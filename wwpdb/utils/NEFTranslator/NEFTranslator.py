@@ -41,11 +41,10 @@ except ImportError as e:
 __version__ = "v1.2-4-g1d9647a"
 
 
-class bmrbTranslator(object):
+class NEFTranslator(object):
     logger = logging.getLogger()
     logger.setLevel(logging.INFO)
     formatter = logging.Formatter('%(asctime)s\t%(levelname)s\t%(message)s')
-    residues = {'ALA': 'A', }
 
     mapFile = scriptPath + '/lib/NEF_NMRSTAR_equivalence.csv'
     NEFinfo = scriptPath + '/lib/NEF_mandatory.csv'
@@ -922,7 +921,7 @@ class bmrbTranslator(object):
 
 if __name__ == "__main__":
     # fname = sys.argv[1]
-    p = bmrbTranslator()
+    p = NEFTranslator()
     flist = open('neflist.txt', 'r').read().split("\n")[:-1]
     for fname in flist:
         print(fname)

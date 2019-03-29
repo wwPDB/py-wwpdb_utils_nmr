@@ -2,9 +2,11 @@ from unittest import TestCase
 import sys
 import os
 import pynmrstar
+
 # Local imports
 sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)), ".."))
 import NEFTranslator as NEFT
+
 
 class TestNEFTranslator(TestCase):
     def test_readInFile(self):
@@ -20,8 +22,9 @@ class TestNEFTranslator(TestCase):
         self.assertEqual(read_out[1], 'Loop')
         read_out = bt.readInFile('data/nonsense.nef')
         self.assertEqual(read_out[0], False)
-        self.assertEqual(read_out[1], 'File contains no valid saveframe or loop. Invalid file PyNMRSTAR Error:("Invalid token found in saveframe \'internaluseyoushouldntseethis_frame\': \'A\'", 2)')
-
+        self.assertEqual(read_out[1],
+                         'File contains no valid saveframe or loop. Invalid file PyNMRSTAR Error:'
+                         '("Invalid token found in saveframe \'internaluseyoushouldntseethis_frame\': \'A\'", 2)')
 
     # def test_load_atom_dict(self):
     #     self.fail()
@@ -52,6 +55,7 @@ class TestNEFTranslator(TestCase):
         dat = pynmrstar.Entry.from_file('data/nodat.str')
         self.assertEqual(bt.IsEmptyLoop(dat, '_Atom_chem_shift', 'Entry'), False)
         self.assertEqual(bt.IsEmptyLoop(dat, '_Gen_dist_constraint', 'Entry'), True)
+
     #
     # def test_GetSTARInfo(self):
     #     self.fail()
@@ -63,17 +67,22 @@ class TestNEFTranslator(TestCase):
         bt = NEFT.NEFTranslator()
         dat = pynmrstar.Entry.from_file('data/2mqq.nef')
         self.assertEqual(bt.GetNEFSeq(dat), [{
-                                                 'A': u'YGHADSPVLMVYGLDQSKMNCDRVFNVFCLYGNVEKVKFMKSKPGAAMVEMADGYAVDRAITHLNNNFMFGQKMNVCVSKQPAIMPGQSYGLEDGSCSYKDFSESRNNRFSTPEQAAKNRIQHPSNVLHFFNAPLEVTEENFFEICDELGVKRPTSVKVFSGKSERSSSGLLEWDSKSDALETLGFLNHYQMKNPNGPYPYTLKLCFSTAQHAS'},
-                                             {'B': 'ACACA'}, {'C': 'ACACA'}])
+            'A': u'YGHADSPVLMVYGLDQSKMNCDRVFNVFCLYGNVEKVKFMKSKPGAAMVEMADGYAVDRAITHLNNNFMFGQKMNVCVSKQPAIMPGQSYGLEDGSCSY'
+                 u'KDFSESRNNRFSTPEQAAKNRIQHPSNVLHFFNAPLEVTEENFFEICDELGVKRPTSVKVFSGKSERSSSGLLEWDSKSDALETLGFLNHYQMKNPNGPY'
+                 u'PYTLKLCFSTAQHAS'},
+            {'B': 'ACACA'}, {'C': 'ACACA'}])
         self.assertEqual(bt.GetNEFSeq(dat, 'nef_sequence', 'sequence_code', 'residue_name'), [{
-                                                                                                  'A': u'YGPHADSPVLMVYGLDQSKMNCDRVFNVFCLYGNVEKVKFMKSKPGAAMVEMADGYAVDRAITHLNNNFMFGQKMNVCVSKQPAIMPGQSYGLEDGSCSYKDFSESRNNRFSTPEQAAKNRIQHPSNVLHFFNAPLEVTEENFFEICDELGVKRPTSVKVFSGKSERSSSGLLEWDSKSDALETLGFLNHYQMKNPNGPYPYTLKLCFSTAQHAS',
-                                                                                                  'C': u'ACACA',
-                                                                                                  'B': u'ACACA'}])
+            'A': u'YGPHADSPVLMVYGLDQSKMNCDRVFNVFCLYGNVEKVKFMKSKPGAAMVEMADGYAVDRAITHLNNNFMFGQKMNVCVSKQPAIMPGQSYGLEDGSCS'
+                 u'YKDFSESRNNRFSTPEQAAKNRIQHPSNVLHFFNAPLEVTEENFFEICDELGVKRPTSVKVFSGKSERSSSGLLEWDSKSDALETLGFLNHYQMKNPNGP'
+                 u'YPYTLKLCFSTAQHAS',
+            'C': u'ACACA',
+            'B': u'ACACA'}])
         dat = bt.readInFile('data/saveframeonly.nef')[2]
         self.assertEqual(bt.GetNEFSeq(dat), [{'A': u'HMSHTQVIELERKFSHQKYLSAPERAHLAKNLKLTETQVKIWFQNRRYKTKRKQLSSELG'}])
         dat = bt.readInFile('data/loopOnly1.nef')[2]
         self.assertEqual(bt.GetNEFSeq(dat), [{
-                                                 'A': u'HMNSQRLIHIKTLTTPNENALKFLSTDGEMLQTRGSKSIVIKNTDENLINHSKLAQQIFLQCPGVESLMIGDDFLTINKDRMVHWNSIKPEIIDLLTKQLAYGEDVISKE'}])
+            'A': u'HMNSQRLIHIKTLTTPNENALKFLSTDGEMLQTRGSKSIVIKNTDENLINHSKLAQQIFLQCPGVESLMIGDDFLTINKDRMVHWNSIKPEIIDLLTKQL'
+                 u'AYGEDVISKE'}])
 
     #
     # def test_GetNMRSTARSeq(self):

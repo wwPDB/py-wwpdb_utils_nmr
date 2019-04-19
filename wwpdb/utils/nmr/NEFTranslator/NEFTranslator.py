@@ -783,7 +783,13 @@ class NEFTranslator(object):
                             sf.add_tag(self.getNMRSTARtag(neftag)[0], tag[1])
                     if saveframe.category == "nef_nmr_meta_data":
                         sf.add_tag("NMR_STAR_version", "3.2.0.15")
-                        sf.add_tag("Generated_date", self.TimeStamp(time.time()), update=True)
+                        #sf.add_tag("Generated_date", self.TimeStamp(time.time()), update=True)
+                        try:
+                            lp1=saveframe.get_loop_by_category('_nef_program_script')
+                            lp1.add_data(['NEFTranslator','NEFtoNMRSTAR','.'])
+                            #print (lp1.tags)
+                        except KeyError:
+                            pass # May be better to add audit loop
                     for loop in saveframe:
                         if loop.category == "_nef_sequence":
                             self.cid = []  # Comp_index_ID list
@@ -922,11 +928,11 @@ class NEFTranslator(object):
 if __name__ == "__main__":
     # fname = sys.argv[1]
     p = NEFTranslator()
-    flist = open('neflist.txt', 'r').read().split("\n")[:-1]
-    for fname in flist:
-        print(fname)
-        p.NEFtoNMRSTAR(fname)
-    # p.NEFtoNMRSTAR('unit_test/translator/data/2mqq.nef')
+    # flist = open('neflist.txt', 'r').read().split("\n")[:-1]
+    # for fname in flist:
+    #     print(fname)
+    #     print (p.NEFtoNMRSTAR(fname))
+    p.NEFtoNMRSTAR('data/2mqq.nef')
     # print (p.getSTARatom('LEU', 'HDY%'))
 
     # dat = pynmrstar.Entry.from_file('unit_test/translator/data/2l9rnonstandard.nef')

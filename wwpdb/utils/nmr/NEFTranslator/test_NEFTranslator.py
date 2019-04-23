@@ -10,7 +10,6 @@ import NEFTranslator as NEFT
 
 class TestNEFTranslator(TestCase):
 
-
     def test_readInFile(self):
         bt = NEFT.NEFTranslator()
         read_out = bt.readInFile('data/2mtv.nef')
@@ -37,7 +36,7 @@ class TestNEFTranslator(TestCase):
         self.assertTrue(len(bt.codeDict) > 0, "Can't read codeDict.json or its empty")
 
     def test_getOneLetter(self):
-        bt =NEFT.NEFTranslator()
+        bt = NEFT.NEFTranslator()
         self.assertTrue(bt.getOneLetter('ALA') == 'A')
         self.assertTrue(bt.getOneLetter('Ala') == 'A')
         self.assertTrue(bt.getOneLetter('Axy') == '?')
@@ -52,7 +51,7 @@ class TestNEFTranslator(TestCase):
 
     def test_TimeStamp(self):
         bt = NEFT.NEFTranslator()
-        self.assertEqual(bt.TimeStamp(1556036192.7247672),'2019-04-23 11:16:32')
+        self.assertEqual(bt.TimeStamp(1556036192.7247672), '2019-04-23 11:16:32')
 
     def test_ValidateFile(self):
         bt = NEFT.NEFTranslator()
@@ -89,7 +88,6 @@ class TestNEFTranslator(TestCase):
         self.assertEqual(bt.ValidateFile('data/loopOnly1.nef', 'S')[0], True)
         self.assertEqual(bt.ValidateFile('data/nonsense.nef', 'R')[0], False)
 
-
     def test_IsEmptyLoop(self):
         bt = NEFT.NEFTranslator()
         dat = pynmrstar.Entry.from_file('data/nodat.nef')
@@ -109,32 +107,32 @@ class TestNEFTranslator(TestCase):
     def test_GetNEFSeq(self):
         bt = NEFT.NEFTranslator()
         dat = pynmrstar.Entry.from_file('data/2mqq.nef')
-        self.assertEqual(bt.GetNEFSeq(dat),[{'A': ['TYR', 'GLY', 'HIS', 'ALA', 'ASP', 'SER', 'PRO', 'VAL', 'LEU',
-                                                   'MET', 'VAL', 'TYR', 'GLY', 'LEU', 'ASP', 'GLN', 'SER', 'LYS',
-                                                   'MET', 'ASN', 'CYS', 'ASP', 'ARG', 'VAL', 'PHE', 'ASN', 'VAL',
-                                                   'PHE', 'CYS', 'LEU', 'TYR', 'GLY', 'ASN', 'VAL', 'GLU', 'LYS',
-                                                   'VAL', 'LYS', 'PHE', 'MET', 'LYS', 'SER', 'LYS', 'PRO', 'GLY',
-                                                   'ALA', 'ALA', 'MET', 'VAL', 'GLU', 'MET', 'ALA', 'ASP', 'GLY',
-                                                   'TYR', 'ALA', 'VAL', 'ASP', 'ARG', 'ALA', 'ILE', 'THR', 'HIS',
-                                                   'LEU', 'ASN', 'ASN', 'ASN', 'PHE', 'MET', 'PHE', 'GLY', 'GLN',
-                                                   'LYS', 'MET', 'ASN', 'VAL', 'CYS', 'VAL', 'SER', 'LYS', 'GLN',
-                                                   'PRO', 'ALA', 'ILE', 'MET', 'PRO', 'GLY', 'GLN', 'SER', 'TYR',
-                                                   'GLY', 'LEU', 'GLU', 'ASP', 'GLY', 'SER', 'CYS', 'SER', 'TYR',
-                                                   'LYS', 'ASP', 'PHE', 'SER', 'GLU', 'SER', 'ARG', 'ASN', 'ASN',
-                                                   'ARG', 'PHE', 'SER', 'THR', 'PRO', 'GLU', 'GLN', 'ALA', 'ALA',
-                                                   'LYS', 'ASN', 'ARG', 'ILE', 'GLN', 'HIS', 'PRO', 'SER', 'ASN',
-                                                   'VAL', 'LEU', 'HIS', 'PHE', 'PHE', 'ASN', 'ALA', 'PRO', 'LEU',
-                                                   'GLU', 'VAL', 'THR', 'GLU', 'GLU', 'ASN', 'PHE', 'PHE', 'GLU',
-                                                   'ILE', 'CYS', 'ASP', 'GLU', 'LEU', 'GLY', 'VAL', 'LYS', 'ARG',
-                                                   'PRO', 'THR', 'SER', 'VAL', 'LYS', 'VAL', 'PHE', 'SER', 'GLY',
-                                                   'LYS', 'SER', 'GLU', 'ARG', 'SER', 'SER', 'SER', 'GLY', 'LEU',
-                                                   'LEU', 'GLU', 'TRP', 'ASP', 'SER', 'LYS', 'SER', 'ASP', 'ALA',
-                                                   'LEU', 'GLU', 'THR', 'LEU', 'GLY', 'PHE', 'LEU', 'ASN', 'HIS',
-                                                   'TYR', 'GLN', 'MET', 'LYS', 'ASN', 'PRO', 'ASN', 'GLY', 'PRO',
-                                                   'TYR', 'PRO', 'TYR', 'THR', 'LEU', 'LYS', 'LEU', 'CYS', 'PHE',
-                                                   'SER', 'THR', 'ALA', 'GLN', 'HIS', 'ALA', 'SER']},
-                                            {'B': ['A', 'C', 'A', 'C', 'A']},
-                                            {'C': ['A', 'C', 'A', 'C', 'A']}])
+        self.assertEqual(bt.GetNEFSeq(dat), [{'A': ['TYR', 'GLY', 'HIS', 'ALA', 'ASP', 'SER', 'PRO', 'VAL', 'LEU',
+                                                    'MET', 'VAL', 'TYR', 'GLY', 'LEU', 'ASP', 'GLN', 'SER', 'LYS',
+                                                    'MET', 'ASN', 'CYS', 'ASP', 'ARG', 'VAL', 'PHE', 'ASN', 'VAL',
+                                                    'PHE', 'CYS', 'LEU', 'TYR', 'GLY', 'ASN', 'VAL', 'GLU', 'LYS',
+                                                    'VAL', 'LYS', 'PHE', 'MET', 'LYS', 'SER', 'LYS', 'PRO', 'GLY',
+                                                    'ALA', 'ALA', 'MET', 'VAL', 'GLU', 'MET', 'ALA', 'ASP', 'GLY',
+                                                    'TYR', 'ALA', 'VAL', 'ASP', 'ARG', 'ALA', 'ILE', 'THR', 'HIS',
+                                                    'LEU', 'ASN', 'ASN', 'ASN', 'PHE', 'MET', 'PHE', 'GLY', 'GLN',
+                                                    'LYS', 'MET', 'ASN', 'VAL', 'CYS', 'VAL', 'SER', 'LYS', 'GLN',
+                                                    'PRO', 'ALA', 'ILE', 'MET', 'PRO', 'GLY', 'GLN', 'SER', 'TYR',
+                                                    'GLY', 'LEU', 'GLU', 'ASP', 'GLY', 'SER', 'CYS', 'SER', 'TYR',
+                                                    'LYS', 'ASP', 'PHE', 'SER', 'GLU', 'SER', 'ARG', 'ASN', 'ASN',
+                                                    'ARG', 'PHE', 'SER', 'THR', 'PRO', 'GLU', 'GLN', 'ALA', 'ALA',
+                                                    'LYS', 'ASN', 'ARG', 'ILE', 'GLN', 'HIS', 'PRO', 'SER', 'ASN',
+                                                    'VAL', 'LEU', 'HIS', 'PHE', 'PHE', 'ASN', 'ALA', 'PRO', 'LEU',
+                                                    'GLU', 'VAL', 'THR', 'GLU', 'GLU', 'ASN', 'PHE', 'PHE', 'GLU',
+                                                    'ILE', 'CYS', 'ASP', 'GLU', 'LEU', 'GLY', 'VAL', 'LYS', 'ARG',
+                                                    'PRO', 'THR', 'SER', 'VAL', 'LYS', 'VAL', 'PHE', 'SER', 'GLY',
+                                                    'LYS', 'SER', 'GLU', 'ARG', 'SER', 'SER', 'SER', 'GLY', 'LEU',
+                                                    'LEU', 'GLU', 'TRP', 'ASP', 'SER', 'LYS', 'SER', 'ASP', 'ALA',
+                                                    'LEU', 'GLU', 'THR', 'LEU', 'GLY', 'PHE', 'LEU', 'ASN', 'HIS',
+                                                    'TYR', 'GLN', 'MET', 'LYS', 'ASN', 'PRO', 'ASN', 'GLY', 'PRO',
+                                                    'TYR', 'PRO', 'TYR', 'THR', 'LEU', 'LYS', 'LEU', 'CYS', 'PHE',
+                                                    'SER', 'THR', 'ALA', 'GLN', 'HIS', 'ALA', 'SER']},
+                                             {'B': ['A', 'C', 'A', 'C', 'A']},
+                                             {'C': ['A', 'C', 'A', 'C', 'A']}])
         self.assertEqual(bt.GetNEFSeq(dat, 'nef_sequence', 'sequence_code', 'residue_name'),
                          [{'A': ['TYR', 'GLY', 'PRO', 'HIS', 'ALA', 'ASP', 'SER', 'PRO', 'VAL', 'LEU', 'MET', 'VAL',
                                  'TYR', 'GLY', 'LEU', 'ASP', 'GLN', 'SER', 'LYS', 'MET', 'ASN', 'CYS', 'ASP', 'ARG',
@@ -156,15 +154,15 @@ class TestNEFTranslator(TestCase):
                                  'LYS', 'LEU', 'CYS', 'PHE', 'SER', 'THR', 'ALA', 'GLN', 'HIS', 'ALA', 'SER'],
                            'C': ['A', 'C', 'A', 'C', 'A'], 'B': ['A', 'C', 'A', 'C', 'A']}])
         dat = bt.readInFile('data/saveframeonly.nef')[2]
-        self.assertEqual(bt.GetNEFSeq(dat),[{'A': ['HIS', 'MET', 'SER', 'HIS', 'THR', 'GLN', 'VAL', 'ILE', 'GLU',
-                                                   'LEU', 'GLU', 'ARG', 'LYS', 'PHE', 'SER', 'HIS', 'GLN', 'LYS',
-                                                   'TYR', 'LEU', 'SER', 'ALA', 'PRO', 'GLU', 'ARG', 'ALA', 'HIS',
-                                                   'LEU', 'ALA', 'LYS', 'ASN', 'LEU', 'LYS', 'LEU', 'THR', 'GLU',
-                                                   'THR', 'GLN', 'VAL', 'LYS', 'ILE', 'TRP', 'PHE', 'GLN', 'ASN',
-                                                   'ARG', 'ARG', 'TYR', 'LYS', 'THR', 'LYS', 'ARG', 'LYS', 'GLN',
-                                                   'LEU', 'SER', 'SER', 'GLU', 'LEU', 'GLY']}])
+        self.assertEqual(bt.GetNEFSeq(dat), [{'A': ['HIS', 'MET', 'SER', 'HIS', 'THR', 'GLN', 'VAL', 'ILE', 'GLU',
+                                                    'LEU', 'GLU', 'ARG', 'LYS', 'PHE', 'SER', 'HIS', 'GLN', 'LYS',
+                                                    'TYR', 'LEU', 'SER', 'ALA', 'PRO', 'GLU', 'ARG', 'ALA', 'HIS',
+                                                    'LEU', 'ALA', 'LYS', 'ASN', 'LEU', 'LYS', 'LEU', 'THR', 'GLU',
+                                                    'THR', 'GLN', 'VAL', 'LYS', 'ILE', 'TRP', 'PHE', 'GLN', 'ASN',
+                                                    'ARG', 'ARG', 'TYR', 'LYS', 'THR', 'LYS', 'ARG', 'LYS', 'GLN',
+                                                    'LEU', 'SER', 'SER', 'GLU', 'LEU', 'GLY']}])
         dat = bt.readInFile('data/loopOnly1.nef')[2]
-        self.assertEqual(bt.GetNEFSeq(dat),[{'A': ['HIS', 'MET', 'ASN', 'SER', 'GLN', 'ARG', 'LEU', 'ILE', 'HIS',
+        self.assertEqual(bt.GetNEFSeq(dat), [{'A': ['HIS', 'MET', 'ASN', 'SER', 'GLN', 'ARG', 'LEU', 'ILE', 'HIS',
                                                     'ILE', 'LYS', 'THR', 'LEU', 'THR', 'THR', 'PRO', 'ASN', 'GLU',
                                                     'ASN', 'ALA', 'LEU', 'LYS', 'PHE', 'LEU', 'SER', 'THR', 'ASP',
                                                     'GLY', 'GLU', 'MET', 'LEU', 'GLN', 'THR', 'ARG', 'GLY', 'SER',
@@ -178,14 +176,69 @@ class TestNEFTranslator(TestCase):
                                                     'LEU', 'ALA', 'TYR', 'GLY', 'GLU', 'ASP', 'VAL', 'ILE', 'SER',
                                                     'LYS', 'GLU']}])
 
+    def test_GetNMRSTARSeq(self):
+        bt = NEFT.NEFTranslator()
+        dat = pynmrstar.Entry.from_file('data/2mqq.str')
+        self.assertEqual(bt.GetNMRSTARSeq(dat),
+                         [{'1': ['TYR', 'GLY', 'HIS', 'ALA', 'ASP', 'SER', 'PRO', 'VAL', 'LEU', 'MET', 'VAL', 'TYR',
+                                 'GLY', 'LEU', 'ASP', 'GLN', 'SER', 'LYS', 'MET', 'ASN', 'CYS', 'ASP', 'ARG', 'VAL',
+                                 'PHE', 'ASN', 'VAL', 'PHE', 'CYS', 'LEU', 'TYR', 'GLY', 'ASN', 'VAL', 'GLU', 'LYS',
+                                 'VAL', 'LYS', 'PHE', 'MET', 'LYS', 'SER', 'LYS', 'PRO', 'GLY', 'ALA', 'ALA', 'MET',
+                                 'VAL', 'GLU', 'MET', 'ALA', 'ASP', 'GLY', 'TYR', 'ALA', 'VAL', 'ASP', 'ARG', 'ALA',
+                                 'ILE', 'THR', 'HIS', 'LEU', 'ASN', 'ASN', 'ASN', 'PHE', 'MET', 'PHE', 'GLY', 'GLN',
+                                 'LYS', 'MET', 'ASN', 'VAL', 'CYS', 'VAL', 'SER', 'LYS', 'GLN', 'PRO', 'ALA', 'ILE',
+                                 'MET', 'PRO', 'GLY', 'GLN', 'SER', 'TYR', 'GLY', 'LEU', 'GLU', 'ASP', 'GLY', 'SER',
+                                 'CYS', 'SER', 'TYR', 'LYS', 'ASP', 'PHE', 'SER', 'GLU', 'SER', 'ARG', 'ASN', 'ASN',
+                                 'ARG', 'PHE', 'SER', 'THR', 'PRO', 'GLU', 'GLN', 'ALA', 'ALA', 'LYS', 'ASN', 'ARG',
+                                 'ILE', 'GLN', 'HIS', 'PRO', 'SER', 'ASN', 'VAL', 'LEU', 'HIS', 'PHE', 'PHE', 'ASN',
+                                 'ALA', 'PRO', 'LEU', 'GLU', 'VAL', 'THR', 'GLU', 'GLU', 'ASN', 'PHE', 'PHE', 'GLU',
+                                 'ILE', 'CYS', 'ASP', 'GLU', 'LEU', 'GLY', 'VAL', 'LYS', 'ARG', 'PRO', 'THR', 'SER',
+                                 'VAL', 'LYS', 'VAL', 'PHE', 'SER', 'GLY', 'LYS', 'SER', 'GLU', 'ARG', 'SER', 'SER',
+                                 'SER', 'GLY', 'LEU', 'LEU', 'GLU', 'TRP', 'ASP', 'SER', 'LYS', 'SER', 'ASP', 'ALA',
+                                 'LEU', 'GLU', 'THR', 'LEU', 'GLY', 'PHE', 'LEU', 'ASN', 'HIS', 'TYR', 'GLN', 'MET',
+                                 'LYS', 'ASN', 'PRO', 'ASN', 'GLY', 'PRO', 'TYR', 'PRO', 'TYR', 'THR', 'LEU', 'LYS',
+                                 'LEU', 'CYS', 'PHE', 'SER', 'THR', 'ALA', 'GLN', 'HIS', 'ALA', 'SER']},
+                          {'2': ['A', 'C', 'A', 'C', 'A']}, {'3': ['A', 'C', 'A', 'C', 'A']}])
+        self.assertEqual(bt.GetNMRSTARSeq(dat, 'Chem_comp_assembly', 'Comp_index_ID', 'Comp_ID'),
+                         [{'1': ['TYR', 'GLY', 'PRO', 'HIS', 'ALA', 'ASP', 'SER', 'PRO', 'VAL', 'LEU', 'MET', 'VAL',
+                                 'TYR',
+                                 'GLY', 'LEU', 'ASP', 'GLN', 'SER', 'LYS', 'MET', 'ASN', 'CYS', 'ASP', 'ARG', 'VAL',
+                                 'PHE', 'ASN', 'VAL', 'PHE', 'CYS', 'LEU', 'TYR', 'GLY', 'ASN', 'VAL', 'GLU', 'LYS',
+                                 'VAL', 'LYS', 'PHE', 'MET', 'LYS', 'SER', 'LYS', 'PRO', 'GLY', 'ALA', 'ALA', 'MET',
+                                 'VAL', 'GLU', 'MET', 'ALA', 'ASP', 'GLY', 'TYR', 'ALA', 'VAL', 'ASP', 'ARG', 'ALA',
+                                 'ILE', 'THR', 'HIS', 'LEU', 'ASN', 'ASN', 'ASN', 'PHE', 'MET', 'PHE', 'GLY', 'GLN',
+                                 'LYS', 'MET', 'ASN', 'VAL', 'CYS', 'VAL', 'SER', 'LYS', 'GLN', 'PRO', 'ALA', 'ILE',
+                                 'MET', 'PRO', 'GLY', 'GLN', 'SER', 'TYR', 'GLY', 'LEU', 'GLU', 'ASP', 'GLY', 'SER',
+                                 'CYS', 'SER', 'TYR', 'LYS', 'ASP', 'PHE', 'SER', 'GLU', 'SER', 'ARG', 'ASN', 'ASN',
+                                 'ARG', 'PHE', 'SER', 'THR', 'PRO', 'GLU', 'GLN', 'ALA', 'ALA', 'LYS', 'ASN', 'ARG',
+                                 'ILE', 'GLN', 'HIS', 'PRO', 'SER', 'ASN', 'VAL', 'LEU', 'HIS', 'PHE', 'PHE', 'ASN',
+                                 'ALA', 'PRO', 'LEU', 'GLU', 'VAL', 'THR', 'GLU', 'GLU', 'ASN', 'PHE', 'PHE', 'GLU',
+                                 'ILE', 'CYS', 'ASP', 'GLU', 'LEU', 'GLY', 'VAL', 'LYS', 'ARG', 'PRO', 'THR', 'SER',
+                                 'VAL', 'LYS', 'VAL', 'PHE', 'SER', 'GLY', 'LYS', 'SER', 'GLU', 'ARG', 'SER', 'SER',
+                                 'SER', 'GLY', 'LEU', 'LEU', 'GLU', 'TRP', 'ASP', 'SER', 'LYS', 'SER', 'ASP', 'ALA',
+                                 'LEU', 'GLU', 'THR', 'LEU', 'GLY', 'PHE', 'LEU', 'ASN', 'HIS', 'TYR', 'GLN', 'MET',
+                                 'LYS', 'ASN', 'PRO', 'ASN', 'GLY', 'PRO', 'TYR', 'PRO', 'TYR', 'THR', 'LEU', 'LYS',
+                                 'LEU', 'CYS', 'PHE', 'SER', 'THR', 'ALA', 'GLN', 'HIS', 'ALA', 'SER'],
+                           '2': ['A', 'C', 'A', 'C', 'A'], '3': ['A', 'C', 'A', 'C', 'A']}])
 
-    #
-    # def test_GetNMRSTARSeq(self):
-    #     self.fail()
-    #
-    # def test_ValidateAtom(self):
-    #     self.fail()
-    #
+    def test_ValidateAtom(self):
+        bt = NEFT.NEFTranslator()
+        dat = pynmrstar.Entry.from_file('data/2mqq.nef')
+        self.assertEqual(len(bt.ValidateAtom(dat, 'nef_chemical_shift', 'sequence_code', 'residue_name', 'atom_name')),
+                         567)
+        self.assertEqual(
+            len(bt.ValidateAtom(dat, 'nef_distance_restraint', 'sequence_code_1', 'residue_name_1', 'atom_name_1')),
+            2960)
+        self.assertEqual(
+            len(bt.ValidateAtom(dat, 'nef_distance_restraint', 'sequence_code_2', 'residue_name_2', 'atom_name_2')),
+            3147)
+        dat = pynmrstar.Entry.from_file('data/2mqq.str')
+        self.assertEqual(len(bt.ValidateAtom(dat)), 0)
+        self.assertEqual(len(bt.ValidateAtom(dat, 'Gen_dist_constraint', 'Comp_index_ID_1', 'Comp_ID_1', 'Atom_ID_1')),
+                         0)
+        self.assertEqual(len(bt.ValidateAtom(dat, 'Gen_dist_constraint', 'Comp_index_ID_2', 'Comp_ID_2', 'Atom_ID_2')),
+                         0)
+
     # def test_getNMRSTARtag(self):
     #     self.fail()
     #
@@ -195,9 +248,15 @@ class TestNEFTranslator(TestCase):
     # def test_getNMRSTARlooptags(self):
     #     self.fail()
     #
-    # def test_getSTARatom(self):
-    #     self.fail()
-    #
+    def test_getSTARatom(self):
+        bt = NEFT.NEFTranslator()
+        self.assertEqual(bt.getSTARatom('CYS', 'HB%'), ('HB', ['HB2', 'HB3'], 1))
+        self.assertEqual(bt.getSTARatom('TRP', 'CE%'), ('CE', ['CE2', 'CE3'], 1))
+        self.assertEqual(bt.getSTARatom('TRP', 'CEX'), ('CE', ['CE2'], 2))
+        self.assertEqual(bt.getSTARatom('TRP', 'CEY'), ('CE', ['CE3'], 2))
+        self.assertEqual(bt.getSTARatom('LEU', 'HDY%'), ('HD', ['HD21', 'HD22', 'HD23'], 2))
+        self.assertEqual(bt.getSTARatom('LEU', 'HD1%'), ('HD1', ['HD11', 'HD12', 'HD13'], 1))
+
     # def test_findAmbiguityCode(self):
     #     self.fail()
     #

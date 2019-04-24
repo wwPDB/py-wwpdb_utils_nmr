@@ -833,8 +833,6 @@ class NEFTranslator(object):
                                     r_index_id += 1
                             else:
                                 dd = self.translate_row(loop.get_tag_names(), lp.get_tag_names(), dat)
-                                for d in dd:
-                                    lp.add_data(d)
 
                         # print (loop.data[0])
                         sf.add_loop(lp)

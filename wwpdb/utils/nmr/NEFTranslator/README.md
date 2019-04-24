@@ -19,7 +19,7 @@ of the file and according to that the file content  parameter is set
 - 'R' for restraint file
 
 
-#### To validate all in one file
+#### 2. To validate all in one file
 
 ```python
 In [1]: import NEFTranslator
@@ -71,7 +71,7 @@ Out[12]: ['_nef_distance_restraint loop not found']
 ```
 If you set file content parameter as 'S', then it will succeed.
 
-#### Extract sequence from chemical shift loop
+#### 3. Extract sequence from chemical shift loop
 
 ```python
 

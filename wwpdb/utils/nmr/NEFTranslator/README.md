@@ -12,8 +12,11 @@ NEFTranslator require 'pynmrstar v 2.6' package which is available via pip insta
 
 Input file can be either in NEF or NMR-STAR format. It can be a complete file with many saveframes and loops or just a
 single saveframe with chemical shift data or just a loop that contain some data. Usually depositor will provide the content
-of the file. 
+of the file and according to that the file content  parameter is set
 
+- 'A' for all in one file (both chemical shift and restraints)
+- 'S' for chemical shift file
+- 'R' for restraint file
 
 
 #### To validate all in one file
@@ -43,8 +46,8 @@ Out[7]:
 
 ```
 
-status_flag is a boolean which gives the information whether the script is successful or not. It the script fails then
-the error tag will have some information
+status_flag is a boolean which gives the information whether the script is successful or not. If the script fails then
+the error tag will have some information. Following example a chemical shift will validated as all in one file. 
 
 ```python
 In [8]: (status_flag,json_data) = nt.validate_file('data/norest.nef','A')
@@ -66,13 +69,11 @@ Out[11]:
 In [12]: dat['error']
 Out[12]: ['_nef_distance_restraint loop not found']
 ```
-
+If you set file content parameter as 'S', then it will succeed.
 
 #### Extract sequence from chemical shift loop
 
 ```python
-In [12]: dat['error']
-Out[12]: ['_nef_distance_restraint loop not found']
 
 In [13]: (status_flag,json_data) = nt.get_seq_from_cs_loop('data/norest.nef')
 

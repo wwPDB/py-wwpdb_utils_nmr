@@ -158,7 +158,7 @@ class NEFTranslator(object):
 
     def validate_file(self, in_file, file_type='A'):
         """
-        Validates input file.
+        Validates input NEF/NMR-STAR file.
         file_type flags can be 'A' or 'S' or 'R'.
         A for  All in one file,
         S for chemical Shifts file,
@@ -309,27 +309,32 @@ class NEFTranslator(object):
         return sf_list, lp_list
 
     def get_seq_from_cs_loop(self, in_file):
+        """
+        Extracts sequence from checmial shift loop
+        :param in_file: NEF/NMR-STAR file
+        :return: status flag,json data
+        """
         (flg, json_data) = self.validate_file(in_file, 'S')
         dat = json.loads(json_data)
         info = dat['info']
         warning = dat['warning']
         error = dat['error']
         is_ok = False
-        sq = []
+        seq = []
         if flg:
             info.append('File successfully read')
             in_dat = self.read_input_file(in_file)[-1]
             if dat['FILE'] == "NMR-STAR":
                 info.append('NMR-STAR')
-                sq = self.get_nmrstar_seq(in_dat)
-                if len(sq):
+                seq = self.get_nmrstar_seq(in_dat)
+                if len(seq):
                     is_ok = True
                 else:
                     error.append("Can't extract sequence from chemical shift loop")
             elif dat['FILE'] == "NEF":
                 info.append('NEF')
-                sq = self.get_nef_seq(in_dat)
-                if len(sq):
+                seq = self.get_nef_seq(in_dat)
+                if len(seq):
                     is_ok = True
                 else:
                     error.append("Can't extract sequence from chemical shift loop")
@@ -337,7 +342,7 @@ class NEFTranslator(object):
                 error.append("Can't identify file type, it is neither NEF nor NMR-STAR")
         else:
             error.append('File validation failed (or) File contains no chemical shift information')
-        return is_ok, json.dumps({'info': info, 'warning': warning, 'error': error, 'FILE': dat['FILE'], 'DATA': sq})
+        return is_ok, json.dumps({'info': info, 'warning': warning, 'error': error, 'FILE': dat['FILE'], 'DATA': seq})
 
     @staticmethod
     def get_nef_seq(str_data, lp_category='nef_chemical_shift', seq_id='sequence_code', res_id='residue_name',
@@ -951,6 +956,7 @@ class NEFTranslator(object):
             star_data.normalize()
             with open(star_file, 'w') as wstarfile:
                 wstarfile.write(str(star_data))
+            info.append('File {} successfully written'.format(star_file))
 
         else:
             is_done = False
@@ -959,7 +965,6 @@ class NEFTranslator(object):
 
 
 if __name__ == "__main__":
-    # fname = sys.argv[1]
-
+    fname = sys.argv[1]
     bt = NEFTranslator()
-    bt.nef_to_nmrstar('data/2mqq.nef')
+    bt.nef_to_nmrstar(fname)

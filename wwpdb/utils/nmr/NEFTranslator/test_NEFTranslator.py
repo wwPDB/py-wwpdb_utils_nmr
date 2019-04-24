@@ -797,3 +797,4 @@ class TestNEFTranslator(TestCase):
         bt = NEFT.NEFTranslator()
         bt.nef_to_nmrstar('data/2mqq.nef', star_file='data/test_out.str')
         self.assertTrue(bt.validate_file('data/test_out.str', 'A')[0])
+        self.assertTrue(bt.validate_file('data/test_out.str')[0])

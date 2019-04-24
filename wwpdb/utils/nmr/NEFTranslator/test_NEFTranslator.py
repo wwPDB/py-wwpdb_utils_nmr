@@ -437,12 +437,46 @@ class TestNEFTranslator(TestCase):
         self.assertEqual(bt.getSTARatom('LEU', 'HDY%'), ('HD', ['HD21', 'HD22', 'HD23'], 2))
         self.assertEqual(bt.getSTARatom('LEU', 'HD1%'), ('HD1', ['HD11', 'HD12', 'HD13'], 1))
 
-    # def test_findAmbiguityCode(self):
-    #     self.fail()
-    #
-    # def test_translate_cs_row(self):
-    #     self.fail()
-    #
+
+    def test_translate_cs_row(self):
+        bt = NEFT.NEFTranslator()
+        bt.NEFtoNMRSTAR('data/2mqq.nef')
+        input_tags = ['_nef_chemical_shift.chain_code', '_nef_chemical_shift.sequence_code',
+                      '_nef_chemical_shift.residue_name', '_nef_chemical_shift.atom_name',
+                      '_nef_chemical_shift.value', '_nef_chemical_shift.value_uncertainty',
+                      '_nef_chemical_shift.element', '_nef_chemical_shift.isotope_number']
+        output_tags = ['_Atom_chem_shift.Auth_asym_ID', '_Atom_chem_shift.Auth_seq_ID',
+                       '_Atom_chem_shift.Auth_comp_ID', '_Atom_chem_shift.Auth_atom_ID',
+                       '_Atom_chem_shift.Val', '_Atom_chem_shift.Val_err', '_Atom_chem_shift.Atom_type',
+                       '_Atom_chem_shift.Atom_isotope_number', '_Atom_chem_shift.Entity_assembly_ID',
+                       '_Atom_chem_shift.Comp_index_ID', '_Atom_chem_shift.Comp_ID', '_Atom_chem_shift.Atom_ID',
+                       '_Atom_chem_shift.Ambiguity_code', '_Atom_chem_shift.Ambiguity_set_ID',
+                       '_Atom_chem_shift.Assigned_chem_shift_list_ID']
+        data = ['A', '484', 'THR', 'N', '108.193', '0.4', 'N', '15']
+        data_out = [['A', '484', 'THR', 'N', '108.193', '0.4', 'N', '15', 1, 113, 'THR', 'N', 1, '.', None]]
+        self.assertEqual(bt.translate_cs_row(input_tags,output_tags,data),data_out)
+        data = ['A', '488', 'ALA', 'HB%', '1.625', '0.02', 'H', '1']
+        data_out = [['A', '488', 'ALA', 'HB%', '1.625', '0.02', 'H', '1', 1, 117, 'ALA', u'HB1', 1, '.', None],
+                    ['A', '488', 'ALA', 'HB%', '1.625', '0.02', 'H', '1', 1, 117, 'ALA', u'HB2', 1, '.', None],
+                    ['A', '488', 'ALA', 'HB%', '1.625', '0.02', 'H', '1', 1, 117, 'ALA', u'HB3', 1, '.', None]]
+        self.assertEqual(bt.translate_cs_row(input_tags, output_tags, data), data_out)
+        data = ['A', '493', 'ILE', 'HD1%', '0.996', '0.02', 'H', '1']
+        data_out = [['A', '493', 'ILE', 'HD1%', '0.996', '0.02', 'H', '1', 1, 122, 'ILE', u'HD11', 1, '.', None],
+                    ['A', '493', 'ILE', 'HD1%', '0.996', '0.02', 'H', '1', 1, 122, 'ILE', u'HD12', 1, '.', None],
+                    ['A', '493', 'ILE', 'HD1%', '0.996', '0.02', 'H', '1', 1, 122, 'ILE', u'HD13', 1, '.', None]]
+        self.assertEqual(bt.translate_cs_row(input_tags, output_tags, data), data_out)
+        data = ['A', '493', 'ILE', 'HG1x', '1.627', '0.02', 'H', '1']
+        data_out = [['A', '493', 'ILE', 'HG1x', '1.627', '0.02', 'H', '1', 1, 122, 'ILE', u'HG12', 2, '.', None]]
+        self.assertEqual(bt.translate_cs_row(input_tags, output_tags, data), data_out)
+        data = ['A', '493', 'ILE', 'HG1y', '1.536', '0.02', 'H', '1']
+        data_out = [['A', '493', 'ILE', 'HG1y', '1.536', '0.02', 'H', '1', 1, 122, 'ILE', u'HG13', 2, '.', None]]
+        self.assertEqual(bt.translate_cs_row(input_tags, output_tags, data), data_out)
+        data = ['A', '493', 'ILE', 'HG2%', '0.859', '0.02', 'H', '1']
+        data_out = [['A', '493', 'ILE', 'HG2%', '0.859', '0.02', 'H', '1', 1, 122, 'ILE', u'HG21', 1, '.', None],
+                    ['A', '493', 'ILE', 'HG2%', '0.859', '0.02', 'H', '1', 1, 122, 'ILE', u'HG22', 1, '.', None],
+                    ['A', '493', 'ILE', 'HG2%', '0.859', '0.02', 'H', '1', 1, 122, 'ILE', u'HG23', 1, '.', None]]
+        self.assertEqual(bt.translate_cs_row(input_tags, output_tags, data), data_out)
+
     # def test_get_identifier(self):
     #     self.fail()
     #

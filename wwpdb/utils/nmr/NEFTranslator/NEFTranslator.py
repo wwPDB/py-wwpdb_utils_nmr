@@ -552,15 +552,15 @@ class NEFTranslator(object):
                 aaa = "H"
         return (aaa, alist, ac)
 
-    def findAmbiguityCode(self, neflist):
-        for nn in neflist:
-            seqid = sorted(set([int(i[0]) for i in nn]))
-            for sid in seqid:
-                sqgroup = [i for i in nn if int(i[0]) == sid]
-                sqatm = [i[2] for i in sqgroup]
-                print("atm", sqatm)
-                print([s for s in sqatm if ('C' in s and 'X' in s.upper()) or ('C' in s and 'Y' in s.upper()) or (
-                        'H' in s and 'X' in s.upper()) or ('H' in s and 'Y' in s.upper())])
+    # def findAmbiguityCode(self, neflist):
+    #     for nn in neflist:
+    #         seqid = sorted(set([int(i[0]) for i in nn]))
+    #         for sid in seqid:
+    #             sqgroup = [i for i in nn if int(i[0]) == sid]
+    #             sqatm = [i[2] for i in sqgroup]
+    #             print("atm", sqatm)
+    #             print([s for s in sqatm if ('C' in s and 'X' in s.upper()) or ('C' in s and 'Y' in s.upper()) or (
+    #                     'H' in s and 'X' in s.upper()) or ('H' in s and 'Y' in s.upper())])
 
     def translate_cs_row(self, f_tags, t_tags, row_data):
         out_row = []
@@ -633,7 +633,7 @@ class NEFTranslator(object):
         # print (f_tags)
         out_row = []
         res_list = self.get_identifier(f_tags)
-        # print (res_list)
+        #print (res_list,f_tags)
         tmp_dict = {}
         for res1 in res_list:
             try:
@@ -693,7 +693,7 @@ class NEFTranslator(object):
     def translate_restraint_row(self, f_tags, t_tags, row_data):
         out_row = []
         res_list = self.get_identifier(f_tags)
-        # print (res_list)
+        #print (res_list,f_tags)
         tmp_dict = {}
         for res1 in res_list:
             try:

@@ -239,15 +239,195 @@ class TestNEFTranslator(TestCase):
         self.assertEqual(len(bt.ValidateAtom(dat, 'Gen_dist_constraint', 'Comp_index_ID_2', 'Comp_ID_2', 'Atom_ID_2')),
                          0)
 
-    # def test_getNMRSTARtag(self):
-    #     self.fail()
-    #
-    # def test_getNEFtag(self):
-    #     self.fail()
-    #
-    # def test_getNMRSTARlooptags(self):
-    #     self.fail()
-    #
+    def test_getNMRSTARtag(self):
+        bt = NEFT.NEFTranslator()
+        self.assertEqual(bt.getNMRSTARtag('_nef_program_script.program_name'),
+                         ['_Software_applied_methods.Software_name', '_Software_applied_methods.Software_name'])
+        self.assertEqual(bt.getNMRSTARtag('_nef_program_script.script_name'),
+                         ['_Software_applied_methods.Script_name', '_Software_applied_methods.Script_name'])
+        self.assertEqual(bt.getNMRSTARtag('_nef_program_script.script'),
+                         ['_Software_applied_methods.Script', '_Software_applied_methods.Script'])
+        self.assertEqual(bt.getNMRSTARtag('_nef_sequence.index'),
+                         ['_Chem_comp_assembly.NEF_index', '_Chem_comp_assembly.NEF_index'])
+        self.assertEqual(bt.getNMRSTARtag('_nef_sequence.chain_code'),
+                         ['_Chem_comp_assembly.Auth_asym_ID', '_Chem_comp_assembly.Entity_assembly_ID'])
+        self.assertEqual(bt.getNMRSTARtag('_nef_sequence.sequence_code'),
+                         ['_Chem_comp_assembly.Auth_seq_ID', '_Chem_comp_assembly.Comp_index_ID'])
+        self.assertEqual(bt.getNMRSTARtag('_nef_sequence.residue_name'),
+                         ['_Chem_comp_assembly.Auth_comp_ID', '_Chem_comp_assembly.Comp_ID'])
+        self.assertEqual(bt.getNMRSTARtag('_nef_sequence.linking'),
+                         ['_Chem_comp_assembly.Sequence_linking', '_Chem_comp_assembly.Sequence_linking'])
+        self.assertEqual(bt.getNMRSTARtag('_nef_sequence.residue_variant'),
+                         ['_Chem_comp_assembly.Auth_variant_ID', '_Chem_comp_assembly.Auth_variant_ID'])
+        self.assertEqual(bt.getNMRSTARtag('_nef_sequence.cis_peptide'),
+                         ['_Chem_comp_assembly.Cis_residue', '_Chem_comp_assembly.Cis_residue'])
+        self.assertEqual(bt.getNMRSTARtag('_nef_chemical_shift.chain_code'),
+                         ['_Atom_chem_shift.Auth_asym_ID', '_Atom_chem_shift.Entity_assembly_ID'])
+        self.assertEqual(bt.getNMRSTARtag('_nef_chemical_shift.sequence_code'),
+                         ['_Atom_chem_shift.Auth_seq_ID', '_Atom_chem_shift.Comp_index_ID'])
+        self.assertEqual(bt.getNMRSTARtag('_nef_chemical_shift.residue_name'),
+                         ['_Atom_chem_shift.Auth_comp_ID', '_Atom_chem_shift.Comp_ID'])
+        self.assertEqual(bt.getNMRSTARtag('_nef_chemical_shift.atom_name'),
+                         ['_Atom_chem_shift.Auth_atom_ID', '_Atom_chem_shift.Atom_ID'])
+        self.assertEqual(bt.getNMRSTARtag('_nef_chemical_shift.value'),
+                         ['_Atom_chem_shift.Val', '_Atom_chem_shift.Val'])
+        self.assertEqual(bt.getNMRSTARtag('_nef_chemical_shift.value_uncertainty'),
+                         ['_Atom_chem_shift.Val_err', '_Atom_chem_shift.Val_err'])
+        self.assertEqual(bt.getNMRSTARtag('_nef_chemical_shift.element'),
+                         ['_Atom_chem_shift.Atom_type', '_Atom_chem_shift.Atom_type'])
+        self.assertEqual(bt.getNMRSTARtag('_nef_chemical_shift.isotope_number'),
+                         ['_Atom_chem_shift.Atom_isotope_number', '_Atom_chem_shift.Atom_isotope_number'])
+        self.assertEqual(bt.getNMRSTARtag('_nef_chemical_shift.chain_code'),
+                         ['_Atom_chem_shift.Auth_asym_ID', '_Atom_chem_shift.Entity_assembly_ID'])
+        self.assertEqual(bt.getNMRSTARtag('_nef_chemical_shift.sequence_code'),
+                         ['_Atom_chem_shift.Auth_seq_ID', '_Atom_chem_shift.Comp_index_ID'])
+        self.assertEqual(bt.getNMRSTARtag('_nef_chemical_shift.residue_name'),
+                         ['_Atom_chem_shift.Auth_comp_ID', '_Atom_chem_shift.Comp_ID'])
+        self.assertEqual(bt.getNMRSTARtag('_nef_chemical_shift.atom_name'),
+                         ['_Atom_chem_shift.Auth_atom_ID', '_Atom_chem_shift.Atom_ID'])
+        self.assertEqual(bt.getNMRSTARtag('_nef_chemical_shift.value'),
+                         ['_Atom_chem_shift.Val', '_Atom_chem_shift.Val'])
+        self.assertEqual(bt.getNMRSTARtag('_nef_chemical_shift.value_uncertainty'),
+                         ['_Atom_chem_shift.Val_err', '_Atom_chem_shift.Val_err'])
+        self.assertEqual(bt.getNMRSTARtag('_nef_chemical_shift.element'),
+                         ['_Atom_chem_shift.Atom_type', '_Atom_chem_shift.Atom_type'])
+        self.assertEqual(bt.getNMRSTARtag('_nef_chemical_shift.isotope_number'),
+                         ['_Atom_chem_shift.Atom_isotope_number', '_Atom_chem_shift.Atom_isotope_number'])
+        self.assertEqual(bt.getNMRSTARtag('_nef_chemical_shift.chain_code'),
+                         ['_Atom_chem_shift.Auth_asym_ID', '_Atom_chem_shift.Entity_assembly_ID'])
+        self.assertEqual(bt.getNMRSTARtag('_nef_chemical_shift.sequence_code'),
+                         ['_Atom_chem_shift.Auth_seq_ID', '_Atom_chem_shift.Comp_index_ID'])
+        self.assertEqual(bt.getNMRSTARtag('_nef_chemical_shift.residue_name'),
+                         ['_Atom_chem_shift.Auth_comp_ID', '_Atom_chem_shift.Comp_ID'])
+        self.assertEqual(bt.getNMRSTARtag('_nef_chemical_shift.atom_name'),
+                         ['_Atom_chem_shift.Auth_atom_ID', '_Atom_chem_shift.Atom_ID'])
+        self.assertEqual(bt.getNMRSTARtag('_nef_chemical_shift.value'),
+                         ['_Atom_chem_shift.Val', '_Atom_chem_shift.Val'])
+        self.assertEqual(bt.getNMRSTARtag('_nef_chemical_shift.value_uncertainty'),
+                         ['_Atom_chem_shift.Val_err', '_Atom_chem_shift.Val_err'])
+        self.assertEqual(bt.getNMRSTARtag('_nef_chemical_shift.element'),
+                         ['_Atom_chem_shift.Atom_type', '_Atom_chem_shift.Atom_type'])
+        self.assertEqual(bt.getNMRSTARtag('_nef_chemical_shift.isotope_number'),
+                         ['_Atom_chem_shift.Atom_isotope_number', '_Atom_chem_shift.Atom_isotope_number'])
+        self.assertEqual(bt.getNMRSTARtag('_nef_distance_restraint.index'),
+                         ['_Gen_dist_constraint.Index_ID', '_Gen_dist_constraint.Index_ID'])
+        self.assertEqual(bt.getNMRSTARtag('_nef_distance_restraint.restraint_id'),
+                         ['_Gen_dist_constraint.ID', '_Gen_dist_constraint.ID'])
+        self.assertEqual(bt.getNMRSTARtag('_nef_distance_restraint.restraint_combination_id'),
+                         ['_Gen_dist_constraint.Combination_ID', '_Gen_dist_constraint.Combination_ID'])
+        self.assertEqual(bt.getNMRSTARtag('_nef_distance_restraint.chain_code_1'),
+                         ['_Gen_dist_constraint.Auth_asym_ID_1', '_Gen_dist_constraint.Entity_assembly_ID_1'])
+        self.assertEqual(bt.getNMRSTARtag('_nef_distance_restraint.sequence_code_1'),
+                         ['_Gen_dist_constraint.Auth_seq_ID_1', '_Gen_dist_constraint.Comp_index_ID_1'])
+        self.assertEqual(bt.getNMRSTARtag('_nef_distance_restraint.residue_name_1'),
+                         ['_Gen_dist_constraint.Auth_comp_ID_1', '_Gen_dist_constraint.Comp_ID_1'])
+        self.assertEqual(bt.getNMRSTARtag('_nef_distance_restraint.atom_name_1'),
+                         ['_Gen_dist_constraint.Auth_atom_ID_1', '_Gen_dist_constraint.Atom_ID_1'])
+        self.assertEqual(bt.getNMRSTARtag('_nef_distance_restraint.chain_code_2'),
+                         ['_Gen_dist_constraint.Auth_asym_ID_2', '_Gen_dist_constraint.Entity_assembly_ID_2'])
+        self.assertEqual(bt.getNMRSTARtag('_nef_distance_restraint.sequence_code_2'),
+                         ['_Gen_dist_constraint.Auth_seq_ID_2', '_Gen_dist_constraint.Comp_index_ID_2'])
+        self.assertEqual(bt.getNMRSTARtag('_nef_distance_restraint.residue_name_2'),
+                         ['_Gen_dist_constraint.Auth_comp_ID_2', '_Gen_dist_constraint.Comp_ID_2'])
+        self.assertEqual(bt.getNMRSTARtag('_nef_distance_restraint.atom_name_2'),
+                         ['_Gen_dist_constraint.Auth_atom_ID_2', '_Gen_dist_constraint.Atom_ID_2'])
+        self.assertEqual(bt.getNMRSTARtag('_nef_distance_restraint.weight'),
+                         ['_Gen_dist_constraint.Weight', '_Gen_dist_constraint.Weight'])
+        self.assertEqual(bt.getNMRSTARtag('_nef_distance_restraint.target_value'),
+                         ['_Gen_dist_constraint.Target_val', '_Gen_dist_constraint.Target_val'])
+        self.assertEqual(bt.getNMRSTARtag('_nef_distance_restraint.target_value_uncertainty'),
+                         ['_Gen_dist_constraint.Target_val_uncertainty', '_Gen_dist_constraint.Target_val_uncertainty'])
+        self.assertEqual(bt.getNMRSTARtag('_nef_distance_restraint.lower_linear_limit'),
+                         ['_Gen_dist_constraint.Lower_linear_limit', '_Gen_dist_constraint.Lower_linear_limit'])
+        self.assertEqual(bt.getNMRSTARtag('_nef_distance_restraint.lower_limit'),
+                         ['_Gen_dist_constraint.Distance_lower_bound_val',
+                          '_Gen_dist_constraint.Distance_lower_bound_val'])
+        self.assertEqual(bt.getNMRSTARtag('_nef_distance_restraint.upper_limit'),
+                         ['_Gen_dist_constraint.Distance_upper_bound_val',
+                          '_Gen_dist_constraint.Distance_upper_bound_val'])
+        self.assertEqual(bt.getNMRSTARtag('_nef_distance_restraint.upper_linear_limit'),
+                         ['_Gen_dist_constraint.Upper_linear_limit', '_Gen_dist_constraint.Upper_linear_limit'])
+
+
+    def test_getNMRSTARlooptags(self):
+        bt = NEFT.NEFTranslator()
+        self.assertEqual(bt.getNMRSTARlooptags(
+            ['_nef_program_script.program_name', '_nef_program_script.script_name', '_nef_program_script.script']),
+                         ['_Software_applied_methods.Software_name', '_Software_applied_methods.Script_name',
+                          '_Software_applied_methods.Script'])
+        self.assertEqual(bt.getNMRSTARlooptags(
+            ['_nef_sequence.index', '_nef_sequence.chain_code', '_nef_sequence.sequence_code',
+             '_nef_sequence.residue_name', '_nef_sequence.linking', '_nef_sequence.residue_variant',
+             '_nef_sequence.cis_peptide']), ['_Chem_comp_assembly.NEF_index', '_Chem_comp_assembly.Auth_asym_ID',
+                                             '_Chem_comp_assembly.Auth_seq_ID', '_Chem_comp_assembly.Auth_comp_ID',
+                                             '_Chem_comp_assembly.Sequence_linking',
+                                             '_Chem_comp_assembly.Auth_variant_ID', '_Chem_comp_assembly.Cis_residue',
+                                             '_Chem_comp_assembly.Entity_assembly_ID',
+                                             '_Chem_comp_assembly.Comp_index_ID', '_Chem_comp_assembly.Comp_ID'])
+        self.assertEqual(bt.getNMRSTARlooptags(
+            ['_nef_chemical_shift.chain_code', '_nef_chemical_shift.sequence_code', '_nef_chemical_shift.residue_name',
+             '_nef_chemical_shift.atom_name', '_nef_chemical_shift.value', '_nef_chemical_shift.value_uncertainty',
+             '_nef_chemical_shift.element', '_nef_chemical_shift.isotope_number']),
+                         ['_Atom_chem_shift.Auth_asym_ID', '_Atom_chem_shift.Auth_seq_ID',
+                          '_Atom_chem_shift.Auth_comp_ID', '_Atom_chem_shift.Auth_atom_ID', '_Atom_chem_shift.Val',
+                          '_Atom_chem_shift.Val_err', '_Atom_chem_shift.Atom_type',
+                          '_Atom_chem_shift.Atom_isotope_number', '_Atom_chem_shift.Entity_assembly_ID',
+                          '_Atom_chem_shift.Comp_index_ID', '_Atom_chem_shift.Comp_ID', '_Atom_chem_shift.Atom_ID',
+                          '_Atom_chem_shift.Ambiguity_code', '_Atom_chem_shift.Ambiguity_set_ID',
+                          '_Atom_chem_shift.Assigned_chem_shift_list_ID'])
+        self.assertEqual(bt.getNMRSTARlooptags(
+            ['_nef_chemical_shift.chain_code', '_nef_chemical_shift.sequence_code', '_nef_chemical_shift.residue_name',
+             '_nef_chemical_shift.atom_name', '_nef_chemical_shift.value', '_nef_chemical_shift.value_uncertainty',
+             '_nef_chemical_shift.element', '_nef_chemical_shift.isotope_number']),
+                         ['_Atom_chem_shift.Auth_asym_ID', '_Atom_chem_shift.Auth_seq_ID',
+                          '_Atom_chem_shift.Auth_comp_ID', '_Atom_chem_shift.Auth_atom_ID', '_Atom_chem_shift.Val',
+                          '_Atom_chem_shift.Val_err', '_Atom_chem_shift.Atom_type',
+                          '_Atom_chem_shift.Atom_isotope_number', '_Atom_chem_shift.Entity_assembly_ID',
+                          '_Atom_chem_shift.Comp_index_ID', '_Atom_chem_shift.Comp_ID', '_Atom_chem_shift.Atom_ID',
+                          '_Atom_chem_shift.Ambiguity_code', '_Atom_chem_shift.Ambiguity_set_ID',
+                          '_Atom_chem_shift.Assigned_chem_shift_list_ID'])
+        self.assertEqual(bt.getNMRSTARlooptags(
+            ['_nef_chemical_shift.chain_code', '_nef_chemical_shift.sequence_code', '_nef_chemical_shift.residue_name',
+             '_nef_chemical_shift.atom_name', '_nef_chemical_shift.value', '_nef_chemical_shift.value_uncertainty',
+             '_nef_chemical_shift.element', '_nef_chemical_shift.isotope_number']),
+                         ['_Atom_chem_shift.Auth_asym_ID', '_Atom_chem_shift.Auth_seq_ID',
+                          '_Atom_chem_shift.Auth_comp_ID', '_Atom_chem_shift.Auth_atom_ID', '_Atom_chem_shift.Val',
+                          '_Atom_chem_shift.Val_err', '_Atom_chem_shift.Atom_type',
+                          '_Atom_chem_shift.Atom_isotope_number', '_Atom_chem_shift.Entity_assembly_ID',
+                          '_Atom_chem_shift.Comp_index_ID', '_Atom_chem_shift.Comp_ID', '_Atom_chem_shift.Atom_ID',
+                          '_Atom_chem_shift.Ambiguity_code', '_Atom_chem_shift.Ambiguity_set_ID',
+                          '_Atom_chem_shift.Assigned_chem_shift_list_ID'])
+        self.assertEqual(bt.getNMRSTARlooptags(['_nef_distance_restraint.index', '_nef_distance_restraint.restraint_id',
+                                                '_nef_distance_restraint.restraint_combination_id',
+                                                '_nef_distance_restraint.chain_code_1',
+                                                '_nef_distance_restraint.sequence_code_1',
+                                                '_nef_distance_restraint.residue_name_1',
+                                                '_nef_distance_restraint.atom_name_1',
+                                                '_nef_distance_restraint.chain_code_2',
+                                                '_nef_distance_restraint.sequence_code_2',
+                                                '_nef_distance_restraint.residue_name_2',
+                                                '_nef_distance_restraint.atom_name_2', '_nef_distance_restraint.weight',
+                                                '_nef_distance_restraint.target_value',
+                                                '_nef_distance_restraint.target_value_uncertainty',
+                                                '_nef_distance_restraint.lower_linear_limit',
+                                                '_nef_distance_restraint.lower_limit',
+                                                '_nef_distance_restraint.upper_limit',
+                                                '_nef_distance_restraint.upper_linear_limit']),
+                         ['_Gen_dist_constraint.Index_ID', '_Gen_dist_constraint.ID',
+                          '_Gen_dist_constraint.Combination_ID', '_Gen_dist_constraint.Auth_asym_ID_1',
+                          '_Gen_dist_constraint.Auth_seq_ID_1', '_Gen_dist_constraint.Auth_comp_ID_1',
+                          '_Gen_dist_constraint.Auth_atom_ID_1', '_Gen_dist_constraint.Auth_asym_ID_2',
+                          '_Gen_dist_constraint.Auth_seq_ID_2', '_Gen_dist_constraint.Auth_comp_ID_2',
+                          '_Gen_dist_constraint.Auth_atom_ID_2', '_Gen_dist_constraint.Weight',
+                          '_Gen_dist_constraint.Target_val', '_Gen_dist_constraint.Target_val_uncertainty',
+                          '_Gen_dist_constraint.Lower_linear_limit', '_Gen_dist_constraint.Distance_lower_bound_val',
+                          '_Gen_dist_constraint.Distance_upper_bound_val', '_Gen_dist_constraint.Upper_linear_limit',
+                          '_Gen_dist_constraint.Entity_assembly_ID_1', '_Gen_dist_constraint.Comp_index_ID_1',
+                          '_Gen_dist_constraint.Comp_ID_1', '_Gen_dist_constraint.Atom_ID_1',
+                          '_Gen_dist_constraint.Entity_assembly_ID_2', '_Gen_dist_constraint.Comp_index_ID_2',
+                          '_Gen_dist_constraint.Comp_ID_2', '_Gen_dist_constraint.Atom_ID_2',
+                          '_Gen_dist_constraint.Member_logic_code'])
+
     def test_getSTARatom(self):
         bt = NEFT.NEFTranslator()
         self.assertEqual(bt.getSTARatom('CYS', 'HB%'), ('HB', ['HB2', 'HB3'], 1))

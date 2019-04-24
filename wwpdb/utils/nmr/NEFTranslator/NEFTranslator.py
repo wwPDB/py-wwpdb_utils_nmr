@@ -453,9 +453,9 @@ class NEFTranslator(object):
         n = self.tagMap[0].index(tag)
         return [self.tagMap[1][n], self.tagMap[2][n]]
 
-    def getNEFtag(self, tag):
-        n = self.tagMap[1].index(tag)
-        return self.tagMap[0][n]
+    # def getNEFtag(self, tag):
+    #     n = self.tagMap[1].index(tag)
+    #     return self.tagMap[0][n]
 
     def getNMRSTARlooptags(self, neflooptags):
         aut_tag = []
@@ -850,6 +850,7 @@ class NEFTranslator(object):
                     for tag in saveframe.tags:
                         if tag[0].lower() == "sf_category":
                             try:
+
                                 sf.add_tag("Sf_category", self.getNMRSTARtag(saveframe.category)[0])
                             except ValueError:
                                 sf.add_tag("Sf_category", self.getNMRSTARtag(tag[1])[0])
@@ -928,11 +929,4 @@ if __name__ == "__main__":
     # fname = sys.argv[1]
 
     bt = NEFTranslator()
-    dat = pynmrstar.Entry.from_file('data/2mqq.nef')
-    print( len(bt.ValidateAtom(dat,'nef_chemical_shift','sequence_code','residue_name','atom_name')))
-    print(len(bt.ValidateAtom(dat, 'nef_distance_restraint', 'sequence_code_1', 'residue_name_1', 'atom_name_1')))
-    print(len(bt.ValidateAtom(dat, 'nef_distance_restraint', 'sequence_code_2', 'residue_name_2', 'atom_name_2')))
-    dat = pynmrstar.Entry.from_file('data/2mqq.str')
-    print (len(bt.ValidateAtom(dat)))
-    print(len(bt.ValidateAtom(dat,'Gen_dist_constraint','Comp_index_ID_1','Comp_ID_1','Atom_ID_1')))
-    print(len(bt.ValidateAtom(dat, 'Gen_dist_constraint', 'Comp_index_ID_2', 'Comp_ID_2', 'Atom_ID_2')))
+    bt.NEFtoNMRSTAR('data/2mqq.nef')

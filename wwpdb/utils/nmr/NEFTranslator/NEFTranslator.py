@@ -172,7 +172,7 @@ class NEFTranslator(object):
                 minimal_info_nmrstar_S = ['_Atom_chem_shift']
                 minimal_info_nmrstar_R = ['_Gen_dist_constraint']
 
-                (sf_list, lp_list) = self.GetSTARInfo(self.inData, file_info[1])
+                (sf_list, lp_list) = self.getDataContent(self.inData, file_info[1])
                 msg = "{} saveframes and {} loops found".format(len(sf_list), len(lp_list))
                 INFO.append(msg)
                 nef_sf_list = [i for i in sf_list if 'nef' in i]
@@ -287,7 +287,7 @@ class NEFTranslator(object):
         return isLoopHasData
 
     @staticmethod
-    def GetSTARInfo(starData, dflag):
+    def getDataContent(starData, dflag):
         sf_list = []
         lp_list = []
         if dflag == "Entry":
@@ -609,7 +609,7 @@ class NEFTranslator(object):
         return out_row
 
     @staticmethod
-    def get_identifier(tag_list):
+    def get_residue_identifier(tag_list):
         out_list = []
         for j in range(1, 16):
             out = [None] * 2
@@ -632,8 +632,7 @@ class NEFTranslator(object):
     def translate_row(self, f_tags, t_tags, row_data):
         # print (f_tags)
         out_row = []
-        res_list = self.get_identifier(f_tags)
-        #print (res_list,f_tags)
+        res_list = self.get_residue_identifier(f_tags)
         tmp_dict = {}
         for res1 in res_list:
             try:
@@ -692,7 +691,7 @@ class NEFTranslator(object):
 
     def translate_restraint_row(self, f_tags, t_tags, row_data):
         out_row = []
-        res_list = self.get_identifier(f_tags)
+        res_list = self.get_residue_identifier(f_tags)
         #print (res_list,f_tags)
         tmp_dict = {}
         for res1 in res_list:
@@ -745,13 +744,14 @@ class NEFTranslator(object):
 
         return out_row
 
-    def NEFtoNMRSTAR(self, nefFile):
+    def NEFtoNMRSTAR(self, nefFile, starFile = None):
         (filePath, fileName) = ntpath.split(os.path.realpath(nefFile))
         isDone = True
         INFO = []
         WARNING = []
         ERROR = []
-        starFile = filePath + "/" + fileName.split(".")[0] + ".str"
+        if starFile is None:
+            starFile = filePath + "/" + fileName.split(".")[0] + ".str"
         (isReadable, dat_content, nefData) = self.readInFile(nefFile)
         try:
             starData = pynmrstar.Entry.from_scratch(nefData.entry_id)
@@ -825,7 +825,6 @@ class NEFTranslator(object):
                                     lp.add_data(d)
                             elif loop.category == '_nef_distance_restraint':
                                 dd = self.translate_restraint_row(loop.get_tag_names(), lp.get_tag_names(), dat)
-
                                 for d in dd:
                                     d[lp.get_tag_names().index('_Gen_dist_constraint.Index_ID')] = r_index_id
                                     if len(dd) > 1:

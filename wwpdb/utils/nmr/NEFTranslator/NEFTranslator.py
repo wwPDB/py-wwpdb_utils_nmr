@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 """
 This module does the following jobs
 1. Validate the NEF and NMR-STAR files

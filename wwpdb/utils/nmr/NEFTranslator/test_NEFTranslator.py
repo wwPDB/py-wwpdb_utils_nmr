@@ -459,7 +459,7 @@ class TestNEFTranslator(TestCase):
                           '_Gen_dist_constraint.Comp_ID_1', '_Gen_dist_constraint.Atom_ID_1',
                           '_Gen_dist_constraint.Entity_assembly_ID_2', '_Gen_dist_constraint.Comp_index_ID_2',
                           '_Gen_dist_constraint.Comp_ID_2', '_Gen_dist_constraint.Atom_ID_2',
-                          '_Gen_dist_constraint.Member_logic_code'])
+                          '_Gen_dist_constraint.Member_logic_code','_Gen_dist_constraint.Gen_dist_constraint_list_ID'])
 
     def test_get_nmrstar_atom(self):
         bt = NEFT.NEFTranslator()

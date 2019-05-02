@@ -486,6 +486,13 @@ class NEFTranslator(object):
             out_tag.append('_Atom_chem_shift.Assigned_chem_shift_list_ID')
         if nef_loop_tags[0].split(".")[0] == "_nef_distance_restraint":
             out_tag.append('_Gen_dist_constraint.Member_logic_code')
+            out_tag.append('_Gen_dist_constraint.Gen_dist_constraint_list_ID')
+        if nef_loop_tags[0].split(".")[0] == "_nef_dihedral_restraint":
+            out_tag.append('_Torsion_angle_constraint.Torsion_angle_constraint_list_ID')
+        if nef_loop_tags[0].split(".")[0] == "_nef_rdc_restraint":
+            out_tag.append('_RDC_constraint.RDC_constraint_list_ID')
+        if nef_loop_tags[0].split(".")[0] == "_nef_peak":
+            out_tag.append('_Peak_row_format.Spectral_peak_list_ID')
         return out_tag
 
     def get_nmrstar_atom(self, res, nef_atom):
@@ -813,6 +820,10 @@ class NEFTranslator(object):
                 error.append('File content unknown')
 
             cs_list = 0
+            rest_list = 0
+            ang_list = 0
+            rdc_list = 0
+            peak_list = 0
             if dat_content == "Entry":
                 for saveframe in nef_data:
                     sf = pynmrstar.Saveframe.from_scratch(saveframe.name)
@@ -841,8 +852,15 @@ class NEFTranslator(object):
 
                         if loop.category == '_nef_distance_restraint':
                             r_index_id = 1
+                            rest_list+=1
+                        if loop.category == '_nef_dihedral_restraint':
+                            ang_list+=1
+                        if loop.category == '_nef_rdc_restraint':
+                            rdc_list+=1
                         if loop.category == "_nef_chemical_shift":
                             cs_list += 1
+                        if loop.category == "_nef_peak":
+                            peak_list += 1
                         lp = pynmrstar.Loop.from_scratch()
                         lp_cols = self.get_nmrstar_loop_tags(loop.get_tag_names())
                         for t in lp_cols:
@@ -870,12 +888,33 @@ class NEFTranslator(object):
                                 dd = self.translate_restraint_row(loop.get_tag_names(), lp.get_tag_names(), dat)
                                 for d in dd:
                                     d[lp.get_tag_names().index('_Gen_dist_constraint.Index_ID')] = r_index_id
+                                    d[lp.get_tag_names().index('_Gen_dist_constraint.Gen_dist_constraint_list_ID')] = rest_list
                                     if len(dd) > 1:
                                         d[lp.get_tag_names().index('_Gen_dist_constraint.Member_logic_code')] = "OR"
                                     lp.add_data(d)
                                     r_index_id += 1
+                            elif loop.category == '_nef_dihedral_restraint':
+                                dd = self.translate_row(loop.get_tag_names(), lp.get_tag_names(), dat)
+                                for d in dd:
+                                    d[lp.get_tag_names().index(
+                                        '_Torsion_angle_constraint.Torsion_angle_constraint_list_ID')] = ang_list
+                                    lp.add_data(d)
+                            elif loop.category == '_nef_rdc_restraint':
+                                dd = self.translate_row(loop.get_tag_names(), lp.get_tag_names(), dat)
+                                for d in dd:
+                                    d[lp.get_tag_names().index(
+                                        '_RDC_constraint.RDC_constraint_list_ID')] = rdc_list
+                                    lp.add_data(d)
+                            elif loop.category == '_nef_peak':
+                                dd = self.translate_row(loop.get_tag_names(), lp.get_tag_names(), dat)
+                                for d in dd:
+                                    d[lp.get_tag_names().index(
+                                        '_Peak_row_format.Spectral_peak_list_ID')] = peak_list
+                                    lp.add_data(d)
                             else:
                                 dd = self.translate_row(loop.get_tag_names(), lp.get_tag_names(), dat)
+                                for d in dd:
+                                    lp.add_data(d)
 
                         # print (loop.data[0])
                         sf.add_loop(lp)
@@ -943,10 +982,30 @@ class NEFTranslator(object):
 
                             for d in dd:
                                 d[lp.get_tag_names().index('_Gen_dist_constraint.Index_ID')] = r_index_id
+                                d[lp.get_tag_names().index(
+                                    '_Gen_dist_constraint.Gen_dist_constraint_list_ID')] = rest_list
                                 if len(dd) > 1:
                                     d[lp.get_tag_names().index('_Gen_dist_constraint.Member_logic_code')] = "OR"
                                 lp.add_data(d)
                                 r_index_id += 1
+                        elif loop.category == '_nef_dihedral_restraint':
+                            dd = self.translate_row(loop.get_tag_names(), lp.get_tag_names(), dat)
+                            for d in dd:
+                                d[lp.get_tag_names().index(
+                                    '_Torsion_angle_constraint.Torsion_angle_constraint_list_ID')] = ang_list
+                                lp.add_data(d)
+                        elif loop.category == '_nef_rdc_restraint':
+                            dd = self.translate_row(loop.get_tag_names(), lp.get_tag_names(), dat)
+                            for d in dd:
+                                d[lp.get_tag_names().index(
+                                    '_RDC_constraint.RDC_constraint_list_ID')] = rdc_list
+                                lp.add_data(d)
+                        elif loop.category == '_nef_peak':
+                            dd = self.translate_row(loop.get_tag_names(), lp.get_tag_names(), dat)
+                            for d in dd:
+                                d[lp.get_tag_names().index(
+                                    '_Peak_row_format.Spectral_peak_list_ID')] = peak_list_list
+                                lp.add_data(d)
                         else:
                             dd = self.translate_row(loop.get_tag_names(), lp.get_tag_names(), dat)
                             for d in dd:
@@ -967,6 +1026,12 @@ class NEFTranslator(object):
 
 
 if __name__ == "__main__":
-    fname = sys.argv[1]
     bt = NEFTranslator()
-    bt.nef_to_nmrstar(fname)
+    bt.nef_to_nmrstar('data/2l9r.nef')
+    print (bt.validate_file('data/2l9r.str','A'))
+    #fname = sys.argv[1]
+    # f = open('neflist.txt','r').read().split("\n")
+    # for fname in f:
+    #     print ("Working on {}".format(fname))
+    #     bt = NEFTranslator()
+    #     bt.nef_to_nmrstar(fname)

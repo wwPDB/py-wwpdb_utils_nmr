@@ -12,7 +12,7 @@ save_nef_nmr_meta_data
    _Entry.Source_data_format_version    1.1
    _Entry.Generated_software_name       CcpNmr
    _Entry.Generated_software_version    3.0.b1
-   _Entry.Generated_date                '2019-03-12 10:37:52'
+   _Entry.Generated_date                2017-02-06T19:54:03.236454
    _Entry.UUID                          CcpNmr-2017-02-06T19:54:03.236454-1110849746
    _Entry.Related_coordinate_file_name  .
 
@@ -21,7 +21,8 @@ save_nef_nmr_meta_data
       _Software_applied_methods.Script_name
       _Software_applied_methods.Script
 
-     CcpNmr   exportProject   .    
+     CcpNmr          exportProject   .    
+     NEFTranslator   NEFtoNMRSTAR    .    
 
    stop_
 
@@ -602,17 +603,18 @@ save_nef_nmr_spectrum_cnoesy1
       _Peak_row_format.Auth_seq_ID_3
       _Peak_row_format.Auth_comp_ID_3
       _Peak_row_format.Auth_atom_ID_3
+      _Peak_row_format.Spectral_peak_list_ID
 
-     1    1   73000000   5100000    33000000   1100000    3.2   0.05   119.5   0.5   8.3   0.03   1   2    TRP   HB3   1   6    PHE   N     1   6    PHE   H     A   14   TRP   HB3   A   18    PHE   N     A   18    PHE   H      
-     2    1   73000000   5100000    33000000   1100000    3.2   0.05   119.5   0.5   8.3   0.03   1   7    LEU   HBy   1   13   GLN   N     1   13   GLN   H     A   19   LEU   HBy   A   24B   GLN   N     A   24B   GLN   H      
-     3    1   73000000   5100000    33000000   1100000    3.2   0.05   119.5   0.5   8.3   0.03   1   7    LEU   HBy   1   15   TYR   N     1   15   TYR   H     A   19   LEU   HBy   A   24D   TYR   N     A   24D   TYR   H      
-     4    1   73000000   5100000    33000000   1100000    3.2   0.05   119.5   0.5   8.3   0.03   1   8    CYS   HBx   1   13   GLN   N     1   13   GLN   H     A   20   CYS   HBx   A   24B   GLN   N     A   24B   GLN   H      
-     5    1   73000000   5100000    33000000   1100000    3.2   0.05   119.5   0.5   8.3   0.03   1   8    CYS   HBx   1   15   TYR   N     1   15   TYR   H     A   20   CYS   HBx   A   24D   TYR   N     A   24D   TYR   H      
-     6    3   54000000   7300000    34000000   5300000    4.4   0.05   106.5   0.5   7.8   0.03   .   .    .     .     1   3    GLY   N     1   3    GLY   H     .   .    .     .     A   15    GLY   N     A   15    GLY   H      
-     7    4   88000000   13000000   48000000   3300000    3.2   0.05   135.6   0.5   9.9   0.03   1   2    TRP   HB3   1   2    TRP   NE1   1   2    TRP   HE1   A   14   TRP   HB3   A   14    TRP   NE1   A   14    TRP   HE1    
-     8    5   88000000   13000000   58000000   23000000   3.4   0.05   135.6   0.5   9.9   0.03   1   2    TRP   HB2   1   2    TRP   NE1   1   2    TRP   HE1   A   14   TRP   HB2   A   14    TRP   NE1   A   14    TRP   HE1    
-     9    5   88000000   13000000   58000000   23000000   3.4   0.05   135.6   0.5   9.9   0.03   1   12   ASP   HBy   1   2    TRP   NE1   1   2    TRP   HE1   A   24   ASP   HBy   A   14    TRP   NE1   A   14    TRP   HE1    
-     10   7   59000000   7100000    29000000   6100000    1.7   0.05   118.3   0.5   9.1   0.03   .   .    .     .     Z   @5   GLX   N     Z   @5   GLX   H     .   .    .     .     Z   @5    GLX   N     Z   @5    GLX   H      
+     1    1   73000000   5100000    33000000   1100000    3.2   0.05   119.5   0.5   8.3   0.03   1   2    TRP   HB3   1   6    PHE   N     1   6    PHE   H     A   14   TRP   HB3   A   18    PHE   N     A   18    PHE   H     1    
+     2    1   73000000   5100000    33000000   1100000    3.2   0.05   119.5   0.5   8.3   0.03   1   7    LEU   HBy   1   13   GLN   N     1   13   GLN   H     A   19   LEU   HBy   A   24B   GLN   N     A   24B   GLN   H     1    
+     3    1   73000000   5100000    33000000   1100000    3.2   0.05   119.5   0.5   8.3   0.03   1   7    LEU   HBy   1   15   TYR   N     1   15   TYR   H     A   19   LEU   HBy   A   24D   TYR   N     A   24D   TYR   H     1    
+     4    1   73000000   5100000    33000000   1100000    3.2   0.05   119.5   0.5   8.3   0.03   1   8    CYS   HBx   1   13   GLN   N     1   13   GLN   H     A   20   CYS   HBx   A   24B   GLN   N     A   24B   GLN   H     1    
+     5    1   73000000   5100000    33000000   1100000    3.2   0.05   119.5   0.5   8.3   0.03   1   8    CYS   HBx   1   15   TYR   N     1   15   TYR   H     A   20   CYS   HBx   A   24D   TYR   N     A   24D   TYR   H     1    
+     6    3   54000000   7300000    34000000   5300000    4.4   0.05   106.5   0.5   7.8   0.03   .   .    .     .     1   3    GLY   N     1   3    GLY   H     .   .    .     .     A   15    GLY   N     A   15    GLY   H     1    
+     7    4   88000000   13000000   48000000   3300000    3.2   0.05   135.6   0.5   9.9   0.03   1   2    TRP   HB3   1   2    TRP   NE1   1   2    TRP   HE1   A   14   TRP   HB3   A   14    TRP   NE1   A   14    TRP   HE1   1    
+     8    5   88000000   13000000   58000000   23000000   3.4   0.05   135.6   0.5   9.9   0.03   1   2    TRP   HB2   1   2    TRP   NE1   1   2    TRP   HE1   A   14   TRP   HB2   A   14    TRP   NE1   A   14    TRP   HE1   1    
+     9    5   88000000   13000000   58000000   23000000   3.4   0.05   135.6   0.5   9.9   0.03   1   12   ASP   HBy   1   2    TRP   NE1   1   2    TRP   HE1   A   24   ASP   HBy   A   14    TRP   NE1   A   14    TRP   HE1   1    
+     10   7   59000000   7100000    29000000   6100000    1.7   0.05   118.3   0.5   9.1   0.03   .   .    .     .     Z   @5   GLX   N     Z   @5   GLX   H     .   .    .     .     Z   @5    GLX   N     Z   @5    GLX   H     1    
 
    stop_
 
@@ -812,8 +814,9 @@ save_nef_nmr_spectrum_dummy15d
       _Peak_row_format.Auth_seq_ID_15
       _Peak_row_format.Auth_comp_ID_15
       _Peak_row_format.Auth_atom_ID_15
+      _Peak_row_format.Spectral_peak_list_ID
 
-     1   1   73000000   5100000   33000000   1100000   7.2   0.05   119.5   0.4   28.3   0.3   172.2   0.5   58.5   0.4   32.3   0.4   22.2   0.5   58.5   0.4   32.3   0.4   22.2   0.5   58.5   0.4   32.3   0.4   22.2   0.5   58.5   0.4   32.3   0.4   1   7   LEU   HN   1   7   LEU   N   1   14   GLN   C   1   7   LEU   CA   1   7   LEU   CB   1   7   LEU   CG   1   7   LEU   CDx   1   7   LEU   CDy   1   7   LEU   CG   1   7   LEU   CA   1   7   LEU   CB   1   7   LEU   CG   1   14   GLN   CA   1   14   GLN   CB   1   14   GLN   CG   A   19   LEU   HN   A   19   LEU   N   A   24C   GLN   C   A   19   LEU   CA   A   19   LEU   CB   A   19   LEU   CG   A   19   LEU   CDx   A   19   LEU   CDy   A   19   LEU   CG   A   19   LEU   CA   A   19   LEU   CB   A   19   LEU   CG   A   24C   GLN   CA   A   24C   GLN   CB   A   24C   GLN   CG    
+     1   1   73000000   5100000   33000000   1100000   7.2   0.05   119.5   0.4   28.3   0.3   172.2   0.5   58.5   0.4   32.3   0.4   22.2   0.5   58.5   0.4   32.3   0.4   22.2   0.5   58.5   0.4   32.3   0.4   22.2   0.5   58.5   0.4   32.3   0.4   1   7   LEU   HN   1   7   LEU   N   1   14   GLN   C   1   7   LEU   CA   1   7   LEU   CB   1   7   LEU   CG   1   7   LEU   CDx   1   7   LEU   CDy   1   7   LEU   CG   1   7   LEU   CA   1   7   LEU   CB   1   7   LEU   CG   1   14   GLN   CA   1   14   GLN   CB   1   14   GLN   CG   A   19   LEU   HN   A   19   LEU   N   A   24C   GLN   C   A   19   LEU   CA   A   19   LEU   CB   A   19   LEU   CG   A   19   LEU   CDx   A   19   LEU   CDy   A   19   LEU   CG   A   19   LEU   CA   A   19   LEU   CB   A   19   LEU   CG   A   24C   GLN   CA   A   24C   GLN   CB   A   24C   GLN   CG   2    
 
    stop_
 
@@ -853,22 +856,23 @@ save_nef_distance_restraint_list_L1
       _Gen_dist_constraint.Auth_seq_ID_2
       _Gen_dist_constraint.Auth_comp_ID_2
       _Gen_dist_constraint.Auth_atom_ID_2
+      _Gen_dist_constraint.Gen_dist_constraint_list_ID
 
-     1    1   .   OR   1   5    VAL   H     1   9    ALA   HB1    3.7   0.4   2     4.7   2.5   4.2   1   A   17   VAL   H     A   21   ALA   HB%     
-     2    1   .   OR   1   5    VAL   H     1   9    ALA   HB2    3.7   0.4   2     4.7   2.5   4.2   1   A   17   VAL   H     A   21   ALA   HB%     
-     3    1   .   OR   1   5    VAL   H     1   9    ALA   HB3    3.7   0.4   2     4.7   2.5   4.2   1   A   17   VAL   H     A   21   ALA   HB%     
-     4    1   .   OR   1   5    VAL   H     1   10   THR   HG21   3.7   0.4   2     4.7   2.5   4.2   1   A   17   VAL   H     A   22   THR   HG2%    
-     5    1   .   OR   1   5    VAL   H     1   10   THR   HG22   3.7   0.4   2     4.7   2.5   4.2   1   A   17   VAL   H     A   22   THR   HG2%    
-     6    1   .   OR   1   5    VAL   H     1   10   THR   HG23   3.7   0.4   2     4.7   2.5   4.2   1   A   17   VAL   H     A   22   THR   HG2%    
-     7    1   .   OR   1   6    LEU   H     1   9    ALA   HB1    3.7   0.4   2     4.7   2.5   4.2   1   A   18   LEU   H     A   21   ALA   HB%     
-     8    1   .   OR   1   6    LEU   H     1   9    ALA   HB2    3.7   0.4   2     4.7   2.5   4.2   1   A   18   LEU   H     A   21   ALA   HB%     
-     9    1   .   OR   1   6    LEU   H     1   9    ALA   HB3    3.7   0.4   2     4.7   2.5   4.2   1   A   18   LEU   H     A   21   ALA   HB%     
-     10   1   .   OR   1   6    LEU   H     1   10   THR   HG21   3.7   0.4   2     4.7   2.5   4.2   1   A   18   LEU   H     A   22   THR   HG2%    
-     11   1   .   OR   1   6    LEU   H     1   10   THR   HG22   3.7   0.4   2     4.7   2.5   4.2   1   A   18   LEU   H     A   22   THR   HG2%    
-     12   1   .   OR   1   6    LEU   H     1   10   THR   HG23   3.7   0.4   2     4.7   2.5   4.2   1   A   18   LEU   H     A   22   THR   HG2%    
-     13   5   .   .    1   6    PHE   HB2   1   12   ASP   HB3    2.8   0.4   1.5   3.7   2     3.2   1   A   18   PHE   HB2   A   24   ASP   HBy     
-     14   8   .   .    1   6    PHE   HB2   1   12   ASP   HB3    4.4   0.4   3.6   5.7   4.1   5.2   1   A   18   PHE   HB2   A   24   ASP   HBy     
-     15   8   .   .    1   12   ASP   HB3   5   7    SER   HB2    4.4   0.4   3.6   5.7   4.1   5.2   1   A   24   ASP   HBy   E   7    SER   HB2     
+     1    1   .   OR   1   5    VAL   H     1   9    ALA   HB1    3.7   0.4   2     4.7   2.5   4.2   1   A   17   VAL   H     A   21   ALA   HB%    1    
+     2    1   .   OR   1   5    VAL   H     1   9    ALA   HB2    3.7   0.4   2     4.7   2.5   4.2   1   A   17   VAL   H     A   21   ALA   HB%    1    
+     3    1   .   OR   1   5    VAL   H     1   9    ALA   HB3    3.7   0.4   2     4.7   2.5   4.2   1   A   17   VAL   H     A   21   ALA   HB%    1    
+     4    1   .   OR   1   5    VAL   H     1   10   THR   HG21   3.7   0.4   2     4.7   2.5   4.2   1   A   17   VAL   H     A   22   THR   HG2%   1    
+     5    1   .   OR   1   5    VAL   H     1   10   THR   HG22   3.7   0.4   2     4.7   2.5   4.2   1   A   17   VAL   H     A   22   THR   HG2%   1    
+     6    1   .   OR   1   5    VAL   H     1   10   THR   HG23   3.7   0.4   2     4.7   2.5   4.2   1   A   17   VAL   H     A   22   THR   HG2%   1    
+     7    1   .   OR   1   6    LEU   H     1   9    ALA   HB1    3.7   0.4   2     4.7   2.5   4.2   1   A   18   LEU   H     A   21   ALA   HB%    1    
+     8    1   .   OR   1   6    LEU   H     1   9    ALA   HB2    3.7   0.4   2     4.7   2.5   4.2   1   A   18   LEU   H     A   21   ALA   HB%    1    
+     9    1   .   OR   1   6    LEU   H     1   9    ALA   HB3    3.7   0.4   2     4.7   2.5   4.2   1   A   18   LEU   H     A   21   ALA   HB%    1    
+     10   1   .   OR   1   6    LEU   H     1   10   THR   HG21   3.7   0.4   2     4.7   2.5   4.2   1   A   18   LEU   H     A   22   THR   HG2%   1    
+     11   1   .   OR   1   6    LEU   H     1   10   THR   HG22   3.7   0.4   2     4.7   2.5   4.2   1   A   18   LEU   H     A   22   THR   HG2%   1    
+     12   1   .   OR   1   6    LEU   H     1   10   THR   HG23   3.7   0.4   2     4.7   2.5   4.2   1   A   18   LEU   H     A   22   THR   HG2%   1    
+     13   5   .   .    1   6    PHE   HB2   1   12   ASP   HB3    2.8   0.4   1.5   3.7   2     3.2   1   A   18   PHE   HB2   A   24   ASP   HBy    1    
+     14   8   .   .    1   6    PHE   HB2   1   12   ASP   HB3    4.4   0.4   3.6   5.7   4.1   5.2   1   A   18   PHE   HB2   A   24   ASP   HBy    1    
+     15   8   .   .    1   12   ASP   HB3   5   7    SER   HB2    4.4   0.4   3.6   5.7   4.1   5.2   1   A   24   ASP   HBy   E   7    SER   HB2    1    
 
    stop_
 
@@ -908,15 +912,16 @@ save_nef_distance_restraint_list_hbond1
       _Gen_dist_constraint.Auth_seq_ID_2
       _Gen_dist_constraint.Auth_comp_ID_2
       _Gen_dist_constraint.Auth_atom_ID_2
+      _Gen_dist_constraint.Gen_dist_constraint_list_ID
 
-     1   1   .   .   1   3   GLY   H   1   13   GLN   O   1.8   .   .   .   1.4   2.7   1   A   15   GLY   H   A   24B   GLN   O    
-     2   2   .   .   1   3   GLY   N   1   13   GLN   O   2.8   .   .   .   2.4   3.7   1   A   15   GLY   N   A   24B   GLN   O    
-     3   3   1   .   1   1   THR   O   1   7    LEU   H   1.8   .   .   .   1.4   2.7   1   A   13   THR   O   A   19    LEU   H    
-     4   3   1   .   1   1   THR   O   1   7    LEU   N   2.8   .   .   .   2.4   3.7   1   A   13   THR   O   A   19    LEU   N    
-     5   4   2   .   1   5   VAL   H   1   10   THR   O   1.8   .   .   .   1.4   2.7   1   A   17   VAL   H   A   22    THR   O    
-     6   4   2   .   1   5   VAL   N   1   10   THR   O   2.8   .   .   .   2.4   3.7   1   A   17   VAL   N   A   22    THR   O    
-     7   4   3   .   1   5   VAL   H   1   12   ASP   O   1.8   .   .   .   1.4   2.7   1   A   17   VAL   H   A   24    ASP   O    
-     8   4   3   .   1   5   VAL   N   1   12   ASP   O   2.8   .   .   .   2.4   3.7   1   A   17   VAL   N   A   24    ASP   O    
+     1   1   .   .   1   3   GLY   H   1   13   GLN   O   1.8   .   .   .   1.4   2.7   1   A   15   GLY   H   A   24B   GLN   O   2    
+     2   2   .   .   1   3   GLY   N   1   13   GLN   O   2.8   .   .   .   2.4   3.7   1   A   15   GLY   N   A   24B   GLN   O   2    
+     3   3   1   .   1   1   THR   O   1   7    LEU   H   1.8   .   .   .   1.4   2.7   1   A   13   THR   O   A   19    LEU   H   2    
+     4   3   1   .   1   1   THR   O   1   7    LEU   N   2.8   .   .   .   2.4   3.7   1   A   13   THR   O   A   19    LEU   N   2    
+     5   4   2   .   1   5   VAL   H   1   10   THR   O   1.8   .   .   .   1.4   2.7   1   A   17   VAL   H   A   22    THR   O   2    
+     6   4   2   .   1   5   VAL   N   1   10   THR   O   2.8   .   .   .   2.4   3.7   1   A   17   VAL   N   A   22    THR   O   2    
+     7   4   3   .   1   5   VAL   H   1   12   ASP   O   1.8   .   .   .   1.4   2.7   1   A   17   VAL   H   A   24    ASP   O   2    
+     8   4   3   .   1   5   VAL   N   1   12   ASP   O   2.8   .   .   .   2.4   3.7   1   A   17   VAL   N   A   24    ASP   O   2    
 
    stop_
 
@@ -972,18 +977,19 @@ save_nef_dihedral_restraint_list_L2
       _Torsion_angle_constraint.Auth_seq_ID_4
       _Torsion_angle_constraint.Auth_comp_ID_4
       _Torsion_angle_constraint.Auth_atom_ID_4
+      _Torsion_angle_constraint.Torsion_angle_constraint_list_ID
 
-     1    1   .   PSI    1   9    ALA   N    1   9    ALA   CA   1   9    ALA   C    1   10   THR   N     -60   -40   -50   5   .   .   1   A   21   ALA   N    A   21   ALA   CA   A   21   ALA   C    A   22    THR   N      
-     2    1   .   PSI    1   9    ALA   N    1   9    ALA   CA   1   9    ALA   C    1   10   THR   N     90    120   105   5   .   .   1   A   21   ALA   N    A   21   ALA   CA   A   21   ALA   C    A   22    THR   N      
-     3    2   .   PHI    1   9    ALA   C    1   10   THR   N    1   10   THR   CA   1   10   THR   C     -60   -40   -50   8   .   .   3   A   21   ALA   C    A   22   THR   N    A   22   THR   CA   A   22    THR   C      
-     4    3   1   PHI    1   11   LYS   C    1   12   ASP   N    1   12   ASP   CA   1   12   ASP   C     -60   -40   -50   5   .   .   1   A   23   LYS   C    A   24   ASP   N    A   24   ASP   CA   A   24    ASP   C      
-     5    3   1   PSI    1   12   ASP   N    1   12   ASP   CA   1   12   ASP   C    1   13   GLN   N     -60   -40   -50   5   .   .   1   A   24   ASP   N    A   24   ASP   CA   A   24   ASP   C    A   24B   GLN   N      
-     6    4   2   PHI    1   3    GLY   C    1   4    ASN   N    1   4    ASN   CA   1   4    ASN   C     -60   -40   -50   5   .   .   1   A   15   GLY   C    A   16   ASN   N    A   16   ASN   CA   A   16    ASN   C      
-     7    4   2   PSI    1   4    ASN   N    1   4    ASN   CA   1   4    ASN   C    1   5    VAL   N     -60   -40   -50   5   .   .   1   A   16   ASN   N    A   16   ASN   CA   A   16   ASN   C    A   17    VAL   N      
-     8    4   3   PHI    1   3    GLY   C    1   4    ASN   N    1   4    ASN   CA   1   4    ASN   C     -90   -70   -80   5   .   .   1   A   15   GLY   C    A   16   ASN   N    A   16   ASN   CA   A   16    ASN   C      
-     9    4   3   PSI    1   4    ASN   N    1   4    ASN   CA   1   4    ASN   C    1   5    VAL   N     -90   -70   -80   5   .   .   1   A   16   ASN   N    A   16   ASN   CA   A   16   ASN   C    A   17    VAL   N      
-     10   5   .   .      1   7    LEU   CA   1   7    LEU   CB   1   7    LEU   CG   1   7    LEU   CDx   -90   -70   -80   5   .   .   1   A   19   LEU   CA   A   19   LEU   CB   A   19   LEU   CG   A   19    LEU   CDx    
-     11   6   .   CHI2   1   11   LYS   CA   1   11   LYS   CB   1   11   LYS   CG   1   11   LYS   CD    -90   -70   -80   5   .   .   1   A   23   LYS   CA   A   23   LYS   CB   A   23   LYS   CG   A   23    LYS   CD     
+     1    1   .   PSI    1   9    ALA   N    1   9    ALA   CA   1   9    ALA   C    1   10   THR   N     -60   -40   -50   5   .   .   1   A   21   ALA   N    A   21   ALA   CA   A   21   ALA   C    A   22    THR   N     1    
+     2    1   .   PSI    1   9    ALA   N    1   9    ALA   CA   1   9    ALA   C    1   10   THR   N     90    120   105   5   .   .   1   A   21   ALA   N    A   21   ALA   CA   A   21   ALA   C    A   22    THR   N     1    
+     3    2   .   PHI    1   9    ALA   C    1   10   THR   N    1   10   THR   CA   1   10   THR   C     -60   -40   -50   8   .   .   3   A   21   ALA   C    A   22   THR   N    A   22   THR   CA   A   22    THR   C     1    
+     4    3   1   PHI    1   11   LYS   C    1   12   ASP   N    1   12   ASP   CA   1   12   ASP   C     -60   -40   -50   5   .   .   1   A   23   LYS   C    A   24   ASP   N    A   24   ASP   CA   A   24    ASP   C     1    
+     5    3   1   PSI    1   12   ASP   N    1   12   ASP   CA   1   12   ASP   C    1   13   GLN   N     -60   -40   -50   5   .   .   1   A   24   ASP   N    A   24   ASP   CA   A   24   ASP   C    A   24B   GLN   N     1    
+     6    4   2   PHI    1   3    GLY   C    1   4    ASN   N    1   4    ASN   CA   1   4    ASN   C     -60   -40   -50   5   .   .   1   A   15   GLY   C    A   16   ASN   N    A   16   ASN   CA   A   16    ASN   C     1    
+     7    4   2   PSI    1   4    ASN   N    1   4    ASN   CA   1   4    ASN   C    1   5    VAL   N     -60   -40   -50   5   .   .   1   A   16   ASN   N    A   16   ASN   CA   A   16   ASN   C    A   17    VAL   N     1    
+     8    4   3   PHI    1   3    GLY   C    1   4    ASN   N    1   4    ASN   CA   1   4    ASN   C     -90   -70   -80   5   .   .   1   A   15   GLY   C    A   16   ASN   N    A   16   ASN   CA   A   16    ASN   C     1    
+     9    4   3   PSI    1   4    ASN   N    1   4    ASN   CA   1   4    ASN   C    1   5    VAL   N     -90   -70   -80   5   .   .   1   A   16   ASN   N    A   16   ASN   CA   A   16   ASN   C    A   17    VAL   N     1    
+     10   5   .   .      1   7    LEU   CA   1   7    LEU   CB   1   7    LEU   CG   1   7    LEU   CDx   -90   -70   -80   5   .   .   1   A   19   LEU   CA   A   19   LEU   CB   A   19   LEU   CG   A   19    LEU   CDx   1    
+     11   6   .   CHI2   1   11   LYS   CA   1   11   LYS   CB   1   11   LYS   CG   1   11   LYS   CD    -90   -70   -80   5   .   .   1   A   23   LYS   CA   A   23   LYS   CB   A   23   LYS   CG   A   23    LYS   CD    1    
 
    stop_
 
@@ -1029,9 +1035,10 @@ save_nef_rdc_restraint_list_3
       _RDC_constraint.Auth_seq_ID_2
       _RDC_constraint.Auth_comp_ID_2
       _RDC_constraint.Auth_atom_ID_2
+      _RDC_constraint.RDC_constraint_list_ID
 
-     1   1   .   1   9    ALA   H   1   9    ALA   N   1   -5.2   0.33   .   .   .   .   1   false   A   21   ALA   H   A   21   ALA   N    
-     2   2   .   1   10   THR   H   1   10   THR   N   1   3.1    0.4    .   .   .   .   1   false   A   22   THR   H   A   22   THR   N    
+     1   1   .   1   9    ALA   H   1   9    ALA   N   1   -5.2   0.33   .   .   .   .   1   false   A   21   ALA   H   A   21   ALA   N   1    
+     2   2   .   1   10   THR   H   1   10   THR   N   1   3.1    0.4    .   .   .   .   1   false   A   22   THR   H   A   22   THR   N   1    
 
    stop_
 

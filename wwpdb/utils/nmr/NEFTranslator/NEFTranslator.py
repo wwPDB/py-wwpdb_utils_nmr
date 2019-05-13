@@ -22,6 +22,7 @@ import re
 import csv
 import datetime
 import pynmrstar
+from pytz import utc
 
 PY3 = (sys.version_info[0] == 3)
 
@@ -110,16 +111,16 @@ class NEFTranslator(object):
         return is_ok, msg, data_dict
 
     @staticmethod
-    def load_csv_data(cav_file, transpose=False):
+    def load_csv_data(csv_file, transpose=False):
         """
         Loads csv data files from lib
-        :param cav_file: csv file
+        :param csv_file: csv file
         :param transpose: transpose multidimensional csv lists
         :return: list
         """
         try:
-            with open(cav_file, 'r') as cav_file:
-                spam_reader = csv.reader(cav_file, delimiter=',')
+            with open(csv_file, 'r') as csv_file:
+                spam_reader = csv.reader(csv_file, delimiter=',')
                 csv_dat = []
                 for r in spam_reader:
                     # print r
@@ -129,10 +130,10 @@ class NEFTranslator(object):
                 csv_map = list(map(list, zip(*csv_dat)))
             else:
                 csv_map = csv_dat
-            msg = "{} file is read!".format(cav_file)
+            msg = "{} file is read!".format(csv_file)
             is_ok = True
         except IOError:
-            msg = "{} file is missing!".format(cav_file)
+            msg = "{} file is missing!".format(csv_file)
             csv_map = []
             is_ok = False
         return is_ok, msg, csv_map
@@ -156,7 +157,7 @@ class NEFTranslator(object):
         :param ts: current system time from time.time()
         :return: returns '%Y-%m-%d %H:%M:%S'
         """
-        return datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d %H:%M:%S')
+        return datetime.datetime.fromtimestamp(ts, tz=utc).strftime('%Y-%m-%d %H:%M:%S')
 
     def validate_file(self, in_file, file_type='A'):
         """
@@ -169,7 +170,7 @@ class NEFTranslator(object):
         info = []
         warning = []
         error = []
-        file_typ = 'UNKNOWN'
+        file_format = 'UNKNOWN'
         try:
             file_info = self.read_input_file(in_file)
             if file_info[0]:
@@ -190,11 +191,11 @@ class NEFTranslator(object):
                 if len(nef_sf_list) > 0 or len(nef_lp_list) > 0:
                     is_nef_file = True
                     msg = "{} is a NEF file".format(in_file)
-                    file_typ = 'NEF'
+                    file_format = 'NEF'
                 else:
                     is_nef_file = False
                     msg = "{} is a NMR-STAR file".format(in_file)
-                    file_typ = "NMR-STAR"
+                    file_format = "NMR-STAR"
                 info.append(msg)
                 if is_nef_file:
                     is_valid = True
@@ -272,7 +273,7 @@ class NEFTranslator(object):
             error.append(msg)
             is_valid = "error"
 
-        return is_valid, json.dumps({'info': info, 'warning': warning, 'error': error, 'FILE': file_typ})
+        return is_valid, json.dumps({'info': info, 'warning': warning, 'error': error, 'FILE': file_format})
 
     @staticmethod
     def is_empty_loop(star_data, lp_category, data_flag):

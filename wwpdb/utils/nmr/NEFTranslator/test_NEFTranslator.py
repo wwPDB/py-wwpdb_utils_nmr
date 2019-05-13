@@ -47,7 +47,7 @@ class TestNEFTranslator(TestCase):
 
     def test_time_stamp(self):
         bt = NEFT.NEFTranslator()
-        self.assertEqual(bt.time_stamp(1556036192.7247672), '2019-04-23 11:16:32')
+        self.assertEqual(bt.time_stamp(1556036192.7247672), '2019-04-23 16:16:32') # CDT to UTC
 
     def test_validate_file(self):
         bt = NEFT.NEFTranslator()

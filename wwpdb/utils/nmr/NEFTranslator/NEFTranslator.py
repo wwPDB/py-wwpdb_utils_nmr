@@ -329,14 +329,14 @@ class NEFTranslator(object):
             in_dat = self.read_input_file(in_file)[-1]
             if dat['FILE'] == "NMR-STAR":
                 info.append('NMR-STAR')
-                seq = self.get_nmrstar_seq(in_dat)
+                seq = self.get_nmrstar_seq(in_dat)[0]
                 if len(seq):
                     is_ok = True
                 else:
                     error.append("Can't extract sequence from chemical shift loop")
             elif dat['FILE'] == "NEF":
                 info.append('NEF')
-                seq = self.get_nef_seq(in_dat)
+                seq = self.get_nef_seq(in_dat)[0]
                 if len(seq):
                     is_ok = True
                 else:
@@ -359,41 +359,54 @@ class NEFTranslator(object):
             except AttributeError:
                 cs_loop = [str_data]
         seq = []
+        sid = []
+        pattern = re.compile(r'^0+')
         for csl in cs_loop:
             seq_dict = {}
+            sid_dict = {}
+
             seq_dat = csl.get_data_by_tag([seq_id, res_id, chain_id])
             chains = (set([i[2] for i in seq_dat]))
             seq_concat = (sorted(set(['{}-{:04d}-{}'.format(i[2], int(i[0]), i[1]) for i in seq_dat])))
-            
+
             chk_dict = {'{}-{:04d}'.format(i[2], int(i[0])):i[1] for i in seq_dat}
-            
+
             for i in seq_dat:
                 chk_key = '{}-{:04d}'.format(i[2], int(i[0]))
                 if chk_dict[chk_key] != i[1]:
                     raise KeyError('Sequence must be unique. category=%s, chain_id=%s, seq_id=%s, res_id=%s or %s' % (lp_category, i[2], i[0], i[1], chk_dict[chk_key]))
-            
+
             if len(seq_concat[0].split("-")[-1]) > 1:
                 if len(chains) > 1:
                     for c in chains:
                         # seq_array = "".join([self.getOneLetter(i.split("-")[-1]) for i in seq_concat if i.split("-")[0] == c])
                         seq_array = [i.split("-")[-1] for i in seq_concat if i.split("-")[0] == c]
+                        sid_array = [int(i.split("-")[1]) for i in seq_concat if i.split("-")[0] == c]
                         seq_dict[c] = seq_array
+                        sid_dict[c] = sid_array
                 else:
                     # seq_array = "".join([self.getOneLetter(i.split("-")[-1]) for i in seq_concat])
                     seq_array = [i.split("-")[-1] for i in seq_concat]
+                    sid_array = [int(i.split("-")[1]) for i in seq_concat]
                     seq_dict[list(chains)[0]] = seq_array
+                    sid_dict[list(chains)[0]] = sid_array
             else:
                 if len(chains) > 1:
                     for c in chains:
                         # seq_array = "".join([i.split("-")[-1] for i in seq_concat if i.split("-")[0] == c])
                         seq_array = [i.split("-")[-1] for i in seq_concat if i.split("-")[0] == c]
+                        sid_array = [int(i.split("-")[1]) for i in seq_concat if i.split("-")[0] == c]
                         seq_dict[c] = seq_array
+                        sid_dict[c] = sid_array
                 else:
                     # seq_array = "".join([i.split("-")[-1] for i in seq_concat])
                     seq_array = [i.split("-")[-1] for i in seq_concat]
+                    sid_array = [int(i.split("-")[1]) for i in seq_concat]
                     seq_dict[list(chains)[0]] = seq_array
+                    sid_dict[list(chains)[0]] = sid_array
             seq.append(seq_dict)
-        return seq
+            sid.append(sid_dict)
+        return seq, sid
 
     @staticmethod
     def get_nmrstar_seq(str_data, lp_category='Atom_chem_shift', seq_id='Comp_index_ID', res_id='Comp_ID',
@@ -407,8 +420,11 @@ class NEFTranslator(object):
             except AttributeError:
                 cs_loop = [str_data]
         seq = []
+        sid = []
         for csl in cs_loop:
             seq_dict = {}
+            sid_dict = {}
+
             if '_{}.Entity_assembly_ID'.format(lp_category) not in csl.get_tag_names():
                 seq_dat = csl.get_data_by_tag([seq_id, res_id])
                 for i in seq_dat:
@@ -418,36 +434,45 @@ class NEFTranslator(object):
 
             chains = (set([i[2] for i in seq_dat]))
             seq_concat = (sorted(set(['{}-{:04d}-{}'.format(i[2], int(i[0]), i[1]) for i in seq_dat])))
-            
+
             chk_dict = {'{}-{:04d}'.format(i[2], int(i[0])):i[1] for i in seq_dat}
-            
+
             for i in seq_dat:
                 chk_key = '{}-{:04d}'.format(i[2], int(i[0]))
                 if chk_dict[chk_key] != i[1]:
                     raise KeyError('Sequence must be unique. category=%s, chain_id=%s, seq_id=%s, res_id=%s or %s' % (lp_category, i[2], i[0], i[1], chk_dict[chk_key]))
-            
+
             if len(seq_concat[0].split("-")[-1]) > 1:
                 if len(chains) > 1:
                     for c in chains:
                         # seq_array = "".join([self.getOneLetter(i.split("-")[-1]) for i in seq_concat if i.split("-")[0] == c])
                         seq_array = [i.split("-")[-1] for i in seq_concat if i.split("-")[0] == c]
+                        sid_array = [int(i.split("-")[1]) for i in seq_concat if i.split("-")[0] == c]
                         seq_dict[c] = seq_array
+                        sid_dict[c] = sid_array
                 else:
                     # seq_array = "".join([self.getOneLetter(i.split("-")[-1]) for i in seq_concat])
                     seq_array = [i.split("-")[-1] for i in seq_concat]
+                    sid_array = [int(i.split("-")[1]) for i in seq_concat]
                     seq_dict[list(chains)[0]] = seq_array
+                    sid_dict[list(chains)[0]] = sid_array
             else:
                 if len(chains) > 1:
                     for c in chains:
                         # seq_array = "".join([i.split("-")[-1] for i in seq_concat if i.split("-")[0] == c])
                         seq_array = [i.split("-")[-1] for i in seq_concat if i.split("-")[0] == c]
+                        sid_array = [int(i.split("-")[1]) for i in seq_concat if i.split("-")[0] == c]
                         seq_dict[c] = seq_array
+                        seeq_id_dict[c] = sid_array
                 else:
                     # seq_array = "".join([i.split("-")[-1] for i in seq_concat])
                     seq_array = [i.split("-")[-1] for i in seq_concat]
+                    sid_array = [int(i.split("-")[1]) for i in seq_concat]
                     seq_dict[list(chains)[0]] = seq_array
+                    sid_dict[list(chains)[0]] = sid_array
             seq.append(seq_dict)
-        return seq
+            sid.append(sid_dict)
+        return seq, sid
 
     def validate_atom(self, star_data, lp_category='Atom_chem_shift', seq_id='Comp_index_ID', res_id='Comp_ID',
                       atom_id='Atom_ID'):

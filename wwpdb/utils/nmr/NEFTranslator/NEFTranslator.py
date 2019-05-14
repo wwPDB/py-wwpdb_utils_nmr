@@ -271,7 +271,7 @@ class NEFTranslator(object):
         except IOError:
             msg = "File not found {}".format(in_file)
             error.append(msg)
-            is_valid = "error"
+            is_valid = False
 
         return is_valid, json.dumps({'info': info, 'warning': warning, 'error': error, 'FILE': file_format})
 

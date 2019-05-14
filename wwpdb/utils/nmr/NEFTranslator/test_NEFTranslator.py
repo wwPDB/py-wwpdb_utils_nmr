@@ -207,6 +207,27 @@ class TestNEFTranslator(TestCase):
                                                       'GLU', 'ILE', 'ILE', 'ASP', 'LEU', 'LEU', 'THR', 'LYS', 'GLN',
                                                       'LEU', 'ALA', 'TYR', 'GLY', 'GLU', 'ASP', 'VAL', 'ILE', 'SER',
                                                       'LYS', 'GLU']}])
+        # extract polymer sequence from nef_molecular_system category
+        dat = pynmrstar.Entry.from_file('data/2l9r.nef')['nef_molecular_system']
+        self.assertEqual(bt.get_nef_seq(dat, lp_category='nef_sequence'),
+                         [{'A': ['MET', 'GLY', 'HIS', 'HIS', 'HIS', 'HIS', 'HIS', 'HIS', 'SER', 'HIS',
+                                 'MET', 'SER', 'HIS', 'THR', 'GLN', 'VAL', 'ILE', 'GLU', 'LEU', 'GLU',
+                                 'ARG', 'LYS', 'PHE', 'SER', 'HIS', 'GLN', 'LYS', 'TYR', 'LEU', 'SER',
+                                 'ALA', 'PRO', 'GLU', 'ARG', 'ALA', 'HIS', 'LEU', 'ALA', 'LYS', 'ASN',
+                                 'LEU', 'LYS', 'LEU', 'THR', 'GLU', 'THR', 'GLN', 'VAL', 'LYS', 'ILE',
+                                 'TRP', 'PHE', 'GLN', 'ASN', 'ARG', 'ARG', 'TYR', 'LYS', 'THR', 'LYS',
+                                 'ARG', 'LYS', 'GLN', 'LEU', 'SER', 'SER', 'GLU', 'LEU', 'GLY']}])
+        # extract polymer sequence from the first cs loop in nef_chemical_shift_list category
+        cs_loops = pynmrstar.Entry.from_file('data/2l9r.nef').get_saveframes_by_category('nef_chemical_shift_list')
+        self.assertEqual(len(cs_loops), 1) # single cs loop
+        self.assertEqual(bt.get_nef_seq(cs_loops[0], lp_category='nef_chemical_shift'),
+                         [{'A': ['HIS',
+                                 'MET', 'SER', 'HIS', 'THR', 'GLN', 'VAL', 'ILE', 'GLU', 'LEU', 'GLU',
+                                 'ARG', 'LYS', 'PHE', 'SER', 'HIS', 'GLN', 'LYS', 'TYR', 'LEU', 'SER',
+                                 'ALA', 'PRO', 'GLU', 'ARG', 'ALA', 'HIS', 'LEU', 'ALA', 'LYS', 'ASN',
+                                 'LEU', 'LYS', 'LEU', 'THR', 'GLU', 'THR', 'GLN', 'VAL', 'LYS', 'ILE',
+                                 'TRP', 'PHE', 'GLN', 'ASN', 'ARG', 'ARG', 'TYR', 'LYS', 'THR', 'LYS',
+                                 'ARG', 'LYS', 'GLN', 'LEU', 'SER', 'SER', 'GLU', 'LEU', 'GLY']}])       
 
     def test_get_nmrstar_seq(self):
         bt = NEFT.NEFTranslator()

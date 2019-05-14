@@ -207,9 +207,9 @@ class TestNEFTranslator(TestCase):
                                                       'GLU', 'ILE', 'ILE', 'ASP', 'LEU', 'LEU', 'THR', 'LYS', 'GLN',
                                                       'LEU', 'ALA', 'TYR', 'GLY', 'GLU', 'ASP', 'VAL', 'ILE', 'SER',
                                                       'LYS', 'GLU']}])
+        entry = pynmrstar.Entry.from_file('data/2l9r.nef')
         # extract polymer sequence from nef_molecular_system category
-        dat = pynmrstar.Entry.from_file('data/2l9r.nef')['nef_molecular_system']
-        self.assertEqual(bt.get_nef_seq(dat, lp_category='nef_sequence'),
+        self.assertEqual(bt.get_nef_seq(entry['nef_molecular_system'], lp_category='nef_sequence'),
                          [{'A': ['MET', 'GLY', 'HIS', 'HIS', 'HIS', 'HIS', 'HIS', 'HIS', 'SER', 'HIS',
                                  'MET', 'SER', 'HIS', 'THR', 'GLN', 'VAL', 'ILE', 'GLU', 'LEU', 'GLU',
                                  'ARG', 'LYS', 'PHE', 'SER', 'HIS', 'GLN', 'LYS', 'TYR', 'LEU', 'SER',
@@ -218,16 +218,16 @@ class TestNEFTranslator(TestCase):
                                  'TRP', 'PHE', 'GLN', 'ASN', 'ARG', 'ARG', 'TYR', 'LYS', 'THR', 'LYS',
                                  'ARG', 'LYS', 'GLN', 'LEU', 'SER', 'SER', 'GLU', 'LEU', 'GLY']}])
         # extract polymer sequence from the first cs loop in nef_chemical_shift_list category
-        cs_loops = pynmrstar.Entry.from_file('data/2l9r.nef').get_saveframes_by_category('nef_chemical_shift_list')
-        self.assertEqual(len(cs_loops), 1) # single cs loop
-        self.assertEqual(bt.get_nef_seq(cs_loops[0], lp_category='nef_chemical_shift'),
+        cs_loops = entry.get_saveframes_by_category('nef_chemical_shift_list')
+        self.assertEqual(len(cs_loops), 1) # assert single cs loop
+        self.assertEqual(bt.get_nef_seq(cs_loops[0], lp_category='nef_chemical_shift'), # select the first cs loop by input sta_data
                          [{'A': ['HIS',
                                  'MET', 'SER', 'HIS', 'THR', 'GLN', 'VAL', 'ILE', 'GLU', 'LEU', 'GLU',
                                  'ARG', 'LYS', 'PHE', 'SER', 'HIS', 'GLN', 'LYS', 'TYR', 'LEU', 'SER',
                                  'ALA', 'PRO', 'GLU', 'ARG', 'ALA', 'HIS', 'LEU', 'ALA', 'LYS', 'ASN',
                                  'LEU', 'LYS', 'LEU', 'THR', 'GLU', 'THR', 'GLN', 'VAL', 'LYS', 'ILE',
                                  'TRP', 'PHE', 'GLN', 'ASN', 'ARG', 'ARG', 'TYR', 'LYS', 'THR', 'LYS',
-                                 'ARG', 'LYS', 'GLN', 'LEU', 'SER', 'SER', 'GLU', 'LEU', 'GLY']}])       
+                                 'ARG', 'LYS', 'GLN', 'LEU', 'SER', 'SER', 'GLU', 'LEU', 'GLY']}])
 
     def test_get_nmrstar_seq(self):
         bt = NEFT.NEFTranslator()
@@ -273,6 +273,27 @@ class TestNEFTranslator(TestCase):
                                  'LYS', 'ASN', 'PRO', 'ASN', 'GLY', 'PRO', 'TYR', 'PRO', 'TYR', 'THR', 'LEU', 'LYS',
                                  'LEU', 'CYS', 'PHE', 'SER', 'THR', 'ALA', 'GLN', 'HIS', 'ALA', 'SER'],
                            '2': ['A', 'C', 'A', 'C', 'A'], '3': ['A', 'C', 'A', 'C', 'A']}])
+        entry = pynmrstar.Entry.from_file('data/2l9r.str')
+        # extract polymer sequence from nef_molecular_system category
+        self.assertEqual(bt.get_nmrstar_seq(entry['nef_molecular_system'], lp_category='Chem_comp_assembly'),
+                         [{'1': ['MET', 'GLY', 'HIS', 'HIS', 'HIS', 'HIS', 'HIS', 'HIS', 'SER', 'HIS',
+                                 'MET', 'SER', 'HIS', 'THR', 'GLN', 'VAL', 'ILE', 'GLU', 'LEU', 'GLU',
+                                 'ARG', 'LYS', 'PHE', 'SER', 'HIS', 'GLN', 'LYS', 'TYR', 'LEU', 'SER',
+                                 'ALA', 'PRO', 'GLU', 'ARG', 'ALA', 'HIS', 'LEU', 'ALA', 'LYS', 'ASN',
+                                 'LEU', 'LYS', 'LEU', 'THR', 'GLU', 'THR', 'GLN', 'VAL', 'LYS', 'ILE',
+                                 'TRP', 'PHE', 'GLN', 'ASN', 'ARG', 'ARG', 'TYR', 'LYS', 'THR', 'LYS',
+                                 'ARG', 'LYS', 'GLN', 'LEU', 'SER', 'SER', 'GLU', 'LEU', 'GLY']}])
+        # extract polymer sequence from the first cs loop in nef_chemical_shift_list category
+        cs_loops = entry.get_saveframes_by_category('assigned_chemical_shifts')
+        self.assertEqual(len(cs_loops), 1) # assert single cs loop
+        self.assertEqual(bt.get_nmrstar_seq(cs_loops[0], lp_category='Atom_chem_shift'), # select the first cs loop by input sta_data
+                         [{'1': ['HIS',
+                                 'MET', 'SER', 'HIS', 'THR', 'GLN', 'VAL', 'ILE', 'GLU', 'LEU', 'GLU',
+                                 'ARG', 'LYS', 'PHE', 'SER', 'HIS', 'GLN', 'LYS', 'TYR', 'LEU', 'SER',
+                                 'ALA', 'PRO', 'GLU', 'ARG', 'ALA', 'HIS', 'LEU', 'ALA', 'LYS', 'ASN',
+                                 'LEU', 'LYS', 'LEU', 'THR', 'GLU', 'THR', 'GLN', 'VAL', 'LYS', 'ILE',
+                                 'TRP', 'PHE', 'GLN', 'ASN', 'ARG', 'ARG', 'TYR', 'LYS', 'THR', 'LYS',
+                                 'ARG', 'LYS', 'GLN', 'LEU', 'SER', 'SER', 'GLU', 'LEU', 'GLY']}])
 
     def test_validate_atom(self):
         bt = NEFT.NEFTranslator()

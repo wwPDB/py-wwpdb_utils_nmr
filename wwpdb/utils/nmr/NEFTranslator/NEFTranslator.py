@@ -363,28 +363,35 @@ class NEFTranslator(object):
             seq_dict = {}
             seq_dat = csl.get_data_by_tag([seq_id, res_id, chain_id])
             chains = (set([i[2] for i in seq_dat]))
-            seq1 = (sorted(set(['{}-{:03d}-{}'.format(i[2], int(i[0]), i[1]) for i in seq_dat])))
-
-            if len(seq1[0].split("-")[-1]) > 1:
+            seq_concat = (sorted(set(['{}-{:04d}-{}'.format(i[2], int(i[0]), i[1]) for i in seq_dat])))
+            
+            chk_dict = {'{}-{:04d}'.format(i[2], int(i[0])):i[1] for i in seq_dat}
+            
+            for i in seq_dat:
+                chk_key = '{}-{:04d}'.format(i[2], int(i[0]))
+                if chk_dict[chk_key] != i[1]:
+                    raise KeyError('Sequence must be unique. category=%s, chain_id=%s, seq_id=%s, res_id=%s or %s' % (lp_category, i[2], i[0], i[1], chk_dict[chk_key]))
+            
+            if len(seq_concat[0].split("-")[-1]) > 1:
                 if len(chains) > 1:
                     for c in chains:
-                        # seq2 = "".join([self.getOneLetter(i.split("-")[-1]) for i in seq1 if i.split("-")[0] == c])
-                        seq2 = [i.split("-")[-1] for i in seq1 if i.split("-")[0] == c]
-                        seq_dict[c] = seq2
+                        # seq_array = "".join([self.getOneLetter(i.split("-")[-1]) for i in seq_concat if i.split("-")[0] == c])
+                        seq_array = [i.split("-")[-1] for i in seq_concat if i.split("-")[0] == c]
+                        seq_dict[c] = seq_array
                 else:
-                    # seq2 = "".join([self.getOneLetter(i.split("-")[-1]) for i in seq1])
-                    seq2 = [i.split("-")[-1] for i in seq1]
-                    seq_dict[list(chains)[0]] = seq2
+                    # seq_array = "".join([self.getOneLetter(i.split("-")[-1]) for i in seq_concat])
+                    seq_array = [i.split("-")[-1] for i in seq_concat]
+                    seq_dict[list(chains)[0]] = seq_array
             else:
                 if len(chains) > 1:
                     for c in chains:
-                        # seq2 = "".join([i.split("-")[-1] for i in seq1 if i.split("-")[0] == c])
-                        seq2 = [i.split("-")[-1] for i in seq1 if i.split("-")[0] == c]
-                        seq_dict[c] = seq2
+                        # seq_array = "".join([i.split("-")[-1] for i in seq_concat if i.split("-")[0] == c])
+                        seq_array = [i.split("-")[-1] for i in seq_concat if i.split("-")[0] == c]
+                        seq_dict[c] = seq_array
                 else:
-                    # seq2 = "".join([i.split("-")[-1] for i in seq1])
-                    seq2 = [i.split("-")[-1] for i in seq1]
-                    seq_dict[list(chains)[0]] = seq2
+                    # seq_array = "".join([i.split("-")[-1] for i in seq_concat])
+                    seq_array = [i.split("-")[-1] for i in seq_concat]
+                    seq_dict[list(chains)[0]] = seq_array
             seq.append(seq_dict)
         return seq
 
@@ -410,27 +417,35 @@ class NEFTranslator(object):
                 seq_dat = csl.get_data_by_tag([seq_id, res_id, chain_id])
 
             chains = (set([i[2] for i in seq_dat]))
-            seq1 = (sorted(set(['{}-{:03d}-{}'.format(i[2], int(i[0]), i[1]) for i in seq_dat])))
-            if len(seq1[0].split("-")[-1]) > 1:
+            seq_concat = (sorted(set(['{}-{:04d}-{}'.format(i[2], int(i[0]), i[1]) for i in seq_dat])))
+            
+            chk_dict = {'{}-{:04d}'.format(i[2], int(i[0])):i[1] for i in seq_dat}
+            
+            for i in seq_dat:
+                chk_key = '{}-{:04d}'.format(i[2], int(i[0]))
+                if chk_dict[chk_key] != i[1]:
+                    raise KeyError('Sequence must be unique. category=%s, chain_id=%s, seq_id=%s, res_id=%s or %s' % (lp_category, i[2], i[0], i[1], chk_dict[chk_key]))
+            
+            if len(seq_concat[0].split("-")[-1]) > 1:
                 if len(chains) > 1:
                     for c in chains:
-                        # seq2 = "".join([self.getOneLetter(i.split("-")[-1]) for i in seq1 if i.split("-")[0] == c])
-                        seq2 = [i.split("-")[-1] for i in seq1 if i.split("-")[0] == c]
-                        seq_dict[c] = seq2
+                        # seq_array = "".join([self.getOneLetter(i.split("-")[-1]) for i in seq_concat if i.split("-")[0] == c])
+                        seq_array = [i.split("-")[-1] for i in seq_concat if i.split("-")[0] == c]
+                        seq_dict[c] = seq_array
                 else:
-                    # seq2 = "".join([self.getOneLetter(i.split("-")[-1]) for i in seq1])
-                    seq2 = [i.split("-")[-1] for i in seq1]
-                    seq_dict[list(chains)[0]] = seq2
+                    # seq_array = "".join([self.getOneLetter(i.split("-")[-1]) for i in seq_concat])
+                    seq_array = [i.split("-")[-1] for i in seq_concat]
+                    seq_dict[list(chains)[0]] = seq_array
             else:
                 if len(chains) > 1:
                     for c in chains:
-                        # seq2 = "".join([i.split("-")[-1] for i in seq1 if i.split("-")[0] == c])
-                        seq2 = [i.split("-")[-1] for i in seq1 if i.split("-")[0] == c]
-                        seq_dict[c] = seq2
+                        # seq_array = "".join([i.split("-")[-1] for i in seq_concat if i.split("-")[0] == c])
+                        seq_array = [i.split("-")[-1] for i in seq_concat if i.split("-")[0] == c]
+                        seq_dict[c] = seq_array
                 else:
-                    # seq2 = "".join([i.split("-")[-1] for i in seq1])
-                    seq2 = [i.split("-")[-1] for i in seq1]
-                    seq_dict[list(chains)[0]] = seq2
+                    # seq_array = "".join([i.split("-")[-1] for i in seq_concat])
+                    seq_array = [i.split("-")[-1] for i in seq_concat]
+                    seq_dict[list(chains)[0]] = seq_array
             seq.append(seq_dict)
         return seq
 

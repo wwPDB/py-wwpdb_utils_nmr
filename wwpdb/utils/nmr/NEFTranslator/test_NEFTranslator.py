@@ -232,6 +232,17 @@ class TestNEFTranslator(TestCase):
                                  'ARG', 'LYS', 'GLN', 'LEU', 'SER', 'SER', 'GLU', 'LEU', 'GLY']}])
         self.assertEqual(bt.get_nef_seq(cs_loops[0], lp_category='nef_chemical_shift')[1], # select the first cs loop by input sta_data
                          [{'A': [i for i in range(10, 70)]}])
+        # extract polymer sequence from nef_distant_restraint_list category
+        self.assertEqual(bt.get_nef_seq(entry['nef_distance_restraint_list_distance_constraint_list'], lp_category='nef_distance_restraint')[0],
+                         [{'A': ['HIS',
+                                 'MET', 'SER', 'HIS', 'THR', 'GLN', 'VAL', 'ILE', 'GLU', 'LEU', 'GLU',
+                                 'ARG', 'LYS', 'PHE', 'SER', 'HIS', 'GLN', 'LYS', 'TYR', 'LEU', 'SER',
+                                 'ALA', 'PRO', 'GLU', 'ARG', 'ALA', 'HIS', 'LEU', 'ALA', 'LYS', 'ASN',
+                                 'LEU', 'LYS', 'LEU', 'THR', 'GLU', 'THR', 'GLN', 'VAL', 'LYS', 'ILE',
+                                 'TRP', 'PHE', 'GLN', 'ASN', 'ARG', 'ARG', 'TYR', 'LYS', 'THR', 'LYS',
+                                 'ARG', 'LYS', 'GLN', 'LEU', 'SER', 'SER', 'GLU', 'LEU', 'GLY']}])
+        self.assertEqual(bt.get_nef_seq(entry['nef_distance_restraint_list_distance_constraint_list'], lp_category='nef_distance_restraint')[1],
+                         [{'A': [i for i in range(10, 70)]}])
 
     def test_get_nmrstar_seq(self):
         bt = NEFT.NEFTranslator()
@@ -301,6 +312,17 @@ class TestNEFTranslator(TestCase):
                                  'TRP', 'PHE', 'GLN', 'ASN', 'ARG', 'ARG', 'TYR', 'LYS', 'THR', 'LYS',
                                  'ARG', 'LYS', 'GLN', 'LEU', 'SER', 'SER', 'GLU', 'LEU', 'GLY']}])
         self.assertEqual(bt.get_nmrstar_seq(cs_loops[0], lp_category='Atom_chem_shift')[1], # select the first cs loop by input sta_data
+                         [{'1': [i for i in range(10, 70)]}])
+        # extract polymer sequence from nef_distant_restraint_list category
+        self.assertEqual(bt.get_nmrstar_seq(entry['nef_distance_restraint_list_distance_constraint_list'], lp_category='Gen_dist_constraint')[0],
+                         [{'1': ['HIS',
+                                 'MET', 'SER', 'HIS', 'THR', 'GLN', 'VAL', 'ILE', 'GLU', 'LEU', 'GLU',
+                                 'ARG', 'LYS', 'PHE', 'SER', 'HIS', 'GLN', 'LYS', 'TYR', 'LEU', 'SER',
+                                 'ALA', 'PRO', 'GLU', 'ARG', 'ALA', 'HIS', 'LEU', 'ALA', 'LYS', 'ASN',
+                                 'LEU', 'LYS', 'LEU', 'THR', 'GLU', 'THR', 'GLN', 'VAL', 'LYS', 'ILE',
+                                 'TRP', 'PHE', 'GLN', 'ASN', 'ARG', 'ARG', 'TYR', 'LYS', 'THR', 'LYS',
+                                 'ARG', 'LYS', 'GLN', 'LEU', 'SER', 'SER', 'GLU', 'LEU', 'GLY']}])
+        self.assertEqual(bt.get_nmrstar_seq(entry['nef_distance_restraint_list_distance_constraint_list'], lp_category='Gen_dist_constraint')[1],
                          [{'1': [i for i in range(10, 70)]}])
 
     def test_validate_atom(self):

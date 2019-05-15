@@ -352,20 +352,40 @@ class NEFTranslator(object):
                     chain_id='chain_code'):
         """Extracts sequence from any given loop from a NEF file"""
         try:
-            cs_loop = str_data.get_loops_by_category(lp_category)
+            loops = str_data.get_loops_by_category(lp_category)
         except AttributeError:
             try:
-                cs_loop = [str_data.get_loop_by_category(lp_category)]
+                loops = [str_data.get_loop_by_category(lp_category)]
             except AttributeError:
-                cs_loop = [str_data]
+                loops = [str_data]
         seq = []
         sid = []
-        pattern = re.compile(r'^0+')
-        for csl in cs_loop:
+
+        for loop in loops:
             seq_dict = {}
             sid_dict = {}
 
-            seq_dat = csl.get_data_by_tag([seq_id, res_id, chain_id])
+            seq_dat = []
+            tags = [seq_id, res_id, chain_id]
+
+            if set(tags) & set(loop.tags) == set(tags):
+                seq_dat = loop.get_data_by_tag(tags)
+            else:
+                _tags_exist = False
+                for i in range(1, 5): # expand up to 4 dimensions
+                    _tags = [seq_id + '_' + str(i), res_id + '_' + str(i), chain_id + '_' + str(i)]
+                    if set(_tags) & set(loop.tags) == set(_tags):
+                        _tags_exist = True
+                        seq_dat += loop.get_data_by_tag(_tags)
+                    else:
+                        break
+                if not _tags_exist:
+                    seq_dat = loop.get_data_by_tag(tags) # raise ValueError
+
+            for i in seq_dat:
+                if i[0] in [None, '', '.', '?'] or i[1] in [None, '', '.', '?'] or i[2] in [None, '', '.', '?']:
+                    raise ValueError('Sequence must not be empty. loop_category=%s, chain_id=%s, seq_id=%s, res_id=%s' % (lp_category, i[2], i[0], i[1]))
+
             chains = (set([i[2] for i in seq_dat]))
             seq_concat = (sorted(set(['{}-{:04d}-{}'.format(i[2], int(i[0]), i[1]) for i in seq_dat])))
 
@@ -374,7 +394,7 @@ class NEFTranslator(object):
             for i in seq_dat:
                 chk_key = '{}-{:04d}'.format(i[2], int(i[0]))
                 if chk_dict[chk_key] != i[1]:
-                    raise KeyError('Sequence must be unique. category=%s, chain_id=%s, seq_id=%s, res_id=%s or %s' % (lp_category, i[2], i[0], i[1], chk_dict[chk_key]))
+                    raise KeyError('Sequence must be unique. loop_category=%s, chain_id=%s, seq_id=%s, res_id=%s vs %s' % (lp_category, i[2], i[0], i[1], chk_dict[chk_key]))
 
             if len(seq_concat[0].split("-")[-1]) > 1:
                 if len(chains) > 1:
@@ -413,24 +433,50 @@ class NEFTranslator(object):
                         chain_id='Entity_assembly_ID'):
         """Extracts sequence from any given NMR-STAR file"""
         try:
-            cs_loop = str_data.get_loops_by_category(lp_category)
+            loops = str_data.get_loops_by_category(lp_category)
         except AttributeError:
             try:
-                cs_loop = [str_data.get_loop_by_category(lp_category)]
+                loops = [str_data.get_loop_by_category(lp_category)]
             except AttributeError:
-                cs_loop = [str_data]
+                loops = [str_data]
         seq = []
         sid = []
-        for csl in cs_loop:
+        for loop in loops:
             seq_dict = {}
             sid_dict = {}
 
-            if '_{}.Entity_assembly_ID'.format(lp_category) not in csl.get_tag_names():
-                seq_dat = csl.get_data_by_tag([seq_id, res_id])
+            seq_dat = []
+            tags = [seq_id, res_id, chain_id]
+            tags_ = [seq_id, res_id]
+
+            if set(tags) & set(loop.tags) == set(tags):
+                seq_dat = loop.get_data_by_tag(tags)
+            elif set(tags_) & set(loop.tags) == set(tags_): # No Entity_assembly_ID tag case
+                seq_dat = loop.get_data_by_tag(tags_)
                 for i in seq_dat:
-                    i.append(".")
+                    i.append('1')
             else:
-                seq_dat = csl.get_data_by_tag([seq_id, res_id, chain_id])
+                _tags_exist = False
+                for i in range(1, 5): # expand up to 4 dimensions
+                    _tags = [seq_id + '_' + str(i), res_id + '_' + str(i), chain_id + '_' + str(i)]
+                    _tags_ = [seq_id + '_' + str(i), res_id + '_' + str(i)]
+                    if set(_tags) & set(loop.tags) == set(_tags):
+                        _tags_exist = True
+                        seq_dat += loop.get_data_by_tag(_tags)
+                    elif set(_tags_) & set(loop.tags) == set(_tags_):
+                        _tags_exist = True
+                        seq_dat_ = loop.get_data_by_tag(_tags_)
+                        for i in seq_dat_:
+                            i.append('1')
+                        seq_dat += seq_dat_
+                    else:
+                        break
+                if not _tags_exist:
+                    seq_dat = loop.get_data_by_tag(tags) # raise ValueError
+
+            for i in seq_dat:
+                if i[0] in [None, '', '.', '?'] or i[1] in [None, '', '.', '?'] or i[2] in [None, '', '.', '?']:
+                    raise ValueError('Sequence must not be empty. loop_category=%s, chain_id=%s, seq_id=%s, res_id=%s' % (lp_category, i[2], i[0], i[1]))
 
             chains = (set([i[2] for i in seq_dat]))
             seq_concat = (sorted(set(['{}-{:04d}-{}'.format(i[2], int(i[0]), i[1]) for i in seq_dat])))
@@ -440,7 +486,7 @@ class NEFTranslator(object):
             for i in seq_dat:
                 chk_key = '{}-{:04d}'.format(i[2], int(i[0]))
                 if chk_dict[chk_key] != i[1]:
-                    raise KeyError('Sequence must be unique. category=%s, chain_id=%s, seq_id=%s, res_id=%s or %s' % (lp_category, i[2], i[0], i[1], chk_dict[chk_key]))
+                    raise KeyError('Sequence must be unique. loop_category=%s, chain_id=%s, seq_id=%s, res_id=%s vs %s' % (lp_category, i[2], i[0], i[1], chk_dict[chk_key]))
 
             if len(seq_concat[0].split("-")[-1]) > 1:
                 if len(chains) > 1:

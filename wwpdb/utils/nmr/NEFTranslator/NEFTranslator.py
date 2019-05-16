@@ -403,6 +403,8 @@ class NEFTranslator(object):
 
             if allow_empty:
                 seq_dat = list(filter(NEFTranslator.is_data, seq_dat))
+                if len(seq_dat) == 0:
+                    continue
             else:
                 for i in seq_dat:
                     if NEFTranslator.is_empty_data(i):
@@ -501,6 +503,8 @@ class NEFTranslator(object):
 
             if allow_empty:
                 seq_dat = list(filter(NEFTranslator.is_data, seq_dat))
+                if len(seq_dat) == 0:
+                    continue
             else:
                 for i in seq_dat:
                     if NEFTranslator.is_empty_data(i):

@@ -1,0 +1,49 @@
+import unittest
+import os
+import sys
+import logging
+import json
+
+from wwpdb.utils.nmr.NmrDpUtility import NmrDpUtility
+from wwpdb.utils.nmr.NmrDpReport import NmrDpReport, NmrDpReportInputSource, NmrDpReportSequenceAlignment, NmrDpReportError, NmrDpReportWarning
+from testfixtures import LogCapture
+
+logger = logging.getLogger('')
+
+class TestNmrDpUtility(unittest.TestCase):
+
+    def setUp(self):
+        self.utility = NmrDpUtility()
+        self.data_dir_path = '../nmr/NEFTranslator/data/'
+        pass
+
+    def tearDown(self):
+        pass
+
+    def test_init(self):
+        nmr_content_subtypes = set(self.utility.nmr_content_subtypes)
+
+        self.assertEqual(nmr_content_subtypes, set(self.utility.sf_categories['nmr-nef'].keys()))
+        self.assertEqual(nmr_content_subtypes, set(self.utility.sf_categories['nmr-star'].keys()))
+
+        self.assertEqual(nmr_content_subtypes, set(self.utility.lp_categories['nmr-nef'].keys()))
+        self.assertEqual(nmr_content_subtypes, set(self.utility.lp_categories['nmr-star'].keys()))
+
+        # compare content subtypes in NmrDpReportInputSource
+        input_source = NmrDpReportInputSource()
+        self.assertEqual(nmr_content_subtypes, set(input_source.content_subtypes) - {'coordinate'})
+
+        # data directory exists
+        self.assertEqual(os.path.isdir(self.data_dir_path), True)
+
+    def test_nmr_nef_parser_check(self):
+        # invalid op code
+        self.assertEqual(self.utility.op('nmr'), False)
+
+        self.utility.setSource(self.data_dir_path + '2l9r.nef')
+        self.utility.op('nmr-nef-parser-check')
+
+        #print(self.utility.report.getJson(None))
+
+if __name__ == '__main__':
+    unittest.main()

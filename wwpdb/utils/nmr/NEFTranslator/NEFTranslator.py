@@ -277,23 +277,40 @@ class NEFTranslator(object):
 
     @staticmethod
     def is_empty_loop(star_data, lp_category, data_flag):
-        is_loop_has_data = False
+        """
+        Check if a given loop is empty
+        """
         if data_flag == "Entry":
-            lp_data = star_data.get_loops_by_category(lp_category)
-            is_loop_has_data = False
-            for lpd in lp_data:
-                if len(lpd.data) == 0:
-                    is_loop_has_data = True
+            loops = star_data.get_loops_by_category(lp_category)
+            for loop in loops:
+                if len(loop.data) == 0:
+                    return True
+            return False
         elif data_flag == "Saveframe":
-            lp_data = star_data.get_loop_by_category(lp_category)
-            is_loop_has_data = False
-
-            if len(lp_data.data) == 0:
-                is_loop_has_data = True
+            loop = star_data.get_loop_by_category(lp_category)
+            return len(loop.data) == 0
         else:
-            if len(star_data.data) == 0:
-                is_loop_has_data = True
-        return is_loop_has_data
+            return len(star_data.data) == 0
+
+    @staticmethod
+    def is_empty_data(data):
+        """
+        Check if given data has empty code
+        """
+        for d in data:
+            if d in (None, '', '.', '?'):
+                return True
+        return False
+
+    @staticmethod
+    def is_data(data):
+        """
+        Check if given data has no empty code
+        """
+        for d in data:
+            if d in (None, '', '.', '?'):
+                return False
+        return True
 
     @staticmethod
     def get_data_content(star_data, data_flag):
@@ -349,7 +366,7 @@ class NEFTranslator(object):
 
     @staticmethod
     def get_nef_seq(str_data, lp_category='nef_chemical_shift', seq_id='sequence_code', res_id='residue_name',
-                    chain_id='chain_code'):
+                    chain_id='chain_code', allow_empty=False):
         """Extracts sequence from any given loop from a NEF file"""
         try:
             loops = str_data.get_loops_by_category(lp_category)
@@ -358,6 +375,9 @@ class NEFTranslator(object):
                 loops = [str_data.get_loop_by_category(lp_category)]
             except AttributeError:
                 loops = [str_data]
+
+        tags = [seq_id, res_id, chain_id]
+
         seq = []
         sid = []
 
@@ -366,7 +386,6 @@ class NEFTranslator(object):
             sid_dict = {}
 
             seq_dat = []
-            tags = [seq_id, res_id, chain_id]
 
             if set(tags) & set(loop.tags) == set(tags):
                 seq_dat = loop.get_data_by_tag(tags)
@@ -382,9 +401,12 @@ class NEFTranslator(object):
                 if not _tags_exist:
                     seq_dat = loop.get_data_by_tag(tags) # raise ValueError
 
-            for i in seq_dat:
-                if i[0] in [None, '', '.', '?'] or i[1] in [None, '', '.', '?'] or i[2] in [None, '', '.', '?']:
-                    raise ValueError('Sequence must not be empty. loop_category=%s, chain_id=%s, seq_id=%s, res_id=%s' % (lp_category, i[2], i[0], i[1]))
+            if allow_empty:
+                seq_dat = list(filter(NEFTranslator.is_data, seq_dat))
+            else:
+                for i in seq_dat:
+                    if NEFTranslator.is_empty_data(i):
+                        raise ValueError('Sequence must not be empty. loop_category=%s, chain_id=%s, seq_id=%s, res_id=%s' % (lp_category, i[2], i[0], i[1]))
 
             chains = (set([i[2] for i in seq_dat]))
             seq_concat = (sorted(set(['{}-{:04d}-{}'.format(i[2], int(i[0]), i[1]) for i in seq_dat])))
@@ -430,7 +452,7 @@ class NEFTranslator(object):
 
     @staticmethod
     def get_nmrstar_seq(str_data, lp_category='Atom_chem_shift', seq_id='Comp_index_ID', res_id='Comp_ID',
-                        chain_id='Entity_assembly_ID'):
+                        chain_id='Entity_assembly_ID', allow_empty=False):
         """Extracts sequence from any given NMR-STAR file"""
         try:
             loops = str_data.get_loops_by_category(lp_category)
@@ -439,15 +461,18 @@ class NEFTranslator(object):
                 loops = [str_data.get_loop_by_category(lp_category)]
             except AttributeError:
                 loops = [str_data]
+
         seq = []
         sid = []
+
+        tags = [seq_id, res_id, chain_id]
+        tags_ = [seq_id, res_id]
+
         for loop in loops:
             seq_dict = {}
             sid_dict = {}
 
             seq_dat = []
-            tags = [seq_id, res_id, chain_id]
-            tags_ = [seq_id, res_id]
 
             if set(tags) & set(loop.tags) == set(tags):
                 seq_dat = loop.get_data_by_tag(tags)
@@ -474,9 +499,12 @@ class NEFTranslator(object):
                 if not _tags_exist:
                     seq_dat = loop.get_data_by_tag(tags) # raise ValueError
 
-            for i in seq_dat:
-                if i[0] in [None, '', '.', '?'] or i[1] in [None, '', '.', '?'] or i[2] in [None, '', '.', '?']:
-                    raise ValueError('Sequence must not be empty. loop_category=%s, chain_id=%s, seq_id=%s, res_id=%s' % (lp_category, i[2], i[0], i[1]))
+            if allow_empty:
+                seq_dat = list(filter(NEFTranslator.is_data, seq_dat))
+            else:
+                for i in seq_dat:
+                    if NEFTranslator.is_empty_data(i):
+                        raise ValueError('Sequence must not be empty. loop_category=%s, chain_id=%s, seq_id=%s, res_id=%s' % (lp_category, i[2], i[0], i[1]))
 
             chains = (set([i[2] for i in seq_dat]))
             seq_concat = (sorted(set(['{}-{:04d}-{}'.format(i[2], int(i[0]), i[1]) for i in seq_dat])))

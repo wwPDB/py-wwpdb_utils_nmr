@@ -9,7 +9,6 @@ import json
 #print (os.path.join(os.path.dirname(os.path.realpath(__file__)), ".."))
 import NEFTranslator as NEFT
 
-
 class TestNEFTranslator(TestCase):
 
     def test_read_input_file(self):

@@ -12,6 +12,7 @@ import os.path
 import pynmrstar
 import logging
 import json
+import itertools
 
 from wwpdb.utils.nmr.NEFTranslator.NEFTranslator import NEFTranslator
 from wwpdb.utils.nmr.NmrDpReport import NmrDpReport
@@ -49,9 +50,9 @@ class NmrDpUtility(object):
                                                       self.__validateInputSource,
                                                       self.__detectContentSubType,
                                                       self.__extractPolymerSequence,
-                                                      self.__extractPolymerSequenceInLoops] }
+                                                      self.__extractPolymerSequenceInLoops,
+                                                      self.__testSequenceConsistency] }
         """
-                                                      self.__testSequenceConsistency]
                                 }
                                                       self.__extractNonStandardResidue,
                                                       self._AlignPolymerSequence,
@@ -456,8 +457,8 @@ class NmrDpUtility(object):
 
             poly_seq, poly_sid = self.__getPolymerSequence(sf_data, content_subtype)
 
-            input_source.setItemValue('polymer_sequence', poly_seq)
-            input_source.setItemValue('polymer_sequence_id', poly_sid)
+            input_source.setItemValue('polymer_sequence', poly_seq[0])
+            input_source.setItemValue('polymer_sequence_id', poly_sid[0])
 
             return True
 
@@ -508,8 +509,8 @@ class NmrDpUtility(object):
                     poly_seq, poly_sid = self.__getPolymerSequence(sf_data, content_subtype)
 
                     if len(poly_seq) > 0:
-                        poly_seq_list_set[content_subtype].append({'list_id': list_id, 'sf_framecode': sf_framecode, 'polymer_sequence': poly_seq})
-                        poly_sid_list_set[content_subtype].append({'list_id': list_id, 'sf_framecode': sf_framecode, 'polymer_sequence': poly_sid})
+                        poly_seq_list_set[content_subtype].append({'list_id': list_id, 'sf_framecode': sf_framecode, 'polymer_sequence': poly_seq[0]})
+                        poly_sid_list_set[content_subtype].append({'list_id': list_id, 'sf_framecode': sf_framecode, 'polymer_sequence_id': poly_sid[0]})
 
                         has_poly_seq = True
 
@@ -543,6 +544,143 @@ class NmrDpUtility(object):
 
         input_source = self.report.input_sources[0]
         input_source_dic = input_source.get()
+
+        file_name = input_source_dic['file_name']
+
+        polymer_sequence = input_source_dic['polymer_sequence']
+        polymer_sequence_in_loop = input_source_dic['polymer_sequence_in_loop']
+
+        has_poly_seq = 'polymer_sequence' in input_source_dic
+        has_poly_seq_in_loop = 'polymer_sequence_in_loop' in input_source_dic
+
+        if not has_poly_seq and not has_poly_seq_in_loop:
+            return False
+
+        poly_seq = 'poly_seq'
+
+        subtype_with_poly_seq = [poly_seq if has_poly_seq else None]
+
+        for subtype in polymer_sequence_in_loop.keys():
+            subtype_with_poly_seq.append(subtype)
+
+        polymer_sequence_id = input_source_dic['polymer_sequence_id']
+        polymer_sequence_id_in_loop = input_source_dic['polymer_sequence_id_in_loop']
+
+        for subtype_pair in itertools.combinations_with_replacement(subtype_with_poly_seq, 2):
+
+            # poly_seq is reference sequence and suppress tests on combinations of two sequences in loop
+            if has_poly_seq and (not poly_seq in subtype_pair or subtype_pair == (poly_seq, poly_seq)):
+                continue
+
+            subtype1 = subtype_pair[0] # poly_seq will appear only on subtype1
+            subtype2 = subtype_pair[1]
+
+            # reference polymer sequence exists
+            if has_poly_seq and subtype1 == poly_seq:
+                sid1 = polymer_sequence_id
+                seq1 = polymer_sequence
+
+                if len(sid1) != len(seq1):
+                    logging.error("+NmrDpUtility.__testSequenceConsistency() ++ Error  - Unmatched length of chains across '%s' polymer sequence objects" % subtype1)
+                    raise ValueError("+NmrDpUtility.__testSequenceConsistency() ++ Error  - Unmatched length of chains across '%s' polymer sequence objects" % subtype1)
+
+                ref_cids = seq1.keys()
+
+                list_len2 = len(polymer_sequence_in_loop[subtype2])
+
+                for list_id2 in range(list_len2):
+                    sid2 = polymer_sequence_id_in_loop[subtype2][list_id2]['polymer_sequence_id']
+                    seq2 = polymer_sequence_in_loop[subtype2][list_id2]['polymer_sequence']
+
+                    sf_framecode2 = polymer_sequence_in_loop[subtype2][list_id2]['sf_framecode']
+
+                    if len(sid2) != len(seq2):
+                        logging.error("+NmrDpUtility.__testSequenceConsistency() ++ Error  - Unmatched length of chains across '%s' polymer sequence objects" % subtype2)
+                        raise ValueError("+NmrDpUtility.__testSequenceConsistency() ++ Error  - Unmatched length of chains across '%s' polymer sequence objects" % subtype2)
+
+                    for cid in seq2.keys():
+
+                        if not cid in ref_cids:
+                            self.report.error.addDescription('sequence_mismatche', "Invalid chain_id '%s' exists in '%s' polymer sequence of %s file." % (cid, sf_framecode2, file_name))
+                            self.report.setError()
+
+                        else:
+
+                            for j in range(len(sid2[cid])):
+                                sid = sid2[cid][j]
+                                seq = seq2[cid][j]
+
+                                if not sid in sid1[cid]:
+                                    self.report.error.addDescription('sequence_mismatche', "Invalid seq_id '%s' at chain_id '%' exists in '%s' polymer sequence of %s file." % (sid, cid, sf_framecode2, file_name))
+                                    self.report.setError()
+
+                                else:
+                                    i = sid1[cid].index(sid)
+
+                                    if seq != seq1[cid][i]:
+                                        self.report.error.addDescription('sequence_mismatche', "Invalid res_id '%s' (correct res_id: '%s') at seq_id '%s', chain_id '%s' exists in '%s' polymer sequence of %s file." % (seq, seq1[cid][i], sid, cid, sf_framecode2, file_name))
+                                        self.report.setError()
+
+            # brute force check
+            else:
+
+                list_len1 = len(polymer_sequence_in_loop[subtype1])
+                list_len2 = len(polymer_sequence_in_loop[subtype2])
+
+                for list_id1 in range(list_len1):
+                    sid1 = polymer_sequence_id_in_loop[subtype1][list_id1]['polymer_sequence_id']
+                    seq1 = polymer_sequence_in_loop[subtype1][list_id1]['polymer_sequence']
+
+                    sf_framecode1 = polymer_sequence_in_loop[subtype1][list_id1]['sf_framecode']
+
+                    if len(sid1) != len(seq1):
+                        logging.error("+NmrDpUtility.__testSequenceConsistency() ++ Error  - Unmatched length of chains across '%s' polymer sequence objects" % subtype1)
+                        raise ValueError("+NmrDpUtility.__testSequenceConsistency() ++ Error  - Unmatched length of chains across '%s' polymer sequence objects" % subtype1)
+
+                    for list_id2 in range(list_len2):
+                        sid2 = polymer_sequence_id_in_loop[subtype2][list_id2]['polymer_sequence_id']
+                        seq2 = polymer_sequence_in_loop[subtype2][list_id2]['polymer_sequence']
+
+                        sf_framecode2 = polymer_sequence_in_loop[subtype2][list_id2]['sf_framecode']
+
+                        # suppress redundant tests inside the same subtype
+                        if subtype1 == suntype2 and list_id1 >= list_id2:
+                            continue
+
+                        if len(sid2) != len(seq2):
+                            logging.error("+NmrDpUtility.__testSequenceConsistency() ++ Error  - Unmatched length of chains across '%s' polymer sequence objects" % subtype2)
+                            raise ValueError("+NmrDpUtility.__testSequenceConsistency() ++ Error  - Unmatched length of chains across '%s' polymer sequence objects" % subtype2)
+
+                        for cid in seq2.keys():
+
+                            if cid in seq1.keys():
+
+                                for j in range(len(sid2[cid])):
+                                    sid = sid2[cid][j]
+                                    seq = seq2[cid][j]
+
+                                    if sid in sid1[cid]:
+                                        i = sid1[cid].index(sid)
+
+                                        if seq != seq1[cid][i]:
+                                            self.report.error.addDescription('sequence_mismatche', "Unmatched res_id '%s' (vs res_id: '%s') at seq_id '%s', chain_id '%s' exists in '%s' (vs '%s') polymer sequence of %s file." % (seq, seq1[cid][i], sid, cid, sf_framecode2, sf_framecode1, file_name))
+                                            self.report.setError()
+
+                        # inverse check required for unverified sequences
+                        for cid in seq1.keys():
+
+                            if cid in seq2.keys():
+
+                                for i in range(len(sid1[cid])):
+                                    sid = sid1[cid][i]
+                                    seq = seq1[cid][i]
+
+                                    if sid in sid2[cid]:
+                                        j = sid2[cid].index(sid)
+
+                                        if seq != seq2[cid][j]:
+                                            self.report.error.addDescription('sequence_mismatche', "Unmatched res_id '%s' (vs res_id: '%s') at seq_id '%s', chain_id '%s' exists in '%s' (vs '%s') polymer sequence of %s file." % (seq, seq2[cid][j], sid, cid, sf_framecode1, sf_framecode2, file_name))
+                                            self.report.setError()
 
         return True
 

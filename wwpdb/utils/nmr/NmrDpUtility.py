@@ -52,10 +52,10 @@ class NmrDpUtility(object):
                                                       self.__extractPolymerSequence,
                                                       self.__extractPolymerSequenceInLoops,
                                                       self.__testSequenceConsistency,
-                                                      self.__extractCommonPolymerSequence] }
+                                                      self.__extractCommonPolymerSequence,
+                                                      self.__extractNonStandardResidue] }
         """
                                 }
-                                                      self.__extractNonStandardResidue,
                                                       self._AlignPolymerSequence,
                                                       self.__testAtomNomenclature,
                                                       self.__testAtomType,
@@ -728,7 +728,7 @@ class NmrDpUtility(object):
                     sid = sid_[cid][i]
                     seq = seq_[cid][i]
 
-                    common_poly_seq[cid].add('{:04d}-{}'.format(sid, seq))
+                    common_poly_seq[cid].add('{:04d}:{}'.format(sid, seq))
 
         poly_seq = {}
         poly_sid = {}
@@ -738,12 +738,48 @@ class NmrDpUtility(object):
             if len(common_poly_seq[cid]) > 0:
                 sorted_poly_seq = sorted(common_poly_seq[cid])
 
-                poly_seq[cid] = [i.split('-')[1] for i in sorted_poly_seq]
-                poly_sid[cid] = [int(i.split('-')[0]) for i in sorted_poly_seq]
+                poly_seq[cid] = [i.split(':')[1] for i in sorted_poly_seq]
+                poly_sid[cid] = [int(i.split(':')[0]) for i in sorted_poly_seq]
 
         if len(poly_seq) > 0:
             input_source.setItemValue('polymer_sequence', poly_seq)
             input_source.setItemValue('polymer_sequence_id', poly_sid)
+
+        return True
+
+    def __extractNonStandardResidue(self):
+        """ Extract non-standard residue.
+        """
+
+        if self.report.isError():
+            return False
+
+        input_source = self.report.input_sources[0]
+        input_source_dic = input_source.get()
+
+        has_poly_seq = 'polymer_sequence' in input_source_dic
+
+        if not has_poly_seq:
+
+            if self.__verbose:
+                logging.warning('+NmrDpReport.__extractNonStandardResidue() ++ Warning  - Common polymer sequence does not exist, __extractCommonPolymerSequence() should be invoked')
+
+            return True
+
+        polymer_sequence = input_source_dic['polymer_sequence']
+        polymer_sequence_id = input_source_dic['polymer_sequence_id']
+
+        has_non_std_residue = False
+
+        non_std_residue = {}
+
+        for cid in polymer_sequence.keys():
+
+            for i in range(len(polymer_sequence[cid])):
+                seq = polymer_sequence[cid][i]
+
+                if self.nef_translator.get_one_letter_code(seq) == '?':
+                    has_non_std_residue = True
 
         return True
 

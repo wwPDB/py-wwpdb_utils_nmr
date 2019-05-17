@@ -411,41 +411,37 @@ class NEFTranslator(object):
                         raise ValueError('Sequence must not be empty. loop_category=%s, chain_id=%s, seq_id=%s, res_id=%s' % (lp_category, i[2], i[0], i[1]))
 
             chains = (set([i[2] for i in seq_dat]))
-            seq_concat = (sorted(set(['{}-{:04d}-{}'.format(i[2], int(i[0]), i[1]) for i in seq_dat])))
+            seq_concat = (sorted(set(['{}:{:04d}:{}'.format(i[2], int(i[0]), i[1]) for i in seq_dat])))
 
-            chk_dict = {'{}-{:04d}'.format(i[2], int(i[0])):i[1] for i in seq_dat}
+            chk_dict = {'{}:{:04d}'.format(i[2], int(i[0])):i[1] for i in seq_dat}
 
             for i in seq_dat:
-                chk_key = '{}-{:04d}'.format(i[2], int(i[0]))
+                chk_key = '{}:{:04d}'.format(i[2], int(i[0]))
                 if chk_dict[chk_key] != i[1]:
                     raise KeyError('Sequence must be unique. loop_category=%s, chain_id=%s, seq_id=%s, res_id=%s vs %s' % (lp_category, i[2], i[0], i[1], chk_dict[chk_key]))
 
-            if len(seq_concat[0].split("-")[-1]) > 1:
+            if len(seq_concat[0].split(':')[-1]) > 1:
                 if len(chains) > 1:
                     for c in chains:
-                        # seq_array = "".join([self.getOneLetter(i.split("-")[-1]) for i in seq_concat if i.split("-")[0] == c])
-                        seq_array = [i.split("-")[-1] for i in seq_concat if i.split("-")[0] == c]
-                        sid_array = [int(i.split("-")[1]) for i in seq_concat if i.split("-")[0] == c]
+                        seq_array = [i.split(':')[-1] for i in seq_concat if i.split(':')[0] == c]
+                        sid_array = [int(i.split(':')[1]) for i in seq_concat if i.split(':')[0] == c]
                         seq_dict[c] = seq_array
                         sid_dict[c] = sid_array
                 else:
-                    # seq_array = "".join([self.getOneLetter(i.split("-")[-1]) for i in seq_concat])
-                    seq_array = [i.split("-")[-1] for i in seq_concat]
-                    sid_array = [int(i.split("-")[1]) for i in seq_concat]
+                    seq_array = [i.split(':')[-1] for i in seq_concat]
+                    sid_array = [int(i.split(':')[1]) for i in seq_concat]
                     seq_dict[list(chains)[0]] = seq_array
                     sid_dict[list(chains)[0]] = sid_array
             else:
                 if len(chains) > 1:
                     for c in chains:
-                        # seq_array = "".join([i.split("-")[-1] for i in seq_concat if i.split("-")[0] == c])
-                        seq_array = [i.split("-")[-1] for i in seq_concat if i.split("-")[0] == c]
-                        sid_array = [int(i.split("-")[1]) for i in seq_concat if i.split("-")[0] == c]
+                        seq_array = [i.split(':')[-1] for i in seq_concat if i.split(':')[0] == c]
+                        sid_array = [int(i.split(':')[1]) for i in seq_concat if i.split(':')[0] == c]
                         seq_dict[c] = seq_array
                         sid_dict[c] = sid_array
                 else:
-                    # seq_array = "".join([i.split("-")[-1] for i in seq_concat])
-                    seq_array = [i.split("-")[-1] for i in seq_concat]
-                    sid_array = [int(i.split("-")[1]) for i in seq_concat]
+                    seq_array = [i.split(':')[-1] for i in seq_concat]
+                    sid_array = [int(i.split(':')[1]) for i in seq_concat]
                     seq_dict[list(chains)[0]] = seq_array
                     sid_dict[list(chains)[0]] = sid_array
             seq.append(seq_dict)
@@ -511,41 +507,37 @@ class NEFTranslator(object):
                         raise ValueError('Sequence must not be empty. loop_category=%s, chain_id=%s, seq_id=%s, res_id=%s' % (lp_category, i[2], i[0], i[1]))
 
             chains = (set([i[2] for i in seq_dat]))
-            seq_concat = (sorted(set(['{}-{:04d}-{}'.format(i[2], int(i[0]), i[1]) for i in seq_dat])))
+            seq_concat = (sorted(set(['{}:{:04d}:{}'.format(i[2], int(i[0]), i[1]) for i in seq_dat])))
 
-            chk_dict = {'{}-{:04d}'.format(i[2], int(i[0])):i[1] for i in seq_dat}
+            chk_dict = {'{}:{:04d}'.format(i[2], int(i[0])):i[1] for i in seq_dat}
 
             for i in seq_dat:
-                chk_key = '{}-{:04d}'.format(i[2], int(i[0]))
+                chk_key = '{}:{:04d}'.format(i[2], int(i[0]))
                 if chk_dict[chk_key] != i[1]:
                     raise KeyError('Sequence must be unique. loop_category=%s, chain_id=%s, seq_id=%s, res_id=%s vs %s' % (lp_category, i[2], i[0], i[1], chk_dict[chk_key]))
 
-            if len(seq_concat[0].split("-")[-1]) > 1:
+            if len(seq_concat[0].split(':')[-1]) > 1:
                 if len(chains) > 1:
                     for c in chains:
-                        # seq_array = "".join([self.getOneLetter(i.split("-")[-1]) for i in seq_concat if i.split("-")[0] == c])
-                        seq_array = [i.split("-")[-1] for i in seq_concat if i.split("-")[0] == c]
-                        sid_array = [int(i.split("-")[1]) for i in seq_concat if i.split("-")[0] == c]
+                        seq_array = [i.split(':')[-1] for i in seq_concat if i.split(':')[0] == c]
+                        sid_array = [int(i.split(':')[1]) for i in seq_concat if i.split(':')[0] == c]
                         seq_dict[c] = seq_array
                         sid_dict[c] = sid_array
                 else:
-                    # seq_array = "".join([self.getOneLetter(i.split("-")[-1]) for i in seq_concat])
-                    seq_array = [i.split("-")[-1] for i in seq_concat]
-                    sid_array = [int(i.split("-")[1]) for i in seq_concat]
+                    seq_array = [i.split(':')[-1] for i in seq_concat]
+                    sid_array = [int(i.split(':')[1]) for i in seq_concat]
                     seq_dict[list(chains)[0]] = seq_array
                     sid_dict[list(chains)[0]] = sid_array
             else:
                 if len(chains) > 1:
                     for c in chains:
-                        # seq_array = "".join([i.split("-")[-1] for i in seq_concat if i.split("-")[0] == c])
-                        seq_array = [i.split("-")[-1] for i in seq_concat if i.split("-")[0] == c]
-                        sid_array = [int(i.split("-")[1]) for i in seq_concat if i.split("-")[0] == c]
+                        seq_array = [i.split(':')[-1] for i in seq_concat if i.split(':')[0] == c]
+                        sid_array = [int(i.split(':')[1]) for i in seq_concat if i.split(':')[0] == c]
                         seq_dict[c] = seq_array
                         seeq_id_dict[c] = sid_array
                 else:
-                    # seq_array = "".join([i.split("-")[-1] for i in seq_concat])
-                    seq_array = [i.split("-")[-1] for i in seq_concat]
-                    sid_array = [int(i.split("-")[1]) for i in seq_concat]
+                    seq_array = [i.split(':')[-1] for i in seq_concat]
+                    sid_array = [int(i.split(':')[1]) for i in seq_concat]
                     seq_dict[list(chains)[0]] = seq_array
                     sid_dict[list(chains)[0]] = sid_array
             seq.append(seq_dict)

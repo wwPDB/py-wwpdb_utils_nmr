@@ -10,10 +10,11 @@ import sys
 import os
 import os.path
 import pynmrstar
+import logging
 import json
 
 from wwpdb.utils.nmr.NEFTranslator.NEFTranslator import NEFTranslator
-from wwpdb.utils.nmr.NmrDpReport import NmrDpReport, NmrDpReportInputSource, NmrDpReportSequenceAlignment, NmrDpReportError, NmrDpReportWarning
+from wwpdb.utils.nmr.NmrDpReport import NmrDpReport
 
 class NmrDpUtility(object):
     """ Wrapper class for data processing for NMR unified data.
@@ -22,7 +23,6 @@ class NmrDpUtility(object):
     def __init__(self, verbose=False, log=sys.stderr):
         self.__verbose = verbose
         self.__lfh = log
-        self.__debug = False
 
         # current workflow operation
         self.__op = None
@@ -44,7 +44,7 @@ class NmrDpUtility(object):
                               'nmr-nef2star-deposit','nmr-star2star-deposit')
 
         # dictionary of processing tasks of each workflow operation
-        self.__procTasksDict = {'nmr-parser-check':  [self.__initializeReport,
+        self.__procTasksDict = {'nmr-parser-check':  [self.__initializeDpReport,
                                                       self.__instanceNEFTranslator,
                                                       self.__validateInputSource,
                                                       self.__detectContentSubType,
@@ -87,6 +87,10 @@ class NmrDpUtility(object):
         # NMR content types
         self.nmr_content_subtypes = ('poly_seq', 'chem_shift', 'dist_restraint', 'dihed_restraint', 'rdc_restraint', 'spectral_peak')
 
+        # readable file format name
+        self.readable_format_name = {'nmr-nef': 'NEF (NMR Exchange Format)', 'nmr-star': 'NMR-STAR V3.2',
+                                     'pdbx': 'PDBx/mmCIF', 'unknown': 'unknown'}
+
         # saveframe categories
         self.sf_categories = {'nmr-nef': {'poly_seq': 'nef_molecular_system',
                                           'chem_shift': 'nef_chemical_shift_list',
@@ -116,12 +120,6 @@ class NmrDpUtility(object):
                                            'rdc_restraint': '_RDC_constraint',
                                            'spectral_peak': '_Peak_row_format'}
                               }
-
-    def setDebugMode(self, flag=True):
-        """ Set debug mode on.
-        """
-
-        self.__debug = flag
 
     def setSource(self, fPath):
         """ Set primary source file path.
@@ -154,11 +152,17 @@ class NmrDpUtility(object):
             elif type == 'file':
                 self.__inputParamDict[name] = os.path.abspath(value)
             else:
+                logging.error("+NmrDpUtility.addInput() ++ Error  - Unknown input type '%s'" % type)
+                raise KeyError("+NmrDpUtility.addInput() ++ Error - Unknown input type '%s'" % type)
+
                 return False
 
             return True
 
-        except:
+        except Exception as e:
+            logging.error("+NmrDpUtility.addInput() ++ Error  - %s" % str(e))
+            raise ValueError("+NmrDpUtility.addInput() ++ Error - %s" % str(e))
+
             return False
 
     def addOutput(self, name=None, value=None, type='file'):
@@ -171,26 +175,33 @@ class NmrDpUtility(object):
             elif type == 'file':
                 self.__outputParamDict[name] = os.path.abspath(value)
             else:
+                logging.error("+NmrDpUtility.addOutput() ++ Error  - Unknown output type '%s'" % type)
+                raise KeyError("+NmrDpUtility.addOutput() ++ Error - Unknown output type '%s'" % type)
+
                 return False
 
             return True
 
         except:
+            logging.error("+NmrDpUtility.addOutput() ++ Error  - %s" % str(e))
+            raise ValueError("+NmrDpUtility.addOutput() ++ Error - %s" % str(e))
+
             return False
 
     def op(self, op):
         """ Perform a series of tasks for a given workflow operation.
         """
 
-        if self.__srcPath is None and len(self.__inputParamDict) < 1:
-            self.__lfh.write("+NmrDbUtility.op() ++ Error  - no input provided for operation %s\n" % op)
-            return False
+        if self.__srcPath is None:
+            logging.error("+NmrDpUtility.op() ++ Error  - No input provided for workflow operation '%s'" % op)
+            raise ValueError("+NmrDpUtility.op() ++ Error - No input provided for workflow operation '%s'" % op)
 
         if self.__verbose:
             self.__lfh.write("\n\n+NmrDpUtility.op() starting op %s\n" % op)
 
         if not op in self.__workFlowOps:
-            self.__lfh.write("+NmrDpUtility.op() ++ Error  - Unknown workflow operation %s\n" % op)
+            logging.error("+NmrDpUtility.op() ++ Error  - Unknown workflow operation '%s'" % op)
+            raise KeyError("+NmrDpUtility.op() ++ Error  - Unknown workflow operation '%s'" % op)
 
         self.__op = op
 
@@ -202,7 +213,10 @@ class NmrDpUtility(object):
                 if self.__verbose:
                     self.__lfh.write("\n\n+NmrDpUtility.op() starting op %s - task %s\n" % (op, task))
 
-                task()
+                if not task():
+                    self.report.writeJson(self.__logPath)
+
+                    return False
 
         # run general processing tasks
         if 'parser-check' in op:
@@ -212,7 +226,10 @@ class NmrDpUtility(object):
                 if self.__verbose:
                     self.__lfh.write("\n\n+NmrDpUtility.op() starting op %s - task %s\n" % (op, task))
 
-                task()
+                if not task():
+                    self.report.writeJson(self.__logPath)
+
+                    return False
 
         elif 'consistency-check' in op:
 
@@ -221,12 +238,17 @@ class NmrDpUtility(object):
                 if self.__verbose:
                     self.__lfh.write("\n\n+NmrDpUtility.op() starting op %s - task %s\n" % (op, task))
 
-                task()
+                if not task():
+                    self.report.writeJson(self.__logPath)
+
+                    return False
+
+        self.report.writeJson(self.__logPath)
 
         return True
 
-    def __initializeReport(self):
-        """ Initialize data processing report.
+    def __initializeDpReport(self):
+        """ Initialize NMR data processing report.
         """
 
         self.report = NmrDpReport()
@@ -267,7 +289,7 @@ class NmrDpUtility(object):
 
             if _file_format != file_format:
 
-                self.report.error.addDescription('format_isssue', "'%s' was selected as %s file, but an %s file." % (file_name, file_format, _file_format))
+                self.report.error.addDescription('format_isssue', "'%s' was selected as %s file, but recognized as an %s file." % (file_name, self.readable_format_name[file_format], self.readable_format_name[_file_format]))
 
                 if len(message['error']) > 0:
                     for error_message in message['error']:
@@ -276,7 +298,7 @@ class NmrDpUtility(object):
                 self.report.setError()
 
                 if self.__verbose:
-                    self.__lfh.write("+NmrDpUtility.__validateInputSource() ++ Error  - '%s' was selected as %s file, but an %s file.\n" % (file_name, file_format, _file_format))
+                    self.__lfh.write("+NmrDpUtility.__validateInputSource() ++ Error  - '%s' was selected as %s file, but recognized as an %s file.\n" % (file_name, self.readable_format_name[file_format], self.readable_format_name[_file_format]))
 
                 return False
 
@@ -284,7 +306,7 @@ class NmrDpUtility(object):
 
         else:
 
-            self.report.error.addDescription('format_isssue', "'%s' was invalid %s file." % (file_name, _file_format))
+            self.report.error.addDescription('format_isssue', "'%s' is invalid %s file." % (file_name, self.readable_format_name[file_format]))
 
             if len(message['error']) > 0:
                 for error_message in message['error']:
@@ -293,12 +315,12 @@ class NmrDpUtility(object):
             self.report.setError()
 
             if self.__verbose:
-                self.__lfh.write("+NmrDpUtility.__validateInputSource() ++ Error  - '%s' was invalid %s file." % (file_name, _file_format))
+                self.__lfh.write("+NmrDpUtility.__validateInputSource() ++ Error  - '%s' is invalid %s file." % (file_name, self.readable_format_name[file_format]))
 
             return False
 
     def __detectContentSubType(self):
-        """ Detect content subtypes from NEF/NMR-STAR V3.2 file.
+        """ Detect content subtypes in NEF/NMR-STAR V3.2 file.
         """
 
         if self.report.isError():
@@ -332,9 +354,8 @@ class NmrDpUtility(object):
 
             sf_category = self.sf_categories[file_format][content_subtype]
 
-            warning = NmrDpReportWarning()
-            warning.setItemValue('missing_saveframe', "Saveframe category '%s' were not found in %s file." % (sf_category, file_name))
-            self.report.appendWarning(warning)
+            self.report.warning.addDescription('missing_saveframe', "Saveframe category '%s' were not found in %s file." % (sf_category, file_name))
+            self.report.setWarning(warning)
 
             if self.__verbose:
                 self.__lfh.write("+NmrDpUtility.__detectContentSubType() ++ Warning  - Saveframe category '%s' were not found in %s file.\n" % (sf_category, file_name))
@@ -391,7 +412,7 @@ class NmrDpUtility(object):
         return self.report.isOk()
 
     def __getPolymerSequence(self, sf_data, content_subtype):
-        """ Retrieve polymer sequence from input source using NEFTranslator.
+        """ Wrapper function to retrieve polymer sequence from loop of a specified saveframe and content subtype via NEFTranslator.
         """
 
         input_source = self.report.input_sources[0]
@@ -405,7 +426,7 @@ class NmrDpUtility(object):
             return self.nef_translator.get_star_seq(sf_data, lp_category=self.lp_categories[file_format][content_subtype], allow_empty=(content_subtype == 'spectral_peak'))
 
     def __extractPolymerSequence(self):
-        """ Extract polymer sequence from NEF/NMR-STAR V3.2 file.
+        """ Extract reference polymer sequence of NEF/NMR-STAR V3.2 file.
         """
 
         if self.report.isError():
@@ -440,12 +461,12 @@ class NmrDpUtility(object):
             self.report.setError()
 
             if self.__verbose:
-                self.__lfh.write("+NmrDpUtility.__detectContentSubType() ++ Error  - %s" % str(e))
+                self.__lfh.write("+NmrDpUtility.__extractPolymerSequence() ++ Error  - %s" % str(e))
 
             return False
 
     def __extractPolymerSequenceInLoops(self):
-        """ Extract polymer sequence in loops from NEF/NMR-STAR V3.2 file.
+        """ Extract polymer sequence in interesting loops of NEF/NMR-STAR V3.2 file.
         """
 
         if self.report.isError():
@@ -508,7 +529,7 @@ class NmrDpUtility(object):
         return True
 
     def __testSequenceConsistency(self):
-        """ Perform sequence consistency test on extracted polymer sequences.
+        """ Apply sequence consistency test among extracted polymer sequences.
         """
 
         if self.report.isError():

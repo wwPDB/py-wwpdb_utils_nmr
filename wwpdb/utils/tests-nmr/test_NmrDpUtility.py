@@ -29,7 +29,7 @@ class TestNmrDpUtility(unittest.TestCase):
         self.assertEqual(nmr_content_subtypes, set(self.utility.lp_categories['nmr-nef'].keys()))
         self.assertEqual(nmr_content_subtypes, set(self.utility.lp_categories['nmr-star'].keys()))
 
-        # compare content subtypes in NmrDpReportInputSource
+        # compare NMR content subtypes in NmrDpReportInputSource
         input_source = NmrDpReportInputSource()
         self.assertEqual(nmr_content_subtypes, set(input_source.content_subtypes) - {'coordinate'})
 
@@ -37,10 +37,18 @@ class TestNmrDpUtility(unittest.TestCase):
         self.assertEqual(os.path.isdir(self.data_dir_path), True)
 
     def test_nmr_nef_parser_check(self):
-        # invalid op code
-        self.assertEqual(self.utility.op('nmr'), False)
+        # no input
+        with LogCapture() as logs:
+            with self.assertRaises(ValueError):
+                self.utility.op('nmr-nef-parser-check')
 
         self.utility.setSource(self.data_dir_path + '2l9r.nef')
+
+        # invalid workflow operation
+        with LogCapture() as logs:
+            with self.assertRaises(KeyError):
+                self.utility.op('nmr')
+
         self.utility.op('nmr-nef-parser-check')
 
         #print(self.utility.report.getJson(None))

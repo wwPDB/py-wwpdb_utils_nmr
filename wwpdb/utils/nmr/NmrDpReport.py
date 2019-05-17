@@ -43,8 +43,8 @@ class NmrDpReport:
         if status in self.status_codes:
             self.__report['information']['status'] = status
         else:
-            logging.error('+NmrDpReport.__setStatus() Unknown item type %s' % item)
-            raise KeyError('+NmrDpReport.__setStatus() Unknown item type %s' % item)
+            logging.error('+NmrDpReport.__setStatus() ++ Error  - Unknown item type %s' % item)
+            raise KeyError('+NmrDpReport.__setStatus() ++ Error  - Unknown item type %s' % item)
 
     def setError(self):
 
@@ -54,8 +54,8 @@ class NmrDpReport:
             self.__setStatus('ERROR')
 
         else:
-            logging.warning('+NmrDpReport.setError() No effects on NMR data processing report because the report is complete')
-            raise UserWarning('+NmrDpReport.setError() No effects on NMR data processing report because the report is complete')
+            logging.warning('+NmrDpReport.setError() ++ Warning  - No effects on NMR data processing report because the report is complete')
+            raise UserWarning('+NmrDpReport.setError() ++ Warning  - No effects on NMR data processing report because the report is complete')
 
     def setWarning(self):
 
@@ -66,8 +66,8 @@ class NmrDpReport:
                 self.__setStatus('WARNING')
 
         else:
-            logging.warning('+NmrDpReport.setWarning() No effects on NMR data processing report because the report is complete')
-            raise UserWarning('+NmrDpReport.setWarning() No effects on NMR data processing report because the report is complete')
+            logging.warning('+NmrDpReport.setWarning() ++ Warning  - No effects on NMR data processing report because the report is complete')
+            raise UserWarning('+NmrDpReport.setWarning() ++ Warning  - No effects on NMR data processing report because the report is complete')
 
     def get(self):
 
@@ -77,14 +77,17 @@ class NmrDpReport:
 
             self.__complete = True
 
-            logging.info('+NmrDpReport.get() NMR data processing report is complete')
+            #logging.info('+NmrDpReport.get() ++ Info  - NMR data processing report is complete')
 
         return self.__report
 
-    def getJson(self, indent_spaces=0):
+    def getJson(self, indent_spaces=None):
         return json.dumps(self.get(), indent=indent_spaces)
 
-    def writeJsonReport(self, out_path):
+    def writeJson(self, out_path):
+        if out_path is None:
+            return self.getJson()
+
         with open(out_path, encoding='utf-8') as file:
             file.write(json.dumps(self.get(), indent=2))
 
@@ -110,20 +113,20 @@ class NmrDpReportInputSource:
         if item in self.items:
 
             if item == 'file_format' and not value in self.file_formats:
-                logging.error('+NmrDpReportInputSource.setItemValue() Unknown file format %s' % value)
-                raise ValueError('+NmrDpReportInputSource.setItemValue() Unknown file format %s' % value)
+                logging.error('+NmrDpReportInputSource.setItemValue() ++ Error  - Unknown file format %s' % value)
+                raise ValueError('+NmrDpReportInputSource.setItemValue() ++ Error  - Unknown file format %s' % value)
 
             elif item == 'content_type' and not value in self.content_types:
-                logging.error('+NmrDpReportInputSource.setItemValue() Unknown content type %s' % value)
-                raise ValueError('+NmrDpReportInputSource.setItemValue() Unknown content type %s' % value)
+                logging.error('+NmrDpReportInputSource.setItemValue() ++ Error  - Unknown content type %s' % value)
+                raise ValueError('+NmrDpReportInputSource.setItemValue() ++ Error  - Unknown content type %s' % value)
 
             elif item == 'content_subtype':
 
                 for k in value:
 
                     if not k in self.content_subtypes:
-                        logging.error('+NmrDpReportInputSource.setItemValue() Unknown content subtype in %s' % value.keys())
-                        raise ValueError('+NmrDpReportInputSource.setItemValue() Unknown content subtype in %s' % value.keys())
+                        logging.error('+NmrDpReportInputSource.setItemValue() ++ Error  - Unknown content subtype in %s' % value.keys())
+                        raise ValueError('+NmrDpReportInputSource.setItemValue() ++ Error  - Unknown content subtype in %s' % value.keys())
 
                 non_positive_keys = [k for k in value if int(value[k]) <= 0]
 
@@ -137,8 +140,8 @@ class NmrDpReportInputSource:
                 self.__contents[item] = value
 
         else:
-            logging.error('+NmrDpReportInputSource.setItemValue() Unknown item type %s' % item)
-            raise KeyError('+NmrDpReportInputSource.setItemValue() Unknown item type %s' % item)
+            logging.error('+NmrDpReportInputSource.setItemValue() ++ Error  - Unknown item type %s' % item)
+            raise KeyError('+NmrDpReportInputSource.setItemValue() ++ Error  - Unknown item type %s' % item)
 
     def get(self):
         return self.__contents
@@ -158,8 +161,8 @@ class NmrDpReportSequenceAlignment:
             self.__contents[item] = value
 
         else:
-            logging.error('+NmrDpReportSequenceAlignment.setItemValue() Unknown item type %s' % item)
-            raise KeyError('+NmrDpReportSequenceAlignment.setItemValue() Unknown item type %s' % item)
+            logging.error('+NmrDpReportSequenceAlignment.setItemValue() ++ Error  - Unknown item type %s' % item)
+            raise KeyError('+NmrDpReportSequenceAlignment.setItemValue() ++ Error  - Unknown item type %s' % item)
 
     def get(self):
         return self.__contents
@@ -184,8 +187,8 @@ class NmrDpReportError:
                 self.__contents[item] += '\n' + value
 
         else:
-            logging.error('+NmrDpReportError.addDescription() Unknown item type %s' % item)
-            raise KeyError('+NmrDpReportError.addDescription() Unknown item type %s' % item)
+            logging.error('+NmrDpReportError.addDescription() ++ Error  - Unknown item type %s' % item)
+            raise KeyError('+NmrDpReportError.addDescription() ++ Error  - Unknown item type %s' % item)
 
     def get(self):
         return self.__contents
@@ -208,8 +211,8 @@ class NmrDpReportWarning:
                 self.__contents[item] += '\n' + value
 
         else:
-            logging.error('+NmrDpReportWarning.addDescription() Unknown item type %s' % item)
-            raise KeyError('+NmrDpReportWarning.addDescription() Unknown item type %s' % item)
+            logging.error('+NmrDpReportWarning.addDescription() ++ Error  - Unknown item type %s' % item)
+            raise KeyError('+NmrDpReportWarning.addDescription() ++ Error  - Unknown item type %s' % item)
 
     def get(self):
         return self.__contents

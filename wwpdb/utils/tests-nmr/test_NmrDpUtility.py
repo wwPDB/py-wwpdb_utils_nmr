@@ -42,6 +42,10 @@ class TestNmrDpUtility(unittest.TestCase):
             with self.assertRaises(ValueError):
                 self.utility.op('nmr-nef-parser-check')
 
+        with LogCapture() as logs:
+            with self.assertRaises(IOError):
+                self.utility.setSource('dummydummy')
+
         self.utility.setSource(self.data_dir_path + '2l9r.nef')
 
         # invalid workflow operation
@@ -51,7 +55,7 @@ class TestNmrDpUtility(unittest.TestCase):
 
         self.utility.op('nmr-nef-parser-check')
 
-        print(self.utility.report.getJson(None))
+        print(self.utility.report.getJson())
 
 if __name__ == '__main__':
     unittest.main()

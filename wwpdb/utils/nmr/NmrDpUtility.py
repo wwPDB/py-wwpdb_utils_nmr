@@ -1,6 +1,6 @@
 ##
 # File: NmrDpUtility.py
-# Date: 13-May-2019
+# Date: 17-May-2019
 #
 # Updates:
 ##
@@ -127,8 +127,10 @@ class NmrDpUtility(object):
 
         if os.access(fPath, os.F_OK):
             self.__srcPath = os.path.abspath(fPath)
+
         else:
-            self.__srcPath = None
+            logging.error("+NmrDpUtility.setSource() ++ Error  - Could not access to file path '%s'" % fPath)
+            raise IOError("+NmrDpUtility.setSource() ++ Error  -  Could not access to file path '%s'" % fPath)
 
     def setDestination(self, fPath):
         """ Set primary destination file path.
@@ -153,7 +155,7 @@ class NmrDpUtility(object):
                 self.__inputParamDict[name] = os.path.abspath(value)
             else:
                 logging.error("+NmrDpUtility.addInput() ++ Error  - Unknown input type '%s'" % type)
-                raise KeyError("+NmrDpUtility.addInput() ++ Error - Unknown input type '%s'" % type)
+                raise KeyError("+NmrDpUtility.addInput() ++ Error  - Unknown input type '%s'" % type)
 
                 return False
 
@@ -161,7 +163,7 @@ class NmrDpUtility(object):
 
         except Exception as e:
             logging.error("+NmrDpUtility.addInput() ++ Error  - %s" % str(e))
-            raise ValueError("+NmrDpUtility.addInput() ++ Error - %s" % str(e))
+            raise ValueError("+NmrDpUtility.addInput() ++ Error  - %s" % str(e))
 
             return False
 
@@ -176,7 +178,7 @@ class NmrDpUtility(object):
                 self.__outputParamDict[name] = os.path.abspath(value)
             else:
                 logging.error("+NmrDpUtility.addOutput() ++ Error  - Unknown output type '%s'" % type)
-                raise KeyError("+NmrDpUtility.addOutput() ++ Error - Unknown output type '%s'" % type)
+                raise KeyError("+NmrDpUtility.addOutput() ++ Error  - Unknown output type '%s'" % type)
 
                 return False
 
@@ -184,7 +186,7 @@ class NmrDpUtility(object):
 
         except:
             logging.error("+NmrDpUtility.addOutput() ++ Error  - %s" % str(e))
-            raise ValueError("+NmrDpUtility.addOutput() ++ Error - %s" % str(e))
+            raise ValueError("+NmrDpUtility.addOutput() ++ Error  - %s" % str(e))
 
             return False
 
@@ -194,7 +196,7 @@ class NmrDpUtility(object):
 
         if self.__srcPath is None:
             logging.error("+NmrDpUtility.op() ++ Error  - No input provided for workflow operation '%s'" % op)
-            raise ValueError("+NmrDpUtility.op() ++ Error - No input provided for workflow operation '%s'" % op)
+            raise ValueError("+NmrDpUtility.op() ++ Error  - No input provided for workflow operation '%s'" % op)
 
         if self.__verbose:
             self.__lfh.write("+NmrDpUtility.op() starting op %s\n" % op)

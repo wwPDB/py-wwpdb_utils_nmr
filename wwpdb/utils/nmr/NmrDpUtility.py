@@ -51,7 +51,8 @@ class NmrDpUtility(object):
                                                       self.__detectContentSubType,
                                                       self.__extractPolymerSequence,
                                                       self.__extractPolymerSequenceInLoops,
-                                                      self.__testSequenceConsistency] }
+                                                      self.__testSequenceConsistency,
+                                                      self.__extractCommonPolymerSequence] }
         """
                                 }
                                                       self.__extractNonStandardResidue,
@@ -416,7 +417,7 @@ class NmrDpUtility(object):
             if self.__verbose:
                 self.__lfh.write("+NmrDpUtility.__detectContentSubType() ++ Warning  - Spectral peak list is missing. The wwPDB NMR Validation Task Force strongly encourages the submission of spectral peak lists, in particular those generated from NOESY spectra. Saveframe category '%s' and loop category '%s' were not found in %s file." % (sf_category, lp_category, file_name))
 
-        return self.report.isOk()
+        return not self.report.isError()
 
     def __getPolymerSequence(self, sf_data, content_subtype):
         """ Wrapper function to retrieve polymer sequence from loop of a specified saveframe and content subtype via NEFTranslator.
@@ -447,7 +448,7 @@ class NmrDpUtility(object):
         content_subtype = 'poly_seq'
 
         if not content_subtype in input_source_dic['content_subtype']:
-            return False
+            return True
 
         sf_category = self.sf_categories[file_format][content_subtype]
 
@@ -536,7 +537,7 @@ class NmrDpUtility(object):
         return True
 
     def __testSequenceConsistency(self):
-        """ Apply sequence consistency test among extracted polymer sequences.
+        """ Perform sequence consistency test among extracted polymer sequences.
         """
 
         if self.report.isError():
@@ -554,7 +555,7 @@ class NmrDpUtility(object):
         has_poly_seq_in_loop = 'polymer_sequence_in_loop' in input_source_dic
 
         if not has_poly_seq and not has_poly_seq_in_loop:
-            return False
+            return True
 
         poly_seq = 'poly_seq'
 
@@ -681,6 +682,68 @@ class NmrDpUtility(object):
                                         if seq != seq2[cid][j]:
                                             self.report.error.addDescription('sequence_mismatche', "Unmatched res_id '%s' (vs res_id: '%s') at seq_id '%s', chain_id '%s' exists in '%s' (vs '%s') polymer sequence of %s file." % (seq, seq2[cid][j], sid, cid, sf_framecode1, sf_framecode2, file_name))
                                             self.report.setError()
+
+        return not self.report.isError()
+
+    def __extractCommonPolymerSequence(self):
+        """ Extract common polymer sequence if required.
+        """
+
+        if self.report.isError():
+            return False
+
+        input_source = self.report.input_sources[0]
+        input_source_dic = input_source.get()
+
+        has_poly_seq = 'polymer_sequence' in input_source_dic
+        has_poly_seq_in_loop = 'polymer_sequence_in_loop' in input_source_dic
+
+        # pass if poly_seq exists
+        if has_poly_seq or not has_poly_seq_in_loop:
+            return True
+
+        polymer_sequence_in_loop = input_source_dic['polymer_sequence_in_loop']
+        polymer_sequence_id_in_loop = input_source_dic['polymer_sequence_id_in_loop']
+
+        common_poly_seq = {}
+
+        for subtype in polymer_sequence_in_loop.keys():
+            list_len = len(polymer_sequence_in_loop[subtype])
+
+            for list_id in range(list_len):
+                seq_ = polymer_sequence_in_loop[subtype][list_id]['polymer_sequence']
+
+                for cid in seq_.keys():
+                    if not cid in common_poly_seq:
+                        common_poly_seq[cid] = set()
+
+        for subtype in polymer_sequence_in_loop.keys():
+            list_len = len(polymer_sequence_in_loop[subtype])
+
+            for list_id in range(list_len):
+                sid_ = polymer_sequence_id_in_loop[subtype][list_id]['polymer_sequence_id']
+                seq_ = polymer_sequence_in_loop[subtype][list_id]['polymer_sequence']
+
+                for i in range(len(sid_[cid])):
+                    sid = sid_[cid][i]
+                    seq = seq_[cid][i]
+
+                    common_poly_seq[cid].add('{:04d}-{}'.format(sid, seq))
+
+        poly_seq = {}
+        poly_sid = {}
+
+        for cid in common_poly_seq.keys():
+
+            if len(common_poly_seq[cid]) > 0:
+                sorted_poly_seq = sorted(common_poly_seq[cid])
+
+                poly_seq[cid] = [i.split('-')[1] for i in sorted_poly_seq]
+                poly_sid[cid] = [int(i.split('-')[0]) for i in sorted_poly_seq]
+
+        if len(poly_seq) > 0:
+            input_source.setItemValue('polymer_sequence', poly_seq)
+            input_source.setItemValue('polymer_sequence_id', poly_sid)
 
         return True
 

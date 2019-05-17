@@ -133,17 +133,17 @@ data_2l9r_docr
          A  10  HIS  HBX   3.201    0.02  H  1 
          A  10  HIS  HBY   3.106    0.02  H  1 
          A  10  HIS  HD2   7.067    0.02  H  1 
-         A  11  MET  C     175.775  0.4   C  13
-         A  11  MET  CA    55.347   0.4   C  13
-         A  11  MET  CB    34.981   0.4   C  13
-         A  11  MET  CG    32.805   0.4   C  13
-         A  11  MET  H     8.234    0.02  H  1 
-         A  11  MET  HA    4.659    0.02  H  1 
-         A  11  MET  HBX   1.996    0.02  H  1 
-         A  11  MET  HBY   1.835    0.02  H  1 
-         A  11  MET  HGX   2.386    0.02  H  1 
-         A  11  MET  HGY   2.484    0.02  H  1 
-         A  11  MET  N     121.293  0.4   N  15
+         A  11  MxT  C     175.775  0.4   C  13
+         A  11  MxT  CA    55.347   0.4   C  13
+         A  11  MxT  CB    34.981   0.4   C  13
+         A  11  MxT  CG    32.805   0.4   C  13
+         A  11  MxT  H     8.234    0.02  H  1 
+         A  11  MxT  HA    4.659    0.02  H  1 
+         A  11  MxT  HBX   1.996    0.02  H  1 
+         A  11  MxT  HBY   1.835    0.02  H  1 
+         A  11  MxT  HGX   2.386    0.02  H  1 
+         A  11  MxT  HGY   2.484    0.02  H  1 
+         A  11  MxT  N     121.293  0.4   N  15
          A  12  SER  CA    56.516   0.4   C  13
          A  12  SER  CB    65.53    0.4   C  13
          A  12  SER  H     9.36     0.02  H  1 
@@ -904,9 +904,9 @@ data_2l9r_docr
          _nef_distance_restraint.upper_limit
          _nef_distance_restraint.upper_linear_limit
 
-         1     1     .  A  10  HIS  HBY   A  11  MET  H     1  5.23  .  .  1.8  5.75  .
-         2     2     .  A  11  MET  H     A  11  MET  HGY   1  4.84  .  .  1.8  5.32  .
-         3     3     .  A  11  MET  HBY   A  12  SER  H     1  4.09  .  .  1.8  4.5   .
+         1     1     .  A  10  HIS  HBY   A  11  MxT  H     1  5.23  .  .  1.8  5.75  .
+         2     2     .  A  11  MxT  H     A  11  MxT  HGY   1  4.84  .  .  1.8  5.32  .
+         3     3     .  A  11  MxT  HBY   A  12  SER  H     1  4.09  .  .  1.8  4.5   .
          4     4     .  A  13  HIS  HBX   A  14  THR  H     1  3.95  .  .  1.8  4.35  .
          5     5     .  A  13  HIS  HBY   A  14  THR  H     1  3.95  .  .  1.8  4.35  .
          6     6     .  A  14  THR  HG2%  A  15  GLN  H     1  4.47  .  .  1.8  4.92  .
@@ -1325,7 +1325,7 @@ data_2l9r_docr
          419   419   .  A  14  THR  H     A  15  GLN  HBX   1  5.01  .  .  1.8  5.51  .
          420   420   .  A  12  SER  H     A  15  GLN  H     1  4.88  .  .  1.8  5.37  .
          421   421   .  A  15  GLN  H     A  16  VAL  HGY%  1  4.65  .  .  1.8  5.12  .
-         422   422   .  A  11  MET  HBY   A  15  GLN  H     1  5.26  .  .  1.8  5.79  .
+         422   422   .  A  11  MxT  HBY   A  15  GLN  H     1  5.26  .  .  1.8  5.79  .
          423   423   .  A  15  GLN  H     A  16  VAL  HB    1  5.17  .  .  1.8  5.69  .
          424   424   .  A  15  GLN  HE2X  A  41  LEU  HG    1  5.23  .  .  1.8  5.75  .
          425   425   .  A  15  GLN  HE2X  A  42  LYS  HBX   1  4.35  .  .  1.8  4.79  .
@@ -1338,9 +1338,9 @@ data_2l9r_docr
          432   432   .  A  15  GLN  HE2Y  A  42  LYS  HBX   1  4.23  .  .  1.8  4.65  .
          433   433   .  A  15  GLN  HE2Y  A  43  LEU  HDX%  1  4.46  .  .  1.8  4.91  .
          434   434   .  A  15  GLN  HE2Y  A  43  LEU  HDY%  1  3.43  .  .  1.8  3.77  .
-         435   435   .  A  11  MET  HBX   A  16  VAL  H     1  5.39  .  .  1.8  5.93  .
+         435   435   .  A  11  MxT  HBX   A  16  VAL  H     1  5.39  .  .  1.8  5.93  .
          436   436   .  A  16  VAL  H     A  17  ILE  HB    1  5.87  .  .  1.8  6.46  .
-         437   437   .  A  11  MET  HBY   A  16  VAL  H     1  4.5   .  .  1.8  4.95  .
+         437   437   .  A  11  MxT  HBY   A  16  VAL  H     1  4.5   .  .  1.8  4.95  .
          438   438   .  A  16  VAL  HGX%  A  19  LEU  H     1  4.94  .  .  1.8  5.43  .
          439   439   .  A  16  VAL  HGX%  A  20  GLU  H     1  4.37  .  .  1.8  4.81  .
          440   440   .  A  20  GLU  H     A  51  TRP  HZ2   1  4.94  .  .  1.8  5.43  .
@@ -1408,12 +1408,12 @@ data_2l9r_docr
          502   502   .  A  50  ILE  HG2%  A  54  ASN  HD2X  1  3.57  .  .  1.8  3.93  .
          503   503   .  A  50  ILE  HG2%  A  54  ASN  HD2Y  1  3.57  .  .  1.8  3.93  .
          504   504   .  A  23  PHE  HE%   A  56  ARG  H     1  4.61  .  .  1.8  5.07  .
-         505   505   .  A  11  MET  HGX   A  12  SER  H     1  5.32  .  .  1.8  5.85  .
+         505   505   .  A  11  MxT  HGX   A  12  SER  H     1  5.32  .  .  1.8  5.85  .
          506   506   .  A  12  SER  H     A  15  GLN  HBX   1  4.03  .  .  1.8  4.43  .
          507   507   .  A  19  LEU  HDX%  A  51  TRP  HE1   1  4.31  .  .  1.8  4.74  .
          508   508   .  A  52  PHE  H     A  52  PHE  HE%   1  4.89  .  .  1.8  5.38  .
          509   509   .  A  44  THR  HB    A  46  THR  H     1  3.19  .  .  1.8  3.51  .
-         510   510   .  A  11  MET  HA    A  11  MET  HGX   1  3.76  .  .  1.8  4.14  .
+         510   510   .  A  11  MxT  HA    A  11  MxT  HGX   1  3.76  .  .  1.8  4.14  .
          511   511   .  A  14  THR  HA    A  14  THR  HG2%  1  3.14  .  .  1.8  3.45  .
          512   512   .  A  15  GLN  HA    A  15  GLN  HGY   1  3.68  .  .  1.8  4.05  .
          513   513   .  A  15  GLN  H     A  15  GLN  HGX   1  4.74  .  .  1.8  5.21  .
@@ -1579,8 +1579,8 @@ data_2l9r_docr
          673   673   .  A  64  LEU  HA    A  64  LEU  HDY%  1  4.62  .  .  1.8  5.08  .
          674   674   .  A  68  LEU  HA    A  68  LEU  HDX%  1  4.89  .  .  1.8  5.38  .
          675   675   .  A  68  LEU  HA    A  68  LEU  HDY%  1  4.89  .  .  1.8  5.38  .
-         676   676   .  A  11  MET  HA    A  12  SER  H     1  3.4   .  .  1.8  3.74  .
-         677   677   .  A  11  MET  HBX   A  12  SER  H     1  4.56  .  .  1.8  5.02  .
+         676   676   .  A  11  MxT  HA    A  12  SER  H     1  3.4   .  .  1.8  3.74  .
+         677   677   .  A  11  MxT  HBX   A  12  SER  H     1  4.56  .  .  1.8  5.02  .
          678   678   .  A  14  THR  HB    A  15  GLN  H     1  3.9   .  .  1.8  4.29  .
          679   679   .  A  15  GLN  HGY   A  16  VAL  H     1  4.57  .  .  1.8  5.03  .
          680   680   .  A  15  GLN  HGX   A  16  VAL  H     1  4.22  .  .  1.8  4.64  .
@@ -1710,7 +1710,7 @@ data_2l9r_docr
          804   804   .  A  15  GLN  HA    A  41  LEU  HDX%  1  4.13  .  .  1.8  4.54  .
          805   805   .  A  15  GLN  HBX   A  16  VAL  HGY%  1  5.13  .  .  1.8  5.64  .
          806   806   .  A  15  GLN  HBX   A  43  LEU  HDX%  1  5.04  .  .  1.8  5.54  .
-         807   807   .  A  11  MET  HBY   A  15  GLN  HBX   1  4.53  .  .  1.8  4.98  .
+         807   807   .  A  11  MxT  HBY   A  15  GLN  HBX   1  4.53  .  .  1.8  4.98  .
          808   808   .  A  15  GLN  HBY   A  43  LEU  HDX%  1  5.05  .  .  1.8  5.56  .
          809   809   .  A  15  GLN  HGY   A  41  LEU  HBY   1  4.17  .  .  1.8  4.59  .
          810   810   .  A  15  GLN  HGY   A  41  LEU  HDX%  1  3.86  .  .  1.8  4.25  .
@@ -1724,10 +1724,10 @@ data_2l9r_docr
          818   818   .  A  16  VAL  HGX%  A  17  ILE  HA    1  4.37  .  .  1.8  4.81  .
          819   819   .  A  13  HIS  HA    A  16  VAL  HGX%  1  4.99  .  .  1.8  5.49  .
          820   820   .  A  16  VAL  HGX%  A  20  GLU  HGY   1  4.39  .  .  1.8  4.83  .
-         821   821   .  A  11  MET  HBX   A  16  VAL  HGX%  1  5.08  .  .  1.8  5.59  .
+         821   821   .  A  11  MxT  HBX   A  16  VAL  HGX%  1  5.08  .  .  1.8  5.59  .
          822   822   .  A  16  VAL  HGX%  A  19  LEU  HBX   1  4.35  .  .  1.8  4.79  .
-         823   823   .  A  11  MET  HBX   A  16  VAL  HGY%  1  3.55  .  .  1.8  3.9   .
-         824   824   .  A  11  MET  HGX   A  16  VAL  HGY%  1  5.01  .  .  1.8  5.51  .
+         823   823   .  A  11  MxT  HBX   A  16  VAL  HGY%  1  3.55  .  .  1.8  3.9   .
+         824   824   .  A  11  MxT  HGX   A  16  VAL  HGY%  1  5.01  .  .  1.8  5.51  .
          825   825   .  A  15  GLN  HGX   A  16  VAL  HGY%  1  4.17  .  .  1.8  4.59  .
          826   826   .  A  17  ILE  HA    A  20  GLU  HGY   1  4.91  .  .  1.8  5.4   .
          827   827   .  A  17  ILE  HB    A  18  GLU  HGX   1  4.98  .  .  1.8  5.48  .
@@ -1938,7 +1938,7 @@ data_2l9r_docr
          1032  1032  .  A  15  GLN  HGX   A  43  LEU  HDX%  1  5.02  .  .  1.8  5.52  .
          1033  1033  .  A  43  LEU  HBX   A  47  GLN  HBX   1  4.61  .  .  1.8  5.07  .
          1034  1034  .  A  38  ALA  HA    A  43  LEU  HBY   1  4.26  .  .  1.8  4.69  .
-         1035  1035  .  A  11  MET  HGX   A  43  LEU  HDY%  1  3.92  .  .  1.8  4.31  .
+         1035  1035  .  A  11  MxT  HGX   A  43  LEU  HDY%  1  3.92  .  .  1.8  4.31  .
          1036  1036  .  A  43  LEU  H     A  44  THR  HG2%  1  5.08  .  .  1.8  5.59  .
          1037  1037  .  A  23  PHE  HZ    A  59  THR  HG2%  1  4.54  .  .  1.8  4.99  .
          1038  1038  .  A  44  THR  HG2%  A  47  GLN  HBX   1  5.36  .  .  1.8  5.9   .
@@ -2010,17 +2010,17 @@ data_2l9r_docr
          1104  1104  .  A  19  LEU  HDX%  A  43  LEU  HDX%  1  3.78  .  .  1.8  4.16  .
          1105  1105  .  A  35  ALA  HB%   A  36  HIS  HB2   1  5.42  .  .  1.8  5.96  .
          1106  1106  .  A  35  ALA  HB%   A  36  HIS  HB3   1  5.42  .  .  1.8  5.96  .
-         1107  1107  .  A  11  MET  HBY   A  15  GLN  HBY   1  4.27  .  .  1.8  4.7   .
-         1108  1108  .  A  11  MET  HBY   A  16  VAL  HGY%  1  3.66  .  .  1.8  4.03  .
-         1109  1109  .  A  11  MET  HBY   A  43  LEU  HDY%  1  5.08  .  .  1.8  5.59  .
-         1110  1110  .  A  11  MET  HBX   A  15  GLN  HBY   1  4.9   .  .  1.8  5.39  .
-         1111  1111  .  A  11  MET  HBX   A  43  LEU  HDY%  1  5.55  .  .  1.8  6.11  .
-         1112  1112  .  A  11  MET  HGX   A  43  LEU  HDX%  1  4.93  .  .  1.8  5.42  .
-         1113  1113  .  A  11  MET  HGY   A  16  VAL  HGY%  1  5.01  .  .  1.8  5.51  .
-         1114  1114  .  A  11  MET  HGY   A  43  LEU  HDX%  1  4.93  .  .  1.8  5.42  .
-         1115  1115  .  A  11  MET  HA    A  11  MET  HGY   1  3.76  .  .  1.8  4.14  .
-         1116  1116  .  A  11  MET  H     A  11  MET  HGX   1  4.84  .  .  1.8  5.32  .
-         1117  1117  .  A  11  MET  HGY   A  12  SER  H     1  5.32  .  .  1.8  5.85  .
+         1107  1107  .  A  11  MxT  HBY   A  15  GLN  HBY   1  4.27  .  .  1.8  4.7   .
+         1108  1108  .  A  11  MxT  HBY   A  16  VAL  HGY%  1  3.66  .  .  1.8  4.03  .
+         1109  1109  .  A  11  MxT  HBY   A  43  LEU  HDY%  1  5.08  .  .  1.8  5.59  .
+         1110  1110  .  A  11  MxT  HBX   A  15  GLN  HBY   1  4.9   .  .  1.8  5.39  .
+         1111  1111  .  A  11  MxT  HBX   A  43  LEU  HDY%  1  5.55  .  .  1.8  6.11  .
+         1112  1112  .  A  11  MxT  HGX   A  43  LEU  HDX%  1  4.93  .  .  1.8  5.42  .
+         1113  1113  .  A  11  MxT  HGY   A  16  VAL  HGY%  1  5.01  .  .  1.8  5.51  .
+         1114  1114  .  A  11  MxT  HGY   A  43  LEU  HDX%  1  4.93  .  .  1.8  5.42  .
+         1115  1115  .  A  11  MxT  HA    A  11  MxT  HGY   1  3.76  .  .  1.8  4.14  .
+         1116  1116  .  A  11  MxT  H     A  11  MxT  HGX   1  4.84  .  .  1.8  5.32  .
+         1117  1117  .  A  11  MxT  HGY   A  12  SER  H     1  5.32  .  .  1.8  5.85  .
          1118  1118  .  A  12  SER  HBY   A  15  GLN  HBX   1  5.09  .  .  1.8  5.6   .
          1119  1119  .  A  13  HIS  HA    A  16  VAL  HGY%  1  3.58  .  .  1.8  3.94  .
          1120  1120  .  A  23  PHE  HBX   A  52  PHE  HE%   1  5.3   .  .  1.8  5.83  .
@@ -2058,7 +2058,7 @@ data_2l9r_docr
          1152  1152  .  A  23  PHE  HE%   A  52  PHE  HA    1  5.08  .  .  1.8  5.59  .
          1153  1153  .  A  52  PHE  HA    A  52  PHE  HE%   1  5.25  .  .  1.8  5.78  .
          1154  1154  .  A  44  THR  HB    A  46  THR  HB    1  3.9   .  .  1.8  4.29  .
-         1155  1155  .  A  10  HIS  HBX   A  11  MET  H     1  5.23  .  .  1.8  5.75  .
+         1155  1155  .  A  10  HIS  HBX   A  11  MxT  H     1  5.23  .  .  1.8  5.75  .
          1156  1156  .  A  12  SER  HBX   A  15  GLN  HBX   1  5.09  .  .  1.8  5.6   .
          1157  1157  .  A  18  GLU  HGY   A  37  LEU  HDX%  1  6     .  .  1.8  6.6   .
          1158  1158  .  A  17  ILE  HG2%  A  21  ARG  HGX   1  4.84  .  .  1.8  5.32  .
@@ -2072,8 +2072,8 @@ data_2l9r_docr
          1166  1166  .  A  41  LEU  HBX   A  43  LEU  HDX%  1  3.59  .  .  1.8  3.95  .
          1167  1167  .  A  68  LEU  H     A  68  LEU  HDX%  1  5.49  .  .  1.8  6.04  .
          1168  1168  .  A  68  LEU  H     A  68  LEU  HDY%  1  5.49  .  .  1.8  6.04  .
-         1169  1169  .  A  11  MET  HBY   A  15  GLN  HGX   1  3.58  .  .  1.8  3.94  .
-         1170  1170  .  A  11  MET  HBX   A  15  GLN  HGX   1  4.21  .  .  1.8  4.63  .
+         1169  1169  .  A  11  MxT  HBY   A  15  GLN  HGX   1  3.58  .  .  1.8  3.94  .
+         1170  1170  .  A  11  MxT  HBX   A  15  GLN  HGX   1  4.21  .  .  1.8  4.63  .
          1171  1171  .  A  19  LEU  HDY%  A  48  VAL  HGX%  1  3.32  .  .  1.8  3.65  .
          1172  1172  .  A  19  LEU  HDY%  A  29  LEU  HDX%  1  4.48  .  .  1.8  4.93  .
          1173  1173  .  A  30  SER  H     A  34  ARG  HBY   1  5.31  .  .  1.8  5.84  .
@@ -2084,9 +2084,9 @@ data_2l9r_docr
          1178  1178  .  A  56  ARG  HA    A  59  THR  HB    1  4.64  .  .  1.8  5.1   .
          1179  1179  .  A  56  ARG  HA    A  59  THR  HG2%  1  4.05  .  .  1.8  4.46  .
          1180  1180  .  A  43  LEU  HDY%  A  47  GLN  HBY   1  4     .  .  1.8  4.4   .
-         1181  1181  .  A  11  MET  HGY   A  43  LEU  HDY%  1  3.92  .  .  1.8  4.31  .
+         1181  1181  .  A  11  MxT  HGY   A  43  LEU  HDY%  1  3.92  .  .  1.8  4.31  .
          1182  1182  .  A  15  GLN  HGX   A  43  LEU  HDY%  1  4.52  .  .  1.8  4.97  .
-         1183  1183  .  A  11  MET  HA    A  43  LEU  HDY%  1  4.39  .  .  1.8  4.83  .
+         1183  1183  .  A  11  MxT  HA    A  43  LEU  HDY%  1  4.39  .  .  1.8  4.83  .
          1184  1184  .  A  34  ARG  HA    A  48  VAL  HGX%  1  3.67  .  .  1.8  4.04  .
          1185  1185  .  A  26  GLN  HG2   A  29  LEU  HDX%  1  5.6   .  .  1.8  6.16  .
          1186  1186  .  A  26  GLN  HG3   A  29  LEU  HDX%  1  5.95  .  .  1.8  6.54  .
@@ -2172,22 +2172,22 @@ data_2l9r_docr
          1266  1266  .  A  23  PHE  HBX   A  51  TRP  HH2   1  4.02  .  .  1.8  4.42  .
          1267  1267  .  A  16  VAL  HA    A  51  TRP  HZ2   1  4.46  .  .  1.8  4.91  .
          1268  1268  .  A  48  VAL  HGX%  A  52  PHE  HE%   1  3.73  .  .  1.8  4.1   .
-         1269  1269  .  A  11  MET  H     A  11  MET  HGX   1  4.18  .  .  1.8  4.6   .
-         1270  1269  .  A  11  MET  H     A  11  MET  HGY   1  4.18  .  .  1.8  4.6   .
-         1271  1270  .  A  11  MET  HA    A  11  MET  HGX   1  3.26  .  .  1.8  3.59  .
-         1272  1270  .  A  11  MET  HA    A  11  MET  HGY   1  3.26  .  .  1.8  3.59  .
-         1273  1271  .  A  11  MET  HGX   A  12  SER  H     1  4.55  .  .  1.8  5.01  .
-         1274  1271  .  A  11  MET  HGY   A  12  SER  H     1  4.55  .  .  1.8  5.01  .
-         1275  1272  .  A  11  MET  HGX   A  15  GLN  HBY   1  4.48  .  .  1.8  4.93  .
-         1276  1272  .  A  11  MET  HGY   A  15  GLN  HBY   1  4.48  .  .  1.8  4.93  .
-         1277  1273  .  A  11  MET  HGX   A  16  VAL  HGY%  1  4.39  .  .  1.8  4.83  .
-         1278  1273  .  A  11  MET  HGY   A  16  VAL  HGY%  1  4.39  .  .  1.8  4.83  .
-         1279  1274  .  A  11  MET  HGX   A  43  LEU  HDY%  1  3.28  .  .  1.8  3.61  .
-         1280  1274  .  A  11  MET  HGY   A  43  LEU  HDY%  1  3.28  .  .  1.8  3.61  .
-         1281  1275  .  A  11  MET  HGX   A  47  GLN  HE2X  1  3.9   .  .  1.8  4.29  .
-         1282  1275  .  A  11  MET  HGX   A  47  GLN  HE2Y  1  3.9   .  .  1.8  4.29  .
-         1283  1275  .  A  11  MET  HGY   A  47  GLN  HE2X  1  3.9   .  .  1.8  4.29  .
-         1284  1275  .  A  11  MET  HGY   A  47  GLN  HE2Y  1  3.9   .  .  1.8  4.29  .
+         1269  1269  .  A  11  MxT  H     A  11  MxT  HGX   1  4.18  .  .  1.8  4.6   .
+         1270  1269  .  A  11  MxT  H     A  11  MxT  HGY   1  4.18  .  .  1.8  4.6   .
+         1271  1270  .  A  11  MxT  HA    A  11  MxT  HGX   1  3.26  .  .  1.8  3.59  .
+         1272  1270  .  A  11  MxT  HA    A  11  MxT  HGY   1  3.26  .  .  1.8  3.59  .
+         1273  1271  .  A  11  MxT  HGX   A  12  SER  H     1  4.55  .  .  1.8  5.01  .
+         1274  1271  .  A  11  MxT  HGY   A  12  SER  H     1  4.55  .  .  1.8  5.01  .
+         1275  1272  .  A  11  MxT  HGX   A  15  GLN  HBY   1  4.48  .  .  1.8  4.93  .
+         1276  1272  .  A  11  MxT  HGY   A  15  GLN  HBY   1  4.48  .  .  1.8  4.93  .
+         1277  1273  .  A  11  MxT  HGX   A  16  VAL  HGY%  1  4.39  .  .  1.8  4.83  .
+         1278  1273  .  A  11  MxT  HGY   A  16  VAL  HGY%  1  4.39  .  .  1.8  4.83  .
+         1279  1274  .  A  11  MxT  HGX   A  43  LEU  HDY%  1  3.28  .  .  1.8  3.61  .
+         1280  1274  .  A  11  MxT  HGY   A  43  LEU  HDY%  1  3.28  .  .  1.8  3.61  .
+         1281  1275  .  A  11  MxT  HGX   A  47  GLN  HE2X  1  3.9   .  .  1.8  4.29  .
+         1282  1275  .  A  11  MxT  HGX   A  47  GLN  HE2Y  1  3.9   .  .  1.8  4.29  .
+         1283  1275  .  A  11  MxT  HGY   A  47  GLN  HE2X  1  3.9   .  .  1.8  4.29  .
+         1284  1275  .  A  11  MxT  HGY   A  47  GLN  HE2Y  1  3.9   .  .  1.8  4.29  .
          1285  1276  .  A  12  SER  H     A  12  SER  HBX   1  3.63  .  .  1.8  3.99  .
          1286  1276  .  A  12  SER  H     A  12  SER  HBY   1  3.63  .  .  1.8  3.99  .
          1287  1277  .  A  12  SER  HBX   A  14  THR  H     1  3.89  .  .  1.8  4.28  .
@@ -3036,7 +3036,7 @@ data_2l9r_docr
          _nef_rdc_restraint.scale
          _nef_rdc_restraint.distance_dependent
 
-         1   1   .  A  11  MET  H  A  11  MET  N  1  3.745    4  .  .  .  .  1  false
+         1   1   .  A  11  MxT  H  A  11  MxT  N  1  3.745    4  .  .  .  .  1  false
          2   2   .  A  12  SER  H  A  12  SER  N  1  3.067    4  .  .  .  .  1  false
          3   3   .  A  14  THR  H  A  14  THR  N  1  5.121    4  .  .  .  .  1  false
          4   4   .  A  15  GLN  H  A  15  GLN  N  1  -6.559   4  .  .  .  .  1  false

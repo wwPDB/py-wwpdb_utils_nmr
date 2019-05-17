@@ -769,17 +769,32 @@ class NmrDpUtility(object):
         polymer_sequence = input_source_dic['polymer_sequence']
         polymer_sequence_id = input_source_dic['polymer_sequence_id']
 
-        has_non_std_residue = False
+        mol_sys_has = False
 
         non_std_residue = {}
 
         for cid in polymer_sequence.keys():
 
-            for i in range(len(polymer_sequence[cid])):
-                seq = polymer_sequence[cid][i]
+            chain_has = False
+
+            non_std_residue_set = set()
+
+            for seq in polymer_sequence[cid]:
 
                 if self.nef_translator.get_one_letter_code(seq) == '?':
-                    has_non_std_residue = True
+                    mol_sys_has = True
+                    chain_has = True
+
+                    if not cid in non_std_residue:
+                        non_std_residue[cid] = []
+
+                    non_std_residue_set.add(seq)
+
+            if (chain_has):
+                non_std_residue[cid] = list(non_std_residue_set)
+
+        if mol_sys_has:
+            input_source.setItemValue('non_standard_residue', non_std_residue)
 
         return True
 

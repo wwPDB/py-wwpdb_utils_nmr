@@ -57,5 +57,12 @@ class TestNmrDpUtility(unittest.TestCase):
 
         #print(self.utility.report.getJson())
 
+    def test_nmr_nef_parser_check_non_std_residue(self):
+        self.utility.setSource(self.data_dir_path + '2l9rnonstandard.nef')
+
+        self.utility.op('nmr-nef-parser-check')
+
+        #print(self.utility.report.getJson())
+
 if __name__ == '__main__':
     unittest.main()

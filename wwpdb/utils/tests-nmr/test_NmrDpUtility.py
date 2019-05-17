@@ -51,7 +51,7 @@ class TestNmrDpUtility(unittest.TestCase):
 
         self.utility.op('nmr-nef-parser-check')
 
-        #print(self.utility.report.getJson(None))
+        print(self.utility.report.getJson(None))
 
 if __name__ == '__main__':
     unittest.main()

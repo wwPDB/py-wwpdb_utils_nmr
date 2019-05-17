@@ -197,7 +197,7 @@ class NmrDpUtility(object):
             raise ValueError("+NmrDpUtility.op() ++ Error - No input provided for workflow operation '%s'" % op)
 
         if self.__verbose:
-            self.__lfh.write("\n\n+NmrDpUtility.op() starting op %s\n" % op)
+            self.__lfh.write("+NmrDpUtility.op() starting op %s\n" % op)
 
         if not op in self.__workFlowOps:
             logging.error("+NmrDpUtility.op() ++ Error  - Unknown workflow operation '%s'" % op)
@@ -211,7 +211,7 @@ class NmrDpUtility(object):
             for task in self.__procTasksDict[op]:
 
                 if self.__verbose:
-                    self.__lfh.write("\n\n+NmrDpUtility.op() starting op %s - task %s\n" % (op, task))
+                    self.__lfh.write("+NmrDpUtility.op() starting op '%s' - task '%s'\n" % (op, task.__name__))
 
                 if not task():
                     self.report.writeJson(self.__logPath)
@@ -224,7 +224,7 @@ class NmrDpUtility(object):
             for task in self.__procTasksDict['nmr-parser-check']:
 
                 if self.__verbose:
-                    self.__lfh.write("\n\n+NmrDpUtility.op() starting op %s - task %s\n" % (op, task))
+                    self.__lfh.write("+NmrDpUtility.op() starting op '%s' - task '%s'\n" % (op, task.__name__))
 
                 if not task():
                     self.report.writeJson(self.__logPath)
@@ -236,7 +236,7 @@ class NmrDpUtility(object):
             for task in self.__procTasksDict['nmr-consistency-check']:
 
                 if self.__verbose:
-                    self.__lfh.write("\n\n+NmrDpUtility.op() starting op %s - task %s\n" % (op, task))
+                    self.__lfh.write("+NmrDpUtility.op() starting op '%s' - task '%s'\n" % (op, task.__name__))
 
                 if not task():
                     self.report.writeJson(self.__logPath)
@@ -260,11 +260,15 @@ class NmrDpUtility(object):
         input_source.setItemValue('file_format', 'nmr-nef' if 'nef' in self.__op else 'nmr-star')
         input_source.setItemValue('content_type','nmr-unified-data')
 
+        return input_source is not None
+
     def __instanceNEFTranslator(self):
         """ Instance NEFTanslator.
         """
 
         self.nef_translator = NEFTranslator()
+
+        return self.nef_translator is not None
 
     def __validateInputSource(self):
         """ Validate input source using NEFTranslator.
@@ -534,6 +538,9 @@ class NmrDpUtility(object):
 
         if self.report.isError():
             return False
+
+        input_source = self.report.input_sources[0]
+        input_source_dic = input_source.get()
 
         return True
 

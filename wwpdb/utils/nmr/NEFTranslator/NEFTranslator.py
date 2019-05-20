@@ -346,14 +346,14 @@ class NEFTranslator(object):
             in_dat = self.read_input_file(in_file)[-1]
             if dat['FILE'] == "NMR-STAR":
                 info.append('NMR-STAR')
-                seq = self.get_nmrstar_seq(in_dat)[0]
+                seq = self.get_nmrstar_seq(in_dat)
                 if len(seq):
                     is_ok = True
                 else:
                     error.append("Can't extract sequence from chemical shift loop")
             elif dat['FILE'] == "NEF":
                 info.append('NEF')
-                seq = self.get_nef_seq(in_dat)[0]
+                seq = self.get_nef_seq(in_dat)
                 if len(seq):
                     is_ok = True
                 else:
@@ -365,7 +365,7 @@ class NEFTranslator(object):
         return is_ok, json.dumps({'info': info, 'warning': warning, 'error': error, 'FILE': dat['FILE'], 'DATA': seq})
 
     @staticmethod
-    def get_nef_seq(str_data, lp_category='nef_chemical_shift', seq_id='sequence_code', res_id='residue_name',
+    def get_nef_seq(str_data, lp_category='nef_chemical_shift', seq_id='sequence_code', comp_id='residue_name',
                     chain_id='chain_code', allow_empty=False):
         """Extracts sequence from any given loop from a NEF file"""
         try:
@@ -376,10 +376,9 @@ class NEFTranslator(object):
             except AttributeError:
                 loops = [str_data]
 
-        tags = [seq_id, res_id, chain_id]
+        tags = [seq_id, comp_id, chain_id]
 
-        seq = []
-        sid = []
+        dat = [] # structured polymer sequence data representation of all loops
 
         for loop in loops:
             seq_dict = {}
@@ -392,7 +391,7 @@ class NEFTranslator(object):
             else:
                 _tags_exist = False
                 for i in range(1, 5): # expand up to 4 dimensions
-                    _tags = [seq_id + '_' + str(i), res_id + '_' + str(i), chain_id + '_' + str(i)]
+                    _tags = [seq_id + '_' + str(i), comp_id + '_' + str(i), chain_id + '_' + str(i)]
                     if set(_tags) & set(loop.tags) == set(_tags):
                         _tags_exist = True
                         seq_dat += loop.get_data_by_tag(_tags)
@@ -408,48 +407,58 @@ class NEFTranslator(object):
             else:
                 for i in seq_dat:
                     if NEFTranslator.is_empty_data(i):
-                        raise ValueError('Sequence must not be empty. loop_category=%s, chain_id=%s, seq_id=%s, res_id=%s' % (lp_category, i[2], i[0], i[1]))
+                        raise ValueError('Sequence must not be empty. loop_category=%s, chain_id=%s, seq_id=%s, comp_id=%s' % (lp_category, i[2], i[0], i[1]))
 
-            chains = (set([i[2] for i in seq_dat]))
-            seq_concat = (sorted(set(['{}:{:04d}:{}'.format(i[2], int(i[0]), i[1]) for i in seq_dat])))
+            chains = sorted(set([i[2] for i in seq_dat]))
+            sorted_seq = sorted(set(['{} {:04d} {}'.format(i[2], int(i[0]), i[1]) for i in seq_dat]))
 
-            chk_dict = {'{}:{:04d}'.format(i[2], int(i[0])):i[1] for i in seq_dat}
+            chk_dict = {'{} {:04d}'.format(i[2], int(i[0])):i[1] for i in seq_dat}
 
             for i in seq_dat:
-                chk_key = '{}:{:04d}'.format(i[2], int(i[0]))
+                chk_key = '{} {:04d}'.format(i[2], int(i[0]))
                 if chk_dict[chk_key] != i[1]:
-                    raise KeyError('Sequence must be unique. loop_category=%s, chain_id=%s, seq_id=%s, res_id=%s vs %s' % (lp_category, i[2], i[0], i[1], chk_dict[chk_key]))
+                    raise KeyError('Sequence must be unique. loop_category=%s, chain_id=%s, seq_id=%s, comp_id=%s vs %s' % (lp_category, i[2], i[0], i[1], chk_dict[chk_key]))
 
-            if len(seq_concat[0].split(':')[-1]) > 1:
+            if len(sorted_seq[0].split(' ')[-1]) > 1:
                 if len(chains) > 1:
                     for c in chains:
-                        seq_array = [i.split(':')[-1] for i in seq_concat if i.split(':')[0] == c]
-                        sid_array = [int(i.split(':')[1]) for i in seq_concat if i.split(':')[0] == c]
+                        seq_array = [i.split(' ')[-1] for i in sorted_seq if i.split(' ')[0] == c]
+                        sid_array = [int(i.split(' ')[1]) for i in sorted_seq if i.split(' ')[0] == c]
                         seq_dict[c] = seq_array
                         sid_dict[c] = sid_array
                 else:
-                    seq_array = [i.split(':')[-1] for i in seq_concat]
-                    sid_array = [int(i.split(':')[1]) for i in seq_concat]
+                    seq_array = [i.split(' ')[-1] for i in sorted_seq]
+                    sid_array = [int(i.split(' ')[1]) for i in sorted_seq]
                     seq_dict[list(chains)[0]] = seq_array
                     sid_dict[list(chains)[0]] = sid_array
             else:
                 if len(chains) > 1:
                     for c in chains:
-                        seq_array = [i.split(':')[-1] for i in seq_concat if i.split(':')[0] == c]
-                        sid_array = [int(i.split(':')[1]) for i in seq_concat if i.split(':')[0] == c]
+                        seq_array = [i.split(' ')[-1] for i in sorted_seq if i.split(' ')[0] == c]
+                        sid_array = [int(i.split(' ')[1]) for i in sorted_seq if i.split(' ')[0] == c]
                         seq_dict[c] = seq_array
                         sid_dict[c] = sid_array
                 else:
-                    seq_array = [i.split(':')[-1] for i in seq_concat]
-                    sid_array = [int(i.split(':')[1]) for i in seq_concat]
+                    seq_array = [i.split(' ')[-1] for i in sorted_seq]
+                    sid_array = [int(i.split(' ')[1]) for i in sorted_seq]
                     seq_dict[list(chains)[0]] = seq_array
                     sid_dict[list(chains)[0]] = sid_array
-            seq.append(seq_dict)
-            sid.append(sid_dict)
-        return seq, sid
+
+            asm = [] # molecular assembly of a loop
+
+            for c in chains:
+                ent = {} # entity
+                ent['chain_id'] = c
+                ent['seq_id'] = sid_dict[c]
+                ent['comp_id'] = seq_dict[c]
+                asm.append(ent)
+
+            dat.append(asm)
+
+        return dat
 
     @staticmethod
-    def get_nmrstar_seq(str_data, lp_category='Atom_chem_shift', seq_id='Comp_index_ID', res_id='Comp_ID',
+    def get_nmrstar_seq(str_data, lp_category='Atom_chem_shift', seq_id='Comp_index_ID', comp_id='Comp_ID',
                         chain_id='Entity_assembly_ID', allow_empty=False):
         """Extracts sequence from any given NMR-STAR file"""
         try:
@@ -460,11 +469,10 @@ class NEFTranslator(object):
             except AttributeError:
                 loops = [str_data]
 
-        seq = []
-        sid = []
+        dat = [] # structured polymer sequence data representation of all loops
 
-        tags = [seq_id, res_id, chain_id]
-        tags_ = [seq_id, res_id]
+        tags = [seq_id, comp_id, chain_id]
+        tags_ = [seq_id, comp_id]
 
         for loop in loops:
             seq_dict = {}
@@ -481,8 +489,8 @@ class NEFTranslator(object):
             else:
                 _tags_exist = False
                 for i in range(1, 5): # expand up to 4 dimensions
-                    _tags = [seq_id + '_' + str(i), res_id + '_' + str(i), chain_id + '_' + str(i)]
-                    _tags_ = [seq_id + '_' + str(i), res_id + '_' + str(i)]
+                    _tags = [seq_id + '_' + str(i), comp_id + '_' + str(i), chain_id + '_' + str(i)]
+                    _tags_ = [seq_id + '_' + str(i), comp_id + '_' + str(i)]
                     if set(_tags) & set(loop.tags) == set(_tags):
                         _tags_exist = True
                         seq_dat += loop.get_data_by_tag(_tags)
@@ -504,47 +512,57 @@ class NEFTranslator(object):
             else:
                 for i in seq_dat:
                     if NEFTranslator.is_empty_data(i):
-                        raise ValueError('Sequence must not be empty. loop_category=%s, chain_id=%s, seq_id=%s, res_id=%s' % (lp_category, i[2], i[0], i[1]))
+                        raise ValueError('Sequence must not be empty. loop_category=%s, chain_id=%s, seq_id=%s, comp_id=%s' % (lp_category, i[2], i[0], i[1]))
 
-            chains = (set([i[2] for i in seq_dat]))
-            seq_concat = (sorted(set(['{}:{:04d}:{}'.format(i[2], int(i[0]), i[1]) for i in seq_dat])))
+            chains = sorted(set([i[2] for i in seq_dat]))
+            sorted_seq = sorted(set(['{} {:04d} {}'.format(i[2], int(i[0]), i[1]) for i in seq_dat]))
 
-            chk_dict = {'{}:{:04d}'.format(i[2], int(i[0])):i[1] for i in seq_dat}
+            chk_dict = {'{} {:04d}'.format(i[2], int(i[0])):i[1] for i in seq_dat}
 
             for i in seq_dat:
-                chk_key = '{}:{:04d}'.format(i[2], int(i[0]))
+                chk_key = '{} {:04d}'.format(i[2], int(i[0]))
                 if chk_dict[chk_key] != i[1]:
-                    raise KeyError('Sequence must be unique. loop_category=%s, chain_id=%s, seq_id=%s, res_id=%s vs %s' % (lp_category, i[2], i[0], i[1], chk_dict[chk_key]))
+                    raise KeyError('Sequence must be unique. loop_category=%s, chain_id=%s, seq_id=%s, comp_id=%s vs %s' % (lp_category, i[2], i[0], i[1], chk_dict[chk_key]))
 
-            if len(seq_concat[0].split(':')[-1]) > 1:
+            if len(sorted_seq[0].split(' ')[-1]) > 1:
                 if len(chains) > 1:
                     for c in chains:
-                        seq_array = [i.split(':')[-1] for i in seq_concat if i.split(':')[0] == c]
-                        sid_array = [int(i.split(':')[1]) for i in seq_concat if i.split(':')[0] == c]
+                        seq_array = [i.split(' ')[-1] for i in sorted_seq if i.split(' ')[0] == c]
+                        sid_array = [int(i.split(' ')[1]) for i in sorted_seq if i.split(' ')[0] == c]
                         seq_dict[c] = seq_array
                         sid_dict[c] = sid_array
                 else:
-                    seq_array = [i.split(':')[-1] for i in seq_concat]
-                    sid_array = [int(i.split(':')[1]) for i in seq_concat]
+                    seq_array = [i.split(' ')[-1] for i in sorted_seq]
+                    sid_array = [int(i.split(' ')[1]) for i in sorted_seq]
                     seq_dict[list(chains)[0]] = seq_array
                     sid_dict[list(chains)[0]] = sid_array
             else:
                 if len(chains) > 1:
                     for c in chains:
-                        seq_array = [i.split(':')[-1] for i in seq_concat if i.split(':')[0] == c]
-                        sid_array = [int(i.split(':')[1]) for i in seq_concat if i.split(':')[0] == c]
+                        seq_array = [i.split(' ')[-1] for i in sorted_seq if i.split(' ')[0] == c]
+                        sid_array = [int(i.split(' ')[1]) for i in sorted_seq if i.split(' ')[0] == c]
                         seq_dict[c] = seq_array
                         seeq_id_dict[c] = sid_array
                 else:
-                    seq_array = [i.split(':')[-1] for i in seq_concat]
-                    sid_array = [int(i.split(':')[1]) for i in seq_concat]
+                    seq_array = [i.split(' ')[-1] for i in sorted_seq]
+                    sid_array = [int(i.split(' ')[1]) for i in sorted_seq]
                     seq_dict[list(chains)[0]] = seq_array
                     sid_dict[list(chains)[0]] = sid_array
-            seq.append(seq_dict)
-            sid.append(sid_dict)
-        return seq, sid
 
-    def validate_atom(self, star_data, lp_category='Atom_chem_shift', seq_id='Comp_index_ID', res_id='Comp_ID',
+            asm = [] # molecular assembly of a loop
+
+            for c in chains:
+                ent = {} # entity
+                ent['chain_id'] = c
+                ent['seq_id'] = sid_dict[c]
+                ent['comp_id'] = seq_dict[c]
+                asm.append(ent)
+
+            dat.append(asm)
+
+        return dat
+
+    def validate_atom(self, star_data, lp_category='Atom_chem_shift', seq_id='Comp_index_ID', comp_id='Comp_ID',
                       atom_id='Atom_ID'):
         """
         Validates the atoms in a given loop against IUPAC standard
@@ -561,7 +579,7 @@ class NEFTranslator(object):
         ns = []
         for lp in loop_data:
             try:
-                atm_data = lp.get_data_by_tag([seq_id, res_id, atom_id])
+                atm_data = lp.get_data_by_tag([seq_id, comp_id, atom_id])
                 for i in atm_data:
                     try:
                         if i[2] not in self.atomDict[i[1].upper()]:
@@ -569,7 +587,7 @@ class NEFTranslator(object):
                     except KeyError:
                         ns.append(i)
             except ValueError:
-                print("One of the following tag is missing ", seq_id, res_id, atom_id)
+                print("One of the following tag is missing ", seq_id, comp_id, atom_id)
 
             # nonStandard = [i for i in atm_data if i[2] not in self.atomDict[i[1].upper]]
             # ns.append(nonStandard)

@@ -97,8 +97,7 @@ class NmrDpReportInputSource:
 
     def __init__(self):
         self.items = ('file_name', 'file_format', 'content_type', 'content_subtype',
-                      'polymer_sequence', 'polymer_sequence_id',
-                      'polymer_sequence_in_loop', 'polymer_sequence_id_in_loop',
+                      'polymer_sequence', 'polymer_sequence_in_loop',
                       'non_standard_residue',
                       'sequence_coverage_by_exptl_data',
                       'statistics_of_exptl_data')
@@ -172,7 +171,7 @@ class NmrDpReportError:
     """
 
     def __init__(self):
-        self.items = ('format_issue', 'missing_mandatory_content', 'missing_mandatory_item', 'blanked_mandatory_value', 'sequence_mismatche',
+        self.items = ('format_issue', 'missing_mandatory_content', 'missing_mandatory_item', 'blanked_mandatory_value', 'sequence_mismatch',
                       'invalid_atom_nomenclature', 'invalid_atom_type', 'invalid_atom_isotope_number', 'invalid_ambiguity_code',
                       'duplicated_data', 'anomalous_data')
 
@@ -198,7 +197,7 @@ class NmrDpReportWarning:
     """
 
     def __init__(self):
-        self.items = ('missing_content', 'missing_saveframe', 'missing_item', 'blanked_item', 'sequence_mismatche', 'suspicious_data')
+        self.items = ('missing_content', 'missing_saveframe', 'missing_item', 'blanked_item', 'sequence_mismatch', 'suspicious_data')
 
         self.__contents = {item:None for item in self.items}
 

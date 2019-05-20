@@ -124,205 +124,136 @@ class TestNEFTranslator(TestCase):
         dat = json.loads(jsondata)
         self.assertTrue(isValid)
         self.assertEqual(dat['FILE'], 'NEF')
-        self.assertEqual(len(dat['DATA'][0]['A']), 214)
-        self.assertEqual(len(dat['DATA'][1]['B']), 5)
-        self.assertEqual(len(dat['DATA'][2]['C']), 5)
+        self.assertEqual(len(dat['DATA'][0][0]['seq_id']), 214)
+        self.assertEqual(len(dat['DATA'][1][0]['seq_id']), 5)
+        self.assertEqual(len(dat['DATA'][2][0]['seq_id']), 5)
         (isValid, jsondata) = bt.get_seq_from_cs_loop('data/2mqq.str')
         dat = json.loads(jsondata)
         self.assertTrue(isValid)
         self.assertEqual(dat['FILE'], 'NMR-STAR')
-        self.assertEqual(len(dat['DATA'][0]['1']), 214)
-        self.assertEqual(len(dat['DATA'][1]['2']), 5)
-        self.assertEqual(len(dat['DATA'][2]['3']), 5)
+        self.assertEqual(len(dat['DATA'][0][0]['seq_id']), 214)
+        self.assertEqual(len(dat['DATA'][1][0]['seq_id']), 5)
+        self.assertEqual(len(dat['DATA'][2][0]['seq_id']), 5)
 
     def test_get_nef_seq(self):
         bt = NEFT.NEFTranslator()
         dat = pynmrstar.Entry.from_file('data/2mqq.nef')
-        self.assertEqual(bt.get_nef_seq(dat)[0], [{'A': ['TYR', 'GLY', 'HIS', 'ALA', 'ASP', 'SER', 'PRO', 'VAL', 'LEU',
-                                                      'MET', 'VAL', 'TYR', 'GLY', 'LEU', 'ASP', 'GLN', 'SER', 'LYS',
-                                                      'MET', 'ASN', 'CYS', 'ASP', 'ARG', 'VAL', 'PHE', 'ASN', 'VAL',
-                                                      'PHE', 'CYS', 'LEU', 'TYR', 'GLY', 'ASN', 'VAL', 'GLU', 'LYS',
-                                                      'VAL', 'LYS', 'PHE', 'MET', 'LYS', 'SER', 'LYS', 'PRO', 'GLY',
-                                                      'ALA', 'ALA', 'MET', 'VAL', 'GLU', 'MET', 'ALA', 'ASP', 'GLY',
-                                                      'TYR', 'ALA', 'VAL', 'ASP', 'ARG', 'ALA', 'ILE', 'THR', 'HIS',
-                                                      'LEU', 'ASN', 'ASN', 'ASN', 'PHE', 'MET', 'PHE', 'GLY', 'GLN',
-                                                      'LYS', 'MET', 'ASN', 'VAL', 'CYS', 'VAL', 'SER', 'LYS', 'GLN',
-                                                      'PRO', 'ALA', 'ILE', 'MET', 'PRO', 'GLY', 'GLN', 'SER', 'TYR',
-                                                      'GLY', 'LEU', 'GLU', 'ASP', 'GLY', 'SER', 'CYS', 'SER', 'TYR',
-                                                      'LYS', 'ASP', 'PHE', 'SER', 'GLU', 'SER', 'ARG', 'ASN', 'ASN',
-                                                      'ARG', 'PHE', 'SER', 'THR', 'PRO', 'GLU', 'GLN', 'ALA', 'ALA',
-                                                      'LYS', 'ASN', 'ARG', 'ILE', 'GLN', 'HIS', 'PRO', 'SER', 'ASN',
-                                                      'VAL', 'LEU', 'HIS', 'PHE', 'PHE', 'ASN', 'ALA', 'PRO', 'LEU',
-                                                      'GLU', 'VAL', 'THR', 'GLU', 'GLU', 'ASN', 'PHE', 'PHE', 'GLU',
-                                                      'ILE', 'CYS', 'ASP', 'GLU', 'LEU', 'GLY', 'VAL', 'LYS', 'ARG',
-                                                      'PRO', 'THR', 'SER', 'VAL', 'LYS', 'VAL', 'PHE', 'SER', 'GLY',
-                                                      'LYS', 'SER', 'GLU', 'ARG', 'SER', 'SER', 'SER', 'GLY', 'LEU',
-                                                      'LEU', 'GLU', 'TRP', 'ASP', 'SER', 'LYS', 'SER', 'ASP', 'ALA',
-                                                      'LEU', 'GLU', 'THR', 'LEU', 'GLY', 'PHE', 'LEU', 'ASN', 'HIS',
-                                                      'TYR', 'GLN', 'MET', 'LYS', 'ASN', 'PRO', 'ASN', 'GLY', 'PRO',
-                                                      'TYR', 'PRO', 'TYR', 'THR', 'LEU', 'LYS', 'LEU', 'CYS', 'PHE',
-                                                      'SER', 'THR', 'ALA', 'GLN', 'HIS', 'ALA', 'SER']},
-                                               {'B': ['A', 'C', 'A', 'C', 'A']},
-                                               {'C': ['A', 'C', 'A', 'C', 'A']}])
-        self.assertEqual(bt.get_nef_seq(dat, 'nef_sequence', 'sequence_code', 'residue_name')[0],
-                         [{'A': ['TYR', 'GLY', 'PRO', 'HIS', 'ALA', 'ASP', 'SER', 'PRO', 'VAL', 'LEU', 'MET', 'VAL',
-                                 'TYR', 'GLY', 'LEU', 'ASP', 'GLN', 'SER', 'LYS', 'MET', 'ASN', 'CYS', 'ASP', 'ARG',
-                                 'VAL', 'PHE', 'ASN', 'VAL', 'PHE', 'CYS', 'LEU', 'TYR', 'GLY', 'ASN', 'VAL', 'GLU',
-                                 'LYS', 'VAL', 'LYS', 'PHE', 'MET', 'LYS', 'SER', 'LYS', 'PRO', 'GLY', 'ALA', 'ALA',
-                                 'MET', 'VAL', 'GLU', 'MET', 'ALA', 'ASP', 'GLY', 'TYR', 'ALA', 'VAL', 'ASP', 'ARG',
-                                 'ALA', 'ILE', 'THR', 'HIS', 'LEU', 'ASN', 'ASN', 'ASN', 'PHE', 'MET', 'PHE', 'GLY',
-                                 'GLN', 'LYS', 'MET', 'ASN', 'VAL', 'CYS', 'VAL', 'SER', 'LYS', 'GLN', 'PRO', 'ALA',
-                                 'ILE', 'MET', 'PRO', 'GLY', 'GLN', 'SER', 'TYR', 'GLY', 'LEU', 'GLU', 'ASP', 'GLY',
-                                 'SER', 'CYS', 'SER', 'TYR', 'LYS', 'ASP', 'PHE', 'SER', 'GLU', 'SER', 'ARG', 'ASN',
-                                 'ASN', 'ARG', 'PHE', 'SER', 'THR', 'PRO', 'GLU', 'GLN', 'ALA', 'ALA', 'LYS', 'ASN',
-                                 'ARG', 'ILE', 'GLN', 'HIS', 'PRO', 'SER', 'ASN', 'VAL', 'LEU', 'HIS', 'PHE', 'PHE',
-                                 'ASN', 'ALA', 'PRO', 'LEU', 'GLU', 'VAL', 'THR', 'GLU', 'GLU', 'ASN', 'PHE', 'PHE',
-                                 'GLU', 'ILE', 'CYS', 'ASP', 'GLU', 'LEU', 'GLY', 'VAL', 'LYS', 'ARG', 'PRO', 'THR',
-                                 'SER', 'VAL', 'LYS', 'VAL', 'PHE', 'SER', 'GLY', 'LYS', 'SER', 'GLU', 'ARG', 'SER',
-                                 'SER', 'SER', 'GLY', 'LEU', 'LEU', 'GLU', 'TRP', 'ASP', 'SER', 'LYS', 'SER', 'ASP',
-                                 'ALA', 'LEU', 'GLU', 'THR', 'LEU', 'GLY', 'PHE', 'LEU', 'ASN', 'HIS', 'TYR', 'GLN',
-                                 'MET', 'LYS', 'ASN', 'PRO', 'ASN', 'GLY', 'PRO', 'TYR', 'PRO', 'TYR', 'THR', 'LEU',
-                                 'LYS', 'LEU', 'CYS', 'PHE', 'SER', 'THR', 'ALA', 'GLN', 'HIS', 'ALA', 'SER'],
-                           'C': ['A', 'C', 'A', 'C', 'A'], 'B': ['A', 'C', 'A', 'C', 'A']}])
+        self.assertEqual(bt.get_nef_seq(dat),
+                         [[{'chain_id': 'A', 'seq_id': [372, 373, 375, 376, 377, 378, 379, 380, 381, 382, 383, 384, 385, 386, 387, 388, 389, 390, 391, 392, 393, 394, 395, 396, 397, 398, 399, 400, 401, 402, 403, 404, 405, 406, 407, 408, 409, 410, 411, 412, 413, 414, 415, 416, 417, 418, 419, 420, 421, 422, 423, 424, 425, 426, 427, 428, 429, 430, 431, 432, 433, 434, 435, 436, 437, 438, 439, 440, 441, 442, 443, 444, 445, 446, 447, 448, 449, 450, 451, 452, 453, 454, 455, 456, 457, 458, 459, 460, 461, 462, 463, 464, 465, 466, 467, 468, 469, 470, 471, 472, 473, 474, 475, 476, 477, 478, 479, 480, 481, 482, 483, 484, 485, 486, 487, 488, 489, 490, 491, 492, 493, 494, 495, 496, 497, 498, 499, 500, 501, 502, 503, 504, 505, 506, 507, 508, 509, 510, 511, 512, 513, 514, 515, 516, 517, 518, 519, 520, 521, 522, 523, 524, 525, 526, 527, 528, 529, 530, 531, 532, 533, 534, 535, 536, 537, 538, 539, 540, 541, 542, 543, 544, 545, 546, 547, 548, 549, 550, 551, 552, 553, 554, 555, 556, 557, 558, 559, 560, 561, 562, 563, 564, 565, 566, 567, 568, 569, 570, 571, 572, 573, 574, 575, 576, 577, 578, 579, 580, 581, 582, 583, 584, 585, 586],
+                            'comp_id': ['TYR', 'GLY', 'HIS', 'ALA', 'ASP', 'SER', 'PRO', 'VAL', 'LEU', 'MET', 'VAL', 'TYR', 'GLY', 'LEU', 'ASP', 'GLN', 'SER', 'LYS', 'MET', 'ASN', 'CYS', 'ASP', 'ARG', 'VAL', 'PHE', 'ASN', 'VAL', 'PHE', 'CYS', 'LEU', 'TYR', 'GLY', 'ASN', 'VAL', 'GLU', 'LYS', 'VAL', 'LYS', 'PHE', 'MET', 'LYS', 'SER', 'LYS', 'PRO', 'GLY', 'ALA', 'ALA', 'MET', 'VAL', 'GLU', 'MET', 'ALA', 'ASP', 'GLY', 'TYR', 'ALA', 'VAL', 'ASP', 'ARG', 'ALA', 'ILE', 'THR', 'HIS', 'LEU', 'ASN', 'ASN', 'ASN', 'PHE', 'MET', 'PHE', 'GLY', 'GLN', 'LYS', 'MET', 'ASN', 'VAL', 'CYS', 'VAL', 'SER', 'LYS', 'GLN', 'PRO', 'ALA', 'ILE', 'MET', 'PRO', 'GLY', 'GLN', 'SER', 'TYR', 'GLY', 'LEU', 'GLU', 'ASP', 'GLY', 'SER', 'CYS', 'SER', 'TYR', 'LYS', 'ASP', 'PHE', 'SER', 'GLU', 'SER', 'ARG', 'ASN', 'ASN', 'ARG', 'PHE', 'SER', 'THR', 'PRO', 'GLU', 'GLN', 'ALA', 'ALA', 'LYS', 'ASN', 'ARG', 'ILE', 'GLN', 'HIS', 'PRO', 'SER', 'ASN', 'VAL', 'LEU', 'HIS', 'PHE', 'PHE', 'ASN', 'ALA', 'PRO', 'LEU', 'GLU', 'VAL', 'THR', 'GLU', 'GLU', 'ASN', 'PHE', 'PHE', 'GLU', 'ILE', 'CYS', 'ASP', 'GLU', 'LEU', 'GLY', 'VAL', 'LYS', 'ARG', 'PRO', 'THR', 'SER', 'VAL', 'LYS', 'VAL', 'PHE', 'SER', 'GLY', 'LYS', 'SER', 'GLU', 'ARG', 'SER', 'SER', 'SER', 'GLY', 'LEU', 'LEU', 'GLU', 'TRP', 'ASP', 'SER', 'LYS', 'SER', 'ASP', 'ALA', 'LEU', 'GLU', 'THR', 'LEU', 'GLY', 'PHE', 'LEU', 'ASN', 'HIS', 'TYR', 'GLN', 'MET', 'LYS', 'ASN', 'PRO', 'ASN', 'GLY', 'PRO', 'TYR', 'PRO', 'TYR', 'THR', 'LEU', 'LYS', 'LEU', 'CYS', 'PHE', 'SER', 'THR', 'ALA', 'GLN', 'HIS', 'ALA', 'SER']}],
+                          [{'chain_id': 'B', 'seq_id': [i for i in range(1, 6)], 'comp_id': ['A', 'C', 'A', 'C', 'A']}],
+                          [{'chain_id': 'C', 'seq_id': [i for i in range(1, 6)], 'comp_id': ['A', 'C', 'A', 'C', 'A']}]])
+        self.assertEqual(bt.get_nef_seq(dat, 'nef_sequence', 'sequence_code', 'residue_name'),
+                         [[{'chain_id': 'A', 'seq_id': [i for i in range(372, 587)],
+                            'comp_id': ['TYR', 'GLY', 'PRO', 'HIS', 'ALA', 'ASP', 'SER', 'PRO', 'VAL', 'LEU', 'MET', 'VAL', 'TYR', 'GLY', 'LEU', 'ASP', 'GLN', 'SER', 'LYS', 'MET', 'ASN', 'CYS', 'ASP', 'ARG', 'VAL', 'PHE', 'ASN', 'VAL', 'PHE', 'CYS', 'LEU', 'TYR', 'GLY', 'ASN', 'VAL', 'GLU', 'LYS', 'VAL', 'LYS', 'PHE', 'MET', 'LYS', 'SER', 'LYS', 'PRO', 'GLY', 'ALA', 'ALA', 'MET', 'VAL', 'GLU', 'MET', 'ALA', 'ASP', 'GLY', 'TYR', 'ALA', 'VAL', 'ASP', 'ARG', 'ALA', 'ILE', 'THR', 'HIS', 'LEU', 'ASN', 'ASN', 'ASN', 'PHE', 'MET', 'PHE', 'GLY', 'GLN', 'LYS', 'MET', 'ASN', 'VAL', 'CYS', 'VAL', 'SER', 'LYS', 'GLN', 'PRO', 'ALA', 'ILE', 'MET', 'PRO', 'GLY', 'GLN', 'SER', 'TYR', 'GLY', 'LEU', 'GLU', 'ASP', 'GLY', 'SER', 'CYS', 'SER', 'TYR', 'LYS', 'ASP', 'PHE', 'SER', 'GLU', 'SER', 'ARG', 'ASN', 'ASN', 'ARG', 'PHE', 'SER', 'THR', 'PRO', 'GLU', 'GLN', 'ALA', 'ALA', 'LYS', 'ASN', 'ARG', 'ILE', 'GLN', 'HIS', 'PRO', 'SER', 'ASN', 'VAL', 'LEU', 'HIS', 'PHE', 'PHE', 'ASN', 'ALA', 'PRO', 'LEU', 'GLU', 'VAL', 'THR', 'GLU', 'GLU', 'ASN', 'PHE', 'PHE', 'GLU', 'ILE', 'CYS', 'ASP', 'GLU', 'LEU', 'GLY', 'VAL', 'LYS', 'ARG', 'PRO', 'THR', 'SER', 'VAL', 'LYS', 'VAL', 'PHE', 'SER', 'GLY', 'LYS', 'SER', 'GLU', 'ARG', 'SER', 'SER', 'SER', 'GLY', 'LEU', 'LEU', 'GLU', 'TRP', 'ASP', 'SER', 'LYS', 'SER', 'ASP', 'ALA', 'LEU', 'GLU', 'THR', 'LEU', 'GLY', 'PHE', 'LEU', 'ASN', 'HIS', 'TYR', 'GLN', 'MET', 'LYS', 'ASN', 'PRO', 'ASN', 'GLY', 'PRO', 'TYR', 'PRO', 'TYR', 'THR', 'LEU', 'LYS', 'LEU', 'CYS', 'PHE', 'SER', 'THR', 'ALA', 'GLN', 'HIS', 'ALA', 'SER']},
+                           {'chain_id': 'B', 'seq_id': [i for i in range(1, 6)], 'comp_id': ['A', 'C', 'A', 'C', 'A']},
+                           {'chain_id': 'C', 'seq_id': [i for i in range(1, 6)], 'comp_id': ['A', 'C', 'A', 'C', 'A']}]])
         dat = bt.read_input_file('data/saveframeonly.nef')[2]
-        self.assertEqual(bt.get_nef_seq(dat)[0], [{'A': ['HIS', 'MET', 'SER', 'HIS', 'THR', 'GLN', 'VAL', 'ILE', 'GLU',
-                                                      'LEU', 'GLU', 'ARG', 'LYS', 'PHE', 'SER', 'HIS', 'GLN', 'LYS',
-                                                      'TYR', 'LEU', 'SER', 'ALA', 'PRO', 'GLU', 'ARG', 'ALA', 'HIS',
-                                                      'LEU', 'ALA', 'LYS', 'ASN', 'LEU', 'LYS', 'LEU', 'THR', 'GLU',
-                                                      'THR', 'GLN', 'VAL', 'LYS', 'ILE', 'TRP', 'PHE', 'GLN', 'ASN',
-                                                      'ARG', 'ARG', 'TYR', 'LYS', 'THR', 'LYS', 'ARG', 'LYS', 'GLN',
-                                                      'LEU', 'SER', 'SER', 'GLU', 'LEU', 'GLY']}])
+        self.assertEqual(bt.get_nef_seq(dat),
+                         [[{'chain_id': 'A', 'seq_id': [i for i in range(10, 70)],
+                            'comp_id': ['HIS', 'MET', 'SER', 'HIS', 'THR', 'GLN', 'VAL', 'ILE', 'GLU',
+                                        'LEU', 'GLU', 'ARG', 'LYS', 'PHE', 'SER', 'HIS', 'GLN', 'LYS',
+                                        'TYR', 'LEU', 'SER', 'ALA', 'PRO', 'GLU', 'ARG', 'ALA', 'HIS',
+                                        'LEU', 'ALA', 'LYS', 'ASN', 'LEU', 'LYS', 'LEU', 'THR', 'GLU',
+                                        'THR', 'GLN', 'VAL', 'LYS', 'ILE', 'TRP', 'PHE', 'GLN', 'ASN',
+                                        'ARG', 'ARG', 'TYR', 'LYS', 'THR', 'LYS', 'ARG', 'LYS', 'GLN',
+                                        'LEU', 'SER', 'SER', 'GLU', 'LEU', 'GLY']}]])
         dat = bt.read_input_file('data/loopOnly1.nef')[2]
-        self.assertEqual(bt.get_nef_seq(dat)[0], [{'A': ['HIS', 'MET', 'ASN', 'SER', 'GLN', 'ARG', 'LEU', 'ILE', 'HIS',
-                                                      'ILE', 'LYS', 'THR', 'LEU', 'THR', 'THR', 'PRO', 'ASN', 'GLU',
-                                                      'ASN', 'ALA', 'LEU', 'LYS', 'PHE', 'LEU', 'SER', 'THR', 'ASP',
-                                                      'GLY', 'GLU', 'MET', 'LEU', 'GLN', 'THR', 'ARG', 'GLY', 'SER',
-                                                      'LYS', 'SER', 'ILE', 'VAL', 'ILE', 'LYS', 'ASN', 'THR', 'ASP',
-                                                      'GLU', 'ASN', 'LEU', 'ILE', 'ASN', 'HIS', 'SER', 'LYS', 'LEU',
-                                                      'ALA', 'GLN', 'GLN', 'ILE', 'PHE', 'LEU', 'GLN', 'CYS', 'PRO',
-                                                      'GLY', 'VAL', 'GLU', 'SER', 'LEU', 'MET', 'ILE', 'GLY', 'ASP',
-                                                      'ASP', 'PHE', 'LEU', 'THR', 'ILE', 'ASN', 'LYS', 'ASP', 'ARG',
-                                                      'MET', 'VAL', 'HIS', 'TRP', 'ASN', 'SER', 'ILE', 'LYS', 'PRO',
-                                                      'GLU', 'ILE', 'ILE', 'ASP', 'LEU', 'LEU', 'THR', 'LYS', 'GLN',
-                                                      'LEU', 'ALA', 'TYR', 'GLY', 'GLU', 'ASP', 'VAL', 'ILE', 'SER',
-                                                      'LYS', 'GLU']}])
+        self.assertEqual(bt.get_nef_seq(dat),
+                         [[{'chain_id': 'A', 'seq_id': [i for i in range(10, 120)],
+                            'comp_id': ['HIS', 'MET', 'ASN', 'SER', 'GLN', 'ARG', 'LEU', 'ILE', 'HIS',
+                                        'ILE', 'LYS', 'THR', 'LEU', 'THR', 'THR', 'PRO', 'ASN', 'GLU',
+                                        'ASN', 'ALA', 'LEU', 'LYS', 'PHE', 'LEU', 'SER', 'THR', 'ASP',
+                                        'GLY', 'GLU', 'MET', 'LEU', 'GLN', 'THR', 'ARG', 'GLY', 'SER',
+                                        'LYS', 'SER', 'ILE', 'VAL', 'ILE', 'LYS', 'ASN', 'THR', 'ASP',
+                                        'GLU', 'ASN', 'LEU', 'ILE', 'ASN', 'HIS', 'SER', 'LYS', 'LEU',
+                                        'ALA', 'GLN', 'GLN', 'ILE', 'PHE', 'LEU', 'GLN', 'CYS', 'PRO',
+                                        'GLY', 'VAL', 'GLU', 'SER', 'LEU', 'MET', 'ILE', 'GLY', 'ASP',
+                                        'ASP', 'PHE', 'LEU', 'THR', 'ILE', 'ASN', 'LYS', 'ASP', 'ARG',
+                                        'MET', 'VAL', 'HIS', 'TRP', 'ASN', 'SER', 'ILE', 'LYS', 'PRO',
+                                        'GLU', 'ILE', 'ILE', 'ASP', 'LEU', 'LEU', 'THR', 'LYS', 'GLN',
+                                        'LEU', 'ALA', 'TYR', 'GLY', 'GLU', 'ASP', 'VAL', 'ILE', 'SER',
+                                        'LYS', 'GLU']}]])
         entry = pynmrstar.Entry.from_file('data/2l9r.nef')
         # extract polymer sequence from nef_molecular_system category
-        self.assertEqual(bt.get_nef_seq(entry['nef_molecular_system'], lp_category='nef_sequence')[0],
-                         [{'A': ['MET', 'GLY', 'HIS', 'HIS', 'HIS', 'HIS', 'HIS', 'HIS', 'SER', 'HIS',
-                                 'MET', 'SER', 'HIS', 'THR', 'GLN', 'VAL', 'ILE', 'GLU', 'LEU', 'GLU',
-                                 'ARG', 'LYS', 'PHE', 'SER', 'HIS', 'GLN', 'LYS', 'TYR', 'LEU', 'SER',
-                                 'ALA', 'PRO', 'GLU', 'ARG', 'ALA', 'HIS', 'LEU', 'ALA', 'LYS', 'ASN',
-                                 'LEU', 'LYS', 'LEU', 'THR', 'GLU', 'THR', 'GLN', 'VAL', 'LYS', 'ILE',
-                                 'TRP', 'PHE', 'GLN', 'ASN', 'ARG', 'ARG', 'TYR', 'LYS', 'THR', 'LYS',
-                                 'ARG', 'LYS', 'GLN', 'LEU', 'SER', 'SER', 'GLU', 'LEU', 'GLY']}])
-        self.assertEqual(bt.get_nef_seq(entry['nef_molecular_system'], lp_category='nef_sequence')[1],
-                         [{'A': [i for i in range(1, 70)]}])
+        self.assertEqual(bt.get_nef_seq(entry['nef_molecular_system'], lp_category='nef_sequence'),
+                         [[{'chain_id': 'A', 'seq_id': [i for i in range(1, 70)], 'comp_id':
+                           ['MET', 'GLY', 'HIS', 'HIS', 'HIS', 'HIS', 'HIS', 'HIS', 'SER', 'HIS',
+                            'MET', 'SER', 'HIS', 'THR', 'GLN', 'VAL', 'ILE', 'GLU', 'LEU', 'GLU',
+                            'ARG', 'LYS', 'PHE', 'SER', 'HIS', 'GLN', 'LYS', 'TYR', 'LEU', 'SER',
+                            'ALA', 'PRO', 'GLU', 'ARG', 'ALA', 'HIS', 'LEU', 'ALA', 'LYS', 'ASN',
+                            'LEU', 'LYS', 'LEU', 'THR', 'GLU', 'THR', 'GLN', 'VAL', 'LYS', 'ILE',
+                            'TRP', 'PHE', 'GLN', 'ASN', 'ARG', 'ARG', 'TYR', 'LYS', 'THR', 'LYS',
+                            'ARG', 'LYS', 'GLN', 'LEU', 'SER', 'SER', 'GLU', 'LEU', 'GLY']}]])
         # extract polymer sequence from the first cs loop in nef_chemical_shift_list category
         cs_loops = entry.get_saveframes_by_category('nef_chemical_shift_list')
         self.assertEqual(len(cs_loops), 1) # assert single cs loop
-        self.assertEqual(bt.get_nef_seq(cs_loops[0], lp_category='nef_chemical_shift')[0], # select the first cs loop by input sta_data
-                         [{'A': ['HIS',
-                                 'MET', 'SER', 'HIS', 'THR', 'GLN', 'VAL', 'ILE', 'GLU', 'LEU', 'GLU',
-                                 'ARG', 'LYS', 'PHE', 'SER', 'HIS', 'GLN', 'LYS', 'TYR', 'LEU', 'SER',
-                                 'ALA', 'PRO', 'GLU', 'ARG', 'ALA', 'HIS', 'LEU', 'ALA', 'LYS', 'ASN',
-                                 'LEU', 'LYS', 'LEU', 'THR', 'GLU', 'THR', 'GLN', 'VAL', 'LYS', 'ILE',
-                                 'TRP', 'PHE', 'GLN', 'ASN', 'ARG', 'ARG', 'TYR', 'LYS', 'THR', 'LYS',
-                                 'ARG', 'LYS', 'GLN', 'LEU', 'SER', 'SER', 'GLU', 'LEU', 'GLY']}])
-        self.assertEqual(bt.get_nef_seq(cs_loops[0], lp_category='nef_chemical_shift')[1], # select the first cs loop by input sta_data
-                         [{'A': [i for i in range(10, 70)]}])
+        self.assertEqual(bt.get_nef_seq(cs_loops[0], lp_category='nef_chemical_shift'), # select the first cs loop by input sta_data
+                         [[{'chain_id': 'A', 'seq_id': [i for i in range(10, 70)], 'comp_id':
+                           ['HIS',
+                            'MET', 'SER', 'HIS', 'THR', 'GLN', 'VAL', 'ILE', 'GLU', 'LEU', 'GLU',
+                            'ARG', 'LYS', 'PHE', 'SER', 'HIS', 'GLN', 'LYS', 'TYR', 'LEU', 'SER',
+                            'ALA', 'PRO', 'GLU', 'ARG', 'ALA', 'HIS', 'LEU', 'ALA', 'LYS', 'ASN',
+                            'LEU', 'LYS', 'LEU', 'THR', 'GLU', 'THR', 'GLN', 'VAL', 'LYS', 'ILE',
+                            'TRP', 'PHE', 'GLN', 'ASN', 'ARG', 'ARG', 'TYR', 'LYS', 'THR', 'LYS',
+                            'ARG', 'LYS', 'GLN', 'LEU', 'SER', 'SER', 'GLU', 'LEU', 'GLY']}]])
         # extract polymer sequence from nef_distant_restraint_list category
-        self.assertEqual(bt.get_nef_seq(entry['nef_distance_restraint_list_distance_constraint_list'], lp_category='nef_distance_restraint')[0],
-                         [{'A': ['HIS',
-                                 'MET', 'SER', 'HIS', 'THR', 'GLN', 'VAL', 'ILE', 'GLU', 'LEU', 'GLU',
-                                 'ARG', 'LYS', 'PHE', 'SER', 'HIS', 'GLN', 'LYS', 'TYR', 'LEU', 'SER',
-                                 'ALA', 'PRO', 'GLU', 'ARG', 'ALA', 'HIS', 'LEU', 'ALA', 'LYS', 'ASN',
-                                 'LEU', 'LYS', 'LEU', 'THR', 'GLU', 'THR', 'GLN', 'VAL', 'LYS', 'ILE',
-                                 'TRP', 'PHE', 'GLN', 'ASN', 'ARG', 'ARG', 'TYR', 'LYS', 'THR', 'LYS',
-                                 'ARG', 'LYS', 'GLN', 'LEU', 'SER', 'SER', 'GLU', 'LEU', 'GLY']}])
-        self.assertEqual(bt.get_nef_seq(entry['nef_distance_restraint_list_distance_constraint_list'], lp_category='nef_distance_restraint')[1],
-                         [{'A': [i for i in range(10, 70)]}])
+        self.assertEqual(bt.get_nef_seq(entry['nef_distance_restraint_list_distance_constraint_list'], lp_category='nef_distance_restraint'),
+                         [[{'chain_id': 'A', 'seq_id': [i for i in range(10, 70)], 'comp_id':
+                           ['HIS',
+                            'MET', 'SER', 'HIS', 'THR', 'GLN', 'VAL', 'ILE', 'GLU', 'LEU', 'GLU',
+                            'ARG', 'LYS', 'PHE', 'SER', 'HIS', 'GLN', 'LYS', 'TYR', 'LEU', 'SER',
+                            'ALA', 'PRO', 'GLU', 'ARG', 'ALA', 'HIS', 'LEU', 'ALA', 'LYS', 'ASN',
+                            'LEU', 'LYS', 'LEU', 'THR', 'GLU', 'THR', 'GLN', 'VAL', 'LYS', 'ILE',
+                            'TRP', 'PHE', 'GLN', 'ASN', 'ARG', 'ARG', 'TYR', 'LYS', 'THR', 'LYS',
+                            'ARG', 'LYS', 'GLN', 'LEU', 'SER', 'SER', 'GLU', 'LEU', 'GLY']}]])
 
     def test_get_nmrstar_seq(self):
         bt = NEFT.NEFTranslator()
         dat = pynmrstar.Entry.from_file('data/2mqq.str')
-        self.assertEqual(bt.get_nmrstar_seq(dat)[0],
-                         [{'1': ['TYR', 'GLY', 'HIS', 'ALA', 'ASP', 'SER', 'PRO', 'VAL', 'LEU', 'MET', 'VAL', 'TYR',
-                                 'GLY', 'LEU', 'ASP', 'GLN', 'SER', 'LYS', 'MET', 'ASN', 'CYS', 'ASP', 'ARG', 'VAL',
-                                 'PHE', 'ASN', 'VAL', 'PHE', 'CYS', 'LEU', 'TYR', 'GLY', 'ASN', 'VAL', 'GLU', 'LYS',
-                                 'VAL', 'LYS', 'PHE', 'MET', 'LYS', 'SER', 'LYS', 'PRO', 'GLY', 'ALA', 'ALA', 'MET',
-                                 'VAL', 'GLU', 'MET', 'ALA', 'ASP', 'GLY', 'TYR', 'ALA', 'VAL', 'ASP', 'ARG', 'ALA',
-                                 'ILE', 'THR', 'HIS', 'LEU', 'ASN', 'ASN', 'ASN', 'PHE', 'MET', 'PHE', 'GLY', 'GLN',
-                                 'LYS', 'MET', 'ASN', 'VAL', 'CYS', 'VAL', 'SER', 'LYS', 'GLN', 'PRO', 'ALA', 'ILE',
-                                 'MET', 'PRO', 'GLY', 'GLN', 'SER', 'TYR', 'GLY', 'LEU', 'GLU', 'ASP', 'GLY', 'SER',
-                                 'CYS', 'SER', 'TYR', 'LYS', 'ASP', 'PHE', 'SER', 'GLU', 'SER', 'ARG', 'ASN', 'ASN',
-                                 'ARG', 'PHE', 'SER', 'THR', 'PRO', 'GLU', 'GLN', 'ALA', 'ALA', 'LYS', 'ASN', 'ARG',
-                                 'ILE', 'GLN', 'HIS', 'PRO', 'SER', 'ASN', 'VAL', 'LEU', 'HIS', 'PHE', 'PHE', 'ASN',
-                                 'ALA', 'PRO', 'LEU', 'GLU', 'VAL', 'THR', 'GLU', 'GLU', 'ASN', 'PHE', 'PHE', 'GLU',
-                                 'ILE', 'CYS', 'ASP', 'GLU', 'LEU', 'GLY', 'VAL', 'LYS', 'ARG', 'PRO', 'THR', 'SER',
-                                 'VAL', 'LYS', 'VAL', 'PHE', 'SER', 'GLY', 'LYS', 'SER', 'GLU', 'ARG', 'SER', 'SER',
-                                 'SER', 'GLY', 'LEU', 'LEU', 'GLU', 'TRP', 'ASP', 'SER', 'LYS', 'SER', 'ASP', 'ALA',
-                                 'LEU', 'GLU', 'THR', 'LEU', 'GLY', 'PHE', 'LEU', 'ASN', 'HIS', 'TYR', 'GLN', 'MET',
-                                 'LYS', 'ASN', 'PRO', 'ASN', 'GLY', 'PRO', 'TYR', 'PRO', 'TYR', 'THR', 'LEU', 'LYS',
-                                 'LEU', 'CYS', 'PHE', 'SER', 'THR', 'ALA', 'GLN', 'HIS', 'ALA', 'SER']},
-                          {'2': ['A', 'C', 'A', 'C', 'A']}, {'3': ['A', 'C', 'A', 'C', 'A']}])
-        self.assertEqual(bt.get_nmrstar_seq(dat, 'Chem_comp_assembly', 'Comp_index_ID', 'Comp_ID')[0],
-                         [{'1': ['TYR', 'GLY', 'PRO', 'HIS', 'ALA', 'ASP', 'SER', 'PRO', 'VAL', 'LEU', 'MET', 'VAL',
-                                 'TYR',
-                                 'GLY', 'LEU', 'ASP', 'GLN', 'SER', 'LYS', 'MET', 'ASN', 'CYS', 'ASP', 'ARG', 'VAL',
-                                 'PHE', 'ASN', 'VAL', 'PHE', 'CYS', 'LEU', 'TYR', 'GLY', 'ASN', 'VAL', 'GLU', 'LYS',
-                                 'VAL', 'LYS', 'PHE', 'MET', 'LYS', 'SER', 'LYS', 'PRO', 'GLY', 'ALA', 'ALA', 'MET',
-                                 'VAL', 'GLU', 'MET', 'ALA', 'ASP', 'GLY', 'TYR', 'ALA', 'VAL', 'ASP', 'ARG', 'ALA',
-                                 'ILE', 'THR', 'HIS', 'LEU', 'ASN', 'ASN', 'ASN', 'PHE', 'MET', 'PHE', 'GLY', 'GLN',
-                                 'LYS', 'MET', 'ASN', 'VAL', 'CYS', 'VAL', 'SER', 'LYS', 'GLN', 'PRO', 'ALA', 'ILE',
-                                 'MET', 'PRO', 'GLY', 'GLN', 'SER', 'TYR', 'GLY', 'LEU', 'GLU', 'ASP', 'GLY', 'SER',
-                                 'CYS', 'SER', 'TYR', 'LYS', 'ASP', 'PHE', 'SER', 'GLU', 'SER', 'ARG', 'ASN', 'ASN',
-                                 'ARG', 'PHE', 'SER', 'THR', 'PRO', 'GLU', 'GLN', 'ALA', 'ALA', 'LYS', 'ASN', 'ARG',
-                                 'ILE', 'GLN', 'HIS', 'PRO', 'SER', 'ASN', 'VAL', 'LEU', 'HIS', 'PHE', 'PHE', 'ASN',
-                                 'ALA', 'PRO', 'LEU', 'GLU', 'VAL', 'THR', 'GLU', 'GLU', 'ASN', 'PHE', 'PHE', 'GLU',
-                                 'ILE', 'CYS', 'ASP', 'GLU', 'LEU', 'GLY', 'VAL', 'LYS', 'ARG', 'PRO', 'THR', 'SER',
-                                 'VAL', 'LYS', 'VAL', 'PHE', 'SER', 'GLY', 'LYS', 'SER', 'GLU', 'ARG', 'SER', 'SER',
-                                 'SER', 'GLY', 'LEU', 'LEU', 'GLU', 'TRP', 'ASP', 'SER', 'LYS', 'SER', 'ASP', 'ALA',
-                                 'LEU', 'GLU', 'THR', 'LEU', 'GLY', 'PHE', 'LEU', 'ASN', 'HIS', 'TYR', 'GLN', 'MET',
-                                 'LYS', 'ASN', 'PRO', 'ASN', 'GLY', 'PRO', 'TYR', 'PRO', 'TYR', 'THR', 'LEU', 'LYS',
-                                 'LEU', 'CYS', 'PHE', 'SER', 'THR', 'ALA', 'GLN', 'HIS', 'ALA', 'SER'],
-                           '2': ['A', 'C', 'A', 'C', 'A'], '3': ['A', 'C', 'A', 'C', 'A']}])
+        self.assertEqual(bt.get_nmrstar_seq(dat),
+                         [[{'chain_id': '1', 'seq_id': [1, 2, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123, 124, 125, 126, 127, 128, 129, 130, 131, 132, 133, 134, 135, 136, 137, 138, 139, 140, 141, 142, 143, 144, 145, 146, 147, 148, 149, 150, 151, 152, 153, 154, 155, 156, 157, 158, 159, 160, 161, 162, 163, 164, 165, 166, 167, 168, 169, 170, 171, 172, 173, 174, 175, 176, 177, 178, 179, 180, 181, 182, 183, 184, 185, 186, 187, 188, 189, 190, 191, 192, 193, 194, 195, 196, 197, 198, 199, 200, 201, 202, 203, 204, 205, 206, 207, 208, 209, 210, 211, 212, 213, 214, 215],
+                            'comp_id': ['TYR', 'GLY', 'HIS', 'ALA', 'ASP', 'SER', 'PRO', 'VAL', 'LEU', 'MET', 'VAL', 'TYR', 'GLY', 'LEU', 'ASP', 'GLN', 'SER', 'LYS', 'MET', 'ASN', 'CYS', 'ASP', 'ARG', 'VAL', 'PHE', 'ASN', 'VAL', 'PHE', 'CYS', 'LEU', 'TYR', 'GLY', 'ASN', 'VAL', 'GLU', 'LYS', 'VAL', 'LYS', 'PHE', 'MET', 'LYS', 'SER', 'LYS', 'PRO', 'GLY', 'ALA', 'ALA', 'MET', 'VAL', 'GLU', 'MET', 'ALA', 'ASP', 'GLY', 'TYR', 'ALA', 'VAL', 'ASP', 'ARG', 'ALA', 'ILE', 'THR', 'HIS', 'LEU', 'ASN', 'ASN', 'ASN', 'PHE', 'MET', 'PHE', 'GLY', 'GLN', 'LYS', 'MET', 'ASN', 'VAL', 'CYS', 'VAL', 'SER', 'LYS', 'GLN', 'PRO', 'ALA', 'ILE', 'MET', 'PRO', 'GLY', 'GLN', 'SER', 'TYR', 'GLY', 'LEU', 'GLU', 'ASP', 'GLY', 'SER', 'CYS', 'SER', 'TYR', 'LYS', 'ASP', 'PHE', 'SER', 'GLU', 'SER', 'ARG', 'ASN', 'ASN', 'ARG', 'PHE', 'SER', 'THR', 'PRO', 'GLU', 'GLN', 'ALA', 'ALA', 'LYS', 'ASN', 'ARG', 'ILE', 'GLN', 'HIS', 'PRO', 'SER', 'ASN', 'VAL', 'LEU', 'HIS', 'PHE', 'PHE', 'ASN', 'ALA', 'PRO', 'LEU', 'GLU', 'VAL', 'THR', 'GLU', 'GLU', 'ASN', 'PHE', 'PHE', 'GLU', 'ILE', 'CYS', 'ASP', 'GLU', 'LEU', 'GLY', 'VAL', 'LYS', 'ARG', 'PRO', 'THR', 'SER', 'VAL', 'LYS', 'VAL', 'PHE', 'SER', 'GLY', 'LYS', 'SER', 'GLU', 'ARG', 'SER', 'SER', 'SER', 'GLY', 'LEU', 'LEU', 'GLU', 'TRP', 'ASP', 'SER', 'LYS', 'SER', 'ASP', 'ALA', 'LEU', 'GLU', 'THR', 'LEU', 'GLY', 'PHE', 'LEU', 'ASN', 'HIS', 'TYR', 'GLN', 'MET', 'LYS', 'ASN', 'PRO', 'ASN', 'GLY', 'PRO', 'TYR', 'PRO', 'TYR', 'THR', 'LEU', 'LYS', 'LEU', 'CYS', 'PHE', 'SER', 'THR', 'ALA', 'GLN', 'HIS', 'ALA', 'SER']}],
+                          [{'chain_id': '2', 'seq_id': [i for i in range(1, 6)], 'comp_id': ['A', 'C', 'A', 'C', 'A']}],
+                          [{'chain_id': '3', 'seq_id': [i for i in range(1, 6)], 'comp_id': ['A', 'C', 'A', 'C', 'A']}]])
+        self.assertEqual(bt.get_nmrstar_seq(dat, 'Chem_comp_assembly', 'Comp_index_ID', 'Comp_ID'),
+                         [[{'chain_id': '1', 'seq_id': [i for i in range(1, 216)],
+                            'comp_id': ['TYR', 'GLY', 'PRO', 'HIS', 'ALA', 'ASP', 'SER', 'PRO', 'VAL', 'LEU', 'MET', 'VAL', 'TYR', 'GLY', 'LEU', 'ASP', 'GLN', 'SER', 'LYS', 'MET', 'ASN', 'CYS', 'ASP', 'ARG', 'VAL', 'PHE', 'ASN', 'VAL', 'PHE', 'CYS', 'LEU', 'TYR', 'GLY', 'ASN', 'VAL', 'GLU', 'LYS', 'VAL', 'LYS', 'PHE', 'MET', 'LYS', 'SER', 'LYS', 'PRO', 'GLY', 'ALA', 'ALA', 'MET', 'VAL', 'GLU', 'MET', 'ALA', 'ASP', 'GLY', 'TYR', 'ALA', 'VAL', 'ASP', 'ARG', 'ALA', 'ILE', 'THR', 'HIS', 'LEU', 'ASN', 'ASN', 'ASN', 'PHE', 'MET', 'PHE', 'GLY', 'GLN', 'LYS', 'MET', 'ASN', 'VAL', 'CYS', 'VAL', 'SER', 'LYS', 'GLN', 'PRO', 'ALA', 'ILE', 'MET', 'PRO', 'GLY', 'GLN', 'SER', 'TYR', 'GLY', 'LEU', 'GLU', 'ASP', 'GLY', 'SER', 'CYS', 'SER', 'TYR', 'LYS', 'ASP', 'PHE', 'SER', 'GLU', 'SER', 'ARG', 'ASN', 'ASN', 'ARG', 'PHE', 'SER', 'THR', 'PRO', 'GLU', 'GLN', 'ALA', 'ALA', 'LYS', 'ASN', 'ARG', 'ILE', 'GLN', 'HIS', 'PRO', 'SER', 'ASN', 'VAL', 'LEU', 'HIS', 'PHE', 'PHE', 'ASN', 'ALA', 'PRO', 'LEU', 'GLU', 'VAL', 'THR', 'GLU', 'GLU', 'ASN', 'PHE', 'PHE', 'GLU', 'ILE', 'CYS', 'ASP', 'GLU', 'LEU', 'GLY', 'VAL', 'LYS', 'ARG', 'PRO', 'THR', 'SER', 'VAL', 'LYS', 'VAL', 'PHE', 'SER', 'GLY', 'LYS', 'SER', 'GLU', 'ARG', 'SER', 'SER', 'SER', 'GLY', 'LEU', 'LEU', 'GLU', 'TRP', 'ASP', 'SER', 'LYS', 'SER', 'ASP', 'ALA', 'LEU', 'GLU', 'THR', 'LEU', 'GLY', 'PHE', 'LEU', 'ASN', 'HIS', 'TYR', 'GLN', 'MET', 'LYS', 'ASN', 'PRO', 'ASN', 'GLY', 'PRO', 'TYR', 'PRO', 'TYR', 'THR', 'LEU', 'LYS', 'LEU', 'CYS', 'PHE', 'SER', 'THR', 'ALA', 'GLN', 'HIS', 'ALA', 'SER']},
+                           {'chain_id': '2', 'seq_id': [i for i in range(1, 6)], 'comp_id': ['A', 'C', 'A', 'C', 'A']},
+                           {'chain_id': '3', 'seq_id': [i for i in range(1, 6)], 'comp_id': ['A', 'C', 'A', 'C', 'A']}]])
         entry = pynmrstar.Entry.from_file('data/2l9r.str')
-        # extract polymer sequence from nef_molecular_system category
-        self.assertEqual(bt.get_nmrstar_seq(entry['nef_molecular_system'], lp_category='Chem_comp_assembly')[0],
-                         [{'1': ['MET', 'GLY', 'HIS', 'HIS', 'HIS', 'HIS', 'HIS', 'HIS', 'SER', 'HIS',
-                                 'MET', 'SER', 'HIS', 'THR', 'GLN', 'VAL', 'ILE', 'GLU', 'LEU', 'GLU',
-                                 'ARG', 'LYS', 'PHE', 'SER', 'HIS', 'GLN', 'LYS', 'TYR', 'LEU', 'SER',
-                                 'ALA', 'PRO', 'GLU', 'ARG', 'ALA', 'HIS', 'LEU', 'ALA', 'LYS', 'ASN',
-                                 'LEU', 'LYS', 'LEU', 'THR', 'GLU', 'THR', 'GLN', 'VAL', 'LYS', 'ILE',
-                                 'TRP', 'PHE', 'GLN', 'ASN', 'ARG', 'ARG', 'TYR', 'LYS', 'THR', 'LYS',
-                                 'ARG', 'LYS', 'GLN', 'LEU', 'SER', 'SER', 'GLU', 'LEU', 'GLY']}])
-        self.assertEqual(bt.get_nmrstar_seq(entry['nef_molecular_system'], lp_category='Chem_comp_assembly')[1],
-                         [{'1': [i for i in range(1, 70)]}])
+        # extract polymer sequence from assembly category
+        self.assertEqual(bt.get_nmrstar_seq(entry['nef_molecular_system'], lp_category='Chem_comp_assembly'),
+                         [[{'chain_id': '1', 'seq_id': [i for i in range(1, 70)], 'comp_id':
+                           ['MET', 'GLY', 'HIS', 'HIS', 'HIS', 'HIS', 'HIS', 'HIS', 'SER', 'HIS',
+                            'MET', 'SER', 'HIS', 'THR', 'GLN', 'VAL', 'ILE', 'GLU', 'LEU', 'GLU',
+                            'ARG', 'LYS', 'PHE', 'SER', 'HIS', 'GLN', 'LYS', 'TYR', 'LEU', 'SER',
+                            'ALA', 'PRO', 'GLU', 'ARG', 'ALA', 'HIS', 'LEU', 'ALA', 'LYS', 'ASN',
+                            'LEU', 'LYS', 'LEU', 'THR', 'GLU', 'THR', 'GLN', 'VAL', 'LYS', 'ILE',
+                            'TRP', 'PHE', 'GLN', 'ASN', 'ARG', 'ARG', 'TYR', 'LYS', 'THR', 'LYS',
+                            'ARG', 'LYS', 'GLN', 'LEU', 'SER', 'SER', 'GLU', 'LEU', 'GLY']}]])
         # extract polymer sequence from the first cs loop in nef_chemical_shift_list category
         cs_loops = entry.get_saveframes_by_category('assigned_chemical_shifts')
         self.assertEqual(len(cs_loops), 1) # assert single cs loop
-        self.assertEqual(bt.get_nmrstar_seq(cs_loops[0], lp_category='Atom_chem_shift')[0], # select the first cs loop by input sta_data
-                         [{'1': ['HIS',
-                                 'MET', 'SER', 'HIS', 'THR', 'GLN', 'VAL', 'ILE', 'GLU', 'LEU', 'GLU',
-                                 'ARG', 'LYS', 'PHE', 'SER', 'HIS', 'GLN', 'LYS', 'TYR', 'LEU', 'SER',
-                                 'ALA', 'PRO', 'GLU', 'ARG', 'ALA', 'HIS', 'LEU', 'ALA', 'LYS', 'ASN',
-                                 'LEU', 'LYS', 'LEU', 'THR', 'GLU', 'THR', 'GLN', 'VAL', 'LYS', 'ILE',
-                                 'TRP', 'PHE', 'GLN', 'ASN', 'ARG', 'ARG', 'TYR', 'LYS', 'THR', 'LYS',
-                                 'ARG', 'LYS', 'GLN', 'LEU', 'SER', 'SER', 'GLU', 'LEU', 'GLY']}])
-        self.assertEqual(bt.get_nmrstar_seq(cs_loops[0], lp_category='Atom_chem_shift')[1], # select the first cs loop by input sta_data
-                         [{'1': [i for i in range(10, 70)]}])
+        self.assertEqual(bt.get_nmrstar_seq(cs_loops[0], lp_category='Atom_chem_shift'), # select the first cs loop by input sta_data
+                         [[{'chain_id': '1', 'seq_id': [i for i in range(10, 70)], 'comp_id':
+                           ['HIS',
+                            'MET', 'SER', 'HIS', 'THR', 'GLN', 'VAL', 'ILE', 'GLU', 'LEU', 'GLU',
+                            'ARG', 'LYS', 'PHE', 'SER', 'HIS', 'GLN', 'LYS', 'TYR', 'LEU', 'SER',
+                            'ALA', 'PRO', 'GLU', 'ARG', 'ALA', 'HIS', 'LEU', 'ALA', 'LYS', 'ASN',
+                            'LEU', 'LYS', 'LEU', 'THR', 'GLU', 'THR', 'GLN', 'VAL', 'LYS', 'ILE',
+                            'TRP', 'PHE', 'GLN', 'ASN', 'ARG', 'ARG', 'TYR', 'LYS', 'THR', 'LYS',
+                            'ARG', 'LYS', 'GLN', 'LEU', 'SER', 'SER', 'GLU', 'LEU', 'GLY']}]])
         # extract polymer sequence from nef_distant_restraint_list category
-        self.assertEqual(bt.get_nmrstar_seq(entry['nef_distance_restraint_list_distance_constraint_list'], lp_category='Gen_dist_constraint')[0],
-                         [{'1': ['HIS',
-                                 'MET', 'SER', 'HIS', 'THR', 'GLN', 'VAL', 'ILE', 'GLU', 'LEU', 'GLU',
-                                 'ARG', 'LYS', 'PHE', 'SER', 'HIS', 'GLN', 'LYS', 'TYR', 'LEU', 'SER',
-                                 'ALA', 'PRO', 'GLU', 'ARG', 'ALA', 'HIS', 'LEU', 'ALA', 'LYS', 'ASN',
-                                 'LEU', 'LYS', 'LEU', 'THR', 'GLU', 'THR', 'GLN', 'VAL', 'LYS', 'ILE',
-                                 'TRP', 'PHE', 'GLN', 'ASN', 'ARG', 'ARG', 'TYR', 'LYS', 'THR', 'LYS',
-                                 'ARG', 'LYS', 'GLN', 'LEU', 'SER', 'SER', 'GLU', 'LEU', 'GLY']}])
-        self.assertEqual(bt.get_nmrstar_seq(entry['nef_distance_restraint_list_distance_constraint_list'], lp_category='Gen_dist_constraint')[1],
-                         [{'1': [i for i in range(10, 70)]}])
+        self.assertEqual(bt.get_nmrstar_seq(entry['nef_distance_restraint_list_distance_constraint_list'], lp_category='Gen_dist_constraint'),
+                         [[{'chain_id': '1', 'seq_id': [i for i in range(10, 70)], 'comp_id':
+                           ['HIS',
+                            'MET', 'SER', 'HIS', 'THR', 'GLN', 'VAL', 'ILE', 'GLU', 'LEU', 'GLU',
+                            'ARG', 'LYS', 'PHE', 'SER', 'HIS', 'GLN', 'LYS', 'TYR', 'LEU', 'SER',
+                            'ALA', 'PRO', 'GLU', 'ARG', 'ALA', 'HIS', 'LEU', 'ALA', 'LYS', 'ASN',
+                            'LEU', 'LYS', 'LEU', 'THR', 'GLU', 'THR', 'GLN', 'VAL', 'LYS', 'ILE',
+                            'TRP', 'PHE', 'GLN', 'ASN', 'ARG', 'ARG', 'TYR', 'LYS', 'THR', 'LYS',
+                            'ARG', 'LYS', 'GLN', 'LEU', 'SER', 'SER', 'GLU', 'LEU', 'GLY']}]])
 
     def test_validate_atom(self):
         bt = NEFT.NEFTranslator()

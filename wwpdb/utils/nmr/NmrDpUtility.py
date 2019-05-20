@@ -4,6 +4,7 @@
 #
 # Updates:
 ##
+from __builtin__ import False
 """ Wrapper class for data processing for NMR unified data.
 """
 import sys
@@ -16,6 +17,7 @@ import itertools
 
 from wwpdb.utils.nmr.NEFTranslator.NEFTranslator import NEFTranslator
 from wwpdb.utils.nmr.NmrDpReport import NmrDpReport
+from wwpdb.utils.align.alignlib import PairwiseAlign
 
 class NmrDpUtility(object):
     """ Wrapper class for data processing for NMR unified data.
@@ -53,11 +55,11 @@ class NmrDpUtility(object):
                                                       self.__extractPolymerSequenceInLoops,
                                                       self.__testSequenceConsistency,
                                                       self.__extractCommonPolymerSequence,
-                                                      self.__extractNonStandardResidue] }
+                                                      self.__extractNonStandardResidue,
+                                                      self.__appendPolymerSequenceAlignment,
+                                                      self.__testAtomNomenclature] }
         """
                                 }
-                                                      self._AlignPolymerSequence,
-                                                      self.__testAtomNomenclature,
                                                       self.__testAtomType,
                                                       self.__testAtomIsotopeNumber,
                                                       self.__testAmbiguityCode,
@@ -67,7 +69,7 @@ class NmrDpUtility(object):
                                                       self__calculateStatistics],
                                 'nmr-consistency-check': [self.__appendInputResource,
                                                           self.__extractCoordPolymerSequence,
-                                                          self.__AlignCoordPolymerSequence,
+                                                          self.__alignCoordPolymerSequence,
                                                           self.__testCoordSequenceConsistency,
                                                           self.__testCoordAtomNomeclature],
                                 'nmr-nef2star-deposit':  [self.__resolveNefMinorIssue,
@@ -122,6 +124,42 @@ class NmrDpUtility(object):
                                            'rdc_restraint': '_RDC_constraint',
                                            'spectral_peak': '_Peak_row_format'}
                               }
+
+        # taken from wwpdb.utils.align.SequenceReferenceData.py
+        self._monDict3 = {'ALA': 'A',
+                          'ARG': 'R',
+                          'ASN': 'N',
+                          'ASP': 'D',
+                          'ASX': 'B',
+                          'CYS': 'C',
+                          'GLN': 'Q',
+                          'GLU': 'E',
+                          'GLX': 'Z',
+                          'GLY': 'G',
+                          'HIS': 'H',
+                          'ILE': 'I',
+                          'LEU': 'L',
+                          'LYS': 'K',
+                          'MET': 'M',
+                          'PHE': 'F',
+                          'PRO': 'P',
+                          'SER': 'S',
+                          'THR': 'T',
+                          'TRP': 'W',
+                          'TYR': 'Y',
+                          'VAL': 'V',
+                          'DA': 'A',
+                          'DC': 'C',
+                          'DG': 'G',
+                          'DT': 'T',
+                          'DU': 'U',
+                          'DI': 'I',
+                          'A': 'A',
+                          'C': 'C',
+                          'G': 'G',
+                          'I': 'I',
+                          'T': 'T',
+                          'U': 'U'}
 
     def setSource(self, fPath):
         """ Set primary source file path.
@@ -456,10 +494,9 @@ class NmrDpUtility(object):
 
         try:
 
-            poly_seq, poly_sid = self.__getPolymerSequence(sf_data, content_subtype)
+            poly_seq = self.__getPolymerSequence(sf_data, content_subtype)
 
             input_source.setItemValue('polymer_sequence', poly_seq[0])
-            input_source.setItemValue('polymer_sequence_id', poly_sid[0])
 
             return True
 
@@ -494,7 +531,6 @@ class NmrDpUtility(object):
                 continue
 
             poly_seq_list_set[content_subtype] = []
-            poly_sid_list_set[content_subtype] = []
 
             sf_category = self.sf_categories[file_format][content_subtype]
 
@@ -507,11 +543,10 @@ class NmrDpUtility(object):
 
                 try:
 
-                    poly_seq, poly_sid = self.__getPolymerSequence(sf_data, content_subtype)
+                    poly_seq = self.__getPolymerSequence(sf_data, content_subtype)
 
                     if len(poly_seq) > 0:
                         poly_seq_list_set[content_subtype].append({'list_id': list_id, 'sf_framecode': sf_framecode, 'polymer_sequence': poly_seq[0]})
-                        poly_sid_list_set[content_subtype].append({'list_id': list_id, 'sf_framecode': sf_framecode, 'polymer_sequence_id': poly_sid[0]})
 
                         has_poly_seq = True
 
@@ -529,10 +564,8 @@ class NmrDpUtility(object):
 
             if not has_poly_seq:
                 poly_seq_list_set.pop(content_subtype)
-                poly_sid_list_set.pop(content_subtype)
 
         input_source.setItemValue('polymer_sequence_in_loop', poly_seq_list_set)
-        input_source.setItemValue('polymer_sequence_id_in_loop', poly_sid_list_set)
 
         return True
 
@@ -545,8 +578,6 @@ class NmrDpUtility(object):
 
         input_source = self.report.input_sources[0]
         input_source_dic = input_source.get()
-
-        file_name = input_source_dic['file_name']
 
         polymer_sequence = input_source_dic['polymer_sequence']
         polymer_sequence_in_loop = input_source_dic['polymer_sequence_in_loop']
@@ -564,9 +595,6 @@ class NmrDpUtility(object):
         for subtype in polymer_sequence_in_loop.keys():
             subtype_with_poly_seq.append(subtype)
 
-        polymer_sequence_id = input_source_dic['polymer_sequence_id']
-        polymer_sequence_id_in_loop = input_source_dic['polymer_sequence_id_in_loop']
-
         for subtype_pair in itertools.combinations_with_replacement(subtype_with_poly_seq, 2):
 
             # poly_seq is reference sequence and suppress tests on combinations of two sequences in loop
@@ -578,49 +606,44 @@ class NmrDpUtility(object):
 
             # reference polymer sequence exists
             if has_poly_seq and subtype1 == poly_seq:
-                sid1 = polymer_sequence_id
-                seq1 = polymer_sequence
+                ps1 = polymer_sequence
 
-                if len(sid1) != len(seq1):
-                    logging.error("+NmrDpUtility.__testSequenceConsistency() ++ Error  - Unmatched length of chains across '%s' polymer sequence objects" % subtype1)
-                    raise ValueError("+NmrDpUtility.__testSequenceConsistency() ++ Error  - Unmatched length of chains across '%s' polymer sequence objects" % subtype1)
-
-                ref_cids = seq1.keys()
+                ref_cids = {s1['chain_id'] for s1 in ps1}
 
                 list_len2 = len(polymer_sequence_in_loop[subtype2])
 
                 for list_id2 in range(list_len2):
-                    sid2 = polymer_sequence_id_in_loop[subtype2][list_id2]['polymer_sequence_id']
-                    seq2 = polymer_sequence_in_loop[subtype2][list_id2]['polymer_sequence']
+                    ps2 = polymer_sequence_in_loop[subtype2][list_id2]['polymer_sequence']
 
                     sf_framecode2 = polymer_sequence_in_loop[subtype2][list_id2]['sf_framecode']
 
-                    if len(sid2) != len(seq2):
-                        logging.error("+NmrDpUtility.__testSequenceConsistency() ++ Error  - Unmatched length of chains across '%s' polymer sequence objects" % subtype2)
-                        raise ValueError("+NmrDpUtility.__testSequenceConsistency() ++ Error  - Unmatched length of chains across '%s' polymer sequence objects" % subtype2)
+                    for s2 in ps2:
 
-                    for cid in seq2.keys():
-
-                        if not cid in ref_cids:
-                            self.report.error.addDescription('sequence_mismatche', "Invalid chain_id '%s' exists in '%s' polymer sequence of %s file." % (cid, sf_framecode2, file_name))
+                        if not s2['chain_id'] in ref_cids:
+                            self.report.error.addDescription('sequence_mismatch', "Invalid chain_id '%s' exists in '%s' polymer sequence." % (cid, sf_framecode2))
                             self.report.setError()
 
                         else:
 
-                            for j in range(len(sid2[cid])):
-                                sid = sid2[cid][j]
-                                seq = seq2[cid][j]
+                            for s1 in ps1:
 
-                                if not sid in sid1[cid]:
-                                    self.report.error.addDescription('sequence_mismatche', "Invalid seq_id '%s' at chain_id '%' exists in '%s' polymer sequence of %s file." % (sid, cid, sf_framecode2, file_name))
-                                    self.report.setError()
+                                if s1['chain_id'] != s2['chain_id']:
+                                    continue
 
-                                else:
-                                    i = sid1[cid].index(sid)
+                                for j in range(len(s2['seq_id'])):
+                                    sid = s2['seq_id'][j]
+                                    seq = s2['comp_id'][j]
 
-                                    if seq != seq1[cid][i]:
-                                        self.report.error.addDescription('sequence_mismatche', "Invalid res_id '%s' (correct res_id: '%s') at seq_id '%s', chain_id '%s' exists in '%s' polymer sequence of %s file." % (seq, seq1[cid][i], sid, cid, sf_framecode2, file_name))
+                                    if not sid in s1['seq_id']:
+                                        self.report.error.addDescription('sequence_mismatch', "Invalid seq_id '%s' at chain_id '%' exists in '%s' polymer sequence." % (sid, cid, sf_framecode2))
                                         self.report.setError()
+
+                                    else:
+                                        i = s1['seq_id'].index(sid)
+
+                                        if seq != s1['comp_id'][i]:
+                                            self.report.error.addDescription('sequence_mismatch', "Invalid comp_id '%s' (correct: '%s') at seq_id '%s', chain_id '%s' exists in '%s' polymer sequence." % (seq, s1['comp_id'][i], sid, cid, sf_framecode2))
+                                            self.report.setError()
 
             # brute force check
             else:
@@ -629,18 +652,12 @@ class NmrDpUtility(object):
                 list_len2 = len(polymer_sequence_in_loop[subtype2])
 
                 for list_id1 in range(list_len1):
-                    sid1 = polymer_sequence_id_in_loop[subtype1][list_id1]['polymer_sequence_id']
-                    seq1 = polymer_sequence_in_loop[subtype1][list_id1]['polymer_sequence']
+                    ps1 = polymer_sequence_in_loop[subtype1][list_id1]['polymer_sequence']
 
                     sf_framecode1 = polymer_sequence_in_loop[subtype1][list_id1]['sf_framecode']
 
-                    if len(sid1) != len(seq1):
-                        logging.error("+NmrDpUtility.__testSequenceConsistency() ++ Error  - Unmatched length of chains across '%s' polymer sequence objects" % subtype1)
-                        raise ValueError("+NmrDpUtility.__testSequenceConsistency() ++ Error  - Unmatched length of chains across '%s' polymer sequence objects" % subtype1)
-
                     for list_id2 in range(list_len2):
-                        sid2 = polymer_sequence_id_in_loop[subtype2][list_id2]['polymer_sequence_id']
-                        seq2 = polymer_sequence_in_loop[subtype2][list_id2]['polymer_sequence']
+                        ps2 = polymer_sequence_in_loop[subtype2][list_id2]['polymer_sequence']
 
                         sf_framecode2 = polymer_sequence_in_loop[subtype2][list_id2]['sf_framecode']
 
@@ -648,39 +665,45 @@ class NmrDpUtility(object):
                         if subtype1 == suntype2 and list_id1 >= list_id2:
                             continue
 
-                        if len(sid2) != len(seq2):
-                            logging.error("+NmrDpUtility.__testSequenceConsistency() ++ Error  - Unmatched length of chains across '%s' polymer sequence objects" % subtype2)
-                            raise ValueError("+NmrDpUtility.__testSequenceConsistency() ++ Error  - Unmatched length of chains across '%s' polymer sequence objects" % subtype2)
+                        for s2 in ps2:
 
-                        for cid in seq2.keys():
+                            cid = s2['chain_id']
 
-                            if cid in seq1.keys():
+                            for s1 in ps1:
 
-                                for j in range(len(sid2[cid])):
-                                    sid = sid2[cid][j]
-                                    seq = seq2[cid][j]
+                                if cid != s1['chain_id']:
+                                    continue
 
-                                    if sid in sid1[cid]:
-                                        i = sid1[cid].index(sid)
+                                for j in range(len(s2['seq_id'])):
+                                    sid = s2['seq_id'][j]
+                                    seq = s2['comp_id'][j]
 
-                                        if seq != seq1[cid][i]:
-                                            self.report.error.addDescription('sequence_mismatche', "Unmatched res_id '%s' (vs res_id: '%s') at seq_id '%s', chain_id '%s' exists in '%s' (vs '%s') polymer sequence of %s file." % (seq, seq1[cid][i], sid, cid, sf_framecode2, sf_framecode1, file_name))
+                                    if sid in s1['seq_id']:
+                                        i = s1['seq_id'].index(sid)
+
+                                        if seq != s1['comp_id'][i]:
+                                            self.report.error.addDescription('sequence_mismatch', "Unmatched comp_id '%s' (vs '%s') at seq_id '%s', chain_id '%s' exists in '%s' (vs '%s') polymer sequence." % (seq, s1['comp_id'][i], sid, cid, sf_framecode2, sf_framecode1))
                                             self.report.setError()
 
                         # inverse check required for unverified sequences
-                        for cid in seq1.keys():
+                        for s1 in ps1:
 
-                            if cid in seq2.keys():
+                            cid = s1['chain_id']
 
-                                for i in range(len(sid1[cid])):
-                                    sid = sid1[cid][i]
-                                    seq = seq1[cid][i]
+                            for s2 in ps2:
 
-                                    if sid in sid2[cid]:
-                                        j = sid2[cid].index(sid)
+                                if cid != s2['chain_id]']:
+                                    continue
 
-                                        if seq != seq2[cid][j]:
-                                            self.report.error.addDescription('sequence_mismatche', "Unmatched res_id '%s' (vs res_id: '%s') at seq_id '%s', chain_id '%s' exists in '%s' (vs '%s') polymer sequence of %s file." % (seq, seq2[cid][j], sid, cid, sf_framecode1, sf_framecode2, file_name))
+                                for i in range(len(s1['seq_id'])):
+                                    sid = s1['seq_id'][i]
+                                    seq = s1['comp_id'][i]
+
+                                    if sid in s2['seq_id']:
+                                        j = s2['seq_id'].index(sid)
+
+                                        if seq != s2['comp_id'][j]:
+                                            self.report.error.addDescription('sequence_mismatch', "Unmatched comp_id '%s' (vs '%s') at seq_id '%s', chain_id '%s' exists in '%s' (vs '%s') polymer sequence." % (seq, s2['comp_id'][j], sid, cid, sf_framecode1, sf_framecode2))
                                             self.report.setError()
 
         return not self.report.isError()
@@ -703,7 +726,6 @@ class NmrDpUtility(object):
             return True
 
         polymer_sequence_in_loop = input_source_dic['polymer_sequence_in_loop']
-        polymer_sequence_id_in_loop = input_source_dic['polymer_sequence_id_in_loop']
 
         common_poly_seq = {}
 
@@ -711,9 +733,11 @@ class NmrDpUtility(object):
             list_len = len(polymer_sequence_in_loop[subtype])
 
             for list_id in range(list_len):
-                seq_ = polymer_sequence_in_loop[subtype][list_id]['polymer_sequence']
+                ps = polymer_sequence_in_loop[subtype][list_id]['polymer_sequence']
 
-                for cid in seq_.keys():
+                for s in ps:
+                    cid = s['chain_id']
+
                     if not cid in common_poly_seq:
                         common_poly_seq[cid] = set()
 
@@ -721,29 +745,31 @@ class NmrDpUtility(object):
             list_len = len(polymer_sequence_in_loop[subtype])
 
             for list_id in range(list_len):
-                sid_ = polymer_sequence_id_in_loop[subtype][list_id]['polymer_sequence_id']
-                seq_ = polymer_sequence_in_loop[subtype][list_id]['polymer_sequence']
+                ps = polymer_sequence_in_loop[subtype][list_id]['polymer_sequence']
 
-                for i in range(len(sid_[cid])):
-                    sid = sid_[cid][i]
-                    seq = seq_[cid][i]
+                cid = s['chain_id']
 
-                    common_poly_seq[cid].add('{:04d}:{}'.format(sid, seq))
+                for i in range(len(s['seq_id'])):
+                    sid = s['seq_id'][i]
+                    seq = s['comp_id'][i]
 
-        poly_seq = {}
-        poly_sid = {}
+                    common_poly_seq[cid].add('{:04d} {}'.format(sid, seq))
 
-        for cid in common_poly_seq.keys():
+        asm = [] # molecular assembly of a loop
+
+        for cid in sorted(common_poly_seq.keys()):
 
             if len(common_poly_seq[cid]) > 0:
                 sorted_poly_seq = sorted(common_poly_seq[cid])
 
-                poly_seq[cid] = [i.split(':')[1] for i in sorted_poly_seq]
-                poly_sid[cid] = [int(i.split(':')[0]) for i in sorted_poly_seq]
+                ent = {} # entity
+                ent['chain_id'] = cid
+                ent['seq_id'] = [int(i.split(' ')[0]) for i in sorted_poly_seq]
+                ent['comp_id'] = [i.split(' ')[1] for i in sorted_poly_seq]
+                asm.append(ent)
 
-        if len(poly_seq) > 0:
-            input_source.setItemValue('polymer_sequence', poly_seq)
-            input_source.setItemValue('polymer_sequence_id', poly_sid)
+        if len(asm) > 0:
+            input_source.setItemValue('polymer_sequence', asm)
 
         return True
 
@@ -767,34 +793,175 @@ class NmrDpUtility(object):
             return True
 
         polymer_sequence = input_source_dic['polymer_sequence']
-        polymer_sequence_id = input_source_dic['polymer_sequence_id']
 
-        mol_sys_has = False
+        asm_has = False
 
-        non_std_residue = {}
+        asm = []
 
-        for cid in polymer_sequence.keys():
+        for s in polymer_sequence:
 
-            chain_has = False
+            ent_has = False
 
-            non_std_residue_set = set()
+            ent = {}
+            ent['chain_id'] = s['chain_id']
+            ent['seq_id'] = []
+            ent['comp_id'] = []
 
-            for seq in polymer_sequence[cid]:
+            for i in range(len(s['seq_id'])):
+                sid = s['seq_id'][i]
+                seq = s['comp_id'][i]
 
                 if self.nef_translator.get_one_letter_code(seq) == '?':
-                    mol_sys_has = True
-                    chain_has = True
+                    asm_has = True
+                    ent_has = True
 
-                    if not cid in non_std_residue:
-                        non_std_residue[cid] = []
+                    ent['seq_id'].append(sid)
+                    ent['comp_id'].append(seq)
 
-                    non_std_residue_set.add(seq)
+            if (ent_has):
+                asm.append(ent)
 
-            if (chain_has):
-                non_std_residue[cid] = list(non_std_residue_set)
+        if asm_has:
+            input_source.setItemValue('non_standard_residue', asm)
 
-        if mol_sys_has:
-            input_source.setItemValue('non_standard_residue', non_std_residue)
+        return True
+
+    def __appendPolymerSequenceAlignment(self):
+        """ Append polymer sequence alignment of interesting loops of NEF/NMR-STAR V3.2 file.
+        """
+
+        if self.report.isError():
+            return False
+
+        input_source = self.report.input_sources[0]
+        input_source_dic = input_source.get()
+
+        has_poly_seq = 'polymer_sequence' in input_source_dic
+        has_poly_seq_in_loop = 'polymer_sequence_in_loop' in input_source_dic
+
+        if not has_poly_seq:
+
+            if self.__verbose:
+                logging.warning('+NmrDpReport.__appendPolymerSequenceAlignment() ++ Warning  - Common polymer sequence does not exist, __extractCommonPolymerSequence() should be invoked')
+
+            return True
+
+        if not has_poly_seq_in_loop:
+            return True
+
+        polymer_sequence = input_source_dic['polymer_sequence']
+        polymer_sequence_in_loop = input_source_dic['polymer_sequence_in_loop']
+
+        for s1 in polymer_sequence:
+            cid = s1['chain_id']
+
+            for subtype in polymer_sequence_in_loop.keys():
+                list_len = len(polymer_sequence_in_loop[subtype])
+
+                has_seq_align = False
+
+                seq_align_set = []
+
+                for list_id in range(list_len):
+                    ps2 = polymer_sequence_in_loop[subtype][list_id]['polymer_sequence']
+
+                    for s2 in ps2:
+
+                        if cid != s2['chain_id']:
+                            continue
+
+                        _s2 = self.__fillBlankedCompId(s1, s2)
+
+                        pA = PairwiseAlign()
+                        pA.setVerbose(self.__verbose)
+                        pA.setReferenceSequence(s1['comp_id'], 'REF' + cid)
+                        pA.addTestSequence(_s2['comp_id'], cid)
+                        pA.doAlign()
+                        #pA.prAlignmentConflicts(cid)
+                        myAlign = pA.getAlignment(cid)
+
+                        length = len(myAlign)
+
+                        if length == 0:
+                            continue
+
+                        has_seq_align = True
+
+                        conflicts = 0
+                        for myPr in myAlign:
+                            if myPr[0] != myPr[1]:
+                                conflicts += 1
+
+                        ref_seq = self.__get1LetterCodeSequence(s1['comp_id'])
+                        tst_seq = self.__get1LetterCodeSequence(_s2['comp_id'])
+                        mid_seq = self.__getMiddleCode(ref_seq, tst_seq)
+
+                        seq_align = {'list_id': polymer_sequence_in_loop[subtype][list_id]['list_id'],
+                                     'sf_framecode': polymer_sequence_in_loop[subtype][list_id]['sf_framecode'],
+                                     'chain_id': cid, 'length': length, 'conflict': conflicts, 'coverage': float('{:.3f}'.format(float(length - conflicts) / float(length))), 'ref_seq_id': s1['seq_id'], 'reference_seq': ref_seq, 'middle_code': mid_seq, 'test_seq': tst_seq}
+
+                        seq_align_set.append(seq_align)
+
+                if has_seq_align:
+                    self.report.sequence_alignment.setItemValue('poly_seq_vs_' + subtype, seq_align_set)
+
+        return True
+
+    def __fillBlankedCompId(self, s1, s2):
+        """ Fill blanked comp ID in s2 against s1.
+        """
+
+        sid = sorted(set(s1['seq_id']) | set(s2['seq_id']))
+        seq = []
+
+        for i in sid:
+            if i in s2['seq_id']:
+                j = s2['seq_id'].index(i)
+                seq.append(s2['comp_id'][j])
+            else:
+                seq.append('.') # blank comp id
+
+        return {'chain_id': s2['chain_id'], 'seq_id': sid, 'comp_id': seq}
+
+    def __get1LetterCodeSequence(self, comp_ids):
+        """ Convert array of comp ID to 1-letter code sequence.
+        """
+
+        array = ''
+
+        for comp_id in comp_ids:
+            if comp_id in self._monDict3:
+                array += self._monDict3[comp_id]
+            elif comp_id in (None, '', '.', '?'):
+                array += '.'
+            else:
+                array += 'X'
+
+        return array
+
+    def __getMiddleCode(self, ref_seq, tst_seq):
+        """ Return array of middle code of sequence alignment.
+        """
+
+        array = ''
+
+        for i in range(0, len(ref_seq)):
+            array += '|' if ref_seq[i] == tst_seq[i] else ' '
+
+        return array
+
+    def __testAtomNomenclature(self):
+        """ Perform atom nomenclature test.
+        """
+
+        if self.report.isError():
+            return False
+
+        input_source = self.report.input_sources[0]
+        input_source_dic = input_source.get()
+
+        has_poly_seq = 'polymer_sequence' in input_source_dic
+        has_poly_seq_in_loop = 'polymer_sequence_in_loop' in input_source_dic
 
         return True
 

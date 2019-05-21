@@ -332,7 +332,7 @@ class NmrDpUtility(object):
 
             if _file_type != file_type:
 
-                self.report.error.addDescription('format_isssue', "'%s' was selected as %s file, but recognized as an %s file." % (file_name, self.readable_file_type[file_type], self.readable_file_type[_file_type]))
+                self.report.error.addDescription('format_isssue', "'%s' was selected as %s file, but recognized as %s file." % (file_name, self.readable_file_type[file_type], self.readable_file_type[_file_type]))
 
                 if len(message['error']) > 0:
                     for error_message in message['error']:
@@ -341,7 +341,7 @@ class NmrDpUtility(object):
                 self.report.setError()
 
                 if self.__verbose:
-                    self.__lfh.write("+NmrDpUtility.__validateInputSource() ++ Error  - '%s' was selected as %s file, but recognized as an %s file.\n" % (file_name, self.readable_file_type[file_type], self.readable_file_type[_file_type]))
+                    self.__lfh.write("+NmrDpUtility.__validateInputSource() ++ Error  - '%s' was selected as %s file, but recognized as %s file.\n" % (file_name, self.readable_file_type[file_type], self.readable_file_type[_file_type]))
 
                 return False
 
@@ -617,7 +617,7 @@ class NmrDpUtility(object):
                     for s2 in ps2:
 
                         if not s2['chain_id'] in ref_cids:
-                            self.report.error.addDescription('sequence_mismatch', "Invalid chain_id '%s' exists in '%s' polymer sequence." % (cid, sf_framecode2))
+                            self.report.error.addDescription('sequence_mismatch', "Invalid chain_id '%s' exists in '%s' saveframe (list_id:%s)." % (cid, sf_framecode2, list_id2 + 1))
                             self.report.setError()
 
                         else:
@@ -632,14 +632,14 @@ class NmrDpUtility(object):
                                     seq = s2['comp_id'][j]
 
                                     if not sid in s1['seq_id']:
-                                        self.report.error.addDescription('sequence_mismatch', "Invalid seq_id '%s' at chain_id '%' exists in '%s' polymer sequence." % (sid, cid, sf_framecode2))
+                                        self.report.error.addDescription('sequence_mismatch', "Invalid seq_id %s, chain_id '%' exists in '%s' saveframe (list_id:%s)." % (sid, cid, sf_framecode2, list_id2 + 1))
                                         self.report.setError()
 
                                     else:
                                         i = s1['seq_id'].index(sid)
 
                                         if seq != s1['comp_id'][i]:
-                                            self.report.error.addDescription('sequence_mismatch', "Invalid comp_id '%s' (correct: '%s') at seq_id '%s', chain_id '%s' exists in '%s' polymer sequence." % (seq, s1['comp_id'][i], sid, cid, sf_framecode2))
+                                            self.report.error.addDescription('sequence_mismatch', "Invalid comp_id '%s' (correct: '%s'), seq_id %s, chain_id '%s' exists in '%s' saveframe (list_id:%s)." % (seq, s1['comp_id'][i], sid, cid, sf_framecode2, list_id2 + 1))
                                             self.report.setError()
 
             # brute force check
@@ -679,7 +679,7 @@ class NmrDpUtility(object):
                                         i = s1['seq_id'].index(sid)
 
                                         if seq != s1['comp_id'][i]:
-                                            self.report.error.addDescription('sequence_mismatch', "Unmatched comp_id '%s' (vs '%s') at seq_id '%s', chain_id '%s' exists in '%s' (vs '%s') polymer sequence." % (seq, s1['comp_id'][i], sid, cid, sf_framecode2, sf_framecode1))
+                                            self.report.error.addDescription('sequence_mismatch', "Unmatched comp_id '%s' (vs '%s'), seq_id %s, chain_id '%s' exists in '%s' (vs '%s') saveframe." % (seq, s1['comp_id'][i], sid, cid, sf_framecode2, sf_framecode1))
                                             self.report.setError()
 
                         # inverse check required for unverified sequences
@@ -700,7 +700,7 @@ class NmrDpUtility(object):
                                         j = s2['seq_id'].index(sid)
 
                                         if seq != s2['comp_id'][j]:
-                                            self.report.error.addDescription('sequence_mismatch', "Unmatched comp_id '%s' (vs '%s') at seq_id '%s', chain_id '%s' exists in '%s' (vs '%s') polymer sequence." % (seq, s2['comp_id'][j], sid, cid, sf_framecode1, sf_framecode2))
+                                            self.report.error.addDescription('sequence_mismatch', "Unmatched comp_id '%s' (vs '%s'), seq_id %s, chain_id '%s' exists in '%s' (vs '%s') saveframe." % (seq, s2['comp_id'][j], sid, cid, sf_framecode1, sf_framecode2))
                                             self.report.setError()
 
         return not self.report.isError()
@@ -948,7 +948,7 @@ class NmrDpUtility(object):
         return array
 
     def __testAtomNomenclature(self):
-        """ Perform atom nomenclature test.
+        """ Perform atom nomenclature test for standard residues supported by NEFTranslator.
         """
 
         if self.report.isError():
@@ -957,10 +957,84 @@ class NmrDpUtility(object):
         input_source = self.report.input_sources[0]
         input_source_dic = input_source.get()
 
-        has_poly_seq = 'polymer_sequence' in input_source_dic
-        has_poly_seq_in_loop = 'polymer_sequence_in_loop' in input_source_dic
+        file_type = input_source_dic['file_type']
+
+        polymer_sequence_in_loop = input_source_dic['polymer_sequence_in_loop']
+
+        for content_subtype in polymer_sequence_in_loop.keys():
+
+            sf_category = self.sf_categories[file_type][content_subtype]
+
+            list_id = 1
+
+            for sf_data in self.__star_data.get_saveframes_by_category(sf_category):
+
+                sf_framecode = sf_data.get_tag('sf_framecode')[0]
+
+                try:
+
+                    ca_pairs = self.__getCompAtomPair(sf_data, content_subtype)[0]
+
+                    for ca_pair in ca_pairs:
+                        comp_id = ca_pair['comp_id']
+                        atom_ids = ca_pair['atom_id']
+
+                        # standard residue
+                        if self.nef_translator.get_one_letter_code(comp_id) != '?':
+
+                            if file_type == 'nef':
+
+                                _atom_ids = []
+                                for atom_id in atom_ids:
+
+                                    _atom_id = self.nef_translator.get_nmrstar_atom(comp_id, atom_id)[1]
+
+                                    if (len(_atom_id) == 0):
+                                        self.report.error.addDescription('invalid_atom_nomenclature', "Invalid NEF atom nomenclature '%s', comp_id '%s' exists in '%s' saveframe (list_id:%s)." % (atom_id, comp_id, sf_framecode, list_id))
+                                        self.report.setError()
+
+                                    else:
+                                        _atom_ids.extend(self.nef_translator.get_nmrstar_atom(comp_id, atom_id)[1])
+
+                                atom_ids = sorted(set(_atom_ids))
+
+                            for atom_id in atom_ids:
+
+                                if not self.nef_translator.validate_comp_atom(comp_id, atom_id):
+                                    self.report.error.addDescription('invalid_atom_nomenclature', "Invalid atom nomenclature '%s', comp_id '%s' exists in '%s' saveframe (list_id:%s)." % (atom_id, comp_id, sf_framecode, list_id))
+                                    self.report.setError()
+
+                        # non-standard residue
+                        else:
+                            pass
+
+                    list_id += 1
+
+                except Exception as e:
+
+                    self.report.error.addDescription('format_issue', str(e))
+                    self.report.setError()
+
+                    if self.__verbose:
+                        self.__lfh.write("+NmrDpUtility.__testAtomNomenclature() ++ Error  - %s" % str(e))
+
+                    return False
 
         return True
+
+    def __getCompAtomPair(self, sf_data, content_subtype):
+        """ Wrapper function to retrieve pairs of comp_id and atom_id from loop of a specified saveframe and content subtype via NEFTranslator.
+        """
+
+        input_source = self.report.input_sources[0]
+        input_source_dic = input_source.get()
+
+        file_type = input_source_dic['file_type']
+
+        if file_type == 'nef':
+            return self.nef_translator.get_nef_comp_atom_pair(sf_data, lp_category=self.lp_categories[file_type][content_subtype], allow_empty=(content_subtype == 'spectral_peak'))
+        else:
+            return self.nef_translator.get_star_comp_atom_pair(sf_data, lp_category=self.lp_categories[file_type][content_subtype], allow_empty=(content_subtype == 'spectral_peak'))
 
 if __name__ == '__main__':
     dp = NmrDpUtility()

@@ -66,6 +66,7 @@ class NEFTranslator(object):
         :param in_file: input file name with proper path
         :return: (is file readable (True/False), Content type Entry/Saveframe/Loop, data object (data) )
         """
+
         is_ok = False
         try:
             in_data = pynmrstar.Entry.from_file(in_file)
@@ -93,8 +94,9 @@ class NEFTranslator(object):
     def load_json_data(json_file):
         """ Loads json data files from lib folder
         :param json_file: json file
-        :return: dictionay
+        :return: dictionary
         """
+
         try:
             with open(json_file, 'r') as jsonF:
                 data_dict = json.loads(jsonF.read())
@@ -113,6 +115,7 @@ class NEFTranslator(object):
         :param transpose: transpose multidimensional csv lists
         :return: list
         """
+
         try:
             with open(csv_file, 'r') as csv_file:
                 spam_reader = csv.reader(csv_file, delimiter=',')
@@ -133,13 +136,14 @@ class NEFTranslator(object):
             is_ok = False
         return is_ok, msg, csv_map
 
-    def get_one_letter_code(self, res):
-        """ Returns one leter amino acid code
-        :param res: Three letter code
-        :return: One leter code
+    def get_one_letter_code(self, comp_id):
+        """ Returns one letter code of component ID
+        :param comp_id: Component ID
+        :return: One letter code
         """
+
         try:
-            ol = self.codeDict[res.upper()]
+            ol = self.codeDict[comp_id.upper()]
         except KeyError:
             ol = '?'
         return ol
@@ -150,6 +154,7 @@ class NEFTranslator(object):
         :param ts: current system time from time.time()
         :return: returns '%Y-%m-%d %H:%M:%S'
         """
+
         return datetime.datetime.fromtimestamp(ts, tz=utc).strftime('%Y-%m-%d %H:%M:%S')
 
     def validate_file(self, in_file, file_subtype='A'):
@@ -159,10 +164,13 @@ class NEFTranslator(object):
         S for chemical Shifts file,
         R for Restraints file
         """
+
         info = []
         warning = []
         error = []
+
         file_type = 'unknown'
+
         try:
             file_info = self.read_input_file(in_file)
             if file_info[0]:
@@ -271,6 +279,7 @@ class NEFTranslator(object):
     def is_empty_loop(star_data, lp_category, data_flag):
         """ Check if a given loop is empty
         """
+
         if data_flag == 'Entry':
             loops = star_data.get_loops_by_category(lp_category)
             for loop in loops:
@@ -287,6 +296,7 @@ class NEFTranslator(object):
     def is_empty_data(data):
         """ Check if given data has empty code
         """
+
         for d in data:
             if d in (None, '', '.', '?'):
                 return True
@@ -296,6 +306,7 @@ class NEFTranslator(object):
     def is_data(data):
         """ Check if given data has no empty code
         """
+
         for d in data:
             if d in (None, '', '.', '?'):
                 return False
@@ -318,10 +329,11 @@ class NEFTranslator(object):
         return sf_list, lp_list
 
     def get_seq_from_cs_loop(self, in_file):
-        """ Extracts sequence from checmial shift loop
+        """ Extracts sequence from chemical shift loop
         :param in_file: NEF/NMR-STAR file
         :return: status flag,json data
         """
+
         (flg, json_data) = self.validate_file(in_file, 'S')
         dat = json.loads(json_data)
         info = dat['info']
@@ -330,17 +342,17 @@ class NEFTranslator(object):
         is_ok = False
         seq = []
         if flg:
-            info.append('File successfully read')
+            info.append('File successfully read ')
             in_dat = self.read_input_file(in_file)[-1]
             if dat['file_type'] == 'nmr-star':
-                info.append('nmr-star')
+                info.append('NMR-STAR')
                 seq = self.get_nmrstar_seq(in_dat)
                 if len(seq):
                     is_ok = True
                 else:
                     error.append("Can't extract sequence from chemical shift loop")
             elif dat['file_type'] == 'nef':
-                info.append('nef')
+                info.append('NEF')
                 seq = self.get_nef_seq(in_dat)
                 if len(seq):
                     is_ok = True
@@ -353,21 +365,22 @@ class NEFTranslator(object):
         return is_ok, json.dumps({'info': info, 'warning': warning, 'error': error, 'file_type': dat['file_type'], 'data': seq})
 
     @staticmethod
-    def get_nef_seq(str_data, lp_category='nef_chemical_shift', seq_id='sequence_code', comp_id='residue_name',
+    def get_nef_seq(star_data, lp_category='nef_chemical_shift', seq_id='sequence_code', comp_id='residue_name',
                     chain_id='chain_code', allow_empty=False):
         """ Extracts sequence from any given loop from a NEF file
         """
+
         try:
-            loops = str_data.get_loops_by_category(lp_category)
+            loops = star_data.get_loops_by_category(lp_category)
         except AttributeError:
             try:
-                loops = [str_data.get_loop_by_category(lp_category)]
+                loops = [star_data.get_loop_by_category(lp_category)]
             except AttributeError:
-                loops = [str_data]
+                loops = [star_data]
 
         tags = [seq_id, comp_id, chain_id]
 
-        dat = [] # structured polymer sequence data representation of all loops
+        dat = [] # data of all loops
 
         for loop in loops:
             seq_dict = {}
@@ -411,27 +424,19 @@ class NEFTranslator(object):
             if len(sorted_seq[0].split(' ')[-1]) > 1:
                 if len(chains) > 1:
                     for c in chains:
-                        seq_array = [i.split(' ')[-1] for i in sorted_seq if i.split(' ')[0] == c]
-                        sid_array = [int(i.split(' ')[1]) for i in sorted_seq if i.split(' ')[0] == c]
-                        seq_dict[c] = seq_array
-                        sid_dict[c] = sid_array
+                        seq_dict[c] = [i.split(' ')[-1] for i in sorted_seq if i.split(' ')[0] == c]
+                        sid_dict[c] = [int(i.split(' ')[1]) for i in sorted_seq if i.split(' ')[0] == c]
                 else:
-                    seq_array = [i.split(' ')[-1] for i in sorted_seq]
-                    sid_array = [int(i.split(' ')[1]) for i in sorted_seq]
-                    seq_dict[list(chains)[0]] = seq_array
-                    sid_dict[list(chains)[0]] = sid_array
+                    seq_dict[list(chains)[0]] = [i.split(' ')[-1] for i in sorted_seq]
+                    sid_dict[list(chains)[0]] = [int(i.split(' ')[1]) for i in sorted_seq]
             else:
                 if len(chains) > 1:
                     for c in chains:
-                        seq_array = [i.split(' ')[-1] for i in sorted_seq if i.split(' ')[0] == c]
-                        sid_array = [int(i.split(' ')[1]) for i in sorted_seq if i.split(' ')[0] == c]
-                        seq_dict[c] = seq_array
-                        sid_dict[c] = sid_array
+                        seq_dict[c] = [i.split(' ')[-1] for i in sorted_seq if i.split(' ')[0] == c]
+                        sid_dict[c] = [int(i.split(' ')[1]) for i in sorted_seq if i.split(' ')[0] == c]
                 else:
-                    seq_array = [i.split(' ')[-1] for i in sorted_seq]
-                    sid_array = [int(i.split(' ')[1]) for i in sorted_seq]
-                    seq_dict[list(chains)[0]] = seq_array
-                    sid_dict[list(chains)[0]] = sid_array
+                    seq_dict[list(chains)[0]] = [i.split(' ')[-1] for i in sorted_seq]
+                    sid_dict[list(chains)[0]] = [int(i.split(' ')[1]) for i in sorted_seq]
 
             asm = [] # molecular assembly of a loop
 
@@ -447,19 +452,20 @@ class NEFTranslator(object):
         return dat
 
     @staticmethod
-    def get_nmrstar_seq(str_data, lp_category='Atom_chem_shift', seq_id='Comp_index_ID', comp_id='Comp_ID',
+    def get_nmrstar_seq(star_data, lp_category='Atom_chem_shift', seq_id='Comp_index_ID', comp_id='Comp_ID',
                         chain_id='Entity_assembly_ID', allow_empty=False):
         """ Extracts sequence from any given NMR-STAR file
         """
+
         try:
-            loops = str_data.get_loops_by_category(lp_category)
+            loops = star_data.get_loops_by_category(lp_category)
         except AttributeError:
             try:
-                loops = [str_data.get_loop_by_category(lp_category)]
+                loops = [star_data.get_loop_by_category(lp_category)]
             except AttributeError:
-                loops = [str_data]
+                loops = [star_data]
 
-        dat = [] # structured polymer sequence data representation of all loops
+        dat = [] # data of all loops
 
         tags = [seq_id, comp_id, chain_id]
         tags_ = [seq_id, comp_id]
@@ -517,27 +523,19 @@ class NEFTranslator(object):
             if len(sorted_seq[0].split(' ')[-1]) > 1:
                 if len(chains) > 1:
                     for c in chains:
-                        seq_array = [i.split(' ')[-1] for i in sorted_seq if i.split(' ')[0] == c]
-                        sid_array = [int(i.split(' ')[1]) for i in sorted_seq if i.split(' ')[0] == c]
-                        seq_dict[c] = seq_array
-                        sid_dict[c] = sid_array
+                        seq_dict[c] = [i.split(' ')[-1] for i in sorted_seq if i.split(' ')[0] == c]
+                        sid_dict[c] = [int(i.split(' ')[1]) for i in sorted_seq if i.split(' ')[0] == c]
                 else:
-                    seq_array = [i.split(' ')[-1] for i in sorted_seq]
-                    sid_array = [int(i.split(' ')[1]) for i in sorted_seq]
-                    seq_dict[list(chains)[0]] = seq_array
-                    sid_dict[list(chains)[0]] = sid_array
+                    seq_dict[list(chains)[0]] = [i.split(' ')[-1] for i in sorted_seq]
+                    sid_dict[list(chains)[0]] = [int(i.split(' ')[1]) for i in sorted_seq]
             else:
                 if len(chains) > 1:
                     for c in chains:
-                        seq_array = [i.split(' ')[-1] for i in sorted_seq if i.split(' ')[0] == c]
-                        sid_array = [int(i.split(' ')[1]) for i in sorted_seq if i.split(' ')[0] == c]
-                        seq_dict[c] = seq_array
-                        seeq_id_dict[c] = sid_array
+                        seq_dict[c] = [i.split(' ')[-1] for i in sorted_seq if i.split(' ')[0] == c]
+                        seeq_id_dict[c] = [int(i.split(' ')[1]) for i in sorted_seq if i.split(' ')[0] == c]
                 else:
-                    seq_array = [i.split(' ')[-1] for i in sorted_seq]
-                    sid_array = [int(i.split(' ')[1]) for i in sorted_seq]
-                    seq_dict[list(chains)[0]] = seq_array
-                    sid_dict[list(chains)[0]] = sid_array
+                    seq_dict[list(chains)[0]] = [i.split(' ')[-1] for i in sorted_seq]
+                    sid_dict[list(chains)[0]] = [int(i.split(' ')[1]) for i in sorted_seq]
 
             asm = [] # molecular assembly of a loop
 
@@ -552,10 +550,145 @@ class NEFTranslator(object):
 
         return dat
 
+    @staticmethod
+    def get_nef_comp_atom_pair(star_data, lp_category='nef_chemical_shift', comp_id='residue_name', atom_id='atom_name',
+                               allow_empty=False):
+        """ Extracts unique pairs of comp_id and atom_id from any given loop from a NEF file
+        """
+
+        try:
+            loops = star_data.get_loops_by_category(lp_category)
+        except AttributeError:
+            try:
+                loops = [star_data.get_loop_by_category(lp_category)]
+            except AttributeError:
+                loops = [star_data]
+
+        tags = [comp_id, atom_id]
+
+        dat = [] # data of all loops
+
+        for loop in loops:
+            ca_dict = {}
+
+            ca_dat = []
+
+            if set(tags) & set(loop.tags) == set(tags):
+                ca_dat = loop.get_data_by_tag(tags)
+            else:
+                _tags_exist = False
+                for i in range(1, 5): # expand up to 4 dimensions
+                    _tags = [comp_id + '_' + str(i), atom_id + '_' + str(i)]
+                    if set(_tags) & set(loop.tags) == set(_tags):
+                        _tags_exist = True
+                        ca_dat += loop.get_data_by_tag(_tags)
+                    else:
+                        break
+                if not _tags_exist:
+                    ca_dat = loop.get_data_by_tag(tags) # raise ValueError
+
+            if allow_empty:
+                ca_dat = list(filter(NEFTranslator.is_data, ca_dat))
+                if len(ca_dat) == 0:
+                    continue
+            else:
+                for i in ca_dat:
+                    if NEFTranslator.is_empty_data(i):
+                        raise ValueError('Pair of comp_id and atom_id must not be empty. loop_category=%s, comp_id=%s, atom_id=%s' % (lp_category, i[0], i[1]))
+
+            comps = sorted(set([i[0] for i in ca_dat]))
+            sorted_ca = sorted(set(['{} {}'.format(i[0], i[1]) for i in ca_dat]))
+
+            for c in comps:
+                ca_dict[c] = [i.split(' ')[1] for i in sorted_ca if i.split(' ')[0] == c]
+
+            asm = [] # molecular assembly of a loop
+
+            for c in comps:
+                ent = {} # entity
+                ent['comp_id'] = c
+                ent['atom_id'] = ca_dict[c]
+                asm.append(ent)
+
+            dat.append(asm)
+
+        return dat
+
+    @staticmethod
+    def get_star_comp_atom_pair(star_data, lp_category='Atom_chem_shift', comp_id='Comp_ID', atom_id='Atom_id',
+                                allow_empty=False):
+        """ Extracts unique pairs of comp_id and atom_id from any given loop from a NMR-STAR file
+        """
+
+        try:
+            loops = star_data.get_loops_by_category(lp_category)
+        except AttributeError:
+            try:
+                loops = [star_data.get_loop_by_category(lp_category)]
+            except AttributeError:
+                loops = [star_data]
+
+        tags = [comp_id, atom_id]
+
+        dat = [] # data of all loops
+
+        for loop in loops:
+            ca_dict = {}
+
+            ca_dat = []
+
+            if set(tags) & set(loop.tags) == set(tags):
+                ca_dat = loop.get_data_by_tag(tags)
+            else:
+                _tags_exist = False
+                for i in range(1, 5): # expand up to 4 dimensions
+                    _tags = [comp_id + '_' + str(i), atom_id + '_' + str(i)]
+                    if set(_tags) & set(loop.tags) == set(_tags):
+                        _tags_exist = True
+                        ca_dat += loop.get_data_by_tag(_tags)
+                    else:
+                        break
+                if not _tags_exist:
+                    ca_dat = loop.get_data_by_tag(tags) # raise ValueError
+
+            if allow_empty:
+                ca_dat = list(filter(NEFTranslator.is_data, ca_dat))
+                if len(ca_dat) == 0:
+                    continue
+            else:
+                for i in ca_dat:
+                    if NEFTranslator.is_empty_data(i):
+                        raise ValueError('Pair of comp_id and atom_id must not be empty. loop_category=%s, comp_id=%s, atom_id=%s' % (lp_category, i[0], i[1]))
+
+            comps = sorted(set([i[0] for i in ca_dat]))
+            sorted_ca = sorted(set(['{} {}'.format(i[0], i[1]) for i in ca_dat]))
+
+            for c in comps:
+                ca_dict[c] = [i.split(' ')[1] for i in sorted_ca if i.split(' ')[0] == c]
+
+            asm = [] # molecular assembly of a loop
+
+            for c in comps:
+                ent = {} # entity
+                ent['comp_id'] = c
+                ent['atom_id'] = ca_dict[c]
+                asm.append(ent)
+
+            dat.append(asm)
+
+        return dat
+
+    def validate_comp_atom(self, comp_id, atom_id):
+        """ Validate input atom_id of comp_id
+        """
+
+        return True if atom_id.upper() in self.atomDict[comp_id.upper()] else False
+
     def validate_atom(self, star_data, lp_category='Atom_chem_shift', seq_id='Comp_index_ID', comp_id='Comp_ID',
                       atom_id='Atom_ID'):
         """ Validates the atoms in a given loop against IUPAC standard
         """
+
         try:
             loop_data = star_data.get_loops_by_category(lp_category)
         except AttributeError:
@@ -612,13 +745,14 @@ class NEFTranslator(object):
             out_tag.append('_Peak_row_format.Spectral_peak_list_ID')
         return out_tag
 
-    def get_nmrstar_atom(self, res, nef_atom):
-        """ Returns (atom with out wildcard,[IUPAC atom list],ambiguity code)
+    def get_nmrstar_atom(self, comp_id, nef_atom):
+        """ Returns (atom with out wildcard, [IUPAC atom list], ambiguity code)
         """
+
         ambiguity_code = 1
         atom_type = None
         try:
-            atoms = self.atomDict[res]
+            atoms = self.atomDict[comp_id]
             atom_list = []
             try:
                 ref_atom = re.findall(r'(\S+)([xyXY])([%*])$|(\S+)([%*])$|(\S+)([xyXY]$)', nef_atom)[0]
@@ -675,10 +809,10 @@ class NEFTranslator(object):
                         atom_list = ['H1', 'H2', 'H3']
                         atom_type = 'H'
         except KeyError:
-            # self.logfile.write('%s\tResidue not found,%s,%s\n'%(self.TimeStamp(time.time()),res,nef_atom))
-            # print 'Residue not found',res,nef_atom
-            if res != '.':
-                self.logger.critical('Non-standard residue found {}'.format(res))
+            # self.logfile.write('%s\tResidue not found,%s,%s\n'%(self.TimeStamp(time.time()),comp_id,nef_atom))
+            # print 'Residue not found',comp_id,nef_atom
+            if comp_id != '.':
+                self.logger.critical('Non-standard residue found {}'.format(comp_id))
             atom_list = []
             atom_type = nef_atom
 
@@ -697,6 +831,7 @@ class NEFTranslator(object):
         :type row_data: list
         :return: List NMR-STAR data
         """
+
         out_row = []
         new_id = None
         if '_nef_chemical_shift.chain_code' in f_tags and '_nef_chemical_shift.sequence_code' in f_tags:
@@ -775,6 +910,7 @@ class NEFTranslator(object):
         :type row_data: list
         :return:
         """
+
         # print (f_tags)
         out_row = []
         res_list = self.get_residue_identifier(f_tags)
@@ -820,6 +956,7 @@ class NEFTranslator(object):
         :type row_data: list
         :return:
         """
+
         out_row = []
         if len(f_tags) != len(t_tags):
             out = [None] * len(t_tags)
@@ -853,6 +990,7 @@ class NEFTranslator(object):
         :type row_data: list
         :return:
         """
+
         out_row = []
         res_list = self.get_residue_identifier(f_tags)
         # print (res_list,f_tags)

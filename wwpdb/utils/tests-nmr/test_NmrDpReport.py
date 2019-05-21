@@ -23,16 +23,16 @@ class TestNmrDpReport(unittest.TestCase):
         self.assertEqual(self.report.isError(), False)
 
     def test_report_generation(self):
-        self.report.input_sources[0].setItemValue('file_format', 'nmr-nef')
+        self.report.input_sources[0].setItemValue('file_type', 'nef')
         self.report.input_sources[0].setItemValue('content_type', 'nmr-unified-data')
         self.report.input_sources[0].setItemValue('content_subtype', {'poly_seq': 1, 'chem_shift': 1, 'dist_restraint': 2})
 
         with self.assertRaises(IndexError):
-            self.report.input_sources[1].setItemValue('file_format', 'pdbx')
+            self.report.input_sources[1].setItemValue('file_type', 'pdbx')
 
         self.report.addInputSource()
 
-        self.report.input_sources[1].setItemValue('file_format', 'pdbx')
+        self.report.input_sources[1].setItemValue('file_type', 'pdbx')
         self.report.input_sources[1].setItemValue('content_type', 'model')
         self.report.input_sources[1].setItemValue('content_subtype', {'poly_seq': 1, 'coordinate': 1})
 
@@ -53,7 +53,7 @@ class TestNmrDpReport(unittest.TestCase):
         self.report.get()
 
         result = json.dumps(self.report.get(), sort_keys=True)
-        answer = json.dumps(json.loads('{"information": {"status": "ERROR", "input_sources": [{"content_subtype": {"chem_shift": 1, "poly_seq": 1, "dist_restraint": 2}, "non_standard_residue": null, "file_name": null, "polymer_sequence": null, "statistics_of_exptl_data": null, "content_type": "nmr-unified-data", "polymer_sequence_in_loop": null, "sequence_coverage_by_exptl_data": null, "file_format": "nmr-nef"}, {"content_subtype": {"coordinate": 1, "poly_seq": 1}, "non_standard_residue": null, "file_name": null, "polymer_sequence": null, "statistics_of_exptl_data": null, "content_type": "model", "polymer_sequence_in_loop": null, "sequence_coverage_by_exptl_data": null, "file_format": "pdbx"}], "sequence_alignments": {"poly_seq_vs_dist_restraint": null, "poly_seq_vs_rdc_restraint": null, "poly_seq_vs_dihed_restraint": null, "poly_seq_vs_spectral_peak": null, "coordinate_vs_poly_seq": "foo", "poly_seq_vs_chem_shift": null}}, "warning": {"missing_content": "foo", "blanked_item": null, "missing_item": null, "suspicious_data": null, "sequence_mismatch": null, "missing_saveframe": null}, "error": {"anomalous_data": null, "missing_mandatory_content": null, "invalid_ambiguity_code": null, "blanked_mandatory_value": null, "format_issue": "foo", "invalid_atom_type": null, "invalid_atom_isotope_number": null, "duplicated_data": null, "missing_mandatory_item": null, "sequence_mismatch": null, "invalid_atom_nomenclature": null}}'), sort_keys=True)
+        answer = json.dumps(json.loads('{"information": {"status": "ERROR", "input_sources": [{"content_subtype": {"chem_shift": 1, "poly_seq": 1, "dist_restraint": 2}, "non_standard_residue": null, "file_name": null, "polymer_sequence": null, "statistics_of_exptl_data": null, "content_type": "nmr-unified-data", "polymer_sequence_in_loop": null, "sequence_coverage_by_exptl_data": null, "file_type": "nef"}, {"content_subtype": {"coordinate": 1, "poly_seq": 1}, "non_standard_residue": null, "file_name": null, "polymer_sequence": null, "statistics_of_exptl_data": null, "content_type": "model", "polymer_sequence_in_loop": null, "sequence_coverage_by_exptl_data": null, "file_type": "pdbx"}], "sequence_alignments": {"poly_seq_vs_dist_restraint": null, "poly_seq_vs_rdc_restraint": null, "poly_seq_vs_dihed_restraint": null, "poly_seq_vs_spectral_peak": null, "coordinate_vs_poly_seq": "foo", "poly_seq_vs_chem_shift": null}}, "warning": {"missing_content": "foo", "blanked_item": null, "missing_item": null, "suspicious_data": null, "sequence_mismatch": null, "missing_saveframe": null}, "error": {"anomalous_data": null, "missing_mandatory_content": null, "invalid_ambiguity_code": null, "blanked_mandatory_value": null, "format_issue": "foo", "invalid_atom_type": null, "invalid_atom_isotope_number": null, "duplicated_data": null, "missing_mandatory_item": null, "sequence_mismatch": null, "invalid_atom_nomenclature": null}}'), sort_keys=True)
 
         self.assertEqual(result, answer)
 
@@ -71,11 +71,11 @@ class TestNmrDpInputSource(unittest.TestCase):
         pass
 
     def test_setitemvalue(self):
-        for item in set(self.input_source.items) - {'file_format', 'content_type', 'content_subtype'}:
+        for item in set(self.input_source.items) - {'file_type', 'content_type', 'content_subtype'}:
             self.input_source.setItemValue(item, 'foo')
 
-        for file_format in self.input_source.file_formats:
-            self.input_source.setItemValue('file_format', file_format)
+        for file_type in self.input_source.file_types:
+            self.input_source.setItemValue('file_type', file_type)
 
         with LogCapture() as logs:
             with self.assertRaises(KeyError):
@@ -83,7 +83,7 @@ class TestNmrDpInputSource(unittest.TestCase):
 
         with LogCapture() as logs:
             with self.assertRaises(ValueError):
-                self.input_source.setItemValue('file_format', 'unknown')
+                self.input_source.setItemValue('file_type', 'unknown')
 
         for content_type in self.input_source.content_types:
             self.input_source.setItemValue('content_type', content_type)

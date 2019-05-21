@@ -7,7 +7,6 @@ This module does the following jobs
 3. Format conversion
 
 @author: Kumaran Baskaran
-
 """
 
 # Make sure print function work in python2 and python3
@@ -28,12 +27,11 @@ PY3 = (sys.version_info[0] == 3)
 
 (scriptPath, scriptName) = ntpath.split(os.path.realpath(__file__))
 
-__version__ = "v1.2.0"
+__version__ = 'v1.2.0'
 
 
 class NEFTranslator(object):
-    """
-    NEF to NMR-STAR translator object
+    """ NEF to NMR-STAR translator object
     """
     logger = logging.getLogger()
     logger.setLevel(logging.INFO)
@@ -64,8 +62,7 @@ class NEFTranslator(object):
 
     @staticmethod
     def read_input_file(in_file):
-        """
-        Reads input NEF/NMR-STAR file
+        """ Reads input NEF/NMR-STAR file
         :param in_file: input file name with proper path
         :return: (is file readable (True/False), Content type Entry/Saveframe/Loop, data object (data) )
         """
@@ -73,29 +70,28 @@ class NEFTranslator(object):
         try:
             in_data = pynmrstar.Entry.from_file(in_file)
             is_ok = True
-            msg = "Entry"
+            msg = 'Entry'
         except ValueError:
             try:
                 in_data = pynmrstar.Saveframe.from_file(in_file)
                 is_ok = True
-                msg = "Saveframe"
+                msg = 'Saveframe'
             except ValueError:
                 try:
                     in_data = pynmrstar.Loop.from_file(in_file)
                     is_ok = True
-                    msg = "Loop"
+                    msg = 'Loop'
                 except ValueError as e:
                     in_data = None
-                    msg = "File contains no valid saveframe or loop. Invalid file PyNMRSTAR Error:{}".format(e)
+                    msg = 'File contains no valid saveframe or loop. Invalid file PyNMRSTAR Error:{}'.format(e)
         except IOError:
             in_data = None
-            msg = "File not found"
+            msg = 'File not found'
         return is_ok, msg, in_data
 
     @staticmethod
     def load_json_data(json_file):
-        """
-        Loads json data files from lib folder
+        """ Loads json data files from lib folder
         :param json_file: json file
         :return: dictionay
         """
@@ -103,17 +99,16 @@ class NEFTranslator(object):
             with open(json_file, 'r') as jsonF:
                 data_dict = json.loads(jsonF.read())
             is_ok = True
-            msg = "{} file is read!".format(json_file)
+            msg = '{} file is read!'.format(json_file)
         except IOError:
-            msg = "{} file is missing!".format(json_file)
+            msg = '{} file is missing!'.format(json_file)
             is_ok = False
             data_dict = []
         return is_ok, msg, data_dict
 
     @staticmethod
     def load_csv_data(csv_file, transpose=False):
-        """
-        Loads csv data files from lib
+        """ Loads csv data files from lib
         :param csv_file: csv file
         :param transpose: transpose multidimensional csv lists
         :return: list
@@ -130,17 +125,16 @@ class NEFTranslator(object):
                 csv_map = list(map(list, zip(*csv_dat)))
             else:
                 csv_map = csv_dat
-            msg = "{} file is read!".format(csv_file)
+            msg = '{} file is read!'.format(csv_file)
             is_ok = True
         except IOError:
-            msg = "{} file is missing!".format(csv_file)
+            msg = '{} file is missing!'.format(csv_file)
             csv_map = []
             is_ok = False
         return is_ok, msg, csv_map
 
     def get_one_letter_code(self, res):
-        """
-        Returns one leter amino acid code
+        """ Returns one leter amino acid code
         :param res: Three letter code
         :return: One leter code
         """
@@ -152,25 +146,23 @@ class NEFTranslator(object):
 
     @staticmethod
     def time_stamp(ts):
-        """
-        Returns time stamp in human readable format for logging
+        """ Returns time stamp in human readable format for logging
         :param ts: current system time from time.time()
         :return: returns '%Y-%m-%d %H:%M:%S'
         """
         return datetime.datetime.fromtimestamp(ts, tz=utc).strftime('%Y-%m-%d %H:%M:%S')
 
-    def validate_file(self, in_file, file_type='A'):
-        """
-        Validates input NEF/NMR-STAR file.
-        file_type flags can be 'A' or 'S' or 'R'.
-        A for  All in one file,
+    def validate_file(self, in_file, file_subtype='A'):
+        """ Validates input NEF/NMR-STAR file
+        file_subtype flags can be 'A' or 'S' or 'R'
+        A for All in one file,
         S for chemical Shifts file,
-        R for 'Restraints file
+        R for Restraints file
         """
         info = []
         warning = []
         error = []
-        file_format = 'UNKNOWN'
+        file_type = 'unknown'
         try:
             file_info = self.read_input_file(in_file)
             if file_info[0]:
@@ -182,24 +174,24 @@ class NEFTranslator(object):
                 minimal_info_nmrstar_s = ['_Atom_chem_shift']
                 minimal_info_nmrstar_r = ['_Gen_dist_constraint']
                 (sf_list, lp_list) = self.get_data_content(in_data, file_info[1])
-                msg = "{} saveframes and {} loops found".format(len(sf_list), len(lp_list))
+                msg = '{} saveframes and {} loops found'.format(len(sf_list), len(lp_list))
                 info.append(msg)
                 nef_sf_list = [i for i in sf_list if 'nef' in i]
                 nef_lp_list = [i for i in lp_list if 'nef' in i]
-                msg = "{} saveframes and {} loops found with nef prefix".format(len(nef_sf_list), len(nef_lp_list))
+                msg = '{} saveframes and {} loops found with NEF prefix'.format(len(nef_sf_list), len(nef_lp_list))
                 info.append(msg)
                 if len(nef_sf_list) > 0 or len(nef_lp_list) > 0:
                     is_nef_file = True
-                    msg = "{} is a NEF file".format(in_file)
-                    file_format = 'NEF'
+                    msg = '{} is a NEF file'.format(in_file)
+                    file_type = 'nef'
                 else:
                     is_nef_file = False
-                    msg = "{} is a NMR-STAR file".format(in_file)
-                    file_format = "NMR-STAR"
+                    msg = '{} is a NMR-STAR file'.format(in_file)
+                    file_type = 'nmr-star'
                 info.append(msg)
                 if is_nef_file:
                     is_valid = True
-                    if file_type == "A":
+                    if file_subtype == 'A':
                         for lp_info in minimal_info_nef_a:
                             if lp_info not in lp_list:
                                 is_valid = False
@@ -208,7 +200,7 @@ class NEFTranslator(object):
                                 if self.is_empty_loop(in_data, lp_info, file_info[1]):
                                     is_valid = False
                                     error.append('{} loop is empty'.format(lp_info))
-                    elif file_type == "S":
+                    elif file_subtype == 'S':
                         for lp_info in minimal_info_nef_s:
                             if lp_info not in lp_list:
                                 is_valid = False
@@ -217,7 +209,7 @@ class NEFTranslator(object):
                                 if self.is_empty_loop(in_data, lp_info, file_info[1]):
                                     is_valid = False
                                     error.append('{} loop is empty'.format(lp_info))
-                    elif file_type == "R":
+                    elif file_subtype == 'R':
                         for lp_info in minimal_info_nef_r:
                             if lp_info not in lp_list:
                                 is_valid = False
@@ -227,12 +219,12 @@ class NEFTranslator(object):
                                     is_valid = False
                                     error.append('{} loop is empty'.format(lp_info))
                     else:
-                        msg = "file_type flag should be A/S/R"
+                        msg = 'file_subtype flag should be A/S/R'
                         error.append(msg)
                         is_valid = False
                 else:
                     is_valid = True
-                    if file_type == "A":
+                    if file_subtype == 'A':
                         for lp_info in minimal_info_nmrstar_a:
                             if lp_info not in lp_list:
                                 is_valid = False
@@ -241,7 +233,7 @@ class NEFTranslator(object):
                                 if self.is_empty_loop(in_data, lp_info, file_info[1]):
                                     is_valid = False
                                     error.append('{} loop is empty'.format(lp_info))
-                    elif file_type == "S":
+                    elif file_subtype == 'S':
                         for lp_info in minimal_info_nmrstar_s:
                             if lp_info not in lp_list:
                                 is_valid = False
@@ -250,7 +242,7 @@ class NEFTranslator(object):
                                 if self.is_empty_loop(in_data, lp_info, file_info[1]):
                                     is_valid = False
                                     error.append('{} loop is empty'.format(lp_info))
-                    elif file_type == "R":
+                    elif file_subtype == 'R':
                         for lp_info in minimal_info_nmrstar_r:
                             if lp_info not in lp_list:
                                 is_valid = False
@@ -260,7 +252,7 @@ class NEFTranslator(object):
                                     is_valid = False
                                     error.append('{} loop is empty'.format(lp_info))
                     else:
-                        msg = "file_type flag should be A/S/R"
+                        msg = 'file_subtype flag should be A/S/R'
                         error.append(msg)
                         is_valid = False
 
@@ -269,24 +261,23 @@ class NEFTranslator(object):
                 error.append(file_info[1])
                 is_valid = False
         except IOError:
-            msg = "File not found {}".format(in_file)
+            msg = 'File not found {}'.format(in_file)
             error.append(msg)
             is_valid = False
 
-        return is_valid, json.dumps({'info': info, 'warning': warning, 'error': error, 'FILE': file_format})
+        return is_valid, json.dumps({'info': info, 'warning': warning, 'error': error, 'file_type': file_type})
 
     @staticmethod
     def is_empty_loop(star_data, lp_category, data_flag):
+        """ Check if a given loop is empty
         """
-        Check if a given loop is empty
-        """
-        if data_flag == "Entry":
+        if data_flag == 'Entry':
             loops = star_data.get_loops_by_category(lp_category)
             for loop in loops:
                 if len(loop.data) == 0:
                     return True
             return False
-        elif data_flag == "Saveframe":
+        elif data_flag == 'Saveframe':
             loop = star_data.get_loop_by_category(lp_category)
             return len(loop.data) == 0
         else:
@@ -294,8 +285,7 @@ class NEFTranslator(object):
 
     @staticmethod
     def is_empty_data(data):
-        """
-        Check if given data has empty code
+        """ Check if given data has empty code
         """
         for d in data:
             if d in (None, '', '.', '?'):
@@ -304,8 +294,7 @@ class NEFTranslator(object):
 
     @staticmethod
     def is_data(data):
-        """
-        Check if given data has no empty code
+        """ Check if given data has no empty code
         """
         for d in data:
             if d in (None, '', '.', '?'):
@@ -316,12 +305,12 @@ class NEFTranslator(object):
     def get_data_content(star_data, data_flag):
         sf_list = []
         lp_list = []
-        if data_flag == "Entry":
+        if data_flag == 'Entry':
             for sf in star_data.frame_list:
                 sf_list.append(sf.category)
                 for lp in sf:
                     lp_list.append(lp.category)
-        elif data_flag == "Saveframe":
+        elif data_flag == 'Saveframe':
             for lp in star_data:
                 lp_list.append(lp.category)
         else:
@@ -329,8 +318,7 @@ class NEFTranslator(object):
         return sf_list, lp_list
 
     def get_seq_from_cs_loop(self, in_file):
-        """
-        Extracts sequence from checmial shift loop
+        """ Extracts sequence from checmial shift loop
         :param in_file: NEF/NMR-STAR file
         :return: status flag,json data
         """
@@ -344,15 +332,15 @@ class NEFTranslator(object):
         if flg:
             info.append('File successfully read')
             in_dat = self.read_input_file(in_file)[-1]
-            if dat['FILE'] == "NMR-STAR":
-                info.append('NMR-STAR')
+            if dat['file_type'] == 'nmr-star':
+                info.append('nmr-star')
                 seq = self.get_nmrstar_seq(in_dat)
                 if len(seq):
                     is_ok = True
                 else:
                     error.append("Can't extract sequence from chemical shift loop")
-            elif dat['FILE'] == "NEF":
-                info.append('NEF')
+            elif dat['file_type'] == 'nef':
+                info.append('nef')
                 seq = self.get_nef_seq(in_dat)
                 if len(seq):
                     is_ok = True
@@ -362,12 +350,13 @@ class NEFTranslator(object):
                 error.append("Can't identify file type, it is neither NEF nor NMR-STAR")
         else:
             error.append('File validation failed (or) File contains no chemical shift information')
-        return is_ok, json.dumps({'info': info, 'warning': warning, 'error': error, 'FILE': dat['FILE'], 'DATA': seq})
+        return is_ok, json.dumps({'info': info, 'warning': warning, 'error': error, 'file_type': dat['file_type'], 'data': seq})
 
     @staticmethod
     def get_nef_seq(str_data, lp_category='nef_chemical_shift', seq_id='sequence_code', comp_id='residue_name',
                     chain_id='chain_code', allow_empty=False):
-        """Extracts sequence from any given loop from a NEF file"""
+        """ Extracts sequence from any given loop from a NEF file
+        """
         try:
             loops = str_data.get_loops_by_category(lp_category)
         except AttributeError:
@@ -460,7 +449,8 @@ class NEFTranslator(object):
     @staticmethod
     def get_nmrstar_seq(str_data, lp_category='Atom_chem_shift', seq_id='Comp_index_ID', comp_id='Comp_ID',
                         chain_id='Entity_assembly_ID', allow_empty=False):
-        """Extracts sequence from any given NMR-STAR file"""
+        """ Extracts sequence from any given NMR-STAR file
+        """
         try:
             loops = str_data.get_loops_by_category(lp_category)
         except AttributeError:
@@ -564,9 +554,7 @@ class NEFTranslator(object):
 
     def validate_atom(self, star_data, lp_category='Atom_chem_shift', seq_id='Comp_index_ID', comp_id='Comp_ID',
                       atom_id='Atom_ID'):
-        """
-        Validates the atoms in a given loop against IUPAC standard
-
+        """ Validates the atoms in a given loop against IUPAC standard
         """
         try:
             loop_data = star_data.get_loops_by_category(lp_category)
@@ -587,7 +575,7 @@ class NEFTranslator(object):
                     except KeyError:
                         ns.append(i)
             except ValueError:
-                print("One of the following tag is missing ", seq_id, comp_id, atom_id)
+                self.logger.error('One of the following tag is missing ', seq_id, comp_id, atom_id)
 
             # nonStandard = [i for i in atm_data if i[2] not in self.atomDict[i[1].upper]]
             # ns.append(nonStandard)
@@ -609,25 +597,23 @@ class NEFTranslator(object):
             out_tag = nt + aut_tag
         else:
             out_tag = nt
-        if nef_loop_tags[0].split(".")[0] == "_nef_chemical_shift":
+        if nef_loop_tags[0].split('.')[0] == '_nef_chemical_shift':
             out_tag.append('_Atom_chem_shift.Ambiguity_code')
             out_tag.append('_Atom_chem_shift.Ambiguity_set_ID')
             out_tag.append('_Atom_chem_shift.Assigned_chem_shift_list_ID')
-        if nef_loop_tags[0].split(".")[0] == "_nef_distance_restraint":
+        if nef_loop_tags[0].split('.')[0] == '_nef_distance_restraint':
             out_tag.append('_Gen_dist_constraint.Member_logic_code')
             out_tag.append('_Gen_dist_constraint.Gen_dist_constraint_list_ID')
-        if nef_loop_tags[0].split(".")[0] == "_nef_dihedral_restraint":
+        if nef_loop_tags[0].split('.')[0] == '_nef_dihedral_restraint':
             out_tag.append('_Torsion_angle_constraint.Torsion_angle_constraint_list_ID')
-        if nef_loop_tags[0].split(".")[0] == "_nef_rdc_restraint":
+        if nef_loop_tags[0].split('.')[0] == '_nef_rdc_restraint':
             out_tag.append('_RDC_constraint.RDC_constraint_list_ID')
-        if nef_loop_tags[0].split(".")[0] == "_nef_peak":
+        if nef_loop_tags[0].split('.')[0] == '_nef_peak':
             out_tag.append('_Peak_row_format.Spectral_peak_list_ID')
         return out_tag
 
     def get_nmrstar_atom(self, res, nef_atom):
-        """
-        Returns (atom with out wildcard,[IUPAC atom list],ambiguity code)
-
+        """ Returns (atom with out wildcard,[IUPAC atom list],ambiguity code)
         """
         ambiguity_code = 1
         atom_type = None
@@ -636,26 +622,26 @@ class NEFTranslator(object):
             atom_list = []
             try:
                 ref_atom = re.findall(r'(\S+)([xyXY])([%*])$|(\S+)([%*])$|(\S+)([xyXY]$)', nef_atom)[0]
-                atm_set = [ref_atom.index(i) for i in ref_atom if i != ""]
+                atm_set = [ref_atom.index(i) for i in ref_atom if i != '']
                 pattern = None
                 if atm_set == [0, 1, 2]:
                     atom_type = ref_atom[0]
                     pattern = re.compile(r'%s\S\d+' % (ref_atom[0]))
                     alist2 = [i for i in atoms if re.search(pattern, i)]
                     xid = sorted(set([int(i[len(ref_atom[0])]) for i in alist2]))
-                    if ref_atom[1] == "x" or ref_atom[1] == "X":
+                    if ref_atom[1] == 'x' or ref_atom[1] == 'X':
                         atom_list = [i for i in alist2 if int(i[len(ref_atom[0])]) == xid[0]]
                     else:
                         atom_list = [i for i in alist2 if int(i[len(ref_atom[0])]) == xid[1]]
                     ambiguity_code = 2
                 elif atm_set == [3, 4]:
                     atom_type = ref_atom[3]
-                    if ref_atom[4] == "%":
+                    if ref_atom[4] == '%':
                         pattern = re.compile(r'%s\d+' % (ref_atom[3]))
-                    elif ref_atom[4] == "*":
+                    elif ref_atom[4] == '*':
                         pattern = re.compile(r'%s\S+' % (ref_atom[3]))
                     else:
-                        logging.critical("Wrong NEF atom {}".format(nef_atom))
+                        logging.critical('Wrong NEF atom {}'.format(nef_atom))
                     atom_list = [i for i in atoms if re.search(pattern, i)]
                     ambiguity_code = 1
 
@@ -665,17 +651,17 @@ class NEFTranslator(object):
                     atom_list = [i for i in atoms if re.search(pattern, i)]
                     if len(atom_list) != 2:
                         atom_list = []
-                    elif ref_atom[6] == "y" or ref_atom[6] == "Y":
+                    elif ref_atom[6] == 'y' or ref_atom[6] == 'Y':
                         # atom_list.reverse()[]
                         atom_list = atom_list[-1:]
-                    elif ref_atom[6] == "x" or ref_atom[6] == "X":
+                    elif ref_atom[6] == 'x' or ref_atom[6] == 'X':
                         atom_list = atom_list[:1]
                     else:
-                        logging.critical("Wrong NEF atom {}".format(nef_atom))
+                        logging.critical('Wrong NEF atom {}'.format(nef_atom))
                     ambiguity_code = 2
 
                 else:
-                    logging.critical("Wrong NEF atom {}".format(nef_atom))
+                    logging.critical('Wrong NEF atom {}'.format(nef_atom))
             except IndexError:
 
                 # print nef_atom
@@ -685,30 +671,29 @@ class NEFTranslator(object):
                 if nef_atom in atoms:
                     atom_list.append(nef_atom)
                 else:
-                    if nef_atom == "H%":  # To handle terminal protons
+                    if nef_atom == 'H%':  # To handle terminal protons
                         atom_list = ['H1', 'H2', 'H3']
-                        atom_type = "H"
+                        atom_type = 'H'
         except KeyError:
-            # self.logfile.write("%s\tResidue not found,%s,%s\n"%(self.TimeStamp(time.time()),res,nef_atom))
-            # print "Residue not found",res,nef_atom
-            if res != ".":
-                self.logger.critical("Non-standard residue found {}".format(res))
+            # self.logfile.write('%s\tResidue not found,%s,%s\n'%(self.TimeStamp(time.time()),res,nef_atom))
+            # print 'Residue not found',res,nef_atom
+            if res != '.':
+                self.logger.critical('Non-standard residue found {}'.format(res))
             atom_list = []
             atom_type = nef_atom
 
-            if nef_atom == "H%":
+            if nef_atom == 'H%':
                 atom_list = ['H1', 'H2', 'H3']
-                atom_type = "H"
+                atom_type = 'H'
         return atom_type, atom_list, ambiguity_code
 
     def translate_cs_row(self, f_tags, t_tags, row_data):
-        """
-        Translates row of data in chemical shift loop from NEF into NMR-STAR
-        :param f_tags: nef tags
+        """ Translates row of data in chemical shift loop from NEF into NMR-STAR
+        :param f_tags: NEF tags
         :type f_tags: list
-        :param t_tags: List nmr-star tags
+        :param t_tags: List NMR-STAR tags
         :type t_tags: list
-        :param row_data: List nef data
+        :param row_data: List NEF data
         :type row_data: list
         :return: List NMR-STAR data
         """
@@ -781,8 +766,7 @@ class NEFTranslator(object):
         return out_list
 
     def translate_row(self, f_tags, t_tags, row_data):
-        """
-        Translates row of data in a loop from NEF into NMR-STAR
+        """ Translates row of data in a loop from NEF into NMR-STAR
         :param f_tags: NEF tags
         :type f_tags: list
         :param t_tags: NMR-STAR tags
@@ -820,15 +804,14 @@ class NEFTranslator(object):
                         out[t_tags.index(stgs[1])] = row_data[f_tags.index(j)]
 
                 # else:
-                #   print ("ERROR",f_tags)
+                #   print ('ERROR',f_tags)
             out_row.append(out)
         else:
             out_row.append(row_data)
         return out_row
 
     def translate_seq_row(self, f_tags, t_tags, row_data):
-        """
-        Translates row of data in sequence  loop from NEF into NMR-STAR
+        """ Translates row of data in sequence  loop from NEF into NMR-STAR
         :param f_tags: NEF tags
         :type f_tags: list
         :param t_tags: NMR-STAR tags
@@ -837,7 +820,6 @@ class NEFTranslator(object):
         :type row_data: list
         :return:
         """
-
         out_row = []
         if len(f_tags) != len(t_tags):
             out = [None] * len(t_tags)
@@ -862,8 +844,7 @@ class NEFTranslator(object):
         return out_row
 
     def translate_restraint_row(self, f_tags, t_tags, row_data):
-        """
-        Translates row of data in restraint loop from NEF into NMR-STAR
+        """ Translates row of data in restraint loop from NEF into NMR-STAR
         :param f_tags: NEF tags
         :type f_tags: list
         :param t_tags: NMR-STAR tags
@@ -930,19 +911,19 @@ class NEFTranslator(object):
         warning = []
         error = []
         if star_file is None:
-            star_file = file_path + "/" + file_name.split(".")[0] + ".str"
+            star_file = file_path + '/' + file_name.split('.')[0] + '.str'
         (is_readable, dat_content, nef_data) = self.read_input_file(nef_file)
         try:
             star_data = pynmrstar.Entry.from_scratch(nef_data.entry_id)
         except AttributeError:
-            star_data = pynmrstar.Entry.from_scratch(file_name.split(".")[0])
+            star_data = pynmrstar.Entry.from_scratch(file_name.split('.')[0])
             warning.append('Not a complete Entry')
         if is_readable:
-            if dat_content == "Entry":
+            if dat_content == 'Entry':
                 self.chains = sorted(list(set(nef_data.get_loops_by_category('nef_sequence')[0].get_tag('chain_code'))))
-            elif dat_content == "Saveframe":
+            elif dat_content == 'Saveframe':
                 self.chains = sorted(list(set(nef_data[0].get_tag('chain_code'))))
-            elif dat_content == "Loop":
+            elif dat_content == 'Loop':
                 self.chains = sorted(list(set(nef_data.get_tag('chain_code'))))
             else:
                 is_done = False
@@ -953,19 +934,19 @@ class NEFTranslator(object):
             ang_list = 0
             rdc_list = 0
             peak_list = 0
-            if dat_content == "Entry":
+            if dat_content == 'Entry':
                 for saveframe in nef_data:
                     sf = pynmrstar.Saveframe.from_scratch(saveframe.name)
 
                     for tag in saveframe.tags:
-                        if tag[0].lower() == "sf_category":
-                            sf.add_tag("Sf_category", self.get_nmrstar_tag(saveframe.category)[0])
+                        if tag[0].lower() == 'sf_category':
+                            sf.add_tag('Sf_category', self.get_nmrstar_tag(saveframe.category)[0])
                         else:
                             neftag = '{}.{}'.format(saveframe.tag_prefix, tag[0])
                             sf.add_tag(self.get_nmrstar_tag(neftag)[0], tag[1])
-                    if saveframe.category == "nef_nmr_meta_data":
-                        sf.add_tag("NMR_STAR_version", "3.2.0.15")
-                        # sf.add_tag("Generated_date", self.TimeStamp(time.time()), update=True)
+                    if saveframe.category == 'nef_nmr_meta_data':
+                        sf.add_tag('NMR_STAR_version', '3.2.0.15')
+                        # sf.add_tag('Generated_date', self.TimeStamp(time.time()), update=True)
                         try:
                             lp1 = saveframe.get_loop_by_category('_nef_program_script')
                             lp1.add_data(['NEFTranslator', 'NEFtoNMRSTAR', '.'])
@@ -973,7 +954,7 @@ class NEFTranslator(object):
                         except KeyError:
                             pass  # May be better to add audit loop
                     for loop in saveframe:
-                        if loop.category == "_nef_sequence":
+                        if loop.category == '_nef_sequence':
                             self.cid = []  # Comp_index_ID list
                             for c in self.chains:  # Comp_index_ID initialized with 1
                                 self.cid.append(1)
@@ -986,9 +967,9 @@ class NEFTranslator(object):
                             ang_list+=1
                         if loop.category == '_nef_rdc_restraint':
                             rdc_list+=1
-                        if loop.category == "_nef_chemical_shift":
+                        if loop.category == '_nef_chemical_shift':
                             cs_list += 1
-                        if loop.category == "_nef_peak":
+                        if loop.category == '_nef_peak':
                             peak_list += 1
                         lp = pynmrstar.Loop.from_scratch()
                         lp_cols = self.get_nmrstar_loop_tags(loop.get_tag_names())
@@ -996,7 +977,7 @@ class NEFTranslator(object):
                             lp.add_tag(t)
                         # print (loop.category,lp.category,lp.get_tag_names(),loop.get_tag_names())
                         for dat in loop.data:
-                            if loop.category == "_nef_sequence":
+                            if loop.category == '_nef_sequence':
                                 dd = self.translate_seq_row(loop.get_tag_names(), lp.get_tag_names(), dat)
                                 self.cid[
                                     self.chains.index(dat[loop.get_tag_names().index('_nef_sequence.chain_code')])] += 1
@@ -1007,7 +988,7 @@ class NEFTranslator(object):
                                         d[lp.get_tag_names().index('_Chem_comp_assembly.Entity_assembly_ID')],
                                         d[lp.get_tag_names().index('_Chem_comp_assembly.Comp_index_ID')])
 
-                            elif loop.category == "_nef_chemical_shift":
+                            elif loop.category == '_nef_chemical_shift':
                                 dd = self.translate_cs_row(loop.get_tag_names(), lp.get_tag_names(), dat)
                                 for d in dd:
                                     d[lp.get_tag_names().index(
@@ -1019,7 +1000,7 @@ class NEFTranslator(object):
                                     d[lp.get_tag_names().index('_Gen_dist_constraint.Index_ID')] = r_index_id
                                     d[lp.get_tag_names().index('_Gen_dist_constraint.Gen_dist_constraint_list_ID')] = rest_list
                                     if len(dd) > 1:
-                                        d[lp.get_tag_names().index('_Gen_dist_constraint.Member_logic_code')] = "OR"
+                                        d[lp.get_tag_names().index('_Gen_dist_constraint.Member_logic_code')] = 'OR'
                                     lp.add_data(d)
                                     r_index_id += 1
                             elif loop.category == '_nef_dihedral_restraint':
@@ -1051,30 +1032,30 @@ class NEFTranslator(object):
                 star_data.normalize()
                 with open(star_file, 'w') as wstarfile:
                     wstarfile.write(str(star_data))
-            elif dat_content == "Saveframe" or dat_content == "Loop":
-                if dat_content == "Saveframe":
+            elif dat_content == 'Saveframe' or dat_content == 'Loop':
+                if dat_content == 'Saveframe':
                     saveframe = nef_data
                     sf = pynmrstar.Saveframe.from_scratch(saveframe.name)
                     for tag in saveframe.tags:
-                        if tag[0].lower() == "sf_category":
+                        if tag[0].lower() == 'sf_category':
                             try:
 
-                                sf.add_tag("Sf_category", self.get_nmrstar_tag(saveframe.category)[0])
+                                sf.add_tag('Sf_category', self.get_nmrstar_tag(saveframe.category)[0])
                             except ValueError:
-                                sf.add_tag("Sf_category", self.get_nmrstar_tag(tag[1])[0])
+                                sf.add_tag('Sf_category', self.get_nmrstar_tag(tag[1])[0])
                         else:
                             neftag = '{}.{}'.format(saveframe.tag_prefix, tag[0])
                             sf.add_tag(self.get_nmrstar_tag(neftag)[0], tag[1])
-                    if saveframe.category == "nef_nmr_meta_data":
-                        sf.add_tag("NMR_STAR_version", "3.2.0.15")
+                    if saveframe.category == 'nef_nmr_meta_data':
+                        sf.add_tag('NMR_STAR_version', '3.2.0.15')
 
                 else:
                     sf = pynmrstar.Saveframe.from_scratch(nef_data.category)
-                    if nef_data.category == "_nef_chemical_shift":
-                        sf.add_tag("_Assigned_chem_shift_list.Sf_category", 'nef_chemical_shift')
+                    if nef_data.category == '_nef_chemical_shift':
+                        sf.add_tag('_Assigned_chem_shift_list.Sf_category', 'nef_chemical_shift')
                     saveframe = [nef_data]
                 for loop in saveframe:
-                    if loop.category == "_nef_sequence":
+                    if loop.category == '_nef_sequence':
                         self.cid = []  # Comp_index_ID list
                         for c in self.chains:  # Comp_index_ID initialized with 1
                             self.cid.append(1)
@@ -1082,7 +1063,7 @@ class NEFTranslator(object):
 
                     if loop.category == '_nef_distance_restraint':
                         r_index_id = 1
-                    if loop.category == "_nef_chemical_shift":
+                    if loop.category == '_nef_chemical_shift':
                         cs_list += 1
                     lp = pynmrstar.Loop.from_scratch()
                     lp_cols = self.get_nmrstar_loop_tags(loop.get_tag_names())
@@ -1090,7 +1071,7 @@ class NEFTranslator(object):
                         lp.add_tag(t)
                     # print (loop.category,lp.category,lp.get_tag_names(),loop.get_tag_names())
                     for dat in loop.data:
-                        if loop.category == "_nef_sequence":
+                        if loop.category == '_nef_sequence':
                             dd = self.translate_seq_row(loop.get_tag_names(), lp.get_tag_names(), dat)
                             self.cid[
                                 self.chains.index(dat[loop.get_tag_names().index('_nef_sequence.chain_code')])] += 1
@@ -1101,7 +1082,7 @@ class NEFTranslator(object):
                                     d[lp.get_tag_names().index('_Chem_comp_assembly.Entity_assembly_ID')],
                                     d[lp.get_tag_names().index('_Chem_comp_assembly.Comp_index_ID')])
 
-                        elif loop.category == "_nef_chemical_shift":
+                        elif loop.category == '_nef_chemical_shift':
                             dd = self.translate_cs_row(loop.get_tag_names(), lp.get_tag_names(), dat)
                             for d in dd:
                                 d[lp.get_tag_names().index('_Atom_chem_shift.Assigned_chem_shift_list_ID')] = cs_list
@@ -1114,7 +1095,7 @@ class NEFTranslator(object):
                                 d[lp.get_tag_names().index(
                                     '_Gen_dist_constraint.Gen_dist_constraint_list_ID')] = rest_list
                                 if len(dd) > 1:
-                                    d[lp.get_tag_names().index('_Gen_dist_constraint.Member_logic_code')] = "OR"
+                                    d[lp.get_tag_names().index('_Gen_dist_constraint.Member_logic_code')] = 'OR'
                                 lp.add_data(d)
                                 r_index_id += 1
                         elif loop.category == '_nef_dihedral_restraint':
@@ -1154,13 +1135,13 @@ class NEFTranslator(object):
         return is_done, json.dumps({'info': info, 'warning': warning, 'error': error})
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     bt = NEFTranslator()
     bt.nef_to_nmrstar('data/2l9r.nef')
     print (bt.validate_file('data/2l9r.str','A'))
     #fname = sys.argv[1]
-    # f = open('neflist.txt','r').read().split("\n")
+    # f = open('neflist.txt','r').read().split('\n')
     # for fname in f:
-    #     print ("Working on {}".format(fname))
+    #     print ('Working on {}'.format(fname))
     #     bt = NEFTranslator()
     #     bt.nef_to_nmrstar(fname)

@@ -96,12 +96,12 @@ class NmrDpReportInputSource:
     """
 
     def __init__(self):
-        self.items = ('file_name', 'file_format', 'content_type', 'content_subtype',
+        self.items = ('file_name', 'file_type', 'content_type', 'content_subtype',
                       'polymer_sequence', 'polymer_sequence_in_loop',
                       'non_standard_residue',
                       'sequence_coverage_by_exptl_data',
                       'statistics_of_exptl_data')
-        self.file_formats = ('pdbx', 'nmr-nef', 'nmr-star')
+        self.file_types = ('pdbx', 'nef', 'nmr-star')
         self.content_types = ('model', 'nmr-unified-data')
         self.content_subtypes = ('coordinate', 'poly_seq', 'chem_shift', 'dist_restraint', 'dihed_restraint', 'rdc_restraint', 'spectral_peak')
 
@@ -111,9 +111,9 @@ class NmrDpReportInputSource:
 
         if item in self.items:
 
-            if item == 'file_format' and not value in self.file_formats:
-                logging.error('+NmrDpReportInputSource.setItemValue() ++ Error  - Unknown file format %s' % value)
-                raise ValueError('+NmrDpReportInputSource.setItemValue() ++ Error  - Unknown file format %s' % value)
+            if item == 'file_type' and not value in self.file_types:
+                logging.error('+NmrDpReportInputSource.setItemValue() ++ Error  - Unknown file type %s' % value)
+                raise ValueError('+NmrDpReportInputSource.setItemValue() ++ Error  - Unknown file type %s' % value)
 
             elif item == 'content_type' and not value in self.content_types:
                 logging.error('+NmrDpReportInputSource.setItemValue() ++ Error  - Unknown content type %s' % value)

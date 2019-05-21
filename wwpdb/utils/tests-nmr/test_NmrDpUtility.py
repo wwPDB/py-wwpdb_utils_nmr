@@ -23,10 +23,10 @@ class TestNmrDpUtility(unittest.TestCase):
     def test_init(self):
         nmr_content_subtypes = set(self.utility.nmr_content_subtypes)
 
-        self.assertEqual(nmr_content_subtypes, set(self.utility.sf_categories['nmr-nef'].keys()))
+        self.assertEqual(nmr_content_subtypes, set(self.utility.sf_categories['nef'].keys()))
         self.assertEqual(nmr_content_subtypes, set(self.utility.sf_categories['nmr-star'].keys()))
 
-        self.assertEqual(nmr_content_subtypes, set(self.utility.lp_categories['nmr-nef'].keys()))
+        self.assertEqual(nmr_content_subtypes, set(self.utility.lp_categories['nef'].keys()))
         self.assertEqual(nmr_content_subtypes, set(self.utility.lp_categories['nmr-star'].keys()))
 
         # compare NMR content subtypes in NmrDpReportInputSource

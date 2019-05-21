@@ -91,17 +91,17 @@ class NmrDpUtility(object):
         # NMR content types
         self.nmr_content_subtypes = ('poly_seq', 'chem_shift', 'dist_restraint', 'dihed_restraint', 'rdc_restraint', 'spectral_peak')
 
-        # readable file format name
-        self.readable_format_name = {'nmr-nef': 'NEF (NMR Exchange Format)', 'nmr-star': 'NMR-STAR V3.2',
-                                     'pdbx': 'PDBx/mmCIF', 'unknown': 'unknown'}
+        # readable file type
+        self.readable_file_type = {'nef': 'NEF (NMR Exchange Format)', 'nmr-star': 'NMR-STAR V3.2',
+                                   'pdbx': 'PDBx/mmCIF', 'unknown': 'unknown'}
 
         # saveframe categories
-        self.sf_categories = {'nmr-nef': {'poly_seq': 'nef_molecular_system',
-                                          'chem_shift': 'nef_chemical_shift_list',
-                                          'dist_restraint': 'nef_distance_restraint_list',
-                                          'dihed_restraint': 'nef_dihedral_restraint_list',
-                                          'rdc_restraint': 'nef_rdc_restraint_list',
-                                          'spectral_peak': 'nef_nmr_spectrum'},
+        self.sf_categories = {'nef': {'poly_seq': 'nef_molecular_system',
+                                      'chem_shift': 'nef_chemical_shift_list',
+                                      'dist_restraint': 'nef_distance_restraint_list',
+                                      'dihed_restraint': 'nef_dihedral_restraint_list',
+                                      'rdc_restraint': 'nef_rdc_restraint_list',
+                                      'spectral_peak': 'nef_nmr_spectrum'},
                               'nmr-star': {'poly_seq': 'assembly',
                                            'chem_shift': 'assigned_chemical_shifts',
                                            'dist_restraint': 'general_distance_constraints',
@@ -111,12 +111,12 @@ class NmrDpUtility(object):
                               }
 
         # loop categories
-        self.lp_categories = {'nmr-nef': {'poly_seq': '_nef_sequence',
-                                          'chem_shift': '_nef_chemical_shift',
-                                          'dist_restraint': '_nef_distance_restraint',
-                                          'dihed_restraint': '_nef_dihedral_restraint',
-                                          'rdc_restraint': '_nef_rdc_restraint',
-                                          'spectral_peak': '_nef_peak'},
+        self.lp_categories = {'nef': {'poly_seq': '_nef_sequence',
+                                      'chem_shift': '_nef_chemical_shift',
+                                      'dist_restraint': '_nef_distance_restraint',
+                                      'dihed_restraint': '_nef_dihedral_restraint',
+                                      'rdc_restraint': '_nef_rdc_restraint',
+                                      'spectral_peak': '_nef_peak'},
                               'nmr-star': {'poly_seq': '_Chem_comp_assembly',
                                            'chem_shift': '_Atom_chem_shift',
                                            'dist_restraint': '_Gen_dist_constraint',
@@ -299,7 +299,7 @@ class NmrDpUtility(object):
         input_source = self.report.input_sources[0]
 
         input_source.setItemValue('file_name', os.path.basename(self.__srcPath))
-        input_source.setItemValue('file_format', 'nmr-nef' if 'nef' in self.__op else 'nmr-star')
+        input_source.setItemValue('file_type', 'nef' if 'nef' in self.__op else 'nmr-star')
         input_source.setItemValue('content_type','nmr-unified-data')
 
         return input_source is not None
@@ -320,22 +320,19 @@ class NmrDpUtility(object):
 
         message = json.loads(json_dumps)
 
-        _file_format = message['FILE'].lower() # nef/nmr-star/unknown
-
-        if _file_format == 'nef':
-            _file_format = 'nmr-nef'
+        _file_type = message['file_type'] # nef/nmr-star/unknown
 
         input_source = self.report.input_sources[0]
         input_source_dic = input_source.get()
 
         file_name = input_source_dic['file_name']
-        file_format = input_source_dic['file_format']
+        file_type = input_source_dic['file_type']
 
         if is_valid:
 
-            if _file_format != file_format:
+            if _file_type != file_type:
 
-                self.report.error.addDescription('format_isssue', "'%s' was selected as %s file, but recognized as an %s file." % (file_name, self.readable_format_name[file_format], self.readable_format_name[_file_format]))
+                self.report.error.addDescription('format_isssue', "'%s' was selected as %s file, but recognized as an %s file." % (file_name, self.readable_file_type[file_type], self.readable_file_type[_file_type]))
 
                 if len(message['error']) > 0:
                     for error_message in message['error']:
@@ -344,7 +341,7 @@ class NmrDpUtility(object):
                 self.report.setError()
 
                 if self.__verbose:
-                    self.__lfh.write("+NmrDpUtility.__validateInputSource() ++ Error  - '%s' was selected as %s file, but recognized as an %s file.\n" % (file_name, self.readable_format_name[file_format], self.readable_format_name[_file_format]))
+                    self.__lfh.write("+NmrDpUtility.__validateInputSource() ++ Error  - '%s' was selected as %s file, but recognized as an %s file.\n" % (file_name, self.readable_file_type[file_type], self.readable_file_type[_file_type]))
 
                 return False
 
@@ -352,7 +349,7 @@ class NmrDpUtility(object):
 
         else:
 
-            self.report.error.addDescription('format_isssue', "'%s' is invalid %s file." % (file_name, self.readable_format_name[file_format]))
+            self.report.error.addDescription('format_isssue', "'%s' is invalid %s file." % (file_name, self.readable_file_type[file_type]))
 
             if len(message['error']) > 0:
                 for error_message in message['error']:
@@ -361,7 +358,7 @@ class NmrDpUtility(object):
             self.report.setError()
 
             if self.__verbose:
-                self.__lfh.write("+NmrDpUtility.__validateInputSource() ++ Error  - '%s' is invalid %s file." % (file_name, self.readable_format_name[file_format]))
+                self.__lfh.write("+NmrDpUtility.__validateInputSource() ++ Error  - '%s' is invalid %s file." % (file_name, self.readable_file_type[file_type]))
 
             return False
 
@@ -378,7 +375,7 @@ class NmrDpUtility(object):
         input_source_dic = input_source.get()
 
         file_name = input_source_dic['file_name']
-        file_format = input_source_dic['file_format']
+        file_type = input_source_dic['file_type']
 
         lp_category_list = self.nef_translator.get_data_content(self.__star_data, self.__star_data_type)[1]
 
@@ -387,8 +384,8 @@ class NmrDpUtility(object):
 
         # increment loop counter of each content subtype
         for lp_category in lp_category_list:
-            if lp_category in self.lp_categories[file_format].values():
-                lp_counts[[k for k, v in self.lp_categories[file_format].items() if v == lp_category][0]] += 1
+            if lp_category in self.lp_categories[file_type].values():
+                lp_counts[[k for k, v in self.lp_categories[file_type].items() if v == lp_category][0]] += 1
 
         content_subtypes = {k:lp_counts[k] for k in lp_counts if lp_counts[k] > 0}
 
@@ -398,7 +395,7 @@ class NmrDpUtility(object):
 
         if lp_counts[content_subtype] == 0:
 
-            sf_category = self.sf_categories[file_format][content_subtype]
+            sf_category = self.sf_categories[file_type][content_subtype]
 
             self.report.warning.addDescription('missing_saveframe', "Saveframe category '%s' were not found in %s file." % (sf_category, file_name))
             self.report.setWarning(warning)
@@ -408,7 +405,7 @@ class NmrDpUtility(object):
 
         elif lp_counts[content_subtype] > 1:
 
-            sf_category = self.sf_categories[file_format][content_subtype]
+            sf_category = self.sf_categories[file_type][content_subtype]
 
             self.report.error.addDescription('format_issue', "Unexpectedly, multiple saveframes belonging to category '%s' were found in %s file." % (sf_category, file_name))
             self.report.setError()
@@ -420,8 +417,8 @@ class NmrDpUtility(object):
 
         if lp_counts[content_subtype] == 0:
 
-            sf_category = self.sf_categories[file_format][content_subtype]
-            lp_category = self.lp_categories[file_format][content_subtype]
+            sf_category = self.sf_categories[file_type][content_subtype]
+            lp_category = self.lp_categories[file_type][content_subtype]
 
             self.report.error.addDescription('missing_mandatory_content', "Assigned chemical shifts are mandatory for PDB/BMRB deposition. Saveframe category '%s' and loop category '%s' were not found in %s file." % (sf_category, lp_category, file_name))
             self.report.setError()
@@ -433,8 +430,8 @@ class NmrDpUtility(object):
 
         if lp_counts[content_subtype] == 0:
 
-            sf_category = self.sf_categories[file_format][content_subtype]
-            lp_category = self.lp_categories[file_format][content_subtype]
+            sf_category = self.sf_categories[file_type][content_subtype]
+            lp_category = self.lp_categories[file_type][content_subtype]
 
             self.report.error.addDescription('missing_mandatory_content', "Distance restraints are mandatory for PDB/BMRB deposition. Saveframe category '%s' and loop category '%s' were not found in %s file." % (sf_category, lp_category, file_name))
             self.report.setError()
@@ -446,8 +443,8 @@ class NmrDpUtility(object):
 
         if lp_counts[content_subtype] == 0:
 
-            sf_category = self.sf_categories[file_format][content_subtype]
-            lp_category = self.lp_categories[file_format][content_subtype]
+            sf_category = self.sf_categories[file_type][content_subtype]
+            lp_category = self.lp_categories[file_type][content_subtype]
 
             self.report.warning.addDescription('missing_content', "Spectral peak list is missing. The wwPDB NMR Validation Task Force strongly encourages the submission of spectral peak lists, in particular those generated from NOESY spectra. Saveframe category '%s' and loop category '%s' were not found in %s file." % (sf_category, lp_category, file_name))
             self.report.setWarning()
@@ -464,12 +461,12 @@ class NmrDpUtility(object):
         input_source = self.report.input_sources[0]
         input_source_dic = input_source.get()
 
-        file_format = input_source_dic['file_format']
+        file_type = input_source_dic['file_type']
 
-        if file_format == 'nmr-nef':
-            return self.nef_translator.get_nef_seq(sf_data, lp_category=self.lp_categories[file_format][content_subtype], allow_empty=(content_subtype == 'spectral_peak'))
+        if file_type == 'nef':
+            return self.nef_translator.get_nef_seq(sf_data, lp_category=self.lp_categories[file_type][content_subtype], allow_empty=(content_subtype == 'spectral_peak'))
         else:
-            return self.nef_translator.get_star_seq(sf_data, lp_category=self.lp_categories[file_format][content_subtype], allow_empty=(content_subtype == 'spectral_peak'))
+            return self.nef_translator.get_star_seq(sf_data, lp_category=self.lp_categories[file_type][content_subtype], allow_empty=(content_subtype == 'spectral_peak'))
 
     def __extractPolymerSequence(self):
         """ Extract reference polymer sequence of NEF/NMR-STAR V3.2 file.
@@ -481,14 +478,14 @@ class NmrDpUtility(object):
         input_source = self.report.input_sources[0]
         input_source_dic = input_source.get()
 
-        file_format = input_source_dic['file_format']
+        file_type = input_source_dic['file_type']
 
         content_subtype = 'poly_seq'
 
         if not content_subtype in input_source_dic['content_subtype']:
             return True
 
-        sf_category = self.sf_categories[file_format][content_subtype]
+        sf_category = self.sf_categories[file_type][content_subtype]
 
         sf_data = self.__star_data.get_saveframes_by_category(sf_category)[0]
 
@@ -520,7 +517,7 @@ class NmrDpUtility(object):
         input_source = self.report.input_sources[0]
         input_source_dic = input_source.get()
 
-        file_format = input_source_dic['file_format']
+        file_type = input_source_dic['file_type']
 
         poly_seq_list_set = {}
         poly_sid_list_set = {}
@@ -532,7 +529,7 @@ class NmrDpUtility(object):
 
             poly_seq_list_set[content_subtype] = []
 
-            sf_category = self.sf_categories[file_format][content_subtype]
+            sf_category = self.sf_categories[file_type][content_subtype]
 
             list_id = 1
             has_poly_seq = False

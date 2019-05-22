@@ -346,7 +346,7 @@ class NEFTranslator(object):
             in_dat = self.read_input_file(in_file)[-1]
             if dat['file_type'] == 'nmr-star':
                 info.append('NMR-STAR')
-                seq = self.get_nmrstar_seq(in_dat)
+                seq = self.get_star_seq(in_dat)
                 if len(seq):
                     is_ok = True
                 else:
@@ -367,7 +367,7 @@ class NEFTranslator(object):
     @staticmethod
     def get_nef_seq(star_data, lp_category='nef_chemical_shift', seq_id='sequence_code', comp_id='residue_name',
                     chain_id='chain_code', allow_empty=False):
-        """ Extracts sequence from any given loop from a NEF file
+        """ Extracts sequence from any given loops in a NEF file
         """
 
         try:
@@ -438,7 +438,7 @@ class NEFTranslator(object):
                     seq_dict[list(chains)[0]] = [i.split(' ')[-1] for i in sorted_seq]
                     sid_dict[list(chains)[0]] = [int(i.split(' ')[1]) for i in sorted_seq]
 
-            asm = [] # molecular assembly of a loop
+            asm = [] # assembly of a loop
 
             for c in chains:
                 ent = {} # entity
@@ -452,9 +452,9 @@ class NEFTranslator(object):
         return dat
 
     @staticmethod
-    def get_nmrstar_seq(star_data, lp_category='Atom_chem_shift', seq_id='Comp_index_ID', comp_id='Comp_ID',
+    def get_star_seq(star_data, lp_category='Atom_chem_shift', seq_id='Comp_index_ID', comp_id='Comp_ID',
                         chain_id='Entity_assembly_ID', allow_empty=False):
-        """ Extracts sequence from any given NMR-STAR file
+        """ Extracts sequence from any given loops in an NMR-STAR file
         """
 
         try:
@@ -537,7 +537,7 @@ class NEFTranslator(object):
                     seq_dict[list(chains)[0]] = [i.split(' ')[-1] for i in sorted_seq]
                     sid_dict[list(chains)[0]] = [int(i.split(' ')[1]) for i in sorted_seq]
 
-            asm = [] # molecular assembly of a loop
+            asm = [] # assembly of a loop
 
             for c in chains:
                 ent = {} # entity
@@ -553,7 +553,7 @@ class NEFTranslator(object):
     @staticmethod
     def get_nef_comp_atom_pair(star_data, lp_category='nef_chemical_shift', comp_id='residue_name', atom_id='atom_name',
                                allow_empty=False):
-        """ Extracts unique pairs of comp_id and atom_id from any given loop from a NEF file
+        """ Extracts unique pairs of comp_id and atom_id from any given loops in a NEF file
         """
 
         try:
@@ -569,45 +569,45 @@ class NEFTranslator(object):
         dat = [] # data of all loops
 
         for loop in loops:
-            ca_dict = {}
+            comp_atom_dict = {}
 
-            ca_dat = []
+            comp_atom_dat = []
 
             if set(tags) & set(loop.tags) == set(tags):
-                ca_dat = loop.get_data_by_tag(tags)
+                comp_atom_dat = loop.get_data_by_tag(tags)
             else:
                 _tags_exist = False
                 for i in range(1, 5): # expand up to 4 dimensions
                     _tags = [comp_id + '_' + str(i), atom_id + '_' + str(i)]
                     if set(_tags) & set(loop.tags) == set(_tags):
                         _tags_exist = True
-                        ca_dat += loop.get_data_by_tag(_tags)
+                        comp_atom_dat += loop.get_data_by_tag(_tags)
                     else:
                         break
                 if not _tags_exist:
-                    ca_dat = loop.get_data_by_tag(tags) # raise ValueError
+                    comp_atom_dat = loop.get_data_by_tag(tags) # raise ValueError
 
             if allow_empty:
-                ca_dat = list(filter(NEFTranslator.is_data, ca_dat))
-                if len(ca_dat) == 0:
+                comp_atom_dat = list(filter(NEFTranslator.is_data, comp_atom_dat))
+                if len(comp_atom_dat) == 0:
                     continue
             else:
-                for i in ca_dat:
+                for i in comp_atom_dat:
                     if NEFTranslator.is_empty_data(i):
                         raise ValueError('Pair of comp_id and atom_id must not be empty. loop_category=%s, comp_id=%s, atom_id=%s' % (lp_category, i[0], i[1]))
 
-            comps = sorted(set([i[0] for i in ca_dat]))
-            sorted_ca = sorted(set(['{} {}'.format(i[0], i[1]) for i in ca_dat]))
+            comps = sorted(set([i[0] for i in comp_atom_dat]))
+            sorted_comp_atom = sorted(set(['{} {}'.format(i[0], i[1]) for i in comp_atom_dat]))
 
             for c in comps:
-                ca_dict[c] = [i.split(' ')[1] for i in sorted_ca if i.split(' ')[0] == c]
+                comp_atom_dict[c] = [i.split(' ')[1] for i in sorted_comp_atom if i.split(' ')[0] == c]
 
-            asm = [] # molecular assembly of a loop
+            asm = [] # assembly of a loop
 
             for c in comps:
                 ent = {} # entity
                 ent['comp_id'] = c
-                ent['atom_id'] = ca_dict[c]
+                ent['atom_id'] = comp_atom_dict[c]
                 asm.append(ent)
 
             dat.append(asm)
@@ -617,7 +617,7 @@ class NEFTranslator(object):
     @staticmethod
     def get_star_comp_atom_pair(star_data, lp_category='Atom_chem_shift', comp_id='Comp_ID', atom_id='Atom_id',
                                 allow_empty=False):
-        """ Extracts unique pairs of comp_id and atom_id from any given loop from a NMR-STAR file
+        """ Extracts unique pairs of comp_id and atom_id from any given loops in an NMR-STAR file
         """
 
         try:
@@ -633,45 +633,157 @@ class NEFTranslator(object):
         dat = [] # data of all loops
 
         for loop in loops:
-            ca_dict = {}
+            comp_atom_dict = {}
 
-            ca_dat = []
+            comp_atom_dat = []
 
             if set(tags) & set(loop.tags) == set(tags):
-                ca_dat = loop.get_data_by_tag(tags)
+                comp_atom_dat = loop.get_data_by_tag(tags)
             else:
                 _tags_exist = False
                 for i in range(1, 5): # expand up to 4 dimensions
                     _tags = [comp_id + '_' + str(i), atom_id + '_' + str(i)]
                     if set(_tags) & set(loop.tags) == set(_tags):
                         _tags_exist = True
-                        ca_dat += loop.get_data_by_tag(_tags)
+                        comp_atom_dat += loop.get_data_by_tag(_tags)
                     else:
                         break
                 if not _tags_exist:
-                    ca_dat = loop.get_data_by_tag(tags) # raise ValueError
+                    comp_atom_dat = loop.get_data_by_tag(tags) # raise ValueError
 
             if allow_empty:
-                ca_dat = list(filter(NEFTranslator.is_data, ca_dat))
-                if len(ca_dat) == 0:
+                comp_atom_dat = list(filter(NEFTranslator.is_data, comp_atom_dat))
+                if len(comp_atom_dat) == 0:
                     continue
             else:
-                for i in ca_dat:
+                for i in comp_atom_dat:
                     if NEFTranslator.is_empty_data(i):
                         raise ValueError('Pair of comp_id and atom_id must not be empty. loop_category=%s, comp_id=%s, atom_id=%s' % (lp_category, i[0], i[1]))
 
-            comps = sorted(set([i[0] for i in ca_dat]))
-            sorted_ca = sorted(set(['{} {}'.format(i[0], i[1]) for i in ca_dat]))
+            comps = sorted(set([i[0] for i in comp_atom_dat]))
+            sorted_comp_atom = sorted(set(['{} {}'.format(i[0], i[1]) for i in comp_atom_dat]))
 
             for c in comps:
-                ca_dict[c] = [i.split(' ')[1] for i in sorted_ca if i.split(' ')[0] == c]
+                comp_atom_dict[c] = [i.split(' ')[1] for i in sorted_comp_atom if i.split(' ')[0] == c]
 
-            asm = [] # molecular assembly of a loop
+            asm = [] # assembly of a loop
 
             for c in comps:
                 ent = {} # entity
                 ent['comp_id'] = c
-                ent['atom_id'] = ca_dict[c]
+                ent['atom_id'] = comp_atom_dict[c]
+                asm.append(ent)
+
+            dat.append(asm)
+
+        return dat
+
+    @staticmethod
+    def get_nef_atom_type_from_cs_loop(star_data, lp_category='nef_chemical_shift', atom_type='element', isotope_number='isotope_number', atom_id='atom_name',
+                               allow_empty=False):
+        """ Extracts unique pairs of atom_type, isotope number, and atom_id from assigned chemical shifts in a NEF file
+        """
+
+        try:
+            loops = star_data.get_loops_by_category(lp_category)
+        except AttributeError:
+            try:
+                loops = [star_data.get_loop_by_category(lp_category)]
+            except AttributeError:
+                loops = [star_data]
+
+        tags = [atom_type, isotope_number, atom_id]
+
+        dat = [] # data of all loops
+
+        for loop in loops:
+            ist_dict = {}
+            atm_dict = {}
+
+            a_type_dat = []
+
+            a_type_dat = loop.get_data_by_tag(tags)
+
+            if allow_empty:
+                a_type_dat = list(filter(NEFTranslator.is_data, a_type_dat))
+                if len(a_type_dat) == 0:
+                    continue
+            else:
+                for i in a_type_dat:
+                    if NEFTranslator.is_empty_data(i):
+                        raise ValueError('Pair of atom_type, isotope_number, and atom_id, must not be empty. loop_category=%s, atom_type=%s, isotope_number=%s, atom_id=%s' % (lp_category, i[0], i[1], i[2]))
+
+            a_types = sorted(set([i[0] for i in a_type_dat]))
+            sorted_ist = sorted(set(['{} {}'.format(i[0], i[1]) for i in a_type_dat]))
+            sorted_atm = sorted(set(['{} {}'.format(i[0], i[2]) for i in a_type_dat]))
+
+            for t in a_types:
+                ist_dict[t] = [int(i.split(' ')[1]) for i in sorted_ist if i.split(' ')[0] == t]
+                atm_dict[t] = [i.split(' ')[1] for i in sorted_atm if i.split(' ')[0] == t]
+
+            asm = [] # assembly of a loop
+
+            for t in a_types:
+                ent = {} # entity
+                ent['atom_type'] = t
+                ent['isotope_number'] = ist_dict[t]
+                ent['atom_id'] = atm_dict[t]
+                asm.append(ent)
+
+            dat.append(asm)
+
+        return dat
+
+    @staticmethod
+    def get_star_atom_type_from_cs_loop(star_data, lp_category='Atom_chem_shift', atom_type='Atom_type', isotope_number='Atom_isotope_number', atom_id='Atom_id',
+                                allow_empty=False):
+        """ Extracts unique pairs of atom_type, isotope number, and atom_id from assigned chemical shifts in an NMR-SAR file
+        """
+
+        try:
+            loops = star_data.get_loops_by_category(lp_category)
+        except AttributeError:
+            try:
+                loops = [star_data.get_loop_by_category(lp_category)]
+            except AttributeError:
+                loops = [star_data]
+
+        tags = [atom_type, isotope_number, atom_id]
+
+        dat = [] # data of all loops
+
+        for loop in loops:
+            ist_dict = {}
+            atm_dict = {}
+
+            a_type_dat = []
+
+            a_type_dat = loop.get_data_by_tag(tags)
+
+            if allow_empty:
+                a_type_dat = list(filter(NEFTranslator.is_data, a_type_dat))
+                if len(a_type_dat) == 0:
+                    continue
+            else:
+                for i in a_type_dat:
+                    if NEFTranslator.is_empty_data(i):
+                        raise ValueError('Pair of atom_type, isotope_number, and atom_id, must not be empty. loop_category=%s, atom_type=%s, isotope_number=%s, atom_id=%s' % (lp_category, i[0], i[1], i[2]))
+
+            a_types = sorted(set([i[0] for i in a_type_dat]))
+            sorted_ist = sorted(set(['{} {}'.format(i[0], i[1]) for i in a_type_dat]))
+            sorted_atm = sorted(set(['{} {}'.format(i[0], i[2]) for i in a_type_dat]))
+
+            for t in a_types:
+                ist_dict[t] = [int(i.split(' ')[1]) for i in sorted_ist if i.split(' ')[0] == t]
+                atm_dict[t] = [i.split(' ')[1] for i in sorted_atm if i.split(' ')[0] == t]
+
+            asm = [] # assembly of a loop
+
+            for t in a_types:
+                ent = {} # entity
+                ent['atom_type'] = t
+                ent['isotope_number'] = ist_dict[t]
+                ent['atom_id'] = atm_dict[t]
                 asm.append(ent)
 
             dat.append(asm)

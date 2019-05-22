@@ -4,7 +4,6 @@
 #
 # Updates:
 ##
-from __builtin__ import False
 """ Wrapper class for data processing for NMR unified data.
 """
 import sys
@@ -57,24 +56,28 @@ class NmrDpUtility(object):
                                                       self.__extractCommonPolymerSequence,
                                                       self.__extractNonStandardResidue,
                                                       self.__appendPolymerSequenceAlignment,
-                                                      self.__testAtomNomenclature] }
+                                                      self.__testAtomNomenclature,
+                                                      self.__testAtomTypeOfCSLoop] }
         """
                                 }
-                                                      self.__testAtomType,
-                                                      self.__testAtomIsotopeNumber,
                                                       self.__testAmbiguityCode,
                                                       self.__testDuplicationData,
                                                       self.__testAnomalousData,
                                                       self.__testSaspiciousData,
                                                       self__calculateStatistics],
                                 'nmr-consistency-check': [self.__appendInputResource,
+                                                          self.__retrieveDpReport,
                                                           self.__extractCoordPolymerSequence,
                                                           self.__alignCoordPolymerSequence,
                                                           self.__testCoordSequenceConsistency,
                                                           self.__testCoordAtomNomeclature],
-                                'nmr-nef2star-deposit':  [self.__resolveNefMinorIssue,
+                                'nmr-nef2star-deposit':  [self.__appendInputResource,
+                                                          self.__retrieveDpReport,
+                                                          self.__resolveNefMinorIssue,
                                                           self.__depositNef2Star],
-                                'nmr-star2star-deposit': [self.__resolveStarMinorIssue,
+                                'nmr-star2star-deposit': [self.__appendInputResource,
+                                                          self.__retrieveDpReport,
+                                                          self.__resolveStarMinorIssue,
                                                           self.__depositStar2Star]
                                 }
         """
@@ -85,7 +88,6 @@ class NmrDpUtility(object):
         self.nef_translator = None
 
         # PyNMRSTAR data
-        self.__star_data_type = None
         self.__star_data = None
 
         # NMR content types
@@ -126,40 +128,51 @@ class NmrDpUtility(object):
                               }
 
         # taken from wwpdb.utils.align.SequenceReferenceData.py
-        self._monDict3 = {'ALA': 'A',
-                          'ARG': 'R',
-                          'ASN': 'N',
-                          'ASP': 'D',
-                          'ASX': 'B',
-                          'CYS': 'C',
-                          'GLN': 'Q',
-                          'GLU': 'E',
-                          'GLX': 'Z',
-                          'GLY': 'G',
-                          'HIS': 'H',
-                          'ILE': 'I',
-                          'LEU': 'L',
-                          'LYS': 'K',
-                          'MET': 'M',
-                          'PHE': 'F',
-                          'PRO': 'P',
-                          'SER': 'S',
-                          'THR': 'T',
-                          'TRP': 'W',
-                          'TYR': 'Y',
-                          'VAL': 'V',
-                          'DA': 'A',
-                          'DC': 'C',
-                          'DG': 'G',
-                          'DT': 'T',
-                          'DU': 'U',
-                          'DI': 'I',
-                          'A': 'A',
-                          'C': 'C',
-                          'G': 'G',
-                          'I': 'I',
-                          'T': 'T',
-                          'U': 'U'}
+        self.monDict3 = {'ALA': 'A',
+                         'ARG': 'R',
+                         'ASN': 'N',
+                         'ASP': 'D',
+                         'ASX': 'B',
+                         'CYS': 'C',
+                         'GLN': 'Q',
+                         'GLU': 'E',
+                         'GLX': 'Z',
+                         'GLY': 'G',
+                         'HIS': 'H',
+                         'ILE': 'I',
+                         'LEU': 'L',
+                         'LYS': 'K',
+                         'MET': 'M',
+                         'PHE': 'F',
+                         'PRO': 'P',
+                         'SER': 'S',
+                         'THR': 'T',
+                         'TRP': 'W',
+                         'TYR': 'Y',
+                         'VAL': 'V',
+                         'DA': 'A',
+                         'DC': 'C',
+                         'DG': 'G',
+                         'DT': 'T',
+                         'DU': 'U',
+                         'DI': 'I',
+                         'A': 'A',
+                         'C': 'C',
+                         'G': 'G',
+                         'I': 'I',
+                         'T': 'T',
+                         'U': 'U'}
+
+        # atom isotopes
+        self.atom_isotopes = {'H': [1, 2, 3],
+                              'C': [13],
+                              'N': [15, 14],
+                              'O': [17],
+                              'P': [31],
+                              'S': [33],
+                              'F': [19],
+                              'CD': [113, 111],
+                              'CA': [43]}
 
     def setSource(self, fPath):
         """ Set primary source file path.
@@ -369,7 +382,7 @@ class NmrDpUtility(object):
         if self.report.isError():
             return False
 
-        is_done, self.__star_data_type, self.__star_data = self.nef_translator.read_input_file(self.__srcPath) # NEFTranslator.validate_file() generates this object internally, but not re-used.
+        is_done, star_data_type, self.__star_data = self.nef_translator.read_input_file(self.__srcPath) # NEFTranslator.validate_file() generates this object internally, but not re-used.
 
         input_source = self.report.input_sources[0]
         input_source_dic = input_source.get()
@@ -377,7 +390,7 @@ class NmrDpUtility(object):
         file_name = input_source_dic['file_name']
         file_type = input_source_dic['file_type']
 
-        lp_category_list = self.nef_translator.get_data_content(self.__star_data, self.__star_data_type)[1]
+        lp_category_list = self.nef_translator.get_data_content(self.__star_data, star_data_type)[1]
 
         # initialize loop counter
         lp_counts = {t:0 for t in self.nmr_content_subtypes}
@@ -499,7 +512,7 @@ class NmrDpUtility(object):
 
         except Exception as e:
 
-            self.report.error.addDescription('format_issue', str(e))
+            self.report.error.addDescription('internal_error', str(e))
             self.report.setError()
 
             if self.__verbose:
@@ -551,7 +564,7 @@ class NmrDpUtility(object):
 
                 except Exception as e:
 
-                    self.report.error.addDescription('format_issue', str(e))
+                    self.report.error.addDescription('internal_error', str(e))
                     self.report.setError()
 
                     if self.__verbose:
@@ -617,7 +630,7 @@ class NmrDpUtility(object):
                     for s2 in ps2:
 
                         if not s2['chain_id'] in ref_cids:
-                            self.report.error.addDescription('sequence_mismatch', "Invalid chain_id '%s' exists in '%s' saveframe (list_id:%s)." % (cid, sf_framecode2, list_id2 + 1))
+                            self.report.error.addDescription('sequence_mismatch', "Invalid chain ID '%s' exists in '%s' saveframe (list_id: %s)." % (cid, sf_framecode2, list_id2 + 1))
                             self.report.setError()
 
                         else:
@@ -632,14 +645,14 @@ class NmrDpUtility(object):
                                     seq = s2['comp_id'][j]
 
                                     if not sid in s1['seq_id']:
-                                        self.report.error.addDescription('sequence_mismatch', "Invalid seq_id %s, chain_id '%' exists in '%s' saveframe (list_id:%s)." % (sid, cid, sf_framecode2, list_id2 + 1))
+                                        self.report.error.addDescription('sequence_mismatch', "Invalid sequence ID %s (chain_id: %s) exists in '%s' saveframe (list_id: %s)." % (sid, cid, sf_framecode2, list_id2 + 1))
                                         self.report.setError()
 
                                     else:
                                         i = s1['seq_id'].index(sid)
 
                                         if seq != s1['comp_id'][i]:
-                                            self.report.error.addDescription('sequence_mismatch', "Invalid comp_id '%s' (correct: '%s'), seq_id %s, chain_id '%s' exists in '%s' saveframe (list_id:%s)." % (seq, s1['comp_id'][i], sid, cid, sf_framecode2, list_id2 + 1))
+                                            self.report.error.addDescription('sequence_mismatch', "Invalid comp ID '%s' vs '%s' (seq_id: %s, chain_id: %s) exists in '%s' saveframe (list_id: %s)." % (seq, s1['comp_id'][i], sid, cid, sf_framecode2, list_id2 + 1))
                                             self.report.setError()
 
             # brute force check
@@ -679,7 +692,7 @@ class NmrDpUtility(object):
                                         i = s1['seq_id'].index(sid)
 
                                         if seq != s1['comp_id'][i]:
-                                            self.report.error.addDescription('sequence_mismatch', "Unmatched comp_id '%s' (vs '%s'), seq_id %s, chain_id '%s' exists in '%s' (vs '%s') saveframe." % (seq, s1['comp_id'][i], sid, cid, sf_framecode2, sf_framecode1))
+                                            self.report.error.addDescription('sequence_mismatch', "Unmatched comp_id '%s' vs '%s' (seq_id: %s, chain_id: %s) exists in '%s' against '%s' saveframe." % (seq, s1['comp_id'][i], sid, cid, sf_framecode2, sf_framecode1))
                                             self.report.setError()
 
                         # inverse check required for unverified sequences
@@ -700,7 +713,7 @@ class NmrDpUtility(object):
                                         j = s2['seq_id'].index(sid)
 
                                         if seq != s2['comp_id'][j]:
-                                            self.report.error.addDescription('sequence_mismatch', "Unmatched comp_id '%s' (vs '%s'), seq_id %s, chain_id '%s' exists in '%s' (vs '%s') saveframe." % (seq, s2['comp_id'][j], sid, cid, sf_framecode1, sf_framecode2))
+                                            self.report.error.addDescription('sequence_mismatch', "Unmatched comp_id '%s' vs '%s' (seq_id: %s, chain_id: %s) exists in '%s' against '%s' saveframe." % (seq, s2['comp_id'][j], sid, cid, sf_framecode1, sf_framecode2))
                                             self.report.setError()
 
         return not self.report.isError()
@@ -785,7 +798,7 @@ class NmrDpUtility(object):
         if not has_poly_seq:
 
             if self.__verbose:
-                logging.warning('+NmrDpReport.__extractNonStandardResidue() ++ Warning  - Common polymer sequence does not exist, __extractCommonPolymerSequence() should be invoked')
+                logging.warning('+NmrDpUtility.__extractNonStandardResidue() ++ Warning  - Common polymer sequence does not exist, __extractCommonPolymerSequence() should be invoked')
 
             return True
 
@@ -839,7 +852,7 @@ class NmrDpUtility(object):
         if not has_poly_seq:
 
             if self.__verbose:
-                logging.warning('+NmrDpReport.__appendPolymerSequenceAlignment() ++ Warning  - Common polymer sequence does not exist, __extractCommonPolymerSequence() should be invoked')
+                logging.warning('+NmrDpUtility.__appendPolymerSequenceAlignment() ++ Warning  - Common polymer sequence does not exist, __extractCommonPolymerSequence() should be invoked')
 
             return True
 
@@ -927,8 +940,8 @@ class NmrDpUtility(object):
         array = ''
 
         for comp_id in comp_ids:
-            if comp_id in self._monDict3:
-                array += self._monDict3[comp_id]
+            if comp_id in self.monDict3:
+                array += self.monDict3[comp_id]
             elif comp_id in (None, '', '.', '?'):
                 array += '.'
             else:
@@ -973,11 +986,11 @@ class NmrDpUtility(object):
 
                 try:
 
-                    ca_pairs = self.__getCompAtomPair(sf_data, content_subtype)[0]
+                    pairs = self.__getCompAtomPair(sf_data, content_subtype)[0]
 
-                    for ca_pair in ca_pairs:
-                        comp_id = ca_pair['comp_id']
-                        atom_ids = ca_pair['atom_id']
+                    for pair in pairs:
+                        comp_id = pair['comp_id']
+                        atom_ids = pair['atom_id']
 
                         # standard residue
                         if self.nef_translator.get_one_letter_code(comp_id) != '?':
@@ -990,7 +1003,7 @@ class NmrDpUtility(object):
                                     _atom_id = self.nef_translator.get_nmrstar_atom(comp_id, atom_id)[1]
 
                                     if (len(_atom_id) == 0):
-                                        self.report.error.addDescription('invalid_atom_nomenclature', "Invalid NEF atom nomenclature '%s', comp_id '%s' exists in '%s' saveframe (list_id:%s)." % (atom_id, comp_id, sf_framecode, list_id))
+                                        self.report.error.addDescription('invalid_atom_nomenclature', "Invalid NEF atom nomenclature '%s' (comp_id: %s) exists in '%s' saveframe (list_id: %s)." % (atom_id, comp_id, sf_framecode, list_id))
                                         self.report.setError()
 
                                     else:
@@ -1001,7 +1014,7 @@ class NmrDpUtility(object):
                             for atom_id in atom_ids:
 
                                 if not self.nef_translator.validate_comp_atom(comp_id, atom_id):
-                                    self.report.error.addDescription('invalid_atom_nomenclature', "Invalid atom nomenclature '%s', comp_id '%s' exists in '%s' saveframe (list_id:%s)." % (atom_id, comp_id, sf_framecode, list_id))
+                                    self.report.error.addDescription('invalid_atom_nomenclature', "Invalid atom nomenclature '%s' (comp_id: %s) exists in '%s' saveframe (list_id: %s)." % (atom_id, comp_id, sf_framecode, list_id))
                                     self.report.setError()
 
                         # non-standard residue
@@ -1012,7 +1025,7 @@ class NmrDpUtility(object):
 
                 except Exception as e:
 
-                    self.report.error.addDescription('format_issue', str(e))
+                    self.report.error.addDescription('internal_error', str(e))
                     self.report.setError()
 
                     if self.__verbose:
@@ -1020,7 +1033,7 @@ class NmrDpUtility(object):
 
                     return False
 
-        return True
+        return not self.report.isError()
 
     def __getCompAtomPair(self, sf_data, content_subtype):
         """ Wrapper function to retrieve pairs of comp_id and atom_id from loop of a specified saveframe and content subtype via NEFTranslator.
@@ -1035,6 +1048,83 @@ class NmrDpUtility(object):
             return self.nef_translator.get_nef_comp_atom_pair(sf_data, lp_category=self.lp_categories[file_type][content_subtype], allow_empty=(content_subtype == 'spectral_peak'))
         else:
             return self.nef_translator.get_star_comp_atom_pair(sf_data, lp_category=self.lp_categories[file_type][content_subtype], allow_empty=(content_subtype == 'spectral_peak'))
+
+    def __testAtomTypeOfCSLoop(self):
+        """ Perform atom type, isotope number test on assigned chemical shifts.
+        """
+
+        if self.report.isError():
+            return False
+
+        input_source = self.report.input_sources[0]
+        input_source_dic = input_source.get()
+
+        file_type = input_source_dic['file_type']
+
+        content_subtype = 'chem_shift'
+
+        if not content_subtype in input_source_dic['content_subtype'].keys():
+            return True
+
+        sf_category = self.sf_categories[file_type][content_subtype]
+
+        list_id = 1
+
+        for sf_data in self.__star_data.get_saveframes_by_category(sf_category):
+
+            sf_framecode = sf_data.get_tag('sf_framecode')[0]
+
+            try:
+
+                a_types = self.__getAtomTypeFromCSLoop(sf_data, content_subtype)[0]
+
+                for a_type in a_types:
+                    atom_type = a_type['atom_type']
+                    isotope_nums = a_type['isotope_number']
+                    atom_ids = a_type['atom_id']
+
+                    if not atom_type in self.atom_isotopes.keys():
+                        self.report.error.addDescription('invalid_atom_type', "Invalid atom type '%s' exists in '%s' saveframe (list_id: %s)." % (atom_type, sf_framecode, list_id))
+                        self.report.setError()
+
+                    else:
+                        for isotope_num in isotope_nums:
+                            if not isotope_num in self.atom_isotopes[atom_type]:
+                                self.report.error.addDescription('invalid_isotope_number', "Invalid isotope number %s (atom_type: %s, allowed isotope number: %s) exists in '%s' saveframe (list_id: %s)." % (isotope_num, atom_type, self.atom_isotopes[atom_type], sf_framecode, list_id))
+                                self.report.setError()
+
+                        for atom_id in atom_ids:
+                            if not atom_id.startswith(atom_type):
+                                self.report.error.addDescription('invalid_atom_nomenclature', "Invalid atom nomenclature '%s' (atom_type: %s) exists in '%s' saveframe (list_id: %s)." % (atom_id, atom_type, sf_framecode, list_id))
+                                self.report.setError()
+
+                list_id += 1
+
+            except Exception as e:
+
+                self.report.error.addDescription('internal_error', str(e))
+                self.report.setError()
+
+                if self.__verbose:
+                    self.__lfh.write("+NmrDpUtility.__testAtomChemShiftType() ++ Error  - %s" % str(e))
+
+                return False
+
+        return not self.report.isError()
+
+    def __getAtomTypeFromCSLoop(self, sf_data, content_subtype):
+        """ Wrapper function to retrieve atom_type, isotope number, and atom_id from assigned chemical shifts via NEFTranslator.
+        """
+
+        input_source = self.report.input_sources[0]
+        input_source_dic = input_source.get()
+
+        file_type = input_source_dic['file_type']
+
+        if file_type == 'nef':
+            return self.nef_translator.get_nef_atom_type_from_cs_loop(sf_data)
+        else:
+            return self.nef_translator.get_star_atom_type_from_cs_loop(sf_data)
 
 if __name__ == '__main__':
     dp = NmrDpUtility()

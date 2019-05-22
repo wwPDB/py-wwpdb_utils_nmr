@@ -57,6 +57,27 @@ class TestNmrDpUtility(unittest.TestCase):
 
         #print(self.utility.report.getJson())
 
+    def test_nmr_star_parser_check(self):
+        # no input
+        with LogCapture() as logs:
+            with self.assertRaises(ValueError):
+                self.utility.op('nmr-star-parser-check')
+
+        with LogCapture() as logs:
+            with self.assertRaises(IOError):
+                self.utility.setSource('dummydummy')
+
+        self.utility.setSource(self.data_dir_path + '2l9r.str')
+
+        # invalid workflow operation
+        with LogCapture() as logs:
+            with self.assertRaises(KeyError):
+                self.utility.op('nmr')
+
+        self.utility.op('nmr-star-parser-check')
+
+        #print(self.utility.report.getJson())
+
     def test_nmr_nef_parser_check_non_std_residue(self):
         self.utility.setSource(self.data_dir_path + '2l9rnonstandard.nef')
 

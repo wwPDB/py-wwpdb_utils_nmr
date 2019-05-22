@@ -164,50 +164,15 @@ class NmrDpUtility(object):
                          'U': 'U'}
 
         # atom isotopes
-        self.atom_isotopes = {'H': [1, 2, 3],
-                              'C': [13],
-                              'N': [15, 14],
-                              'O': [17],
-                              'P': [31],
-                              'S': [33],
-                              'F': [19],
-                              'CD': [113, 111],
-                              'CA': [43]}
-
-        ###################################################################
-        #       Chemical Shift Ambiguity Index Value Definitions          #
-        #                                                                 #
-        # The values other than 1 are used for those atoms with different #
-        # chemical shifts that cannot be assigned to stereospecific atoms #
-        # or to specific residues or chains.                              #
-        #                                                                 #
-        #   Index Value            Definition                             #
-        #                                                                 #
-        #      1             Unique (including isolated methyl protons,   #
-        #                         geminal atoms, and geminal methyl       #
-        #                         groups with identical chemical shifts)  #
-        #                         (e.g. ILE HD11, HD12, HD13 protons)     #
-        #      2             Ambiguity of geminal atoms or geminal methyl #
-        #                         proton groups (e.g. ASP HB2 and HB3     #
-        #                         protons, LEU CD1 and CD2 carbons, or    #
-        #                         LEU HD11, HD12, HD13 and HD21, HD22,    #
-        #                         HD23 methyl protons)                    #
-        #      3             Aromatic atoms on opposite sides of          #
-        #                         symmetrical rings (e.g. TYR HE1 and HE2 #
-        #                         protons)                                #
-        #      4             Intraresidue ambiguities (e.g. LYS HG and    #
-        #                         HD protons or TRP HZ2 and HZ3 protons)  #
-        #      5             Interresidue ambiguities (LYS 12 vs. LYS 27) #
-        #      6             Intermolecular ambiguities (e.g. ASP 31 CA   #
-        #                         in monomer 1 and ASP 31 CA in monomer 2 #
-        #                         of an asymmetrical homodimer, duplex    #
-        #                         DNA assignments, or other assignments   #
-        #                         that may apply to atoms in one or more  #
-        #                         molecule in the molecular assembly)     #
-        #      9             Ambiguous, specific ambiguity not defined    #
-        #                                                                 #
-        ###################################################################
-        self.bmrb_ambiguity_codes = {"1", "2", "3", "4", "5", "6", "9"}
+        self.atom_isotopes = {'H': {1, 2, 3},
+                              'C': {13},
+                              'N': {15, 14},
+                              'O': {17},
+                              'P': {31},
+                              'S': {33},
+                              'F': {19},
+                              'CD': {113, 111},
+                              'CA': {43}}
 
     def setSource(self, fPath):
         """ Set primary source file path.
@@ -217,8 +182,8 @@ class NmrDpUtility(object):
             self.__srcPath = os.path.abspath(fPath)
 
         else:
-            logging.error("+NmrDpUtility.setSource() ++ Error  - Could not access to file path '%s'" % fPath)
-            raise IOError("+NmrDpUtility.setSource() ++ Error  - Could not access to file path '%s'" % fPath)
+            logging.error("+NmrDpUtility.setSource() ++ Error  - Could not access to file path '%s'." % fPath)
+            raise IOError("+NmrDpUtility.setSource() ++ Error  - Could not access to file path '%s'." % fPath)
 
     def setDestination(self, fPath):
         """ Set primary destination file path.
@@ -242,8 +207,8 @@ class NmrDpUtility(object):
             elif type == 'file':
                 self.__inputParamDict[name] = os.path.abspath(value)
             else:
-                logging.error("+NmrDpUtility.addInput() ++ Error  - Unknown input type '%s'" % type)
-                raise KeyError("+NmrDpUtility.addInput() ++ Error  - Unknown input type '%s'" % type)
+                logging.error("+NmrDpUtility.addInput() ++ Error  - Unknown input type '%s'." % type)
+                raise KeyError("+NmrDpUtility.addInput() ++ Error  - Unknown input type '%s'." % type)
 
                 return False
 
@@ -265,8 +230,8 @@ class NmrDpUtility(object):
             elif type == 'file':
                 self.__outputParamDict[name] = os.path.abspath(value)
             else:
-                logging.error("+NmrDpUtility.addOutput() ++ Error  - Unknown output type '%s'" % type)
-                raise KeyError("+NmrDpUtility.addOutput() ++ Error  - Unknown output type '%s'" % type)
+                logging.error("+NmrDpUtility.addOutput() ++ Error  - Unknown output type '%s'." % type)
+                raise KeyError("+NmrDpUtility.addOutput() ++ Error  - Unknown output type '%s'." % type)
 
                 return False
 
@@ -283,15 +248,15 @@ class NmrDpUtility(object):
         """
 
         if self.__srcPath is None:
-            logging.error("+NmrDpUtility.op() ++ Error  - No input provided for workflow operation '%s'" % op)
-            raise ValueError("+NmrDpUtility.op() ++ Error  - No input provided for workflow operation '%s'" % op)
+            logging.error("+NmrDpUtility.op() ++ Error  - No input provided for workflow operation '%s'." % op)
+            raise ValueError("+NmrDpUtility.op() ++ Error  - No input provided for workflow operation '%s'." % op)
 
         if self.__verbose:
             self.__lfh.write("+NmrDpUtility.op() starting op %s\n" % op)
 
         if not op in self.__workFlowOps:
-            logging.error("+NmrDpUtility.op() ++ Error  - Unknown workflow operation '%s'" % op)
-            raise KeyError("+NmrDpUtility.op() ++ Error  - Unknown workflow operation '%s'" % op)
+            logging.error("+NmrDpUtility.op() ++ Error  - Unknown workflow operation '%s'." % op)
+            raise KeyError("+NmrDpUtility.op() ++ Error  - Unknown workflow operation '%s'." % op)
 
         self.__op = op
 
@@ -563,7 +528,7 @@ class NmrDpUtility(object):
 
         except ValueError as e:
 
-            self.report.error.addDescription('blanked_mandatory_value', str(e))
+            self.report.error.addDescription('invalid_value', str(e))
             self.report.setError()
 
             if self.__verbose:
@@ -857,7 +822,7 @@ class NmrDpUtility(object):
         if not has_poly_seq:
 
             if self.__verbose:
-                logging.warning('+NmrDpUtility.__extractNonStandardResidue() ++ Warning  - Common polymer sequence does not exist, __extractCommonPolymerSequence() should be invoked')
+                logging.warning('+NmrDpUtility.__extractNonStandardResidue() ++ Warning  - Common polymer sequence does not exist, __extractCommonPolymerSequence() should be invoked.')
 
             return True
 
@@ -910,11 +875,11 @@ class NmrDpUtility(object):
 
         if not has_poly_seq:
 
-            self.report.error.addDescription('internal_error', "+NmrDpUtility.__appendPolymerSequenceAlignment() ++ Error  - Common polymer sequence does not exist, __extractCommonPolymerSequence() should be invoked")
+            self.report.error.addDescription('internal_error', "+NmrDpUtility.__appendPolymerSequenceAlignment() ++ Error  - Common polymer sequence does not exist, __extractCommonPolymerSequence() should be invoked.")
             self.report.setError()
 
             if self.__verbose:
-                logging.warning("+NmrDpUtility.__appendPolymerSequenceAlignment() ++ Error  - Common polymer sequence does not exist, __extractCommonPolymerSequence() should be invoked")
+                logging.warning("+NmrDpUtility.__appendPolymerSequenceAlignment() ++ Error  - Common polymer sequence does not exist, __extractCommonPolymerSequence() should be invoked.")
 
             return False
 
@@ -995,6 +960,17 @@ class NmrDpUtility(object):
 
         return {'chain_id': s2['chain_id'], 'seq_id': sid, 'comp_id': seq}
 
+    def __get1LetterCode(self, comp_id):
+        """ Convert comp ID to 1-letter code.
+        """
+
+        if comp_id in self.monDict3:
+            return self.monDict3[comp_id]
+        elif comp_id in (None, '', '.', '?'):
+            return '.'
+        else:
+            return 'X'
+
     def __get1LetterCodeSequence(self, comp_ids):
         """ Convert array of comp ID to 1-letter code sequence.
         """
@@ -1002,12 +978,7 @@ class NmrDpUtility(object):
         array = ''
 
         for comp_id in comp_ids:
-            if comp_id in self.monDict3:
-                array += self.monDict3[comp_id]
-            elif comp_id in (None, '', '.', '?'):
-                array += '.'
-            else:
-                array += 'X'
+            array += self.__get1LetterCode(comp_id)
 
         return array
 
@@ -1095,7 +1066,7 @@ class NmrDpUtility(object):
 
                 except ValueError as e:
 
-                    self.report.error.addDescription('blanked_mandatory_value', str(e))
+                    self.report.error.addDescription('invalid_value', str(e))
                     self.report.setError()
 
                     if self.__verbose:
@@ -1142,7 +1113,7 @@ class NmrDpUtility(object):
 
         if not content_subtype in input_source_dic['content_subtype'].keys():
 
-            self.report.error.addDescription('internal_error', "+NmrDpUtility.__testAtomTypeOfCSLoop() ++ Error  - Assigned chemical shift loop does not exists in %s file" % file_name)
+            self.report.error.addDescription('internal_error', "+NmrDpUtility.__testAtomTypeOfCSLoop() ++ Error  - Assigned chemical shift loop does not exists in %s file." % file_name)
             self.report.setError()
 
             if self.__verbose:
@@ -1194,7 +1165,7 @@ class NmrDpUtility(object):
 
             except ValueError as e:
 
-                self.report.error.addDescription('blanked_mandatory_value', str(e))
+                self.report.error.addDescription('invalid_value', str(e))
                 self.report.setError()
 
                 if self.__verbose:
@@ -1241,7 +1212,7 @@ class NmrDpUtility(object):
 
         if not content_subtype in input_source_dic['content_subtype'].keys():
 
-            self.report.error.addDescription('internal_error', "+NmrDpUtility.__testAmbiguityCodeOfCSLoop() ++ Error  - Assigned chemical shift loop does not exists in %s file" % file_name)
+            self.report.error.addDescription('internal_error', "+NmrDpUtility.__testAmbiguityCodeOfCSLoop() ++ Error  - Assigned chemical shift loop does not exists in %s file." % file_name)
             self.report.setError()
 
             if self.__verbose:
@@ -1261,7 +1232,189 @@ class NmrDpUtility(object):
 
             sf_framecode = sf_data.get_tag('sf_framecode')[0]
 
+            try:
+
+                a_codes = self.nef_translator.get_star_ambig_code_from_cs_loop(sf_data)[0]
+
+                comp_ids_wo_ambig_code = []
+
+                for a_code in a_codes:
+                    comp_id = a_code['comp_id']
+                    ambig_code = a_code['ambig_code']
+                    atom_ids = a_code['atom_id']
+
+                    # standard residue
+                    if self.nef_translator.get_one_letter_code(comp_id) != '?':
+
+                        if ambig_code is None:
+                            comp_ids_wo_ambig_code.append(comp_id)
+
+                        elif ambig_code == 1 or ambig_code >= 4:
+                            pass
+
+                        # ambig_code is 2 (geminal atoms) or 3 (aromatic ring atoms in opposite side)
+                        else:
+
+                            for atom_id in atom_ids:
+
+                                if ambig_code > self.__getMaximumAguityCode(comp_id, atom_id):
+                                    self.report.error.addDescription('invalid_ambiguity_code', "Invalid ambiguity code %s (comp_id: %s, atom_id: %s, allowed ambig_code: %s) exists in '%s' saveframe (list_id: %s)." % (ambig_code, comp_id, atom_id, [1, self.__getMaximumAguityCode(comp_id, atom_id), 4, 5, 6, 9], sf_framecode, list_id))
+                                    self.report.setError()
+
+                    # non-standard residue
+                    else:
+                        pass
+
+                if len(comp_ids_wo_ambig_code) > 0:
+                    self.report.warning.addDescription('missing_data', "Missing ambiguity code for standard residues in '%s' saveframe (list_id: %s)." % (sf_framecode, list_id))
+                    self.report.setWarning()
+
+                    if self.__verbose:
+                        self.__lfh.write("+NmrDpUtility.__testAmbigCodeOfCSLoop() ++ Warning  - Missing ambiguity code for standard residues in '%s' saveframe (list_id: %s)." % (sf_framecode, list_id))
+
+                list_id += 1
+
+            except LookupError as e:
+
+                self.report.error.addDescription('missing_mandatory_item', str(e))
+                self.report.setError()
+
+                if self.__verbose:
+                    self.__lfh.write("+NmrDpUtility.__testAmbigCodeOfCSLoop() ++ LookupError  - %s" % str(e))
+
+            except ValueError as e:
+
+                self.report.error.addDescription('invalid_value', str(e))
+                self.report.setError()
+
+                if self.__verbose:
+                    self.__lfh.write("+NmrDpUtility.__testAmbigCodeOfCSLoop() ++ ValueError  - %s" % str(e))
+            """
+            except Exception as e:
+
+                self.report.error.addDescription('internal_error', "+NmrDpUtility.__testAmbigCodeOfCSLoop() ++ Error  - %s" % str(e))
+                self.report.setError()
+
+                if self.__verbose:
+                    self.__lfh.write("+NmrDpUtility.__testAmbigCodeOfCSLoop() ++ Error  - %s" % str(e))
+            """
         return not self.report.isError()
+
+    def __getMaximumAguityCode(self, comp_id, atom_id):
+        """ Return allowed maximum ambiguity code of a given atom
+        """
+
+        code = self.__get1LetterCode(comp_id)
+
+        if code == '.' or code == 'X':
+            return 1
+
+        if atom_id.startswith('H'):
+
+            if comp_id == 'ARG':
+                if atom_id in ['HB2', 'HB3', 'HG2', 'HG3', 'HD2', 'HD3', 'HH11', 'HH12', 'HH21', 'HH22']:
+                    return 2
+
+            elif comp_id == 'ASN':
+                if atom_id in ['HB2', 'HB3', 'HD21', 'HD22']:
+                    return 2
+
+            elif comp_id in ['ASP', 'CYS', 'HIS', 'SER', 'TRP']:
+                if atom_id in ['HB2', 'HB3']:
+                    return 2
+
+            elif comp_id == 'GLN':
+                if atom_id in ['HB2', 'HB3', 'HG2', 'HG3', 'HE21', 'HE22']:
+                    return 2
+
+            elif comp_id in ['GLU', 'MET']:
+                if atom_id in ['HB2', 'HB3', 'HG2', 'HG3']:
+                    return 2
+
+            elif comp_id == 'GLY':
+                if atom_id in ['HA2', 'HA3']:
+                    return 2
+
+            elif comp_id == 'ILE':
+                if atom_id in ['HG12', 'HG13']:
+                    return 2
+
+            elif comp_id == 'LEU':
+                if atom_id in ['HB2', 'HB3', 'HD11', 'HD12', 'HD13', 'HD21', 'HD22', 'HD23']:
+                    return 2
+
+            elif comp_id == 'LYS':
+                if atom_id in ['HB2', 'HB3', 'HG2', 'HG3', 'HD2', 'HD3', 'HE2', 'HE3']:
+                    return 2
+
+            elif comp_id in ['PHE', 'TYR']:
+                if atom_id in ['HB2', 'HB3']:
+                    return 2
+
+                elif atom_id in ['HD1', 'HD2', 'HE1', 'HE2']:
+                    return 3
+
+            elif comp_id == 'PRO':
+                if atom_id in ['HB2', 'HB3', 'HG2', 'HG3', 'HD2', 'HD3']:
+                    return 2
+
+            elif comp_id == 'VAL':
+                if atom_id in ['HG11', 'HG12', 'HG13', 'HG21', 'HG22', 'HG23']:
+                    return 2
+
+            elif comp_id == 'DA':
+                if atom_id in ['H61', 'H62', "H2'", "H2''", "H5'", "H5''"]:
+                    return 2
+
+            elif comp_id == 'DG':
+                if atom_id in ['H21', 'H22', "H2'", "H2''", "H5'", "H5''"]:
+                    return 2
+
+            elif comp_id == 'DC':
+                if atom_id in ['H41', 'H42', "H2'", "H2''", "H5'", "H5''"]:
+                    return 2
+
+            elif comp_id == 'DT':
+                if atom_id in ["H2'", "H2''", "H5'", "H5''"]:
+                    return 2
+
+            elif comp_id == 'A':
+                if atom_id in ['H61', 'H62', "H5'", "H5''"]:
+                    return 2
+
+            elif comp_id == 'G':
+                if atom_id in ['H21', 'H22', "H5'", "H5''"]:
+                    return 2
+
+            elif comp_id == 'C':
+                if atom_id in ['H41', 'H42', "H5'", "H5''"]:
+                    return 2
+
+            elif comp_id == 'U':
+                if atom_id in ["H5'", "H5''"]:
+                    return 2
+
+        elif atom_id.startswith('C'):
+
+            if comp_id == 'LEU':
+                if atom_id in ['CD1', 'CD2']:
+                    return 2
+
+            elif comp_id in ['PHE', 'TYR']:
+                if atom_id in ['CD1', 'CD2', 'CE1', 'CE2']:
+                    return 3
+
+            elif comp_id == 'VAL':
+                if atom_id in ['CG1', 'CG2']:
+                    return 2
+
+        elif atom_id.startswith('N'):
+
+            if comp_id == 'ARG':
+                if atom_id in ['NH1', 'NH2']:
+                    return 2
+
+        return 1
 
 if __name__ == '__main__':
     dp = NmrDpUtility()

@@ -411,43 +411,50 @@ class NEFTranslator(object):
                     if NEFTranslator.is_empty_data(i):
                         raise ValueError("Sequence must not be empty: chain_id '%s', seq_id '%s', comp_id '%s' in loop_category '%'." % (i[2], i[0], i[1], lp_category))
 
-            chains = sorted(set([i[2] for i in seq_dat]))
-            sorted_seq = sorted(set(['{} {:04d} {}'.format(i[2], int(i[0]), i[1]) for i in seq_dat]))
+            try:
 
-            chk_dict = {'{} {:04d}'.format(i[2], int(i[0])):i[1] for i in seq_dat}
+                chains = sorted(set([i[2] for i in seq_dat]))
+                sorted_seq = sorted(set(['{} {:04d} {}'.format(i[2], int(i[0]), i[1]) for i in seq_dat]))
 
-            for i in seq_dat:
-                chk_key = '{} {:04d}'.format(i[2], int(i[0]))
-                if chk_dict[chk_key] != i[1]:
-                    raise KeyError("Sequence must be unique: chain_id '%s', seq_id '%s', comp_id '%s' vs '%s' in '%s' loop category." % (i[2], i[0], i[1], chk_dict[chk_key], lp_category))
+                chk_dict = {'{} {:04d}'.format(i[2], int(i[0])):i[1] for i in seq_dat}
 
-            if len(sorted_seq[0].split(' ')[-1]) > 1:
-                if len(chains) > 1:
-                    for c in chains:
-                        seq_dict[c] = [i.split(' ')[-1] for i in sorted_seq if i.split(' ')[0] == c]
-                        sid_dict[c] = [int(i.split(' ')[1]) for i in sorted_seq if i.split(' ')[0] == c]
+                for i in seq_dat:
+                    chk_key = '{} {:04d}'.format(i[2], int(i[0]))
+                    if chk_dict[chk_key] != i[1]:
+                        raise KeyError("Sequence must be unique: chain_id '%s', seq_id '%s', comp_id '%s' vs '%s' in '%s' loop category." % (i[2], i[0], i[1], chk_dict[chk_key], lp_category))
+
+                if len(sorted_seq[0].split(' ')[-1]) > 1:
+                    if len(chains) > 1:
+                        for c in chains:
+                            seq_dict[c] = [i.split(' ')[-1] for i in sorted_seq if i.split(' ')[0] == c]
+                            sid_dict[c] = [int(i.split(' ')[1]) for i in sorted_seq if i.split(' ')[0] == c]
+                    else:
+                        seq_dict[list(chains)[0]] = [i.split(' ')[-1] for i in sorted_seq]
+                        sid_dict[list(chains)[0]] = [int(i.split(' ')[1]) for i in sorted_seq]
                 else:
-                    seq_dict[list(chains)[0]] = [i.split(' ')[-1] for i in sorted_seq]
-                    sid_dict[list(chains)[0]] = [int(i.split(' ')[1]) for i in sorted_seq]
-            else:
-                if len(chains) > 1:
-                    for c in chains:
-                        seq_dict[c] = [i.split(' ')[-1] for i in sorted_seq if i.split(' ')[0] == c]
-                        sid_dict[c] = [int(i.split(' ')[1]) for i in sorted_seq if i.split(' ')[0] == c]
-                else:
-                    seq_dict[list(chains)[0]] = [i.split(' ')[-1] for i in sorted_seq]
-                    sid_dict[list(chains)[0]] = [int(i.split(' ')[1]) for i in sorted_seq]
+                    if len(chains) > 1:
+                        for c in chains:
+                            seq_dict[c] = [i.split(' ')[-1] for i in sorted_seq if i.split(' ')[0] == c]
+                            sid_dict[c] = [int(i.split(' ')[1]) for i in sorted_seq if i.split(' ')[0] == c]
+                    else:
+                        seq_dict[list(chains)[0]] = [i.split(' ')[-1] for i in sorted_seq]
+                        sid_dict[list(chains)[0]] = [int(i.split(' ')[1]) for i in sorted_seq]
 
-            asm = [] # assembly of a loop
+                asm = [] # assembly of a loop
 
-            for c in chains:
-                ent = {} # entity
-                ent['chain_id'] = c
-                ent['seq_id'] = sid_dict[c]
-                ent['comp_id'] = seq_dict[c]
-                asm.append(ent)
+                for c in chains:
+                    ent = {} # entity
 
-            dat.append(asm)
+                    ent['chain_id'] = c
+                    ent['seq_id'] = sid_dict[c]
+                    ent['comp_id'] = seq_dict[c]
+
+                    asm.append(ent)
+
+                dat.append(asm)
+
+            except ValueError:
+                raise ValueError("Sequence ID should be integer in '%s' loop category" % (lp_category))
 
         return dat
 
@@ -510,43 +517,50 @@ class NEFTranslator(object):
                     if NEFTranslator.is_empty_data(i):
                         raise ValueError("Sequence must not be empty: chain_id '%s', seq_id '%s', comp_id '%s' in loop_category '%'." % (i[2], i[0], i[1], lp_category))
 
-            chains = sorted(set([i[2] for i in seq_dat]))
-            sorted_seq = sorted(set(['{} {:04d} {}'.format(i[2], int(i[0]), i[1]) for i in seq_dat]))
+            try:
 
-            chk_dict = {'{} {:04d}'.format(i[2], int(i[0])):i[1] for i in seq_dat}
+                chains = sorted(set([i[2] for i in seq_dat]))
+                sorted_seq = sorted(set(['{} {:04d} {}'.format(i[2], int(i[0]), i[1]) for i in seq_dat]))
 
-            for i in seq_dat:
-                chk_key = '{} {:04d}'.format(i[2], int(i[0]))
-                if chk_dict[chk_key] != i[1]:
-                    raise KeyError("Sequence must be unique: chain_id '%s', seq_id '%s', comp_id '%s' vs '%s' in '%s' loop category." % (i[2], i[0], i[1], chk_dict[chk_key], lp_category))
+                chk_dict = {'{} {:04d}'.format(i[2], int(i[0])):i[1] for i in seq_dat}
 
-            if len(sorted_seq[0].split(' ')[-1]) > 1:
-                if len(chains) > 1:
-                    for c in chains:
-                        seq_dict[c] = [i.split(' ')[-1] for i in sorted_seq if i.split(' ')[0] == c]
-                        sid_dict[c] = [int(i.split(' ')[1]) for i in sorted_seq if i.split(' ')[0] == c]
+                for i in seq_dat:
+                    chk_key = '{} {:04d}'.format(i[2], int(i[0]))
+                    if chk_dict[chk_key] != i[1]:
+                        raise KeyError("Sequence must be unique: chain_id '%s', seq_id '%s', comp_id '%s' vs '%s' in '%s' loop category." % (i[2], i[0], i[1], chk_dict[chk_key], lp_category))
+
+                if len(sorted_seq[0].split(' ')[-1]) > 1:
+                    if len(chains) > 1:
+                        for c in chains:
+                            seq_dict[c] = [i.split(' ')[-1] for i in sorted_seq if i.split(' ')[0] == c]
+                            sid_dict[c] = [int(i.split(' ')[1]) for i in sorted_seq if i.split(' ')[0] == c]
+                    else:
+                        seq_dict[list(chains)[0]] = [i.split(' ')[-1] for i in sorted_seq]
+                        sid_dict[list(chains)[0]] = [int(i.split(' ')[1]) for i in sorted_seq]
                 else:
-                    seq_dict[list(chains)[0]] = [i.split(' ')[-1] for i in sorted_seq]
-                    sid_dict[list(chains)[0]] = [int(i.split(' ')[1]) for i in sorted_seq]
-            else:
-                if len(chains) > 1:
-                    for c in chains:
-                        seq_dict[c] = [i.split(' ')[-1] for i in sorted_seq if i.split(' ')[0] == c]
-                        sid_dict[c] = [int(i.split(' ')[1]) for i in sorted_seq if i.split(' ')[0] == c]
-                else:
-                    seq_dict[list(chains)[0]] = [i.split(' ')[-1] for i in sorted_seq]
-                    sid_dict[list(chains)[0]] = [int(i.split(' ')[1]) for i in sorted_seq]
+                    if len(chains) > 1:
+                        for c in chains:
+                            seq_dict[c] = [i.split(' ')[-1] for i in sorted_seq if i.split(' ')[0] == c]
+                            sid_dict[c] = [int(i.split(' ')[1]) for i in sorted_seq if i.split(' ')[0] == c]
+                    else:
+                        seq_dict[list(chains)[0]] = [i.split(' ')[-1] for i in sorted_seq]
+                        sid_dict[list(chains)[0]] = [int(i.split(' ')[1]) for i in sorted_seq]
 
-            asm = [] # assembly of a loop
+                asm = [] # assembly of a loop
 
-            for c in chains:
-                ent = {} # entity
-                ent['chain_id'] = c
-                ent['seq_id'] = sid_dict[c]
-                ent['comp_id'] = seq_dict[c]
-                asm.append(ent)
+                for c in chains:
+                    ent = {} # entity
 
-            dat.append(asm)
+                    ent['chain_id'] = c
+                    ent['seq_id'] = sid_dict[c]
+                    ent['comp_id'] = seq_dict[c]
+
+                    asm.append(ent)
+
+                dat.append(asm)
+
+            except ValueError:
+                raise ValueError("Sequence ID should be integer in '%s' loop category" % (lp_category))
 
         return dat
 
@@ -594,7 +608,7 @@ class NEFTranslator(object):
             else:
                 for i in comp_atom_dat:
                     if NEFTranslator.is_empty_data(i):
-                        raise ValueError("Pair of comp ID and atom ID must not be empty: comp_id '%s', atom_id '%s' in loop_category '%'." % (i[0], i[1], lp_category))
+                        raise ValueError("One of comp ID and atom ID must not be empty: comp_id '%s', atom_id '%s' in loop_category '%'." % (i[0], i[1], lp_category))
 
             comps = sorted(set([i[0] for i in comp_atom_dat]))
             sorted_comp_atom = sorted(set(['{} {}'.format(i[0], i[1]) for i in comp_atom_dat]))
@@ -606,8 +620,10 @@ class NEFTranslator(object):
 
             for c in comps:
                 ent = {} # entity
+
                 ent['comp_id'] = c
                 ent['atom_id'] = comp_atom_dict[c]
+
                 asm.append(ent)
 
             dat.append(asm)
@@ -658,7 +674,7 @@ class NEFTranslator(object):
             else:
                 for i in comp_atom_dat:
                     if NEFTranslator.is_empty_data(i):
-                        raise ValueError("Pair of comp ID and atom ID must not be empty: comp_id '%s', atom_id '%s' in loop_category '%'." % (i[0], i[1], lp_category))
+                        raise ValueError("One of comp ID and atom ID must not be empty: comp_id '%s', atom_id '%s' in loop_category '%'." % (i[0], i[1], lp_category))
 
             comps = sorted(set([i[0] for i in comp_atom_dat]))
             sorted_comp_atom = sorted(set(['{} {}'.format(i[0], i[1]) for i in comp_atom_dat]))
@@ -670,8 +686,10 @@ class NEFTranslator(object):
 
             for c in comps:
                 ent = {} # entity
+
                 ent['comp_id'] = c
                 ent['atom_id'] = comp_atom_dict[c]
+
                 asm.append(ent)
 
             dat.append(asm)
@@ -714,26 +732,33 @@ class NEFTranslator(object):
             else:
                 for i in a_type_dat:
                     if NEFTranslator.is_empty_data(i):
-                        raise ValueError("Pair of atom type, isotope number, and atom ID must not be empty: atom_type '%s', isotope_number '%s', atom_id '%s' in '%s' loop category." % (i[0], i[1], i[2], lp_category))
+                        raise ValueError("One of atom type, isotope number, and atom ID must not be empty: atom_type '%s', isotope_number '%s', atom_id '%s' in '%s' loop category." % (i[0], i[1], i[2], lp_category))
 
-            a_types = sorted(set([i[0] for i in a_type_dat]))
-            sorted_ist = sorted(set(['{} {}'.format(i[0], i[1]) for i in a_type_dat]))
-            sorted_atm = sorted(set(['{} {}'.format(i[0], i[2]) for i in a_type_dat]))
+            try:
 
-            for t in a_types:
-                ist_dict[t] = [int(i.split(' ')[1]) for i in sorted_ist if i.split(' ')[0] == t]
-                atm_dict[t] = [i.split(' ')[1] for i in sorted_atm if i.split(' ')[0] == t]
+                a_types = sorted(set([i[0] for i in a_type_dat]))
+                sorted_ist = sorted(set(['{} {}'.format(i[0], i[1]) for i in a_type_dat]))
+                sorted_atm = sorted(set(['{} {}'.format(i[0], i[2]) for i in a_type_dat]))
 
-            asm = [] # assembly of a loop
+                for t in a_types:
+                    ist_dict[t] = [int(i.split(' ')[1]) for i in sorted_ist if i.split(' ')[0] == t]
+                    atm_dict[t] = [i.split(' ')[1] for i in sorted_atm if i.split(' ')[0] == t]
 
-            for t in a_types:
-                ent = {} # entity
-                ent['atom_type'] = t
-                ent['isotope_number'] = ist_dict[t]
-                ent['atom_id'] = atm_dict[t]
-                asm.append(ent)
+                asm = [] # assembly of a loop
 
-            dat.append(asm)
+                for t in a_types:
+                    ent = {} # entity
+
+                    ent['atom_type'] = t
+                    ent['isotope_number'] = ist_dict[t]
+                    ent['atom_id'] = atm_dict[t]
+
+                    asm.append(ent)
+
+                dat.append(asm)
+
+            except ValueError:
+                raise ValueError("Isotope number should be integer in '%s' loop category" % (lp_category))
 
         return dat
 
@@ -773,23 +798,112 @@ class NEFTranslator(object):
             else:
                 for i in a_type_dat:
                     if NEFTranslator.is_empty_data(i):
-                        raise ValueError("Pair of atom type, isotope number, and atom ID must not be empty: atom_type '%s', isotope_number '%s', atom_id '%s' in '%s' loop category." % (i[0], i[1], i[2], lp_category))
+                        raise ValueError("One of atom type, isotope number, and atom ID must not be empty: atom_type '%s', isotope_number '%s', atom_id '%s' in '%s' loop category." % (i[0], i[1], i[2], lp_category))
 
-            a_types = sorted(set([i[0] for i in a_type_dat]))
-            sorted_ist = sorted(set(['{} {}'.format(i[0], i[1]) for i in a_type_dat]))
-            sorted_atm = sorted(set(['{} {}'.format(i[0], i[2]) for i in a_type_dat]))
+            try:
 
-            for t in a_types:
-                ist_dict[t] = [int(i.split(' ')[1]) for i in sorted_ist if i.split(' ')[0] == t]
-                atm_dict[t] = [i.split(' ')[1] for i in sorted_atm if i.split(' ')[0] == t]
+                a_types = sorted(set([i[0] for i in a_type_dat]))
+                sorted_ist = sorted(set(['{} {}'.format(i[0], i[1]) for i in a_type_dat]))
+                sorted_atm = sorted(set(['{} {}'.format(i[0], i[2]) for i in a_type_dat]))
+
+                for t in a_types:
+                    ist_dict[t] = [int(i.split(' ')[1]) for i in sorted_ist if i.split(' ')[0] == t]
+                    atm_dict[t] = [i.split(' ')[1] for i in sorted_atm if i.split(' ')[0] == t]
+
+                asm = [] # assembly of a loop
+
+                for t in a_types:
+                    ent = {} # entity
+
+                    ent['atom_type'] = t
+                    ent['isotope_number'] = ist_dict[t]
+                    ent['atom_id'] = atm_dict[t]
+
+                    asm.append(ent)
+
+                dat.append(asm)
+
+            except ValueError:
+                raise ValueError("Isotope number should be integer in '%s' loop category" % (lp_category))
+
+        return dat
+
+    @staticmethod
+    def get_star_ambig_code_from_cs_loop(star_data, lp_category='Atom_chem_shift', comp_id='Comp_ID', atom_id='Atom_ID', ambig_code='Ambiguity_code', ambig_set_id='Ambiguity_set_ID'):
+        """ Extracts pairs of comp_id, atom_id, and ambiguity code from assigned chemical shifts in an NMR-SAR file
+        """
+
+        try:
+            loops = star_data.get_loops_by_category(lp_category)
+        except AttributeError:
+            try:
+                loops = [star_data.get_loop_by_category(lp_category)]
+            except AttributeError:
+                loops = [star_data]
+
+        tags = [comp_id, atom_id, ambig_code, ambig_set_id]
+
+        dat = [] # data of all loops
+
+        empty_value = (None, '', '.', '?')
+        bmrb_ambiguity_codes = (1, 2, 3, 4, 5, 6, 9)
+
+        for loop in loops:
+            atm_dict = {}
+
+            ambig_dat = []
+
+            if set(tags) & set(loop.tags) != set(tags):
+                raise LookupError("Missing one of mandatory items %s in '%s' loop category." % (tags, lp_category))
+
+            ambig_dat = loop.get_data_by_tag(tags)
+
+            if len(ambig_dat) == 0:
+                dat.append(None)
+                continue
+
+            for i in ambig_dat:
+                # already checked elsewhere
+                #if i[0] in empty_value:
+                #   raise ValueError("Comp ID should not be empty in '%s' loop category." % (lp_category))
+                #if i[1] in empty_value:
+                #    raise ValueError("Atom ID should not be empty in '%s' loop category." % (lp_category))
+                if not i[2] in empty_value:
+
+                    try:
+                        ambig_code = int(i[2])
+                    except ValueError:
+                        raise ValueError("Ambiguity code should be %s in '%s' loop category" % (list(bmrb_ambiguity_codes), lp_category))
+
+                    if not ambig_code in bmrb_ambiguity_codes:
+                        raise ValueError("Ambiguity code should be %s in '%s' loop category." % (list(bmrb_ambiguity_codes), lp_category))
+
+                    if ambig_code >= 4:
+                        if i[3] in empty_value:
+                            raise ("Ambiguity set ID should not be empty for ambiguity code '%s' in '%s' loop category." % (list(bmrb_ambiguity_codes), lp_category))
+                        else:
+                            try:
+                                ambig_set_id = int(i[3])
+                            except ValueError:
+                                raise ValueError("Ambiguity set ID should be integer in '%s' loop category" % lp_category)
+
+            ambigs = sorted(set(['{}:{}'.format(i[0], i[2]) for i in ambig_dat]))
+            sorted_atm = sorted(set(['{}:{} {}'.format(i[0], i[2], i[1]) for i in ambig_dat]))
+
+            for a in ambigs:
+                atm_dict[a] = [i.split(' ')[1] for i in sorted_atm if i.split(' ')[0] == a]
 
             asm = [] # assembly of a loop
 
-            for t in a_types:
+            for a in ambigs:
                 ent = {} # entity
-                ent['atom_type'] = t
-                ent['isotope_number'] = ist_dict[t]
-                ent['atom_id'] = atm_dict[t]
+
+                split_a = a.split(':')
+
+                ent['comp_id'] = split_a[0]
+                ent['ambig_code'] = None if split_a[1] in empty_value else int(split_a[1])
+                ent['atom_id'] = atm_dict[a]
+
                 asm.append(ent)
 
             dat.append(asm)
@@ -839,28 +953,40 @@ class NEFTranslator(object):
     def get_nmrstar_loop_tags(self, nef_loop_tags):
         aut_tag = []
         nt = []
+
         for t in nef_loop_tags:
             st = self.get_nmrstar_tag(t)
+
             if st[0] != st[1]:
                 aut_tag.append(st[1])
+
             nt.append(st[0])
+
         if len(aut_tag) != 0:
             out_tag = nt + aut_tag
         else:
             out_tag = nt
-        if nef_loop_tags[0].split('.')[0] == '_nef_chemical_shift':
+
+        lp_category = nef_loop_tags[0].split('.')[0]
+
+        if lp_category == '_nef_chemical_shift':
             out_tag.append('_Atom_chem_shift.Ambiguity_code')
             out_tag.append('_Atom_chem_shift.Ambiguity_set_ID')
             out_tag.append('_Atom_chem_shift.Assigned_chem_shift_list_ID')
-        if nef_loop_tags[0].split('.')[0] == '_nef_distance_restraint':
+
+        elif lp_category == '_nef_distance_restraint':
             out_tag.append('_Gen_dist_constraint.Member_logic_code')
             out_tag.append('_Gen_dist_constraint.Gen_dist_constraint_list_ID')
-        if nef_loop_tags[0].split('.')[0] == '_nef_dihedral_restraint':
+
+        elif lp_category == '_nef_dihedral_restraint':
             out_tag.append('_Torsion_angle_constraint.Torsion_angle_constraint_list_ID')
-        if nef_loop_tags[0].split('.')[0] == '_nef_rdc_restraint':
+
+        elif lp_category == '_nef_rdc_restraint':
             out_tag.append('_RDC_constraint.RDC_constraint_list_ID')
-        if nef_loop_tags[0].split('.')[0] == '_nef_peak':
+
+        elif lp_category == '_nef_peak':
             out_tag.append('_Peak_row_format.Spectral_peak_list_ID')
+
         return out_tag
 
     def get_nmrstar_atom(self, comp_id, nef_atom):

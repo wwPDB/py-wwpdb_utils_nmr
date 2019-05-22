@@ -10,7 +10,7 @@ import json
 import NEFTranslator as NEFT
 
 class TestNEFTranslator(TestCase):
-    
+
     def setUp(self):
         self.neft = NEFT.NEFTranslator()
         pass
@@ -289,6 +289,14 @@ class TestNEFTranslator(TestCase):
         self.assertEqual(len(cs_loops), 1) # assert single cs loop
         self.assertEqual(self.neft.get_star_ambig_code_from_cs_loop(cs_loops[0], lp_category='Atom_chem_shift'), # select the first cs loop by input sta_data
                          [[{'comp_id': 'ALA', 'ambig_code': 1, 'atom_id': ['C', 'CA', 'CB', 'H', 'HA', 'HB1', 'HB2', 'HB3', 'N']}, {'comp_id': 'ARG', 'ambig_code': 1, 'atom_id': ['C', 'CA', 'CB', 'CD', 'CG', 'H', 'HA', 'HD2', 'HD3', 'HG2', 'HG3', 'N']}, {'comp_id': 'ARG', 'ambig_code': 2, 'atom_id': ['HB2', 'HB3', 'HD2', 'HD3', 'HG2', 'HG3']}, {'comp_id': 'ASN', 'ambig_code': 1, 'atom_id': ['C', 'CA', 'CB', 'H', 'HA', 'N', 'ND2']}, {'comp_id': 'ASN', 'ambig_code': 2, 'atom_id': ['HB2', 'HB3', 'HD21', 'HD22']}, {'comp_id': 'GLN', 'ambig_code': 1, 'atom_id': ['C', 'CA', 'CB', 'CG', 'H', 'HA', 'HB2', 'HB3', 'HG2', 'HG3', 'N', 'NE2']}, {'comp_id': 'GLN', 'ambig_code': 2, 'atom_id': ['HB2', 'HB3', 'HE21', 'HE22', 'HG2', 'HG3']}, {'comp_id': 'GLU', 'ambig_code': 1, 'atom_id': ['C', 'CA', 'CB', 'CG', 'H', 'HA', 'HB2', 'HB3', 'N']}, {'comp_id': 'GLU', 'ambig_code': 2, 'atom_id': ['HB2', 'HB3', 'HG2', 'HG3']}, {'comp_id': 'GLY', 'ambig_code': 1, 'atom_id': ['CA', 'H', 'HA2', 'HA3', 'N']}, {'comp_id': 'HIS', 'ambig_code': 1, 'atom_id': ['C', 'CA', 'CB', 'CD2', 'H', 'HA', 'HB2', 'HB3', 'HD2', 'N']}, {'comp_id': 'HIS', 'ambig_code': 2, 'atom_id': ['HB2', 'HB3']}, {'comp_id': 'ILE', 'ambig_code': 1, 'atom_id': ['C', 'CA', 'CB', 'CD1', 'CG1', 'CG2', 'H', 'HA', 'HB', 'HD11', 'HD12', 'HD13', 'HG21', 'HG22', 'HG23', 'N']}, {'comp_id': 'ILE', 'ambig_code': 2, 'atom_id': ['HG12', 'HG13']}, {'comp_id': 'LEU', 'ambig_code': 1, 'atom_id': ['C', 'CA', 'CB', 'CG', 'H', 'HA', 'HG', 'N']}, {'comp_id': 'LEU', 'ambig_code': 2, 'atom_id': ['CD1', 'CD2', 'HB2', 'HB3', 'HD11', 'HD12', 'HD13', 'HD21', 'HD22', 'HD23']}, {'comp_id': 'LYS', 'ambig_code': 1, 'atom_id': ['C', 'CA', 'CB', 'CD', 'CE', 'CG', 'H', 'HA', 'HD2', 'HD3', 'HE2', 'HE3', 'HG2', 'HG3', 'N']}, {'comp_id': 'LYS', 'ambig_code': 2, 'atom_id': ['HB2', 'HB3', 'HD2', 'HD3', 'HE2', 'HE3', 'HG2', 'HG3']}, {'comp_id': 'MET', 'ambig_code': 1, 'atom_id': ['C', 'CA', 'CB', 'CG', 'H', 'HA', 'N']}, {'comp_id': 'MET', 'ambig_code': 2, 'atom_id': ['HB2', 'HB3', 'HG2', 'HG3']}, {'comp_id': 'PHE', 'ambig_code': 1, 'atom_id': ['C', 'CA', 'CB', 'CD1', 'CD2', 'CE1', 'CE2', 'CZ', 'H', 'HA', 'HD1', 'HD2', 'HE1', 'HE2', 'HZ', 'N']}, {'comp_id': 'PHE', 'ambig_code': 2, 'atom_id': ['HB2', 'HB3']}, {'comp_id': 'PRO', 'ambig_code': 1, 'atom_id': ['C', 'CA', 'CB', 'CD', 'CG', 'HA']}, {'comp_id': 'PRO', 'ambig_code': 2, 'atom_id': ['HB2', 'HB3', 'HD2', 'HD3', 'HG2', 'HG3']}, {'comp_id': 'SER', 'ambig_code': 1, 'atom_id': ['C', 'CA', 'CB', 'H', 'HA', 'N']}, {'comp_id': 'SER', 'ambig_code': 2, 'atom_id': ['HB2', 'HB3']}, {'comp_id': 'THR', 'ambig_code': 1, 'atom_id': ['C', 'CA', 'CB', 'CG2', 'H', 'HA', 'HB', 'HG21', 'HG22', 'HG23', 'N']}, {'comp_id': 'TRP', 'ambig_code': 1, 'atom_id': ['C', 'CA', 'CB', 'CD1', 'CE3', 'CH2', 'CZ2', 'CZ3', 'H', 'HA', 'HD1', 'HE1', 'HE3', 'HH2', 'HZ2', 'HZ3', 'N', 'NE1']}, {'comp_id': 'TRP', 'ambig_code': 2, 'atom_id': ['HB2', 'HB3']}, {'comp_id': 'TYR', 'ambig_code': 1, 'atom_id': ['C', 'CA', 'CB', 'CD1', 'CD2', 'CE1', 'CE2', 'H', 'HA', 'HD1', 'HD2', 'HE1', 'HE2', 'N']}, {'comp_id': 'TYR', 'ambig_code': 2, 'atom_id': ['HB2', 'HB3']}, {'comp_id': 'VAL', 'ambig_code': 1, 'atom_id': ['C', 'CA', 'CB', 'H', 'HA', 'HB', 'N']}, {'comp_id': 'VAL', 'ambig_code': 2, 'atom_id': ['CG1', 'CG2', 'HG11', 'HG12', 'HG13', 'HG21', 'HG22', 'HG23']}]])
+
+    def test_get_nef_index(self):
+        dat = pynmrstar.Entry.from_file('data/2l9r.nef')
+        self.assertEqual(self.neft.get_nef_index(dat), [[i for i in range(1, 70)]])
+
+    def test_get_star_index(self):
+        dat = pynmrstar.Entry.from_file('data/2l9r.str')
+        self.assertEqual(self.neft.get_star_index(dat), [[i for i in range(1, 70)]])
 
     def test_validate_comp_atom(self):
         self.assertEqual(self.neft.validate_comp_atom('ALA', 'HB1'), True)

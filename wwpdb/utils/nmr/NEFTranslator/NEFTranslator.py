@@ -194,7 +194,7 @@ class NEFTranslator(object):
                     file_type = 'nef'
                 else:
                     is_nef_file = False
-                    msg = '{} is a NMR-STAR file'.format(in_file)
+                    msg = '{} is an NMR-STAR file'.format(in_file)
                     file_type = 'nmr-star'
                 info.append(msg)
                 if is_nef_file:
@@ -409,7 +409,7 @@ class NEFTranslator(object):
             else:
                 for i in seq_dat:
                     if NEFTranslator.is_empty_data(i):
-                        raise ValueError("Sequence must not be empty: chain_id '%s', seq_id '%s', comp_id '%s' in loop_category '%'." % (i[2], i[0], i[1], lp_category))
+                        raise ValueError("Sequence must not be empty: chain_id '%s', seq_id '%s', comp_id '%s' in '%s' loop category." % (i[2], i[0], i[1], lp_category))
 
             try:
 
@@ -515,7 +515,7 @@ class NEFTranslator(object):
             else:
                 for i in seq_dat:
                     if NEFTranslator.is_empty_data(i):
-                        raise ValueError("Sequence must not be empty: chain_id '%s', seq_id '%s', comp_id '%s' in loop_category '%'." % (i[2], i[0], i[1], lp_category))
+                        raise ValueError("Sequence must not be empty: chain_id '%s', seq_id '%s', comp_id '%s' in '%s' loop_category." % (i[2], i[0], i[1], lp_category))
 
             try:
 
@@ -608,7 +608,7 @@ class NEFTranslator(object):
             else:
                 for i in comp_atom_dat:
                     if NEFTranslator.is_empty_data(i):
-                        raise ValueError("One of comp ID and atom ID must not be empty: comp_id '%s', atom_id '%s' in loop_category '%'." % (i[0], i[1], lp_category))
+                        raise ValueError("One of comp ID and atom ID must not be empty: comp_id '%s', atom_id '%s' in '%s' loop category." % (i[0], i[1], lp_category))
 
             comps = sorted(set([i[0] for i in comp_atom_dat]))
             sorted_comp_atom = sorted(set(['{} {}'.format(i[0], i[1]) for i in comp_atom_dat]))
@@ -674,7 +674,7 @@ class NEFTranslator(object):
             else:
                 for i in comp_atom_dat:
                     if NEFTranslator.is_empty_data(i):
-                        raise ValueError("One of comp ID and atom ID must not be empty: comp_id '%s', atom_id '%s' in loop_category '%'." % (i[0], i[1], lp_category))
+                        raise ValueError("One of comp ID and atom ID must not be empty: comp_id '%s', atom_id '%s' in '%s' loop category." % (i[0], i[1], lp_category))
 
             comps = sorted(set([i[0] for i in comp_atom_dat]))
             sorted_comp_atom = sorted(set(['{} {}'.format(i[0], i[1]) for i in comp_atom_dat]))
@@ -830,7 +830,7 @@ class NEFTranslator(object):
 
     @staticmethod
     def get_star_ambig_code_from_cs_loop(star_data, lp_category='Atom_chem_shift', comp_id='Comp_ID', atom_id='Atom_ID', ambig_code='Ambiguity_code', ambig_set_id='Ambiguity_set_ID'):
-        """ Extracts pairs of comp_id, atom_id, and ambiguity code from assigned chemical shifts in an NMR-SAR file
+        """ Extracts unique pairs of comp_id, atom_id, and ambiguity code from assigned chemical shifts in an NMR-SAR file
         """
 
         try:
@@ -907,6 +907,98 @@ class NEFTranslator(object):
                 asm.append(ent)
 
             dat.append(asm)
+
+        return dat
+
+    @staticmethod
+    def get_nef_index(star_data, lp_category='nef_sequence', index_id='index'):
+        """ Extracts index_id from any given loops in a NEF file
+        """
+
+        try:
+            loops = star_data.get_loops_by_category(lp_category)
+        except AttributeError:
+            try:
+                loops = [star_data.get_loop_by_category(lp_category)]
+            except AttributeError:
+                loops = [star_data]
+
+        tags = [index_id]
+
+        dat = [] # data of all loops
+
+        for loop in loops:
+            index_dat = []
+
+            if set(tags) & set(loop.tags) == set(tags):
+                index_dat = loop.get_data_by_tag(tags)
+            else:
+                if not _tags_exist:
+                    raise LookupError("Missing mandatory item %s in '%s' loop category." % (index_id, lp_category))
+
+            for i in index_dat:
+                if NEFTranslator.is_empty_data(i):
+                    raise ValueError("index ID must not be empty in '%s' loop_category." % (i[0], lp_category))
+
+            try:
+
+                indices = [int(i) for i in index_dat[0]]
+
+                dup_indices = [i for i in set(indices) if indices.count(i) > 1]
+
+                if len(dup_indices) > 0:
+                    raise KeyError("Index ID must be unique: %s are duplicated indices in '%s' loop category" % (dup_indices, lp_category))
+
+                dat.append(indices)
+
+            except ValueError:
+                raise ValueError("Index ID should be integer in '%s' loop category" % (lp_category))
+
+        return dat
+
+    @staticmethod
+    def get_star_index(star_data, lp_category='Chem_comp_assembly', index_id='NEF_index'):
+        """ Extracts index_id from any given loops in an NMR-STAR file
+        """
+
+        try:
+            loops = star_data.get_loops_by_category(lp_category)
+        except AttributeError:
+            try:
+                loops = [star_data.get_loop_by_category(lp_category)]
+            except AttributeError:
+                loops = [star_data]
+
+        tags = [index_id]
+
+        dat = [] # data of all loops
+
+        for loop in loops:
+            index_dat = []
+
+            if set(tags) & set(loop.tags) == set(tags):
+                index_dat = loop.get_data_by_tag(tags)
+            else:
+                if not _tags_exist:
+                    raise LookupError("Missing mandatory item %s in '%s' loop category." % (index_id, lp_category))
+
+            for i in index_dat:
+                if NEFTranslator.is_empty_data(i):
+                    raise ValueError("index ID must not be empty in '%s' loop_category." % (i[0], lp_category))
+
+            try:
+
+                indices = [int(i) for i in index_dat[0]]
+
+                dup_indices = [i for i in set(indices) if indices.count(i) > 1]
+
+                if len(dup_indices) > 0:
+                    raise KeyError("Index ID must be unique: %s are duplicated indices in '%s' loop category" % (dup_indices, lp_category))
+
+                dat.append(indices)
+
+            except ValueError:
+                raise ValueError("Index ID should be integer in '%s' loop category" % (lp_category))
 
         return dat
 

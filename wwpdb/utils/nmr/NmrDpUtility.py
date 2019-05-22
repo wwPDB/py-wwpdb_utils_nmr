@@ -58,10 +58,11 @@ class NmrDpUtility(object):
                                                       self.__appendPolymerSequenceAlignment,
                                                       self.__testAtomNomenclature,
                                                       self.__testAtomTypeOfCSLoop,
-                                                      self.__testAmbiguityCodeOfCSLoop] }
+                                                      self.__testAmbiguityCodeOfCSLoop,
+                                                      self.__testIndexConsistency,
+                                                      self.__testChemShiftConsistency] }
         """
                                 }
-                                                      self.__testDuplicationData,
                                                       self.__testAnomalousData,
                                                       self.__testSaspiciousData,
                                                       self__calculateStatistics],
@@ -126,6 +127,21 @@ class NmrDpUtility(object):
                                            'rdc_restraint': '_RDC_constraint',
                                            'spectral_peak': '_Peak_row_format'}
                               }
+
+        # index tags
+        self.index_tags = {'nef': {'poly_seq': 'index',
+                                   'chem_shift': None,
+                                   'dist_restraint': 'index',
+                                   'dihed_restraint': 'index',
+                                   'rdc_restraint': 'index',
+                                   'spectral_peak': 'index'},
+                           'nmr-star': {'poly_seq': None,
+                                        'chem_shift': None,
+                                        'dist_restraint': 'Index_ID',
+                                        'dihed_restraint': 'Index_ID',
+                                        'rdc_restraint': 'Index_ID',
+                                        'spectral_peak': 'Index_ID'}
+                         }
 
         # taken from wwpdb.utils.align.SequenceReferenceData.py
         self.monDict3 = {'ALA': 'A',
@@ -1415,6 +1431,117 @@ class NmrDpUtility(object):
                     return 2
 
         return 1
+
+    def __getIndexOfLoop(self, sf_data, content_subtype):
+        """ Wrapper function to retrieve index from loop of a specified saveframe and content subtype via NEFTranslator.
+        """
+
+        input_source = self.report.input_sources[0]
+        input_source_dic = input_source.get()
+
+        file_type = input_source_dic['file_type']
+
+        if file_type == 'nef':
+            return self.nef_translator.get_nef_index(sf_data, lp_category=self.lp_categories[file_type][content_subtype], index_id=self.index_tags[file_type][content_subtype])
+        else:
+            return self.nef_translator.get_star_index(sf_data, lp_category=self.lp_categories[file_type][content_subtype], index_id=self.index_tags[file_type][content_subtype])
+
+    def __testIndexConsistency(self):
+        """ Perform consistency test on index of interesting loops of NEF/NMR-STAR V3.2 file.
+        """
+
+        if self.report.isError():
+            return False
+
+        input_source = self.report.input_sources[0]
+        input_source_dic = input_source.get()
+
+        file_type = input_source_dic['file_type']
+
+        for content_subtype in input_source_dic['content_subtype'].keys():
+
+            sf_category = self.sf_categories[file_type][content_subtype]
+            index_tag = self.index_tags[file_type][content_subtype]
+
+            if index_tag is None:
+                continue
+
+            list_id = 1
+
+            for sf_data in self.__star_data.get_saveframes_by_category(sf_category):
+
+                sf_framecode = sf_data.get_tag('sf_framecode')[0]
+
+                try:
+
+                    indices = self.__getIndexOfLoop(sf_data, content_subtype)[0]
+
+                    if indices != range(1, len(indices) + 1):
+                        self.report.warning.addDescription('disordered_index', "Index ID (loop tag: %s.%s) is disordered in '%s' saveframe (list_id: %s)." % (self.lp_categories[file_type][content_subtype], index_tag, sf_framecode, list_id))
+                        self.report.setWarning()
+
+                        if self.__verbose:
+                            self.__lfh.write("+NmrDpUtility.__testIndexConsistency() ++ Warning  - %s" % str(e))
+
+                except KeyError as e:
+
+                    self.report.error.addDescription('duplicated_index', str(e))
+                    self.report.setError()
+
+                    if self.__verbose:
+                        self.__lfh.write("+NmrDpUtility.__testIndexConsistency() ++ KeyError  - %s" % str(e))
+
+                except LookupError as e:
+
+                    self.report.error.addDescription('missing_mandatory_item', str(e))
+                    self.report.setError()
+
+                    if self.__verbose:
+                        self.__lfh.write("+NmrDpUtility.__testIndexConsistency() ++ LookupError  - %s" % str(e))
+
+                except ValueError as e:
+
+                    self.report.error.addDescription('invalid_data', str(e))
+                    self.report.setError()
+
+                    if self.__verbose:
+                        self.__lfh.write("+NmrDpUtility.__testIndexConsistency() ++ ValueError  - %s" % str(e))
+
+                except Exception as e:
+
+                    self.report.error.addDescription('internal_error', "+NmrDpUtility.__testIndexConsistency() ++ Error  - %s" % str(e))
+                    self.report.setError()
+
+                    if self.__verbose:
+                        self.__lfh.write("+NmrDpUtility.__testIndexConsistency() ++ Error  - %s" % str(e))
+
+        return not self.report.isError()
+
+    def __testChemShiftConsistency(self):
+        """ Perform consistency test on assigned chemical shifts.
+        """
+
+        if self.report.isError():
+            return False
+
+        input_source = self.report.input_sources[0]
+        input_source_dic = input_source.get()
+
+        file_name = input_source_dic['file_name']
+
+        content_subtype = 'chem_shift'
+
+        if not content_subtype in input_source_dic['content_subtype'].keys():
+
+            self.report.error.addDescription('internal_error', "+NmrDpUtility.__testChemShiftConsistency() ++ Error  - Assigned chemical shift loop does not exists in %s file." % file_name)
+            self.report.setError()
+
+            if self.__verbose:
+                self.__lfh.write("+NmrDpUtility.__testChemShiftConsistency() ++ Error  - Assigned chemical shift loop does not exists in %s file" % file_name)
+
+            return False
+
+        return not self.report.isError()
 
 if __name__ == '__main__':
     dp = NmrDpUtility()

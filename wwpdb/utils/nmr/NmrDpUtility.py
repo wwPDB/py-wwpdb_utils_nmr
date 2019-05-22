@@ -57,10 +57,10 @@ class NmrDpUtility(object):
                                                       self.__extractNonStandardResidue,
                                                       self.__appendPolymerSequenceAlignment,
                                                       self.__testAtomNomenclature,
-                                                      self.__testAtomTypeOfCSLoop] }
+                                                      self.__testAtomTypeOfCSLoop,
+                                                      self.__testAmbiguityCodeOfCSLoop] }
         """
                                 }
-                                                      self.__testAmbiguityCode,
                                                       self.__testDuplicationData,
                                                       self.__testAnomalousData,
                                                       self.__testSaspiciousData,
@@ -174,6 +174,41 @@ class NmrDpUtility(object):
                               'CD': [113, 111],
                               'CA': [43]}
 
+        ###################################################################
+        #       Chemical Shift Ambiguity Index Value Definitions          #
+        #                                                                 #
+        # The values other than 1 are used for those atoms with different #
+        # chemical shifts that cannot be assigned to stereospecific atoms #
+        # or to specific residues or chains.                              #
+        #                                                                 #
+        #   Index Value            Definition                             #
+        #                                                                 #
+        #      1             Unique (including isolated methyl protons,   #
+        #                         geminal atoms, and geminal methyl       #
+        #                         groups with identical chemical shifts)  #
+        #                         (e.g. ILE HD11, HD12, HD13 protons)     #
+        #      2             Ambiguity of geminal atoms or geminal methyl #
+        #                         proton groups (e.g. ASP HB2 and HB3     #
+        #                         protons, LEU CD1 and CD2 carbons, or    #
+        #                         LEU HD11, HD12, HD13 and HD21, HD22,    #
+        #                         HD23 methyl protons)                    #
+        #      3             Aromatic atoms on opposite sides of          #
+        #                         symmetrical rings (e.g. TYR HE1 and HE2 #
+        #                         protons)                                #
+        #      4             Intraresidue ambiguities (e.g. LYS HG and    #
+        #                         HD protons or TRP HZ2 and HZ3 protons)  #
+        #      5             Interresidue ambiguities (LYS 12 vs. LYS 27) #
+        #      6             Intermolecular ambiguities (e.g. ASP 31 CA   #
+        #                         in monomer 1 and ASP 31 CA in monomer 2 #
+        #                         of an asymmetrical homodimer, duplex    #
+        #                         DNA assignments, or other assignments   #
+        #                         that may apply to atoms in one or more  #
+        #                         molecule in the molecular assembly)     #
+        #      9             Ambiguous, specific ambiguity not defined    #
+        #                                                                 #
+        ###################################################################
+        self.bmrb_ambiguity_codes = {"1", "2", "3", "4", "5", "6", "9"}
+
     def setSource(self, fPath):
         """ Set primary source file path.
         """
@@ -183,7 +218,7 @@ class NmrDpUtility(object):
 
         else:
             logging.error("+NmrDpUtility.setSource() ++ Error  - Could not access to file path '%s'" % fPath)
-            raise IOError("+NmrDpUtility.setSource() ++ Error  -  Could not access to file path '%s'" % fPath)
+            raise IOError("+NmrDpUtility.setSource() ++ Error  - Could not access to file path '%s'" % fPath)
 
     def setDestination(self, fPath):
         """ Set primary destination file path.
@@ -510,15 +545,39 @@ class NmrDpUtility(object):
 
             return True
 
+        except KeyError as e:
+
+            self.report.error.addDescription('sequence_mismatch', str(e))
+            self.report.setError()
+
+            if self.__verbose:
+                self.__lfh.write("+NmrDpUtility.__extractPolymerSequence() ++ KeyError  - %s" % str(e))
+
+        except LookupError as e:
+
+            self.report.error.addDescription('missing_mandatory_item', str(e))
+            self.report.setError()
+
+            if self.__verbose:
+                self.__lfh.write("+NmrDpUtility.__extractPolymerSequence() ++ LookupError  - %s" % str(e))
+
+        except ValueError as e:
+
+            self.report.error.addDescription('blanked_mandatory_value', str(e))
+            self.report.setError()
+
+            if self.__verbose:
+                self.__lfh.write("+NmrDpUtility.__extractPolymerSequence() ++ ValueError  - %s" % str(e))
+
         except Exception as e:
 
-            self.report.error.addDescription('internal_error', str(e))
+            self.report.error.addDescription('internal_error', "+NmrDpUtility.__extractPolymerSequence() ++ Error  - %s" % str(e))
             self.report.setError()
 
             if self.__verbose:
                 self.__lfh.write("+NmrDpUtility.__extractPolymerSequence() ++ Error  - %s" % str(e))
 
-            return False
+        return False
 
     def __extractPolymerSequenceInLoops(self):
         """ Extract polymer sequence in interesting loops of NEF/NMR-STAR V3.2 file.
@@ -564,7 +623,7 @@ class NmrDpUtility(object):
 
                 except Exception as e:
 
-                    self.report.error.addDescription('internal_error', str(e))
+                    self.report.error.addDescription('internal_error', "+NmrDpUtility.__extractPolymerSequenceInLoops() ++ Error  - %s" % str(e))
                     self.report.setError()
 
                     if self.__verbose:
@@ -851,10 +910,13 @@ class NmrDpUtility(object):
 
         if not has_poly_seq:
 
-            if self.__verbose:
-                logging.warning('+NmrDpUtility.__appendPolymerSequenceAlignment() ++ Warning  - Common polymer sequence does not exist, __extractCommonPolymerSequence() should be invoked')
+            self.report.error.addDescription('internal_error', "+NmrDpUtility.__appendPolymerSequenceAlignment() ++ Error  - Common polymer sequence does not exist, __extractCommonPolymerSequence() should be invoked")
+            self.report.setError()
 
-            return True
+            if self.__verbose:
+                logging.warning("+NmrDpUtility.__appendPolymerSequenceAlignment() ++ Error  - Common polymer sequence does not exist, __extractCommonPolymerSequence() should be invoked")
+
+            return False
 
         if not has_poly_seq_in_loop:
             return True
@@ -1023,15 +1085,29 @@ class NmrDpUtility(object):
 
                     list_id += 1
 
+                except LookupError as e:
+
+                    self.report.error.addDescription('missing_mandatory_item', str(e))
+                    self.report.setError()
+
+                    if self.__verbose:
+                        self.__lfh.write("+NmrDpUtility.__testAtomNomenclature() ++ LookupError  - %s" % str(e))
+
+                except ValueError as e:
+
+                    self.report.error.addDescription('blanked_mandatory_value', str(e))
+                    self.report.setError()
+
+                    if self.__verbose:
+                        self.__lfh.write("+NmrDpUtility.__testAtomNomenclature() ++ ValueError  - %s" % str(e))
+
                 except Exception as e:
 
-                    self.report.error.addDescription('internal_error', str(e))
+                    self.report.error.addDescription('internal_error', "+NmrDpUtility.__testAtomNomenclature() ++ Error  - %s" % str(e))
                     self.report.setError()
 
                     if self.__verbose:
                         self.__lfh.write("+NmrDpUtility.__testAtomNomenclature() ++ Error  - %s" % str(e))
-
-                    return False
 
         return not self.report.isError()
 
@@ -1059,12 +1135,20 @@ class NmrDpUtility(object):
         input_source = self.report.input_sources[0]
         input_source_dic = input_source.get()
 
+        file_name = input_source_dic['file_name']
         file_type = input_source_dic['file_type']
 
         content_subtype = 'chem_shift'
 
         if not content_subtype in input_source_dic['content_subtype'].keys():
-            return True
+
+            self.report.error.addDescription('internal_error', "+NmrDpUtility.__testAtomTypeOfCSLoop() ++ Error  - Assigned chemical shift loop does not exists in %s file" % file_name)
+            self.report.setError()
+
+            if self.__verbose:
+                self.__lfh.write("+NmrDpUtility.__testAtomTypeOfCSLoop() ++ Error  - Assigned chemical shift loop does not exists in %s file" % file_name)
+
+            return False
 
         sf_category = self.sf_categories[file_type][content_subtype]
 
@@ -1100,15 +1184,29 @@ class NmrDpUtility(object):
 
                 list_id += 1
 
-            except Exception as e:
+            except LookupError as e:
 
-                self.report.error.addDescription('internal_error', str(e))
+                self.report.error.addDescription('missing_mandatory_item', str(e))
                 self.report.setError()
 
                 if self.__verbose:
-                    self.__lfh.write("+NmrDpUtility.__testAtomChemShiftType() ++ Error  - %s" % str(e))
+                    self.__lfh.write("+NmrDpUtility.__testAtomTypeOfCSLoop() ++ LookupError  - %s" % str(e))
 
-                return False
+            except ValueError as e:
+
+                self.report.error.addDescription('blanked_mandatory_value', str(e))
+                self.report.setError()
+
+                if self.__verbose:
+                    self.__lfh.write("+NmrDpUtility.__testAtomTypeOfCSLoop() ++ ValueError  - %s" % str(e))
+
+            except Exception as e:
+
+                self.report.error.addDescription('internal_error', "+NmrDpUtility.__testAtomTypeOfCSLoop() ++ Error  - %s" % str(e))
+                self.report.setError()
+
+                if self.__verbose:
+                    self.__lfh.write("+NmrDpUtility.__testAtomTypeOfCSLoop() ++ Error  - %s" % str(e))
 
         return not self.report.isError()
 
@@ -1125,6 +1223,45 @@ class NmrDpUtility(object):
             return self.nef_translator.get_nef_atom_type_from_cs_loop(sf_data)
         else:
             return self.nef_translator.get_star_atom_type_from_cs_loop(sf_data)
+
+    def __testAmbiguityCodeOfCSLoop(self):
+        """ Perform ambiguity code test on assigned chemical shifts.
+        """
+
+        if self.report.isError():
+            return False
+
+        input_source = self.report.input_sources[0]
+        input_source_dic = input_source.get()
+
+        file_name = input_source_dic['file_name']
+        file_type = input_source_dic['file_type']
+
+        content_subtype = 'chem_shift'
+
+        if not content_subtype in input_source_dic['content_subtype'].keys():
+
+            self.report.error.addDescription('internal_error', "+NmrDpUtility.__testAmbiguityCodeOfCSLoop() ++ Error  - Assigned chemical shift loop does not exists in %s file" % file_name)
+            self.report.setError()
+
+            if self.__verbose:
+                self.__lfh.write("+NmrDpUtility.__testAmbiguityCodeOfCSLoop() ++ Error  - Assigned chemical shift loop does not exists in %s file" % file_name)
+
+            return False
+
+        # NEF file has no ambiguity code
+        if file_type == 'nef':
+            return True
+
+        sf_category = self.sf_categories[file_type][content_subtype]
+
+        list_id = 1
+
+        for sf_data in self.__star_data.get_saveframes_by_category(sf_category):
+
+            sf_framecode = sf_data.get_tag('sf_framecode')[0]
+
+        return not self.report.isError()
 
 if __name__ == '__main__':
     dp = NmrDpUtility()

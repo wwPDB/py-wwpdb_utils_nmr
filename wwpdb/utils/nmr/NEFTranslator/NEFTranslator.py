@@ -400,7 +400,7 @@ class NEFTranslator(object):
                     else:
                         break
                 if not _tags_exist:
-                    seq_dat = loop.get_data_by_tag(tags) # raise ValueError
+                    raise LookupError("Missing one of mandatory items %s in '%s' loop category." % (tags, lp_category))
 
             if allow_empty:
                 seq_dat = list(filter(NEFTranslator.is_data, seq_dat))
@@ -409,7 +409,7 @@ class NEFTranslator(object):
             else:
                 for i in seq_dat:
                     if NEFTranslator.is_empty_data(i):
-                        raise ValueError('Sequence must not be empty. loop_category=%s, chain_id=%s, seq_id=%s, comp_id=%s' % (lp_category, i[2], i[0], i[1]))
+                        raise ValueError("Sequence must not be empty: chain_id '%s', seq_id '%s', comp_id '%s' in loop_category '%'." % (i[2], i[0], i[1], lp_category))
 
             chains = sorted(set([i[2] for i in seq_dat]))
             sorted_seq = sorted(set(['{} {:04d} {}'.format(i[2], int(i[0]), i[1]) for i in seq_dat]))
@@ -419,7 +419,7 @@ class NEFTranslator(object):
             for i in seq_dat:
                 chk_key = '{} {:04d}'.format(i[2], int(i[0]))
                 if chk_dict[chk_key] != i[1]:
-                    raise KeyError('Sequence must be unique. loop_category=%s, chain_id=%s, seq_id=%s, comp_id=%s vs %s' % (lp_category, i[2], i[0], i[1], chk_dict[chk_key]))
+                    raise KeyError("Sequence must be unique: chain_id '%s', seq_id '%s', comp_id '%s' vs '%s' in '%s' loop category." % (i[2], i[0], i[1], chk_dict[chk_key], lp_category))
 
             if len(sorted_seq[0].split(' ')[-1]) > 1:
                 if len(chains) > 1:
@@ -499,7 +499,7 @@ class NEFTranslator(object):
                     else:
                         break
                 if not _tags_exist:
-                    seq_dat = loop.get_data_by_tag(tags) # raise ValueError
+                    raise LookupError("Missing one of mandatory items %s in '%s' loop category." % (tags, lp_category))
 
             if allow_empty:
                 seq_dat = list(filter(NEFTranslator.is_data, seq_dat))
@@ -508,7 +508,7 @@ class NEFTranslator(object):
             else:
                 for i in seq_dat:
                     if NEFTranslator.is_empty_data(i):
-                        raise ValueError('Sequence must not be empty. loop_category=%s, chain_id=%s, seq_id=%s, comp_id=%s' % (lp_category, i[2], i[0], i[1]))
+                        raise ValueError("Sequence must not be empty: chain_id '%s', seq_id '%s', comp_id '%s' in loop_category '%'." % (i[2], i[0], i[1], lp_category))
 
             chains = sorted(set([i[2] for i in seq_dat]))
             sorted_seq = sorted(set(['{} {:04d} {}'.format(i[2], int(i[0]), i[1]) for i in seq_dat]))
@@ -518,7 +518,7 @@ class NEFTranslator(object):
             for i in seq_dat:
                 chk_key = '{} {:04d}'.format(i[2], int(i[0]))
                 if chk_dict[chk_key] != i[1]:
-                    raise KeyError('Sequence must be unique. loop_category=%s, chain_id=%s, seq_id=%s, comp_id=%s vs %s' % (lp_category, i[2], i[0], i[1], chk_dict[chk_key]))
+                    raise KeyError("Sequence must be unique: chain_id '%s', seq_id '%s', comp_id '%s' vs '%s' in '%s' loop category." % (i[2], i[0], i[1], chk_dict[chk_key], lp_category))
 
             if len(sorted_seq[0].split(' ')[-1]) > 1:
                 if len(chains) > 1:
@@ -532,7 +532,7 @@ class NEFTranslator(object):
                 if len(chains) > 1:
                     for c in chains:
                         seq_dict[c] = [i.split(' ')[-1] for i in sorted_seq if i.split(' ')[0] == c]
-                        seeq_id_dict[c] = [int(i.split(' ')[1]) for i in sorted_seq if i.split(' ')[0] == c]
+                        sid_dict[c] = [int(i.split(' ')[1]) for i in sorted_seq if i.split(' ')[0] == c]
                 else:
                     seq_dict[list(chains)[0]] = [i.split(' ')[-1] for i in sorted_seq]
                     sid_dict[list(chains)[0]] = [int(i.split(' ')[1]) for i in sorted_seq]
@@ -585,7 +585,7 @@ class NEFTranslator(object):
                     else:
                         break
                 if not _tags_exist:
-                    comp_atom_dat = loop.get_data_by_tag(tags) # raise ValueError
+                    raise LookupError("Missing one of mandatory items %s in '%s' loop category." % (tags, lp_category))
 
             if allow_empty:
                 comp_atom_dat = list(filter(NEFTranslator.is_data, comp_atom_dat))
@@ -594,7 +594,7 @@ class NEFTranslator(object):
             else:
                 for i in comp_atom_dat:
                     if NEFTranslator.is_empty_data(i):
-                        raise ValueError('Pair of comp_id and atom_id must not be empty. loop_category=%s, comp_id=%s, atom_id=%s' % (lp_category, i[0], i[1]))
+                        raise ValueError("Pair of comp ID and atom ID must not be empty: comp_id '%s', atom_id '%s' in loop_category '%'." % (i[0], i[1], lp_category))
 
             comps = sorted(set([i[0] for i in comp_atom_dat]))
             sorted_comp_atom = sorted(set(['{} {}'.format(i[0], i[1]) for i in comp_atom_dat]))
@@ -615,7 +615,7 @@ class NEFTranslator(object):
         return dat
 
     @staticmethod
-    def get_star_comp_atom_pair(star_data, lp_category='Atom_chem_shift', comp_id='Comp_ID', atom_id='Atom_id',
+    def get_star_comp_atom_pair(star_data, lp_category='Atom_chem_shift', comp_id='Comp_ID', atom_id='Atom_ID',
                                 allow_empty=False):
         """ Extracts unique pairs of comp_id and atom_id from any given loops in an NMR-STAR file
         """
@@ -649,7 +649,7 @@ class NEFTranslator(object):
                     else:
                         break
                 if not _tags_exist:
-                    comp_atom_dat = loop.get_data_by_tag(tags) # raise ValueError
+                    raise LookupError("Missing one of mandatory items %s in '%s' loop category." % (tags, lp_category))
 
             if allow_empty:
                 comp_atom_dat = list(filter(NEFTranslator.is_data, comp_atom_dat))
@@ -658,7 +658,7 @@ class NEFTranslator(object):
             else:
                 for i in comp_atom_dat:
                     if NEFTranslator.is_empty_data(i):
-                        raise ValueError('Pair of comp_id and atom_id must not be empty. loop_category=%s, comp_id=%s, atom_id=%s' % (lp_category, i[0], i[1]))
+                        raise ValueError("Pair of comp ID and atom ID must not be empty: comp_id '%s', atom_id '%s' in loop_category '%'." % (i[0], i[1], lp_category))
 
             comps = sorted(set([i[0] for i in comp_atom_dat]))
             sorted_comp_atom = sorted(set(['{} {}'.format(i[0], i[1]) for i in comp_atom_dat]))
@@ -702,6 +702,9 @@ class NEFTranslator(object):
 
             a_type_dat = []
 
+            if set(tags) & set(loop.tags) != set(tags):
+                raise LookupError("Missing one of mandatory items %s in '%s' loop category." % (tags, lp_category))
+
             a_type_dat = loop.get_data_by_tag(tags)
 
             if allow_empty:
@@ -711,7 +714,7 @@ class NEFTranslator(object):
             else:
                 for i in a_type_dat:
                     if NEFTranslator.is_empty_data(i):
-                        raise ValueError('Pair of atom_type, isotope_number, and atom_id, must not be empty. loop_category=%s, atom_type=%s, isotope_number=%s, atom_id=%s' % (lp_category, i[0], i[1], i[2]))
+                        raise ValueError("Pair of atom type, isotope number, and atom ID must not be empty: atom_type '%s', isotope_number '%s', atom_id '%s' in '%s' loop category." % (i[0], i[1], i[2], lp_category))
 
             a_types = sorted(set([i[0] for i in a_type_dat]))
             sorted_ist = sorted(set(['{} {}'.format(i[0], i[1]) for i in a_type_dat]))
@@ -735,7 +738,7 @@ class NEFTranslator(object):
         return dat
 
     @staticmethod
-    def get_star_atom_type_from_cs_loop(star_data, lp_category='Atom_chem_shift', atom_type='Atom_type', isotope_number='Atom_isotope_number', atom_id='Atom_id',
+    def get_star_atom_type_from_cs_loop(star_data, lp_category='Atom_chem_shift', atom_type='Atom_type', isotope_number='Atom_isotope_number', atom_id='Atom_ID',
                                 allow_empty=False):
         """ Extracts unique pairs of atom_type, isotope number, and atom_id from assigned chemical shifts in an NMR-SAR file
         """
@@ -758,6 +761,9 @@ class NEFTranslator(object):
 
             a_type_dat = []
 
+            if set(tags) & set(loop.tags) != set(tags):
+                raise LookupError("Missing one of mandatory items %s in '%s' loop category." % (tags, lp_category))
+
             a_type_dat = loop.get_data_by_tag(tags)
 
             if allow_empty:
@@ -767,7 +773,7 @@ class NEFTranslator(object):
             else:
                 for i in a_type_dat:
                     if NEFTranslator.is_empty_data(i):
-                        raise ValueError('Pair of atom_type, isotope_number, and atom_id, must not be empty. loop_category=%s, atom_type=%s, isotope_number=%s, atom_id=%s' % (lp_category, i[0], i[1], i[2]))
+                        raise ValueError("Pair of atom type, isotope number, and atom ID must not be empty: atom_type '%s', isotope_number '%s', atom_id '%s' in '%s' loop category." % (i[0], i[1], i[2], lp_category))
 
             a_types = sorted(set([i[0] for i in a_type_dat]))
             sorted_ist = sorted(set(['{} {}'.format(i[0], i[1]) for i in a_type_dat]))

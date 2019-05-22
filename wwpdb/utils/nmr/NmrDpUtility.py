@@ -345,7 +345,7 @@ class NmrDpUtility(object):
 
             if _file_type != file_type:
 
-                self.report.error.addDescription('format_isssue', "'%s' was selected as %s file, but recognized as %s file." % (file_name, self.readable_file_type[file_type], self.readable_file_type[_file_type]))
+                self.report.error.addDescription('format_issue', "'%s' was selected as %s file, but recognized as %s file." % (file_name, self.readable_file_type[file_type], self.readable_file_type[_file_type]))
 
                 if len(message['error']) > 0:
                     for error_message in message['error']:
@@ -362,7 +362,7 @@ class NmrDpUtility(object):
 
         else:
 
-            self.report.error.addDescription('format_isssue', "'%s' is invalid %s file." % (file_name, self.readable_file_type[file_type]))
+            self.report.error.addDescription('format_issue', "'%s' is invalid %s file." % (file_name, self.readable_file_type[file_type]))
 
             if len(message['error']) > 0:
                 for error_message in message['error']:
@@ -528,7 +528,7 @@ class NmrDpUtility(object):
 
         except ValueError as e:
 
-            self.report.error.addDescription('invalid_value', str(e))
+            self.report.error.addDescription('invalid_data', str(e))
             self.report.setError()
 
             if self.__verbose:
@@ -1066,7 +1066,7 @@ class NmrDpUtility(object):
 
                 except ValueError as e:
 
-                    self.report.error.addDescription('invalid_value', str(e))
+                    self.report.error.addDescription('invalid_data', str(e))
                     self.report.setError()
 
                     if self.__verbose:
@@ -1165,7 +1165,7 @@ class NmrDpUtility(object):
 
             except ValueError as e:
 
-                self.report.error.addDescription('invalid_value', str(e))
+                self.report.error.addDescription('invalid_data', str(e))
                 self.report.setError()
 
                 if self.__verbose:
@@ -1284,12 +1284,12 @@ class NmrDpUtility(object):
 
             except ValueError as e:
 
-                self.report.error.addDescription('invalid_value', str(e))
+                self.report.error.addDescription('invalid_data', str(e))
                 self.report.setError()
 
                 if self.__verbose:
                     self.__lfh.write("+NmrDpUtility.__testAmbigCodeOfCSLoop() ++ ValueError  - %s" % str(e))
-            """
+
             except Exception as e:
 
                 self.report.error.addDescription('internal_error', "+NmrDpUtility.__testAmbigCodeOfCSLoop() ++ Error  - %s" % str(e))
@@ -1297,7 +1297,7 @@ class NmrDpUtility(object):
 
                 if self.__verbose:
                     self.__lfh.write("+NmrDpUtility.__testAmbigCodeOfCSLoop() ++ Error  - %s" % str(e))
-            """
+
         return not self.report.isError()
 
     def __getMaximumAguityCode(self, comp_id, atom_id):

@@ -197,7 +197,8 @@ class NmrDpReportWarning:
     """
 
     def __init__(self):
-        self.items = ('missing_content', 'missing_saveframe', 'missing_item', 'missing_data', 'sequence_mismatch', 'suspicious_data')
+        self.items = ('missing_content', 'missing_saveframe', 'missing_data',
+                      'sequence_mismatch', 'suspicious_data')
 
         self.__contents = {item:None for item in self.items}
 

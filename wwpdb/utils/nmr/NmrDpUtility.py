@@ -59,7 +59,7 @@ class NmrDpUtility(object):
                                                       self.__testAtomNomenclature,
                                                       self.__testAtomTypeOfCSLoop,
                                                       self.__testAmbiguityCodeOfCSLoop,
-                                                      self.__testDuplicatedIndexId,
+                                                      self.__testDuplicatedIndex,
                                                       self.__testDuplicatedChemShift] }
         """
                                 }
@@ -1301,8 +1301,8 @@ class NmrDpUtility(object):
 
                             for atom_id in atom_ids:
 
-                                if ambig_code > self.__getMaximumAguityCode(comp_id, atom_id):
-                                    self.report.error.addDescription('invalid_ambiguity_code', "Invalid ambiguity code %s (comp_id %s, atom_id %s, allowed ambig_code %s) exists in %s saveframe." % (ambig_code, comp_id, atom_id, [1, self.__getMaximumAguityCode(comp_id, atom_id), 4, 5, 6, 9], sf_framecode))
+                                if ambig_code > self.__getMaxAmbigCodeWoSetId(comp_id, atom_id):
+                                    self.report.error.addDescription('invalid_ambiguity_code', "Invalid ambiguity code %s (comp_id %s, atom_id %s, allowed ambig_code %s) exists in %s saveframe." % (ambig_code, comp_id, atom_id, [1, self.__getMaxAmbigCodeWoSetId(comp_id, atom_id), 4, 5, 6, 9], sf_framecode))
                                     self.report.setError()
 
                     # non-standard residue
@@ -1344,8 +1344,8 @@ class NmrDpUtility(object):
 
         return not self.report.isError()
 
-    def __getMaximumAguityCode(self, comp_id, atom_id):
-        """ Return allowed maximum ambiguity code of a given atom
+    def __getMaxAmbigCodeWoSetId(self, comp_id, atom_id):
+        """ Return maximum ambiguity code of a given atom that does not require declaration of ambiguity set ID
         """
 
         code = self.__get1LetterCode(comp_id)
@@ -1474,8 +1474,8 @@ class NmrDpUtility(object):
         else:
             return self.nef_translator.get_star_index(sf_data, lp_category=self.lp_categories[file_type][content_subtype], index_id=self.index_tags[file_type][content_subtype])
 
-    def __testDuplicatedIndexId(self):
-        """ Perform duplication test on index ID of interesting loops of NEF/NMR-STAR V3.2 file.
+    def __testDuplicatedIndex(self):
+        """ Perform duplication test on index of interesting loops of NEF/NMR-STAR V3.2 file.
         """
 
         if self.report.isError():

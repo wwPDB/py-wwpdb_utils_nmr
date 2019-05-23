@@ -30,9 +30,7 @@ class TestNEFTranslator(TestCase):
         self.assertEqual(read_out[1], 'Loop')
         read_out = self.neft.read_input_file('data/nonsense.nef')
         self.assertEqual(read_out[0], False)
-        self.assertEqual(read_out[1],
-                         'File contains no valid saveframe or loop. Invalid file PyNMRSTAR Error:'
-                         '("Invalid token found in saveframe \'internaluseyoushouldntseethis_frame\': \'A\'", 2)')
+        self.assertEqual(read_out[1], 'data/nonsense.nef contains no valid saveframe or loop. PyNMRSTAR ++ Error  - ("Invalid token found in saveframe \'internaluseyoushouldntseethis_frame\': \'A\'", 2)')
 
     def test_load_csv_data(self):
         self.assertTrue(len(self.neft.tagMap) > 0, "Can't read NEF-NMRSTAR_equivalence.csv or its empty")
@@ -298,6 +296,14 @@ class TestNEFTranslator(TestCase):
         dat = pynmrstar.Entry.from_file('data/2l9r.str')
         self.assertEqual(self.neft.get_star_index(dat), [[i for i in range(1, 70)]])
 
+    def test_get_nef_data(self):
+        dat = pynmrstar.Entry.from_file('data/2l9r.nef')
+        self.assertEqual(self.neft.get_nef_data(dat)[0][1]['value'], 56.002)
+
+    def test_get_star_data(self):
+        dat = pynmrstar.Entry.from_file('data/2l9r.str')
+        self.assertEqual(self.neft.get_star_data(dat)[0][1]['Val'], 56.002)
+
     def test_validate_comp_atom(self):
         self.assertEqual(self.neft.validate_comp_atom('ALA', 'HB1'), True)
         self.assertEqual(self.neft.validate_comp_atom('ALA', 'HB'), False)
@@ -308,12 +314,10 @@ class TestNEFTranslator(TestCase):
         dat = pynmrstar.Entry.from_file('data/2mqq.nef')
         self.assertEqual(len(self.neft.validate_atom(dat, 'nef_chemical_shift', 'sequence_code', 'residue_name', 'atom_name')),
                          567)
-        self.assertEqual(
-            len(self.neft.validate_atom(dat, 'nef_distance_restraint', 'sequence_code_1', 'residue_name_1', 'atom_name_1')),
-            2960)
-        self.assertEqual(
-            len(self.neft.validate_atom(dat, 'nef_distance_restraint', 'sequence_code_2', 'residue_name_2', 'atom_name_2')),
-            3147)
+        self.assertEqual(len(self.neft.validate_atom(dat, 'nef_distance_restraint', 'sequence_code_1', 'residue_name_1', 'atom_name_1')),
+                         2960)
+        self.assertEqual(len(self.neft.validate_atom(dat, 'nef_distance_restraint', 'sequence_code_2', 'residue_name_2', 'atom_name_2')),
+                         3147)
         dat = pynmrstar.Entry.from_file('data/2mqq.str')
         self.assertEqual(len(self.neft.validate_atom(dat)), 0)
         self.assertEqual(len(self.neft.validate_atom(dat, 'Gen_dist_constraint', 'Comp_index_ID_1', 'Comp_ID_1', 'Atom_ID_1')),

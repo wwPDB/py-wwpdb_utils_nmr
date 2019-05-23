@@ -400,7 +400,7 @@ class NEFTranslator(object):
                     else:
                         break
                 if not _tags_exist:
-                    raise LookupError("Missing one of mandatory items %s in '%s' loop category." % (tags, lp_category))
+                    raise LookupError("Missing one of mandatory items %s in %s loop category" % (tags, lp_category))
 
             if allow_empty:
                 seq_dat = list(filter(NEFTranslator.is_data, seq_dat))
@@ -409,7 +409,7 @@ class NEFTranslator(object):
             else:
                 for i in seq_dat:
                     if NEFTranslator.is_empty_data(i):
-                        raise ValueError("Sequence must not be empty: chain_id '%s', seq_id '%s', comp_id '%s' in '%s' loop category." % (i[2], i[0], i[1], lp_category))
+                        raise ValueError("Sequence must not be empty. chain_id %s, seq_id %s, comp_id %s in %s loop category" % (i[2], i[0], i[1], lp_category))
 
             try:
 
@@ -421,7 +421,7 @@ class NEFTranslator(object):
                 for i in seq_dat:
                     chk_key = '{} {:04d}'.format(i[2], int(i[0]))
                     if chk_dict[chk_key] != i[1]:
-                        raise KeyError("Sequence must be unique: chain_id '%s', seq_id '%s', comp_id '%s' vs '%s' in '%s' loop category." % (i[2], i[0], i[1], chk_dict[chk_key], lp_category))
+                        raise KeyError("Sequence must be unique. chain_id %s, seq_id %s, comp_id %s vs %s in %s loop category" % (i[2], i[0], i[1], chk_dict[chk_key], lp_category))
 
                 if len(sorted_seq[0].split(' ')[-1]) > 1:
                     if len(chains) > 1:
@@ -454,7 +454,7 @@ class NEFTranslator(object):
                 dat.append(asm)
 
             except ValueError:
-                raise ValueError("Sequence ID should be integer in '%s' loop category" % (lp_category))
+                raise ValueError("Sequence ID should be integer in %s loop category" % (lp_category))
 
         return dat
 
@@ -506,7 +506,7 @@ class NEFTranslator(object):
                     else:
                         break
                 if not _tags_exist:
-                    raise LookupError("Missing one of mandatory items %s in '%s' loop category." % (tags, lp_category))
+                    raise LookupError("Missing one of mandatory items %s in %s loop category" % (tags, lp_category))
 
             if allow_empty:
                 seq_dat = list(filter(NEFTranslator.is_data, seq_dat))
@@ -515,7 +515,7 @@ class NEFTranslator(object):
             else:
                 for i in seq_dat:
                     if NEFTranslator.is_empty_data(i):
-                        raise ValueError("Sequence must not be empty: chain_id '%s', seq_id '%s', comp_id '%s' in '%s' loop_category." % (i[2], i[0], i[1], lp_category))
+                        raise ValueError("Sequence must not be empty. chain_id %s, seq_id %s, comp_id %s in %s loop category" % (i[2], i[0], i[1], lp_category))
 
             try:
 
@@ -527,7 +527,7 @@ class NEFTranslator(object):
                 for i in seq_dat:
                     chk_key = '{} {:04d}'.format(i[2], int(i[0]))
                     if chk_dict[chk_key] != i[1]:
-                        raise KeyError("Sequence must be unique: chain_id '%s', seq_id '%s', comp_id '%s' vs '%s' in '%s' loop category." % (i[2], i[0], i[1], chk_dict[chk_key], lp_category))
+                        raise KeyError("Sequence must be unique. chain_id %s, seq_id %s, comp_id %s vs %s in %s loop category" % (i[2], i[0], i[1], chk_dict[chk_key], lp_category))
 
                 if len(sorted_seq[0].split(' ')[-1]) > 1:
                     if len(chains) > 1:
@@ -560,7 +560,7 @@ class NEFTranslator(object):
                 dat.append(asm)
 
             except ValueError:
-                raise ValueError("Sequence ID should be integer in '%s' loop category" % (lp_category))
+                raise ValueError("Sequence ID should be integer in %s loop category" % (lp_category))
 
         return dat
 
@@ -599,7 +599,7 @@ class NEFTranslator(object):
                     else:
                         break
                 if not _tags_exist:
-                    raise LookupError("Missing one of mandatory items %s in '%s' loop category." % (tags, lp_category))
+                    raise LookupError("Missing one of mandatory items %s in %s loop category" % (tags, lp_category))
 
             if allow_empty:
                 comp_atom_dat = list(filter(NEFTranslator.is_data, comp_atom_dat))
@@ -608,7 +608,7 @@ class NEFTranslator(object):
             else:
                 for i in comp_atom_dat:
                     if NEFTranslator.is_empty_data(i):
-                        raise ValueError("One of comp ID and atom ID must not be empty: comp_id '%s', atom_id '%s' in '%s' loop category." % (i[0], i[1], lp_category))
+                        raise ValueError("One of comp ID and atom ID must not be empty. comp_id %s, atom_id %s in %s loop category" % (i[0], i[1], lp_category))
 
             comps = sorted(set([i[0] for i in comp_atom_dat]))
             sorted_comp_atom = sorted(set(['{} {}'.format(i[0], i[1]) for i in comp_atom_dat]))
@@ -665,7 +665,7 @@ class NEFTranslator(object):
                     else:
                         break
                 if not _tags_exist:
-                    raise LookupError("Missing one of mandatory items %s in '%s' loop category." % (tags, lp_category))
+                    raise LookupError("Missing one of mandatory items %s in %s loop category" % (tags, lp_category))
 
             if allow_empty:
                 comp_atom_dat = list(filter(NEFTranslator.is_data, comp_atom_dat))
@@ -674,7 +674,7 @@ class NEFTranslator(object):
             else:
                 for i in comp_atom_dat:
                     if NEFTranslator.is_empty_data(i):
-                        raise ValueError("One of comp ID and atom ID must not be empty: comp_id '%s', atom_id '%s' in '%s' loop category." % (i[0], i[1], lp_category))
+                        raise ValueError("One of comp ID and atom ID must not be empty. comp_id %s, atom_id %s in %s loop category" % (i[0], i[1], lp_category))
 
             comps = sorted(set([i[0] for i in comp_atom_dat]))
             sorted_comp_atom = sorted(set(['{} {}'.format(i[0], i[1]) for i in comp_atom_dat]))
@@ -721,7 +721,7 @@ class NEFTranslator(object):
             a_type_dat = []
 
             if set(tags) & set(loop.tags) != set(tags):
-                raise LookupError("Missing one of mandatory items %s in '%s' loop category." % (tags, lp_category))
+                raise LookupError("Missing one of mandatory items %s in %s loop category" % (tags, lp_category))
 
             a_type_dat = loop.get_data_by_tag(tags)
 
@@ -732,7 +732,7 @@ class NEFTranslator(object):
             else:
                 for i in a_type_dat:
                     if NEFTranslator.is_empty_data(i):
-                        raise ValueError("One of atom type, isotope number, and atom ID must not be empty: atom_type '%s', isotope_number '%s', atom_id '%s' in '%s' loop category." % (i[0], i[1], i[2], lp_category))
+                        raise ValueError("One of atom type, isotope number, and atom ID must not be empty. atom_type %s, isotope_number %s, atom_id %s in %s loop category" % (i[0], i[1], i[2], lp_category))
 
             try:
 
@@ -758,7 +758,7 @@ class NEFTranslator(object):
                 dat.append(asm)
 
             except ValueError:
-                raise ValueError("Isotope number should be integer in '%s' loop category" % (lp_category))
+                raise ValueError("Isotope number should be integer in %s loop category" % (lp_category))
 
         return dat
 
@@ -787,7 +787,7 @@ class NEFTranslator(object):
             a_type_dat = []
 
             if set(tags) & set(loop.tags) != set(tags):
-                raise LookupError("Missing one of mandatory items %s in '%s' loop category." % (tags, lp_category))
+                raise LookupError("Missing one of mandatory items %s in %s loop category" % (tags, lp_category))
 
             a_type_dat = loop.get_data_by_tag(tags)
 
@@ -798,7 +798,7 @@ class NEFTranslator(object):
             else:
                 for i in a_type_dat:
                     if NEFTranslator.is_empty_data(i):
-                        raise ValueError("One of atom type, isotope number, and atom ID must not be empty: atom_type '%s', isotope_number '%s', atom_id '%s' in '%s' loop category." % (i[0], i[1], i[2], lp_category))
+                        raise ValueError("One of atom type, isotope number, and atom ID must not be empty. atom_type %s, isotope_number %s, atom_id %s in %s loop category" % (i[0], i[1], i[2], lp_category))
 
             try:
 
@@ -824,7 +824,7 @@ class NEFTranslator(object):
                 dat.append(asm)
 
             except ValueError:
-                raise ValueError("Isotope number should be integer in '%s' loop category" % (lp_category))
+                raise ValueError("Isotope number should be integer in %s loop category" % (lp_category))
 
         return dat
 
@@ -854,7 +854,7 @@ class NEFTranslator(object):
             ambig_dat = []
 
             if set(tags) & set(loop.tags) != set(tags):
-                raise LookupError("Missing one of mandatory items %s in '%s' loop category." % (tags, lp_category))
+                raise LookupError("Missing one of mandatory items %s in %s loop category" % (tags, lp_category))
 
             ambig_dat = loop.get_data_by_tag(tags)
 
@@ -865,27 +865,27 @@ class NEFTranslator(object):
             for i in ambig_dat:
                 # already checked elsewhere
                 #if i[0] in empty_value:
-                #   raise ValueError("Comp ID should not be empty in '%s' loop category." % (lp_category))
+                #   raise ValueError("Comp ID should not be empty in %s loop category" % (lp_category))
                 #if i[1] in empty_value:
-                #    raise ValueError("Atom ID should not be empty in '%s' loop category." % (lp_category))
+                #    raise ValueError("Atom ID should not be empty in %s loop category" % (lp_category))
                 if not i[2] in empty_value:
 
                     try:
                         ambig_code = int(i[2])
                     except ValueError:
-                        raise ValueError("Ambiguity code should be %s in '%s' loop category" % (list(bmrb_ambiguity_codes), lp_category))
+                        raise ValueError("Ambiguity code should be %s in %s loop category" % (list(bmrb_ambiguity_codes), lp_category))
 
                     if not ambig_code in bmrb_ambiguity_codes:
-                        raise ValueError("Ambiguity code should be %s in '%s' loop category." % (list(bmrb_ambiguity_codes), lp_category))
+                        raise ValueError("Ambiguity code should be %s in %s loop category" % (list(bmrb_ambiguity_codes), lp_category))
 
                     if ambig_code >= 4:
                         if i[3] in empty_value:
-                            raise ("Ambiguity set ID should not be empty for ambiguity code '%s' in '%s' loop category." % (list(bmrb_ambiguity_codes), lp_category))
+                            raise ("Ambiguity set ID should not be empty for ambiguity code %s in %s loop category" % (list(bmrb_ambiguity_codes), lp_category))
                         else:
                             try:
                                 ambig_set_id = int(i[3])
                             except ValueError:
-                                raise ValueError("Ambiguity set ID should be integer in '%s' loop category" % lp_category)
+                                raise ValueError("Ambiguity set ID should be integer in %s loop category" % lp_category)
 
             ambigs = sorted(set(['{}:{}'.format(i[0], i[2]) for i in ambig_dat]))
             sorted_atm = sorted(set(['{}:{} {}'.format(i[0], i[2], i[1]) for i in ambig_dat]))
@@ -934,11 +934,11 @@ class NEFTranslator(object):
                 index_dat = loop.get_data_by_tag(tags)
             else:
                 if not _tags_exist:
-                    raise LookupError("Missing mandatory item %s in '%s' loop category." % (index_id, lp_category))
+                    raise LookupError("Missing mandatory item %s in %s loop category" % (index_id, lp_category))
 
             for i in index_dat:
                 if NEFTranslator.is_empty_data(i):
-                    raise ValueError("index ID must not be empty in '%s' loop_category." % (i[0], lp_category))
+                    raise ValueError("index ID must not be empty in %s loop category" % (i[0], lp_category))
 
             try:
 
@@ -947,12 +947,12 @@ class NEFTranslator(object):
                 dup_indices = [i for i in set(indices) if indices.count(i) > 1]
 
                 if len(dup_indices) > 0:
-                    raise KeyError("Index ID must be unique: %s are duplicated indices in '%s' loop category" % (dup_indices, lp_category))
+                    raise KeyError("Index ID must be unique. %s are duplicated indices in %s loop category" % (dup_indices, lp_category))
 
                 dat.append(indices)
 
             except ValueError:
-                raise ValueError("Index ID should be integer in '%s' loop category" % (lp_category))
+                raise ValueError("Index ID should be integer in %s loop category" % (lp_category))
 
         return dat
 
@@ -980,11 +980,11 @@ class NEFTranslator(object):
                 index_dat = loop.get_data_by_tag(tags)
             else:
                 if not _tags_exist:
-                    raise LookupError("Missing mandatory item %s in '%s' loop category." % (index_id, lp_category))
+                    raise LookupError("Missing mandatory item %s in %s loop category" % (index_id, lp_category))
 
             for i in index_dat:
                 if NEFTranslator.is_empty_data(i):
-                    raise ValueError("index ID must not be empty in '%s' loop_category." % (i[0], lp_category))
+                    raise ValueError("index ID must not be empty in %s loop category" % (i[0], lp_category))
 
             try:
 
@@ -993,12 +993,12 @@ class NEFTranslator(object):
                 dup_indices = [i for i in set(indices) if indices.count(i) > 1]
 
                 if len(dup_indices) > 0:
-                    raise KeyError("Index ID must be unique: %s are duplicated indices in '%s' loop category" % (dup_indices, lp_category))
+                    raise KeyError("Index ID must be unique. %s are duplicated indices in %s loop category" % (dup_indices, lp_category))
 
                 dat.append(indices)
 
             except ValueError:
-                raise ValueError("Index ID should be integer in '%s' loop category" % (lp_category))
+                raise ValueError("Index ID should be integer in %s loop category" % (lp_category))
 
         return dat
 

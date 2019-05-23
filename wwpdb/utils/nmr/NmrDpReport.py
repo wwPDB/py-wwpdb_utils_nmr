@@ -1,6 +1,6 @@
 ##
 # File: NmrDpReport.py
-# Date: 17-May-2019
+# Date: 23-May-2019
 #
 # Updates:
 ##
@@ -172,7 +172,7 @@ class NmrDpReportError:
 
     def __init__(self):
         self.items = ('internal_error', 'format_issue', 'missing_mandatory_content', 'missing_mandatory_item', 'sequence_mismatch',
-                      'invalid_data', 'invalid_atom_nomenclature', 'invalid_atom_type', 'invalid_isotope_number', 'invalid_ambiguity_code',
+                      'invalid_data', 'invalid_atom_nomenclature', 'invalid_atom_type', 'invalid_isotope_number', 'invalid_ambiguity_code', 'multiple_data',
                       'duplicated_index', 'duplicated_chem_shift', 'anomalous_data')
 
         self.__contents = {item:None for item in self.items}

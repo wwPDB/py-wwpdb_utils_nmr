@@ -1,6 +1,6 @@
 ##
 # File: NmrDpUtility.py
-# Date: 17-May-2019
+# Date: 23-May-2019
 #
 # Updates:
 ##
@@ -60,7 +60,7 @@ class NmrDpUtility(object):
                                                       self.__testAtomTypeOfCSLoop,
                                                       self.__testAmbiguityCodeOfCSLoop,
                                                       self.__testDuplicatedIndex,
-                                                      self.__testDuplicatedChemShift] }
+                                                      self.__testDataConsistencyInLoop] }
         """
                                 }
                                                       self.__testAnomalousData,
@@ -95,8 +95,30 @@ class NmrDpUtility(object):
         self.nmr_content_subtypes = ('poly_seq', 'chem_shift', 'dist_restraint', 'dihed_restraint', 'rdc_restraint', 'spectral_peak')
 
         # readable file type
-        self.readable_file_type = {'nef': 'NEF (NMR Exchange Format)', 'nmr-star': 'NMR-STAR V3.2',
-                                   'pdbx': 'PDBx/mmCIF', 'unknown': 'unknown'}
+        self.readable_file_type = {'nef': 'NEF (NMR Exchange Format)',
+                                   'nmr-star': 'NMR-STAR V3.2',
+                                   'pdbx': 'PDBx/mmCIF',
+                                   'unknown': 'unknown'
+                                   }
+
+        # atom isotopes
+        self.atom_isotopes = {'H': {1, 2, 3},
+                              'C': {13},
+                              'N': {15, 14},
+                              'O': {17},
+                              'P': {31},
+                              'S': {33},
+                              'F': {19},
+                              'CD': {113, 111},
+                              'CA': {43}
+                              }
+
+        # ambiguity codes
+        self.bmrb_ambiguity_codes = (1, 2, 3, 4, 5, 6, 9)
+
+        isotope_nums = []
+        for i in self.atom_isotopes.values():
+            isotope_nums.extend(list(i))
 
         # saveframe categories
         self.sf_categories = {'nef': {'poly_seq': 'nef_molecular_system',
@@ -104,13 +126,15 @@ class NmrDpUtility(object):
                                       'dist_restraint': 'nef_distance_restraint_list',
                                       'dihed_restraint': 'nef_dihedral_restraint_list',
                                       'rdc_restraint': 'nef_rdc_restraint_list',
-                                      'spectral_peak': 'nef_nmr_spectrum'},
+                                      'spectral_peak': 'nef_nmr_spectrum'
+                                      },
                               'nmr-star': {'poly_seq': 'assembly',
                                            'chem_shift': 'assigned_chemical_shifts',
                                            'dist_restraint': 'general_distance_constraints',
                                            'dihed_restraint': 'torsion_angle_constraints',
                                            'rdc_restraint': 'RDC_constraints',
-                                           'spectral_peak': 'spectral_peak_list'}
+                                           'spectral_peak': 'spectral_peak_list'
+                                           }
                               }
 
         # loop categories
@@ -119,13 +143,15 @@ class NmrDpUtility(object):
                                       'dist_restraint': '_nef_distance_restraint',
                                       'dihed_restraint': '_nef_dihedral_restraint',
                                       'rdc_restraint': '_nef_rdc_restraint',
-                                      'spectral_peak': '_nef_peak'},
+                                      'spectral_peak': '_nef_peak'
+                                      },
                               'nmr-star': {'poly_seq': '_Chem_comp_assembly',
                                            'chem_shift': '_Atom_chem_shift',
                                            'dist_restraint': '_Gen_dist_constraint',
                                            'dihed_restraint': '_Torsion_angle_constraint',
                                            'rdc_restraint': '_RDC_constraint',
-                                           'spectral_peak': '_Peak_row_format'}
+                                           'spectral_peak': '_Peak_row_format'
+                                           }
                               }
 
         # index tags
@@ -134,14 +160,496 @@ class NmrDpUtility(object):
                                    'dist_restraint': 'index',
                                    'dihed_restraint': 'index',
                                    'rdc_restraint': 'index',
-                                   'spectral_peak': 'index'},
+                                   'spectral_peak': 'index'
+                                   },
                            'nmr-star': {'poly_seq': None,
                                         'chem_shift': None,
                                         'dist_restraint': 'Index_ID',
                                         'dihed_restraint': 'Index_ID',
                                         'rdc_restraint': 'Index_ID',
-                                        'spectral_peak': 'Index_ID'}
+                                        'spectral_peak': 'Index_ID'
+                                        }
                          }
+
+        # key_items
+        self.key_items = {'nef': {'poly_seq': [{'name': 'chain_code', 'type': 'str'},
+                                               {'name': 'sequence_code', 'type': 'int'},
+                                               {'name': 'residue_name', 'type': 'str'}
+                                               ],
+                                   'chem_shift': [{'name': 'chain_code', 'type': 'str'},
+                                                  {'name': 'sequence_code', 'type': 'int'},
+                                                  {'name': 'residue_name', 'type': 'str'},
+                                                  {'name': 'atom_name', 'type': 'str'}
+                                                  ],
+                                   'dist_restraint': [{'name': 'chain_code_1', 'type': 'str'},
+                                                      {'name': 'sequence_code_1', 'type': 'int'},
+                                                      {'name': 'residue_name_1', 'type': 'str'},
+                                                      {'name': 'atom_name_1', 'type': 'str'},
+                                                      {'name': 'chain_code_2', 'type': 'str'},
+                                                      {'name': 'sequence_code_2', 'type': 'int'},
+                                                      {'name': 'residue_name_2', 'type': 'str'},
+                                                      {'name': 'atom_name_2', 'type': 'str'}
+                                                      ],
+                                   'dihed_restraint': [{'name': 'chain_code_1', 'type': 'str'},
+                                                       {'name': 'sequence_code_1', 'type': 'int'},
+                                                       {'name': 'residue_name_1', 'type': 'str'},
+                                                       {'name': 'atom_name_1', 'type': 'str'},
+                                                       {'name': 'chain_code_2', 'type': 'str'},
+                                                       {'name': 'sequence_code_2', 'type': 'int'},
+                                                       {'name': 'residue_name_2', 'type': 'str'},
+                                                       {'name': 'atom_name_2', 'type': 'str'},
+                                                       {'name': 'chain_code_3', 'type': 'str'},
+                                                       {'name': 'sequence_code_3', 'type': 'int'},
+                                                       {'name': 'residue_name_3', 'type': 'str'},
+                                                       {'name': 'atom_name_3', 'type': 'str'},
+                                                       {'name': 'chain_code_4', 'type': 'str'},
+                                                       {'name': 'sequence_code_4', 'type': 'int'},
+                                                       {'name': 'residue_name_4', 'type': 'str'},
+                                                       {'name': 'atom_name_4', 'type': 'str'}
+                                                       ],
+                                   'rdc_restraint': [{'name': 'chain_code_1', 'type': 'str'},
+                                                     {'name': 'sequence_code_1', 'type': 'int'},
+                                                     {'name': 'residue_name_1', 'type': 'str'},
+                                                     {'name': 'atom_name_1', 'type': 'str'},
+                                                     {'name': 'chain_code_2', 'type': 'str'},
+                                                     {'name': 'sequence_code_2', 'type': 'int'},
+                                                     {'name': 'residue_name_2', 'type': 'str'},
+                                                     {'name': 'atom_name_2', 'type': 'str'}
+                                                     ],
+                                   'spectral_peak': {'1': [{'name': 'position_1', 'type': 'float'}
+                                                           ],
+                                                     '2': [{'name': 'position_1', 'type': 'float'},
+                                                           {'name': 'position_2', 'type': 'float'}
+                                                           ],
+                                                     '3': [{'name': 'position_1', 'type': 'float'},
+                                                           {'name': 'position_2', 'type': 'float'},
+                                                           {'name': 'position_3', 'type': 'float'}
+                                                           ],
+                                                     '4': [{'name': 'position_1', 'type': 'float'},
+                                                           {'name': 'position_2', 'type': 'float'},
+                                                           {'name': 'position_3', 'type': 'float'},
+                                                           {'name': 'position_4', 'type': 'float'}
+                                                           ]
+                                                    }
+                                   },
+                          'nmr-star': {'poly_seq': [{'name': 'Entity_assembly_ID', 'type': 'positive-int'},
+                                                    {'name': 'Comp_index_ID', 'type': 'int'},
+                                                    {'name': 'Comp_ID', 'type': 'str'}
+                                                    ],
+                                       'chem_shift': [{'name': 'Entity_assembly_ID', 'type': 'positive-int'},
+                                                      {'name': 'Comp_index_ID', 'type': 'int'},
+                                                      {'name': 'Comp_ID', 'type': 'str'},
+                                                      {'name': 'Atom_ID', 'type': 'str'}
+                                                      ],
+                                       'dist_restraint': [{'name': 'Entity_assembly_ID_1', 'type': 'positive-int'},
+                                                          {'name': 'Comp_index_ID_1', 'type': 'int'},
+                                                          {'name': 'Comp_ID_1', 'type': 'str'},
+                                                          {'name': 'Atom_ID_1', 'type': 'str'},
+                                                          {'name': 'Entity_assembly_ID_2', 'type': 'positive-int'},
+                                                          {'name': 'Comp_index_ID_2', 'type': 'int'},
+                                                          {'name': 'Comp_ID_2', 'type': 'str'},
+                                                          {'name': 'Atom_ID_2', 'type': 'str'}
+                                                          ],
+                                       'dihed_restraint': [{'name': 'Entity_assembly_ID_1', 'type': 'positive-int'},
+                                                           {'name': 'Comp_index_ID_1', 'type': 'int'},
+                                                           {'name': 'Comp_ID_1', 'type': 'str'},
+                                                           {'name': 'Atom_ID_1', 'type': 'str'},
+                                                           {'name': 'Entity_assembly_ID_2', 'type': 'positive-int'},
+                                                           {'name': 'Comp_index_ID_2', 'type': 'int'},
+                                                           {'name': 'Comp_ID_2', 'type': 'str'},
+                                                           {'name': 'Atom_ID_2', 'type': 'str'},
+                                                           {'name': 'Entity_assembly_ID_3', 'type': 'positive-int'},
+                                                           {'name': 'Comp_index_ID_3', 'type': 'int'},
+                                                           {'name': 'Comp_ID_3', 'type': 'str'},
+                                                           {'name': 'Atom_ID_3', 'type': 'str'},
+                                                           {'name': 'Entity_assembly_ID_4', 'type': 'positive-int'},
+                                                           {'name': 'Comp_index_ID_4', 'type': 'int'},
+                                                           {'name': 'Comp_ID_4', 'type': 'str'},
+                                                           {'name': 'Atom_ID_4', 'type': 'str'}
+                                                           ],
+                                       'rdc_restraint': [{'name': 'Entity_assembly_ID_1', 'type': 'positive-int'},
+                                                         {'name': 'Comp_index_ID_1', 'type': 'int'},
+                                                         {'name': 'Comp_ID_1', 'type': 'str'},
+                                                         {'name': 'Atom_ID_1', 'type': 'str'},
+                                                         {'name': 'Entity_assembly_ID_2', 'type': 'positive-int'},
+                                                         {'name': 'Comp_index_ID_2', 'type': 'int'},
+                                                         {'name': 'Comp_ID_2', 'type': 'str'},
+                                                         {'name': 'Atom_ID_2', 'type': 'str'}
+                                                         ],
+                                       'spectral_peak': {'1': [{'name': 'Position_1', 'type': 'float'}
+                                                               ],
+                                                         '2': [{'name': 'Position_1', 'type': 'float'},
+                                                               {'name': 'Position_2', 'type': 'float'}
+                                                               ],
+                                                         '3': [{'name': 'Position_1', 'type': 'float'},
+                                                               {'name': 'Position_2', 'type': 'float'},
+                                                               {'name': 'Position_3', 'type': 'float'}
+                                                               ],
+                                                         '4': [{'name': 'Position_1', 'type': 'float'},
+                                                               {'name': 'Position_2', 'type': 'float'},
+                                                               {'name': 'Position_3', 'type': 'float'},
+                                                               {'name': 'Position_4', 'type': 'float'}
+                                                               ]
+                                                         }
+                                       }
+                          }
+
+        # data items
+        self.data_items = {'nef': {'poly_seq': [{'name': 'linking', 'type': 'enum', 'mandatory': False,
+                                                 'enum': ('start', 'end', 'middle', 'cyclic', 'break', 'single', 'dummy')},
+                                                {'name': 'residue_variant', 'type': 'str', 'mandatory': False},
+                                                {'name': 'cis_peptide', 'type': 'enum', 'mandatory': False,
+                                                 'enum': ('true', 'false')}
+                                                ],
+                                   'chem_shift': [{'name': 'value', 'type': 'float', 'mandatory': True}, # check range
+                                                  {'name': 'value_uncertainty', 'type': 'positive-float', 'mandatory': False},
+                                                  {'name': 'element', 'type': 'enum', 'mandatory': True,
+                                                   'enum': set(self.atom_isotopes.keys())},
+                                                  {'name': 'isotope_number', 'type': 'enum-int', 'mandatory': True,
+                                                   'enum': set(isotope_nums)}
+                                                  ],
+                                   'dist_restraint': [{'name': 'index', 'type':'index-int', 'mandatory': True},
+                                                      {'name': 'restraint_id', 'type':'positive-int', 'mandatory': True},
+                                                      {'name': 'restraint_combination_id', 'type':'positive-int', 'mandatory': False},
+                                                      {'name': 'weight', 'type':'positive-float', 'mandatory': True},
+                                                      {'name': 'target_value', 'type':'positive-float', 'mandatory': False}, # check null, range
+                                                      {'name': 'target_value_uncertainty', 'type':'positive-float', 'mandatory': False},
+                                                      {'name': 'lower_linear_limit', 'type':'positive-float', 'mandatory': False}, # check null, range
+                                                      {'name': 'lower_limit', 'type':'positive-float', 'mandatory': False}, # check null, range
+                                                      {'name': 'upper_limit', 'type':'positive-float', 'mandatory': False}, # check null, range
+                                                      {'name': 'upper_linear_limit', 'type':'positive-float', 'mandatory': False} # check null, range
+                                                      ],
+                                   'dihed_restraint': [{'name': 'index', 'type':'index-int', 'mandatory': True},
+                                                       {'name': 'restraint_id', 'type':'positive-int', 'mandatory': True},
+                                                       {'name': 'restraint_combination_id', 'type':'positive-int', 'mandatory': False},
+                                                       {'name': 'weight', 'type':'positive-float', 'mandatory': True},
+                                                       {'name': 'target_value', 'type':'float', 'mandatory': False}, # check null, range
+                                                       {'name': 'target_value_uncertainty', 'type':'float', 'mandatory': False}, # check null, range
+                                                       {'name': 'lower_linear_limit', 'type':'float', 'mandatory': False}, # check null, range
+                                                       {'name': 'lower_limit', 'type':'float', 'mandatory': False}, # check null, range
+                                                       {'name': 'upper_limit', 'type':'float', 'mandatory': False}, # check null, range
+                                                       {'name': 'upper_linear_limit', 'type':'float', 'mandatory': False}, # check null, range
+                                                       {'name': 'name', 'type':'str', 'mandatory': False},
+                                                    ],
+                                   'rdc_restraint': [{'name': 'index', 'type':'index-int', 'mandatory': True},
+                                                     {'name': 'restraint_id', 'type':'positive-int', 'mandatory': True},
+                                                     {'name': 'restraint_combination_id', 'type':'positive-int', 'mandatory': False},
+                                                     {'name': 'target_value', 'type':'float', 'mandatory': False}, # check null, range
+                                                     {'name': 'target_value_uncertainty', 'type':'positive-float', 'mandatory': False},
+                                                     {'name': 'lower_linear_limit', 'type':'float', 'mandatory': False}, # check null, range
+                                                     {'name': 'lower_limit', 'type':'float', 'mandatory': False}, # check null, range
+                                                     {'name': 'upper_limit', 'type':'float', 'mandatory': False}, # check null, range
+                                                     {'name': 'upper_linear_limit', 'type':'float', 'mandatory': False}, # check null, range
+                                                     {'name': 'scale', 'type':'positive-float', 'mandatory': False},
+                                                     {'name': 'distance_dependent', 'type':'enum', 'mandatory': False,
+                                                      'enum': ('true', 'false')}
+                                                     ],
+                                   'spectral_peak': {'1': [{'name': 'index', 'type':'index-int', 'mandatory': True},
+                                                           {'name': 'peak_id', 'type':'positive-int', 'mandatory': True},
+                                                           {'name': 'volume', 'type':'float', 'mandatory': False}, # check null
+                                                           {'name': 'volume_uncertainty', 'type':'positive-float', 'mandatory': False},
+                                                           {'name': 'height', 'type':'float', 'mandatory': False}, # check null
+                                                           {'name': 'height_uncertainty', 'type':'positive-float', 'mandatory': False},
+                                                           {'name': 'position_uncertainty_1', 'type':'positive-float', 'mandatory': False},
+                                                           {'name': 'chain_code_1', 'type':'str', 'mandatory': False},
+                                                           {'name': 'sequence_code_1', 'type':'int', 'mandatory': False},
+                                                           {'name': 'residue_name_1', 'type':'str', 'mandatory': False},
+                                                           {'name': 'atom_name_1', 'type':'str', 'mandatory': False}
+                                                           ],
+                                                     '2': [{'name': 'index', 'type':'index-int', 'mandatory': True},
+                                                           {'name': 'peak_id', 'type':'positive-int', 'mandatory': True},
+                                                           {'name': 'volume', 'type':'float', 'mandatory': False}, # check null
+                                                           {'name': 'volume_uncertainty', 'type':'positive-float', 'mandatory': False},
+                                                           {'name': 'height', 'type':'float', 'mandatory': False}, # check null
+                                                           {'name': 'height_uncertainty', 'type':'positive-float', 'mandatory': False},
+                                                           {'name': 'position_uncertainty_1', 'type':'positive-float', 'mandatory': False},
+                                                           {'name': 'position_uncertainty_2', 'type':'positive-float', 'mandatory': False},
+                                                           {'name': 'chain_code_1', 'type':'str', 'mandatory': False},
+                                                           {'name': 'sequence_code_1', 'type':'int', 'mandatory': False},
+                                                           {'name': 'residue_name_1', 'type':'str', 'mandatory': False},
+                                                           {'name': 'atom_name_1', 'type':'str', 'mandatory': False},
+                                                           {'name': 'chain_code_2', 'type':'str', 'mandatory': False},
+                                                           {'name': 'sequence_code_2', 'type':'int', 'mandatory': False},
+                                                           {'name': 'residue_name_2', 'type':'str', 'mandatory': False},
+                                                           {'name': 'atom_name_2', 'type':'str', 'mandatory': False}
+                                                           ],
+                                                     '3': [{'name': 'index', 'type':'index-int', 'mandatory': True},
+                                                           {'name': 'peak_id', 'type':'positive-int', 'mandatory': True},
+                                                           {'name': 'volume', 'type':'float', 'mandatory': False}, # check null
+                                                           {'name': 'volume_uncertainty', 'type':'positive-float', 'mandatory': False},
+                                                           {'name': 'height', 'type':'float', 'mandatory': False}, # check null
+                                                           {'name': 'height_uncertainty', 'type':'positive-float', 'mandatory': False},
+                                                           {'name': 'position_uncertainty_1', 'type':'positive-float', 'mandatory': False},
+                                                           {'name': 'position_uncertainty_2', 'type':'positive-float', 'mandatory': False},
+                                                           {'name': 'position_uncertainty_3', 'type':'positive-float', 'mandatory': False},
+                                                           {'name': 'chain_code_1', 'type':'str', 'mandatory': False},
+                                                           {'name': 'sequence_code_1', 'type':'int', 'mandatory': False},
+                                                           {'name': 'residue_name_1', 'type':'str', 'mandatory': False},
+                                                           {'name': 'atom_name_1', 'type':'str', 'mandatory': False},
+                                                           {'name': 'chain_code_2', 'type':'str', 'mandatory': False},
+                                                           {'name': 'sequence_code_2', 'type':'int', 'mandatory': False},
+                                                           {'name': 'residue_name_2', 'type':'str', 'mandatory': False},
+                                                           {'name': 'atom_name_2', 'type':'str', 'mandatory': False},
+                                                           {'name': 'chain_code_3', 'type':'str', 'mandatory': False},
+                                                           {'name': 'sequence_code_3', 'type':'int', 'mandatory': False},
+                                                           {'name': 'residue_name_3', 'type':'str', 'mandatory': False},
+                                                           {'name': 'atom_name_3', 'type':'str', 'mandatory': False}
+                                                           ],
+                                                     '4': [{'name': 'index', 'type':'index-int', 'mandatory': True},
+                                                           {'name': 'peak_id', 'type':'positive-int', 'mandatory': True},
+                                                           {'name': 'volume', 'type':'float', 'mandatory': False}, # check null
+                                                           {'name': 'volume_uncertainty', 'type':'positive-float', 'mandatory': False},
+                                                           {'name': 'height', 'type':'float', 'mandatory': False}, # check null
+                                                           {'name': 'height_uncertainty', 'type':'positive-float', 'mandatory': False},
+                                                           {'name': 'position_uncertainty_1', 'type':'positive-float', 'mandatory': False},
+                                                           {'name': 'position_uncertainty_2', 'type':'positive-float', 'mandatory': False},
+                                                           {'name': 'position_uncertainty_3', 'type':'positive-float', 'mandatory': False},
+                                                           {'name': 'position_uncertainty_4', 'type':'positive-float', 'mandatory': False},
+                                                           {'name': 'chain_code_1', 'type':'str', 'mandatory': False},
+                                                           {'name': 'sequence_code_1', 'type':'int', 'mandatory': False},
+                                                           {'name': 'residue_name_1', 'type':'str', 'mandatory': False},
+                                                           {'name': 'atom_name_1', 'type':'str', 'mandatory': False},
+                                                           {'name': 'chain_code_2', 'type':'str', 'mandatory': False},
+                                                           {'name': 'sequence_code_2', 'type':'int', 'mandatory': False},
+                                                           {'name': 'residue_name_2', 'type':'str', 'mandatory': False},
+                                                           {'name': 'atom_name_2', 'type':'str', 'mandatory': False},
+                                                           {'name': 'chain_code_3', 'type':'str', 'mandatory': False},
+                                                           {'name': 'sequence_code_3', 'type':'int', 'mandatory': False},
+                                                           {'name': 'residue_name_3', 'type':'str', 'mandatory': False},
+                                                           {'name': 'atom_name_3', 'type':'str', 'mandatory': False},
+                                                           {'name': 'chain_code_4', 'type':'str', 'mandatory': False},
+                                                           {'name': 'sequence_code_4', 'type':'int', 'mandatory': False},
+                                                           {'name': 'residue_name_4', 'type':'str', 'mandatory': False},
+                                                           {'name': 'atom_name_4', 'type':'str', 'mandatory': False}
+                                                           ]
+                                                     }
+                                   },
+                           'nmr-star': {'poly_seq': [{'name': 'Auth_asym_ID', 'type': 'str', 'mandatory': False},
+                                                     {'name': 'Auth_seq_ID', 'type': 'int', 'mandatory': False},
+                                                     {'name': 'Auth_comp_ID', 'type': 'str', 'mandatory': False},
+                                                     {'name': 'Auth_variant_ID', 'type': 'str', 'mandatory': False},
+                                                     {'name': 'Sequence_linking', 'type': 'enum', 'mandatory': False,
+                                                      'enum': ('start', 'end', 'middle', 'cyclic', 'break', 'single', 'dummy')},
+                                                     {'name': 'Cis_residue', 'type': 'str', 'mandatory': False,
+                                                      'enum': ('yes', 'no', 'true', 'false')},
+                                                     {'name': 'NEF_index', 'type': 'positive-int', 'mandatory': False}
+                                                     ],
+                                        'chem_shift': [{'name': 'Atom_type', 'type': 'enum', 'mandatory': True,
+                                                        'enum': set(self.atom_isotopes.keys())},
+                                                       {'name': 'Atom_isotope_number', 'type': 'enum-int', 'mandatory': True,
+                                                        'enum': set(isotope_nums)},
+                                                       {'name': 'Val', 'type': 'float', 'mandatory': True}, # check range
+                                                       {'name': 'Val_err', 'type': 'positive-float', 'mandatory': False},
+                                                       {'name': 'Ambiguity_code', 'type': 'enum-int', 'mandatory': False,
+                                                        'enum': self.bmrb_ambiguity_codes},
+                                                       {'name': 'Ambiguity_set_ID', 'type': 'positive-int', 'mandatory': False},
+                                                       {'name': 'Auth_asym_ID', 'type': 'str', 'mandatory': False},
+                                                       {'name': 'Auth_seq_ID', 'type': 'int', 'mandatory': False},
+                                                       {'name': 'Auth_comp_ID', 'type': 'str', 'mandatory': False},
+                                                       {'name': 'Auth_atom_ID', 'type': 'str', 'mandatory': False},
+                                                       {'name': 'Assigned_chem_shift_list_ID', 'type': 'static-positive-int', 'mandatory': True}
+                                                       ],
+                                        'dist_restraint': [{'name': 'Index_ID', 'type': 'index-int', 'mandatory': True},
+                                                           {'name': 'ID', 'type': 'positive-int', 'mandatory': True},
+                                                           {'name': 'Combination_ID', 'type': 'positive-int', 'mandatory': False},
+                                                           {'name': 'Member_logic_code', 'type': 'enum', 'mandatory': False,
+                                                            'enum': ('OR', 'AND')},
+                                                           {'name': 'Target_val', 'type': 'positive-float', 'mandatory': False}, # check null, range
+                                                           {'name': 'Target_val_uncertainty', 'type': 'positive-float', 'mandatory': False},
+                                                           {'name': 'Lower_linear_limit', 'type': 'positive-float', 'mandatory': False}, # check null, range
+                                                           {'name': 'Upper_linear_limit', 'type': 'positive-float', 'mandatory': False}, # check null, range
+                                                           {'name': 'Distance_lower_bound_val', 'type': 'positive-float', 'mandatory': False}, # check null, range
+                                                           {'name': 'Distance_upper_bound_val', 'type': 'positive-float', 'mandatory': False}, # check null, range
+                                                           {'name': 'Weight', 'type': 'positive-float', 'mandatory': True},
+                                                           {'name': 'Auth_asym_ID_1', 'type': 'str', 'mandatory': False},
+                                                           {'name': 'Auth_seq_ID_1', 'type': 'int', 'mandatory': False},
+                                                           {'name': 'Auth_comp_ID_1', 'type': 'str', 'mandatory': False},
+                                                           {'name': 'Auth_atom_ID_1', 'type': 'str', 'mandatory': False},
+                                                           {'name': 'Auth_asym_ID_2', 'type': 'str', 'mandatory': False},
+                                                           {'name': 'Auth_seq_ID_2', 'type': 'int', 'mandatory': False},
+                                                           {'name': 'Auth_comp_ID_2', 'type': 'str', 'mandatory': False},
+                                                           {'name': 'Auth_atom_ID_2', 'type': 'str', 'mandatory': False},
+                                                           {'name': 'Gen_dist_constraint_list_ID', 'type': 'static-positive-int', 'mandatory': True},
+                                                           ],
+                                        'dihed_restraint': [{'name': 'Index_ID', 'type':'index-int', 'mandatory': True},
+                                                            {'name': 'ID', 'type':'positive-int', 'mandatory': True},
+                                                            {'name': 'Combination_ID', 'type':'positive-int', 'mandatory': False},
+                                                            {'name': 'Torsion_angle_name', 'type':'str', 'mandatory': False},
+                                                            {'name': 'Angle_lower_bound_val', 'type':'float', 'mandatory': False}, # check null, range
+                                                            {'name': 'Angle_upper_bound_val', 'type':'float', 'mandatory': False}, # check null, range
+                                                            {'name': 'Angle_target_val', 'type':'float', 'mandatory': False}, # check null, range
+                                                            {'name': 'Angle_target_val_err', 'type':'positive-float', 'mandatory': False},
+                                                            {'name': 'Angle_lower_linear_limit', 'type':'float', 'mandatory': False}, # check null, range
+                                                            {'name': 'Angle_upper_linear_limit', 'type':'float', 'mandatory': False}, # check null, range
+                                                            {'name': 'Weight', 'type':'positive-float', 'mandatory': True},
+                                                            {'name': 'Auth_asym_ID_1', 'type':'str', 'mandatory': False},
+                                                            {'name': 'Auth_seq_ID_1', 'type':'int', 'mandatory': False},
+                                                            {'name': 'Auth_comp_ID_1', 'type':'str', 'mandatory': False},
+                                                            {'name': 'Auth_atom_ID_1', 'type':'str', 'mandatory': False},
+                                                            {'name': 'Auth_asym_ID_2', 'type':'str', 'mandatory': False},
+                                                            {'name': 'Auth_seq_ID_2', 'type':'int', 'mandatory': False},
+                                                            {'name': 'Auth_comp_ID_2', 'type':'str', 'mandatory': False},
+                                                            {'name': 'Auth_atom_ID_2', 'type':'str', 'mandatory': False},
+                                                            {'name': 'Auth_asym_ID_3', 'type':'str', 'mandatory': False},
+                                                            {'name': 'Auth_seq_ID_3', 'type':'int', 'mandatory': False},
+                                                            {'name': 'Auth_comp_ID_3', 'type':'str', 'mandatory': False},
+                                                            {'name': 'Auth_atom_ID_3', 'type':'str', 'mandatory': False},
+                                                            {'name': 'Auth_asym_ID_4', 'type':'str', 'mandatory': False},
+                                                            {'name': 'Auth_seq_ID_4', 'type':'int', 'mandatory': False},
+                                                            {'name': 'Auth_comp_ID_4', 'type':'str', 'mandatory': False},
+                                                            {'name': 'Auth_atom_ID_4', 'type':'str', 'mandatory': False},
+                                                            {'name': 'Torsion_angle_constraint_list_ID', 'type':'static-positive-int', 'mandatory': True},
+                                            ],
+                                        'rdc_restraint': [{'name': 'Index_ID', 'type':'index-int', 'mandatory': True},
+                                                          {'name': 'ID', 'type':'positive-int', 'mandatory': True},
+                                                          {'name': 'Combination_ID', 'type':'positive-int', 'mandatory': False},
+                                                          {'name': 'Weight', 'type':'positive-float', 'mandatory': True},
+                                                          {'name': 'Target_value', 'type':'float', 'mandatory': False}, # check null, range
+                                                          {'name': 'Target_value_uncertainty', 'type':'positive-float', 'mandatory': False},
+                                                          {'name': 'RDC_lower_bound', 'type':'float', 'mandatory': False}, # check null, range
+                                                          {'name': 'RDC_upper_bound', 'type':'float', 'mandatory': False}, # check null, range
+                                                          {'name': 'RDC_lower_linear_limit', 'type':'float', 'mandatory': False}, # check null, range
+                                                          {'name': 'RDC_upper_linear_limit', 'type':'float', 'mandatory': False}, # check null, range
+                                                          {'name': 'RDC_val_scale_factor', 'type':'positive-float', 'mandatory': False},
+                                                          {'name': 'RDC_distant_dependent', 'type':'enum', 'mandatory': False,
+                                                           'enum': ('yes', 'no', 'true', 'false')},
+                                                          {'name': 'Auth_asym_ID_1', 'type':'str', 'mandatory': False},
+                                                          {'name': 'Auth_seq_ID_1', 'type':'int', 'mandatory': False},
+                                                          {'name': 'Auth_comp_ID_1', 'type':'str', 'mandatory': False},
+                                                          {'name': 'Auth_atom_ID_1', 'type':'str', 'mandatory': False},
+                                                          {'name': 'Auth_asym_ID_2', 'type':'str', 'mandatory': False},
+                                                          {'name': 'Auth_seq_ID_2', 'type':'int', 'mandatory': False},
+                                                          {'name': 'Auth_comp_ID_2', 'type':'str', 'mandatory': False},
+                                                          {'name': 'Auth_atom_ID_2', 'type':'str', 'mandatory': False},
+                                                          {'name': 'RDC_constraint_list_ID', 'type':'static-positive-int', 'mandatory': True}
+                                                          ],
+                                        'spectral_peak': {'1': [{'name': 'Index_ID', 'type':'index-int', 'mandatory': True},
+                                                                {'name': 'ID', 'type':'positive-int', 'mandatory': True},
+                                                                {'name': 'Volume', 'type':'float', 'mandatory': False}, # check null
+                                                                {'name': 'Volume_uncertainty', 'type':'positive-float', 'mandatory': False},
+                                                                {'name': 'Height', 'type':'float', 'mandatory': False}, # check null
+                                                                {'name': 'Height_uncertainty', 'type':'positive-float', 'mandatory': False},
+                                                                {'name': 'Position_uncertainty_1', 'type':'positive-float', 'mandatory': False},
+                                                                {'name': 'Entity_assembly_ID_1', 'type':'positive-int', 'mandatory': False},
+                                                                {'name': 'Comp_index_ID_1', 'type':'int', 'mandatory': False},
+                                                                {'name': 'Comp_ID_1', 'type':'str', 'mandatory': False},
+                                                                {'name': 'Atom_ID_1', 'type':'str', 'mandatory': False},
+                                                                {'name': 'Auth_asym_ID_1', 'type':'str', 'mandatory': False},
+                                                                {'name': 'Auth_seq_ID_1', 'type':'int', 'mandatory': False},
+                                                                {'name': 'Auth_comp_ID_1', 'type':'str', 'mandatory': False},
+                                                                {'name': 'Auth_atom_ID_1', 'type':'str', 'mandatory': False},
+                                                                {'name': 'Spectral_peak_list_ID', 'type':'static-positive-int', 'mandatory': True}],
+                                                          '2': [{'name': 'Index_ID', 'type':'index-int', 'mandatory': True},
+                                                                {'name': 'ID', 'type':'positive-int', 'mandatory': True},
+                                                                {'name': 'Volume', 'type':'float', 'mandatory': False}, # check null
+                                                                {'name': 'Volume_uncertainty', 'type':'positive-float', 'mandatory': False},
+                                                                {'name': 'Height', 'type':'float', 'mandatory': False}, # check null
+                                                                {'name': 'Height_uncertainty', 'type':'positive-float', 'mandatory': False},
+                                                                {'name': 'Position_uncertainty_1', 'type':'positive-float', 'mandatory': False},
+                                                                {'name': 'Position_uncertainty_2', 'type':'positive-float', 'mandatory': False},
+                                                                {'name': 'Entity_assembly_ID_1', 'type':'positive-int', 'mandatory': False},
+                                                                {'name': 'Comp_index_ID_1', 'type':'int', 'mandatory': False},
+                                                                {'name': 'Comp_ID_1', 'type':'str', 'mandatory': False},
+                                                                {'name': 'Atom_ID_1', 'type':'str', 'mandatory': False},
+                                                                {'name': 'Entity_assembly_ID_2', 'type':'positive-int', 'mandatory': False},
+                                                                {'name': 'Comp_index_ID_2', 'type':'int', 'mandatory': False},
+                                                                {'name': 'Comp_ID_2', 'type':'str', 'mandatory': False},
+                                                                {'name': 'Atom_ID_2', 'type':'str', 'mandatory': False},
+                                                                {'name': 'Auth_asym_ID_1', 'type':'str', 'mandatory': False},
+                                                                {'name': 'Auth_seq_ID_1', 'type':'int', 'mandatory': False},
+                                                                {'name': 'Auth_comp_ID_1', 'type':'str', 'mandatory': False},
+                                                                {'name': 'Auth_atom_ID_1', 'type':'str', 'mandatory': False},
+                                                                {'name': 'Auth_asym_ID_2', 'type':'str', 'mandatory': False},
+                                                                {'name': 'Auth_seq_ID_2', 'type':'int', 'mandatory': False},
+                                                                {'name': 'Auth_comp_ID_2', 'type':'str', 'mandatory': False},
+                                                                {'name': 'Auth_atom_ID_2', 'type':'str', 'mandatory': False},
+                                                                {'name': 'Spectral_peak_list_ID', 'type':'static-positive-int', 'mandatory': True}],
+                                                          '3': [{'name': 'Index_ID', 'type':'index-int', 'mandatory': True},
+                                                                {'name': 'ID', 'type':'positive-int', 'mandatory': True},
+                                                                {'name': 'Volume', 'type':'float', 'mandatory': False}, # check null
+                                                                {'name': 'Volume_uncertainty', 'type':'positive-float', 'mandatory': False},
+                                                                {'name': 'Height', 'type':'float', 'mandatory': False}, # check null
+                                                                {'name': 'Height_uncertainty', 'type':'positive-float', 'mandatory': False},
+                                                                {'name': 'Position_uncertainty_1', 'type':'positive-float', 'mandatory': False},
+                                                                {'name': 'Position_uncertainty_2', 'type':'positive-float', 'mandatory': False},
+                                                                {'name': 'Position_uncertainty_3', 'type':'positive-float', 'mandatory': False},
+                                                                {'name': 'Entity_assembly_ID_1', 'type':'positive-int', 'mandatory': False},
+                                                                {'name': 'Comp_index_ID_1', 'type':'int', 'mandatory': False},
+                                                                {'name': 'Comp_ID_1', 'type':'str', 'mandatory': False},
+                                                                {'name': 'Atom_ID_1', 'type':'str', 'mandatory': False},
+                                                                {'name': 'Entity_assembly_ID_2', 'type':'positive-int', 'mandatory': False},
+                                                                {'name': 'Comp_index_ID_2', 'type':'int', 'mandatory': False},
+                                                                {'name': 'Comp_ID_2', 'type':'str', 'mandatory': False},
+                                                                {'name': 'Atom_ID_2', 'type':'str', 'mandatory': False},
+                                                                {'name': 'Entity_assembly_ID_3', 'type':'positive-int', 'mandatory': False},
+                                                                {'name': 'Comp_index_ID_3', 'type':'int', 'mandatory': False},
+                                                                {'name': 'Comp_ID_3', 'type':'str', 'mandatory': False},
+                                                                {'name': 'Atom_ID_3', 'type':'str', 'mandatory': False},
+                                                                {'name': 'Auth_asym_ID_1', 'type':'str', 'mandatory': False},
+                                                                {'name': 'Auth_seq_ID_1', 'type':'int', 'mandatory': False},
+                                                                {'name': 'Auth_comp_ID_1', 'type':'str', 'mandatory': False},
+                                                                {'name': 'Auth_atom_ID_1', 'type':'str', 'mandatory': False},
+                                                                {'name': 'Auth_asym_ID_2', 'type':'str', 'mandatory': False},
+                                                                {'name': 'Auth_seq_ID_2', 'type':'int', 'mandatory': False},
+                                                                {'name': 'Auth_comp_ID_2', 'type':'str', 'mandatory': False},
+                                                                {'name': 'Auth_atom_ID_2', 'type':'str', 'mandatory': False},
+                                                                {'name': 'Auth_asym_ID_3', 'type':'str', 'mandatory': False},
+                                                                {'name': 'Auth_seq_ID_3', 'type':'int', 'mandatory': False},
+                                                                {'name': 'Auth_comp_ID_3', 'type':'str', 'mandatory': False},
+                                                                {'name': 'Auth_atom_ID_3', 'type':'str', 'mandatory': False},
+                                                                {'name': 'Spectral_peak_list_ID', 'type':'static-positive-int', 'mandatory': True}
+                                                              ],
+                                                          '4': [{'name': 'Index_ID', 'type':'index-int', 'mandatory': True},
+                                                                {'name': 'ID', 'type':'positive-int', 'mandatory': True},
+                                                                {'name': 'Volume', 'type':'float', 'mandatory': False}, # check null
+                                                                {'name': 'Volume_uncertainty', 'type':'positive-float', 'mandatory': False},
+                                                                {'name': 'Height', 'type':'float', 'mandatory': False}, # check null
+                                                                {'name': 'Height_uncertainty', 'type':'positive-float', 'mandatory': False},
+                                                                {'name': 'Position_uncertainty_1', 'type':'positive-float', 'mandatory': False},
+                                                                {'name': 'Position_uncertainty_2', 'type':'positive-float', 'mandatory': False},
+                                                                {'name': 'Position_uncertainty_3', 'type':'positive-float', 'mandatory': False},
+                                                                {'name': 'Position_uncertainty_4', 'type':'positive-float', 'mandatory': False},
+                                                                {'name': 'Entity_assembly_ID_1', 'type':'positive-int', 'mandatory': False},
+                                                                {'name': 'Comp_index_ID_1', 'type':'int', 'mandatory': False},
+                                                                {'name': 'Comp_ID_1', 'type':'str', 'mandatory': False},
+                                                                {'name': 'Atom_ID_1', 'type':'str', 'mandatory': False},
+                                                                {'name': 'Entity_assembly_ID_2', 'type':'positive-int', 'mandatory': False},
+                                                                {'name': 'Comp_index_ID_2', 'type':'int', 'mandatory': False},
+                                                                {'name': 'Comp_ID_2', 'type':'str', 'mandatory': False},
+                                                                {'name': 'Atom_ID_2', 'type':'str', 'mandatory': False},
+                                                                {'name': 'Entity_assembly_ID_3', 'type':'positive-int', 'mandatory': False},
+                                                                {'name': 'Comp_index_ID_3', 'type':'int', 'mandatory': False},
+                                                                {'name': 'Comp_ID_3', 'type':'str', 'mandatory': False},
+                                                                {'name': 'Atom_ID_3', 'type':'str', 'mandatory': False},
+                                                                {'name': 'Entity_assembly_ID_4', 'type':'positive-int', 'mandatory': False},
+                                                                {'name': 'Comp_index_ID_4', 'type':'int', 'mandatory': False},
+                                                                {'name': 'Comp_ID_4', 'type':'str', 'mandatory': False},
+                                                                {'name': 'Atom_ID_4', 'type':'str', 'mandatory': False},
+                                                                {'name': 'Auth_asym_ID_1', 'type':'str', 'mandatory': False},
+                                                                {'name': 'Auth_seq_ID_1', 'type':'int', 'mandatory': False},
+                                                                {'name': 'Auth_comp_ID_1', 'type':'str', 'mandatory': False},
+                                                                {'name': 'Auth_atom_ID_1', 'type':'str', 'mandatory': False},
+                                                                {'name': 'Auth_asym_ID_2', 'type':'str', 'mandatory': False},
+                                                                {'name': 'Auth_seq_ID_2', 'type':'int', 'mandatory': False},
+                                                                {'name': 'Auth_comp_ID_2', 'type':'str', 'mandatory': False},
+                                                                {'name': 'Auth_atom_ID_2', 'type':'str', 'mandatory': False},
+                                                                {'name': 'Auth_asym_ID_3', 'type':'str', 'mandatory': False},
+                                                                {'name': 'Auth_seq_ID_3', 'type':'int', 'mandatory': False},
+                                                                {'name': 'Auth_comp_ID_3', 'type':'str', 'mandatory': False},
+                                                                {'name': 'Auth_atom_ID_3', 'type':'str', 'mandatory': False},
+                                                                {'name': 'Auth_asym_ID_4', 'type':'str', 'mandatory': False},
+                                                                {'name': 'Auth_seq_ID_4', 'type':'int', 'mandatory': False},
+                                                                {'name': 'Auth_comp_ID_4', 'type':'str', 'mandatory': False},
+                                                                {'name': 'Auth_atom_ID_4', 'type':'str', 'mandatory': False},
+                                                                {'name': 'Spectral_peak_list_ID', 'type':'static-positive-int', 'mandatory': True}]
+                                                          }
+                                        }
+                           }
+        # number of dimension of spectral peak
+        self.num_dim_items = {'nef': 'num_dimensions', 'nmr-star': 'Number_of_spectral_dimensions'}
+
+        # supported number of dimension of spectral peak
+        self.num_dims = ('1', '2', '3', '4')
 
         # taken from wwpdb.utils.align.SequenceReferenceData.py
         self.monDict3 = {'ALA': 'A',
@@ -178,17 +686,6 @@ class NmrDpUtility(object):
                          'I': 'I',
                          'T': 'T',
                          'U': 'U'}
-
-        # atom isotopes
-        self.atom_isotopes = {'H': {1, 2, 3},
-                              'C': {13},
-                              'N': {15, 14},
-                              'O': {17},
-                              'P': {31},
-                              'S': {33},
-                              'F': {19},
-                              'CD': {113, 111},
-                              'CA': {43}}
 
     def setSource(self, fPath):
         """ Set primary source file path.
@@ -1547,8 +2044,39 @@ class NmrDpUtility(object):
 
         return not self.report.isError()
 
-    def __testDuplicatedChemShift(self):
-        """ Perform duplication test on assigned chemical shifts.
+    def __getDataOfLoop(self, sf_data, content_subtype, num_dim):
+        """ Wrapper function to retrieve data from loop of a specified saveframe and content subtype via NEFTranslator.
+        """
+
+        input_source = self.report.input_sources[0]
+        input_source_dic = input_source.get()
+
+        file_type = input_source_dic['file_type']
+
+        if content_subtype != 'spectral_peak':
+
+            if file_type == 'nef':
+                return self.nef_translator.get_nef_data(sf_data, lp_category=self.lp_categories[file_type][content_subtype],
+                                                        key_items=self.key_items[file_type][content_subtype],
+                                                        data_items=self.data_items[file_type][content_subtype])
+            else:
+                return self.nef_translator.get_star_data(sf_data, lp_category=self.lp_categories[file_type][content_subtype],
+                                                         key_items=self.key_items[file_type][content_subtype],
+                                                         data_items=self.data_items[file_type][content_subtype])
+
+        else:
+
+            if file_type == 'nef':
+                return self.nef_translator.get_nef_data(sf_data, lp_category=self.lp_categories[file_type][content_subtype],
+                                                        key_items=self.key_items[file_type][content_subtype][num_dim],
+                                                        data_items=self.data_items[file_type][content_subtype][num_dim])
+            else:
+                return self.nef_translator.get_star_data(sf_data, lp_category=self.lp_categories[file_type][content_subtype],
+                                                         key_items=self.key_items[file_type][content_subtype][num_dim],
+                                                         data_items=self.data_items[file_type][content_subtype][num_dim])
+
+    def __testDataConsistencyInLoop(self):
+        """ Perform consistency test on data of interesting loops of NEF/NMR-STAR V3.2 file
         """
 
         if self.report.isError():
@@ -1557,19 +2085,71 @@ class NmrDpUtility(object):
         input_source = self.report.input_sources[0]
         input_source_dic = input_source.get()
 
-        file_name = input_source_dic['file_name']
+        file_type = input_source_dic['file_type']
 
-        content_subtype = 'chem_shift'
+        for content_subtype in input_source_dic['content_subtype'].keys():
 
-        if not content_subtype in input_source_dic['content_subtype'].keys():
+            sf_category = self.sf_categories[file_type][content_subtype]
 
-            self.report.error.addDescription('internal_error', "+NmrDpUtility.__testChemShiftConsistency() ++ Error  - Assigned chemical shift loop does not exists in %s file." % file_name)
-            self.report.setError()
+            list_id = 1
 
-            if self.__verbose:
-                self.__lfh.write("+NmrDpUtility.__testChemShiftConsistency() ++ Error  - Assigned chemical shift loop does not exists in %s file" % file_name)
+            for sf_data in self.__star_data.get_saveframes_by_category(sf_category):
 
-            return False
+                sf_framecode = sf_data.get_tag('sf_framecode')[0]
+
+                num_dim = None
+
+                if content_subtype == 'spectral_peak':
+
+                    num_dim = sf_data.get_tag(self.num_dim_items[file_type])[0]
+
+                    if not num_dim in self.num_dims:
+
+                        self.report.error.addDescription('invalid_data', "%s %s must be in %s, %s saveframe. This is current limitation of OneDep system." % (self.num_dim_items[file_type], num_dim, self.num_dims, sf_framecode))
+                        self.report.setError()
+
+                        if self.__verbose:
+                            self.__lfh.write("+NmrDpUtility.__testDataConsistencyInLoop() ++ ValueError  - %s %s must be in %s, %s saveframe. This is current limitation of OneDep system." % (self.num_dim_items[file_type], num_dim, self.num_dims, sf_framecode))
+
+                try:
+
+                    data = self.__getDataOfLoop(sf_data, content_subtype, num_dim)[0]
+
+                    # TODO
+
+                    list_id += 1
+
+                except KeyError as e:
+
+                    self.report.error.addDescription('multiple_data', "%s, %s saveframe." % (str(e).strip("'"), sf_framecode))
+                    self.report.setError()
+
+                    if self.__verbose:
+                        self.__lfh.write("+NmrDpUtility.__testDataConsistencyInLoop() ++ KeyError  - %s" % str(e))
+
+                except LookupError as e:
+
+                    self.report.error.addDescription('missing_mandatory_item', "%s, %s saveframe." % (str(e).strip("'"), sf_framecode))
+                    self.report.setError()
+
+                    if self.__verbose:
+                        self.__lfh.write("+NmrDpUtility.__testDataConsistencyInLoop() ++ LookupError  - %s" % str(e))
+
+                except ValueError as e:
+
+                    self.report.error.addDescription('invalid_data', "%s, %s saveframe." % (str(e).strip("'"), sf_framecode))
+                    self.report.setError()
+
+                    if self.__verbose:
+                        self.__lfh.write("+NmrDpUtility.__testDataConsistencyInLoop() ++ ValueError  - %s" % str(e))
+
+                except Exception as e:
+
+                    self.report.error.addDescription('internal_error', "+NmrDpUtility.__testDataConsistencyInLoop() ++ Error  - %s" % str(e))
+                    self.report.setError()
+
+                    if self.__verbose:
+                        self.__lfh.write("+NmrDpUtility.__testDataConsistencyInLoop() ++ Error  - %s" % str(e))
 
         return not self.report.isError()
 

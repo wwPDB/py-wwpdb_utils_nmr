@@ -296,13 +296,13 @@ class TestNEFTranslator(TestCase):
         dat = pynmrstar.Entry.from_file('data/2l9r.str')
         self.assertEqual(self.neft.get_star_index(dat), [[i for i in range(1, 70)]])
 
-    def test_get_nef_data(self):
+    def test_check_nef_data(self):
         dat = pynmrstar.Entry.from_file('data/2l9r.nef')
-        self.assertEqual(self.neft.get_nef_data(dat)[0][1]['value'], 56.002)
+        self.assertEqual(self.neft.check_nef_data(dat)[0][1]['value'], 56.002)
 
-    def test_get_star_data(self):
+    def test_check_star_data(self):
         dat = pynmrstar.Entry.from_file('data/2l9r.str')
-        self.assertEqual(self.neft.get_star_data(dat)[0][1]['Val'], 56.002)
+        self.assertEqual(self.neft.check_star_data(dat)[0][1]['Val'], 56.002)
 
     def test_validate_comp_atom(self):
         self.assertEqual(self.neft.validate_comp_atom('ALA', 'HB1'), True)

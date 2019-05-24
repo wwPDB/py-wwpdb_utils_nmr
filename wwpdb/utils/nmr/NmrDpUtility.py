@@ -60,7 +60,8 @@ class NmrDpUtility(object):
                                                       self.__testAtomTypeOfCSLoop,
                                                       self.__testAmbiguityCodeOfCSLoop,
                                                       self.__testDuplicatedIndex,
-                                                      self.__testDataConsistencyInLoop] }
+                                                      self.__testDataConsistencyInLoop,
+                                                      self.__testParentChildRelation] }
         """
                                 }
                                                       self.__testAnomalousData,
@@ -1560,7 +1561,16 @@ class NmrDpUtility(object):
 
                 try:
 
-                    pairs = self.__getCompAtomPair(sf_data, content_subtype)[0]
+                    if file_type == 'nef':
+                        pairs = self.nef_translator.get_nef_comp_atom_pair(
+                            sf_data,
+                            lp_category=self.lp_categories[file_type][content_subtype],
+                            allow_empty=(content_subtype == 'spectral_peak'))[0]
+                    else:
+                        pairs = self.nef_translator.get_star_comp_atom_pair(
+                            sf_data,
+                            lp_category=self.lp_categories[file_type][content_subtype],
+                            allow_empty=(content_subtype == 'spectral_peak'))[0]
 
                     for pair in pairs:
                         comp_id = pair['comp_id']
@@ -1623,20 +1633,6 @@ class NmrDpUtility(object):
 
         return not self.report.isError()
 
-    def __getCompAtomPair(self, sf_data, content_subtype):
-        """ Wrapper function to retrieve pairs of comp_id and atom_id from loop of a specified saveframe and content subtype via NEFTranslator.
-        """
-
-        input_source = self.report.input_sources[0]
-        input_source_dic = input_source.get()
-
-        file_type = input_source_dic['file_type']
-
-        if file_type == 'nef':
-            return self.nef_translator.get_nef_comp_atom_pair(sf_data, lp_category=self.lp_categories[file_type][content_subtype], allow_empty=(content_subtype == 'spectral_peak'))
-        else:
-            return self.nef_translator.get_star_comp_atom_pair(sf_data, lp_category=self.lp_categories[file_type][content_subtype], allow_empty=(content_subtype == 'spectral_peak'))
-
     def __testAtomTypeOfCSLoop(self):
         """ Perform atom type, isotope number test on assigned chemical shifts.
         """
@@ -1672,7 +1668,10 @@ class NmrDpUtility(object):
 
             try:
 
-                a_types = self.__getAtomTypeFromCSLoop(sf_data, content_subtype)[0]
+                if file_type == 'nef':
+                    a_types = self.nef_translator.get_nef_atom_type_from_cs_loop(sf_data)[0]
+                else:
+                    a_types = self.nef_translator.get_star_atom_type_from_cs_loop(sf_data)[0]
 
                 for a_type in a_types:
                     atom_type = a_type['atom_type']
@@ -1721,20 +1720,6 @@ class NmrDpUtility(object):
                     self.__lfh.write("+NmrDpUtility.__testAtomTypeOfCSLoop() ++ Error  - %s" % str(e))
 
         return not self.report.isError()
-
-    def __getAtomTypeFromCSLoop(self, sf_data, content_subtype):
-        """ Wrapper function to retrieve atom_type, isotope number, and atom_id from assigned chemical shifts via NEFTranslator.
-        """
-
-        input_source = self.report.input_sources[0]
-        input_source_dic = input_source.get()
-
-        file_type = input_source_dic['file_type']
-
-        if file_type == 'nef':
-            return self.nef_translator.get_nef_atom_type_from_cs_loop(sf_data)
-        else:
-            return self.nef_translator.get_star_atom_type_from_cs_loop(sf_data)
 
     def __testAmbiguityCodeOfCSLoop(self):
         """ Perform ambiguity code test on assigned chemical shifts.
@@ -1957,20 +1942,6 @@ class NmrDpUtility(object):
 
         return 1
 
-    def __getIndexOfLoop(self, sf_data, content_subtype):
-        """ Wrapper function to retrieve index from loop of a specified saveframe and content subtype via NEFTranslator.
-        """
-
-        input_source = self.report.input_sources[0]
-        input_source_dic = input_source.get()
-
-        file_type = input_source_dic['file_type']
-
-        if file_type == 'nef':
-            return self.nef_translator.get_nef_index(sf_data, lp_category=self.lp_categories[file_type][content_subtype], index_id=self.index_tags[file_type][content_subtype])
-        else:
-            return self.nef_translator.get_star_index(sf_data, lp_category=self.lp_categories[file_type][content_subtype], index_id=self.index_tags[file_type][content_subtype])
-
     def __testDuplicatedIndex(self):
         """ Perform duplication test on index of interesting loops of NEF/NMR-STAR V3.2 file.
         """
@@ -1999,7 +1970,7 @@ class NmrDpUtility(object):
 
                 try:
 
-                    indices = self.__getIndexOfLoop(sf_data, content_subtype)[0]
+                    indices = self.nef_translator.get_index(sf_data, lp_category=self.lp_categories[file_type][content_subtype], index_id=self.index_tags[file_type][content_subtype])[0]
 
                     if indices != range(1, len(indices) + 1):
                         self.report.warning.addDescription('disordered_index', "Index (loop tag %s.%s) is disordered in %s saveframe." % (self.lp_categories[file_type][content_subtype], index_tag, sf_framecode))
@@ -2044,39 +2015,107 @@ class NmrDpUtility(object):
 
         return not self.report.isError()
 
-    def __getDataOfLoop(self, sf_data, content_subtype, num_dim):
-        """ Wrapper function to retrieve data from loop of a specified saveframe and content subtype via NEFTranslator.
+    def __testDataConsistencyInLoop(self):
+        """ Perform consistency test on data of interesting loops of NEF/NMR-STAR V3.2 file
         """
+
+        if self.report.isError():
+            return False
 
         input_source = self.report.input_sources[0]
         input_source_dic = input_source.get()
 
         file_type = input_source_dic['file_type']
 
-        if content_subtype != 'spectral_peak':
+        for content_subtype in input_source_dic['content_subtype'].keys():
 
-            if file_type == 'nef':
-                return self.nef_translator.get_nef_data(sf_data, lp_category=self.lp_categories[file_type][content_subtype],
-                                                        key_items=self.key_items[file_type][content_subtype],
-                                                        data_items=self.data_items[file_type][content_subtype])
-            else:
-                return self.nef_translator.get_star_data(sf_data, lp_category=self.lp_categories[file_type][content_subtype],
-                                                         key_items=self.key_items[file_type][content_subtype],
-                                                         data_items=self.data_items[file_type][content_subtype])
+            sf_category = self.sf_categories[file_type][content_subtype]
 
-        else:
+            list_id = 1
 
-            if file_type == 'nef':
-                return self.nef_translator.get_nef_data(sf_data, lp_category=self.lp_categories[file_type][content_subtype],
-                                                        key_items=self.key_items[file_type][content_subtype][num_dim],
-                                                        data_items=self.data_items[file_type][content_subtype][num_dim])
-            else:
-                return self.nef_translator.get_star_data(sf_data, lp_category=self.lp_categories[file_type][content_subtype],
-                                                         key_items=self.key_items[file_type][content_subtype][num_dim],
-                                                         data_items=self.data_items[file_type][content_subtype][num_dim])
+            for sf_data in self.__star_data.get_saveframes_by_category(sf_category):
 
-    def __testDataConsistencyInLoop(self):
-        """ Perform consistency test on data of interesting loops of NEF/NMR-STAR V3.2 file
+                sf_framecode = sf_data.get_tag('sf_framecode')[0]
+
+                if content_subtype == 'spectral_peak':
+
+                    num_dim = sf_data.get_tag(self.num_dim_items[file_type])[0]
+
+                    if not num_dim in self.num_dims:
+
+                        self.report.error.addDescription('invalid_data', "%s %s must be in %s, %s saveframe. This is current limitation of OneDep system." % (self.num_dim_items[file_type], num_dim, self.num_dims, sf_framecode))
+                        self.report.setError()
+
+                        if self.__verbose:
+                            self.__lfh.write("+NmrDpUtility.__testDataConsistencyInLoop() ++ ValueError  - %s %s must be in %s, %s saveframe. This is current limitation of OneDep system." % (self.num_dim_items[file_type], num_dim, self.num_dims, sf_framecode))
+
+                    key_items = self.key_items[file_type][content_subtype][num_dim]
+                    data_items = self.data_items[file_type][content_subtype][num_dim]
+
+                else:
+
+                    key_items = self.key_items[file_type][content_subtype]
+                    data_items = self.data_items[file_type][content_subtype]
+
+                try:
+
+                    data = self.nef_translator.check_data(sf_data, self.lp_categories[file_type][content_subtype], key_items, data_items, False, False)[0]
+
+                    # TODO
+
+                    list_id += 1
+
+                except KeyError as e:
+
+                    self.report.error.addDescription('multiple_data', "%s, %s saveframe." % (str(e).strip("'"), sf_framecode))
+                    self.report.setError()
+
+                    if self.__verbose:
+                        self.__lfh.write("+NmrDpUtility.__testDataConsistencyInLoop() ++ KeyError  - %s" % str(e))
+
+                except LookupError as e:
+
+                    self.report.error.addDescription('missing_mandatory_item', "%s, %s saveframe." % (str(e).strip("'"), sf_framecode))
+                    self.report.setError()
+
+                    if self.__verbose:
+                        self.__lfh.write("+NmrDpUtility.__testDataConsistencyInLoop() ++ LookupError  - %s" % str(e))
+
+                except ValueError as e:
+
+                    self.report.error.addDescription('invalid_data', "%s, %s saveframe." % (str(e).strip("'"), sf_framecode))
+                    self.report.setError()
+
+                    if self.__verbose:
+                        self.__lfh.write("+NmrDpUtility.__testDataConsistencyInLoop() ++ ValueError  - %s" % str(e))
+
+                except UserWarning as e:
+
+                    self.report.warning.addDescription('missing_data', "%s, %s saveframe." % (str(e).strip("'"), sf_framecode))
+                    self.report.setWarning()
+
+                    if self.__verbose:
+                        self.__lfh.write("+NmrDpUtility.__testDataConsistencyInLoop() ++ Warning  - %s" % str(e))
+
+                    # retry allowing zero
+
+                    try:
+                        data = self.nef_translator.check_data(sf_data, self.lp_categories[file_type][content_subtype], key_items, data_items, False, True)[0]
+                    except:
+                        pass
+
+                except Exception as e:
+
+                    self.report.error.addDescription('internal_error', "+NmrDpUtility.__testDataConsistencyInLoop() ++ Error  - %s" % str(e))
+                    self.report.setError()
+
+                    if self.__verbose:
+                        self.__lfh.write("+NmrDpUtility.__testDataConsistencyInLoop() ++ Error  - %s" % str(e))
+
+        return not self.report.isError()
+
+    def __testParentChildRelation(self):
+        """ Perform consistency test on saveframe category and loop category relationship of interesting loops of NEF/NMR-STAR V3.2 file
         """
 
         if self.report.isError():
@@ -2111,47 +2150,7 @@ class NmrDpUtility(object):
                         if self.__verbose:
                             self.__lfh.write("+NmrDpUtility.__testDataConsistencyInLoop() ++ ValueError  - %s %s must be in %s, %s saveframe. This is current limitation of OneDep system." % (self.num_dim_items[file_type], num_dim, self.num_dims, sf_framecode))
 
-                try:
-
-                    data = self.__getDataOfLoop(sf_data, content_subtype, num_dim)[0]
-
-                    # TODO
-
-                    list_id += 1
-
-                except KeyError as e:
-
-                    self.report.error.addDescription('multiple_data', "%s, %s saveframe." % (str(e).strip("'"), sf_framecode))
-                    self.report.setError()
-
-                    if self.__verbose:
-                        self.__lfh.write("+NmrDpUtility.__testDataConsistencyInLoop() ++ KeyError  - %s" % str(e))
-
-                except LookupError as e:
-
-                    self.report.error.addDescription('missing_mandatory_item', "%s, %s saveframe." % (str(e).strip("'"), sf_framecode))
-                    self.report.setError()
-
-                    if self.__verbose:
-                        self.__lfh.write("+NmrDpUtility.__testDataConsistencyInLoop() ++ LookupError  - %s" % str(e))
-
-                except ValueError as e:
-
-                    self.report.error.addDescription('invalid_data', "%s, %s saveframe." % (str(e).strip("'"), sf_framecode))
-                    self.report.setError()
-
-                    if self.__verbose:
-                        self.__lfh.write("+NmrDpUtility.__testDataConsistencyInLoop() ++ ValueError  - %s" % str(e))
-
-                except Exception as e:
-
-                    self.report.error.addDescription('internal_error', "+NmrDpUtility.__testDataConsistencyInLoop() ++ Error  - %s" % str(e))
-                    self.report.setError()
-
-                    if self.__verbose:
-                        self.__lfh.write("+NmrDpUtility.__testDataConsistencyInLoop() ++ Error  - %s" % str(e))
-
-        return not self.report.isError()
+        return self.report.isError()
 
 if __name__ == '__main__':
     dp = NmrDpUtility()

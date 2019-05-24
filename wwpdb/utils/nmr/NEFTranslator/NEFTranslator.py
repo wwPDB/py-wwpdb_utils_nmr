@@ -22,6 +22,7 @@ import csv
 import datetime
 import pynmrstar
 from pytz import utc
+from _openbabel import OBAtom_ImplicitHydrogenCount
 
 PY3 = (sys.version_info[0] == 3)
 
@@ -99,7 +100,7 @@ class NEFTranslator(object):
 
                 except ValueError as e:
                     is_ok = False
-                    msg = '%s contains no valid saveframe or loop. PyNMRSTAR ++ Error  - %s' % (in_file, str(e))
+                    msg = str(e) # '%s contains no valid saveframe or loop. PyNMRSTAR ++ Error  - %s' % (os.path.basename(in_file), str(e))
 
         except IOError as e:
             is_ok = False
@@ -442,7 +443,7 @@ class NEFTranslator(object):
     @staticmethod
     def get_nef_seq(star_data, lp_category='nef_chemical_shift', seq_id='sequence_code', comp_id='residue_name',
                     chain_id='chain_code', allow_empty=False):
-        """ Extracts sequence from any given loops in a NEF file
+        """ Extracts sequence from any given loops in an NEF file
             extended by Masashi Yokochi
         """
 
@@ -644,74 +645,24 @@ class NEFTranslator(object):
     @staticmethod
     def get_nef_comp_atom_pair(star_data, lp_category='nef_chemical_shift', comp_id='residue_name', atom_id='atom_name',
                                allow_empty=False):
-        """ Extracts unique pairs of comp_id and atom_id from any given loops in a NEF file
+        """ Wrapper function of get_comp_atom_pair() for an NEF file
         @author: Masashi Yokochi
         """
 
-        try:
-            loops = star_data.get_loops_by_category(lp_category)
-        except AttributeError:
-            try:
-                loops = [star_data.get_loop_by_category(lp_category)]
-            except AttributeError:
-                loops = [star_data]
-
-        tags = [comp_id, atom_id]
-
-        dat = [] # data of all loops
-
-        for loop in loops:
-            comp_atom_dict = {}
-
-            comp_atom_dat = []
-
-            if set(tags) & set(loop.tags) == set(tags):
-                comp_atom_dat = loop.get_data_by_tag(tags)
-            else:
-                _tags_exist = False
-                for i in range(1, 5): # expand up to 4 dimensions
-                    _tags = [comp_id + '_' + str(i), atom_id + '_' + str(i)]
-                    if set(_tags) & set(loop.tags) == set(_tags):
-                        _tags_exist = True
-                        comp_atom_dat += loop.get_data_by_tag(_tags)
-                    else:
-                        break
-                if not _tags_exist:
-                    raise LookupError("Missing one of mandatory items %s in %s loop category" % (tags, lp_category))
-
-            if allow_empty:
-                comp_atom_dat = list(filter(NEFTranslator.is_data, comp_atom_dat))
-                if len(comp_atom_dat) == 0:
-                    continue
-            else:
-                for i in comp_atom_dat:
-                    if NEFTranslator.is_empty_data(i):
-                        raise ValueError("One of comp ID and atom ID must not be empty. comp_id %s, atom_id %s in %s loop category" % (i[0], i[1], lp_category))
-
-            comps = sorted(set([i[0] for i in comp_atom_dat]))
-            sorted_comp_atom = sorted(set(['{} {}'.format(i[0], i[1]) for i in comp_atom_dat]))
-
-            for c in comps:
-                comp_atom_dict[c] = [i.split(' ')[1] for i in sorted_comp_atom if i.split(' ')[0] == c]
-
-            asm = [] # assembly of a loop
-
-            for c in comps:
-                ent = {} # entity
-
-                ent['comp_id'] = c
-                ent['atom_id'] = comp_atom_dict[c]
-
-                asm.append(ent)
-
-            dat.append(asm)
-
-        return dat
+        return NEFTranslator.get_comp_atom_pair(star_data, lp_category, comp_id, atom_id, allow_empty)
 
     @staticmethod
     def get_star_comp_atom_pair(star_data, lp_category='Atom_chem_shift', comp_id='Comp_ID', atom_id='Atom_ID',
                                 allow_empty=False):
-        """ Extracts unique pairs of comp_id and atom_id from any given loops in an NMR-STAR file
+        """ Wrapper function of get_comp_atom_pair() for an NMR-STAR file
+        @author: Masashi Yokochi
+        """
+
+        return NEFTranslator.get_comp_atom_pair(star_data, lp_category, comp_id, atom_id, allow_empty)
+
+    @staticmethod
+    def get_comp_atom_pair(star_data, lp_category, comp_id, atom_id, allow_empty):
+        """ Extracts unique pairs of comp_id and atom_id from any given loops in an NEF/NMR-STAR file
         @author: Masashi Yokochi
         """
 
@@ -778,74 +729,24 @@ class NEFTranslator(object):
     @staticmethod
     def get_nef_atom_type_from_cs_loop(star_data, lp_category='nef_chemical_shift', atom_type='element', isotope_number='isotope_number', atom_id='atom_name',
                                allow_empty=False):
-        """ Extracts unique pairs of atom_type, isotope number, and atom_id from assigned chemical shifts in a NEF file
+        """ Wrapper function of get_atom_type_from_cs_loop() for an NEF file
         @author: Masashi Yokochi
         """
 
-        try:
-            loops = star_data.get_loops_by_category(lp_category)
-        except AttributeError:
-            try:
-                loops = [star_data.get_loop_by_category(lp_category)]
-            except AttributeError:
-                loops = [star_data]
-
-        tags = [atom_type, isotope_number, atom_id]
-
-        dat = [] # data of all loops
-
-        for loop in loops:
-            ist_dict = {}
-            atm_dict = {}
-
-            a_type_dat = []
-
-            if set(tags) & set(loop.tags) != set(tags):
-                raise LookupError("Missing one of mandatory items %s in %s loop category" % (tags, lp_category))
-
-            a_type_dat = loop.get_data_by_tag(tags)
-
-            if allow_empty:
-                a_type_dat = list(filter(NEFTranslator.is_data, a_type_dat))
-                if len(a_type_dat) == 0:
-                    continue
-            else:
-                for i in a_type_dat:
-                    if NEFTranslator.is_empty_data(i):
-                        raise ValueError("One of atom type, isotope number, and atom ID must not be empty. atom_type %s, isotope_number %s, atom_id %s in %s loop category" % (i[0], i[1], i[2], lp_category))
-
-            try:
-
-                a_types = sorted(set([i[0] for i in a_type_dat]))
-                sorted_ist = sorted(set(['{} {}'.format(i[0], i[1]) for i in a_type_dat]))
-                sorted_atm = sorted(set(['{} {}'.format(i[0], i[2]) for i in a_type_dat]))
-
-                for t in a_types:
-                    ist_dict[t] = [int(i.split(' ')[1]) for i in sorted_ist if i.split(' ')[0] == t]
-                    atm_dict[t] = [i.split(' ')[1] for i in sorted_atm if i.split(' ')[0] == t]
-
-                asm = [] # assembly of a loop
-
-                for t in a_types:
-                    ent = {} # entity
-
-                    ent['atom_type'] = t
-                    ent['isotope_number'] = ist_dict[t]
-                    ent['atom_id'] = atm_dict[t]
-
-                    asm.append(ent)
-
-                dat.append(asm)
-
-            except ValueError:
-                raise ValueError("Isotope number must be integer in %s loop category" % lp_category)
-
-        return dat
+        return NEFTranslator.get_atom_type_from_cs_loop(star_data, lp_category, atom_type, isotope_number, atom_id, allow_empty)
 
     @staticmethod
     def get_star_atom_type_from_cs_loop(star_data, lp_category='Atom_chem_shift', atom_type='Atom_type', isotope_number='Atom_isotope_number', atom_id='Atom_ID',
                                 allow_empty=False):
-        """ Extracts unique pairs of atom_type, isotope number, and atom_id from assigned chemical shifts in an NMR-SAR file
+        """ Wrapper function of get_atom_type_from_cs_loop() for an NMR-SAR file
+        @author: Masashi Yokochi
+        """
+
+        return NEFTranslator.get_atom_type_from_cs_loop(star_data, lp_category, atom_type, isotope_number, atom_id, allow_empty)
+
+    @staticmethod
+    def get_atom_type_from_cs_loop(star_data, lp_category, atom_type, isotope_number, atom_id, allow_empty):
+        """ Extracts unique pairs of atom_type, isotope number, and atom_id from assigned chemical shifts in n NEF/NMR-SAR file
         @author: Masashi Yokochi
         """
 
@@ -994,54 +895,23 @@ class NEFTranslator(object):
 
     @staticmethod
     def get_nef_index(star_data, lp_category='nef_sequence', index_id='index'):
-        """ Extracts index_id from any given loops in a NEF file
+        """ Wrapper function of get_index() for an NEF file
         @author: Masashi Yokochi
         """
 
-        try:
-            loops = star_data.get_loops_by_category(lp_category)
-        except AttributeError:
-            try:
-                loops = [star_data.get_loop_by_category(lp_category)]
-            except AttributeError:
-                loops = [star_data]
-
-        tags = [index_id]
-
-        dat = [] # data of all loops
-
-        for loop in loops:
-            index_dat = []
-
-            if set(tags) & set(loop.tags) == set(tags):
-                index_dat = loop.get_data_by_tag(tags)
-            else:
-                if not _tags_exist:
-                    raise LookupError("Missing mandatory item %s in %s loop category" % (index_id, lp_category))
-
-            for i in index_dat:
-                if NEFTranslator.is_empty_data(i):
-                    raise ValueError("index ID must not be empty in %s loop category" % (i[0], lp_category))
-
-            try:
-
-                indices = [int(i) for i in index_dat[0]]
-
-                dup_indices = [i for i in set(indices) if indices.count(i) > 1]
-
-                if len(dup_indices) > 0:
-                    raise KeyError("Index ID must be unique. %s are duplicated indices in %s loop category" % (dup_indices, lp_category))
-
-                dat.append(indices)
-
-            except ValueError:
-                raise ValueError("Index ID must be integer in %s loop category" % lp_category)
-
-        return dat
+        return NEFTranslator.get_index(star_data, lp_category, index_id)
 
     @staticmethod
     def get_star_index(star_data, lp_category='Chem_comp_assembly', index_id='NEF_index'):
-        """ Extracts index_id from any given loops in an NMR-STAR file
+        """ Wrapper function of get_index() for an NMR-STAR file
+        @author: Masashi Yokochi
+        """
+
+        return NEFTranslator.get_index(star_data, lp_category, index_id)
+
+    @staticmethod
+    def get_index(star_data, lp_category, index_id):
+        """ Extracts index_id from any given loops in an NEF/NMR-STAR file
         @author: Masashi Yokochi
         """
 
@@ -1072,14 +942,14 @@ class NEFTranslator(object):
 
             try:
 
-                indices = [int(i) for i in index_dat[0]]
+                idxs = [int(i) for i in index_dat[0]]
 
-                dup_indices = [i for i in set(indices) if indices.count(i) > 1]
+                dup_idxs = [i for i in set(idxs) if idxs.count(i) > 1]
 
-                if len(dup_indices) > 0:
-                    raise KeyError("Index ID must be unique. %s are duplicated indices in %s loop category" % (dup_indices, lp_category))
+                if len(dup_idxs) > 0:
+                    raise KeyError("Index ID must be unique. %s are duplicated indices in %s loop category" % (dup_idxs, lp_category))
 
-                dat.append(indices)
+                dat.append(idxs)
 
             except ValueError:
                 raise ValueError("Index ID must be integer in %s loop category" % lp_category)
@@ -1087,270 +957,38 @@ class NEFTranslator(object):
         return dat
 
     @staticmethod
-    def get_nef_data(star_data, lp_category='nef_chemical_shift',
-                     key_items=[{'name': 'chain_code', 'type': 'str'},
-                                {'name': 'sequence_code', 'type': 'int'},
-                                {'name': 'residue_name', 'type': 'str'},
-                                {'name': 'atom_name', 'type': 'str'}],
-                     data_items=[{'name': 'value', 'type': 'float', 'mandatory': True},
-                                 {'name': 'value_uncertainty', 'type': 'positive-float', 'mandatory': False}]):
-        """ Extracts unique data from any given loops in a NEF file
+    def check_nef_data(star_data, lp_category='nef_chemical_shift',
+                       key_items=[{'name': 'chain_code', 'type': 'str'},
+                                  {'name': 'sequence_code', 'type': 'int'},
+                                  {'name': 'residue_name', 'type': 'str'},
+                                  {'name': 'atom_name', 'type': 'str'}],
+                       data_items=[{'name': 'value', 'type': 'float', 'mandatory': True},
+                                   {'name': 'value_uncertainty', 'type': 'positive-float', 'mandatory': False}],
+                       inc_idx_test=False, allow_zero=True):
+        """ Wrapper function of check_data() for an NEF file
         @author: Masashi Yokochi
         """
 
-        try:
-            loops = star_data.get_loops_by_category(lp_category)
-        except AttributeError:
-            try:
-                loops = [star_data.get_loop_by_category(lp_category)]
-            except AttributeError:
-                loops = [star_data]
-
-        item_types = ('str', 'int', 'index-int', 'positive-int', 'static-positive-int', 'float', 'positive-float', 'enum', 'enum-int')
-
-        key_names = [k['name'] for k in key_items]
-        data_names = [d['name'] for d in data_items]
-        mand_data_names = [d['name'] for d in data_items if d['mandatory']]
-
-        key_len = len(key_items)
-
-        for k in key_items:
-            if not k['type'] in item_types:
-                raise TypeError("Type %s of key item %s must be one of %s" % (k['type'], k['name'], item_types))
-
-        for d in data_items:
-            if not d['type'] in item_types:
-                raise TypeError("Type %s of data item %s must be one of %s" % (d['type'], d['name'], item_types))
-
-        empty_value = (None, '', '.', '?')
-
-        dat = [] # data of all loops
-
-        for loop in loops:
-            tag_dat = []
-
-            if set(key_names) & set(loop.tags) != set(key_names):
-                raise LookupError("Missing one of key items %s in %s loop category" % (key_names, lp_category))
-
-            if len(mand_data_names) > 0 and set(mand_data_names) & set(loop.tags) != set(mand_data_names):
-                raise LookupError("Missing one of data items %s in %s loop category" % (mand_data_names, lp_category))
-
-            tags = [k['name'] for k in key_items]
-            for data_name in set(data_names) & set(loop.tags):
-                tags.append(data_name)
-
-            tag_len = len(tags)
-
-            static_val = {}
-            for name in tags:
-                static_val[name] = None
-
-            idx_tag_ids = set()
-            for j in range(tag_len):
-                name = tags[j]
-                if name in key_names:
-                    for k in key_items:
-                        if k['name'] == name and k['type'] == 'index-int':
-                            idx_tag_ids.add(j)
-                else:
-                    for d in data_items:
-                        if d['name'] == name and d['type']== 'index-int':
-                            idx_tag_ids.add(j)
-
-            tag_dat = loop.get_data_by_tag(tags)
-
-            for i in tag_dat:
-                for j in range(tag_len):
-                    if i[j] in empty_value:
-                        name = tags[j]
-                        if name in key_names:
-                            raise ValueError("Item value %s must not be empty in %s loop category" % (name, lp_category))
-                        else:
-                            for d in data_items:
-                                if d['name'] == name and d['mandatory']:
-                                    raise ValueError("Data item value %s must not be empty in %s loop category" % (name, lp_category))
-
-            keys = set()
-
-            for i in tag_dat:
-                key = ""
-                for j in range(key_len):
-                    key += " " + i[j]
-                key.rstrip()
-                if key in keys:
-                    msg = ""
-                    for j in range(key_len):
-                        msg += key_names[j] + " %s, " % i[j]
-
-                    idx_msg = ''
-
-                    if len(idx_tag_ids) > 0:
-                        for _j in idx_tag_ids:
-                            idx_msg += tags[_j] + ' '
-
-                            for _i in tag_dat:
-                                _key = ""
-                                for j in range(key_len):
-                                    _key += " " + _i[j]
-                                    _key.rstrip()
-
-                                if key == _key:
-                                    idx_msg += _i[_j] + ' vs '
-
-                            idx_msg = idx_msg[:-4] + ', '
-
-                        idx_msg = idx_msg[: -2]
-
-                        if len(idx_msg) > 0:
-                            idx_msg = 'Check rows of ' + idx_msg + '. '
-
-                    raise KeyError("%sValues of key items must be unique. %s in %s loop category" % (idx_msg, msg.rstrip().rstrip(','), lp_category))
-
-                keys.add(key)
-
-            asm = [] # assembly of a loop
-
-            for i in tag_dat:
-                ent = {} # entity
-
-                for j in range(tag_len):
-                    name = tags[j]
-                    val = i[j]
-                    if j < key_len:
-                        type = key_items[j]['type']
-                        if type == 'int':
-                            try:
-                                ent[name] = int(val)
-                            except:
-                                raise ValueError("%s %s must be %s in %s loop category" % (name, val, type, lp_category))
-                        elif type == 'index-int' or type == 'positive-int':
-                            try:
-                                ent[name] = int(val)
-                            except:
-                                raise ValueError("%s %s must be %s in %s loop category" % (name, val, type, lp_category))
-                            if ent[name] <= 0:
-                                raise ValueError("%s %s must be %s in %s loop category" % (name, val, type, lp_category))
-                        elif type == 'static-positive-int':
-                            try:
-                                ent[name] = int(val)
-                            except:
-                                raise ValueError("%s %s must be %s in %s loop category" % (name, val, type, lp_category))
-                            if ent[name] <= 0:
-                                raise ValueError("%s %s must be %s in %s loop category" % (name, val, type, lp_category))
-                            elif static_val[name] is None:
-                                static_val[name] = val
-                            elif val != static_val[name]:
-                                raise ValueError("%s %s vs %s must be %s in %s loop category" % (name, val, static_val[name], type, lp_category))
-                        elif type == 'float':
-                            try:
-                                ent[name] = float(val)
-                            except:
-                                raise ValueError("%s %s must be %s in %s loop category" % (name, val, type, lp_category))
-                        elif type == 'positive-float':
-                            try:
-                                ent[name] = float(val)
-                            except:
-                                raise ValueError("%s %s must be %s in %s loop category" % (name, val, type, lp_category))
-                            if ent[name] <= 0.0:
-                                raise ValueError("%s %s must be %s in %s loop category" % (name, val, type, lp_category))
-                        elif type == 'enum':
-                            try:
-                                enum = key_items[j]['enum']
-                                if not val in enum:
-                                    raise ValueError('%s %s must be one of %s in %s loop category' % (name, val, enum, lp_category))
-                                ent[name] = val
-                            except KeyError:
-                                raise Error('Enumeration of key item %s is not defined' % name)
-                        elif type == 'enum-int':
-                            try:
-                                enum = key_items[j]['enum']
-                                if not int(val) in enum:
-                                    raise ValueError('%s %s must be one of %s in %s loop category' % (name, val, enum, lp_category))
-                                ent[name] = int(val)
-                            except KeyError:
-                                raise Error('Enumeration of key item %s is not defined' % name)
-                            except:
-                                raise ValueError("%s %s must be %s in %s loop category" % (name, val, type, lp_category))
-                        else:
-                                ent[name] = val
-
-                    else:
-                        for d in data_items:
-                            if d['name'] == name:
-                                type = d['type']
-                                if val in empty_value:
-                                   ent[name] = None
-                                elif type == 'int':
-                                    try:
-                                        ent[name] = int(val)
-                                    except:
-                                        raise ValueError("%s %s must be %s in %s loop category" % (name, val, type, lp_category))
-                                elif type == 'index-int' or type == 'positive-int':
-                                    try:
-                                        ent[name] = int(val)
-                                    except:
-                                        raise ValueError("%s %s must be %s in %s loop category" % (name, val, type, lp_category))
-                                    if ent[name] <= 0:
-                                        raise ValueError("%s %s must be %s in %s loop category" % (name, val, type, lp_category))
-                                elif type == 'static-positive-int':
-                                    try:
-                                        ent[name] = int(val)
-                                    except:
-                                        raise ValueError("%s %s must be %s in %s loop category" % (name, val, type, lp_category))
-                                    if ent[name] <= 0:
-                                        raise ValueError("%s %s must be %s in %s loop category" % (name, val, type, lp_category))
-                                    elif static_val[name] is None:
-                                        static_val[name] = val
-                                    elif val != static_val[name]:
-                                        raise ValueError("%s %s vs %s must be %s in %s loop category" % (name, val, static_val[name], type, lp_category))
-                                elif type == 'float':
-                                    try:
-                                        ent[name] = float(val)
-                                    except:
-                                        raise ValueError("%s %s must be %s in %s loop category" % (name, val, type, lp_category))
-                                elif type == 'positive-float':
-                                    try:
-                                        ent[name] = float(val)
-                                    except:
-                                        raise ValueError("%s %s must be %s in %s loop category" % (name, val, type, lp_category))
-                                    if ent[name] <= 0.0:
-                                        raise ValueError("%s %s must be %s in %s loop category" % (name, val, type, lp_category))
-                                elif type == 'enum':
-                                    try:
-                                        enum = d['enum']
-                                        if not val in enum:
-                                            raise ValueError('%s %s must be one of %s in %s loop category' % (name, val, enum, lp_category))
-                                        ent[name] = val
-                                    except KeyError:
-                                        raise Error('Enumeration of data item %s is not defined' % name)
-                                elif type == 'enum-int':
-                                    try:
-                                        enum = d['enum']
-                                        if not int(val) in enum:
-                                            raise ValueError('%s %s must be one of %s in %s loop category' % (name, val, enum, lp_category))
-                                        ent[name] = int(val)
-                                    except KeyError:
-                                        raise Error('Enumeration of data item %s is not defined' % name)
-                                    except:
-                                        raise ValueError("%s %s must be %s in %s loop category" % (name, val, type, lp_category))
-                                else:
-                                        ent[name] = val
-
-                asm.append(ent)
-
-            dat.append(asm)
-
-        return dat
+        return NEFTranslator.check_data(star_data, lp_category, key_items, data_items, inc_idx_test)
 
     @staticmethod
-    def get_star_data(star_data, lp_category='Atom_chem_shift',
-                      key_items=[{'name': 'Entity_assembly_ID', 'type': 'int'},
-                                 {'name': 'Comp_index_ID', 'type': 'int'},
-                                 {'name': 'Comp_ID', 'type': 'str'},
-                                 {'name': 'Atom_ID', 'type': 'str'}],
-                      data_items=[{'name': 'Val', 'type': 'float', 'mandatory': True},
-                                  {'name': 'Val_err', 'type': 'positive-float', 'mandatory': False}]):
-        """ Extracts unique data from any given loops in an NMR-STAR file
+    def check_star_data(star_data, lp_category='Atom_chem_shift',
+                        key_items=[{'name': 'Entity_assembly_ID', 'type': 'int'},
+                                   {'name': 'Comp_index_ID', 'type': 'int'},
+                                   {'name': 'Comp_ID', 'type': 'str'},
+                                   {'name': 'Atom_ID', 'type': 'str'}],
+                        data_items=[{'name': 'Val', 'type': 'float', 'mandatory': True},
+                                    {'name': 'Val_err', 'type': 'positive-float', 'mandatory': False}],
+                        inc_idx_test=False, allow_zero=True):
+        """ Wrapper function of check_data() for an NMR-STAR file
+        @author: Masashi Yokochi
+        """
+
+        return NEFTranslator.check_data(star_data, lp_category, key_items, data_items, inc_idx_test)
+
+    @staticmethod
+    def check_data(star_data, lp_category, key_items, data_items, inc_idx_test, allow_zero=True):
+        """ Extracts unique data with sanity check from any given loops in an NEF/NMR-STAR file
         @author: Masashi Yokochi
         """
 
@@ -1415,6 +1053,21 @@ class NEFTranslator(object):
 
             tag_dat = loop.get_data_by_tag(tags)
 
+            if inc_idx_test and len(idx_tag_ids) > 0:
+
+                for _j in idx_tag_ids:
+
+                    try:
+                        idxs = [int(i[_j]) for i in tag_dat]
+
+                        dup_idxs = [i for i in set(idxs) if idxs.count(i) > 1]
+
+                        if len(dup_idxs) > 0:
+                            raise KeyError("%s must be unique. %s are duplicated indices in %s loop category" % (tag[_j], dup_idxs, lp_category))
+
+                    except ValueError:
+                        raise ValueError("%s must be integer in %s loop category" % (tag[_j], lp_category))
+
             for i in tag_dat:
                 for j in range(tag_len):
                     if i[j] in empty_value:
@@ -1478,21 +1131,23 @@ class NEFTranslator(object):
                             try:
                                 ent[name] = int(val)
                             except:
-                                raise ValueError("%s %s must be %s in %s loop category" % (name, val, type, lp_category))
+                                raise ValueError("%s '%s' must be %s in %s loop category" % (name, val, type, lp_category))
                         elif type == 'index-int' or type == 'positive-int':
                             try:
                                 ent[name] = int(val)
                             except:
-                                raise ValueError("%s %s must be %s in %s loop category" % (name, val, type, lp_category))
-                            if ent[name] <= 0:
-                                raise ValueError("%s %s must be %s in %s loop category" % (name, val, type, lp_category))
+                                raise ValueError("%s '%s' must be %s in %s loop category" % (name, val, type, lp_category))
+                            if (type == 'index-int' and ent[name] <= 0) or (type == 'positive-int' and ent[name] < 0):
+                                raise ValueError("%s '%s' must be %s in %s loop category" % (name, val, type, lp_category))
+                            elif ent[name] == 0 and not allow_zero:
+                                raise UserWarning("%s '%s' is non-sense value as %s in %s loop category" % (name, val, type, lp_category))
                         elif type == 'static-positive-int':
                             try:
                                 ent[name] = int(val)
                             except:
-                                raise ValueError("%s %s must be %s in %s loop category" % (name, val, type, lp_category))
+                                raise ValueError("%s '%s' must be %s in %s loop category" % (name, val, type, lp_category))
                             if ent[name] <= 0:
-                                raise ValueError("%s %s must be %s in %s loop category" % (name, val, type, lp_category))
+                                raise ValueError("%s '%s' must be %s in %s loop category" % (name, val, type, lp_category))
                             elif static_val[name] is None:
                                 static_val[name] = val
                             elif val != static_val[name]:
@@ -1501,19 +1156,21 @@ class NEFTranslator(object):
                             try:
                                 ent[name] = float(val)
                             except:
-                                raise ValueError("%s %s must be %s in %s loop category" % (name, val, type, lp_category))
+                                raise ValueError("%s '%s' must be %s in %s loop category" % (name, val, type, lp_category))
                         elif type == 'positive-float':
                             try:
                                 ent[name] = float(val)
                             except:
-                                raise ValueError("%s %s must be %s in %s loop category" % (name, val, type, lp_category))
-                            if ent[name] <= 0.0:
-                                raise ValueError("%s %s must be %s in %s loop category" % (name, val, type, lp_category))
+                                raise ValueError("%s '%s' must be %s in %s loop category" % (name, val, type, lp_category))
+                            if ent[name] < 0.0:
+                                raise ValueError("%s '%s' must be %s in %s loop category" % (name, val, type, lp_category))
+                            elif ent[name] == 0.0 and not allow_zero:
+                                raise UserWarning("%s '%s' is non-sense value as %s in %s loop category" % (name, val, type, lp_category))
                         elif type == 'enum':
                             try:
                                 enum = key_items[j]['enum']
                                 if not val in enum:
-                                    raise ValueError('%s %s must be one of %s in %s loop category' % (name, val, enum, lp_category))
+                                    raise ValueError("%s '%s' must be one of %s in %s loop category" % (name, val, enum, lp_category))
                                 ent[name] = val
                             except KeyError:
                                 raise Error('Enumeration of key item %s is not defined' % name)
@@ -1521,12 +1178,12 @@ class NEFTranslator(object):
                             try:
                                 enum = key_items[j]['enum']
                                 if not int(val) in enum:
-                                    raise ValueError('%s %s must be one of %s in %s loop category' % (name, val, enum, lp_category))
+                                    raise ValueError("%s '%s' must be one of %s in %s loop category" % (name, val, enum, lp_category))
                                 ent[name] = int(val)
                             except KeyError:
                                 raise Error('Enumeration of key item %s is not defined' % name)
                             except:
-                                raise ValueError("%s %s must be %s in %s loop category" % (name, val, type, lp_category))
+                                raise ValueError("%s '%s' must be %s in %s loop category" % (name, val, type, lp_category))
                         else:
                                 ent[name] = val
 
@@ -1540,21 +1197,23 @@ class NEFTranslator(object):
                                     try:
                                         ent[name] = int(val)
                                     except:
-                                        raise ValueError("%s %s must be %s in %s loop category" % (name, val, type, lp_category))
+                                        raise ValueError("%s '%s' must be %s in %s loop category" % (name, val, type, lp_category))
                                 elif type == 'index-int' or type == 'positive-int':
                                     try:
                                         ent[name] = int(val)
                                     except:
-                                        raise ValueError("%s %s must be %s in %s loop category" % (name, val, type, lp_category))
-                                    if ent[name] <= 0:
-                                        raise ValueError("%s %s must be %s in %s loop category" % (name, val, type, lp_category))
+                                        raise ValueError("%s '%s' must be %s in %s loop category" % (name, val, type, lp_category))
+                                    if (type == 'index-int' and ent[name] <= 0) or (type == 'positive-int' and ent[name] < 0):
+                                        raise ValueError("%s '%s' must be %s in %s loop category" % (name, val, type, lp_category))
+                                    elif ent[name] == 0 and not allow_zero:
+                                        raise UserWarning("%s '%s' is non-sense value as %s in %s loop category" % (name, val, type, lp_category))
                                 elif type == 'static-positive-int':
                                     try:
                                         ent[name] = int(val)
                                     except:
-                                        raise ValueError("%s %s must be %s in %s loop category" % (name, val, type, lp_category))
+                                        raise ValueError("%s '%s' must be %s in %s loop category" % (name, val, type, lp_category))
                                     if ent[name] <= 0:
-                                        raise ValueError("%s %s must be %s in %s loop category" % (name, val, type, lp_category))
+                                        raise ValueError("%s '%s' must be %s in %s loop category" % (name, val, type, lp_category))
                                     elif static_val[name] is None:
                                         static_val[name] = val
                                     elif val != static_val[name]:
@@ -1563,19 +1222,21 @@ class NEFTranslator(object):
                                     try:
                                         ent[name] = float(val)
                                     except:
-                                        raise ValueError("%s %s must be %s in %s loop category" % (name, val, type, lp_category))
+                                        raise ValueError("%s '%s' must be %s in %s loop category" % (name, val, type, lp_category))
                                 elif type == 'positive-float':
                                     try:
                                         ent[name] = float(val)
                                     except:
-                                        raise ValueError("%s %s must be %s in %s loop category" % (name, val, type, lp_category))
-                                    if ent[name] <= 0.0:
-                                        raise ValueError("%s %s must be %s in %s loop category" % (name, val, type, lp_category))
+                                        raise ValueError("%s '%s' must be %s in %s loop category" % (name, val, type, lp_category))
+                                    if ent[name] < 0.0:
+                                        raise ValueError("%s '%s' must be %s in %s loop category" % (name, val, type, lp_category))
+                                    elif ent[name] == 0.0 and not allow_zero:
+                                        raise UserWarning("%s '%s' is non-sense value as %s in %s loop category" % (name, val, type, lp_category))
                                 elif type == 'enum':
                                     try:
                                         enum = d['enum']
                                         if not val in enum:
-                                            raise ValueError('%s %s must be one of %s in %s loop category' % (name, val, enum, lp_category))
+                                            raise ValueError("%s '%s' must be one of %s in %s loop category" % (name, val, enum, lp_category))
                                         ent[name] = val
                                     except KeyError:
                                         raise Error('Enumeration of data item %s is not defined' % name)
@@ -1583,12 +1244,12 @@ class NEFTranslator(object):
                                     try:
                                         enum = d['enum']
                                         if not int(val) in enum:
-                                            raise ValueError('%s %s must be one of %s in %s loop category' % (name, val, enum, lp_category))
+                                            raise ValueError("%s '%s' must be one of %s in %s loop category" % (name, val, enum, lp_category))
                                         ent[name] = int(val)
                                     except KeyError:
                                         raise Error('Enumeration of data item %s is not defined' % name)
                                     except:
-                                        raise ValueError("%s %s must be %s in %s loop category" % (name, val, type, lp_category))
+                                        raise ValueError("%s '%s' must be %s in %s loop category" % (name, val, type, lp_category))
                                 else:
                                         ent[name] = val
 

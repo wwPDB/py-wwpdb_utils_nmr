@@ -30,7 +30,7 @@ class TestNEFTranslator(TestCase):
         self.assertEqual(read_out[1], 'Loop')
         read_out = self.neft.read_input_file('data/nonsense.nef')
         self.assertEqual(read_out[0], False)
-        self.assertEqual(read_out[1], 'data/nonsense.nef contains no valid saveframe or loop. PyNMRSTAR ++ Error  - ("Invalid token found in saveframe \'internaluseyoushouldntseethis_frame\': \'A\'", 2)')
+        self.assertEqual(read_out[1], '("Invalid token found in saveframe \'internaluseyoushouldntseethis_frame\': \'A\'", 2)')
 
     def test_load_csv_data(self):
         self.assertTrue(len(self.neft.tagMap) > 0, "Can't read NEF-NMRSTAR_equivalence.csv or its empty")

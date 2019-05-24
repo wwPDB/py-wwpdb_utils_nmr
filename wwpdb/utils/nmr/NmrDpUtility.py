@@ -155,6 +155,18 @@ class NmrDpUtility(object):
                                            }
                               }
 
+        # allowed chem shift range
+        self.chem_shift_range = {'min_exclusive': -300.0, 'max_exclusive': 300.0}
+
+        # allowed distance range
+        self.dist_restraint_range = {'min_exclusive': 1.0, 'max_exclusive': 10.0}
+
+        # allowed dihed range
+        self.dihed_restraint_range = {'min_exclusive': -200.0, 'max_exclusive': 200.0}
+
+        # allowed rdc range
+        self.rdc_restraint_range = {'min_exclusive': -50.0, 'max_exclusive': 50.0}
+
         # index tags
         self.index_tags = {'nef': {'poly_seq': 'index',
                                    'chem_shift': None,
@@ -217,19 +229,29 @@ class NmrDpUtility(object):
                                                      {'name': 'residue_name_2', 'type': 'str'},
                                                      {'name': 'atom_name_2', 'type': 'str'}
                                                      ],
-                                   'spectral_peak': {'1': [{'name': 'position_1', 'type': 'float'}
+                                   'spectral_peak': {'1': [{'name': 'position_1', 'type': 'range-float',
+                                                            'range': self.chem_shift_range}
                                                            ],
-                                                     '2': [{'name': 'position_1', 'type': 'float'},
-                                                           {'name': 'position_2', 'type': 'float'}
+                                                     '2': [{'name': 'position_1', 'type': 'range-float',
+                                                            'range': self.chem_shift_range},
+                                                           {'name': 'position_2', 'type': 'range-float',
+                                                            'range': self.chem_shift_range}
                                                            ],
-                                                     '3': [{'name': 'position_1', 'type': 'float'},
-                                                           {'name': 'position_2', 'type': 'float'},
-                                                           {'name': 'position_3', 'type': 'float'}
+                                                     '3': [{'name': 'position_1', 'type': 'range-float',
+                                                            'range': self.chem_shift_range},
+                                                           {'name': 'position_2', 'type': 'range-float',
+                                                            'range': self.chem_shift_range},
+                                                           {'name': 'position_3', 'type': 'range-float',
+                                                            'range': self.chem_shift_range}
                                                            ],
-                                                     '4': [{'name': 'position_1', 'type': 'float'},
-                                                           {'name': 'position_2', 'type': 'float'},
-                                                           {'name': 'position_3', 'type': 'float'},
-                                                           {'name': 'position_4', 'type': 'float'}
+                                                     '4': [{'name': 'position_1', 'type': 'range-float',
+                                                            'range': self.chem_shift_range},
+                                                           {'name': 'position_2', 'type': 'range-float',
+                                                            'range': self.chem_shift_range},
+                                                           {'name': 'position_3', 'type': 'range-float',
+                                                            'range': self.chem_shift_range},
+                                                           {'name': 'position_4', 'type': 'range-float',
+                                                            'range': self.chem_shift_range}
                                                            ]
                                                     }
                                    },
@@ -277,19 +299,29 @@ class NmrDpUtility(object):
                                                          {'name': 'Comp_ID_2', 'type': 'str'},
                                                          {'name': 'Atom_ID_2', 'type': 'str'}
                                                          ],
-                                       'spectral_peak': {'1': [{'name': 'Position_1', 'type': 'float'}
+                                       'spectral_peak': {'1': [{'name': 'Position_1', 'type': 'range-float',
+                                                                'range': self.chem_shift_range}
                                                                ],
-                                                         '2': [{'name': 'Position_1', 'type': 'float'},
-                                                               {'name': 'Position_2', 'type': 'float'}
+                                                         '2': [{'name': 'Position_1', 'type': 'range-float',
+                                                                'range': self.chem_shift_range},
+                                                               {'name': 'Position_2', 'type': 'range-float',
+                                                                'range': self.chem_shift_range}
                                                                ],
-                                                         '3': [{'name': 'Position_1', 'type': 'float'},
-                                                               {'name': 'Position_2', 'type': 'float'},
-                                                               {'name': 'Position_3', 'type': 'float'}
+                                                         '3': [{'name': 'Position_1', 'type': 'range-float',
+                                                                'range': self.chem_shift_range},
+                                                               {'name': 'Position_2', 'type': 'range-float',
+                                                                'range': self.chem_shift_range},
+                                                               {'name': 'Position_3', 'type': 'range-float',
+                                                                'range': self.chem_shift_range}
                                                                ],
-                                                         '4': [{'name': 'Position_1', 'type': 'float'},
-                                                               {'name': 'Position_2', 'type': 'float'},
-                                                               {'name': 'Position_3', 'type': 'float'},
-                                                               {'name': 'Position_4', 'type': 'float'}
+                                                         '4': [{'name': 'Position_1', 'type': 'range-float',
+                                                                'range': self.chem_shift_range},
+                                                               {'name': 'Position_2', 'type': 'range-float',
+                                                                'range': self.chem_shift_range},
+                                                               {'name': 'Position_3', 'type': 'range-float',
+                                                                'range': self.chem_shift_range},
+                                                               {'name': 'Position_4', 'type': 'range-float',
+                                                                'range': self.chem_shift_range}
                                                                ]
                                                          }
                                        }
@@ -302,7 +334,8 @@ class NmrDpUtility(object):
                                                 {'name': 'cis_peptide', 'type': 'enum', 'mandatory': False,
                                                  'enum': ('true', 'false')}
                                                 ],
-                                   'chem_shift': [{'name': 'value', 'type': 'float', 'mandatory': True}, # check range
+                                   'chem_shift': [{'name': 'value', 'type': 'range-float', 'mandatory': True,
+                                                   'range': self.chem_shift_range},
                                                   {'name': 'value_uncertainty', 'type': 'positive-float', 'mandatory': False},
                                                   {'name': 'element', 'type': 'enum', 'mandatory': True,
                                                    'enum': set(self.atom_isotopes.keys())},
@@ -312,43 +345,61 @@ class NmrDpUtility(object):
                                    'dist_restraint': [{'name': 'index', 'type':'index-int', 'mandatory': True},
                                                       {'name': 'restraint_id', 'type':'positive-int', 'mandatory': True},
                                                       {'name': 'restraint_combination_id', 'type':'positive-int', 'mandatory': False},
-                                                      {'name': 'weight', 'type':'positive-float', 'mandatory': True},
-                                                      {'name': 'target_value', 'type':'positive-float', 'mandatory': False}, # check null, range
+                                                      {'name': 'weight', 'type':'positive-float', 'mandatory': True,
+                                                       'enforce-non-zero': True},
+                                                      {'name': 'target_value', 'type':'range-float', 'mandatory': False,
+                                                       'range': self.dist_restraint_range}, # check null
                                                       {'name': 'target_value_uncertainty', 'type':'positive-float', 'mandatory': False},
-                                                      {'name': 'lower_linear_limit', 'type':'positive-float', 'mandatory': False}, # check null, range
-                                                      {'name': 'lower_limit', 'type':'positive-float', 'mandatory': False}, # check null, range
-                                                      {'name': 'upper_limit', 'type':'positive-float', 'mandatory': False}, # check null, range
-                                                      {'name': 'upper_linear_limit', 'type':'positive-float', 'mandatory': False} # check null, range
+                                                      {'name': 'lower_linear_limit', 'type':'range-float', 'mandatory': False,
+                                                       'range': self.dist_restraint_range}, # check null
+                                                      {'name': 'lower_limit', 'type':'range-float', 'mandatory': False,
+                                                       'range': self.dist_restraint_range}, # check null
+                                                      {'name': 'upper_limit', 'type':'range-float', 'mandatory': False,
+                                                       'range': self.dist_restraint_range}, # check null
+                                                      {'name': 'upper_linear_limit', 'type':'range-float', 'mandatory': False,
+                                                       'range': self.dist_restraint_range} # check null
                                                       ],
                                    'dihed_restraint': [{'name': 'index', 'type':'index-int', 'mandatory': True},
                                                        {'name': 'restraint_id', 'type':'positive-int', 'mandatory': True},
                                                        {'name': 'restraint_combination_id', 'type':'positive-int', 'mandatory': False},
-                                                       {'name': 'weight', 'type':'positive-float', 'mandatory': True},
-                                                       {'name': 'target_value', 'type':'float', 'mandatory': False}, # check null, range
-                                                       {'name': 'target_value_uncertainty', 'type':'float', 'mandatory': False}, # check null, range
-                                                       {'name': 'lower_linear_limit', 'type':'float', 'mandatory': False}, # check null, range
-                                                       {'name': 'lower_limit', 'type':'float', 'mandatory': False}, # check null, range
-                                                       {'name': 'upper_limit', 'type':'float', 'mandatory': False}, # check null, range
-                                                       {'name': 'upper_linear_limit', 'type':'float', 'mandatory': False}, # check null, range
+                                                       {'name': 'weight', 'type':'positive-float', 'mandatory': True,
+                                                        'enforce-non-zero': True},
+                                                       {'name': 'target_value', 'type':'range-float', 'mandatory': False,
+                                                        'range': self.dihed_restraint_range}, # check null
+                                                       {'name': 'target_value_uncertainty', 'type':'float', 'mandatory': False},
+                                                       {'name': 'lower_linear_limit', 'type':'range-float', 'mandatory': False,
+                                                        'range': self.dihed_restraint_range}, # check null
+                                                       {'name': 'lower_limit', 'type':'range-float', 'mandatory': False,
+                                                        'range': self.dihed_restraint_range}, # check null
+                                                       {'name': 'upper_limit', 'type':'range-float', 'mandatory': False,
+                                                        'range': self.dihed_restraint_range}, # check null
+                                                       {'name': 'upper_linear_limit', 'type':'range-float', 'mandatory': False,
+                                                        'range': self.dihed_restraint_range}, # check null
                                                        {'name': 'name', 'type':'str', 'mandatory': False},
                                                     ],
                                    'rdc_restraint': [{'name': 'index', 'type':'index-int', 'mandatory': True},
                                                      {'name': 'restraint_id', 'type':'positive-int', 'mandatory': True},
                                                      {'name': 'restraint_combination_id', 'type':'positive-int', 'mandatory': False},
-                                                     {'name': 'target_value', 'type':'float', 'mandatory': False}, # check null, range
+                                                     {'name': 'target_value', 'type':'range-float', 'mandatory': False,
+                                                      'range': self.rdc_restraint_range}, # check null
                                                      {'name': 'target_value_uncertainty', 'type':'positive-float', 'mandatory': False},
-                                                     {'name': 'lower_linear_limit', 'type':'float', 'mandatory': False}, # check null, range
-                                                     {'name': 'lower_limit', 'type':'float', 'mandatory': False}, # check null, range
-                                                     {'name': 'upper_limit', 'type':'float', 'mandatory': False}, # check null, range
-                                                     {'name': 'upper_linear_limit', 'type':'float', 'mandatory': False}, # check null, range
-                                                     {'name': 'scale', 'type':'positive-float', 'mandatory': False},
+                                                     {'name': 'lower_linear_limit', 'type':'range-float', 'mandatory': False,
+                                                      'range': self.rdc_restraint_range}, # check null
+                                                     {'name': 'lower_limit', 'type':'range-float', 'mandatory': False,
+                                                      'range': self.rdc_restraint_range}, # check null
+                                                     {'name': 'upper_limit', 'type':'range-float', 'mandatory': False,
+                                                      'range': self.rdc_restraint_range}, # check null
+                                                     {'name': 'upper_linear_limit', 'type':'range-float', 'mandatory': False,
+                                                      'range': self.rdc_restraint_range}, # check null
+                                                     {'name': 'scale', 'type':'positive-float', 'mandatory': False,
+                                                      'enforce-non-zero': True},
                                                      {'name': 'distance_dependent', 'type':'enum', 'mandatory': False,
                                                       'enum': ('true', 'false')}
                                                      ],
                                    'spectral_peak': {'1': [{'name': 'index', 'type':'index-int', 'mandatory': True},
                                                            {'name': 'peak_id', 'type':'positive-int', 'mandatory': True},
                                                            {'name': 'volume', 'type':'float', 'mandatory': False}, # check null
-                                                           {'name': 'volume_uncertainty', 'type':'positive-float', 'mandatory': False},
+                                                           {'name': 'volume_uncertainty', 'type':'positive-float','mandatory': False},
                                                            {'name': 'height', 'type':'float', 'mandatory': False}, # check null
                                                            {'name': 'height_uncertainty', 'type':'positive-float', 'mandatory': False},
                                                            {'name': 'position_uncertainty_1', 'type':'positive-float', 'mandatory': False},
@@ -432,14 +483,15 @@ class NmrDpUtility(object):
                                                      {'name': 'Sequence_linking', 'type': 'enum', 'mandatory': False,
                                                       'enum': ('start', 'end', 'middle', 'cyclic', 'break', 'single', 'dummy')},
                                                      {'name': 'Cis_residue', 'type': 'str', 'mandatory': False,
-                                                      'enum': ('yes', 'no', 'true', 'false')},
+                                                      'enum': ('yes', 'no')},
                                                      {'name': 'NEF_index', 'type': 'positive-int', 'mandatory': False}
                                                      ],
                                         'chem_shift': [{'name': 'Atom_type', 'type': 'enum', 'mandatory': True,
                                                         'enum': set(self.atom_isotopes.keys())},
                                                        {'name': 'Atom_isotope_number', 'type': 'enum-int', 'mandatory': True,
                                                         'enum': set(isotope_nums)},
-                                                       {'name': 'Val', 'type': 'float', 'mandatory': True}, # check range
+                                                       {'name': 'Val', 'type': 'range-float', 'mandatory': True,
+                                                        'range': self.chem_shift_range},
                                                        {'name': 'Val_err', 'type': 'positive-float', 'mandatory': False},
                                                        {'name': 'Ambiguity_code', 'type': 'enum-int', 'mandatory': False,
                                                         'enum': self.bmrb_ambiguity_codes},
@@ -455,13 +507,19 @@ class NmrDpUtility(object):
                                                            {'name': 'Combination_ID', 'type': 'positive-int', 'mandatory': False},
                                                            {'name': 'Member_logic_code', 'type': 'enum', 'mandatory': False,
                                                             'enum': ('OR', 'AND')},
-                                                           {'name': 'Target_val', 'type': 'positive-float', 'mandatory': False}, # check null, range
+                                                           {'name': 'Target_val', 'type': 'range-float', 'mandatory': False,
+                                                            'range': self.dist_restraint_range}, # check null
                                                            {'name': 'Target_val_uncertainty', 'type': 'positive-float', 'mandatory': False},
-                                                           {'name': 'Lower_linear_limit', 'type': 'positive-float', 'mandatory': False}, # check null, range
-                                                           {'name': 'Upper_linear_limit', 'type': 'positive-float', 'mandatory': False}, # check null, range
-                                                           {'name': 'Distance_lower_bound_val', 'type': 'positive-float', 'mandatory': False}, # check null, range
-                                                           {'name': 'Distance_upper_bound_val', 'type': 'positive-float', 'mandatory': False}, # check null, range
-                                                           {'name': 'Weight', 'type': 'positive-float', 'mandatory': True},
+                                                           {'name': 'Lower_linear_limit', 'type': 'range-float', 'mandatory': False,
+                                                            'range': self.dist_restraint_range}, # check null
+                                                           {'name': 'Upper_linear_limit', 'type': 'range-float', 'mandatory': False,
+                                                            'range': self.dist_restraint_range}, # check null
+                                                           {'name': 'Distance_lower_bound_val', 'type': 'range-float', 'mandatory': False,
+                                                            'range': self.dist_restraint_range}, # check null
+                                                           {'name': 'Distance_upper_bound_val', 'type': 'range-float', 'mandatory': False,
+                                                            'range': self.dist_restraint_range}, # check null
+                                                           {'name': 'Weight', 'type': 'positive-float', 'mandatory': True,
+                                                            'enforce-non-zero': True},
                                                            {'name': 'Auth_asym_ID_1', 'type': 'str', 'mandatory': False},
                                                            {'name': 'Auth_seq_ID_1', 'type': 'int', 'mandatory': False},
                                                            {'name': 'Auth_comp_ID_1', 'type': 'str', 'mandatory': False},
@@ -476,13 +534,19 @@ class NmrDpUtility(object):
                                                             {'name': 'ID', 'type':'positive-int', 'mandatory': True},
                                                             {'name': 'Combination_ID', 'type':'positive-int', 'mandatory': False},
                                                             {'name': 'Torsion_angle_name', 'type':'str', 'mandatory': False},
-                                                            {'name': 'Angle_lower_bound_val', 'type':'float', 'mandatory': False}, # check null, range
-                                                            {'name': 'Angle_upper_bound_val', 'type':'float', 'mandatory': False}, # check null, range
-                                                            {'name': 'Angle_target_val', 'type':'float', 'mandatory': False}, # check null, range
+                                                            {'name': 'Angle_lower_bound_val', 'type':'range-float', 'mandatory': False,
+                                                             'range': self.dihed_restraint_range}, # check null
+                                                            {'name': 'Angle_upper_bound_val', 'type':'range-float', 'mandatory': False,
+                                                             'range': self.dihed_restraint_range}, # check null
+                                                            {'name': 'Angle_target_val', 'type':'range-float', 'mandatory': False,
+                                                             'range': self.dihed_restraint_range}, # check null
                                                             {'name': 'Angle_target_val_err', 'type':'positive-float', 'mandatory': False},
-                                                            {'name': 'Angle_lower_linear_limit', 'type':'float', 'mandatory': False}, # check null, range
-                                                            {'name': 'Angle_upper_linear_limit', 'type':'float', 'mandatory': False}, # check null, range
-                                                            {'name': 'Weight', 'type':'positive-float', 'mandatory': True},
+                                                            {'name': 'Angle_lower_linear_limit', 'type':'range-float', 'mandatory': False,
+                                                             'range': self.dihed_restraint_range}, # check null
+                                                            {'name': 'Angle_upper_linear_limit', 'type':'range-float', 'mandatory': False,
+                                                             'range': self.dihed_restraint_range}, # check null
+                                                            {'name': 'Weight', 'type':'positive-float', 'mandatory': True,
+                                                             'enforce-non-zero': True},
                                                             {'name': 'Auth_asym_ID_1', 'type':'str', 'mandatory': False},
                                                             {'name': 'Auth_seq_ID_1', 'type':'int', 'mandatory': False},
                                                             {'name': 'Auth_comp_ID_1', 'type':'str', 'mandatory': False},
@@ -504,16 +568,22 @@ class NmrDpUtility(object):
                                         'rdc_restraint': [{'name': 'Index_ID', 'type':'index-int', 'mandatory': True},
                                                           {'name': 'ID', 'type':'positive-int', 'mandatory': True},
                                                           {'name': 'Combination_ID', 'type':'positive-int', 'mandatory': False},
-                                                          {'name': 'Weight', 'type':'positive-float', 'mandatory': True},
-                                                          {'name': 'Target_value', 'type':'float', 'mandatory': False}, # check null, range
+                                                          {'name': 'Weight', 'type':'positive-float', 'mandatory': True,
+                                                           'enforce-non-zero': True},
+                                                          {'name': 'Target_value', 'type':'range-float', 'mandatory': False,
+                                                           'range': self.dihed_restraint_range}, # check null
                                                           {'name': 'Target_value_uncertainty', 'type':'positive-float', 'mandatory': False},
-                                                          {'name': 'RDC_lower_bound', 'type':'float', 'mandatory': False}, # check null, range
-                                                          {'name': 'RDC_upper_bound', 'type':'float', 'mandatory': False}, # check null, range
-                                                          {'name': 'RDC_lower_linear_limit', 'type':'float', 'mandatory': False}, # check null, range
-                                                          {'name': 'RDC_upper_linear_limit', 'type':'float', 'mandatory': False}, # check null, range
+                                                          {'name': 'RDC_lower_bound', 'type':'range-float', 'mandatory': False,
+                                                           'range': self.dihed_restraint_range}, # check null
+                                                          {'name': 'RDC_upper_bound', 'type':'range-float', 'mandatory': False,
+                                                           'range': self.dihed_restraint_range}, # check null
+                                                          {'name': 'RDC_lower_linear_limit', 'type':'range-float', 'mandatory': False,
+                                                           'range': self.dihed_restraint_range}, # check null
+                                                          {'name': 'RDC_upper_linear_limit', 'type':'range-float', 'mandatory': False,
+                                                           'range': self.dihed_restraint_range}, # check null
                                                           {'name': 'RDC_val_scale_factor', 'type':'positive-float', 'mandatory': False},
                                                           {'name': 'RDC_distant_dependent', 'type':'enum', 'mandatory': False,
-                                                           'enum': ('yes', 'no', 'true', 'false')},
+                                                           'enum': ('yes', 'no')},
                                                           {'name': 'Auth_asym_ID_1', 'type':'str', 'mandatory': False},
                                                           {'name': 'Auth_seq_ID_1', 'type':'int', 'mandatory': False},
                                                           {'name': 'Auth_comp_ID_1', 'type':'str', 'mandatory': False},
@@ -2097,7 +2167,7 @@ class NmrDpUtility(object):
                     if self.__verbose:
                         self.__lfh.write("+NmrDpUtility.__testDataConsistencyInLoop() ++ Warning  - %s" % str(e))
 
-                    # retry allowing zero
+                    # retry allowing zero, range
 
                     try:
                         data = self.nef_translator.check_data(sf_data, self.lp_categories[file_type][content_subtype], key_items, data_items, False, True)[0]

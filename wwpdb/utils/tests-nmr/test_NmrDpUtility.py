@@ -55,7 +55,7 @@ class TestNmrDpUtility(unittest.TestCase):
 
         self.utility.op('nmr-nef-parser-check')
 
-        #print(self.utility.report.getJson())
+        #print(self.utility.report.getJson(1))
 
     def test_nmr_star_parser_check(self):
         # no input
@@ -76,14 +76,14 @@ class TestNmrDpUtility(unittest.TestCase):
 
         self.utility.op('nmr-star-parser-check')
 
-        #print(self.utility.report.getJson())
+        #print(self.utility.report.getJson(1))
 
     def test_nmr_nef_parser_check_non_std_residue(self):
         self.utility.setSource(self.data_dir_path + '2l9rnonstandard.nef')
 
         self.utility.op('nmr-nef-parser-check')
 
-        #print(self.utility.report.getJson())
+        #print(self.utility.report.getJson(1))
 
 if __name__ == '__main__':
     unittest.main()

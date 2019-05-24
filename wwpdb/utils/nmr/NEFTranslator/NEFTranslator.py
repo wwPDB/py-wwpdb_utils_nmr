@@ -23,6 +23,7 @@ import datetime
 import pynmrstar
 from pytz import utc
 from _openbabel import OBAtom_ImplicitHydrogenCount
+from _ast import Or
 
 PY3 = (sys.version_info[0] == 3)
 
@@ -1000,7 +1001,7 @@ class NEFTranslator(object):
             except AttributeError:
                 loops = [star_data]
 
-        item_types = ('str', 'int', 'index-int', 'positive-int', 'static-positive-int', 'float', 'positive-float', 'enum', 'enum-int')
+        item_types = ('str', 'int', 'index-int', 'positive-int', 'static-positive-int', 'float', 'positive-float', 'range-float', 'enum', 'enum-int')
 
         key_names = [k['name'] for k in key_items]
         data_names = [d['name'] for d in data_items]
@@ -1126,7 +1127,8 @@ class NEFTranslator(object):
                     name = tags[j]
                     val = i[j]
                     if j < key_len:
-                        type = key_items[j]['type']
+                        k = key_items[j]
+                        type = k['type']
                         if type == 'int':
                             try:
                                 ent[name] = int(val)
@@ -1137,7 +1139,7 @@ class NEFTranslator(object):
                                 ent[name] = int(val)
                             except:
                                 raise ValueError("%s '%s' must be %s in %s loop category" % (name, val, type, lp_category))
-                            if (type == 'index-int' and ent[name] <= 0) or (type == 'positive-int' and ent[name] < 0):
+                            if (type == 'index-int' and ent[name] <= 0) or (type == 'positive-int' and (ent[name] < 0 or (ent[name] == 0 and 'enforce-non-zero' in k and k['enforce-non-zero']))):
                                 raise ValueError("%s '%s' must be %s in %s loop category" % (name, val, type, lp_category))
                             elif ent[name] == 0 and not allow_zero:
                                 raise UserWarning("%s '%s' is non-sense value as %s in %s loop category" % (name, val, type, lp_category))
@@ -1162,13 +1164,23 @@ class NEFTranslator(object):
                                 ent[name] = float(val)
                             except:
                                 raise ValueError("%s '%s' must be %s in %s loop category" % (name, val, type, lp_category))
-                            if ent[name] < 0.0:
+                            if ent[name] < 0.0 or (ent[name] == 0.0 and 'enforce-non-zero' in k and k['enforce-non-zero']):
                                 raise ValueError("%s '%s' must be %s in %s loop category" % (name, val, type, lp_category))
                             elif ent[name] == 0.0 and not allow_zero:
                                 raise UserWarning("%s '%s' is non-sense value as %s in %s loop category" % (name, val, type, lp_category))
+                        elif type == 'range-float':
+                            try:
+                                _range = k['range']
+                                ent[name] = float(val)
+                            except KeyError:
+                                raise Error('Range of key item %s is not defined' % name)
+                            except:
+                                raise ValueError("%s '%s' must be %s in %s loop category" % (name, val, type, lp_category))
+                            if ('min_exclusive' in _range and ent[name] <= _range['min_exclusive']) or ('min_inclusive' in _range and ent[name] < _range['min_inclusive']) or ('max_inclusive' in _range and ent[name] > _range['max_inclusive']) or ('max_exclusive' in _range and ent[name] >= _range['max_exclusive']):
+                                raise ValueError("%s '%s' must be %s in %s loop category" % (name, val, _range, lp_category))
                         elif type == 'enum':
                             try:
-                                enum = key_items[j]['enum']
+                                enum = k['enum']
                                 if not val in enum:
                                     raise ValueError("%s '%s' must be one of %s in %s loop category" % (name, val, enum, lp_category))
                                 ent[name] = val
@@ -1176,7 +1188,7 @@ class NEFTranslator(object):
                                 raise Error('Enumeration of key item %s is not defined' % name)
                         elif type == 'enum-int':
                             try:
-                                enum = key_items[j]['enum']
+                                enum = k['enum']
                                 if not int(val) in enum:
                                     raise ValueError("%s '%s' must be one of %s in %s loop category" % (name, val, enum, lp_category))
                                 ent[name] = int(val)
@@ -1203,7 +1215,7 @@ class NEFTranslator(object):
                                         ent[name] = int(val)
                                     except:
                                         raise ValueError("%s '%s' must be %s in %s loop category" % (name, val, type, lp_category))
-                                    if (type == 'index-int' and ent[name] <= 0) or (type == 'positive-int' and ent[name] < 0):
+                                    if (type == 'index-int' and ent[name] <= 0) or (type == 'positive-int' and (ent[name] < 0 or (ent[name] == 0 and 'enforce-non-zero' in d and d['enforce-non-zero']))):
                                         raise ValueError("%s '%s' must be %s in %s loop category" % (name, val, type, lp_category))
                                     elif ent[name] == 0 and not allow_zero:
                                         raise UserWarning("%s '%s' is non-sense value as %s in %s loop category" % (name, val, type, lp_category))
@@ -1228,10 +1240,20 @@ class NEFTranslator(object):
                                         ent[name] = float(val)
                                     except:
                                         raise ValueError("%s '%s' must be %s in %s loop category" % (name, val, type, lp_category))
-                                    if ent[name] < 0.0:
+                                    if ent[name] < 0.0 or (ent[name] == 0.0 and 'enforce-non-zero' in d and d['enforce-non-zero']):
                                         raise ValueError("%s '%s' must be %s in %s loop category" % (name, val, type, lp_category))
                                     elif ent[name] == 0.0 and not allow_zero:
                                         raise UserWarning("%s '%s' is non-sense value as %s in %s loop category" % (name, val, type, lp_category))
+                                elif type == 'range-float':
+                                    try:
+                                        _range = d['range']
+                                        ent[name] = float(val)
+                                    except KeyError:
+                                        raise Error('Range of data item %s is not defined' % name)
+                                    except:
+                                        raise ValueError("%s '%s' must be %s in %s loop category" % (name, val, type, lp_category))
+                                    if ('min_exclusive' in _range and ent[name] <= _range['min_exclusive']) or ('min_inclusive' in _range and ent[name] < _range['min_inclusive']) or ('max_inclusive' in _range and ent[name] > _range['max_inclusive']) or ('max_exclusive' in _range and ent[name] >= _range['max_exclusive']):
+                                        raise ValueError("%s '%s' must be %s in %s loop category" % (name, val, _range, lp_category))
                                 elif type == 'enum':
                                     try:
                                         enum = d['enum']

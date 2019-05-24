@@ -22,8 +22,6 @@ import csv
 import datetime
 import pynmrstar
 from pytz import utc
-from _openbabel import OBAtom_ImplicitHydrogenCount
-from _ast import Or
 
 PY3 = (sys.version_info[0] == 3)
 

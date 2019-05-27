@@ -13,6 +13,7 @@ import pynmrstar
 import logging
 import json
 import itertools
+import copy
 
 from wwpdb.utils.nmr.NEFTranslator.NEFTranslator import NEFTranslator
 from wwpdb.utils.nmr.NmrDpReport import NmrDpReport
@@ -229,31 +230,7 @@ class NmrDpUtility(object):
                                                      {'name': 'residue_name_2', 'type': 'str'},
                                                      {'name': 'atom_name_2', 'type': 'str'}
                                                      ],
-                                   'spectral_peak': {'1': [{'name': 'position_1', 'type': 'range-float',
-                                                            'range': self.chem_shift_range}
-                                                           ],
-                                                     '2': [{'name': 'position_1', 'type': 'range-float',
-                                                            'range': self.chem_shift_range},
-                                                           {'name': 'position_2', 'type': 'range-float',
-                                                            'range': self.chem_shift_range}
-                                                           ],
-                                                     '3': [{'name': 'position_1', 'type': 'range-float',
-                                                            'range': self.chem_shift_range},
-                                                           {'name': 'position_2', 'type': 'range-float',
-                                                            'range': self.chem_shift_range},
-                                                           {'name': 'position_3', 'type': 'range-float',
-                                                            'range': self.chem_shift_range}
-                                                           ],
-                                                     '4': [{'name': 'position_1', 'type': 'range-float',
-                                                            'range': self.chem_shift_range},
-                                                           {'name': 'position_2', 'type': 'range-float',
-                                                            'range': self.chem_shift_range},
-                                                           {'name': 'position_3', 'type': 'range-float',
-                                                            'range': self.chem_shift_range},
-                                                           {'name': 'position_4', 'type': 'range-float',
-                                                            'range': self.chem_shift_range}
-                                                           ]
-                                                    }
+                                   'spectral_peak': None
                                    },
                           'nmr-star': {'poly_seq': [{'name': 'Entity_assembly_ID', 'type': 'positive-int'},
                                                     {'name': 'Comp_index_ID', 'type': 'int'},
@@ -299,33 +276,18 @@ class NmrDpUtility(object):
                                                          {'name': 'Comp_ID_2', 'type': 'str'},
                                                          {'name': 'Atom_ID_2', 'type': 'str'}
                                                          ],
-                                       'spectral_peak': {'1': [{'name': 'Position_1', 'type': 'range-float',
-                                                                'range': self.chem_shift_range}
-                                                               ],
-                                                         '2': [{'name': 'Position_1', 'type': 'range-float',
-                                                                'range': self.chem_shift_range},
-                                                               {'name': 'Position_2', 'type': 'range-float',
-                                                                'range': self.chem_shift_range}
-                                                               ],
-                                                         '3': [{'name': 'Position_1', 'type': 'range-float',
-                                                                'range': self.chem_shift_range},
-                                                               {'name': 'Position_2', 'type': 'range-float',
-                                                                'range': self.chem_shift_range},
-                                                               {'name': 'Position_3', 'type': 'range-float',
-                                                                'range': self.chem_shift_range}
-                                                               ],
-                                                         '4': [{'name': 'Position_1', 'type': 'range-float',
-                                                                'range': self.chem_shift_range},
-                                                               {'name': 'Position_2', 'type': 'range-float',
-                                                                'range': self.chem_shift_range},
-                                                               {'name': 'Position_3', 'type': 'range-float',
-                                                                'range': self.chem_shift_range},
-                                                               {'name': 'Position_4', 'type': 'range-float',
-                                                                'range': self.chem_shift_range}
-                                                               ]
-                                                         }
+                                       'spectral_peak': None
                                        }
                           }
+
+        # key items for spectral peak
+        self.spectral_peak_key_items = {'nef': [{'name': 'position_%s', 'type': 'range-float',
+                                                 'range': self.chem_shift_range}
+                                                 ],
+                                        'nmr-star': [{'name': 'Position_%s', 'type': 'range-float',
+                                                 'range': self.chem_shift_range}
+                                                 ]
+                                        }
 
         # data items
         self.data_items = {'nef': {'poly_seq': [{'name': 'linking', 'type': 'enum', 'mandatory': False,
@@ -396,85 +358,13 @@ class NmrDpUtility(object):
                                                      {'name': 'distance_dependent', 'type':'enum', 'mandatory': False,
                                                       'enum': ('true', 'false')}
                                                      ],
-                                   'spectral_peak': {'1': [{'name': 'index', 'type':'index-int', 'mandatory': True},
-                                                           {'name': 'peak_id', 'type':'positive-int', 'mandatory': True},
-                                                           {'name': 'volume', 'type':'float', 'mandatory': False}, # check null
-                                                           {'name': 'volume_uncertainty', 'type':'positive-float','mandatory': False},
-                                                           {'name': 'height', 'type':'float', 'mandatory': False}, # check null
-                                                           {'name': 'height_uncertainty', 'type':'positive-float', 'mandatory': False},
-                                                           {'name': 'position_uncertainty_1', 'type':'positive-float', 'mandatory': False},
-                                                           {'name': 'chain_code_1', 'type':'str', 'mandatory': False},
-                                                           {'name': 'sequence_code_1', 'type':'int', 'mandatory': False},
-                                                           {'name': 'residue_name_1', 'type':'str', 'mandatory': False},
-                                                           {'name': 'atom_name_1', 'type':'str', 'mandatory': False}
-                                                           ],
-                                                     '2': [{'name': 'index', 'type':'index-int', 'mandatory': True},
-                                                           {'name': 'peak_id', 'type':'positive-int', 'mandatory': True},
-                                                           {'name': 'volume', 'type':'float', 'mandatory': False}, # check null
-                                                           {'name': 'volume_uncertainty', 'type':'positive-float', 'mandatory': False},
-                                                           {'name': 'height', 'type':'float', 'mandatory': False}, # check null
-                                                           {'name': 'height_uncertainty', 'type':'positive-float', 'mandatory': False},
-                                                           {'name': 'position_uncertainty_1', 'type':'positive-float', 'mandatory': False},
-                                                           {'name': 'position_uncertainty_2', 'type':'positive-float', 'mandatory': False},
-                                                           {'name': 'chain_code_1', 'type':'str', 'mandatory': False},
-                                                           {'name': 'sequence_code_1', 'type':'int', 'mandatory': False},
-                                                           {'name': 'residue_name_1', 'type':'str', 'mandatory': False},
-                                                           {'name': 'atom_name_1', 'type':'str', 'mandatory': False},
-                                                           {'name': 'chain_code_2', 'type':'str', 'mandatory': False},
-                                                           {'name': 'sequence_code_2', 'type':'int', 'mandatory': False},
-                                                           {'name': 'residue_name_2', 'type':'str', 'mandatory': False},
-                                                           {'name': 'atom_name_2', 'type':'str', 'mandatory': False}
-                                                           ],
-                                                     '3': [{'name': 'index', 'type':'index-int', 'mandatory': True},
-                                                           {'name': 'peak_id', 'type':'positive-int', 'mandatory': True},
-                                                           {'name': 'volume', 'type':'float', 'mandatory': False}, # check null
-                                                           {'name': 'volume_uncertainty', 'type':'positive-float', 'mandatory': False},
-                                                           {'name': 'height', 'type':'float', 'mandatory': False}, # check null
-                                                           {'name': 'height_uncertainty', 'type':'positive-float', 'mandatory': False},
-                                                           {'name': 'position_uncertainty_1', 'type':'positive-float', 'mandatory': False},
-                                                           {'name': 'position_uncertainty_2', 'type':'positive-float', 'mandatory': False},
-                                                           {'name': 'position_uncertainty_3', 'type':'positive-float', 'mandatory': False},
-                                                           {'name': 'chain_code_1', 'type':'str', 'mandatory': False},
-                                                           {'name': 'sequence_code_1', 'type':'int', 'mandatory': False},
-                                                           {'name': 'residue_name_1', 'type':'str', 'mandatory': False},
-                                                           {'name': 'atom_name_1', 'type':'str', 'mandatory': False},
-                                                           {'name': 'chain_code_2', 'type':'str', 'mandatory': False},
-                                                           {'name': 'sequence_code_2', 'type':'int', 'mandatory': False},
-                                                           {'name': 'residue_name_2', 'type':'str', 'mandatory': False},
-                                                           {'name': 'atom_name_2', 'type':'str', 'mandatory': False},
-                                                           {'name': 'chain_code_3', 'type':'str', 'mandatory': False},
-                                                           {'name': 'sequence_code_3', 'type':'int', 'mandatory': False},
-                                                           {'name': 'residue_name_3', 'type':'str', 'mandatory': False},
-                                                           {'name': 'atom_name_3', 'type':'str', 'mandatory': False}
-                                                           ],
-                                                     '4': [{'name': 'index', 'type':'index-int', 'mandatory': True},
-                                                           {'name': 'peak_id', 'type':'positive-int', 'mandatory': True},
-                                                           {'name': 'volume', 'type':'float', 'mandatory': False}, # check null
-                                                           {'name': 'volume_uncertainty', 'type':'positive-float', 'mandatory': False},
-                                                           {'name': 'height', 'type':'float', 'mandatory': False}, # check null
-                                                           {'name': 'height_uncertainty', 'type':'positive-float', 'mandatory': False},
-                                                           {'name': 'position_uncertainty_1', 'type':'positive-float', 'mandatory': False},
-                                                           {'name': 'position_uncertainty_2', 'type':'positive-float', 'mandatory': False},
-                                                           {'name': 'position_uncertainty_3', 'type':'positive-float', 'mandatory': False},
-                                                           {'name': 'position_uncertainty_4', 'type':'positive-float', 'mandatory': False},
-                                                           {'name': 'chain_code_1', 'type':'str', 'mandatory': False},
-                                                           {'name': 'sequence_code_1', 'type':'int', 'mandatory': False},
-                                                           {'name': 'residue_name_1', 'type':'str', 'mandatory': False},
-                                                           {'name': 'atom_name_1', 'type':'str', 'mandatory': False},
-                                                           {'name': 'chain_code_2', 'type':'str', 'mandatory': False},
-                                                           {'name': 'sequence_code_2', 'type':'int', 'mandatory': False},
-                                                           {'name': 'residue_name_2', 'type':'str', 'mandatory': False},
-                                                           {'name': 'atom_name_2', 'type':'str', 'mandatory': False},
-                                                           {'name': 'chain_code_3', 'type':'str', 'mandatory': False},
-                                                           {'name': 'sequence_code_3', 'type':'int', 'mandatory': False},
-                                                           {'name': 'residue_name_3', 'type':'str', 'mandatory': False},
-                                                           {'name': 'atom_name_3', 'type':'str', 'mandatory': False},
-                                                           {'name': 'chain_code_4', 'type':'str', 'mandatory': False},
-                                                           {'name': 'sequence_code_4', 'type':'int', 'mandatory': False},
-                                                           {'name': 'residue_name_4', 'type':'str', 'mandatory': False},
-                                                           {'name': 'atom_name_4', 'type':'str', 'mandatory': False}
-                                                           ]
-                                                     }
+                                   'spectral_peak': [{'name': 'index', 'type':'index-int', 'mandatory': True},
+                                                     {'name': 'peak_id', 'type':'positive-int', 'mandatory': True},
+                                                     {'name': 'volume', 'type':'float', 'mandatory': False}, # check null
+                                                     {'name': 'volume_uncertainty', 'type':'positive-float','mandatory': False},
+                                                     {'name': 'height', 'type':'float', 'mandatory': False}, # check null
+                                                     {'name': 'height_uncertainty', 'type':'positive-float', 'mandatory': False}
+                                                     ]
                                    },
                            'nmr-star': {'poly_seq': [{'name': 'Auth_asym_ID', 'type': 'str', 'mandatory': False},
                                                      {'name': 'Auth_seq_ID', 'type': 'int', 'mandatory': False},
@@ -483,7 +373,7 @@ class NmrDpUtility(object):
                                                      {'name': 'Sequence_linking', 'type': 'enum', 'mandatory': False,
                                                       'enum': ('start', 'end', 'middle', 'cyclic', 'break', 'single', 'dummy')},
                                                      {'name': 'Cis_residue', 'type': 'str', 'mandatory': False,
-                                                      'enum': ('yes', 'no')},
+                                                      'enum': ('yes', 'no', 'true', 'false')}, # need to fix yes_no
                                                      {'name': 'NEF_index', 'type': 'positive-int', 'mandatory': False}
                                                      ],
                                         'chem_shift': [{'name': 'Atom_type', 'type': 'enum', 'mandatory': True,
@@ -583,7 +473,7 @@ class NmrDpUtility(object):
                                                            'range': self.dihed_restraint_range}, # check null
                                                           {'name': 'RDC_val_scale_factor', 'type':'positive-float', 'mandatory': False},
                                                           {'name': 'RDC_distant_dependent', 'type':'enum', 'mandatory': False,
-                                                           'enum': ('yes', 'no')},
+                                                           'enum': ('yes', 'no', 'true', 'false')}, # need to fix yes_no
                                                           {'name': 'Auth_asym_ID_1', 'type':'str', 'mandatory': False},
                                                           {'name': 'Auth_seq_ID_1', 'type':'int', 'mandatory': False},
                                                           {'name': 'Auth_comp_ID_1', 'type':'str', 'mandatory': False},
@@ -594,128 +484,34 @@ class NmrDpUtility(object):
                                                           {'name': 'Auth_atom_ID_2', 'type':'str', 'mandatory': False},
                                                           {'name': 'RDC_constraint_list_ID', 'type':'static-positive-int', 'mandatory': True}
                                                           ],
-                                        'spectral_peak': {'1': [{'name': 'Index_ID', 'type':'index-int', 'mandatory': True},
-                                                                {'name': 'ID', 'type':'positive-int', 'mandatory': True},
-                                                                {'name': 'Volume', 'type':'float', 'mandatory': False}, # check null
-                                                                {'name': 'Volume_uncertainty', 'type':'positive-float', 'mandatory': False},
-                                                                {'name': 'Height', 'type':'float', 'mandatory': False}, # check null
-                                                                {'name': 'Height_uncertainty', 'type':'positive-float', 'mandatory': False},
-                                                                {'name': 'Position_uncertainty_1', 'type':'positive-float', 'mandatory': False},
-                                                                {'name': 'Entity_assembly_ID_1', 'type':'positive-int', 'mandatory': False},
-                                                                {'name': 'Comp_index_ID_1', 'type':'int', 'mandatory': False},
-                                                                {'name': 'Comp_ID_1', 'type':'str', 'mandatory': False},
-                                                                {'name': 'Atom_ID_1', 'type':'str', 'mandatory': False},
-                                                                {'name': 'Auth_asym_ID_1', 'type':'str', 'mandatory': False},
-                                                                {'name': 'Auth_seq_ID_1', 'type':'int', 'mandatory': False},
-                                                                {'name': 'Auth_comp_ID_1', 'type':'str', 'mandatory': False},
-                                                                {'name': 'Auth_atom_ID_1', 'type':'str', 'mandatory': False},
-                                                                {'name': 'Spectral_peak_list_ID', 'type':'static-positive-int', 'mandatory': True}],
-                                                          '2': [{'name': 'Index_ID', 'type':'index-int', 'mandatory': True},
-                                                                {'name': 'ID', 'type':'positive-int', 'mandatory': True},
-                                                                {'name': 'Volume', 'type':'float', 'mandatory': False}, # check null
-                                                                {'name': 'Volume_uncertainty', 'type':'positive-float', 'mandatory': False},
-                                                                {'name': 'Height', 'type':'float', 'mandatory': False}, # check null
-                                                                {'name': 'Height_uncertainty', 'type':'positive-float', 'mandatory': False},
-                                                                {'name': 'Position_uncertainty_1', 'type':'positive-float', 'mandatory': False},
-                                                                {'name': 'Position_uncertainty_2', 'type':'positive-float', 'mandatory': False},
-                                                                {'name': 'Entity_assembly_ID_1', 'type':'positive-int', 'mandatory': False},
-                                                                {'name': 'Comp_index_ID_1', 'type':'int', 'mandatory': False},
-                                                                {'name': 'Comp_ID_1', 'type':'str', 'mandatory': False},
-                                                                {'name': 'Atom_ID_1', 'type':'str', 'mandatory': False},
-                                                                {'name': 'Entity_assembly_ID_2', 'type':'positive-int', 'mandatory': False},
-                                                                {'name': 'Comp_index_ID_2', 'type':'int', 'mandatory': False},
-                                                                {'name': 'Comp_ID_2', 'type':'str', 'mandatory': False},
-                                                                {'name': 'Atom_ID_2', 'type':'str', 'mandatory': False},
-                                                                {'name': 'Auth_asym_ID_1', 'type':'str', 'mandatory': False},
-                                                                {'name': 'Auth_seq_ID_1', 'type':'int', 'mandatory': False},
-                                                                {'name': 'Auth_comp_ID_1', 'type':'str', 'mandatory': False},
-                                                                {'name': 'Auth_atom_ID_1', 'type':'str', 'mandatory': False},
-                                                                {'name': 'Auth_asym_ID_2', 'type':'str', 'mandatory': False},
-                                                                {'name': 'Auth_seq_ID_2', 'type':'int', 'mandatory': False},
-                                                                {'name': 'Auth_comp_ID_2', 'type':'str', 'mandatory': False},
-                                                                {'name': 'Auth_atom_ID_2', 'type':'str', 'mandatory': False},
-                                                                {'name': 'Spectral_peak_list_ID', 'type':'static-positive-int', 'mandatory': True}],
-                                                          '3': [{'name': 'Index_ID', 'type':'index-int', 'mandatory': True},
-                                                                {'name': 'ID', 'type':'positive-int', 'mandatory': True},
-                                                                {'name': 'Volume', 'type':'float', 'mandatory': False}, # check null
-                                                                {'name': 'Volume_uncertainty', 'type':'positive-float', 'mandatory': False},
-                                                                {'name': 'Height', 'type':'float', 'mandatory': False}, # check null
-                                                                {'name': 'Height_uncertainty', 'type':'positive-float', 'mandatory': False},
-                                                                {'name': 'Position_uncertainty_1', 'type':'positive-float', 'mandatory': False},
-                                                                {'name': 'Position_uncertainty_2', 'type':'positive-float', 'mandatory': False},
-                                                                {'name': 'Position_uncertainty_3', 'type':'positive-float', 'mandatory': False},
-                                                                {'name': 'Entity_assembly_ID_1', 'type':'positive-int', 'mandatory': False},
-                                                                {'name': 'Comp_index_ID_1', 'type':'int', 'mandatory': False},
-                                                                {'name': 'Comp_ID_1', 'type':'str', 'mandatory': False},
-                                                                {'name': 'Atom_ID_1', 'type':'str', 'mandatory': False},
-                                                                {'name': 'Entity_assembly_ID_2', 'type':'positive-int', 'mandatory': False},
-                                                                {'name': 'Comp_index_ID_2', 'type':'int', 'mandatory': False},
-                                                                {'name': 'Comp_ID_2', 'type':'str', 'mandatory': False},
-                                                                {'name': 'Atom_ID_2', 'type':'str', 'mandatory': False},
-                                                                {'name': 'Entity_assembly_ID_3', 'type':'positive-int', 'mandatory': False},
-                                                                {'name': 'Comp_index_ID_3', 'type':'int', 'mandatory': False},
-                                                                {'name': 'Comp_ID_3', 'type':'str', 'mandatory': False},
-                                                                {'name': 'Atom_ID_3', 'type':'str', 'mandatory': False},
-                                                                {'name': 'Auth_asym_ID_1', 'type':'str', 'mandatory': False},
-                                                                {'name': 'Auth_seq_ID_1', 'type':'int', 'mandatory': False},
-                                                                {'name': 'Auth_comp_ID_1', 'type':'str', 'mandatory': False},
-                                                                {'name': 'Auth_atom_ID_1', 'type':'str', 'mandatory': False},
-                                                                {'name': 'Auth_asym_ID_2', 'type':'str', 'mandatory': False},
-                                                                {'name': 'Auth_seq_ID_2', 'type':'int', 'mandatory': False},
-                                                                {'name': 'Auth_comp_ID_2', 'type':'str', 'mandatory': False},
-                                                                {'name': 'Auth_atom_ID_2', 'type':'str', 'mandatory': False},
-                                                                {'name': 'Auth_asym_ID_3', 'type':'str', 'mandatory': False},
-                                                                {'name': 'Auth_seq_ID_3', 'type':'int', 'mandatory': False},
-                                                                {'name': 'Auth_comp_ID_3', 'type':'str', 'mandatory': False},
-                                                                {'name': 'Auth_atom_ID_3', 'type':'str', 'mandatory': False},
-                                                                {'name': 'Spectral_peak_list_ID', 'type':'static-positive-int', 'mandatory': True}
-                                                              ],
-                                                          '4': [{'name': 'Index_ID', 'type':'index-int', 'mandatory': True},
-                                                                {'name': 'ID', 'type':'positive-int', 'mandatory': True},
-                                                                {'name': 'Volume', 'type':'float', 'mandatory': False}, # check null
-                                                                {'name': 'Volume_uncertainty', 'type':'positive-float', 'mandatory': False},
-                                                                {'name': 'Height', 'type':'float', 'mandatory': False}, # check null
-                                                                {'name': 'Height_uncertainty', 'type':'positive-float', 'mandatory': False},
-                                                                {'name': 'Position_uncertainty_1', 'type':'positive-float', 'mandatory': False},
-                                                                {'name': 'Position_uncertainty_2', 'type':'positive-float', 'mandatory': False},
-                                                                {'name': 'Position_uncertainty_3', 'type':'positive-float', 'mandatory': False},
-                                                                {'name': 'Position_uncertainty_4', 'type':'positive-float', 'mandatory': False},
-                                                                {'name': 'Entity_assembly_ID_1', 'type':'positive-int', 'mandatory': False},
-                                                                {'name': 'Comp_index_ID_1', 'type':'int', 'mandatory': False},
-                                                                {'name': 'Comp_ID_1', 'type':'str', 'mandatory': False},
-                                                                {'name': 'Atom_ID_1', 'type':'str', 'mandatory': False},
-                                                                {'name': 'Entity_assembly_ID_2', 'type':'positive-int', 'mandatory': False},
-                                                                {'name': 'Comp_index_ID_2', 'type':'int', 'mandatory': False},
-                                                                {'name': 'Comp_ID_2', 'type':'str', 'mandatory': False},
-                                                                {'name': 'Atom_ID_2', 'type':'str', 'mandatory': False},
-                                                                {'name': 'Entity_assembly_ID_3', 'type':'positive-int', 'mandatory': False},
-                                                                {'name': 'Comp_index_ID_3', 'type':'int', 'mandatory': False},
-                                                                {'name': 'Comp_ID_3', 'type':'str', 'mandatory': False},
-                                                                {'name': 'Atom_ID_3', 'type':'str', 'mandatory': False},
-                                                                {'name': 'Entity_assembly_ID_4', 'type':'positive-int', 'mandatory': False},
-                                                                {'name': 'Comp_index_ID_4', 'type':'int', 'mandatory': False},
-                                                                {'name': 'Comp_ID_4', 'type':'str', 'mandatory': False},
-                                                                {'name': 'Atom_ID_4', 'type':'str', 'mandatory': False},
-                                                                {'name': 'Auth_asym_ID_1', 'type':'str', 'mandatory': False},
-                                                                {'name': 'Auth_seq_ID_1', 'type':'int', 'mandatory': False},
-                                                                {'name': 'Auth_comp_ID_1', 'type':'str', 'mandatory': False},
-                                                                {'name': 'Auth_atom_ID_1', 'type':'str', 'mandatory': False},
-                                                                {'name': 'Auth_asym_ID_2', 'type':'str', 'mandatory': False},
-                                                                {'name': 'Auth_seq_ID_2', 'type':'int', 'mandatory': False},
-                                                                {'name': 'Auth_comp_ID_2', 'type':'str', 'mandatory': False},
-                                                                {'name': 'Auth_atom_ID_2', 'type':'str', 'mandatory': False},
-                                                                {'name': 'Auth_asym_ID_3', 'type':'str', 'mandatory': False},
-                                                                {'name': 'Auth_seq_ID_3', 'type':'int', 'mandatory': False},
-                                                                {'name': 'Auth_comp_ID_3', 'type':'str', 'mandatory': False},
-                                                                {'name': 'Auth_atom_ID_3', 'type':'str', 'mandatory': False},
-                                                                {'name': 'Auth_asym_ID_4', 'type':'str', 'mandatory': False},
-                                                                {'name': 'Auth_seq_ID_4', 'type':'int', 'mandatory': False},
-                                                                {'name': 'Auth_comp_ID_4', 'type':'str', 'mandatory': False},
-                                                                {'name': 'Auth_atom_ID_4', 'type':'str', 'mandatory': False},
-                                                                {'name': 'Spectral_peak_list_ID', 'type':'static-positive-int', 'mandatory': True}]
-                                                          }
+                                        'spectral_peak': [{'name': 'Index_ID', 'type':'index-int', 'mandatory': True},
+                                                          {'name': 'ID', 'type':'positive-int', 'mandatory': True},
+                                                          {'name': 'Volume', 'type':'float', 'mandatory': False}, # check null
+                                                          {'name': 'Volume_uncertainty', 'type':'positive-float', 'mandatory': False},
+                                                          {'name': 'Height', 'type':'float', 'mandatory': False}, # check null
+                                                          {'name': 'Height_uncertainty', 'type':'positive-float', 'mandatory': False},
+                                                          {'name': 'Spectral_peak_list_ID', 'type':'static-positive-int', 'mandatory': True}
+                                                          ]
                                         }
                            }
+
+        # data items for spectral peak
+        self.spectral_peak_data_items = {'nef': [{'name': 'position_uncertainty_%s', 'type':'positive-float', 'mandatory': False},
+                                                 {'name': 'chain_code_%s', 'type':'str', 'mandatory': False},
+                                                 {'name': 'sequence_code_%s', 'type':'int', 'mandatory': False},
+                                                 {'name': 'residue_name_%s', 'type':'str', 'mandatory': False},
+                                                 {'name': 'atom_name_%s', 'type':'str', 'mandatory': False}],
+                                         'nmr-star': [{'name': 'Position_uncertainty_%s', 'type':'positive-float', 'mandatory': False},
+                                                      {'name': 'Entity_assembly_ID_%s', 'type':'positive-int', 'mandatory': False},
+                                                      {'name': 'Comp_index_ID_%s', 'type':'int', 'mandatory': False},
+                                                      {'name': 'Comp_ID_%s', 'type':'str', 'mandatory': False},
+                                                      {'name': 'Atom_ID_%s', 'type':'str', 'mandatory': False},
+                                                      {'name': 'Auth_asym_ID_%s', 'type':'str', 'mandatory': False},
+                                                      {'name': 'Auth_seq_ID_%s', 'type':'int', 'mandatory': False},
+                                                      {'name': 'Auth_comp_ID_%s', 'type':'str', 'mandatory': False},
+                                                      {'name': 'Auth_atom_ID_%s', 'type':'str', 'mandatory': False}]
+                                         }
+
         # number of dimension of spectral peak
         self.num_dim_items = {'nef': 'num_dimensions', 'nmr-star': 'Number_of_spectral_dimensions'}
 
@@ -2119,8 +1915,25 @@ class NmrDpUtility(object):
                         if self.__verbose:
                             self.__lfh.write("+NmrDpUtility.__testDataConsistencyInLoop() ++ ValueError  - %s %s must be in %s, %s saveframe. This is current limitation of OneDep system." % (self.num_dim_items[file_type], num_dim, self.num_dims, sf_framecode))
 
-                    key_items = self.key_items[file_type][content_subtype][num_dim]
-                    data_items = self.data_items[file_type][content_subtype][num_dim]
+                    max_dim = int(num_dim) + 1
+
+                    key_items = []
+                    for dim in range(1, max_dim):
+                        for k in self.spectral_peak_key_items[file_type]:
+                            _k = copy.copy(k)
+                            if '%s' in k['name']:
+                               _k['name'] = k['name'] % dim
+                            key_items.append(_k)
+
+                    data_items = []
+                    for d in self.data_items[file_type][content_subtype]:
+                        data_items.append(d)
+                    for dim in range(1, max_dim):
+                        for d in self.spectral_peak_data_items[file_type]:
+                            _d = copy.copy(d)
+                            if '%s' in d['name']:
+                                _d['name'] = d['name'] % dim
+                            data_items.append(_d)
 
                 else:
 

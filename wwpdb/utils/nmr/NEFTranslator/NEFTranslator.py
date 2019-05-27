@@ -468,7 +468,7 @@ class NEFTranslator(object):
                 seq_dat = loop.get_data_by_tag(tags)
             else:
                 _tags_exist = False
-                for i in range(1, 5): # expand up to 4 dimensions
+                for i in range(1, 6): # expand up to 5 dimensions
                     _tags = [seq_id + '_' + str(i), comp_id + '_' + str(i), chain_id + '_' + str(i)]
                     if set(_tags) & set(loop.tags) == set(_tags):
                         _tags_exist = True
@@ -568,7 +568,7 @@ class NEFTranslator(object):
                     i.append('1')
             else:
                 _tags_exist = False
-                for i in range(1, 5): # expand up to 4 dimensions
+                for i in range(1, 6): # expand up to 5 dimensions
                     _tags = [seq_id + '_' + str(i), comp_id + '_' + str(i), chain_id + '_' + str(i)]
                     _tags_ = [seq_id + '_' + str(i), comp_id + '_' + str(i)]
                     if set(_tags) & set(loop.tags) == set(_tags):
@@ -686,7 +686,7 @@ class NEFTranslator(object):
                 comp_atom_dat = loop.get_data_by_tag(tags)
             else:
                 _tags_exist = False
-                for i in range(1, 5): # expand up to 4 dimensions
+                for i in range(1, 6): # expand up to 5 dimensions
                     _tags = [comp_id + '_' + str(i), atom_id + '_' + str(i)]
                     if set(_tags) & set(loop.tags) == set(_tags):
                         _tags_exist = True

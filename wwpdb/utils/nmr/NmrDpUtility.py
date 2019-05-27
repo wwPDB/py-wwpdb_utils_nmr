@@ -516,7 +516,7 @@ class NmrDpUtility(object):
         self.num_dim_items = {'nef': 'num_dimensions', 'nmr-star': 'Number_of_spectral_dimensions'}
 
         # supported number of dimension of spectral peak
-        self.num_dims = ('1', '2', '3', '4')
+        self.num_dims = ('1', '2', '3', '4', '5')
 
         # allowed tags
         self.allowed_tags = {'nef': {'poly_seq': ['index', 'chain_code', 'sequence_code', 'residue_name', 'linking', 'residue_variant', 'cis_peptide'],

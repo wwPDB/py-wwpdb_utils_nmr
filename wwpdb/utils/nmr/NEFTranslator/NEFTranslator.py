@@ -22,6 +22,7 @@ import csv
 import datetime
 import pynmrstar
 from pytz import utc
+from __builtin__ import True, False
 
 PY3 = (sys.version_info[0] == 3)
 
@@ -468,7 +469,7 @@ class NEFTranslator(object):
                 seq_dat = loop.get_data_by_tag(tags)
             else:
                 _tags_exist = False
-                for i in range(1, 6): # expand up to 5 dimensions
+                for i in range(1, 16):
                     _tags = [seq_id + '_' + str(i), comp_id + '_' + str(i), chain_id + '_' + str(i)]
                     if set(_tags) & set(loop.tags) == set(_tags):
                         _tags_exist = True
@@ -568,7 +569,7 @@ class NEFTranslator(object):
                     i.append('1')
             else:
                 _tags_exist = False
-                for i in range(1, 6): # expand up to 5 dimensions
+                for i in range(1, 16):
                     _tags = [seq_id + '_' + str(i), comp_id + '_' + str(i), chain_id + '_' + str(i)]
                     _tags_ = [seq_id + '_' + str(i), comp_id + '_' + str(i)]
                     if set(_tags) & set(loop.tags) == set(_tags):
@@ -686,7 +687,7 @@ class NEFTranslator(object):
                 comp_atom_dat = loop.get_data_by_tag(tags)
             else:
                 _tags_exist = False
-                for i in range(1, 6): # expand up to 5 dimensions
+                for i in range(1, 16):
                     _tags = [comp_id + '_' + str(i), atom_id + '_' + str(i)]
                     if set(_tags) & set(loop.tags) == set(_tags):
                         _tags_exist = True
@@ -1015,11 +1016,31 @@ class NEFTranslator(object):
 
         if not allowed_tags is None:
 
-            if set(key_names) | set(allowed_tags) != set(allowed_tags):
-                raise LookupError("Key items %s must not exists in %s loop category" % (set(key_names) | set(allowed_tags) - set(allowed_tags), lp_category))
+            if (set(key_names) | set(allowed_tags)) != set(allowed_tags):
+                print (allowed_tags)
+                raise LookupError("Key items %s must not exists in %s loop category" % ((set(key_names) | set(allowed_tags)) - set(allowed_tags), lp_category))
 
-            if set(data_names) | set(allowed_tags) != set(allowed_tags):
-                raise LookupError("Data items %s must not exists in %s loop category" % (set(data_names) | set(allowed_tags) - set(allowed_tags), lp_category))
+            if (set(data_names) | set(allowed_tags)) != set(allowed_tags):
+                raise LookupError("Data items %s must not exists in %s loop category" % ((set(data_names) | set(allowed_tags)) - set(allowed_tags), lp_category))
+
+            for d in data_items:
+                if d.has_key('group-mandatory') and d['group-mandatory']:
+                    group = d['group']
+                    for m in group['member-with']:
+                        if not m in allowed_tags:
+                            raise UserWarning("Member data item %s of %s must exists in allowed tags of %s loop category" % (m, d['name'], lp_category))
+                    if not group['coexist-with'] is None:
+                        for c in group['coexist-with']:
+                            if not c in allowed_tags:
+                                raise UserWarning("Co-existing data item %s of %s must exists in allowed tags of %s loop category" % (c, d['name'], lp_category))
+                    if group.has_key('smaller-than') and group['smaller-than']:
+                        for s in group['smaller-than']:
+                            if not s in allowed_tags:
+                                raise UserWarning("Smaller data item %s of %s must exists in allowed tags of %s loop category" % (s, d['name'], lp_category))
+                    if group.has_key('larger-than') and group['larger-than']:
+                        for l in group['larger-than']:
+                            if not l in allowed_tags:
+                                raise UserWarning("Larger data item %s of %s must exists in allowed tags of %s loop category" % (l, d['name'], lp_category))
 
         empty_value = (None, '', '.', '?')
 
@@ -1037,6 +1058,25 @@ class NEFTranslator(object):
             if not disallowed_tags is None:
                 if len(set(loop.tags) & set(disallowed_tags)) > 0:
                     raise LookupError("Disallowed items %s exists in %s loop category" % (set(loop.tags) & set(disallowed_tags), lp_category))
+
+            for d in data_items:
+                if d.has_key('group-mandatory') and d['group-mandatory']:
+                    name = d['name']
+                    group = d['group']
+                    if name in loop.tags:
+                        if not group['coexist-with'] is None:
+                            for c in group['coexist-with']:
+                                if not c in loop.tags:
+                                    raise LookupError("Missing one of data items %s in %s loop category" % (set(group['coexist-with']).add(name), lp_category))
+
+                    else:
+                        has_member = False
+                        for m in group['member-with']:
+                            if m in loop.tags:
+                                has_member = True
+                                break
+                        if not has_member:
+                            raise LookupError("Missing one of data items %s in %s loop category" % (set(group['member-with']).add(name), lp_category))
 
             tags = [k['name'] for k in key_items]
             for data_name in set(data_names) & set(loop.tags):
@@ -1091,14 +1131,14 @@ class NEFTranslator(object):
             keys = set()
 
             for i in tag_dat:
-                key = ""
+                key = ''
                 for j in range(key_len):
-                    key += " " + i[j]
+                    key += ' ' + i[j]
                 key.rstrip()
                 if key in keys:
-                    msg = ""
+                    msg = ''
                     for j in range(key_len):
-                        msg += key_names[j] + " %s, " % i[j]
+                        msg += key_names[j] + ' %s, ' % i[j]
 
                     idx_msg = ''
 
@@ -1107,7 +1147,7 @@ class NEFTranslator(object):
                             idx_msg += tags[_j] + ' '
 
                             for _i in tag_dat:
-                                _key = ""
+                                _key = ''
                                 for j in range(key_len):
                                     _key += " " + _i[j]
                                     _key.rstrip()
@@ -1117,10 +1157,7 @@ class NEFTranslator(object):
 
                             idx_msg = idx_msg[:-4] + ', '
 
-                        idx_msg = idx_msg[: -2]
-
-                        if len(idx_msg) > 0:
-                            idx_msg = 'Check rows of ' + idx_msg + '. '
+                        idx_msg = 'Check a row of ' + idx_msg[:-2] + '. '
 
                     raise KeyError("%sValues of key items must be unique. %s in %s loop category" % (idx_msg, msg.rstrip().rstrip(','), lp_category))
 
@@ -1282,6 +1319,74 @@ class NEFTranslator(object):
                                         raise ValueError("%s '%s' must be %s in %s loop category" % (name, val, type, lp_category))
                                 else:
                                         ent[name] = val
+
+                for d in data_items:
+                    if d.has_key('group-mandatory') and d['group-mandatory']:
+                        name = d['name']
+                        group = d['group']
+                        if ent.has_key(name) and not ent[name] is None:
+                            if not group['coexist-with'] is None:
+                                has_coexist = True
+                                for c in group['coexist-with']:
+                                    if not ent.has_key(c) or ent[c] is None:
+
+                                        idx_msg = ''
+
+                                        if len(idx_tag_ids) > 0:
+                                            for _j in idx_tag_ids:
+                                                idx_msg += tags[_j] + " '" + str(ent[tags[_j]]) + "', "
+
+                                            idx_msg = 'Check a row of ' + idx_msg[:-2] + '. '
+
+                                        raise ValueError("%sOne of data item %s must not be empty for a row having %s '%s' in %s loop category" % (idx_msg, c, name, ent[name], lp_category))
+
+                            if group.has_key('smaller-than') and not group['smaller-than'] is None:
+                                for s in group['smaller-than']:
+                                    if ent.has_key(s) and not ent[s] is None:
+                                        if ent[name] <= ent[s]:
+
+                                            idx_msg = ''
+
+                                            if len(idx_tag_ids) > 0:
+                                                for _j in idx_tag_ids:
+                                                    idx_msg += tags[_j] + " '" + str(ent[tags[_j]]) + "', "
+
+                                                idx_msg = 'Check a row of ' + idx_msg[:-2] + '. '
+
+                                            raise ValueError("%sdata item %s '%s' must be larger than %s '%s' in %s loop category" % (idx_msg, name, ent[name], s, ent[s], lp_category))
+
+                            if group.has_key('larger-than') and not group['larger-than'] is None:
+                                for l in group['larger-than']:
+                                    if ent.has_key(l) and not ent[l] is None:
+                                        if ent[name] >= ent[l]:
+
+                                            idx_msg = ''
+
+                                            if len(idx_tag_ids) > 0:
+                                                for _j in idx_tag_ids:
+                                                    idx_msg += tags[_j] + " '" + str(ent[tags[_j]]) + "', "
+
+                                                idx_msg = 'Check a row of ' + idx_msg[:-2] + '. '
+
+                                            raise ValueError("%sdata item %s '%s' must be smaller than %s '%s' in %s loop category" % (idx_msg, name, ent[name], l, ent[l], lp_category))
+
+                        else:
+                            has_member = False
+                            for m in group['member-with']:
+                                if ent.has_key(m) and not ent[m] is None:
+                                    has_member = True
+                                    break
+                            if not has_member:
+
+                                idx_msg = ''
+
+                                if len(idx_tag_ids) > 0:
+                                    for _j in idx_tag_ids:
+                                        idx_msg += tags[_j] + " '" + str(ent[tags[_j]]) + "', "
+
+                                    idx_msg = 'Check a row of ' + idx_msg[:-2] + '. '
+
+                                raise ValueError("%sOne of data items %s must not be empty in %s loop category" % (idx_msg, set(group['member-with']).add(name), lp_category))
 
                 asm.append(ent)
 

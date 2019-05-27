@@ -55,7 +55,7 @@ class TestNmrDpUtility(unittest.TestCase):
 
         self.utility.op('nmr-nef-parser-check')
 
-        print(self.utility.report.getJson(1))
+        #print(self.utility.report.getJson(1))
 
     def test_nmr_star_parser_check(self):
         # no input

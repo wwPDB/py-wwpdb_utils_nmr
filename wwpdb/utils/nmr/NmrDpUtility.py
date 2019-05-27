@@ -535,6 +535,11 @@ class NmrDpUtility(object):
                                           }
                               }
 
+        # disallowed tags of spectral peak
+        self.spectral_peak_disallowed_tags = {'nef': ['position_%s', 'position_uncertainty_%s', 'chain_code_%s', 'sequence_code_%s', 'residue_name_%s', 'atom_name_%s'],
+                                              'nmr-star': ['Position_%s', 'Position_uncertainty_%s', 'Entity_assembly_ID_%s', 'Entity_ID_%s', 'Comp_index_ID_%s', 'Seq_ID_%s', 'Comp_ID_%s', 'Atom_ID_%s', 'Ambiguity_code_%s', 'Ambiguity_set_ID_%s']
+                                              }
+
         # taken from wwpdb.utils.align.SequenceReferenceData.py
         self.monDict3 = {'ALA': 'A',
                          'ARG': 'R',
@@ -1929,7 +1934,7 @@ class NmrDpUtility(object):
 
                     if not num_dim in self.num_dims:
 
-                        self.report.error.addDescription('invalid_data', "%s %s must be in %s, %s saveframe. This is current limitation of OneDep system." % (self.num_dim_items[file_type], num_dim, self.num_dims, sf_framecode))
+                        self.report.error.addDescription('invalid_data', "%s %s must be in %s, %s saveframe. This is current limitation of NMR-STAR dictionary." % (self.num_dim_items[file_type], num_dim, self.num_dims, sf_framecode))
                         self.report.setError()
 
                         if self.__verbose:
@@ -1954,6 +1959,16 @@ class NmrDpUtility(object):
                             if '%s' in d['name']:
                                 _d['name'] = d['name'] % dim
                             data_items.append(_d)
+
+                    lim_dim = 16 if file_type == 'nef' else 6 # nef supports up to 15D, nmr-star supports up to 5D due to each dictionary
+
+                    if max_dim < lim_dim:
+                        disallowed_tags = []
+                        for dim in range(max_dim, lim_dim):
+                            for t in self.spectral_peak_disallowed_tags[file_type]:
+                                if '%s' in t:
+                                    t = t % dim
+                                disallowed_tags.append(t)
 
                 else:
 

@@ -962,13 +962,12 @@ class NEFTranslator(object):
                                   {'name': 'residue_name', 'type': 'str'},
                                   {'name': 'atom_name', 'type': 'str'}],
                        data_items=[{'name': 'value', 'type': 'float', 'mandatory': True},
-                                   {'name': 'value_uncertainty', 'type': 'positive-float', 'mandatory': False}],
-                       inc_idx_test=False, allow_zero=True):
+                                   {'name': 'value_uncertainty', 'type': 'positive-float', 'mandatory': False}]):
         """ Wrapper function of check_data() for an NEF file
         @author: Masashi Yokochi
         """
 
-        return NEFTranslator.check_data(star_data, lp_category, key_items, data_items, inc_idx_test)
+        return NEFTranslator.check_data(star_data, lp_category, key_items, data_items)
 
     @staticmethod
     def check_star_data(star_data, lp_category='Atom_chem_shift',
@@ -977,16 +976,15 @@ class NEFTranslator(object):
                                    {'name': 'Comp_ID', 'type': 'str'},
                                    {'name': 'Atom_ID', 'type': 'str'}],
                         data_items=[{'name': 'Val', 'type': 'float', 'mandatory': True},
-                                    {'name': 'Val_err', 'type': 'positive-float', 'mandatory': False}],
-                        inc_idx_test=False, allow_zero=True):
+                                    {'name': 'Val_err', 'type': 'positive-float', 'mandatory': False}]):
         """ Wrapper function of check_data() for an NMR-STAR file
         @author: Masashi Yokochi
         """
 
-        return NEFTranslator.check_data(star_data, lp_category, key_items, data_items, inc_idx_test)
+        return NEFTranslator.check_data(star_data, lp_category, key_items, data_items)
 
     @staticmethod
-    def check_data(star_data, lp_category, key_items, data_items, inc_idx_test, allow_zero=True):
+    def check_data(star_data, lp_category, key_items, data_items, allowed_tags=None, disallowed_tags=None, inc_idx_test=False, allow_zero=True):
         """ Extracts unique data with sanity check from any given loops in an NEF/NMR-STAR file
         @author: Masashi Yokochi
         """
@@ -1015,6 +1013,14 @@ class NEFTranslator(object):
             if not d['type'] in item_types:
                 raise TypeError("Type %s of data item %s must be one of %s" % (d['type'], d['name'], item_types))
 
+        if not allowed_tags is None:
+
+            if set(key_names) | set(allowed_tags) != set(allowed_tags):
+                raise LookupError("Key items %s must not exists in %s loop category" % (set(key_names) | set(allowed_tags) - set(allowed_tags), lp_category))
+
+            if set(data_names) | set(allowed_tags) != set(allowed_tags):
+                raise LookupError("Data items %s must not exists in %s loop category" % (set(data_names) | set(allowed_tags) - set(allowed_tags), lp_category))
+
         empty_value = (None, '', '.', '?')
 
         dat = [] # data of all loops
@@ -1027,6 +1033,10 @@ class NEFTranslator(object):
 
             if len(mand_data_names) > 0 and set(mand_data_names) & set(loop.tags) != set(mand_data_names):
                 raise LookupError("Missing one of data items %s in %s loop category" % (mand_data_names, lp_category))
+
+            if not disallowed_tags is None:
+                if len(set(loop.tags) & set(disallowed_tags)) > 0:
+                    raise LookupError("Disallowed items %s exists in %s loop category" % (set(loop.tags) & set(disallowed_tags), lp_category))
 
             tags = [k['name'] for k in key_items]
             for data_name in set(data_names) & set(loop.tags):

@@ -248,6 +248,20 @@ class TestNEFTranslator(TestCase):
                             'TRP', 'PHE', 'GLN', 'ASN', 'ARG', 'ARG', 'TYR', 'LYS', 'THR', 'LYS',
                             'ARG', 'LYS', 'GLN', 'LEU', 'SER', 'SER', 'GLU', 'LEU', 'GLY']}]])
 
+    def test_get_star_auth_seq(self):
+        entry = pynmrstar.Entry.from_file('data/2l9r.str')
+        # extract polymer sequence from assembly category
+        self.assertEqual(self.neft.get_star_auth_seq(entry['nef_molecular_system'], lp_category='Chem_comp_assembly'),
+                         [[{'chain_id': '1', 'auth_asym_id': ['A' for i in range(1, 70)],
+                            'auth_seq_id': ['%s' % i for i in range(1, 70)], 'auth_comp_id':
+                           ['MET', 'GLY', 'HIS', 'HIS', 'HIS', 'HIS', 'HIS', 'HIS', 'SER', 'HIS',
+                            'MET', 'SER', 'HIS', 'THR', 'GLN', 'VAL', 'ILE', 'GLU', 'LEU', 'GLU',
+                            'ARG', 'LYS', 'PHE', 'SER', 'HIS', 'GLN', 'LYS', 'TYR', 'LEU', 'SER',
+                            'ALA', 'PRO', 'GLU', 'ARG', 'ALA', 'HIS', 'LEU', 'ALA', 'LYS', 'ASN',
+                            'LEU', 'LYS', 'LEU', 'THR', 'GLU', 'THR', 'GLN', 'VAL', 'LYS', 'ILE',
+                            'TRP', 'PHE', 'GLN', 'ASN', 'ARG', 'ARG', 'TYR', 'LYS', 'THR', 'LYS',
+                            'ARG', 'LYS', 'GLN', 'LEU', 'SER', 'SER', 'GLU', 'LEU', 'GLY']}]])
+
     def test_get_nef_comp_atom_pair(self):
         entry = pynmrstar.Entry.from_file('data/2l9r.nef')
         # extract comp/atom pair from the first cs loop in nef_chemical_shift_list category

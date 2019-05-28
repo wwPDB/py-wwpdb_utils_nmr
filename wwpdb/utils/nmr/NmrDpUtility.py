@@ -296,8 +296,7 @@ class NmrDpUtility(object):
         self.data_items = {'nef': {'poly_seq': [{'name': 'linking', 'type': 'enum', 'mandatory': False,
                                                  'enum': ('start', 'end', 'middle', 'cyclic', 'break', 'single', 'dummy')},
                                                 {'name': 'residue_variant', 'type': 'str', 'mandatory': False},
-                                                {'name': 'cis_peptide', 'type': 'enum', 'mandatory': False,
-                                                 'enum': ('true', 'false')}
+                                                {'name': 'cis_peptide', 'type': 'bool', 'mandatory': False}
                                                 ],
                                    'chem_shift': [{'name': 'value', 'type': 'range-float', 'mandatory': True,
                                                    'range': self.chem_shift_range},
@@ -418,8 +417,7 @@ class NmrDpUtility(object):
                                                                 'larger-than': None}},
                                                      {'name': 'scale', 'type':'positive-float', 'mandatory': False,
                                                       'enforce-non-zero': True},
-                                                     {'name': 'distance_dependent', 'type':'enum', 'mandatory': False,
-                                                      'enum': ('true', 'false')}
+                                                     {'name': 'distance_dependent', 'type':'bool', 'mandatory': False}
                                                      ],
                                    'spectral_peak': [{'name': 'index', 'type':'index-int', 'mandatory': True},
                                                      {'name': 'peak_id', 'type':'positive-int', 'mandatory': True},
@@ -439,8 +437,7 @@ class NmrDpUtility(object):
                                                      {'name': 'Auth_variant_ID', 'type': 'str', 'mandatory': False},
                                                      {'name': 'Sequence_linking', 'type': 'enum', 'mandatory': False,
                                                       'enum': ('start', 'end', 'middle', 'cyclic', 'break', 'single', 'dummy')},
-                                                     {'name': 'Cis_residue', 'type': 'str', 'mandatory': False,
-                                                      'enum': ('yes', 'no', 'true', 'false')}, # need to fix yes_no
+                                                     {'name': 'Cis_residue', 'type': 'bool', 'mandatory': False},
                                                      {'name': 'NEF_index', 'type': 'positive-int', 'mandatory': False}
                                                      ],
                                         'chem_shift': [{'name': 'Atom_type', 'type': 'enum', 'mandatory': True,
@@ -599,8 +596,7 @@ class NmrDpUtility(object):
                                                                      'smaller-than': None,
                                                                      'larger-than': ['RDC_upper_linear_limit', 'RDC_lower_bound', 'RDC_upper_bound']}},
                                                           {'name': 'RDC_val_scale_factor', 'type':'positive-float', 'mandatory': False},
-                                                          {'name': 'RDC_distant_dependent', 'type':'enum', 'mandatory': False,
-                                                           'enum': ('yes', 'no', 'true', 'false')}, # need to fix yes_no
+                                                          {'name': 'RDC_distant_dependent', 'type':'bool', 'mandatory': False},
                                                           {'name': 'Auth_asym_ID_1', 'type':'str', 'mandatory': False},
                                                           {'name': 'Auth_seq_ID_1', 'type':'int', 'mandatory': False},
                                                           {'name': 'Auth_comp_ID_1', 'type':'str', 'mandatory': False},
@@ -1037,9 +1033,45 @@ class NmrDpUtility(object):
 
         try:
 
-            poly_seq = self.__getPolymerSequence(sf_data, content_subtype)
+            poly_seq = self.__getPolymerSequence(sf_data, content_subtype)[0]
 
-            input_source.setItemValue('polymer_sequence', poly_seq[0])
+            input_source.setItemValue('polymer_sequence', poly_seq)
+
+            if file_type == 'nmr-star':
+                auth_poly_seq = self.nef_translator.get_star_auth_seq(sf_data, lp_category=self.lp_categories[file_type][content_subtype])[0]
+
+                for cid in range(len(poly_seq)):
+                    chain_id = poly_seq[cid]['chain_id']
+                    comp_ids = poly_seq[cid]['comp_id']
+
+                    for auth_cid in range(len(auth_poly_seq)):
+
+                        if auth_poly_seq[auth_cid]['chain_id'] != chain_id:
+                            continue
+
+                        auth_comp_ids = auth_poly_seq[auth_cid]['auth_comp_id']
+
+                        if comp_ids == auth_comp_ids: # no difference
+                            continue
+
+                        for i in range(len(poly_seq[cid]['comp_id'])):
+
+                            comp_id = comp_ids[i]
+                            auth_comp_id = auth_comp_ids[i]
+
+                            if comp_id == auth_comp_id:
+                                continue
+
+                            seq_id = poly_seq[cid]['seq_id'][i]
+
+                            auth_asym_id = auth_poly_seq[auth_cid]['auth_asym_id'][i]
+                            auth_seq_id = auth_poly_seq[auth_cid]['auth_seq_id'][i]
+
+                            self.report.warning.addDescription('sequence_mismatch', "Author comp ID %s (auth_asym_id %s, auth_seq_id %s) vs %s (chain_id %s, seq_id %s) mismatches in %s saveframe." % (auth_comp_id, auth_asym_id, auth_seq_id, comp_id, chain_id, seq_id, sf_framecode))
+                            self.report.setWarning()
+
+                            if self.__verbose:
+                                self.__lfh.write("+NmrDpUtility.__extractPolymerSequence() ++ Warning  - Author comp ID %s (auth_asym_id %s, auth_seq_id %s) vs %s (chain_id %s, seq_id %s) mismatches in %s saveframe." % (auth_comp_id, auth_asym_id, auth_seq_id, comp_id, chain_id, seq_id, sf_framecode))
 
             return True
 
@@ -1116,6 +1148,42 @@ class NmrDpUtility(object):
                         poly_seq_list_set[content_subtype].append({'list_id': list_id, 'sf_framecode': sf_framecode, 'polymer_sequence': poly_seq[0]})
 
                         has_poly_seq = True
+
+                        if file_type == 'nmr-star':
+                            auth_poly_seq = self.nef_translator.get_star_auth_seq(sf_data, lp_category=self.lp_categories[file_type][content_subtype])[0]
+
+                            for cid in range(len(poly_seq)):
+                                chain_id = poly_seq[cid]['chain_id']
+                                comp_ids = poly_seq[cid]['comp_id']
+
+                                for auth_cid in range(len(auth_poly_seq)):
+
+                                    if auth_poly_seq[auth_cid]['chain_id'] != chain_id:
+                                        continue
+
+                                    auth_comp_ids = auth_poly_seq[auth_cid]['auth_comp_id']
+
+                                    if comp_ids == auth_comp_ids: # no difference
+                                        continue
+
+                                    for i in range(len(poly_seq[cid]['comp_id'])):
+
+                                        comp_id = comp_ids[i]
+                                        auth_comp_id = auth_comp_ids[i]
+
+                                        if comp_id == auth_comp_id:
+                                            continue
+
+                                        seq_id = poly_seq[cid]['seq_id'][i]
+
+                                        auth_asym_id = auth_poly_seq[auth_cid]['auth_asym_id'][i]
+                                        auth_seq_id = auth_poly_seq[auth_cid]['auth_seq_id'][i]
+
+                                        self.report.warning.addDescription('sequence_mismatch', "Author comp ID %s (auth_asym_id %s, auth_seq_id %s) vs %s (chain_id %s, seq_id %s) mismatches in %s saveframe." % (auth_comp_id, auth_asym_id, auth_seq_id, comp_id, chain_id, seq_id, sf_framecode))
+                                        self.report.setWarning()
+
+                                        if self.__verbose:
+                                            self.__lfh.write("+NmrDpUtility.__extractPolymerSequenceInLoop() ++ Warning  - Author comp ID %s (auth_asym_id %s, auth_seq_id %s) vs %s (chain_id %s, seq_id %s) mismatches in %s saveframe." % (auth_comp_id, auth_asym_id, auth_seq_id, comp_id, chain_id, seq_id, sf_framecode))
 
                     list_id += 1
 
@@ -1410,7 +1478,7 @@ class NmrDpUtility(object):
                     ent['seq_id'].append(sid)
                     ent['comp_id'].append(seq)
 
-            if (ent_has):
+            if ent_has:
                 asm.append(ent)
 
         if asm_has:
@@ -1546,7 +1614,7 @@ class NmrDpUtility(object):
 
         array = ''
 
-        for i in range(0, len(ref_seq)):
+        for i in range(len(ref_seq)):
             array += '|' if ref_seq[i] == tst_seq[i] else ' '
 
         return array
@@ -1602,7 +1670,7 @@ class NmrDpUtility(object):
 
                                     _atom_id = self.nef_translator.get_nmrstar_atom(comp_id, atom_id)[1]
 
-                                    if (len(_atom_id) == 0):
+                                    if len(_atom_id) == 0:
                                         self.report.error.addDescription('invalid_atom_nomenclature', "Invalid atom_id %s (comp_id %s) exists in %s saveframe." % (atom_id, comp_id, sf_framecode))
                                         self.report.setError()
 

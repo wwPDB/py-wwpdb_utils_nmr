@@ -537,7 +537,7 @@ class NEFTranslator(object):
 
     @staticmethod
     def get_star_seq(star_data, lp_category='Atom_chem_shift', seq_id='Comp_index_ID', comp_id='Comp_ID',
-                        chain_id='Entity_assembly_ID', allow_empty=False):
+                     chain_id='Entity_assembly_ID', allow_empty=False):
         """ Extracts sequence from any given loops in an NMR-STAR file
             extended by Masashi Yokochi
         """
@@ -643,6 +643,115 @@ class NEFTranslator(object):
         return dat
 
     @staticmethod
+    def get_star_auth_seq(star_data, lp_category='Atom_chem_shift', seq_id='Auth_seq_ID', comp_id='Auth_comp_ID',
+                          asym_id='Auth_asym_ID', chain_id='Entity_assembly_ID', allow_empty=True):
+        """ Extracts author sequence from any given loops in an NMR-STAR file
+        @author: Masashi Yokochi
+        """
+
+        try:
+            loops = star_data.get_loops_by_category(lp_category)
+        except AttributeError:
+            try:
+                loops = [star_data.get_loop_by_category(lp_category)]
+            except AttributeError:
+                loops = [star_data]
+
+        dat = [] # data of all loops
+
+        tags = [seq_id, comp_id, asym_id, chain_id]
+        tags_ = [seq_id, comp_id, asym_id]
+
+        for loop in loops:
+            seq_dict = {}
+            sid_dict = {}
+            asym_dict = {}
+
+            seq_dat = []
+
+            if set(tags) & set(loop.tags) == set(tags):
+                seq_dat = loop.get_data_by_tag(tags)
+            elif set(tags_) & set(loop.tags) == set(tags_): # No Entity_assembly_ID tag case
+                seq_dat = loop.get_data_by_tag(tags_)
+                for i in seq_dat:
+                    i.append('1')
+            else:
+                _tags_exist = False
+                for i in range(1, 16):
+                    _tags = [seq_id + '_' + str(i), comp_id + '_' + str(i), asym_id + '_' + str(i), chain_id + '_' + str(i)]
+                    _tags_ = [seq_id + '_' + str(i), comp_id + '_' + str(i), asym_id + '_' + str(i)]
+                    if set(_tags) & set(loop.tags) == set(_tags):
+                        _tags_exist = True
+                        seq_dat += loop.get_data_by_tag(_tags)
+                    elif set(_tags_) & set(loop.tags) == set(_tags_):
+                        _tags_exist = True
+                        seq_dat_ = loop.get_data_by_tag(_tags_)
+                        for i in seq_dat_:
+                            i.append('1')
+                        seq_dat += seq_dat_
+                    else:
+                        break
+                if not _tags_exist:
+                    raise LookupError("Missing one of mandatory items %s in %s loop category" % (tags, lp_category))
+
+            if allow_empty:
+                seq_dat = list(filter(NEFTranslator.is_data, seq_dat))
+                if len(seq_dat) == 0:
+                    continue
+            else:
+                for i in seq_dat:
+                    if NEFTranslator.is_empty_data(i):
+                        raise ValueError("Author sequence must not be empty. chain_id %s, auth_asym_id %s, auth_seq_id %s, auth_comp_id %s in %s loop category" % (i[3], i[2], i[0], i[1], lp_category))
+
+            chains = sorted(set([i[3] for i in seq_dat]))
+            sorted_seq = sorted(set(['{}:{}:{: >4}:{}'.format(i[3], i[2], i[0], i[1]) for i in seq_dat]))
+
+            chk_dict = {'{}:{}:{: >4}'.format(i[3], i[2], i[0]):i[1] for i in seq_dat}
+
+            for i in seq_dat:
+                chk_key = '{}:{}:{: >4}'.format(i[3], i[2], i[0])
+                if chk_dict[chk_key] != i[1]:
+                    raise KeyError("Author sequence must be unique. chain_id %s, auth_asym_id %s, auth_seq_id %s, auth_comp_id %s vs %s in %s loop category" % (i[3], i[2], i[0], i[1], chk_dict[chk_key], lp_category))
+
+            if len(sorted_seq[0].split(':')[-1]) > 1:
+                if len(chains) > 1:
+                    for c in chains:
+                        seq_dict[c] = [i.split(':')[-1] for i in sorted_seq if i.split(':')[0] == c]
+                        sid_dict[c] = [i.split(':')[2].strip() for i in sorted_seq if i.split(':')[0] == c]
+                        asym_dict[c] = [i.split(':')[1] for i in sorted_seq if i.split(':')[0] == c]
+
+                else:
+                    seq_dict[list(chains)[0]] = [i.split(':')[-1] for i in sorted_seq]
+                    sid_dict[list(chains)[0]] = [i.split(':')[2].strip() for i in sorted_seq]
+                    asym_dict[list(chains)[0]] = [i.split(':')[1] for i in sorted_seq]
+            else:
+                if len(chains) > 1:
+                    for c in chains:
+                        seq_dict[c] = [i.split(':')[-1] for i in sorted_seq if i.split(':')[0] == c]
+                        sid_dict[c] = [i.split(':')[2].strip() for i in sorted_seq if i.split(':')[0] == c]
+                        asym_dict[c] = [i.split(':')[1] for i in sorted_seq if i.split(':')[0] == c]
+                else:
+                    seq_dict[list(chains)[0]] = [i.split(':')[-1] for i in sorted_seq]
+                    sid_dict[list(chains)[0]] = [i.split(':')[2].strip() for i in sorted_seq]
+                    asym_dict[list(chains)[0]] = [i.split(':')[1] for i in sorted_seq]
+
+            asm = [] # assembly of a loop
+
+            for c in chains:
+                ent = {} # entity
+
+                ent['chain_id'] = c
+                ent['auth_asym_id'] = asym_dict[c]
+                ent['auth_seq_id'] = sid_dict[c]
+                ent['auth_comp_id'] = seq_dict[c]
+
+                asm.append(ent)
+
+            dat.append(asm)
+
+        return dat
+
+    @staticmethod
     def get_nef_comp_atom_pair(star_data, lp_category='nef_chemical_shift', comp_id='residue_name', atom_id='atom_name',
                                allow_empty=False):
         """ Wrapper function of get_comp_atom_pair() for an NEF file
@@ -728,7 +837,7 @@ class NEFTranslator(object):
 
     @staticmethod
     def get_nef_atom_type_from_cs_loop(star_data, lp_category='nef_chemical_shift', atom_type='element', isotope_number='isotope_number', atom_id='atom_name',
-                               allow_empty=False):
+                                       allow_empty=False):
         """ Wrapper function of get_atom_type_from_cs_loop() for an NEF file
         @author: Masashi Yokochi
         """
@@ -737,7 +846,7 @@ class NEFTranslator(object):
 
     @staticmethod
     def get_star_atom_type_from_cs_loop(star_data, lp_category='Atom_chem_shift', atom_type='Atom_type', isotope_number='Atom_isotope_number', atom_id='Atom_ID',
-                                allow_empty=False):
+                                        allow_empty=False):
         """ Wrapper function of get_atom_type_from_cs_loop() for an NMR-SAR file
         @author: Masashi Yokochi
         """
@@ -998,7 +1107,7 @@ class NEFTranslator(object):
             except AttributeError:
                 loops = [star_data]
 
-        item_types = ('str', 'int', 'index-int', 'positive-int', 'static-positive-int', 'float', 'positive-float', 'range-float', 'enum', 'enum-int')
+        item_types = ('str', 'bool', 'int', 'index-int', 'positive-int', 'static-positive-int', 'float', 'positive-float', 'range-float', 'enum', 'enum-int')
 
         key_names = [k['name'] for k in key_items]
         data_names = [d['name'] for d in data_items]
@@ -1174,7 +1283,12 @@ class NEFTranslator(object):
                     if j < key_len:
                         k = key_items[j]
                         type = k['type']
-                        if type == 'int':
+                        if type == 'bool':
+                            try:
+                                ent[name] = bool(val)
+                            except:
+                                raise ValueError("%s '%s' must be %s in %s loop category" % (name, val, type, lp_category))
+                        elif type == 'int':
                             try:
                                 ent[name] = int(val)
                             except:
@@ -1250,6 +1364,11 @@ class NEFTranslator(object):
                                 type = d['type']
                                 if val in empty_value:
                                    ent[name] = None
+                                elif type == 'bool':
+                                    try:
+                                        ent[name] = bool(val)
+                                    except:
+                                        raise ValueError("%s '%s' must be %s in %s loop category" % (name, val, type, lp_category))
                                 elif type == 'int':
                                     try:
                                         ent[name] = int(val)

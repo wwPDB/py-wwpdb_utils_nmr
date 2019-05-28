@@ -14,6 +14,7 @@ import logging
 import json
 import itertools
 import copy
+import collections
 
 from wwpdb.utils.nmr.NEFTranslator.NEFTranslator import NEFTranslator
 from wwpdb.utils.nmr.NmrDpReport import NmrDpReport
@@ -158,15 +159,24 @@ class NmrDpUtility(object):
 
         # allowed chem shift range
         self.chem_shift_range = {'min_exclusive': -300.0, 'max_exclusive': 300.0}
+        self.chem_shift_error = {'min_exclusive': 0.0, 'max_exclusive': 3.0}
 
         # allowed distance range
         self.dist_restraint_range = {'min_exclusive': 1.0, 'max_exclusive': 10.0}
+        self.dist_restraint_error = {'min_exclusive': 0.0, 'max_exclusive': 5.0}
 
         # allowed dihed range
         self.dihed_restraint_range = {'min_exclusive': -200.0, 'max_exclusive': 200.0}
+        self.dihed_restraint_error = {'min_exclusive': 0.0, 'max_exclusive': 20.0}
 
         # allowed rdc range
         self.rdc_restraint_range = {'min_exclusive': -50.0, 'max_exclusive': 50.0}
+        self.rdc_restraint_error = {'min_exclusive': 0.0, 'max_exclusive': 5.0}
+
+        # allowed weight range
+        self.weight_range = {'min_exclusive': 0.0, 'max_inclusive': 10.0}
+        # allowed scale range
+        self.scale_range = self.weight_range
 
         # index tags
         self.index_tags = {'nef': {'poly_seq': 'index',
@@ -300,16 +310,18 @@ class NmrDpUtility(object):
                                                 ],
                                    'chem_shift': [{'name': 'value', 'type': 'range-float', 'mandatory': True,
                                                    'range': self.chem_shift_range},
-                                                  {'name': 'value_uncertainty', 'type': 'positive-float', 'mandatory': False},
+                                                  {'name': 'value_uncertainty', 'type': 'range-float', 'mandatory': False,
+                                                   'range': self.chem_shift_error},
                                                   {'name': 'element', 'type': 'enum', 'mandatory': True,
                                                    'enum': set(self.atom_isotopes.keys())},
                                                   {'name': 'isotope_number', 'type': 'enum-int', 'mandatory': True,
                                                    'enum': set(isotope_nums)}
                                                   ],
                                    'dist_restraint': [{'name': 'index', 'type':'index-int', 'mandatory': True},
-                                                      {'name': 'restraint_id', 'type':'positive-int', 'mandatory': True},
+                                                      {'name': 'restraint_id', 'type':'index-int', 'mandatory': True},
                                                       {'name': 'restraint_combination_id', 'type':'positive-int', 'mandatory': False},
-                                                      {'name': 'weight', 'type':'positive-float', 'mandatory': True,
+                                                      {'name': 'weight', 'type':'range-float', 'mandatory': True,
+                                                       'range': self.weight_range,
                                                        'enforce-non-zero': True},
                                                       {'name': 'target_value', 'type':'range-float', 'mandatory': False, 'group-mandatory': True,
                                                        'range': self.dist_restraint_range,
@@ -317,7 +329,8 @@ class NmrDpUtility(object):
                                                                  'coexist-with': None,
                                                                  'smaller-than': ['lower_limit', 'lower_linear_limit'],
                                                                  'larger-than': ['upper_limit', 'upper_linear_limit']}},
-                                                      {'name': 'target_value_uncertainty', 'type':'positive-float', 'mandatory': False},
+                                                      {'name': 'target_value_uncertainty', 'type':'range-float', 'mandatory': False,
+                                                       'range': self.dist_restraint_error},
                                                       {'name': 'lower_linear_limit', 'type':'range-float', 'mandatory': False, 'group-mandatory': True,
                                                        'range': self.dist_restraint_range,
                                                        'group': {'member-with': ['target_value', 'lower_limit', 'upper_limit', 'upper_linear_limit'],
@@ -344,9 +357,10 @@ class NmrDpUtility(object):
                                                                  'larger-than': None}}
                                                       ],
                                    'dihed_restraint': [{'name': 'index', 'type':'index-int', 'mandatory': True},
-                                                       {'name': 'restraint_id', 'type':'positive-int', 'mandatory': True},
+                                                       {'name': 'restraint_id', 'type':'index-int', 'mandatory': True},
                                                        {'name': 'restraint_combination_id', 'type':'positive-int', 'mandatory': False},
-                                                       {'name': 'weight', 'type':'positive-float', 'mandatory': True,
+                                                       {'name': 'weight', 'type':'range-float', 'mandatory': True,
+                                                        'range': self.weight_range,
                                                         'enforce-non-zero': True},
                                                        {'name': 'target_value', 'type':'range-float', 'mandatory': False, 'group-mandatory': True,
                                                         'range': self.dihed_restraint_range,
@@ -382,7 +396,7 @@ class NmrDpUtility(object):
                                                        {'name': 'name', 'type':'str', 'mandatory': False},
                                                     ],
                                    'rdc_restraint': [{'name': 'index', 'type':'index-int', 'mandatory': True},
-                                                     {'name': 'restraint_id', 'type':'positive-int', 'mandatory': True},
+                                                     {'name': 'restraint_id', 'type':'index-int', 'mandatory': True},
                                                      {'name': 'restraint_combination_id', 'type':'positive-int', 'mandatory': False},
                                                      {'name': 'target_value', 'type':'range-float', 'mandatory': False, 'group-mandatory': True,
                                                       'range': self.rdc_restraint_range,
@@ -390,7 +404,8 @@ class NmrDpUtility(object):
                                                                 'coexist-with': None,
                                                                 'smaller-than': ['lower_limit', 'lower_linear_limit'],
                                                                 'larger-than': ['upper_limit', 'upper_linear_limit']}},
-                                                     {'name': 'target_value_uncertainty', 'type':'positive-float', 'mandatory': False},
+                                                     {'name': 'target_value_uncertainty', 'type':'range-float', 'mandatory': False,
+                                                      'range': self.rdc_restraint_error},
                                                      {'name': 'lower_linear_limit', 'type':'range-float', 'mandatory': False, 'group-mandatory': True,
                                                       'range': self.rdc_restraint_range,
                                                       'group': {'member-with': ['target_value', 'lower_limit', 'upper_limit', 'upper_linear_limit'],
@@ -415,12 +430,13 @@ class NmrDpUtility(object):
                                                                 'coexist-with': ['lower_linear_limit', 'lower_limit', 'upper_limit'],
                                                                 'smaller-than': ['lower_linear_limit', 'lower_limit', 'upper_limit'],
                                                                 'larger-than': None}},
-                                                     {'name': 'scale', 'type':'positive-float', 'mandatory': False,
+                                                     {'name': 'scale', 'type':'range-float', 'mandatory': False,
+                                                      'range': self.scale_range,
                                                       'enforce-non-zero': True},
                                                      {'name': 'distance_dependent', 'type':'bool', 'mandatory': False}
                                                      ],
                                    'spectral_peak': [{'name': 'index', 'type':'index-int', 'mandatory': True},
-                                                     {'name': 'peak_id', 'type':'positive-int', 'mandatory': True},
+                                                     {'name': 'peak_id', 'type':'index-int', 'mandatory': True},
                                                      {'name': 'volume', 'type':'float', 'mandatory': False, 'group-mandatory': True,
                                                       'group': {'member-with': ['height'],
                                                                 'coexist-with': None}},
@@ -438,7 +454,7 @@ class NmrDpUtility(object):
                                                      {'name': 'Sequence_linking', 'type': 'enum', 'mandatory': False,
                                                       'enum': ('start', 'end', 'middle', 'cyclic', 'break', 'single', 'dummy')},
                                                      {'name': 'Cis_residue', 'type': 'bool', 'mandatory': False},
-                                                     {'name': 'NEF_index', 'type': 'positive-int', 'mandatory': False}
+                                                     {'name': 'NEF_index', 'type': 'index-int', 'mandatory': False}
                                                      ],
                                         'chem_shift': [{'name': 'Atom_type', 'type': 'enum', 'mandatory': True,
                                                         'enum': set(self.atom_isotopes.keys())},
@@ -446,7 +462,8 @@ class NmrDpUtility(object):
                                                         'enum': set(isotope_nums)},
                                                        {'name': 'Val', 'type': 'range-float', 'mandatory': True,
                                                         'range': self.chem_shift_range},
-                                                       {'name': 'Val_err', 'type': 'positive-float', 'mandatory': False},
+                                                       {'name': 'Val_err', 'type': 'range-float', 'mandatory': False,
+                                                        'range': self.chem_shift_error},
                                                        {'name': 'Ambiguity_code', 'type': 'enum-int', 'mandatory': False,
                                                         'enum': self.bmrb_ambiguity_codes},
                                                        {'name': 'Ambiguity_set_ID', 'type': 'positive-int', 'mandatory': False},
@@ -467,7 +484,8 @@ class NmrDpUtility(object):
                                                                       'coexist-with': None,
                                                                       'smaller-than': ['Lower_linear_limit', 'Distance_lower_bound_val'],
                                                                       'larger-than': ['Upper_linear_limit', 'Distance_upper_bound_val']}},
-                                                           {'name': 'Target_val_uncertainty', 'type': 'positive-float', 'mandatory': False},
+                                                           {'name': 'Target_val_uncertainty', 'type': 'range-float', 'mandatory': False,
+                                                            'range': self.dist_restraint_error},
                                                            {'name': 'Lower_linear_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
                                                             'range': self.dist_restraint_range,
                                                             'group': {'member-with': ['Target_val', 'Upper_linear_limit', 'Distance_lower_bound_val', 'Distance_upper_bound_val'],
@@ -492,7 +510,8 @@ class NmrDpUtility(object):
                                                                       'coexist-with': ['Distance_lower_bound_val'],
                                                                       'smaller-than': ['Lower_linear_limit', 'Distance_lower_bound_val'],
                                                                       'larger-than': ['Upper_linear_limit']}},
-                                                           {'name': 'Weight', 'type': 'positive-float', 'mandatory': True,
+                                                           {'name': 'Weight', 'type': 'range-float', 'mandatory': True,
+                                                            'range': self.weight_range,
                                                             'enforce-non-zero': True},
                                                            {'name': 'Auth_asym_ID_1', 'type': 'str', 'mandatory': False},
                                                            {'name': 'Auth_seq_ID_1', 'type': 'int', 'mandatory': False},
@@ -505,7 +524,7 @@ class NmrDpUtility(object):
                                                            {'name': 'Gen_dist_constraint_list_ID', 'type': 'static-positive-int', 'mandatory': True},
                                                            ],
                                         'dihed_restraint': [{'name': 'Index_ID', 'type':'index-int', 'mandatory': True},
-                                                            {'name': 'ID', 'type':'positive-int', 'mandatory': True},
+                                                            {'name': 'ID', 'type':'index-int', 'mandatory': True},
                                                             {'name': 'Combination_ID', 'type':'positive-int', 'mandatory': False},
                                                             {'name': 'Torsion_angle_name', 'type':'str', 'mandatory': False},
                                                             {'name': 'Angle_lower_bound_val', 'type':'range-float', 'mandatory': False, 'group-mandatory': True,
@@ -526,7 +545,8 @@ class NmrDpUtility(object):
                                                                        'coexist-with': None,
                                                                        'smaller-than': ['Angle_lower_linear_limit', 'Angle_lower_bound_val'],
                                                                        'larger-than': ['Angle_upper_linear_limit', 'Angle_upper_bound_val']}},
-                                                            {'name': 'Angle_target_val_err', 'type':'positive-float', 'mandatory': False},
+                                                            {'name': 'Angle_target_val_err', 'type':'range-float', 'mandatory': False,
+                                                             'range': self.dihed_restraint_error},
                                                             {'name': 'Angle_lower_linear_limit', 'type':'range-float', 'mandatory': False, 'group-mandatory': True,
                                                              'range': self.dihed_restraint_range,
                                                              'group': {'member-with': ['Angle_target_val', 'Angle_upper_linear_limit', 'Angle_lower_bound_val', 'Angle_upper_bound_val'],
@@ -539,7 +559,8 @@ class NmrDpUtility(object):
                                                                       'coexist-with': ['Angle_lower_linear_limit', 'Angle_lower_bound_val', 'Angle_upper_bound_val'],
                                                                       'smaller-than': ['Angle_lower_linear_limit', 'Angle_lower_bound_val', 'Angle_upper_bound_val'],
                                                                       'larger-than': None}},
-                                                            {'name': 'Weight', 'type':'positive-float', 'mandatory': True,
+                                                            {'name': 'Weight', 'type':'range-float', 'mandatory': True,
+                                                             'range': self.weight_range,
                                                              'enforce-non-zero': True},
                                                             {'name': 'Auth_asym_ID_1', 'type':'str', 'mandatory': False},
                                                             {'name': 'Auth_seq_ID_1', 'type':'int', 'mandatory': False},
@@ -560,9 +581,10 @@ class NmrDpUtility(object):
                                                             {'name': 'Torsion_angle_constraint_list_ID', 'type':'static-positive-int', 'mandatory': True},
                                             ],
                                         'rdc_restraint': [{'name': 'Index_ID', 'type':'index-int', 'mandatory': True},
-                                                          {'name': 'ID', 'type':'positive-int', 'mandatory': True},
+                                                          {'name': 'ID', 'type':'index-int', 'mandatory': True},
                                                           {'name': 'Combination_ID', 'type':'positive-int', 'mandatory': False},
-                                                          {'name': 'Weight', 'type':'positive-float', 'mandatory': True,
+                                                          {'name': 'Weight', 'type':'range-float', 'mandatory': True,
+                                                           'range': self.weight_range,
                                                            'enforce-non-zero': True},
                                                           {'name': 'Target_value', 'type':'range-float', 'mandatory': False, 'group-mandatory': True,
                                                            'range': self.dihed_restraint_range,
@@ -570,7 +592,8 @@ class NmrDpUtility(object):
                                                                      'coexist-with': None,
                                                                      'smaller-than': ['RDC_lower_linear_limit', 'RDC_lower_bound'],
                                                                      'larger-than': ['RDC_upper_linear_limit', 'RDC_upper_bound']}},
-                                                          {'name': 'Target_value_uncertainty', 'type':'positive-float', 'mandatory': False},
+                                                          {'name': 'Target_value_uncertainty', 'type':'range-float', 'mandatory': False,
+                                                           'range': self.rdc_restraint_error},
                                                           {'name': 'RDC_lower_bound', 'type':'range-float', 'mandatory': False, 'group-mandatory': True,
                                                            'range': self.dihed_restraint_range,
                                                            'group': {'member-with': ['Target_value', 'RDC_lower_linear_limit', 'RDC_upper_linear_limit', 'RDC_upper_bound'],
@@ -595,7 +618,9 @@ class NmrDpUtility(object):
                                                                      'coexist-with': ['RDC_upper_linear_limit', 'RDC_lower_bound', 'RDC_upper_bound'],
                                                                      'smaller-than': None,
                                                                      'larger-than': ['RDC_upper_linear_limit', 'RDC_lower_bound', 'RDC_upper_bound']}},
-                                                          {'name': 'RDC_val_scale_factor', 'type':'positive-float', 'mandatory': False},
+                                                          {'name': 'RDC_val_scale_factor', 'type':'range-float', 'mandatory': False,
+                                                           'range': self.scale_range,
+                                                           'enforce-non-zero': True},
                                                           {'name': 'RDC_distant_dependent', 'type':'bool', 'mandatory': False},
                                                           {'name': 'Auth_asym_ID_1', 'type':'str', 'mandatory': False},
                                                           {'name': 'Auth_seq_ID_1', 'type':'int', 'mandatory': False},
@@ -608,7 +633,7 @@ class NmrDpUtility(object):
                                                           {'name': 'RDC_constraint_list_ID', 'type':'static-positive-int', 'mandatory': True}
                                                           ],
                                         'spectral_peak': [{'name': 'Index_ID', 'type':'index-int', 'mandatory': True},
-                                                          {'name': 'ID', 'type':'positive-int', 'mandatory': True},
+                                                          {'name': 'ID', 'type':'index-int', 'mandatory': True},
                                                           {'name': 'Volume', 'type':'float', 'mandatory': False, 'group-mandatory': True,
                                                            'group': {'member-with': ['Height'],
                                                                      'coexist-with': None}},
@@ -623,12 +648,14 @@ class NmrDpUtility(object):
                            }
 
         # data items for spectral peak
-        self.spectral_peak_data_items = {'nef': [{'name': 'position_uncertainty_%s', 'type':'positive-float', 'mandatory': False},
+        self.spectral_peak_data_items = {'nef': [{'name': 'position_uncertainty_%s', 'type':'range-float', 'mandatory': False,
+                                                  'range': self.chem_shift_error},
                                                  {'name': 'chain_code_%s', 'type':'str', 'mandatory': False},
                                                  {'name': 'sequence_code_%s', 'type':'int', 'mandatory': False},
                                                  {'name': 'residue_name_%s', 'type':'str', 'mandatory': False},
                                                  {'name': 'atom_name_%s', 'type':'str', 'mandatory': False}],
-                                         'nmr-star': [{'name': 'Position_uncertainty_%s', 'type':'positive-float', 'mandatory': False},
+                                         'nmr-star': [{'name': 'Position_uncertainty_%s', 'type':'range-float', 'mandatory': False,
+                                                       'range': self.chem_shift_error},
                                                       {'name': 'Entity_assembly_ID_%s', 'type':'positive-int', 'mandatory': False},
                                                       {'name': 'Comp_index_ID_%s', 'type':'int', 'mandatory': False},
                                                       {'name': 'Comp_ID_%s', 'type':'str', 'mandatory': False},
@@ -1042,6 +1069,7 @@ class NmrDpUtility(object):
 
                 for cid in range(len(poly_seq)):
                     chain_id = poly_seq[cid]['chain_id']
+                    seq_ids = poly_seq[cid]['seq_id']
                     comp_ids = poly_seq[cid]['comp_id']
 
                     for auth_cid in range(len(auth_poly_seq)):
@@ -1049,29 +1077,86 @@ class NmrDpUtility(object):
                         if auth_poly_seq[auth_cid]['chain_id'] != chain_id:
                             continue
 
+                        _seq_ids = auth_poly_seq[auth_cid]['seq_id']
+                        auth_asym_ids = auth_poly_seq[auth_cid]['auth_asym_id']
+                        auth_seq_ids = auth_poly_seq[auth_cid]['auth_seq_id']
                         auth_comp_ids = auth_poly_seq[auth_cid]['auth_comp_id']
 
-                        if comp_ids == auth_comp_ids: # no difference
-                            continue
+                        auth_asym_id_set = sorted(set(auth_asym_ids))
 
-                        for i in range(len(poly_seq[cid]['comp_id'])):
+                        for auth_asym_id in auth_asym_id_set:
 
+                            offsets = []
+                            total = 0
+
+                            for j in range(len(auth_seq_ids)):
+                                auth_seq_id = auth_seq_ids[j]
+
+                                if auth_seq_id in (None, '', '.', '?'):
+                                    continue
+
+                                try:
+                                    _auth_seq_id = int(auth_seq_id)
+
+                                    offsets.append(_auth_seq_id - _seq_ids[j])
+                                    total += 1
+
+                                except ValueError:
+                                    self.report.warning.addDescription('suspicious_data', "Author seq ID '%s' (auth_asym_id %s, auth_comp_id %s) has to be integer in %s saveframe." % (auth_seq_id, auth_asym_id, auth_comp_ids[j], sf_framecode))
+                                    self.report.setWarning()
+
+                                    if self.__verbose:
+                                        self.__lfh.write("+NmrDpUtility.__extractPolymerSequence() ++ Warning  - Author seq ID '%s' (auth_asym_id %s, auth_comp_id %s) has to be integer in %s saveframe." % (auth_seq_id, auth_asym_id, auth_comp_ids[j], sf_framecode))
+
+                                    continue
+
+                            if total > 1:
+
+                                offset = collections.Counter(offsets).most_common()[0][0]
+
+                                for j in range(len(auth_seq_ids)):
+                                    auth_seq_id = auth_seq_ids[j]
+
+                                    if auth_seq_id in (None, '', '.', '?'):
+                                        continue
+
+                                    try:
+                                        _auth_seq_id = int(auth_seq_id)
+                                    except ValueError:
+                                        continue
+
+                                    if _auth_seq_id - _seq_ids[j] != offset:
+                                        self.report.warning.addDescription('suspicious_data', "Author seq ID '%s' vs '%d' (auth_asym_id %s, auth_comp_id %s) mismatches in %s saveframe." % (auth_seq_id, seq_ids[j] + offset, auth_asym_id, auth_comp_ids[j], sf_framecode))
+                                        self.report.setWarning()
+
+                                        if self.__verbose:
+                                            self.__lfh.write("+NmrDpUtility.__extractPolymerSequence() ++ Warning  - Author seq ID '%s' vs '%d' (auth_asym_id %s, auth_comp_id %s) mismatches in %s saveframe." % (auth_seq_id, seq_ids[j] + offset, auth_asym_id, auth_comp_ids[j], sf_framecode))
+
+                        for i in range(len(comp_ids)):
+
+                            seq_id = seq_ids[i]
                             comp_id = comp_ids[i]
-                            auth_comp_id = auth_comp_ids[i]
 
-                            if comp_id == auth_comp_id:
-                                continue
+                            for j in range(len(auth_comp_ids)):
 
-                            seq_id = poly_seq[cid]['seq_id'][i]
+                                if _seq_ids[j] != seq_id:
+                                    continue
 
-                            auth_asym_id = auth_poly_seq[auth_cid]['auth_asym_id'][i]
-                            auth_seq_id = auth_poly_seq[auth_cid]['auth_seq_id'][i]
+                                auth_comp_id = auth_comp_ids[j]
 
-                            self.report.warning.addDescription('sequence_mismatch', "Author comp ID %s (auth_asym_id %s, auth_seq_id %s) vs %s (chain_id %s, seq_id %s) mismatches in %s saveframe." % (auth_comp_id, auth_asym_id, auth_seq_id, comp_id, chain_id, seq_id, sf_framecode))
-                            self.report.setWarning()
+                                if comp_id == auth_comp_id:
+                                    continue
 
-                            if self.__verbose:
-                                self.__lfh.write("+NmrDpUtility.__extractPolymerSequence() ++ Warning  - Author comp ID %s (auth_asym_id %s, auth_seq_id %s) vs %s (chain_id %s, seq_id %s) mismatches in %s saveframe." % (auth_comp_id, auth_asym_id, auth_seq_id, comp_id, chain_id, seq_id, sf_framecode))
+                                auth_asym_id = auth_asym_ids[j]
+                                auth_seq_id = auth_seq_ids[j]
+
+                                self.report.warning.addDescription('sequence_mismatch', "Author comp ID %s (auth_asym_id %s, auth_seq_id %s) vs %s (chain_id %s, seq_id %s) mismatches in %s saveframe." % (auth_comp_id, auth_asym_id, auth_seq_id, comp_id, chain_id, seq_id, sf_framecode))
+                                self.report.setWarning()
+
+                                if self.__verbose:
+                                    self.__lfh.write("+NmrDpUtility.__extractPolymerSequence() ++ Warning  - Author comp ID %s (auth_asym_id %s, auth_seq_id %s) vs %s (chain_id %s, seq_id %s) mismatches in %s saveframe." % (auth_comp_id, auth_asym_id, auth_seq_id, comp_id, chain_id, seq_id, sf_framecode))
+
+                                break
 
             return True
 
@@ -1142,18 +1227,23 @@ class NmrDpUtility(object):
 
                 try:
 
-                    poly_seq = self.__getPolymerSequence(sf_data, content_subtype)
+                    _poly_seq = self.__getPolymerSequence(sf_data, content_subtype)
 
-                    if len(poly_seq) > 0:
-                        poly_seq_list_set[content_subtype].append({'list_id': list_id, 'sf_framecode': sf_framecode, 'polymer_sequence': poly_seq[0]})
+                    if len(_poly_seq) > 0:
+                        poly_seq = _poly_seq[0]
+
+                        poly_seq_list_set[content_subtype].append({'list_id': list_id, 'sf_framecode': sf_framecode, 'polymer_sequence': poly_seq})
 
                         has_poly_seq = True
+
+                        list_id += 1
 
                         if file_type == 'nmr-star':
                             auth_poly_seq = self.nef_translator.get_star_auth_seq(sf_data, lp_category=self.lp_categories[file_type][content_subtype])[0]
 
                             for cid in range(len(poly_seq)):
                                 chain_id = poly_seq[cid]['chain_id']
+                                seq_ids = poly_seq[cid]['seq_id']
                                 comp_ids = poly_seq[cid]['comp_id']
 
                                 for auth_cid in range(len(auth_poly_seq)):
@@ -1161,31 +1251,86 @@ class NmrDpUtility(object):
                                     if auth_poly_seq[auth_cid]['chain_id'] != chain_id:
                                         continue
 
+                                    _seq_ids = auth_poly_seq[auth_cid]['seq_id']
+                                    auth_asym_ids = auth_poly_seq[auth_cid]['auth_asym_id']
+                                    auth_seq_ids = auth_poly_seq[auth_cid]['auth_seq_id']
                                     auth_comp_ids = auth_poly_seq[auth_cid]['auth_comp_id']
 
-                                    if comp_ids == auth_comp_ids: # no difference
-                                        continue
+                                    auth_asym_id_set = sorted(set(auth_asym_ids))
 
-                                    for i in range(len(poly_seq[cid]['comp_id'])):
+                                    for auth_asym_id in auth_asym_id_set:
 
+                                        offsets = []
+                                        total = 0
+
+                                        for j in range(len(auth_seq_ids)):
+                                            auth_seq_id = auth_seq_ids[j]
+
+                                            if auth_seq_id in (None, '', '.', '?'):
+                                                continue
+
+                                            try:
+                                                _auth_seq_id = int(auth_seq_id)
+
+                                                offsets.append(_auth_seq_id - _seq_ids[j])
+                                                total += 1
+
+                                            except ValueError:
+                                                self.report.warning.addDescription('suspicious_data', "Author seq ID '%s' (auth_asym_id %s, auth_comp_id %s) has to be integer in %s saveframe." % (auth_seq_id, auth_asym_id, auth_comp_ids[j], sf_framecode))
+                                                self.report.setWarning()
+
+                                                if self.__verbose:
+                                                    self.__lfh.write("+NmrDpUtility.__extractPolymerSequenceInLoop() ++ Warning  - Author seq ID '%s' (auth_asym_id %s, auth_comp_id %s) has to be integer in %s saveframe." % (auth_seq_id, auth_asym_id, auth_comp_ids[j], sf_framecode))
+
+                                                continue
+
+                                        if total > 1:
+
+                                            offset = collections.Counter(offsets).most_common()[0][0]
+
+                                            for j in range(len(auth_seq_ids)):
+                                                auth_seq_id = auth_seq_ids[j]
+
+                                                if auth_seq_id in (None, '', '.', '?'):
+                                                    continue
+
+                                                try:
+                                                    _auth_seq_id = int(auth_seq_id)
+                                                except ValueError:
+                                                    continue
+
+                                                if _auth_seq_id - _seq_ids[j] != offset:
+                                                    self.report.warning.addDescription('suspicious_data', "Author seq ID '%s' vs '%d' (auth_asym_id %s, auth_comp_id %s) mismatches in %s saveframe." % (auth_seq_id, seq_ids[j] + offset, auth_asym_id, auth_comp_ids[j], sf_framecode))
+                                                    self.report.setWarning()
+
+                                                    if self.__verbose:
+                                                        self.__lfh.write("+NmrDpUtility.__extractPolymerSequenceInLoop() ++ Warning  - Author seq ID '%s' vs '%d' (auth_asym_id %s, auth_comp_id %s) mismatches in %s saveframe." % (auth_seq_id, seq_ids[j] + offset, auth_asym_id, auth_comp_ids[j], sf_framecode))
+
+                                    for i in range(len(comp_ids)):
+
+                                        seq_id = seq_ids[i]
                                         comp_id = comp_ids[i]
-                                        auth_comp_id = auth_comp_ids[i]
 
-                                        if comp_id == auth_comp_id:
-                                            continue
+                                        for j in range(len(auth_comp_ids)):
 
-                                        seq_id = poly_seq[cid]['seq_id'][i]
+                                            if _seq_ids[j] != seq_id:
+                                                continue
 
-                                        auth_asym_id = auth_poly_seq[auth_cid]['auth_asym_id'][i]
-                                        auth_seq_id = auth_poly_seq[auth_cid]['auth_seq_id'][i]
+                                            auth_comp_id = auth_comp_ids[j]
 
-                                        self.report.warning.addDescription('sequence_mismatch', "Author comp ID %s (auth_asym_id %s, auth_seq_id %s) vs %s (chain_id %s, seq_id %s) mismatches in %s saveframe." % (auth_comp_id, auth_asym_id, auth_seq_id, comp_id, chain_id, seq_id, sf_framecode))
-                                        self.report.setWarning()
+                                            if comp_id == auth_comp_id:
+                                                continue
 
-                                        if self.__verbose:
-                                            self.__lfh.write("+NmrDpUtility.__extractPolymerSequenceInLoop() ++ Warning  - Author comp ID %s (auth_asym_id %s, auth_seq_id %s) vs %s (chain_id %s, seq_id %s) mismatches in %s saveframe." % (auth_comp_id, auth_asym_id, auth_seq_id, comp_id, chain_id, seq_id, sf_framecode))
+                                            auth_asym_id = auth_asym_ids[j]
+                                            auth_seq_id = auth_seq_ids[j]
 
-                    list_id += 1
+                                            self.report.warning.addDescription('sequence_mismatch', "Author comp ID %s (auth_asym_id %s, auth_seq_id %s) vs %s (chain_id %s, seq_id %s) mismatches in %s saveframe." % (auth_comp_id, auth_asym_id, auth_seq_id, comp_id, chain_id, seq_id, sf_framecode))
+                                            self.report.setWarning()
+
+                                            if self.__verbose:
+                                                self.__lfh.write("+NmrDpUtility.__extractPolymerSequenceInLoop() ++ Warning  - Author comp ID %s (auth_asym_id %s, auth_seq_id %s) vs %s (chain_id %s, seq_id %s) mismatches in %s saveframe." % (auth_comp_id, auth_asym_id, auth_seq_id, comp_id, chain_id, seq_id, sf_framecode))
+
+                                            break
 
                 except KeyError as e:
 
@@ -1210,7 +1355,7 @@ class NmrDpUtility(object):
 
                     if self.__verbose:
                         self.__lfh.write("+NmrDpUtility.__extractPolymerSequenceInLoop() ++ ValueError  - %s" % str(e))
-
+                """
                 except Exception as e:
 
                     self.report.error.addDescription('internal_error', "+NmrDpUtility.__extractPolymerSequenceInLoop() ++ Error  - %s" % str(e))
@@ -1218,7 +1363,7 @@ class NmrDpUtility(object):
 
                     if self.__verbose:
                         self.__lfh.write("+NmrDpUtility.__extractPolymerSequenceInLoop() ++ Error  - %s" % str(e))
-
+                """
             if not has_poly_seq:
                 poly_seq_list_set.pop(content_subtype)
 
@@ -2061,7 +2206,7 @@ class NmrDpUtility(object):
                         self.report.setWarning()
 
                         if self.__verbose:
-                            self.__lfh.write("+NmrDpUtility.__testIndexConsistency() ++ Warning  - %s" % str(e))
+                            self.__lfh.write("+NmrDpUtility.__testIndexConsistency() ++ Warning  - Index (loop tag %s.%s) is disordered in %s saveframe." % (self.lp_categories[file_type][content_subtype], index_tag, sf_framecode))
 
                     list_id += 1
 
@@ -2181,7 +2326,7 @@ class NmrDpUtility(object):
 
                 try:
 
-                    data = self.nef_translator.check_data(sf_data, self.lp_categories[file_type][content_subtype], key_items, data_items, allowed_tags, disallowed_tags, False, False)[0]
+                    data = self.nef_translator.check_data(sf_data, self.lp_categories[file_type][content_subtype], key_items, data_items, allowed_tags, disallowed_tags, True, False)[0]
 
                     # TODO
 
@@ -2225,7 +2370,7 @@ class NmrDpUtility(object):
                         data = self.nef_translator.check_data(sf_data, self.lp_categories[file_type][content_subtype], key_items, data_items, allowed_tags, disallowed_tags, False, True)[0]
                     except:
                         pass
-                """
+
                 except Exception as e:
 
                     self.report.error.addDescription('internal_error', "+NmrDpUtility.__testDataConsistencyInLoop() ++ Error  - %s" % str(e))
@@ -2233,7 +2378,7 @@ class NmrDpUtility(object):
 
                     if self.__verbose:
                         self.__lfh.write("+NmrDpUtility.__testDataConsistencyInLoop() ++ Error  - %s" % str(e))
-                """
+
         return not self.report.isError()
 
     def __testParentChildRelation(self):

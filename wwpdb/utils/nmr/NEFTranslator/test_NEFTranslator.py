@@ -252,7 +252,8 @@ class TestNEFTranslator(TestCase):
         entry = pynmrstar.Entry.from_file('data/2l9r.str')
         # extract polymer sequence from assembly category
         self.assertEqual(self.neft.get_star_auth_seq(entry['nef_molecular_system'], lp_category='Chem_comp_assembly'),
-                         [[{'chain_id': '1', 'auth_asym_id': ['A' for i in range(1, 70)],
+                         [[{'chain_id': '1', 'seq_id': [i for i in range(1, 70)],
+                            'auth_asym_id': ['A' for i in range(1, 70)],
                             'auth_seq_id': ['%s' % i for i in range(1, 70)], 'auth_comp_id':
                            ['MET', 'GLY', 'HIS', 'HIS', 'HIS', 'HIS', 'HIS', 'HIS', 'SER', 'HIS',
                             'MET', 'SER', 'HIS', 'THR', 'GLN', 'VAL', 'ILE', 'GLU', 'LEU', 'GLU',

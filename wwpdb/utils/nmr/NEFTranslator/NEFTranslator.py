@@ -643,8 +643,8 @@ class NEFTranslator(object):
         return dat
 
     @staticmethod
-    def get_star_auth_seq(star_data, lp_category='Atom_chem_shift', seq_id='Auth_seq_ID', comp_id='Auth_comp_ID',
-                          asym_id='Auth_asym_ID', chain_id='Entity_assembly_ID', allow_empty=True):
+    def get_star_auth_seq(star_data, lp_category='Atom_chem_shift', aseq_id='Auth_seq_ID', acomp_id='Auth_comp_ID',
+                          asym_id='Auth_asym_ID', seq_id='Comp_index_ID', chain_id='Entity_assembly_ID', allow_empty=True):
         """ Extracts author sequence from any given loops in an NMR-STAR file
         @author: Masashi Yokochi
         """
@@ -659,12 +659,13 @@ class NEFTranslator(object):
 
         dat = [] # data of all loops
 
-        tags = [seq_id, comp_id, asym_id, chain_id]
-        tags_ = [seq_id, comp_id, asym_id]
+        tags = [aseq_id, acomp_id, asym_id, seq_id, chain_id]
+        tags_ = [aseq_id, acomp_id, seq_id, asym_id]
 
         for loop in loops:
-            seq_dict = {}
             sid_dict = {}
+            aseq_dict = {}
+            asid_dict = {}
             asym_dict = {}
 
             seq_dat = []
@@ -678,8 +679,8 @@ class NEFTranslator(object):
             else:
                 _tags_exist = False
                 for i in range(1, 16):
-                    _tags = [seq_id + '_' + str(i), comp_id + '_' + str(i), asym_id + '_' + str(i), chain_id + '_' + str(i)]
-                    _tags_ = [seq_id + '_' + str(i), comp_id + '_' + str(i), asym_id + '_' + str(i)]
+                    _tags = [aseq_id + '_' + str(i), acomp_id + '_' + str(i), asym_id + '_' + str(i), seq_id + '_' + str(i), chain_id + '_' + str(i)]
+                    _tags_ = [aseq_id + '_' + str(i), acomp_id + '_' + str(i), asym_id + '_' + str(i), seq_id + '_' + str(i)]
                     if set(_tags) & set(loop.tags) == set(_tags):
                         _tags_exist = True
                         seq_dat += loop.get_data_by_tag(_tags)
@@ -701,53 +702,62 @@ class NEFTranslator(object):
             else:
                 for i in seq_dat:
                     if NEFTranslator.is_empty_data(i):
-                        raise ValueError("Author sequence must not be empty. chain_id %s, auth_asym_id %s, auth_seq_id %s, auth_comp_id %s in %s loop category" % (i[3], i[2], i[0], i[1], lp_category))
+                        raise ValueError("Author sequence must not be empty. chain_id %s, seq_id %s, auth_asym_id %s, auth_seq_id %s, auth_comp_id %s in %s loop category" % (i[4], i[3], i[2], i[0], i[1], lp_category))
 
-            chains = sorted(set([i[3] for i in seq_dat]))
-            sorted_seq = sorted(set(['{}:{}:{: >4}:{}'.format(i[3], i[2], i[0], i[1]) for i in seq_dat]))
+            try:
 
-            chk_dict = {'{}:{}:{: >4}'.format(i[3], i[2], i[0]):i[1] for i in seq_dat}
+                chains = sorted(set([i[4] for i in seq_dat]))
+                sorted_seq = sorted(set(['{}:{:04d}:{}:{: >4}:{}'.format(i[4], int(i[3]), i[2], i[0], i[1]) for i in seq_dat]))
 
-            for i in seq_dat:
-                chk_key = '{}:{}:{: >4}'.format(i[3], i[2], i[0])
-                if chk_dict[chk_key] != i[1]:
-                    raise KeyError("Author sequence must be unique. chain_id %s, auth_asym_id %s, auth_seq_id %s, auth_comp_id %s vs %s in %s loop category" % (i[3], i[2], i[0], i[1], chk_dict[chk_key], lp_category))
+                chk_dict = {'{}:{:04d}:{}:{: >4}'.format(i[4], int(i[3]), i[2], i[0]):i[1] for i in seq_dat}
 
-            if len(sorted_seq[0].split(':')[-1]) > 1:
-                if len(chains) > 1:
-                    for c in chains:
-                        seq_dict[c] = [i.split(':')[-1] for i in sorted_seq if i.split(':')[0] == c]
-                        sid_dict[c] = [i.split(':')[2].strip() for i in sorted_seq if i.split(':')[0] == c]
-                        asym_dict[c] = [i.split(':')[1] for i in sorted_seq if i.split(':')[0] == c]
+                for i in seq_dat:
+                    chk_key = '{}:{:04d}:{}:{: >4}'.format(i[4], int(i[3]), i[2], i[0])
+                    if chk_dict[chk_key] != i[1]:
+                        raise KeyError("Author sequence must be unique. chain_id %s, seq_id %s, auth_asym_id %s, auth_seq_id %s, auth_comp_id %s vs %s in %s loop category" % (i[4], i[3], i[2], i[0], i[1], chk_dict[chk_key], lp_category))
 
+                if len(sorted_seq[0].split(':')[-1]) > 1:
+                    if len(chains) > 1:
+                        for c in chains:
+                            aseq_dict[c] = [i.split(':')[-1] for i in sorted_seq if i.split(':')[0] == c]
+                            asid_dict[c] = [i.split(':')[3].strip() for i in sorted_seq if i.split(':')[0] == c]
+                            asym_dict[c] = [i.split(':')[2] for i in sorted_seq if i.split(':')[0] == c]
+                            sid_dict[c] = [int(i.split(':')[1]) for i in sorted_seq if i.split(':')[0] == c]
+                    else:
+                        aseq_dict[list(chains)[0]] = [i.split(':')[-1] for i in sorted_seq]
+                        asid_dict[list(chains)[0]] = [i.split(':')[3].strip() for i in sorted_seq]
+                        asym_dict[list(chains)[0]] = [i.split(':')[2] for i in sorted_seq]
+                        sid_dict[list(chains)[0]] = [int(i.split(':')[1]) for i in sorted_seq]
                 else:
-                    seq_dict[list(chains)[0]] = [i.split(':')[-1] for i in sorted_seq]
-                    sid_dict[list(chains)[0]] = [i.split(':')[2].strip() for i in sorted_seq]
-                    asym_dict[list(chains)[0]] = [i.split(':')[1] for i in sorted_seq]
-            else:
-                if len(chains) > 1:
-                    for c in chains:
-                        seq_dict[c] = [i.split(':')[-1] for i in sorted_seq if i.split(':')[0] == c]
-                        sid_dict[c] = [i.split(':')[2].strip() for i in sorted_seq if i.split(':')[0] == c]
-                        asym_dict[c] = [i.split(':')[1] for i in sorted_seq if i.split(':')[0] == c]
-                else:
-                    seq_dict[list(chains)[0]] = [i.split(':')[-1] for i in sorted_seq]
-                    sid_dict[list(chains)[0]] = [i.split(':')[2].strip() for i in sorted_seq]
-                    asym_dict[list(chains)[0]] = [i.split(':')[1] for i in sorted_seq]
+                    if len(chains) > 1:
+                        for c in chains:
+                            aseq_dict[c] = [i.split(':')[-1] for i in sorted_seq if i.split(':')[0] == c]
+                            asid_dict[c] = [i.split(':')[3].strip() for i in sorted_seq if i.split(':')[0] == c]
+                            asym_dict[c] = [i.split(':')[2] for i in sorted_seq if i.split(':')[0] == c]
+                            sid_dict[c] = [int(i.split(':')[1]) for i in sorted_seq if i.split(':')[0] == c]
+                    else:
+                        aseq_dict[list(chains)[0]] = [i.split(':')[-1] for i in sorted_seq]
+                        asid_dict[list(chains)[0]] = [i.split(':')[3].strip() for i in sorted_seq]
+                        asym_dict[list(chains)[0]] = [i.split(':')[2] for i in sorted_seq]
+                        sid_dict[list(chains)[0]] = [int(i.split(':')[1]) for i in sorted_seq]
 
-            asm = [] # assembly of a loop
+                asm = [] # assembly of a loop
 
-            for c in chains:
-                ent = {} # entity
+                for c in chains:
+                    ent = {} # entity
 
-                ent['chain_id'] = c
-                ent['auth_asym_id'] = asym_dict[c]
-                ent['auth_seq_id'] = sid_dict[c]
-                ent['auth_comp_id'] = seq_dict[c]
+                    ent['chain_id'] = c
+                    ent['seq_id'] = sid_dict[c]
+                    ent['auth_asym_id'] = asym_dict[c]
+                    ent['auth_seq_id'] = asid_dict[c]
+                    ent['auth_comp_id'] = aseq_dict[c]
 
-                asm.append(ent)
+                    asm.append(ent)
 
-            dat.append(asm)
+                dat.append(asm)
+
+            except ValueError:
+                raise ValueError("Sequence ID must be integer in %s loop category" % lp_category)
 
         return dat
 
@@ -1221,10 +1231,10 @@ class NEFTranslator(object):
                         dup_idxs = [i for i in set(idxs) if idxs.count(i) > 1]
 
                         if len(dup_idxs) > 0:
-                            raise KeyError("%s must be unique. %s are duplicated indices in %s loop category" % (tag[_j], dup_idxs, lp_category))
+                            raise KeyError("%s must be unique. %s are duplicated indices in %s loop category" % (tags[_j], dup_idxs, lp_category))
 
                     except ValueError:
-                        raise ValueError("%s must be integer in %s loop category" % (tag[_j], lp_category))
+                        raise ValueError("%s must be integer in %s loop category" % (tags[_j], lp_category))
 
             for i in tag_dat:
                 for j in range(tag_len):

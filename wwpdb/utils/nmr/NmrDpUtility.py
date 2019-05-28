@@ -318,7 +318,7 @@ class NmrDpUtility(object):
                                                    'enum': set(isotope_nums)}
                                                   ],
                                    'dist_restraint': [{'name': 'index', 'type':'index-int', 'mandatory': True},
-                                                      {'name': 'restraint_id', 'type':'index-int', 'mandatory': True},
+                                                      {'name': 'restraint_id', 'type':'positive-int', 'mandatory': True},
                                                       {'name': 'restraint_combination_id', 'type':'positive-int', 'mandatory': False},
                                                       {'name': 'weight', 'type':'range-float', 'mandatory': True,
                                                        'range': self.weight_range,
@@ -1102,13 +1102,13 @@ class NmrDpUtility(object):
                                     total += 1
 
                                 except ValueError:
-                                    self.report.warning.addDescription('suspicious_data', "Author seq ID '%s' (auth_asym_id %s, auth_comp_id %s) has to be integer in %s saveframe." % (auth_seq_id, auth_asym_id, auth_comp_ids[j], sf_framecode))
+                                    self.report.warning.addDescription('sequence_mismatch', "Author seq ID '%s' (auth_asym_id %s, auth_comp_id %s) has to be integer in %s saveframe." % (auth_seq_id, auth_asym_id, auth_comp_ids[j], sf_framecode))
                                     self.report.setWarning()
 
                                     if self.__verbose:
                                         self.__lfh.write("+NmrDpUtility.__extractPolymerSequence() ++ Warning  - Author seq ID '%s' (auth_asym_id %s, auth_comp_id %s) has to be integer in %s saveframe." % (auth_seq_id, auth_asym_id, auth_comp_ids[j], sf_framecode))
 
-                                    continue
+                                    pass
 
                             if total > 1:
 
@@ -1126,7 +1126,7 @@ class NmrDpUtility(object):
                                         continue
 
                                     if _auth_seq_id - _seq_ids[j] != offset:
-                                        self.report.warning.addDescription('suspicious_data', "Author seq ID '%s' vs '%d' (auth_asym_id %s, auth_comp_id %s) mismatches in %s saveframe." % (auth_seq_id, seq_ids[j] + offset, auth_asym_id, auth_comp_ids[j], sf_framecode))
+                                        self.report.warning.addDescription('sequence_mismatch', "Author seq ID '%s' vs '%d' (auth_asym_id %s, auth_comp_id %s) mismatches in %s saveframe." % (auth_seq_id, seq_ids[j] + offset, auth_asym_id, auth_comp_ids[j], sf_framecode))
                                         self.report.setWarning()
 
                                         if self.__verbose:
@@ -1276,13 +1276,13 @@ class NmrDpUtility(object):
                                                 total += 1
 
                                             except ValueError:
-                                                self.report.warning.addDescription('suspicious_data', "Author seq ID '%s' (auth_asym_id %s, auth_comp_id %s) has to be integer in %s saveframe." % (auth_seq_id, auth_asym_id, auth_comp_ids[j], sf_framecode))
+                                                self.report.warning.addDescription('sequence_mismatch', "Author seq ID '%s' (auth_asym_id %s, auth_comp_id %s) has to be integer in %s saveframe." % (auth_seq_id, auth_asym_id, auth_comp_ids[j], sf_framecode))
                                                 self.report.setWarning()
 
                                                 if self.__verbose:
                                                     self.__lfh.write("+NmrDpUtility.__extractPolymerSequenceInLoop() ++ Warning  - Author seq ID '%s' (auth_asym_id %s, auth_comp_id %s) has to be integer in %s saveframe." % (auth_seq_id, auth_asym_id, auth_comp_ids[j], sf_framecode))
 
-                                                continue
+                                                pass
 
                                         if total > 1:
 
@@ -1300,7 +1300,7 @@ class NmrDpUtility(object):
                                                     continue
 
                                                 if _auth_seq_id - _seq_ids[j] != offset:
-                                                    self.report.warning.addDescription('suspicious_data', "Author seq ID '%s' vs '%d' (auth_asym_id %s, auth_comp_id %s) mismatches in %s saveframe." % (auth_seq_id, seq_ids[j] + offset, auth_asym_id, auth_comp_ids[j], sf_framecode))
+                                                    self.report.warning.addDescription('sequence_mismatch', "Author seq ID '%s' vs '%d' (auth_asym_id %s, auth_comp_id %s) mismatches in %s saveframe." % (auth_seq_id, seq_ids[j] + offset, auth_asym_id, auth_comp_ids[j], sf_framecode))
                                                     self.report.setWarning()
 
                                                     if self.__verbose:
@@ -1833,6 +1833,61 @@ class NmrDpUtility(object):
                         # non-standard residue
                         else:
                             pass
+
+                    if file_type == 'nmr-star':
+                        auth_pairs = self.nef_translator.get_star_auth_comp_atom_pair(
+                            sf_data,
+                            lp_category=self.lp_categories[file_type][content_subtype])[0]
+
+                        for auth_pair in auth_pairs:
+                            comp_id = auth_pair['comp_id']
+                            auth_atom_ids = auth_pair['atom_id']
+
+                            # standard residue
+                            if self.nef_translator.get_one_letter_code(comp_id) != '?':
+
+                                _auth_atom_ids = []
+                                for auth_atom_id in auth_atom_ids:
+
+                                    _auth_atom_id = self.nef_translator.get_nmrstar_atom(comp_id, auth_atom_id)[1]
+
+                                    if len(_auth_atom_id) == 0:
+                                        self.report.warning.addDescription('atom_nomenclature_mismatch', "Unmatched author atom ID %s (auth_comp_id %s) exists in %s saveframe." % (auth_atom_id, comp_id, sf_framecode))
+                                        self.report.setWarning()
+
+                                    else:
+                                        _auth_atom_ids.extend(self.nef_translator.get_nmrstar_atom(comp_id, auth_atom_id)[1])
+
+                                auth_atom_ids = sorted(set(_auth_atom_ids))
+
+                                for auth_atom_id in auth_atom_ids:
+
+                                    if not self.nef_translator.validate_comp_atom(comp_id, auth_atom_id):
+                                        self.report.warning.addDescription('atom_nomenclature_mismatch', "Unmatched author atom ID %s (auth_comp_id %s) exists in %s saveframe." % (auth_atom_id, comp_id, sf_framecode))
+                                        self.report.setWarning()
+
+                            # non-standard residue
+                            else:
+                                has_comp_id = False
+
+                                for pair in pairs:
+
+                                    if pair['comp_id'] != comp_id:
+                                        continue
+
+                                    has_comp_id = True
+
+                                    atom_ids = pair['atom_id']
+
+                                    if (set(auth_atom_ids) | set(atom_ids)) != set(atom_ids):
+                                        self.report.warning.addDescription('atom_nomenclature_mismatch', "Unmatched author atom ID %s (auth_comp_id %s, non-standard residue) exists in %s saveframe." % ((set(auth_atom_ids) | set(atom_ids)) - set(atom_ids), comp_id, sf_framecode))
+                                        self.report.setWarning()
+
+                                    break
+
+                                if not has_comp_id:
+                                        self.report.warning.addDescription('atom_nomenclature_mismatch', "Unmatched author atom ID %s (auth_comp_id %s, non-standard residue) exists in %s saveframe." % (auth_atom_ids, comp_id, sf_framecode))
+                                        self.report.setWarning()
 
                     list_id += 1
 

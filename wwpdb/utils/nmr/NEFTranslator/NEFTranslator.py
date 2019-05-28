@@ -780,6 +780,15 @@ class NEFTranslator(object):
         return NEFTranslator.get_comp_atom_pair(star_data, lp_category, comp_id, atom_id, allow_empty)
 
     @staticmethod
+    def get_star_auth_comp_atom_pair(star_data, lp_category='Atom_chem_shift', comp_id='Auth_comp_ID', atom_id='Auth_atom_ID',
+                                     allow_empty=True):
+        """ Wrapper function of get_comp_atom_pair() for pairs of author comp_id and author atom_id in an NMR-STAR file
+        @author: Masashi Yokochi
+        """
+
+        return NEFTranslator.get_comp_atom_pair(star_data, lp_category, comp_id, atom_id, allow_empty)
+
+    @staticmethod
     def get_comp_atom_pair(star_data, lp_category, comp_id, atom_id, allow_empty):
         """ Extracts unique pairs of comp_id and atom_id from any given loops in an NEF/NMR-STAR file
         @author: Masashi Yokochi
@@ -1136,7 +1145,6 @@ class NEFTranslator(object):
         if not allowed_tags is None:
 
             if (set(key_names) | set(allowed_tags)) != set(allowed_tags):
-                print (allowed_tags)
                 raise LookupError("Key items %s must not exists in %s loop category" % ((set(key_names) | set(allowed_tags)) - set(allowed_tags), lp_category))
 
             if (set(data_names) | set(allowed_tags)) != set(allowed_tags):

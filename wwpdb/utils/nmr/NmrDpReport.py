@@ -173,7 +173,7 @@ class NmrDpReportError:
     def __init__(self):
         self.items = ('internal_error', 'format_issue', 'missing_mandatory_content', 'missing_mandatory_item', 'sequence_mismatch',
                       'invalid_data', 'invalid_atom_nomenclature', 'invalid_atom_type', 'invalid_isotope_number', 'invalid_ambiguity_code', 'multiple_data',
-                      'duplicated_index', 'anomalous_data')
+                      'missing_data', 'duplicated_index', 'anomalous_data')
 
         self.__contents = {item:None for item in self.items}
 
@@ -197,9 +197,9 @@ class NmrDpReportWarning:
     """
 
     def __init__(self):
-        self.items = ('missing_content', 'missing_saveframe', 'missing_data',
+        self.items = ('missing_content', 'missing_saveframe', 'missing_data', 'enum_failure',
                       'disordered_index', 'sequence_mismatch', 'atom_nomenclature_mismatch',
-                      'suspicious_data')
+                      'skipped_sf_category', 'skipped_lp_category', 'suspicious_data')
 
         self.__contents = {item:None for item in self.items}
 

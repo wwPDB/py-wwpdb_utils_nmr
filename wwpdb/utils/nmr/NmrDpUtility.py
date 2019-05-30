@@ -4,6 +4,7 @@
 #
 # Updates:
 ##
+from __builtin__ import True
 """ Wrapper class for data processing for NMR unified data.
 """
 import sys
@@ -64,6 +65,7 @@ class NmrDpUtility(object):
                                                       self.__testDuplicatedIndex,
                                                       self.__testDataConsistencyInLoop,
                                                       self.__testSaveframeTag,
+                                                      self.__testDataConsistencyInAuxLoop,
                                                       self.__testParentChildRelation] }
         """
                                 }
@@ -314,7 +316,8 @@ class NmrDpUtility(object):
 
         # loop data items
         self.data_items = {'nef': {'poly_seq': [{'name': 'linking', 'type': 'enum', 'mandatory': False,
-                                                 'enum': ('start', 'end', 'middle', 'cyclic', 'break', 'single', 'dummy')},
+                                                 'enum': ('start', 'end', 'middle', 'cyclic', 'break', 'single', 'dummy'),
+                                                 'enforce-enum': True},
                                                 {'name': 'residue_variant', 'type': 'str', 'mandatory': False},
                                                 {'name': 'cis_peptide', 'type': 'bool', 'mandatory': False}
                                                 ],
@@ -323,16 +326,17 @@ class NmrDpUtility(object):
                                                   {'name': 'value_uncertainty', 'type': 'range-float', 'mandatory': False,
                                                    'range': self.chem_shift_error},
                                                   {'name': 'element', 'type': 'enum', 'mandatory': True,
-                                                   'enum': set(self.atom_isotopes.keys())},
+                                                   'enum': set(self.atom_isotopes.keys()),
+                                                   'enforce-enum': True},
                                                   {'name': 'isotope_number', 'type': 'enum-int', 'mandatory': True,
-                                                   'enum': set(isotope_nums)}
+                                                   'enum': set(isotope_nums),
+                                                   'enforce-enum': True}
                                                   ],
                                    'dist_restraint': [{'name': 'index', 'type':'index-int', 'mandatory': True},
                                                       {'name': 'restraint_id', 'type':'positive-int', 'mandatory': True},
                                                       {'name': 'restraint_combination_id', 'type':'positive-int', 'mandatory': False},
                                                       {'name': 'weight', 'type':'range-float', 'mandatory': True,
-                                                       'range': self.weight_range,
-                                                       'enforce-non-zero': True},
+                                                       'range': self.weight_range},
                                                       {'name': 'target_value', 'type':'range-float', 'mandatory': False, 'group-mandatory': True,
                                                        'range': self.dist_restraint_range,
                                                        'group': {'member-with': ['lower_linear_limit', 'lower_limit', 'upper_limit', 'upper_linear_limit'],
@@ -370,8 +374,7 @@ class NmrDpUtility(object):
                                                        {'name': 'restraint_id', 'type':'index-int', 'mandatory': True},
                                                        {'name': 'restraint_combination_id', 'type':'positive-int', 'mandatory': False},
                                                        {'name': 'weight', 'type':'range-float', 'mandatory': True,
-                                                        'range': self.weight_range,
-                                                        'enforce-non-zero': True},
+                                                        'range': self.weight_range},
                                                        {'name': 'target_value', 'type':'range-float', 'mandatory': False, 'group-mandatory': True,
                                                         'range': self.dihed_restraint_range,
                                                         'group': {'member-with': ['lower_linear_limit', 'lower_limit', 'upper_limit', 'upper_linear_limit'],
@@ -441,8 +444,7 @@ class NmrDpUtility(object):
                                                                 'smaller-than': ['lower_linear_limit', 'lower_limit', 'upper_limit'],
                                                                 'larger-than': None}},
                                                      {'name': 'scale', 'type':'range-float', 'mandatory': False,
-                                                      'range': self.scale_range,
-                                                      'enforce-non-zero': True},
+                                                      'range': self.scale_range},
                                                      {'name': 'distance_dependent', 'type':'bool', 'mandatory': False}
                                                      ],
                                    'spectral_peak': [{'name': 'index', 'type':'index-int', 'mandatory': True},
@@ -462,20 +464,24 @@ class NmrDpUtility(object):
                                                      {'name': 'Auth_comp_ID', 'type': 'str', 'mandatory': False},
                                                      {'name': 'Auth_variant_ID', 'type': 'str', 'mandatory': False},
                                                      {'name': 'Sequence_linking', 'type': 'enum', 'mandatory': False,
-                                                      'enum': ('start', 'end', 'middle', 'cyclic', 'break', 'single', 'dummy')},
+                                                      'enum': ('start', 'end', 'middle', 'cyclic', 'break', 'single', 'dummy'),
+                                                      'enforce-enum': True},
                                                      {'name': 'Cis_residue', 'type': 'bool', 'mandatory': False},
                                                      {'name': 'NEF_index', 'type': 'index-int', 'mandatory': False}
                                                      ],
                                         'chem_shift': [{'name': 'Atom_type', 'type': 'enum', 'mandatory': True,
-                                                        'enum': set(self.atom_isotopes.keys())},
+                                                        'enum': set(self.atom_isotopes.keys()),
+                                                        'enforce-enum': True},
                                                        {'name': 'Atom_isotope_number', 'type': 'enum-int', 'mandatory': True,
-                                                        'enum': set(isotope_nums)},
+                                                        'enum': set(isotope_nums),
+                                                        'enforce-enum': True},
                                                        {'name': 'Val', 'type': 'range-float', 'mandatory': True,
                                                         'range': self.chem_shift_range},
                                                        {'name': 'Val_err', 'type': 'range-float', 'mandatory': False,
                                                         'range': self.chem_shift_error},
                                                        {'name': 'Ambiguity_code', 'type': 'enum-int', 'mandatory': False,
-                                                        'enum': self.bmrb_ambiguity_codes},
+                                                        'enum': self.bmrb_ambiguity_codes,
+                                                        'enforce-enum': True},
                                                        {'name': 'Ambiguity_set_ID', 'type': 'positive-int', 'mandatory': False},
                                                        {'name': 'Auth_asym_ID', 'type': 'str', 'mandatory': False},
                                                        {'name': 'Auth_seq_ID', 'type': 'int', 'mandatory': False},
@@ -487,7 +493,8 @@ class NmrDpUtility(object):
                                                            {'name': 'ID', 'type': 'positive-int', 'mandatory': True},
                                                            {'name': 'Combination_ID', 'type': 'positive-int', 'mandatory': False},
                                                            {'name': 'Member_logic_code', 'type': 'enum', 'mandatory': False,
-                                                            'enum': ('OR', 'AND')},
+                                                            'enum': ('OR', 'AND'),
+                                                            'enforce-enum': True},
                                                            {'name': 'Target_val', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
                                                             'range': self.dist_restraint_range,
                                                             'group': {'member-with': ['Lower_linear_limit', 'Upper_linear_limit', 'Distance_lower_bound_val', 'Distance_upper_bound_val'],
@@ -521,8 +528,7 @@ class NmrDpUtility(object):
                                                                       'smaller-than': ['Lower_linear_limit', 'Distance_lower_bound_val'],
                                                                       'larger-than': ['Upper_linear_limit']}},
                                                            {'name': 'Weight', 'type': 'range-float', 'mandatory': True,
-                                                            'range': self.weight_range,
-                                                            'enforce-non-zero': True},
+                                                            'range': self.weight_range},
                                                            {'name': 'Auth_asym_ID_1', 'type': 'str', 'mandatory': False},
                                                            {'name': 'Auth_seq_ID_1', 'type': 'int', 'mandatory': False},
                                                            {'name': 'Auth_comp_ID_1', 'type': 'str', 'mandatory': False},
@@ -570,8 +576,7 @@ class NmrDpUtility(object):
                                                                       'smaller-than': ['Angle_lower_linear_limit', 'Angle_lower_bound_val', 'Angle_upper_bound_val'],
                                                                       'larger-than': None}},
                                                             {'name': 'Weight', 'type':'range-float', 'mandatory': True,
-                                                             'range': self.weight_range,
-                                                             'enforce-non-zero': True},
+                                                             'range': self.weight_range},
                                                             {'name': 'Auth_asym_ID_1', 'type':'str', 'mandatory': False},
                                                             {'name': 'Auth_seq_ID_1', 'type':'int', 'mandatory': False},
                                                             {'name': 'Auth_comp_ID_1', 'type':'str', 'mandatory': False},
@@ -594,8 +599,7 @@ class NmrDpUtility(object):
                                                           {'name': 'ID', 'type':'index-int', 'mandatory': True},
                                                           {'name': 'Combination_ID', 'type':'positive-int', 'mandatory': False},
                                                           {'name': 'Weight', 'type':'range-float', 'mandatory': True,
-                                                           'range': self.weight_range,
-                                                           'enforce-non-zero': True},
+                                                           'range': self.weight_range},
                                                           {'name': 'Target_value', 'type':'range-float', 'mandatory': False, 'group-mandatory': True,
                                                            'range': self.dihed_restraint_range,
                                                            'group': {'member-with': ['RDC_lower_linear_limit', 'RDC_upper_linear_limit', 'RDC_lower_bound', 'RDC_upper_bound'],
@@ -629,8 +633,7 @@ class NmrDpUtility(object):
                                                                      'smaller-than': None,
                                                                      'larger-than': ['RDC_upper_linear_limit', 'RDC_lower_bound', 'RDC_upper_bound']}},
                                                           {'name': 'RDC_val_scale_factor', 'type':'range-float', 'mandatory': False,
-                                                           'range': self.scale_range,
-                                                           'enforce-non-zero': True},
+                                                           'range': self.scale_range},
                                                           {'name': 'RDC_distant_dependent', 'type':'bool', 'mandatory': False},
                                                           {'name': 'Auth_asym_ID_1', 'type':'str', 'mandatory': False},
                                                           {'name': 'Auth_seq_ID_1', 'type':'int', 'mandatory': False},
@@ -703,105 +706,132 @@ class NmrDpUtility(object):
                                               'nmr-star': ['Position_%s', 'Position_uncertainty_%s', 'Line_width_%s', 'Line_width_uncertainty_%s', 'Entity_assembly_ID_%s', 'Entity_ID_%s', 'Comp_index_ID_%s', 'Seq_ID_%s', 'Comp_ID_%s', 'Atom_ID_%s', 'Ambiguity_code_%s', 'Ambiguity_set_ID_%s', 'Auth_entity_assembly_ID_%s', 'Auth_entity_ID_%s', 'Auth_asym_ID_%s', 'Auth_seq_ID_%s', 'Auth_comp_ID_%s', 'Auth_atom_ID_%s', 'Auth_ambiguity_code_%s', 'Auth_ambiguity_set_ID_%s']
                                               }
 
-        # saveframe data items
-        self.sf_data_items = {'nef': {'entry_info': [{'name': 'sf_category', 'type': 'str', 'mandatory': True},
-                                                     {'name': 'sf_framecode', 'type': 'str', 'mandatory': True},
-                                                     {'name': 'format_name', 'type': 'str', 'mandatory': True},
-                                                     {'name': 'format_version', 'type': 'str', 'mandatory': True},
-                                                     {'name': 'program_name', 'type': 'str', 'mandatory': True},
-                                                     {'name': 'program_version', 'type': 'str', 'mandatory': True},
-                                                     {'name': 'creation_date', 'type': 'str', 'mandatory': True},
-                                                     {'name': 'uuid', 'type': 'str', 'mandatory': True},
-                                                     {'name': 'coordinate_file_name', 'type': 'str', 'mandatory': False}
-                                                     ],
-                                      'poly_seq': [{'name': 'sf_category', 'type': 'str', 'mandatory': True},
-                                                   {'name': 'sf_framecode', 'type': 'str', 'mandatory': True}
+        # saveframe tag prefixes (saveframe holder categories)
+        self.sf_tag_prefixes = {'nef': {'entry_info': '_nef_nmr_meta_data',
+                                        'poly_seq': '_nef_molecular_system',
+                                        'chem_shift': '_nef_chemical_shift_list',
+                                        'dist_restraint': '_nef_distance_restraint_list',
+                                        'dihed_restraint': '_nef_dihedral_restraint_list',
+                                        'rdc_restraint': '_nef_rdc_restraint_list',
+                                        'spectral_peak': '_nef_nmr_spectrum'
+                                        },
+                                'nmr-star': {'entry_info': '_Entry',
+                                             'poly_seq': '_Assembly',
+                                             'chem_shift': '_Assigned_chem_shift_list',
+                                             'dist_restraint': '_Gen_dist_constraint_list',
+                                             'dihed_restraint': '_Torsion_angle_constraint_list',
+                                             'rdc_restraint': '_RDC_constraint_list',
+                                             'spectral_peak': '_Spectral_peak_list'
+                                             }
+                              }
+
+        # saveframe tag items
+        self.sf_tag_items = {'nef': {'entry_info': [{'name': 'sf_category', 'type': 'str', 'mandatory': True},
+                                                    {'name': 'sf_framecode', 'type': 'str', 'mandatory': True},
+                                                    {'name': 'format_name', 'type': 'str', 'mandatory': True},
+                                                    {'name': 'format_version', 'type': 'str', 'mandatory': True},
+                                                    {'name': 'program_name', 'type': 'str', 'mandatory': True},
+                                                    {'name': 'program_version', 'type': 'str', 'mandatory': True},
+                                                    {'name': 'creation_date', 'type': 'str', 'mandatory': True},
+                                                    {'name': 'uuid', 'type': 'str', 'mandatory': True},
+                                                    {'name': 'coordinate_file_name', 'type': 'str', 'mandatory': False}
                                                    ],
-                                      'chem_shift': [{'name': 'sf_category', 'type': 'str', 'mandatory': True},
-                                                     {'name': 'sf_framecode', 'type': 'str', 'mandatory': True}
-                                                     ],
-                                      'dist_restraint': [{'name': 'sf_category', 'type': 'str', 'mandatory': True},
-                                                         {'name': 'sf_framecode', 'type': 'str', 'mandatory': True},
-                                                         {'name': 'potential_type', 'type': 'str', 'mandatory': True},
-                                                         {'name': 'restraint_origin', 'type': 'str', 'mandatory': False}
-                                                         ],
-                                      'dihed_restraint': [{'name': 'sf_category', 'type': 'str', 'mandatory': True},
-                                                          {'name': 'sf_framecode', 'type': 'str', 'mandatory': True},
-                                                          {'name': 'potential_type', 'type': 'str', 'mandatory': True},
-                                                          {'name': 'restraint_origin', 'type': 'str', 'mandatory': False}
-                                                          ],
-                                      'rdc_restraint': [{'name': 'sf_category', 'type': 'str', 'mandatory': True},
+                                     'poly_seq': [{'name': 'sf_category', 'type': 'str', 'mandatory': True},
+                                                  {'name': 'sf_framecode', 'type': 'str', 'mandatory': True}
+                                                  ],
+                                     'chem_shift': [{'name': 'sf_category', 'type': 'str', 'mandatory': True},
+                                                    {'name': 'sf_framecode', 'type': 'str', 'mandatory': True}
+                                                    ],
+                                     'dist_restraint': [{'name': 'sf_category', 'type': 'str', 'mandatory': True},
                                                         {'name': 'sf_framecode', 'type': 'str', 'mandatory': True},
-                                                        {'name': 'potential_type', 'type': 'str', 'mandatory': True},
-                                                        {'name': 'restraint_origin', 'type': 'str', 'mandatory': False},
-                                                        {'name': 'tensor_magnitude', 'type': 'float', 'mandatory': False},
-                                                        {'name': 'tensor_rhombicity', 'type': 'positive-float', 'mandatory': False},
-                                                        {'name': 'tensor_chain_code', 'type': 'str', 'mandatory': False},
-                                                        {'name': 'tensor_sequence_code', 'type': 'str', 'mandatory': False},
-                                                        {'name': 'tensor_residue_name', 'type': 'str', 'mandatory': False}
+                                                        {'name': 'potential_type', 'type': 'enum', 'mandatory': True,
+                                                         'enum': ('log-harmonic', 'parabolic', 'square-well-parabolic', 'square-well-parabolic-linear', 'upper-bound-parabolic', 'lower-bound-parabolic', 'upper-bound-parabolic-linear', 'lower-bound-parabolic-linear')},
+                                                        {'name': 'restraint_origin', 'type': 'enum', 'mandatory': False,
+                                                         'enum': ('NOE', 'NOE build-up', 'NOE not seen', 'ROE', 'ROE build-up', 'hydrogen bond', 'disulfide bond', 'paramagnetic relaxation', 'symmetry', 'general distance')}
                                                         ],
-                                        'spectral_peak': [{'name': 'sf_category', 'type': 'str', 'mandatory': True},
-                                                          {'name': 'sf_framecode', 'type': 'str', 'mandatory': True},
-                                                          {'name': 'num_dimensions', 'type': 'enum-int', 'mandatory': True,
-                                                           'enum': set(range(1, 16))},
-                                                          {'name': 'chemical_shift_list', 'type': 'str', 'mandatory': False},
-                                                          {'name': 'experiment_classification', 'type': 'str', 'mandatory': False},
-                                                          {'name': 'experiment_type', 'type': 'str', 'mandatory': False}
-                                                          ]
-                                      },
-                              'nmr-star': {'entry_info': [{'name': 'Sf_category', 'type': 'str', 'mandatory': True},
-                                                          {'name': 'Sf_framecode', 'type': 'str', 'mandatory': True},
-                                                          {'name': 'NMR_STAR_version', 'type': 'str', 'mandatory': True},
-                                                          {'name': 'Source_data_format', 'type': 'str', 'mandatory': False},
-                                                          {'name': 'Source_data_format_version', 'type': 'str', 'mandatory': False},
-                                                          {'name': 'Generated_software_name', 'type': 'str', 'mandatory': False},
-                                                          {'name': 'Generated_software_version', 'type': 'str', 'mandatory': False},
-                                                          {'name': 'Generated_date', 'type': 'str', 'mandatory': False},
-                                                          {'name': 'UUID', 'type': 'str', 'mandatory': False},
-                                                          {'name': 'Related_coordinate_file_name', 'type': 'str', 'mandatory': False}
-                                                          ],
-                                           'poly_seq': [{'name': 'Sf_category', 'type': 'str', 'mandatory': True},
-                                                        {'name': 'Sf_framecode', 'type': 'str', 'mandatory': True}
-                                                        ],
-                                           'chem_shift': [{'name': 'Sf_category', 'type': 'str', 'mandatory': True},
-                                                          {'name': 'Sf_framecode', 'type': 'str', 'mandatory': True}
-                                                          ],
-                                           'dist_restraint': [{'name': 'Sf_category', 'type': 'str', 'mandatory': True},
+                                     'dihed_restraint': [{'name': 'sf_category', 'type': 'str', 'mandatory': True},
+                                                         {'name': 'sf_framecode', 'type': 'str', 'mandatory': True},
+                                                         {'name': 'potential_type', 'type': 'enum', 'mandatory': True,
+                                                          'enum': ('log-harmonic', 'parabolic', 'square-well-parabolic', 'square-well-parabolic-linear', 'upper-bound-parabolic', 'lower-bound-parabolic', 'upper-bound-parabolic-linear', 'lower-bound-parabolic-linear')},
+                                                         {'name': 'restraint_origin', 'type': 'enum', 'mandatory': False,
+                                                          'enum': ('J-couplings', 'backbone chemical shifts')}
+                                                         ],
+                                     'rdc_restraint': [{'name': 'sf_category', 'type': 'str', 'mandatory': True},
+                                                       {'name': 'sf_framecode', 'type': 'str', 'mandatory': True},
+                                                       {'name': 'potential_type', 'type': 'enum', 'mandatory': True,
+                                                        'enum': ('log-harmonic', 'parabolic', 'square-well-parabolic', 'square-well-parabolic-linear', 'upper-bound-parabolic', 'lower-bound-parabolic', 'upper-bound-parabolic-linear', 'lower-bound-parabolic-linear')},
+                                                       {'name': 'restraint_origin', 'type': 'enum', 'mandatory': False,
+                                                        'enum': ('RDC')},
+                                                       {'name': 'tensor_magnitude', 'type': 'float', 'mandatory': False},
+                                                       {'name': 'tensor_rhombicity', 'type': 'positive-float', 'mandatory': False},
+                                                       {'name': 'tensor_chain_code', 'type': 'str', 'mandatory': False},
+                                                       {'name': 'tensor_sequence_code', 'type': 'str', 'mandatory': False},
+                                                       {'name': 'tensor_residue_name', 'type': 'str', 'mandatory': False}
+                                                       ],
+                                       'spectral_peak': [{'name': 'sf_category', 'type': 'str', 'mandatory': True},
+                                                         {'name': 'sf_framecode', 'type': 'str', 'mandatory': True},
+                                                         {'name': 'num_dimensions', 'type': 'enum-int', 'mandatory': True,
+                                                          'enum': set(range(1, 16)),
+                                                          'enforce-enum': True},
+                                                         {'name': 'chemical_shift_list', 'type': 'str', 'mandatory': False},
+                                                         {'name': 'experiment_classification', 'type': 'str', 'mandatory': False},
+                                                         {'name': 'experiment_type', 'type': 'str', 'mandatory': False}
+                                                         ]
+                                     },
+                             'nmr-star': {'entry_info': [{'name': 'Sf_category', 'type': 'str', 'mandatory': True},
+                                                         {'name': 'Sf_framecode', 'type': 'str', 'mandatory': True},
+                                                         {'name': 'NMR_STAR_version', 'type': 'str', 'mandatory': True},
+                                                         {'name': 'Source_data_format', 'type': 'str', 'mandatory': False},
+                                                         {'name': 'Source_data_format_version', 'type': 'str', 'mandatory': False},
+                                                         {'name': 'Generated_software_name', 'type': 'str', 'mandatory': False},
+                                                         {'name': 'Generated_software_version', 'type': 'str', 'mandatory': False},
+                                                         {'name': 'Generated_date', 'type': 'str', 'mandatory': False},
+                                                         {'name': 'UUID', 'type': 'str', 'mandatory': False},
+                                                         {'name': 'Related_coordinate_file_name', 'type': 'str', 'mandatory': False}
+                                                         ],
+                                          'poly_seq': [{'name': 'Sf_category', 'type': 'str', 'mandatory': True},
+                                                       {'name': 'Sf_framecode', 'type': 'str', 'mandatory': True}
+                                                       ],
+                                          'chem_shift': [{'name': 'Sf_category', 'type': 'str', 'mandatory': True},
+                                                         {'name': 'Sf_framecode', 'type': 'str', 'mandatory': True}
+                                                         ],
+                                          'dist_restraint': [{'name': 'Sf_category', 'type': 'str', 'mandatory': True},
+                                                             {'name': 'Sf_framecode', 'type': 'str', 'mandatory': True},
+                                                             {'name': 'Constraint_type', 'type': 'enum', 'mandatory': False,
+                                                              'enum': ('NOE', 'NOE build-up', 'NOE not seen', 'ROE', 'ROE build-up', 'hydrogen bond', 'disulfide bond', 'paramagnetic relaxation', 'symmetry', 'general distance')},
+                                                             {'name': 'Potential_type', 'type': 'enum', 'mandatory': False,
+                                                              'enum': ('log-harmonic', 'parabolic', 'square-well-parabolic', 'square-well-parabolic-linear', 'upper-bound-parabolic', 'lower-bound-parabolic', 'upper-bound-parabolic-linear', 'lower-bound-parabolic-linear')}
+                                                             ],
+                                          'dihed_restraint': [{'name': 'Sf_category', 'type': 'str', 'mandatory': True},
                                                               {'name': 'Sf_framecode', 'type': 'str', 'mandatory': True},
                                                               {'name': 'Constraint_type', 'type': 'enum', 'mandatory': False,
-                                                               'enum': ('NOE', 'NOE build-up', 'NOE not seen', 'ROE', 'ROE build-up', 'hydrogen bond', 'disulfide bond', 'paramagnetic relaxation', 'symmetry', 'general distance')},
+                                                               'enum': ('J-couplings', 'backbone chemical shifts')},
                                                               {'name': 'Potential_type', 'type': 'enum', 'mandatory': False,
                                                                'enum': ('log-harmonic', 'parabolic', 'square-well-parabolic', 'square-well-parabolic-linear', 'upper-bound-parabolic', 'lower-bound-parabolic', 'upper-bound-parabolic-linear', 'lower-bound-parabolic-linear')}
                                                               ],
-                                           'dihed_restraint': [{'name': 'Sf_category', 'type': 'str', 'mandatory': True},
-                                                               {'name': 'Sf_framecode', 'type': 'str', 'mandatory': True},
-                                                               {'name': 'Constraint_type', 'type': 'enum', 'mandatory': False,
-                                                                'enum': ('J-couplings', 'backbone chemical shifts')},
-                                                               {'name': 'Potential_type', 'type': 'enum', 'mandatory': False,
-                                                                'enum': ('log-harmonic', 'parabolic', 'square-well-parabolic', 'square-well-parabolic-linear', 'upper-bound-parabolic', 'lower-bound-parabolic', 'upper-bound-parabolic-linear', 'lower-bound-parabolic-linear')}
-                                                               ],
-                                           'rdc_restraint': [{'name': 'Sf_category', 'type': 'str', 'mandatory': True},
-                                                               {'name': 'Sf_framecode', 'type': 'str', 'mandatory': True},
-                                                               {'name': 'Constraint_type', 'type': 'enum', 'mandatory': False,
-                                                                'enum': ('RDC')},
-                                                               {'name': 'Potential_type', 'type': 'enum', 'mandatory': False,
-                                                                'enum': ('log-harmonic', 'parabolic', 'square-well-parabolic', 'square-well-parabolic-linear', 'upper-bound-parabolic', 'lower-bound-parabolic', 'upper-bound-parabolic-linear', 'lower-bound-parabolic-linear')},
-                                                               {'name': 'Tensor_magnitude', 'type': 'float', 'mandatory': False},
-                                                               {'name': 'Tensor_rhombicity', 'type': 'positive-float', 'mandatory': False},
-                                                               {'name': 'Tensor_auth_asym_ID', 'type': 'str', 'mandatory': False},
-                                                               {'name': 'Tensor_auth_seq_ID', 'type': 'str', 'mandatory': False},
-                                                               {'name': 'Tensor_auth_comp_ID', 'type': 'str', 'mandatory': False}
-                                                               ],
-                                           'spectral_peak': [{'name': 'Sf_category', 'type': 'str', 'mandatory': True},
-                                                             {'name': 'Sf_framecode', 'type': 'str', 'mandatory': True},
-                                                             {'name': 'Experiment_class', 'type': 'str', 'mandatory': False},
-                                                             {'name': 'Experiment_type', 'type': 'str', 'mandatory': False},
-                                                             {'name': 'Number_of_spectral_dimensions', 'type': 'enum-int', 'mandatory': True,
-                                                              'enum': set(range(1, 16))},
-                                                             {'name': 'Chemical_shift_list', 'type': 'str', 'mandatory': True}
-                                                             ]
-                                           }
-                              }
+                                          'rdc_restraint': [{'name': 'Sf_category', 'type': 'str', 'mandatory': True},
+                                                              {'name': 'Sf_framecode', 'type': 'str', 'mandatory': True},
+                                                              {'name': 'Constraint_type', 'type': 'enum', 'mandatory': False,
+                                                               'enum': ('RDC')},
+                                                              {'name': 'Potential_type', 'type': 'enum', 'mandatory': False,
+                                                               'enum': ('log-harmonic', 'parabolic', 'square-well-parabolic', 'square-well-parabolic-linear', 'upper-bound-parabolic', 'lower-bound-parabolic', 'upper-bound-parabolic-linear', 'lower-bound-parabolic-linear')},
+                                                              {'name': 'Tensor_magnitude', 'type': 'float', 'mandatory': False},
+                                                              {'name': 'Tensor_rhombicity', 'type': 'positive-float', 'mandatory': False},
+                                                              {'name': 'Tensor_auth_asym_ID', 'type': 'str', 'mandatory': False},
+                                                              {'name': 'Tensor_auth_seq_ID', 'type': 'str', 'mandatory': False},
+                                                              {'name': 'Tensor_auth_comp_ID', 'type': 'str', 'mandatory': False}
+                                                              ],
+                                          'spectral_peak': [{'name': 'Sf_category', 'type': 'str', 'mandatory': True},
+                                                            {'name': 'Sf_framecode', 'type': 'str', 'mandatory': True},
+                                                            {'name': 'Experiment_class', 'type': 'str', 'mandatory': False},
+                                                            {'name': 'Experiment_type', 'type': 'str', 'mandatory': False},
+                                                            {'name': 'Number_of_spectral_dimensions', 'type': 'enum-int', 'mandatory': True,
+                                                             'enum': set(range(1, 16)),
+                                                             'enforce-enum': True},
+                                                            {'name': 'Chemical_shift_list', 'type': 'str', 'mandatory': True}
+                                                            ]
+                                          }
+                             }
 
         # allowed saveframe tags
         self.sf_allowed_tags = {'nef': {'entry_info': ['sf_category', 'sf_framecode', 'format_name', 'format_version', 'program_name', 'program_version', 'creation_date', 'uuid', 'coordinate_file_name'],
@@ -821,6 +851,159 @@ class NmrDpUtility(object):
                                              'spectral_peak': ['Sf_category', 'Sf_framecode', 'Entry_ID', 'Sf_ID', 'ID', 'Name', 'Data_file_name', 'Sample_ID', 'Sample_label', 'Sample_condition_list_ID', 'Sample_condition_list_label', 'Experiment_ID', 'Experiment_name', 'Experiment_class', 'Experiment_type', 'Number_of_spectral_dimensions', 'Chemical_shift_list', 'Assigned_chem_shift_list_ID', 'Assigned_chem_shift_list_label', 'Details', 'Text_data_format', 'Text_data']
                                              }
                                 }
+
+        # auxiliary loop categories
+        self.aux_lp_categories = {'nef': {'entry_info': [],
+                                          'poly_seq':  [],
+                                          'chem_shift': [],
+                                          'dist_restraint': [],
+                                          'dihed_restraint': [],
+                                          'rdc_restraint': [],
+                                          'spectral_peak': ['_nef_spectrum_dimension', '_nef_spectrum_dimension_transfer']
+                                          },
+                                  'nmr-star': {'entry_info': [],
+                                               'poly_seq':  [],
+                                               'chem_shift': [],
+                                               'dist_restraint': [],
+                                               'dihed_restraint': [],
+                                               'rdc_restraint': [],
+                                               'spectral_peak': ['_Spectral_dim', '_Spectral_dim_transfer']
+                                               }
+                                  }
+
+        # linked loop categories
+        self.linked_lp_categories = {'nef': {'entry_info': ['_nef_related_entries', '_nef_program_script', '_nef_run_history'],
+                                             'poly_seq':  ['_nef_sequence', '_nef_covalent_links'],
+                                             'chem_shift': ['_nef_chemical_shift'],
+                                             'dist_restraint': ['_nef_distance_restraint'],
+                                             'dihed_restraint': ['_nef_dihedral_restraint'],
+                                             'rdc_restraint': ['_nef_rdc_restraint'],
+                                             'spectral_peak': ['_nef_spectrum_dimension', '_nef_spectrum_dimension_transfer', '_nef_peak']
+                                             },
+                                  'nmr-star': {'entry_info': ['_Study_list', '_Entry_experimental_methods', '_Entry_author', '_SG_project', '_Entry_src', '_Struct_keywords', '_Data_set', '_Datum', '_Release', '_Related_entries', '_Matched_entries', '_Auxiliary_files', '_Citation', '_Assembly', '_Assembly_annotation_list', '_Assembly_subsystem', '_Entity', '_Entity_natural_src_list', '_Entity_natural_src', '_Entity_experimental_src_list', '_Chem_comp', '_Chem_comp_atom', '_Sample', '_Sample_condition_list', '_Entity_purity_list', '_Software', '_Method', '_Mass_spec', '_Mass_spectrometer_list', '_Mass_spec_ref_compd_set', '_Chromatographic_system', '_Chromatographic_column', '_Fluorescence_instrument', '_EMR_instrument', '_Xray_instrument', '_NMR_spectrometer', '_NMR_spectrometer_list', '_NMR_spectrometer_probe', '_Experiment_list', '_NMR_spec_expt', '_NMR_spectral_processing', '_MS_expt', '_MS_expt_param', '_MS_expt_software', '_Computer', '_Chem_shift_reference', '_Assigned_chem_shift_list', '_Chem_shifts_calc_type', '_Theoretical_chem_shift_list', '_Theoretical_chem_shift', '_Coupling_constant_list', '_Theoretical_coupling_constant_list', '_Spectral_peak_list', '_Resonance_linker_list', '_Resonance_assignment', '_Chem_shift_isotope_effect_list', '_Chem_shift_perturbation_list', '_Chem_shift_anisotropy', '_RDC_list', '_RDC_experiment', '_RDC_software', '_RDC', '_Dipolar_coupling_list', '_Dipolar_coupling_experiment', '_Dipolar_coupling_software', '_Dipolar_coupling', '_Spectral_density_list', '_Spectral_density_experiment', '_Spectral_density_software', '_Spectral_density', '_Other_data_type_list', '_Other_data_experiment', '_Other_data_software', '_Other_data', '_Chemical_rate_list', '_Chemical_rate_experiment', '_Chemical_rate_software', '_Chemical_rate', '_H_exch_rate_list', '_H_exch_rate_experiment', '_H_exch_rate_software', '_H_exch_rate', '_H_exch_protection_factor_list', '_H_exch_protection_fact_experiment', '_H_exch_protection_fact_software', '_H_exch_protection_factor', '_Homonucl_NOE_list', '_Homonucl_NOE_experiment', '_Homonucl_NOE_software', '_Homonucl_NOE', '_Heteronucl_NOE_list', '_Heteronucl_NOE_experiment', '_Heteronucl_NOE_software', '_Heteronucl_NOE', '_Theoretical_heteronucl_NOE_list', '_Theoretical_heteronucl_NOE_experiment', '_Theoretical_heteronucl_NOE_software', '_Theoretical_heteronucl_NOE', '_Heteronucl_T1_list', '_Heteronucl_T1_experiment', '_Heteronucl_T1_software', '_T1', '_Theoretical_heteronucl_T1_list', '_Theoretical_heteronucl_T1_experiment', '_Theoretical_heteronucl_T1_software', '_Theoretical_T1', '_Heteronucl_T1rho_list', '_Heteronucl_T1rho_experiment', '_Heteronucl_T1rho_software', '_T1rho', '_Heteronucl_T2_list', '_Heteronucl_T2_experiment', '_Heteronucl_T2_software', '_T2', '_Theoretical_heteronucl_T2_list', '_Theoretical_heteronucl_T2_experiment', '_Theoretical_heteronucl_T2_software', '_Theoretical_T2', '_Auto_relaxation_list', '_Auto_relaxation_experiment', '_Auto_relaxation_software', '_Auto_relaxation', '_Theoretical_auto_relaxation_list', '_Theoretical_auto_relaxation_experiment', '_Theoretical_auto_relaxation_software', '_Theoretical_auto_relaxation', '_Dipole_dipole_relax_list', '_Dipole_dipole_relax_experiment', '_Dipole_dipole_relax_software', '_Dipole_dipole_relax', '_Cross_correlation_DD_list', '_Cross_correlation_DD_experiment', '_Cross_correlation_DD_software', '_Cross_correlation_DD', '_Theoretical_cross_correlation_DD_list', '_Theoretical_cross_correlation_DD_experiment', '_Theoretical_cross_correlation_DD_software', '_Theoretical_cross_correlation_DD', '_Cross_correlation_D_CSA_list', '_Cross_correlation_D_CSA_experiment', '_Cross_correlation_D_CSA_software', '_Cross_correlation_D_CSA', '_Order_parameter_list', '_Order_parameter_experiment', '_Order_parameter_software', '_Order_param', '_PH_titration_list', '_PH_titration_experiment', '_PH_titration_software', '_PH_titr_result', '_PH_param_list', '_PH_param', '_D_H_fractionation_factor_list', '_D_H_fract_factor_experiment', '_D_H_fract_factor_software', '_D_H_fractionation_factor', '_Binding_value_list', '_Binding_experiment', '_Binding_software', '_Binding_result', '_Binding_partners', '_Binding_param_list', '_Binding_param', '_Deduced_secd_struct_list', '_Deduced_secd_struct_experiment', '_Deduced_secd_struct_software', '_Deduced_secd_struct_exptl', '_Deduced_secd_struct_feature', '_Deduced_H_bond_list', '_Deduced_H_bond_experiment', '_Deduced_H_bond_software', '_Deduced_H_bond', '_Conformer_stat_list', '_Conformer_stat_list_ens', '_Conformer_stat_list_rep', '_Conf_stats_software', '_Conformer_family_coord_set', '_Conformer_family_refinement', '_Conformer_family_software', '_Energetic_penalty_function', '_Conformer_family_coord_set_expt', '_Conf_family_coord_set_constr_list', '_Struct_image', '_Local_structure_quality', '_Model_type', '_Atom_site', '_Atom_sites_footnote', '_Representative_conformer', '_Rep_conf_refinement', '_Rep_conf_software', '_Terminal_residue', '_Rep_conf', '_Rep_coordinate_details', '_Constraint_stat_list', '_Constraint_stat_list_ens', '_Constraint_stat_list_rep', '_Constraint_stats_constr_list', '_Constraint_file', '_Force_constant_list', '_Force_constant_software', '_Force_constant', '_Angular_order_parameter_list', '_Angular_order_param', '_Tertiary_struct_element_list', '_Tertiary_struct_element_sel', '_Tertiary_struct', '_Structure_annotation', '_Struct_anno_software', '_Struct_classification', '_Struct_anno_char', '_Secondary_struct_list', '_Secondary_struct_sel', '_Secondary_struct', '_Bond_annotation_list', '_Bond_annotation', '_Bond_observed_conformer', '_Structure_interaction_list', '_Structure_interaction', '_Observed_conformer', '_Other_struct_feature_list', '_Other_struct_feature', '_Tensor_list', '_Interatomic_distance_list', '_Interatomic_dist', '_Gen_dist_constraint_list', '_Gen_dist_constraint_expt', '_Gen_dist_constraint_software', '_Gen_dist_constraint_software_param', '_Gen_dist_constraint', '_Gen_dist_constraint_comment_org', '_Gen_dist_constraint_parse_err', '_Gen_dist_constraint_parse_file', '_Gen_dist_constraint_conv_err', '_Distance_constraint_list', '_Distance_constraint_expt', '_Distance_constraint_software', '_Dist_constr_software_setting', '_Dist_constraint_tree', '_Dist_constraint', '_Dist_constraint_value', '_Dist_constraint_comment_org', '_Dist_constraint_parse_err', '_Dist_constraint_parse_file', '_Dist_constraint_conv_err', '_Floating_chirality_assign', '_Floating_chirality_software', '_Floating_chirality', '_Torsion_angle_constraint_list', '_Torsion_angle_constraints_expt', '_Torsion_angle_constraint_software', '_Karplus_equation', '_Torsion_angle_constraint', '_TA_constraint_comment_org', '_TA_constraint_parse_err', '_TA_constraint_parse_file', '_TA_constraint_conv_err', '_RDC_constraint_list', '_RDC_constraint_expt', '_RDC_constraint_software', '_RDC_constraint', '_RDC_constraint_comment_org', '_RDC_constraint_parse_err', '_RDC_constraint_parse_file', '_RDC_constraint_conv_err', '_J_three_bond_constraint_list', '_J_three_bond_constraint_expt', '_J_three_bond_constraint_software', '_J_three_bond_constraint', '_CA_CB_constraint_list', '_CA_CB_constraint_expt', '_CA_CB_constraint_software', '_CA_CB_constraint', '_H_chem_shift_constraint_list', '_H_chem_shift_constraint_expt', '_H_chem_shift_constraint_software', '_H_chem_shift_constraint', '_Peak_constraint_link_list', '_Peak_constraint_link', '_SAXS_constraint_list', '_SAXS_constraint_expt', '_SAXS_constraint_software', '_SAXS_constraint', '_Other_constraint_list', '_Other_constraint_expt', '_Other_constraint_software', '_Org_constr_file_comment', '_MZ_ratio_data_list', '_MZ_ratio_experiment', '_MZ_ratio_software', '_MZ_ratio_spectrum_param', '_MZ_precursor_ion', '_MZ_precursor_ion_annotation', '_MZ_product_ion', '_MZ_product_ion_annotation', '_MS_chromatogram_list', '_MS_chromatogram_experiment', '_MS_chromatogram_software', '_MS_chromatogram_param', '_MS_chromatogram_ion', '_MS_chrom_ion_annotation', '_Software_specific_info_list', '_Software_specific_info', '_Software_applied_list', '_Software_applied_methods', '_Software_applied_history', '_History'],
+                                               'poly_seq':  ['_Assembly_type', '_Entity_assembly', '_Bond', '_Entity_deleted_atom', '_Struct_asym', '_Assembly_db_link', '_Assembly_common_name', '_Assembly_systematic_name', '_Assembly_interaction', '_Chem_comp_assembly', '_PDBX_poly_seq_scheme', '_PDBX_nonpoly_scheme', '_Atom_type', '_Atom', '_Assembly_bio_function', '_Angle', '_Torsion_angle', '_Assembly_segment', '_Assembly_segment_description', '_Assembly_keyword', '_Assembly_citation', '_Author_annotation', '_Sample_component', '_Chemical_rate', '_Auto_relaxation', '_Theoretical_auto_relaxation', '_Binding_result', '_Binding_partners', '_Struct_anno_char' ],
+                                               'chem_shift': ['_Chem_shift_experiment', '_Systematic_chem_shift_offset', '_Chem_shift_software', '_Atom_chem_shift', '_Ambiguous_atom_chem_shift', '_Spectral_peak_list', '_Assigned_peak_chem_shift', '_Assigned_spectral_transition'],
+                                               'dist_restraint': ['_Gen_dist_constraint_expt', '_Gen_dist_constraint_software', '_Gen_dist_constraint_software_param', '_Gen_dist_constraint', '_Gen_dist_constraint_comment_org', '_Gen_dist_constraint_parse_err', '_Gen_dist_constraint_parse_file', '_Gen_dist_constraint_conv_err'],
+                                               'dihed_restraint': ['_Torsion_angle_constraints_expt', '_Torsion_angle_constraint_software', '_Karplus_equation', '_Torsion_angle_constraint', '_TA_constraint_comment_org', '_TA_constraint_parse_err', '_TA_constraint_parse_file', '_TA_constraint_conv_err'],
+                                               'rdc_restraint': ['_RDC_constraint_expt', '_RDC_constraint_software', '_RDC_constraint', '_RDC_constraint_comment_org', '_RDC_constraint_parse_err', '_RDC_constraint_parse_file', '_RDC_constraint_conv_err'],
+                                               'spectral_peak': ['_Spectral_dim', '_Spectral_dim_transfer', '_Spectral_peak_software', '_Peak', '_Peak_general_char', '_Peak_char', '_Assigned_peak_chem_shift', '_Peak_row_format', '_Spectral_transition', '_Spectral_transition_general_char', '_Spectral_transition_char', '_Assigned_spectral_transition', '_Gen_dist_constraint', '_Dist_constraint_value']
+                                               }
+                                  }
+
+        # auxiliary loop key items
+        self.aux_key_items = {'nef': {'entry_info': None,
+                                      'poly_seq':  None,
+                                      'chem_shift': None,
+                                      'dist_restraint': None,
+                                      'dihed_restraint': None,
+                                      'rdc_restraint': None,
+                                      'spectral_peak': {
+                                          '_nef_spectrum_dimension': [{'name': 'dimension_id', 'type': 'index-int'}
+                                                                      ],
+                                          '_nef_spectrum_dimension_transfer': [{'name': 'dimension_1', 'type': 'positive-int'},
+                                                                               {'name': 'dimension_2', 'type': 'positive-int'},
+                                                                               ]
+                                          }
+                                      },
+                              'nmr-star': {'entry_info': None,
+                                           'poly_seq':  None,
+                                           'chem_shift': None,
+                                           'dist_restraint': None,
+                                           'dihed_restraint': None,
+                                           'rdc_restraint': None,
+                                           'spectral_peak': {
+                                               '_Spectral_dim': [{'name': 'ID', 'type': 'index-int'}
+                                                                 ],
+                                               '_Spectral_dim_transfer': [{'name': 'Spectral_dim_ID_1', 'type': 'positive-int'},
+                                                                          {'name': 'Spectral_dim_ID_2', 'type': 'positive-int'},
+                                                                          ]
+                                               }
+                                           }
+                                  }
+
+        # auxiliary loop data items
+        self.aux_data_items = {'nef': {'entry_info': None,
+                                       'poly_seq':  None,
+                                       'chem_shift': None,
+                                       'dist_restraint': None,
+                                       'dihed_restraint': None,
+                                       'rdc_restraint': None,
+                                       'spectral_peak': {
+                                           '_nef_spectrum_dimension': [{'name': 'axis_unit', 'type': 'enum', 'mandatory': True,
+                                                                        'enum': ('ppm', 'Hz'),
+                                                                        'enforce-enum': True},
+                                                                       {'name': 'axis_code', 'type': 'str', 'mandatory': True},
+                                                                       {'name': 'spectrometer_frequency', 'type': 'positive-float', 'mandatory': False,
+                                                                        'enforce-non-zero': True},
+                                                                       {'name': 'spectral_width', 'type': 'positive-float', 'mandatory': False,
+                                                                        'enforce-non-zero': True},
+                                                                       {'name': 'value_first_point', 'type': 'float', 'mandatory': False},
+                                                                       {'name': 'folding', 'type': 'enum', 'mandatory': False,
+                                                                        'enum': ('circular', 'mirror', 'none')},
+                                                                       {'name': 'absolute_peak_positions', 'type': 'bool', 'mandatory': False},
+                                                                       {'name': 'is_acquisition', 'type': 'bool', 'mandatory': False},
+                                                                       ],
+                                           '_nef_spectrum_dimension_transfer': [{'name': 'transfer_type', 'type': 'enum', 'mandatory': True,
+                                                                                 'enum': ('onebond', 'jcoupling', 'jmultibond', 'relayed', 'relayed-alternate', 'through-space'),
+                                                                                 'enforce-enum': True},
+                                                                                {'name': 'is_indirect', 'type': 'bool', 'mandatory': False}
+                                                                                ]
+                                           }
+                                       },
+                                  'nmr-star': {'entry_info': None,
+                                               'poly_seq':  None,
+                                               'chem_shift': None,
+                                               'dist_restraint': None,
+                                               'dihed_restraint': None,
+                                               'rdc_restraint': None,
+                                               'spectral_peak': {
+                                                   '_Spectral_dim': [{'name': 'Axis_code', 'type': 'str', 'mandatory': True},
+                                                                     {'name': 'Spectrometer_frequency', 'type': 'positive-float', 'mandatory': False,
+                                                                      'enforce-non-zero': True},
+                                                                     {'name': 'Under_sampling_type', 'type': 'enum', 'mandatory': False,
+                                                                      'enum': ('aliased', 'folded', 'not observed')},
+                                                                     {'name': 'Sweep_width', 'type': 'positive-float', 'mandatory': False,
+                                                                      'enforce-non-zero': True},
+                                                                     {'name': 'Sweep_width_units', 'type': 'enum', 'mandatory': True,
+                                                                      'enum': ('ppm', 'Hz'),
+                                                                      'enforce-enum': True},
+                                                                     {'name': 'Value_first_point', 'type': 'float', 'mandatory': False},
+                                                                     {'name': 'Absolute_peak_positions', 'type': 'bool', 'mandatory': False},
+                                                                     {'name': 'Acquisition', 'type': 'bool', 'mandatory': False},
+                                                                     ],
+                                                   '_Spectral_dim_transfer': [{'name': 'Indirect', 'type': 'bool', 'mandatory': False},
+                                                                              {'name': 'Type', 'type': 'enum', 'mandatory': True,
+                                                                               'enum': ('onebond', 'jcoupling', 'jmultibond', 'relayed', 'relayed-alternate', 'through-space'),
+                                                                               'enforce-enum': True}
+                                                                              ]
+                                                   }
+                                               }
+                                  }
+
+        # allowed auxiliary loop tags
+        self.aux_allowed_tags = {'nef': {'entry_info': None,
+                                       'poly_seq':  None,
+                                       'chem_shift': None,
+                                       'dist_restraint': None,
+                                       'dihed_restraint': None,
+                                       'rdc_restraint': None,
+                                       'spectral_peak': {
+                                           '_nef_spectrum_dimension': ['dimension_id', 'axis_unit', 'axis_code', 'spectrometer_frequency', 'spectral_width', 'value_first_point', 'folding', 'absolute_peak_positions', 'is_acquisition'],
+                                           '_nef_spectrum_dimension_transfer': ['dimension_1', 'dimension_2', 'transfer_type', 'is_indirect']
+                                           }
+                                       },
+                                  'nmr-star': {'entry_info': None,
+                                               'poly_seq':  None,
+                                               'chem_shift': None,
+                                               'dist_restraint': None,
+                                               'dihed_restraint': None,
+                                               'rdc_restraint': None,
+                                               'spectral_peak': {
+                                                   '_Spectral_dim': ['ID', 'Axis_code', 'Spectrometer_frequency', 'Atom_type', 'Atom_isotope_number', 'Spectral_region', 'Magnetization_linkage_ID', 'Under_sampling_type', 'Sweep_width', 'Sweep_width_units', 'Value_first_point', 'Absolute_peak_positions', 'Acquisition', 'Center_frequency_offset', 'Encoding_code', 'Encoded_reduced_dimension_ID', 'Sf_ID', 'Entry_ID', 'Spectral_peak_list_ID'],
+                                                   '_Spectral_dim_transfer': ['Spectral_dim_ID_1', 'Spectral_dim_ID_2', 'Indirect', 'Type', 'Sf_ID', 'Entry_ID', 'Spectral_peak_list_ID']
+                                                   }
+                                               }
+                                  }
 
         # taken from wwpdb.utils.align.SequenceReferenceData.py
         self.monDict3 = {'ALA': 'A',
@@ -979,7 +1162,7 @@ class NmrDpUtility(object):
 
         self.report.writeJson(self.__logPath)
 
-        return self.report.isError()
+        return not self.report.isError()
 
     def __initializeDpReport(self):
         """ Initialize NMR data processing report.
@@ -1070,6 +1253,14 @@ class NmrDpUtility(object):
         file_type = input_source_dic['file_type']
 
         self.__sf_category_list, self.__lp_category_list = self.nef_translator.get_data_content(self.__star_data, self.__star_data_type)
+
+        for sf_category in self.__sf_category_list:
+            if not sf_category in self.sf_categories[file_type].values():
+                self.report.warning.addDestination('skipped_sf_category', "Unsupported %s saveframe category exists in %s file." % (sf_category, file_name))
+                self.report.setWarning()
+
+                if self.__verbose:
+                    self.__lfh.write("+NmrDpUtility.__detectContentSubType() ++ Warning  - Unsupported %s saveframe category exists in %s file." % (sf_category, file_name))
 
         # initialize loop counter
         lp_counts = {t:0 for t in self.nmr_content_subtypes}
@@ -1359,9 +1550,8 @@ class NmrDpUtility(object):
 
                         poly_seq_list_set[content_subtype].append({'list_id': list_id, 'sf_framecode': sf_framecode, 'polymer_sequence': poly_seq})
 
-                        has_poly_seq = True
-
                         list_id += 1
+                        has_poly_seq = True
 
                         if file_type == 'nmr-star':
                             auth_poly_seq = self.nef_translator.get_star_auth_seq(sf_data, lp_category=self.lp_categories[file_type][content_subtype])[0]
@@ -1907,8 +2097,6 @@ class NmrDpUtility(object):
 
             sf_category = self.sf_categories[file_type][content_subtype]
 
-            list_id = 1
-
             for sf_data in self.__star_data.get_saveframes_by_category(sf_category):
 
                 sf_framecode = sf_data.get_tag('sf_framecode')[0]
@@ -2014,8 +2202,6 @@ class NmrDpUtility(object):
                                         self.report.warning.addDescription('atom_nomenclature_mismatch', "Unmatched author atom ID %s (auth_comp_id %s, non-standard residue) exists in %s saveframe." % (auth_atom_ids, comp_id, sf_framecode))
                                         self.report.setWarning()
 
-                    list_id += 1
-
                 except LookupError as e:
 
                     self.report.error.addDescription('missing_mandatory_item', "%s, %s saveframe." % (str(e).strip("'"), sf_framecode))
@@ -2069,8 +2255,6 @@ class NmrDpUtility(object):
 
         sf_category = self.sf_categories[file_type][content_subtype]
 
-        list_id = 1
-
         for sf_data in self.__star_data.get_saveframes_by_category(sf_category):
 
             sf_framecode = sf_data.get_tag('sf_framecode')[0]
@@ -2101,8 +2285,6 @@ class NmrDpUtility(object):
                             if not atom_id.startswith(atom_type):
                                 self.report.error.addDescription('invalid_atom_nomenclature', "Invalid atom_id %s (atom_type %s) exists in %s saveframe." % (atom_id, atom_type, sf_framecode))
                                 self.report.setError()
-
-                list_id += 1
 
             except LookupError as e:
 
@@ -2161,8 +2343,6 @@ class NmrDpUtility(object):
 
         sf_category = self.sf_categories[file_type][content_subtype]
 
-        list_id = 1
-
         for sf_data in self.__star_data.get_saveframes_by_category(sf_category):
 
             sf_framecode = sf_data.get_tag('sf_framecode')[0]
@@ -2206,8 +2386,6 @@ class NmrDpUtility(object):
 
                     if self.__verbose:
                         self.__lfh.write("+NmrDpUtility.__testAmbigCodeOfCSLoop() ++ Warning  - Missing ambiguity code for standard residues in %s saveframe." % sf_framecode)
-
-                list_id += 1
 
             except LookupError as e:
 
@@ -2371,8 +2549,6 @@ class NmrDpUtility(object):
             if index_tag is None:
                 continue
 
-            list_id = 1
-
             for sf_data in self.__star_data.get_saveframes_by_category(sf_category):
 
                 sf_framecode = sf_data.get_tag('sf_framecode')[0]
@@ -2387,8 +2563,6 @@ class NmrDpUtility(object):
 
                         if self.__verbose:
                             self.__lfh.write("+NmrDpUtility.__testIndexConsistency() ++ Warning  - Index (loop tag %s.%s) is disordered in %s saveframe." % (self.lp_categories[file_type][content_subtype], index_tag, sf_framecode))
-
-                    list_id += 1
 
                 except KeyError as e:
 
@@ -2442,8 +2616,6 @@ class NmrDpUtility(object):
                 continue
 
             sf_category = self.sf_categories[file_type][content_subtype]
-
-            list_id = 1
 
             for sf_data in self.__star_data.get_saveframes_by_category(sf_category):
 
@@ -2509,9 +2681,8 @@ class NmrDpUtility(object):
 
                 try:
 
-                    data = self.nef_translator.check_data(sf_data, self.lp_categories[file_type][content_subtype], key_items, data_items, allowed_tags, disallowed_tags, True, False)[0]
-
-                    list_id += 1
+                    data = self.nef_translator.check_data(sf_data, self.lp_categories[file_type][content_subtype], key_items, data_items, allowed_tags, disallowed_tags,
+                                                          inc_idx_test=True, enforce_non_zero=True, enforce_enum=True)[0]
 
                 except KeyError as e:
 
@@ -2539,18 +2710,34 @@ class NmrDpUtility(object):
 
                 except UserWarning as e:
 
-                    self.report.warning.addDescription('missing_data', "%s, %s saveframe." % (str(e).strip("'"), sf_framecode))
-                    self.report.setWarning()
+                    err = str(e).strip("'")
 
-                    if self.__verbose:
-                        self.__lfh.write("+NmrDpUtility.__testDataConsistencyInLoop() ++ Warning  - %s" % str(e))
+                    zero = err.startswith('[ZERO] ')
+                    enum = err.startswith("[ENUM] ")
 
-                    # retry allowing zero, range
+                    if zero or enum:
+                        err = err[7:]
 
-                    try:
-                        data = self.nef_translator.check_data(sf_data, self.lp_categories[file_type][content_subtype], key_items, data_items, allowed_tags, disallowed_tags, False, True)[0]
-                    except:
-                        pass
+                        self.report.warning.addDescription('missing_data' if zero else 'enum_failure', "%s, %s saveframe." % (err, sf_framecode))
+                        self.report.setWarning()
+
+                        if self.__verbose:
+                            self.__lfh.write("+NmrDpUtility.__testDataConsistencyInLoop() ++ Warning  - %s" % err)
+
+                        # retry allowing zero, range
+
+                        try:
+                            data = self.nef_translator.check_data(sf_data, self.lp_categories[file_type][content_subtype], key_items, data_items, allowed_tags, disallowed_tags,
+                                                                  inc_idx_test=False, enforce_non_zero=False, enforce_enum=False)[0]
+                        except:
+                            pass
+
+                    else:
+                        self.report.error.addDescription('internal_error', "+NmrDpUtility.__testDataConsistencyInLoop() ++ Error  - %s" % str(e))
+                        self.report.setError()
+
+                        if self.__verbose:
+                            self.__lfh.write("+NmrDpUtility.__testDataConsistencyInLoop() ++ Error  - %s" % str(e))
 
                 except Exception as e:
 
@@ -2578,17 +2765,24 @@ class NmrDpUtility(object):
 
             sf_category = self.sf_categories[file_type][content_subtype]
 
-            list_id = 1
-
             for sf_data in self.__star_data.get_saveframes_by_category(sf_category):
 
                 sf_framecode = sf_data.get_tag('sf_framecode')[0]
 
+                if sf_data.tag_prefix != self.sf_tag_prefixes[file_type][content_subtype]:
+
+                    self.report.error.addDescription('internal_error', "+NmrDpUtility.__testSaveframeTag() ++ Error  - Saveframe tag prefix %s does not match with %s in saveframe %s." % (sf_data.tag_prefix, self.sf_tag_prefixes[file_type][content_subtype], sf_framecode))
+                    self.report.setError()
+
+                    if self.__verbose:
+                        self.__lfh.write("+NmrDpUtility.__testSaveframeTag() ++ Error  - Saveframe tag prefix %s does not match with %s in saveframe %s." % (sf_data.tag_prefix, self.sf_tag_prefixes[file_type][content_subtype], sf_framecode))
+
+                    pass
+
                 try:
 
-                    data = self.nef_translator.check_sf_tag(sf_data, self.sf_data_items[file_type][content_subtype], self.sf_allowed_tags[file_type][content_subtype], False)
-
-                    list_id += 1
+                    data = self.nef_translator.check_sf_tag(sf_data, self.sf_tag_items[file_type][content_subtype], self.sf_allowed_tags[file_type][content_subtype],
+                                                            enforce_non_zero=True, enforce_enum=True)
 
                 except LookupError as e:
 
@@ -2608,28 +2802,294 @@ class NmrDpUtility(object):
 
                 except UserWarning as e:
 
-                    self.report.warning.addDescription('missing_data', "%s %s saveframe." % (str(e).strip("'"), sf_framecode))
-                    self.report.setWarning()
+                    err = str(e).strip("'")
 
-                    if self.__verbose:
-                        self.__lfh.write("+NmrDpUtility.__testSaveframeTag() ++ Warning  - %s" % str(e))
+                    zero = err.startswith("[ZERO] ")
+                    enum = err.startswith("[ENUM] ")
 
-                    # retry allowing zero, range
+                    if zero or enum:
+                        err = err[7:]
 
-                    try:
-                        data = self.nef_translator.check_sf_tag(sf_data, self.sf_data_items[file_type][content_subtype], self.sf_allowed_tags[file_type][content_subtype], True)
-                    except:
-                        pass
+                        self.report.warning.addDescription('missing_data' if zero else 'enum_failure', "%s, %s saveframe." % (err, sf_framecode))
+                        self.report.setWarning()
+
+                        if self.__verbose:
+                            self.__lfh.write("+NmrDpUtility.__testSaveframeTag() ++ Warning  - %s" % err)
+
+                        # retry allowing zero, range
+
+                        try:
+                            data = self.nef_translator.check_sf_tag(sf_data, self.sf_tag_items[file_type][content_subtype], self.sf_allowed_tags[file_type][content_subtype],
+                                                                    enfoce_non_zero=False, enforce_enum=False)
+                        except:
+                            pass
+
+                    else:
+                        self.report.error.addDescription('internal_error', "+NmrDpUtility.__testSaveframeTag() ++ Error  - %s" % str(e))
+                        self.report.setError()
+
+                        if self.__verbose:
+                            self.__lfh.write("+NmrDpUtility.__testSaveframeTag() ++ Error  - %s" % str(e))
 
                 except Exception as e:
 
-                    self.report.error.addDescription('internal_error', "+NmrDpUtility.__testSaveFrameTag() ++ Error  - %s" % str(e))
+                    self.report.error.addDescription('internal_error', "+NmrDpUtility.__testSaveframeTag() ++ Error  - %s" % str(e))
                     self.report.setError()
 
                     if self.__verbose:
                         self.__lfh.write("+NmrDpUtility.__testSaveframeTag() ++ Error  - %s" % str(e))
 
         return not self.report.isError()
+
+    def __testDataConsistencyInAuxLoop(self):
+        """ Perform consistency test on data of auxiliary loops of NEF/NMR-STAR V3.2 file
+        """
+
+        if self.report.isError():
+            return False
+
+        input_source = self.report.input_sources[0]
+        input_source_dic = input_source.get()
+
+        file_type = input_source_dic['file_type']
+
+        for content_subtype in input_source_dic['content_subtype'].keys():
+
+            sf_category = self.sf_categories[file_type][content_subtype]
+
+            for sf_data in self.__star_data.get_saveframes_by_category(sf_category):
+
+                sf_framecode = sf_data.get_tag('sf_framecode')[0]
+
+                if content_subtype == 'spectral_peak':
+
+                    try:
+
+                        _num_dim = sf_data.get_tag(self.num_dim_items[file_type])[0]
+                        num_dim = int(_num_dim)
+
+                    except ValueError:
+                        self.report.error.addDescription('invalid_data', "%s %s must be in %s, %s saveframe." % (self.num_dim_items[file_type], _num_dim, set(range(1, self.spectral_peak_lim_dim)), sf_framecode))
+                        self.report.setError()
+
+                        if self.__verbose:
+                            self.__lfh.write("+NmrDpUtility.__testDataConsistencyInAuxLoop() ++ ValueError  - %s %s must be in %s, %s saveframe." % (self.num_dim_items[file_type], _num_dim, range(1, self.spectral_peak_lim_dim), sf_framecode))
+
+                    if not num_dim in range(1, self.spectral_peak_lim_dim):
+
+                        self.report.error.addDescription('invalid_data', "%s %s must be in %s, %s saveframe." % (self.num_dim_items[file_type], num_dim, range(1, self.spectral_peak_lim_dim), sf_framecode))
+                        self.report.setError()
+
+                        if self.__verbose:
+                            self.__lfh.write("+NmrDpUtility.__testDataConsistencyInAuxLoop() ++ ValueError  - %s %s must be in %s, %s saveframe." % (self.num_dim_items[file_type], num_dim, range(1, self.spectral_peak_lim_dim), sf_framecode))
+
+                loops = sf_data.loops
+
+                for loop in loops:
+
+                    lp_category = loop.category
+
+                    # main content loop has been processed in __testDataConsistencyInLoop()
+                    if lp_category in self.lp_categories[file_type][content_subtype]:
+                        continue
+
+                    elif lp_category in self.aux_lp_categories[file_type][content_subtype]:
+
+                        key_items = self.aux_key_items[file_type][content_subtype][lp_category]
+                        data_items = self.aux_data_items[file_type][content_subtype][lp_category]
+                        allowed_tags = self.aux_allowed_tags[file_type][content_subtype][lp_category]
+
+                        try:
+
+                            data = self.nef_translator.check_data(sf_data, lp_category, key_items, data_items, allowed_tags, None,
+                                                                  inc_idx_test=True, enforce_non_zero=True, enforce_enum=True)[0]
+
+                            if content_subtype == 'spectral_peak':
+                                self.__testDataConsistencyInAuxLoopOfSpectralPeak(file_type, sf_data, sf_framecode, num_dim, lp_category, data)
+
+                        except KeyError as e:
+
+                            self.report.error.addDescription('multiple_data', "%s, %s saveframe." % (str(e).strip("'"), sf_framecode))
+                            self.report.setError()
+
+                            if self.__verbose:
+                                self.__lfh.write("+NmrDpUtility.__testDataConsistencyInAuxLoop() ++ KeyError  - %s" % str(e))
+
+                        except LookupError as e:
+
+                            self.report.error.addDescription('missing_mandatory_item', "%s, %s saveframe." % (str(e).strip("'"), sf_framecode))
+                            self.report.setError()
+
+                            if self.__verbose:
+                                self.__lfh.write("+NmrDpUtility.__testDataConsistencyInAuxLoop() ++ LookupError  - %s" % str(e))
+
+                        except ValueError as e:
+
+                            self.report.error.addDescription('invalid_data', "%s, %s saveframe." % (str(e).strip("'"), sf_framecode))
+                            self.report.setError()
+
+                            if self.__verbose:
+                                self.__lfh.write("+NmrDpUtility.__testDataConsistencyInAuxLoop() ++ ValueError  - %s" % str(e))
+
+                        except UserWarning as e:
+
+                            err = str(e).strip("'")
+
+                            zero = err.startswith('[ZERO] ')
+                            enum = err.startswith("[ENUM] ")
+
+                            if zero or enum:
+                                err = err[7:]
+
+                                self.report.warning.addDescription('missing_data' if zero else 'enum_failure', "%s, %s saveframe." % (err, sf_framecode))
+                                self.report.setWarning()
+
+                                if self.__verbose:
+                                    self.__lfh.write("+NmrDpUtility.__testDataConsistencyInAuxLoop() ++ Warning  - %s" % err)
+
+                                # retry allowing zero, range
+
+                                try:
+                                    data = self.nef_translator.check_data(sf_data, lp_category, key_items, data_items, allowed_tags, None,
+                                                                          inc_idx_test=False, enforce_non_zero=False, enforce_enum=False)[0]
+
+                                    if content_subtype == 'spectral_peak':
+                                        self.__testDataConsistencyInAuxLoopOfSpectralPeak(file_type, sf_data, sf_framecode, num_dim, lp_category, data)
+
+                                except:
+                                    pass
+
+                            else:
+                                self.report.error.addDescription('internal_error', "+NmrDpUtility.__testDataConsistencyInAuxLoop() ++ Error  - %s" % str(e))
+                                self.report.setError()
+
+                                if self.__verbose:
+                                    self.__lfh.write("+NmrDpUtility.__testDataConsistencyInAuxLoop() ++ Error  - %s" % str(e))
+
+                        except Exception as e:
+
+                            self.report.error.addDescription('internal_error', "+NmrDpUtility.__testDataConsistencyInAuxLoop() ++ Error  - %s" % str(e))
+                            self.report.setError()
+
+                            if self.__verbose:
+                                self.__lfh.write("+NmrDpUtility.__testDataConsistencyInAuxLoop() ++ Error  - %s" % str(e))
+
+                    elif lp_category in self.linked_lp_categories[file_type][content_subtype]:
+                        self.report.warning.addDestination('skipped_lp_category', "Unsupported %s loop category exists in saveframe %s." % (lp_category, sf_framecode))
+                        self.report.setWarning()
+
+                        if self.__verbose:
+                            self.__lfh.write("+NmrDpUtility.__testDataConsistencyInAuxLoop() ++ Warning  - Unsupported %s loop category exists in saveframe %s." % (loop.category, sf_framecode))
+
+                    else:
+                        self.report.error.addDescription('format_issue', "+NmrDpUtility.__testDataConsistencyInAuxLoop() ++ Error  - %s loop category exists unexpectedly in saveframe %s." % (loop.category, sf_framecode))
+                        self.report.setError()
+
+                        if self.__verbose:
+                            self.__lfh.write("+NmrDpUtility.__testDataConsistencyInAuxLoop() ++ Error  - %s loop category exists unexpectedly in saveframe %s." % (loop.category, sf_framecode))
+
+        return not self.report.isError()
+
+    def __testDataConsistencyInAuxLoopOfSpectralPeak(self, file_type, sf_data, sf_framecode, num_dim, lp_category, aux_data):
+        """ Perform consistency test on data of specral peak loops of NEF/NMR-STAR V3.2 file
+        """
+
+        content_subtype = 'spectral_peak'
+
+        max_dim = num_dim + 1
+
+        if (file_type == 'nef' and lp_category == '_nef_spectrum_dimension') or (file_type == 'nmr-star' and lp_category == '_Spectral_dim'):
+            if len(aux_data) != num_dim:
+                self.report.error.addDescription('missing_data', "The number of dimension %s and the number of rows in %s loop category %s are not matched, %s saveframe." % (num_dim, len(aux_data), lp_category, sf_framecode))
+                self.report.setError()
+
+            if self.__verbose:
+                self.__lfh.write("+NmrDpUtility.__testDataConsistencyInAuxLoopOfSpectralPeak() ++ Error  - The number of dimension %s and the number of rows in %s loop category %s are not matched, %s saveframe." % (num_dim, len(aux_data), lp_category, sf_framecode))
+
+            min_points = []
+            max_points = []
+
+            for sp_dim in aux_data:
+
+                if file_type == 'nef':
+                    axis_unit = sp_dim['axis_unit']
+                    first_point = sp_dim['value_first_point']
+                    sp_width = sp_dim['spectral_width']
+                    acq = sp_dim['is_acquisition']
+                    abs = sp_dim['absolute_peak_positions']
+
+                    if axis_unit == 'Hz':
+                        sp_freq = sp_dim['spectrometer_frequency']
+                        first_point /= sp_freq
+                        sp_width /= sp_freq
+
+                else:
+                    axis_unit = sp_dim['Sweep_width_units']
+                    first_point = sp_dim['Value_first_point']
+                    sp_width = sp_dim['Sweep_width']
+                    acq = sp_dim['Acquisition']
+                    abs = spe_dim['Absolute_peak_positions']
+
+                    if axis_unit == 'Hz':
+                        sp_freq = sp_dim['Spectrometer_frequency']
+                        first_point /= sp_freq
+                        sp_width /= sp_freq
+
+                last_point = first_point - sp_width
+
+                min_point = last_point - (0.0 if (acq or not abs) else sp_width)
+                max_point = first_point + (0.0 if (acq or not abs) else sp_width)
+
+                min_points.append(min_point)
+                max_points.append(max_point)
+
+            key_items = []
+            for dim in range(1, max_dim):
+                for k in self.spectral_peak_key_items[file_type]:
+                    _k = copy.copy(k)
+                    if '%s' in k['name']:
+                       _k['name'] = k['name'] % dim
+                    key_items.append(_k)
+
+            data_items = []
+            for d in self.data_items[file_type][content_subtype]:
+                data_items.append(d)
+            for dim in range(1, max_dim):
+                for d in self.spectral_peak_data_items[file_type]:
+                    _d = copy.copy(d)
+                    if '%s' in d['name']:
+                        _d['name'] = d['name'] % dim
+                    data_items.append(_d)
+
+            position_names = [k['name'] for k in key_items]
+            index_tag = self.index_tags[file_type][content_subtype]
+
+            data = self.nef_translator.check_data(sf_data, self.lp_categories[file_type][content_subtype], key_items, data_items, None, None,
+                                                          inc_idx_test=False, enforce_non_zero=False, enforce_enum=False)[0]
+
+            for i in data:
+                for j in range(num_dim):
+                    position = i[position_names[j]]
+                    if position < min_points[j] or position > max_points[j]:
+                        err = 'Check row of %s %s. %s %s is out of range (min %s, max %s) in %s loop category, %s saveframe.' % (index_tag, i[index_tag], position_names[j], position, min_points[j], max_points[j], lp_category, sf_framecode)
+
+                        self.report.error.addDescription('invalid_data', err)
+                        self.report.setError()
+
+                        if self.__verbose:
+                            self.__lfh.write("+NmrDpUtility.__testDataConsistencyInAuxLoopOfSpectralPeak() ++ ValueError  - %s" % err)
+
+        if (file_type == 'nef' and lp_category == '_nef_spectrum_dimension_transfer') or (file_type == 'nmr-star' and lp_category == '_Spectral_dim_transfer'):
+
+            for i in aux_data:
+                for name in [j['name'] for j in self.aux_key_items[file_type][content_subtype][lp_category]]:
+                    if not i[name] in range(1, max_dim):
+                        err = "%s '%s' must be one of %s in %s loop category, saveframe %s." % (name, i[name], range(1, max_dim), lp_category, sf_framecode)
+                        self.report.error.addDescription('invalid_data', err)
+                        self.report.setError()
+
+                        if self.__verbose:
+                            self.__lfh.write("+NmrDpUtility.__testDataConsistencyInAuxLoopOfSpectralPeak() ++ ValueError  - %s" % err)
 
     def __testParentChildRelation(self):
         """ Perform consistency test on saveframe category and loop category relationship of interesting loops of NEF/NMR-STAR V3.2 file
@@ -2647,13 +3107,11 @@ class NmrDpUtility(object):
 
             sf_category = self.sf_categories[file_type][content_subtype]
 
-            list_id = 1
-
             for sf_data in self.__star_data.get_saveframes_by_category(sf_category):
 
                 sf_framecode = sf_data.get_tag('sf_framecode')[0]
 
-        return self.report.isError()
+        return not self.report.isError()
 
 if __name__ == '__main__':
     dp = NmrDpUtility()

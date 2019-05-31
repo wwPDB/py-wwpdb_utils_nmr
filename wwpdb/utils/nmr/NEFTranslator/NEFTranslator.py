@@ -1126,7 +1126,7 @@ class NEFTranslator(object):
             except AttributeError:
                 loops = [star_data]
 
-        item_types = ('str', 'bool', 'int', 'index-int', 'positive-int', 'static-positive-int', 'float', 'positive-float', 'range-float', 'enum', 'enum-int')
+        item_types = ('str', 'bool', 'int', 'index-int', 'positive-int', 'static-index', 'float', 'positive-float', 'range-float', 'enum', 'enum-int')
 
         key_names = [k['name'] for k in key_items]
         data_names = [d['name'] for d in data_items]
@@ -1170,6 +1170,7 @@ class NEFTranslator(object):
                                 raise Error("Larger data item %s of %s must exists in allowed tags of %s loop category" % (l, d['name'], lp_category))
 
         empty_value = (None, '', '.', '?')
+        true_value = ('true', 't', 'yes', 'y', '1')
 
         dat = [] # data of all loops
 
@@ -1255,40 +1256,41 @@ class NEFTranslator(object):
                                 if d['name'] == name and d['mandatory']:
                                     raise ValueError("Data item value %s must not be empty in %s loop category" % (name, lp_category))
 
-            keys = set()
+            if inc_idx_test:
+                keys = set()
 
-            for i in tag_dat:
-                key = ''
-                for j in range(key_len):
-                    key += ' ' + i[j]
-                key.rstrip()
-                if key in keys:
-                    msg = ''
+                for i in tag_dat:
+                    key = ''
                     for j in range(key_len):
-                        msg += key_names[j] + ' %s, ' % i[j]
+                        key += ' ' + i[j]
+                    key.rstrip()
+                    if key in keys:
+                        msg = ''
+                        for j in range(key_len):
+                            msg += key_names[j] + ' %s, ' % i[j]
 
-                    idx_msg = ''
+                        idx_msg = ''
 
-                    if len(idx_tag_ids) > 0:
-                        for _j in idx_tag_ids:
-                            idx_msg += tags[_j] + ' '
+                        if len(idx_tag_ids) > 0:
+                            for _j in idx_tag_ids:
+                                idx_msg += tags[_j] + ' '
 
-                            for _i in tag_dat:
-                                _key = ''
-                                for j in range(key_len):
-                                    _key += " " + _i[j]
-                                    _key.rstrip()
+                                for _i in tag_dat:
+                                    _key = ''
+                                    for j in range(key_len):
+                                        _key += " " + _i[j]
+                                        _key.rstrip()
 
-                                if key == _key:
-                                    idx_msg += _i[_j] + ' vs '
+                                    if key == _key:
+                                        idx_msg += _i[_j] + ' vs '
 
-                            idx_msg = idx_msg[:-4] + ', '
+                                idx_msg = idx_msg[:-4] + ', '
 
-                        idx_msg = 'Check rows of ' + idx_msg[:-2] + '. '
+                            idx_msg = 'Check rows of ' + idx_msg[:-2] + '. '
 
-                    raise KeyError("%sValues of key items must be unique. %s in %s loop category" % (idx_msg, msg.rstrip().rstrip(','), lp_category))
+                        raise KeyError("%sValues of key items must be unique. %s in %s loop category" % (idx_msg, msg.rstrip().rstrip(','), lp_category))
 
-                keys.add(key)
+                    keys.add(key)
 
             asm = [] # assembly of a loop
 
@@ -1303,7 +1305,7 @@ class NEFTranslator(object):
                         type = k['type']
                         if type == 'bool':
                             try:
-                                ent[name] = bool(val)
+                                ent[name] = val.tolower() in true_value
                             except:
                                 raise ValueError("%s '%s' must be %s in %s loop category" % (name, val, type, lp_category))
                         elif type == 'int':
@@ -1320,7 +1322,7 @@ class NEFTranslator(object):
                                 raise ValueError("%s '%s' must be %s in %s loop category" % (name, val, type, lp_category))
                             elif ent[name] == 0 and enforce_non_zero:
                                 raise UserWarning("[ZERO] %s '%s' is non-sense value as %s in %s loop category" % (name, val, type, lp_category))
-                        elif type == 'static-positive-int':
+                        elif type == 'static-index':
                             try:
                                 ent[name] = int(val)
                             except:
@@ -1329,7 +1331,7 @@ class NEFTranslator(object):
                                 raise ValueError("%s '%s' must be %s in %s loop category" % (name, val, type, lp_category))
                             elif static_val[name] is None:
                                 static_val[name] = val
-                            elif val != static_val[name]:
+                            elif val != static_val[name] and inc_idx_test:
                                 raise ValueError("%s %s vs %s must be %s in %s loop category" % (name, val, static_val[name], type, lp_category))
                         elif type == 'float':
                             try:
@@ -1390,7 +1392,7 @@ class NEFTranslator(object):
                                    ent[name] = None
                                 elif type == 'bool':
                                     try:
-                                        ent[name] = bool(val)
+                                        ent[name] = val in true_value
                                     except:
                                         raise ValueError("%s '%s' must be %s in %s loop category" % (name, val, type, lp_category))
                                 elif type == 'int':
@@ -1407,7 +1409,7 @@ class NEFTranslator(object):
                                         raise ValueError("%s '%s' must be %s in %s loop category" % (name, val, type, lp_category))
                                     elif ent[name] == 0 and enforce_non_zero:
                                         raise UserWarning("[ZERO] %s '%s' is non-sense value as %s in %s loop category" % (name, val, type, lp_category))
-                                elif type == 'static-positive-int':
+                                elif type == 'static-index':
                                     try:
                                         ent[name] = int(val)
                                     except:
@@ -1416,7 +1418,7 @@ class NEFTranslator(object):
                                         raise ValueError("%s '%s' must be %s in %s loop category" % (name, val, type, lp_category))
                                     elif static_val[name] is None:
                                         static_val[name] = val
-                                    elif val != static_val[name]:
+                                    elif val != static_val[name] and inc_idx_test:
                                         raise ValueError("%s %s vs %s must be %s in %s loop category" % (name, val, static_val[name], type, lp_category))
                                 elif type == 'float':
                                     try:
@@ -1598,6 +1600,7 @@ class NEFTranslator(object):
                                 raise Error("Larger tag item %s of %s must exists in allowed tags of" % (l, t['name']))
 
         empty_value = (None, '', '.', '?')
+        true_value = ('true', 't', 'yes', 'y', '1')
 
         sf_tags = {i[0]:i[1] for i in star_data.tags}
 
@@ -1639,7 +1642,7 @@ class NEFTranslator(object):
                        ent[name] = None
                     elif type == 'bool':
                         try:
-                            ent[name] = bool(val)
+                            ent[name] = val in true_value
                         except:
                             raise ValueError("%s '%s' must be %s in" % (name, val, type))
                     elif type == 'int':

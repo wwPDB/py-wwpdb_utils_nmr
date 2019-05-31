@@ -64,9 +64,8 @@ class NmrDpUtility(object):
                                                       self.__testAmbiguityCodeOfCSLoop,
                                                       self.__testDuplicatedIndex,
                                                       self.__testDataConsistencyInLoop,
-                                                      self.__testSaveframeTag,
                                                       self.__testDataConsistencyInAuxLoop,
-                                                      self.__testParentChildRelation] }
+                                                      self.__testSaveframeTag]}
         """
                                 }
                                                       self.__testAnomalousData,
@@ -306,11 +305,9 @@ class NmrDpUtility(object):
         self.spectral_peak_lim_dim = 16
 
         # key items for spectral peak
-        self.spectral_peak_key_items = {'nef': [{'name': 'position_%s', 'type': 'range-float',
-                                                 'range': self.chem_shift_range}
+        self.spectral_peak_key_items = {'nef': [{'name': 'position_%s', 'type': 'float'}
                                                  ],
-                                        'nmr-star': [{'name': 'Position_%s', 'type': 'range-float',
-                                                 'range': self.chem_shift_range}
+                                        'nmr-star': [{'name': 'Position_%s', 'type': 'float'}
                                                  ]
                                         }
 
@@ -487,7 +484,7 @@ class NmrDpUtility(object):
                                                        {'name': 'Auth_seq_ID', 'type': 'int', 'mandatory': False},
                                                        {'name': 'Auth_comp_ID', 'type': 'str', 'mandatory': False},
                                                        {'name': 'Auth_atom_ID', 'type': 'str', 'mandatory': False},
-                                                       {'name': 'Assigned_chem_shift_list_ID', 'type': 'static-positive-int', 'mandatory': True}
+                                                       {'name': 'Assigned_chem_shift_list_ID', 'type': 'static-index', 'mandatory': True}
                                                        ],
                                         'dist_restraint': [{'name': 'Index_ID', 'type': 'index-int', 'mandatory': True},
                                                            {'name': 'ID', 'type': 'positive-int', 'mandatory': True},
@@ -537,7 +534,7 @@ class NmrDpUtility(object):
                                                            {'name': 'Auth_seq_ID_2', 'type': 'int', 'mandatory': False},
                                                            {'name': 'Auth_comp_ID_2', 'type': 'str', 'mandatory': False},
                                                            {'name': 'Auth_atom_ID_2', 'type': 'str', 'mandatory': False},
-                                                           {'name': 'Gen_dist_constraint_list_ID', 'type': 'static-positive-int', 'mandatory': True},
+                                                           {'name': 'Gen_dist_constraint_list_ID', 'type': 'static-index', 'mandatory': True},
                                                            ],
                                         'dihed_restraint': [{'name': 'Index_ID', 'type':'index-int', 'mandatory': True},
                                                             {'name': 'ID', 'type':'index-int', 'mandatory': True},
@@ -593,7 +590,7 @@ class NmrDpUtility(object):
                                                             {'name': 'Auth_seq_ID_4', 'type':'int', 'mandatory': False},
                                                             {'name': 'Auth_comp_ID_4', 'type':'str', 'mandatory': False},
                                                             {'name': 'Auth_atom_ID_4', 'type':'str', 'mandatory': False},
-                                                            {'name': 'Torsion_angle_constraint_list_ID', 'type':'static-positive-int', 'mandatory': True},
+                                                            {'name': 'Torsion_angle_constraint_list_ID', 'type':'static-index', 'mandatory': True},
                                             ],
                                         'rdc_restraint': [{'name': 'Index_ID', 'type':'index-int', 'mandatory': True},
                                                           {'name': 'ID', 'type':'index-int', 'mandatory': True},
@@ -643,7 +640,7 @@ class NmrDpUtility(object):
                                                           {'name': 'Auth_seq_ID_2', 'type':'int', 'mandatory': False},
                                                           {'name': 'Auth_comp_ID_2', 'type':'str', 'mandatory': False},
                                                           {'name': 'Auth_atom_ID_2', 'type':'str', 'mandatory': False},
-                                                          {'name': 'RDC_constraint_list_ID', 'type':'static-positive-int', 'mandatory': True}
+                                                          {'name': 'RDC_constraint_list_ID', 'type':'static-index', 'mandatory': True}
                                                           ],
                                         'spectral_peak': [{'name': 'Index_ID', 'type':'index-int', 'mandatory': True},
                                                           {'name': 'ID', 'type':'index-int', 'mandatory': True},
@@ -655,7 +652,7 @@ class NmrDpUtility(object):
                                                            'group': {'member-with': ['Volume'],
                                                                      'coexist-with': None}},
                                                           {'name': 'Height_uncertainty', 'type':'positive-float', 'mandatory': False},
-                                                          {'name': 'Spectral_peak_list_ID', 'type':'static-positive-int', 'mandatory': True}
+                                                          {'name': 'Spectral_peak_list_ID', 'type':'static-index', 'mandatory': True}
                                                           ]
                                         }
                            }
@@ -771,7 +768,7 @@ class NmrDpUtility(object):
                                        'spectral_peak': [{'name': 'sf_category', 'type': 'str', 'mandatory': True},
                                                          {'name': 'sf_framecode', 'type': 'str', 'mandatory': True},
                                                          {'name': 'num_dimensions', 'type': 'enum-int', 'mandatory': True,
-                                                          'enum': set(range(1, 16)),
+                                                          'enum': set(range(1, self.spectral_peak_lim_dim)),
                                                           'enforce-enum': True},
                                                          {'name': 'chemical_shift_list', 'type': 'str', 'mandatory': False},
                                                          {'name': 'experiment_classification', 'type': 'str', 'mandatory': False},
@@ -826,7 +823,7 @@ class NmrDpUtility(object):
                                                             {'name': 'Experiment_class', 'type': 'str', 'mandatory': False},
                                                             {'name': 'Experiment_type', 'type': 'str', 'mandatory': False},
                                                             {'name': 'Number_of_spectral_dimensions', 'type': 'enum-int', 'mandatory': True,
-                                                             'enum': set(range(1, 16)),
+                                                             'enum': set(range(1, self.spectral_peak_lim_dim)),
                                                              'enforce-enum': True},
                                                             {'name': 'Chemical_shift_list', 'type': 'str', 'mandatory': True}
                                                             ]
@@ -2631,20 +2628,11 @@ class NmrDpUtility(object):
                         _num_dim = sf_data.get_tag(self.num_dim_items[file_type])[0]
                         num_dim = int(_num_dim)
 
-                    except ValueError:
-                        self.report.error.addDescription('invalid_data', "%s %s must be in %s, %s saveframe." % (self.num_dim_items[file_type], _num_dim, set(range(1, self.spectral_peak_lim_dim)), sf_framecode))
-                        self.report.setError()
+                        if not num_dim in range(1, self.spectral_peak_lim_dim):
+                            raise ValueError()
 
-                        if self.__verbose:
-                            self.__lfh.write("+NmrDpUtility.__testDataConsistencyInLoop() ++ ValueError  - %s %s must be in %s, %s saveframe." % (self.num_dim_items[file_type], _num_dim, range(1, self.spectral_peak_lim_dim), sf_framecode))
-
-                    if not num_dim in range(1, self.spectral_peak_lim_dim):
-
-                        self.report.error.addDescription('invalid_data', "%s %s must be in %s, %s saveframe." % (self.num_dim_items[file_type], num_dim, range(1, self.spectral_peak_lim_dim), sf_framecode))
-                        self.report.setError()
-
-                        if self.__verbose:
-                            self.__lfh.write("+NmrDpUtility.__testDataConsistencyInLoop() ++ ValueError  - %s %s must be in %s, %s saveframe." % (self.num_dim_items[file_type], num_dim, range(1, self.spectral_peak_lim_dim), sf_framecode))
+                    except ValueError: # raised error already at __testDuplicatedIndex()
+                        continue
 
                     max_dim = num_dim + 1
 
@@ -2749,104 +2737,12 @@ class NmrDpUtility(object):
 
         return not self.report.isError()
 
-    def __testSaveframeTag(self):
-        """ Perform consistency test on data of interesting saveframe tags of NEF/NMR-STAR V3.2 file
-        """
-
-        if self.report.isError():
-            return False
-
-        input_source = self.report.input_sources[0]
-        input_source_dic = input_source.get()
-
-        file_type = input_source_dic['file_type']
-
-        for content_subtype in input_source_dic['content_subtype'].keys():
-
-            sf_category = self.sf_categories[file_type][content_subtype]
-
-            for sf_data in self.__star_data.get_saveframes_by_category(sf_category):
-
-                sf_framecode = sf_data.get_tag('sf_framecode')[0]
-
-                if sf_data.tag_prefix != self.sf_tag_prefixes[file_type][content_subtype]:
-
-                    self.report.error.addDescription('internal_error', "+NmrDpUtility.__testSaveframeTag() ++ Error  - Saveframe tag prefix %s does not match with %s in saveframe %s." % (sf_data.tag_prefix, self.sf_tag_prefixes[file_type][content_subtype], sf_framecode))
-                    self.report.setError()
-
-                    if self.__verbose:
-                        self.__lfh.write("+NmrDpUtility.__testSaveframeTag() ++ Error  - Saveframe tag prefix %s does not match with %s in saveframe %s." % (sf_data.tag_prefix, self.sf_tag_prefixes[file_type][content_subtype], sf_framecode))
-
-                    pass
-
-                try:
-
-                    data = self.nef_translator.check_sf_tag(sf_data, self.sf_tag_items[file_type][content_subtype], self.sf_allowed_tags[file_type][content_subtype],
-                                                            enforce_non_zero=True, enforce_enum=True)
-
-                except LookupError as e:
-
-                    self.report.error.addDescription('missing_mandatory_item', "%s %s saveframe." % (str(e).strip("'"), sf_framecode))
-                    self.report.setError()
-
-                    if self.__verbose:
-                        self.__lfh.write("+NmrDpUtility.__testSaveframeTag() ++ LookupError  - %s" % str(e))
-
-                except ValueError as e:
-
-                    self.report.error.addDescription('invalid_data', "%s %s saveframe." % (str(e).strip("'"), sf_framecode))
-                    self.report.setError()
-
-                    if self.__verbose:
-                        self.__lfh.write("+NmrDpUtility.__testSaveframeTag() ++ ValueError  - %s" % str(e))
-
-                except UserWarning as e:
-
-                    err = str(e).strip("'")
-
-                    zero = err.startswith("[ZERO] ")
-                    enum = err.startswith("[ENUM] ")
-
-                    if zero or enum:
-                        err = err[7:]
-
-                        self.report.warning.addDescription('missing_data' if zero else 'enum_failure', "%s, %s saveframe." % (err, sf_framecode))
-                        self.report.setWarning()
-
-                        if self.__verbose:
-                            self.__lfh.write("+NmrDpUtility.__testSaveframeTag() ++ Warning  - %s" % err)
-
-                        # retry allowing zero, range
-
-                        try:
-                            data = self.nef_translator.check_sf_tag(sf_data, self.sf_tag_items[file_type][content_subtype], self.sf_allowed_tags[file_type][content_subtype],
-                                                                    enfoce_non_zero=False, enforce_enum=False)
-                        except:
-                            pass
-
-                    else:
-                        self.report.error.addDescription('internal_error', "+NmrDpUtility.__testSaveframeTag() ++ Error  - %s" % str(e))
-                        self.report.setError()
-
-                        if self.__verbose:
-                            self.__lfh.write("+NmrDpUtility.__testSaveframeTag() ++ Error  - %s" % str(e))
-
-                except Exception as e:
-
-                    self.report.error.addDescription('internal_error', "+NmrDpUtility.__testSaveframeTag() ++ Error  - %s" % str(e))
-                    self.report.setError()
-
-                    if self.__verbose:
-                        self.__lfh.write("+NmrDpUtility.__testSaveframeTag() ++ Error  - %s" % str(e))
-
-        return not self.report.isError()
-
     def __testDataConsistencyInAuxLoop(self):
         """ Perform consistency test on data of auxiliary loops of NEF/NMR-STAR V3.2 file
         """
 
-        if self.report.isError():
-            return False
+        #if self.report.isError():
+        #    return False
 
         input_source = self.report.input_sources[0]
         input_source_dic = input_source.get()
@@ -2868,20 +2764,15 @@ class NmrDpUtility(object):
                         _num_dim = sf_data.get_tag(self.num_dim_items[file_type])[0]
                         num_dim = int(_num_dim)
 
+                        if not num_dim in range(1, self.spectral_peak_lim_dim):
+                            raise ValueError()
+
                     except ValueError:
                         self.report.error.addDescription('invalid_data', "%s %s must be in %s, %s saveframe." % (self.num_dim_items[file_type], _num_dim, set(range(1, self.spectral_peak_lim_dim)), sf_framecode))
                         self.report.setError()
 
                         if self.__verbose:
                             self.__lfh.write("+NmrDpUtility.__testDataConsistencyInAuxLoop() ++ ValueError  - %s %s must be in %s, %s saveframe." % (self.num_dim_items[file_type], _num_dim, range(1, self.spectral_peak_lim_dim), sf_framecode))
-
-                    if not num_dim in range(1, self.spectral_peak_lim_dim):
-
-                        self.report.error.addDescription('invalid_data', "%s %s must be in %s, %s saveframe." % (self.num_dim_items[file_type], num_dim, range(1, self.spectral_peak_lim_dim), sf_framecode))
-                        self.report.setError()
-
-                        if self.__verbose:
-                            self.__lfh.write("+NmrDpUtility.__testDataConsistencyInAuxLoop() ++ ValueError  - %s %s must be in %s, %s saveframe." % (self.num_dim_items[file_type], num_dim, range(1, self.spectral_peak_lim_dim), sf_framecode))
 
                 loops = sf_data.loops
 
@@ -2950,8 +2841,9 @@ class NmrDpUtility(object):
                                 # retry allowing zero, range
 
                                 try:
+
                                     data = self.nef_translator.check_data(sf_data, lp_category, key_items, data_items, allowed_tags, None,
-                                                                          inc_idx_test=False, enforce_non_zero=False, enforce_enum=False)[0]
+                                                                          inc_idx_test=True, enforce_non_zero=False, enforce_enum=False)[0]
 
                                     if content_subtype == 'spectral_peak':
                                         self.__testDataConsistencyInAuxLoopOfSpectralPeak(file_type, sf_data, sf_framecode, num_dim, lp_category, data)
@@ -2991,7 +2883,7 @@ class NmrDpUtility(object):
         return not self.report.isError()
 
     def __testDataConsistencyInAuxLoopOfSpectralPeak(self, file_type, sf_data, sf_framecode, num_dim, lp_category, aux_data):
-        """ Perform consistency test on data of specral peak loops of NEF/NMR-STAR V3.2 file
+        """ Perform consistency test on data of spectral peak loops of NEF/NMR-STAR V3.2 file
         """
 
         content_subtype = 'spectral_peak'
@@ -2999,6 +2891,7 @@ class NmrDpUtility(object):
         max_dim = num_dim + 1
 
         if (file_type == 'nef' and lp_category == '_nef_spectrum_dimension') or (file_type == 'nmr-star' and lp_category == '_Spectral_dim'):
+
             if len(aux_data) != num_dim:
                 self.report.error.addDescription('missing_data', "The number of dimension %s and the number of rows in %s loop category %s are not matched, %s saveframe." % (num_dim, len(aux_data), lp_category, sf_framecode))
                 self.report.setError()
@@ -3006,42 +2899,246 @@ class NmrDpUtility(object):
             if self.__verbose:
                 self.__lfh.write("+NmrDpUtility.__testDataConsistencyInAuxLoopOfSpectralPeak() ++ Error  - The number of dimension %s and the number of rows in %s loop category %s are not matched, %s saveframe." % (num_dim, len(aux_data), lp_category, sf_framecode))
 
-            min_points = []
-            max_points = []
+            try:
 
-            for sp_dim in aux_data:
+                min_points = []
+                max_points = []
 
-                if file_type == 'nef':
-                    axis_unit = sp_dim['axis_unit']
-                    first_point = sp_dim['value_first_point']
-                    sp_width = sp_dim['spectral_width']
-                    acq = sp_dim['is_acquisition']
-                    abs = sp_dim['absolute_peak_positions']
+                for i in range(1, max_dim):
 
-                    if axis_unit == 'Hz':
-                        sp_freq = sp_dim['spectrometer_frequency']
-                        first_point /= sp_freq
-                        sp_width /= sp_freq
+                    for sp_dim in aux_data:
 
-                else:
-                    axis_unit = sp_dim['Sweep_width_units']
-                    first_point = sp_dim['Value_first_point']
-                    sp_width = sp_dim['Sweep_width']
-                    acq = sp_dim['Acquisition']
-                    abs = spe_dim['Absolute_peak_positions']
+                        if file_type == 'nef':
 
-                    if axis_unit == 'Hz':
-                        sp_freq = sp_dim['Spectrometer_frequency']
-                        first_point /= sp_freq
-                        sp_width /= sp_freq
+                            if sp_dim['dimension_id'] != i:
+                                continue
 
-                last_point = first_point - sp_width
+                            axis_unit = sp_dim['axis_unit']
+                            first_point = sp_dim['value_first_point']
+                            sp_width = sp_dim['spectral_width']
+                            acq = sp_dim['is_acquisition']
+                            abs = sp_dim['absolute_peak_positions']
 
-                min_point = last_point - (0.0 if (acq or not abs) else sp_width)
-                max_point = first_point + (0.0 if (acq or not abs) else sp_width)
+                            if axis_unit == 'Hz':
+                                sp_freq = sp_dim['spectrometer_frequency']
+                                first_point /= sp_freq
+                                sp_width /= sp_freq
 
-                min_points.append(min_point)
-                max_points.append(max_point)
+                        else:
+
+                            if sp_dim['ID'] != i:
+                                continue
+                            axis_unit = sp_dim['Sweep_width_units']
+                            first_point = sp_dim['Value_first_point']
+                            sp_width = sp_dim['Sweep_width']
+                            acq = sp_dim['Acquisition']
+                            abs = sp_dim['Absolute_peak_positions']
+
+                            if axis_unit == 'Hz':
+                                sp_freq = sp_dim['Spectrometer_frequency']
+                                first_point /= sp_freq
+                                sp_width /= sp_freq
+
+                        last_point = first_point - sp_width
+
+                        min_point = last_point - (0.0 if (acq or not abs) else sp_width)
+                        max_point = first_point + (0.0 if (acq or not abs) else sp_width)
+
+                        min_points.append(min_point)
+                        max_points.append(max_point)
+
+                key_items = []
+                for dim in range(1, max_dim):
+                    for k in self.spectral_peak_key_items[file_type]:
+                        _k = copy.copy(k)
+                        if '%s' in k['name']:
+                           _k['name'] = k['name'] % dim
+                        key_items.append(_k)
+
+                data_items = []
+                for d in self.data_items[file_type][content_subtype]:
+                    data_items.append(d)
+                for dim in range(1, max_dim):
+                    for d in self.spectral_peak_data_items[file_type]:
+                        _d = copy.copy(d)
+                        if '%s' in d['name']:
+                            _d['name'] = d['name'] % dim
+                        data_items.append(_d)
+
+                position_names = [k['name'] for k in key_items]
+                index_tag = self.index_tags[file_type][content_subtype]
+
+                data = self.nef_translator.check_data(sf_data, self.lp_categories[file_type][content_subtype], key_items, data_items, None, None,
+                                                              inc_idx_test=False, enforce_non_zero=False, enforce_enum=False)[0]
+
+                for i in data:
+                    for j in range(num_dim):
+                        position = i[position_names[j]]
+
+                        if position < min_points[j] or position > max_points[j]:
+                            err = 'Check row of %s %s. %s %s is out of range (min_position %s, max_position %s) in %s loop category, %s saveframe.' % (index_tag, i[index_tag], position_names[j], position, min_points[j], max_points[j], lp_category, sf_framecode)
+
+                            self.report.error.addDescription('invalid_data', err)
+                            self.report.setError()
+
+                            if self.__verbose:
+                                self.__lfh.write("+NmrDpUtility.__testDataConsistencyInAuxLoopOfSpectralPeak() ++ ValueError  - %s" % err)
+
+            except Exception as e:
+
+                self.report.error.addDescription('internal_error', "+NmrDpUtility.__testDataConsistencyInAuxLoopOfSpectralPeak() ++ Error  - %s" % str(e))
+                self.report.setError()
+
+                if self.__verbose:
+                    self.__lfh.write("+NmrDpUtility.__testDataConsistencyInAuxLoopOfSpectralPeak() ++ Error  - %s" % str(e))
+
+        if (file_type == 'nef' and lp_category == '_nef_spectrum_dimension_transfer') or (file_type == 'nmr-star' and lp_category == '_Spectral_dim_transfer'):
+
+            for i in aux_data:
+                for name in [j['name'] for j in self.aux_key_items[file_type][content_subtype][lp_category]]:
+                    if not i[name] in range(1, max_dim):
+                        err = "%s '%s' must be one of %s in %s loop category, saveframe %s." % (name, i[name], range(1, max_dim), lp_category, sf_framecode)
+                        self.report.error.addDescription('invalid_data', err)
+                        self.report.setError()
+
+                        if self.__verbose:
+                            self.__lfh.write("+NmrDpUtility.__testDataConsistencyInAuxLoopOfSpectralPeak() ++ ValueError  - %s" % err)
+
+    def __testSaveframeTag(self):
+        """ Perform consistency test on data of interesting saveframe tags of NEF/NMR-STAR V3.2 file
+        """
+
+        #if self.report.isError():
+        #    return False
+
+        input_source = self.report.input_sources[0]
+        input_source_dic = input_source.get()
+
+        file_type = input_source_dic['file_type']
+
+        for content_subtype in input_source_dic['content_subtype'].keys():
+
+            sf_category = self.sf_categories[file_type][content_subtype]
+
+            list_id = 1
+
+            for sf_data in self.__star_data.get_saveframes_by_category(sf_category):
+
+                sf_framecode = sf_data.get_tag('sf_framecode')[0]
+
+                if sf_data.tag_prefix != self.sf_tag_prefixes[file_type][content_subtype]:
+
+                    self.report.error.addDescription('internal_error', "+NmrDpUtility.__testSaveframeTag() ++ Error  - Saveframe tag prefix %s does not match with %s in saveframe %s." % (sf_data.tag_prefix, self.sf_tag_prefixes[file_type][content_subtype], sf_framecode))
+                    self.report.setError()
+
+                    if self.__verbose:
+                        self.__lfh.write("+NmrDpUtility.__testSaveframeTag() ++ Error  - Saveframe tag prefix %s does not match with %s in saveframe %s." % (sf_data.tag_prefix, self.sf_tag_prefixes[file_type][content_subtype], sf_framecode))
+
+                    pass
+
+                try:
+
+                    data = self.nef_translator.check_sf_tag(sf_data, self.sf_tag_items[file_type][content_subtype], self.sf_allowed_tags[file_type][content_subtype],
+                                                            enforce_non_zero=True, enforce_enum=True)
+
+                    self.__testParentChildRelation(file_type, content_subtype, list_id, sf_data, sf_framecode, data)
+
+                    list_id += 1
+
+                except LookupError as e:
+
+                    self.report.error.addDescription('missing_mandatory_item', "%s %s saveframe." % (str(e).strip("'"), sf_framecode))
+                    self.report.setError()
+
+                    if self.__verbose:
+                        self.__lfh.write("+NmrDpUtility.__testSaveframeTag() ++ LookupError  - %s" % str(e))
+
+                except ValueError as e:
+
+                    self.report.error.addDescription('invalid_data', "%s %s saveframe." % (str(e).strip("'"), sf_framecode))
+                    self.report.setError()
+
+                    if self.__verbose:
+                        self.__lfh.write("+NmrDpUtility.__testSaveframeTag() ++ ValueError  - %s" % str(e))
+
+                except UserWarning as e:
+
+                    err = str(e).strip("'")
+
+                    zero = err.startswith("[ZERO] ")
+                    enum = err.startswith("[ENUM] ")
+
+                    if zero or enum:
+                        err = err[7:]
+
+                        self.report.warning.addDescription('missing_data' if zero else 'enum_failure', "%s, %s saveframe." % (err, sf_framecode))
+                        self.report.setWarning()
+
+                        if self.__verbose:
+                            self.__lfh.write("+NmrDpUtility.__testSaveframeTag() ++ Warning  - %s" % err)
+
+                        # retry allowing zero, range
+
+                        try:
+
+                            data = self.nef_translator.check_sf_tag(sf_data, self.sf_tag_items[file_type][content_subtype], self.sf_allowed_tags[file_type][content_subtype],
+                                                                    enfoce_non_zero=False, enforce_enum=False)
+
+                            self.____testParentChildRelation(file_type, content_subtype, list_id, sf_data, sf_framecode, data)
+
+                            list_id += 1
+
+                        except:
+                            pass
+
+                    else:
+                        self.report.error.addDescription('internal_error', "+NmrDpUtility.__testSaveframeTag() ++ Error  - %s" % str(e))
+                        self.report.setError()
+
+                        if self.__verbose:
+                            self.__lfh.write("+NmrDpUtility.__testSaveframeTag() ++ Error  - %s" % str(e))
+
+                except Exception as e:
+
+                    self.report.error.addDescription('internal_error', "+NmrDpUtility.__testSaveframeTag() ++ Error  - %s" % str(e))
+                    self.report.setError()
+
+                    if self.__verbose:
+                        self.__lfh.write("+NmrDpUtility.__testSaveframeTag() ++ Error  - %s" % str(e))
+
+        return not self.report.isError()
+
+    def __testParentChildRelation(self, file_type, content_subtype, list_id, sf_data, sf_framecode, data):
+        """ Perform consistency test on saveframe category and loop category relationship of interesting loops of NEF/NMR-STAR V3.2 file
+        """
+
+        if file_type == 'nef' or content_subtype == 'entry_info':
+            return True
+
+        key_base = self.sf_tag_prefixes['nmr-star'][content_subtype].lstrip('_')
+
+        parent_key_name = key_base + '.ID'
+        child_key_name = key_base + '_ID'
+
+        if data.has_key(parent_key_name):
+            parent_key = data[parent_key_name]
+        else:
+            parent_key = list_id
+
+        if content_subtype == 'spectral_peak':
+
+            try:
+
+                _num_dim = sf_data.get_tag(self.num_dim_items[file_type])[0]
+                num_dim = int(_num_dim)
+
+                if not num_dim in range(1, self.spectral_peak_lim_dim):
+                    raise ValueError()
+
+            except ValueError: # raised error already at __testDuplicatedIndex()
+                return False
+
+            max_dim = num_dim + 1
 
             key_items = []
             for dim in range(1, max_dim):
@@ -3061,55 +3158,63 @@ class NmrDpUtility(object):
                         _d['name'] = d['name'] % dim
                     data_items.append(_d)
 
-            position_names = [k['name'] for k in key_items]
-            index_tag = self.index_tags[file_type][content_subtype]
+            if max_dim < self.spectral_peak_lim_dim:
+                disallowed_tags = []
+                for dim in range(max_dim, self.spectral_peak_lim_dim):
+                    for t in self.spectral_peak_disallowed_tags[file_type]:
+                        if '%s' in t:
+                            t = t % dim
+                        disallowed_tags.append(t)
 
-            data = self.nef_translator.check_data(sf_data, self.lp_categories[file_type][content_subtype], key_items, data_items, None, None,
-                                                          inc_idx_test=False, enforce_non_zero=False, enforce_enum=False)[0]
+        else:
 
-            for i in data:
-                for j in range(num_dim):
-                    position = i[position_names[j]]
-                    if position < min_points[j] or position > max_points[j]:
-                        err = 'Check row of %s %s. %s %s is out of range (min %s, max %s) in %s loop category, %s saveframe.' % (index_tag, i[index_tag], position_names[j], position, min_points[j], max_points[j], lp_category, sf_framecode)
+            key_items = self.key_items[file_type][content_subtype]
+            data_items = self.data_items[file_type][content_subtype]
+
+        index_tag = self.index_tags[file_type][content_subtype]
+
+        try:
+
+            lp_category = self.lp_categories[file_type][content_subtype]
+
+            lp_data = self.nef_translator.check_data(sf_data, lp_category, key_items, data_items, None, None,
+                                                     inc_idx_test=False, enforce_non_zero=False, enforce_enum=False)[0]
+
+            for i in lp_data:
+                if i.has_key(child_key_name) and i[child_key_name] != parent_key:
+                    err = 'Check row of %s %s. %s %s must be %s in %s loop category, %s saveframe.' % (index_tag, i[index_tag], child_key_name, i[child_key_name], parent_key, lp_category, sf_framecode)
+
+                    self.report.error.addDescription('invalid_data', err)
+                    self.report.setError()
+
+                    if self.__verbose:
+                        self.__lfh.write("+NmrDpUtility.__testParentChildRelation() ++ ValueError  - %s" % err)
+
+            for lp_category in self.aux_lp_categories[file_type][content_subtype]:
+
+                key_items = self.aux_key_items[file_type][content_subtype][lp_category]
+                data_items = self.aux_data_items[file_type][content_subtype][lp_category]
+
+                lp_data = self.nef_translator.check_data(sf_data, lp_category, key_items, data_items, None, None,
+                                                         inc_idx_test=False, enforce_non_zero=False, enforce_enum=False)[0]
+
+                for i in lp_data:
+                    if i.has_key(child_key_name) and i[child_key_name] != parent_key:
+                        err = 'Check row of %s %s. %s %s must be %s in %s loop category, %s saveframe.' % (index_tag, i[index_tag], child_key_name, i[child_key_name], parent_key, lp_category, sf_framecode)
 
                         self.report.error.addDescription('invalid_data', err)
                         self.report.setError()
 
                         if self.__verbose:
-                            self.__lfh.write("+NmrDpUtility.__testDataConsistencyInAuxLoopOfSpectralPeak() ++ ValueError  - %s" % err)
+                            self.__lfh.write("+NmrDpUtility.__testParentChildRelation() ++ ValueError  - %s" % err)
 
-        if (file_type == 'nef' and lp_category == '_nef_spectrum_dimension_transfer') or (file_type == 'nmr-star' and lp_category == '_Spectral_dim_transfer'):
+        except Exception as e:
 
-            for i in aux_data:
-                for name in [j['name'] for j in self.aux_key_items[file_type][content_subtype][lp_category]]:
-                    if not i[name] in range(1, max_dim):
-                        err = "%s '%s' must be one of %s in %s loop category, saveframe %s." % (name, i[name], range(1, max_dim), lp_category, sf_framecode)
-                        self.report.error.addDescription('invalid_data', err)
-                        self.report.setError()
+                self.report.error.addDescription('internal_error', "+NmrDpUtility.__testParentChildRelation() ++ Error  - %s" % str(e))
+                self.report.setError()
 
-                        if self.__verbose:
-                            self.__lfh.write("+NmrDpUtility.__testDataConsistencyInAuxLoopOfSpectralPeak() ++ ValueError  - %s" % err)
-
-    def __testParentChildRelation(self):
-        """ Perform consistency test on saveframe category and loop category relationship of interesting loops of NEF/NMR-STAR V3.2 file
-        """
-
-        if self.report.isError():
-            return False
-
-        input_source = self.report.input_sources[0]
-        input_source_dic = input_source.get()
-
-        file_type = input_source_dic['file_type']
-
-        for content_subtype in input_source_dic['content_subtype'].keys():
-
-            sf_category = self.sf_categories[file_type][content_subtype]
-
-            for sf_data in self.__star_data.get_saveframes_by_category(sf_category):
-
-                sf_framecode = sf_data.get_tag('sf_framecode')[0]
+                if self.__verbose:
+                    self.__lfh.write("+NmrDpUtility.__testParentChildRelation() ++ Error  - %s" % str(e))
 
         return not self.report.isError()
 

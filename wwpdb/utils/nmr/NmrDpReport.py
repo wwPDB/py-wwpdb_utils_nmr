@@ -1,6 +1,6 @@
 ##
 # File: NmrDpReport.py
-# Date: 23-May-2019
+# Date: 30-May-2019
 #
 # Updates:
 ##
@@ -199,7 +199,7 @@ class NmrDpReportWarning:
     def __init__(self):
         self.items = ('missing_content', 'missing_saveframe', 'missing_data', 'enum_failure',
                       'disordered_index', 'sequence_mismatch', 'atom_nomenclature_mismatch',
-                      'skipped_sf_category', 'skipped_lp_category', 'suspicious_data')
+                      'skipped_sf_category', 'skipped_lp_category', 'suspicious_data', 'unusual_data')
 
         self.__contents = {item:None for item in self.items}
 

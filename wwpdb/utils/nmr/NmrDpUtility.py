@@ -1,10 +1,9 @@
 ##
 # File: NmrDpUtility.py
-# Date: 23-May-2019
+# Date: 30-May-2019
 #
 # Updates:
 ##
-from __builtin__ import True
 """ Wrapper class for data processing for NMR unified data.
 """
 import sys
@@ -20,6 +19,7 @@ import collections
 from wwpdb.utils.nmr.NEFTranslator.NEFTranslator import NEFTranslator
 from wwpdb.utils.nmr.NmrDpReport import NmrDpReport
 from wwpdb.utils.align.alignlib import PairwiseAlign
+from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
 
 class NmrDpUtility(object):
     """ Wrapper class for data processing for NMR unified data.
@@ -51,6 +51,7 @@ class NmrDpUtility(object):
         # dictionary of processing tasks of each workflow operation
         self.__procTasksDict = {'nmr-parser-check':  [self.__initializeDpReport,
                                                       self.__instanceNEFTranslator,
+                                                      self.__instanceBMRBChemShiftStat,
                                                       self.__validateInputSource,
                                                       self.__detectContentSubType,
                                                       self.__extractPolymerSequence,
@@ -91,6 +92,9 @@ class NmrDpUtility(object):
 
         # NEFTranslator
         self.nef_translator = None
+
+        # BMRB chemical shift statistics
+        self.bmrb_cs_stat = None
 
         # PyNMRSTAR data
         self.__star_data = None
@@ -1001,6 +1005,19 @@ class NmrDpUtility(object):
                                                }
                                   }
 
+        # item name in cs loop
+        self.item_names_in_cs_loop = {'nef': {'chain_id': 'chain_code',
+                                              'seq_id': 'sequence_code',
+                                              'comp_id': 'residue_name',
+                                              'atom_id': 'atom_name',
+                                              'value': 'value'},
+                                      'nmr-star': {'chain_id': 'Entity_assembly_ID',
+                                                   'seq_id': 'Comp_index_ID',
+                                                   'comp_id': 'Comp_ID',
+                                                   'atom_id': 'Atom_ID',
+                                                   'value': 'Val'}
+                                      }
+
         # taken from wwpdb.utils.align.SequenceReferenceData.py
         self.monDict3 = {'ALA': 'A',
                          'ARG': 'R',
@@ -1182,6 +1199,14 @@ class NmrDpUtility(object):
         self.nef_translator = NEFTranslator()
 
         return self.nef_translator is not None
+
+    def __instanceBMRBChemShiftStat(self):
+        """ Instance BMRBChemShiftStat.
+        """
+
+        self.bmrb_cs_stat = BMRBChemShiftStat()
+
+        return self.bmrb_cs_stat.isOk()
 
     def __validateInputSource(self):
         """ Validate input source using NEFTranslator.
@@ -1365,6 +1390,7 @@ class NmrDpUtility(object):
             return True
 
         sf_category = self.sf_categories[file_type][content_subtype]
+        lp_category = self.lp_categories[file_type][content_subtype]
 
         sf_data = self.__star_data.get_saveframes_by_category(sf_category)[0]
 
@@ -1377,7 +1403,7 @@ class NmrDpUtility(object):
             input_source.setItemValue('polymer_sequence', poly_seq)
 
             if file_type == 'nmr-star':
-                auth_poly_seq = self.nef_translator.get_star_auth_seq(sf_data, lp_category=self.lp_categories[file_type][content_subtype])[0]
+                auth_poly_seq = self.nef_translator.get_star_auth_seq(sf_data, lp_category)[0]
 
                 for cid in range(len(poly_seq)):
                     chain_id = poly_seq[cid]['chain_id']
@@ -1529,6 +1555,7 @@ class NmrDpUtility(object):
             poly_seq_list_set[content_subtype] = []
 
             sf_category = self.sf_categories[file_type][content_subtype]
+            lp_category = self.lp_categories[file_type][content_subtype]
 
             list_id = 1
             has_poly_seq = False
@@ -1550,7 +1577,7 @@ class NmrDpUtility(object):
                         has_poly_seq = True
 
                         if file_type == 'nmr-star':
-                            auth_poly_seq = self.nef_translator.get_star_auth_seq(sf_data, lp_category=self.lp_categories[file_type][content_subtype])[0]
+                            auth_poly_seq = self.nef_translator.get_star_auth_seq(sf_data, lp_category)[0]
 
                             for cid in range(len(poly_seq)):
                                 chain_id = poly_seq[cid]['chain_id']
@@ -2092,6 +2119,7 @@ class NmrDpUtility(object):
         for content_subtype in polymer_sequence_in_loop.keys():
 
             sf_category = self.sf_categories[file_type][content_subtype]
+            lp_category = self.lp_categories[file_type][content_subtype]
 
             for sf_data in self.__star_data.get_saveframes_by_category(sf_category):
 
@@ -2100,15 +2128,11 @@ class NmrDpUtility(object):
                 try:
 
                     if file_type == 'nef':
-                        pairs = self.nef_translator.get_nef_comp_atom_pair(
-                            sf_data,
-                            lp_category=self.lp_categories[file_type][content_subtype],
-                            allow_empty=(content_subtype == 'spectral_peak'))[0]
+                        pairs = self.nef_translator.get_nef_comp_atom_pair(sf_data, lp_category,
+                                                                           allow_empty=(content_subtype == 'spectral_peak'))[0]
                     else:
-                        pairs = self.nef_translator.get_star_comp_atom_pair(
-                            sf_data,
-                            lp_category=self.lp_categories[file_type][content_subtype],
-                            allow_empty=(content_subtype == 'spectral_peak'))[0]
+                        pairs = self.nef_translator.get_star_comp_atom_pair(sf_data, lp_category,
+                                                                            allow_empty=(content_subtype == 'spectral_peak'))[0]
 
                     for pair in pairs:
                         comp_id = pair['comp_id']
@@ -2129,7 +2153,7 @@ class NmrDpUtility(object):
                                         self.report.setError()
 
                                     else:
-                                        _atom_ids.extend(self.nef_translator.get_nmrstar_atom(comp_id, atom_id)[1])
+                                        _atom_ids.extend(_atom_id)
 
                                 atom_ids = sorted(set(_atom_ids))
 
@@ -2144,9 +2168,7 @@ class NmrDpUtility(object):
                             pass
 
                     if file_type == 'nmr-star':
-                        auth_pairs = self.nef_translator.get_star_auth_comp_atom_pair(
-                            sf_data,
-                            lp_category=self.lp_categories[file_type][content_subtype])[0]
+                        auth_pairs = self.nef_translator.get_star_auth_comp_atom_pair(sf_data, lp_category)[0]
 
                         for auth_pair in auth_pairs:
                             comp_id = auth_pair['comp_id']
@@ -2165,7 +2187,7 @@ class NmrDpUtility(object):
                                         self.report.setWarning()
 
                                     else:
-                                        _auth_atom_ids.extend(self.nef_translator.get_nmrstar_atom(comp_id, auth_atom_id)[1])
+                                        _auth_atom_ids.extend(_auth_atom_id)
 
                                 auth_atom_ids = sorted(set(_auth_atom_ids))
 
@@ -2540,6 +2562,8 @@ class NmrDpUtility(object):
         for content_subtype in input_source_dic['content_subtype'].keys():
 
             sf_category = self.sf_categories[file_type][content_subtype]
+            lp_category = self.lp_categories[file_type][content_subtype]
+
             index_tag = self.index_tags[file_type][content_subtype]
 
             if index_tag is None:
@@ -2551,14 +2575,14 @@ class NmrDpUtility(object):
 
                 try:
 
-                    indices = self.nef_translator.get_index(sf_data, lp_category=self.lp_categories[file_type][content_subtype], index_id=self.index_tags[file_type][content_subtype])[0]
+                    indices = self.nef_translator.get_index(sf_data, lp_category, index_id=index_tag)[0]
 
                     if indices != range(1, len(indices) + 1):
-                        self.report.warning.addDescription('disordered_index', "Index (loop tag %s.%s) is disordered in %s saveframe." % (self.lp_categories[file_type][content_subtype], index_tag, sf_framecode))
+                        self.report.warning.addDescription('disordered_index', "Index (loop tag %s.%s) is disordered in %s saveframe." % (lp_category, index_tag, sf_framecode))
                         self.report.setWarning()
 
                         if self.__verbose:
-                            self.__lfh.write("+NmrDpUtility.__testIndexConsistency() ++ Warning  - Index (loop tag %s.%s) is disordered in %s saveframe." % (self.lp_categories[file_type][content_subtype], index_tag, sf_framecode))
+                            self.__lfh.write("+NmrDpUtility.__testIndexConsistency() ++ Warning  - Index (loop tag %s.%s) is disordered in %s saveframe." % (lp_category, index_tag, sf_framecode))
 
                 except KeyError as e:
 
@@ -2612,6 +2636,7 @@ class NmrDpUtility(object):
                 continue
 
             sf_category = self.sf_categories[file_type][content_subtype]
+            lp_category = self.lp_categories[file_type][content_subtype]
 
             for sf_data in self.__star_data.get_saveframes_by_category(sf_category):
 
@@ -2668,7 +2693,7 @@ class NmrDpUtility(object):
 
                 try:
 
-                    data = self.nef_translator.check_data(sf_data, self.lp_categories[file_type][content_subtype], key_items, data_items, allowed_tags, disallowed_tags,
+                    data = self.nef_translator.check_data(sf_data, lp_category, key_items, data_items, allowed_tags, disallowed_tags,
                                                           inc_idx_test=True, enforce_non_zero=True, enforce_enum=True)[0]
 
                 except KeyError as e:
@@ -2715,7 +2740,7 @@ class NmrDpUtility(object):
 
                         try:
 
-                            data = self.nef_translator.check_data(sf_data, self.lp_categories[file_type][content_subtype], key_items, data_items, allowed_tags, disallowed_tags,
+                            data = self.nef_translator.check_data(sf_data, lp_category, key_items, data_items, allowed_tags, disallowed_tags,
                                                                   inc_idx_test=False, enforce_non_zero=False, enforce_enum=False)[0]
 
                         except:
@@ -3243,6 +3268,271 @@ class NmrDpUtility(object):
                 self.__lfh.write("+NmrDpUtility.__testChemShiftValue() ++ Error  - Assigned chemical shift loop does not exists in %s file" % file_name)
 
             return False
+
+        sf_category = self.sf_categories[file_type][content_subtype]
+        lp_category = self.lp_categories[file_type][content_subtype]
+
+        key_items = self.key_items[file_type][content_subtype]
+        data_items = self.data_items[file_type][content_subtype]
+
+        index_tag = self.index_tags[file_type][content_subtype]
+
+        for sf_data in self.__star_data.get_saveframes_by_category(sf_category):
+
+            sf_framecode = sf_data.get_tag('sf_framecode')[0]
+
+            try:
+
+                lp_data = self.nef_translator.check_data(sf_data, lp_category, key_items, data_items, None, None,
+                                                         inc_idx_test=False, enforce_non_zero=False, enforce_enum=False)[0]
+
+                for i in lp_data:
+                    chain_id = i[self.item_names_in_cs_loop[file_type]['chain_id']]
+                    comp_id = i[self.item_names_in_cs_loop[file_type]['comp_id']]
+                    atom_id = i[self.item_names_in_cs_loop[file_type]['atom_id']]
+
+                    value_name = self.item_names_in_cs_loop[file_type]['value']
+                    value = i[value_name]
+
+                    one_letter_code = self.__get1LetterCode(comp_id)
+
+                    if one_letter_code == '.':
+                        continue
+
+                    # non-standard residue
+                    elif one_letter_code == 'X':
+
+                        for cs_stat in self.bmrb_cs_stat.others:
+
+                            if cs_stat['comp_id'] == comp_id and cs_stat['atom_id'] == atom_id_:
+                                min_value = cs_stat['min']
+                                max_value = cs_stat['max']
+                                avg_value = cs_stat['avg']
+                                std_value = cs_stat['std']
+
+                                if std_value is None:
+                                    break
+
+                                z_score = (value - avg_value) / std_value
+                                tolerance = std_value / 10.0
+
+                                if value < min_value - tolerance or value > max_value + tolerance:
+                                    err = 'Check row of chain_id %s, comp_id %s, atom_id %s. %s %s is out of range (avg %s, std %s, min %s, max %s, Z_score %.2f) in %s loop category, %s saveframe.' %\
+                                          (chain_id, comp_id, atom_id, value_name, value, avg_value, std_value, min_value, max_value, z_score, lp_category, sf_framecode)
+
+                                    self.report.error.addDescription('anomalous_data', err)
+                                    self.report.setError()
+
+                                    if self.__verbose:
+                                        self.__lfh.write("+NmrDpUtility.__testChemShiftValue() ++ ValueError  - %s" % err)
+
+                                elif abs(z_score) > 5.0:
+                                    warn = 'Check row of chain_id %s, comp_id %s, atom_id %s. %s %s must be verified (avg %s, std %s, min %s, max %s, Z_score %.2f) in %s loop category, %s saveframe.' %\
+                                           (chain_id, comp_id, atom_id, value_name, value, avg_value, std_value, min_value, max_value, z_score, lp_category, sf_framecode)
+
+                                    self.report.warning.addDescription('suspicious_data', warn)
+                                    self.report.setWarning()
+
+                                    if self.__verbose:
+                                        self.__lfh.write("+NmrDpUtility.__testChemShiftValue() ++ Warning  - %s" % warn)
+
+                                elif abs(z_score) > 3.5:
+                                    warn = 'Check row of chain_id %s, comp_id %s, atom_id %s. %s %s should be verified (avg %s, std %s, min %s, max %s, Z_score %.2f) in %s loop category, %s saveframe.' %\
+                                           (chain_id, comp_id, atom_id, value_name, value, avg_value, std_value, min_value, max_value, z_score, lp_category, sf_framecode)
+
+                                    self.report.warning.addDescription('unusual_data', warn)
+                                    self.report.setWarning()
+
+                                    if self.__verbose:
+                                        self.__lfh.write("+NmrDpUtility.__testChemShiftValue() ++ Warning  - %s" % warn)
+
+                                break
+
+                    # standard residue
+                    else:
+
+                        if file_type == 'nef':
+                            _atom_id = self.nef_translator.get_nmrstar_atom(comp_id, atom_id)[1]
+
+                            if len(_atom_id) == 0:
+                                continue
+
+                            # representative atom id
+                            atom_id_ = _atom_id[0]
+                            atom_name = atom_id + ' (e.g. %s)' % atom_id_
+
+                        else:
+                            atom_id_ = atom_id
+                            atom_name = atom_id
+
+                        has_cs_stat = False
+
+                        if len(comp_id) == 3:
+
+                            for cs_stat in self.bmrb_cs_stat.aa_full:
+
+                                if cs_stat['comp_id'] == comp_id and cs_stat['atom_id'] == atom_id_:
+                                    min_value = cs_stat['min']
+                                    max_value = cs_stat['max']
+                                    avg_value = cs_stat['avg']
+                                    std_value = cs_stat['std']
+
+                                    z_score = (value - avg_value) / std_value
+                                    tolerance = std_value / 10.0
+
+                                    if value < min_value - tolerance or value > max_value + tolerance:
+                                        err = 'Check row of chain_id %s, comp_id %s, atom_id %s. %s %s is out of range (avg %s, std %s, min %s, max %s, Z_score %.2f) in %s loop category, %s saveframe.' %\
+                                              (chain_id, comp_id, atom_name, value_name, value, avg_value, std_value, min_value, max_value, z_score, lp_category, sf_framecode)
+
+                                        self.report.error.addDescription('anomalous_data', err)
+                                        self.report.setError()
+
+                                        if self.__verbose:
+                                            self.__lfh.write("+NmrDpUtility.__testChemShiftValue() ++ ValueError  - %s" % err)
+
+                                    elif abs(z_score) > 5.0:
+                                        warn = 'Check row of chain_id %s, comp_id %s, atom_id %s. %s %s must be verified (avg %s, std %s, min %s, max %s, Z_score %.2f) in %s loop category, %s saveframe.' %\
+                                               (chain_id, comp_id, atom_name, value_name, value, avg_value, std_value, min_value, max_value, z_score, lp_category, sf_framecode)
+
+                                        self.report.warning.addDescription('suspicious_data', warn)
+                                        self.report.setWarning()
+
+                                        if self.__verbose:
+                                            self.__lfh.write("+NmrDpUtility.__testChemShiftValue() ++ Warning  - %s" % warn)
+
+                                    elif abs(z_score) > 3.5:
+                                        warn = 'Check row of chain_id %s, comp_id %s, atom_id %s. %s %s should be verified (avg %s, std %s, min %s, max %s, Z_score %.2f) in %s loop category, %s saveframe.' %\
+                                               (chain_id, comp_id, atom_name, value_name, value, avg_value, std_value, min_value, max_value, z_score, lp_category, sf_framecode)
+
+                                        self.report.warning.addDescription('unusual_data', warn)
+                                        self.report.setWarning()
+
+                                        if self.__verbose:
+                                            self.__lfh.write("+NmrDpUtility.__testChemShiftValue() ++ Warning  - %s" % warn)
+
+                                    has_cs_stat = True
+
+                                    break
+
+                        elif len(comp_id) == 2:
+
+                            for cs_stat in self.bmrb_cs_stat.dna_full:
+
+                                if cs_stat['comp_id'] == comp_id and cs_stat['atom_id'] == atom_id_:
+                                    min_value = cs_stat['min']
+                                    max_value = cs_stat['max']
+                                    avg_value = cs_stat['avg']
+                                    std_value = cs_stat['std']
+
+                                    if std_value is None:
+                                        has_cs_stat = True
+                                        break
+
+                                    z_score = (value - avg_value) / std_value
+                                    tolerance = std_value / 10.0
+
+                                    if value < min_value - tolerance or value > max_value + tolerance:
+                                        err = 'Check row of chain_id %s, comp_id %s, atom_id %s. %s %s is out of range (avg %s, std %s, min %s, max %s, Z_score %.2f) in %s loop category, %s saveframe.' %\
+                                              (chain_id, comp_id, atom_name, value_name, value, avg_value, std_value, min_value, max_value, z_score, lp_category, sf_framecode)
+
+                                        self.report.error.addDescription('anomalous_data', err)
+                                        self.report.setError()
+
+                                        if self.__verbose:
+                                            self.__lfh.write("+NmrDpUtility.__testChemShiftValue() ++ ValueError  - %s" % err)
+
+                                    elif abs(z_score) > 5.0:
+                                        warn = 'Check row of chain_id %s, comp_id %s, atom_id %s. %s %s must be verified (avg %s, std %s, min %s, max %s, Z_score %.2f) in %s loop category, %s saveframe.' %\
+                                               (chain_id, comp_id, atom_name, value_name, value, avg_value, std_value, min_value, max_value, z_score, lp_category, sf_framecode)
+
+                                        self.report.warning.addDescription('suspicious_data', warn)
+                                        self.report.setWarning()
+
+                                        if self.__verbose:
+                                            self.__lfh.write("+NmrDpUtility.__testChemShiftValue() ++ Warning  - %s" % warn)
+
+                                    elif abs(z_score) > 3.5:
+                                        warn = 'Check row of chain_id %s, comp_id %s, atom_id %s. %s %s should be verified (avg %s, std %s, min %s, max %s, Z_score %.2f) in %s loop category, %s saveframe.' %\
+                                               (chain_id, comp_id, atom_name, value_name, value, avg_value, std_value, min_value, max_value, z_score, lp_category, sf_framecode)
+
+                                        self.report.warning.addDescription('unusual_data', warn)
+                                        self.report.setWarning()
+
+                                        if self.__verbose:
+                                            self.__lfh.write("+NmrDpUtility.__testChemShiftValue() ++ Warning  - %s" % warn)
+
+                                    has_cs_stat = True
+
+                                    break
+
+                        else:
+
+                            for cs_stat in self.bmrb_cs_stat.rna_full:
+
+                                if cs_stat['comp_id'] == comp_id and cs_stat['atom_id'] == atom_id_:
+                                    min_value = cs_stat['min']
+                                    max_value = cs_stat['max']
+                                    avg_value = cs_stat['avg']
+                                    std_value = cs_stat['std']
+
+                                    if std_value is None:
+                                        has_cs_stat = True
+                                        break
+
+                                    z_score = (value - avg_value) / std_value
+                                    tolerance = std_value / 10.0
+
+                                    if value < min_value - tolerance or value > max_value + tolerance:
+                                        err = 'Check row of chain_id %s, comp_id %s, atom_id %s. %s %s is out of range (avg %s, std %s, min %s, max %s, Z_score %.2f) in %s loop category, %s saveframe.' %\
+                                              (chain_id, comp_id, atom_name, value_name, value, avg_value, std_value, min_value, max_value, z_score, lp_category, sf_framecode)
+
+                                        self.report.error.addDescription('anomalous_data', err)
+                                        self.report.setError()
+
+                                        if self.__verbose:
+                                            self.__lfh.write("+NmrDpUtility.__testChemShiftValue() ++ ValueError  - %s" % err)
+
+                                    elif abs(z_score) > 5.0:
+                                        warn = 'Check row of chain_id %s, comp_id %s, atom_id %s. %s %s must be verified (avg %s, std %s, min %s, max %s, Z_score %.2f) in %s loop category, %s saveframe.' %\
+                                               (chain_id, comp_id, atom_name, value_name, value, avg_value, std_value, min_value, max_value, z_score, lp_category, sf_framecode)
+
+                                        self.report.warning.addDescription('suspicious_data', warn)
+                                        self.report.setWarning()
+
+                                        if self.__verbose:
+                                            self.__lfh.write("+NmrDpUtility.__testChemShiftValue() ++ Warning  - %s" % warn)
+
+                                    elif abs(z_score) > 3.5:
+                                        warn = 'Check row of chain_id %s, comp_id %s, atom_id %s. %s %s should be verified (avg %s, std %s, min %s, max %s, Z_score %.2f) in %s loop category, %s saveframe.' %\
+                                               (chain_id, comp_id, atom_name, value_name, value, avg_value, std_value, min_value, max_value, z_score, lp_category, sf_framecode)
+
+                                        self.report.warning.addDescription('unusual_data', warn)
+                                        self.report.setWarning()
+
+                                        if self.__verbose:
+                                            self.__lfh.write("+NmrDpUtility.__testChemShiftValue() ++ Warning  - %s" % warn)
+
+                                    has_cs_stat = True
+
+                                    break
+
+                        if not has_cs_stat:
+                            warn = 'No chemical shift statistics is available for chain_id %s, comp_id %s, atom_id %s. %s %s should be verified in %s loop category, %s saveframe.' %\
+                                   (chain_id, comp_id, atom_name, value_name, value, lp_category, sf_framecode)
+
+                            self.report.warning.addDescription('unusual_data', warn)
+                            self.report.setWarning()
+
+                            if self.__verbose:
+                                self.__lfh.write("+NmrDpUtility.__testChemShiftValue() ++ Warning  - %s" % warn)
+
+            except Exception as e:
+
+                self.report.error.addDescription('internal_error', "+NmrDpUtility.__testChemShiftValue() ++ Error  - %s" % str(e))
+                self.report.setError()
+
+                if self.__verbose:
+                    self.__lfh.write("+NmrDpUtility.__testChemShiftValue() ++ Error  - %s" % str(e))
 
         return not self.report.isError()
 

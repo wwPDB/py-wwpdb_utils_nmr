@@ -36,6 +36,12 @@ class BMRBChemShiftStat:
 
         self.loadStatFromPickleFiles()
 
+    def isOk(self):
+        """ Return whether all BMRB statistics are available.
+        """
+
+        return len(self.aa_filt) > 0 and len(self.aa_full) > 0 and len(self.dna_filt) > 0 and len(self.dna_full) > 0 and len(self.others) > 0
+
     def printStat(self, list):
         """ Print out statistics.
         """
@@ -74,6 +80,20 @@ class BMRBChemShiftStat:
                     if row['atom_id'].startswith('M'):
                         _atom_id = re.sub(r'^M', 'H', row['atom_id'])
 
+                        _row = {}
+                        _row['comp_id'] = row['comp_id']
+                        _row['atom_id'] = _atom_id
+                        _row['count'] = int(row['count'])
+                        _row['avg'] = float(row['avg'])
+                        try:
+                            _row['std'] = float(row['std'])
+                        except ValueError:
+                            _row['std'] = None
+                        _row['min'] = float(row['min'])
+                        _row['max'] = float(row['max'])
+
+                        list.append(_row)
+
                         for i in range(1, 4):
                             _row = {}
                             _row['comp_id'] = row['comp_id']
@@ -92,6 +112,20 @@ class BMRBChemShiftStat:
                     # methylen/amino group
                     elif row['atom_id'].startswith('Q'):
                         _atom_id = re.sub(r'^Q', 'H', row['atom_id'])
+
+                        _row = {}
+                        _row['comp_id'] = row['comp_id']
+                        _row['atom_id'] = _atom_id
+                        _row['count'] = int(row['count'])
+                        _row['avg'] = float(row['avg'])
+                        try:
+                            _row['std'] = float(row['std'])
+                        except ValueError:
+                            _row['std'] = None
+                        _row['min'] = float(row['min'])
+                        _row['max'] = float(row['max'])
+
+                        list.append(_row)
 
                         for i in range(1, 3):
                             _row = {}

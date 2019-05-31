@@ -1,13 +1,10 @@
 import unittest
 import os
 import sys
-import logging
 import json
 
 from wwpdb.utils.nmr.NmrDpReport import NmrDpReport, NmrDpReportInputSource, NmrDpReportSequenceAlignment, NmrDpReportError, NmrDpReportWarning
 from testfixtures import LogCapture
-
-logger = logging.getLogger('')
 
 class TestNmrDpReport(unittest.TestCase):
 

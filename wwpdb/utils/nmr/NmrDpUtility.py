@@ -3226,6 +3226,9 @@ class NmrDpUtility(object):
         #if self.report.isError():
         #    return False
 
+        input_source = self.report.input_sources[0]
+        input_source_dic = input_source.get()
+
         file_name = input_source_dic['file_name']
         file_type = input_source_dic['file_type']
 

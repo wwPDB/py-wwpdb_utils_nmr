@@ -65,11 +65,10 @@ class NmrDpUtility(object):
                                                       self.__testDuplicatedIndex,
                                                       self.__testDataConsistencyInLoop,
                                                       self.__testDataConsistencyInAuxLoop,
-                                                      self.__testSaveframeTag]}
+                                                      self.__testSaveframeTag,
+                                                      self.__testChemShiftValue]}
         """
                                 }
-                                                      self.__testAnomalousData,
-                                                      self.__testSaspiciousData,
                                                       self__calculateStatistics],
                                 'nmr-consistency-check': [self.__appendInputResource,
                                                           self.__retrieveDpReport,
@@ -2715,8 +2714,10 @@ class NmrDpUtility(object):
                         # retry allowing zero, range
 
                         try:
+
                             data = self.nef_translator.check_data(sf_data, self.lp_categories[file_type][content_subtype], key_items, data_items, allowed_tags, disallowed_tags,
                                                                   inc_idx_test=False, enforce_non_zero=False, enforce_enum=False)[0]
+
                         except:
                             pass
 
@@ -2978,7 +2979,7 @@ class NmrDpUtility(object):
                         if position < min_points[j] or position > max_points[j]:
                             err = 'Check row of %s %s. %s %s is out of range (min_position %s, max_position %s) in %s loop category, %s saveframe.' % (index_tag, i[index_tag], position_names[j], position, min_points[j], max_points[j], lp_category, sf_framecode)
 
-                            self.report.error.addDescription('invalid_data', err)
+                            self.report.error.addDescription('anomalous_data', err)
                             self.report.setError()
 
                             if self.__verbose:
@@ -3215,6 +3216,30 @@ class NmrDpUtility(object):
 
                 if self.__verbose:
                     self.__lfh.write("+NmrDpUtility.__testParentChildRelation() ++ Error  - %s" % str(e))
+
+        return not self.report.isError()
+
+    def __testChemShiftValue(self):
+        """ Perform statistical test on assigned chemical shift values of NEF/NMR-STAR V3.2 file
+        """
+
+        #if self.report.isError():
+        #    return False
+
+        file_name = input_source_dic['file_name']
+        file_type = input_source_dic['file_type']
+
+        content_subtype = 'chem_shift'
+
+        if not content_subtype in input_source_dic['content_subtype'].keys():
+
+            self.report.error.addDescription('internal_error', "+NmrDpUtility.__testChemShiftValue() ++ Error  - Assigned chemical shift loop does not exists in %s file." % file_name)
+            self.report.setError()
+
+            if self.__verbose:
+                self.__lfh.write("+NmrDpUtility.__testChemShiftValue() ++ Error  - Assigned chemical shift loop does not exists in %s file" % file_name)
+
+            return False
 
         return not self.report.isError()
 

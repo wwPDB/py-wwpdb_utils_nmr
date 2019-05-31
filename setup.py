@@ -41,7 +41,7 @@ setup(
         'Programming Language :: Python :: 3.7',
     ],
     #
-    install_requires=['pynmrstar'],
+    install_requires=['pynmrstar', 'pytz'],
     packages=find_packages(exclude=['wwpdb.utils.tests-nmr', 'mock-data']),
     package_data={
         # If any package contains *.md or *.rst ...  files, include them:

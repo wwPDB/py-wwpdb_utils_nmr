@@ -43,6 +43,8 @@ setup(
     #
     install_requires=['wwpdb.utils.align', 'pynmrstar', 'pytz'],
     packages=find_packages(exclude=['wwpdb.utils.tests-nmr', 'mock-data']),
+    # Enables Manifest to be used
+    include_package_data = True,
     package_data={
         # If any package contains *.md or *.rst ...  files, include them:
         '': ['*.md', '*.rst', "*.txt", "*.cfg"],

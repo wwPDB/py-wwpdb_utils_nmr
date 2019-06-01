@@ -1,0 +1,2 @@
+recursive-include wwpdb/utils/nmr/NEFTranslator/lib *.json *.csv
+

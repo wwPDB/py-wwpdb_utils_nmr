@@ -104,3 +104,6 @@ venv.bak/
 
 # mypy
 .mypy_cache/
+
+# Test output
+wwpdb/utils/tests-nmr/test-output/

@@ -67,10 +67,11 @@ class NmrDpUtility(object):
                                                       self.__testDataConsistencyInLoop,
                                                       self.__testDataConsistencyInAuxLoop,
                                                       self.__testSaveframeTag,
-                                                      self.__testChemShiftValue]}
-        """
+                                                      self.__validateChemShiftValue,
+                                                      self.__calculateStatistics
+                                                      ]
                                 }
-                                                      self__calculateStatistics],
+        """
                                 'nmr-consistency-check': [self.__appendInputResource,
                                                           self.__retrieveDpReport,
                                                           self.__extractCoordPolymerSequence,
@@ -304,8 +305,8 @@ class NmrDpUtility(object):
                                        }
                           }
 
-        # limit of spectral peak dimensions
-        self.spectral_peak_lim_dim = 16
+        # limit number of dimensions
+        self.lim_num_dim = 16
 
         # key items for spectral peak
         self.spectral_peak_key_items = {'nef': [{'name': 'position_%s', 'type': 'float'}
@@ -771,7 +772,7 @@ class NmrDpUtility(object):
                                        'spectral_peak': [{'name': 'sf_category', 'type': 'str', 'mandatory': True},
                                                          {'name': 'sf_framecode', 'type': 'str', 'mandatory': True},
                                                          {'name': 'num_dimensions', 'type': 'enum-int', 'mandatory': True,
-                                                          'enum': set(range(1, self.spectral_peak_lim_dim)),
+                                                          'enum': set(range(1, self.lim_num_dim)),
                                                           'enforce-enum': True},
                                                          {'name': 'chemical_shift_list', 'type': 'str', 'mandatory': False},
                                                          {'name': 'experiment_classification', 'type': 'str', 'mandatory': False},
@@ -826,7 +827,7 @@ class NmrDpUtility(object):
                                                             {'name': 'Experiment_class', 'type': 'str', 'mandatory': False},
                                                             {'name': 'Experiment_type', 'type': 'str', 'mandatory': False},
                                                             {'name': 'Number_of_spectral_dimensions', 'type': 'enum-int', 'mandatory': True,
-                                                             'enum': set(range(1, self.spectral_peak_lim_dim)),
+                                                             'enum': set(range(1, self.lim_num_dim)),
                                                              'enforce-enum': True},
                                                             {'name': 'Chemical_shift_list', 'type': 'str', 'mandatory': True}
                                                             ]
@@ -1259,7 +1260,7 @@ class NmrDpUtility(object):
             return False
 
     def __detectContentSubType(self):
-        """ Detect content subtypes in NEF/NMR-STAR V3.2 file.
+        """ Detect content subtypes.
         """
 
         if self.report.isError():
@@ -1373,7 +1374,7 @@ class NmrDpUtility(object):
             return self.nef_translator.get_star_seq(sf_data, lp_category=self.lp_categories[file_type][content_subtype], allow_empty=(content_subtype == 'spectral_peak'))
 
     def __extractPolymerSequence(self):
-        """ Extract reference polymer sequence of NEF/NMR-STAR V3.2 file.
+        """ Extract reference polymer sequence.
         """
 
         if self.report.isError():
@@ -1533,7 +1534,7 @@ class NmrDpUtility(object):
         return False
 
     def __extractPolymerSequenceInLoop(self):
-        """ Extract polymer sequence in interesting loops of NEF/NMR-STAR V3.2 file.
+        """ Extract polymer sequence in interesting loops.
         """
 
         if self.report.isError():
@@ -1970,7 +1971,7 @@ class NmrDpUtility(object):
         return True
 
     def __appendPolymerSequenceAlignment(self):
-        """ Append polymer sequence alignment of interesting loops of NEF/NMR-STAR V3.2 file.
+        """ Append polymer sequence alignment of interesting loops.
         """
 
         if self.report.isError():
@@ -2432,7 +2433,7 @@ class NmrDpUtility(object):
         return not self.report.isError()
 
     def __getMaxAmbigCodeWoSetId(self, comp_id, atom_id):
-        """ Return maximum ambiguity code of a given atom that does not require declaration of ambiguity set ID
+        """ Return maximum ambiguity code of a given atom that does not require declaration of ambiguity set ID.
         """
 
         code = self.__get1LetterCode(comp_id)
@@ -2548,7 +2549,7 @@ class NmrDpUtility(object):
         return 1
 
     def __testDuplicatedIndex(self):
-        """ Perform duplication test on index of interesting loops of NEF/NMR-STAR V3.2 file.
+        """ Perform duplication test on index of interesting loops.
         """
 
         if self.report.isError():
@@ -2619,7 +2620,7 @@ class NmrDpUtility(object):
         return not self.report.isError()
 
     def __testDataConsistencyInLoop(self):
-        """ Perform consistency test on data of interesting loops of NEF/NMR-STAR V3.2 file
+        """ Perform consistency test on data of interesting loops.
         """
 
         if self.report.isError():
@@ -2652,7 +2653,7 @@ class NmrDpUtility(object):
                         _num_dim = sf_data.get_tag(self.num_dim_items[file_type])[0]
                         num_dim = int(_num_dim)
 
-                        if not num_dim in range(1, self.spectral_peak_lim_dim):
+                        if not num_dim in range(1, self.lim_num_dim):
                             raise ValueError()
 
                     except ValueError: # raised error already at __testDuplicatedIndex()
@@ -2678,9 +2679,9 @@ class NmrDpUtility(object):
                                 _d['name'] = d['name'] % dim
                             data_items.append(_d)
 
-                    if max_dim < self.spectral_peak_lim_dim:
+                    if max_dim < self.lim_num_dim:
                         disallowed_tags = []
-                        for dim in range(max_dim, self.spectral_peak_lim_dim):
+                        for dim in range(max_dim, self.lim_num_dim):
                             for t in self.spectral_peak_disallowed_tags[file_type]:
                                 if '%s' in t:
                                     t = t % dim
@@ -2736,7 +2737,7 @@ class NmrDpUtility(object):
                         if self.__verbose:
                             self.__lfh.write("+NmrDpUtility.__testDataConsistencyInLoop() ++ Warning  - %s" % err)
 
-                        # retry allowing zero, range
+                        # try to parse data without constraints
 
                         try:
 
@@ -2764,7 +2765,7 @@ class NmrDpUtility(object):
         return not self.report.isError()
 
     def __testDataConsistencyInAuxLoop(self):
-        """ Perform consistency test on data of auxiliary loops of NEF/NMR-STAR V3.2 file
+        """ Perform consistency test on data of auxiliary loops.
         """
 
         #if self.report.isError():
@@ -2790,15 +2791,15 @@ class NmrDpUtility(object):
                         _num_dim = sf_data.get_tag(self.num_dim_items[file_type])[0]
                         num_dim = int(_num_dim)
 
-                        if not num_dim in range(1, self.spectral_peak_lim_dim):
+                        if not num_dim in range(1, self.lim_num_dim):
                             raise ValueError()
 
                     except ValueError:
-                        self.report.error.addDescription('invalid_data', "%s %s must be in %s, %s saveframe." % (self.num_dim_items[file_type], _num_dim, set(range(1, self.spectral_peak_lim_dim)), sf_framecode))
+                        self.report.error.addDescription('invalid_data', "%s %s must be in %s, %s saveframe." % (self.num_dim_items[file_type], _num_dim, set(range(1, self.lim_num_dim)), sf_framecode))
                         self.report.setError()
 
                         if self.__verbose:
-                            self.__lfh.write("+NmrDpUtility.__testDataConsistencyInAuxLoop() ++ ValueError  - %s %s must be in %s, %s saveframe." % (self.num_dim_items[file_type], _num_dim, range(1, self.spectral_peak_lim_dim), sf_framecode))
+                            self.__lfh.write("+NmrDpUtility.__testDataConsistencyInAuxLoop() ++ ValueError  - %s %s must be in %s, %s saveframe." % (self.num_dim_items[file_type], _num_dim, range(1, self.lim_num_dim), sf_framecode))
 
                 loops = sf_data.loops
 
@@ -2864,7 +2865,7 @@ class NmrDpUtility(object):
                                 if self.__verbose:
                                     self.__lfh.write("+NmrDpUtility.__testDataConsistencyInAuxLoop() ++ Warning  - %s" % err)
 
-                                # retry allowing zero, range
+                                # try to parse data without constraints
 
                                 try:
 
@@ -2909,7 +2910,7 @@ class NmrDpUtility(object):
         return not self.report.isError()
 
     def __testDataConsistencyInAuxLoopOfSpectralPeak(self, file_type, sf_data, sf_framecode, num_dim, lp_category, aux_data):
-        """ Perform consistency test on data of spectral peak loops of NEF/NMR-STAR V3.2 file
+        """ Perform consistency test on data of spectral peak loops.
         """
 
         content_subtype = 'spectral_peak'
@@ -3031,7 +3032,7 @@ class NmrDpUtility(object):
                             self.__lfh.write("+NmrDpUtility.__testDataConsistencyInAuxLoopOfSpectralPeak() ++ ValueError  - %s" % err)
 
     def __testSaveframeTag(self):
-        """ Perform consistency test on data of interesting saveframe tags of NEF/NMR-STAR V3.2 file
+        """ Perform consistency test on data of interesting saveframe tags.
         """
 
         #if self.report.isError():
@@ -3103,7 +3104,7 @@ class NmrDpUtility(object):
                         if self.__verbose:
                             self.__lfh.write("+NmrDpUtility.__testSaveframeTag() ++ Warning  - %s" % err)
 
-                        # retry allowing zero, range
+                        # try to parse data without constraints
 
                         try:
 
@@ -3135,7 +3136,7 @@ class NmrDpUtility(object):
         return not self.report.isError()
 
     def __testParentChildRelation(self, file_type, content_subtype, list_id, sf_data, sf_framecode, data):
-        """ Perform consistency test on saveframe category and loop category relationship of interesting loops of NEF/NMR-STAR V3.2 file
+        """ Perform consistency test on saveframe category and loop category relationship of interesting loops.
         """
 
         if file_type == 'nef' or content_subtype == 'entry_info':
@@ -3158,7 +3159,7 @@ class NmrDpUtility(object):
                 _num_dim = sf_data.get_tag(self.num_dim_items[file_type])[0]
                 num_dim = int(_num_dim)
 
-                if not num_dim in range(1, self.spectral_peak_lim_dim):
+                if not num_dim in range(1, self.lim_num_dim):
                     raise ValueError()
 
             except ValueError: # raised error already at __testDuplicatedIndex()
@@ -3184,9 +3185,9 @@ class NmrDpUtility(object):
                         _d['name'] = d['name'] % dim
                     data_items.append(_d)
 
-            if max_dim < self.spectral_peak_lim_dim:
+            if max_dim < self.lim_num_dim:
                 disallowed_tags = []
-                for dim in range(max_dim, self.spectral_peak_lim_dim):
+                for dim in range(max_dim, self.lim_num_dim):
                     for t in self.spectral_peak_disallowed_tags[file_type]:
                         if '%s' in t:
                             t = t % dim
@@ -3244,8 +3245,8 @@ class NmrDpUtility(object):
 
         return not self.report.isError()
 
-    def __testChemShiftValue(self):
-        """ Perform statistical test on assigned chemical shift values of NEF/NMR-STAR V3.2 file
+    def __validateChemShiftValue(self):
+        """ Validate assigned chemical shift values based on BMRB chemical shift statistics.
         """
 
         #if self.report.isError():
@@ -3533,6 +3534,34 @@ class NmrDpUtility(object):
 
                 if self.__verbose:
                     self.__lfh.write("+NmrDpUtility.__testChemShiftValue() ++ Error  - %s" % str(e))
+
+        return not self.report.isError()
+
+    def __calculateStatistics(self):
+        """ Calculate statistics of NMR data.
+        """
+
+        #if self.report.isError():
+        #    return False
+
+        input_source = self.report.input_sources[0]
+        input_source_dic = input_source.get()
+
+        file_type = input_source_dic['file_type']
+
+        for content_subtype in input_source_dic['content_subtype'].keys():
+
+            if content_subtype == 'entry_info':
+                continue
+
+            sf_category = self.sf_categories[file_type][content_subtype]
+            lp_category = self.lp_categories[file_type][content_subtype]
+
+            list_id = 1
+
+            for sf_data in self.__star_data.get_saveframes_by_category(sf_category):
+
+                sf_framecode = sf_data.get_tag('sf_framecode')[0]
 
         return not self.report.isError()
 

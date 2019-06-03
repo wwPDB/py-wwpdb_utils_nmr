@@ -22,7 +22,6 @@ import csv
 import datetime
 import pynmrstar
 from pytz import utc
-from __builtin__ import True, False
 
 PY3 = (sys.version_info[0] == 3)
 

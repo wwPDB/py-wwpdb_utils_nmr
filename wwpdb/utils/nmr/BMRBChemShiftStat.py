@@ -80,20 +80,6 @@ class BMRBChemShiftStat:
                     if row['atom_id'].startswith('M'):
                         _atom_id = re.sub(r'^M', 'H', row['atom_id'])
 
-                        _row = {}
-                        _row['comp_id'] = row['comp_id']
-                        _row['atom_id'] = _atom_id
-                        _row['count'] = int(row['count'])
-                        _row['avg'] = float(row['avg'])
-                        try:
-                            _row['std'] = float(row['std'])
-                        except ValueError:
-                            _row['std'] = None
-                        _row['min'] = float(row['min'])
-                        _row['max'] = float(row['max'])
-
-                        list.append(_row)
-
                         for i in range(1, 4):
                             _row = {}
                             _row['comp_id'] = row['comp_id']
@@ -112,20 +98,6 @@ class BMRBChemShiftStat:
                     # methylen/amino group
                     elif row['atom_id'].startswith('Q'):
                         _atom_id = re.sub(r'^Q', 'H', row['atom_id'])
-
-                        _row = {}
-                        _row['comp_id'] = row['comp_id']
-                        _row['atom_id'] = _atom_id
-                        _row['count'] = int(row['count'])
-                        _row['avg'] = float(row['avg'])
-                        try:
-                            _row['std'] = float(row['std'])
-                        except ValueError:
-                            _row['std'] = None
-                        _row['min'] = float(row['min'])
-                        _row['max'] = float(row['max'])
-
-                        list.append(_row)
 
                         for i in range(1, 3):
                             _row = {}

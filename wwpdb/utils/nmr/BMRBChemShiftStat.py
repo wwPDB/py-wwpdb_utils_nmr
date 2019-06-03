@@ -50,7 +50,7 @@ class BMRBChemShiftStat:
             print (i)
 
     def loadStatFromCsvFiles(self):
-        """ Load all BMRB chemical shift statistics from CSV files
+        """ Load all BMRB chemical shift statistics from CSV files.
         """
 
         self.aa_filt = self.loadStatFromCsvFile(self.stat_dir + 'aa_filt.csv')
@@ -65,7 +65,7 @@ class BMRBChemShiftStat:
         self.others = self.loadStatFromCsvFile(self.stat_dir + 'others.csv')
 
     def loadStatFromCsvFile(self, file_name, standard_residue=True):
-        """ Load BMRB chemical shift statistics from a given CSV file
+        """ Load BMRB chemical shift statistics from a given CSV file.
         """
 
         list = []
@@ -76,7 +76,7 @@ class BMRBChemShiftStat:
             for row in reader:
                 if standard_residue:
 
-                    # methyl group
+                    # methyl proton group
                     if row['atom_id'].startswith('M'):
                         _atom_id = re.sub(r'^M', 'H', row['atom_id'])
 
@@ -92,10 +92,11 @@ class BMRBChemShiftStat:
                                 _row['std'] = None
                             _row['min'] = float(row['min'])
                             _row['max'] = float(row['max'])
+                            _row['h_desc'] = 'methyl'
 
                             list.append(_row)
 
-                    # methylen/amino group
+                    # geminal proton group
                     elif row['atom_id'].startswith('Q'):
                         _atom_id = re.sub(r'^Q', 'H', row['atom_id'])
 
@@ -111,6 +112,7 @@ class BMRBChemShiftStat:
                                 _row['std'] = None
                             _row['min'] = float(row['min'])
                             _row['max'] = float(row['max'])
+                            _row['h_desc'] = 'geminal'
 
                             list.append(_row)
 
@@ -126,6 +128,8 @@ class BMRBChemShiftStat:
                             _row['std'] = None
                         _row['min'] = float(row['min'])
                         _row['max'] = float(row['max'])
+                        if row['atom_id'].startswith('H'):
+                            _row['h_desc'] = 'isolated'
 
                         list.append(_row)
 
@@ -141,13 +145,77 @@ class BMRBChemShiftStat:
                         _row['std'] = None
                     _row['min'] = float(row['min'])
                     _row['max'] = float(row['max'])
+                    if row['atom_id'].startswith('H'):
+                        _row['h_desc'] = 'isolated'
 
                     list.append(_row)
 
+        self.detectMethylProtonsFromAtomNomenclature(list)
+        self.detectGeminalProtonsFromAtomNomenclature(list)
+
         return list
 
+    def detectMethylProtonsFromAtomNomenclature(self, list):
+        """ Detect methyl protons from atom nomenclature.
+            @attention: This function should be re-written using CCD.
+        """
+
+        comp_ids = set()
+
+        for i in list:
+            comp_ids.add(i['comp_id'])
+
+        for comp_id in comp_ids:
+            _list = [i for i in list if i['comp_id'] == comp_id and i['atom_id'].startswith('H') and i['h_desc'] == 'isolated']
+
+            h_1 = [i['atom_id'][:-1] for i in _list if i['atom_id'].endswith('1')]
+            h_2 = [i['atom_id'][:-1] for i in _list if i['atom_id'].endswith('2')]
+            h_3 = [i['atom_id'][:-1] for i in _list if i['atom_id'].endswith('3')]
+            h_4 = [i['atom_id'][:-1] for i in _list if i['atom_id'].endswith('4')]
+
+            common = set(h_1) & set(h_2) & set(h_3) - set(h_4)
+
+            for c in common:
+                for i in _list:
+                    atom_id = i['atom_id']
+                    if atom_id == c + '1' or atom_id == c + '2' or atom_id == c + '3':
+                        i['h_desc'] = 'methyl'
+
+    def detectGeminalProtonsFromAtomNomenclature(self, list):
+        """ Detect geminal protons from atom nomenclature.
+            @attention: This function should be re-written using CCD.
+        """
+
+        comp_ids = set()
+
+        for i in list:
+            comp_ids.add(i['comp_id'])
+
+        for comp_id in comp_ids:
+            _list = [i for i in list if i['comp_id'] == comp_id and i['atom_id'].startswith('H') and i['h_desc'] == 'isolated']
+
+            h_1 = [i['atom_id'][:-1] for i in _list if i['atom_id'].endswith('1')]
+            h_2 = [i['atom_id'][:-1] for i in _list if i['atom_id'].endswith('2')]
+            h_3 = [i['atom_id'][:-1] for i in _list if i['atom_id'].endswith('3')]
+
+            common = set(h_1) & set(h_2) - set(h_3)
+
+            for c in common:
+                for i in _list:
+                    atom_id = i['atom_id']
+                    if atom_id == c + '1' or atom_id == c + '2':
+                        i['h_desc'] = 'genimal'
+
+            common = set(h_2) & set(h_3) - set(h_1)
+
+            for c in common:
+                for i in _list:
+                    atom_id = i['atom_id']
+                    if atom_id == c + '2' or atom_id == c + '3':
+                        i['h_desc'] = 'geminal'
+
     def writeStatAsPickleFiles(self):
-        """ Write all BMRB chemical shift statitics as pickle files
+        """ Write all BMRB chemical shift statistics as pickle files.
         """
 
         self.writeStatAsPickleFile(self.aa_filt, self.stat_dir + 'aa_filt.pkl')
@@ -162,7 +230,7 @@ class BMRBChemShiftStat:
         self.writeStatAsPickleFile(self.others, self.stat_dir + 'others.pkl')
 
     def writeStatAsPickleFile(self, list, file_name):
-        """ Write BMRB chemical shift statistics as pickle file
+        """ Write BMRB chemical shift statistics as pickle file.
         """
 
         with open(file_name, 'wb') as f:
@@ -184,7 +252,7 @@ class BMRBChemShiftStat:
         self.others = self.loadStatFromPickleFile(self.stat_dir + 'others.pkl')
 
     def loadStatFromPickleFile(self, file_name):
-        """ Load BMRB chemical shift statistics from pickle file if possible
+        """ Load BMRB chemical shift statistics from pickle file if possible.
         """
 
         if os.path.exists(file_name):

@@ -3047,7 +3047,9 @@ class NmrDpUtility(object):
 
             sf_category = self.sf_categories[file_type][content_subtype]
 
-            list_id = 1
+            parent_keys = set()
+
+            list_id = 1  # tentative parent key if not exists
 
             for sf_data in self.__star_data.get_saveframes_by_category(sf_category):
 
@@ -3068,7 +3070,7 @@ class NmrDpUtility(object):
                     data = self.nef_translator.check_sf_tag(sf_data, self.sf_tag_items[file_type][content_subtype], self.sf_allowed_tags[file_type][content_subtype],
                                                             enforce_non_zero=True, enforce_enum=True)
 
-                    self.__testParentChildRelation(file_type, content_subtype, list_id, sf_data, sf_framecode, data)
+                    self.__testParentChildRelation(file_type, content_subtype, parent_keys, list_id, sf_data, sf_framecode, data)
 
                     list_id += 1
 
@@ -3111,7 +3113,7 @@ class NmrDpUtility(object):
                             data = self.nef_translator.check_sf_tag(sf_data, self.sf_tag_items[file_type][content_subtype], self.sf_allowed_tags[file_type][content_subtype],
                                                                     enfoce_non_zero=False, enforce_enum=False)
 
-                            self.____testParentChildRelation(file_type, content_subtype, list_id, sf_data, sf_framecode, data)
+                            self.____testParentChildRelation(file_type, content_subtype, parent_keys, list_id, sf_data, sf_framecode, data)
 
                             list_id += 1
 
@@ -3135,7 +3137,7 @@ class NmrDpUtility(object):
 
         return not self.report.isError()
 
-    def __testParentChildRelation(self, file_type, content_subtype, list_id, sf_data, sf_framecode, data):
+    def __testParentChildRelation(self, file_type, content_subtype, parent_keys, list_id, sf_data, sf_framecode, data):
         """ Perform consistency test on saveframe category and loop category relationship of interesting loops.
         """
 
@@ -3151,6 +3153,13 @@ class NmrDpUtility(object):
             parent_key = data[parent_key_name]
         else:
             parent_key = list_id
+
+        if parent_key in parent_keys:
+            self.report.error.addDescription('duplicated_index', "%s '%s' must be unique. %s in %s saveframe." % (parent_key_name, parent_key, sf_framecode))
+            self.report.setError()
+
+            if self.__verbose:
+                self.__lfh.write("+NmrDpUtility.__testParentChildRelation() ++ KeyError  - %s '%s' must be unique. %s in %s saveframe." % (parent_key_name, parent_key, sf_framecode))
 
         if content_subtype == 'spectral_peak':
 
@@ -3287,8 +3296,11 @@ class NmrDpUtility(object):
                 lp_data = self.nef_translator.check_data(sf_data, lp_category, key_items, data_items, None, None,
                                                          inc_idx_test=False, enforce_non_zero=False, enforce_enum=False)[0]
 
+                methyl_cs_vals = {}
+
                 for i in lp_data:
                     chain_id = i[self.item_names_in_cs_loop[file_type]['chain_id']]
+                    seq_id = i[self.item_names_in_cs_loop[file_type]['seq_id']]
                     comp_id = i[self.item_names_in_cs_loop[file_type]['comp_id']]
                     atom_id = i[self.item_names_in_cs_loop[file_type]['atom_id']]
 
@@ -3296,6 +3308,8 @@ class NmrDpUtility(object):
                     value = i[value_name]
 
                     one_letter_code = self.__get1LetterCode(comp_id)
+
+                    has_cs_stat = False
 
                     if one_letter_code == '.':
                         continue
@@ -3311,11 +3325,40 @@ class NmrDpUtility(object):
                                 avg_value = cs_stat['avg']
                                 std_value = cs_stat['std']
 
+                                has_cs_stat = True
+
+                                if atom_id.startswith('H') and cs_stat['h_desc'] == 'methyl':
+                                    methyl_cs_key = "%s %04d %s" % (chain_id, seq_id, atom_id[:-1])
+
+                                    if not methyl_cs_vals.has_key(methyl_cs_key):
+                                        methyl_cs_vals[methyl_cs_key] = value
+
+                                    elif value != methyl_cs_vals[methyl_cs_key]:
+                                        err = 'Check row of chain_id %s, comp_id %s, atom_id %s. Chemical shift value of the same methyl group %s %s vs %s is inconsistent in %s loop category, %s saveframe.' %\
+                                        (chain_id, comp_id, atom_id, value_name, value, methyl_cs_vals[methyl_cs_key], lp_category, sf_framecode)
+
+                                        self.report.error.addDescription('invalid_data', err)
+                                        self.report.setError()
+
+                                        if self.__verbose:
+                                            self.__lfh.write("+NmrDpUtility.__testChemShiftValue() ++ ValueError  - %s" % err)
+
+                                        break
+
                                 if std_value is None:
+                                    warn = 'Check row of chain_id %s, comp_id %s, atom_id %s. Insufficient chemical shift statistics is available to verify %s %s (avg %s) in %s loop category, %s saveframe.' %\
+                                           (chain_id, comp_id, atom_id, value_name, value, avg_value, lp_category, sf_framecode)
+
+                                    self.report.warning.addDescription('unusual_data', warn)
+                                    self.report.setWarning()
+
+                                    if self.__verbose:
+                                        self.__lfh.write("+NmrDpUtility.__testChemShiftValue() ++ Warning  - %s" % warn)
+
                                     break
 
                                 z_score = (value - avg_value) / std_value
-                                tolerance = std_value / 10.0
+                                tolerance = std_value * 10.0
 
                                 if value < min_value - tolerance or value > max_value + tolerance:
                                     err = 'Check row of chain_id %s, comp_id %s, atom_id %s. %s %s is out of range (avg %s, std %s, min %s, max %s, Z_score %.2f) in %s loop category, %s saveframe.' %\
@@ -3327,21 +3370,11 @@ class NmrDpUtility(object):
                                     if self.__verbose:
                                         self.__lfh.write("+NmrDpUtility.__testChemShiftValue() ++ ValueError  - %s" % err)
 
-                                elif abs(z_score) > 5.0:
+                                elif abs(z_score) > 10.0:
                                     warn = 'Check row of chain_id %s, comp_id %s, atom_id %s. %s %s must be verified (avg %s, std %s, min %s, max %s, Z_score %.2f) in %s loop category, %s saveframe.' %\
                                            (chain_id, comp_id, atom_id, value_name, value, avg_value, std_value, min_value, max_value, z_score, lp_category, sf_framecode)
 
                                     self.report.warning.addDescription('suspicious_data', warn)
-                                    self.report.setWarning()
-
-                                    if self.__verbose:
-                                        self.__lfh.write("+NmrDpUtility.__testChemShiftValue() ++ Warning  - %s" % warn)
-
-                                elif abs(z_score) > 3.5:
-                                    warn = 'Check row of chain_id %s, comp_id %s, atom_id %s. %s %s should be verified (avg %s, std %s, min %s, max %s, Z_score %.2f) in %s loop category, %s saveframe.' %\
-                                           (chain_id, comp_id, atom_id, value_name, value, avg_value, std_value, min_value, max_value, z_score, lp_category, sf_framecode)
-
-                                    self.report.warning.addDescription('unusual_data', warn)
                                     self.report.setWarning()
 
                                     if self.__verbose:
@@ -3366,8 +3399,6 @@ class NmrDpUtility(object):
                             atom_id_ = atom_id
                             atom_name = atom_id
 
-                        has_cs_stat = False
-
                         if len(comp_id) == 3:
 
                             for cs_stat in self.bmrb_cs_stat.aa_full:
@@ -3377,6 +3408,38 @@ class NmrDpUtility(object):
                                     max_value = cs_stat['max']
                                     avg_value = cs_stat['avg']
                                     std_value = cs_stat['std']
+
+                                    has_cs_stat = True
+
+                                    if atom_id.startswith('H') and cs_stat['h_desc'] == 'methyl':
+                                        methyl_cs_key = "%s %04d %s" % (chain_id, seq_id, atom_id[:-1])
+
+                                        if not methyl_cs_vals.has_key(methyl_cs_key):
+                                            methyl_cs_vals[methyl_cs_key] = value
+
+                                        elif value != methyl_cs_vals[methyl_cs_key]:
+                                            err = 'Check row of chain_id %s, comp_id %s, atom_id %s. Chemical shift value of the same methyl group %s %s vs %s is inconsistent in %s loop category, %s saveframe.' %\
+                                            (chain_id, comp_id, atom_id, value_name, value, methyl_cs_vals[methyl_cs_key], lp_category, sf_framecode)
+
+                                            self.report.error.addDescription('invalid_data', err)
+                                            self.report.setError()
+
+                                            if self.__verbose:
+                                                self.__lfh.write("+NmrDpUtility.__testChemShiftValue() ++ ValueError  - %s" % err)
+
+                                            break
+
+                                    if std_value is None:
+                                        warn = 'Check row of chain_id %s, comp_id %s, atom_id %s. Insufficient chemical shift statistics is available to verify %s %s (avg %s) in %s loop category, %s saveframe.' %\
+                                               (chain_id, comp_id, atom_id, value_name, value, avg_value, lp_category, sf_framecode)
+
+                                        self.report.warning.addDescription('unusual_data', warn)
+                                        self.report.setWarning()
+
+                                        if self.__verbose:
+                                            self.__lfh.write("+NmrDpUtility.__testChemShiftValue() ++ Warning  - %s" % warn)
+
+                                        break
 
                                     z_score = (value - avg_value) / std_value
                                     tolerance = std_value / 10.0
@@ -3410,8 +3473,6 @@ class NmrDpUtility(object):
 
                                         if self.__verbose:
                                             self.__lfh.write("+NmrDpUtility.__testChemShiftValue() ++ Warning  - %s" % warn)
-
-                                    has_cs_stat = True
 
                                     break
 
@@ -3425,8 +3486,36 @@ class NmrDpUtility(object):
                                     avg_value = cs_stat['avg']
                                     std_value = cs_stat['std']
 
+                                    has_cs_stat = True
+
+                                    if atom_id.startswith('H') and cs_stat['h_desc'] == 'methyl':
+                                        methyl_cs_key = "%s %04d %s" % (chain_id, seq_id, atom_id[:-1])
+
+                                        if not methyl_cs_vals.has_key(methyl_cs_key):
+                                            methyl_cs_vals[methyl_cs_key] = value
+
+                                        elif value != methyl_cs_vals[methyl_cs_key]:
+                                            err = 'Check row of chain_id %s, comp_id %s, atom_id %s. Chemical shift value of the same methyl group %s %s vs %s is inconsistent in %s loop category, %s saveframe.' %\
+                                            (chain_id, comp_id, atom_id, value_name, value, methyl_cs_vals[methyl_cs_key], lp_category, sf_framecode)
+
+                                            self.report.error.addDescription('invalid_data', err)
+                                            self.report.setError()
+
+                                            if self.__verbose:
+                                                self.__lfh.write("+NmrDpUtility.__testChemShiftValue() ++ ValueError  - %s" % err)
+
+                                            break
+
                                     if std_value is None:
-                                        has_cs_stat = True
+                                        warn = 'Check row of chain_id %s, comp_id %s, atom_id %s. Insufficient chemical shift statistics is available to verify %s %s (avg %s) in %s loop category, %s saveframe.' %\
+                                               (chain_id, comp_id, atom_id, value_name, value, avg_value, lp_category, sf_framecode)
+
+                                        self.report.warning.addDescription('unusual_data', warn)
+                                        self.report.setWarning()
+
+                                        if self.__verbose:
+                                            self.__lfh.write("+NmrDpUtility.__testChemShiftValue() ++ Warning  - %s" % warn)
+
                                         break
 
                                     z_score = (value - avg_value) / std_value
@@ -3461,8 +3550,6 @@ class NmrDpUtility(object):
 
                                         if self.__verbose:
                                             self.__lfh.write("+NmrDpUtility.__testChemShiftValue() ++ Warning  - %s" % warn)
-
-                                    has_cs_stat = True
 
                                     break
 
@@ -3476,8 +3563,36 @@ class NmrDpUtility(object):
                                     avg_value = cs_stat['avg']
                                     std_value = cs_stat['std']
 
+                                    has_cs_stat = True
+
+                                    if atom_id.startswith('H') and cs_stat['h_desc'] == 'methyl':
+                                        methyl_cs_key = "%s %04d %s" % (chain_id, seq_id, atom_id[:-1])
+
+                                        if not methyl_cs_vals.has_key(methyl_cs_key):
+                                            methyl_cs_vals[methyl_cs_key] = value
+
+                                        elif value != methyl_cs_vals[methyl_cs_key]:
+                                            err = 'Check row of chain_id %s, comp_id %s, atom_id %s. Chemical shift value of the same methyl group %s %s vs %s is inconsistent in %s loop category, %s saveframe.' %\
+                                            (chain_id, comp_id, atom_id, value_name, value, methyl_cs_vals[methyl_cs_key], lp_category, sf_framecode)
+
+                                            self.report.error.addDescription('invalid_data', err)
+                                            self.report.setError()
+
+                                            if self.__verbose:
+                                                self.__lfh.write("+NmrDpUtility.__testChemShiftValue() ++ ValueError  - %s" % err)
+
+                                            break
+
                                     if std_value is None:
-                                        has_cs_stat = True
+                                        warn = 'Check row of chain_id %s, comp_id %s, atom_id %s. Insufficient chemical shift statistics is available to verify %s %s (avg %s) in %s loop category, %s saveframe.' %\
+                                               (chain_id, comp_id, atom_id, value_name, value, avg_value, lp_category, sf_framecode)
+
+                                        self.report.warning.addDescription('unusual_data', warn)
+                                        self.report.setWarning()
+
+                                        if self.__verbose:
+                                            self.__lfh.write("+NmrDpUtility.__testChemShiftValue() ++ Warning  - %s" % warn)
+
                                         break
 
                                     z_score = (value - avg_value) / std_value
@@ -3513,19 +3628,17 @@ class NmrDpUtility(object):
                                         if self.__verbose:
                                             self.__lfh.write("+NmrDpUtility.__testChemShiftValue() ++ Warning  - %s" % warn)
 
-                                    has_cs_stat = True
-
                                     break
 
-                        if not has_cs_stat:
-                            warn = 'No chemical shift statistics is available for chain_id %s, comp_id %s, atom_id %s. %s %s should be verified in %s loop category, %s saveframe.' %\
-                                   (chain_id, comp_id, atom_name, value_name, value, lp_category, sf_framecode)
+                    if not has_cs_stat:
+                        warn = 'Check row of chain_id %s, comp_id %s, atom_id %s. No chemical shift statistics is available to verify %s %s in %s loop category, %s saveframe.' %\
+                                           (chain_id, comp_id, atom_id, value_name, value, lp_category, sf_framecode)
 
-                            self.report.warning.addDescription('unusual_data', warn)
-                            self.report.setWarning()
+                        self.report.warning.addDescription('unusual_data', warn)
+                        self.report.setWarning()
 
-                            if self.__verbose:
-                                self.__lfh.write("+NmrDpUtility.__testChemShiftValue() ++ Warning  - %s" % warn)
+                        if self.__verbose:
+                            self.__lfh.write("+NmrDpUtility.__testChemShiftValue() ++ Warning  - %s" % warn)
 
             except Exception as e:
 

@@ -304,6 +304,7 @@ class NEFTranslator(object):
                                 if self.is_empty_loop(star_data, lp_info, data_type):
                                     is_valid = False
                                     error.append('{} loop is empty'.format(lp_info))
+
                     else:
                         is_valid = False
                         error.append('file_subtype flag should be A/S/R')
@@ -326,9 +327,11 @@ class NEFTranslator(object):
         if data_type == 'Entry':
 
             loops = star_data.get_loops_by_category(lp_category)
+
             for loop in loops:
                 if len(loop.data) == 0:
                     return True
+
             return False
 
         elif data_type == 'Saveframe':
@@ -1167,6 +1170,10 @@ class NEFTranslator(object):
                         for l in group['larger-than']:
                             if not l in allowed_tags:
                                 raise Error("Larger data item %s of %s must exists in allowed tags of %s loop category" % (l, d['name'], lp_category))
+                    if group.has_key('not-equal-to') and group['not-equal-to']:
+                        for l in group['not-equal-to']:
+                            if not l in allowed_tags:
+                                raise Error("None-equal data item %s of %s must exists in allowed tags of %s loop category" % (l, d['name'], lp_category))
 
         empty_value = (None, '', '.', '?')
         true_value = ('true', 't', 'yes', 'y', '1')
@@ -1597,6 +1604,10 @@ class NEFTranslator(object):
                         for l in group['larger-than']:
                             if not l in allowed_tags:
                                 raise Error("Larger tag item %s of %s must exists in allowed tags of" % (l, t['name']))
+                    if group.has_key('not-equal-to') and group['not-equal-to']:
+                        for l in group['not-equal-to']:
+                            if not l in allowed_tags:
+                                raise Error("None-equal tag item %s of %s must exists in allowed tags of" % (l, t['name']))
 
         empty_value = (None, '', '.', '?')
         true_value = ('true', 't', 'yes', 'y', '1')

@@ -1015,12 +1015,14 @@ class NmrDpUtility(object):
                                               'seq_id': 'sequence_code',
                                               'comp_id': 'residue_name',
                                               'atom_id': 'atom_name',
-                                              'value': 'value'},
+                                              'value': 'value',
+                                              'error': 'value_uncertainty'},
                                       'nmr-star': {'chain_id': 'Entity_assembly_ID',
                                                    'seq_id': 'Comp_index_ID',
                                                    'comp_id': 'Comp_ID',
                                                    'atom_id': 'Atom_ID',
-                                                   'value': 'Val'}
+                                                   'value': 'Val',
+                                                   'error': 'Val_err'}
                                       }
 
         # item name in spectral peak loop
@@ -1683,6 +1685,7 @@ class NmrDpUtility(object):
                                                 try:
 
                                                     _auth_seq_id = int(auth_seq_id)
+
                                                 except ValueError:
                                                     continue
 
@@ -2997,13 +3000,12 @@ class NmrDpUtility(object):
                             if sp_dim['dimension_id'] != i:
                                 continue
 
-                            axis_unit = sp_dim['axis_unit']
                             first_point = sp_dim['value_first_point']
                             sp_width = sp_dim['spectral_width']
                             acq = sp_dim['is_acquisition']
                             abs = sp_dim['absolute_peak_positions']
 
-                            if axis_unit == 'Hz':
+                            if sp_dim['axis_unit'] == 'Hz':
                                 sp_freq = sp_dim['spectrometer_frequency']
                                 first_point /= sp_freq
                                 sp_width /= sp_freq
@@ -3012,21 +3014,22 @@ class NmrDpUtility(object):
 
                             if sp_dim['ID'] != i:
                                 continue
+
                             axis_unit = sp_dim['Sweep_width_units']
                             first_point = sp_dim['Value_first_point']
                             sp_width = sp_dim['Sweep_width']
                             acq = sp_dim['Acquisition']
                             abs = sp_dim['Absolute_peak_positions']
 
-                            if axis_unit == 'Hz':
+                            if sp_dim['Sweep_width_units'] == 'Hz':
                                 sp_freq = sp_dim['Spectrometer_frequency']
                                 first_point /= sp_freq
                                 sp_width /= sp_freq
 
                         last_point = first_point - sp_width
 
-                        min_point = last_point - (0.0 if (acq or not abs) else sp_width)
-                        max_point = first_point + (0.0 if (acq or not abs) else sp_width)
+                        min_point = last_point - (sp_width if abs else 0.0)
+                        max_point = first_point + (sp_width if abs else 0.0)
 
                         min_points.append(min_point)
                         max_points.append(max_point)
@@ -3654,7 +3657,7 @@ class NmrDpUtility(object):
         return not self.report.isError()
 
     def __testCSValueConsistencyInPkLoop(self):
-        """ Perform consistency test on chemical shift values of spectral peak's loops.
+        """ Perform consistency test on peak position and assignment of spectral peaks.
         """
 
         #if self.report.isError():
@@ -3683,6 +3686,10 @@ class NmrDpUtility(object):
 
                 cs_data = next(l['data'] for l in self.lp_data['chem_shift'] if l['sf_framecode'] == cs_list)
 
+                cs_item_names = self.item_names_in_cs_loop[file_type]
+                cs_value_name = cs_item_names['value']
+                cs_error_name = cs_item_names['error']
+
             except StopIteration:
 
                 self.report.error.addDescription('missing_mandatory_content', "Assigned chemical shifts are mandatory. Saveframe %s referred by %s in %s saveframe was not found in %s file." % (cs_list, self.cs_list_sf_tag_name[file_type], sf_framecode, file_name))
@@ -3706,6 +3713,85 @@ class NmrDpUtility(object):
 
             max_dim = num_dim + 1
 
+            aux_data = next((l['data'] for l in self.aux_data[content_subtype] if l['sf_framecode'] == sf_framecode and l['lp_category'] == self.aux_lp_categories[file_type][content_subtype][0]), None)
+
+            abs_pk_pos = []
+            sp_widths = []
+            if not aux_data is None:
+                for i in range(1, max_dim):
+                    for sp_dim in aux_data:
+                        if file_type == 'nef':
+                            if sp_dim['dimension_id'] != i:
+                                continue
+                            abs_pk_pos.append(sp_dim['absolute_peak_positions'])
+                            sp_width = sp_dim['spectral_width']
+                            if sp_dim['axis_unit'] == 'Hz':
+                                sp_freq = sp_dim['spectrometer_frequency']
+                                sp_width /= sp_freq
+                            sp_widths.append(sp_width)
+                        else:
+                            if sp_dim['ID'] != i:
+                                continue
+                            abs_pk_pos.append(sp_dim['Absolute_peak_positions'])
+                            sp_width = sp_dim['Sweep_width']
+                            if sp_dim['Sweep_width_units'] == 'Hz':
+                                sp_freq = sp_dim['Spectrometer_frequency']
+                                sp_width /= sp_freq
+                            sp_widths.append(sp_width)
+            else:
+                for i in range(num_dim):
+                    abs_pk_pos.append(False)
+
+            aux_data = next((l['data'] for l in self.aux_data[content_subtype] if l['sf_framecode'] == sf_framecode and l['lp_category'] == self.aux_lp_categories[file_type][content_subtype][1]), None)
+
+            onebond = [[False] * num_dim for i in range(num_dim)]
+            if not aux_data is None:
+                for sp_dim_trans in aux_data:
+                    if file_type == 'nef':
+                        if sp_dim_trans['transfer_type'] == 'onebond':
+                            dim_1 = sp_dim_trans['dimension_1']
+                            dim_2 = sp_dim_trans['dimension_2']
+                            onebond[dim_1 - 1][dim_2 - 1] = True
+                            onebond[dim_2 - 1][dim_1 - 1] = True
+                    else:
+                        if sp_dim_trans['Type'] == 'onebond':
+                            dim_1 = sp_dim_trans['Spectral_dim_ID_1']
+                            dim_2 = sp_dim_trans['Spectral_dim_ID_2']
+                            onebond[dim_1 - 1][dim_2 - 1] = True
+                            onebond[dim_2 - 1][dim_1 - 1] = True
+
+            jcoupling = [[False] * num_dim for i in range(num_dim)]
+            if not aux_data is None:
+                for sp_dim_trans in aux_data:
+                    if file_type == 'nef':
+                        if sp_dim_trans['transfer_type'].startswith('j'):
+                            dim_1 = sp_dim_trans['dimension_1']
+                            dim_2 = sp_dim_trans['dimension_2']
+                            jcoupling[dim_1 - 1][dim_2 - 1] = True
+                            jcoupling[dim_2 - 1][dim_1 - 1] = True
+                    else:
+                        if sp_dim_trans['Type'].startswith('j'):
+                            dim_1 = sp_dim_trans['Spectral_dim_ID_1']
+                            dim_2 = sp_dim_trans['Spectral_dim_ID_2']
+                            jcoupling[dim_1 - 1][dim_2 - 1] = True
+                            jcoupling[dim_2 - 1][dim_1 - 1] = True
+
+            relayed = [[False] * num_dim for i in range(num_dim)]
+            if not aux_data is None:
+                for sp_dim_trans in aux_data:
+                    if file_type == 'nef':
+                        if sp_dim_trans['transfer_type'].startswith('relayed'):
+                            dim_1 = sp_dim_trans['dimension_1']
+                            dim_2 = sp_dim_trans['dimension_2']
+                            relayed[dim_1 - 1][dim_2 - 1] = True
+                            relayed[dim_2 - 1][dim_1 - 1] = True
+                    else:
+                        if sp_dim_trans['Type'].startswith('relayed'):
+                            dim_1 = sp_dim_trans['Spectral_dim_ID_1']
+                            dim_2 = sp_dim_trans['Spectral_dim_ID_2']
+                            relayed[dim_1 - 1][dim_2 - 1] = True
+                            relayed[dim_2 - 1][dim_1 - 1] = True
+
             item_names = []
             for dim in range(1, max_dim):
                 _d = {}
@@ -3716,6 +3802,7 @@ class NmrDpUtility(object):
                 item_names.append(_d)
 
             index_tag = self.index_tags[file_type][content_subtype]
+            max_cs_err = self.chem_shift_error['max_exclusive']
 
             try:
 
@@ -3725,26 +3812,137 @@ class NmrDpUtility(object):
                     for i in lp_data:
                         for d in range(num_dim):
                             chain_id = i[item_names[d]['chain_id']]
-
                             if chain_id in self.empty_value:
                                 continue
 
                             seq_id = i[item_names[d]['seq_id']]
-
                             if seq_id in self.empty_value:
                                 continue
 
                             comp_id = i[item_names[d]['comp_id']]
-
                             if comp_id in self.empty_value:
                                 continue
 
                             atom_id = i[item_names[d]['atom_id']]
-
                             if atom_id in self.empty_value:
                                 continue
 
                             position = i[item_names[d]['position']]
+
+                            try:
+
+                                value = next(j[cs_value_name] for j in cs_data if j[cs_item_names['chain_id']] == chain_id and
+                                                                                  j[cs_item_names['seq_id']] == seq_id and
+                                                                                  j[cs_item_names['comp_id']] == comp_id and
+                                                                                  j[cs_item_names['atom_id']] == atom_id)
+
+                                error = next(j[cs_error_name] for j in cs_data if j[cs_item_names['chain_id']] == chain_id and
+                                                                                  j[cs_item_names['seq_id']] == seq_id and
+                                                                                  j[cs_item_names['comp_id']] == comp_id and
+                                                                                  j[cs_item_names['atom_id']] == atom_id)
+
+                                if error is None:
+                                    error = max_cs_err
+
+                                if abs(position - value) > error:
+
+                                    if not abs_pk_pos[d]:
+                                        if position < value:
+                                            while position < value:
+                                                position += sp_widths[d]
+                                        elif position > value:
+                                            while position > value:
+                                                position -= sp_widths[d]
+
+                                    if abs(position - value) > error:
+
+                                        err = 'Check row of %s %s. Peak position of spectral peak %s %s (%s %s, %s %s, %s %s, %s %s) in %s saveframe is inconsistent with the assigned chemical shift value %s (difference %s, tolerance %s) in %s saveframe.' %\
+                                              (index_tag, i[index_tag], item_names[d]['position'], position, item_names[d]['chain_id'], chain_id, item_names[d]['seq_id'], seq_id, item_names[d]['comp_id'], comp_id, item_names[d]['atom_id'], atom_id, sf_framecode, value, position - value, error, cs_list)
+
+                                        self.report.error.addDescription('invalid_data', err)
+                                        self.report.setError()
+
+                                        if self.__verbose:
+                                            self.__lfh.write("+NmrDpUtility.__testCSValueConsistencyInPkLoop() ++ ValueError  - %s" % err)
+
+                            except StopIteration:
+
+                                err = 'Check row of %s %s. Assignment of spectral peak %s %s, %s %s, %s %s, %s %s in %s saveframe was not found in assigned chemical shifts in %s saveframe.' %\
+                                      (index_tag, i[index_tag], item_names[d]['chain_id'], chain_id, item_names[d]['seq_id'], seq_id, item_names[d]['comp_id'], comp_id, item_names[d]['atom_id'], atom_id, sf_framecode, cs_list)
+
+                                self.report.error.addDescription('invalid_data', err)
+                                self.report.setError()
+
+                                if self.__verbose:
+                                    self.__lfh.write("+NmrDpUtility.__testCSValueConsistencyInPkLoop() ++ ValueError  - %s" % err)
+
+                            if True in onebond[d]:
+                                for d2 in range(num_dim):
+                                    if onebond[d][d2]:
+                                        chain_id2 = i[item_names[d2]['chain_id']]
+                                        seq_id2 = i[item_names[d2]['seq_id']]
+                                        comp_id2 = i[item_names[d2]['comp_id']]
+                                        atom_id2 = i[item_names[d2]['atom_id']]
+
+                                        if not atom_id2 is None:
+                                            diff = len(atom_id) != len(atom_id2)
+                                            _atom_id = '_' + (atom_id[1:-1] if atom_id.startswith('H') and diff else atom_id[1:])
+                                            _atom_id2 = '_' + (atom_id2[1:-1] if atom_id2.startswith('H') and diff else atom_id2[1:])
+
+                                        if chain_id2 in self.empty_value or seq_id2 in self.empty_value or comp_id2 in self.empty_value or atom_id2 in self.empty_value or\
+                                           (d < d2 and (chain_id2 != chain_id or seq_id2 != seq_id or comp_id2 != comp_id or _atom_id2 != _atom_id)):
+
+                                            err = 'Check row of %s %s. Coherence transfer type is onebond, but assignment of spectral peak is inconsistent with the type, (%s %s, %s %s, %s %s, %s %s) vs (%s %s, %s %s, %s %s, %s %s) in %s saveframe.' %\
+                                                  (index_tag, i[index_tag], item_names[d]['chain_id'], chain_id, item_names[d]['seq_id'], seq_id, item_names[d]['comp_id'], comp_id, item_names[d]['atom_id'], atom_id,
+                                                   item_names[d2]['chain_id'], chain_id2, item_names[d2]['seq_id'], seq_id2, item_names[d2]['comp_id'], comp_id2, item_names[d2]['atom_id'], atom_id2, sf_framecode)
+
+                                            self.report.error.addDescription('invalid_data', err)
+                                            self.report.setError()
+
+                                            if self.__verbose:
+                                                self.__lfh.write("+NmrDpUtility.__testCSValueConsistencyInPkLoop() ++ ValueError  - %s" % err)
+
+                            if True in jcoupling[d]:
+                                for d2 in range(num_dim):
+                                    if jcoupling[d][d2]:
+                                        chain_id2 = i[item_names[d2]['chain_id']]
+                                        seq_id2 = i[item_names[d2]['seq_id']]
+                                        comp_id2 = i[item_names[d2]['comp_id']]
+                                        atom_id2 = i[item_names[d2]['atom_id']]
+
+                                        if chain_id2 in self.empty_value or seq_id2 in self.empty_value or comp_id2 in self.empty_value or atom_id2 in self.empty_value or\
+                                           (d < d2 and (chain_id2 != chain_id or abs(seq_id2 - seq_id) > 1)):
+
+                                            err = 'Check row of %s %s. Coherence transfer type is jcoupling, but assignment of spectral peak is inconsistent with the type, (%s %s, %s %s, %s %s, %s %s) vs (%s %s, %s %s, %s %s, %s %s) in %s saveframe.' %\
+                                                  (index_tag, i[index_tag], item_names[d]['chain_id'], chain_id, item_names[d]['seq_id'], seq_id, item_names[d]['comp_id'], comp_id, item_names[d]['atom_id'], atom_id,
+                                                   item_names[d2]['chain_id'], chain_id2, item_names[d2]['seq_id'], seq_id2, item_names[d2]['comp_id'], comp_id2, item_names[d2]['atom_id'], atom_id2, sf_framecode)
+
+                                            self.report.error.addDescription('invalid_data', err)
+                                            self.report.setError()
+
+                                            if self.__verbose:
+                                                self.__lfh.write("+NmrDpUtility.__testCSValueConsistencyInPkLoop() ++ ValueError  - %s" % err)
+
+                            if True in relayed[d]:
+                                for d2 in range(num_dim):
+                                    if relayed[d][d2]:
+                                        chain_id2 = i[item_names[d2]['chain_id']]
+                                        seq_id2 = i[item_names[d2]['seq_id']]
+                                        comp_id2 = i[item_names[d2]['comp_id']]
+                                        atom_id2 = i[item_names[d2]['atom_id']]
+
+                                        if chain_id2 in self.empty_value or seq_id2 in self.empty_value or comp_id2 in self.empty_value or atom_id2 in self.empty_value or\
+                                           (d < d2 and (chain_id2 != chain_id or seq_id2 != seq_id or comp_id2 != comp_id)):
+
+                                            err = 'Check row of %s %s. Coherence transfer type is relayed, but assignment of spectral peak is inconsistent with the type, (%s %s, %s %s, %s %s, %s %s) vs (%s %s, %s %s, %s %s, %s %s) in %s saveframe.' %\
+                                                  (index_tag, i[index_tag], item_names[d]['chain_id'], chain_id, item_names[d]['seq_id'], seq_id, item_names[d]['comp_id'], comp_id, item_names[d]['atom_id'], atom_id,
+                                                   item_names[d2]['chain_id'], chain_id2, item_names[d2]['seq_id'], seq_id2, item_names[d2]['comp_id'], comp_id2, item_names[d2]['atom_id'], atom_id2, sf_framecode)
+
+                                            self.report.error.addDescription('invalid_data', err)
+                                            self.report.setError()
+
+                                            if self.__verbose:
+                                                self.__lfh.write("+NmrDpUtility.__testCSValueConsistencyInPkLoop() ++ ValueError  - %s" % err)
 
             except Exception as e:
 

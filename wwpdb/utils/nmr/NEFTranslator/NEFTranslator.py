@@ -476,8 +476,7 @@ class NEFTranslator(object):
                     if set(_tags) & set(loop.tags) == set(_tags):
                         _tags_exist = True
                         seq_dat += loop.get_data_by_tag(_tags)
-                    else:
-                        break
+
                 if not _tags_exist:
                     raise LookupError("Missing one of mandatory items %s in %s loop category" % (tags, lp_category))
 
@@ -534,6 +533,9 @@ class NEFTranslator(object):
 
             except ValueError:
                 raise ValueError("Sequence ID must be integer in %s loop category" % lp_category)
+
+        if len(dat) == 0:
+            dat.append([])
 
         return dat
 
@@ -583,8 +585,7 @@ class NEFTranslator(object):
                         for i in seq_dat_:
                             i.append('1')
                         seq_dat += seq_dat_
-                    else:
-                        break
+
                 if not _tags_exist:
                     raise LookupError("Missing one of mandatory items %s in %s loop category" % (tags, lp_category))
 
@@ -641,6 +642,9 @@ class NEFTranslator(object):
 
             except ValueError:
                 raise ValueError("Sequence ID must be integer in %s loop category" % lp_category)
+
+        if len(dat) == 0:
+            dat.append([])
 
         return dat
 
@@ -692,8 +696,7 @@ class NEFTranslator(object):
                         for i in seq_dat_:
                             i.append('1')
                         seq_dat += seq_dat_
-                    else:
-                        break
+
                 if not _tags_exist:
                     raise LookupError("Missing one of mandatory items %s in %s loop category" % (tags, lp_category))
 
@@ -761,6 +764,9 @@ class NEFTranslator(object):
             except ValueError:
                 raise ValueError("Sequence ID must be integer in %s loop category" % lp_category)
 
+        if len(dat) == 0:
+            dat.append([])
+
         return dat
 
     @staticmethod
@@ -822,8 +828,7 @@ class NEFTranslator(object):
                     if set(_tags) & set(loop.tags) == set(_tags):
                         _tags_exist = True
                         comp_atom_dat += loop.get_data_by_tag(_tags)
-                    else:
-                        break
+
                 if not _tags_exist:
                     raise LookupError("Missing one of mandatory items %s in %s loop category" % (tags, lp_category))
 
@@ -853,6 +858,9 @@ class NEFTranslator(object):
                 asm.append(ent)
 
             dat.append(asm)
+
+        if len(dat) == 0:
+            dat.append([])
 
         return dat
 
@@ -938,6 +946,9 @@ class NEFTranslator(object):
             except ValueError:
                 raise ValueError("Isotope number must be integer in %s loop category" % lp_category)
 
+        if len(dat) == 0:
+            dat.append([])
+
         return dat
 
     @staticmethod
@@ -1021,6 +1032,9 @@ class NEFTranslator(object):
 
             dat.append(asm)
 
+        if len(dat) == 0:
+            dat.append([])
+
         return dat
 
     @staticmethod
@@ -1083,6 +1097,9 @@ class NEFTranslator(object):
 
             except ValueError:
                 raise ValueError("Index ID must be integer in %s loop category" % lp_category)
+
+        if len(dat) == 0:
+            dat.append([])
 
         return dat
 
@@ -1563,6 +1580,9 @@ class NEFTranslator(object):
                 asm.append(ent)
 
             dat.append(asm)
+
+        if len(dat) == 0:
+            dat.append([])
 
         return dat
 

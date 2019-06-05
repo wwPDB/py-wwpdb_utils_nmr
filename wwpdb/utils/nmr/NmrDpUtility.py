@@ -2428,8 +2428,8 @@ class NmrDpUtility(object):
                     ambig_code = a_code['ambig_code']
                     atom_ids = a_code['atom_id']
 
-                    # standard residue
-                    if self.nef_translator.get_one_letter_code(comp_id) != '?':
+                    # known residues
+                    if self.bmrb_cs_stat.hasCompId(comp_id):
 
                         if ambig_code is None:
                             comp_ids_wo_ambig_code.append(comp_id)
@@ -2442,20 +2442,20 @@ class NmrDpUtility(object):
 
                             for atom_id in atom_ids:
 
-                                if ambig_code > self.__getMaxAmbigCodeWoSetId(comp_id, atom_id):
+                                if ambig_code > self.bmrb_cs_stat.getMaxAmbigCodeWoSetId(comp_id, atom_id):
                                     self.report.error.addDescription('invalid_ambiguity_code', "Invalid ambiguity code %s (comp_id %s, atom_id %s, allowed ambig_code %s) exists in %s saveframe." % (ambig_code, comp_id, atom_id, [1, self.__getMaxAmbigCodeWoSetId(comp_id, atom_id), 4, 5, 6, 9], sf_framecode))
                                     self.report.setError()
 
-                    # non-standard residue
+                    # non-standard residue without chemical shift statistics
                     else:
                         pass
 
                 if len(comp_ids_wo_ambig_code) > 0:
-                    self.report.warning.addDescription('missing_data', "Missing ambiguity code for standard residues in %s saveframe." % sf_framecode)
+                    self.report.warning.addDescription('missing_data', "Missing ambiguity code for the following residues %s in %s saveframe." % (comp_ids_wo_ambig_code, sf_framecode))
                     self.report.setWarning()
 
                     if self.__verbose:
-                        self.__lfh.write("+NmrDpUtility.__testAmbigCodeOfCSLoop() ++ Warning  - Missing ambiguity code for standard residues in %s saveframe." % sf_framecode)
+                        self.__lfh.write("+NmrDpUtility.__testAmbigCodeOfCSLoop() ++ Warning  - Missing ambiguity code for the following residues %s in %s saveframe." % (comp_ids_wo_ambig_code, sf_framecode))
 
             except LookupError as e:
 
@@ -2482,122 +2482,6 @@ class NmrDpUtility(object):
                     self.__lfh.write("+NmrDpUtility.__testAmbigCodeOfCSLoop() ++ Error  - %s" % str(e))
 
         return not self.report.isError()
-
-    def __getMaxAmbigCodeWoSetId(self, comp_id, atom_id):
-        """ Return maximum ambiguity code of a given atom that does not require declaration of ambiguity set ID.
-        """
-
-        code = self.__get1LetterCode(comp_id)
-
-        if code == '.' or code == 'X':
-            return 1
-
-        if atom_id.startswith('H'):
-
-            if comp_id == 'ARG':
-                if atom_id in ['HB2', 'HB3', 'HG2', 'HG3', 'HD2', 'HD3', 'HH11', 'HH12', 'HH21', 'HH22']:
-                    return 2
-
-            elif comp_id == 'ASN':
-                if atom_id in ['HB2', 'HB3', 'HD21', 'HD22']:
-                    return 2
-
-            elif comp_id in ['ASP', 'CYS', 'HIS', 'SER', 'TRP']:
-                if atom_id in ['HB2', 'HB3']:
-                    return 2
-
-            elif comp_id == 'GLN':
-                if atom_id in ['HB2', 'HB3', 'HG2', 'HG3', 'HE21', 'HE22']:
-                    return 2
-
-            elif comp_id in ['GLU', 'MET']:
-                if atom_id in ['HB2', 'HB3', 'HG2', 'HG3']:
-                    return 2
-
-            elif comp_id == 'GLY':
-                if atom_id in ['HA2', 'HA3']:
-                    return 2
-
-            elif comp_id == 'ILE':
-                if atom_id in ['HG12', 'HG13']:
-                    return 2
-
-            elif comp_id == 'LEU':
-                if atom_id in ['HB2', 'HB3', 'HD11', 'HD12', 'HD13', 'HD21', 'HD22', 'HD23']:
-                    return 2
-
-            elif comp_id == 'LYS':
-                if atom_id in ['HB2', 'HB3', 'HG2', 'HG3', 'HD2', 'HD3', 'HE2', 'HE3']:
-                    return 2
-
-            elif comp_id in ['PHE', 'TYR']:
-                if atom_id in ['HB2', 'HB3']:
-                    return 2
-
-                elif atom_id in ['HD1', 'HD2', 'HE1', 'HE2']:
-                    return 3
-
-            elif comp_id == 'PRO':
-                if atom_id in ['HB2', 'HB3', 'HG2', 'HG3', 'HD2', 'HD3']:
-                    return 2
-
-            elif comp_id == 'VAL':
-                if atom_id in ['HG11', 'HG12', 'HG13', 'HG21', 'HG22', 'HG23']:
-                    return 2
-
-            elif comp_id == 'DA':
-                if atom_id in ['H61', 'H62', "H2'", "H2''", "H5'", "H5''"]:
-                    return 2
-
-            elif comp_id == 'DG':
-                if atom_id in ['H21', 'H22', "H2'", "H2''", "H5'", "H5''"]:
-                    return 2
-
-            elif comp_id == 'DC':
-                if atom_id in ['H41', 'H42', "H2'", "H2''", "H5'", "H5''"]:
-                    return 2
-
-            elif comp_id == 'DT':
-                if atom_id in ["H2'", "H2''", "H5'", "H5''"]:
-                    return 2
-
-            elif comp_id == 'A':
-                if atom_id in ['H61', 'H62', "H5'", "H5''"]:
-                    return 2
-
-            elif comp_id == 'G':
-                if atom_id in ['H21', 'H22', "H5'", "H5''"]:
-                    return 2
-
-            elif comp_id == 'C':
-                if atom_id in ['H41', 'H42', "H5'", "H5''"]:
-                    return 2
-
-            elif comp_id == 'U':
-                if atom_id in ["H5'", "H5''"]:
-                    return 2
-
-        elif atom_id.startswith('C'):
-
-            if comp_id == 'LEU':
-                if atom_id in ['CD1', 'CD2']:
-                    return 2
-
-            elif comp_id in ['PHE', 'TYR']:
-                if atom_id in ['CD1', 'CD2', 'CE1', 'CE2']:
-                    return 3
-
-            elif comp_id == 'VAL':
-                if atom_id in ['CG1', 'CG2']:
-                    return 2
-
-        elif atom_id.startswith('N'):
-
-            if comp_id == 'ARG':
-                if atom_id in ['NH1', 'NH2']:
-                    return 2
-
-        return 1
 
     def __testDuplicatedIndex(self):
         """ Perform duplication test on index of interesting loops.
@@ -3325,7 +3209,7 @@ class NmrDpUtility(object):
 
                                 has_cs_stat = True
 
-                                if atom_id.startswith('H') and cs_stat['h_desc'] == 'methyl':
+                                if atom_id.startswith('H') and 'methyl' in cs_stat['desc']:
                                     methyl_cs_key = "%s %04d %s" % (chain_id, seq_id, atom_id[:-1])
 
                                     if not methyl_cs_vals.has_key(methyl_cs_key):
@@ -3409,7 +3293,7 @@ class NmrDpUtility(object):
 
                                     has_cs_stat = True
 
-                                    if atom_id.startswith('H') and cs_stat['h_desc'] == 'methyl':
+                                    if atom_id.startswith('H') and 'methyl' in cs_stat['desc']:
                                         methyl_cs_key = "%s %04d %s" % (chain_id, seq_id, atom_id[:-1])
 
                                         if not methyl_cs_vals.has_key(methyl_cs_key):
@@ -3486,7 +3370,7 @@ class NmrDpUtility(object):
 
                                     has_cs_stat = True
 
-                                    if atom_id.startswith('H') and cs_stat['h_desc'] == 'methyl':
+                                    if atom_id.startswith('H') and 'methyl' in cs_stat['desc']:
                                         methyl_cs_key = "%s %04d %s" % (chain_id, seq_id, atom_id[:-1])
 
                                         if not methyl_cs_vals.has_key(methyl_cs_key):
@@ -3563,7 +3447,7 @@ class NmrDpUtility(object):
 
                                     has_cs_stat = True
 
-                                    if atom_id.startswith('H') and cs_stat['h_desc'] == 'methyl':
+                                    if atom_id.startswith('H') and 'methyl' in cs_stat['h_desc']:
                                         methyl_cs_key = "%s %04d %s" % (chain_id, seq_id, atom_id[:-1])
 
                                         if not methyl_cs_vals.has_key(methyl_cs_key):
@@ -3831,18 +3715,18 @@ class NmrDpUtility(object):
 
                             try:
 
-                                value = next(j[cs_value_name] for j in cs_data if j[cs_item_names['chain_id']] == chain_id and
-                                                                                  j[cs_item_names['seq_id']] == seq_id and
-                                                                                  j[cs_item_names['comp_id']] == comp_id and
-                                                                                  j[cs_item_names['atom_id']] == atom_id)
+                                cs = next(j for j in cs_data if j[cs_item_names['chain_id']] == chain_id and
+                                                                j[cs_item_names['seq_id']] == seq_id and
+                                                                j[cs_item_names['comp_id']] == comp_id and
+                                                                j[cs_item_names['atom_id']] == atom_id)
 
-                                error = next(j[cs_error_name] for j in cs_data if j[cs_item_names['chain_id']] == chain_id and
-                                                                                  j[cs_item_names['seq_id']] == seq_id and
-                                                                                  j[cs_item_names['comp_id']] == comp_id and
-                                                                                  j[cs_item_names['atom_id']] == atom_id)
+                                value = cs[cs_value_name]
+                                error = cs[cs_error_name]
 
-                                if error is None:
+                                if error is None or error * 5.0 > max_cs_err:
                                     error = max_cs_err
+                                else:
+                                    error *= 5.0
 
                                 if abs(position - value) > error:
 

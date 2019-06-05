@@ -34,16 +34,63 @@ class BMRBChemShiftStat:
 
         self.others = []
 
+        self.__aa_comp_ids = set()
+        self.__dna_comp_ids = set()
+        self.__rna_comp_ids = set()
+        self.__all_comp_ids = set()
+
         self.loadStatFromPickleFiles()
 
     def isOk(self):
-        """ Return whether all BMRB statistics are available.
+        """ Return whether all BMRB chemical shift statistics are available.
         """
 
         return len(self.aa_filt) > 0 and len(self.aa_full) > 0 and len(self.dna_filt) > 0 and len(self.dna_full) > 0 and len(self.others) > 0
 
+    def hasCompId(self, comp_id):
+        """ Return whether a given comp_id has BMRB chemical shift statistics.
+        """
+
+        return comp_id in self.__all_comp_ids
+
+    def getMaxAmbigCodeWoSetId(self, comp_id, atom_id):
+        """ Return maximum ambiguity code of a given atom that does not require declaration of ambiguity set ID.
+        @return: one of (1, 2, 3), 0 for not found
+        """
+
+        if not self.hasCompId(comp_id):
+            return 0
+
+        elif comp_id in self.__aa_comp_ids:
+            try:
+                d = next(i['desc'] for i in self.aa_filt if i['comp_id'] == comp_id and i['atom_id'] == atom_id)
+            except StopIteration:
+                return 0
+        elif comp_id in self.__dna_comp_ids:
+            try:
+                d = next(i['desc'] for i in self.dna_filt if i['comp_id'] == comp_id and i['atom_id'] == atom_id)
+            except StopIteration:
+                return 0
+        elif comp_id in self.__rna_comp_ids:
+            try:
+                d = next(i['desc'] for i in self.rna_filt if i['comp_id'] == comp_id and i['atom_id'] == atom_id)
+            except StopIteration:
+                return 0
+        else:
+            try:
+                d = next(i['desc'] for i in self.others if i['comp_id'] == comp_id and i['atom_id'] == atom_id)
+            except StopIteration:
+                return 0
+
+        if 'geminal' in d:
+            return 2
+        elif 'opposite' in d:
+            return 3
+        else:
+            return 1
+
     def printStat(self, list):
-        """ Print out statistics.
+        """ Print out BMRB chemical shift statistics.
         """
 
         for i in list:
@@ -63,6 +110,8 @@ class BMRBChemShiftStat:
         self.rna_full = self.loadStatFromCsvFile(self.stat_dir + 'rna_full.csv')
 
         self.others = self.loadStatFromCsvFile(self.stat_dir + 'others.csv')
+
+        self.__updateCompIdSet()
 
     def loadStatFromCsvFile(self, file_name, standard_residue=True):
         """ Load BMRB chemical shift statistics from a given CSV file.
@@ -92,7 +141,7 @@ class BMRBChemShiftStat:
                                 _row['std'] = None
                             _row['min'] = float(row['min'])
                             _row['max'] = float(row['max'])
-                            _row['h_desc'] = 'methyl'
+                            _row['desc'] = 'methyl'
 
                             list.append(_row)
 
@@ -112,7 +161,7 @@ class BMRBChemShiftStat:
                                 _row['std'] = None
                             _row['min'] = float(row['min'])
                             _row['max'] = float(row['max'])
-                            _row['h_desc'] = 'geminal'
+                            _row['desc'] = 'geminal'
 
                             list.append(_row)
 
@@ -128,8 +177,7 @@ class BMRBChemShiftStat:
                             _row['std'] = None
                         _row['min'] = float(row['min'])
                         _row['max'] = float(row['max'])
-                        if row['atom_id'].startswith('H'):
-                            _row['h_desc'] = 'isolated'
+                        _row['desc'] = 'isolated'
 
                         list.append(_row)
 
@@ -145,18 +193,20 @@ class BMRBChemShiftStat:
                         _row['std'] = None
                     _row['min'] = float(row['min'])
                     _row['max'] = float(row['max'])
-                    if row['atom_id'].startswith('H'):
-                        _row['h_desc'] = 'isolated'
+                    _row['desc'] = 'isolated'
 
                     list.append(_row)
 
-        self.detectMethylProtonsFromAtomNomenclature(list)
-        self.detectGeminalProtonsFromAtomNomenclature(list)
+        self.__detectMethylProtonFromAtomNomenclature(list)
+        self.__detectGeminalProtonFromAtomNomenclature(list)
+
+        self.__detectGeminalCarbon(list)
+        self.__detectGeminalNitrogen(list)
 
         return list
 
-    def detectMethylProtonsFromAtomNomenclature(self, list):
-        """ Detect methyl protons from atom nomenclature.
+    def __detectMethylProtonFromAtomNomenclature(self, list):
+        """ Detect methyl proton from atom nomenclature.
             @attention: This function should be re-written using CCD.
         """
 
@@ -166,7 +216,7 @@ class BMRBChemShiftStat:
             comp_ids.add(i['comp_id'])
 
         for comp_id in comp_ids:
-            h_list = [i for i in list if i['comp_id'] == comp_id and i['atom_id'].startswith('H') and i['h_desc'] == 'isolated']
+            h_list = [i for i in list if i['comp_id'] == comp_id and i['atom_id'].startswith('H') and i['desc'] == 'isolated']
 
             h_1 = [i['atom_id'][:-1] for i in h_list if i['atom_id'].endswith('1')]
             h_2 = [i['atom_id'][:-1] for i in h_list if i['atom_id'].endswith('2')]
@@ -179,10 +229,10 @@ class BMRBChemShiftStat:
                 for i in h_list:
                     atom_id = i['atom_id']
                     if atom_id == h + '1' or atom_id == h + '2' or atom_id == h + '3':
-                        i['h_desc'] = 'methyl'
+                        i['desc'] = 'methyl'
 
-    def detectGeminalProtonsFromAtomNomenclature(self, list):
-        """ Detect geminal protons from atom nomenclature.
+    def __detectGeminalProtonFromAtomNomenclature(self, list):
+        """ Detect geminal proton from atom nomenclature.
             @attention: This function should be re-written using CCD.
         """
 
@@ -192,7 +242,7 @@ class BMRBChemShiftStat:
             comp_ids.add(i['comp_id'])
 
         for comp_id in comp_ids:
-            h_list = [i for i in list if i['comp_id'] == comp_id and i['atom_id'].startswith('H') and i['h_desc'] == 'isolated']
+            h_list = [i for i in list if i['comp_id'] == comp_id and i['atom_id'].startswith('H') and i['desc'] == 'isolated']
 
             h_1 = [i['atom_id'][:-1] for i in h_list if i['atom_id'].endswith('1')]
             h_2 = [i['atom_id'][:-1] for i in h_list if i['atom_id'].endswith('2')]
@@ -221,7 +271,7 @@ class BMRBChemShiftStat:
                         try:
                             next(n for n in n_list if n['atom_id'] == atom_id)
                         except:
-                            i['h_desc'] = 'aroma' if h in cn_common and i['avg'] > 5.0 else 'geminal'
+                            i['desc'] = 'aroma' if h in cn_common and i['avg'] > 5.0 else 'geminal'
 
             h_common = set(h_2) & set(h_3) - set(h_1)
             cn_common = set(c_2) & set(c_3) | set(c_2) & set(n_3) | set(n_2) & set(c_3)
@@ -234,20 +284,20 @@ class BMRBChemShiftStat:
                         try:
                             next(n for n in n_list if n['atom_id'] == atom_id)
                         except:
-                            i['h_desc'] = 'aroma' if h in cn_common and i['avg'] > 5.0 else 'geminal'
+                            i['desc'] = 'aroma' if h in cn_common and i['avg'] > 5.0 else 'geminal'
 
-            h_list = [i for i in list if i['comp_id'] == comp_id and i['atom_id'].startswith('H') and i['h_desc'] == 'isolated']
+            h_list = [i for i in list if i['comp_id'] == comp_id and i['atom_id'].startswith('H') and i['desc'] == 'isolated']
 
             for h in h_list:
                 if h['avg'] > 5.0:
                     atom_id = 'C' + h['atom_id'][1:]
                     try:
-                        next(c for c in c_list if c['atom_id'] == atom_id and c['avg'] > 95.0 and c['avg'] < 165.0)
-                        h['h_desc'] = 'aroma'
+                        next(c for c in c_list if c['atom_id'] == atom_id and c['avg'] > 95.0 and c['avg'] < 170.0)
+                        h['desc'] = 'aroma'
                     except StopIteration:
                         pass
 
-            h_list = [i for i in list if i['comp_id'] == comp_id and i['atom_id'].startswith('H') and i['h_desc'] == 'isolated']
+            h_list = [i for i in list if i['comp_id'] == comp_id and i['atom_id'].startswith('H') and i['desc'] == 'isolated']
 
             h_c = [i['atom_id'][:-1] for i in h_list if i['atom_id'].endswith("'") and not i['atom_id'].endswith("''")]
             h_cc = [i['atom_id'][:-2] for i in h_list if i['atom_id'].endswith("''")]
@@ -265,9 +315,9 @@ class BMRBChemShiftStat:
                         try:
                             next(n for n in n_list if n['atom_id'] == atom_id)
                         except:
-                            i['h_desc'] = 'geminal'
+                            i['desc'] = 'geminal'
 
-            h_list = [i for i in list if i['comp_id'] == comp_id and i['atom_id'].startswith('H') and i['h_desc'] == 'aroma']
+            h_list = [i for i in list if i['comp_id'] == comp_id and i['atom_id'].startswith('H') and i['desc'] == 'aroma']
 
             h_1 = [i['atom_id'][:-1] for i in h_list if i['atom_id'].endswith('1')]
             h_2 = [i['atom_id'][:-1] for i in h_list if i['atom_id'].endswith('2')]
@@ -280,7 +330,7 @@ class BMRBChemShiftStat:
                     for i in h_list:
                         atom_id = i['atom_id']
                         if atom_id == h + '1' or atom_id == h + '2':
-                            i['h_desc'] = 'aroma-opposite'
+                            i['desc'] = 'aroma-opposite'
 
             h_common = set(h_2) & set(h_3)
 
@@ -289,7 +339,85 @@ class BMRBChemShiftStat:
                     for i in h_list:
                         atom_id = i['atom_id']
                         if atom_id == h + '2' or atom_id == h + '3':
-                            i['h_desc'] = 'aroma-opposite'
+                            i['desc'] = 'aroma-opposite'
+
+    def __detectGeminalCarbon(self, list):
+        """ Detect geminal carbon from atom nomenclature.
+            @attention: This function should be re-written using CCD.
+        """
+
+        comp_ids = set()
+
+        for i in list:
+            comp_ids.add(i['comp_id'])
+
+        for comp_id in comp_ids:
+            methyl_list = ['C' + i['atom_id'][1:-1] for i in list if i['comp_id'] == comp_id and i['atom_id'].startswith('H') and i['desc'] == 'methyl' and i['atom_id'].endswith('1')]
+
+            methyl_1 = [i[:-1] for i in methyl_list if i.endswith('1')]
+            methyl_2 = [i[:-1] for i in methyl_list if i.endswith('2')]
+            methyl_3 = [i[:-1] for i in methyl_list if i.endswith('3')]
+
+            c_list = [i for i in list if i['comp_id'] == comp_id and i['atom_id'].startswith('C')]
+
+            for c in c_list:
+                if c['atom_id'] in methyl_list:
+                    c['desc'] = 'methyl'
+                elif c['avg'] > 95.0 and c['avg'] < 170.0:
+                    c['desc'] = 'aroma'
+
+            methyl_common = set(methyl_1) & set(methyl_2) - set(methyl_3)
+
+            for m in methyl_common:
+                for c in c_list:
+                    atom_id = c['atom_id']
+                    if atom_id == m + '1' or atom_id == m + '2':
+                        c['desc'] = 'methyl-geminal'
+                        for h in [i for i in list if i['comp_id'] == comp_id and i['atom_id'].startswith('H') and i['desc'] == 'methyl' and i['atom_id'].startswith('H' + atom_id[1:])]:
+                            h['desc'] = 'methyl-geminal'
+
+            aroma_list = ['C' + i['atom_id'][1:] for i in list if i['comp_id'] == comp_id and i['atom_id'].startswith('H') and i['desc'] == 'aroma']
+
+            for c in c_list:
+                if c['atom_id'] in aroma_list:
+                    c['desc'] = 'aroma'
+
+            aroma_opposite_list = ['C' + i['atom_id'][1:] for i in list if i['comp_id'] == comp_id and i['atom_id'].startswith('H') and i['desc'] == 'aroma-opposite']
+
+            for c in c_list:
+                if c['atom_id'] in aroma_opposite_list:
+                    c['desc'] = 'aroma-opposite'
+
+    def __detectGeminalNitrogen(self, list):
+        """ Detect geminal nitrogen from atom nomenclature.
+            @attention: This function should be re-written using CCD.
+        """
+
+        comp_ids = set()
+
+        for i in list:
+            comp_ids.add(i['comp_id'])
+
+        for comp_id in comp_ids:
+            geminal_list = ['N' + i['atom_id'][1:-1] for i in list if i['comp_id'] == comp_id and i['atom_id'].startswith('H') and i['desc'] == 'geminal' and i['atom_id'].endswith('1')]
+
+            geminal_1 = [i[:-1] for i in geminal_list if i.endswith('1')]
+            geminal_2 = [i[:-1] for i in geminal_list if i.endswith('2')]
+            geminal_3 = [i[:-1] for i in geminal_list if i.endswith('3')]
+
+            n_list = [i for i in list if i['comp_id'] == comp_id and i['atom_id'].startswith('N')]
+
+            for n in n_list:
+                if n['avg'] > 125.0:
+                    n['desc'] = 'aroma'
+
+            geminal_common = set(geminal_1) & set(geminal_2) - set(geminal_3)
+
+            for g in geminal_common:
+                for n in n_list:
+                    atom_id = n['atom_id']
+                    if atom_id == g + '1' or atom_id == g + '2':
+                        n['desc'] = 'geminal'
 
     def writeStatAsPickleFiles(self):
         """ Write all BMRB chemical shift statistics as pickle files.
@@ -328,6 +456,8 @@ class BMRBChemShiftStat:
 
         self.others = self.loadStatFromPickleFile(self.stat_dir + 'others.pkl')
 
+        self.__updateCompIdSet()
+
     def loadStatFromPickleFile(self, file_name):
         """ Load BMRB chemical shift statistics from pickle file if possible.
         """
@@ -338,3 +468,23 @@ class BMRBChemShiftStat:
                 return pickle.load(f)
 
         return []
+
+    def __updateCompIdSet(self):
+        """ Update set of comp_id having BMRB chemical shift statistics
+        """
+
+        for i in self.aa_filt:
+            self.__aa_comp_ids.add(i['comp_id'])
+
+        for i in self.dna_filt:
+            self.__dna_comp_ids.add(i['comp_id'])
+
+        for i in self.rna_filt:
+            self.__rna_comp_ids.add(i['comp_id'])
+
+        self.__all_comp_ids |= self.__aa_comp_ids
+        self.__all_comp_ids |= self.__dna_comp_ids
+        self.__all_comp_ids |= self.__rna_comp_ids
+
+        for i in self.others:
+            self.__all_comp_ids.add(i['comp_id'])

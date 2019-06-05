@@ -21,7 +21,10 @@ class TestBMRBChemShiftStat(unittest.TestCase):
         self.bmrb_cs_stat.writeStatAsPickleFiles()
 
     def test_init(self):
-        self.bmrb_cs_stat.printStat(self.bmrb_cs_stat.aa_full)
+        #self.bmrb_cs_stat.printStat(self.bmrb_cs_stat.aa_filt)
+        #self.bmrb_cs_stat.printStat(self.bmrb_cs_stat.dna_filt)
+        #self.bmrb_cs_stat.printStat(self.bmrb_cs_stat.rna_filt)
+        #self.bmrb_cs_stat.printStat(self.bmrb_cs_stat.others)
         self.assertEqual(self.bmrb_cs_stat.isOk(), True)
 
 if __name__ == '__main__':

@@ -166,19 +166,19 @@ class BMRBChemShiftStat:
             comp_ids.add(i['comp_id'])
 
         for comp_id in comp_ids:
-            _list = [i for i in list if i['comp_id'] == comp_id and i['atom_id'].startswith('H') and i['h_desc'] == 'isolated']
+            h_list = [i for i in list if i['comp_id'] == comp_id and i['atom_id'].startswith('H') and i['h_desc'] == 'isolated']
 
-            h_1 = [i['atom_id'][:-1] for i in _list if i['atom_id'].endswith('1')]
-            h_2 = [i['atom_id'][:-1] for i in _list if i['atom_id'].endswith('2')]
-            h_3 = [i['atom_id'][:-1] for i in _list if i['atom_id'].endswith('3')]
-            h_4 = [i['atom_id'][:-1] for i in _list if i['atom_id'].endswith('4')]
+            h_1 = [i['atom_id'][:-1] for i in h_list if i['atom_id'].endswith('1')]
+            h_2 = [i['atom_id'][:-1] for i in h_list if i['atom_id'].endswith('2')]
+            h_3 = [i['atom_id'][:-1] for i in h_list if i['atom_id'].endswith('3')]
+            h_4 = [i['atom_id'][:-1] for i in h_list if i['atom_id'].endswith('4')]
 
-            common = set(h_1) & set(h_2) & set(h_3) - set(h_4)
+            h_common = set(h_1) & set(h_2) & set(h_3) - set(h_4)
 
-            for c in common:
-                for i in _list:
+            for h in h_common:
+                for i in h_list:
                     atom_id = i['atom_id']
-                    if atom_id == c + '1' or atom_id == c + '2' or atom_id == c + '3':
+                    if atom_id == h + '1' or atom_id == h + '2' or atom_id == h + '3':
                         i['h_desc'] = 'methyl'
 
     def detectGeminalProtonsFromAtomNomenclature(self, list):
@@ -192,27 +192,104 @@ class BMRBChemShiftStat:
             comp_ids.add(i['comp_id'])
 
         for comp_id in comp_ids:
-            _list = [i for i in list if i['comp_id'] == comp_id and i['atom_id'].startswith('H') and i['h_desc'] == 'isolated']
+            h_list = [i for i in list if i['comp_id'] == comp_id and i['atom_id'].startswith('H') and i['h_desc'] == 'isolated']
 
-            h_1 = [i['atom_id'][:-1] for i in _list if i['atom_id'].endswith('1')]
-            h_2 = [i['atom_id'][:-1] for i in _list if i['atom_id'].endswith('2')]
-            h_3 = [i['atom_id'][:-1] for i in _list if i['atom_id'].endswith('3')]
+            h_1 = [i['atom_id'][:-1] for i in h_list if i['atom_id'].endswith('1')]
+            h_2 = [i['atom_id'][:-1] for i in h_list if i['atom_id'].endswith('2')]
+            h_3 = [i['atom_id'][:-1] for i in h_list if i['atom_id'].endswith('3')]
 
-            common = set(h_1) & set(h_2) - set(h_3)
+            c_list = [i for i in list if i['comp_id'] == comp_id and i['atom_id'].startswith('C')]
 
-            for c in common:
-                for i in _list:
+            c_1 = ['H' + i['atom_id'][1:-1] for i in c_list if i['atom_id'].endswith('1')]
+            c_2 = ['H' + i['atom_id'][1:-1] for i in c_list if i['atom_id'].endswith('2')]
+            c_3 = ['H' + i['atom_id'][1:-1] for i in c_list if i['atom_id'].endswith('3')]
+
+            n_list = [i for i in list if i['comp_id'] == comp_id and i['atom_id'].startswith('N')]
+
+            n_1 = ['H' + i['atom_id'][1:-1] for i in n_list if i['atom_id'].endswith('1')]
+            n_2 = ['H' + i['atom_id'][1:-1] for i in n_list if i['atom_id'].endswith('2')]
+            n_3 = ['H' + i['atom_id'][1:-1] for i in n_list if i['atom_id'].endswith('3')]
+
+            h_common = set(h_1) & set(h_2) - set(h_3)
+            cn_common = set(c_1) & set(c_2) | set(c_1) & set(n_2) | set(n_1) & set(c_2)
+
+            for h in h_common:
+                for i in h_list:
                     atom_id = i['atom_id']
-                    if atom_id == c + '1' or atom_id == c + '2':
-                        i['h_desc'] = 'genimal'
+                    if atom_id == h + '1' or atom_id == h + '2':
+                        atom_id = 'N' + i['atom_id'][1:]
+                        try:
+                            next(n for n in n_list if n['atom_id'] == atom_id)
+                        except:
+                            i['h_desc'] = 'aroma' if h in cn_common and i['avg'] > 5.0 else 'geminal'
 
-            common = set(h_2) & set(h_3) - set(h_1)
+            h_common = set(h_2) & set(h_3) - set(h_1)
+            cn_common = set(c_2) & set(c_3) | set(c_2) & set(n_3) | set(n_2) & set(c_3)
 
-            for c in common:
-                for i in _list:
+            for h in h_common:
+                for i in h_list:
                     atom_id = i['atom_id']
-                    if atom_id == c + '2' or atom_id == c + '3':
-                        i['h_desc'] = 'geminal'
+                    if atom_id == h + '2' or atom_id == h + '3':
+                        atom_id = 'N' + i['atom_id'][1:]
+                        try:
+                            next(n for n in n_list if n['atom_id'] == atom_id)
+                        except:
+                            i['h_desc'] = 'aroma' if h in cn_common and i['avg'] > 5.0 else 'geminal'
+
+            h_list = [i for i in list if i['comp_id'] == comp_id and i['atom_id'].startswith('H') and i['h_desc'] == 'isolated']
+
+            for h in h_list:
+                if h['avg'] > 5.0:
+                    atom_id = 'C' + h['atom_id'][1:]
+                    try:
+                        next(c for c in c_list if c['atom_id'] == atom_id and c['avg'] > 95.0 and c['avg'] < 165.0)
+                        h['h_desc'] = 'aroma'
+                    except StopIteration:
+                        pass
+
+            h_list = [i for i in list if i['comp_id'] == comp_id and i['atom_id'].startswith('H') and i['h_desc'] == 'isolated']
+
+            h_c = [i['atom_id'][:-1] for i in h_list if i['atom_id'].endswith("'") and not i['atom_id'].endswith("''")]
+            h_cc = [i['atom_id'][:-2] for i in h_list if i['atom_id'].endswith("''")]
+
+            c_c = ['H' + i['atom_id'][1:-1] for i in c_list if i['atom_id'].endswith("'") and not i['atom_id'].endswith("''")]
+            c_cc = ['H' + i['atom_id'][1:-2] for i in c_list if i['atom_id'].endswith("''")]
+
+            h_common = set(h_c) & set(h_cc) & set(c_c) - set(c_cc)
+
+            for h in h_common:
+                for i in h_list:
+                    atom_id = i['atom_id']
+                    if atom_id == h + "'" or atom_id == h + "''":
+                        atom_id = 'N' + i['atom_id'][1:]
+                        try:
+                            next(n for n in n_list if n['atom_id'] == atom_id)
+                        except:
+                            i['h_desc'] = 'geminal'
+
+            h_list = [i for i in list if i['comp_id'] == comp_id and i['atom_id'].startswith('H') and i['h_desc'] == 'aroma']
+
+            h_1 = [i['atom_id'][:-1] for i in h_list if i['atom_id'].endswith('1')]
+            h_2 = [i['atom_id'][:-1] for i in h_list if i['atom_id'].endswith('2')]
+            h_3 = [i['atom_id'][:-1] for i in h_list if i['atom_id'].endswith('3')]
+
+            h_common = set(h_1) & set(h_2)
+
+            if len(h_common) > 0 and len(h_common) % 2 == 0:
+                for h in h_common:
+                    for i in h_list:
+                        atom_id = i['atom_id']
+                        if atom_id == h + '1' or atom_id == h + '2':
+                            i['h_desc'] = 'aroma-opposite'
+
+            h_common = set(h_2) & set(h_3)
+
+            if len(h_common) > 0 and len(h_common) % 2 == 0:
+                for h in h_common:
+                    for i in h_list:
+                        atom_id = i['atom_id']
+                        if atom_id == h + '2' or atom_id == h + '3':
+                            i['h_desc'] = 'aroma-opposite'
 
     def writeStatAsPickleFiles(self):
         """ Write all BMRB chemical shift statistics as pickle files.
@@ -246,8 +323,8 @@ class BMRBChemShiftStat:
         self.dna_filt = self.loadStatFromPickleFile(self.stat_dir + 'dna_filt.pkl')
         self.dna_full = self.loadStatFromPickleFile(self.stat_dir + 'dna_full.pkl')
 
-        self.dna_filt = self.loadStatFromPickleFile(self.stat_dir + 'dna_filt.pkl')
-        self.dna_full = self.loadStatFromPickleFile(self.stat_dir + 'dna_full.pkl')
+        self.rna_filt = self.loadStatFromPickleFile(self.stat_dir + 'rna_filt.pkl')
+        self.rna_full = self.loadStatFromPickleFile(self.stat_dir + 'rna_full.pkl')
 
         self.others = self.loadStatFromPickleFile(self.stat_dir + 'others.pkl')
 

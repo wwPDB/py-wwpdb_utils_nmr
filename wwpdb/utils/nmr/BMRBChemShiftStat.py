@@ -100,20 +100,20 @@ class BMRBChemShiftStat:
         """ Load all BMRB chemical shift statistics from CSV files.
         """
 
-        self.aa_filt = self.loadStatFromCsvFile(self.stat_dir + 'aa_filt.csv')
-        self.aa_full = self.loadStatFromCsvFile(self.stat_dir + 'aa_full.csv')
+        self.aa_filt = self.loadStatFromCsvFile(self.stat_dir + 'aa_filt.csv', 0.1)
+        self.aa_full = self.loadStatFromCsvFile(self.stat_dir + 'aa_full.csv', 0.1)
 
-        self.dna_filt = self.loadStatFromCsvFile(self.stat_dir + 'dna_filt.csv')
-        self.dna_full = self.loadStatFromCsvFile(self.stat_dir + 'dna_full.csv')
+        self.dna_filt = self.loadStatFromCsvFile(self.stat_dir + 'dna_filt.csv', 0.3)
+        self.dna_full = self.loadStatFromCsvFile(self.stat_dir + 'dna_full.csv', 0.3)
 
-        self.rna_filt = self.loadStatFromCsvFile(self.stat_dir + 'rna_filt.csv')
-        self.rna_full = self.loadStatFromCsvFile(self.stat_dir + 'rna_full.csv')
+        self.rna_filt = self.loadStatFromCsvFile(self.stat_dir + 'rna_filt.csv', 0.3)
+        self.rna_full = self.loadStatFromCsvFile(self.stat_dir + 'rna_full.csv', 0.3)
 
-        self.others = self.loadStatFromCsvFile(self.stat_dir + 'others.csv')
+        self.others = self.loadStatFromCsvFile(self.stat_dir + 'others.csv', 0.6)
 
         self.__updateCompIdSet()
 
-    def loadStatFromCsvFile(self, file_name, standard_residue=True):
+    def loadStatFromCsvFile(self, file_name, threshold):
         """ Load BMRB chemical shift statistics from a given CSV file.
         """
 
@@ -123,52 +123,15 @@ class BMRBChemShiftStat:
             reader = csv.DictReader(f)
 
             for row in reader:
-                if standard_residue:
 
-                    # methyl proton group
-                    if row['atom_id'].startswith('M'):
-                        _atom_id = re.sub(r'^M', 'H', row['atom_id'])
+                # methyl proton group
+                if row['atom_id'].startswith('M'):
+                    _atom_id = re.sub(r'^M', 'H', row['atom_id'])
 
-                        for i in range(1, 4):
-                            _row = {}
-                            _row['comp_id'] = row['comp_id']
-                            _row['atom_id'] = _atom_id + str(i)
-                            _row['count'] = int(row['count'])
-                            _row['avg'] = float(row['avg'])
-                            try:
-                                _row['std'] = float(row['std'])
-                            except ValueError:
-                                _row['std'] = None
-                            _row['min'] = float(row['min'])
-                            _row['max'] = float(row['max'])
-                            _row['desc'] = 'methyl'
-
-                            list.append(_row)
-
-                    # geminal proton group
-                    elif row['atom_id'].startswith('Q'):
-                        _atom_id = re.sub(r'^Q', 'H', row['atom_id'])
-
-                        for i in range(1, 3):
-                            _row = {}
-                            _row['comp_id'] = row['comp_id']
-                            _row['atom_id'] = _atom_id + str(i)
-                            _row['count'] = int(row['count'])
-                            _row['avg'] = float(row['avg'])
-                            try:
-                                _row['std'] = float(row['std'])
-                            except ValueError:
-                                _row['std'] = None
-                            _row['min'] = float(row['min'])
-                            _row['max'] = float(row['max'])
-                            _row['desc'] = 'geminal'
-
-                            list.append(_row)
-
-                    else:
+                    for i in range(1, 4):
                         _row = {}
                         _row['comp_id'] = row['comp_id']
-                        _row['atom_id'] = row['atom_id']
+                        _row['atom_id'] = _atom_id + str(i)
                         _row['count'] = int(row['count'])
                         _row['avg'] = float(row['avg'])
                         try:
@@ -177,7 +140,31 @@ class BMRBChemShiftStat:
                             _row['std'] = None
                         _row['min'] = float(row['min'])
                         _row['max'] = float(row['max'])
-                        _row['desc'] = 'isolated'
+                        _row['desc'] = 'methyl'
+                        _row['major'] = False
+                        _row['norm_freq'] = None
+
+                        list.append(_row)
+
+                # geminal proton group
+                elif row['atom_id'].startswith('Q'):
+                    _atom_id = re.sub(r'^Q', 'H', row['atom_id'])
+
+                    for i in range(1, 3):
+                        _row = {}
+                        _row['comp_id'] = row['comp_id']
+                        _row['atom_id'] = _atom_id + str(i)
+                        _row['count'] = int(row['count'])
+                        _row['avg'] = float(row['avg'])
+                        try:
+                            _row['std'] = float(row['std'])
+                        except ValueError:
+                            _row['std'] = None
+                        _row['min'] = float(row['min'])
+                        _row['max'] = float(row['max'])
+                        _row['desc'] = 'geminal'
+                        _row['major'] = False
+                        _row['norm_freq'] = None
 
                         list.append(_row)
 
@@ -194,6 +181,8 @@ class BMRBChemShiftStat:
                     _row['min'] = float(row['min'])
                     _row['max'] = float(row['max'])
                     _row['desc'] = 'isolated'
+                    _row['major'] = False
+                    _row['norm_freq'] = None
 
                     list.append(_row)
 
@@ -202,6 +191,8 @@ class BMRBChemShiftStat:
 
         self.__detectGeminalCarbon(list)
         self.__detectGeminalNitrogen(list)
+
+        self.__detectMajorResonance(list, threshold)
 
         return list
 
@@ -418,6 +409,25 @@ class BMRBChemShiftStat:
                     atom_id = n['atom_id']
                     if atom_id == g + '1' or atom_id == g + '2':
                         n['desc'] = 'geminal'
+
+    def __detectMajorResonance(self, list, threshold):
+        """ Detect major resonance based on count of assignments.
+        """
+
+        comp_ids = set()
+
+        for i in list:
+            comp_ids.add(i['comp_id'])
+
+        for comp_id in comp_ids:
+            atom_list = [i for i in list if i['comp_id'] == comp_id]
+
+            max_count = max([i['count'] for i in atom_list])
+
+            for a in atom_list:
+                a['norm_freq'] = float("%.3f" % (float(a['count']) / max_count))
+                if threshold < 0.5 and a['count'] > max_count * threshold:
+                    a['major'] = True
 
     def writeStatAsPickleFiles(self):
         """ Write all BMRB chemical shift statistics as pickle files.

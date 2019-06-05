@@ -417,7 +417,7 @@ class NEFTranslator(object):
                 info.append('NMR-STAR')
                 seq = self.get_star_seq(in_dat)
 
-                if len(seq):
+                if len(seq[0]) > 0:
                     is_ok = True
 
                 else:
@@ -428,7 +428,7 @@ class NEFTranslator(object):
                 info.append('NEF')
                 seq = self.get_nef_seq(in_dat)
 
-                if len(seq):
+                if len(seq[0]) > 0:
                     is_ok = True
 
                 else:
@@ -457,9 +457,9 @@ class NEFTranslator(object):
             except AttributeError:
                 loops = [star_data]
 
-        tags = [seq_id, comp_id, chain_id]
-
         dat = [] # data of all loops
+
+        tags = [seq_id, comp_id, chain_id]
 
         for loop in loops:
             seq_dict = {}
@@ -810,9 +810,9 @@ class NEFTranslator(object):
             except AttributeError:
                 loops = [star_data]
 
-        tags = [comp_id, atom_id]
-
         dat = [] # data of all loops
+
+        tags = [comp_id, atom_id]
 
         for loop in loops:
             comp_atom_dict = {}
@@ -896,9 +896,9 @@ class NEFTranslator(object):
             except AttributeError:
                 loops = [star_data]
 
-        tags = [atom_type, isotope_number, atom_id]
-
         dat = [] # data of all loops
+
+        tags = [atom_type, isotope_number, atom_id]
 
         for loop in loops:
             ist_dict = {}
@@ -965,9 +965,9 @@ class NEFTranslator(object):
             except AttributeError:
                 loops = [star_data]
 
-        tags = [comp_id, atom_id, ambig_code, ambig_set_id]
-
         dat = [] # data of all loops
+
+        tags = [comp_id, atom_id, ambig_code, ambig_set_id]
 
         empty_value = (None, '', '.', '?')
         bmrb_ambiguity_codes = (1, 2, 3, 4, 5, 6, 9)
@@ -1067,9 +1067,9 @@ class NEFTranslator(object):
             except AttributeError:
                 loops = [star_data]
 
-        tags = [index_id]
-
         dat = [] # data of all loops
+
+        tags = [index_id]
 
         for loop in loops:
             index_dat = []
@@ -1145,6 +1145,8 @@ class NEFTranslator(object):
             except AttributeError:
                 loops = [star_data]
 
+        dat = [] # data of all loops
+
         item_types = ('str', 'bool', 'int', 'index-int', 'positive-int', 'static-index', 'float', 'positive-float', 'range-float', 'enum', 'enum-int')
 
         key_names = [k['name'] for k in key_items]
@@ -1194,8 +1196,6 @@ class NEFTranslator(object):
 
         empty_value = (None, '', '.', '?')
         true_value = ('true', 't', 'yes', 'y', '1')
-
-        dat = [] # data of all loops
 
         for loop in loops:
             tag_dat = []

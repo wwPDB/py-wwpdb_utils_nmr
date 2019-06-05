@@ -199,7 +199,7 @@ class NmrDpReportWarning:
     def __init__(self):
         self.items = ('missing_content', 'missing_saveframe', 'missing_data', 'enum_failure',
                       'disordered_index', 'sequence_mismatch', 'atom_nomenclature_mismatch',
-                      'skipped_sf_category', 'skipped_lp_category', 'suspicious_data', 'unusual_data')
+                      'skipped_sf_category', 'skipped_lp_category', 'suspicious_data', 'unusual_data', 'remarkable_data')
 
         self.__contents = {item:None for item in self.items}
 

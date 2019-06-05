@@ -60,16 +60,16 @@ class NmrDpUtility(object):
                                                       self.__extractCommonPolymerSequence,
                                                       self.__extractNonStandardResidue,
                                                       self.__appendPolymerSequenceAlignment,
-                                                      self.__testAtomNomenclature,
-                                                      self.__testAtomTypeOfCSLoop,
-                                                      self.__testAmbiguityCodeOfCSLoop,
-                                                      self.__testDuplicatedIndex,
+                                                      self.__validteAtomIdOfStandardResidue,
+                                                      self.__validateAtomTypeOfCSLoop,
+                                                      self.__validateAmbigCodeOfCSLoop,
+                                                      self.__testIndexConsistency,
                                                       self.__testDataConsistencyInLoop,
                                                       self.__testDataConsistencyInAuxLoop,
-                                                      self.__testSaveframeTag,
-                                                      self.__validateChemShiftValue,
+                                                      self.__testSfTagConsistency,
+                                                      self.__validateCSValue,
                                                       self.__testCSValueConsistencyInPkLoop,
-                                                      self.__calculateStatistics
+                                                      self.__calculateStatOfNmrData
                                                       ]
                                 }
         """
@@ -2157,8 +2157,8 @@ class NmrDpUtility(object):
 
         return array
 
-    def __testAtomNomenclature(self):
-        """ Perform atom nomenclature test for standard residues supported by NEFTranslator.
+    def __validteAtomIdOfStandardResidue(self):
+        """ Validate atom nomenclature of standard residues supported by NEFTranslator.
         """
 
         if self.report.isError():
@@ -2281,7 +2281,7 @@ class NmrDpUtility(object):
                     self.report.setError()
 
                     if self.__verbose:
-                        self.__lfh.write("+NmrDpUtility.__testAtomNomenclature() ++ LookupError  - %s" % str(e))
+                        self.__lfh.write("+NmrDpUtility.__validteAtomIdOfStandardResidue() ++ LookupError  - %s" % str(e))
 
                 except ValueError as e:
 
@@ -2289,20 +2289,20 @@ class NmrDpUtility(object):
                     self.report.setError()
 
                     if self.__verbose:
-                        self.__lfh.write("+NmrDpUtility.__testAtomNomenclature() ++ ValueError  - %s" % str(e))
+                        self.__lfh.write("+NmrDpUtility.__validteAtomIdOfStandardResidue() ++ ValueError  - %s" % str(e))
 
                 except Exception as e:
 
-                    self.report.error.addDescription('internal_error', "+NmrDpUtility.__testAtomNomenclature() ++ Error  - %s" % str(e))
+                    self.report.error.addDescription('internal_error', "+NmrDpUtility.__validteAtomIdOfStandardResidue() ++ Error  - %s" % str(e))
                     self.report.setError()
 
                     if self.__verbose:
-                        self.__lfh.write("+NmrDpUtility.__testAtomNomenclature() ++ Error  - %s" % str(e))
+                        self.__lfh.write("+NmrDpUtility.__validteAtomIdOfStandardResidue() ++ Error  - %s" % str(e))
 
         return not self.report.isError()
 
-    def __testAtomTypeOfCSLoop(self):
-        """ Perform atom type, isotope number test on assigned chemical shifts.
+    def __validateAtomTypeOfCSLoop(self):
+        """ Validate atom type, isotope number on assigned chemical shifts.
         """
 
         if self.report.isError():
@@ -2318,11 +2318,11 @@ class NmrDpUtility(object):
 
         if not content_subtype in input_source_dic['content_subtype'].keys():
 
-            self.report.error.addDescription('internal_error', "+NmrDpUtility.__testAtomTypeOfCSLoop() ++ Error  - Assigned chemical shift loop does not exists in %s file." % file_name)
+            self.report.error.addDescription('internal_error', "+NmrDpUtility.__validateAtomTypeOfCSLoop() ++ Error  - Assigned chemical shift loop does not exists in %s file." % file_name)
             self.report.setError()
 
             if self.__verbose:
-                self.__lfh.write("+NmrDpUtility.__testAtomTypeOfCSLoop() ++ Error  - Assigned chemical shift loop does not exists in %s file" % file_name)
+                self.__lfh.write("+NmrDpUtility.__validateAtomTypeOfCSLoop() ++ Error  - Assigned chemical shift loop does not exists in %s file" % file_name)
 
             return False
 
@@ -2365,7 +2365,7 @@ class NmrDpUtility(object):
                 self.report.setError()
 
                 if self.__verbose:
-                    self.__lfh.write("+NmrDpUtility.__testAtomTypeOfCSLoop() ++ LookupError  - %s" % str(e))
+                    self.__lfh.write("+NmrDpUtility.__validateAtomTypeOfCSLoop() ++ LookupError  - %s" % str(e))
 
             except ValueError as e:
 
@@ -2373,20 +2373,20 @@ class NmrDpUtility(object):
                 self.report.setError()
 
                 if self.__verbose:
-                    self.__lfh.write("+NmrDpUtility.__testAtomTypeOfCSLoop() ++ ValueError  - %s" % str(e))
+                    self.__lfh.write("+NmrDpUtility.__validateAtomTypeOfCSLoop() ++ ValueError  - %s" % str(e))
 
             except Exception as e:
 
-                self.report.error.addDescription('internal_error', "+NmrDpUtility.__testAtomTypeOfCSLoop() ++ Error  - %s" % str(e))
+                self.report.error.addDescription('internal_error', "+NmrDpUtility.__validateAtomTypeOfCSLoop() ++ Error  - %s" % str(e))
                 self.report.setError()
 
                 if self.__verbose:
-                    self.__lfh.write("+NmrDpUtility.__testAtomTypeOfCSLoop() ++ Error  - %s" % str(e))
+                    self.__lfh.write("+NmrDpUtility.__validateAtomTypeOfCSLoop() ++ Error  - %s" % str(e))
 
         return not self.report.isError()
 
-    def __testAmbiguityCodeOfCSLoop(self):
-        """ Perform ambiguity code test on assigned chemical shifts.
+    def __validateAmbigCodeOfCSLoop(self):
+        """ Validate ambiguity code on assigned chemical shifts.
         """
 
         if self.report.isError():
@@ -2402,11 +2402,11 @@ class NmrDpUtility(object):
 
         if not content_subtype in input_source_dic['content_subtype'].keys():
 
-            self.report.error.addDescription('internal_error', "+NmrDpUtility.__testAmbiguityCodeOfCSLoop() ++ Error  - Assigned chemical shift loop does not exists in %s file." % file_name)
+            self.report.error.addDescription('internal_error', "+NmrDpUtility.__validateAmbigCodeOfCSLoop() ++ Error  - Assigned chemical shift loop does not exists in %s file." % file_name)
             self.report.setError()
 
             if self.__verbose:
-                self.__lfh.write("+NmrDpUtility.__testAmbiguityCodeOfCSLoop() ++ Error  - Assigned chemical shift loop does not exists in %s file" % file_name)
+                self.__lfh.write("+NmrDpUtility.__validateAmbigCodeOfCSLoop() ++ Error  - Assigned chemical shift loop does not exists in %s file" % file_name)
 
             return False
 
@@ -2486,8 +2486,8 @@ class NmrDpUtility(object):
 
         return not self.report.isError()
 
-    def __testDuplicatedIndex(self):
-        """ Perform duplication test on index of interesting loops.
+    def __testIndexConsistency(self):
+        """ Perform consistency test on index of interesting loops.
         """
 
         if self.report.isError():
@@ -2594,7 +2594,7 @@ class NmrDpUtility(object):
                         if not num_dim in range(1, self.lim_num_dim):
                             raise ValueError()
 
-                    except ValueError: # raised error already at __testDuplicatedIndex()
+                    except ValueError: # raised error already at __testIndexConsistency()
                         continue
 
                     max_dim = num_dim + 1
@@ -2968,8 +2968,8 @@ class NmrDpUtility(object):
                         if self.__verbose:
                             self.__lfh.write("+NmrDpUtility.__testDataConsistencyInAuxLoopOfSpectralPeak() ++ ValueError  - %s" % err)
 
-    def __testSaveframeTag(self):
-        """ Perform consistency test on data of interesting saveframe tags.
+    def __testSfTagConsistency(self):
+        """ Perform consistency test on saveframe tags.
         """
 
         #if self.report.isError():
@@ -2994,11 +2994,11 @@ class NmrDpUtility(object):
 
                 if sf_data.tag_prefix != self.sf_tag_prefixes[file_type][content_subtype]:
 
-                    self.report.error.addDescription('internal_error', "+NmrDpUtility.__testSaveframeTag() ++ Error  - Saveframe tag prefix %s does not match with %s in saveframe %s." % (sf_data.tag_prefix, self.sf_tag_prefixes[file_type][content_subtype], sf_framecode))
+                    self.report.error.addDescription('internal_error', "+NmrDpUtility.__testSfTagConsistency() ++ Error  - Saveframe tag prefix %s does not match with %s in saveframe %s." % (sf_data.tag_prefix, self.sf_tag_prefixes[file_type][content_subtype], sf_framecode))
                     self.report.setError()
 
                     if self.__verbose:
-                        self.__lfh.write("+NmrDpUtility.__testSaveframeTag() ++ Error  - Saveframe tag prefix %s does not match with %s in saveframe %s." % (sf_data.tag_prefix, self.sf_tag_prefixes[file_type][content_subtype], sf_framecode))
+                        self.__lfh.write("+NmrDpUtility.__testSfTagConsistency() ++ Error  - Saveframe tag prefix %s does not match with %s in saveframe %s." % (sf_data.tag_prefix, self.sf_tag_prefixes[file_type][content_subtype], sf_framecode))
 
                     pass
 
@@ -3017,7 +3017,7 @@ class NmrDpUtility(object):
                     self.report.setError()
 
                     if self.__verbose:
-                        self.__lfh.write("+NmrDpUtility.__testSaveframeTag() ++ LookupError  - %s" % str(e))
+                        self.__lfh.write("+NmrDpUtility.__testSfTagConsistency() ++ LookupError  - %s" % str(e))
 
                 except ValueError as e:
 
@@ -3025,7 +3025,7 @@ class NmrDpUtility(object):
                     self.report.setError()
 
                     if self.__verbose:
-                        self.__lfh.write("+NmrDpUtility.__testSaveframeTag() ++ ValueError  - %s" % str(e))
+                        self.__lfh.write("+NmrDpUtility.__testSfTagConsistency() ++ ValueError  - %s" % str(e))
 
                 except UserWarning as e:
 
@@ -3041,7 +3041,7 @@ class NmrDpUtility(object):
                         self.report.setWarning()
 
                         if self.__verbose:
-                            self.__lfh.write("+NmrDpUtility.__testSaveframeTag() ++ Warning  - %s" % err)
+                            self.__lfh.write("+NmrDpUtility.__testSfTagConsistency() ++ Warning  - %s" % err)
 
                         # try to parse data without constraints
 
@@ -3058,19 +3058,19 @@ class NmrDpUtility(object):
                             pass
 
                     else:
-                        self.report.error.addDescription('internal_error', "+NmrDpUtility.__testSaveframeTag() ++ Error  - %s" % str(e))
+                        self.report.error.addDescription('internal_error', "+NmrDpUtility.__testSfTagConsistency() ++ Error  - %s" % str(e))
                         self.report.setError()
 
                         if self.__verbose:
-                            self.__lfh.write("+NmrDpUtility.__testSaveframeTag() ++ Error  - %s" % str(e))
+                            self.__lfh.write("+NmrDpUtility.__testSfTagConsistency() ++ Error  - %s" % str(e))
 
                 except Exception as e:
 
-                    self.report.error.addDescription('internal_error', "+NmrDpUtility.__testSaveframeTag() ++ Error  - %s" % str(e))
+                    self.report.error.addDescription('internal_error', "+NmrDpUtility.__testSfTagConsistency() ++ Error  - %s" % str(e))
                     self.report.setError()
 
                     if self.__verbose:
-                        self.__lfh.write("+NmrDpUtility.__testSaveframeTag() ++ Error  - %s" % str(e))
+                        self.__lfh.write("+NmrDpUtility.__testSfTagConsistency() ++ Error  - %s" % str(e))
 
         return not self.report.isError()
 
@@ -3140,8 +3140,8 @@ class NmrDpUtility(object):
 
         return not self.report.isError()
 
-    def __validateChemShiftValue(self):
-        """ Validate assigned chemical shift values based on BMRB chemical shift statistics.
+    def __validateCSValue(self):
+        """ Validate assigned chemical shift value based on BMRB chemical shift statistics.
         """
 
         #if self.report.isError():
@@ -3157,11 +3157,11 @@ class NmrDpUtility(object):
 
         if not content_subtype in input_source_dic['content_subtype'].keys():
 
-            self.report.error.addDescription('internal_error', "+NmrDpUtility.__testChemShiftValue() ++ Error  - Assigned chemical shift loop does not exists in %s file." % file_name)
+            self.report.error.addDescription('internal_error', "+NmrDpUtility.__validateCSValue() ++ Error  - Assigned chemical shift loop does not exists in %s file." % file_name)
             self.report.setError()
 
             if self.__verbose:
-                self.__lfh.write("+NmrDpUtility.__testChemShiftValue() ++ Error  - Assigned chemical shift loop does not exists in %s file" % file_name)
+                self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ Error  - Assigned chemical shift loop does not exists in %s file" % file_name)
 
             return False
 
@@ -3223,7 +3223,7 @@ class NmrDpUtility(object):
                                         self.report.setError()
 
                                         if self.__verbose:
-                                            self.__lfh.write("+NmrDpUtility.__testChemShiftValue() ++ ValueError  - %s" % err)
+                                            self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ ValueError  - %s" % err)
 
                                         break
 
@@ -3235,7 +3235,7 @@ class NmrDpUtility(object):
                                     self.report.setWarning()
 
                                     if self.__verbose:
-                                        self.__lfh.write("+NmrDpUtility.__testChemShiftValue() ++ Warning  - %s" % warn)
+                                        self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ Warning  - %s" % warn)
 
                                     break
 
@@ -3250,7 +3250,7 @@ class NmrDpUtility(object):
                                     self.report.setError()
 
                                     if self.__verbose:
-                                        self.__lfh.write("+NmrDpUtility.__testChemShiftValue() ++ ValueError  - %s" % err)
+                                        self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ ValueError  - %s" % err)
 
                                 elif abs(z_score) > 10.0:
                                     warn = 'Check row of chain_id %s, seq_id %s, comp_id %s, atom_id %s. %s %s must be verified (avg %s, std %s, min %s, max %s, Z_score %.2f) in %s loop category, %s saveframe.' %\
@@ -3260,7 +3260,7 @@ class NmrDpUtility(object):
                                     self.report.setWarning()
 
                                     if self.__verbose:
-                                        self.__lfh.write("+NmrDpUtility.__testChemShiftValue() ++ Warning  - %s" % warn)
+                                        self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ Warning  - %s" % warn)
 
                                 break
 
@@ -3312,7 +3312,7 @@ class NmrDpUtility(object):
                                         self.report.setError()
 
                                         if self.__verbose:
-                                            self.__lfh.write("+NmrDpUtility.__testChemShiftValue() ++ ValueError  - %s" % err)
+                                            self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ ValueError  - %s" % err)
 
                                         break
 
@@ -3324,7 +3324,7 @@ class NmrDpUtility(object):
                                     self.report.setWarning()
 
                                     if self.__verbose:
-                                        self.__lfh.write("+NmrDpUtility.__testChemShiftValue() ++ Warning  - %s" % warn)
+                                        self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ Warning  - %s" % warn)
 
                                     break
 
@@ -3339,7 +3339,7 @@ class NmrDpUtility(object):
                                     self.report.setError()
 
                                     if self.__verbose:
-                                        self.__lfh.write("+NmrDpUtility.__testChemShiftValue() ++ ValueError  - %s" % err)
+                                        self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ ValueError  - %s" % err)
 
                                 elif abs(z_score) > 5.0:
                                     warn = 'Check row of chain_id %s, seq_id %s, comp_id %s, atom_id %s. %s %s must be verified (avg %s, std %s, min %s, max %s, Z_score %.2f) in %s loop category, %s saveframe.' %\
@@ -3349,7 +3349,7 @@ class NmrDpUtility(object):
                                     self.report.setWarning()
 
                                     if self.__verbose:
-                                        self.__lfh.write("+NmrDpUtility.__testChemShiftValue() ++ Warning  - %s" % warn)
+                                        self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ Warning  - %s" % warn)
 
                                 elif abs(z_score) > 3.5:
                                     warn = 'Check row of chain_id %s, seq_id %s, comp_id %s, atom_id %s. %s %s should be verified (avg %s, std %s, min %s, max %s, Z_score %.2f) in %s loop category, %s saveframe.' %\
@@ -3359,7 +3359,7 @@ class NmrDpUtility(object):
                                     self.report.setWarning()
 
                                     if self.__verbose:
-                                        self.__lfh.write("+NmrDpUtility.__testChemShiftValue() ++ Warning  - %s" % warn)
+                                        self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ Warning  - %s" % warn)
 
                                 elif not cs_stat['major']:
                                     warn = 'Check row of chain_id %s, seq_id %s, comp_id %s, atom_id %s. %s %s is remarkable assignment (appearance rate %s) in %s loop category, %s saveframe.' %\
@@ -3369,7 +3369,7 @@ class NmrDpUtility(object):
                                     self.report.setWarning()
 
                                     if self.__verbose:
-                                        self.__lfh.write("+NmrDpUtility.__testChemShiftValue() ++ Warning  - %s" % warn)
+                                        self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ Warning  - %s" % warn)
 
                                 break
 
@@ -3381,7 +3381,7 @@ class NmrDpUtility(object):
                         self.report.setWarning()
 
                         if self.__verbose:
-                            self.__lfh.write("+NmrDpUtility.__testChemShiftValue() ++ Warning  - %s" % warn)
+                            self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ Warning  - %s" % warn)
 
             except StopIteration:
 
@@ -3389,15 +3389,15 @@ class NmrDpUtility(object):
                 self.report.setError()
 
                 if self.__verbose:
-                    self.__lfh.write("+NmrDpUtility.__testCSValueConsistencyInPkLoop() ++ Error  - Assigned chemical shifts are mandatory. Saveframe %s referred by %s in %s saveframe was not found in %s file." % (cs_list, self.cs_list_sf_tag_name[file_type], sf_framecode, file_name))
+                    self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ Error  - Assigned chemical shifts are mandatory. Saveframe %s referred by %s in %s saveframe was not found in %s file." % (cs_list, self.cs_list_sf_tag_name[file_type], sf_framecode, file_name))
 
             except Exception as e:
 
-                self.report.error.addDescription('internal_error', "+NmrDpUtility.__testChemShiftValue() ++ Error  - %s" % str(e))
+                self.report.error.addDescription('internal_error', "+NmrDpUtility.__validateCSValue() ++ Error  - %s" % str(e))
                 self.report.setError()
 
                 if self.__verbose:
-                    self.__lfh.write("+NmrDpUtility.__testChemShiftValue() ++ Error  - %s" % str(e))
+                    self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ Error  - %s" % str(e))
 
         return not self.report.isError()
 
@@ -3455,7 +3455,7 @@ class NmrDpUtility(object):
                 if not num_dim in range(1, self.lim_num_dim):
                     raise ValueError()
 
-            except ValueError: # raised error already at __testDuplicatedIndex()
+            except ValueError: # raised error already at __testIndexConsistency()
                 return False
 
             max_dim = num_dim + 1
@@ -3717,7 +3717,7 @@ class NmrDpUtility(object):
 
         return not self.report.isError()
 
-    def __calculateStatistics(self):
+    def __calculateStatOfNmrData(self):
         """ Calculate statistics of NMR data.
         """
 

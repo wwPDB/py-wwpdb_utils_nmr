@@ -4,7 +4,6 @@
 #
 # Updates:
 ##
-from __builtin__ import False, True
 """ Wrapper class for retrieving BMRB chemical shift statistics.
 """
 import sys

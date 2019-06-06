@@ -1,6 +1,6 @@
 ##
 # File: NmrDpReport.py
-# Date: 30-May-2019
+# Date: 06-Jun-2019
 #
 # Updates:
 ##
@@ -99,8 +99,7 @@ class NmrDpReportInputSource:
         self.items = ('file_name', 'file_type', 'content_type', 'content_subtype',
                       'polymer_sequence', 'polymer_sequence_in_loop',
                       'non_standard_residue',
-                      'sequence_coverage_by_exptl_data',
-                      'statistics_of_exptl_data')
+                      'stats_of_exptl_data')
         self.file_types = ('pdbx', 'nef', 'nmr-star')
         self.content_types = ('model', 'nmr-unified-data')
         self.content_subtypes = ('coordinate', 'entry_info', 'poly_seq', 'chem_shift', 'dist_restraint', 'dihed_restraint', 'rdc_restraint', 'spectral_peak')

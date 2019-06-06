@@ -1177,7 +1177,7 @@ class NEFTranslator(object):
                 raise LookupError("Data items %s must not exists in %s loop category" % ((set(data_names) | set(allowed_tags)) - set(allowed_tags), lp_category))
 
             for d in data_items:
-                if d.has_key('group-mandatory') and d['group-mandatory']:
+                if 'group-mandatory' in d and d['group-mandatory']:
                     group = d['group']
                     for m in group['member-with']:
                         if not m in allowed_tags:
@@ -1186,15 +1186,15 @@ class NEFTranslator(object):
                         for c in group['coexist-with']:
                             if not c in allowed_tags:
                                 raise Error("Coexisting data item %s of %s must exists in allowed tags of %s loop category" % (c, d['name'], lp_category))
-                    if group.has_key('smaller-than') and group['smaller-than']:
+                    if 'smaller-than' in group and group['smaller-than']:
                         for s in group['smaller-than']:
                             if not s in allowed_tags:
                                 raise Error("Smaller data item %s of %s must exists in allowed tags of %s loop category" % (s, d['name'], lp_category))
-                    if group.has_key('larger-than') and group['larger-than']:
+                    if 'larger-than' in group and group['larger-than']:
                         for l in group['larger-than']:
                             if not l in allowed_tags:
                                 raise Error("Larger data item %s of %s must exists in allowed tags of %s loop category" % (l, d['name'], lp_category))
-                    if group.has_key('not-equal-to') and group['not-equal-to']:
+                    if 'not-equal-to' in group and group['not-equal-to']:
                         for l in group['not-equal-to']:
                             if not l in allowed_tags:
                                 raise Error("None-equal data item %s of %s must exists in allowed tags of %s loop category" % (l, d['name'], lp_category))
@@ -1216,7 +1216,7 @@ class NEFTranslator(object):
                     raise LookupError("Disallowed items %s exists in %s loop category" % (set(loop.tags) & set(disallowed_tags), lp_category))
 
             for d in data_items:
-                if d.has_key('group-mandatory') and d['group-mandatory']:
+                if 'group-mandatory' in d and d['group-mandatory']:
                     name = d['name']
                     group = d['group']
                     if name in loop.tags:
@@ -1500,14 +1500,14 @@ class NEFTranslator(object):
                                         ent[name] = val
 
                 for d in data_items:
-                    if d.has_key('group-mandatory') and d['group-mandatory']:
+                    if 'group-mandatory' in d and d['group-mandatory']:
                         name = d['name']
                         group = d['group']
-                        if ent.has_key(name) and not ent[name] is None:
+                        if name in ent and not ent[name] is None:
                             if not group['coexist-with'] is None:
                                 has_coexist = True
                                 for c in group['coexist-with']:
-                                    if not ent.has_key(c) or ent[c] is None:
+                                    if not c in ent or ent[c] is None:
 
                                         idx_msg = ''
 
@@ -1519,9 +1519,9 @@ class NEFTranslator(object):
 
                                         raise ValueError("%sOne of data item %s must not be empty for a row having %s '%s' in %s loop category" % (idx_msg, c, name, ent[name], lp_category))
 
-                            if group.has_key('smaller-than') and not group['smaller-than'] is None:
+                            if 'smaller-than' in group and not group['smaller-than'] is None:
                                 for s in group['smaller-than']:
-                                    if ent.has_key(s) and not ent[s] is None:
+                                    if s in ent and not ent[s] is None:
                                         if ent[name] <= ent[s]:
 
                                             idx_msg = ''
@@ -1534,9 +1534,9 @@ class NEFTranslator(object):
 
                                             raise ValueError("%sData item %s '%s' must be larger than %s '%s' in %s loop category" % (idx_msg, name, ent[name], s, ent[s], lp_category))
 
-                            if group.has_key('larger-than') and not group['larger-than'] is None:
+                            if 'larger-than' in group and not group['larger-than'] is None:
                                 for l in group['larger-than']:
-                                    if ent.has_key(l) and not ent[l] is None:
+                                    if l in ent and not ent[l] is None:
                                         if ent[name] >= ent[l]:
 
                                             idx_msg = ''
@@ -1549,9 +1549,9 @@ class NEFTranslator(object):
 
                                             raise ValueError("%sData item %s '%s' must be smaller than %s '%s' in %s loop category" % (idx_msg, name, ent[name], l, ent[l], lp_category))
 
-                            if group.has_key('not-equal-to') and not group['not-equal-to'] is None:
+                            if 'not-equal-to' in group and not group['not-equal-to'] is None:
                                 for n in group['not-equal-to']:
-                                    if ent.has_key(n) and not ent[n] is None:
+                                    if n in ent and not ent[n] is None:
                                         if ent[name] == ent[n]:
 
                                             idx_msg = ''
@@ -1567,7 +1567,7 @@ class NEFTranslator(object):
                         else:
                             has_member = False
                             for m in group['member-with']:
-                                if ent.has_key(m) and not ent[m] is None:
+                                if m in ent and not ent[m] is None:
                                     has_member = True
                                     break
                             if not has_member:
@@ -1612,7 +1612,7 @@ class NEFTranslator(object):
                 raise LookupError("Tag items %s must not exists in" % (set(tag_names) | set(allowed_tags)) - set(allowed_tags))
 
             for t in tag_items:
-                if t.has_key('group-mandatory') and t['group-mandatory']:
+                if 'group-mandatory' in t and t['group-mandatory']:
                     group = t['group']
                     for m in group['member-with']:
                         if not m in allowed_tags:
@@ -1621,15 +1621,15 @@ class NEFTranslator(object):
                         for c in group['coexist-with']:
                             if not c in allowed_tags:
                                 raise Error("Coexisting tag item %s of %s must exists in allowed tags of" % (c, t['name']))
-                    if group.has_key('smaller-than') and group['smaller-than']:
+                    if 'smaller-than' in group and group['smaller-than']:
                         for s in group['smaller-than']:
                             if not s in allowed_tags:
                                 raise Error("Smaller tag item %s of %s must exists in allowed tags of" % (s, t['name']))
-                    if group.has_key('larger-than') and group['larger-than']:
+                    if 'larger-than' in group and group['larger-than']:
                         for l in group['larger-than']:
                             if not l in allowed_tags:
                                 raise Error("Larger tag item %s of %s must exists in allowed tags of" % (l, t['name']))
-                    if group.has_key('not-equal-to') and group['not-equal-to']:
+                    if 'not-equal-to' in group and group['not-equal-to']:
                         for l in group['not-equal-to']:
                             if not l in allowed_tags:
                                 raise Error("None-equal tag item %s of %s must exists in allowed tags of" % (l, t['name']))
@@ -1643,7 +1643,7 @@ class NEFTranslator(object):
             raise LookupError("Missing one of tag items %s in" % mand_tag_names)
 
         for t in tag_items:
-            if t.has_key('group-mandatory') and t['group-mandatory']:
+            if 'group-mandatory' in t and t['group-mandatory']:
                 name = t['name']
                 group = t['group']
                 if name in sf_tags.keys():
@@ -1746,38 +1746,38 @@ class NEFTranslator(object):
                             ent[name] = val
 
             for t in tag_items:
-                if t.has_key('group-mandatory') and t['group-mandatory']:
+                if 'group-mandatory' in t and t['group-mandatory']:
                     name = t['name']
                     group = t['group']
-                    if ent.has_key(name) and not ent[name] is None:
+                    if name in ent and not ent[name] is None:
                         if not group['coexist-with'] is None:
                             has_coexist = True
                             for c in group['coexist-with']:
-                                if not ent.has_key(c) or ent[c] is None:
+                                if not c in ent or ent[c] is None:
                                     raise ValueError("One of tag item %s must not be empty due to %s '%s' in" % (c, name, ent[name]))
 
-                        if group.has_key('smaller-than') and not group['smaller-than'] is None:
+                        if 'smaller-than' in group and not group['smaller-than'] is None:
                             for s in group['smaller-than']:
-                                if ent.has_key(s) and not ent[s] is None:
+                                if s in ent and not ent[s] is None:
                                     if ent[name] <= ent[s]:
                                         raise ValueError("Tag item %s '%s' must be larger than %s '%s' in" % (name, ent[name], s, ent[s]))
 
-                        if group.has_key('larger-than') and not group['larger-than'] is None:
+                        if 'larger-than' in group and not group['larger-than'] is None:
                             for l in group['larger-than']:
-                                if ent.has_key(l) and not ent[l] is None:
+                                if l in ent and not ent[l] is None:
                                     if ent[name] >= ent[l]:
                                         raise ValueError("Tag item %s '%s' must be smaller than %s '%s' in" % (name, ent[name], l, ent[l]))
 
-                        if group.has_key('not-equal-to') and not group['not-equal-to'] is None:
+                        if 'not-equal-to' in group and not group['not-equal-to'] is None:
                             for n in group['not-equal-to']:
-                                if ent.has_key(n) and not ent[n] is None:
+                                if n in ent and not ent[n] is None:
                                     if ent[name] == ent[n]:
                                         raise ValueError("Tag item %s '%s' must not be equal to %s '%s' in" % (name, ent[name], n, ent[n]))
 
                     else:
                         has_member = False
                         for m in group['member-with']:
-                            if ent.has_key(m) and not ent[m] is None:
+                            if m in ent and not ent[m] is None:
                                 has_member = True
                                 break
                         if not has_member:

@@ -1,6 +1,6 @@
 ##
 # File: NmrDpUtility.py
-# Date: 30-May-2019
+# Date: 06-Jun-2019
 #
 # Updates:
 ##
@@ -69,7 +69,7 @@ class NmrDpUtility(object):
                                                       self.__testSfTagConsistency,
                                                       self.__validateCSValue,
                                                       self.__testCSValueConsistencyInPkLoop,
-                                                      self.__calculateStatOfNmrData
+                                                      self.__calculateStatsOfExptlData
                                                       ]
                                 }
         """
@@ -3088,7 +3088,7 @@ class NmrDpUtility(object):
         parent_key_name = key_base + '.ID'
         child_key_name = key_base + '_ID'
 
-        if sf_tag_data.has_key(parent_key_name):
+        if parent_key_name in sf_tag_data:
             parent_key = sf_tag_data[parent_key_name]
         else:
             parent_key = list_id
@@ -3108,7 +3108,7 @@ class NmrDpUtility(object):
 
             if not lp_data is None:
                 for i in lp_data:
-                    if i.has_key(child_key_name) and i[child_key_name] != parent_key:
+                    if child_key_name in i and i[child_key_name] != parent_key:
                         err = 'Check row of %s %s. %s %s must be %s in %s loop category, %s saveframe.' % (index_tag, i[index_tag], child_key_name, i[child_key_name], parent_key, lp_category, sf_framecode)
 
                         self.report.error.addDescription('invalid_data', err)
@@ -3123,7 +3123,7 @@ class NmrDpUtility(object):
 
                 if not aux_data is None:
                     for i in aux_data:
-                        if i.has_key(child_key_name) and i[child_key_name] != parent_key:
+                        if child_key_name in i and i[child_key_name] != parent_key:
                             err = 'Check row of %s %s. %s %s must be %s in %s loop category, %s saveframe.' % (index_tag, i[index_tag], child_key_name, i[child_key_name], parent_key, lp_category, sf_framecode)
 
                             self.report.error.addDescription('invalid_data', err)
@@ -3167,7 +3167,7 @@ class NmrDpUtility(object):
 
             return False
 
-        paramagnetic = self.__inputParamDict.has_key('paramagnetic') and self.__inputParamDict['paramagnetic']
+        paramagnetic = 'paramgnetic' in self.__inputParamDict and self.__inputParamDict['paramagnetic']
 
         sf_category = self.sf_categories[file_type][content_subtype]
         lp_category = self.lp_categories[file_type][content_subtype]
@@ -3216,7 +3216,7 @@ class NmrDpUtility(object):
                                 if atom_id.startswith('H') and 'methyl' in cs_stat['desc']:
                                     methyl_cs_key = "%s %04d %s" % (chain_id, seq_id, atom_id[:-1])
 
-                                    if not methyl_cs_vals.has_key(methyl_cs_key):
+                                    if not methyl_cs_key in methyl_cs_vals:
                                         methyl_cs_vals[methyl_cs_key] = value
 
                                     elif value != methyl_cs_vals[methyl_cs_key]:
@@ -3343,7 +3343,7 @@ class NmrDpUtility(object):
                                 if atom_id.startswith('H') and 'methyl' in cs_stat['desc']:
                                     methyl_cs_key = "%s %04d %s" % (chain_id, seq_id, atom_id[:-1])
 
-                                    if not methyl_cs_vals.has_key(methyl_cs_key):
+                                    if not methyl_cs_key in methyl_cs_vals:
                                         methyl_cs_vals[methyl_cs_key] = value
 
                                     elif value != methyl_cs_vals[methyl_cs_key]:
@@ -3427,7 +3427,7 @@ class NmrDpUtility(object):
 
                     # ambiguity code
 
-                    elif file_type == 'nmr-star' and i.has_key(ambig_code_name):
+                    elif file_type == 'nmr-star' and ambig_code_name in i:
                         ambig_code = i[ambig_code_name]
 
                         if ambig_code in self.empty_value or ambig_code == 1:
@@ -3452,7 +3452,7 @@ class NmrDpUtility(object):
 
                             ambig_set_id_name = 'Ambiguity_set_ID'
 
-                            if not i.has_key(ambig_set_id_name):
+                            if not ambig_set_id_name in i:
 
                                 err = 'Check row of chain_id %s, seq_id %s, comp_id %s, atom_id %s. %s %s requires %s loop tag in %s loop_cateogry, %s saveframe.' %\
                                       (chain_id, seq_id, comp_id, atom_id, ambig_code_name, ambig_code, ambig_set_id_name, lp_category, sf_framecode)
@@ -3927,8 +3927,8 @@ class NmrDpUtility(object):
 
         return not self.report.isError()
 
-    def __calculateStatOfNmrData(self):
-        """ Calculate statistics of NMR data.
+    def __calculateStatsOfExptlData(self):
+        """ Calculate statistics of experimental data.
         """
 
         #if self.report.isError():

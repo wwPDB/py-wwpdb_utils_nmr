@@ -3446,7 +3446,37 @@ class NmrDpUtility(object):
                                 self.report.setError()
 
                                 if self.__verbose:
-                                    self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ ValueError - %s" % warn)
+                                    self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ ValueError - %s" % err)
+
+                            atom_id2 = self.bmrb_cs_stat.getGeminalAtom(comp_id, atom_id)
+
+                            try:
+
+                                j = next(j for j in lp_data if j[item_names['chain_id']] == chain_id and j[item_names['seq_id']] == seq_id and j[item_names['comp_id']] == comp_id and j[item_names['atom_id']] == atom_id2)
+
+                                ambig_code2 = j[ambig_code_name]
+
+                                if ambig_code2 != ambig_code:
+
+                                    err = 'Check row of chain_id %s, seq_id %s, comp_id %s, atom_id %s. %s %s indicates %s, but %s %s of atom_id %s are inconsistent in %s loop category, %s saveframe.' %\
+                                          (chain_id, seq_id, comp_id, atom_id, ambig_code_name, ambig_code, 'ambiguity of geminal atoms or geminal methyl proton groups' if ambig_code == 2 else 'aromatic atoms on opposite sides of symmetrical rings', ambig_code_name, ambig_code2, atom_id2, lp_category, sf_framecode)
+
+                                    self.report.error.addDescription('invalid_ambiguity_code', err)
+                                    self.report.setError()
+
+                                    if self.__verbose:
+                                        self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ ValueError - %s" % err)
+
+                            except StopIteration:
+
+                                err = 'Check row of chain_id %s, seq_id %s, comp_id %s, atom_id %s. %s %s indicates %s, but row of atom_id %s does not exists in %s loop category, %s saveframe.' %\
+                                      (chain_id, seq_id, comp_id, atom_id, ambig_code_name, ambig_code, 'ambiguity of geminal atoms or geminal methyl proton groups' if ambig_code == 2 else 'aromatic atoms on opposite sides of symmetrical rings', atom_id2, lp_category, sf_framecode)
+
+                                self.report.error.addDescription('invalid_ambiguity_code', err)
+                                self.report.setError()
+
+                                if self.__verbose:
+                                    self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ ValueError - %s" % err)
 
                         elif ambig_code in [4, 5, 6, 9]:
 
@@ -3461,7 +3491,7 @@ class NmrDpUtility(object):
                                 self.report.setError()
 
                                 if self.__verbose:
-                                    self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ LookupError  - %s" % str(e))
+                                    self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ LookupError  - %s" % err)
 
                             else:
 
@@ -3476,7 +3506,7 @@ class NmrDpUtility(object):
                                     self.report.setError()
 
                                     if self.__verbose:
-                                        self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ ValueError  - %s" % str(e))
+                                        self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ ValueError  - %s" % err)
 
                                 else:
 
@@ -3491,7 +3521,7 @@ class NmrDpUtility(object):
                                         self.report.setError()
 
                                         if self.__verbose:
-                                            self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ LookupError  - %s" % str(e))
+                                            self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ LookupError  - %s" % err)
 
                                     # Intra-residue ambiguities
                                     elif ambig_code == 4:
@@ -3511,7 +3541,7 @@ class NmrDpUtility(object):
                                                 self.report.setError()
 
                                                 if self.__verbose:
-                                                    self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ ValueError - %s" % warn)
+                                                    self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ ValueError - %s" % err)
 
                                     # Inter-residue ambiguities
                                     elif ambig_code == 5:
@@ -3531,7 +3561,7 @@ class NmrDpUtility(object):
                                                 self.report.setError()
 
                                                 if self.__verbose:
-                                                    self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ ValueError - %s" % warn)
+                                                    self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ ValueError - %s" % err)
 
                                     # Inter-molecular ambiguities
                                     elif ambig_code == 6:
@@ -3552,7 +3582,7 @@ class NmrDpUtility(object):
                                                 self.report.setError()
 
                                                 if self.__verbose:
-                                                    self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ ValueError - %s" % warn)
+                                                    self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ ValueError - %s" % err)
 
                                     for j in ambig_set:
                                         chain_id2 = j[item_names['chain_id']]
@@ -3569,7 +3599,7 @@ class NmrDpUtility(object):
                                             self.report.setError()
 
                                             if self.__verbose:
-                                                self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ ValueError - %s" % warn)
+                                                self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ ValueError - %s" % err)
 
                                         elif abs(value2 - value) > max_cs_err and value < value2:
 
@@ -3580,7 +3610,7 @@ class NmrDpUtility(object):
                                             self.report.setError()
 
                                             if self.__verbose:
-                                                self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ ValueError - %s" % warn)
+                                                self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ ValueError - %s" % err)
 
                         else:
 
@@ -3591,7 +3621,7 @@ class NmrDpUtility(object):
                             self.report.setError()
 
                             if self.__verbose:
-                                self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ ValueError - %s" % warn)
+                                self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ ValueError - %s" % err)
 
             except StopIteration:
 

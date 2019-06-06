@@ -68,8 +68,11 @@ class BMRBChemShiftStat:
             return True
 
         try:
+
             next(i for i in self.others if i['comp_id'] == comp_id and i['major'])
+
             return True
+
         except:
             return False
 
@@ -81,18 +84,21 @@ class BMRBChemShiftStat:
             return []
 
         if comp_id in self.__aa_comp_ids:
+
             if paramagnetic:
                 return [i for i in self.aa_full if i['comp_id'] == comp_id]
             else:
                 return [i for i in self.aa_filt if i['comp_id'] == comp_id]
 
         elif comp_id in self._dna_comp_ids:
+
             if paramagnetic:
                 return [i for i in self.dna_full if i['comp_id'] == comp_id]
             else:
                 return [i for i in self.dna_filt if i['comp_id'] == comp_id]
 
         elif comp_id in self._rna_comp_ids:
+
             if paramagnetic:
                 return [i for i in self.rna_full if i['comp_id'] == comp_id]
             else:
@@ -109,33 +115,51 @@ class BMRBChemShiftStat:
         if not comp_id in self.__all_comp_ids:
             return 0
 
-        if comp_id in self.__aa_comp_ids:
-            try:
-                d = next(i['desc'] for i in self.aa_filt if i['comp_id'] == comp_id and i['atom_id'] == atom_id)
-            except StopIteration:
-                return 0
-        elif comp_id in self.__dna_comp_ids:
-            try:
-                d = next(i['desc'] for i in self.dna_filt if i['comp_id'] == comp_id and i['atom_id'] == atom_id)
-            except StopIteration:
-                return 0
-        elif comp_id in self.__rna_comp_ids:
-            try:
-                d = next(i['desc'] for i in self.rna_filt if i['comp_id'] == comp_id and i['atom_id'] == atom_id)
-            except StopIteration:
-                return 0
-        else:
-            try:
-                d = next(i['desc'] for i in self.others if i['comp_id'] == comp_id and i['atom_id'] == atom_id)
-            except StopIteration:
-                return 0
+        try:
 
-        if 'geminal' in d:
-            return 2
-        elif 'opposite' in d:
-            return 3
-        else:
-            return 1
+            d = next(i['desc'] for i in self.get(comp_id) if i['atom_id'] == atom_id)
+
+            if 'geminal' in d:
+                return 2
+            elif d == 'aroma-opposite':
+                return 3
+            else:
+                return 1
+
+        except StopIteration:
+            return 0
+
+    def getGeminalAtom(self, comp_id, atom_id):
+        """ Return geminal or aromatic opposite atom of a given atom.
+        """
+
+        if not comp_id in self.__all_comp_ids:
+            return None
+
+        cs_stat = self.get(comp_id)
+
+        try:
+
+            d = next(i['desc'] for i in cs_stat if i['atom_id'] == atom_id)
+
+            if 'geminal' in d:
+
+                if d == 'geminal':
+                    return next(i['atom_id'] for i in cs_stat if i['desc'] == d and i['atom_id'] != atom_id and i['atom_id'][:-1] == atom_id[:-1])
+                else: # methyl-geminal
+                    if atom_id[0] == 'H':
+                        return next(i['atom_id'] for i in cs_stat if i['desc'] == d and i['atom_id'] != atom_id and i['atom_id'][:-2] == atom_id[:-2] and i['atom_id'][-1] == atom_id[-1])
+                    else: # methyl carbon
+                        return next(i['atom_id'] for i in cs_stat if i['desc'] == d and i['atom_id'] != atom_id and i['atom_id'][:-1] == atom_id[:-1])
+
+            elif d == 'aroma-opposite':
+                return next(i['atom_id'] for i in cs_stat if i['desc'] == d and i['atom_id'] != atom_id and i['atom_id'][:-1] == atom_id[:-1])
+
+            else:
+                return None
+
+        except StopIteration:
+            return None
 
     def printStat(self, list):
         """ Print out BMRB chemical shift statistics.

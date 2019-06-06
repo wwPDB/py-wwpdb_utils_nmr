@@ -1004,12 +1004,17 @@ class NEFTranslator(object):
 
                     if ambig_code >= 4:
                         if i[3] in empty_value:
-                            raise ("Ambiguity set ID should not be empty for ambiguity code %s in %s loop category" % (list(bmrb_ambiguity_codes), lp_category))
+                            raise ValueError("Ambiguity set ID should not be empty for ambiguity code %s in %s loop category" % (ambig_code, lp_category))
                         else:
                             try:
                                 ambig_set_id = int(i[3])
                             except ValueError:
                                 raise ValueError("Ambiguity set ID must be integer in %s loop category" % lp_category)
+
+                if not i[3] in empty_value:
+
+                    if i[2] in empty_value or not i[2] in ['4', '5', '6', '9']:
+                        raise ValueError("Ambiguity set ID must be empty for ambiguity code %s in %s loop category" % (i[2], lp_category))
 
             ambigs = sorted(set(['{}:{}'.format(i[0], i[2]) for i in ambig_dat]))
             sorted_atm = sorted(set(['{}:{} {}'.format(i[0], i[2], i[1]) for i in ambig_dat]))

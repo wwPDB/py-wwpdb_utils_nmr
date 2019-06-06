@@ -2445,8 +2445,10 @@ class NmrDpUtility(object):
 
                             for atom_id in atom_ids:
 
-                                if ambig_code > self.bmrb_cs_stat.getMaxAmbigCodeWoSetId(comp_id, atom_id):
-                                    self.report.error.addDescription('invalid_ambiguity_code', "Invalid ambiguity code %s (comp_id %s, atom_id %s, allowed ambig_code %s) exists in %s saveframe." % (ambig_code, comp_id, atom_id, [1, self.__getMaxAmbigCodeWoSetId(comp_id, atom_id), 4, 5, 6, 9], sf_framecode))
+                                allowed_ambig_code = self.bmrb_cs_stat.getMaxAmbigCodeWoSetId(comp_id, atom_id)
+
+                                if ambig_code > allowed_ambig_code:
+                                    self.report.error.addDescription('invalid_ambiguity_code', "Invalid ambiguity code %s (comp_id %s, atom_id %s, allowed ambig_code %s) exists in %s saveframe." % (ambig_code, comp_id, atom_id, [1, allowed_ambig_code, 4, 5, 6, 9], sf_framecode))
                                     self.report.setError()
 
                     # non-standard residue without chemical shift statistics
@@ -2475,7 +2477,7 @@ class NmrDpUtility(object):
 
                 if self.__verbose:
                     self.__lfh.write("+NmrDpUtility.__testAmbigCodeOfCSLoop() ++ ValueError  - %s" % str(e))
-
+            """
             except Exception as e:
 
                 self.report.error.addDescription('internal_error', "+NmrDpUtility.__testAmbigCodeOfCSLoop() ++ Error  - %s" % str(e))
@@ -2483,7 +2485,7 @@ class NmrDpUtility(object):
 
                 if self.__verbose:
                     self.__lfh.write("+NmrDpUtility.__testAmbigCodeOfCSLoop() ++ Error  - %s" % str(e))
-
+            """
         return not self.report.isError()
 
     def __testIndexConsistency(self):
@@ -3171,6 +3173,7 @@ class NmrDpUtility(object):
         lp_category = self.lp_categories[file_type][content_subtype]
 
         index_tag = self.index_tags[file_type][content_subtype]
+        max_cs_err = self.chem_shift_error['max_exclusive']
 
         for sf_data in self.__star_data.get_saveframes_by_category(sf_category):
 
@@ -3182,6 +3185,7 @@ class NmrDpUtility(object):
 
                 item_names = self.item_names_in_cs_loop[file_type]
                 value_name = item_names['value']
+                ambig_code_name = 'Ambiguity_code'
 
                 methyl_cs_vals = {}
 
@@ -3199,9 +3203,9 @@ class NmrDpUtility(object):
                     # non-standard residue
                     if one_letter_code == 'X':
 
-                        for cs_stat in self.bmrb_cs_stat.others:
+                        for cs_stat in self.bmrb_cs_stat.get(comp_id):
 
-                            if cs_stat['comp_id'] == comp_id and cs_stat['atom_id'] == atom_id_:
+                            if cs_stat['atom_id'] == atom_id_:
                                 min_value = cs_stat['min']
                                 max_value = cs_stat['max']
                                 avg_value = cs_stat['avg']
@@ -3240,27 +3244,72 @@ class NmrDpUtility(object):
                                     break
 
                                 z_score = (value - avg_value) / std_value
-                                tolerance = std_value * 10.0
 
-                                if value < min_value - tolerance or value > max_value + tolerance:
-                                    err = 'Check row of chain_id %s, seq_id %s, comp_id %s, atom_id %s. %s %s is out of range (avg %s, std %s, min %s, max %s, Z_score %.2f) in %s loop category, %s saveframe.' %\
-                                          (chain_id, seq_id, comp_id, atom_id, value_name, value, avg_value, std_value, min_value, max_value, z_score, lp_category, sf_framecode)
+                                if self.bmrb_cs_stat.hasEnoughStat(comp_id):
+                                    tolerance = std_value
 
-                                    self.report.error.addDescription('anomalous_data', err)
-                                    self.report.setError()
+                                    if value < min_value - tolerance or value > max_value + tolerance:
+                                        err = 'Check row of chain_id %s, seq_id %s, comp_id %s, atom_id %s. %s %s is out of range (avg %s, std %s, min %s, max %s, Z_score %.2f) in %s loop category, %s saveframe.' %\
+                                              (chain_id, seq_id, comp_id, atom_id, value_name, value, avg_value, std_value, min_value, max_value, z_score, lp_category, sf_framecode)
 
-                                    if self.__verbose:
-                                        self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ ValueError  - %s" % err)
+                                        self.report.error.addDescription('anomalous_data', err)
+                                        self.report.setError()
 
-                                elif abs(z_score) > 10.0:
-                                    warn = 'Check row of chain_id %s, seq_id %s, comp_id %s, atom_id %s. %s %s must be verified (avg %s, std %s, min %s, max %s, Z_score %.2f) in %s loop category, %s saveframe.' %\
-                                           (chain_id, seq_id, comp_id, atom_id, value_name, value, avg_value, std_value, min_value, max_value, z_score, lp_category, sf_framecode)
+                                        if self.__verbose:
+                                            self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ ValueError  - %s" % err)
 
-                                    self.report.warning.addDescription('suspicious_data', warn)
-                                    self.report.setWarning()
+                                    elif abs(z_score) > 7.5:
+                                        warn = 'Check row of chain_id %s, seq_id %s, comp_id %s, atom_id %s. %s %s must be verified (avg %s, std %s, min %s, max %s, Z_score %.2f) in %s loop category, %s saveframe.' %\
+                                               (chain_id, seq_id, comp_id, atom_id, value_name, value, avg_value, std_value, min_value, max_value, z_score, lp_category, sf_framecode)
 
-                                    if self.__verbose:
-                                        self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ Warning  - %s" % warn)
+                                        self.report.warning.addDescription('suspicious_data', warn)
+                                        self.report.setWarning()
+
+                                        if self.__verbose:
+                                            self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ Warning  - %s" % warn)
+
+                                    elif abs(z_score) > 5.3:
+                                        warn = 'Check row of chain_id %s, seq_id %s, comp_id %s, atom_id %s. %s %s should be verified (avg %s, std %s, min %s, max %s, Z_score %.2f) in %s loop category, %s saveframe.' %\
+                                               (chain_id, seq_id, comp_id, atom_id, value_name, value, avg_value, std_value, min_value, max_value, z_score, lp_category, sf_framecode)
+
+                                        self.report.warning.addDescription('unusual_data', warn)
+                                        self.report.setWarning()
+
+                                        if self.__verbose:
+                                            self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ Warning  - %s" % warn)
+
+                                    elif not cs_stat['major']:
+                                        warn = 'Check row of chain_id %s, seq_id %s, comp_id %s, atom_id %s. %s %s is remarkable assignment (appearance rate %s) in %s loop category, %s saveframe.' %\
+                                               (chain_id, seq_id, comp_id, atom_id, value_name, value, cs_stat['norm_freq'], lp_category, sf_framecode)
+
+                                        self.report.warning.addDescription('remarkable_data', warn)
+                                        self.report.setWarning()
+
+                                        if self.__verbose:
+                                            self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ Warning  - %s" % warn)
+
+                                else:
+                                    tolerance = std_value * 10.0
+
+                                    if value < min_value - tolerance or value > max_value + tolerance:
+                                        err = 'Check row of chain_id %s, seq_id %s, comp_id %s, atom_id %s. %s %s is out of range (avg %s, std %s, min %s, max %s, Z_score %.2f) in %s loop category, %s saveframe.' %\
+                                              (chain_id, seq_id, comp_id, atom_id, value_name, value, avg_value, std_value, min_value, max_value, z_score, lp_category, sf_framecode)
+
+                                        self.report.error.addDescription('anomalous_data', err)
+                                        self.report.setError()
+
+                                        if self.__verbose:
+                                            self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ ValueError  - %s" % err)
+
+                                    elif abs(z_score) > 10.0:
+                                        warn = 'Check row of chain_id %s, seq_id %s, comp_id %s, atom_id %s. %s %s must be verified (avg %s, std %s, min %s, max %s, Z_score %.2f) in %s loop category, %s saveframe.' %\
+                                               (chain_id, seq_id, comp_id, atom_id, value_name, value, avg_value, std_value, min_value, max_value, z_score, lp_category, sf_framecode)
+
+                                        self.report.warning.addDescription('suspicious_data', warn)
+                                        self.report.setWarning()
+
+                                        if self.__verbose:
+                                            self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ Warning  - %s" % warn)
 
                                 break
 
@@ -3281,16 +3330,9 @@ class NmrDpUtility(object):
                             atom_id_ = atom_id
                             atom_name = atom_id
 
-                        if len(comp_id) == 3:
-                            cs_stats = self.bmrb_cs_stat.aa_full if paramagnetic else self.bmrb_cs_stat.aa_filt
-                        elif len(comp_id) == 2:
-                            cs_stats = self.bmrb_cs_stat.dna_full if paramagnetic else self.bmrb_cs_stat.dna_filt
-                        else:
-                            cs_stats = self.bmrb_cs_stat.rna_full if paramagnetic else self.bmrb_cs_stat.rna_filt
+                        for cs_stat in self.bmrb_cs_stat.get(comp_id, paramagnetic):
 
-                        for cs_stat in cs_stats:
-
-                            if cs_stat['comp_id'] == comp_id and cs_stat['atom_id'] == atom_id_:
+                            if cs_stat['atom_id'] == atom_id_:
                                 min_value = cs_stat['min']
                                 max_value = cs_stat['max']
                                 avg_value = cs_stat['avg']
@@ -3306,7 +3348,7 @@ class NmrDpUtility(object):
 
                                     elif value != methyl_cs_vals[methyl_cs_key]:
                                         err = 'Check row of chain_id %s, seq_id %s, comp_id %s, atom_id %s. Chemical shift values in the same methyl group %s %s vs %s are inconsistent in %s loop category, %s saveframe.' %\
-                                        (chain_id, seq_id, comp_id, atom_id, value_name, value, methyl_cs_vals[methyl_cs_key], lp_category, sf_framecode)
+                                        (chain_id, seq_id, comp_id, atom_name, value_name, value, methyl_cs_vals[methyl_cs_key], lp_category, sf_framecode)
 
                                         self.report.error.addDescription('invalid_data', err)
                                         self.report.setError()
@@ -3318,7 +3360,7 @@ class NmrDpUtility(object):
 
                                 if std_value is None:
                                     warn = 'Check row of chain_id %s, seq_id %s, comp_id %s, atom_id %s. Insufficient chemical shift statistics is available to verify %s %s (avg %s) in %s loop category, %s saveframe.' %\
-                                           (chain_id, seq_id, comp_id, atom_id, value_name, value, avg_value, lp_category, sf_framecode)
+                                           (chain_id, seq_id, comp_id, atom_name, value_name, value, avg_value, lp_category, sf_framecode)
 
                                     self.report.warning.addDescription('unusual_data', warn)
                                     self.report.setWarning()
@@ -3351,7 +3393,7 @@ class NmrDpUtility(object):
                                     if self.__verbose:
                                         self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ Warning  - %s" % warn)
 
-                                elif abs(z_score) > 3.5:
+                                elif abs(z_score) > 3.6:
                                     warn = 'Check row of chain_id %s, seq_id %s, comp_id %s, atom_id %s. %s %s should be verified (avg %s, std %s, min %s, max %s, Z_score %.2f) in %s loop category, %s saveframe.' %\
                                            (chain_id, seq_id, comp_id, atom_name, value_name, value, avg_value, std_value, min_value, max_value, z_score, lp_category, sf_framecode)
 
@@ -3382,6 +3424,174 @@ class NmrDpUtility(object):
 
                         if self.__verbose:
                             self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ Warning  - %s" % warn)
+
+                    # ambiguity code
+
+                    elif file_type == 'nmr-star' and i.has_key(ambig_code_name):
+                        ambig_code = i[ambig_code_name]
+
+                        if ambig_code in self.empty_value or ambig_code == 1:
+                            continue
+
+                        allowed_ambig_code = self.bmrb_cs_stat.getMaxAmbigCodeWoSetId(comp_id, atom_id)
+
+                        if ambig_code == 2 or ambig_code == 3:
+
+                            if ambig_code != allowed_ambig_code:
+
+                                err = 'Check row of chain_id %s, seq_id %s, comp_id %s, atom_id %s. Invalid %s %s (allowed ambig_code %s) exists in %s loop category, %s saveframe.' %\
+                                      (chain_id, seq_id, comp_id, atom_id, ambig_code_name, ambig_code, [1, allowed_ambig_code, 4, 5, 6, 9], lp_category, sf_framecode)
+
+                                self.report.error.addDescription('invalid_ambiguity_code', err)
+                                self.report.setError()
+
+                                if self.__verbose:
+                                    self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ ValueError - %s" % warn)
+
+                        elif ambig_code in [4, 5, 6, 9]:
+
+                            ambig_set_id_name = 'Ambiguity_set_ID'
+
+                            if not i.has_key(ambig_set_id_name):
+
+                                err = 'Check row of chain_id %s, seq_id %s, comp_id %s, atom_id %s. %s %s requires %s loop tag in %s loop_cateogry, %s saveframe.' %\
+                                      (chain_id, seq_id, comp_id, atom_id, ambig_code_name, ambig_code, ambig_set_id_name, lp_category, sf_framecode)
+
+                                self.report.error.addDescription('missing_mandatory_item', err)
+                                self.report.setError()
+
+                                if self.__verbose:
+                                    self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ LookupError  - %s" % str(e))
+
+                            else:
+
+                                ambig_set_id = i[ambig_set_id_name]
+
+                                if ambig_set_id in self.empty_value:
+
+                                    err = 'Check row of chain_id %s, seq_id %s, comp_id %s, atom_id %s. %s %s requires %s value in %s loop_cateogry, %s saveframe.' %\
+                                          (chain_id, seq_id, comp_id, atom_id, ambig_code_name, ambig_code, ambig_set_id_name, lp_category, sf_framecode)
+
+                                    self.report.error.addDescription('missing_data', err)
+                                    self.report.setError()
+
+                                    if self.__verbose:
+                                        self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ ValueError  - %s" % str(e))
+
+                                else:
+
+                                    ambig_set = [j for j in lp_data if j[ambig_set_id_name] == ambig_set_id and j != i]
+
+                                    if len(ambig_set) == 0:
+
+                                        err = 'Check row of chain_id %s, seq_id %s, comp_id %s, atom_id %s. %s %s requires other rows sharing %s %s in %s loop_cateogry, %s saveframe.' %\
+                                              (chain_id, seq_id, comp_id, atom_id, ambig_code_name, ambig_code, ambig_set_id_name, ambig_set_id, lp_category, sf_framecode)
+
+                                        self.report.error.addDescription('missing_data', err)
+                                        self.report.setError()
+
+                                        if self.__verbose:
+                                            self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ LookupError  - %s" % str(e))
+
+                                    # Intra-residue ambiguities
+                                    elif ambig_code == 4:
+
+                                        for j in ambig_set:
+                                            chain_id2 = j[item_names['chain_id']]
+                                            seq_id2 = j[item_names['seq_id']]
+                                            comp_id2 = j[item_names['comp_id']]
+                                            atom_id2 = j[item_names['atom_id']]
+
+                                            if (chain_id2 != chain_id or seq_id2 != seq_id or comp_id2 != comp_id) and atom_id < atom_id2:
+
+                                                err = 'Check row of chain_id %s, seq_id %s, comp_id %s, atom_id %s. %s %s, %s %s indicates intra-residue ambiguities, but row of chain_id %s, seq_id %s, comp_id %s, atom_id %s exists in %s loop category, %s saveframe.' %\
+                                                      (chain_id, seq_id, comp_id, atom_id, ambig_code_name, ambig_code, ambig_set_id_name, ambig_set_id, chain_id2, seq_id2, comp_id2, atom_id2, lp_category, sf_framecode)
+
+                                                self.report.error.addDescription('invalid_ambiguity_code', err)
+                                                self.report.setError()
+
+                                                if self.__verbose:
+                                                    self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ ValueError - %s" % warn)
+
+                                    # Inter-residue ambiguities
+                                    elif ambig_code == 5:
+
+                                        for j in ambig_set:
+                                            chain_id2 = j[item_names['chain_id']]
+                                            seq_id2 = j[item_names['seq_id']]
+                                            comp_id2 = j[item_names['comp_id']]
+                                            atom_id2 = j[item_names['atom_id']]
+
+                                            if ((chain_id2 != chain_id and chain_id < chain_id2) or (seq_id2 == seq_id and atom_id < atom_id2)):
+
+                                                err = 'Check row of chain_id %s, seq_id %s, comp_id %s, atom_id %s. %s %s, %s %s indicates inter-residue ambiguities, but row of chain_id %s, seq_id %s, comp_id %s, atom_id %s exists in %s loop category, %s saveframe.' %\
+                                                      (chain_id, seq_id, comp_id, atom_id, ambig_code_name, ambig_code, ambig_set_id_name, ambig_set_id, chain_id2, seq_id2, comp_id2, atom_id2, lp_category, sf_framecode)
+
+                                                self.report.error.addDescription('invalid_ambiguity_code', err)
+                                                self.report.setError()
+
+                                                if self.__verbose:
+                                                    self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ ValueError - %s" % warn)
+
+                                    # Inter-molecular ambiguities
+                                    elif ambig_code == 6:
+
+                                        for j in ambig_set:
+                                            chain_id2 = j[item_names['chain_id']]
+                                            seq_id2 = j[item_names['seq_id']]
+                                            comp_id2 = j[item_names['comp_id']]
+                                            atom_id2 = j[item_names['atom_id']]
+                                            value2 = j[value_name]
+
+                                            if chain_id2 == chain_id and (seq_id < seq_id2 or (seq_id == seq_id2 and atom_id < atom_id2)):
+
+                                                err = 'Check row of chain_id %s, seq_id %s, comp_id %s, atom_id %s. %s %s, %s %s indicates inter-molecular ambiguities, but row of chain_id %s, seq_id %s, comp_id %s, atom_id %s exists in %s loop category, %s saveframe.' %\
+                                                      (chain_id, seq_id, comp_id, atom_id, ambig_code_name, ambig_code, ambig_set_id_name, ambig_set_id, chain_id2, seq_id2, comp_id2, atom_id2, lp_category, sf_framecode)
+
+                                                self.report.error.addDescription('invalid_ambiguity_code', err)
+                                                self.report.setError()
+
+                                                if self.__verbose:
+                                                    self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ ValueError - %s" % warn)
+
+                                    for j in ambig_set:
+                                        chain_id2 = j[item_names['chain_id']]
+                                        seq_id2 = j[item_names['seq_id']]
+                                        comp_id2 = j[item_names['comp_id']]
+                                        atom_id2 = j[item_names['atom_id']]
+                                        value2 = j[value_name]
+
+                                        if atom_id[0] != atom_id2[0] and atom_id < atom_id2:
+                                            err = 'Check row of chain_id %s, seq_id %s, comp_id %s, atom_id %s, %s %s, %s %s, %s %s, but observation nucleus of chain_id %s, seq_id %s, comp_id %s, atom_id %s, %s %s differs in %s loop category, %s saveframe.' %\
+                                                  (chain_id, seq_id, comp_id, atom_id, value_name, value, ambig_code_name, ambig_code, ambig_set_id_name, ambig_set_id, chain_id2, seq_id2, comp_id2, atom_id2, value_name, value2, lp_category, sf_framecode)
+
+                                            self.report.error.addDescription('invalid_ambiguity_code', err)
+                                            self.report.setError()
+
+                                            if self.__verbose:
+                                                self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ ValueError - %s" % warn)
+
+                                        elif abs(value2 - value) > max_cs_err and value < value2:
+
+                                            err = 'Check row of chain_id %s, seq_id %s, comp_id %s, atom_id %s, %s %s, %s %s, %s %s, but %s %s of chain_id %s, seq_id %s, comp_id %s, atom_id %s differs by %s (tolerance %s) in %s loop category, %s saveframe.' %\
+                                                  (chain_id, seq_id, comp_id, atom_id, value_name, value, ambig_code_name, ambig_code, ambig_set_id_name, ambig_set_id, value_name, value2, chain_id2, seq_id2, comp_id2, atom_id2, value2 - value, max_cs_err, lp_category, sf_framecode)
+
+                                            self.report.error.addDescription('invalid_ambiguity_code', err)
+                                            self.report.setError()
+
+                                            if self.__verbose:
+                                                self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ ValueError - %s" % warn)
+
+                        else:
+
+                            err = 'Check row of chain_id %s, seq_id %s, comp_id %s, atom_id %s. Invalid ambiguity code %s (allowed ambig_code %s) exists in %s loop category, %s saveframe.' %\
+                                  (chain_id, seq_id, comp_id, atom_id, ambig_code, self.bmrb_ambiguity_codes, lp_category, sf_framecode)
+
+                            self.report.error.addDescription('invalid_ambiguity_code', err)
+                            self.report.setError()
+
+                            if self.__verbose:
+                                self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ ValueError - %s" % warn)
 
             except StopIteration:
 

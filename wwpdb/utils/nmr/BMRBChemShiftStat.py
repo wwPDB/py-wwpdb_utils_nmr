@@ -4,6 +4,7 @@
 #
 # Updates:
 ##
+from __builtin__ import False, True
 """ Wrapper class for retrieving BMRB chemical shift statistics.
 """
 import sys
@@ -39,6 +40,10 @@ class BMRBChemShiftStat:
         self.__rna_comp_ids = set()
         self.__all_comp_ids = set()
 
+        self.aa_threshold = 0.1
+        self.na_threshold = 0.3
+        self.other_threshold = 0.3
+
         self.loadStatFromPickleFiles()
 
     def isOk(self):
@@ -53,15 +58,59 @@ class BMRBChemShiftStat:
 
         return comp_id in self.__all_comp_ids
 
+    def hasEnoughStat(self, comp_id):
+        """ Return whether a given comp_id has enough statistics.
+        """
+
+        if not comp_id in self.__all_comp_ids:
+            return False
+
+        if comp_id in self.__aa_comp_ids or comp_id in self.__dna_comp_ids or comp_id in self.__rna_comp_ids:
+            return True
+
+        try:
+            next(i for i in self.others if i['comp_id'] == comp_id and i['major'])
+            return True
+        except:
+            return False
+
+    def get(self, comp_id, paramagnetic=False):
+        """ Return BMRB chemical shift statistics for a given comp_id.
+        """
+
+        if not comp_id in self.__all_comp_ids:
+            return []
+
+        if comp_id in self.__aa_comp_ids:
+            if paramagnetic:
+                return [i for i in self.aa_full if i['comp_id'] == comp_id]
+            else:
+                return [i for i in self.aa_filt if i['comp_id'] == comp_id]
+
+        elif comp_id in self._dna_comp_ids:
+            if paramagnetic:
+                return [i for i in self.dna_full if i['comp_id'] == comp_id]
+            else:
+                return [i for i in self.dna_filt if i['comp_id'] == comp_id]
+
+        elif comp_id in self._rna_comp_ids:
+            if paramagnetic:
+                return [i for i in self.rna_full if i['comp_id'] == comp_id]
+            else:
+                return [i for i in self.rna_filt if i['comp_id'] == comp_id]
+
+        else:
+            return [i for i in self.others if i['comp_id'] == comp_id]
+
     def getMaxAmbigCodeWoSetId(self, comp_id, atom_id):
         """ Return maximum ambiguity code of a given atom that does not require declaration of ambiguity set ID.
         @return: one of (1, 2, 3), 0 for not found
         """
 
-        if not self.hasCompId(comp_id):
+        if not comp_id in self.__all_comp_ids:
             return 0
 
-        elif comp_id in self.__aa_comp_ids:
+        if comp_id in self.__aa_comp_ids:
             try:
                 d = next(i['desc'] for i in self.aa_filt if i['comp_id'] == comp_id and i['atom_id'] == atom_id)
             except StopIteration:
@@ -100,16 +149,16 @@ class BMRBChemShiftStat:
         """ Load all BMRB chemical shift statistics from CSV files.
         """
 
-        self.aa_filt = self.loadStatFromCsvFile(self.stat_dir + 'aa_filt.csv', 0.1)
-        self.aa_full = self.loadStatFromCsvFile(self.stat_dir + 'aa_full.csv', 0.1)
+        self.aa_filt = self.loadStatFromCsvFile(self.stat_dir + 'aa_filt.csv', self.aa_threshold)
+        self.aa_full = self.loadStatFromCsvFile(self.stat_dir + 'aa_full.csv', self.aa_threshold)
 
-        self.dna_filt = self.loadStatFromCsvFile(self.stat_dir + 'dna_filt.csv', 0.3)
-        self.dna_full = self.loadStatFromCsvFile(self.stat_dir + 'dna_full.csv', 0.3)
+        self.dna_filt = self.loadStatFromCsvFile(self.stat_dir + 'dna_filt.csv', self.na_threshold)
+        self.dna_full = self.loadStatFromCsvFile(self.stat_dir + 'dna_full.csv', self.na_threshold)
 
-        self.rna_filt = self.loadStatFromCsvFile(self.stat_dir + 'rna_filt.csv', 0.3)
-        self.rna_full = self.loadStatFromCsvFile(self.stat_dir + 'rna_full.csv', 0.3)
+        self.rna_filt = self.loadStatFromCsvFile(self.stat_dir + 'rna_filt.csv', self.na_threshold)
+        self.rna_full = self.loadStatFromCsvFile(self.stat_dir + 'rna_full.csv', self.na_threshold)
 
-        self.others = self.loadStatFromCsvFile(self.stat_dir + 'others.csv', 0.6)
+        self.others = self.loadStatFromCsvFile(self.stat_dir + 'others.csv', self.other_threshold)
 
         self.__updateCompIdSet()
 
@@ -426,7 +475,7 @@ class BMRBChemShiftStat:
 
             for a in atom_list:
                 a['norm_freq'] = float("%.3f" % (float(a['count']) / max_count))
-                if threshold < 0.5 and a['count'] > max_count * threshold:
+                if max_count >= 10 and a['count'] > max_count * threshold:
                     a['major'] = True
 
     def writeStatAsPickleFiles(self):

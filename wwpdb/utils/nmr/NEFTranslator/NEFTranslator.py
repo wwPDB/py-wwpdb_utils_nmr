@@ -1256,6 +1256,13 @@ class NEFTranslator(object):
                         if d['name'] == name and d['type']== 'index-int':
                             idx_tag_ids.add(j)
 
+            relax_key_ids = set()
+            for j in range(tag_len):
+                name = tags[j]
+                for d in data_items:
+                    if d['name'] == name and 'relax-key-if-exist' in d and d['relax-key-if-exist']:
+                        relax_key_ids.add(j)
+
             tag_dat = loop.get_data_by_tag(tags)
 
             if inc_idx_test and len(idx_tag_ids) > 0:
@@ -1287,12 +1294,29 @@ class NEFTranslator(object):
             if inc_idx_test:
                 keys = set()
 
+                rechk = False
+
                 for i in tag_dat:
+
                     key = ''
                     for j in range(key_len):
                         key += ' ' + i[j]
                     key.rstrip()
+
                     if key in keys:
+
+                        relax_key = False
+
+                        if len(relax_key_ids) > 0:
+                            for j in relax_key_ids:
+                                if not i[j] is empty_value:
+                                    relax_key = True
+                                    break
+
+                        if relax_key:
+                            rechk = True
+                            continue
+
                         msg = ''
                         for j in range(key_len):
                             msg += key_names[j] + ' %s, ' % i[j]
@@ -1319,6 +1343,46 @@ class NEFTranslator(object):
                         raise KeyError("%sValues of key items must be unique. %s in %s loop category" % (idx_msg, msg.rstrip().rstrip(','), lp_category))
 
                     keys.add(key)
+
+                if rechk:
+                    keys = set()
+
+                    for i in tag_dat:
+
+                        key = ''
+                        for j in range(key_len):
+                            key += ' ' + i[j]
+                        for j in relax_key_ids:
+                            key += ' ' + i[j]
+                        key.rstrip()
+
+                        if key in keys:
+                            msg = ''
+                            for j in range(key_len):
+                                msg += key_names[j] + ' %s, ' % i[j]
+
+                            idx_msg = ''
+
+                            if len(idx_tag_ids) > 0:
+                                for _j in idx_tag_ids:
+                                    idx_msg += tags[_j] + ' '
+
+                                    for _i in tag_dat:
+                                        _key = ''
+                                        for j in range(key_len):
+                                            _key += " " + _i[j]
+                                            _key.rstrip()
+
+                                        if key == _key:
+                                            idx_msg += _i[_j] + ' vs '
+
+                                    idx_msg = idx_msg[:-4] + ', '
+
+                                idx_msg = 'Check rows of ' + idx_msg[:-2] + '. '
+
+                            raise KeyError("%sValues of key items must be unique. %s in %s loop category" % (idx_msg, msg.rstrip().rstrip(','), lp_category))
+
+                        keys.add(key)
 
             asm = [] # assembly of a loop
 

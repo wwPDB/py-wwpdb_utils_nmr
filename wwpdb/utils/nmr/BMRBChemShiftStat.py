@@ -41,7 +41,6 @@ class BMRBChemShiftStat:
 
         self.aa_threshold = 0.1
         self.na_threshold = 0.3
-        self.other_threshold = 0.3
 
         self.loadStatFromPickleFiles()
 
@@ -152,8 +151,9 @@ class BMRBChemShiftStat:
         except StopIteration:
             return None
 
-    def getBackBoneAtoms(self, comp_id, polypeptide_like=False, polynucleotide_like=False):
+    def getBackBoneAtoms(self, comp_id, excl_minor_atom=False, polypeptide_like=False, polynucleotide_like=False):
         """ Return backbone atoms of a given comp_id.
+            @attention: This function should be re-written using CCD.
         """
 
         if not comp_id in self.__all_comp_ids:
@@ -162,55 +162,72 @@ class BMRBChemShiftStat:
         cs_stat = self.get(comp_id)
 
         if comp_id in self.__aa_comp_ids:
-            return [i['atom_id'] for i in cs_stat if i['atom_id'] in ['C', 'CA', 'CB', 'H', 'HA', 'HA2', 'HA3', 'N']]
+            return [i['atom_id'] for i in cs_stat if i['atom_id'] in ['C', 'CA', 'CB', 'H', 'HA', 'HA2', 'HA3', 'N'] and
+                    (not excl_minor_atom or (excl_minor_atom and i['major']))]
 
         elif comp_id in self.__dna_comp_ids:
-            return [i['atom_id'] for i in cs_stat if i['atom_id'] in ["C1'", "C2'", "C3'", "C4'", "C5'", "H1'", "H2'", "H2''", "H3'", "H4'", "H5'", "H5''", 'P']]
+            return [i['atom_id'] for i in cs_stat if i['atom_id'] in ["C1'", "C2'", "C3'", "C4'", "C5'", "H1'", "H2'", "H2''", "H3'", "H4'", "H5'", "H5''", 'P'] and
+                    (not excl_minor_atom or (excl_minor_atom and i['major']))]
 
         elif comp_id in self.__rna_comp_ids:
-            return [i['atom_id'] for i in cs_stat if i['atom_id'] in ["C1'", "C2'", "C3'", "C4'", "C5'", "H1'", "H2'", "H3'", "H4'", "H5'", "H5''", "HO2'", 'P']]
+            return [i['atom_id'] for i in cs_stat if i['atom_id'] in ["C1'", "C2'", "C3'", "C4'", "C5'", "H1'", "H2'", "H3'", "H4'", "H5'", "H5''", "HO2'", 'P'] and
+                    (not excl_minor_atom or (excl_minor_atom and i['major']))]
 
         elif polypeptide_like:
-            return [i['atom_id'] for i in cs_stat if i['atom_id'] in ['C', 'CA', 'CB', 'H', 'HA', 'HA2', 'HA3', 'N']]
+            return [i['atom_id'] for i in cs_stat if i['atom_id'] in ['C', 'CA', 'CB', 'H', 'HA', 'HA2', 'HA3', 'N'] and
+                    (not excl_minor_atom or (excl_minor_atom and i['major']))]
 
         elif polynucleotide_like:
-            return [i['atom_id'] for i in cs_stat if i['atom_id'] in ["C1'", "C2'", "C3'", "C4'", "C5'", "H1'", "H2'", "H2''", "H3'", "H4'", "H5'", "H5''", 'P']]
+            return [i['atom_id'] for i in cs_stat if i['atom_id'] in ["C1'", "C2'", "C3'", "C4'", "C5'", "H1'", "H2'", "H2''", "H3'", "H4'", "H5'", "H5''", 'P'] and
+                    (not excl_minor_atom or (excl_minor_atom and i['aaa']))]
 
         return []
 
-    def getAromaticAtoms(self, comp_id):
+    def getAromaticAtoms(self, comp_id, excl_minor_atom=False):
         """ Return aromatic atoms of a given comp_id.
+            @attention: This function should be re-written using CCD.
         """
 
         if not comp_id in self.__all_comp_ids:
             return []
 
-        return [i['atom_id'] for i in self.get(comp_id) if 'aroma' in i['desc']]
+        return [i['atom_id'] for i in self.get(comp_id) if 'aroma' in i['desc'] and
+                (not excl_minor_atom or (excl_minor_atom and i['major']))]
 
-    def getMethylAtoms(self, comp_id):
+    def getMethylAtoms(self, comp_id, excl_minor_atom=False):
         """ Return atoms in methyl group of a geven comp_id.
+            @attention: This function should be re-written using CCD.
         """
 
         if not comp_id in self.__all_comp_ids:
             return []
 
-        return [i['atom_id'] for i in self.get(comp_id) if 'methyl' in i['desc']]
+        return [i['atom_id'] for i in self.get(comp_id) if 'methyl' in i['desc'] and
+                (not excl_minor_atom or (excl_minor_atom and i['major']))]
 
-    def getSideChainAtoms(self, comp_id, polypeptide_like=False, polynucleotide_like=False):
+    def getSideChainAtoms(self, comp_id, excl_minor_atom=False, polypeptide_like=False, polynucleotide_like=False):
         """ Return sidechain atoms of a given comp_id.
+            @attention: This function should be re-written using CCD.
         """
 
         if not comp_id in self.__all_comp_ids:
             return []
 
-        bb_atoms = self.getBackBoneAtoms(comp_id, polypeptide_like, polynucleotide_like)
+        bb_atoms = self.getBackBoneAtoms(comp_id, False, polypeptide_like, polynucleotide_like)
 
         try:
             bb_atoms.remove('CB')
         except ValueError:
             pass
 
-        return [i['atom_id'] for i in self.get(comp_id) if not i['atom_id'] in bb_atoms]
+        cs_stat = self.get(comp_id)
+
+        if comp_id in self.__aa_comp_ids or comp_id in self.__dna_comp_ids or comp_id in self.__rna_comp_ids or not polynucleotide_like:
+            return [i['atom_id'] for i in cs_stat if not i['atom_id'] in bb_atoms and
+                    (not excl_minor_atom or (excl_minor_atom and i['major']))]
+
+        return [i['atom_id'] for i in cs_stat if not i['atom_id'] in bb_atoms and
+                (not excl_minor_atom or (excl_minor_atom and i['aaa']))]
 
     def printStat(self, list):
         """ Print out BMRB chemical shift statistics.
@@ -232,11 +249,11 @@ class BMRBChemShiftStat:
         self.rna_filt = self.loadStatFromCsvFile(self.stat_dir + 'rna_filt.csv', self.na_threshold)
         self.rna_full = self.loadStatFromCsvFile(self.stat_dir + 'rna_full.csv', self.na_threshold)
 
-        self.others = self.loadStatFromCsvFile(self.stat_dir + 'others.csv', self.other_threshold)
+        self.others = self.loadStatFromCsvFile(self.stat_dir + 'others.csv', self.aa_threshold, self.na_threshold)
 
         self.__updateCompIdSet()
 
-    def loadStatFromCsvFile(self, file_name, threshold):
+    def loadStatFromCsvFile(self, file_name, threshold, threshold2=None):
         """ Load BMRB chemical shift statistics from a given CSV file.
         """
 
@@ -315,7 +332,7 @@ class BMRBChemShiftStat:
         self.__detectGeminalCarbon(list)
         self.__detectGeminalNitrogen(list)
 
-        self.__detectMajorResonance(list, threshold)
+        self.__detectMajorResonance(list, threshold, threshold2)
 
         return list
 
@@ -539,7 +556,7 @@ class BMRBChemShiftStat:
                     if atom_id == g + '1' or atom_id == g + '2':
                         n['desc'] = 'geminal'
 
-    def __detectMajorResonance(self, list, threshold):
+    def __detectMajorResonance(self, list, threshold, threshold2=None):
         """ Detect major resonance based on count of assignments.
         """
 
@@ -555,8 +572,11 @@ class BMRBChemShiftStat:
 
             for a in atom_list:
                 a['norm_freq'] = float("%.3f" % (float(a['count']) / max_count))
-                if max_count >= 10 and a['count'] > max_count * threshold:
-                    a['major'] = True
+                if max_count >= 10:
+                    if a['count'] > max_count * threshold:
+                        a['major'] = True
+                    if not threshold2 is None and a['count'] > max_count * threshold2:
+                        a['aaa'] = True
 
     def writeStatAsPickleFiles(self):
         """ Write all BMRB chemical shift statistics as pickle files.

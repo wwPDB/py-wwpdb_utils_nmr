@@ -90,14 +90,14 @@ class BMRBChemShiftStat:
             else:
                 return [i for i in self.aa_filt if i['comp_id'] == comp_id]
 
-        elif comp_id in self._dna_comp_ids:
+        elif comp_id in self.__dna_comp_ids:
 
             if paramagnetic:
                 return [i for i in self.dna_full if i['comp_id'] == comp_id]
             else:
                 return [i for i in self.dna_filt if i['comp_id'] == comp_id]
 
-        elif comp_id in self._rna_comp_ids:
+        elif comp_id in self.__rna_comp_ids:
 
             if paramagnetic:
                 return [i for i in self.rna_full if i['comp_id'] == comp_id]
@@ -151,6 +151,66 @@ class BMRBChemShiftStat:
 
         except StopIteration:
             return None
+
+    def getBackBoneAtoms(self, comp_id, polypeptide_like=False, polynucleotide_like=False):
+        """ Return backbone atoms of a given comp_id.
+        """
+
+        if not comp_id in self.__all_comp_ids:
+            return []
+
+        cs_stat = self.get(comp_id)
+
+        if comp_id in self.__aa_comp_ids:
+            return [i['atom_id'] for i in cs_stat if i['atom_id'] in ['C', 'CA', 'CB', 'H', 'HA', 'HA2', 'HA3', 'N']]
+
+        elif comp_id in self.__dna_comp_ids:
+            return [i['atom_id'] for i in cs_stat if i['atom_id'] in ["C1'", "C2'", "C3'", "C4'", "C5'", "H1'", "H2'", "H2''", "H3'", "H4'", "H5'", "H5''", 'P']]
+
+        elif comp_id in self.__rna_comp_ids:
+            return [i['atom_id'] for i in cs_stat if i['atom_id'] in ["C1'", "C2'", "C3'", "C4'", "C5'", "H1'", "H2'", "H3'", "H4'", "H5'", "H5''", "HO2'", 'P']]
+
+        elif polypeptide_like:
+            return [i['atom_id'] for i in cs_stat if i['atom_id'] in ['C', 'CA', 'CB', 'H', 'HA', 'HA2', 'HA3', 'N']]
+
+        elif polynucleotide_like:
+            return [i['atom_id'] for i in cs_stat if i['atom_id'] in ["C1'", "C2'", "C3'", "C4'", "C5'", "H1'", "H2'", "H2''", "H3'", "H4'", "H5'", "H5''", 'P']]
+
+        return []
+
+    def getAromaticAtoms(self, comp_id):
+        """ Return aromatic atoms of a given comp_id.
+        """
+
+        if not comp_id in self.__all_comp_ids:
+            return []
+
+        return [i['atom_id'] for i in self.get(comp_id) if 'aroma' in i['desc']]
+
+    def getMethylAtoms(self, comp_id):
+        """ Return atoms in methyl group of a geven comp_id.
+        """
+
+        if not comp_id in self.__all_comp_ids:
+            return []
+
+        return [i['atom_id'] for i in self.get(comp_id) if 'methyl' in i['desc']]
+
+    def getSideChainAtoms(self, comp_id, polypeptide_like=False, polynucleotide_like=False):
+        """ Return sidechain atoms of a given comp_id.
+        """
+
+        if not comp_id in self.__all_comp_ids:
+            return []
+
+        bb_atoms = self.getBackBoneAtoms(comp_id, polypeptide_like, polynucleotide_like)
+
+        try:
+            bb_atoms.remove('CB')
+        except ValueError:
+            pass
+
+        return [i['atom_id'] for i in self.get(comp_id) if not i['atom_id'] in bb_atoms]
 
     def printStat(self, list):
         """ Print out BMRB chemical shift statistics.
@@ -464,6 +524,12 @@ class BMRBChemShiftStat:
             for n in n_list:
                 if n['avg'] > 125.0:
                     n['desc'] = 'aroma'
+                    atom_id = 'H' + n['atom_id'][1:]
+                    try:
+                        h = next(i for i in list if i['comp_id'] == comp_id and i['atom_id'] == atom_id and i['desc'] == 'isolated')
+                        h['desc'] = 'aroma'
+                    except StopIteration:
+                        pass
 
             geminal_common = set(geminal_1) & set(geminal_2) - set(geminal_3)
 

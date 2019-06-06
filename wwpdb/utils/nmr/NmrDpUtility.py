@@ -3445,8 +3445,7 @@ class NmrDpUtility(object):
                         if self.__verbose:
                             self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ Warning  - %s" % warn)
 
-                    # ambiguity code
-
+                    # check ambiguity code
                     elif file_type == 'nmr-star' and ambig_code_name in i:
                         ambig_code = i[ambig_code_name]
 
@@ -3456,6 +3455,8 @@ class NmrDpUtility(object):
                         allowed_ambig_code = self.bmrb_cs_stat.getMaxAmbigCodeWoSetId(comp_id, atom_id)
 
                         if ambig_code == 2 or ambig_code == 3:
+
+                            ambig_code_desc = 'ambiguity of geminal atoms or geminal methyl proton groups' if ambig_code == 2 else 'aromatic atoms on opposite sides of symmetrical rings'
 
                             if ambig_code != allowed_ambig_code:
 
@@ -3472,14 +3473,12 @@ class NmrDpUtility(object):
 
                             try:
 
-                                j = next(j for j in lp_data if j[item_names['chain_id']] == chain_id and j[item_names['seq_id']] == seq_id and j[item_names['comp_id']] == comp_id and j[item_names['atom_id']] == atom_id2)
-
-                                ambig_code2 = j[ambig_code_name]
+                                ambig_code2 = next(j[ambig_code_name] for j in lp_data if j[item_names['chain_id']] == chain_id and j[item_names['seq_id']] == seq_id and j[item_names['comp_id']] == comp_id and j[item_names['atom_id']] == atom_id2)
 
                                 if ambig_code2 != ambig_code:
 
                                     err = 'Check row of chain_id %s, seq_id %s, comp_id %s, atom_id %s. %s %s indicates %s, but %s %s of atom_id %s are inconsistent in %s loop category, %s saveframe.' %\
-                                          (chain_id, seq_id, comp_id, atom_id, ambig_code_name, ambig_code, 'ambiguity of geminal atoms or geminal methyl proton groups' if ambig_code == 2 else 'aromatic atoms on opposite sides of symmetrical rings', ambig_code_name, ambig_code2, atom_id2, lp_category, sf_framecode)
+                                          (chain_id, seq_id, comp_id, atom_id, ambig_code_name, ambig_code, ambig_code_desc, ambig_code_name, ambig_code2, atom_id2, lp_category, sf_framecode)
 
                                     self.report.error.addDescription('invalid_ambiguity_code', err)
                                     self.report.setError()
@@ -3490,7 +3489,7 @@ class NmrDpUtility(object):
                             except StopIteration:
 
                                 err = 'Check row of chain_id %s, seq_id %s, comp_id %s, atom_id %s. %s %s indicates %s, but row of atom_id %s does not exists in %s loop category, %s saveframe.' %\
-                                      (chain_id, seq_id, comp_id, atom_id, ambig_code_name, ambig_code, 'ambiguity of geminal atoms or geminal methyl proton groups' if ambig_code == 2 else 'aromatic atoms on opposite sides of symmetrical rings', atom_id2, lp_category, sf_framecode)
+                                      (chain_id, seq_id, comp_id, atom_id, ambig_code_name, ambig_code, ambig_code_desc, atom_id2, lp_category, sf_framecode)
 
                                 self.report.error.addDescription('invalid_ambiguity_code', err)
                                 self.report.setError()

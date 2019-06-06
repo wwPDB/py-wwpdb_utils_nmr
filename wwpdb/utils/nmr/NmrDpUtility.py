@@ -4,6 +4,7 @@
 #
 # Updates:
 ##
+from __builtin__ import False
 """ Wrapper class for data processing for NMR unified data.
 """
 import sys
@@ -3280,6 +3281,17 @@ class NmrDpUtility(object):
                     # non-standard residue
                     if one_letter_code == 'X':
 
+                        polypeptide_like = False
+                        polynucleotide_like = False
+
+                        neighbor_comp_ids = set([j[item_names['comp_id']] for j in lp_data if j[item_names['chain_id']] == chain_id and abs(j[item_names['seq_id']] - seq_id) < 3 and j[item_names['seq_id']] != seq_id])
+
+                        for comp_id2 in neighbor_comp_ids:
+                            polypepdide, polynucleotide = self.bmrb_cs_stat.getPolymerTypeOfCompId(comp_id2)
+
+                        polypeptide_like |= polypepdide
+                        polynucleotide_like |= polynucleotide
+
                         for cs_stat in self.bmrb_cs_stat.get(comp_id):
 
                             if cs_stat['atom_id'] == atom_id_:
@@ -3324,7 +3336,7 @@ class NmrDpUtility(object):
 
                                 z_score = (value - avg_value) / std_value
 
-                                if self.bmrb_cs_stat.hasEnoughStat(comp_id):
+                                if self.bmrb_cs_stat.hasEnoughCSStat(comp_id, polypeptide_like, polynucleotide_like):
                                     tolerance = std_value
 
                                     if value < min_value - tolerance or value > max_value + tolerance:

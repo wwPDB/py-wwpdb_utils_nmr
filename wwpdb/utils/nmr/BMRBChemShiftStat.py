@@ -1,9 +1,10 @@
 ##
 # File: BMRBChemShiftStat.py
-# Date: 30-May-2019
+# Date: 06-Jun-2019
 #
 # Updates:
 ##
+from __builtin__ import False
 """ Wrapper class for retrieving BMRB chemical shift statistics.
 """
 import sys
@@ -37,10 +38,13 @@ class BMRBChemShiftStat:
         self.__aa_comp_ids = set()
         self.__dna_comp_ids = set()
         self.__rna_comp_ids = set()
+        self.__std_comp_ids = set()
         self.__all_comp_ids = set()
 
         self.aa_threshold = 0.1
         self.na_threshold = 0.3
+
+        self.max_count_th = 10
 
         self.loadStatFromPickleFiles()
 
@@ -56,19 +60,33 @@ class BMRBChemShiftStat:
 
         return comp_id in self.__all_comp_ids
 
-    def hasEnoughStat(self, comp_id):
-        """ Return whether a given comp_id has enough statistics.
+    def getPolymerTypeOfCompId(self, comp_id):
+        """ Return polymer type of a given comp_id.
+            @return: polypeptide, polynucleotide
+            @attention: This function should be re-written using CCD.
+        """
+
+        polypeptide = comp_id in self.__aa_comp_ids
+        polynucleotide = comp_id in self.__dna_comp_ids or comp_id in self.__rna_comp_ids
+
+        return polypeptide, polynucleotide
+
+    def hasEnoughCSStat(self, comp_id, polypeptide_like=False, polynucleotide_like=False):
+        """ Return whether a given comp_id has enough chemical shift statistics.
         """
 
         if not comp_id in self.__all_comp_ids:
             return False
 
-        if comp_id in self.__aa_comp_ids or comp_id in self.__dna_comp_ids or comp_id in self.__rna_comp_ids:
+        if comp_id in self.__std_comp_ids:
             return True
 
         try:
 
-            next(i for i in self.others if i['comp_id'] == comp_id and i['major'])
+            if polypeptide_like or not polynucleotide_like:
+                next(i for i in self.others if i['comp_id'] == comp_id and i['major'])
+            else:
+                next(i for i in self.others if i['comp_id'] == comp_id and i['aaa'])
 
             return True
 
@@ -108,7 +126,7 @@ class BMRBChemShiftStat:
 
     def getMaxAmbigCodeWoSetId(self, comp_id, atom_id):
         """ Return maximum ambiguity code of a given atom that does not require declaration of ambiguity set ID.
-        @return: one of (1, 2, 3), 0 for not found
+            @return: one of (1, 2, 3), 0 for not found
         """
 
         if not comp_id in self.__all_comp_ids:
@@ -183,7 +201,7 @@ class BMRBChemShiftStat:
 
         return []
 
-    def getAromaticAtoms(self, comp_id, excl_minor_atom=False):
+    def getAromaticAtoms(self, comp_id, excl_minor_atom=False, polypeptide_like=False, polynucleotide_like=False):
         """ Return aromatic atoms of a given comp_id.
             @attention: This function should be re-written using CCD.
         """
@@ -191,10 +209,16 @@ class BMRBChemShiftStat:
         if not comp_id in self.__all_comp_ids:
             return []
 
-        return [i['atom_id'] for i in self.get(comp_id) if 'aroma' in i['desc'] and
-                (not excl_minor_atom or (excl_minor_atom and i['major']))]
+        cs_stat = self.get(comp_id)
 
-    def getMethylAtoms(self, comp_id, excl_minor_atom=False):
+        if comp_id in self.__std_comp_ids or polypeptide_like or not polynucleotide_like:
+            return [i['atom_id'] for i in cs_stat if 'aroma' in i['desc'] and
+                    (not excl_minor_atom or (excl_minor_atom and i['major']))]
+
+        return [i['atom_id'] for i in cs_stat if 'aroma' in i['desc'] and
+                (not excl_minor_atom or (excl_minor_atom and i['aaa']))]
+
+    def getMethylAtoms(self, comp_id, excl_minor_atom=False, polypeptide_like=False, polynucleotide_like=False):
         """ Return atoms in methyl group of a geven comp_id.
             @attention: This function should be re-written using CCD.
         """
@@ -202,8 +226,14 @@ class BMRBChemShiftStat:
         if not comp_id in self.__all_comp_ids:
             return []
 
-        return [i['atom_id'] for i in self.get(comp_id) if 'methyl' in i['desc'] and
-                (not excl_minor_atom or (excl_minor_atom and i['major']))]
+        cs_stat = self.get(comp_id)
+
+        if comp_id in self.__std_comp_ids or polypeptide_like or not polynucleotide_like:
+            return [i['atom_id'] for i in cs_stat if 'methyl' in i['desc'] and
+                    (not excl_minor_atom or (excl_minor_atom and i['major']))]
+
+        return [i['atom_id'] for i in cs_stat if 'methyl' in i['desc'] and
+                (not excl_minor_atom or (excl_minor_atom and i['aaa']))]
 
     def getSideChainAtoms(self, comp_id, excl_minor_atom=False, polypeptide_like=False, polynucleotide_like=False):
         """ Return sidechain atoms of a given comp_id.
@@ -222,7 +252,7 @@ class BMRBChemShiftStat:
 
         cs_stat = self.get(comp_id)
 
-        if comp_id in self.__aa_comp_ids or comp_id in self.__dna_comp_ids or comp_id in self.__rna_comp_ids or not polynucleotide_like:
+        if comp_id in self.__std_comp_ids or polypeptide_like or not polynucleotide_like:
             return [i['atom_id'] for i in cs_stat if not i['atom_id'] in bb_atoms and
                     (not excl_minor_atom or (excl_minor_atom and i['major']))]
 
@@ -572,7 +602,7 @@ class BMRBChemShiftStat:
 
             for a in atom_list:
                 a['norm_freq'] = float("%.3f" % (float(a['count']) / max_count))
-                if max_count >= 10:
+                if max_count >= self.max_count_th:
                     if a['count'] > max_count * threshold:
                         a['major'] = True
                     if not threshold2 is None and a['count'] > max_count * threshold2:
@@ -644,6 +674,8 @@ class BMRBChemShiftStat:
         self.__all_comp_ids |= self.__aa_comp_ids
         self.__all_comp_ids |= self.__dna_comp_ids
         self.__all_comp_ids |= self.__rna_comp_ids
+
+        self.__std_comp_ids = copy.copy(self.__all_comp_ids)
 
         for i in self.others:
             self.__all_comp_ids.add(i['comp_id'])

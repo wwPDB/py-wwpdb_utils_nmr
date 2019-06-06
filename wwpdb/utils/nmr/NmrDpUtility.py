@@ -1370,11 +1370,11 @@ class NmrDpUtility(object):
 
             sf_category = self.sf_categories[file_type][content_subtype]
 
-            self.report.warning.addDescription('missing_saveframe', "Saveframe category %s were not found in %s file." % (sf_category, file_name))
+            self.report.warning.addDescription('missing_saveframe', "Saveframe category %s did not exist in %s file." % (sf_category, file_name))
             self.report.setWarning(warning)
 
             if self.__verbose:
-                self.__lfh.write("+NmrDpUtility.__detectContentSubType() ++ Warning  - Saveframe category %s were not found in %s file.\n" % (sf_category, file_name))
+                self.__lfh.write("+NmrDpUtility.__detectContentSubType() ++ Warning  - Saveframe category %s did not exist in %s file.\n" % (sf_category, file_name))
 
         elif lp_counts[content_subtype] > 1:
 
@@ -2006,7 +2006,7 @@ class NmrDpUtility(object):
         if not has_poly_seq:
 
             if self.__verbose:
-                logging.warning('+NmrDpUtility.__extractNonStandardResidue() ++ Warning  - Common polymer sequence does not exist, __extractCommonPolymerSequence() should be invoked.')
+                logging.warning('+NmrDpUtility.__extractNonStandardResidue() ++ Warning  - Common polymer sequence did not exist, __extractCommonPolymerSequence() should be invoked.')
 
             return True
 
@@ -2059,11 +2059,11 @@ class NmrDpUtility(object):
 
         if not has_poly_seq:
 
-            self.report.error.addDescription('internal_error', "+NmrDpUtility.__appendPolymerSequenceAlignment() ++ Error  - Common polymer sequence does not exist, __extractCommonPolymerSequence() should be invoked.")
+            self.report.error.addDescription('internal_error', "+NmrDpUtility.__appendPolymerSequenceAlignment() ++ Error  - Common polymer sequence did not exist, __extractCommonPolymerSequence() should be invoked.")
             self.report.setError()
 
             if self.__verbose:
-                logging.warning("+NmrDpUtility.__appendPolymerSequenceAlignment() ++ Error  - Common polymer sequence does not exist, __extractCommonPolymerSequence() should be invoked.")
+                logging.warning("+NmrDpUtility.__appendPolymerSequenceAlignment() ++ Error  - Common polymer sequence did not exist, __extractCommonPolymerSequence() should be invoked.")
 
             return False
 
@@ -2338,11 +2338,11 @@ class NmrDpUtility(object):
 
         if not content_subtype in input_source_dic['content_subtype'].keys():
 
-            self.report.error.addDescription('internal_error', "+NmrDpUtility.__validateAtomTypeOfCSLoop() ++ Error  - Assigned chemical shift loop does not exists in %s file." % file_name)
+            self.report.error.addDescription('internal_error', "+NmrDpUtility.__validateAtomTypeOfCSLoop() ++ Error  - Assigned chemical shift loop did not exist in %s file." % file_name)
             self.report.setError()
 
             if self.__verbose:
-                self.__lfh.write("+NmrDpUtility.__validateAtomTypeOfCSLoop() ++ Error  - Assigned chemical shift loop does not exists in %s file" % file_name)
+                self.__lfh.write("+NmrDpUtility.__validateAtomTypeOfCSLoop() ++ Error  - Assigned chemical shift loop did not exist in %s file" % file_name)
 
             return False
 
@@ -2422,11 +2422,11 @@ class NmrDpUtility(object):
 
         if not content_subtype in input_source_dic['content_subtype'].keys():
 
-            self.report.error.addDescription('internal_error', "+NmrDpUtility.__validateAmbigCodeOfCSLoop() ++ Error  - Assigned chemical shift loop does not exists in %s file." % file_name)
+            self.report.error.addDescription('internal_error', "+NmrDpUtility.__validateAmbigCodeOfCSLoop() ++ Error  - Assigned chemical shift loop did not exist in %s file." % file_name)
             self.report.setError()
 
             if self.__verbose:
-                self.__lfh.write("+NmrDpUtility.__validateAmbigCodeOfCSLoop() ++ Error  - Assigned chemical shift loop does not exists in %s file" % file_name)
+                self.__lfh.write("+NmrDpUtility.__validateAmbigCodeOfCSLoop() ++ Error  - Assigned chemical shift loop did not exist in %s file" % file_name)
 
             return False
 
@@ -3016,11 +3016,11 @@ class NmrDpUtility(object):
 
                 if sf_data.tag_prefix != self.sf_tag_prefixes[file_type][content_subtype]:
 
-                    self.report.error.addDescription('internal_error', "+NmrDpUtility.__testSfTagConsistency() ++ Error  - Saveframe tag prefix %s does not match with %s in saveframe %s." % (sf_data.tag_prefix, self.sf_tag_prefixes[file_type][content_subtype], sf_framecode))
+                    self.report.error.addDescription('internal_error', "+NmrDpUtility.__testSfTagConsistency() ++ Error  - Saveframe tag prefix %s did not match with %s in saveframe %s." % (sf_data.tag_prefix, self.sf_tag_prefixes[file_type][content_subtype], sf_framecode))
                     self.report.setError()
 
                     if self.__verbose:
-                        self.__lfh.write("+NmrDpUtility.__testSfTagConsistency() ++ Error  - Saveframe tag prefix %s does not match with %s in saveframe %s." % (sf_data.tag_prefix, self.sf_tag_prefixes[file_type][content_subtype], sf_framecode))
+                        self.__lfh.write("+NmrDpUtility.__testSfTagConsistency() ++ Error  - Saveframe tag prefix %s did not match with %s in saveframe %s." % (sf_data.tag_prefix, self.sf_tag_prefixes[file_type][content_subtype], sf_framecode))
 
                     pass
 
@@ -3179,11 +3179,11 @@ class NmrDpUtility(object):
 
         if not content_subtype in input_source_dic['content_subtype'].keys():
 
-            self.report.error.addDescription('internal_error', "+NmrDpUtility.__validateCSValue() ++ Error  - Assigned chemical shift loop does not exists in %s file." % file_name)
+            self.report.error.addDescription('internal_error', "+NmrDpUtility.__validateCSValue() ++ Error  - Assigned chemical shift loop did not exist in %s file." % file_name)
             self.report.setError()
 
             if self.__verbose:
-                self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ Error  - Assigned chemical shift loop does not exists in %s file" % file_name)
+                self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ Error  - Assigned chemical shift loop did not exist in %s file" % file_name)
 
             return False
 
@@ -3477,7 +3477,7 @@ class NmrDpUtility(object):
 
                                 if ambig_code2 != ambig_code:
 
-                                    err = 'Check row of chain_id %s, seq_id %s, comp_id %s, atom_id %s. %s %s indicates %s, but %s %s of atom_id %s are inconsistent in %s loop category, %s saveframe.' %\
+                                    err = 'Check row of chain_id %s, seq_id %s, comp_id %s, atom_id %s. %s %s indicates %s. However, %s %s of atom_id %s is inconsistent in %s loop category, %s saveframe.' %\
                                           (chain_id, seq_id, comp_id, atom_id, ambig_code_name, ambig_code, ambig_code_desc, ambig_code_name, ambig_code2, atom_id2, lp_category, sf_framecode)
 
                                     self.report.error.addDescription('invalid_ambiguity_code', err)
@@ -3488,7 +3488,7 @@ class NmrDpUtility(object):
 
                             except StopIteration:
 
-                                err = 'Check row of chain_id %s, seq_id %s, comp_id %s, atom_id %s. %s %s indicates %s, but row of atom_id %s does not exists in %s loop category, %s saveframe.' %\
+                                err = 'Check row of chain_id %s, seq_id %s, comp_id %s, atom_id %s. %s %s indicates %s. However, row of atom_id %s of the same residue was not found in %s loop category, %s saveframe.' %\
                                       (chain_id, seq_id, comp_id, atom_id, ambig_code_name, ambig_code, ambig_code_desc, atom_id2, lp_category, sf_framecode)
 
                                 self.report.error.addDescription('invalid_ambiguity_code', err)
@@ -3553,7 +3553,7 @@ class NmrDpUtility(object):
 
                                             if (chain_id2 != chain_id or seq_id2 != seq_id or comp_id2 != comp_id) and atom_id < atom_id2:
 
-                                                err = 'Check row of chain_id %s, seq_id %s, comp_id %s, atom_id %s. %s %s, %s %s indicates intra-residue ambiguities, but row of chain_id %s, seq_id %s, comp_id %s, atom_id %s exists in %s loop category, %s saveframe.' %\
+                                                err = 'Check row of chain_id %s, seq_id %s, comp_id %s, atom_id %s. %s %s, %s %s indicates intra-residue ambiguities. However, row of chain_id %s, seq_id %s, comp_id %s, atom_id %s exists in %s loop category, %s saveframe.' %\
                                                       (chain_id, seq_id, comp_id, atom_id, ambig_code_name, ambig_code, ambig_set_id_name, ambig_set_id, chain_id2, seq_id2, comp_id2, atom_id2, lp_category, sf_framecode)
 
                                                 self.report.error.addDescription('invalid_ambiguity_code', err)
@@ -3573,7 +3573,7 @@ class NmrDpUtility(object):
 
                                             if ((chain_id2 != chain_id and chain_id < chain_id2) or (seq_id2 == seq_id and atom_id < atom_id2)):
 
-                                                err = 'Check row of chain_id %s, seq_id %s, comp_id %s, atom_id %s. %s %s, %s %s indicates inter-residue ambiguities, but row of chain_id %s, seq_id %s, comp_id %s, atom_id %s exists in %s loop category, %s saveframe.' %\
+                                                err = 'Check row of chain_id %s, seq_id %s, comp_id %s, atom_id %s. %s %s, %s %s indicates inter-residue ambiguities. However, row of chain_id %s, seq_id %s, comp_id %s, atom_id %s exists in %s loop category, %s saveframe.' %\
                                                       (chain_id, seq_id, comp_id, atom_id, ambig_code_name, ambig_code, ambig_set_id_name, ambig_set_id, chain_id2, seq_id2, comp_id2, atom_id2, lp_category, sf_framecode)
 
                                                 self.report.error.addDescription('invalid_ambiguity_code', err)
@@ -3594,7 +3594,7 @@ class NmrDpUtility(object):
 
                                             if chain_id2 == chain_id and (seq_id < seq_id2 or (seq_id == seq_id2 and atom_id < atom_id2)):
 
-                                                err = 'Check row of chain_id %s, seq_id %s, comp_id %s, atom_id %s. %s %s, %s %s indicates inter-molecular ambiguities, but row of chain_id %s, seq_id %s, comp_id %s, atom_id %s exists in %s loop category, %s saveframe.' %\
+                                                err = 'Check row of chain_id %s, seq_id %s, comp_id %s, atom_id %s. %s %s, %s %s indicates inter-molecular ambiguities. However, row of chain_id %s, seq_id %s, comp_id %s, atom_id %s exists in %s loop category, %s saveframe.' %\
                                                       (chain_id, seq_id, comp_id, atom_id, ambig_code_name, ambig_code, ambig_set_id_name, ambig_set_id, chain_id2, seq_id2, comp_id2, atom_id2, lp_category, sf_framecode)
 
                                                 self.report.error.addDescription('invalid_ambiguity_code', err)
@@ -3611,7 +3611,7 @@ class NmrDpUtility(object):
                                         value2 = j[value_name]
 
                                         if atom_id[0] != atom_id2[0] and atom_id < atom_id2:
-                                            err = 'Check row of chain_id %s, seq_id %s, comp_id %s, atom_id %s, %s %s, %s %s, %s %s, but observation nucleus of chain_id %s, seq_id %s, comp_id %s, atom_id %s, %s %s differs in %s loop category, %s saveframe.' %\
+                                            err = 'Check row of chain_id %s, seq_id %s, comp_id %s, atom_id %s, %s %s, %s %s, %s %s. However, observation nucleus of chain_id %s, seq_id %s, comp_id %s, atom_id %s, %s %s differs in %s loop category, %s saveframe.' %\
                                                   (chain_id, seq_id, comp_id, atom_id, value_name, value, ambig_code_name, ambig_code, ambig_set_id_name, ambig_set_id, chain_id2, seq_id2, comp_id2, atom_id2, value_name, value2, lp_category, sf_framecode)
 
                                             self.report.error.addDescription('invalid_ambiguity_code', err)
@@ -3622,7 +3622,7 @@ class NmrDpUtility(object):
 
                                         elif abs(value2 - value) > max_cs_err and value < value2:
 
-                                            err = 'Check row of chain_id %s, seq_id %s, comp_id %s, atom_id %s, %s %s, %s %s, %s %s, but %s %s of chain_id %s, seq_id %s, comp_id %s, atom_id %s differs by %s (tolerance %s) in %s loop category, %s saveframe.' %\
+                                            err = 'Check row of chain_id %s, seq_id %s, comp_id %s, atom_id %s, %s %s, %s %s, %s %s. However, %s %s of chain_id %s, seq_id %s, comp_id %s, atom_id %s differs by %s (tolerance %s) in %s loop category, %s saveframe.' %\
                                                   (chain_id, seq_id, comp_id, atom_id, value_name, value, ambig_code_name, ambig_code, ambig_set_id_name, ambig_set_id, value_name, value2, chain_id2, seq_id2, comp_id2, atom_id2, value2 - value, max_cs_err, lp_category, sf_framecode)
 
                                             self.report.error.addDescription('invalid_ambiguity_code', err)
@@ -3644,11 +3644,11 @@ class NmrDpUtility(object):
 
             except StopIteration:
 
-                self.report.error.addDescription('missing_mandatory_content', "Assigned chemical shifts are mandatory. Saveframe %s was not found in %s file." % (sf_framecode, file_name))
+                self.report.error.addDescription('missing_mandatory_content', "Assigned chemical shifts are mandatory. Saveframe %s did not exist in %s file." % (sf_framecode, file_name))
                 self.report.setError()
 
                 if self.__verbose:
-                    self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ Error  - Assigned chemical shifts are mandatory. Saveframe %s referred by %s in %s saveframe was not found in %s file." % (cs_list, self.cs_list_sf_tag_name[file_type], sf_framecode, file_name))
+                    self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ Error  - Assigned chemical shifts are mandatory. Saveframe %s did not exist in %s file." % (sf_framecode, file_name))
 
             except Exception as e:
 
@@ -3698,11 +3698,11 @@ class NmrDpUtility(object):
 
             except StopIteration:
 
-                self.report.error.addDescription('missing_mandatory_content', "Assigned chemical shifts are mandatory. Saveframe %s referred by %s in %s saveframe was not found in %s file." % (cs_list, self.cs_list_sf_tag_name[file_type], sf_framecode, file_name))
+                self.report.error.addDescription('missing_mandatory_content', "Assigned chemical shifts are mandatory. Saveframe %s referred by %s in %s saveframe did not exist in %s file." % (cs_list, self.cs_list_sf_tag_name[file_type], sf_framecode, file_name))
                 self.report.setError()
 
                 if self.__verbose:
-                    self.__lfh.write("+NmrDpUtility.__testCSValueConsistencyInPkLoop() ++ Error  - Assigned chemical shifts are mandatory. Saveframe %s referred by %s in %s saveframe was not found in %s file." % (cs_list, self.cs_list_sf_tag_name[file_type], sf_framecode, file_name))
+                    self.__lfh.write("+NmrDpUtility.__testCSValueConsistencyInPkLoop() ++ Error  - Assigned chemical shifts are mandatory. Saveframe %s referred by %s in %s saveframe did not exist in %s file." % (cs_list, self.cs_list_sf_tag_name[file_type], sf_framecode, file_name))
 
                     continue
 
@@ -3914,7 +3914,7 @@ class NmrDpUtility(object):
                                         if chain_id2 in self.empty_value or seq_id2 in self.empty_value or comp_id2 in self.empty_value or atom_id2 in self.empty_value or\
                                            (d < d2 and (chain_id2 != chain_id or seq_id2 != seq_id or comp_id2 != comp_id or _atom_id2 != _atom_id)):
 
-                                            err = 'Check row of %s %s. Coherence transfer type is onebond, but assignment of spectral peak is inconsistent with the type, (%s %s, %s %s, %s %s, %s %s) vs (%s %s, %s %s, %s %s, %s %s) in %s saveframe.' %\
+                                            err = 'Check row of %s %s. Coherence transfer type is onebond. However, assignment of spectral peak is inconsistent with the type, (%s %s, %s %s, %s %s, %s %s) vs (%s %s, %s %s, %s %s, %s %s) in %s saveframe.' %\
                                                   (index_tag, i[index_tag], item_names[d]['chain_id'], chain_id, item_names[d]['seq_id'], seq_id, item_names[d]['comp_id'], comp_id, item_names[d]['atom_id'], atom_id,
                                                    item_names[d2]['chain_id'], chain_id2, item_names[d2]['seq_id'], seq_id2, item_names[d2]['comp_id'], comp_id2, item_names[d2]['atom_id'], atom_id2, sf_framecode)
 
@@ -3935,7 +3935,7 @@ class NmrDpUtility(object):
                                         if chain_id2 in self.empty_value or seq_id2 in self.empty_value or comp_id2 in self.empty_value or atom_id2 in self.empty_value or\
                                            (d < d2 and (chain_id2 != chain_id or abs(seq_id2 - seq_id) > 1)):
 
-                                            err = 'Check row of %s %s. Coherence transfer type is jcoupling, but assignment of spectral peak is inconsistent with the type, (%s %s, %s %s, %s %s, %s %s) vs (%s %s, %s %s, %s %s, %s %s) in %s saveframe.' %\
+                                            err = 'Check row of %s %s. Coherence transfer type is jcoupling. However, assignment of spectral peak is inconsistent with the type, (%s %s, %s %s, %s %s, %s %s) vs (%s %s, %s %s, %s %s, %s %s) in %s saveframe.' %\
                                                   (index_tag, i[index_tag], item_names[d]['chain_id'], chain_id, item_names[d]['seq_id'], seq_id, item_names[d]['comp_id'], comp_id, item_names[d]['atom_id'], atom_id,
                                                    item_names[d2]['chain_id'], chain_id2, item_names[d2]['seq_id'], seq_id2, item_names[d2]['comp_id'], comp_id2, item_names[d2]['atom_id'], atom_id2, sf_framecode)
 
@@ -3956,7 +3956,7 @@ class NmrDpUtility(object):
                                         if chain_id2 in self.empty_value or seq_id2 in self.empty_value or comp_id2 in self.empty_value or atom_id2 in self.empty_value or\
                                            (d < d2 and (chain_id2 != chain_id or seq_id2 != seq_id or comp_id2 != comp_id or atom_id[0] != atom_id2[0])):
 
-                                            err = 'Check row of %s %s. Coherence transfer type is relayed, but assignment of spectral peak is inconsistent with the type, (%s %s, %s %s, %s %s, %s %s) vs (%s %s, %s %s, %s %s, %s %s) in %s saveframe.' %\
+                                            err = 'Check row of %s %s. Coherence transfer type is relayed. However, assignment of spectral peak is inconsistent with the type, (%s %s, %s %s, %s %s, %s %s) vs (%s %s, %s %s, %s %s, %s %s) in %s saveframe.' %\
                                                   (index_tag, i[index_tag], item_names[d]['chain_id'], chain_id, item_names[d]['seq_id'], seq_id, item_names[d]['comp_id'], comp_id, item_names[d]['atom_id'], atom_id,
                                                    item_names[d2]['chain_id'], chain_id2, item_names[d2]['seq_id'], seq_id2, item_names[d2]['comp_id'], comp_id2, item_names[d2]['atom_id'], atom_id2, sf_framecode)
 

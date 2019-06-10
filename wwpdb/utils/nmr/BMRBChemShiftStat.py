@@ -48,6 +48,9 @@ class BMRBChemShiftStat:
 
         self.max_count_th = 10
 
+        self.loadStatFromPickleFiles()
+
+        # CCD accessing utility
         self.__verbose = False
         self.__lfh = sys.stderr
 
@@ -85,8 +88,8 @@ class BMRBChemShiftStat:
                 ('_chem_comp_atom.pdbx_ordinal','%s','str','')
                 ]
 
-        atom_id_col = next(d for d in self.__chem_comp_atom_dict if d[0] == '_chem_comp_atom.atom_id')
-        self.__cca_atom_id_col = self.__chem_comp_atom_dict.index(atom_id_col)
+        atom_id = next(d for d in self.__chem_comp_atom_dict if d[0] == '_chem_comp_atom.atom_id')
+        self.__cca_atom_id = self.__chem_comp_atom_dict.index(atom_id)
 
         aromatic_flag = next(d for d in self.__chem_comp_atom_dict if d[0] == '_chem_comp_atom.pdbx_aromatic_flag')
         self.__cca_aromatic_flag = self.__chem_comp_atom_dict.index(aromatic_flag)
@@ -105,16 +108,14 @@ class BMRBChemShiftStat:
                 ('_chem_comp_bond.pdbx_ordinal','%s','str','')
                 ]
 
-        atom_id_1_col = next(d for d in self.__chem_comp_bond_dict if d[0] == '_chem_comp_bond.atom_id_1')
-        self.__ccb_atom_id_1_col = self.__chem_comp_bond_dict.index(atom_id_1_col)
+        atom_id_1 = next(d for d in self.__chem_comp_bond_dict if d[0] == '_chem_comp_bond.atom_id_1')
+        self.__ccb_atom_id_1 = self.__chem_comp_bond_dict.index(atom_id_1)
 
-        atom_id_2_col = next(d for d in self.__chem_comp_bond_dict if d[0] == '_chem_comp_bond.atom_id_2')
-        self.__ccb_atom_id_2_col = self.__chem_comp_bond_dict.index(atom_id_2_col)
+        atom_id_2 = next(d for d in self.__chem_comp_bond_dict if d[0] == '_chem_comp_bond.atom_id_2')
+        self.__ccb_atom_id_2 = self.__chem_comp_bond_dict.index(atom_id_2)
 
         aromatic_flag = next(d for d in self.__chem_comp_bond_dict if d[0] == '_chem_comp_bond.pdbx_aromatic_flag')
         self.__ccb_aromatic_flag = self.__chem_comp_bond_dict.index(aromatic_flag)
-
-        self.loadStatFromPickleFiles()
 
     def isOk(self):
         """ Return whether all BMRB chemical shift statistics are available.
@@ -488,7 +489,7 @@ class BMRBChemShiftStat:
         """
 
         try:
-            next(a[self.__cca_atom_id_col] for a in self.__last_chem_comp_atoms if a[self.__cca_atom_id_col] == atom_id and a[self.__cca_leaving_atom_flag] != 'Y')
+            next(a[self.__cca_atom_id] for a in self.__last_chem_comp_atoms if a[self.__cca_atom_id] == atom_id and a[self.__cca_leaving_atom_flag] != 'Y')
             return True
         except:
             if self.__verbose:
@@ -510,7 +511,7 @@ class BMRBChemShiftStat:
             h_list = [i for i in _list if i['atom_id'].startswith('H') and i['desc'] == 'isolated']
 
             if self.__updateChemCompDict(comp_id):
-                c_h_bonds = collections.Counter([b[self.__ccb_atom_id_1_col] for b in self.__last_chem_comp_bonds if b[self.__ccb_atom_id_1_col].startswith('C') and b[self.__ccb_atom_id_2_col].startswith('H')])
+                c_h_bonds = collections.Counter([b[self.__ccb_atom_id_1] for b in self.__last_chem_comp_bonds if b[self.__ccb_atom_id_1].startswith('C') and b[self.__ccb_atom_id_2].startswith('H')])
 
                 for k, v in c_h_bonds.items():
                     if v == 3:
@@ -522,7 +523,7 @@ class BMRBChemShiftStat:
                         for i in h_list:
                             atom_id = i['atom_id']
                             try:
-                                next(b for b in self.__last_chem_comp_bonds if b[self.__ccb_atom_id_1_col] == k and b[self.__ccb_atom_id_2_col] == atom_id)
+                                next(b for b in self.__last_chem_comp_bonds if b[self.__ccb_atom_id_1] == k and b[self.__ccb_atom_id_2] == atom_id)
                                 i['desc'] = 'methyl'
                             except StopIteration:
                                 pass
@@ -556,7 +557,7 @@ class BMRBChemShiftStat:
             h_list = [i for i in _list if i['atom_id'].startswith('H') and i['desc'] == 'isolated']
 
             if self.__updateChemCompDict(comp_id):
-                aro_list = [a[self.__cca_atom_id_col] for a in self.__last_chem_comp_atoms if a[self.__cca_aromatic_flag] == 'Y']
+                aro_list = [a[self.__cca_atom_id] for a in self.__last_chem_comp_atoms if a[self.__cca_aromatic_flag] == 'Y']
 
                 for i in _list:
                     if i['atom_id'] in aro_list:
@@ -566,14 +567,14 @@ class BMRBChemShiftStat:
                     for i in h_list:
                         atom_id = i['atom_id']
                         try:
-                            next(b for b in self.__last_chem_comp_bonds if b[self.__ccb_atom_id_1_col] == aro and b[self.__ccb_atom_id_2_col] == atom_id)
+                            next(b for b in self.__last_chem_comp_bonds if b[self.__ccb_atom_id_1] == aro and b[self.__ccb_atom_id_2] == atom_id)
                             i['desc'] = 'aroma'
                         except StopIteration:
                             pass
 
-                leaving_atom_list = [a[self.__cca_atom_id_col] for a in self.__last_chem_comp_atoms if a[self.__cca_leaving_atom_flag] == 'Y']
+                leaving_atom_list = [a[self.__cca_atom_id] for a in self.__last_chem_comp_atoms if a[self.__cca_leaving_atom_flag] == 'Y']
 
-                cn_h_bonds = collections.Counter([b[self.__ccb_atom_id_1_col] for b in self.__last_chem_comp_bonds if b[self.__ccb_atom_id_2_col].startswith('H') and not b[self.__ccb_atom_id_2_col] in leaving_atom_list])
+                cn_h_bonds = collections.Counter([b[self.__ccb_atom_id_1] for b in self.__last_chem_comp_bonds if b[self.__ccb_atom_id_2].startswith('H') and not b[self.__ccb_atom_id_2] in leaving_atom_list])
 
                 h_list = [i for i in _list if i['atom_id'].startswith('H') and i['desc'] == 'isolated']
 
@@ -582,7 +583,7 @@ class BMRBChemShiftStat:
                         for i in h_list:
                             atom_id = i['atom_id']
                             try:
-                                next(b for b in self.__last_chem_comp_bonds if b[self.__ccb_atom_id_1_col] == k and b[self.__ccb_atom_id_2_col] == atom_id)
+                                next(b for b in self.__last_chem_comp_bonds if b[self.__ccb_atom_id_1] == k and b[self.__ccb_atom_id_2] == atom_id)
                                 i['desc'] = 'geminal'
                             except StopIteration:
                                 pass
@@ -594,15 +595,15 @@ class BMRBChemShiftStat:
                 pair = 0
                 for h_1 in h_list:
                     if h_1['atom_id'][-1] in ['1', '2', '3']:
-                        hvy_1 = next(b[self.__ccb_atom_id_1_col] for b in self.__last_chem_comp_bonds if b[self.__ccb_atom_id_2_col] == h_1['atom_id'])
+                        hvy_1 = next(b[self.__ccb_atom_id_1] for b in self.__last_chem_comp_bonds if b[self.__ccb_atom_id_2] == h_1['atom_id'])
                         for h_2 in h_list:
                             if h_2['atom_id'][-1] in ['1', '2', '3'] and h_list.index(h_1) < h_list.index(h_2):
-                                hvy_2 = next(b[self.__ccb_atom_id_1_col] for b in self.__last_chem_comp_bonds if b[self.__ccb_atom_id_2_col] == h_2['atom_id'])
+                                hvy_2 = next(b[self.__ccb_atom_id_1] for b in self.__last_chem_comp_bonds if b[self.__ccb_atom_id_2] == h_2['atom_id'])
                                 if hvy_1[:-1] == hvy_2[:-1]:
-                                    hvy_1_c = set([b[self.__ccb_atom_id_1_col] for b in self.__last_chem_comp_bonds if b[self.__ccb_aromatic_flag] == 'Y' and b[self.__ccb_atom_id_2_col] == hvy_1]) |\
-                                              set([b[self.__ccb_atom_id_2_col] for b in self.__last_chem_comp_bonds if b[self.__ccb_aromatic_flag] == 'Y' and b[self.__ccb_atom_id_1_col] == hvy_1])
-                                    hvy_2_c = set([b[self.__ccb_atom_id_1_col] for b in self.__last_chem_comp_bonds if b[self.__ccb_aromatic_flag] == 'Y' and b[self.__ccb_atom_id_2_col] == hvy_2]) |\
-                                              set([b[self.__ccb_atom_id_2_col] for b in self.__last_chem_comp_bonds if b[self.__ccb_aromatic_flag] == 'Y' and b[self.__ccb_atom_id_1_col] == hvy_2])
+                                    hvy_1_c = set([b[self.__ccb_atom_id_1] for b in self.__last_chem_comp_bonds if b[self.__ccb_aromatic_flag] == 'Y' and b[self.__ccb_atom_id_2] == hvy_1]) |\
+                                              set([b[self.__ccb_atom_id_2] for b in self.__last_chem_comp_bonds if b[self.__ccb_aromatic_flag] == 'Y' and b[self.__ccb_atom_id_1] == hvy_1])
+                                    hvy_2_c = set([b[self.__ccb_atom_id_1] for b in self.__last_chem_comp_bonds if b[self.__ccb_aromatic_flag] == 'Y' and b[self.__ccb_atom_id_2] == hvy_2]) |\
+                                              set([b[self.__ccb_atom_id_2] for b in self.__last_chem_comp_bonds if b[self.__ccb_aromatic_flag] == 'Y' and b[self.__ccb_atom_id_1] == hvy_2])
                                     set_hvy_c = hvy_1_c & hvy_2_c
                                     if len(set_hvy_c) == 1:
                                         for hvy_c in set_hvy_c:
@@ -614,10 +615,10 @@ class BMRBChemShiftStat:
                     for hvy_c_1 in hvy_c_list:
                         for hvy_c_2 in hvy_c_list:
                             if hvy_c_1 < hvy_c_2:
-                                hvy_set_1 = set([b[self.__ccb_atom_id_1_col] for b in self.__last_chem_comp_bonds if b[self.__ccb_aromatic_flag] == 'Y' and b[self.__ccb_atom_id_2_col] == hvy_c_1]) |\
-                                            set([b[self.__ccb_atom_id_2_col] for b in self.__last_chem_comp_bonds if b[self.__ccb_aromatic_flag] == 'Y' and b[self.__ccb_atom_id_1_col] == hvy_c_1])
-                                hvy_set_2 = set([b[self.__ccb_atom_id_1_col] for b in self.__last_chem_comp_bonds if b[self.__ccb_aromatic_flag] == 'Y' and b[self.__ccb_atom_id_2_col] == hvy_c_2]) |\
-                                            set([b[self.__ccb_atom_id_2_col] for b in self.__last_chem_comp_bonds if b[self.__ccb_aromatic_flag] == 'Y' and b[self.__ccb_atom_id_1_col] == hvy_c_2])
+                                hvy_set_1 = set([b[self.__ccb_atom_id_1] for b in self.__last_chem_comp_bonds if b[self.__ccb_aromatic_flag] == 'Y' and b[self.__ccb_atom_id_2] == hvy_c_1]) |\
+                                            set([b[self.__ccb_atom_id_2] for b in self.__last_chem_comp_bonds if b[self.__ccb_aromatic_flag] == 'Y' and b[self.__ccb_atom_id_1] == hvy_c_1])
+                                hvy_set_2 = set([b[self.__ccb_atom_id_1] for b in self.__last_chem_comp_bonds if b[self.__ccb_aromatic_flag] == 'Y' and b[self.__ccb_atom_id_2] == hvy_c_2]) |\
+                                            set([b[self.__ccb_atom_id_2] for b in self.__last_chem_comp_bonds if b[self.__ccb_aromatic_flag] == 'Y' and b[self.__ccb_atom_id_1] == hvy_c_2])
                                 in_ring = False
                                 for hvy_1 in hvy_set_1:
                                     if in_ring:
@@ -626,12 +627,12 @@ class BMRBChemShiftStat:
                                         if in_ring:
                                             break
                                         try:
-                                            next(b for b in self.__last_chem_comp_bonds if b[self.__ccb_aromatic_flag] == 'Y' and b[self.__ccb_atom_id_1_col] == hvy_1 and b[self.__ccb_atom_id_2_col] == hvy_2)
+                                            next(b for b in self.__last_chem_comp_bonds if b[self.__ccb_aromatic_flag] == 'Y' and b[self.__ccb_atom_id_1] == hvy_1 and b[self.__ccb_atom_id_2] == hvy_2)
                                             in_ring = True
                                         except StopIteration:
                                             pass
                                         try:
-                                            next(b for b in self.__last_chem_comp_bonds if b[self.__ccb_aromatic_flag] == 'Y' and b[self.__ccb_atom_id_1_col] == hvy_2 and b[self.__ccb_atom_id_2_col] == hvy_1)
+                                            next(b for b in self.__last_chem_comp_bonds if b[self.__ccb_aromatic_flag] == 'Y' and b[self.__ccb_atom_id_1] == hvy_2 and b[self.__ccb_atom_id_2] == hvy_1)
                                             in_ring = True
                                         except StopIteration:
                                             pass
@@ -641,15 +642,15 @@ class BMRBChemShiftStat:
 
                     for h_1 in h_list:
                         if h_1['atom_id'][-1] in ['1', '2', '3']:
-                            hvy_1 = next(b[self.__ccb_atom_id_1_col] for b in self.__last_chem_comp_bonds if b[self.__ccb_atom_id_2_col] == h_1['atom_id'])
+                            hvy_1 = next(b[self.__ccb_atom_id_1] for b in self.__last_chem_comp_bonds if b[self.__ccb_atom_id_2] == h_1['atom_id'])
                             for h_2 in h_list:
                                 if h_2['atom_id'][-1] in ['1', '2', '3'] and h_list.index(h_1) < h_list.index(h_2):
-                                    hvy_2 = next(b[self.__ccb_atom_id_1_col] for b in self.__last_chem_comp_bonds if b[self.__ccb_atom_id_2_col] == h_2['atom_id'])
+                                    hvy_2 = next(b[self.__ccb_atom_id_1] for b in self.__last_chem_comp_bonds if b[self.__ccb_atom_id_2] == h_2['atom_id'])
                                     if hvy_1[:-1] == hvy_2[:-1]:
-                                        hvy_1_c = set([b[self.__ccb_atom_id_1_col] for b in self.__last_chem_comp_bonds if b[self.__ccb_aromatic_flag] == 'Y' and b[self.__ccb_atom_id_2_col] == hvy_1]) |\
-                                                  set([b[self.__ccb_atom_id_2_col] for b in self.__last_chem_comp_bonds if b[self.__ccb_aromatic_flag] == 'Y' and b[self.__ccb_atom_id_1_col] == hvy_1])
-                                        hvy_2_c = set([b[self.__ccb_atom_id_1_col] for b in self.__last_chem_comp_bonds if b[self.__ccb_aromatic_flag] == 'Y' and b[self.__ccb_atom_id_2_col] == hvy_2]) |\
-                                                  set([b[self.__ccb_atom_id_2_col] for b in self.__last_chem_comp_bonds if b[self.__ccb_aromatic_flag] == 'Y' and b[self.__ccb_atom_id_1_col] == hvy_2])
+                                        hvy_1_c = set([b[self.__ccb_atom_id_1] for b in self.__last_chem_comp_bonds if b[self.__ccb_aromatic_flag] == 'Y' and b[self.__ccb_atom_id_2] == hvy_1]) |\
+                                                  set([b[self.__ccb_atom_id_2] for b in self.__last_chem_comp_bonds if b[self.__ccb_aromatic_flag] == 'Y' and b[self.__ccb_atom_id_1] == hvy_1])
+                                        hvy_2_c = set([b[self.__ccb_atom_id_1] for b in self.__last_chem_comp_bonds if b[self.__ccb_aromatic_flag] == 'Y' and b[self.__ccb_atom_id_2] == hvy_2]) |\
+                                                  set([b[self.__ccb_atom_id_2] for b in self.__last_chem_comp_bonds if b[self.__ccb_aromatic_flag] == 'Y' and b[self.__ccb_atom_id_1] == hvy_2])
                                         if len(hvy_1_c & hvy_2_c & hvy_c_set_in_ring) > 0:
                                             h_1['desc'] = 'aroma-opposite'
                                             h_2['desc'] = 'aroma-opposite'
@@ -773,27 +774,27 @@ class BMRBChemShiftStat:
                 for methyl_c_1 in methyl_c_list:
                     for methyl_c_2 in methyl_c_list:
                         if methyl_c_list.index(methyl_c_1) < methyl_c_list.index(methyl_c_2):
-                            hvy_1_c = set([b[self.__ccb_atom_id_2_col] for b in self.__last_chem_comp_bonds if b[self.__ccb_atom_id_1_col] == methyl_c_1 and not b[self.__ccb_atom_id_2_col].startswith('H')]) |\
-                                      set([b[self.__ccb_atom_id_1_col] for b in self.__last_chem_comp_bonds if b[self.__ccb_atom_id_2_col] == methyl_c_1 and not b[self.__ccb_atom_id_1_col].startswith('H')])
-                            hvy_2_c = set([b[self.__ccb_atom_id_2_col] for b in self.__last_chem_comp_bonds if b[self.__ccb_atom_id_1_col] == methyl_c_2 and not b[self.__ccb_atom_id_2_col].startswith('H')]) |\
-                                      set([b[self.__ccb_atom_id_1_col] for b in self.__last_chem_comp_bonds if b[self.__ccb_atom_id_2_col] == methyl_c_2 and not b[self.__ccb_atom_id_1_col].startswith('H')])
+                            hvy_1_c = set([b[self.__ccb_atom_id_2] for b in self.__last_chem_comp_bonds if b[self.__ccb_atom_id_1] == methyl_c_1 and not b[self.__ccb_atom_id_2].startswith('H')]) |\
+                                      set([b[self.__ccb_atom_id_1] for b in self.__last_chem_comp_bonds if b[self.__ccb_atom_id_2] == methyl_c_1 and not b[self.__ccb_atom_id_1].startswith('H')])
+                            hvy_2_c = set([b[self.__ccb_atom_id_2] for b in self.__last_chem_comp_bonds if b[self.__ccb_atom_id_1] == methyl_c_2 and not b[self.__ccb_atom_id_2].startswith('H')]) |\
+                                      set([b[self.__ccb_atom_id_1] for b in self.__last_chem_comp_bonds if b[self.__ccb_atom_id_2] == methyl_c_2 and not b[self.__ccb_atom_id_1].startswith('H')])
                             hvy_common = hvy_1_c & hvy_2_c
                             if len(hvy_common) > 0:
                                 for hvy_c in hvy_common:
-                                    v = len([b for b in self.__last_chem_comp_bonds if b[self.__ccb_atom_id_1_col] == hvy_c and b[self.__ccb_atom_id_2_col] in methyl_c_list]) +\
-                                        len([b for b in self.__last_chem_comp_bonds if b[self.__ccb_atom_id_2_col] == hvy_c and b[self.__ccb_atom_id_1_col] in methyl_c_list])
+                                    v = len([b for b in self.__last_chem_comp_bonds if b[self.__ccb_atom_id_1] == hvy_c and b[self.__ccb_atom_id_2] in methyl_c_list]) +\
+                                        len([b for b in self.__last_chem_comp_bonds if b[self.__ccb_atom_id_2] == hvy_c and b[self.__ccb_atom_id_1] in methyl_c_list])
 
                                     if v == 2:
                                         for i in _list:
                                             if i['atom_id'] == methyl_c_1 or i['atom_id'] == methyl_c_2:
                                                 i['desc'] = 'methyl-geminal'
 
-                                                for methyl_h in [b[self.__ccb_atom_id_2_col] for b in self.__last_chem_comp_bonds if b[self.__ccb_atom_id_1_col] == methyl_c_1 and b[self.__ccb_atom_id_2_col].startswith('H')]:
+                                                for methyl_h in [b[self.__ccb_atom_id_2] for b in self.__last_chem_comp_bonds if b[self.__ccb_atom_id_1] == methyl_c_1 and b[self.__ccb_atom_id_2].startswith('H')]:
                                                     for j in _list:
                                                         if j['atom_id'] == methyl_h:
                                                             j['desc'] = 'methyl-geminal'
 
-                                                for methyl_h in [b[self.__ccb_atom_id_2_col] for b in self.__last_chem_comp_bonds if b[self.__ccb_atom_id_1_col] == methyl_c_2 and b[self.__ccb_atom_id_2_col].startswith('H')]:
+                                                for methyl_h in [b[self.__ccb_atom_id_2] for b in self.__last_chem_comp_bonds if b[self.__ccb_atom_id_1] == methyl_c_2 and b[self.__ccb_atom_id_2].startswith('H')]:
                                                     for j in _list:
                                                         if j['atom_id'] == methyl_h:
                                                             j['desc'] = 'methyl-geminal'
@@ -853,15 +854,15 @@ class BMRBChemShiftStat:
                 for geminal_n_1 in geminal_n_list:
                     for geminal_n_2 in geminal_n_list:
                         if geminal_n_list.index(geminal_n_1) < geminal_n_list.index(geminal_n_2):
-                            hvy_1_c = set([b[self.__ccb_atom_id_2_col] for b in self.__last_chem_comp_bonds if b[self.__ccb_atom_id_1_col] == geminal_n_1 and not b[self.__ccb_atom_id_2_col].startswith('H')]) |\
-                                      set([b[self.__ccb_atom_id_1_col] for b in self.__last_chem_comp_bonds if b[self.__ccb_atom_id_2_col] == geminal_n_1 and not b[self.__ccb_atom_id_1_col].startswith('H')])
-                            hvy_2_c = set([b[self.__ccb_atom_id_2_col] for b in self.__last_chem_comp_bonds if b[self.__ccb_atom_id_1_col] == geminal_n_2 and not b[self.__ccb_atom_id_2_col].startswith('H')]) |\
-                                      set([b[self.__ccb_atom_id_1_col] for b in self.__last_chem_comp_bonds if b[self.__ccb_atom_id_2_col] == geminal_n_2 and not b[self.__ccb_atom_id_1_col].startswith('H')])
+                            hvy_1_c = set([b[self.__ccb_atom_id_2] for b in self.__last_chem_comp_bonds if b[self.__ccb_atom_id_1] == geminal_n_1 and not b[self.__ccb_atom_id_2].startswith('H')]) |\
+                                      set([b[self.__ccb_atom_id_1] for b in self.__last_chem_comp_bonds if b[self.__ccb_atom_id_2] == geminal_n_1 and not b[self.__ccb_atom_id_1].startswith('H')])
+                            hvy_2_c = set([b[self.__ccb_atom_id_2] for b in self.__last_chem_comp_bonds if b[self.__ccb_atom_id_1] == geminal_n_2 and not b[self.__ccb_atom_id_2].startswith('H')]) |\
+                                      set([b[self.__ccb_atom_id_1] for b in self.__last_chem_comp_bonds if b[self.__ccb_atom_id_2] == geminal_n_2 and not b[self.__ccb_atom_id_1].startswith('H')])
                             hvy_common = hvy_1_c & hvy_2_c
                             if len(hvy_common) > 0:
                                 for hvy_c in hvy_common:
-                                    v = len([b for b in self.__last_chem_comp_bonds if b[self.__ccb_atom_id_1_col] == hvy_c and b[self.__ccb_atom_id_2_col] in geminal_n_list]) +\
-                                        len([b for b in self.__last_chem_comp_bonds if b[self.__ccb_atom_id_2_col] == hvy_c and b[self.__ccb_atom_id_1_col] in geminal_n_list])
+                                    v = len([b for b in self.__last_chem_comp_bonds if b[self.__ccb_atom_id_1] == hvy_c and b[self.__ccb_atom_id_2] in geminal_n_list]) +\
+                                        len([b for b in self.__last_chem_comp_bonds if b[self.__ccb_atom_id_2] == hvy_c and b[self.__ccb_atom_id_1] in geminal_n_list])
 
                                     if v == 2:
                                         for i in _list:

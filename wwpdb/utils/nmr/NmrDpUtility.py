@@ -20,6 +20,8 @@ from wwpdb.utils.nmr.NEFTranslator.NEFTranslator import NEFTranslator
 from wwpdb.utils.nmr.NmrDpReport import NmrDpReport
 from wwpdb.utils.align.alignlib import PairwiseAlign
 from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
+from wwpdb.utils.config.ConfigInfo import ConfigInfo, getSiteId
+from wwpdb.apps.ccmodule.io.ChemCompIo import ChemCompReader
 
 class NmrDpUtility(object):
     """ Wrapper class for data processing for NMR unified data.
@@ -1121,6 +1123,73 @@ class NmrDpUtility(object):
                          'spectral_peak': []
                          }
 
+        # CCD accessing utility
+        self.__verbose = False
+        self.__lfh = sys.stderr
+
+        self.__cI = ConfigInfo(getSiteId())
+        self.__ccCvsPath = self.__cI.get('SITE_CC_CVS_PATH')
+
+        self.__ccR = ChemCompReader(self.__verbose, self.__lfh)
+        self.__ccR.setCachePath(self.__ccCvsPath)
+
+        self.__last_comp_id = None
+        self.__last_comp_id_test = False
+        self.__last_chem_comp_dict = None
+        self.__last_chem_comp_atoms = None
+        self.__last_chem_comp_bonds = None
+
+        # taken from wwpdb.apps.ccmodule.io.ChemCompIo
+        self.__chem_comp_atom_dict = [
+                ('_chem_comp_atom.comp_id','%s','str',''),
+                ('_chem_comp_atom.atom_id','%s','str',''),
+                ('_chem_comp_atom.alt_atom_id','%s','str',''),
+                ('_chem_comp_atom.type_symbol','%s','str',''),
+                ('_chem_comp_atom.charge','%s','str',''),
+                ('_chem_comp_atom.pdbx_align','%s','str',''),
+                ('_chem_comp_atom.pdbx_aromatic_flag','%s','str',''),
+                ('_chem_comp_atom.pdbx_leaving_atom_flag','%s','str',''),
+                ('_chem_comp_atom.pdbx_stereo_config','%s','str',''),
+                ('_chem_comp_atom.model_Cartn_x','%s','str',''),
+                ('_chem_comp_atom.model_Cartn_y','%s','str',''),
+                ('_chem_comp_atom.model_Cartn_z','%s','str',''),
+                ('_chem_comp_atom.pdbx_model_Cartn_x_ideal','%s','str',''),
+                ('_chem_comp_atom.pdbx_model_Cartn_y_ideal','%s','str',''),
+                ('_chem_comp_atom.pdbx_model_Cartn_z_ideal','%s','str',''),
+                ('_chem_comp_atom.pdbx_component_atom_id','%s','str',''),
+                ('_chem_comp_atom.pdbx_component_comp_id','%s','str',''),
+                ('_chem_comp_atom.pdbx_ordinal','%s','str','')
+                ]
+
+        atom_id = next(d for d in self.__chem_comp_atom_dict if d[0] == '_chem_comp_atom.atom_id')
+        self.__cca_atom_id = self.__chem_comp_atom_dict.index(atom_id)
+
+        aromatic_flag = next(d for d in self.__chem_comp_atom_dict if d[0] == '_chem_comp_atom.pdbx_aromatic_flag')
+        self.__cca_aromatic_flag = self.__chem_comp_atom_dict.index(aromatic_flag)
+
+        leaving_atom_flag = next(d for d in self.__chem_comp_atom_dict if d[0] == '_chem_comp_atom.pdbx_leaving_atom_flag')
+        self.__cca_leaving_atom_flag = self.__chem_comp_atom_dict.index(leaving_atom_flag)
+
+        # taken from wwpdb.apps.ccmodule.io.ChemCompIo
+        self.__chem_comp_bond_dict = [
+                ('_chem_comp_bond.comp_id','%s','str',''),
+                ('_chem_comp_bond.atom_id_1','%s','str',''),
+                ('_chem_comp_bond.atom_id_2','%s','str',''),
+                ('_chem_comp_bond.value_order','%s','str',''),
+                ('_chem_comp_bond.pdbx_aromatic_flag','%s','str',''),
+                ('_chem_comp_bond.pdbx_stereo_config','%s','str',''),
+                ('_chem_comp_bond.pdbx_ordinal','%s','str','')
+                ]
+
+        atom_id_1 = next(d for d in self.__chem_comp_bond_dict if d[0] == '_chem_comp_bond.atom_id_1')
+        self.__ccb_atom_id_1 = self.__chem_comp_bond_dict.index(atom_id_1)
+
+        atom_id_2 = next(d for d in self.__chem_comp_bond_dict if d[0] == '_chem_comp_bond.atom_id_2')
+        self.__ccb_atom_id_2 = self.__chem_comp_bond_dict.index(atom_id_2)
+
+        aromatic_flag = next(d for d in self.__chem_comp_bond_dict if d[0] == '_chem_comp_bond.pdbx_aromatic_flag')
+        self.__ccb_aromatic_flag = self.__chem_comp_bond_dict.index(aromatic_flag)
+
     def setSource(self, fPath):
         """ Set primary source file path.
         """
@@ -1276,6 +1345,21 @@ class NmrDpUtility(object):
         self.bmrb_cs_stat = BMRBChemShiftStat()
 
         return self.bmrb_cs_stat.isOk()
+
+    def __updateChemCompDict(self, comp_id):
+        """ Update CCD information for a given comp_id.
+        """
+
+        if comp_id != self.__last_comp_id:
+            self.__last_comp_id_test = self.__ccR.setCompId(comp_id)
+            self.__last_comp_id = comp_id
+
+            if self.__last_comp_id_test:
+                self.__last_chem_comp_dict = self.__ccR.getChemCompDict()
+                self.__last_chem_comp_atoms = self.__ccR.getAtoms()
+                self.__last_chem_comp_bonds = self.__ccR.getBonds()
+
+        return self.__last_comp_id_test
 
     def __validateInputSource(self):
         """ Validate input source using NEFTranslator.
@@ -2261,7 +2345,26 @@ class NmrDpUtility(object):
 
                         # non-standard residue
                         else:
-                            pass
+                            self.__updateChemCompDict(comp_id)
+
+                            if self.__last_comp_id_test: # has CCD
+
+                                ref_atom_ids = [a[self.__cca_atom_id] for a in self.__last_chem_comp_atoms if a[self.__cca_leaving_atom_flag] != 'Y']
+                                unk_atom_ids = []
+
+                                for atom_id in atom_ids:
+
+                                    if not atom_id in ref_atom_ids:
+                                        unk_atom_ids.append(atom_id)
+
+                                if len(unk_atom_ids) > 0:
+                                    cc_name = self.__last_chem_comp_dict['_chem_comp.name']
+
+                                    self.report.warning.addDescription('atom_nomenclature_mismatch', "Unknown atom_id %s (comp_id %s, comp_name %s) exist in %s saveframe." % (unk_atom_ids, comp_id, cc_name, sf_framecode))
+                                    self.report.setWarning()
+
+                            else:
+                                pass
 
                     if file_type == 'nmr-star':
                         auth_pairs = self.nef_translator.get_star_auth_comp_atom_pair(sf_data, lp_category)[0]

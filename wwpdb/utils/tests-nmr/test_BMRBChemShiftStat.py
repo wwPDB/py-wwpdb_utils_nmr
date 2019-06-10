@@ -27,6 +27,16 @@ class TestBMRBChemShiftStat(unittest.TestCase):
         #self.bmrb_cs_stat.printStat(self.bmrb_cs_stat.others)
         self.assertEqual(self.bmrb_cs_stat.isOk(), True)
 
+    def test_poly_type(self):
+        self.assertEqual(self.bmrb_cs_stat.getTypeOfCompId('ALA')[0], True)
+        self.assertEqual(self.bmrb_cs_stat.getTypeOfCompId('GLY')[0], True)
+        self.assertEqual(self.bmrb_cs_stat.getTypeOfCompId('PRO')[0], True)
+        self.assertEqual(self.bmrb_cs_stat.getTypeOfCompId('PTR')[0], True)
+        self.assertEqual(self.bmrb_cs_stat.getTypeOfCompId('DA')[1], True)
+        self.assertEqual(self.bmrb_cs_stat.getTypeOfCompId('5MC')[1], True)
+        self.assertEqual(self.bmrb_cs_stat.getTypeOfCompId('NAG')[2], True)
+        self.assertEqual(self.bmrb_cs_stat.getTypeOfCompId('GLC')[2], True)
+
     def test_bb_atoms(self):
         self.assertEqual(self.bmrb_cs_stat.getBackBoneAtoms('GLY'), ['C', 'CA', 'H', 'HA2', 'HA3', 'N'])
         self.assertEqual(self.bmrb_cs_stat.getBackBoneAtoms('PRO'), ['C', 'CA', 'CB', 'HA', 'N'])
@@ -41,11 +51,11 @@ class TestBMRBChemShiftStat(unittest.TestCase):
         self.assertEqual(self.bmrb_cs_stat.getBackBoneAtoms('A', excl_minor_atom=True), ["C1'", "C2'", "C3'", "C4'", "C5'", "H1'", "H2'", "H3'", "H4'", "H5'", "H5''"])
         self.assertEqual(self.bmrb_cs_stat.getBackBoneAtoms('5MC'), [])
         self.assertEqual(self.bmrb_cs_stat.getBackBoneAtoms('5MC', polypeptide_like=True), [])
-        self.assertEqual(self.bmrb_cs_stat.getBackBoneAtoms('5MC', polynucleotide_like=True), ["H1'", "H2'", "H2''", "H3'", "H4'", "H5'", "H5''", 'P'])
+        self.assertEqual(self.bmrb_cs_stat.getBackBoneAtoms('5MC', polynucleotide_like=True), ["H1'", "H2'", "H3'", "H4'", "H5'", "H5''", 'P'])
 
     def test_arom_atoms(self):
         self.assertEqual(self.bmrb_cs_stat.getAromaticAtoms('ALA'), [])
-        self.assertEqual(self.bmrb_cs_stat.getAromaticAtoms('PRO'), ['N'])
+        self.assertEqual(self.bmrb_cs_stat.getAromaticAtoms('PRO'), [])
         self.assertEqual(self.bmrb_cs_stat.getAromaticAtoms('HIS'), ['CD2', 'CE1', 'CG', 'HD1', 'HD2', 'HE1', 'HE2', 'ND1', 'NE2'])
         self.assertEqual(self.bmrb_cs_stat.getAromaticAtoms('PHE'), ['CD1', 'CD2', 'CE1', 'CE2', 'CG', 'CZ', 'HD1', 'HD2', 'HE1', 'HE2', 'HZ'])
         self.assertEqual(self.bmrb_cs_stat.getAromaticAtoms('TYR'), ['CD1', 'CD2', 'CE1', 'CE2', 'CG', 'CZ', 'HD1', 'HD2', 'HE1', 'HE2'])

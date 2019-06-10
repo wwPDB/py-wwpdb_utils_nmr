@@ -4,7 +4,6 @@
 #
 # Updates:
 ##
-from __builtin__ import False
 """ Wrapper class for data processing for NMR unified data.
 """
 import sys
@@ -3281,16 +3280,12 @@ class NmrDpUtility(object):
                     # non-standard residue
                     if one_letter_code == 'X':
 
-                        polypeptide_like = False
-                        polynucleotide_like = False
-
                         neighbor_comp_ids = set([j[item_names['comp_id']] for j in lp_data if j[item_names['chain_id']] == chain_id and abs(j[item_names['seq_id']] - seq_id) < 3 and j[item_names['seq_id']] != seq_id])
 
-                        for comp_id2 in neighbor_comp_ids:
-                            polypepdide, polynucleotide = self.bmrb_cs_stat.getPolymerTypeOfCompId(comp_id2)
+                        polypeptide_like = False
 
-                        polypeptide_like |= polypepdide
-                        polynucleotide_like |= polynucleotide
+                        for comp_id2 in neighbor_comp_ids:
+                            polypeptide_like |= self.bmrb_cs_stat.getTypeOfCompId(comp_id2)[0]
 
                         for cs_stat in self.bmrb_cs_stat.get(comp_id):
 
@@ -3336,7 +3331,7 @@ class NmrDpUtility(object):
 
                                 z_score = (value - avg_value) / std_value
 
-                                if self.bmrb_cs_stat.hasEnoughCSStat(comp_id, polypeptide_like, polynucleotide_like):
+                                if self.bmrb_cs_stat.hasEnoughStat(comp_id, polypeptide_like):
                                     tolerance = std_value
 
                                     if value < min_value - tolerance or value > max_value + tolerance:
@@ -3372,7 +3367,7 @@ class NmrDpUtility(object):
                                         if self.__verbose:
                                             self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ Warning  - %s" % warn)
 
-                                    elif not cs_stat['major']:
+                                    elif not cs_stat['primary']:
 
                                         warn = 'Check row of chain_id %s, seq_id %s, comp_id %s, atom_id %s. %s %s is remarkable assignment (appearance rate %s) in %s loop category, %s saveframe.' %\
                                                (chain_id, seq_id, comp_id, atom_id, value_name, value, cs_stat['norm_freq'], lp_category, sf_framecode)
@@ -3505,7 +3500,7 @@ class NmrDpUtility(object):
                                     if self.__verbose:
                                         self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ Warning  - %s" % warn)
 
-                                elif not cs_stat['major']:
+                                elif not cs_stat['primary']:
 
                                     warn = 'Check row of chain_id %s, seq_id %s, comp_id %s, atom_id %s. %s %s is remarkable assignment (appearance rate %s) in %s loop category, %s saveframe.' %\
                                            (chain_id, seq_id, comp_id, atom_name, value_name, value, cs_stat['norm_freq'], lp_category, sf_framecode)

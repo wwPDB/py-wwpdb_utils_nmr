@@ -1,6 +1,6 @@
 ##
 # File: BMRBChemShiftStat.py
-# Date: 10-Jun-2019
+# Date: 11-Jun-2019
 #
 # Updates:
 ##
@@ -36,10 +36,14 @@ class BMRBChemShiftStat:
         self.rna_full = []
 
         self.others = []
+        self.extras = []
 
         self.__aa_comp_ids = set()
         self.__dna_comp_ids = set()
         self.__rna_comp_ids = set()
+        self.__oth_comp_ids = set()
+        self.__ext_comp_ids = set()
+
         self.__std_comp_ids = set()
         self.__all_comp_ids = set()
 
@@ -97,6 +101,9 @@ class BMRBChemShiftStat:
         leaving_atom_flag = next(d for d in self.__chem_comp_atom_dict if d[0] == '_chem_comp_atom.pdbx_leaving_atom_flag')
         self.__cca_leaving_atom_flag = self.__chem_comp_atom_dict.index(leaving_atom_flag)
 
+        type_symbol = next(d for d in self.__chem_comp_atom_dict if d[0] == '_chem_comp_atom.type_symbol')
+        self.__cca_type_symbol = self.__chem_comp_atom_dict.index(type_symbol)
+
         # taken from wwpdb.apps.ccmodule.io.ChemCompIo
         self.__chem_comp_bond_dict = [
                 ('_chem_comp_bond.comp_id','%s','str',''),
@@ -136,6 +143,7 @@ class BMRBChemShiftStat:
 
         if comp_id in self.__aa_comp_ids:
             return True, False, False
+
         elif comp_id in self.__dna_comp_ids or comp_id in self.__rna_comp_ids:
             return False, True, False
 
@@ -157,7 +165,7 @@ class BMRBChemShiftStat:
                 nucleotide_like > peptide_like and nucleotide_like > carbohydrate_like,\
                 carbohydrate_like > peptide_like and carbohydrate_like > nucleotide_like
 
-    def hasEnoughStat(self, comp_id, primary=False):
+    def hasEnoughStat(self, comp_id, primary=True):
         """ Return whether a given comp_id has enough chemical shift statistics.
         """
 
@@ -172,11 +180,11 @@ class BMRBChemShiftStat:
             if primary:
                 next(i for i in self.others if i['comp_id'] == comp_id and i['primary'])
             else:
-                next(i for i in self.others if i['comp_id'] == comp_id and i['secondary'])
+                next(i for i in self.others if i['comp_id'] == comp_id and 'secondary' in i and i['secondary'])
 
             return True
 
-        except:
+        except StopIteration:
             return False
 
     def get(self, comp_id, paramagnetic=False):
@@ -207,8 +215,43 @@ class BMRBChemShiftStat:
             else:
                 return [i for i in self.rna_filt if i['comp_id'] == comp_id]
 
-        else:
+        return [i for i in self.others if i['comp_id'] == comp_id]
+
+    def __get(self, comp_id, paramagnetic=False):
+        """ Return atom list for a given comp_id.
+        """
+
+        if not comp_id in self.__all_comp_ids:
+            self.appendExtraFromCcd(comp_id)
+
+        if comp_id in self.__aa_comp_ids:
+
+            if paramagnetic:
+                return [i for i in self.aa_full if i['comp_id'] == comp_id]
+            else:
+                return [i for i in self.aa_filt if i['comp_id'] == comp_id]
+
+        elif comp_id in self.__dna_comp_ids:
+
+            if paramagnetic:
+                return [i for i in self.dna_full if i['comp_id'] == comp_id]
+            else:
+                return [i for i in self.dna_filt if i['comp_id'] == comp_id]
+
+        elif comp_id in self.__rna_comp_ids:
+
+            if paramagnetic:
+                return [i for i in self.rna_full if i['comp_id'] == comp_id]
+            else:
+                return [i for i in self.rna_filt if i['comp_id'] == comp_id]
+
+        elif comp_id in self.__oth_comp_ids:
             return [i for i in self.others if i['comp_id'] == comp_id]
+
+        elif comp_id in self.__ext_comp_ids:
+            return [i for i in self.extras if i['comp_id'] == comp_id]
+
+        return []
 
     def getMaxAmbigCodeWoSetId(self, comp_id, atom_id):
         """ Return maximum ambiguity code of a given atom that does not require declaration of ambiguity set ID.
@@ -216,11 +259,11 @@ class BMRBChemShiftStat:
         """
 
         if not comp_id in self.__all_comp_ids:
-            return 0
+            self.appendExtraFromCcd(comp_id)
 
         try:
 
-            d = next(i['desc'] for i in self.get(comp_id) if i['atom_id'] == atom_id)
+            d = next(i['desc'] for i in self.__get(comp_id) if i['atom_id'] == atom_id)
 
             if 'geminal' in d:
                 return 2
@@ -237,9 +280,9 @@ class BMRBChemShiftStat:
         """
 
         if not comp_id in self.__all_comp_ids:
-            return None
+            self.appendExtraFromCcd(comp_id)
 
-        cs_stat = self.get(comp_id)
+        cs_stat = self.__get(comp_id)
 
         try:
 
@@ -260,9 +303,12 @@ class BMRBChemShiftStat:
         """
 
         if not comp_id in self.__all_comp_ids:
-            return []
+            self.appendExtraFromCcd(comp_id)
 
-        cs_stat = self.get(comp_id)
+        if polypeptide_like == False and polynucleotide_like == False and carbohydrates_like == False:
+            polypeptide_like, polynucleotide_like, carbohydrates_like = self.getTypeOfCompId(comp_id)
+
+        cs_stat = self.__get(comp_id)
 
         if comp_id in self.__aa_comp_ids:
             return [i['atom_id'] for i in cs_stat if i['atom_id'] in ['C', 'CA', 'CB', 'H', 'HA', 'HA2', 'HA3', 'N'] and
@@ -295,9 +341,9 @@ class BMRBChemShiftStat:
         """
 
         if not comp_id in self.__all_comp_ids:
-            return []
+            self.appendExtraFromCcd(comp_id)
 
-        cs_stat = self.get(comp_id)
+        cs_stat = self.__get(comp_id)
 
         if comp_id in self.__std_comp_ids or primary:
             return [i['atom_id'] for i in cs_stat if 'aroma' in i['desc'] and
@@ -311,9 +357,9 @@ class BMRBChemShiftStat:
         """
 
         if not comp_id in self.__all_comp_ids:
-            return []
+            self.appendExtraFromCcd(comp_id)
 
-        cs_stat = self.get(comp_id)
+        cs_stat = self.__get(comp_id)
 
         if comp_id in self.__std_comp_ids or primary:
             return [i['atom_id'] for i in cs_stat if 'methyl' in i['desc'] and
@@ -327,16 +373,20 @@ class BMRBChemShiftStat:
         """
 
         if not comp_id in self.__all_comp_ids:
-            return []
+            self.appendExtraFromCcd(comp_id)
 
-        bb_atoms = self.getBackBoneAtoms(comp_id, False, polypeptide_like, polynucleotide_like, carbohydrates_like)
+        if polypeptide_like == False and polynucleotide_like == False and carbohydrates_like == False:
+            polypeptide_like, polynucleotide_like, carbohydrates_like = self.getTypeOfCompId(comp_id)
+
+        bb_atoms = self.getBackBoneAtoms(comp_id, excl_minor_atom, polypeptide_like, polynucleotide_like, carbohydrates_like)
 
         try:
-            bb_atoms.remove('CB')
+            if polypeptide_like:
+                bb_atoms.remove('CB')
         except ValueError:
             pass
 
-        cs_stat = self.get(comp_id)
+        cs_stat = self.__get(comp_id)
 
         if comp_id in self.__std_comp_ids or polypeptide_like:
             return [i['atom_id'] for i in cs_stat if not i['atom_id'] in bb_atoms and
@@ -469,6 +519,43 @@ class BMRBChemShiftStat:
 
         return list
 
+    def appendExtraFromCcd(self, comp_id):
+        """ Append atom list as extra residue for a given comp_id.
+        """
+
+        if comp_id in self.__all_comp_ids or comp_id in self.__ext_comp_ids or not self.__updateChemCompDict(comp_id):
+            return
+
+        list = []
+
+        for i in self.__last_chem_comp_atoms:
+
+            if i[self.__cca_leaving_atom_flag] == 'Y' or not i[self.__cca_type_symbol] in ['H', 'C', 'N', 'P']:
+                continue
+
+            _row = {}
+            _row['comp_id'] = comp_id
+            _row['atom_id'] = _atom_id + str(i)
+            _row['desc'] = 'isolated'
+            _row['primary'] = False
+            _row['norm_freq'] = None
+
+            list.append(_row)
+
+        self.__ext_comp_ids.add(comp_id)
+
+        if len(list) == 0:
+            return
+
+        self.__detectMethylProtonFromAtomNomenclature(list)
+        self.__detectGeminalProtonFromAtomNomenclature(list)
+
+        self.__detectGeminalCarbon(list)
+        self.__detectGeminalNitrogen(list)
+
+        for i in list:
+            self.extra.append(i)
+
     def __updateChemCompDict(self, comp_id):
         """ Update CCD information for a given comp_id.
         """
@@ -491,7 +578,7 @@ class BMRBChemShiftStat:
         try:
             next(a[self.__cca_atom_id] for a in self.__last_chem_comp_atoms if a[self.__cca_atom_id] == atom_id and a[self.__cca_leaving_atom_flag] != 'Y')
             return True
-        except:
+        except StopIteration:
             if self.__verbose:
                 self.__lfh.write("+BMRBChemShiftStat.__checkAtomNomenclature() ++ Error  - Invalid atom nomenclature %s, comp_id %s\n" % (atom_id, self.__last_comp_id))
             return False
@@ -685,7 +772,7 @@ class BMRBChemShiftStat:
                             atom_id = 'N' + i['atom_id'][1:]
                             try:
                                 next(n for n in n_list if n['atom_id'] == atom_id)
-                            except:
+                            except StopIteration:
                                 i['desc'] = 'aroma' if h in cn_common and i['avg'] > 5.0 else 'geminal'
 
                 h_common = set(h_2) & set(h_3) - set(h_1)
@@ -698,7 +785,7 @@ class BMRBChemShiftStat:
                             atom_id = 'N' + i['atom_id'][1:]
                             try:
                                 next(n for n in n_list if n['atom_id'] == atom_id)
-                            except:
+                            except StopIteration:
                                 i['desc'] = 'aroma' if h in cn_common and i['avg'] > 5.0 else 'geminal'
 
                 h_list = [i for i in _list if i['atom_id'].startswith('H') and i['desc'] == 'isolated']
@@ -729,7 +816,7 @@ class BMRBChemShiftStat:
                             atom_id = 'N' + i['atom_id'][1:]
                             try:
                                 next(n for n in n_list if n['atom_id'] == atom_id)
-                            except:
+                            except StopIteration:
                                 i['desc'] = 'geminal'
 
                 h_list = [i for i in _list if i['atom_id'].startswith('H') and i['desc'] == 'aroma']
@@ -986,4 +1073,6 @@ class BMRBChemShiftStat:
         self.__std_comp_ids = copy.copy(self.__all_comp_ids)
 
         for i in self.others:
-            self.__all_comp_ids.add(i['comp_id'])
+            self.__oth_comp_ids.add(i['comp_id'])
+
+        self.__all_comp_ids |= self.__oth_comp_ids

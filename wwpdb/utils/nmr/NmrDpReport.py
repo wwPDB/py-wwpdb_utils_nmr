@@ -1,6 +1,6 @@
 ##
 # File: NmrDpReport.py
-# Date: 06-Jun-2019
+# Date: 11-Jun-2019
 #
 # Updates:
 ##
@@ -176,6 +176,8 @@ class NmrDpReportError:
 
         self.__contents = {item:None for item in self.items}
 
+        self.__contents['total'] = 0
+
     def addDescription(self, item, value):
 
         if item in self.items:
@@ -183,6 +185,8 @@ class NmrDpReportError:
                 self.__contents[item] = value
             else:
                 self.__contents[item] += '\n' + value
+
+            self.__contents['total'] += 1
 
         else:
             logging.error('+NmrDpReportError.addDescription() ++ Error  - Unknown item type %s' % item)
@@ -202,6 +206,8 @@ class NmrDpReportWarning:
 
         self.__contents = {item:None for item in self.items}
 
+        self.__contents['total'] = 0
+
     def addDescription(self, item, value):
 
         if item in self.items:
@@ -209,6 +215,8 @@ class NmrDpReportWarning:
                 self.__contents[item] = value
             else:
                 self.__contents[item] += '\n' + value
+
+            self.__contents['total'] += 1
 
         else:
             logging.error('+NmrDpReportWarning.addDescription() ++ Error  - Unknown item type %s' % item)

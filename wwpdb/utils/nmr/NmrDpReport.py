@@ -8,16 +8,18 @@
 """
 import logging
 import json
+import types
 
 class NmrDpReport:
     """ Wrapper class for data processing report of NMR unified data.
     """
 
     def __init__(self):
-        self.__complete = False
+        self.__immutable = False
 
         self.__report = {'information': {'input_sources': [],
                                          'sequence_alignments': [],
+                                         'diamagnetic': True,
                                          'status': 'OK'},
                          'error': None,
                          'warning': None }
@@ -38,6 +40,9 @@ class NmrDpReport:
     def isError(self):
         return self.__report['information']['status'] == 'ERROR'
 
+    def isDiamagnetic(self):
+        return self.__report['information']['diamagnetic']
+
     def __setStatus(self, status):
 
         if status in self.status_codes:
@@ -48,36 +53,46 @@ class NmrDpReport:
 
     def setError(self):
 
-        if not self.__complete:
+        if not self.__immutable:
             self.__report['error'] = self.error.get()
 
             self.__setStatus('ERROR')
 
         else:
-            logging.warning('+NmrDpReport.setError() ++ Warning  - No effects on NMR data processing report because the report is complete')
-            raise UserWarning('+NmrDpReport.setError() ++ Warning  - No effects on NMR data processing report because the report is complete')
+            logging.warning('+NmrDpReport.setError() ++ Warning  - No effects on NMR data processing report because the report is immutable')
+            raise UserWarning('+NmrDpReport.setError() ++ Warning  - No effects on NMR data processing report because the report is immutable')
 
     def setWarning(self):
 
-        if not self.__complete:
+        if not self.__immutable:
             self.__report['warning'] = self.warning.get()
 
             if not self.isError():
                 self.__setStatus('WARNING')
 
         else:
-            logging.warning('+NmrDpReport.setWarning() ++ Warning  - No effects on NMR data processing report because the report is complete')
-            raise UserWarning('+NmrDpReport.setWarning() ++ Warning  - No effects on NMR data processing report because the report is complete')
+            logging.warning('+NmrDpReport.setWarning() ++ Warning  - No effects on NMR data processing report because the report is immutable')
+            raise UserWarning('+NmrDpReport.setWarning() ++ Warning  - No effects on NMR data processing report because the report is immutable')
+
+    def setDiamagnetic(self, diamagnetic):
+
+        if type(diamagnetic) is types.BooleanType:
+            self.__report['information']['diamagnetic'] = diamagnetic
+
+        else:
+            logging.warning('+NmrDpReport.setDiamagnetic() ++ Warning  - No effects on NMR data processing report because input variable is not boolean type')
+            raise UserDiamagnetic('+NmrDpReport.setWarning() ++ Warning  - No effects on NMR data processing report because input variable is not boolean type')
+
+    def setMutable(self):
+        self.__immutable = False
 
     def get(self):
 
-        if not self.__complete:
+        if not self.__immutable:
             self.__report['information']['input_sources'] = [input_source.get() for input_source in self.input_sources]
             self.__report['information']['sequence_alignments'] = self.sequence_alignment.get()
 
-            self.__complete = True
-
-            #logging.info('+NmrDpReport.get() ++ Info  - NMR data processing report is complete')
+            self.__immutable = True
 
         return self.__report
 

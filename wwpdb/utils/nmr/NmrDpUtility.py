@@ -15,6 +15,7 @@ import json
 import itertools
 import copy
 import collections
+import types
 
 from wwpdb.utils.nmr.NEFTranslator.NEFTranslator import NEFTranslator
 from wwpdb.utils.nmr.NmrDpReport import NmrDpReport
@@ -22,6 +23,7 @@ from wwpdb.utils.align.alignlib import PairwiseAlign
 from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
 from wwpdb.utils.config.ConfigInfo import ConfigInfo, getSiteId
 from wwpdb.apps.ccmodule.io.ChemCompIo import ChemCompReader
+from wwpdb.utils.nmr.CifReader import CifReader
 
 class NmrDpUtility(object):
     """ Wrapper class for data processing for NMR unified data.
@@ -46,38 +48,37 @@ class NmrDpUtility(object):
         self.__outputParamDict = {}
 
         # list of known workflow operations
-        self.__workFlowOps = ('nmr-nef-parser-check','nmr-star-parser-check',
-                              'nmr-nef-consistency-check','nmr-star-consistency-check',
-                              'nmr-nef2star-deposit','nmr-star2star-deposit')
+        self.__workFlowOps = ('nmr-nef-consistency-check', 'nmr-str-consistency-check',
+                              'nmr-nef2str-deposit', 'nmr-str2str-deposit')
 
         # dictionary of processing tasks of each workflow operation
-        self.__procTasksDict = {'nmr-parser-check':  [self.__initializeDpReport,
-                                                      self.__instanceNEFTranslator,
-                                                      self.__instanceBMRBChemShiftStat,
-                                                      self.__validateInputSource,
-                                                      self.__detectContentSubType,
-                                                      self.__extractPolymerSequence,
-                                                      self.__extractPolymerSequenceInLoop,
-                                                      self.__testSequenceConsistency,
-                                                      self.__extractCommonPolymerSequence,
-                                                      self.__extractNonStandardResidue,
-                                                      self.__appendPolymerSequenceAlignment,
-                                                      self.__validteAtomIdOfStandardResidue,
-                                                      self.__validateAtomTypeOfCSLoop,
-                                                      self.__validateAmbigCodeOfCSLoop,
-                                                      self.__testIndexConsistency,
-                                                      self.__testDataConsistencyInLoop,
-                                                      self.__testDataConsistencyInAuxLoop,
-                                                      self.__testSfTagConsistency,
-                                                      self.__validateCSValue,
-                                                      self.__testCSValueConsistencyInPkLoop,
-                                                      self.__calculateStatsOfExptlData
-                                                      ]
+        self.__procTasksDict = {'nmr-consistency-check':
+                                [self.__initializeDpReport,
+                                 self.__instanceNEFTranslator,
+                                 self.__instanceBMRBChemShiftStat,
+                                 self.__validateInputSource,
+                                 self.__detectContentSubType,
+                                 self.__extractPolymerSequence,
+                                 self.__extractPolymerSequenceInLoop,
+                                 self.__testSequenceConsistency,
+                                 self.__extractCommonPolymerSequence,
+                                 self.__extractNonStandardResidue,
+                                 self.__appendPolymerSequenceAlignment,
+                                 self.__validteAtomIdOfStandardResidue,
+                                 self.__validateAtomTypeOfCSLoop,
+                                 self.__validateAmbigCodeOfCSLoop,
+                                 self.__testIndexConsistency,
+                                 self.__testDataConsistencyInLoop,
+                                 self.__testDataConsistencyInAuxLoop,
+                                 self.__testSfTagConsistency,
+                                 self.__validateCSValue,
+                                 self.__testCSValueConsistencyInPkLoop,
+                                 self.__calculateStatsOfExptlData,
+                                 self.__appendCoordinate
+                                 ]
                                 }
         """
-                                'nmr-consistency-check': [self.__appendInputResource,
-                                                          self.__retrieveDpReport,
-                                                          self.__extractCoordPolymerSequence,
+                                'nmr-consistency-check': [self.__extractCoordPolymerSequence,
                                                           self.__alignCoordPolymerSequence,
                                                           self.__testCoordSequenceConsistency,
                                                           self.__testCoordAtomNomeclature],
@@ -119,7 +120,14 @@ class NmrDpUtility(object):
                                    'unknown': 'unknown'
                                    }
 
-        # atom isotopes
+        # paramagnetic elements, except for Oxygen
+        self.paramag_elems = {'LI', 'O', 'NA', 'MG', 'AL', 'K', 'CA', 'SC', 'TI', 'V', 'MN', 'RB', 'SR', 'Y', 'ZR', 'NB', 'MO', 'TC', 'RU', 'RH', 'PD', 'SN', 'CS', 'BA', 'LA', 'CE', 'PR', 'ND', 'PM', 'SM', 'EU', 'GD', 'TB', 'DY', 'HO', 'ER', 'TM', 'YB', 'LU', 'HF', 'TA', 'W', 'RE', 'OS', 'IR', 'PT', 'FR', 'RA', 'AC'}\
+                                - {'O'}
+
+        # ferromagnetic elements
+        self.ferromag_elems = {'CR', 'FE', 'CO', 'NI'}
+
+        # isotope numbers of NMR observable atoms
         self.atom_isotopes = {'H': {1, 2, 3},
                               'C': {13},
                               'N': {15, 14},
@@ -464,7 +472,7 @@ class NmrDpUtility(object):
                                                      {'name': 'volume', 'type':'float', 'mandatory': False, 'group-mandatory': True,
                                                       'group': {'member-with': ['height'],
                                                                 'coexist-with': None}},
-                                                     {'name': 'volume_uncertainty', 'type':'positive-float','mandatory': False},
+                                                     {'name': 'volume_uncertainty', 'type':'positive-float', 'mandatory': False},
                                                      {'name': 'height', 'type':'float', 'mandatory': False, 'group-mandatory': True,
                                                       'group': {'member-with': ['volume'],
                                                                 'coexist-with': None}},
@@ -1190,6 +1198,9 @@ class NmrDpUtility(object):
         aromatic_flag = next(d for d in self.__chem_comp_bond_dict if d[0] == '_chem_comp_bond.pdbx_aromatic_flag')
         self.__ccb_aromatic_flag = self.__chem_comp_bond_dict.index(aromatic_flag)
 
+        # CIF reader
+        self.__cR = CifReader(self.__verbose, self.__lfh)
+
     def setSource(self, fPath):
         """ Set primary source file path.
         """
@@ -1279,6 +1290,16 @@ class NmrDpUtility(object):
 
         self.__op = op
 
+        if 'consistency-check' in op:
+
+            for task in self.__procTasksDict['nmr-consistency-check']:
+
+                if self.__verbose:
+                    self.__lfh.write("+NmrDpUtility.op() starting op %s - task %s\n" % (op, task.__name__))
+
+                if not task():
+                    pass
+
         # run workflow operation specific tasks
         if op in self.__procTasksDict:
 
@@ -1290,18 +1311,7 @@ class NmrDpUtility(object):
                 if not task():
                     pass
 
-        # run general processing tasks
-        if 'parser-check' in op:
-
-            for task in self.__procTasksDict['nmr-parser-check']:
-
-                if self.__verbose:
-                    self.__lfh.write("+NmrDpUtility.op() starting op %s - task %s\n" % (op, task.__name__))
-
-                if not task():
-                    pass
-
-        elif 'consistency-check' in op:
+        if 'consistency-check' in op:
 
             for task in self.__procTasksDict['nmr-consistency-check']:
 
@@ -1326,9 +1336,44 @@ class NmrDpUtility(object):
 
         input_source.setItemValue('file_name', os.path.basename(self.__srcPath))
         input_source.setItemValue('file_type', 'nef' if 'nef' in self.__op else 'nmr-star')
-        input_source.setItemValue('content_type','nmr-unified-data')
+        input_source.setItemValue('content_type', 'nmr-unified-data')
+
+        self.__testDiamagnetism()
 
         return input_source is not None
+
+    def __testDiamagnetism(self):
+        """ Test diamagnetism of molecular assembly.
+        """
+
+        if 'coordinate_file_path' in self.__inputParamDict:
+
+            try:
+
+                if not self.__cR.setFilePath(file_path) or not self.__cR.parse():
+                    return
+
+                comp_comp_list = cR.getDictList('chem_comp')
+
+                non_std_comp_ids = [i['id'] for i in comp_comp_list if i['mon_nstd_flag'] == 'n']
+
+                if len(non_std_comp_ids) == 0:
+                    return
+
+                for comp_id in non_std_comp_ids:
+
+                    self.__updateChemCompDict(comp_id)
+
+                    if self.__last_comp_id_test: # matches with comp_id in CCD
+                        ref_elems = set([a[self.__cca_type_symbol] for a in self.__last_chem_comp_atoms if a[self.__cca_leaving_atom_flag] != 'Y'])
+
+                        for elem in ref_elems:
+                            if elem in self.paramag_elems or elem in self.ferromag_elems:
+                                self.report.setDiamagnetic(False)
+                                break
+
+            except:
+                pass
 
     def __instanceNEFTranslator(self):
         """ Instance NEFTanslator.
@@ -2370,7 +2415,7 @@ class NmrDpUtility(object):
                         else:
                             self.__updateChemCompDict(comp_id)
 
-                            if self.__last_comp_id_test: # matches with CCD
+                            if self.__last_comp_id_test: # matches with comp_id in CCD
 
                                 ref_atom_ids = [a[self.__cca_atom_id] for a in self.__last_chem_comp_atoms if a[self.__cca_leaving_atom_flag] != 'Y']
                                 unk_atom_ids = []
@@ -2385,6 +2430,13 @@ class NmrDpUtility(object):
 
                                     self.report.warning.addDescription('atom_nomenclature_mismatch', "Unknown atom_id %s (comp_id %s, comp_name %s) exist in %s saveframe." % (unk_atom_ids, comp_id, cc_name, sf_framecode))
                                     self.report.setWarning()
+
+                                ref_elems = set([a[self.__cca_type_symbol] for a in self.__last_chem_comp_atoms if a[self.__cca_leaving_atom_flag] != 'Y'])
+
+                                for elem in ref_elems:
+                                    if elem in self.paramag_elems or elem in self.ferromag_elems:
+                                        self.report.setDiagmagnetic(False)
+                                        break
 
                             else:
                                 pass
@@ -2891,6 +2943,9 @@ class NmrDpUtility(object):
 
         file_type = input_source_dic['file_type']
 
+        if input_source_dic['content_subtype'] is None:
+            return True
+
         for content_subtype in input_source_dic['content_subtype'].keys():
 
             sf_category = self.sf_categories[file_type][content_subtype]
@@ -3167,6 +3222,9 @@ class NmrDpUtility(object):
 
         file_type = input_source_dic['file_type']
 
+        if input_source_dic['content_subtype'] is None:
+            return True
+
         for content_subtype in input_source_dic['content_subtype'].keys():
 
             sf_category = self.sf_categories[file_type][content_subtype]
@@ -3349,6 +3407,9 @@ class NmrDpUtility(object):
         file_name = input_source_dic['file_name']
         file_type = input_source_dic['file_type']
 
+        if input_source_dic['content_subtype'] is None:
+            return True
+
         content_subtype = 'chem_shift'
 
         if not content_subtype in input_source_dic['content_subtype'].keys():
@@ -3362,8 +3423,6 @@ class NmrDpUtility(object):
                 self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ Error  - %s\n" % err)
 
             return False
-
-        paramagnetic = 'paramgnetic' in self.__inputParamDict and self.__inputParamDict['paramagnetic']
 
         sf_category = self.sf_categories[file_type][content_subtype]
         lp_category = self.lp_categories[file_type][content_subtype]
@@ -3541,7 +3600,7 @@ class NmrDpUtility(object):
                             atom_id_ = atom_id
                             atom_name = atom_id
 
-                        for cs_stat in self.bmrb_cs_stat.get(comp_id, paramagnetic):
+                        for cs_stat in self.bmrb_cs_stat.get(comp_id, self.report.isDiamagnetic()):
 
                             if cs_stat['atom_id'] == atom_id_:
                                 min_value = cs_stat['min']
@@ -3874,6 +3933,9 @@ class NmrDpUtility(object):
         file_name = input_source_dic['file_name']
         file_type = input_source_dic['file_type']
 
+        if input_source_dic['content_subtype'] is None:
+            return True
+
         content_subtype = 'spectral_peak'
 
         if not content_subtype in input_source_dic['content_subtype'].keys():
@@ -4191,6 +4253,9 @@ class NmrDpUtility(object):
 
         file_type = input_source_dic['file_type']
 
+        if input_source_dic['content_subtype'] is None:
+            return True
+
         stats = {}
 
         for content_subtype in input_source_dic['content_subtype'].keys():
@@ -4252,6 +4317,68 @@ class NmrDpUtility(object):
         input_source.setItemValue('stats_of_exptl_data', stats)
 
         return True
+
+    def __appendCoordinate(self):
+        """ Append coordinate file as secondary input resource.
+        """
+
+        file_type = 'pdbx'
+
+        if 'coordinate_file_path' in self.__inputParamDict:
+
+            file_path = self.__inputParamDict['coordinate_file_path']
+            file_name = os.path.basename(file_path)
+
+            try:
+
+                if not self.__cR.setFilePath(file_path):
+
+                    err = "No such %s file as %s." % (file_name, self.readable_file_type[file_type])
+
+                    self.report.error.addDescription('internal_error', "+NmrDpUtility.__appendCoordinate() ++ Error  - %s" % err)
+                    self.report.setError()
+
+                    if self.__verbose:
+                        self.__lfh.write("+NmrDpUtility.__appendCoordinate() ++ Error  - %s\n" % err)
+
+                    return False
+
+                if not self.__cR.parse():
+
+                    err = "%s is invalid %s file." % (file_name, self.readable_file_type[file_type])
+
+                    self.report.error.addDescription('internal_error', "+NmrDpUtility.__appendCoordinate() ++ Error  - %s" % err)
+                    self.report.setError()
+
+                    if self.__verbose:
+                        self.__lfh.write("+NmrDpUtility.__appendCoordinate() ++ Error  - %s\n" % err)
+
+                    return False
+
+                self.report.addInputSource()
+
+                input_source = self.report.input_sources[-1]
+
+                input_source.setItemValue('file_name', file_name)
+                input_source.setItemValue('file_type', file_type)
+                input_source.setItemValue('content_type', 'model')
+
+                return True
+
+            except:
+                return False
+
+        else:
+
+            err = "%s formatted model file is mandatory." % self.readable_file_type[file_type]
+
+            self.report.error.addDescription('internal_error', "+NmrDpUtility.__appendCoordinate() ++ Error  - %s" % err)
+            self.report.setError()
+
+            if self.__verbose:
+                self.__lfh.write("+NmrDpUtility.__appendCoordinate() ++ Error  - %s\n" % err)
+
+            return False
 
 if __name__ == '__main__':
     dp = NmrDpUtility()

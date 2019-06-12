@@ -128,7 +128,7 @@ class BMRBChemShiftStat:
         """ Return whether all BMRB chemical shift statistics are available.
         """
 
-        return len(self.aa_filt) > 0 and len(self.aa_full) > 0 and len(self.dna_filt) > 0 and len(self.dna_full) > 0 and len(self.others) > 0
+        return len(self.aa_filt) > 0 and len(self.aa_full) > 0 and len(self.dna_filt) > 0 and len(self.dna_full) > 0 and len(self.rna_filt) > 0 and len(self.rna_full) and len(self.others) > 0
 
     def hasCompId(self, comp_id):
         """ Return whether a given comp_id has BMRB chemical shift statistics.
@@ -187,7 +187,7 @@ class BMRBChemShiftStat:
         except StopIteration:
             return False
 
-    def get(self, comp_id, paramagnetic=False):
+    def get(self, comp_id, diamagnetic=True):
         """ Return BMRB chemical shift statistics for a given comp_id.
         """
 
@@ -196,28 +196,28 @@ class BMRBChemShiftStat:
 
         if comp_id in self.__aa_comp_ids:
 
-            if paramagnetic:
-                return [i for i in self.aa_full if i['comp_id'] == comp_id]
-            else:
+            if diamagnetic:
                 return [i for i in self.aa_filt if i['comp_id'] == comp_id]
+            else:
+                return [i for i in self.aa_full if i['comp_id'] == comp_id]
 
         elif comp_id in self.__dna_comp_ids:
 
-            if paramagnetic:
-                return [i for i in self.dna_full if i['comp_id'] == comp_id]
-            else:
+            if diamagnetic:
                 return [i for i in self.dna_filt if i['comp_id'] == comp_id]
+            else:
+                return [i for i in self.dna_full if i['comp_id'] == comp_id]
 
         elif comp_id in self.__rna_comp_ids:
 
-            if paramagnetic:
-                return [i for i in self.rna_full if i['comp_id'] == comp_id]
-            else:
+            if diamagnetic:
                 return [i for i in self.rna_filt if i['comp_id'] == comp_id]
+            else:
+                return [i for i in self.rna_full if i['comp_id'] == comp_id]
 
         return [i for i in self.others if i['comp_id'] == comp_id]
 
-    def __get(self, comp_id, paramagnetic=False):
+    def __get(self, comp_id, diamagnetic=True):
         """ Return atom list for a given comp_id.
         """
 
@@ -226,24 +226,24 @@ class BMRBChemShiftStat:
 
         if comp_id in self.__aa_comp_ids:
 
-            if paramagnetic:
-                return [i for i in self.aa_full if i['comp_id'] == comp_id]
-            else:
+            if diamagnetic:
                 return [i for i in self.aa_filt if i['comp_id'] == comp_id]
+            else:
+                return [i for i in self.aa_full if i['comp_id'] == comp_id]
 
         elif comp_id in self.__dna_comp_ids:
 
-            if paramagnetic:
-                return [i for i in self.dna_full if i['comp_id'] == comp_id]
-            else:
+            if diamagnetic:
                 return [i for i in self.dna_filt if i['comp_id'] == comp_id]
+            else:
+                return [i for i in self.dna_full if i['comp_id'] == comp_id]
 
         elif comp_id in self.__rna_comp_ids:
 
-            if paramagnetic:
-                return [i for i in self.rna_full if i['comp_id'] == comp_id]
-            else:
+            if diamagnetic:
                 return [i for i in self.rna_filt if i['comp_id'] == comp_id]
+            else:
+                return [i for i in self.rna_full if i['comp_id'] == comp_id]
 
         elif comp_id in self.__oth_comp_ids:
             return [i for i in self.others if i['comp_id'] == comp_id]

@@ -33,32 +33,33 @@ class TestNmrDpUtility(unittest.TestCase):
         # data directory exists
         self.assertEqual(os.path.isdir(self.data_dir_path), True)
 
-    def test_nmr_nef_parser_check(self):
+    def test_nmr_nef_consistency_check(self):
         # no input
         with LogCapture() as logs:
             with self.assertRaises(ValueError):
-                self.utility.op('nmr-nef-parser-check')
+                self.utility.op('nmr-nef-consistency-check')
 
         with LogCapture() as logs:
             with self.assertRaises(IOError):
                 self.utility.setSource('dummydummy')
 
         self.utility.setSource(self.data_dir_path + '2l9r.nef')
+        self.utility.addInput(name='coordinate_file_path', value=self.data_dir_path + '2l9r.cif', type='file')
 
         # invalid workflow operation
         with LogCapture() as logs:
             with self.assertRaises(KeyError):
                 self.utility.op('nmr')
 
-        self.utility.op('nmr-nef-parser-check')
+        self.utility.op('nmr-nef-consistency-check')
 
         #print(self.utility.report.getJson(1))
 
-    def test_nmr_star_parser_check(self):
+    def test_nmr_star_consistency_check(self):
         # no input
         with LogCapture() as logs:
             with self.assertRaises(ValueError):
-                self.utility.op('nmr-star-parser-check')
+                self.utility.op('nmr-str-consistency-check')
 
         with LogCapture() as logs:
             with self.assertRaises(IOError):
@@ -71,14 +72,14 @@ class TestNmrDpUtility(unittest.TestCase):
             with self.assertRaises(KeyError):
                 self.utility.op('nmr')
 
-        self.utility.op('nmr-star-parser-check')
+        self.utility.op('nmr-str-consistency-check')
 
         #print(self.utility.report.getJson(1))
 
-    def test_nmr_nef_parser_check_non_std_residue(self):
+    def test_nmr_nef_consistency_check_non_std_residue(self):
         self.utility.setSource(self.data_dir_path + '2l9rnonstandard.nef')
 
-        self.utility.op('nmr-nef-parser-check')
+        self.utility.op('nmr-nef-consistency-check')
 
         #print(self.utility.report.getJson(1))
 

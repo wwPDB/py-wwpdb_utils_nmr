@@ -1397,7 +1397,7 @@ class NEFTranslator(object):
                         type = k['type']
                         if type == 'bool':
                             try:
-                                ent[name] = val.tolower() in true_value
+                                ent[name] = val.lower() in true_value
                             except:
                                 raise ValueError("%s '%s' must be %s in %s loop category" % (name, val, type, lp_category))
                         elif type == 'int':

@@ -76,7 +76,8 @@ class NmrDpUtility(object):
                                  self.__calculateStatsOfExptlData,
                                  self.__appendCoordinate,
                                  self.__detectCoordContentSubType,
-                                 self.__extractCoorPolymerSequence
+                                 self.__extractCoordPolymerSequence,
+                                 self.__extractCoordPolymerSequenceInLoop
                                  ]
                                 }
         """
@@ -4404,7 +4405,7 @@ class NmrDpUtility(object):
             return False
 
     def __detectCoordContentSubType(self):
-        """ Detect content subtypes in coordinate file.
+        """ Detect content subtypes of coordinate file.
         """
 
         id = self.report.getInputSourceIdOfCoord()
@@ -4444,16 +4445,14 @@ class NmrDpUtility(object):
 
         return True
 
-    def __extractCoorPolymerSequence(self):
-        """ Extract reference polymer sequence in coordinate file.
+    def __extractCoordPolymerSequence(self):
+        """ Extract reference polymer sequence of coordinate file.
         """
 
         id = self.report.getInputSourceIdOfCoord()
 
         if id < 0:
             return True
-
-        __errors = self.report.getTotalErrors()
 
         input_source = self.report.input_sources[id]
         input_source_dic = input_source.get()
@@ -4509,6 +4508,89 @@ class NmrDpUtility(object):
                 self.__lfh.write("+NmrDpUtility.__extractCoordPolymerSequence() ++ Error  - %s" % str(e))
 
         return False
+
+    def __extractCoordPolymerSequenceInLoop(self):
+        """ Extract polymer sequence in interesting loops of coordinate file.
+        """
+
+        id = self.report.getInputSourceIdOfCoord()
+
+        if id < 0:
+            return True
+
+        __errors = self.report.getTotalErrors()
+
+        input_source = self.report.input_sources[id]
+        input_source_dic = input_source.get()
+
+        file_name = input_source_dic['file_name']
+        file_type = input_source_dic['file_type']
+
+        poly_seq_list_set = {}
+        poly_sid_list_set = {}
+
+        for content_subtype in self.cif_content_subtypes:
+
+            if content_subtype == 'entry_info' or content_subtype == 'poly_seq' or not content_subtype in input_source_dic['content_subtype']:
+                continue
+
+            poly_seq_list_set[content_subtype] = []
+
+            lp_category = self.lp_categories[file_type][content_subtype]
+
+            has_poly_seq = False
+
+            try:
+
+                poly_seq = self.__cR.getPolymerSequence(lp_category, self.key_items[file_type][content_subtype])
+
+                if len(poly_seq) > 0:
+
+                    poly_seq_list_set[content_subtype].append({'polymer_sequence': poly_seq})
+
+                    has_poly_seq = True
+
+            except KeyError as e:
+
+                self.report.error.addDescription('sequence_mismatch', "%s, %s file." % (str(e).strip("'"), file_name))
+                self.report.setError()
+
+                if self.__verbose:
+                    self.__lfh.write("+NmrDpUtility.__extractCoordPolymerSequenceInLoop() ++ KeyError  - %s" % str(e))
+
+            except LookupError as e:
+
+                self.report.error.addDescription('missing_mandatory_item', "%s, %s file." % (str(e).strip("'"), file_name))
+                self.report.setError()
+
+                if self.__verbose:
+                    self.__lfh.write("+NmrDpUtility.__extractCoordPolymerSequenceInLoop() ++ LookupError  - %s" % str(e))
+
+            except ValueError as e:
+
+                self.report.error.addDescription('invalid_data', "%s, %s file." % (str(e).strip("'"), file_name))
+                self.report.setError()
+
+                if self.__verbose:
+                    self.__lfh.write("+NmrDpUtility.__extractCoordPolymerSequenceInLoop() ++ ValueError  - %s" % str(e))
+
+            except Exception as e:
+
+                self.report.error.addDescription('internal_error', "+NmrDpUtility.__extractCoordPolymerSequenceInLoop() ++ Error  - %s" % str(e))
+                self.report.setError()
+
+                if self.__verbose:
+                    self.__lfh.write("+NmrDpUtility.__extractCoordPolymerSequenceInLoop() ++ Error  - %s" % str(e))
+
+            if not has_poly_seq:
+                poly_seq_list_set.pop(content_subtype)
+
+        if self.report.getTotalErrors() > __errors:
+            return False
+
+        input_source.setItemValue('polymer_sequence_in_loop', poly_seq_list_set)
+
+        return True
 
 if __name__ == '__main__':
     dp = NmrDpUtility()

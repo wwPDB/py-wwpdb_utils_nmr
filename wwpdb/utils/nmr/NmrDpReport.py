@@ -43,6 +43,23 @@ class NmrDpReport:
     def isDiamagnetic(self):
         return self.__report['information']['diamagnetic']
 
+    def getInputSourceIdOfCoord(self):
+        """ Return input_source_id of coordinate file.
+            @return: index id of input_source, otherwise -1
+        """
+
+        for i in self.input_sources:
+            if i.get()['file_type'] is 'pdbx':
+                return self.input_sources.index(i)
+
+        return -1
+
+    def getTotalErrors(self):
+        return self.error.getTotal()
+
+    def getTotalWarnings(self):
+        return self.warning.getTotal()
+
     def __setStatus(self, status):
 
         if status in self.status_codes:
@@ -210,6 +227,9 @@ class NmrDpReportError:
     def get(self):
         return self.__contents
 
+    def getTotal(self):
+        return self.__contents['total']
+
 class NmrDpReportWarning:
     """ Wrapper class for data processing report of NMR unified data (warning).
     """
@@ -239,3 +259,6 @@ class NmrDpReportWarning:
 
     def get(self):
         return self.__contents
+
+    def getTotal(self):
+        return self.__contents['total']

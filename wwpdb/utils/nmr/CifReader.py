@@ -22,10 +22,18 @@ class CifReader(object):
     def __init__(self, verbose=True, log=sys.stdout):
         self.__verbose = verbose
         self.__lfh = log
+
         # file path
         self.__filePath = None
+
         # active data block
         self.__dBlock = None
+
+        # preset values
+        self.empty_value = (None, '', '.', '?')
+        self.true_value = ('true', 't', 'yes', 'y', '1')
+
+        self.item_types = ('str', 'bool', 'int', 'index-int', 'positive-int', 'static-index', 'float', 'positive-float', 'range-float', 'enum', 'enum-int')
 
     def setFilePath(self, filePath):
         """ Set file path and test readability.
@@ -94,6 +102,12 @@ class CifReader(object):
 
         return ok
 
+    def hasCategory(self, catName):
+        """ Return whether a give category exists.
+        """
+
+        return catName in self.__dBlock.getObjNameList()
+
     def getDictList(self, catName):
         """ Return a list of dictionaries of a given category.
         """
@@ -108,15 +122,108 @@ class CifReader(object):
             # get column name index
             itDict = {}
             itNameList = catObj.getItemNameList()
-            for idxIt,itName in enumerate(itNameList):
-                itDict[itName] = idxIt
+            for idxIt, itName in enumerate(itNameList):
+                itDict[itName[len_catName:]] = idxIt
 
             # get row list
             rowList = catObj.getRowList()
             for row in rowList:
                 tD = {}
                 for k, v in itDict.items():
-                    tD[k[len_catName:]] = row[v]
+                    tD[k] = row[v]
                 dList.append(tD)
 
         return dList
+
+    def getPolymerSequence(self, catName, key_items):
+        """ Extracts sequence from a given loop in a CIF file
+        """
+
+        key_names = [k['name'] for k in key_items]
+
+        key_len = len(key_items)
+
+        for k in key_items:
+            if not k['type'] in self.item_types:
+                raise TypeError("Type %s of key item %s (alt. %s) must be one of %s" % (k['type'], k['name'], k['alt_name'], elf.item_types))
+
+        asm = [] # assembly of a loop
+
+        # get category object
+        catObj = self.__dBlock.getObj(catName)
+
+        if not catObj is None:
+            len_catName = len(catName) + 2
+
+            # get column name index
+            itDict = {}
+            altDict = {}
+
+            itNameList = [j[len_catName:] for j in catObj.getItemNameList()]
+
+            for idxIt, itName in enumerate(itNameList):
+                itDict[itName] = idxIt
+                if itName in key_names:
+                    altDict[next(k['alt_name'] for k in key_items if k['name'] == itName)] = idxIt
+
+            if set(key_names) & set(itDict.keys()) != set(key_names):
+                raise LookupError("Missing one of key items %s in %s category" % (key_names, catName))
+
+            # get row list
+            rowList = catObj.getRowList()
+
+            for i in rowList:
+                for j in range(key_len):
+                    if i[itDict[key_names[j]]] in self.empty_value:
+                        raise ValueError("Item value %s must not be empty in %s category" % (itNameList[j], catName))
+
+            seq_dict = {}
+            sid_dict = {}
+
+            try:
+                chain_id_col = altDict['chain_id']
+                seq_id_col = altDict['seq_id']
+                comp_id_col = altDict['comp_id']
+
+                chains = sorted(set([i[chain_id_col] for i in rowList]))
+                sorted_seq = sorted(set(['{} {:04d} {}'.format(i[chain_id_col], int(i[seq_id_col]), i[comp_id_col]) for i in rowList]))
+
+                chk_dict = {'{} {:04d}'.format(i[chain_id_col], int(i[seq_id_col])):i[comp_id_col] for i in rowList}
+
+                for i in rowList:
+                    chk_key = '{} {:04d}'.format(i[chain_id_col], int(i[seq_id_col]))
+                    if chk_dict[chk_key] != i[comp_id_col]:
+                        raise KeyError("Sequence must be unique. chain_id %s, seq_id %s, comp_id %s vs %s in %s category" % (i[chain_id_col], i[seq_id_col], i[comp_id_col], chk_dict[chk_key], catName))
+
+                if len(sorted_seq[0].split(' ')[-1]) > 1:
+                    if len(chains) > 1:
+                        for c in chains:
+                            seq_dict[c] = [i.split(' ')[-1] for i in sorted_seq if i.split(' ')[0] == c]
+                            sid_dict[c] = [int(i.split(' ')[1]) for i in sorted_seq if i.split(' ')[0] == c]
+                    else:
+                        seq_dict[list(chains)[0]] = [i.split(' ')[-1] for i in sorted_seq]
+                        sid_dict[list(chains)[0]] = [int(i.split(' ')[1]) for i in sorted_seq]
+                else:
+                    if len(chains) > 1:
+                        for c in chains:
+                            seq_dict[c] = [i.split(' ')[-1] for i in sorted_seq if i.split(' ')[0] == c]
+                            sid_dict[c] = [int(i.split(' ')[1]) for i in sorted_seq if i.split(' ')[0] == c]
+                    else:
+                        seq_dict[list(chains)[0]] = [i.split(' ')[-1] for i in sorted_seq]
+                        sid_dict[list(chains)[0]] = [int(i.split(' ')[1]) for i in sorted_seq]
+
+                asm = [] # assembly of a loop
+
+                for c in chains:
+                    ent = {} # entity
+
+                    ent['chain_id'] = c
+                    ent['seq_id'] = sid_dict[c]
+                    ent['comp_id'] = seq_dict[c]
+
+                    asm.append(ent)
+
+            except ValueError:
+                raise ValueError("Sequence ID must be integer in %s category" % catName)
+
+        return asm

@@ -74,12 +74,13 @@ class NmrDpUtility(object):
                                  self.__validateCSValue,
                                  self.__testCSValueConsistencyInPkLoop,
                                  self.__calculateStatsOfExptlData,
-                                 self.__appendCoordinate
+                                 self.__appendCoordinate,
+                                 self.__detectCoordContentSubType,
+                                 self.__extractCoorPolymerSequence
                                  ]
                                 }
         """
-                                'nmr-consistency-check': [self.__extractCoordPolymerSequence,
-                                                          self.__alignCoordPolymerSequence,
+                                'nmr-consistency-check': [self.__alignCoordPolymerSequence,
                                                           self.__testCoordSequenceConsistency,
                                                           self.__testCoordAtomNomeclature],
                                 'nmr-nef2star-deposit':  [self.__appendInputResource,
@@ -113,12 +114,20 @@ class NmrDpUtility(object):
         # NMR content types
         self.nmr_content_subtypes = ('entry_info', 'poly_seq', 'chem_shift', 'dist_restraint', 'dihed_restraint', 'rdc_restraint', 'spectral_peak')
 
+        # CIF content types
+        self.cif_content_subtypes = ('poly_seq', 'coordinate')
+
         # readable file type
         self.readable_file_type = {'nef': 'NEF (NMR Exchange Format)',
                                    'nmr-star': 'NMR-STAR V3.2',
                                    'pdbx': 'PDBx/mmCIF',
                                    'unknown': 'unknown'
                                    }
+
+        # content type
+        self.content_type = {'nef': 'nmr-unified-data',
+                             'nmr-star': 'nmr-unified-data',
+                             'pdbx': 'model'}
 
         # paramagnetic elements, except for Oxygen
         self.paramag_elems = {'LI', 'O', 'NA', 'MG', 'AL', 'K', 'CA', 'SC', 'TI', 'V', 'MN', 'RB', 'SR', 'Y', 'ZR', 'NB', 'MO', 'TC', 'RU', 'RH', 'PD', 'SN', 'CS', 'BA', 'LA', 'CE', 'PR', 'ND', 'PM', 'SM', 'EU', 'GD', 'TB', 'DY', 'HO', 'ER', 'TM', 'YB', 'LU', 'HF', 'TA', 'W', 'RE', 'OS', 'IR', 'PT', 'FR', 'RA', 'AC'}\
@@ -181,7 +190,9 @@ class NmrDpUtility(object):
                                            'dihed_restraint': '_Torsion_angle_constraint',
                                            'rdc_restraint': '_RDC_constraint',
                                            'spectral_peak': '_Peak_row_format'
-                                           }
+                                           },
+                              'pdbx': {'poly_seq': 'pdbx_poly_seq_scheme',
+                                       'coordinate': 'atom_site'}
                               }
 
         # allowed chem shift range
@@ -221,7 +232,9 @@ class NmrDpUtility(object):
                                         'dihed_restraint': 'Index_ID',
                                         'rdc_restraint': 'Index_ID',
                                         'spectral_peak': 'Index_ID'
-                                        }
+                                        },
+                           'pdbx': {'poly_seq': None,
+                                    'coordinate': 'id'}
                            }
 
         # loop key items
@@ -316,7 +329,14 @@ class NmrDpUtility(object):
                                                          {'name': 'Atom_ID_2', 'type': 'str'}
                                                          ],
                                        'spectral_peak': None
-                                       }
+                                       },
+                          'pdbx': {'poly_seq': [{'name': 'asym_id', 'type': 'str', 'alt_name': 'chain_id'},
+                                                {'name': 'seq_id', 'type': 'int', 'alt_name': 'seq_id'},
+                                                {'name': 'mon_id', 'type': 'str', 'alt_name': 'comp_id'}],
+                                   'coordinate': [{'name': 'label_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
+                                                  {'name': 'label_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
+                                                  {'name': 'label_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
+                                                  {'name': 'pdbx_PDB_model_num', 'type': 'int', 'alt_name': 'model_id'}]}
                           }
 
         # limit number of dimensions
@@ -1334,9 +1354,12 @@ class NmrDpUtility(object):
         # set primary input source as NMR unified data
         input_source = self.report.input_sources[0]
 
+        file_type = 'nef' if 'nef' in self.__op else 'nmr-star'
+        content_type = self.content_type[file_type]
+
         input_source.setItemValue('file_name', os.path.basename(self.__srcPath))
-        input_source.setItemValue('file_type', 'nef' if 'nef' in self.__op else 'nmr-star')
-        input_source.setItemValue('content_type', 'nmr-unified-data')
+        input_source.setItemValue('file_type', file_type)
+        input_source.setItemValue('content_type', content_type)
 
         self.__testDiamagnetism()
 
@@ -1355,7 +1378,7 @@ class NmrDpUtility(object):
 
                 comp_comp_list = cR.getDictList('chem_comp')
 
-                non_std_comp_ids = [i['id'] for i in comp_comp_list if i['mon_nstd_flag'] == 'n']
+                non_std_comp_ids = [i['id'] for i in comp_comp_list if i['mon_nstd_flag'] != 'y']
 
                 if len(non_std_comp_ids) == 0:
                     return
@@ -2785,13 +2808,15 @@ class NmrDpUtility(object):
         """ Perform consistency test on data of interesting loops.
         """
 
-        if self.report.isError():
-            return False
-
         input_source = self.report.input_sources[0]
         input_source_dic = input_source.get()
 
         file_type = input_source_dic['file_type']
+
+        if input_source_dic['content_subtype'] is None:
+            return False
+
+        __errors = self.report.getTotalErrors()
 
         for content_subtype in input_source_dic['content_subtype'].keys():
 
@@ -2929,14 +2954,11 @@ class NmrDpUtility(object):
                     if self.__verbose:
                         self.__lfh.write("+NmrDpUtility.__testDataConsistencyInLoop() ++ Error  - %s" % str(e))
 
-        return not self.report.isError()
+        return self.report.getTotalErrors() == __errors
 
     def __testDataConsistencyInAuxLoop(self):
         """ Perform consistency test on data of auxiliary loops.
         """
-
-        #if self.report.isError():
-        #    return False
 
         input_source = self.report.input_sources[0]
         input_source_dic = input_source.get()
@@ -2944,7 +2966,9 @@ class NmrDpUtility(object):
         file_type = input_source_dic['file_type']
 
         if input_source_dic['content_subtype'] is None:
-            return True
+            return False
+
+        __errors = self.report.getTotalErrors()
 
         for content_subtype in input_source_dic['content_subtype'].keys():
 
@@ -3091,7 +3115,7 @@ class NmrDpUtility(object):
                         if self.__verbose:
                             self.__lfh.write("+NmrDpUtility.__testDataConsistencyInAuxLoop() ++ Error  - %s\n" % err)
 
-        return not self.report.isError()
+        return self.report.getTotalErrors() == __errors
 
     def __testDataConsistencyInAuxLoopOfSpectralPeak(self, file_type, sf_framecode, num_dim, lp_category, aux_data):
         """ Perform consistency test on data of spectral peak loops.
@@ -3214,16 +3238,15 @@ class NmrDpUtility(object):
         """ Perform consistency test on saveframe tags.
         """
 
-        #if self.report.isError():
-        #    return False
-
         input_source = self.report.input_sources[0]
         input_source_dic = input_source.get()
 
         file_type = input_source_dic['file_type']
 
         if input_source_dic['content_subtype'] is None:
-            return True
+            return False
+
+        __errors = self.report.getTotalErrors()
 
         for content_subtype in input_source_dic['content_subtype'].keys():
 
@@ -3321,7 +3344,7 @@ class NmrDpUtility(object):
                     if self.__verbose:
                         self.__lfh.write("+NmrDpUtility.__testSfTagConsistency() ++ Error  - %s" % str(e))
 
-        return not self.report.isError()
+        return self.report.getTotalErrors() == __errors
 
     def __testParentChildRelation(self, file_type, content_subtype, parent_keys, list_id, sf_framecode, sf_tag_data):
         """ Perform consistency test on saveframe category and loop category relationship of interesting loops.
@@ -3329,6 +3352,8 @@ class NmrDpUtility(object):
 
         if file_type == 'nef' or content_subtype == 'entry_info':
             return True
+
+        __errors = self.report.getTotalErrors()
 
         key_base = self.sf_tag_prefixes['nmr-star'][content_subtype].lstrip('_')
 
@@ -3392,14 +3417,11 @@ class NmrDpUtility(object):
                 if self.__verbose:
                     self.__lfh.write("+NmrDpUtility.__testParentChildRelation() ++ Error  - %s" % str(e))
 
-        return not self.report.isError()
+        return self.report.getTotalErrors() == __errors
 
     def __validateCSValue(self):
         """ Validate assigned chemical shift value based on BMRB chemical shift statistics.
         """
-
-        #if self.report.isError():
-        #    return False
 
         input_source = self.report.input_sources[0]
         input_source_dic = input_source.get()
@@ -3408,7 +3430,9 @@ class NmrDpUtility(object):
         file_type = input_source_dic['file_type']
 
         if input_source_dic['content_subtype'] is None:
-            return True
+            return False
+
+        __errors = self.report.getTotalErrors()
 
         content_subtype = 'chem_shift'
 
@@ -3918,14 +3942,11 @@ class NmrDpUtility(object):
                 if self.__verbose:
                     self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ Error  - %s" % str(e))
 
-        return not self.report.isError()
+        return self.report.getTotalErrors() == __errors
 
     def __testCSValueConsistencyInPkLoop(self):
         """ Perform consistency test on peak position and assignment of spectral peaks.
         """
-
-        #if self.report.isError():
-        #    return False
 
         input_source = self.report.input_sources[0]
         input_source_dic = input_source.get()
@@ -3934,12 +3955,14 @@ class NmrDpUtility(object):
         file_type = input_source_dic['file_type']
 
         if input_source_dic['content_subtype'] is None:
-            return True
+            return False
 
         content_subtype = 'spectral_peak'
 
         if not content_subtype in input_source_dic['content_subtype'].keys():
             return True
+
+        __errors = self.report.getTotalErrors()
 
         sf_category = self.sf_categories[file_type][content_subtype]
         lp_category = self.lp_categories[file_type][content_subtype]
@@ -4239,14 +4262,11 @@ class NmrDpUtility(object):
                 if self.__verbose:
                     self.__lfh.write("+NmrDpUtility.__testCSValueConsistencyInPkLoop() ++ Error  - %s" % str(e))
 
-        return not self.report.isError()
+        return self.report.getTotalErrors() == __errors
 
     def __calculateStatsOfExptlData(self):
         """ Calculate statistics of experimental data.
         """
-
-        #if self.report.isError():
-        #    return False
 
         input_source = self.report.input_sources[0]
         input_source_dic = input_source.get()
@@ -4254,7 +4274,9 @@ class NmrDpUtility(object):
         file_type = input_source_dic['file_type']
 
         if input_source_dic['content_subtype'] is None:
-            return True
+            return False
+
+        __errors = self.report.getTotalErrors()
 
         stats = {}
 
@@ -4316,13 +4338,14 @@ class NmrDpUtility(object):
 
         input_source.setItemValue('stats_of_exptl_data', stats)
 
-        return True
+        return self.report.getTotalErrors() == __errors
 
     def __appendCoordinate(self):
         """ Append coordinate file as secondary input resource.
         """
 
         file_type = 'pdbx'
+        content_type = self.content_type[file_type]
 
         if 'coordinate_file_path' in self.__inputParamDict:
 
@@ -4333,7 +4356,7 @@ class NmrDpUtility(object):
 
                 if not self.__cR.setFilePath(file_path):
 
-                    err = "No such %s file as %s." % (file_name, self.readable_file_type[file_type])
+                    err = "No such %s file." % file_name
 
                     self.report.error.addDescription('internal_error', "+NmrDpUtility.__appendCoordinate() ++ Error  - %s" % err)
                     self.report.setError()
@@ -4361,12 +4384,12 @@ class NmrDpUtility(object):
 
                 input_source.setItemValue('file_name', file_name)
                 input_source.setItemValue('file_type', file_type)
-                input_source.setItemValue('content_type', 'model')
+                input_source.setItemValue('content_type', content_type)
 
                 return True
 
             except:
-                return False
+                pass
 
         else:
 
@@ -4379,6 +4402,113 @@ class NmrDpUtility(object):
                 self.__lfh.write("+NmrDpUtility.__appendCoordinate() ++ Error  - %s\n" % err)
 
             return False
+
+    def __detectCoordContentSubType(self):
+        """ Detect content subtypes in coordinate file.
+        """
+
+        id = self.report.getInputSourceIdOfCoord()
+
+        if id < 0:
+            return True
+
+        input_source = self.report.input_sources[id]
+        input_source_dic = input_source.get()
+
+        file_name = input_source_dic['file_name']
+        file_type = input_source_dic['file_type']
+
+        # initialize loop counter
+        lp_counts = {t:0 for t in self.cif_content_subtypes}
+
+        for content_subtype in self.cif_content_subtypes:
+
+            lp_category = self.lp_categories[file_type][content_subtype]
+
+            if self.__cR.hasCategory(lp_category):
+                lp_counts[content_subtype] = 1
+
+            else:
+
+                warn = "Category %s did not exist in %s file." % (self.lp_categories[file_type][content_subtype], file_name)
+
+                self.report.warning.addDescription('missing_saveframe', warn)
+                self.report.setWarning(warning)
+
+                if self.__verbose:
+                    self.__lfh.write("+NmrDpUtility.__detectCoordContentSubType() ++ Warning  - %s\n" % warn)
+
+        content_subtypes = {k:lp_counts[k] for k in lp_counts if lp_counts[k] > 0}
+
+        input_source.setItemValue('content_subtype', content_subtypes)
+
+        return True
+
+    def __extractCoorPolymerSequence(self):
+        """ Extract reference polymer sequence in coordinate file.
+        """
+
+        id = self.report.getInputSourceIdOfCoord()
+
+        if id < 0:
+            return True
+
+        __errors = self.report.getTotalErrors()
+
+        input_source = self.report.input_sources[id]
+        input_source_dic = input_source.get()
+
+        file_name = input_source_dic['file_name']
+        file_type = input_source_dic['file_type']
+
+        content_subtype = 'poly_seq'
+
+        if not content_subtype in input_source_dic['content_subtype']:
+            return True
+
+        lp_category = self.lp_categories[file_type][content_subtype]
+
+        try:
+
+            poly_seq = self.__cR.getPolymerSequence(lp_category, self.key_items[file_type][content_subtype])
+
+            input_source.setItemValue('polymer_sequence', poly_seq)
+
+            return True
+
+        except KeyError as e:
+
+            self.report.error.addDescription('sequence_mismatch', "%s, %s file." % (str(e).strip("'"), file_name))
+            self.report.setError()
+
+            if self.__verbose:
+                self.__lfh.write("+NmrDpUtility.__extractCoordPolymerSequence() ++ KeyError  - %s" % str(e))
+
+        except LookupError as e:
+
+            self.report.error.addDescription('missing_mandatory_item', "%s, %s file." % (str(e).strip("'"), file_name))
+            self.report.setError()
+
+            if self.__verbose:
+                self.__lfh.write("+NmrDpUtility.__extractCoordPolymerSequence() ++ LookupError  - %s" % str(e))
+
+        except ValueError as e:
+
+            self.report.error.addDescription('invalid_data', "%s, %s file." % (str(e).strip("'"), file_name))
+            self.report.setError()
+
+            if self.__verbose:
+                self.__lfh.write("+NmrDpUtility.__extractCoordPolymerSequence() ++ ValueError  - %s" % str(e))
+
+        except Exception as e:
+
+            self.report.error.addDescription('internal_error', "+NmrDpUtility.__extractCoordPolymerSequence() ++ Error  - %s" % str(e))
+            self.report.setError()
+
+            if self.__verbose:
+                self.__lfh.write("+NmrDpUtility.__extractCoordPolymerSequence() ++ Error  - %s" % str(e))
+
+        return False
 
 if __name__ == '__main__':
     dp = NmrDpUtility()

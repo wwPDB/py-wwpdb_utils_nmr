@@ -41,7 +41,9 @@ setup(
         'Programming Language :: Python :: 3.7',
     ],
     #
-    install_requires=['wwpdb.utils.align', 'pynmrstar', 'pytz'],
+    # munkrs 1.0.12 last to support python 2
+    install_requires=['wwpdb.utils.align', 'pynmrstar', 'pytz',
+                      'munkres==1.0.12'],
     packages=find_packages(exclude=['wwpdb.utils.tests-nmr', 'mock-data']),
     # Enables Manifest to be used
     include_package_data = True,

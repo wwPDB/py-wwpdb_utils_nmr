@@ -1,6 +1,6 @@
 ##
 # File: NmrDpUtility.py
-# Date: 11-Jun-2019
+# Date: 13-Jun-2019
 #
 # Updates:
 ##
@@ -16,6 +16,7 @@ import itertools
 import copy
 import collections
 import types
+from munkres import Munkres
 
 from wwpdb.utils.nmr.NEFTranslator.NEFTranslator import NEFTranslator
 from wwpdb.utils.nmr.NmrDpReport import NmrDpReport
@@ -79,12 +80,13 @@ class NmrDpUtility(object):
                                  self.__detectCoordContentSubType,
                                  self.__extractCoordPolymerSequence,
                                  self.__extractCoordPolymerSequenceInLoop,
-                                 self.__extractCoordNonStandardResidue
+                                 self.__extractCoordNonStandardResidue,
+                                 self.__appendCoordPolymerSequenceAlignment,
+                                 self.__assignPolymerSequences
                                  ]
                                 }
         """
-                                'nmr-consistency-check': [self.__alignCoordPolymerSequence,
-                                                          self.__testCoordSequenceConsistency,
+                                'nmr-consistency-check': [
                                                           self.__testCoordAtomNomeclature],
                                 'nmr-nef2star-deposit':  [self.__appendInputResource,
                                                           self.__retrieveDpReport,
@@ -1153,6 +1155,10 @@ class NmrDpUtility(object):
                          'rdc_restraint': [],
                          'spectral_peak': []
                          }
+
+        # Pairwise align
+        self.__pA = PairwiseAlign()
+        self.__pA.setVerbose(self.__verbose)
 
         # CCD accessing utility
         self.__cI = ConfigInfo(getSiteId())
@@ -2292,13 +2298,11 @@ class NmrDpUtility(object):
 
                         _s2 = self.__fillBlankedCompId(s1, s2)
 
-                        pA = PairwiseAlign()
-                        pA.setVerbose(self.__verbose)
-                        pA.setReferenceSequence(s1['comp_id'], 'REF' + cid)
-                        pA.addTestSequence(_s2['comp_id'], cid)
-                        pA.doAlign()
-                        #pA.prAlignmentConflicts(cid)
-                        myAlign = pA.getAlignment(cid)
+                        self.__pA.setReferenceSequence(s1['comp_id'], 'REF' + cid)
+                        self.__pA.addTestSequence(_s2['comp_id'], cid)
+                        self.__pA.doAlign()
+                        #self.__pA.prAlignmentConflicts(cid)
+                        myAlign = self.__pA.getAlignment(cid)
 
                         length = len(myAlign)
 
@@ -2323,7 +2327,7 @@ class NmrDpUtility(object):
                         seq_align_set.append(seq_align)
 
                 if has_seq_align:
-                    self.report.sequence_alignment.setItemValue('poly_seq_vs_' + subtype, seq_align_set)
+                    self.report.sequence_alignment.setItemValue('nmr_poly_seq_vs_' + subtype, seq_align_set)
 
         return True
 
@@ -4540,6 +4544,7 @@ class NmrDpUtility(object):
 
             lp_category = self.lp_categories[file_type][content_subtype]
 
+            list_id = 1
             has_poly_seq = False
 
             try:
@@ -4548,8 +4553,9 @@ class NmrDpUtility(object):
 
                 if len(poly_seq) > 0:
 
-                    poly_seq_list_set[content_subtype].append({'polymer_sequence': poly_seq})
+                    poly_seq_list_set[content_subtype].append({'list_id': list_id, 'polymer_sequence': poly_seq})
 
+                    list_id += 1
                     has_poly_seq = True
 
             except KeyError as e:
@@ -4644,6 +4650,433 @@ class NmrDpUtility(object):
             input_source.setItemValue('non_standard_residue', asm)
 
         return True
+
+    def __appendCoordPolymerSequenceAlignment(self):
+        """ Append polymer sequence alignment between coordinate and NMR data.
+        """
+
+        id = self.report.getInputSourceIdOfCoord()
+
+        if id < 0:
+            return True
+
+        # sequence alignment inside coordinate file
+
+        input_source = self.report.input_sources[id]
+        input_source_dic = input_source.get()
+
+        has_poly_seq = 'polymer_sequence' in input_source_dic
+        has_poly_seq_in_loop = 'polymer_sequence_in_loop' in input_source_dic
+
+        if not has_poly_seq:
+            return False
+
+        if has_poly_seq_in_loop:
+
+            polymer_sequence = input_source_dic['polymer_sequence']
+            polymer_sequence_in_loop = input_source_dic['polymer_sequence_in_loop']
+
+            for s1 in polymer_sequence:
+                cid = s1['chain_id']
+
+                for subtype in polymer_sequence_in_loop.keys():
+                    list_len = len(polymer_sequence_in_loop[subtype])
+
+                    has_seq_align = False
+
+                    seq_align_set = []
+
+                    for list_id in range(list_len):
+                        ps2 = polymer_sequence_in_loop[subtype][list_id]['polymer_sequence']
+
+                        for s2 in ps2:
+
+                            if cid != s2['chain_id']:
+                                continue
+
+                            _s2 = self.__fillBlankedCompId(s1, s2)
+
+                            self.__pA.setReferenceSequence(s1['comp_id'], 'REF' + cid)
+                            self.__pA.addTestSequence(_s2['comp_id'], cid)
+                            self.__pA.doAlign()
+                            #self.__pA.prAlignmentConflicts(cid)
+                            myAlign = self.__pA.getAlignment(cid)
+
+                            length = len(myAlign)
+
+                            if length == 0:
+                                continue
+
+                            has_seq_align = True
+
+                            conflicts = 0
+                            for myPr in myAlign:
+                                if myPr[0] != myPr[1]:
+                                    conflicts += 1
+
+                            ref_seq = self.__get1LetterCodeSequence(s1['comp_id'])
+                            tst_seq = self.__get1LetterCodeSequence(_s2['comp_id'])
+                            mid_seq = self.__getMiddleCode(ref_seq, tst_seq)
+
+                            seq_align = {'list_id': polymer_sequence_in_loop[subtype][list_id]['list_id'],
+                                         'chain_id': cid, 'length': length, 'conflict': conflicts, 'sequence_coverage': float('{:.3f}'.format(float(length - conflicts) / float(length))), 'ref_seq_id': s1['seq_id'], 'reference_seq': ref_seq, 'middle_code': mid_seq, 'test_seq': tst_seq}
+
+                            seq_align_set.append(seq_align)
+
+                    if has_seq_align:
+                        self.report.sequence_alignment.setItemValue('model_poly_seq_vs_' + subtype, seq_align_set)
+
+        # sequence alignment between model and NMR data
+
+        nmr_input_source = self.report.input_sources[0]
+        nmr_input_source_dic = nmr_input_source.get()
+
+        has_nmr_poly_seq = 'polymer_sequence' in nmr_input_source_dic
+
+        if not has_nmr_poly_seq:
+
+            err = "Common polymer sequence did not exist, __extractCommonPolymerSequence() should be invoked."
+
+            self.report.error.addDescription('internal_error', "+NmrDpUtility.__appendCoordPolymerSequenceAlignment() ++ Error  - %s" % err)
+            self.report.setError()
+
+            if self.__verbose:
+                logging.warning("+NmrDpUtility.__appendCoordPolymerSequenceAlignment() ++ Error  - %s\n" % err)
+
+            return False
+
+        nmr_polymer_sequence = nmr_input_source_dic['polymer_sequence']
+
+        for s1 in polymer_sequence:
+            cid = s1['chain_id']
+
+            has_seq_align = False
+
+            seq_align_set = []
+
+            for s2 in nmr_polymer_sequence:
+                cid2 = s2['chain_id']
+
+                _s2 = self.__fillBlankedCompId(s1, s2)
+
+                self.__pA.setReferenceSequence(s1['comp_id'], 'REF' + cid)
+                self.__pA.addTestSequence(_s2['comp_id'], cid2)
+                self.__pA.doAlign()
+                #self.__pA.prAlignmentConflicts(cid)
+                myAlign = self.__pA.getAlignment(cid)
+
+                length = len(myAlign)
+
+                if length == 0:
+                    continue
+
+                has_seq_align = True
+
+                conflicts = 0
+                for myPr in myAlign:
+                    if myPr[0] != myPr[1]:
+                        conflicts += 1
+
+                ref_seq = self.__get1LetterCodeSequence(s1['comp_id'])
+                tst_seq = self.__get1LetterCodeSequence(_s2['comp_id'])
+                mid_seq = self.__getMiddleCode(ref_seq, tst_seq)
+
+                seq_align = {'ref_chain_id': cid, 'test_chain_id': cid2, 'length': length, 'conflict': conflicts, 'sequence_coverage': float('{:.3f}'.format(float(length - conflicts) / float(length))), 'ref_seq_id': s1['seq_id'], 'reference_seq': ref_seq, 'middle_code': mid_seq, 'test_seq': tst_seq}
+
+                seq_align_set.append(seq_align)
+
+            if has_seq_align:
+                self.report.sequence_alignment.setItemValue('model_poly_seq_vs_nmr_poly_seq', seq_align_set)
+
+        for s1 in nmr_polymer_sequence:
+            cid = s1['chain_id']
+
+            has_seq_align = False
+
+            seq_align_set = []
+
+            for s2 in polymer_sequence:
+                cid2 = s2['chain_id']
+
+                _s2 = self.__fillBlankedCompId(s1, s2)
+
+                self.__pA.setReferenceSequence(s1['comp_id'], 'REF' + cid)
+                self.__pA.addTestSequence(_s2['comp_id'], cid2)
+                self.__pA.doAlign()
+                #self.__pA.prAlignmentConflicts(cid)
+                myAlign = self.__pA.getAlignment(cid)
+
+                length = len(myAlign)
+
+                if length == 0:
+                    continue
+
+                has_seq_align = True
+
+                conflicts = 0
+                for myPr in myAlign:
+                    if myPr[0] != myPr[1]:
+                        conflicts += 1
+
+                ref_seq = self.__get1LetterCodeSequence(s1['comp_id'])
+                tst_seq = self.__get1LetterCodeSequence(_s2['comp_id'])
+                mid_seq = self.__getMiddleCode(ref_seq, tst_seq)
+
+                seq_align = {'ref_chain_id': cid, 'test_chain_id': cid2, 'length': length, 'conflict': conflicts, 'sequence_coverage': float('{:.3f}'.format(float(length - conflicts) / float(length))), 'ref_seq_id': s1['seq_id'], 'reference_seq': ref_seq, 'middle_code': mid_seq, 'test_seq': tst_seq}
+
+                seq_align_set.append(seq_align)
+
+            if has_seq_align:
+                self.report.sequence_alignment.setItemValue('nmr_poly_seq_vs_model_poly_seq', seq_align_set)
+
+        return True
+
+    def __assignPolymerSequences(self):
+        """ Assign polymer sequences between coordinate and NMR data.
+        """
+
+        id = self.report.getInputSourceIdOfCoord()
+
+        if id < 0:
+            return True
+
+        cif_input_source = self.report.input_sources[id]
+        cif_input_source_dic = cif_input_source.get()
+
+        cif_file_name = cif_input_source_dic['file_name']
+
+        has_cif_poly_seq = 'polymer_sequence' in cif_input_source_dic
+
+        if not has_cif_poly_seq:
+            return False
+
+        nmr_input_source = self.report.input_sources[0]
+        nmr_input_source_dic = nmr_input_source.get()
+
+        nmr_file_name = nmr_input_source_dic['file_name']
+
+        has_nmr_poly_seq = 'polymer_sequence' in nmr_input_source_dic
+
+        if not has_nmr_poly_seq:
+
+            err = "Common polymer sequence did not exist, __extractCommonPolymerSequence() should be invoked."
+
+            self.report.error.addDescription('internal_error', "+NmrDpUtility.__mapCoordPolymerSequence() ++ Error  - %s" % err)
+            self.report.setError()
+
+            if self.__verbose:
+                logging.warning("+NmrDpUtility.__mapCoordPolymerSequence() ++ Error  - %s\n" % err)
+
+            return False
+
+        seq_align_dic = self.report.sequence_alignment.get()
+
+        if 'model_poly_seq_vs_nmr_poly_seq' in seq_align_dic and 'nmr_poly_seq_vs_model_poly_seq' in seq_align_dic:
+
+            cif_polymer_sequence = cif_input_source_dic['polymer_sequence']
+            nmr_polymer_sequence = nmr_input_source_dic['polymer_sequence']
+
+            cif_chains = len(cif_polymer_sequence)
+            nmr_chains = len(nmr_polymer_sequence)
+
+            # map polymer sequences in coordinate and NMR data using Hungarian algorithm
+            m = Munkres()
+
+            # from model to nmr
+
+            cif2nmr = {}
+
+            mat = []
+
+            for s1 in cif_polymer_sequence:
+                cid = s1['chain_id']
+
+                cost = [0 * nmr_chains]
+
+                for s2 in nmr_polymer_sequence:
+                    cid2 = s2['chain_id']
+
+                    result = next((seq_align for seq_align in seq_align_dic['model_poly_seq_vs_nmr_poly_seq'] if seq_align['ref_chain_id'] == cid and seq_align['test_chain_id'] == cid2), None)
+
+                    if not result is None:
+                        cost[nmr_polymer_sequence.index(s2)] = result['conflict'] - result['length']
+
+                mat.append(cost)
+
+            indices = m.compute(mat)
+
+            chain_assign_set = []
+
+            for row, column in indices:
+
+                if mat[row][column] >= 0:
+                    continue
+
+                cid = cif_polymer_sequence[row]['chain_id']
+                cid2 = nmr_polymer_sequence[column]['chain_id']
+
+                cif2nmr[cid] = cid2
+
+                result = next(seq_align for seq_align in seq_align_dic['model_poly_seq_vs_nmr_poly_seq'] if seq_align['ref_chain_id'] == cid and seq_align['test_chain_id'] == cid2)
+
+                chain_assign = {'ref_chain_id': cid, 'test_chain_id': cid2, 'length': result['length'], 'conflict': result['conflict'], 'sequence_coverage': result['sequence_coverage']}
+
+                chain_assign_set.append(chain_assign)
+
+            if len(chain_assign_set) > 0:
+                self.report.chain_assignment.setItemValue('model_poly_seq_vs_nmr_poly_seq', chain_assign_set)
+
+            # from nmr to model
+
+            nmr2cif = {}
+
+            mat = []
+
+            for s1 in nmr_polymer_sequence:
+                cid = s1['chain_id']
+
+                cost = [0 * cif_chains]
+
+                for s2 in cif_polymer_sequence:
+                    cid2 = s2['chain_id']
+
+                    result = next((seq_align for seq_align in seq_align_dic['nmr_poly_seq_vs_model_poly_seq'] if seq_align['ref_chain_id'] == cid and seq_align['test_chain_id'] == cid2), None)
+
+                    if not result is None:
+                        cost[cif_polymer_sequence.index(s2)] = result['conflict'] - result['length']
+
+                mat.append(cost)
+
+            indices = m.compute(mat)
+
+            chain_assign_set = []
+
+            for row, column in indices:
+
+                if mat[row][column] >= 0:
+                    continue
+
+                cid = nmr_polymer_sequence[row]['chain_id']
+                cid2 = cif_polymer_sequence[column]['chain_id']
+
+                nmr2cif[cid] = cid2
+
+                result = next(seq_align for seq_align in seq_align_dic['nmr_poly_seq_vs_model_poly_seq'] if seq_align['ref_chain_id'] == cid and seq_align['test_chain_id'] == cid2)
+
+                chain_assign = {'ref_chain_id': cid, 'test_chain_id': cid2, 'length': result['length'], 'conflict': result['conflict'], 'sequence_coverage': result['sequence_coverage']}
+
+                chain_assign_set.append(chain_assign)
+
+            if len(chain_assign_set) > 0:
+                self.report.chain_assignment.setItemValue('nmr_poly_seq_vs_model_poly_seq', chain_assign_set)
+
+            # check conflict
+
+            conflicts = []
+
+            for s1 in cif_polymer_sequence:
+                cid = s1['chain_id']
+
+                if cid in cif2nmr:
+                    cid2 = cif2nmr[cid]
+
+                    result = next(seq_align for seq_align in seq_align_dic['model_poly_seq_vs_nmr_poly_seq'] if seq_align['ref_chain_id'] == cid and seq_align['test_chain_id'] == cid2)
+
+                    if result['conflict'] == 0:
+                        continue
+
+                    s2 = next(s for s in nmr_polymer_sequence if s['chain_id'] == cid2)
+
+                    _s2 = self.__fillBlankedCompId(s1, s2)
+
+                    self.__pA.setReferenceSequence(s1['comp_id'], 'REF' + cid)
+                    self.__pA.addTestSequence(_s2['comp_id'], cid2)
+                    self.__pA.doAlign()
+                    #self.__pA.prAlignmentConflicts(cid)
+                    myAlign = self.__pA.getAlignment(cid)
+
+                    for i in range(len(myAlign)):
+                        myPr = myAlign[i]
+                        if myPr[0] == myPr[1]:
+                            continue
+
+                        cif_comp_id = myPr[0].encode()
+                        nmr_comp_id = myPr[1].encode()
+
+                        if nmr_comp_id == '.':
+                            continue
+
+                        conflict = {'cif_chain_id': cid, 'cif_seq_id': s1['seq_id'][i], 'cif_comp_id': cif_comp_id,
+                                    'nmr_chain_id': cid2, 'nmr_seq_id': _s2['seq_id'][i], 'nmr_comp_id': nmr_comp_id}
+
+                        if not conflict in conflicts:
+                            conflicts.append(conflict)
+
+            # reverse check
+
+            for s1 in nmr_polymer_sequence:
+                cid = s1['chain_id']
+
+                if cid in nmr2cif:
+                    cid2 = nmr2cif[cid]
+
+                    result = next(seq_align for seq_align in seq_align_dic['nmr_poly_seq_vs_model_poly_seq'] if seq_align['ref_chain_id'] == cid and seq_align['test_chain_id'] == cid2)
+
+                    if result['conflict'] == 0:
+                        continue
+
+                    s2 = next(s for s in cif_polymer_sequence if s['chain_id'] == cid2)
+
+                    _s2 = self.__fillBlankedCompId(s1, s2)
+
+                    self.__pA.setReferenceSequence(s1['comp_id'], 'REF' + cid)
+                    self.__pA.addTestSequence(_s2['comp_id'], cid2)
+                    self.__pA.doAlign()
+                    #self.__pA.prAlignmentConflicts(cid)
+                    myAlign = self.__pA.getAlignment(cid)
+
+                    for i in range(len(myAlign)):
+                        myPr = myAlign[i]
+                        if myPr[0] == myPr[1]:
+                            continue
+
+                        nmr_comp_id = myPr[0].encode()
+                        cif_comp_id = myPr[1].encode()
+
+                        if cif_comp_id == '.':
+                            continue
+
+                        conflict = {'cif_chain_id': cid2, 'cif_seq_id': _s2['seq_id'][i], 'cif_comp_id': cif_comp_id,
+                                    'nmr_chain_id': cid, 'nmr_seq_id': s1['seq_id'][i], 'nmr_comp_id': nmr_comp_id}
+
+                        if not conflict in conflicts:
+                            conflicts.append(conflict)
+
+            for conflict in conflicts:
+
+                err = "Sequence alignment error between %s (chain_id %s, seq_id %s, comp_id %s) and %s (chain_id %s, seq_id %s, comp_id %s)." %\
+                    (cif_file_name, conflict['cif_chain_id'], conflict['cif_seq_id'], conflict['cif_comp_id'],
+                     nmr_file_name, conflict['nmr_chain_id'], conflict['nmr_seq_id'], conflict['nmr_comp_id'])
+
+                self.report.error.addDescription('sequence_mismatch', err)
+                self.report.setError()
+
+                if self.__verbose:
+                    self.__lfh.write("+NmrDpUtility.__extractCoordPolymerSequence() ++ Error  - %s" % err)
+
+            return len(conflicts) == 0
+
+        else:
+
+            err = "No sequence alignment found between %s and %s files." % (input_source_dic['file_name'], nmr_input_source_dic['file_name'])
+
+            self.report.error.addDescription('sequence_mismatch', err)
+            self.report.setError()
+
+            if self.__verbose:
+                self.__lfh.write("+NmrDpUtility.__extractCoordPolymerSequence() ++ Error  - %s" % err)
+
+            return False
 
 if __name__ == '__main__':
     dp = NmrDpUtility()

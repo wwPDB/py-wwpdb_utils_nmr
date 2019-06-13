@@ -3,7 +3,7 @@ import os
 import sys
 import json
 
-from wwpdb.utils.nmr.NmrDpReport import NmrDpReport, NmrDpReportInputSource, NmrDpReportSequenceAlignment, NmrDpReportError, NmrDpReportWarning
+from wwpdb.utils.nmr.NmrDpReport import NmrDpReport, NmrDpReportInputSource, NmrDpReportSequenceAlignment, NmrDpReportChainAssignment, NmrDpReportError, NmrDpReportWarning
 from testfixtures import LogCapture
 
 class TestNmrDpReport(unittest.TestCase):
@@ -33,7 +33,8 @@ class TestNmrDpReport(unittest.TestCase):
         self.report.input_sources[1].setItemValue('content_type', 'model')
         self.report.input_sources[1].setItemValue('content_subtype', {'poly_seq': 1, 'coordinate': 1})
 
-        self.report.sequence_alignment.setItemValue('coordinate_vs_poly_seq', 'foo');
+        self.report.sequence_alignment.setItemValue('model_poly_seq_vs_nmr_poly_seq', 'foo');
+        self.report.chain_assignment.setItemValue('model_poly_seq_vs_nmr_poly_seq', 'foo');
 
         self.report.warning.addDescription('missing_content', 'foo')
         self.report.setWarning()
@@ -50,7 +51,7 @@ class TestNmrDpReport(unittest.TestCase):
         self.report.get()
 
         result = json.dumps(self.report.get(), sort_keys=True)
-        answer = json.dumps(json.loads('{"error": {"anomalous_data": null, "duplicated_index": null, "format_issue": "foo", "internal_error": null, "invalid_ambiguity_code": null, "invalid_atom_nomenclature": null, "invalid_atom_type": null, "invalid_data": null, "invalid_isotope_number": null, "missing_mandatory_content": null, "missing_mandatory_item": null, "missing_data": null, "multiple_data": null, "sequence_mismatch": null, "total": 1}, "information": {"diamagnetic": true, "input_sources": [{"content_subtype": {"chem_shift": 1, "dist_restraint": 2, "poly_seq": 1}, "content_type": "nmr-unified-data", "file_name": null, "file_type": "nef", "non_standard_residue": null, "polymer_sequence": null, "polymer_sequence_in_loop": null, "stats_of_exptl_data": null}, {"content_subtype": {"coordinate": 1, "poly_seq": 1}, "content_type": "model", "file_name": null, "file_type": "pdbx", "non_standard_residue": null, "polymer_sequence": null, "polymer_sequence_in_loop": null, "stats_of_exptl_data": null}], "sequence_alignments": {"coordinate_vs_poly_seq": "foo", "poly_seq_vs_chem_shift": null, "poly_seq_vs_dihed_restraint": null, "poly_seq_vs_dist_restraint": null, "poly_seq_vs_rdc_restraint": null, "poly_seq_vs_spectral_peak": null}, "status": "ERROR"}, "warning": {"atom_nomenclature_mismatch": null, "disordered_index": null, "enum_failure": null, "missing_content": "foo", "missing_data": null, "missing_saveframe": null, "remarkable_data": null, "sequence_mismatch": null, "skipped_lp_category": null, "skipped_sf_category": null, "suspicious_data": null, "total": 1, "unusual_data": null}}'), sort_keys=True)
+        answer = json.dumps(json.loads('{"error": {"anomalous_data": null, "duplicated_index": null, "format_issue": "foo", "internal_error": null, "invalid_ambiguity_code": null, "invalid_atom_nomenclature": null, "invalid_atom_type": null, "invalid_data": null, "invalid_isotope_number": null, "missing_mandatory_content": null, "missing_mandatory_item": null, "missing_data": null, "multiple_data": null, "sequence_mismatch": null, "total": 1}, "information": {"chain_assignments": {"model_poly_seq_vs_nmr_poly_seq": "foo", "nmr_poly_seq_vs_model_poly_seq": null}, "diamagnetic": true, "input_sources": [{"content_subtype": {"chem_shift": 1, "dist_restraint": 2, "poly_seq": 1}, "content_type": "nmr-unified-data", "file_name": null, "file_type": "nef", "non_standard_residue": null, "polymer_sequence": null, "polymer_sequence_in_loop": null, "stats_of_exptl_data": null}, {"content_subtype": {"coordinate": 1, "poly_seq": 1}, "content_type": "model", "file_name": null, "file_type": "pdbx", "non_standard_residue": null, "polymer_sequence": null, "polymer_sequence_in_loop": null, "stats_of_exptl_data": null}], "sequence_alignments": {"model_poly_seq_vs_coordinate": null, "model_poly_seq_vs_nmr_poly_seq": "foo", "nmr_poly_seq_vs_model_poly_seq": null, "nmr_poly_seq_vs_chem_shift": null, "nmr_poly_seq_vs_dihed_restraint": null, "nmr_poly_seq_vs_dist_restraint": null, "nmr_poly_seq_vs_rdc_restraint": null, "nmr_poly_seq_vs_spectral_peak": null}, "status": "ERROR"}, "warning": {"atom_nomenclature_mismatch": null, "disordered_index": null, "enum_failure": null, "missing_content": "foo", "missing_data": null, "missing_saveframe": null, "remarkable_data": null, "sequence_mismatch": null, "skipped_lp_category": null, "skipped_sf_category": null, "suspicious_data": null, "total": 1, "unusual_data": null}}'), sort_keys=True)
 
         self.assertEqual(result, answer)
 
@@ -130,6 +131,26 @@ class TestNmrDpSequenceAlignment(unittest.TestCase):
 
         for item in self.sequence_alignment.items:
             self.assertEqual(self.sequence_alignment.get()[item], 'foo')
+
+class TestNmrDpChainAssignment(unittest.TestCase):
+
+    def setUp(self):
+        self.chain_assignment = NmrDpReportChainAssignment()
+        pass
+
+    def tearDown(self):
+        pass
+
+    def test_setitemvalue(self):
+        for item in self.chain_assignment.items:
+            self.chain_assignment.setItemValue(item, 'foo')
+
+        with LogCapture() as logs:
+            with self.assertRaises(KeyError):
+                self.chain_assignment.setItemValue('unknown', 'foo')
+
+        for item in self.chain_assignment.items:
+            self.assertEqual(self.chain_assignment.get()[item], 'foo')
 
 class TestNmrDpError(unittest.TestCase):
 

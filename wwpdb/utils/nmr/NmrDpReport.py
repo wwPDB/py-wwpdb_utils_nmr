@@ -1,6 +1,6 @@
 ##
 # File: NmrDpReport.py
-# Date: 11-Jun-2019
+# Date: 13-Jun-2019
 #
 # Updates:
 ##
@@ -19,6 +19,7 @@ class NmrDpReport:
 
         self.__report = {'information': {'input_sources': [],
                                          'sequence_alignments': [],
+                                         'chain_assignments': [],
                                          'diamagnetic': True,
                                          'status': 'OK'},
                          'error': None,
@@ -28,6 +29,7 @@ class NmrDpReport:
 
         self.input_sources = [NmrDpReportInputSource()]
         self.sequence_alignment = NmrDpReportSequenceAlignment()
+        self.chain_assignment = NmrDpReportChainAssignment()
         self.error = NmrDpReportError()
         self.warning = NmrDpReportWarning()
 
@@ -108,6 +110,7 @@ class NmrDpReport:
         if not self.__immutable:
             self.__report['information']['input_sources'] = [input_source.get() for input_source in self.input_sources]
             self.__report['information']['sequence_alignments'] = self.sequence_alignment.get()
+            self.__report['information']['chain_assignments'] = self.chain_assignment.get()
 
             self.__immutable = True
 
@@ -181,7 +184,7 @@ class NmrDpReportSequenceAlignment:
     """
 
     def __init__(self):
-        self.items = ('coordinate_vs_poly_seq', 'poly_seq_vs_chem_shift', 'poly_seq_vs_dist_restraint', 'poly_seq_vs_dihed_restraint', 'poly_seq_vs_rdc_restraint', 'poly_seq_vs_spectral_peak')
+        self.items = ('model_poly_seq_vs_coordinate', 'model_poly_seq_vs_nmr_poly_seq', 'nmr_poly_seq_vs_model_poly_seq', 'nmr_poly_seq_vs_chem_shift', 'nmr_poly_seq_vs_dist_restraint', 'nmr_poly_seq_vs_dihed_restraint', 'nmr_poly_seq_vs_rdc_restraint', 'nmr_poly_seq_vs_spectral_peak')
 
         self.__contents = {item:None for item in self.items}
 
@@ -193,6 +196,27 @@ class NmrDpReportSequenceAlignment:
         else:
             logging.error('+NmrDpReportSequenceAlignment.setItemValue() ++ Error  - Unknown item type %s' % item)
             raise KeyError('+NmrDpReportSequenceAlignment.setItemValue() ++ Error  - Unknown item type %s' % item)
+
+    def get(self):
+        return self.__contents
+
+class NmrDpReportChainAssignment:
+    """ Wrapper class for data processing report of NMR unified data (chain assignment).
+    """
+
+    def __init__(self):
+        self.items = ('model_poly_seq_vs_nmr_poly_seq', 'nmr_poly_seq_vs_model_poly_seq')
+
+        self.__contents = {item:None for item in self.items}
+
+    def setItemValue(self, item, value):
+
+        if item in self.items:
+            self.__contents[item] = value
+
+        else:
+            logging.error('+NmrDpReportChainAssignment.setItemValue() ++ Error  - Unknown item type %s' % item)
+            raise KeyError('+NmrDpReportChainAssignment.setItemValue() ++ Error  - Unknown item type %s' % item)
 
     def get(self):
         return self.__contents

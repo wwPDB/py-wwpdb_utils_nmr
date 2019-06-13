@@ -74,10 +74,12 @@ class NmrDpUtility(object):
                                  self.__validateCSValue,
                                  self.__testCSValueConsistencyInPkLoop,
                                  self.__calculateStatsOfExptlData,
+                                 # coordinate check
                                  self.__appendCoordinate,
                                  self.__detectCoordContentSubType,
                                  self.__extractCoordPolymerSequence,
-                                 self.__extractCoordPolymerSequenceInLoop
+                                 self.__extractCoordPolymerSequenceInLoop,
+                                 self.__extractCoordNonStandardResidue
                                  ]
                                 }
         """
@@ -4589,6 +4591,57 @@ class NmrDpUtility(object):
             return False
 
         input_source.setItemValue('polymer_sequence_in_loop', poly_seq_list_set)
+
+        return True
+
+    def __extractCoordNonStandardResidue(self):
+        """ Extract non-standard residue of coordinate file.
+        """
+
+        id = self.report.getInputSourceIdOfCoord()
+
+        if id < 0:
+            return True
+
+        input_source = self.report.input_sources[id]
+        input_source_dic = input_source.get()
+
+        file_name = input_source_dic['file_name']
+        file_type = input_source_dic['file_type']
+
+        has_poly_seq = 'polymer_sequence' in input_source_dic
+
+        if not has_poly_seq:
+            return True
+
+        polymer_sequence = input_source_dic['polymer_sequence']
+
+        asm_has = False
+
+        asm = []
+
+        for s in polymer_sequence:
+
+            ent_has = False
+
+            ent = {'chain_id': s['chain_id'], 'seq_id': [], 'comp_id': []}
+
+            for i in range(len(s['seq_id'])):
+                sid = s['seq_id'][i]
+                seq = s['comp_id'][i]
+
+                if self.nef_translator.get_one_letter_code(seq) == '?':
+                    asm_has = True
+                    ent_has = True
+
+                    ent['seq_id'].append(sid)
+                    ent['comp_id'].append(seq)
+
+            if ent_has:
+                asm.append(ent)
+
+        if asm_has:
+            input_source.setItemValue('non_standard_residue', asm)
 
         return True
 

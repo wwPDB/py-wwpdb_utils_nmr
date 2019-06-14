@@ -31,9 +31,9 @@ class CifReader(object):
 
         # preset values
         self.empty_value = (None, '', '.', '?')
-        self.true_value = ('true', 't', 'yes', 'y', '1')
+        #self.true_value = ('true', 't', 'yes', 'y', '1')
 
-        self.item_types = ('str', 'bool', 'int', 'index-int', 'positive-int', 'static-index', 'float', 'positive-float', 'range-float', 'enum', 'enum-int')
+        #self.item_types = ('str', 'bool', 'int', 'index-int', 'positive-int', 'static-index', 'float', 'positive-float', 'range-float', 'enum', 'enum-int')
 
     def setFilePath(self, filePath):
         """ Set file path and test readability.
@@ -198,22 +198,13 @@ class CifReader(object):
                                         itNameList[seq_id_col], i[seq_id_col],
                                         itNameList[comp_id_col], i[comp_id_col], chk_dict[chk_key]))
 
-                if len(sorted_seq[0].split(' ')[-1]) > 1:
-                    if len(chains) > 1:
-                        for c in chains:
-                            seq_dict[c] = [i.split(' ')[-1] for i in sorted_seq if i.split(' ')[0] == c]
-                            sid_dict[c] = [int(i.split(' ')[1]) for i in sorted_seq if i.split(' ')[0] == c]
-                    else:
-                        seq_dict[list(chains)[0]] = [i.split(' ')[-1] for i in sorted_seq]
-                        sid_dict[list(chains)[0]] = [int(i.split(' ')[1]) for i in sorted_seq]
+                if len(chains) > 1:
+                    for c in chains:
+                        seq_dict[c] = [i.split(' ')[-1] for i in sorted_seq if i.split(' ')[0] == c]
+                        sid_dict[c] = [int(i.split(' ')[1]) for i in sorted_seq if i.split(' ')[0] == c]
                 else:
-                    if len(chains) > 1:
-                        for c in chains:
-                            seq_dict[c] = [i.split(' ')[-1] for i in sorted_seq if i.split(' ')[0] == c]
-                            sid_dict[c] = [int(i.split(' ')[1]) for i in sorted_seq if i.split(' ')[0] == c]
-                    else:
-                        seq_dict[list(chains)[0]] = [i.split(' ')[-1] for i in sorted_seq]
-                        sid_dict[list(chains)[0]] = [int(i.split(' ')[1]) for i in sorted_seq]
+                    seq_dict[list(chains)[0]] = [i.split(' ')[-1] for i in sorted_seq]
+                    sid_dict[list(chains)[0]] = [int(i.split(' ')[1]) for i in sorted_seq]
 
                 asm = [] # assembly of a loop
 

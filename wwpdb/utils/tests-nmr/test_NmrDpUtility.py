@@ -28,7 +28,7 @@ class TestNmrDpUtility(unittest.TestCase):
 
         # compare NMR content subtypes in NmrDpReportInputSource
         input_source = NmrDpReportInputSource()
-        self.assertEqual(nmr_content_subtypes, set(input_source.content_subtypes) - {'coordinate'})
+        self.assertEqual(nmr_content_subtypes, set(input_source.content_subtypes) - {'coordinate', 'non_poly'})
 
         # data directory exists
         self.assertEqual(os.path.isdir(self.data_dir_path), True)

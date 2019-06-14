@@ -138,7 +138,7 @@ class NmrDpReportInputSource:
                       'stats_of_exptl_data')
         self.file_types = ('pdbx', 'nef', 'nmr-star')
         self.content_types = ('model', 'nmr-unified-data')
-        self.content_subtypes = ('coordinate', 'entry_info', 'poly_seq', 'chem_shift', 'dist_restraint', 'dihed_restraint', 'rdc_restraint', 'spectral_peak')
+        self.content_subtypes = ('coordinate', 'non_poly', 'entry_info', 'poly_seq', 'chem_shift', 'dist_restraint', 'dihed_restraint', 'rdc_restraint', 'spectral_peak')
 
         self.__contents = {item:None for item in self.items}
 
@@ -237,7 +237,6 @@ class NmrDpReportError:
 
         self.chk_row_pat = re.compile(r'^\[Check row of (.*)\] (.*)$')
         self.chk_rows_pat = re.compile(r'\[Check rows of (.*)\] (.*)$')
-        self.chk_rows_key_pat = re.compile(r'^(.*) (.*)$')
 
     def appendDescription(self, item, value):
 

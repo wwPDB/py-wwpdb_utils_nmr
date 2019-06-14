@@ -80,6 +80,7 @@ class NmrDpUtility(object):
                                  self.__appendCoordinate,
                                  self.__detectCoordContentSubType,
                                  self.__extractCoordPolymerSequence,
+                                 self.__extractCoordNonPolymerScheme,
                                  self.__extractCoordPolymerSequenceInLoop,
                                  self.__extractCoordNonStandardResidue,
                                  self.__appendCoordPolymerSequenceAlignment,
@@ -121,7 +122,7 @@ class NmrDpUtility(object):
         self.nmr_content_subtypes = ('entry_info', 'poly_seq', 'chem_shift', 'dist_restraint', 'dihed_restraint', 'rdc_restraint', 'spectral_peak')
 
         # CIF content types
-        self.cif_content_subtypes = ('poly_seq', 'coordinate')
+        self.cif_content_subtypes = ('poly_seq', 'non_poly', 'coordinate')
 
         # readable file type
         self.readable_file_type = {'nef': 'NEF (NMR Exchange Format)',
@@ -133,7 +134,8 @@ class NmrDpUtility(object):
         # content type
         self.content_type = {'nef': 'nmr-unified-data',
                              'nmr-star': 'nmr-unified-data',
-                             'pdbx': 'model'}
+                             'pdbx': 'model'
+                             }
 
         # paramagnetic elements, except for Oxygen
         self.paramag_elems = {'LI', 'O', 'NA', 'MG', 'AL', 'K', 'CA', 'SC', 'TI', 'V', 'MN', 'RB', 'SR', 'Y', 'ZR', 'NB', 'MO', 'TC', 'RU', 'RH', 'PD', 'SN', 'CS', 'BA', 'LA', 'CE', 'PR', 'ND', 'PM', 'SM', 'EU', 'GD', 'TB', 'DY', 'HO', 'ER', 'TM', 'YB', 'LU', 'HF', 'TA', 'W', 'RE', 'OS', 'IR', 'PT', 'FR', 'RA', 'AC'}\
@@ -198,7 +200,9 @@ class NmrDpUtility(object):
                                            'spectral_peak': '_Peak_row_format'
                                            },
                               'pdbx': {'poly_seq': 'pdbx_poly_seq_scheme',
-                                       'coordinate': 'atom_site'}
+                                       'non_poly': 'pdbx_nonpoly_scheme',
+                                       'coordinate': 'atom_site'
+                                       }
                               }
 
         # allowed chem shift range
@@ -240,7 +244,9 @@ class NmrDpUtility(object):
                                         'spectral_peak': 'Index_ID'
                                         },
                            'pdbx': {'poly_seq': None,
-                                    'coordinate': 'id'}
+                                    'non_poly': None,
+                                    'coordinate': 'id'
+                                    }
                            }
 
         # loop key items
@@ -338,11 +344,18 @@ class NmrDpUtility(object):
                                        },
                           'pdbx': {'poly_seq': [{'name': 'asym_id', 'type': 'str', 'alt_name': 'chain_id'},
                                                 {'name': 'seq_id', 'type': 'int', 'alt_name': 'seq_id'},
-                                                {'name': 'mon_id', 'type': 'str', 'alt_name': 'comp_id'}],
+                                                {'name': 'mon_id', 'type': 'str', 'alt_name': 'comp_id'}
+                                                ],
+                                   'non_poly': [{'name': 'asym_id', 'type': 'str', 'alt_name': 'chain_id'},
+                                                {'name': 'pdb_seq_num', 'type': 'int', 'alt_name': 'seq_id'},
+                                                {'name': 'mon_id', 'type': 'str', 'alt_name': 'comp_id'}
+                                                ],
                                    'coordinate': [{'name': 'label_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
                                                   {'name': 'label_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
                                                   {'name': 'label_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
-                                                  {'name': 'pdbx_PDB_model_num', 'type': 'int', 'alt_name': 'model_id'}]}
+                                                  {'name': 'pdbx_PDB_model_num', 'type': 'int', 'alt_name': 'model_id'}
+                                                  ]
+                                   }
                           }
 
         # limit number of dimensions
@@ -1563,7 +1576,7 @@ class NmrDpUtility(object):
             warn = "Saveframe category %s did not exist in %s file." % (sf_category, file_name)
 
             self.report.warning.appendDescription('missing_saveframe', {'file_name': file_name, 'description': warn})
-            self.report.setWarning(warning)
+            self.report.setWarning()
 
             if self.__verbose:
                 self.__lfh.write("+NmrDpUtility.__detectContentSubType() ++ Warning  - %s\n" % warn)
@@ -4557,12 +4570,12 @@ class NmrDpUtility(object):
             if self.__cR.hasCategory(lp_category):
                 lp_counts[content_subtype] = 1
 
-            else:
+            elif content_subtype != 'non_poly':
 
                 warn = "Category %s did not exist." % self.lp_categories[file_type][content_subtype]
 
-                self.report.warning.appendDescription('missing_saveframe', {'file_name': file_name, 'description': warn})
-                self.report.setWarning(warning)
+                self.report.warning.appendDescription('missing_content', {'file_name': file_name, 'description': warn})
+                self.report.setWarning()
 
                 if self.__verbose:
                     self.__lfh.write("+NmrDpUtility.__detectCoordContentSubType() ++ Warning  - %s\n" % warn)
@@ -4634,6 +4647,89 @@ class NmrDpUtility(object):
 
             if self.__verbose:
                 self.__lfh.write("+NmrDpUtility.__extractCoordPolymerSequence() ++ Error  - %s" % str(e))
+
+        return False
+
+    def __extractCoordNonPolymerScheme(self):
+        """ Extract non-polymer scheme of coordinate file.
+        """
+
+        id = self.report.getInputSourceIdOfCoord()
+
+        if id < 0:
+            return True
+
+        input_source = self.report.input_sources[id]
+        input_source_dic = input_source.get()
+
+        file_name = input_source_dic['file_name']
+        file_type = input_source_dic['file_type']
+
+        content_subtype = 'non_poly'
+
+        if not content_subtype in input_source_dic['content_subtype']:
+            return True
+
+        lp_category = self.lp_categories[file_type][content_subtype]
+
+        try:
+
+            non_poly = self.__cR.getPolymerSequence(lp_category, self.key_items[file_type][content_subtype])
+
+            if len(non_poly) > 0:
+
+                poly_seq = input_source_dic['polymer_sequence']
+
+                if poly_seq is None:
+
+                    err = "Polymer sequence did not exist, __extractCoordPolymerSequence() should be invoked."
+
+                    self.report.error.appendDescription('internal_error', "+NmrDpUtility.__extractCoordNonPolymerScheme() ++ Error  - %s" % err)
+                    self.report.setError()
+
+                    if self.__verbose:
+                        self.__lfh.write("+NmrDpUtility.__extractCoordNonPolymerScheme() ++ Error  - %s" % err)
+
+                    return False
+
+                for np in non_poly:
+                    poly_seq.append(np)
+
+                input_source.setItemValue('polymer_sequence', poly_seq)
+
+            return True
+
+        except KeyError as e:
+
+            self.report.error.appendDescription('sequence_mismatch', {'file_name': file_name, 'category': lp_category, 'description': str(e).strip("'")})
+            self.report.setError()
+
+            if self.__verbose:
+                self.__lfh.write("+NmrDpUtility.__extractCoordNonPolymerScheme() ++ KeyError  - %s" % str(e))
+
+        except LookupError as e:
+
+            self.report.error.appendDescription('missing_mandatory_item', {'file_name': file_name, 'category': lp_category, 'description': str(e).strip("'")})
+            self.report.setError()
+
+            if self.__verbose:
+                self.__lfh.write("+NmrDpUtility.__extractCoordNonPolymerScheme() ++ LookupError  - %s" % str(e))
+
+        except ValueError as e:
+
+            self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'category': lp_category, 'description': str(e).strip("'")})
+            self.report.setError()
+
+            if self.__verbose:
+                self.__lfh.write("+NmrDpUtility.__extractCoordNonPolymerScheme() ++ ValueError  - %s" % str(e))
+
+        except Exception as e:
+
+            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__extractCoordNonPolymerScheme() ++ Error  - %s" % str(e))
+            self.report.setError()
+
+            if self.__verbose:
+                self.__lfh.write("+NmrDpUtility.__extractCoordNonPolymerScheme() ++ Error  - %s" % str(e))
 
         return False
 
@@ -5001,7 +5097,7 @@ class NmrDpUtility(object):
             cif_chains = len(cif_polymer_sequence)
             nmr_chains = len(nmr_polymer_sequence)
 
-            # map polymer sequences in coordinate and NMR data using Hungarian algorithm
+            # map polymer sequences between coordinate and NMR data using Hungarian algorithm
             m = Munkres()
 
             # from model to nmr
@@ -5128,11 +5224,11 @@ class NmrDpUtility(object):
                         if nmr_comp_id == '.':
                             continue
 
-                        conflict = {'cif_chain_id': cid, 'cif_seq_id': s1['seq_id'][i], 'cif_comp_id': cif_comp_id,
-                                    'nmr_chain_id': cid2, 'nmr_seq_id': _s2['seq_id'][i], 'nmr_comp_id': nmr_comp_id}
+                        c = {'cif_chain_id': cid, 'cif_seq_id': s1['seq_id'][i], 'cif_comp_id': cif_comp_id,
+                             'nmr_chain_id': cid2, 'nmr_seq_id': _s2['seq_id'][i], 'nmr_comp_id': nmr_comp_id}
 
-                        if not conflict in conflicts:
-                            conflicts.append(conflict)
+                        if not c in conflicts:
+                            conflicts.append(c)
 
             # reverse check
 
@@ -5168,17 +5264,17 @@ class NmrDpUtility(object):
                         if cif_comp_id == '.':
                             continue
 
-                        conflict = {'cif_chain_id': cid2, 'cif_seq_id': _s2['seq_id'][i], 'cif_comp_id': cif_comp_id,
-                                    'nmr_chain_id': cid, 'nmr_seq_id': s1['seq_id'][i], 'nmr_comp_id': nmr_comp_id}
+                        c = {'cif_chain_id': cid2, 'cif_seq_id': _s2['seq_id'][i], 'cif_comp_id': cif_comp_id,
+                             'nmr_chain_id': cid, 'nmr_seq_id': s1['seq_id'][i], 'nmr_comp_id': nmr_comp_id}
 
-                        if not conflict in conflicts:
-                            conflicts.append(conflict)
+                        if not c in conflicts:
+                            conflicts.append(c)
 
-            for conflict in conflicts:
+            for c in conflicts:
 
                 err = "Sequence alignment error between %s (chain_id %s, seq_id %s, comp_id %s) and %s (chain_id %s, seq_id %s, comp_id %s)." %\
-                    (cif_file_name, conflict['cif_chain_id'], conflict['cif_seq_id'], conflict['cif_comp_id'],
-                     nmr_file_name, conflict['nmr_chain_id'], conflict['nmr_seq_id'], conflict['nmr_comp_id'])
+                    (cif_file_name, c['cif_chain_id'], c['cif_seq_id'], c['cif_comp_id'],
+                     nmr_file_name, c['nmr_chain_id'], c['nmr_seq_id'], c['nmr_comp_id'])
 
                 self.report.error.appendDescription('sequence_mismatch', {'file_name': cif_file_name, 'description': err})
                 self.report.setError()

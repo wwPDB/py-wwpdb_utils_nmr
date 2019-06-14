@@ -132,8 +132,8 @@ class NmrDpUtility(object):
                                    }
 
         # content type
-        self.content_type = {'nef': 'nmr-unified-data',
-                             'nmr-star': 'nmr-unified-data',
+        self.content_type = {'nef': 'nmr-unified-data-nef',
+                             'nmr-star': 'nmr-unified-data-str',
                              'pdbx': 'model'
                              }
 

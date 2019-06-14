@@ -41,7 +41,11 @@ setup(
         'Programming Language :: Python :: 3.7',
     ],
     #
-    install_requires=['wwpdb.utils.align', 'pynmrstar', 'pytz'],
+    # munkres 1.0.12 last to support python 2
+    # wwpdb.apps.ccmodule will need to be changed
+    install_requires=['wwpdb.utils.config', 'wwpdb.utils.align',
+                      'pynmrstar', 'pytz', 'munkres==1.0.12',
+                      'wwpdb.apps.ccmodule'],
     packages=find_packages(exclude=['wwpdb.utils.tests-nmr', 'mock-data']),
     # Enables Manifest to be used
     include_package_data = True,

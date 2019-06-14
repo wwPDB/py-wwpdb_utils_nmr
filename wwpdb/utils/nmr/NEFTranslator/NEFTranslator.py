@@ -478,7 +478,7 @@ class NEFTranslator(object):
                         seq_dat += loop.get_data_by_tag(_tags)
 
                 if not _tags_exist:
-                    raise LookupError("Missing one of mandatory items %s in %s loop category" % (tags, lp_category))
+                    raise LookupError("Missing one of data items %s." % tags)
 
             if allow_empty:
                 seq_dat = list(filter(NEFTranslator.is_data, seq_dat))
@@ -487,7 +487,7 @@ class NEFTranslator(object):
             else:
                 for i in seq_dat:
                     if NEFTranslator.is_empty_data(i):
-                        raise ValueError("Sequence must not be empty. chain_id %s, seq_id %s, comp_id %s in %s loop category" % (i[2], i[0], i[1], lp_category))
+                        raise ValueError("Sequence must not be empty. %s %s, %s %s, %s %s." % (chain_id, i[2], seq_id, i[0], comp_id, i[1]))
 
             try:
 
@@ -499,7 +499,7 @@ class NEFTranslator(object):
                 for i in seq_dat:
                     chk_key = '{} {:04d}'.format(i[2], int(i[0]))
                     if chk_dict[chk_key] != i[1]:
-                        raise KeyError("Sequence must be unique. chain_id %s, seq_id %s, comp_id %s vs %s in %s loop category" % (i[2], i[0], i[1], chk_dict[chk_key], lp_category))
+                        raise KeyError("Sequence must be unique. %s %s, %s %s, %s %s vs %s." % (chain_id, i[2], seq_id, i[0], comp_id, i[1], chk_dict[chk_key]))
 
                 if len(sorted_seq[0].split(' ')[-1]) > 1:
                     if len(chains) > 1:
@@ -532,7 +532,7 @@ class NEFTranslator(object):
                 dat.append(asm)
 
             except ValueError:
-                raise ValueError("Sequence ID must be integer in %s loop category" % lp_category)
+                raise ValueError("%s must be int." % seq_id)
 
         if len(dat) == 0:
             dat.append([])
@@ -587,7 +587,7 @@ class NEFTranslator(object):
                         seq_dat += seq_dat_
 
                 if not _tags_exist:
-                    raise LookupError("Missing one of mandatory items %s in %s loop category" % (tags, lp_category))
+                    raise LookupError("Missing one of data items %s." % tags)
 
             if allow_empty:
                 seq_dat = list(filter(NEFTranslator.is_data, seq_dat))
@@ -596,7 +596,7 @@ class NEFTranslator(object):
             else:
                 for i in seq_dat:
                     if NEFTranslator.is_empty_data(i):
-                        raise ValueError("Sequence must not be empty. chain_id %s, seq_id %s, comp_id %s in %s loop category" % (i[2], i[0], i[1], lp_category))
+                        raise ValueError("Sequence must not be empty. %s %s, %s %s, %s %s." % (chain_id, i[2], seq_id, i[0], comp_id, i[1]))
 
             try:
 
@@ -608,7 +608,7 @@ class NEFTranslator(object):
                 for i in seq_dat:
                     chk_key = '{} {:04d}'.format(i[2], int(i[0]))
                     if chk_dict[chk_key] != i[1]:
-                        raise KeyError("Sequence must be unique. chain_id %s, seq_id %s, comp_id %s vs %s in %s loop category" % (i[2], i[0], i[1], chk_dict[chk_key], lp_category))
+                        raise KeyError("Sequence must be unique. %s %s, %s %s, %s %s vs %s." % (chain_id, i[2], seq_id, i[0], comp_id, i[1], chk_dict[chk_key]))
 
                 if len(sorted_seq[0].split(' ')[-1]) > 1:
                     if len(chains) > 1:
@@ -641,7 +641,7 @@ class NEFTranslator(object):
                 dat.append(asm)
 
             except ValueError:
-                raise ValueError("Sequence ID must be integer in %s loop category" % lp_category)
+                raise ValueError("%s must be int.")
 
         if len(dat) == 0:
             dat.append([])
@@ -698,7 +698,7 @@ class NEFTranslator(object):
                         seq_dat += seq_dat_
 
                 if not _tags_exist:
-                    raise LookupError("Missing one of mandatory items %s in %s loop category" % (tags, lp_category))
+                    raise LookupError("Missing one of data items %s." % tags)
 
             if allow_empty:
                 seq_dat = list(filter(NEFTranslator.is_data, seq_dat))
@@ -707,7 +707,8 @@ class NEFTranslator(object):
             else:
                 for i in seq_dat:
                     if NEFTranslator.is_empty_data(i):
-                        raise ValueError("Author sequence must not be empty. chain_id %s, seq_id %s, auth_asym_id %s, auth_seq_id %s, auth_comp_id %s in %s loop category" % (i[4], i[3], i[2], i[0], i[1], lp_category))
+                        raise ValueError("Author sequence must not be empty. %s %s, %s %s, %s %s, %s %s, %s %s." %\
+                                         (chain_id, i[4], seq_id, i[3], asym_id, i[2], aseq_id, i[0], acomp_id, i[1]))
 
             try:
 
@@ -719,7 +720,8 @@ class NEFTranslator(object):
                 for i in seq_dat:
                     chk_key = '{}:{:04d}:{}:{: >4}'.format(i[4], int(i[3]), i[2], i[0])
                     if chk_dict[chk_key] != i[1]:
-                        raise KeyError("Author sequence must be unique. chain_id %s, seq_id %s, auth_asym_id %s, auth_seq_id %s, auth_comp_id %s vs %s in %s loop category" % (i[4], i[3], i[2], i[0], i[1], chk_dict[chk_key], lp_category))
+                        raise KeyError("Author sequence must be unique. %s %s, %s %s, %s %s, %s %s, %s %s vs %s." %\
+                                       (chain_id, i[4], seq_id, i[3], asym_id, i[2], aseq_id, i[0], acomp_id, i[1], chk_dict[chk_key]))
 
                 if len(sorted_seq[0].split(':')[-1]) > 1:
                     if len(chains) > 1:
@@ -762,7 +764,7 @@ class NEFTranslator(object):
                 dat.append(asm)
 
             except ValueError:
-                raise ValueError("Sequence ID must be integer in %s loop category" % lp_category)
+                raise ValueError("%s must be int." % seq_id)
 
         if len(dat) == 0:
             dat.append([])
@@ -830,7 +832,7 @@ class NEFTranslator(object):
                         comp_atom_dat += loop.get_data_by_tag(_tags)
 
                 if not _tags_exist:
-                    raise LookupError("Missing one of mandatory items %s in %s loop category" % (tags, lp_category))
+                    raise LookupError("Missing one of data items %s." % tags)
 
             if allow_empty:
                 comp_atom_dat = list(filter(NEFTranslator.is_data, comp_atom_dat))
@@ -839,7 +841,7 @@ class NEFTranslator(object):
             else:
                 for i in comp_atom_dat:
                     if NEFTranslator.is_empty_data(i):
-                        raise ValueError("One of comp ID and atom ID must not be empty. comp_id %s, atom_id %s in %s loop category" % (i[0], i[1], lp_category))
+                        raise ValueError("%s and %s must not be empty. %s %s, %s %s." % (comp_id, atom_id, comp_id, i[0], atom_id, i[1]))
 
             comps = sorted(set([i[0] for i in comp_atom_dat]))
             sorted_comp_atom = sorted(set(['{} {}'.format(i[0], i[1]) for i in comp_atom_dat]))
@@ -907,7 +909,7 @@ class NEFTranslator(object):
             a_type_dat = []
 
             if set(tags) & set(loop.tags) != set(tags):
-                raise LookupError("Missing one of mandatory items %s in %s loop category" % (tags, lp_category))
+                raise LookupError("Missing one of data items %s." % tags)
 
             a_type_dat = loop.get_data_by_tag(tags)
 
@@ -918,7 +920,8 @@ class NEFTranslator(object):
             else:
                 for i in a_type_dat:
                     if NEFTranslator.is_empty_data(i):
-                        raise ValueError("One of atom type, isotope number, and atom ID must not be empty. atom_type %s, isotope_number %s, atom_id %s in %s loop category" % (i[0], i[1], i[2], lp_category))
+                        raise ValueError("%s, %s, and %s must not be empty. %s %s, %s %s, %s %s." %\
+                                         (atom_type, isotope_number, atom_id, atom_type, i[0], isotope_number, i[1], atom_id, i[2]))
 
             try:
 
@@ -944,7 +947,7 @@ class NEFTranslator(object):
                 dat.append(asm)
 
             except ValueError:
-                raise ValueError("Isotope number must be integer in %s loop category" % lp_category)
+                raise ValueError("%s must be int." % isotope_number)
 
         if len(dat) == 0:
             dat.append([])
@@ -978,7 +981,7 @@ class NEFTranslator(object):
             ambig_dat = []
 
             if set(tags) & set(loop.tags) != set(tags):
-                raise LookupError("Missing one of mandatory items %s in %s loop category" % (tags, lp_category))
+                raise LookupError("Missing one of data items %s." % tags)
 
             ambig_dat = loop.get_data_by_tag(tags)
 
@@ -989,32 +992,32 @@ class NEFTranslator(object):
             for i in ambig_dat:
                 # already checked elsewhere
                 #if i[0] in empty_value:
-                #   raise ValueError("Comp ID should not be empty in %s loop category" % (lp_category))
+                #   raise ValueError("%s should not be empty." % comp_id)
                 #if i[1] in empty_value:
-                #    raise ValueError("Atom ID should not be empty in %s loop category" % (lp_category))
+                #    raise ValueError("%s should not be empty." % atom_id)
                 if not i[2] in empty_value:
 
                     try:
-                        ambig_code = int(i[2])
+                       code = int(i[2])
                     except ValueError:
-                        raise ValueError("Ambiguity code must be %s in %s loop category" % (list(bmrb_ambiguity_codes), lp_category))
+                        raise ValueError("%s must be one of %s." % (ambig_code, list(bmrb_ambiguity_codes)))
 
-                    if not ambig_code in bmrb_ambiguity_codes:
-                        raise ValueError("Ambiguity code must be %s in %s loop category" % (list(bmrb_ambiguity_codes), lp_category))
+                    if not code in bmrb_ambiguity_codes:
+                        raise ValueError("%s must be one of %s." % (ambig_code, list(bmrb_ambiguity_codes)))
 
-                    if ambig_code >= 4:
+                    if code >= 4:
                         if i[3] in empty_value:
-                            raise ValueError("Ambiguity set ID should not be empty for ambiguity code %s in %s loop category" % (ambig_code, lp_category))
+                            raise ValueError("%s should not be empty for %s %s." % (ambig_set_id, ambig_code, code))
                         else:
                             try:
-                                ambig_set_id = int(i[3])
+                                int(i[3])
                             except ValueError:
-                                raise ValueError("Ambiguity set ID must be integer in %s loop category" % lp_category)
+                                raise ValueError("%s must be integer." % ambig_set_id)
 
                 if not i[3] in empty_value:
 
                     if i[2] in empty_value or not i[2] in ['4', '5', '6', '9']:
-                        raise ValueError("Ambiguity set ID must be empty for ambiguity code %s in %s loop category" % (i[2], lp_category))
+                        raise ValueError("%s must be empty for %s %s." % (ambig_set_id, ambig_code, i[2]))
 
             ambigs = sorted(set(['{}:{}'.format(i[0], i[2]) for i in ambig_dat]))
             sorted_atm = sorted(set(['{}:{} {}'.format(i[0], i[2], i[1]) for i in ambig_dat]))
@@ -1083,11 +1086,11 @@ class NEFTranslator(object):
                 index_dat = loop.get_data_by_tag(tags)
             else:
                 if not _tags_exist:
-                    raise LookupError("Missing mandatory item %s in %s loop category" % (index_id, lp_category))
+                    raise LookupError("Missing key item %s." % index_id)
 
             for i in index_dat:
                 if NEFTranslator.is_empty_data(i):
-                    raise ValueError("index ID must not be empty in %s loop category" % (i[0], lp_category))
+                    raise ValueError("%s must not be empty." % index_id)
 
             try:
 
@@ -1096,12 +1099,12 @@ class NEFTranslator(object):
                 dup_idxs = [i for i in set(idxs) if idxs.count(i) > 1]
 
                 if len(dup_idxs) > 0:
-                    raise KeyError("Index ID must be unique. %s are duplicated indices in %s loop category" % (dup_idxs, lp_category))
+                    raise KeyError("%s must be unique in loop. %s are duplicated indices." % (index_id, dup_idxs))
 
                 dat.append(idxs)
 
             except ValueError:
-                raise ValueError("Index ID must be integer in %s loop category" % lp_category)
+                raise ValueError("%s must be int." % index_id)
 
         if len(dat) == 0:
             dat.append([])
@@ -1162,42 +1165,42 @@ class NEFTranslator(object):
 
         for k in key_items:
             if not k['type'] in item_types:
-                raise TypeError("Type %s of key item %s must be one of %s" % (k['type'], k['name'], item_types))
+                raise TypeError("Type %s of key item %s must be one of %s." % (k['type'], k['name'], item_types))
 
         for d in data_items:
             if not d['type'] in item_types:
-                raise TypeError("Type %s of data item %s must be one of %s" % (d['type'], d['name'], item_types))
+                raise TypeError("Type %s of data item %s must be one of %s." % (d['type'], d['name'], item_types))
 
         if not allowed_tags is None:
 
             if (set(key_names) | set(allowed_tags)) != set(allowed_tags):
-                raise LookupError("Key items %s must not exists in %s loop category" % ((set(key_names) | set(allowed_tags)) - set(allowed_tags), lp_category))
+                raise LookupError("Key items %s must not exists." % ((set(key_names) | set(allowed_tags)) - set(allowed_tags)))
 
             if (set(data_names) | set(allowed_tags)) != set(allowed_tags):
-                raise LookupError("Data items %s must not exists in %s loop category" % ((set(data_names) | set(allowed_tags)) - set(allowed_tags), lp_category))
+                raise LookupError("Data items %s must not exists." % ((set(data_names) | set(allowed_tags)) - set(allowed_tags)))
 
             for d in data_items:
                 if 'group-mandatory' in d and d['group-mandatory']:
                     group = d['group']
                     for m in group['member-with']:
                         if not m in allowed_tags:
-                            raise Error("Member data item %s of %s must exists in allowed tags of %s loop category" % (m, d['name'], lp_category))
+                            raise Error("Member data item %s of %s must exists in allowed tags." % (m, d['name']))
                     if not group['coexist-with'] is None:
                         for c in group['coexist-with']:
                             if not c in allowed_tags:
-                                raise Error("Coexisting data item %s of %s must exists in allowed tags of %s loop category" % (c, d['name'], lp_category))
+                                raise Error("Coexisting data item %s of %s must exists in allowed tags." % (c, d['name']))
                     if 'smaller-than' in group and group['smaller-than']:
                         for s in group['smaller-than']:
                             if not s in allowed_tags:
-                                raise Error("Smaller data item %s of %s must exists in allowed tags of %s loop category" % (s, d['name'], lp_category))
+                                raise Error("Smaller data item %s of %s must exists in allowed tags." % (s, d['name']))
                     if 'larger-than' in group and group['larger-than']:
                         for l in group['larger-than']:
                             if not l in allowed_tags:
-                                raise Error("Larger data item %s of %s must exists in allowed tags of %s loop category" % (l, d['name'], lp_category))
+                                raise Error("Larger data item %s of %s must exists in allowed tags." % (l, d['name']))
                     if 'not-equal-to' in group and group['not-equal-to']:
                         for l in group['not-equal-to']:
                             if not l in allowed_tags:
-                                raise Error("None-equal data item %s of %s must exists in allowed tags of %s loop category" % (l, d['name'], lp_category))
+                                raise Error("None-equal data item %s of %s must exists in allowed tags." % (l, d['name']))
 
         empty_value = (None, '', '.', '?')
         true_value = ('true', 't', 'yes', 'y', '1')
@@ -1206,14 +1209,14 @@ class NEFTranslator(object):
             tag_dat = []
 
             if set(key_names) & set(loop.tags) != set(key_names):
-                raise LookupError("Missing one of key items %s in %s loop category" % (key_names, lp_category))
+                raise LookupError("Missing one of key items %s." % key_names)
 
             if len(mand_data_names) > 0 and set(mand_data_names) & set(loop.tags) != set(mand_data_names):
-                raise LookupError("Missing one of data items %s in %s loop category" % (mand_data_names, lp_category))
+                raise LookupError("Missing one of data items %s." % mand_data_names)
 
             if not disallowed_tags is None:
                 if len(set(loop.tags) & set(disallowed_tags)) > 0:
-                    raise LookupError("Disallowed items %s exists in %s loop category" % (set(loop.tags) & set(disallowed_tags), lp_category))
+                    raise LookupError("Disallowed items %s exists." % (set(loop.tags) & set(disallowed_tags)))
 
             for d in data_items:
                 if 'group-mandatory' in d and d['group-mandatory']:
@@ -1223,7 +1226,7 @@ class NEFTranslator(object):
                         if not group['coexist-with'] is None:
                             for c in group['coexist-with']:
                                 if not c in loop.tags:
-                                    raise LookupError("Missing one of data items %s in %s loop category" % (set(group['coexist-with']).add(name), lp_category))
+                                    raise LookupError("Missing one of data items %s." % set(group['coexist-with']).add(name))
 
                     else:
                         has_member = False
@@ -1232,7 +1235,7 @@ class NEFTranslator(object):
                                 has_member = True
                                 break
                         if not has_member:
-                            raise LookupError("Missing one of data items %s in %s loop category" % (set(group['member-with']).add(name), lp_category))
+                            raise LookupError("Missing one of data items %s." % set(group['member-with']).add(name))
 
             tags = [k['name'] for k in key_items]
             for data_name in set(data_names) & set(loop.tags):
@@ -1275,21 +1278,21 @@ class NEFTranslator(object):
                         dup_idxs = [i for i in set(idxs) if idxs.count(i) > 1]
 
                         if len(dup_idxs) > 0:
-                            raise KeyError("%s must be unique. %s are duplicated indices in %s loop category" % (tags[_j], dup_idxs, lp_category))
+                            raise KeyError("%s must be unique in loop. %s are duplicated indices." % (tags[_j], dup_idxs))
 
                     except ValueError:
-                        raise ValueError("%s must be integer in %s loop category" % (tags[_j], lp_category))
+                        raise ValueError("%s must be int." % tags[_j])
 
             for i in tag_dat:
                 for j in range(tag_len):
                     if i[j] in empty_value:
                         name = tags[j]
                         if name in key_names:
-                            raise ValueError("Item value %s must not be empty in %s loop category" % (name, lp_category))
+                            raise ValueError("Item value %s must not be empty." % name)
                         else:
                             for d in data_items:
                                 if d['name'] == name and d['mandatory']:
-                                    raise ValueError("Data item value %s must not be empty in %s loop category" % (name, lp_category))
+                                    raise ValueError("Data item value %s must not be empty." % name)
 
             if inc_idx_test:
                 keys = set()
@@ -1338,9 +1341,9 @@ class NEFTranslator(object):
 
                                 idx_msg = idx_msg[:-4] + ', '
 
-                            idx_msg = 'Check rows of ' + idx_msg[:-2] + '. '
+                            idx_msg = '[Check rows of ' + idx_msg[:-2] + '] '
 
-                        raise KeyError("%sValues of key items must be unique. %s in %s loop category" % (idx_msg, msg.rstrip().rstrip(','), lp_category))
+                        raise KeyError("%sValues of key items must be unique in loop. %s are duplicated values." % (idx_msg, msg.rstrip().rstrip(',')))
 
                     keys.add(key)
 
@@ -1360,6 +1363,9 @@ class NEFTranslator(object):
                             msg = ''
                             for j in range(key_len):
                                 msg += key_names[j] + ' %s, ' % i[j]
+                            for j in relax_key_ids:
+                                if not i[j] in empty_value:
+                                    msg += tags[j] + ' %s, ' % i[j]
 
                             idx_msg = ''
 
@@ -1371,6 +1377,8 @@ class NEFTranslator(object):
                                         _key = ''
                                         for j in range(key_len):
                                             _key += " " + _i[j]
+                                        for j in relax_key_ids:
+                                            _key += " " + _i[j]
                                             _key.rstrip()
 
                                         if key == _key:
@@ -1378,9 +1386,9 @@ class NEFTranslator(object):
 
                                     idx_msg = idx_msg[:-4] + ', '
 
-                                idx_msg = 'Check rows of ' + idx_msg[:-2] + '. '
+                                idx_msg = '[Check rows of ' + idx_msg[:-2] + '] '
 
-                            raise KeyError("%sValues of key items must be unique. %s in %s loop category" % (idx_msg, msg.rstrip().rstrip(','), lp_category))
+                            raise KeyError("%sValues of key items must be unique in loop. %s are duplicated values." % (idx_msg, msg.rstrip().rstrip(',')))
 
                         keys.add(key)
 
@@ -1399,46 +1407,46 @@ class NEFTranslator(object):
                             try:
                                 ent[name] = val.lower() in true_value
                             except:
-                                raise ValueError("%s '%s' must be %s in %s loop category" % (name, val, type, lp_category))
+                                raise ValueError("%s '%s' must be %s." % (name, val, type))
                         elif type == 'int':
                             try:
                                 ent[name] = int(val)
                             except:
-                                raise ValueError("%s '%s' must be %s in %s loop category" % (name, val, type, lp_category))
+                                raise ValueError("%s '%s' must be %s." % (name, val, type))
                         elif type == 'index-int' or type == 'positive-int':
                             try:
                                 ent[name] = int(val)
                             except:
-                                raise ValueError("%s '%s' must be %s in %s loop category" % (name, val, type, lp_category))
+                                raise ValueError("%s '%s' must be %s." % (name, val, type))
                             if (type == 'index-int' and ent[name] <= 0) or (type == 'positive-int' and (ent[name] < 0 or (ent[name] == 0 and 'enforce-non-zero' in k and k['enforce-non-zero']))):
-                                raise ValueError("%s '%s' must be %s in %s loop category" % (name, val, type, lp_category))
+                                raise ValueError("%s '%s' must be %s." % (name, val, type))
                             elif ent[name] == 0 and enforce_non_zero:
-                                raise UserWarning("[ZERO] %s '%s' is non-sense value as %s in %s loop category" % (name, val, type, lp_category))
+                                raise UserWarning("[ZERO] %s '%s' is non-sense value as %s." % (name, val, type))
                         elif type == 'static-index':
                             try:
                                 ent[name] = int(val)
                             except:
-                                raise ValueError("%s '%s' must be %s in %s loop category" % (name, val, type, lp_category))
+                                raise ValueError("%s '%s' must be %s." % (name, val, type))
                             if ent[name] <= 0:
-                                raise ValueError("%s '%s' must be %s in %s loop category" % (name, val, type, lp_category))
+                                raise ValueError("%s '%s' must be %s." % (name, val, type))
                             elif static_val[name] is None:
                                 static_val[name] = val
                             elif val != static_val[name] and inc_idx_test:
-                                raise ValueError("%s %s vs %s must be %s in %s loop category" % (name, val, static_val[name], type, lp_category))
+                                raise ValueError("%s %s vs %s must be %s." % (name, val, static_val[name], type))
                         elif type == 'float':
                             try:
                                 ent[name] = float(val)
                             except:
-                                raise ValueError("%s '%s' must be %s in %s loop category" % (name, val, type, lp_category))
+                                raise ValueError("%s '%s' must be %s." % (name, val, type))
                         elif type == 'positive-float':
                             try:
                                 ent[name] = float(val)
                             except:
-                                raise ValueError("%s '%s' must be %s in %s loop category" % (name, val, type, lp_category))
+                                raise ValueError("%s '%s' must be %s." % (name, val, type))
                             if ent[name] < 0.0 or (ent[name] == 0.0 and 'enforce-non-zero' in k and k['enforce-non-zero']):
-                                raise ValueError("%s '%s' must be %s in %s loop category" % (name, val, type, lp_category))
+                                raise ValueError("%s '%s' must be %s." % (name, val, type))
                             elif ent[name] == 0.0 and enforce_non_zero:
-                                raise UserWarning("[ZERO] %s '%s' is non-sense value as %s in %s loop category" % (name, val, type, lp_category))
+                                raise UserWarning("[ZERO] %s '%s' is non-sense value as %s." % (name, val, type))
                         elif type == 'range-float':
                             try:
                                 _range = k['range']
@@ -1446,17 +1454,17 @@ class NEFTranslator(object):
                             except KeyError:
                                 raise Error('Range of key item %s is not defined' % name)
                             except:
-                                raise ValueError("%s '%s' must be %s in %s loop category" % (name, val, type, lp_category))
+                                raise ValueError("%s '%s' must be %s." % (name, val, type))
                             if ('min_exclusive' in _range and ent[name] <= _range['min_exclusive']) or ('min_inclusive' in _range and ent[name] < _range['min_inclusive']) or ('max_inclusive' in _range and ent[name] > _range['max_inclusive']) or ('max_exclusive' in _range and ent[name] >= _range['max_exclusive']):
-                                raise ValueError("%s '%s' must be %s in %s loop category" % (name, val, _range, lp_category))
+                                raise ValueError("%s '%s' must be %s." % (name, val, _range))
                         elif type == 'enum':
                             try:
                                 enum = k['enum']
                                 if not val in enum:
                                     if 'enforce-enum' in k and k['enforce-enum']:
-                                        raise ValueError("%s '%s' must be one of %s in %s loop category" % (name, val, enum, lp_category))
+                                        raise ValueError("%s '%s' must be one of %s." % (name, val, enum))
                                     elif enforce_enum:
-                                        raise UserError("%s '%s' should be one of %s in %s loop category" % (name, val, enum, lp_category))
+                                        raise UserError("%s '%s' should be one of %s." % (name, val, enum))
                                 ent[name] = val
                             except KeyError:
                                 raise Error('Enumeration of key item %s is not defined' % name)
@@ -1465,14 +1473,14 @@ class NEFTranslator(object):
                                 enum = k['enum']
                                 if not int(val) in enum:
                                     if 'enforce-enum' in k and k['enforce-enum']:
-                                        raise ValueError("%s '%s' must be one of %s in %s loop category" % (name, val, enum, lp_category))
+                                        raise ValueError("%s '%s' must be one of %s." % (name, val, enum))
                                     elif enforce_enum:
-                                        raise UserWarning("[ENUM] %s '%s' should be one of %s in %s loop category" % (name, val, enum, lp_category))
+                                        raise UserWarning("[ENUM] %s '%s' should be one of %s." % (name, val, enum))
                                 ent[name] = int(val)
                             except KeyError:
                                 raise Error('Enumeration of key item %s is not defined' % name)
                             except:
-                                raise ValueError("%s '%s' must be %s in %s loop category" % (name, val, type, lp_category))
+                                raise ValueError("%s '%s' must be %s." % (name, val, type))
                         else:
                                 ent[name] = val
 
@@ -1486,46 +1494,46 @@ class NEFTranslator(object):
                                     try:
                                         ent[name] = val in true_value
                                     except:
-                                        raise ValueError("%s '%s' must be %s in %s loop category" % (name, val, type, lp_category))
+                                        raise ValueError("%s '%s' must be %s." % (name, val, type))
                                 elif type == 'int':
                                     try:
                                         ent[name] = int(val)
                                     except:
-                                        raise ValueError("%s '%s' must be %s in %s loop category" % (name, val, type, lp_category))
+                                        raise ValueError("%s '%s' must be %s." % (name, val, type))
                                 elif type == 'index-int' or type == 'positive-int':
                                     try:
                                         ent[name] = int(val)
                                     except:
-                                        raise ValueError("%s '%s' must be %s in %s loop category" % (name, val, type, lp_category))
+                                        raise ValueError("%s '%s' must be %s." % (name, val, type))
                                     if (type == 'index-int' and ent[name] <= 0) or (type == 'positive-int' and (ent[name] < 0 or (ent[name] == 0 and 'enforce-non-zero' in d and d['enforce-non-zero']))):
-                                        raise ValueError("%s '%s' must be %s in %s loop category" % (name, val, type, lp_category))
+                                        raise ValueError("%s '%s' must be %s." % (name, val, type))
                                     elif ent[name] == 0 and enforce_non_zero:
-                                        raise UserWarning("[ZERO] %s '%s' is non-sense value as %s in %s loop category" % (name, val, type, lp_category))
+                                        raise UserWarning("[ZERO] %s '%s' is non-sense value as %s." % (name, val, type))
                                 elif type == 'static-index':
                                     try:
                                         ent[name] = int(val)
                                     except:
-                                        raise ValueError("%s '%s' must be %s in %s loop category" % (name, val, type, lp_category))
+                                        raise ValueError("%s '%s' must be %s." % (name, val, type))
                                     if ent[name] <= 0:
-                                        raise ValueError("%s '%s' must be %s in %s loop category" % (name, val, type, lp_category))
+                                        raise ValueError("%s '%s' must be %s." % (name, val, type))
                                     elif static_val[name] is None:
                                         static_val[name] = val
                                     elif val != static_val[name] and inc_idx_test:
-                                        raise ValueError("%s %s vs %s must be %s in %s loop category" % (name, val, static_val[name], type, lp_category))
+                                        raise ValueError("%s %s vs %s must be %s." % (name, val, static_val[name], type))
                                 elif type == 'float':
                                     try:
                                         ent[name] = float(val)
                                     except:
-                                        raise ValueError("%s '%s' must be %s in %s loop category" % (name, val, type, lp_category))
+                                        raise ValueError("%s '%s' must be %s." % (name, val, type))
                                 elif type == 'positive-float':
                                     try:
                                         ent[name] = float(val)
                                     except:
-                                        raise ValueError("%s '%s' must be %s in %s loop category" % (name, val, type, lp_category))
+                                        raise ValueError("%s '%s' must be %s." % (name, val, type))
                                     if ent[name] < 0.0 or (ent[name] == 0.0 and 'enforce-non-zero' in d and d['enforce-non-zero']):
-                                        raise ValueError("%s '%s' must be %s in %s loop category" % (name, val, type, lp_category))
+                                        raise ValueError("%s '%s' must be %s." % (name, val, type))
                                     elif ent[name] == 0.0 and enforce_non_zero:
-                                        raise UserWarning("[ZERO] %s '%s' is non-sense value as %s in %s loop category" % (name, val, type, lp_category))
+                                        raise UserWarning("[ZERO] %s '%s' is non-sense value as %s." % (name, val, type))
                                 elif type == 'range-float':
                                     try:
                                         _range = d['range']
@@ -1533,17 +1541,17 @@ class NEFTranslator(object):
                                     except KeyError:
                                         raise Error('Range of data item %s is not defined' % name)
                                     except:
-                                        raise ValueError("%s '%s' must be %s in %s loop category" % (name, val, type, lp_category))
+                                        raise ValueError("%s '%s' must be %s." % (name, val, type))
                                     if ('min_exclusive' in _range and ent[name] <= _range['min_exclusive']) or ('min_inclusive' in _range and ent[name] < _range['min_inclusive']) or ('max_inclusive' in _range and ent[name] > _range['max_inclusive']) or ('max_exclusive' in _range and ent[name] >= _range['max_exclusive']):
-                                        raise ValueError("%s '%s' must be %s in %s loop category" % (name, val, _range, lp_category))
+                                        raise ValueError("%s '%s' must be %s." % (name, val, _range))
                                 elif type == 'enum':
                                     try:
                                         enum = d['enum']
                                         if not val in enum:
                                             if 'enforce-enum' in d and d['enforce-enum']:
-                                                raise ValueError("%s '%s' must be one of %s in %s loop category" % (name, val, enum, lp_category))
+                                                raise ValueError("%s '%s' must be one of %s." % (name, val, enum))
                                             elif enforce_enum:
-                                                raise UserWarning("[ENUM] %s '%s' should be one of %s in %s loop category" % (name, val, enum, lp_category))
+                                                raise UserWarning("[ENUM] %s '%s' should be one of %s." % (name, val, enum))
                                         ent[name] = val
                                     except KeyError:
                                         raise Error('Enumeration of data item %s is not defined' % name)
@@ -1552,14 +1560,14 @@ class NEFTranslator(object):
                                         enum = d['enum']
                                         if not int(val) in enum:
                                             if 'enforce-enum' in d and d['enforce-enum']:
-                                                raise ValueError("%s '%s' must be one of %s in %s loop category" % (name, val, enum, lp_category))
+                                                raise ValueError("%s '%s' must be one of %s." % (name, val, enum))
                                             elif enforce_enum:
-                                                raise UserWarning("[ENUM] %s '%s' should be one of %s in %s loop category" % (name, val, enum, lp_category))
+                                                raise UserWarning("[ENUM] %s '%s' should be one of %s." % (name, val, enum))
                                         ent[name] = int(val)
                                     except KeyError:
                                         raise Error('Enumeration of data item %s is not defined' % name)
                                     except:
-                                        raise ValueError("%s '%s' must be %s in %s loop category" % (name, val, type, lp_category))
+                                        raise ValueError("%s '%s' must be %s." % (name, val, type))
                                 else:
                                         ent[name] = val
 
@@ -1577,11 +1585,11 @@ class NEFTranslator(object):
 
                                         if len(idx_tag_ids) > 0:
                                             for _j in idx_tag_ids:
-                                                idx_msg += tags[_j] + " '" + str(ent[tags[_j]]) + "', "
+                                                idx_msg += tags[_j] + " " + str(ent[tags[_j]]) + ", "
 
-                                            idx_msg = 'Check rows of ' + idx_msg[:-2] + '. '
+                                            idx_msg = '[Check row of ' + idx_msg[:-2] + '] '
 
-                                        raise ValueError("%sOne of data item %s must not be empty for a row having %s '%s' in %s loop category" % (idx_msg, c, name, ent[name], lp_category))
+                                        raise ValueError("%sOne of data item %s must not be empty for a row having %s '%s'." % (idx_msg, c, name, ent[name]))
 
                             if 'smaller-than' in group and not group['smaller-than'] is None:
                                 for s in group['smaller-than']:
@@ -1592,11 +1600,11 @@ class NEFTranslator(object):
 
                                             if len(idx_tag_ids) > 0:
                                                 for _j in idx_tag_ids:
-                                                    idx_msg += tags[_j] + " '" + str(ent[tags[_j]]) + "', "
+                                                    idx_msg += tags[_j] + " " + str(ent[tags[_j]]) + ", "
 
-                                                idx_msg = 'Check rows of ' + idx_msg[:-2] + '. '
+                                                idx_msg = '[Check row of ' + idx_msg[:-2] + '] '
 
-                                            raise ValueError("%sData item %s '%s' must be larger than %s '%s' in %s loop category" % (idx_msg, name, ent[name], s, ent[s], lp_category))
+                                            raise ValueError("%sData item %s '%s' must be larger than %s '%s'." % (idx_msg, name, ent[name], s, ent[s]))
 
                             if 'larger-than' in group and not group['larger-than'] is None:
                                 for l in group['larger-than']:
@@ -1607,11 +1615,11 @@ class NEFTranslator(object):
 
                                             if len(idx_tag_ids) > 0:
                                                 for _j in idx_tag_ids:
-                                                    idx_msg += tags[_j] + " '" + str(ent[tags[_j]]) + "', "
+                                                    idx_msg += tags[_j] + " " + str(ent[tags[_j]]) + ", "
 
-                                                idx_msg = 'Check rows of ' + idx_msg[:-2] + '. '
+                                                idx_msg = '[Check row of ' + idx_msg[:-2] + '] '
 
-                                            raise ValueError("%sData item %s '%s' must be smaller than %s '%s' in %s loop category" % (idx_msg, name, ent[name], l, ent[l], lp_category))
+                                            raise ValueError("%sData item %s '%s' must be smaller than %s '%s'." % (idx_msg, name, ent[name], l, ent[l]))
 
                             if 'not-equal-to' in group and not group['not-equal-to'] is None:
                                 for n in group['not-equal-to']:
@@ -1622,11 +1630,11 @@ class NEFTranslator(object):
 
                                             if len(idx_tag_ids) > 0:
                                                 for _j in idx_tag_ids:
-                                                    idx_msg += tags[_j] + " '" + str(ent[tags[_j]]) + "', "
+                                                    idx_msg += tags[_j] + " " + str(ent[tags[_j]]) + ", "
 
-                                                idx_msg = 'Check rows of ' + idx_msg[:-2] + '. '
+                                                idx_msg = '[Check row of ' + idx_msg[:-2] + '] '
 
-                                            raise ValueError("%sData item %s '%s' must not be equal to %s '%s' in %s loop category" % (idx_msg, name, ent[name], n, ent[n], lp_category))
+                                            raise ValueError("%sData item %s '%s' must not be equal to %s '%s'." % (idx_msg, name, ent[name], n, ent[n]))
 
                         else:
                             has_member = False
@@ -1640,11 +1648,11 @@ class NEFTranslator(object):
 
                                 if len(idx_tag_ids) > 0:
                                     for _j in idx_tag_ids:
-                                        idx_msg += tags[_j] + " '" + str(ent[tags[_j]]) + "', "
+                                        idx_msg += tags[_j] + " " + str(ent[tags[_j]]) + ", "
 
-                                    idx_msg = 'Check rows of ' + idx_msg[:-2] + '. '
+                                    idx_msg = '[Check row of ' + idx_msg[:-2] + '] '
 
-                                raise ValueError("%sOne of data items %s must not be empty in %s loop category" % (idx_msg, set(group['member-with']).add(name), lp_category))
+                                raise ValueError("%sOne of data items %s must not be empty." % (idx_msg, set(group['member-with']).add(name)))
 
                 asm.append(ent)
 
@@ -1668,35 +1676,35 @@ class NEFTranslator(object):
 
         for t in tag_items:
             if not t['type'] in item_types:
-                raise TypeError("Type %s of tag item %s must be one of %s" % (t['type'], t['name'], item_types))
+                raise TypeError("Type %s of tag item %s must be one of %s." % (t['type'], t['name'], item_types))
 
         if not allowed_tags is None:
 
             if (set(tag_names) | set(allowed_tags)) != set(allowed_tags):
-                raise LookupError("Tag items %s must not exists in" % (set(tag_names) | set(allowed_tags)) - set(allowed_tags))
+                raise LookupError("Tag items %s must not exists." % (set(tag_names) | set(allowed_tags)) - set(allowed_tags))
 
             for t in tag_items:
                 if 'group-mandatory' in t and t['group-mandatory']:
                     group = t['group']
                     for m in group['member-with']:
                         if not m in allowed_tags:
-                            raise Error("Member tag item %s of %s must exists in allowed tags of" % (m, t['name']))
+                            raise Error("Member tag item %s of %s must exists in allowed tags." % (m, t['name']))
                     if not group['coexist-with'] is None:
                         for c in group['coexist-with']:
                             if not c in allowed_tags:
-                                raise Error("Coexisting tag item %s of %s must exists in allowed tags of" % (c, t['name']))
+                                raise Error("Coexisting tag item %s of %s must exists in allowed tags." % (c, t['name']))
                     if 'smaller-than' in group and group['smaller-than']:
                         for s in group['smaller-than']:
                             if not s in allowed_tags:
-                                raise Error("Smaller tag item %s of %s must exists in allowed tags of" % (s, t['name']))
+                                raise Error("Smaller tag item %s of %s must exists in allowed tags." % (s, t['name']))
                     if 'larger-than' in group and group['larger-than']:
                         for l in group['larger-than']:
                             if not l in allowed_tags:
-                                raise Error("Larger tag item %s of %s must exists in allowed tags of" % (l, t['name']))
+                                raise Error("Larger tag item %s of %s must exists in allowed tags." % (l, t['name']))
                     if 'not-equal-to' in group and group['not-equal-to']:
                         for l in group['not-equal-to']:
                             if not l in allowed_tags:
-                                raise Error("None-equal tag item %s of %s must exists in allowed tags of" % (l, t['name']))
+                                raise Error("None-equal tag item %s of %s must exists in allowed tags." % (l, t['name']))
 
         empty_value = (None, '', '.', '?')
         true_value = ('true', 't', 'yes', 'y', '1')
@@ -1704,7 +1712,7 @@ class NEFTranslator(object):
         sf_tags = {i[0]:i[1] for i in star_data.tags}
 
         if len(mand_tag_names) > 0 and set(mand_tag_names) & set(sf_tags.keys()) != set(mand_tag_names):
-            raise LookupError("Missing one of tag items %s in" % mand_tag_names)
+            raise LookupError("Missing one of tag items %s." % mand_tag_names)
 
         for t in tag_items:
             if 'group-mandatory' in t and t['group-mandatory']:
@@ -1714,7 +1722,7 @@ class NEFTranslator(object):
                     if not group['coexist-with'] is None:
                         for c in group['coexist-with']:
                             if not c in sf_tags.keys():
-                                raise LookupError("Missing one of tag items %s in" % set(group['coexist-with']).add(name))
+                                raise LookupError("Missing one of tags %s." % set(group['coexist-with']).add(name))
 
                 else:
                     has_member = False
@@ -1723,13 +1731,13 @@ class NEFTranslator(object):
                             has_member = True
                             break
                     if not has_member:
-                        raise LookupError("Missing one of tag items %s in" % set(group['member-with']).add(name))
+                        raise LookupError("Missing one of tags %s." % set(group['member-with']).add(name))
 
         for name, val in sf_tags.items():
             if val in empty_value:
                 for t in tag_items:
                     if t['name'] == name and t['mandatory']:
-                        raise ValueError("Tag item value %s must not be empty in" % name)
+                        raise ValueError("Tag item value %s must not be empty." % name)
 
         ent = {} # entity
 
@@ -1743,69 +1751,69 @@ class NEFTranslator(object):
                         try:
                             ent[name] = val in true_value
                         except:
-                            raise ValueError("%s '%s' must be %s in" % (name, val, type))
+                            raise ValueError("%s '%s' must be %s." % (name, val, type))
                     elif type == 'int':
                         try:
                             ent[name] = int(val)
                         except:
-                            raise ValueError("%s '%s' must be %s in" % (name, val, type))
+                            raise ValueError("%s '%s' must be %s." % (name, val, type))
                     elif type == 'positive-int':
                         try:
                             ent[name] = int(val)
                         except:
-                            raise ValueError("%s '%s' must be %s in" % (name, val, type))
+                            raise ValueError("%s '%s' must be %s." % (name, val, type))
                         if ent[name] < 0 or (ent[name] == 0 and 'enforce-non-zero' in t and t['enforce-non-zero']):
-                            raise ValueError("%s '%s' must be %s in" % (name, val, type))
+                            raise ValueError("%s '%s' must be %s." % (name, val, type))
                         elif ent[name] == 0 and enforce_non_zero:
-                            raise UserWarning("[ZERO] %s '%s' is non-sense value as %s in" % (name, val, type))
+                            raise UserWarning("[ZERO] %s '%s' is non-sense value as %s." % (name, val, type))
                     elif type == 'float':
                         try:
                             ent[name] = float(val)
                         except:
-                            raise ValueError("%s '%s' must be %s in" % (name, val, type))
+                            raise ValueError("%s '%s' must be %s." % (name, val, type))
                     elif type == 'positive-float':
                         try:
                             ent[name] = float(val)
                         except:
-                            raise ValueError("%s '%s' must be %s in" % (name, val, type))
+                            raise ValueError("%s '%s' must be %s." % (name, val, type))
                         if ent[name] < 0.0 or (ent[name] == 0.0 and 'enforce-non-zero' in t and t['enforce-non-zero']):
-                            raise ValueError("%s '%s' must be %s in" % (name, val, type))
+                            raise ValueError("%s '%s' must be %s." % (name, val, type))
                         elif ent[name] == 0.0 and enforce_non_zero:
-                            raise UserWarning("[ZERO] %s '%s' is non-sense value as %s in" % (name, val, type))
+                            raise UserWarning("[ZERO] %s '%s' is non-sense value as %s." % (name, val, type))
                     elif type == 'range-float':
                         try:
                             _range = t['range']
                             ent[name] = float(val)
                         except KeyError:
-                            raise Error('Range of tag item %s is not defined' % name)
+                            raise Error('Range of tag item %s is not defined.' % name)
                         except:
-                            raise ValueError("%s '%s' must be %s in" % (name, val, type))
+                            raise ValueError("%s '%s' must be %s." % (name, val, type))
                         if ('min_exclusive' in _range and ent[name] <= _range['min_exclusive']) or ('min_inclusive' in _range and ent[name] < _range['min_inclusive']) or ('max_inclusive' in _range and ent[name] > _range['max_inclusive']) or ('max_exclusive' in _range and ent[name] >= _range['max_exclusive']):
-                            raise ValueError("%s '%s' must be %s in" % (name, val, _range))
+                            raise ValueError("%s '%s' must be %s." % (name, val, _range))
                     elif type == 'enum':
                         try:
                             enum = t['enum']
                             if not val in enum:
                                 if 'enforce-enum' in t and t['enforce-enum']:
-                                    raise ValueError("%s '%s' must be one of %s in" % (name, val, enum))
+                                    raise ValueError("%s '%s' must be one of %s." % (name, val, enum))
                                 elif enforce_enum:
-                                    raise UserWarning("[ENUM] %s '%s' should be one of %s in" % (name, val, enum))
+                                    raise UserWarning("[ENUM] %s '%s' should be one of %s." % (name, val, enum))
                             ent[name] = val
                         except KeyError:
-                            raise Error('Enumeration of tag item %s is not defined' % name)
+                            raise Error('Enumeration of tag item %s is not defined.' % name)
                     elif type == 'enum-int':
                         try:
                             enum = t['enum']
                             if not int(val) in enum:
                                 if 'enforce-enum' in t and t['enforce-enum']:
-                                    raise ValueError("%s '%s' must be one of %s in" % (name, val, enum))
+                                    raise ValueError("%s '%s' must be one of %s." % (name, val, enum))
                                 elif enforce_enum:
-                                    raise UserWarning("[ENUM] %s '%s' should be one of %s in" % (name, val, enum))
+                                    raise UserWarning("[ENUM] %s '%s' should be one of %s." % (name, val, enum))
                             ent[name] = int(val)
                         except KeyError:
-                            raise Error('Enumeration of tag item %s is not defined' % name)
+                            raise Error('Enumeration of tag item %s is not defined.' % name)
                         except:
-                            raise ValueError("%s '%s' must be %s in" % (name, val, type))
+                            raise ValueError("%s '%s' must be %s." % (name, val, type))
                     else:
                             ent[name] = val
 
@@ -1818,25 +1826,25 @@ class NEFTranslator(object):
                             has_coexist = True
                             for c in group['coexist-with']:
                                 if not c in ent or ent[c] is None:
-                                    raise ValueError("One of tag item %s must not be empty due to %s '%s' in" % (c, name, ent[name]))
+                                    raise ValueError("One of tag item %s must not be empty due to %s '%s'." % (c, name, ent[name]))
 
                         if 'smaller-than' in group and not group['smaller-than'] is None:
                             for s in group['smaller-than']:
                                 if s in ent and not ent[s] is None:
                                     if ent[name] <= ent[s]:
-                                        raise ValueError("Tag item %s '%s' must be larger than %s '%s' in" % (name, ent[name], s, ent[s]))
+                                        raise ValueError("Tag item %s '%s' must be larger than %s '%s'." % (name, ent[name], s, ent[s]))
 
                         if 'larger-than' in group and not group['larger-than'] is None:
                             for l in group['larger-than']:
                                 if l in ent and not ent[l] is None:
                                     if ent[name] >= ent[l]:
-                                        raise ValueError("Tag item %s '%s' must be smaller than %s '%s' in" % (name, ent[name], l, ent[l]))
+                                        raise ValueError("Tag item %s '%s' must be smaller than %s '%s'." % (name, ent[name], l, ent[l]))
 
                         if 'not-equal-to' in group and not group['not-equal-to'] is None:
                             for n in group['not-equal-to']:
                                 if n in ent and not ent[n] is None:
                                     if ent[name] == ent[n]:
-                                        raise ValueError("Tag item %s '%s' must not be equal to %s '%s' in" % (name, ent[name], n, ent[n]))
+                                        raise ValueError("Tag item %s '%s' must not be equal to %s '%s'." % (name, ent[name], n, ent[n]))
 
                     else:
                         has_member = False
@@ -1845,7 +1853,7 @@ class NEFTranslator(object):
                                 has_member = True
                                 break
                         if not has_member:
-                            raise ValueError("One of tag items %s must not be empty in" % set(group['member-with']).add(name))
+                            raise ValueError("One of tag items %s must not be empty." % set(group['member-with']).add(name))
 
         return ent
 
@@ -1879,7 +1887,7 @@ class NEFTranslator(object):
                     except KeyError:
                         ns.append(i)
             except ValueError:
-                self.logger.error('One of the following tag is missing ', seq_id, comp_id, atom_id)
+                self.logger.error('Missing one of data items %s' % (seq_id, comp_id, atom_id))
 
             # nonStandard = [i for i in atm_data if i[2] not in self.atomDict[i[1].upper]]
             # ns.append(nonStandard)

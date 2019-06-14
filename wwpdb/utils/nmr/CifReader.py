@@ -7,7 +7,7 @@
 #                     Add accessors for lists of dictionaries.
 # 12-May-2011 - rps - Added check for None when asking for category Object in __getDataList()
 # 2012-10-24    RPS   Updated to reflect reorganization of modules in pdbx packages
-# 11-Jun-2019   my  - Forked original code to wwpdb.util.nmr.CifReader
+# 14-Jun-2019   my  - Forked original code to wwpdb.util.nmr.CifReader
 ##
 """ A collection of classes for parsing CIF files.
 """
@@ -142,11 +142,11 @@ class CifReader(object):
         key_names = [k['name'] for k in key_items]
 
         key_len = len(key_items)
-
+        """
         for k in key_items:
             if not k['type'] in self.item_types:
-                raise TypeError("Type %s of key item %s (alt. %s) must be one of %s" % (k['type'], k['name'], k['alt_name'], elf.item_types))
-
+                raise TypeError("Type %s of key item %s (alt. %s) must be one of %s" % (k['type'], k['name'], k['alt_name'], self.item_types))
+        """
         asm = [] # assembly of a loop
 
         # get category object
@@ -167,7 +167,7 @@ class CifReader(object):
                     altDict[next(k['alt_name'] for k in key_items if k['name'] == itName)] = idxIt
 
             if set(key_names) & set(itDict.keys()) != set(key_names):
-                raise LookupError("Missing one of key items %s in %s category" % (key_names, catName))
+                raise LookupError("Missing one of data items %s." % key_names)
 
             # get row list
             rowList = catObj.getRowList()
@@ -175,7 +175,7 @@ class CifReader(object):
             for i in rowList:
                 for j in range(key_len):
                     if i[itDict[key_names[j]]] in self.empty_value:
-                        raise ValueError("Item value %s must not be empty in %s category" % (itNameList[j], catName))
+                        raise ValueError("%s must not be empty." % itNameList[j])
 
             seq_dict = {}
             sid_dict = {}
@@ -193,7 +193,10 @@ class CifReader(object):
                 for i in rowList:
                     chk_key = '{} {:04d}'.format(i[chain_id_col], int(i[seq_id_col]))
                     if chk_dict[chk_key] != i[comp_id_col]:
-                        raise KeyError("Sequence must be unique. chain_id %s, seq_id %s, comp_id %s vs %s in %s category" % (i[chain_id_col], i[seq_id_col], i[comp_id_col], chk_dict[chk_key], catName))
+                        raise KeyError("Sequence must be unique. %s %s, %s %s, %s %s vs %s." %\
+                                       (itNameList[chain_id_col], i[chain_id_col],
+                                        itNameList[seq_id_col], i[seq_id_col],
+                                        itNameList[comp_id_col], i[comp_id_col], chk_dict[chk_key]))
 
                 if len(sorted_seq[0].split(' ')[-1]) > 1:
                     if len(chains) > 1:
@@ -224,6 +227,6 @@ class CifReader(object):
                     asm.append(ent)
 
             except ValueError:
-                raise ValueError("Sequence ID must be integer in %s category" % catName)
+                raise ValueError("%s must be int." % itNameList[seq_id_col])
 
         return asm

@@ -1,6 +1,6 @@
 ##
 # File: NmrDpReport.py
-# Date: 13-Jun-2019
+# Date: 14-Jun-2019
 #
 # Updates:
 ##
@@ -9,6 +9,7 @@
 import logging
 import json
 import types
+import re
 
 class NmrDpReport:
     """ Wrapper class for data processing report of NMR unified data.
@@ -234,19 +235,54 @@ class NmrDpReportError:
 
         self.__contents['total'] = 0
 
-    def addDescription(self, item, value):
+        self.chk_row_pat = re.compile(r'^\[Check row of (.*)\] (.*)$')
+        self.chk_rows_pat = re.compile(r'\[Check rows of (.*)\] (.*)$')
+        self.chk_rows_key_pat = re.compile(r'^(.*) (.*)$')
+
+    def appendDescription(self, item, value):
 
         if item in self.items:
+
             if self.__contents[item] is None:
-                self.__contents[item] = value
-            else:
-                self.__contents[item] += '\n' + value
+                self.__contents[item] = []
+
+            if 'category' in value:
+                value['category'] = value['category'].lstrip('_')
+
+            if not item is 'internal_error' and 'description' in value:
+                d = value['description']
+
+                if d.startswith('[Check row of'):
+                    g = self.chk_row_pat.search(d).groups()
+
+                    loc = {}
+                    for i in g[0].split(','):
+                        p = i.lstrip()
+                        s = p.index(' ')
+                        loc[p[0:s]] = p[s:].lstrip()
+
+                    value['row_location'] = loc
+                    value['description'] = g[1]
+
+                elif d.startswith('[Check rows of'):
+                    g = self.chk_rows_pat.search(d).groups()
+
+                    locs = {}
+                    for i in g[0].split(','):
+                        p = i.lstrip()
+                        q = p.split(' ', 1)
+                        locs[q[0]] = re.sub(' vs ', ',', q[1]).split(',')
+
+                    value['row_locations'] = locs
+                    value['description'] = g[1]
+
+            self.__contents[item].append(value)
 
             self.__contents['total'] += 1
 
         else:
-            logging.error('+NmrDpReportError.addDescription() ++ Error  - Unknown item type %s' % item)
-            raise KeyError('+NmrDpReportError.addDescription() ++ Error  - Unknown item type %s' % item)
+            logging.error('+NmrDpReportError.appendDescription() ++ Error  - Unknown item type %s' % item)
+            raise KeyError('+NmrDpReportError.appendDescription() ++ Error  - Unknown item type %s' % item)
 
     def get(self):
         return self.__contents
@@ -267,19 +303,40 @@ class NmrDpReportWarning:
 
         self.__contents['total'] = 0
 
-    def addDescription(self, item, value):
+        self.chk_row_pat = re.compile(r'^\[Check row of (.*)\] (.*)$')
+
+    def appendDescription(self, item, value):
 
         if item in self.items:
+
             if self.__contents[item] is None:
-                self.__contents[item] = value
-            else:
-                self.__contents[item] += '\n' + value
+                self.__contents[item] = []
+
+            if 'category' in value:
+                value['category'] = value['category'].lstrip('_')
+
+            if not item is 'internal_error' and 'description' in value:
+                d = value['description']
+
+                if d.startswith('[Check row of'):
+                    g = self.chk_row_pat.search(d).groups()
+
+                    loc = {}
+                    for i in g[0].split(','):
+                        p = i.lstrip()
+                        s = p.index(' ')
+                        loc[p[0:s]] = p[s:].lstrip()
+
+                    value['row_location'] = loc
+                    value['description'] = g[1]
+
+            self.__contents[item].append(value)
 
             self.__contents['total'] += 1
 
         else:
-            logging.error('+NmrDpReportWarning.addDescription() ++ Error  - Unknown item type %s' % item)
-            raise KeyError('+NmrDpReportWarning.addDescription() ++ Error  - Unknown item type %s' % item)
+            logging.error('+NmrDpReportWarning.appendDescription() ++ Error  - Unknown item type %s' % item)
+            raise KeyError('+NmrDpReportWarning.appendDescription() ++ Error  - Unknown item type %s' % item)
 
     def get(self):
         return self.__contents

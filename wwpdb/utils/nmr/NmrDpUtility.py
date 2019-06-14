@@ -1,6 +1,6 @@
 ##
 # File: NmrDpUtility.py
-# Date: 13-Jun-2019
+# Date: 14-Jun-2019
 #
 # Updates:
 ##
@@ -57,6 +57,7 @@ class NmrDpUtility(object):
                                 [self.__initializeDpReport,
                                  self.__instanceNEFTranslator,
                                  self.__instanceBMRBChemShiftStat,
+                                 # validate NMR data only
                                  self.__validateInputSource,
                                  self.__detectContentSubType,
                                  self.__extractPolymerSequence,
@@ -65,7 +66,7 @@ class NmrDpUtility(object):
                                  self.__extractCommonPolymerSequence,
                                  self.__extractNonStandardResidue,
                                  self.__appendPolymerSequenceAlignment,
-                                 self.__validteAtomIdOfStandardResidue,
+                                 self.__validateAtomNomenclature,
                                  self.__validateAtomTypeOfCSLoop,
                                  self.__validateAmbigCodeOfCSLoop,
                                  self.__testIndexConsistency,
@@ -75,19 +76,19 @@ class NmrDpUtility(object):
                                  self.__validateCSValue,
                                  self.__testCSValueConsistencyInPkLoop,
                                  self.__calculateStatsOfExptlData,
-                                 # coordinate check
+                                 # validate coordinate only
                                  self.__appendCoordinate,
                                  self.__detectCoordContentSubType,
                                  self.__extractCoordPolymerSequence,
                                  self.__extractCoordPolymerSequenceInLoop,
                                  self.__extractCoordNonStandardResidue,
                                  self.__appendCoordPolymerSequenceAlignment,
-                                 self.__assignPolymerSequences
+                                 # cross-check
+                                 self.__assignCoordPolymerSequence,
+                                 self.__testCorrdAtomIdConsistency
                                  ]
                                 }
         """
-                                'nmr-consistency-check': [
-                                                          self.__testCoordAtomNomeclature],
                                 'nmr-nef2star-deposit':  [self.__appendInputResource,
                                                           self.__retrieveDpReport,
                                                           self.__resolveNefMinorIssue,
@@ -1417,7 +1418,7 @@ class NmrDpUtility(object):
 
             err = "+NmrDpUtility.__instanceNEFTranslator() ++ Error - NEFTranslator is not available."
 
-            self.report.error.addDescription('internal_error', err)
+            self.report.error.appendDescription('internal_error', err)
             self.report.setError()
 
             if self.__verbose:
@@ -1438,7 +1439,7 @@ class NmrDpUtility(object):
 
         err = "+NmrDpUtility.__instanceBMRBChemShiftStat() ++ Error - BMRB chemical shift statistics is not available."
 
-        self.report.error.addDescription('internal_error', err)
+        self.report.error.appendDescription('internal_error', err)
         self.report.setError()
 
         if self.__verbose:
@@ -1483,12 +1484,11 @@ class NmrDpUtility(object):
 
                 err = "%s was selected as %s file, but recognized as %s file." % (file_name, self.readable_file_type[file_type], self.readable_file_type[_file_type])
 
-                self.report.error.addDescription('format_issue', err)
-
                 if len(message['error']) > 0:
                     for error_message in message['error']:
-                        self.report.error.addDescription('format_issue', "Diagnostic information - %s" % error_message)
+                        err += err_message
 
+                self.report.error.appendDescription('format_issue', {'file_name': file_name, 'description': err})
                 self.report.setError()
 
                 if self.__verbose:
@@ -1502,12 +1502,11 @@ class NmrDpUtility(object):
 
             err = "%s is invalid %s file." % (file_name, self.readable_file_type[file_type])
 
-            self.report.error.addDescription('format_issue', err)
-
             if len(message['error']) > 0:
                 for error_message in message['error']:
-                    self.report.error.addDescription('format_issue', "Diagnostic information - %s" % error_message)
+                    err += err_message
 
+            self.report.error.appendDescription('format_issue', {'file_name': file_name, 'description': err})
             self.report.setError()
 
             if self.__verbose:
@@ -1537,7 +1536,7 @@ class NmrDpUtility(object):
 
                 warn = "Unsupported %s saveframe category exists in %s file." % (sf_category, file_name)
 
-                self.report.warning.addDestination('skipped_sf_category', warn)
+                self.report.warning.appendDescription('skipped_sf_category', {'file_name': file_name, 'description': warn})
                 self.report.setWarning()
 
                 if self.__verbose:
@@ -1563,7 +1562,7 @@ class NmrDpUtility(object):
 
             warn = "Saveframe category %s did not exist in %s file." % (sf_category, file_name)
 
-            self.report.warning.addDescription('missing_saveframe', warn)
+            self.report.warning.appendDescription('missing_saveframe', {'file_name': file_name, 'description': warn})
             self.report.setWarning(warning)
 
             if self.__verbose:
@@ -1575,7 +1574,7 @@ class NmrDpUtility(object):
 
             err = "Unexpectedly, multiple saveframes belonging to category %s were found in %s file." % (sf_category, file_name)
 
-            self.report.error.addDescription('format_issue', err)
+            self.report.error.appendDescription('format_issue', {'file_name': file_name, 'description': err})
             self.report.setError()
 
             if self.__verbose:
@@ -1590,7 +1589,7 @@ class NmrDpUtility(object):
 
             err = "Assigned chemical shifts are mandatory for PDB/BMRB deposition. Saveframe category %s and loop category %s were not found in %s file." % (sf_category, lp_category, file_name)
 
-            self.report.error.addDescription('missing_mandatory_content', err)
+            self.report.error.appendDescription('missing_mandatory_content', {'file_name': file_name, 'description': err})
             self.report.setError()
 
             if self.__verbose:
@@ -1605,7 +1604,7 @@ class NmrDpUtility(object):
 
             err = "Distance restraints are mandatory for PDB/BMRB deposition. Saveframe category %s and loop category %s were not found in %s file." % (sf_category, lp_category, file_name)
 
-            self.report.error.addDescription('missing_mandatory_content', err)
+            self.report.error.appendDescription('missing_mandatory_content', {'file_name': file_name, 'description': err})
             self.report.setError()
 
             if self.__verbose:
@@ -1620,7 +1619,7 @@ class NmrDpUtility(object):
 
             warn = "Spectral peak list is missing. The wwPDB NMR Validation Task Force strongly encourages the submission of spectral peak lists, in particular those generated from NOESY spectra. Saveframe category %s and loop category %s were not found in %s file." % (sf_category, lp_category, file_name)
 
-            self.report.warning.addDescription('missing_content', warn)
+            self.report.warning.appendDescription('missing_content', {'file_name': file_name, 'description': warn})
             self.report.setWarning()
 
             if self.__verbose:
@@ -1652,6 +1651,7 @@ class NmrDpUtility(object):
         input_source = self.report.input_sources[0]
         input_source_dic = input_source.get()
 
+        file_name = input_source_dic['file_name']
         file_type = input_source_dic['file_type']
 
         content_subtype = 'poly_seq'
@@ -1712,9 +1712,9 @@ class NmrDpUtility(object):
 
                                 except ValueError:
 
-                                    warn = "Author seq ID '%s' (auth_asym_id %s, auth_comp_id %s) has to be integer in %s saveframe." % (auth_seq_id, auth_asym_id, auth_comp_ids[j], sf_framecode)
+                                    warn = "auth_seq_id '%s' (auth_asym_id %s, auth_comp_id %s) has to be int." % (auth_seq_id, auth_asym_id, auth_comp_ids[j])
 
-                                    self.report.warning.addDescription('sequence_mismatch', warn)
+                                    self.report.warning.appendDescription('sequence_mismatch', {'file_name': file_name, 'saveframe': sf_framecode, 'category': lp_category, 'description': warn})
                                     self.report.setWarning()
 
                                     if self.__verbose:
@@ -1740,9 +1740,9 @@ class NmrDpUtility(object):
 
                                     if _auth_seq_id - _seq_ids[j] != offset:
 
-                                        warn = "Author seq ID '%s' vs '%d' (auth_asym_id %s, auth_comp_id %s) mismatches in %s saveframe." % (auth_seq_id, seq_ids[j] + offset, auth_asym_id, auth_comp_ids[j], sf_framecode)
+                                        warn = "auth_seq_id '%s' vs '%d' (auth_asym_id %s, auth_comp_id %s) mismatches." % (auth_seq_id, seq_ids[j] + offset, auth_asym_id, auth_comp_ids[j])
 
-                                        self.report.warning.addDescription('sequence_mismatch', warn)
+                                        self.report.warning.appendDescription('sequence_mismatch', {'file_name': file_name, 'saveframe': sf_framecode, 'category': lp_category, 'description': warn})
                                         self.report.setWarning()
 
                                         if self.__verbose:
@@ -1766,9 +1766,9 @@ class NmrDpUtility(object):
                                 auth_asym_id = auth_asym_ids[j]
                                 auth_seq_id = auth_seq_ids[j]
 
-                                warn = "Author comp ID %s (auth_asym_id %s, auth_seq_id %s) vs %s (chain_id %s, seq_id %s) mismatches in %s saveframe." % (auth_comp_id, auth_asym_id, auth_seq_id, comp_id, chain_id, seq_id, sf_framecode)
+                                warn = "auth_comp_id %s (auth_asym_id %s, auth_seq_id %s) vs %s (chain_id %s, seq_id %s) mismatches." % (auth_comp_id, auth_asym_id, auth_seq_id, comp_id, chain_id, seq_id)
 
-                                self.report.warning.addDescription('sequence_mismatch', warn)
+                                self.report.warning.appendDescription('sequence_mismatch', {'file_name': file_name, 'saveframe': sf_framecode, 'category': lp_category, 'description': warn})
                                 self.report.setWarning()
 
                                 if self.__verbose:
@@ -1780,7 +1780,7 @@ class NmrDpUtility(object):
 
         except KeyError as e:
 
-            self.report.error.addDescription('sequence_mismatch', "%s, %s saveframe." % (str(e).strip("'"), sf_framecode))
+            self.report.error.appendDescription('sequence_mismatch', {'file_name': file_name, 'saveframe': sf_framecode, 'category': lp_category, 'description': str(e).strip("'")})
             self.report.setError()
 
             if self.__verbose:
@@ -1788,7 +1788,7 @@ class NmrDpUtility(object):
 
         except LookupError as e:
 
-            self.report.error.addDescription('missing_mandatory_item', "%s, %s saveframe." % (str(e).strip("'"), sf_framecode))
+            self.report.error.appendDescription('missing_mandatory_item', {'file_name': file_name, 'saveframe': sf_framecode, 'category': lp_category, 'description': str(e).strip("'")})
             self.report.setError()
 
             if self.__verbose:
@@ -1796,7 +1796,7 @@ class NmrDpUtility(object):
 
         except ValueError as e:
 
-            self.report.error.addDescription('invalid_data', "%s, %s saveframe." % (str(e).strip("'"), sf_framecode))
+            self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'saveframe': sf_framecode, 'category': lp_category, 'description': str(e).strip("'")})
             self.report.setError()
 
             if self.__verbose:
@@ -1804,7 +1804,7 @@ class NmrDpUtility(object):
 
         except Exception as e:
 
-            self.report.error.addDescription('internal_error', "+NmrDpUtility.__extractPolymerSequence() ++ Error  - %s" % str(e))
+            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__extractPolymerSequence() ++ Error  - %s" % str(e))
             self.report.setError()
 
             if self.__verbose:
@@ -1822,6 +1822,7 @@ class NmrDpUtility(object):
         input_source = self.report.input_sources[0]
         input_source_dic = input_source.get()
 
+        file_name = input_source_dic['file_name']
         file_type = input_source_dic['file_type']
 
         poly_seq_list_set = {}
@@ -1895,9 +1896,9 @@ class NmrDpUtility(object):
 
                                             except ValueError:
 
-                                                warn = "Author seq ID '%s' (auth_asym_id %s, auth_comp_id %s) has to be integer in %s saveframe." % (auth_seq_id, auth_asym_id, auth_comp_ids[j], sf_framecode)
+                                                warn = "auth_seq_id '%s' (auth_asym_id %s, auth_comp_id %s) has to be int." % (auth_seq_id, auth_asym_id, auth_comp_ids[j])
 
-                                                self.report.warning.addDescription('sequence_mismatch', warn)
+                                                self.report.warning.appendDescription('sequence_mismatch', {'file_name': file_name, 'saveframe': sf_framecode, 'category': lp_category, 'description': warn})
                                                 self.report.setWarning()
 
                                                 if self.__verbose:
@@ -1924,9 +1925,9 @@ class NmrDpUtility(object):
 
                                                 if _auth_seq_id - _seq_ids[j] != offset:
 
-                                                    warn = "Author seq ID '%s' vs '%d' (auth_asym_id %s, auth_comp_id %s) mismatches in %s saveframe." % (auth_seq_id, seq_ids[j] + offset, auth_asym_id, auth_comp_ids[j], sf_framecode)
+                                                    warn = "auth_seq_id '%s' vs '%d' (auth_asym_id %s, auth_comp_id %s) mismatches." % (auth_seq_id, seq_ids[j] + offset, auth_asym_id, auth_comp_ids[j])
 
-                                                    self.report.warning.addDescription('sequence_mismatch', warn)
+                                                    self.report.warning.appendDescription('sequence_mismatch', {'file_name': file_name, 'saveframe': sf_framecode, 'category': lp_category, 'description': warn})
                                                     self.report.setWarning()
 
                                                     if self.__verbose:
@@ -1950,9 +1951,9 @@ class NmrDpUtility(object):
                                             auth_asym_id = auth_asym_ids[j]
                                             auth_seq_id = auth_seq_ids[j]
 
-                                            warn = "Author comp ID %s (auth_asym_id %s, auth_seq_id %s) vs %s (chain_id %s, seq_id %s) mismatches in %s saveframe." % (auth_comp_id, auth_asym_id, auth_seq_id, comp_id, chain_id, seq_id, sf_framecode)
+                                            warn = "auth_comp_id %s (auth_asym_id %s, auth_seq_id %s) vs %s (chain_id %s, seq_id %s) mismatches." % (auth_comp_id, auth_asym_id, auth_seq_id, comp_id, chain_id, seq_id)
 
-                                            self.report.warning.addDescription('sequence_mismatch', warn)
+                                            self.report.warning.appendDescription('sequence_mismatch', {'file_name': file_name, 'saveframe': sf_framecode, 'category': lp_category, 'description': warn})
                                             self.report.setWarning()
 
                                             if self.__verbose:
@@ -1962,7 +1963,7 @@ class NmrDpUtility(object):
 
                 except KeyError as e:
 
-                    self.report.error.addDescription('sequence_mismatch', "%s, %s saveframe." % (str(e).strip("'"), sf_framecode))
+                    self.report.error.appendDescription('sequence_mismatch', {'file_name': file_name, 'saveframe': sf_framecode, 'category': lp_category, 'description': str(e).strip("'")})
                     self.report.setError()
 
                     if self.__verbose:
@@ -1970,7 +1971,7 @@ class NmrDpUtility(object):
 
                 except LookupError as e:
 
-                    self.report.error.addDescription('missing_mandatory_item', "%s, %s saveframe." % (str(e).strip("'"), sf_framecode))
+                    self.report.error.appendDescription('missing_mandatory_item', {'file_name': file_name, 'saveframe': sf_framecode, 'category': lp_category, 'description': str(e).strip("'")})
                     self.report.setError()
 
                     if self.__verbose:
@@ -1978,7 +1979,7 @@ class NmrDpUtility(object):
 
                 except ValueError as e:
 
-                    self.report.error.addDescription('invalid_data', "%s, %s saveframe." % (str(e).strip("'"), sf_framecode))
+                    self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'saveframe': sf_framecode, 'category': lp_category, 'description': str(e).strip("'")})
                     self.report.setError()
 
                     if self.__verbose:
@@ -1986,7 +1987,7 @@ class NmrDpUtility(object):
 
                 except Exception as e:
 
-                    self.report.error.addDescription('internal_error', "+NmrDpUtility.__extractPolymerSequenceInLoop() ++ Error  - %s" % str(e))
+                    self.report.error.appendDescription('internal_error', "+NmrDpUtility.__extractPolymerSequenceInLoop() ++ Error  - %s" % str(e))
                     self.report.setError()
 
                     if self.__verbose:
@@ -2011,6 +2012,9 @@ class NmrDpUtility(object):
 
         input_source = self.report.input_sources[0]
         input_source_dic = input_source.get()
+
+        file_name = input_source_dic['file_name']
+        file_type = input_source_dic['file_type']
 
         polymer_sequence = input_source_dic['polymer_sequence']
         polymer_sequence_in_loop = input_source_dic['polymer_sequence_in_loop']
@@ -2037,6 +2041,9 @@ class NmrDpUtility(object):
             subtype1 = subtype_pair[0] # poly_seq will appear only on subtype1
             subtype2 = subtype_pair[1]
 
+            lp_category1 = self.lp_categories[file_type][subtype1]
+            lp_category2 = self.lp_categories[file_type][subtype2]
+
             # reference polymer sequence exists
             if has_poly_seq and subtype1 == poly_seq:
                 ps1 = polymer_sequence
@@ -2053,8 +2060,14 @@ class NmrDpUtility(object):
                     for s2 in ps2:
 
                         if not s2['chain_id'] in ref_cids:
-                            self.report.error.addDescription('sequence_mismatch', "Invalid chain_id %s exists in %s saveframe." % (cid, sf_framecode2))
+
+                            err = "Invalid chain_id %s exists." % cid
+
+                            self.report.error.appendDescription('sequence_mismatch', {'file_name': file_name, 'saveframe': sf_framecode2, 'category': lp_category2, 'description': err})
                             self.report.setError()
+
+                            if self.__verbose:
+                                self.__lfh.write("+NmrDpUtility.__testSequenceConsistency() ++ Error  - %s\n" % err)
 
                         else:
 
@@ -2068,15 +2081,27 @@ class NmrDpUtility(object):
                                     seq = s2['comp_id'][j]
 
                                     if not sid in s1['seq_id']:
-                                        self.report.error.addDescription('sequence_mismatch', "Invalid seq_id %s (chain_id %s) exists in %s saveframe." % (sid, cid, sf_framecode2))
+
+                                        err = "Invalid seq_id %s (chain_id %s) exists." % (sid, cid)
+
+                                        self.report.error.appendDescription('sequence_mismatch', {'file_name': file_name, 'saveframe': sf_framecode2, 'category': lp_category2, 'description': err})
                                         self.report.setError()
+
+                                        if self.__verbose:
+                                            self.__lfh.write("+NmrDpUtility.__testSequenceConsistency() ++ Error  - %s\n" % err)
 
                                     else:
                                         i = s1['seq_id'].index(sid)
 
                                         if seq != s1['comp_id'][i]:
-                                            self.report.error.addDescription('sequence_mismatch', "Invalid comp_id %s vs %s (seq_id %s, chain_id %s) exists in %s saveframe." % (seq, s1['comp_id'][i], sid, cid, sf_framecode2))
+
+                                            err = "Invalid comp_id %s vs %s (seq_id %s, chain_id %s) exists." % (seq, s1['comp_id'][i], sid, cid)
+
+                                            self.report.error.appendDescription('sequence_mismatch', {'file_name': file_name, 'saveframe': sf_framecode2, 'category': lp_category2, 'description': err})
                                             self.report.setError()
+
+                                            if self.__verbose:
+                                                self.__lfh.write("+NmrDpUtility.__testSequenceConsistency() ++ Error  - %s\n" % err)
 
             # brute force check
             else:
@@ -2115,8 +2140,14 @@ class NmrDpUtility(object):
                                         i = s1['seq_id'].index(sid)
 
                                         if seq != s1['comp_id'][i]:
-                                            self.report.error.addDescription('sequence_mismatch', "Unmatched comp_id %s vs %s (seq_id %s, chain_id %s) exists in %s against %s saveframe." % (seq, s1['comp_id'][i], sid, cid, sf_framecode2, sf_framecode1))
+
+                                            err = "Unmatched comp_id %s vs %s (seq_id %s, chain_id %s) exists against %s saveframe." % (seq, s1['comp_id'][i], sid, cid, sf_framecode1)
+
+                                            self.report.error.appendDescription('sequence_mismatch', {'file_name': file_name, 'saveframe': sf_framecode2, 'category': lp_category2, 'description': err})
                                             self.report.setError()
+
+                                            if self.__verbose:
+                                                self.__lfh.write("+NmrDpUtility.__testSequenceConsistency() ++ Error  - %s\n" % err)
 
                         # inverse check required for unverified sequences
                         for s1 in ps1:
@@ -2136,8 +2167,14 @@ class NmrDpUtility(object):
                                         j = s2['seq_id'].index(sid)
 
                                         if seq != s2['comp_id'][j]:
-                                            self.report.error.addDescription('sequence_mismatch', "Unmatched comp_id %s vs %s (seq_id %s, chain_id %s) exists in %s against %s saveframe." % (seq, s2['comp_id'][j], sid, cid, sf_framecode1, sf_framecode2))
+
+                                            err = "Unmatched comp_id %s vs %s (seq_id %s, chain_id %s) exists against %s saveframe." % (seq, s2['comp_id'][j], sid, cid, sf_framecode2)
+
+                                            self.report.error.appendDescription('sequence_mismatch', {'file_name': file_name, 'saveframe': sf_framecode1, 'category': lp_category1, 'description': err})
                                             self.report.setError()
+
+                                            if self.__verbose:
+                                                self.__lfh.write("+NmrDpUtility.__testSequenceConsistency() ++ Error  - %s\n" % err)
 
         return not self.report.isError()
 
@@ -2264,11 +2301,11 @@ class NmrDpUtility(object):
 
             err = "Common polymer sequence did not exist, __extractCommonPolymerSequence() should be invoked."
 
-            self.report.error.addDescription('internal_error', "+NmrDpUtility.__appendPolymerSequenceAlignment() ++ Error  - %s" % err)
+            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__appendPolymerSequenceAlignment() ++ Error  - %s" % err)
             self.report.setError()
 
             if self.__verbose:
-                logging.warning("+NmrDpUtility.__appendPolymerSequenceAlignment() ++ Error  - %s\n" % err)
+                self.__lfh.write("+NmrDpUtility.__appendPolymerSequenceAlignment() ++ Error  - %s\n" % err)
 
             return False
 
@@ -2380,8 +2417,8 @@ class NmrDpUtility(object):
 
         return array
 
-    def __validteAtomIdOfStandardResidue(self):
-        """ Validate atom nomenclature of standard residues supported by NEFTranslator.
+    def __validateAtomNomenclature(self):
+        """ Validate atom nomenclature using NEFTranslator and CCD.
         """
 
         if self.report.isError():
@@ -2390,6 +2427,7 @@ class NmrDpUtility(object):
         input_source = self.report.input_sources[0]
         input_source_dic = input_source.get()
 
+        file_name = input_source_dic['file_name']
         file_type = input_source_dic['file_type']
 
         polymer_sequence_in_loop = input_source_dic['polymer_sequence_in_loop']
@@ -2427,8 +2465,14 @@ class NmrDpUtility(object):
                                     _atom_id = self.nef_translator.get_nmrstar_atom(comp_id, atom_id)[1]
 
                                     if len(_atom_id) == 0:
-                                        self.report.error.addDescription('invalid_atom_nomenclature', "Invalid atom_id %s (comp_id %s) exists in %s saveframe." % (atom_id, comp_id, sf_framecode))
+
+                                        err = "Invalid atom_id %s (comp_id %s) exists." % (atom_id, comp_id)
+
+                                        self.report.error.appendDescription('invalid_atom_nomenclature', {'file_name': file_name, 'saveframe': sf_framecode, 'category': lp_category, 'description': err})
                                         self.report.setError()
+
+                                        if self.__verbose:
+                                            self.__lfh.write("+NmrDpUtility.__validateAtomNomenclature() ++ Error  - %s\n" % err)
 
                                     else:
                                         _atom_ids.extend(_atom_id)
@@ -2438,8 +2482,14 @@ class NmrDpUtility(object):
                             for atom_id in atom_ids:
 
                                 if not self.nef_translator.validate_comp_atom(comp_id, atom_id):
-                                    self.report.error.addDescription('invalid_atom_nomenclature', "Invalid atom_id %s (comp_id %s) exists in %s saveframe." % (atom_id, comp_id, sf_framecode))
+
+                                    err = "Invalid atom_id %s (comp_id %s) exists." % (atom_id, comp_id)
+
+                                    self.report.error.appendDescription('invalid_atom_nomenclature', {'file_name': file_name, 'saveframe': sf_framecode, 'category': lp_category, 'description': err})
                                     self.report.setError()
+
+                                    if self.__verbose:
+                                        self.__lfh.write("+NmrDpUtility.__validateAtomNomenclature() ++ Error  - %s\n" % err)
 
                         # non-standard residue
                         else:
@@ -2458,8 +2508,13 @@ class NmrDpUtility(object):
                                 if len(unk_atom_ids) > 0:
                                     cc_name = self.__last_chem_comp_dict['_chem_comp.name']
 
-                                    self.report.warning.addDescription('atom_nomenclature_mismatch', "Unknown atom_id %s (comp_id %s, comp_name %s) exist in %s saveframe." % (unk_atom_ids, comp_id, cc_name, sf_framecode))
+                                    warn = "Unknown atom_id %s (comp_id %s, comp_name %s) exist." % (unk_atom_ids, comp_id, cc_name)
+
+                                    self.report.warning.appendDescription('atom_nomenclature_mismatch', {'file_name': file_name, 'saveframe': sf_framecode, 'category': lp_category, 'description': warn})
                                     self.report.setWarning()
+
+                                    if self.__verbose:
+                                        self.__lfh.write("+NmrDpUtility.__validateAtomNomenclature() ++ Warning  - %s\n" % warn)
 
                                 ref_elems = set([a[self.__cca_type_symbol] for a in self.__last_chem_comp_atoms if a[self.__cca_leaving_atom_flag] != 'Y'])
 
@@ -2487,8 +2542,14 @@ class NmrDpUtility(object):
                                     _auth_atom_id = self.nef_translator.get_nmrstar_atom(comp_id, auth_atom_id)[1]
 
                                     if len(_auth_atom_id) == 0:
-                                        self.report.warning.addDescription('atom_nomenclature_mismatch', "Unmatched author atom ID %s (auth_comp_id %s) exists in %s saveframe." % (auth_atom_id, comp_id, sf_framecode))
+
+                                        warn = "Unmatched author atom ID %s (auth_comp_id %s) exists." % (auth_atom_id, comp_id)
+
+                                        self.report.warning.appendDescription('atom_nomenclature_mismatch', {'file_name': file_name, 'saveframe': sf_framecode, 'category': lp_category, 'description': warn})
                                         self.report.setWarning()
+
+                                        if self.__verbose:
+                                            self.__lfh.write("+NmrDpUtility.__validateAtomNomenclature() ++ Warning  - %s\n" % warn)
 
                                     else:
                                         _auth_atom_ids.extend(_auth_atom_id)
@@ -2498,8 +2559,14 @@ class NmrDpUtility(object):
                                 for auth_atom_id in auth_atom_ids:
 
                                     if not self.nef_translator.validate_comp_atom(comp_id, auth_atom_id):
-                                        self.report.warning.addDescription('atom_nomenclature_mismatch', "Unmatched author atom ID %s (auth_comp_id %s) exists in %s saveframe." % (auth_atom_id, comp_id, sf_framecode))
+
+                                        warn = "Unmatched author atom ID %s (auth_comp_id %s) exists." % (auth_atom_id, comp_id)
+
+                                        self.report.warning.appendDescription('atom_nomenclature_mismatch', {'file_name': file_name, 'saveframe': sf_framecode, 'category': lp_category, 'description': warn})
                                         self.report.setWarning()
+
+                                        if self.__verbose:
+                                            self.__lfh.write("+NmrDpUtility.__validateAtomNomenclature() ++ Warning  - %s\n" % warn)
 
                             # non-standard residue
                             else:
@@ -2515,38 +2582,50 @@ class NmrDpUtility(object):
                                     atom_ids = pair['atom_id']
 
                                     if (set(auth_atom_ids) | set(atom_ids)) != set(atom_ids):
-                                        self.report.warning.addDescription('atom_nomenclature_mismatch', "Unmatched author atom ID %s (auth_comp_id %s, non-standard residue) exists in %s saveframe." % ((set(auth_atom_ids) | set(atom_ids)) - set(atom_ids), comp_id, sf_framecode))
+
+                                        warn = "Unmatched author atom ID %s (auth_comp_id %s, non-standard residue) exists." % ((set(auth_atom_ids) | set(atom_ids)) - set(atom_ids), comp_id)
+
+                                        self.report.warning.appendDescription('atom_nomenclature_mismatch', {'file_name': file_name, 'saveframe': sf_framecode, 'category': lp_category, 'description': warn})
                                         self.report.setWarning()
+
+                                        if self.__verbose:
+                                            self.__lfh.write("+NmrDpUtility.__validateAtomNomenclature() ++ Warning  - %s\n" % warn)
 
                                     break
 
                                 if not has_comp_id:
-                                        self.report.warning.addDescription('atom_nomenclature_mismatch', "Unmatched author atom ID %s (auth_comp_id %s, non-standard residue) exists in %s saveframe." % (auth_atom_ids, comp_id, sf_framecode))
+
+                                        warn = "Unmatched author atom ID %s (auth_comp_id %s, non-standard residue) exists." % (auth_atom_ids, comp_id)
+
+                                        self.report.warning.appendDescription('atom_nomenclature_mismatch', {'file_name': file_name, 'saveframe': sf_framecode, 'category': lp_category, 'description': warn})
                                         self.report.setWarning()
+
+                                        if self.__verbose:
+                                            self.__lfh.write("+NmrDpUtility.__validateAtomNomenclature() ++ Warning  - %s\n" % warn)
 
                 except LookupError as e:
 
-                    self.report.error.addDescription('missing_mandatory_item', "%s, %s saveframe." % (str(e).strip("'"), sf_framecode))
+                    self.report.error.appendDescription('missing_mandatory_item', {'file_name': file_name, 'saveframe': sf_framecode, 'category': lp_category, 'description': str(e).strip("'")})
                     self.report.setError()
 
                     if self.__verbose:
-                        self.__lfh.write("+NmrDpUtility.__validteAtomIdOfStandardResidue() ++ LookupError  - %s" % str(e))
+                        self.__lfh.write("+NmrDpUtility.__validateAtomNomenclature() ++ LookupError  - %s" % str(e))
 
                 except ValueError as e:
 
-                    self.report.error.addDescription('invalid_data', "%s, %s saveframe." % (str(e).strip("'"), sf_framecode))
+                    self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'saveframe': sf_framecode, 'category': lp_category, 'description': str(e).strip("'")})
                     self.report.setError()
 
                     if self.__verbose:
-                        self.__lfh.write("+NmrDpUtility.__validteAtomIdOfStandardResidue() ++ ValueError  - %s" % str(e))
+                        self.__lfh.write("+NmrDpUtility.__validateAtomNomenclature() ++ ValueError  - %s" % str(e))
 
                 except Exception as e:
 
-                    self.report.error.addDescription('internal_error', "+NmrDpUtility.__validteAtomIdOfStandardResidue() ++ Error  - %s" % str(e))
+                    self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateAtomNomenclature() ++ Error  - %s" % str(e))
                     self.report.setError()
 
                     if self.__verbose:
-                        self.__lfh.write("+NmrDpUtility.__validteAtomIdOfStandardResidue() ++ Error  - %s" % str(e))
+                        self.__lfh.write("+NmrDpUtility.__validateAtomNomenclature() ++ Error  - %s" % str(e))
 
         return not self.report.isError()
 
@@ -2569,7 +2648,7 @@ class NmrDpUtility(object):
 
             err = "Assigned chemical shift loop did not exist in %s file." % file_name
 
-            self.report.error.addDescription('internal_error', "+NmrDpUtility.__validateAtomTypeOfCSLoop() ++ Error  - %s" % err)
+            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateAtomTypeOfCSLoop() ++ Error  - %s" % err)
             self.report.setError()
 
             if self.__verbose:
@@ -2578,6 +2657,7 @@ class NmrDpUtility(object):
             return False
 
         sf_category = self.sf_categories[file_type][content_subtype]
+        lp_category = self.lp_categories[file_type][content_subtype]
 
         for sf_data in self.__star_data.get_saveframes_by_category(sf_category):
 
@@ -2596,23 +2676,41 @@ class NmrDpUtility(object):
                     atom_ids = a_type['atom_id']
 
                     if not atom_type in self.atom_isotopes.keys():
-                        self.report.error.addDescription('invalid_atom_type', "Invalid atom_type %s exists in %s saveframe." % (atom_type, sf_framecode))
+
+                        err = "Invalid atom_type %s exists." % atom_type
+
+                        self.report.error.appendDescription('invalid_atom_type', {'file_name': file_name, 'saveframe': sf_framecode, 'category': lp_category, 'description': err})
                         self.report.setError()
+
+                        if self.__verbose:
+                            self.__lfh.write("+NmrDpUtility.__validateAtomTypeOfCSLoop() ++ Error  - %s\n" % err)
 
                     else:
                         for isotope_num in isotope_nums:
                             if not isotope_num in self.atom_isotopes[atom_type]:
-                                self.report.error.addDescription('invalid_isotope_number', "Invalid isotope number %s (atom_type %s, allowed isotope number %s) exists in %s saveframe." % (isotope_num, atom_type, self.atom_isotopes[atom_type], sf_framecode))
+
+                                err = "Invalid isotope number %s (atom_type %s, allowed isotope number %s) exists." % (isotope_num, atom_type, self.atom_isotopes[atom_type])
+
+                                self.report.error.appendDescription('invalid_isotope_number', {'file_name': file_name, 'saveframe': sf_framecode, 'category': lp_category, 'description': err})
                                 self.report.setError()
+
+                                if self.__verbose:
+                                    self.__lfh.write("+NmrDpUtility.__validateAtomTypeOfCSLoop() ++ Error  - %s\n" % err)
 
                         for atom_id in atom_ids:
                             if not atom_id.startswith(atom_type):
-                                self.report.error.addDescription('invalid_atom_nomenclature', "Invalid atom_id %s (atom_type %s) exists in %s saveframe." % (atom_id, atom_type, sf_framecode))
+
+                                err = "Invalid atom_id %s (atom_type %s) exists." % (atom_id, atom_type)
+
+                                self.report.error.appendDescription('invalid_atom_nomenclature', {'file_name': file_name, 'saveframe': sf_framecode, 'category': lp_category, 'description': err})
                                 self.report.setError()
+
+                                if self.__verbose:
+                                    self.__lfh.write("+NmrDpUtility.__validateAtomTypeOfCSLoop() ++ Error  - %s\n" % err)
 
             except LookupError as e:
 
-                self.report.error.addDescription('missing_mandatory_item', "%s, %s saveframe." % (str(e).strip("'"), sf_framecode))
+                self.report.error.appendDescription('missing_mandatory_item', {'file_name': file_name, 'saveframe': sf_framecode, 'category': lp_category, 'description': str(e).strip("'")})
                 self.report.setError()
 
                 if self.__verbose:
@@ -2620,7 +2718,7 @@ class NmrDpUtility(object):
 
             except ValueError as e:
 
-                self.report.error.addDescription('invalid_data', "%s, %s saveframe." % (str(e).strip("'"), sf_framecode))
+                self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'saveframe': sf_framecode, 'category': lp_category, 'description': str(e).strip("'")})
                 self.report.setError()
 
                 if self.__verbose:
@@ -2628,7 +2726,7 @@ class NmrDpUtility(object):
 
             except Exception as e:
 
-                self.report.error.addDescription('internal_error', "+NmrDpUtility.__validateAtomTypeOfCSLoop() ++ Error  - %s" % str(e))
+                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateAtomTypeOfCSLoop() ++ Error  - %s" % str(e))
                 self.report.setError()
 
                 if self.__verbose:
@@ -2655,7 +2753,7 @@ class NmrDpUtility(object):
 
             err = "Assigned chemical shift loop did not exist in %s file." % file_name
 
-            self.report.error.addDescription('internal_error', "+NmrDpUtility.__validateAmbigCodeOfCSLoop() ++ Error  - %s" % err)
+            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateAmbigCodeOfCSLoop() ++ Error  - %s" % err)
             self.report.setError()
 
             if self.__verbose:
@@ -2668,6 +2766,7 @@ class NmrDpUtility(object):
             return True
 
         sf_category = self.sf_categories[file_type][content_subtype]
+        lp_category = self.lp_categories[file_type][content_subtype]
 
         for sf_data in self.__star_data.get_saveframes_by_category(sf_category):
 
@@ -2698,14 +2797,20 @@ class NmrDpUtility(object):
                             allowed_ambig_code = self.bmrb_cs_stat.getMaxAmbigCodeWoSetId(comp_id, atom_id)
 
                             if ambig_code > allowed_ambig_code:
-                                self.report.error.addDescription('invalid_ambiguity_code', "Invalid ambiguity code %s (comp_id %s, atom_id %s, allowed ambig_code %s) exists in %s saveframe." % (ambig_code, comp_id, atom_id, [1, allowed_ambig_code, 4, 5, 6, 9], sf_framecode))
+
+                                err = "Invalid ambiguity code %s (comp_id %s, atom_id %s, allowed ambig_code %s) exists." % (ambig_code, comp_id, atom_id, [1, allowed_ambig_code, 4, 5, 6, 9])
+
+                                self.report.error.appendDescription('invalid_ambiguity_code', {'file_name': file_name, 'saveframe': sf_framecode, 'category': lp_category, 'description': err})
                                 self.report.setError()
+
+                                if self.__verbose:
+                                    self.__lfh.write("+NmrDpUtility.__testAmbigCodeOfCSLoop() ++ Error  - %s\n" % err)
 
                 if len(comp_ids_wo_ambig_code) > 0:
 
-                    warn = "Missing ambiguity code for the following residues %s in %s saveframe." % (comp_ids_wo_ambig_code, sf_framecode)
+                    warn = "Missing ambiguity code for the following residues %s." % comp_ids_wo_ambig_code
 
-                    self.report.warning.addDescription('missing_data', warn)
+                    self.report.warning.appendDescription('missing_data', {'file_name': file_name, 'saveframe': sf_framecode, 'category': lp_category, 'description': warn})
                     self.report.setWarning()
 
                     if self.__verbose:
@@ -2713,7 +2818,7 @@ class NmrDpUtility(object):
 
             except LookupError as e:
 
-                self.report.error.addDescription('missing_mandatory_item', "%s, %s saveframe." % (str(e).strip("'"), sf_framecode))
+                self.report.error.appendDescription('missing_mandatory_item', {'file_name': file_name, 'saveframe': sf_framecode, 'category': lp_category, 'description': str(e).strip("'")})
                 self.report.setError()
 
                 if self.__verbose:
@@ -2721,7 +2826,7 @@ class NmrDpUtility(object):
 
             except ValueError as e:
 
-                self.report.error.addDescription('invalid_data', "%s, %s saveframe." % (str(e).strip("'"), sf_framecode))
+                self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'saveframe': sf_framecode, 'category': lp_category, 'description': str(e).strip("'")})
                 self.report.setError()
 
                 if self.__verbose:
@@ -2729,7 +2834,7 @@ class NmrDpUtility(object):
 
             except Exception as e:
 
-                self.report.error.addDescription('internal_error', "+NmrDpUtility.__testAmbigCodeOfCSLoop() ++ Error  - %s" % str(e))
+                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__testAmbigCodeOfCSLoop() ++ Error  - %s" % str(e))
                 self.report.setError()
 
                 if self.__verbose:
@@ -2747,6 +2852,7 @@ class NmrDpUtility(object):
         input_source = self.report.input_sources[0]
         input_source_dic = input_source.get()
 
+        file_name = input_source_dic['file_name']
         file_type = input_source_dic['file_type']
 
         for content_subtype in input_source_dic['content_subtype'].keys():
@@ -2769,9 +2875,9 @@ class NmrDpUtility(object):
 
                     if indices != range(1, len(indices) + 1):
 
-                        warn = "Index (loop tag %s.%s) is disordered in %s saveframe." % (lp_category, index_tag, sf_framecode)
+                        warn = "Index (loop tag %s.%s) is disordered." % (lp_category, index_tag)
 
-                        self.report.warning.addDescription('disordered_index', warn)
+                        self.report.warning.appendDescription('disordered_index', {'file_name': file_name, 'saveframe': sf_framecode, 'category': lp_category, 'description': warn})
                         self.report.setWarning()
 
                         if self.__verbose:
@@ -2779,7 +2885,7 @@ class NmrDpUtility(object):
 
                 except KeyError as e:
 
-                    self.report.error.addDescription('duplicated_index', "%s, %s saveframe." % (str(e).strip("'"), sf_framecode))
+                    self.report.error.appendDescription('duplicated_index', {'file_name': file_name, 'saveframe': sf_framecode, 'category': lp_category, 'description': str(e).strip("'")})
                     self.report.setError()
 
                     if self.__verbose:
@@ -2787,7 +2893,7 @@ class NmrDpUtility(object):
 
                 except LookupError as e:
 
-                    self.report.error.addDescription('missing_mandatory_item', "%s, %s saveframe." % (str(e).strip("'"), sf_framecode))
+                    self.report.error.appendDescription('missing_mandatory_item', {'file_name': file_name, 'saveframe': sf_framecode, 'category': lp_category, 'description': str(e).strip("'")})
                     self.report.setError()
 
                     if self.__verbose:
@@ -2795,7 +2901,7 @@ class NmrDpUtility(object):
 
                 except ValueError as e:
 
-                    self.report.error.addDescription('invalid_data', "%s, %s saveframe." % (str(e).strip("'"), sf_framecode))
+                    self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'saveframe': sf_framecode, 'category': lp_category, 'description': str(e).strip("'")})
                     self.report.setError()
 
                     if self.__verbose:
@@ -2803,7 +2909,7 @@ class NmrDpUtility(object):
 
                 except Exception as e:
 
-                    self.report.error.addDescription('internal_error', "+NmrDpUtility.__testIndexConsistency() ++ Error  - %s" % str(e))
+                    self.report.error.appendDescription('internal_error', "+NmrDpUtility.__testIndexConsistency() ++ Error  - %s" % str(e))
                     self.report.setError()
 
                     if self.__verbose:
@@ -2818,6 +2924,7 @@ class NmrDpUtility(object):
         input_source = self.report.input_sources[0]
         input_source_dic = input_source.get()
 
+        file_name = input_source_dic['file_name']
         file_type = input_source_dic['file_type']
 
         if input_source_dic['content_subtype'] is None:
@@ -2895,7 +3002,7 @@ class NmrDpUtility(object):
 
                 except KeyError as e:
 
-                    self.report.error.addDescription('multiple_data', "%s, %s saveframe." % (str(e).strip("'"), sf_framecode))
+                    self.report.error.appendDescription('multiple_data', {'file_name': file_name, 'saveframe': sf_framecode, 'category': lp_category, 'description': str(e).strip("'")})
                     self.report.setError()
 
                     if self.__verbose:
@@ -2903,7 +3010,7 @@ class NmrDpUtility(object):
 
                 except LookupError as e:
 
-                    self.report.error.addDescription('missing_mandatory_item', "%s, %s saveframe." % (str(e).strip("'"), sf_framecode))
+                    self.report.error.appendDescription('missing_mandatory_item', {'file_name': file_name, 'saveframe': sf_framecode, 'category': lp_category, 'description': str(e).strip("'")})
                     self.report.setError()
 
                     if self.__verbose:
@@ -2911,7 +3018,7 @@ class NmrDpUtility(object):
 
                 except ValueError as e:
 
-                    self.report.error.addDescription('invalid_data', "%s, %s saveframe." % (str(e).strip("'"), sf_framecode))
+                    self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'saveframe': sf_framecode, 'category': lp_category, 'description': str(e).strip("'")})
                     self.report.setError()
 
                     if self.__verbose:
@@ -2926,9 +3033,9 @@ class NmrDpUtility(object):
 
                     if zero or enum:
 
-                        warn = warn[7:] + ', %s saveframe.' % sf_framecode
+                        warn = warn[7:]
 
-                        self.report.warning.addDescription('missing_data' if zero else 'enum_failure', warn)
+                        self.report.warning.appendDescription('missing_data' if zero else 'enum_failure', {'file_name': file_name, 'saveframe': sf_framecode, 'category': lp_category, 'description': warn})
                         self.report.setWarning()
 
                         if self.__verbose:
@@ -2947,7 +3054,8 @@ class NmrDpUtility(object):
                             pass
 
                     else:
-                        self.report.error.addDescription('internal_error', "+NmrDpUtility.__testDataConsistencyInLoop() ++ Error  - %s" % str(e))
+
+                        self.report.error.appendDescription('internal_error', "+NmrDpUtility.__testDataConsistencyInLoop() ++ Error  - %s" % str(e))
                         self.report.setError()
 
                         if self.__verbose:
@@ -2955,7 +3063,7 @@ class NmrDpUtility(object):
 
                 except Exception as e:
 
-                    self.report.error.addDescription('internal_error', "+NmrDpUtility.__testDataConsistencyInLoop() ++ Error  - %s" % str(e))
+                    self.report.error.appendDescription('internal_error', "+NmrDpUtility.__testDataConsistencyInLoop() ++ Error  - %s" % str(e))
                     self.report.setError()
 
                     if self.__verbose:
@@ -2970,6 +3078,7 @@ class NmrDpUtility(object):
         input_source = self.report.input_sources[0]
         input_source_dic = input_source.get()
 
+        file_name = input_source_dic['file_name']
         file_type = input_source_dic['file_type']
 
         if input_source_dic['content_subtype'] is None:
@@ -2980,6 +3089,7 @@ class NmrDpUtility(object):
         for content_subtype in input_source_dic['content_subtype'].keys():
 
             sf_category = self.sf_categories[file_type][content_subtype]
+            lp_category = self.lp_categories[file_type][content_subtype]
 
             for sf_data in self.__star_data.get_saveframes_by_category(sf_category):
 
@@ -2997,9 +3107,9 @@ class NmrDpUtility(object):
 
                     except ValueError:
 
-                        err = "%s %s must be in %s, %s saveframe." % (self.num_dim_items[file_type], _num_dim, set(range(1, self.lim_num_dim)), sf_framecode)
+                        err = "%s %s must be in %s." % (self.num_dim_items[file_type], _num_dim, set(range(1, self.lim_num_dim)))
 
-                        self.report.error.addDescription('invalid_data', err)
+                        self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'saveframe': sf_framecode, 'category': lp_category, 'description': err})
                         self.report.setError()
 
                         if self.__verbose:
@@ -3029,11 +3139,11 @@ class NmrDpUtility(object):
                             self.aux_data[content_subtype].append({'sf_framecode': sf_framecode, 'lp_category': lp_category, 'data': aux_data})
 
                             if content_subtype == 'spectral_peak':
-                                self.__testDataConsistencyInAuxLoopOfSpectralPeak(file_type, sf_framecode, num_dim, lp_category, aux_data)
+                                self.__testDataConsistencyInAuxLoopOfSpectralPeak(file_name, file_type, sf_framecode, num_dim, lp_category, aux_data)
 
                         except KeyError as e:
 
-                            self.report.error.addDescription('multiple_data', "%s, %s saveframe." % (str(e).strip("'"), sf_framecode))
+                            self.report.error.appendDescription('multiple_data', {'file_name': file_name, 'saveframe': sf_framecode, 'category': lp_category, 'description': str(e).strip("'")})
                             self.report.setError()
 
                             if self.__verbose:
@@ -3041,7 +3151,7 @@ class NmrDpUtility(object):
 
                         except LookupError as e:
 
-                            self.report.error.addDescription('missing_mandatory_item', "%s, %s saveframe." % (str(e).strip("'"), sf_framecode))
+                            self.report.error.appendDescription('missing_mandatory_item', {'file_name': file_name, 'saveframe': sf_framecode, 'category': lp_category, 'description': str(e).strip("'")})
                             self.report.setError()
 
                             if self.__verbose:
@@ -3049,7 +3159,7 @@ class NmrDpUtility(object):
 
                         except ValueError as e:
 
-                            self.report.error.addDescription('invalid_data', "%s, %s saveframe." % (str(e).strip("'"), sf_framecode))
+                            self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'saveframe': sf_framecode, 'category': lp_category, 'description': str(e).strip("'")})
                             self.report.setError()
 
                             if self.__verbose:
@@ -3064,9 +3174,9 @@ class NmrDpUtility(object):
 
                             if zero or enum:
 
-                                warn = warn[7:] + ", %s saveframe." % sf_framecode
+                                warn = warn[7:]
 
-                                self.report.warning.addDescription('missing_data' if zero else 'enum_failure', warn)
+                                self.report.warning.appendDescription('missing_data' if zero else 'enum_failure', {'file_name': file_name, 'saveframe': sf_framecode, 'category': lp_category, 'description': warn})
                                 self.report.setWarning()
 
                                 if self.__verbose:
@@ -3082,13 +3192,14 @@ class NmrDpUtility(object):
                                     self.aux_data[content_subtype].append({'sf_framecode': sf_framecode, 'lp_category': lp_category, 'data': aux_data})
 
                                     if content_subtype == 'spectral_peak':
-                                        self.__testDataConsistencyInAuxLoopOfSpectralPeak(file_type, sf_framecode, num_dim, lp_category, aux_data)
+                                        self.__testDataConsistencyInAuxLoopOfSpectralPeak(file_name, file_type, sf_framecode, num_dim, lp_category, aux_data)
 
                                 except:
                                     pass
 
                             else:
-                                self.report.error.addDescription('internal_error', "+NmrDpUtility.__testDataConsistencyInAuxLoop() ++ Error  - %s" % str(e))
+
+                                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__testDataConsistencyInAuxLoop() ++ Error  - %s" % str(e))
                                 self.report.setError()
 
                                 if self.__verbose:
@@ -3096,7 +3207,7 @@ class NmrDpUtility(object):
 
                         except Exception as e:
 
-                            self.report.error.addDescription('internal_error', "+NmrDpUtility.__testDataConsistencyInAuxLoop() ++ Error  - %s" % str(e))
+                            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__testDataConsistencyInAuxLoop() ++ Error  - %s" % str(e))
                             self.report.setError()
 
                             if self.__verbose:
@@ -3104,9 +3215,9 @@ class NmrDpUtility(object):
 
                     elif lp_category in self.linked_lp_categories[file_type][content_subtype]:
 
-                        warn = "Unsupported %s loop category exists in saveframe %s." % (lp_category, sf_framecode)
+                        warn = "Unsupported %s loop category exists." % lp_category
 
-                        self.report.warning.addDestination('skipped_lp_category', warn)
+                        self.report.warning.appendDescription('skipped_lp_category', {'file_name': file_name, 'saveframe': sf_framecode, 'description': warn})
                         self.report.setWarning()
 
                         if self.__verbose:
@@ -3114,9 +3225,9 @@ class NmrDpUtility(object):
 
                     else:
 
-                        err = "%s loop category exists unexpectedly in saveframe %s." % (loop.category, sf_framecode)
+                        err = "%s loop category exists unexpectedly." % loop.category
 
-                        self.report.error.addDescription('format_issue', err)
+                        self.report.error.appendDescription('format_issue', {'file_name': file_name, 'saveframe': sf_framecode, 'description': err})
                         self.report.setError()
 
                         if self.__verbose:
@@ -3124,7 +3235,7 @@ class NmrDpUtility(object):
 
         return self.report.getTotalErrors() == __errors
 
-    def __testDataConsistencyInAuxLoopOfSpectralPeak(self, file_type, sf_framecode, num_dim, lp_category, aux_data):
+    def __testDataConsistencyInAuxLoopOfSpectralPeak(self, file_name, file_type, sf_framecode, num_dim, lp_category, aux_data):
         """ Perform consistency test on data of spectral peak loops.
         """
 
@@ -3134,14 +3245,14 @@ class NmrDpUtility(object):
 
         if (file_type == 'nef' and lp_category == '_nef_spectrum_dimension') or (file_type == 'nmr-star' and lp_category == '_Spectral_dim'):
 
-            err = "The number of dimension %s and the number of rows in %s loop category %s are not matched, %s saveframe." % (num_dim, len(aux_data), lp_category, sf_framecode)
+            err = "The number of dimension %s and the number of rows %s are not matched." % (num_dim, len(aux_data))
 
             if len(aux_data) != num_dim:
-                self.report.error.addDescription('missing_data', err)
+                self.report.error.appendDescription('missing_data', {'file_name': file_name, 'saveframe': sf_framecode, 'category': lp_category, 'description': err})
                 self.report.setError()
 
-            if self.__verbose:
-                self.__lfh.write("+NmrDpUtility.__testDataConsistencyInAuxLoopOfSpectralPeak() ++ Error  - %s\n" % err)
+                if self.__verbose:
+                    self.__lfh.write("+NmrDpUtility.__testDataConsistencyInAuxLoopOfSpectralPeak() ++ Error  - %s\n" % err)
 
             try:
 
@@ -3211,9 +3322,9 @@ class NmrDpUtility(object):
 
                             if position < min_points[j] or position > max_points[j]:
 
-                                err = 'Check row of %s %s. %s %s is out of range (min_position %s, max_position %s) in %s loop category, %s saveframe.' % (index_tag, i[index_tag], position_names[j], position, min_points[j], max_points[j], lp_category, sf_framecode)
+                                err = '[Check row of %s %s] %s %s is out of range (min_position %s, max_position %s).' % (index_tag, i[index_tag], position_names[j], position, min_points[j], max_points[j])
 
-                                self.report.error.addDescription('anomalous_data', err)
+                                self.report.error.appendDescription('anomalous_data', {'file_name': file_name, 'saveframe': sf_framecode, 'category': lp_category, 'description': err})
                                 self.report.setError()
 
                                 if self.__verbose:
@@ -3221,7 +3332,7 @@ class NmrDpUtility(object):
 
             except Exception as e:
 
-                self.report.error.addDescription('internal_error', "+NmrDpUtility.__testDataConsistencyInAuxLoopOfSpectralPeak() ++ Error  - %s" % str(e))
+                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__testDataConsistencyInAuxLoopOfSpectralPeak() ++ Error  - %s" % str(e))
                 self.report.setError()
 
                 if self.__verbose:
@@ -3233,9 +3344,9 @@ class NmrDpUtility(object):
                 for name in [j['name'] for j in self.aux_key_items[file_type][content_subtype][lp_category]]:
                     if not i[name] in range(1, max_dim):
 
-                        err = "%s '%s' must be one of %s in %s loop category, saveframe %s." % (name, i[name], range(1, max_dim), lp_category, sf_framecode)
+                        err = "%s '%s' must be one of %s." % (name, i[name], range(1, max_dim), lp_category)
 
-                        self.report.error.addDescription('invalid_data', err)
+                        self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'saveframe': sf_framecode, 'category': lp_category, 'description': err})
                         self.report.setError()
 
                         if self.__verbose:
@@ -3248,6 +3359,7 @@ class NmrDpUtility(object):
         input_source = self.report.input_sources[0]
         input_source_dic = input_source.get()
 
+        file_name = input_source_dic['file_name']
         file_type = input_source_dic['file_type']
 
         if input_source_dic['content_subtype'] is None:
@@ -3271,7 +3383,7 @@ class NmrDpUtility(object):
 
                     err = "Saveframe tag prefix %s did not match with %s in saveframe %s." % (sf_data.tag_prefix, self.sf_tag_prefixes[file_type][content_subtype], sf_framecode)
 
-                    self.report.error.addDescription('internal_error', "+NmrDpUtility.__testSfTagConsistency() ++ Error  - %s" % err)
+                    self.report.error.appendDescription('internal_error', "+NmrDpUtility.__testSfTagConsistency() ++ Error  - %s" % err)
                     self.report.setError()
 
                     if self.__verbose:
@@ -3284,13 +3396,13 @@ class NmrDpUtility(object):
                     sf_tag_data = self.nef_translator.check_sf_tag(sf_data, self.sf_tag_items[file_type][content_subtype], self.sf_allowed_tags[file_type][content_subtype],
                                                             enforce_non_zero=True, enforce_enum=True)
 
-                    self.__testParentChildRelation(file_type, content_subtype, parent_keys, list_id, sf_framecode, sf_tag_data)
+                    self.__testParentChildRelation(file_name, file_type, content_subtype, parent_keys, list_id, sf_framecode, sf_tag_data)
 
                     list_id += 1
 
                 except LookupError as e:
 
-                    self.report.error.addDescription('missing_mandatory_item', "%s %s saveframe." % (str(e).strip("'"), sf_framecode))
+                    self.report.error.appendDescription('missing_mandatory_item', {'file_name': file_name, 'saveframe': sf_framecode, 'description': str(e).strip("'")})
                     self.report.setError()
 
                     if self.__verbose:
@@ -3298,7 +3410,7 @@ class NmrDpUtility(object):
 
                 except ValueError as e:
 
-                    self.report.error.addDescription('invalid_data', "%s %s saveframe." % (str(e).strip("'"), sf_framecode))
+                    self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'saveframe': sf_framecode, 'description': str(e).strip("'")})
                     self.report.setError()
 
                     if self.__verbose:
@@ -3313,9 +3425,9 @@ class NmrDpUtility(object):
 
                     if zero or enum:
 
-                        warn = warn[7:] + ", %s saveframe." % sf_framecode
+                        warn = warn[7:]
 
-                        self.report.warning.addDescription('missing_data' if zero else 'enum_failure', warn)
+                        self.report.warning.appendDescription('missing_data' if zero else 'enum_failure', {'file_name': file_name, 'saveframe': sf_framecode, 'description': warn})
                         self.report.setWarning()
 
                         if self.__verbose:
@@ -3328,7 +3440,7 @@ class NmrDpUtility(object):
                             sf_tag_data = self.nef_translator.check_sf_tag(sf_data, self.sf_tag_items[file_type][content_subtype], self.sf_allowed_tags[file_type][content_subtype],
                                                                     enfoce_non_zero=False, enforce_enum=False)
 
-                            self.__testParentChildRelation(file_type, content_subtype, parent_keys, list_id, sf_framecode, sf_tag_data)
+                            self.__testParentChildRelation(file_name, file_type, content_subtype, parent_keys, list_id, sf_framecode, sf_tag_data)
 
                             list_id += 1
 
@@ -3337,7 +3449,7 @@ class NmrDpUtility(object):
 
                     else:
 
-                        self.report.error.addDescription('internal_error', "+NmrDpUtility.__testSfTagConsistency() ++ Error  - %s" % str(e))
+                        self.report.error.appendDescription('internal_error', "+NmrDpUtility.__testSfTagConsistency() ++ Error  - %s" % str(e))
                         self.report.setError()
 
                         if self.__verbose:
@@ -3345,7 +3457,7 @@ class NmrDpUtility(object):
 
                 except Exception as e:
 
-                    self.report.error.addDescription('internal_error', "+NmrDpUtility.__testSfTagConsistency() ++ Error  - %s" % str(e))
+                    self.report.error.appendDescription('internal_error', "+NmrDpUtility.__testSfTagConsistency() ++ Error  - %s" % str(e))
                     self.report.setError()
 
                     if self.__verbose:
@@ -3353,7 +3465,7 @@ class NmrDpUtility(object):
 
         return self.report.getTotalErrors() == __errors
 
-    def __testParentChildRelation(self, file_type, content_subtype, parent_keys, list_id, sf_framecode, sf_tag_data):
+    def __testParentChildRelation(self, file_name, file_type, content_subtype, parent_keys, list_id, sf_framecode, sf_tag_data):
         """ Perform consistency test on saveframe category and loop category relationship of interesting loops.
         """
 
@@ -3374,15 +3486,16 @@ class NmrDpUtility(object):
 
         if parent_key in parent_keys:
 
-            err = "%s '%s' must be unique. %s in %s saveframe." % (parent_key_name, parent_key, sf_framecode)
+            err = "%s '%s' must be unique." % (parent_key_name, parent_key)
 
-            self.report.error.addDescription('duplicated_index', err)
+            self.report.error.appendDescription('duplicated_index', {'file_name': file_name, 'saveframe': sf_framecode, 'description': err})
             self.report.setError()
 
             if self.__verbose:
                 self.__lfh.write("+NmrDpUtility.__testParentChildRelation() ++ KeyError  - %s\n" % err)
 
         index_tag = self.index_tags[file_type][content_subtype]
+        lp_category = self.lp_categories[file_type][content_subtype]
 
         try:
 
@@ -3392,9 +3505,9 @@ class NmrDpUtility(object):
                 for i in lp_data:
                     if child_key_name in i and i[child_key_name] != parent_key:
 
-                        err = 'Check row of %s %s. %s %s must be %s in %s loop category, %s saveframe.' % (index_tag, i[index_tag], child_key_name, i[child_key_name], parent_key, lp_category, sf_framecode)
+                        err = '[Check row of %s %s] %s %s must be %s.' % (index_tag, i[index_tag], child_key_name, i[child_key_name], parent_key)
 
-                        self.report.error.addDescription('invalid_data', err)
+                        self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'saveframe': sf_framecode, 'category': lp_category, 'description': err})
                         self.report.setError()
 
                         if self.__verbose:
@@ -3408,9 +3521,9 @@ class NmrDpUtility(object):
                     for i in aux_data:
                         if child_key_name in i and i[child_key_name] != parent_key:
 
-                            err = 'Check row of %s %s. %s %s must be %s in %s loop category, %s saveframe.' % (index_tag, i[index_tag], child_key_name, i[child_key_name], parent_key, lp_category, sf_framecode)
+                            err = '[Check row of %s %s] %s %s must be %s.' % (index_tag, i[index_tag], child_key_name, i[child_key_name], parent_key)
 
-                            self.report.error.addDescription('invalid_data', err)
+                            self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'saveframe': sf_framecode, 'category': lp_category, 'description': err})
                             self.report.setError()
 
                             if self.__verbose:
@@ -3418,7 +3531,7 @@ class NmrDpUtility(object):
 
         except Exception as e:
 
-                self.report.error.addDescription('internal_error', "+NmrDpUtility.__testParentChildRelation() ++ Error  - %s" % str(e))
+                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__testParentChildRelation() ++ Error  - %s" % str(e))
                 self.report.setError()
 
                 if self.__verbose:
@@ -3447,7 +3560,7 @@ class NmrDpUtility(object):
 
             err = "Assigned chemical shift loop did not exist in %s file." % file_name
 
-            self.report.error.addDescription('internal_error', "+NmrDpUtility.__validateCSValue() ++ Error  - %s" % err)
+            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateCSValue() ++ Error  - %s" % err)
             self.report.setError()
 
             if self.__verbose:
@@ -3472,6 +3585,9 @@ class NmrDpUtility(object):
                 item_names = self.item_names_in_cs_loop[file_type]
                 value_name = item_names['value']
                 ambig_code_name = 'Ambiguity_code'
+
+                chk_row_tmp = "[Check row of {0} %s, {1} %s, {2} %s, {3} %s".format(item_names['chain_id'], item_names['seq_id'], item_names['comp_id'], item_names['atom_id'])
+                row_tmp = "{0} %s, {1} %s, {2} %s, {3} %s".format(item_names['chain_id'], item_names['seq_id'], item_names['comp_id'], item_names['atom_id'])
 
                 methyl_cs_vals = {}
 
@@ -3514,10 +3630,10 @@ class NmrDpUtility(object):
 
                                     elif value != methyl_cs_vals[methyl_cs_key]:
 
-                                        err = 'Check row of chain_id %s, seq_id %s, comp_id %s, atom_id %s. Chemical shift values in the same methyl group %s %s vs %s are inconsistent in %s loop category, %s saveframe.' %\
-                                        (chain_id, seq_id, comp_id, atom_id, value_name, value, methyl_cs_vals[methyl_cs_key], lp_category, sf_framecode)
+                                        err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_id) + '] Chemical shift values in the same methyl group %s %s vs %s are inconsistent.' %\
+                                              (value_name, value, methyl_cs_vals[methyl_cs_key])
 
-                                        self.report.error.addDescription('invalid_data', err)
+                                        self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'saveframe': sf_framecode, 'category': lp_category, 'description': err})
                                         self.report.setError()
 
                                         if self.__verbose:
@@ -3527,10 +3643,10 @@ class NmrDpUtility(object):
 
                                 if std_value is None:
 
-                                    warn = 'Check row of chain_id %s, seq_id %s, comp_id %s, atom_id %s. Insufficient chemical shift statistics is available to verify %s %s (avg %s) in %s loop category, %s saveframe.' %\
-                                           (chain_id, seq_id, comp_id, atom_id, value_name, value, avg_value, lp_category, sf_framecode)
+                                    warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_id) + '] Insufficient chemical shift statistics is available to verify %s %s (avg %s).' %\
+                                           (value_name, value, avg_value)
 
-                                    self.report.warning.addDescription('unusual_data', warn)
+                                    self.report.warning.appendDescription('unusual_data', {'file_name': file_name, 'saveframe': sf_framecode, 'category': lp_category, 'description': warn})
                                     self.report.setWarning()
 
                                     if self.__verbose:
@@ -3545,10 +3661,10 @@ class NmrDpUtility(object):
 
                                     if value < min_value - tolerance or value > max_value + tolerance:
 
-                                        err = 'Check row of chain_id %s, seq_id %s, comp_id %s, atom_id %s. %s %s is out of range (avg %s, std %s, min %s, max %s, Z_score %.2f) in %s loop category, %s saveframe.' %\
-                                              (chain_id, seq_id, comp_id, atom_id, value_name, value, avg_value, std_value, min_value, max_value, z_score, lp_category, sf_framecode)
+                                        err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_id) + '] %s %s is out of range (avg %s, std %s, min %s, max %s, Z_score %.2f).' %\
+                                              (value_name, value, avg_value, std_value, min_value, max_value, z_score)
 
-                                        self.report.error.addDescription('anomalous_data', err)
+                                        self.report.error.appendDescription('anomalous_data', {'file_name': file_name, 'saveframe': sf_framecode, 'category': lp_category, 'description': err})
                                         self.report.setError()
 
                                         if self.__verbose:
@@ -3556,10 +3672,10 @@ class NmrDpUtility(object):
 
                                     elif abs(z_score) > 7.5:
 
-                                        warn = 'Check row of chain_id %s, seq_id %s, comp_id %s, atom_id %s. %s %s must be verified (avg %s, std %s, min %s, max %s, Z_score %.2f) in %s loop category, %s saveframe.' %\
-                                               (chain_id, seq_id, comp_id, atom_id, value_name, value, avg_value, std_value, min_value, max_value, z_score, lp_category, sf_framecode)
+                                        warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_id) + '] %s %s must be verified (avg %s, std %s, min %s, max %s, Z_score %.2f).' %\
+                                               (value_name, value, avg_value, std_value, min_value, max_value, z_score)
 
-                                        self.report.warning.addDescription('suspicious_data', warn)
+                                        self.report.warning.appendDescription('suspicious_data', {'file_name': file_name, 'saveframe': sf_framecode, 'category': lp_category, 'description': warn})
                                         self.report.setWarning()
 
                                         if self.__verbose:
@@ -3567,10 +3683,10 @@ class NmrDpUtility(object):
 
                                     elif abs(z_score) > 5.3:
 
-                                        warn = 'Check row of chain_id %s, seq_id %s, comp_id %s, atom_id %s. %s %s should be verified (avg %s, std %s, min %s, max %s, Z_score %.2f) in %s loop category, %s saveframe.' %\
-                                               (chain_id, seq_id, comp_id, atom_id, value_name, value, avg_value, std_value, min_value, max_value, z_score, lp_category, sf_framecode)
+                                        warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_id) + '] %s %s should be verified (avg %s, std %s, min %s, max %s, Z_score %.2f).' %\
+                                               (value_name, value, avg_value, std_value, min_value, max_value, z_score)
 
-                                        self.report.warning.addDescription('unusual_data', warn)
+                                        self.report.warning.appendDescription('unusual_data', {'file_name': file_name, 'saveframe': sf_framecode, 'category': lp_category, 'description': warn})
                                         self.report.setWarning()
 
                                         if self.__verbose:
@@ -3578,10 +3694,10 @@ class NmrDpUtility(object):
 
                                     elif not cs_stat['primary']:
 
-                                        warn = 'Check row of chain_id %s, seq_id %s, comp_id %s, atom_id %s. %s %s is remarkable assignment (appearance rate %s) in %s loop category, %s saveframe.' %\
-                                               (chain_id, seq_id, comp_id, atom_id, value_name, value, cs_stat['norm_freq'], lp_category, sf_framecode)
+                                        warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_id) + '] %s %s is remarkable assignment (appearance rate %s).' %\
+                                               (value_name, value, cs_stat['norm_freq'], lp_category)
 
-                                        self.report.warning.addDescription('remarkable_data', warn)
+                                        self.report.warning.appendDescription('remarkable_data', {'file_name': file_name, 'saveframe': sf_framecode, 'category': lp_category, 'description': warn})
                                         self.report.setWarning()
 
                                         if self.__verbose:
@@ -3592,10 +3708,10 @@ class NmrDpUtility(object):
 
                                     if value < min_value - tolerance or value > max_value + tolerance:
 
-                                        err = 'Check row of chain_id %s, seq_id %s, comp_id %s, atom_id %s. %s %s is out of range (avg %s, std %s, min %s, max %s, Z_score %.2f) in %s loop category, %s saveframe.' %\
-                                              (chain_id, seq_id, comp_id, atom_id, value_name, value, avg_value, std_value, min_value, max_value, z_score, lp_category, sf_framecode)
+                                        err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_id) + '] %s %s is out of range (avg %s, std %s, min %s, max %s, Z_score %.2f).' %\
+                                              (value_name, value, avg_value, std_value, min_value, max_value, z_score)
 
-                                        self.report.error.addDescription('anomalous_data', err)
+                                        self.report.error.appendDescription('anomalous_data', {'file_name': file_name, 'saveframe': sf_framecode, 'category': lp_category, 'description': err})
                                         self.report.setError()
 
                                         if self.__verbose:
@@ -3603,10 +3719,10 @@ class NmrDpUtility(object):
 
                                     elif abs(z_score) > 10.0:
 
-                                        warn = 'Check row of chain_id %s, seq_id %s, comp_id %s, atom_id %s. %s %s must be verified (avg %s, std %s, min %s, max %s, Z_score %.2f) in %s loop category, %s saveframe.' %\
-                                               (chain_id, seq_id, comp_id, atom_id, value_name, value, avg_value, std_value, min_value, max_value, z_score, lp_category, sf_framecode)
+                                        warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_id) + '] %s %s must be verified (avg %s, std %s, min %s, max %s, Z_score %.2f).' %\
+                                               (value_name, value, avg_value, std_value, min_value, max_value, z_score)
 
-                                        self.report.warning.addDescription('suspicious_data', warn)
+                                        self.report.warning.appendDescription('suspicious_data', {'file_name': file_name, 'saveframe': sf_framecode, 'category': lp_category, 'description': warn})
                                         self.report.setWarning()
 
                                         if self.__verbose:
@@ -3649,10 +3765,10 @@ class NmrDpUtility(object):
 
                                     elif value != methyl_cs_vals[methyl_cs_key]:
 
-                                        err = 'Check row of chain_id %s, seq_id %s, comp_id %s, atom_id %s. Chemical shift values in the same methyl group %s %s vs %s are inconsistent in %s loop category, %s saveframe.' %\
-                                        (chain_id, seq_id, comp_id, atom_name, value_name, value, methyl_cs_vals[methyl_cs_key], lp_category, sf_framecode)
+                                        err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] Chemical shift values in the same methyl group %s %s vs %s are inconsistent.' %\
+                                              (value_name, value, methyl_cs_vals[methyl_cs_key])
 
-                                        self.report.error.addDescription('invalid_data', err)
+                                        self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'saveframe': sf_framecode, 'category': lp_category, 'description': err})
                                         self.report.setError()
 
                                         if self.__verbose:
@@ -3662,10 +3778,10 @@ class NmrDpUtility(object):
 
                                 if std_value is None:
 
-                                    warn = 'Check row of chain_id %s, seq_id %s, comp_id %s, atom_id %s. Insufficient chemical shift statistics is available to verify %s %s (avg %s) in %s loop category, %s saveframe.' %\
-                                           (chain_id, seq_id, comp_id, atom_name, value_name, value, avg_value, lp_category, sf_framecode)
+                                    warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] Insufficient chemical shift statistics is available to verify %s %s (avg %s).' %\
+                                           (value_name, value, avg_value)
 
-                                    self.report.warning.addDescription('unusual_data', warn)
+                                    self.report.warning.appendDescription('unusual_data', {'file_name': file_name, 'saveframe': sf_framecode, 'category': lp_category, 'description': warn})
                                     self.report.setWarning()
 
                                     if self.__verbose:
@@ -3678,10 +3794,10 @@ class NmrDpUtility(object):
 
                                 if value < min_value - tolerance or value > max_value + tolerance:
 
-                                    err = 'Check row of chain_id %s, seq_id %s, comp_id %s, atom_id %s. %s %s is out of range (avg %s, std %s, min %s, max %s, Z_score %.2f) in %s loop category, %s saveframe.' %\
-                                          (chain_id, seq_id, comp_id, atom_name, value_name, value, avg_value, std_value, min_value, max_value, z_score, lp_category, sf_framecode)
+                                    err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] %s %s is out of range (avg %s, std %s, min %s, max %s, Z_score %.2f).' %\
+                                          (value_name, value, avg_value, std_value, min_value, max_value, z_score)
 
-                                    self.report.error.addDescription('anomalous_data', err)
+                                    self.report.error.appendDescription('anomalous_data', {'file_name': file_name, 'saveframe': sf_framecode, 'category': lp_category, 'description': err})
                                     self.report.setError()
 
                                     if self.__verbose:
@@ -3689,10 +3805,10 @@ class NmrDpUtility(object):
 
                                 elif abs(z_score) > 5.0:
 
-                                    warn = 'Check row of chain_id %s, seq_id %s, comp_id %s, atom_id %s. %s %s must be verified (avg %s, std %s, min %s, max %s, Z_score %.2f) in %s loop category, %s saveframe.' %\
-                                           (chain_id, seq_id, comp_id, atom_name, value_name, value, avg_value, std_value, min_value, max_value, z_score, lp_category, sf_framecode)
+                                    warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] %s %s must be verified (avg %s, std %s, min %s, max %s, Z_score %.2f).' %\
+                                           (value_name, value, avg_value, std_value, min_value, max_value, z_score)
 
-                                    self.report.warning.addDescription('suspicious_data', warn)
+                                    self.report.warning.appendDescription('suspicious_data', {'file_name': file_name, 'saveframe': sf_framecode, 'category': lp_category, 'description': warn})
                                     self.report.setWarning()
 
                                     if self.__verbose:
@@ -3700,10 +3816,10 @@ class NmrDpUtility(object):
 
                                 elif abs(z_score) > 3.6:
 
-                                    warn = 'Check row of chain_id %s, seq_id %s, comp_id %s, atom_id %s. %s %s should be verified (avg %s, std %s, min %s, max %s, Z_score %.2f) in %s loop category, %s saveframe.' %\
-                                           (chain_id, seq_id, comp_id, atom_name, value_name, value, avg_value, std_value, min_value, max_value, z_score, lp_category, sf_framecode)
+                                    warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] %s %s should be verified (avg %s, std %s, min %s, max %s, Z_score %.2f).' %\
+                                           (value_name, value, avg_value, std_value, min_value, max_value, z_score)
 
-                                    self.report.warning.addDescription('unusual_data', warn)
+                                    self.report.warning.appendDescription('unusual_data', {'file_name': file_name, 'saveframe': sf_framecode, 'category': lp_category, 'description': warn})
                                     self.report.setWarning()
 
                                     if self.__verbose:
@@ -3711,10 +3827,10 @@ class NmrDpUtility(object):
 
                                 elif not cs_stat['primary']:
 
-                                    warn = 'Check row of chain_id %s, seq_id %s, comp_id %s, atom_id %s. %s %s is remarkable assignment (appearance rate %s) in %s loop category, %s saveframe.' %\
-                                           (chain_id, seq_id, comp_id, atom_name, value_name, value, cs_stat['norm_freq'], lp_category, sf_framecode)
+                                    warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] %s %s is remarkable assignment (appearance rate %s).' %\
+                                           (value_name, value, cs_stat['norm_freq'])
 
-                                    self.report.warning.addDescription('remarkable_data', warn)
+                                    self.report.warning.appendDescription('remarkable_data', {'file_name': file_name, 'saveframe': sf_framecode, 'category': lp_category, 'description': warn})
                                     self.report.setWarning()
 
                                     if self.__verbose:
@@ -3724,10 +3840,10 @@ class NmrDpUtility(object):
 
                     if not has_cs_stat:
 
-                        warn = 'Check row of chain_id %s, seq_id %s, comp_id %s, atom_id %s. No chemical shift statistics is available to verify %s %s in %s loop category, %s saveframe.' %\
-                                           (chain_id, seq_id, comp_id, atom_id, value_name, value, lp_category, sf_framecode)
+                        warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_id) + '] No chemical shift statistics is available to verify %s %s.' %\
+                               (value_name, value)
 
-                        self.report.warning.addDescription('unusual_data', warn)
+                        self.report.warning.appendDescription('unusual_data', {'file_name': file_name, 'saveframe': sf_framecode, 'category': lp_category, 'description': warn})
                         self.report.setWarning()
 
                         if self.__verbose:
@@ -3748,10 +3864,10 @@ class NmrDpUtility(object):
 
                             if ambig_code != allowed_ambig_code:
 
-                                err = 'Check row of chain_id %s, seq_id %s, comp_id %s, atom_id %s. Invalid %s %s (allowed ambig_code %s) exists in %s loop category, %s saveframe.' %\
-                                      (chain_id, seq_id, comp_id, atom_id, ambig_code_name, ambig_code, [1, allowed_ambig_code, 4, 5, 6, 9], lp_category, sf_framecode)
+                                err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_id) + '] Invalid %s %s (allowed ambig_code %s) exists.' %\
+                                      (ambig_code_name, ambig_code, [1, allowed_ambig_code, 4, 5, 6, 9])
 
-                                self.report.error.addDescription('invalid_ambiguity_code', err)
+                                self.report.error.appendDescription('invalid_ambiguity_code', {'file_name': file_name, 'saveframe': sf_framecode, 'category': lp_category, 'description': err})
                                 self.report.setError()
 
                                 if self.__verbose:
@@ -3765,10 +3881,10 @@ class NmrDpUtility(object):
 
                                 if ambig_code2 != ambig_code:
 
-                                    err = 'Check row of chain_id %s, seq_id %s, comp_id %s, atom_id %s. %s %s indicates %s. However, %s %s of atom_id %s is inconsistent in %s loop category, %s saveframe.' %\
-                                          (chain_id, seq_id, comp_id, atom_id, ambig_code_name, ambig_code, ambig_code_desc, ambig_code_name, ambig_code2, atom_id2, lp_category, sf_framecode)
+                                    err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_id) + '] %s %s indicates %s. However, %s %s of %s %s is inconsistent.' %\
+                                          (ambig_code_name, ambig_code, ambig_code_desc, ambig_code_name, ambig_code2, item_names['atom_id'], atom_id2)
 
-                                    self.report.error.addDescription('invalid_ambiguity_code', err)
+                                    self.report.error.appendDescription('invalid_ambiguity_code', {'file_name': file_name, 'saveframe': sf_framecode, 'category': lp_category, 'description': err})
                                     self.report.setError()
 
                                     if self.__verbose:
@@ -3776,10 +3892,10 @@ class NmrDpUtility(object):
 
                             except StopIteration:
 
-                                err = 'Check row of chain_id %s, seq_id %s, comp_id %s, atom_id %s. %s %s indicates %s. However, row of atom_id %s of the same residue was not found in %s loop category, %s saveframe.' %\
-                                      (chain_id, seq_id, comp_id, atom_id, ambig_code_name, ambig_code, ambig_code_desc, atom_id2, lp_category, sf_framecode)
+                                err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_id) + '] %s %s indicates %s. However, row of %s %s of the same residue was not found.' %\
+                                      (ambig_code_name, ambig_code, ambig_code_desc, item_names['atom_id'], atom_id2)
 
-                                self.report.error.addDescription('invalid_ambiguity_code', err)
+                                self.report.error.appendDescription('invalid_ambiguity_code', {'file_name': file_name, 'saveframe': sf_framecode, 'category': lp_category, 'description': err})
                                 self.report.setError()
 
                                 if self.__verbose:
@@ -3791,10 +3907,10 @@ class NmrDpUtility(object):
 
                             if not ambig_set_id_name in i:
 
-                                err = 'Check row of chain_id %s, seq_id %s, comp_id %s, atom_id %s. %s %s requires %s loop tag in %s loop_cateogry, %s saveframe.' %\
-                                      (chain_id, seq_id, comp_id, atom_id, ambig_code_name, ambig_code, ambig_set_id_name, lp_category, sf_framecode)
+                                err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_id) + '] %s %s requires %s loop tag.' %\
+                                      (ambig_code_name, ambig_code, ambig_set_id_name)
 
-                                self.report.error.addDescription('missing_mandatory_item', err)
+                                self.report.error.appendDescription('missing_mandatory_item', {'file_name': file_name, 'saveframe': sf_framecode, 'category': lp_category, 'description': err})
                                 self.report.setError()
 
                                 if self.__verbose:
@@ -3806,10 +3922,10 @@ class NmrDpUtility(object):
 
                                 if ambig_set_id in self.empty_value:
 
-                                    err = 'Check row of chain_id %s, seq_id %s, comp_id %s, atom_id %s. %s %s requires %s value in %s loop_cateogry, %s saveframe.' %\
-                                          (chain_id, seq_id, comp_id, atom_id, ambig_code_name, ambig_code, ambig_set_id_name, lp_category, sf_framecode)
+                                    err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_id) + '] %s %s requires %s value.' %\
+                                          (ambig_code_name, ambig_code, ambig_set_id_name)
 
-                                    self.report.error.addDescription('missing_data', err)
+                                    self.report.error.appendDescription('missing_data', {'file_name': file_name, 'saveframe': sf_framecode, 'category': lp_category, 'description': err})
                                     self.report.setError()
 
                                     if self.__verbose:
@@ -3821,10 +3937,10 @@ class NmrDpUtility(object):
 
                                     if len(ambig_set) == 0:
 
-                                        err = 'Check row of chain_id %s, seq_id %s, comp_id %s, atom_id %s. %s %s requires other rows sharing %s %s in %s loop_cateogry, %s saveframe.' %\
-                                              (chain_id, seq_id, comp_id, atom_id, ambig_code_name, ambig_code, ambig_set_id_name, ambig_set_id, lp_category, sf_framecode)
+                                        err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_id) + '] %s %s requires other rows sharing %s %s.' %\
+                                              (ambig_code_name, ambig_code, ambig_set_id_name, ambig_set_id)
 
-                                        self.report.error.addDescription('missing_data', err)
+                                        self.report.error.appendDescription('missing_data', {'file_name': file_name, 'saveframe': sf_framecode, 'category': lp_category, 'description': err})
                                         self.report.setError()
 
                                         if self.__verbose:
@@ -3841,10 +3957,11 @@ class NmrDpUtility(object):
 
                                             if (chain_id2 != chain_id or seq_id2 != seq_id or comp_id2 != comp_id) and atom_id < atom_id2:
 
-                                                err = 'Check row of chain_id %s, seq_id %s, comp_id %s, atom_id %s. %s %s, %s %s indicates intra-residue ambiguities. However, row of chain_id %s, seq_id %s, comp_id %s, atom_id %s exists in %s loop category, %s saveframe.' %\
-                                                      (chain_id, seq_id, comp_id, atom_id, ambig_code_name, ambig_code, ambig_set_id_name, ambig_set_id, chain_id2, seq_id2, comp_id2, atom_id2, lp_category, sf_framecode)
+                                                err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_id) +\
+                                                      ', %s %s, %s %s] It indicates intra-residue ambiguities. However, row of ' % (ambig_code_name, ambig_code, ambig_set_id_name, ambig_set_id) +\
+                                                      row_tmp % (chain_id2, seq_id2, comp_id2, atom_id2) + ' exists.'
 
-                                                self.report.error.addDescription('invalid_ambiguity_code', err)
+                                                self.report.error.appendDescription('invalid_ambiguity_code', {'file_name': file_name, 'saveframe': sf_framecode, 'category': lp_category, 'description': err})
                                                 self.report.setError()
 
                                                 if self.__verbose:
@@ -3861,10 +3978,11 @@ class NmrDpUtility(object):
 
                                             if ((chain_id2 != chain_id and chain_id < chain_id2) or (seq_id2 == seq_id and atom_id < atom_id2)):
 
-                                                err = 'Check row of chain_id %s, seq_id %s, comp_id %s, atom_id %s. %s %s, %s %s indicates inter-residue ambiguities. However, row of chain_id %s, seq_id %s, comp_id %s, atom_id %s exists in %s loop category, %s saveframe.' %\
-                                                      (chain_id, seq_id, comp_id, atom_id, ambig_code_name, ambig_code, ambig_set_id_name, ambig_set_id, chain_id2, seq_id2, comp_id2, atom_id2, lp_category, sf_framecode)
+                                                err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_id) +\
+                                                      ', %s %s, %s %s] It indicates inter-residue ambiguities. However, row of ' % (ambig_code_name, ambig_code, ambig_set_id_name, ambig_set_id) +\
+                                                      row_tmp % (chain_id2, seq_id2, comp_id2, atom_id2) + ' exists.'
 
-                                                self.report.error.addDescription('invalid_ambiguity_code', err)
+                                                self.report.error.appendDescription('invalid_ambiguity_code', {'file_name': file_name, 'saveframe': sf_framecode, 'category': lp_category, 'description': err})
                                                 self.report.setError()
 
                                                 if self.__verbose:
@@ -3882,10 +4000,11 @@ class NmrDpUtility(object):
 
                                             if chain_id2 == chain_id and (seq_id < seq_id2 or (seq_id == seq_id2 and atom_id < atom_id2)):
 
-                                                err = 'Check row of chain_id %s, seq_id %s, comp_id %s, atom_id %s. %s %s, %s %s indicates inter-molecular ambiguities. However, row of chain_id %s, seq_id %s, comp_id %s, atom_id %s exists in %s loop category, %s saveframe.' %\
-                                                      (chain_id, seq_id, comp_id, atom_id, ambig_code_name, ambig_code, ambig_set_id_name, ambig_set_id, chain_id2, seq_id2, comp_id2, atom_id2, lp_category, sf_framecode)
+                                                err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_id) +\
+                                                      ', %s %s, %s %s] It indicates inter-molecular ambiguities. However, row of ' % (ambig_code_name, ambig_code, ambig_set_id_name, ambig_set_id) +\
+                                                      row_tmp % (chain_id2, seq_id2, comp_id2, atom_id2) + ' exists.'
 
-                                                self.report.error.addDescription('invalid_ambiguity_code', err)
+                                                self.report.error.appendDescription('invalid_ambiguity_code', {'file_name': file_name, 'saveframe': sf_framecode, 'category': lp_category, 'description': err})
                                                 self.report.setError()
 
                                                 if self.__verbose:
@@ -3900,10 +4019,11 @@ class NmrDpUtility(object):
 
                                         if atom_id[0] != atom_id2[0] and atom_id < atom_id2:
 
-                                            err = 'Check row of chain_id %s, seq_id %s, comp_id %s, atom_id %s, %s %s, %s %s, %s %s. However, observation nucleus of chain_id %s, seq_id %s, comp_id %s, atom_id %s, %s %s differs in %s loop category, %s saveframe.' %\
-                                                  (chain_id, seq_id, comp_id, atom_id, value_name, value, ambig_code_name, ambig_code, ambig_set_id_name, ambig_set_id, chain_id2, seq_id2, comp_id2, atom_id2, value_name, value2, lp_category, sf_framecode)
+                                            err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_id) +\
+                                                  ', %s %s, %s %s] However, observation nucleus of ' % (ambig_code_name, ambig_code, ambig_set_id_name, ambig_set_id) +\
+                                                  row_tmp % (chain_id2, seq_id2, comp_id2, atom_id2) + ' sharing the same %s differs.' % ambig_set_id_name
 
-                                            self.report.error.addDescription('invalid_ambiguity_code', err)
+                                            self.report.error.appendDescription('invalid_ambiguity_code', {'file_name': file_name, 'saveframe': sf_framecode, 'category': lp_category, 'description': err})
                                             self.report.setError()
 
                                             if self.__verbose:
@@ -3911,10 +4031,12 @@ class NmrDpUtility(object):
 
                                         elif abs(value2 - value) > max_cs_err and value < value2:
 
-                                            err = 'Check row of chain_id %s, seq_id %s, comp_id %s, atom_id %s, %s %s, %s %s, %s %s. However, %s %s of chain_id %s, seq_id %s, comp_id %s, atom_id %s differs by %s (tolerance %s) in %s loop category, %s saveframe.' %\
-                                                  (chain_id, seq_id, comp_id, atom_id, value_name, value, ambig_code_name, ambig_code, ambig_set_id_name, ambig_set_id, value_name, value2, chain_id2, seq_id2, comp_id2, atom_id2, value2 - value, max_cs_err, lp_category, sf_framecode)
+                                            err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_id) +\
+                                                  ', %s %s, %s %s, %s %s] However, %s %s of ' % (value_name, value, ambig_code_name, ambig_code, ambig_set_id_name, ambig_set_id, value_name, value2) +\
+                                                  row_tmp % (chain_id2, seq_id2, comp_id2, atom_id2) +\
+                                                  'differs by %s (tolerance %s).' % (value2 - value, max_cs_err)
 
-                                            self.report.error.addDescription('invalid_ambiguity_code', err)
+                                            self.report.error.appendDescription('invalid_ambiguity_code', {'file_name': file_name, 'saveframe': sf_framecode, 'category': lp_category, 'description': err})
                                             self.report.setError()
 
                                             if self.__verbose:
@@ -3922,10 +4044,10 @@ class NmrDpUtility(object):
 
                         else:
 
-                            err = 'Check row of chain_id %s, seq_id %s, comp_id %s, atom_id %s. Invalid ambiguity code %s (allowed ambig_code %s) exists in %s loop category, %s saveframe.' %\
-                                  (chain_id, seq_id, comp_id, atom_id, ambig_code, self.bmrb_ambiguity_codes, lp_category, sf_framecode)
+                            err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_id) + '] Invalid ambiguity code %s (allowed ambig_code %s) exists.' %\
+                                  (ambig_code, self.bmrb_ambiguity_codes)
 
-                            self.report.error.addDescription('invalid_ambiguity_code', err)
+                            self.report.error.appendDescription('invalid_ambiguity_code', {'file_name': file_name, 'saveframe': sf_framecode, 'category': lp_category, 'description': err})
                             self.report.setError()
 
                             if self.__verbose:
@@ -3933,9 +4055,9 @@ class NmrDpUtility(object):
 
             except StopIteration:
 
-                err = "Assigned chemical shifts are mandatory. Saveframe %s did not exist in %s file." % (sf_framecode, file_name)
+                err = "Assigned chemical shifts are mandatory. Saveframe %s did not exist." % sf_framecode
 
-                self.report.error.addDescription('missing_mandatory_content', err)
+                self.report.error.appendDescription('missing_mandatory_content', {'file_name': file_name, 'description': err})
                 self.report.setError()
 
                 if self.__verbose:
@@ -3943,7 +4065,7 @@ class NmrDpUtility(object):
 
             except Exception as e:
 
-                self.report.error.addDescription('internal_error', "+NmrDpUtility.__validateCSValue() ++ Error  - %s" % str(e))
+                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateCSValue() ++ Error  - %s" % str(e))
                 self.report.setError()
 
                 if self.__verbose:
@@ -3991,9 +4113,9 @@ class NmrDpUtility(object):
 
             except StopIteration:
 
-                err = "Assigned chemical shifts are mandatory. Saveframe %s referred by %s in %s saveframe did not exist in %s file." % (cs_list, self.cs_list_sf_tag_name[file_type], sf_framecode, file_name)
+                err = "Assigned chemical shifts are mandatory. Referred saveframe %s did not exist." % (cs_list, self.cs_list_sf_tag_name[file_type])
 
-                self.report.error.addDescription('missing_mandatory_content', err)
+                self.report.error.appendDescription('missing_mandatory_content', {'file_name': file_name, 'saveframe': sf_framecode, 'description': err})
                 self.report.setError()
 
                 if self.__verbose:
@@ -4160,10 +4282,10 @@ class NmrDpUtility(object):
 
                                     if abs(position - value) > error:
 
-                                        err = 'Check row of %s %s. Peak position of spectral peak %s %s (%s %s, %s %s, %s %s, %s %s) in %s saveframe is inconsistent with the assigned chemical shift value %s (difference %s, tolerance %s) in %s saveframe.' %\
+                                        err = '[Check row of %s %s] Peak position of spectral peak %s %s (%s %s, %s %s, %s %s, %s %s) in %s saveframe is inconsistent with the assigned chemical shift value %s (difference %s, tolerance %s) in %s saveframe.' %\
                                               (index_tag, i[index_tag], item_names[d]['position'], position, item_names[d]['chain_id'], chain_id, item_names[d]['seq_id'], seq_id, item_names[d]['comp_id'], comp_id, item_names[d]['atom_id'], atom_id, sf_framecode, value, position - value, error, cs_list)
 
-                                        self.report.error.addDescription('invalid_data', err)
+                                        self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'saveframe': sf_framecode, 'category': lp_category, 'description': err})
                                         self.report.setError()
 
                                         if self.__verbose:
@@ -4173,10 +4295,10 @@ class NmrDpUtility(object):
 
                                 if axis_code != axis_codes[d]:
 
-                                    err = 'Check row of %s %s. Assignment of spectral peak %s %s, %s %s, %s %s, %s %s is inconsistent with axis code %s vs %s in %s saveframe.' %\
-                                          (index_tag, i[index_tag], item_names[d]['chain_id'], chain_id, item_names[d]['seq_id'], seq_id, item_names[d]['comp_id'], comp_id, item_names[d]['atom_id'], atom_id, axis_code, axis_codes[d], sf_framecode)
+                                    err = '[Check row of %s %s] Assignment of spectral peak %s %s, %s %s, %s %s, %s %s is inconsistent with axis code %s vs %s.' %\
+                                          (index_tag, i[index_tag], item_names[d]['chain_id'], chain_id, item_names[d]['seq_id'], seq_id, item_names[d]['comp_id'], comp_id, item_names[d]['atom_id'], atom_id, axis_code, axis_codes[d])
 
-                                    self.report.error.addDescription('invalid_data', err)
+                                    self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'saveframe': sf_framecode, 'category': lp_category, 'description': err})
                                     self.report.setError()
 
                                     if self.__verbose:
@@ -4184,10 +4306,10 @@ class NmrDpUtility(object):
 
                             except StopIteration:
 
-                                err = 'Check row of %s %s. Assignment of spectral peak %s %s, %s %s, %s %s, %s %s in %s saveframe was not found in assigned chemical shifts in %s saveframe.' %\
-                                      (index_tag, i[index_tag], item_names[d]['chain_id'], chain_id, item_names[d]['seq_id'], seq_id, item_names[d]['comp_id'], comp_id, item_names[d]['atom_id'], atom_id, sf_framecode, cs_list)
+                                err = '[Check row of %s %s] Assignment of spectral peak %s %s, %s %s, %s %s, %s %s was not found in assigned chemical shifts in %s saveframe.' %\
+                                      (index_tag, i[index_tag], item_names[d]['chain_id'], chain_id, item_names[d]['seq_id'], seq_id, item_names[d]['comp_id'], comp_id, item_names[d]['atom_id'], atom_id, cs_list)
 
-                                self.report.error.addDescription('invalid_data', err)
+                                self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'saveframe': sf_framecode, 'category': lp_category, 'description': err})
                                 self.report.setError()
 
                                 if self.__verbose:
@@ -4209,11 +4331,11 @@ class NmrDpUtility(object):
                                         if chain_id2 in self.empty_value or seq_id2 in self.empty_value or comp_id2 in self.empty_value or atom_id2 in self.empty_value or\
                                            (d < d2 and (chain_id2 != chain_id or seq_id2 != seq_id or comp_id2 != comp_id or _atom_id2 != _atom_id)):
 
-                                            err = 'Check row of %s %s. Coherence transfer type is onebond. However, assignment of spectral peak is inconsistent with the type, (%s %s, %s %s, %s %s, %s %s) vs (%s %s, %s %s, %s %s, %s %s) in %s saveframe.' %\
+                                            err = '[Check row of %s %s] Coherence transfer type is onebond. However, assignment of spectral peak is inconsistent with the type, (%s %s, %s %s, %s %s, %s %s) vs (%s %s, %s %s, %s %s, %s %s).' %\
                                                   (index_tag, i[index_tag], item_names[d]['chain_id'], chain_id, item_names[d]['seq_id'], seq_id, item_names[d]['comp_id'], comp_id, item_names[d]['atom_id'], atom_id,
-                                                   item_names[d2]['chain_id'], chain_id2, item_names[d2]['seq_id'], seq_id2, item_names[d2]['comp_id'], comp_id2, item_names[d2]['atom_id'], atom_id2, sf_framecode)
+                                                   item_names[d2]['chain_id'], chain_id2, item_names[d2]['seq_id'], seq_id2, item_names[d2]['comp_id'], comp_id2, item_names[d2]['atom_id'], atom_id2)
 
-                                            self.report.error.addDescription('invalid_data', err)
+                                            self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'saveframe': sf_framecode, 'category': lp_category, 'description': err})
                                             self.report.setError()
 
                                             if self.__verbose:
@@ -4230,11 +4352,11 @@ class NmrDpUtility(object):
                                         if chain_id2 in self.empty_value or seq_id2 in self.empty_value or comp_id2 in self.empty_value or atom_id2 in self.empty_value or\
                                            (d < d2 and (chain_id2 != chain_id or abs(seq_id2 - seq_id) > 1)):
 
-                                            err = 'Check row of %s %s. Coherence transfer type is jcoupling. However, assignment of spectral peak is inconsistent with the type, (%s %s, %s %s, %s %s, %s %s) vs (%s %s, %s %s, %s %s, %s %s) in %s saveframe.' %\
+                                            err = '[Check row of %s %s] Coherence transfer type is jcoupling. However, assignment of spectral peak is inconsistent with the type, (%s %s, %s %s, %s %s, %s %s) vs (%s %s, %s %s, %s %s, %s %s).' %\
                                                   (index_tag, i[index_tag], item_names[d]['chain_id'], chain_id, item_names[d]['seq_id'], seq_id, item_names[d]['comp_id'], comp_id, item_names[d]['atom_id'], atom_id,
-                                                   item_names[d2]['chain_id'], chain_id2, item_names[d2]['seq_id'], seq_id2, item_names[d2]['comp_id'], comp_id2, item_names[d2]['atom_id'], atom_id2, sf_framecode)
+                                                   item_names[d2]['chain_id'], chain_id2, item_names[d2]['seq_id'], seq_id2, item_names[d2]['comp_id'], comp_id2, item_names[d2]['atom_id'], atom_id2)
 
-                                            self.report.error.addDescription('invalid_data', err)
+                                            self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'saveframe': sf_framecode, 'category': lp_category, 'description': err})
                                             self.report.setError()
 
                                             if self.__verbose:
@@ -4251,11 +4373,11 @@ class NmrDpUtility(object):
                                         if chain_id2 in self.empty_value or seq_id2 in self.empty_value or comp_id2 in self.empty_value or atom_id2 in self.empty_value or\
                                            (d < d2 and (chain_id2 != chain_id or seq_id2 != seq_id or comp_id2 != comp_id or atom_id[0] != atom_id2[0])):
 
-                                            err = 'Check row of %s %s. Coherence transfer type is relayed. However, assignment of spectral peak is inconsistent with the type, (%s %s, %s %s, %s %s, %s %s) vs (%s %s, %s %s, %s %s, %s %s) in %s saveframe.' %\
+                                            err = '[Check row of %s %s] Coherence transfer type is relayed. However, assignment of spectral peak is inconsistent with the type, (%s %s, %s %s, %s %s, %s %s) vs (%s %s, %s %s, %s %s, %s %s).' %\
                                                   (index_tag, i[index_tag], item_names[d]['chain_id'], chain_id, item_names[d]['seq_id'], seq_id, item_names[d]['comp_id'], comp_id, item_names[d]['atom_id'], atom_id,
-                                                   item_names[d2]['chain_id'], chain_id2, item_names[d2]['seq_id'], seq_id2, item_names[d2]['comp_id'], comp_id2, item_names[d2]['atom_id'], atom_id2, sf_framecode)
+                                                   item_names[d2]['chain_id'], chain_id2, item_names[d2]['seq_id'], seq_id2, item_names[d2]['comp_id'], comp_id2, item_names[d2]['atom_id'], atom_id2)
 
-                                            self.report.error.addDescription('invalid_data', err)
+                                            self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'saveframe': sf_framecode, 'category': lp_category, 'description': err})
                                             self.report.setError()
 
                                             if self.__verbose:
@@ -4263,7 +4385,7 @@ class NmrDpUtility(object):
 
             except Exception as e:
 
-                self.report.error.addDescription('internal_error', "+NmrDpUtility.__testCSValueConsistencyInPkLoop() ++ Error  - %s" % str(e))
+                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__testCSValueConsistencyInPkLoop() ++ Error  - %s" % str(e))
                 self.report.setError()
 
                 if self.__verbose:
@@ -4328,7 +4450,7 @@ class NmrDpUtility(object):
 
                         err = "Module for calculation of statistics on content subtype %s were not found." % content_subtype
 
-                        self.report.error.addDescription('internal_error', "+NmrDpUtility.__calculateStatsOfExptlData() ++ Error  - %s" % err)
+                        self.report.error.appendDescription('internal_error', "+NmrDpUtility.__calculateStatsOfExptlData() ++ Error  - %s" % err)
                         self.report.setError()
 
                         if self.__verbose:
@@ -4365,7 +4487,7 @@ class NmrDpUtility(object):
 
                     err = "No such %s file." % file_name
 
-                    self.report.error.addDescription('internal_error', "+NmrDpUtility.__appendCoordinate() ++ Error  - %s" % err)
+                    self.report.error.appendDescription('internal_error', "+NmrDpUtility.__appendCoordinate() ++ Error  - %s" % err)
                     self.report.setError()
 
                     if self.__verbose:
@@ -4377,7 +4499,7 @@ class NmrDpUtility(object):
 
                     err = "%s is invalid %s file." % (file_name, self.readable_file_type[file_type])
 
-                    self.report.error.addDescription('internal_error', "+NmrDpUtility.__appendCoordinate() ++ Error  - %s" % err)
+                    self.report.error.appendDescription('internal_error', "+NmrDpUtility.__appendCoordinate() ++ Error  - %s" % err)
                     self.report.setError()
 
                     if self.__verbose:
@@ -4402,7 +4524,7 @@ class NmrDpUtility(object):
 
             err = "%s formatted model file is mandatory." % self.readable_file_type[file_type]
 
-            self.report.error.addDescription('internal_error', "+NmrDpUtility.__appendCoordinate() ++ Error  - %s" % err)
+            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__appendCoordinate() ++ Error  - %s" % err)
             self.report.setError()
 
             if self.__verbose:
@@ -4437,9 +4559,9 @@ class NmrDpUtility(object):
 
             else:
 
-                warn = "Category %s did not exist in %s file." % (self.lp_categories[file_type][content_subtype], file_name)
+                warn = "Category %s did not exist." % self.lp_categories[file_type][content_subtype]
 
-                self.report.warning.addDescription('missing_saveframe', warn)
+                self.report.warning.appendDescription('missing_saveframe', {'file_name': file_name, 'description': warn})
                 self.report.setWarning(warning)
 
                 if self.__verbose:
@@ -4483,7 +4605,7 @@ class NmrDpUtility(object):
 
         except KeyError as e:
 
-            self.report.error.addDescription('sequence_mismatch', "%s, %s file." % (str(e).strip("'"), file_name))
+            self.report.error.appendDescription('sequence_mismatch', {'file_name': file_name, 'category': lp_category, 'description': str(e).strip("'")})
             self.report.setError()
 
             if self.__verbose:
@@ -4491,7 +4613,7 @@ class NmrDpUtility(object):
 
         except LookupError as e:
 
-            self.report.error.addDescription('missing_mandatory_item', "%s, %s file." % (str(e).strip("'"), file_name))
+            self.report.error.appendDescription('missing_mandatory_item', {'file_name': file_name, 'category': lp_category, 'description': str(e).strip("'")})
             self.report.setError()
 
             if self.__verbose:
@@ -4499,7 +4621,7 @@ class NmrDpUtility(object):
 
         except ValueError as e:
 
-            self.report.error.addDescription('invalid_data', "%s, %s file." % (str(e).strip("'"), file_name))
+            self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'category': lp_category, 'description': str(e).strip("'")})
             self.report.setError()
 
             if self.__verbose:
@@ -4507,7 +4629,7 @@ class NmrDpUtility(object):
 
         except Exception as e:
 
-            self.report.error.addDescription('internal_error', "+NmrDpUtility.__extractCoordPolymerSequence() ++ Error  - %s" % str(e))
+            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__extractCoordPolymerSequence() ++ Error  - %s" % str(e))
             self.report.setError()
 
             if self.__verbose:
@@ -4560,7 +4682,7 @@ class NmrDpUtility(object):
 
             except KeyError as e:
 
-                self.report.error.addDescription('sequence_mismatch', "%s, %s file." % (str(e).strip("'"), file_name))
+                self.report.error.appendDescription('sequence_mismatch', {'file_name': file_name, 'category': lp_category, 'description': str(e).strip("'")})
                 self.report.setError()
 
                 if self.__verbose:
@@ -4568,7 +4690,7 @@ class NmrDpUtility(object):
 
             except LookupError as e:
 
-                self.report.error.addDescription('missing_mandatory_item', "%s, %s file." % (str(e).strip("'"), file_name))
+                self.report.error.appendDescription('missing_mandatory_item', {'file_name': file_name, 'category': lp_category, 'description': str(e).strip("'")})
                 self.report.setError()
 
                 if self.__verbose:
@@ -4576,7 +4698,7 @@ class NmrDpUtility(object):
 
             except ValueError as e:
 
-                self.report.error.addDescription('invalid_data', "%s, %s file." % (str(e).strip("'"), file_name))
+                self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'category': lp_category, 'description': str(e).strip("'")})
                 self.report.setError()
 
                 if self.__verbose:
@@ -4584,7 +4706,7 @@ class NmrDpUtility(object):
 
             except Exception as e:
 
-                self.report.error.addDescription('internal_error', "+NmrDpUtility.__extractCoordPolymerSequenceInLoop() ++ Error  - %s" % str(e))
+                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__extractCoordPolymerSequenceInLoop() ++ Error  - %s" % str(e))
                 self.report.setError()
 
                 if self.__verbose:
@@ -4737,11 +4859,11 @@ class NmrDpUtility(object):
 
             err = "Common polymer sequence did not exist, __extractCommonPolymerSequence() should be invoked."
 
-            self.report.error.addDescription('internal_error', "+NmrDpUtility.__appendCoordPolymerSequenceAlignment() ++ Error  - %s" % err)
+            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__appendCoordPolymerSequenceAlignment() ++ Error  - %s" % err)
             self.report.setError()
 
             if self.__verbose:
-                logging.warning("+NmrDpUtility.__appendCoordPolymerSequenceAlignment() ++ Error  - %s\n" % err)
+                self.__lfh.write("+NmrDpUtility.__appendCoordPolymerSequenceAlignment() ++ Error  - %s\n" % err)
 
             return False
 
@@ -4831,8 +4953,8 @@ class NmrDpUtility(object):
 
         return True
 
-    def __assignPolymerSequences(self):
-        """ Assign polymer sequences between coordinate and NMR data.
+    def __assignCoordPolymerSequence(self):
+        """ Assign polymer sequences of coordinate file.
         """
 
         id = self.report.getInputSourceIdOfCoord()
@@ -4861,11 +4983,11 @@ class NmrDpUtility(object):
 
             err = "Common polymer sequence did not exist, __extractCommonPolymerSequence() should be invoked."
 
-            self.report.error.addDescription('internal_error', "+NmrDpUtility.__mapCoordPolymerSequence() ++ Error  - %s" % err)
+            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__assignCoordPolymerSequence() ++ Error  - %s" % err)
             self.report.setError()
 
             if self.__verbose:
-                logging.warning("+NmrDpUtility.__mapCoordPolymerSequence() ++ Error  - %s\n" % err)
+                self.__lfh.write("+NmrDpUtility.__assignCoordPolymerSequence() ++ Error  - %s\n" % err)
 
             return False
 
@@ -5058,25 +5180,46 @@ class NmrDpUtility(object):
                     (cif_file_name, conflict['cif_chain_id'], conflict['cif_seq_id'], conflict['cif_comp_id'],
                      nmr_file_name, conflict['nmr_chain_id'], conflict['nmr_seq_id'], conflict['nmr_comp_id'])
 
-                self.report.error.addDescription('sequence_mismatch', err)
+                self.report.error.appendDescription('sequence_mismatch', {'file_name': cif_file_name, 'description': err})
                 self.report.setError()
 
                 if self.__verbose:
-                    self.__lfh.write("+NmrDpUtility.__extractCoordPolymerSequence() ++ Error  - %s" % err)
+                    self.__lfh.write("+NmrDpUtility.__assignCoordPolymerSequence() ++ Error  - %s" % err)
 
             return len(conflicts) == 0
 
         else:
 
-            err = "No sequence alignment found between %s and %s files." % (input_source_dic['file_name'], nmr_input_source_dic['file_name'])
+            err = "No sequence alignment found."
 
-            self.report.error.addDescription('sequence_mismatch', err)
+            self.report.error.appendDescription('sequence_mismatch', {'file_name': cif_file_name, 'description': err})
             self.report.setError()
 
             if self.__verbose:
-                self.__lfh.write("+NmrDpUtility.__extractCoordPolymerSequence() ++ Error  - %s" % err)
+                self.__lfh.write("+NmrDpUtility.__assignCoordPolymerSequence() ++ Error  - %s" % err)
 
             return False
+
+    def __testCorrdAtomIdConsistency(self):
+        """ Perform consistency test on atom names of coordinate file.
+        """
+
+        id = self.report.getInputSourceIdOfCoord()
+
+        if id < 0:
+            return True
+
+        cif_input_source = self.report.input_sources[id]
+        cif_input_source_dic = cif_input_source.get()
+
+        cif_file_name = cif_input_source_dic['file_name']
+
+        nmr_input_source = self.report.input_sources[0]
+        nmr_input_source_dic = nmr_input_source.get()
+
+        nmr_file_name = nmr_input_source_dic['file_name']
+
+        return True
 
 if __name__ == '__main__':
     dp = NmrDpUtility()

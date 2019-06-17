@@ -2361,10 +2361,13 @@ class NmrDpUtility(object):
 
                         has_seq_align = True
 
-                        conflicts = 0
+                        conflict = 0
+                        unmapped = 0
                         for myPr in myAlign:
                             if myPr[0] != myPr[1]:
-                                conflicts += 1
+                                conflict += 1
+                                if myPr[0] == '.' or myPr[1] == '.':
+                                    unmapped += 1
 
                         ref_seq = self.__get1LetterCodeSequence(s1['comp_id'])
                         tst_seq = self.__get1LetterCodeSequence(_s2['comp_id'])
@@ -2372,7 +2375,7 @@ class NmrDpUtility(object):
 
                         seq_align = {'list_id': polymer_sequence_in_loop[subtype][list_id]['list_id'],
                                      'sf_framecode': polymer_sequence_in_loop[subtype][list_id]['sf_framecode'],
-                                     'chain_id': cid, 'length': length, 'conflict': conflicts, 'sequence_coverage': float('{:.3f}'.format(float(length - conflicts) / float(length))), 'ref_seq_id': s1['seq_id'], 'reference_seq': ref_seq, 'middle_code': mid_seq, 'test_seq': tst_seq}
+                                     'chain_id': cid, 'length': length, 'conflict': conflict, 'unmapped': unmapped, 'sequence_coverage': float('{:.3f}'.format(float(length - conflict) / float(length))), 'ref_seq_id': s1['seq_id'], 'reference_seq': ref_seq, 'middle_code': mid_seq, 'test_seq': tst_seq}
 
                         seq_align_set.append(seq_align)
 
@@ -3041,12 +3044,15 @@ class NmrDpUtility(object):
 
                     warn = str(e).strip("'")
 
-                    zero = warn.startswith('[ZERO] ')
-                    enum = warn.startswith("[ENUM] ")
+                    zero = warn.startswith('[Zero value error] ')
+                    enum = warn.startswith('[Enumeration error] ')
 
                     if zero or enum:
 
-                        warn = warn[7:]
+                        if zero:
+                            warn = warn[19:]
+                        else:
+                            warn = warn[20:]
 
                         self.report.warning.appendDescription('missing_data' if zero else 'enum_failure', {'file_name': file_name, 'saveframe': sf_framecode, 'category': lp_category, 'description': warn})
                         self.report.setWarning()
@@ -3182,12 +3188,15 @@ class NmrDpUtility(object):
 
                             warn = str(e).strip("'")
 
-                            zero = warn.startswith('[ZERO] ')
-                            enum = warn.startswith("[ENUM] ")
+                            zero = warn.startswith('[Zero value error] ')
+                            enum = warn.startswith('[Enumeration error] ')
 
                             if zero or enum:
 
-                                warn = warn[7:]
+                                if zero:
+                                    warn = warn[19:]
+                                else:
+                                    warn = warn[20:]
 
                                 self.report.warning.appendDescription('missing_data' if zero else 'enum_failure', {'file_name': file_name, 'saveframe': sf_framecode, 'category': lp_category, 'description': warn})
                                 self.report.setWarning()
@@ -3433,12 +3442,15 @@ class NmrDpUtility(object):
 
                     warn = str(e).strip("'")
 
-                    zero = warn.startswith("[ZERO] ")
-                    enum = warn.startswith("[ENUM] ")
+                    zero = warn.startswith('[Zero value error] ')
+                    enum = warn.startswith('[Enumeration error] ')
 
                     if zero or enum:
 
-                        warn = warn[7:]
+                        if zero:
+                            warn = warn[19:]
+                        else:
+                            warn = warn[20:]
 
                         self.report.warning.appendDescription('missing_data' if zero else 'enum_failure', {'file_name': file_name, 'saveframe': sf_framecode, 'description': warn})
                         self.report.setWarning()
@@ -3752,9 +3764,15 @@ class NmrDpUtility(object):
                             if len(_atom_id) == 0:
                                 continue
 
+                            atom_name = atom_id + ' (e.g. '
+
+                            for atom_id_ in _atom_id:
+                                atom_name += atom_id_ + ' '
+
+                            atom_name = atom_name.rstrip() + ')'
+
                             # representative atom id
                             atom_id_ = _atom_id[0]
-                            atom_name = atom_id + ' (e.g. %s)' % atom_id_
 
                         else:
                             atom_id_ = atom_id
@@ -4077,7 +4095,6 @@ class NmrDpUtility(object):
                     self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ Error  - %s\n" % err)
 
             except Exception as e:
-
                 self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateCSValue() ++ Error  - %s" % str(e))
                 self.report.setError()
 
@@ -4927,17 +4944,20 @@ class NmrDpUtility(object):
 
                             has_seq_align = True
 
-                            conflicts = 0
+                            conflict = 0
+                            unmapped = 0
                             for myPr in myAlign:
                                 if myPr[0] != myPr[1]:
-                                    conflicts += 1
+                                    conflict += 1
+                                    if myPr[0] == '.' or myPr[1] == '.':
+                                        unmapped += 1
 
                             ref_seq = self.__get1LetterCodeSequence(s1['comp_id'])
                             tst_seq = self.__get1LetterCodeSequence(_s2['comp_id'])
                             mid_seq = self.__getMiddleCode(ref_seq, tst_seq)
 
                             seq_align = {'list_id': polymer_sequence_in_loop[subtype][list_id]['list_id'],
-                                         'chain_id': cid, 'length': length, 'conflict': conflicts, 'sequence_coverage': float('{:.3f}'.format(float(length - conflicts) / float(length))), 'ref_seq_id': s1['seq_id'], 'reference_seq': ref_seq, 'middle_code': mid_seq, 'test_seq': tst_seq}
+                                         'chain_id': cid, 'length': length, 'conflict': conflict, 'unmapped': unmapped, 'sequence_coverage': float('{:.3f}'.format(float(length - conflict) / float(length))), 'ref_seq_id': s1['seq_id'], 'reference_seq': ref_seq, 'middle_code': mid_seq, 'test_seq': tst_seq}
 
                             seq_align_set.append(seq_align)
 
@@ -4990,16 +5010,19 @@ class NmrDpUtility(object):
 
                 has_seq_align = True
 
-                conflicts = 0
+                conflict = 0
+                unmapped = 0
                 for myPr in myAlign:
                     if myPr[0] != myPr[1]:
-                        conflicts += 1
+                        conflict += 1
+                        if myPr[0] == '.' or myPr[1] == '.':
+                            unmapped += 1
 
                 ref_seq = self.__get1LetterCodeSequence(s1['comp_id'])
                 tst_seq = self.__get1LetterCodeSequence(_s2['comp_id'])
                 mid_seq = self.__getMiddleCode(ref_seq, tst_seq)
 
-                seq_align = {'ref_chain_id': cid, 'test_chain_id': cid2, 'length': length, 'conflict': conflicts, 'sequence_coverage': float('{:.3f}'.format(float(length - conflicts) / float(length))), 'ref_seq_id': s1['seq_id'], 'reference_seq': ref_seq, 'middle_code': mid_seq, 'test_seq': tst_seq}
+                seq_align = {'ref_chain_id': cid, 'test_chain_id': cid2, 'length': length, 'conflict': conflict, 'unmapped': unmapped, 'sequence_coverage': float('{:.3f}'.format(float(length - conflict) / float(length))), 'ref_seq_id': s1['seq_id'], 'reference_seq': ref_seq, 'middle_code': mid_seq, 'test_seq': tst_seq}
 
                 seq_align_set.append(seq_align)
 
@@ -5031,16 +5054,19 @@ class NmrDpUtility(object):
 
                 has_seq_align = True
 
-                conflicts = 0
+                conflict = 0
+                unmapped = 0
                 for myPr in myAlign:
                     if myPr[0] != myPr[1]:
-                        conflicts += 1
+                        conflict += 1
+                        if myPr[0] == '.' or myPr[1] == '.':
+                            unmapped += 1
 
                 ref_seq = self.__get1LetterCodeSequence(s1['comp_id'])
                 tst_seq = self.__get1LetterCodeSequence(_s2['comp_id'])
                 mid_seq = self.__getMiddleCode(ref_seq, tst_seq)
 
-                seq_align = {'ref_chain_id': cid, 'test_chain_id': cid2, 'length': length, 'conflict': conflicts, 'sequence_coverage': float('{:.3f}'.format(float(length - conflicts) / float(length))), 'ref_seq_id': s1['seq_id'], 'reference_seq': ref_seq, 'middle_code': mid_seq, 'test_seq': tst_seq}
+                seq_align = {'ref_chain_id': cid, 'test_chain_id': cid2, 'length': length, 'conflict': conflict, 'unmapped': unmapped, 'sequence_coverage': float('{:.3f}'.format(float(length - conflict) / float(length))), 'ref_seq_id': s1['seq_id'], 'reference_seq': ref_seq, 'middle_code': mid_seq, 'test_seq': tst_seq}
 
                 seq_align_set.append(seq_align)
 
@@ -5086,6 +5112,8 @@ class NmrDpUtility(object):
                 self.__lfh.write("+NmrDpUtility.__assignCoordPolymerSequence() ++ Error  - %s\n" % err)
 
             return False
+
+        __errors = self.report.getTotalErrors()
 
         seq_align_dic = self.report.sequence_alignment.get()
 
@@ -5137,7 +5165,62 @@ class NmrDpUtility(object):
 
                 result = next(seq_align for seq_align in seq_align_dic['model_poly_seq_vs_nmr_poly_seq'] if seq_align['ref_chain_id'] == cid and seq_align['test_chain_id'] == cid2)
 
-                chain_assign = {'ref_chain_id': cid, 'test_chain_id': cid2, 'length': result['length'], 'conflict': result['conflict'], 'sequence_coverage': result['sequence_coverage']}
+                chain_assign = {'ref_chain_id': cid, 'test_chain_id': cid2, 'length': result['length'], 'conflict': result['conflict'], 'unmapped': result['unmapped'], 'sequence_coverage': result['sequence_coverage']}
+
+                if result['conflict'] > 0:
+
+                    unmapped = []
+                    conflict = []
+
+                    s1 = next(s for s in cif_polymer_sequence if s['chain_id'] == cid)
+                    s2 = next(s for s in nmr_polymer_sequence if s['chain_id'] == cid2)
+
+                    _s2 = self.__fillBlankedCompId(s1, s2)
+
+                    self.__pA.setReferenceSequence(s1['comp_id'], 'REF' + cid)
+                    self.__pA.addTestSequence(_s2['comp_id'], cid2)
+                    self.__pA.doAlign()
+                    #self.__pA.prAlignmentConflicts(cid)
+                    myAlign = self.__pA.getAlignment(cid)
+
+                    for i in range(len(myAlign)):
+                        myPr = myAlign[i]
+                        if myPr[0] == myPr[1]:
+                            continue
+
+                        cif_comp_id = myPr[0].encode()
+                        nmr_comp_id = myPr[1].encode()
+
+                        if nmr_comp_id == '.':
+                            unmapped.append({'ref_seq_id': s1['seq_id'][i], 'ref_comp_id': cif_comp_id})
+
+                            warn = "%s's sequence (chain_id %s, seq_id %s, comp_id %s) could not mapped to anything in %s." %\
+                                   (cif_file_name, cid, s1['seq_id'][i], cif_comp_id, nmr_file_name)
+
+                            self.report.warning.appendDescription('sequence_mismatch', {'file_name': cif_file_name, 'description': warn})
+                            self.report.setWarning()
+
+                            if self.__verbose:
+                                self.__lfh.write("+NmrDpUtility.__assignCoordPolymerSequence() ++ Warning  - %s" % warn)
+
+                        else:
+                            conflict.append({'ref_seq_id': s1['seq_id'][i], 'ref_comp_id': cif_comp_id,
+                                             'test_seq_id': _s2['seq_id'][i], 'test_comp_id': nmr_comp_id})
+
+                            err = "Sequence alignment error between %s (chain_id %s, seq_id %s, comp_id %s) and %s (chain_id %s, seq_id %s, comp_id %s)." %\
+                                  (cif_file_name, cid, s1['seq_id'][i], cif_comp_id, nmr_file_name, cid2, _s2['seq_id'][i], nmr_comp_id)
+
+                            self.report.error.appendDescription('sequence_mismatch', {'file_name': cif_file_name, 'description': err})
+                            self.report.setError()
+
+                            if self.__verbose:
+                                self.__lfh.write("+NmrDpUtility.__assignCoordPolymerSequence() ++ Error  - %s" % err)
+
+                    if len(unmapped) > 0:
+                        chain_assign['unmapped_sequence'] = unmapped
+
+                    if len(conflict) > 0:
+                        chain_assign['conflict_sequence'] = conflict
 
                 chain_assign_set.append(chain_assign)
 
@@ -5181,68 +5264,14 @@ class NmrDpUtility(object):
 
                 result = next(seq_align for seq_align in seq_align_dic['nmr_poly_seq_vs_model_poly_seq'] if seq_align['ref_chain_id'] == cid and seq_align['test_chain_id'] == cid2)
 
-                chain_assign = {'ref_chain_id': cid, 'test_chain_id': cid2, 'length': result['length'], 'conflict': result['conflict'], 'sequence_coverage': result['sequence_coverage']}
+                chain_assign = {'ref_chain_id': cid, 'test_chain_id': cid2, 'length': result['length'], 'conflict': result['conflict'], 'unmapped': result['unmapped'], 'sequence_coverage': result['sequence_coverage']}
 
-                chain_assign_set.append(chain_assign)
+                if result['conflict'] > 0:
 
-            if len(chain_assign_set) > 0:
-                self.report.chain_assignment.setItemValue('nmr_poly_seq_vs_model_poly_seq', chain_assign_set)
+                    unmapped = []
+                    conflict = []
 
-            # check conflict
-
-            conflicts = []
-
-            for s1 in cif_polymer_sequence:
-                cid = s1['chain_id']
-
-                if cid in cif2nmr:
-                    cid2 = cif2nmr[cid]
-
-                    result = next(seq_align for seq_align in seq_align_dic['model_poly_seq_vs_nmr_poly_seq'] if seq_align['ref_chain_id'] == cid and seq_align['test_chain_id'] == cid2)
-
-                    if result['conflict'] == 0:
-                        continue
-
-                    s2 = next(s for s in nmr_polymer_sequence if s['chain_id'] == cid2)
-
-                    _s2 = self.__fillBlankedCompId(s1, s2)
-
-                    self.__pA.setReferenceSequence(s1['comp_id'], 'REF' + cid)
-                    self.__pA.addTestSequence(_s2['comp_id'], cid2)
-                    self.__pA.doAlign()
-                    #self.__pA.prAlignmentConflicts(cid)
-                    myAlign = self.__pA.getAlignment(cid)
-
-                    for i in range(len(myAlign)):
-                        myPr = myAlign[i]
-                        if myPr[0] == myPr[1]:
-                            continue
-
-                        cif_comp_id = myPr[0].encode()
-                        nmr_comp_id = myPr[1].encode()
-
-                        if nmr_comp_id == '.':
-                            continue
-
-                        c = {'cif_chain_id': cid, 'cif_seq_id': s1['seq_id'][i], 'cif_comp_id': cif_comp_id,
-                             'nmr_chain_id': cid2, 'nmr_seq_id': _s2['seq_id'][i], 'nmr_comp_id': nmr_comp_id}
-
-                        if not c in conflicts:
-                            conflicts.append(c)
-
-            # reverse check
-
-            for s1 in nmr_polymer_sequence:
-                cid = s1['chain_id']
-
-                if cid in nmr2cif:
-                    cid2 = nmr2cif[cid]
-
-                    result = next(seq_align for seq_align in seq_align_dic['nmr_poly_seq_vs_model_poly_seq'] if seq_align['ref_chain_id'] == cid and seq_align['test_chain_id'] == cid2)
-
-                    if result['conflict'] == 0:
-                        continue
-
+                    s1 = next(s for s in nmr_polymer_sequence if s['chain_id'] == cid)
                     s2 = next(s for s in cif_polymer_sequence if s['chain_id'] == cid2)
 
                     _s2 = self.__fillBlankedCompId(s1, s2)
@@ -5262,27 +5291,42 @@ class NmrDpUtility(object):
                         cif_comp_id = myPr[1].encode()
 
                         if cif_comp_id == '.':
-                            continue
+                            unmapped.append({'ref_seq_id': s1['seq_id'][i], 'ref_comp_id': nmr_comp_id})
 
-                        c = {'cif_chain_id': cid2, 'cif_seq_id': _s2['seq_id'][i], 'cif_comp_id': cif_comp_id,
-                             'nmr_chain_id': cid, 'nmr_seq_id': s1['seq_id'][i], 'nmr_comp_id': nmr_comp_id}
+                            warn = "%s's sequence (chain_id %s, seq_id %s, comp_id %s) could not mapped to anything in %s." %\
+                                   (nmr_file_name, cid, s1['seq_id'][i], nmr_comp_id, cif_file_name)
 
-                        if not c in conflicts:
-                            conflicts.append(c)
+                            self.report.warning.appendDescription('sequence_mismatch', {'file_name': nmr_file_name, 'description': warn})
+                            self.report.setWarning()
 
-            for c in conflicts:
+                            if self.__verbose:
+                                self.__lfh.write("+NmrDpUtility.__assignCoordPolymerSequence() ++ Warning  - %s" % warn)
 
-                err = "Sequence alignment error between %s (chain_id %s, seq_id %s, comp_id %s) and %s (chain_id %s, seq_id %s, comp_id %s)." %\
-                    (cif_file_name, c['cif_chain_id'], c['cif_seq_id'], c['cif_comp_id'],
-                     nmr_file_name, c['nmr_chain_id'], c['nmr_seq_id'], c['nmr_comp_id'])
+                        else:
+                            conflict.append({'ref_seq_id': s1['seq_id'][i], 'ref_comp_id': nmr_comp_id,
+                                             'test_seq_id': _s2['seq_id'][i], 'test_comp_id': cif_comp_id})
 
-                self.report.error.appendDescription('sequence_mismatch', {'file_name': cif_file_name, 'description': err})
-                self.report.setError()
+                            err = "Sequence alignment error between %s (chain_id %s, seq_id %s, comp_id %s) and %s (chain_id %s, seq_id %s, comp_id %s)." %\
+                                  (nmr_file_name, cid, s1['seq_id'][i], nmr_comp_id, cif_file_name, cid2, _s2['seq_id'][i], cif_comp_id)
 
-                if self.__verbose:
-                    self.__lfh.write("+NmrDpUtility.__assignCoordPolymerSequence() ++ Error  - %s" % err)
+                            self.report.error.appendDescription('sequence_mismatch', {'file_name': nmr_file_name, 'description': err})
+                            self.report.setError()
 
-            return len(conflicts) == 0
+                            if self.__verbose:
+                                self.__lfh.write("+NmrDpUtility.__assignCoordPolymerSequence() ++ Error  - %s" % err)
+
+                    if len(unmapped) > 0:
+                        chain_assign['unmapped_sequence'] = unmapped
+
+                    if len(conflict) > 0:
+                        chain_assign['conflict_sequence'] = conflict
+
+                chain_assign_set.append(chain_assign)
+
+            if len(chain_assign_set) > 0:
+                self.report.chain_assignment.setItemValue('nmr_poly_seq_vs_model_poly_seq', chain_assign_set)
+
+            return self.report.getTotalErrors() == __errors
 
         else:
 

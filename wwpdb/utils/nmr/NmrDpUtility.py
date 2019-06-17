@@ -1852,6 +1852,7 @@ class NmrDpUtility(object):
             lp_category = self.lp_categories[file_type][content_subtype]
 
             list_id = 1
+
             has_poly_seq = False
 
             for sf_data in self.__star_data.get_saveframes_by_category(sf_category):
@@ -1867,6 +1868,7 @@ class NmrDpUtility(object):
                         poly_seq_list_set[content_subtype].append({'list_id': list_id, 'sf_framecode': sf_framecode, 'polymer_sequence': poly_seq})
 
                         list_id += 1
+
                         has_poly_seq = True
 
                         if file_type == 'nmr-star':
@@ -2361,13 +2363,13 @@ class NmrDpUtility(object):
 
                         has_seq_align = True
 
-                        conflict = 0
                         unmapped = 0
+                        conflict = 0
                         for myPr in myAlign:
-                            if myPr[0] != myPr[1]:
+                            if myPr[0] == '.' or myPr[1] == '.':
+                                unmapped += 1
+                            elif myPr[0] != myPr[1]:
                                 conflict += 1
-                                if myPr[0] == '.' or myPr[1] == '.':
-                                    unmapped += 1
 
                         ref_seq = self.__get1LetterCodeSequence(s1['comp_id'])
                         tst_seq = self.__get1LetterCodeSequence(_s2['comp_id'])
@@ -2375,7 +2377,9 @@ class NmrDpUtility(object):
 
                         seq_align = {'list_id': polymer_sequence_in_loop[subtype][list_id]['list_id'],
                                      'sf_framecode': polymer_sequence_in_loop[subtype][list_id]['sf_framecode'],
-                                     'chain_id': cid, 'length': length, 'conflict': conflict, 'unmapped': unmapped, 'sequence_coverage': float('{:.3f}'.format(float(length - conflict) / float(length))), 'ref_seq_id': s1['seq_id'], 'reference_seq': ref_seq, 'middle_code': mid_seq, 'test_seq': tst_seq}
+                                     'chain_id': cid, 'length': length, 'conflict': conflict, 'unmapped': unmapped, 'sequence_coverage': float('{:.3f}'.format(float(length - (unmapped + conflict)) / float(length))),
+                                     'ref_seq_id': s1['seq_id'],
+                                     'reference_seq': ref_seq, 'middle_code': mid_seq, 'test_seq': tst_seq}
 
                         seq_align_set.append(seq_align)
 
@@ -4437,6 +4441,8 @@ class NmrDpUtility(object):
 
         __errors = self.report.getTotalErrors()
 
+        seq_align_dic = self.report.sequence_alignment.get()
+
         stats = {}
 
         for content_subtype in input_source_dic['content_subtype'].keys():
@@ -4459,22 +4465,29 @@ class NmrDpUtility(object):
 
                 if not lp_data is None:
 
-                    ent = {'list_id': list_id, 'sf_framecode': sf_framecode, 'number_of_rows': len(lp_data), 'sequence_coverage': []}
+                    ent = {'list_id': list_id, 'sf_framecode': sf_framecode, 'number_of_rows': len(lp_data)}
 
-                    if content_subtype == 'chem_shift':
-                        pass
+                    if content_subtype == 'chem_shift' or content_subtype == 'dist_restraint' or content_subtype == 'dihed_restraint' or content_subtype == 'rdc_restraint' or content_subtype == 'spectral_peak':
 
-                    elif content_subtype == 'dist_restraint':
-                        pass
+                        sa_name = 'nmr_poly_seq_vs_' + content_subtype
 
-                    elif content_subtype == 'dihed_restraint':
-                        pass
+                        if sa_name in seq_align_dic and not seq_align_dic[sa_name] is None:
 
-                    elif content_subtype == 'rdc_restraint':
-                        pass
+                            seq_coverage = []
 
-                    elif content_subtype == 'spectral_peak':
-                        pass
+                            for seq_align in seq_align_dic[sa_name]:
+
+                                if seq_align['list_id'] == list_id:
+
+                                    sc = {}
+                                    sc['chain_id'] = seq_align['chain_id']
+                                    sc['length'] = seq_align['length']
+                                    sc['sequence_coverage'] = seq_align['sequence_coverage']
+
+                                    seq_coverage.append(sc)
+
+                            if len(seq_coverage) > 0:
+                                ent['sequence_coverage'] = seq_coverage
 
                     else:
 
@@ -4780,6 +4793,7 @@ class NmrDpUtility(object):
             lp_category = self.lp_categories[file_type][content_subtype]
 
             list_id = 1
+
             has_poly_seq = False
 
             try:
@@ -4791,6 +4805,7 @@ class NmrDpUtility(object):
                     poly_seq_list_set[content_subtype].append({'list_id': list_id, 'polymer_sequence': poly_seq})
 
                     list_id += 1
+
                     has_poly_seq = True
 
             except KeyError as e:
@@ -4944,20 +4959,22 @@ class NmrDpUtility(object):
 
                             has_seq_align = True
 
-                            conflict = 0
                             unmapped = 0
+                            conflict = 0
                             for myPr in myAlign:
-                                if myPr[0] != myPr[1]:
+                                if myPr[0] == '.' or myPr[1] == '.':
+                                    unmapped += 1
+                                elif myPr[0] != myPr[1]:
                                     conflict += 1
-                                    if myPr[0] == '.' or myPr[1] == '.':
-                                        unmapped += 1
 
                             ref_seq = self.__get1LetterCodeSequence(s1['comp_id'])
                             tst_seq = self.__get1LetterCodeSequence(_s2['comp_id'])
                             mid_seq = self.__getMiddleCode(ref_seq, tst_seq)
 
                             seq_align = {'list_id': polymer_sequence_in_loop[subtype][list_id]['list_id'],
-                                         'chain_id': cid, 'length': length, 'conflict': conflict, 'unmapped': unmapped, 'sequence_coverage': float('{:.3f}'.format(float(length - conflict) / float(length))), 'ref_seq_id': s1['seq_id'], 'reference_seq': ref_seq, 'middle_code': mid_seq, 'test_seq': tst_seq}
+                                         'chain_id': cid, 'length': length, 'conflict': conflict, 'unmapped': unmapped, 'sequence_coverage': float('{:.3f}'.format(float(length - (unmapped + conflict)) / float(length))),
+                                         'ref_seq_id': s1['seq_id'],
+                                         'reference_seq': ref_seq, 'middle_code': mid_seq, 'test_seq': tst_seq}
 
                             seq_align_set.append(seq_align)
 
@@ -5010,19 +5027,21 @@ class NmrDpUtility(object):
 
                 has_seq_align = True
 
-                conflict = 0
                 unmapped = 0
+                conflict = 0
                 for myPr in myAlign:
-                    if myPr[0] != myPr[1]:
+                    if myPr[0] == '.' or myPr[1] == '.':
+                        unmapped += 1
+                    elif myPr[0] != myPr[1]:
                         conflict += 1
-                        if myPr[0] == '.' or myPr[1] == '.':
-                            unmapped += 1
 
                 ref_seq = self.__get1LetterCodeSequence(s1['comp_id'])
                 tst_seq = self.__get1LetterCodeSequence(_s2['comp_id'])
                 mid_seq = self.__getMiddleCode(ref_seq, tst_seq)
 
-                seq_align = {'ref_chain_id': cid, 'test_chain_id': cid2, 'length': length, 'conflict': conflict, 'unmapped': unmapped, 'sequence_coverage': float('{:.3f}'.format(float(length - conflict) / float(length))), 'ref_seq_id': s1['seq_id'], 'reference_seq': ref_seq, 'middle_code': mid_seq, 'test_seq': tst_seq}
+                seq_align = {'ref_chain_id': cid, 'test_chain_id': cid2, 'length': length, 'conflict': conflict, 'unmapped': unmapped, 'sequence_coverage': float('{:.3f}'.format(float(length - (unmapped + conflict)) / float(length))),
+                             'ref_seq_id': s1['seq_id'], 'test_seq_id': _s2['seq_id'],
+                             'reference_seq': ref_seq, 'middle_code': mid_seq, 'test_seq': tst_seq}
 
                 seq_align_set.append(seq_align)
 
@@ -5054,19 +5073,21 @@ class NmrDpUtility(object):
 
                 has_seq_align = True
 
-                conflict = 0
                 unmapped = 0
+                conflict = 0
                 for myPr in myAlign:
-                    if myPr[0] != myPr[1]:
+                    if myPr[0] == '.' or myPr[1] == '.':
+                        unmapped += 1
+                    elif myPr[0] != myPr[1]:
                         conflict += 1
-                        if myPr[0] == '.' or myPr[1] == '.':
-                            unmapped += 1
 
                 ref_seq = self.__get1LetterCodeSequence(s1['comp_id'])
                 tst_seq = self.__get1LetterCodeSequence(_s2['comp_id'])
                 mid_seq = self.__getMiddleCode(ref_seq, tst_seq)
 
-                seq_align = {'ref_chain_id': cid, 'test_chain_id': cid2, 'length': length, 'conflict': conflict, 'unmapped': unmapped, 'sequence_coverage': float('{:.3f}'.format(float(length - conflict) / float(length))), 'ref_seq_id': s1['seq_id'], 'reference_seq': ref_seq, 'middle_code': mid_seq, 'test_seq': tst_seq}
+                seq_align = {'ref_chain_id': cid, 'test_chain_id': cid2, 'length': length, 'conflict': conflict, 'unmapped': unmapped, 'sequence_coverage': float('{:.3f}'.format(float(length - (unmapped + conflict)) / float(length))),
+                             'ref_seq_id': s1['seq_id'], 'test_seq_id': _s2['seq_id'],
+                             'reference_seq': ref_seq, 'middle_code': mid_seq, 'test_seq': tst_seq}
 
                 seq_align_set.append(seq_align)
 
@@ -5145,7 +5166,7 @@ class NmrDpUtility(object):
                     result = next((seq_align for seq_align in seq_align_dic['model_poly_seq_vs_nmr_poly_seq'] if seq_align['ref_chain_id'] == cid and seq_align['test_chain_id'] == cid2), None)
 
                     if not result is None:
-                        cost[nmr_polymer_sequence.index(s2)] = result['conflict'] - result['length']
+                        cost[nmr_polymer_sequence.index(s2)] = result['unmapped'] + result['conflict'] - result['length']
 
                 mat.append(cost)
 
@@ -5167,7 +5188,7 @@ class NmrDpUtility(object):
 
                 chain_assign = {'ref_chain_id': cid, 'test_chain_id': cid2, 'length': result['length'], 'conflict': result['conflict'], 'unmapped': result['unmapped'], 'sequence_coverage': result['sequence_coverage']}
 
-                if result['conflict'] > 0:
+                if result['unmapped'] > 0 or result['conflict'] > 0:
 
                     unmapped = []
                     conflict = []
@@ -5244,7 +5265,7 @@ class NmrDpUtility(object):
                     result = next((seq_align for seq_align in seq_align_dic['nmr_poly_seq_vs_model_poly_seq'] if seq_align['ref_chain_id'] == cid and seq_align['test_chain_id'] == cid2), None)
 
                     if not result is None:
-                        cost[cif_polymer_sequence.index(s2)] = result['conflict'] - result['length']
+                        cost[cif_polymer_sequence.index(s2)] = result['unmapped'] + result['conflict'] - result['length']
 
                 mat.append(cost)
 
@@ -5266,7 +5287,7 @@ class NmrDpUtility(object):
 
                 chain_assign = {'ref_chain_id': cid, 'test_chain_id': cid2, 'length': result['length'], 'conflict': result['conflict'], 'unmapped': result['unmapped'], 'sequence_coverage': result['sequence_coverage']}
 
-                if result['conflict'] > 0:
+                if result['unmapped'] > 0 or result['conflict'] > 0:
 
                     unmapped = []
                     conflict = []
@@ -5349,17 +5370,212 @@ class NmrDpUtility(object):
         if id < 0:
             return True
 
+        __errors = self.report.getTotalErrors()
+
         cif_input_source = self.report.input_sources[id]
         cif_input_source_dic = cif_input_source.get()
 
         cif_file_name = cif_input_source_dic['file_name']
+        cif_polymer_sequence = cif_input_source_dic['polymer_sequence']
 
         nmr_input_source = self.report.input_sources[0]
         nmr_input_source_dic = nmr_input_source.get()
 
-        nmr_file_name = nmr_input_source_dic['file_name']
+        file_type = nmr_input_source_dic['file_type']
+        file_name = nmr_input_source_dic['file_name']
 
-        return True
+        seq_align_dic = self.report.sequence_alignment.get()
+        chain_assign_dic = self.report.chain_assignment.get()
+
+        if not 'nmr_poly_seq_vs_model_poly_seq' in chain_assign_dic:
+
+            err = "Chain assignment did not exist, __assignCoordPolymerSequence() should be invoked."
+
+            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__testCorrdAtomIdConsistency() ++ Error  - %s" % err)
+            self.report.setError()
+
+            if self.__verbose:
+                self.__lfh.write("+NmrDpUtility.__testCorrdAtomIdConsistency() ++ Error  - %s\n" % err)
+
+            return False
+
+        __errors = self.report.getTotalErrors()
+
+        nmr2ca = {}
+
+        for chain_assign in chain_assign_dic['nmr_poly_seq_vs_model_poly_seq']:
+
+            ref_chain_id = chain_assign['ref_chain_id']
+            test_chain_id = chain_assign['test_chain_id']
+
+            result = next((seq_align for seq_align in seq_align_dic['nmr_poly_seq_vs_model_poly_seq'] if seq_align['ref_chain_id'] == ref_chain_id and seq_align['test_chain_id'] == test_chain_id), None)
+
+            nmr2ca[ref_chain_id] = result
+
+        coord = self.__cR.getDictListWithFilter('atom_site',
+                                                [{'name': 'label_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
+                                                  {'name': 'label_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
+                                                  {'name': 'label_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
+                                                  {'name': 'label_atom_id', 'type': 'str', 'alt_name': 'atom_id'}
+                                                 ],
+                                                [{'name': 'pdbx_PDB_model_num', 'type': 'str', 'value': '1'}
+                                                 ])
+
+        for content_subtype in nmr_input_source_dic['content_subtype'].keys():
+
+            if content_subtype == 'entry_info' or content_subtype == 'poly_seq':
+                continue
+
+            sf_category = self.sf_categories[file_type][content_subtype]
+            lp_category = self.lp_categories[file_type][content_subtype]
+
+            index_tag = self.index_tags[file_type][content_subtype]
+
+            list_id = 1
+
+            for sf_data in self.__star_data.get_saveframes_by_category(sf_category):
+
+                sf_framecode = sf_data.get_tag('sf_framecode')[0]
+
+                lp_data = next((l['data'] for l in self.lp_data[content_subtype] if l['sf_framecode'] == sf_framecode), None)
+
+                if not lp_data is None:
+
+                    has_seq_align = False
+
+                    sa_name = 'nmr_poly_seq_vs_' + content_subtype
+
+                    if sa_name in seq_align_dic and not seq_align_dic[sa_name] is None:
+
+                        for seq_align in seq_align_dic[sa_name]:
+
+                            if seq_align['list_id'] == list_id:
+                                has_seq_align = True
+                                break
+
+                    if not has_seq_align:
+                        continue
+
+                    item_names = []
+
+                    if content_subtype == 'chem_shift':
+                        max_dim = 2
+
+                        item_names.append(self.item_names_in_cs_loop[file_type])
+
+                    else:
+
+                        if content_subtype == 'dist_restraint' or content_subtype == 'rdc_restraint':
+                            max_dim = 3
+
+                        elif content_subtype == 'dihed_restring':
+                            max_dim = 5
+
+                        elif content_subtype == 'spectral_peak':
+
+                            try:
+
+                                _num_dim = sf_data.get_tag(self.num_dim_items[file_type])[0]
+                                num_dim = int(_num_dim)
+
+                                if not num_dim in range(1, self.lim_num_dim):
+                                    raise ValueError()
+
+                            except ValueError: # raised error already at __testIndexConsistency()
+                                continue
+
+                            max_dim = num_dim + 1
+
+                        else:
+                            continue
+
+                        for j in range(1, max_dim):
+                            _item_names = {}
+                            for k, v in self.item_names_in_pk_loop[file_type].items():
+                                if '%s' in v:
+                                    v = v % j
+                                _item_names[k] = v
+                            item_names.append(_item_names)
+
+                    num_dim = max_dim - 1
+
+                    for i in lp_data:
+
+                        for j in range(num_dim):
+                            chain_id = i[item_names[j]['chain_id']]
+                            seq_id = i[item_names[j]['seq_id']]
+                            comp_id = i[item_names[j]['comp_id']]
+                            atom_id = i[item_names[j]['atom_id']]
+
+                            if content_subtype == 'sepcral_peak' and (chain_id in self.empty_value or seq_id in self.empty_value or comp_id in self.empty_value or atom_id in self.empty_value):
+                                continue
+
+                            ca = nmr2ca[chain_id]
+
+                            cif_chain_id = ca['test_chain_id']
+
+                            cif_seq_id = None
+                            for k in range(ca['length']):
+                                if ca['ref_seq_id'][k] == seq_id:
+                                    cif_seq_id = ca['test_seq_id'][k]
+                                    break
+
+                            if cif_seq_id is None:
+                                continue
+
+                            cif_seq_id_ = str(cif_seq_id)
+
+                            cif_ps = next(ps for ps in cif_polymer_sequence if ps['chain_id'] == cif_chain_id)
+
+                            cif_comp_id = None
+                            for k in range(len(cif_ps['seq_id'])):
+                                if cif_ps['seq_id'][k] == cif_seq_id:
+                                    cif_comp_id = cif_ps['comp_id'][k]
+                                    break
+
+                            if cif_comp_id is None:
+                                continue
+
+                            if file_type == 'nef':
+                                _atom_id = self.nef_translator.get_nmrstar_atom(comp_id, atom_id)[1]
+
+                                if len(_atom_id) == 0:
+                                    continue
+
+                                atom_name = atom_id + ' (e.g. '
+
+                                for atom_id_ in _atom_id:
+                                    atom_name += atom_id_ + ' '
+
+                                atom_name = atom_name.rstrip() + ')'
+
+                                # representative atom id
+                                atom_id_ = _atom_id[0]
+
+                            else:
+                                atom_id_ = atom_id
+                                atom_name = atom_id
+
+                            result = next((c for c in coord if c['chain_id'] == cif_chain_id and c['seq_id'] == cif_seq_id_ and c['comp_id'] == cif_comp_id and c['atom_id'] == atom_id_), None)
+
+                            if result is None:
+
+                                idx_msg = ''
+                                if not index_tag is None:
+                                    idx_msg = "[Check row of %s %s] " % (index_tag, i[index_tag])
+
+                                err = "%sThere is an invalid atom (%s %s, %s %s, %s %s, %s %s), not incorporated in the atomic coordinate." %\
+                                      (idx_msg, item_names[j]['chain_id'], chain_id, item_names[j]['seq_id'], seq_id, item_names[j]['comp_id'], comp_id, item_names[j]['atom_id'], atom_name)
+
+                                self.report.error.appendDescription('invalid_atom_nomenclature', {'file_name': file_name, 'saveframe': sf_framecode, 'category': lp_category, 'description': err})
+                                self.report.setError()
+
+                                if self.__verbose:
+                                    self.__lfh.write("+NmrDpUtility.__testCorrdAtomIdConsistency() ++ Error  - %s\n" % err)
+
+                    list_id += 1
+
+        return self.report.getTotalErrors() == __errors
 
 if __name__ == '__main__':
     dp = NmrDpUtility()

@@ -31,9 +31,6 @@ class CifReader(object):
 
         # preset values
         self.empty_value = (None, '', '.', '?')
-        #self.true_value = ('true', 't', 'yes', 'y', '1')
-
-        #self.item_types = ('str', 'bool', 'int', 'index-int', 'positive-int', 'static-index', 'float', 'positive-float', 'range-float', 'enum', 'enum-int')
 
     def setFilePath(self, filePath):
         """ Set file path and test readability.
@@ -142,11 +139,7 @@ class CifReader(object):
         key_names = [k['name'] for k in key_items]
 
         key_len = len(key_items)
-        """
-        for k in key_items:
-            if not k['type'] in self.item_types:
-                raise TypeError("Type %s of key item %s (alt. %s) must be one of %s" % (k['type'], k['name'], k['alt_name'], self.item_types))
-        """
+
         asm = [] # assembly of a loop
 
         # get category object
@@ -221,3 +214,57 @@ class CifReader(object):
                 raise ValueError("%s must be int." % itNameList[seq_id_col])
 
         return asm
+
+    def getDictListWithFilter(self, catName, data_items, filter_items=None):
+        """ Return a list of dictionaries of a given category with filter.
+        """
+
+        data_names = [d['name'] for d in data_items]
+        if not filter_items is None:
+            filt_names = [f['name'] for f in filter_items]
+
+        dList = []
+        # get category object
+        catObj = self.__dBlock.getObj(catName)
+
+        if not catObj is None:
+            len_catName = len(catName) + 2
+
+            # get column name index
+            colDict = {}
+            fcolDict = {}
+
+            itNameList = [j[len_catName:] for j in catObj.getItemNameList()]
+
+            for idxIt, itName in enumerate(itNameList):
+                if itName in data_names:
+                    colDict[itName] = idxIt
+                if not filter_items is None and itName in filt_names:
+                    fcolDict[itName] = idxIt
+
+            if set(data_names) & set(itNameList) != set(data_names):
+                raise LookupError("Missing one of data items %s." % data_names)
+
+            if not filter_items is None and set(filt_names) & set(itNameList) != set(filt_names):
+                raise LookupError("Missing one of filter items %s." % filt_names)
+
+            # get row list
+            rowList = catObj.getRowList()
+            for row in rowList:
+                filter = True
+                if not filter_items is None:
+                    for filt_item in filter_items:
+                        if row[fcolDict[filt_item['name']]] != filt_item['value']:
+                            filter = False
+                            break
+                if filter:
+                    tD = {}
+                    for data_item in data_items:
+                        col = colDict[data_item['name']]
+                        if 'alt_name' in data_item:
+                            tD[data_item['alt_name']] = row[col]
+                        else:
+                            tD[data_item['name']] = row[col]
+                        dList.append(tD)
+
+        return dList

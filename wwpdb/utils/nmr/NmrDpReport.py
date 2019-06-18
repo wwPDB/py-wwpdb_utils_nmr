@@ -1,6 +1,6 @@
 ##
 # File: NmrDpReport.py
-# Date: 14-Jun-2019
+# Date: 18-Jun-2019
 #
 # Updates:
 ##
@@ -34,7 +34,7 @@ class NmrDpReport:
         self.error = NmrDpReportError()
         self.warning = NmrDpReportWarning()
 
-    def addInputSource(self):
+    def appendInputSource(self):
         self.input_sources.append(NmrDpReportInputSource())
 
     def isOk(self):
@@ -124,8 +124,28 @@ class NmrDpReport:
         if out_path is None:
             return self.getJson()
 
-        with open(out_path, encoding='utf-8') as file:
+        with open(out_path, 'w') as file:
             file.write(json.dumps(self.get(), indent=2))
+
+    def loadJson(self, in_path):
+        with open(in_path, 'r') as file:
+            self.__report = json.loads(file.read())
+
+        self.input_sources = []
+
+        for contents in self.__report['information']['input_sources']:
+
+            input_source = NmrDpReportInputSource()
+            input_source.put(contents)
+
+            self.input_sources.append(input_source)
+
+        self.sequence_alignment.put(self.__report['information']['sequence_alignments'])
+        self.chain_assignment.put(self.__report['information']['chain_assignments'])
+        self.error.put(self.__report['error'])
+        self.warning.put(self.__report['warning'])
+
+        self.__immutable = True
 
 class NmrDpReportInputSource:
     """ Wrapper class for data processing report of NMR unified data (input source).
@@ -180,6 +200,9 @@ class NmrDpReportInputSource:
     def get(self):
         return self.__contents
 
+    def put(self, contents):
+        self.__contents = contents
+
 class NmrDpReportSequenceAlignment:
     """ Wrapper class for data processing report of NMR unified data (sequence alignment).
     """
@@ -201,6 +224,9 @@ class NmrDpReportSequenceAlignment:
     def get(self):
         return self.__contents
 
+    def put(self, contents):
+        self.__contents = contents
+
 class NmrDpReportChainAssignment:
     """ Wrapper class for data processing report of NMR unified data (chain assignment).
     """
@@ -221,6 +247,9 @@ class NmrDpReportChainAssignment:
 
     def get(self):
         return self.__contents
+
+    def put(self, contents):
+        self.__contents = contents
 
 class NmrDpReportError:
     """ Wrapper class for data processing report of NMR unified data (error).
@@ -289,6 +318,9 @@ class NmrDpReportError:
     def getTotal(self):
         return self.__contents['total']
 
+    def put(self, contents):
+        self.__contents = contents
+
 class NmrDpReportWarning:
     """ Wrapper class for data processing report of NMR unified data (warning).
     """
@@ -342,3 +374,6 @@ class NmrDpReportWarning:
 
     def getTotal(self):
         return self.__contents['total']
+
+    def put(self, contents):
+        self.__contents = contents

@@ -27,7 +27,7 @@ class TestNmrDpReport(unittest.TestCase):
         with self.assertRaises(IndexError):
             self.report.input_sources[1].setItemValue('file_type', 'pdbx')
 
-        self.report.addInputSource()
+        self.report.appendInputSource()
 
         self.report.input_sources[1].setItemValue('file_type', 'pdbx')
         self.report.input_sources[1].setItemValue('content_type', 'model')

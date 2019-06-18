@@ -2355,7 +2355,6 @@ class NEFTranslator(object):
                     for tag in saveframe.tags:
                         if tag[0].lower() == 'sf_category':
                             try:
-
                                 sf.add_tag('Sf_category', self.get_nmrstar_tag(saveframe.category)[0])
                             except ValueError:
                                 sf.add_tag('Sf_category', self.get_nmrstar_tag(tag[1])[0])

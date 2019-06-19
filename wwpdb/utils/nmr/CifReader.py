@@ -286,11 +286,20 @@ class CifReader(object):
                 if filter:
                     tD = {}
                     for data_item in data_items:
-                        col = colDict[data_item['name']]
-                        if 'alt_name' in data_item:
-                            tD[data_item['alt_name']] = row[col]
+                        val = row[colDict[data_item['name']]]
+                        data_item_type = data_item['type']
+                        if data_item_type == 'str':
+                                pass
+                        elif data_item_type == 'bool':
+                            val = val.lower() in true_value
+                        elif data_item_type == 'int':
+                            val = int(val)
                         else:
-                            tD[data_item['name']] = row[col]
+                            val = float(val)
+                        if 'alt_name' in data_item:
+                            tD[data_item['alt_name']] = val
+                        else:
+                            tD[data_item['name']] = val
                         dList.append(tD)
 
         return dList

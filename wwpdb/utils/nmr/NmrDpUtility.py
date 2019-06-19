@@ -15,6 +15,7 @@ import json
 import itertools
 import copy
 import collections
+import re
 from munkres import Munkres
 
 from wwpdb.utils.nmr.NEFTranslator.NEFTranslator import NEFTranslator
@@ -102,6 +103,8 @@ class NmrDpUtility(object):
                                  self.__removeNonSenseZeroValue,
                                  self.__fixNonSenseNegativeValue,
                                  self.__fixEnumerationValue,
+                                 self.__resetBoolValue,
+                                 self.__appendParentSfTag,
                                  self.__addUnnamedEntryId,
                                  self.__depositNmrData
                                  ],
@@ -220,7 +223,7 @@ class NmrDpUtility(object):
         self.chem_shift_error = {'min_exclusive': 0.0, 'max_exclusive': 3.0}
 
         # allowed distance range
-        self.dist_restraint_range = {'min_exclusive': 1.0, 'max_exclusive': 10.0}
+        self.dist_restraint_range = {'min_exclusive': 1.0, 'max_exclusive': 50.0}
         self.dist_restraint_error = {'min_exclusive': 0.0, 'max_exclusive': 5.0}
 
         # allowed dihed range
@@ -1073,27 +1076,27 @@ class NmrDpUtility(object):
 
         # allowed auxiliary loop tags
         self.aux_allowed_tags = {'nef': {'entry_info': None,
-                                       'poly_seq':  None,
-                                       'chem_shift': None,
-                                       'dist_restraint': None,
-                                       'dihed_restraint': None,
-                                       'rdc_restraint': None,
-                                       'spectral_peak': {
-                                           '_nef_spectrum_dimension': ['dimension_id', 'axis_unit', 'axis_code', 'spectrometer_frequency', 'spectral_width', 'value_first_point', 'folding', 'absolute_peak_positions', 'is_acquisition'],
-                                           '_nef_spectrum_dimension_transfer': ['dimension_1', 'dimension_2', 'transfer_type', 'is_indirect']
-                                           }
-                                       },
-                                  'nmr-star': {'entry_info': None,
-                                               'poly_seq':  None,
-                                               'chem_shift': None,
-                                               'dist_restraint': None,
-                                               'dihed_restraint': None,
-                                               'rdc_restraint': None,
-                                               'spectral_peak': {
-                                                   '_Spectral_dim': ['ID', 'Axis_code', 'Spectrometer_frequency', 'Atom_type', 'Atom_isotope_number', 'Spectral_region', 'Magnetization_linkage_ID', 'Under_sampling_type', 'Sweep_width', 'Sweep_width_units', 'Value_first_point', 'Absolute_peak_positions', 'Acquisition', 'Center_frequency_offset', 'Encoding_code', 'Encoded_reduced_dimension_ID', 'Sf_ID', 'Entry_ID', 'Spectral_peak_list_ID'],
-                                                   '_Spectral_dim_transfer': ['Spectral_dim_ID_1', 'Spectral_dim_ID_2', 'Indirect', 'Type', 'Sf_ID', 'Entry_ID', 'Spectral_peak_list_ID']
-                                                   }
-                                               }
+                                         'poly_seq':  None,
+                                         'chem_shift': None,
+                                         'dist_restraint': None,
+                                         'dihed_restraint': None,
+                                         'rdc_restraint': None,
+                                         'spectral_peak': {
+                                             '_nef_spectrum_dimension': ['dimension_id', 'axis_unit', 'axis_code', 'spectrometer_frequency', 'spectral_width', 'value_first_point', 'folding', 'absolute_peak_positions', 'is_acquisition'],
+                                             '_nef_spectrum_dimension_transfer': ['dimension_1', 'dimension_2', 'transfer_type', 'is_indirect']
+                                             }
+                                         },
+                                 'nmr-star': {'entry_info': None,
+                                              'poly_seq':  None,
+                                              'chem_shift': None,
+                                              'dist_restraint': None,
+                                              'dihed_restraint': None,
+                                              'rdc_restraint': None,
+                                              'spectral_peak': {
+                                                  '_Spectral_dim': ['ID', 'Axis_code', 'Spectrometer_frequency', 'Atom_type', 'Atom_isotope_number', 'Spectral_region', 'Magnetization_linkage_ID', 'Under_sampling_type', 'Sweep_width', 'Sweep_width_units', 'Value_first_point', 'Absolute_peak_positions', 'Acquisition', 'Center_frequency_offset', 'Encoding_code', 'Encoded_reduced_dimension_ID', 'Sf_ID', 'Entry_ID', 'Spectral_peak_list_ID'],
+                                                  '_Spectral_dim_transfer': ['Spectral_dim_ID_1', 'Spectral_dim_ID_2', 'Indirect', 'Type', 'Sf_ID', 'Entry_ID', 'Spectral_peak_list_ID']
+                                                  }
+                                              }
                                   }
 
         # item name in cs loop
@@ -1104,7 +1107,8 @@ class NmrDpUtility(object):
                                               'value': 'value',
                                               'error': 'value_uncertainty',
                                               'atom_type': 'element',
-                                              'isotope_number': 'isotope_number'},
+                                              'isotope_number': 'isotope_number'
+                                              },
                                       'nmr-star': {'chain_id': 'Entity_assembly_ID',
                                                    'seq_id': 'Comp_index_ID',
                                                    'comp_id': 'Comp_ID',
@@ -1112,7 +1116,8 @@ class NmrDpUtility(object):
                                                    'value': 'Val',
                                                    'error': 'Val_err',
                                                    'atom_type': 'Atom_type',
-                                                   'isotope_number': 'Atom_isotope_number'}
+                                                   'isotope_number': 'Atom_isotope_number'
+                                                   }
                                       }
 
         # item name in spectral peak loop
@@ -1120,12 +1125,45 @@ class NmrDpUtility(object):
                                               'seq_id': 'sequence_code_%s',
                                               'comp_id': 'residue_name_%s',
                                               'atom_id': 'atom_name_%s',
-                                              'position': 'position_%s'},
+                                              'position': 'position_%s'
+                                              },
                                       'nmr-star': {'chain_id': 'Entity_assembly_ID_%s',
                                                    'seq_id': 'Comp_index_ID_%s',
                                                    'comp_id': 'Comp_ID_%s',
                                                    'atom_id': 'Atom_ID_%s',
-                                                   'position': 'Position_%s'}
+                                                   'position': 'Position_%s'
+                                                   }
+                                      }
+
+        # item name in distance restratin loop
+        self.item_names_in_dr_loop = {'nef': {'chain_id_1': 'chain_code_1',
+                                              'seq_id_1': 'sequence_code_1',
+                                              'comp_id_1': 'residue_name_1',
+                                              'atom_id_1': 'atom_name_1',
+                                              'chain_id_2': 'chain_code_2',
+                                              'seq_id_2': 'sequence_code_2',
+                                              'comp_id_2': 'residue_name_2',
+                                              'atom_id_2': 'atom_name_2',
+                                              'target_value': 'target_value',
+                                              'lower_linear_limit': 'lower_linear_limit',
+                                              'upper_linear_limit': 'upper_linear_limit',
+                                              'lower_limit': 'lower_limit',
+                                              'upper_limit': 'upper_limit'
+                                              },
+                                      'nmr-star': {'chain_id_1': 'Entity_assembly_ID_1',
+                                                   'seq_id_1': 'Comp_index_ID_1',
+                                                   'comp_id_1': 'Comp_ID_1',
+                                                   'atom_id_1': 'Atom_ID_1',
+                                                   'chain_id_2': 'Entity_assembly_ID_2',
+                                                   'seq_id_2': 'Comp_index_ID_2',
+                                                   'comp_id_2': 'Comp_ID_2',
+                                                   'atom_id_2': 'Atom_ID_2',
+                                                   'target_value': 'Target_val',
+                                                   'lower_linear_limit': 'Lower_linear_limit',
+                                                   'upper_linear_limit': 'Upper_linear_limit',
+                                                   'lower_limit': 'Distance_lower_bound_val',
+                                                   'upper_limit': 'Distance_upper_bound_val'
+                                                   }
                                       }
 
         # saveframe tag name for chemical shift list in spectral peak
@@ -3792,15 +3830,20 @@ class NmrDpUtility(object):
                             if len(_atom_id) == 0:
                                 continue
 
-                            atom_name = atom_id + ' (e.g. '
+                            if len(_atom_id) == 1 and atom_id == _atom_id[0]:
+                                atom_id_ = atom_id
+                                atom_name = atom_id
 
-                            for atom_id_ in _atom_id:
-                                atom_name += atom_id_ + ' '
+                            else:
+                                atom_name = atom_id + ' (e.g. '
 
-                            atom_name = atom_name.rstrip() + ')'
+                                for atom_id_ in _atom_id:
+                                    atom_name += atom_id_ + ' '
 
-                            # representative atom id
-                            atom_id_ = _atom_id[0]
+                                atom_name = atom_name.rstrip() + ')'
+
+                                # representative atom id
+                                atom_id_ = _atom_id[0]
 
                         else:
                             atom_id_ = atom_id
@@ -5588,15 +5631,20 @@ class NmrDpUtility(object):
                                 if len(_atom_id) == 0:
                                     continue
 
-                                atom_name = atom_id + ' (e.g. '
+                                if len(_atom_id) == 1 and atom_id == _atom_id[0]:
+                                    atom_id_ = atom_id
+                                    atom_name = atom_id
 
-                                for atom_id_ in _atom_id:
-                                    atom_name += atom_id_ + ' '
+                                else:
+                                    atom_name = atom_id + ' (e.g. '
 
-                                atom_name = atom_name.rstrip() + ')'
+                                    for atom_id_ in _atom_id:
+                                        atom_name += atom_id_ + ' '
 
-                                # representative atom id
-                                atom_id_ = _atom_id[0]
+                                    atom_name = atom_name.rstrip() + ')'
+
+                                    # representative atom id
+                                    atom_id_ = _atom_id[0]
 
                             else:
                                 atom_id_ = atom_id
@@ -5829,7 +5877,13 @@ class NmrDpUtility(object):
             sf_data = self.__star_data.get_saveframes_by_category(sf_category)[0]
 
             if not sf_data is None:
-                orig_lp_data = self.nef_translator.check_data(sf_data, lp_category, key_items, data_items, None, None)[0]
+
+                sf_framecode = sf_data.get_tag('sf_framecode')[0]
+
+                orig_lp_data = next((l['data'] for l in self.lp_data[content_subtype] if l['sf_framecode'] == sf_framecode), None)
+
+                if orig_lp_data is None:
+                    orig_lp_data = self.nef_translator.check_data(sf_data, lp_category, key_items, data_items, None, None)[0]
 
                 if file_type == 'nef':
                     if 'residue_variant' in orig_lp_data[0]:
@@ -6541,7 +6595,320 @@ class NmrDpUtility(object):
         return True
 
     def __fixEnumerationValue(self):
-        """ Fix enumeration violations.
+        """ Fix enumeration failures if possible.
+        """
+
+        warning_dic = self.report.warning.get()
+
+        if warning_dic['enum_failure'] is None:
+            return True
+
+        input_source = self.report.input_sources[0]
+        input_source_dic = input_source.get()
+
+        file_type = input_source_dic['file_type']
+        file_name = input_source_dic['file_name']
+
+        self.chk_desc_pat = re.compile(r'^(.*) \'(.*)\' should be one of \((.*)\)\.$')
+
+        for w in warning_dic['enum_failure']:
+
+            if w['file_name'] != file_name:
+                continue
+
+            if not "should be one of" in w['description']:
+                continue
+
+            g = self.chk_desc_pat.search(w['description']).groups()
+
+            itName = g[0]
+            itValue = g[1]
+            itEnum = [str(e.strip("'")) for e in re.sub(r"\', \'", "\',\'", g[2]).split(',')]
+
+            if self.__star_data_type == "Entry" or self.__star_data_type == "Saveframe":
+
+                if not 'saveframe' in w:
+
+                    err = "Could not specify 'saveframe' in NMR data processing report."
+
+                    self.report.error.appendDescription('internal_error', "+NmrDpUtility.__fixEnumerationValue() ++ Error  - %s" % err)
+                    self.report.setError()
+
+                    if self.__verbose:
+                        self.__lfh.write("+NmrDpUtility.__fixEnumerationValue() ++ Error  - %s\n" % err)
+
+                else:
+
+                    sf_data = self.__star_data.get_saveframe_by_name(w['saveframe'])
+
+                    if sf_data is None:
+
+                        err = "Could not specify saveframe %s unexpectedly in %s file." % (w['saveframe'], file_name)
+
+                        self.report.error.appendDescription('internal_error', "+NmrDpUtility.__fixEnumerationValue() ++ Error  - %s" % err)
+                        self.report.setError()
+
+                        if self.__verbose:
+                            self.__lfh.write("+NmrDpUtility.__fixEnumerationValue() ++ Error  - %s\n" % err)
+
+                    else:
+
+                        if not 'category' in w:
+
+                            tagNames = [t[0] for t in sf_data.tags]
+
+                            if not itName in tagNames:
+
+                                err = "Could not find saveframe tag %s in %s saveframe, %s file." % (itName, w['saveframe'], file_name)
+
+                                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__fixEnumerationValue() ++ Error  - %s" % err)
+                                self.report.setError()
+
+                                if self.__verbose:
+                                    self.__lfh.write("+NmrDpUtility.__fixEnumerationValue() ++ Error  - %s\n" % err)
+
+                            else:
+
+                                itCol = tagNames.index(itName)
+
+                                if sf_data.tags[itCol][1] == itValue:
+                                    if len(itEnum) == 1:
+                                        sf_data.tags[itCol][1] = itEnum[0]
+
+                                    # specific remediattion follows
+                                    else:
+
+                                        sf_category = sf_data.get_tag('sf_category')[0]
+
+                                        try:
+
+                                            content_subtype = next(c for c in input_source_dic['content_subtype'].keys() if self.sf_categories[file_type][c] == sf_category)
+
+                                            if (file_type == 'nef' and itName == 'restraint_origin') or (file_type == 'nmr-star' and itName == 'Constraint_type'):
+
+                                                lp_data = next((l['data'] for l in self.lp_data[content_subtype] if l['sf_framecode'] == w['saveframe']), None)
+
+                                                if lp_data is None:
+                                                    lp_category = self.lp_categories[file_type][content_subtype]
+
+                                                    key_items = self.key_items[file_type][content_subtype]
+                                                    data_items = self.data_items[file_type][content_subtype]
+
+                                                    try:
+
+                                                        lp_data = self.nef_translator.check_data(sf_data, lp_category, key_items, data_items, None, None)[0]
+
+                                                    except:
+                                                        pass
+
+                                                if not lp_data is None:
+
+                                                    if content_subtype == 'dist_restraint':
+
+                                                        # 'NOE', 'NOE build-up', 'NOE not seen', 'ROE', 'ROE build-up', 'hydrogen bond', 'disulfide bond', 'paramagnetic relaxation', 'symmetry', 'general distance'
+
+                                                        if self.__testDistRestraintAsHydrogenBond(lp_data):
+                                                            sf_data.tags[itCol][1] = 'hydrogen bond'
+
+                                                        elif self.__testDistRestraintAsDisulfideBond(lp_data):
+                                                            sf_data.tags[itCol][1] = 'disulfide bond'
+
+                                                    elif content_subtype == 'dihed_restraint':
+
+                                                        # 'J-couplings', 'backbone chemical shifts'
+
+                                                        #if self.__testDihedRestraintAsBackBone(lp_data):
+                                                        #   sf_data.tags[itCol][1] = 'backbone chemical shifts'
+                                                        #else:
+                                                        #    sf_data.tags[itCol][1] = 'J-couplings'
+
+                                                        pass
+
+                                                    elif content_subtype == 'rdc_restraint':
+                                                        sf_data.tags[itCol][1] = 'RDC'
+
+                                        except StopIteration:
+
+                                            err = "Could not specify content_subtype in NMR data processing report."
+
+                                            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__fixEnumeration() ++ Error  - %s" % err)
+                                            self.report.setError()
+
+                                            if self.__verbose:
+                                                self.__lfh.write("+NmrDpUtility.__fixEnumeration() ++ Error  - %s\n" % err)
+
+                        else:
+
+                            lp_data = sf_data.get_loop_by_category(w['category'])
+
+                            if not itName in lp_data.tags:
+
+                                err = "Could not find loop tag %s in %s category, %s saveframe, %s file." % (itName, w['category'], w['saveframe'], file_name)
+
+                                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__fixEnumerationValue() ++ Error  - %s" % err)
+                                self.report.setError()
+
+                                if self.__verbose:
+                                    self.__lfh.write("+NmrDpUtility.__fixEnumerationValue() ++ Error  - %s\n" % err)
+
+                            else:
+
+                                itCol = lp_data.tags.index(itName)
+
+                                for row in lp_data.data:
+
+                                    if row[itCol] is self.empty_value:
+                                        continue
+
+                                    if row[itCol] == itValue:
+                                        if len(itEnum) == 1:
+                                            row[itCol] = itEnum[0]
+
+            else:
+
+                err = "Unexpected PyNMRSTAR object %s found in %s file." % (self.__star_data_type, file_name)
+
+                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__fixEnumerationValue() ++ Error  - %s" % err)
+                self.report.setError()
+
+                if self.__verbose:
+                    self.__lfh.write("+NmrDpUtility.__fixEnumerationValue() ++ Error  - %s\n" % err)
+
+        return True
+
+    def __testDistRestraintAsHydrogenBond(self, lp_data):
+        """ Detect whether given restraints are derived from hydrogen bonds.
+        """
+
+        if lp_data is None:
+            return False
+
+        input_source = self.report.input_sources[0]
+        input_source_dic = input_source.get()
+
+        file_type = input_source_dic['file_type']
+
+        item_names = self.item_names_in_dr_loop[file_type]
+
+        try:
+
+            for i in lp_data:
+                chain_id_1 = i[item_names['chain_id_1']]
+                chain_id_2 = i[item_names['chain_id_2']]
+                seq_id_1 = i[item_names['seq_id_1']]
+                seq_id_2 = i[item_names['seq_id_2']]
+
+                if chain_id_1 == chain_id_2 and seq_id_1 == seq_id_2:
+                    return False
+
+                target_value = i[item_names['target_value']]
+
+                if target_value is None:
+
+                    if not i[item_names['lower_limit']] is None and not i[item_names['upper_limit']] is None:
+                        target_value = (i[item_names['lower_limit']] + i[item_names['upper_limit']]) / 2.0
+
+                    elif not i[item_names['lower_linear_limit']] is None and not i[item_names['upper_linear_limit']] is None:
+                        target_value = (i[item_names['lower_linear_limit']] + i[item_names['upper_linear_limit']]) / 2.0
+
+                    else:
+                        return False
+
+                atom_id_1 = i[item_names['atom_id_1']][0]
+                atom_id_2 = i[item_names['atom_id_2']][0]
+
+                if (atom_id_1 == 'O' and atom_id_2 == 'H') or (atom_id_2 == 'O' and atom_id_1 == 'H'):
+
+                    if target_value < 1.8 or target_value > 2.1:
+                        return False
+
+                elif (atom_id_1 == 'O' and atom_id_2 == 'N') or (atom_id_2 == 'O' and atom_id_1 == 'N'):
+
+                    if target_value < 2.7 or target_value > 3.1:
+                        return False
+
+                else:
+                    return False
+
+        except Exception as e:
+
+            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__testDistRestraintAsHydrogenBond() ++ Error  - %s" % str(e))
+            self.report.setError()
+
+            if self.__verbose:
+                self.__lfh.write("+NmrDpUtility.__testDistRestraintAsHydrogenBond() ++ Error  - %s" % str(e))
+
+            return False
+
+        return True
+
+    def __testDistRestraintAsDisulfideBond(self, lp_data):
+        """ Detect whether given restraints are derived from disulfide bonds.
+        """
+
+        if lp_data is None:
+            return False
+
+        input_source = self.report.input_sources[0]
+        input_source_dic = input_source.get()
+
+        file_type = input_source_dic['file_type']
+
+        item_names = self.item_names_in_dr_loop[file_type]
+
+        try:
+
+            for i in lp_data:
+                chain_id_1 = i[item_names['chain_id_1']]
+                chain_id_2 = i[item_names['chain_id_2']]
+                seq_id_1 = i[item_names['seq_id_1']]
+                seq_id_2 = i[item_names['seq_id_2']]
+
+                if chain_id_1 == chain_id_2 and seq_id_1 == seq_id_2:
+                    return False
+
+                target_value = i[item_names['target_value']]
+
+                if target_value is None:
+
+                    if not i[item_names['lower_limit']] is None and not i[item_names['upper_limit']] is None:
+                        target_value = (i[item_names['lower_limit']] + i[item_names['upper_limit']]) / 2.0
+
+                    elif not i[item_names['lower_linear_limit']] is None and not i[item_names['upper_linear_limit']] is None:
+                        target_value = (i[item_names['lower_linear_limit']] + i[item_names['upper_linear_limit']]) / 2.0
+
+                    else:
+                        return False
+
+                atom_id_1 = i[item_names['atom_id_1']][0]
+                atom_id_2 = i[item_names['atom_id_2']][0]
+
+                if atom_id_1 == 'S' and atom_id_2 == 'S':
+
+                    if target_value < 1.9 or target_value > 2.3:
+                        return False
+
+                else:
+                    return False
+
+        except Exception as e:
+
+            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__testDistRestraintAsHydrogenBond() ++ Error  - %s" % str(e))
+            self.report.setError()
+
+            if self.__verbose:
+                self.__lfh.write("+NmrDpUtility.__testDistRestraintAsHydrogenBond() ++ Error  - %s" % str(e))
+
+            return False
+
+        return True
+
+    def __resetBoolValue(self):
+        """ Reset bool values depending on file type.
+        """
+
+    def __appendParentSfTag(self):
+        """ Append parent tag in saveframe if not exists.
         """
 
     def __addUnnamedEntryId(self):

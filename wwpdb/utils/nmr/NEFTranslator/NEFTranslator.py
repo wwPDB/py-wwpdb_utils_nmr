@@ -1476,7 +1476,7 @@ class NEFTranslator(object):
                                     if 'enforce-enum' in k and k['enforce-enum']:
                                         raise ValueError("%s%s '%s' must be one of %s." % (NEFTranslator.idx_msg(idx_tag_ids, tags, ent), name, val, enum))
                                     elif enforce_enum:
-                                        raise UserError("%s%s '%s' should be one of %s." % (NEFTranslator.idx_msg(idx_tag_ids, tags, ent), name, val, enum))
+                                        raise UserError("[Enumeration error] %s%s '%s' should be one of %s." % (NEFTranslator.idx_msg(idx_tag_ids, tags, ent), name, val, enum))
                                 ent[name] = val
                             except KeyError:
                                 raise Error('Enumeration of key item %s is not defined' % name)

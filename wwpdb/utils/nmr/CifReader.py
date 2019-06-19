@@ -32,6 +32,8 @@ class CifReader(object):
         # preset values
         self.empty_value = (None, '', '.', '?')
         self.true_value = ('true', 't', 'yes', 'y', '1')
+
+        # allowed item types 
         self.item_types = ('str', 'bool', 'int', 'float')
 
     def setFilePath(self, filePath):

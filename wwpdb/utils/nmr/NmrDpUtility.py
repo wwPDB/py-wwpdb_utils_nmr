@@ -4,6 +4,7 @@
 #
 # Updates:
 ##
+from __builtin__ import False
 """ Wrapper class for data processing for NMR unified data.
 """
 import sys
@@ -103,7 +104,8 @@ class NmrDpUtility(object):
                                  self.__removeNonSenseZeroValue,
                                  self.__fixNonSenseNegativeValue,
                                  self.__fixEnumerationValue,
-                                 self.__resetBoolValue,
+                                 self.__resetBoolValueInLoop,
+                                 self.__resetBoolValueInAuxLoop,
                                  self.__appendParentSfTag,
                                  self.__addUnnamedEntryId,
                                  self.__depositNmrData
@@ -130,6 +132,9 @@ class NmrDpUtility(object):
 
         # empty value
         self.empty_value = (None, '', '.', '?')
+
+        # true value
+        self.true_value = ('true', 't', 'yes', 'y', '1')
 
         # NMR content types
         self.nmr_content_subtypes = ('entry_info', 'poly_seq', 'chem_shift', 'dist_restraint', 'dihed_restraint', 'rdc_restraint', 'spectral_peak')
@@ -399,139 +404,139 @@ class NmrDpUtility(object):
                                                    'enum': set(isotope_nums),
                                                    'enforce-enum': True}
                                                   ],
-                                   'dist_restraint': [{'name': 'index', 'type':'index-int', 'mandatory': True},
-                                                      {'name': 'restraint_id', 'type':'positive-int', 'mandatory': True,
+                                   'dist_restraint': [{'name': 'index', 'type': 'index-int', 'mandatory': True},
+                                                      {'name': 'restraint_id', 'type': 'positive-int', 'mandatory': True,
                                                        'enforce-non-zero': True},
-                                                      {'name': 'restraint_combination_id', 'type':'positive-int', 'mandatory': False,
+                                                      {'name': 'restraint_combination_id', 'type': 'positive-int', 'mandatory': False,
                                                        'enforce-non-zero': True},
-                                                      {'name': 'weight', 'type':'range-float', 'mandatory': True,
+                                                      {'name': 'weight', 'type': 'range-float', 'mandatory': True,
                                                        'range': self.weight_range,
                                                        'enforce-non-zero': True},
-                                                      {'name': 'target_value', 'type':'range-float', 'mandatory': False, 'group-mandatory': True,
+                                                      {'name': 'target_value', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
                                                        'range': self.dist_restraint_range,
                                                        'group': {'member-with': ['lower_linear_limit', 'lower_limit', 'upper_limit', 'upper_linear_limit'],
                                                                  'coexist-with': None,
                                                                  'smaller-than': ['lower_limit', 'lower_linear_limit'],
                                                                  'larger-than': ['upper_limit', 'upper_linear_limit']}},
-                                                      {'name': 'target_value_uncertainty', 'type':'range-float', 'mandatory': False,
+                                                      {'name': 'target_value_uncertainty', 'type': 'range-float', 'mandatory': False,
                                                        'range': self.dist_restraint_error},
-                                                      {'name': 'lower_linear_limit', 'type':'range-float', 'mandatory': False, 'group-mandatory': True,
+                                                      {'name': 'lower_linear_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
                                                        'range': self.dist_restraint_range,
                                                        'group': {'member-with': ['target_value', 'lower_limit', 'upper_limit', 'upper_linear_limit'],
                                                                  'coexist-with': ['lower_limit', 'upper_limit', 'upper_linear_limit'],
                                                                  'smaller-than': None,
                                                                  'larger-than': ['lower_limit', 'upper_limit', 'upper_linear_limit']}},
-                                                      {'name': 'lower_limit', 'type':'range-float', 'mandatory': False, 'group-mandatory': True,
+                                                      {'name': 'lower_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
                                                        'range': self.dist_restraint_range,
                                                        'group': {'member-with': ['target_value', 'lower_linear_limit', 'upper_limit', 'upper_linear_limit'],
                                                                  'coexist-with': ['upper_limit'],
                                                                  'smaller-than': ['lower_linear_limit'],
                                                                  'larger-than': ['upper_limit', 'upper_linear_limit']}},
-                                                      {'name': 'upper_limit', 'type':'range-float', 'mandatory': False, 'group-mandatory': True,
+                                                      {'name': 'upper_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
                                                        'range': self.dist_restraint_range,
                                                        'group': {'member-with': ['target_value', 'lower_linear_limit', 'lower_limit', 'upper_linear_limit'],
                                                                  'coexist-with': ['lower_limit'],
                                                                  'smaller-than': ['lower_linear_limit', 'lower_limit'],
                                                                  'larger-than': ['upper_linear_limit']}},
-                                                      {'name': 'upper_linear_limit', 'type':'range-float', 'mandatory': False, 'group-mandatory': True,
+                                                      {'name': 'upper_linear_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
                                                        'range': self.dist_restraint_range,
                                                        'group': {'member-with': ['target_value', 'lower_linear_limit', 'lower_limit', 'upper_limit'],
                                                                  'coexist-with': ['lower_linear_limit', 'lower_limit', 'upper_limit'],
                                                                  'smaller-than': ['lower_linear_limit', 'lower_limit', 'upper_limit'],
                                                                  'larger-than': None}}
                                                       ],
-                                   'dihed_restraint': [{'name': 'index', 'type':'index-int', 'mandatory': True},
-                                                       {'name': 'restraint_id', 'type':'index-int', 'mandatory': True},
-                                                       {'name': 'restraint_combination_id', 'type':'positive-int', 'mandatory': False,
+                                   'dihed_restraint': [{'name': 'index', 'type': 'index-int', 'mandatory': True},
+                                                       {'name': 'restraint_id', 'type': 'index-int', 'mandatory': True},
+                                                       {'name': 'restraint_combination_id', 'type': 'positive-int', 'mandatory': False,
                                                         'enforce-non-zero': True},
-                                                       {'name': 'weight', 'type':'range-float', 'mandatory': True,
+                                                       {'name': 'weight', 'type': 'range-float', 'mandatory': True,
                                                         'range': self.weight_range,
                                                         'enforce-non-zero': True},
-                                                       {'name': 'target_value', 'type':'range-float', 'mandatory': False, 'group-mandatory': True,
+                                                       {'name': 'target_value', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
                                                         'range': self.dihed_restraint_range,
                                                         'group': {'member-with': ['lower_linear_limit', 'lower_limit', 'upper_limit', 'upper_linear_limit'],
                                                                   'coexist-with': None,
                                                                   'smaller-than': ['lower_limit', 'lower_linear_limit'],
                                                                   'larger-than': ['upper_limit', 'upper_linear_limit']}},
-                                                       {'name': 'target_value_uncertainty', 'type':'float', 'mandatory': False},
-                                                       {'name': 'lower_linear_limit', 'type':'range-float', 'mandatory': False, 'group-mandatory': True,
+                                                       {'name': 'target_value_uncertainty', 'type': 'float', 'mandatory': False},
+                                                       {'name': 'lower_linear_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
                                                         'range': self.dihed_restraint_range,
                                                         'group': {'member-with': ['target_value', 'lower_limit', 'upper_limit', 'upper_linear_limit'],
                                                                   'coexist-with': ['lower_limit', 'upper_limit', 'upper_linear_limit'],
                                                                   'smaller-than': None,
                                                                   'larger-than': ['lower_limit', 'upper_limit', 'upper_linear_limit']}},
-                                                       {'name': 'lower_limit', 'type':'range-float', 'mandatory': False, 'group-mandatory': True,
+                                                       {'name': 'lower_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
                                                         'range': self.dihed_restraint_range,
                                                         'group': {'member-with': ['target_value', 'lower_linear_limit', 'upper_limit', 'upper_linear_limit'],
                                                                   'coexist-with': ['upper_limit'],
                                                                   'smaller-than': ['lower_linear_limit'],
                                                                   'larger-than': ['upper_limit', 'upper_linear_limit']}},
-                                                       {'name': 'upper_limit', 'type':'range-float', 'mandatory': False, 'group-mandatory': True,
+                                                       {'name': 'upper_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
                                                         'range': self.dihed_restraint_range,
                                                         'group': {'member-with': ['target_value', 'lower_linear_limit', 'lower_limit', 'upper_linear_limit'],
                                                                   'coexist-with': ['lower_limit'],
                                                                   'smaller-than': ['lower_linear_limit', 'lower_limit'],
                                                                   'larger-than': ['upper_linear_limit']}},
-                                                       {'name': 'upper_linear_limit', 'type':'range-float', 'mandatory': False, 'group-mandatory': True,
+                                                       {'name': 'upper_linear_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
                                                         'range': self.dihed_restraint_range,
                                                         'group': {'member-with': ['target_value', 'lower_linear_limit', 'lower_limit', 'upper_limit'],
                                                                   'coexist-with': ['lower_linear_limit', 'lower_limit', 'upper_limit'],
                                                                   'smaller-than': ['lower_linear_limit', 'lower_limit', 'upper_limit'],
                                                                   'larger-than': None}},
-                                                       {'name': 'name', 'type':'str', 'mandatory': False},
+                                                       {'name': 'name', 'type': 'str', 'mandatory': False},
                                                     ],
-                                   'rdc_restraint': [{'name': 'index', 'type':'index-int', 'mandatory': True},
-                                                     {'name': 'restraint_id', 'type':'index-int', 'mandatory': True},
-                                                     {'name': 'restraint_combination_id', 'type':'positive-int', 'mandatory': False,
+                                   'rdc_restraint': [{'name': 'index', 'type': 'index-int', 'mandatory': True},
+                                                     {'name': 'restraint_id', 'type': 'index-int', 'mandatory': True},
+                                                     {'name': 'restraint_combination_id', 'type': 'positive-int', 'mandatory': False,
                                                       'enforce-non-zero': True},
-                                                     {'name': 'target_value', 'type':'range-float', 'mandatory': False, 'group-mandatory': True,
+                                                     {'name': 'target_value', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
                                                       'range': self.rdc_restraint_range,
                                                       'group': {'member-with': ['lower_linear_limit', 'lower_limit', 'upper_limit', 'upper_linear_limit'],
                                                                 'coexist-with': None,
                                                                 'smaller-than': ['lower_limit', 'lower_linear_limit'],
                                                                 'larger-than': ['upper_limit', 'upper_linear_limit']}},
-                                                     {'name': 'target_value_uncertainty', 'type':'range-float', 'mandatory': False,
+                                                     {'name': 'target_value_uncertainty', 'type': 'range-float', 'mandatory': False,
                                                       'range': self.rdc_restraint_error},
-                                                     {'name': 'lower_linear_limit', 'type':'range-float', 'mandatory': False, 'group-mandatory': True,
+                                                     {'name': 'lower_linear_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
                                                       'range': self.rdc_restraint_range,
                                                       'group': {'member-with': ['target_value', 'lower_limit', 'upper_limit', 'upper_linear_limit'],
                                                                 'coexist-with': ['lower_limit', 'upper_limit', 'upper_linear_limit'],
                                                                 'smaller-than': None,
                                                                 'larger-than': ['lower_limit', 'upper_limit', 'upper_linear_limit']}},
-                                                     {'name': 'lower_limit', 'type':'range-float', 'mandatory': False, 'group-mandatory': True,
+                                                     {'name': 'lower_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
                                                       'range': self.rdc_restraint_range,
                                                       'group': {'member-with': ['target_value', 'lower_linear_limit', 'upper_limit', 'upper_linear_limit'],
                                                                 'coexist-with': ['upper_limit'],
                                                                 'smaller-than': ['lower_linear_limit'],
                                                                 'larger-than': ['upper_limit', 'upper_linear_limit']}},
-                                                     {'name': 'upper_limit', 'type':'range-float', 'mandatory': False, 'group-mandatory': True,
+                                                     {'name': 'upper_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
                                                       'range': self.rdc_restraint_range,
                                                       'group': {'member-with': ['target_value', 'lower_linear_limit', 'lower_limit', 'upper_linear_limit'],
                                                                 'coexist-with': ['lower_limit'],
                                                                 'smaller-than': ['lower_linear_limit', 'lower_limit'],
                                                                 'larger-than': ['upper_linear_limit']}},
-                                                     {'name': 'upper_linear_limit', 'type':'range-float', 'mandatory': False, 'group-mandatory': True,
+                                                     {'name': 'upper_linear_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
                                                       'range': self.rdc_restraint_range,
                                                       'group': {'member-with': ['target_value', 'lower_linear_limit', 'lower_limit', 'upper_limit'],
                                                                 'coexist-with': ['lower_linear_limit', 'lower_limit', 'upper_limit'],
                                                                 'smaller-than': ['lower_linear_limit', 'lower_limit', 'upper_limit'],
                                                                 'larger-than': None}},
-                                                     {'name': 'scale', 'type':'range-float', 'mandatory': False,
+                                                     {'name': 'scale', 'type': 'range-float', 'mandatory': False,
                                                       'range': self.scale_range,
                                                       'enforce-non-zero': True},
-                                                     {'name': 'distance_dependent', 'type':'bool', 'mandatory': False}
+                                                     {'name': 'distance_dependent', 'type': 'bool', 'mandatory': False}
                                                      ],
-                                   'spectral_peak': [{'name': 'index', 'type':'index-int', 'mandatory': True},
-                                                     {'name': 'peak_id', 'type':'positive-int', 'mandatory': True,
+                                   'spectral_peak': [{'name': 'index', 'type': 'index-int', 'mandatory': True},
+                                                     {'name': 'peak_id', 'type': 'positive-int', 'mandatory': True,
                                                       'enforce-non-zero': True},
-                                                     {'name': 'volume', 'type':'float', 'mandatory': False, 'group-mandatory': True,
+                                                     {'name': 'volume', 'type': 'float', 'mandatory': False, 'group-mandatory': True,
                                                       'group': {'member-with': ['height'],
                                                                 'coexist-with': None}},
-                                                     {'name': 'volume_uncertainty', 'type':'positive-float', 'mandatory': False},
-                                                     {'name': 'height', 'type':'float', 'mandatory': False, 'group-mandatory': True,
+                                                     {'name': 'volume_uncertainty', 'type': 'positive-float', 'mandatory': False},
+                                                     {'name': 'height', 'type': 'float', 'mandatory': False, 'group-mandatory': True,
                                                       'group': {'member-with': ['volume'],
                                                                 'coexist-with': None}},
-                                                     {'name': 'height_uncertainty', 'type':'positive-float', 'mandatory': False}
+                                                     {'name': 'height_uncertainty', 'type': 'positive-float', 'mandatory': False}
                                                      ]
                                    },
                            'nmr-star': {'poly_seq': [{'name': 'Auth_asym_ID', 'type': 'str', 'mandatory': False},
@@ -618,159 +623,159 @@ class NmrDpUtility(object):
                                                            {'name': 'Auth_atom_ID_2', 'type': 'str', 'mandatory': False},
                                                            {'name': 'Gen_dist_constraint_list_ID', 'type': 'static-index', 'mandatory': True},
                                                            ],
-                                        'dihed_restraint': [{'name': 'Index_ID', 'type':'index-int', 'mandatory': True},
-                                                            {'name': 'ID', 'type':'index-int', 'mandatory': True},
-                                                            {'name': 'Combination_ID', 'type':'positive-int', 'mandatory': False,
+                                        'dihed_restraint': [{'name': 'Index_ID', 'type': 'index-int', 'mandatory': True},
+                                                            {'name': 'ID', 'type': 'index-int', 'mandatory': True},
+                                                            {'name': 'Combination_ID', 'type': 'positive-int', 'mandatory': False,
                                                              'enforce-non-zero': True},
-                                                            {'name': 'Torsion_angle_name', 'type':'str', 'mandatory': False},
-                                                            {'name': 'Angle_lower_bound_val', 'type':'range-float', 'mandatory': False, 'group-mandatory': True,
+                                                            {'name': 'Torsion_angle_name', 'type': 'str', 'mandatory': False},
+                                                            {'name': 'Angle_lower_bound_val', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
                                                              'range': self.dihed_restraint_range,
                                                              'group': {'member-with': ['Angle_target_val', 'Angle_lower_linear_limit', 'Angle_upper_linear_limit', 'Angle_upper_bound_val'],
                                                                        'coexist-with': ['Angle_upper_bound_val'],
                                                                        'smaller-than': ['Angle_lower_linear_limit'],
                                                                        'larger-than': ['Angle_upper_linear_limit', 'Angle_upper_bound_val']}},
-                                                            {'name': 'Angle_upper_bound_val', 'type':'range-float', 'mandatory': False, 'group-mandatory': True,
+                                                            {'name': 'Angle_upper_bound_val', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
                                                              'range': self.dihed_restraint_range,
                                                              'group': {'member-with': ['Angle_target_val', 'Angle_lower_linear_limit', 'Angle_upper_linear_limit', 'Angle_lower_bound_val'],
                                                                        'coexist-with': ['Angle_lower_bound_val'],
                                                                        'smaller-than': ['Angle_lower_linear_limit', 'Angle_lower_bound_val'],
                                                                        'larger-than': ['Angle_upper_linear_limit']}},
-                                                            {'name': 'Angle_target_val', 'type':'range-float', 'mandatory': False, 'group-mandatory': True,
+                                                            {'name': 'Angle_target_val', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
                                                              'range': self.dihed_restraint_range,
                                                              'group': {'member-with': ['Angle_lower_linear_limit', 'Angle_upper_linear_limit', 'Angle_lower_bound_val', 'Angle_upper_bound_val'],
                                                                        'coexist-with': None,
                                                                        'smaller-than': ['Angle_lower_linear_limit', 'Angle_lower_bound_val'],
                                                                        'larger-than': ['Angle_upper_linear_limit', 'Angle_upper_bound_val']}},
-                                                            {'name': 'Angle_target_val_err', 'type':'range-float', 'mandatory': False,
+                                                            {'name': 'Angle_target_val_err', 'type': 'range-float', 'mandatory': False,
                                                              'range': self.dihed_restraint_error},
-                                                            {'name': 'Angle_lower_linear_limit', 'type':'range-float', 'mandatory': False, 'group-mandatory': True,
+                                                            {'name': 'Angle_lower_linear_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
                                                              'range': self.dihed_restraint_range,
                                                              'group': {'member-with': ['Angle_target_val', 'Angle_upper_linear_limit', 'Angle_lower_bound_val', 'Angle_upper_bound_val'],
                                                                        'coexist-with': ['Angle_upper_linear_limit', 'Angle_lower_bound_val', 'Angle_upper_bound_val'],
                                                                        'smaller-than': None,
                                                                        'larger-than': ['Angle_upper_linear_limit', 'Angle_lower_bound_val', 'Angle_upper_bound_val']}},
-                                                            {'name': 'Angle_upper_linear_limit', 'type':'range-float', 'mandatory': False, 'group-mandatory': True,
+                                                            {'name': 'Angle_upper_linear_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
                                                              'range': self.dihed_restraint_range,
                                                              'group': {'member-with': ['Angle_target_val', 'Angle_lower_linear_limit', 'Angle_lower_bound_val', 'Angle_upper_bound_val'],
                                                                       'coexist-with': ['Angle_lower_linear_limit', 'Angle_lower_bound_val', 'Angle_upper_bound_val'],
                                                                       'smaller-than': ['Angle_lower_linear_limit', 'Angle_lower_bound_val', 'Angle_upper_bound_val'],
                                                                       'larger-than': None}},
-                                                            {'name': 'Weight', 'type':'range-float', 'mandatory': True,
+                                                            {'name': 'Weight', 'type': 'range-float', 'mandatory': True,
                                                              'range': self.weight_range,
                                                              'enforce-non-zero': True},
-                                                            {'name': 'Auth_asym_ID_1', 'type':'str', 'mandatory': False},
-                                                            {'name': 'Auth_seq_ID_1', 'type':'int', 'mandatory': False},
-                                                            {'name': 'Auth_comp_ID_1', 'type':'str', 'mandatory': False},
-                                                            {'name': 'Auth_atom_ID_1', 'type':'str', 'mandatory': False},
-                                                            {'name': 'Auth_asym_ID_2', 'type':'str', 'mandatory': False},
-                                                            {'name': 'Auth_seq_ID_2', 'type':'int', 'mandatory': False},
-                                                            {'name': 'Auth_comp_ID_2', 'type':'str', 'mandatory': False},
-                                                            {'name': 'Auth_atom_ID_2', 'type':'str', 'mandatory': False},
-                                                            {'name': 'Auth_asym_ID_3', 'type':'str', 'mandatory': False},
-                                                            {'name': 'Auth_seq_ID_3', 'type':'int', 'mandatory': False},
-                                                            {'name': 'Auth_comp_ID_3', 'type':'str', 'mandatory': False},
-                                                            {'name': 'Auth_atom_ID_3', 'type':'str', 'mandatory': False},
-                                                            {'name': 'Auth_asym_ID_4', 'type':'str', 'mandatory': False},
-                                                            {'name': 'Auth_seq_ID_4', 'type':'int', 'mandatory': False},
-                                                            {'name': 'Auth_comp_ID_4', 'type':'str', 'mandatory': False},
-                                                            {'name': 'Auth_atom_ID_4', 'type':'str', 'mandatory': False},
-                                                            {'name': 'Torsion_angle_constraint_list_ID', 'type':'static-index', 'mandatory': True},
+                                                            {'name': 'Auth_asym_ID_1', 'type': 'str', 'mandatory': False},
+                                                            {'name': 'Auth_seq_ID_1', 'type': 'int', 'mandatory': False},
+                                                            {'name': 'Auth_comp_ID_1', 'type': 'str', 'mandatory': False},
+                                                            {'name': 'Auth_atom_ID_1', 'type': 'str', 'mandatory': False},
+                                                            {'name': 'Auth_asym_ID_2', 'type': 'str', 'mandatory': False},
+                                                            {'name': 'Auth_seq_ID_2', 'type': 'int', 'mandatory': False},
+                                                            {'name': 'Auth_comp_ID_2', 'type': 'str', 'mandatory': False},
+                                                            {'name': 'Auth_atom_ID_2', 'type': 'str', 'mandatory': False},
+                                                            {'name': 'Auth_asym_ID_3', 'type': 'str', 'mandatory': False},
+                                                            {'name': 'Auth_seq_ID_3', 'type': 'int', 'mandatory': False},
+                                                            {'name': 'Auth_comp_ID_3', 'type': 'str', 'mandatory': False},
+                                                            {'name': 'Auth_atom_ID_3', 'type': 'str', 'mandatory': False},
+                                                            {'name': 'Auth_asym_ID_4', 'type': 'str', 'mandatory': False},
+                                                            {'name': 'Auth_seq_ID_4', 'type': 'int', 'mandatory': False},
+                                                            {'name': 'Auth_comp_ID_4', 'type': 'str', 'mandatory': False},
+                                                            {'name': 'Auth_atom_ID_4', 'type': 'str', 'mandatory': False},
+                                                            {'name': 'Torsion_angle_constraint_list_ID', 'type': 'static-index', 'mandatory': True},
                                             ],
-                                        'rdc_restraint': [{'name': 'Index_ID', 'type':'index-int', 'mandatory': True},
-                                                          {'name': 'ID', 'type':'index-int', 'mandatory': True},
-                                                          {'name': 'Combination_ID', 'type':'positive-int', 'mandatory': False,
+                                        'rdc_restraint': [{'name': 'Index_ID', 'type': 'index-int', 'mandatory': True},
+                                                          {'name': 'ID', 'type': 'index-int', 'mandatory': True},
+                                                          {'name': 'Combination_ID', 'type': 'positive-int', 'mandatory': False,
                                                            'enforce-non-zero': True},
-                                                          {'name': 'Weight', 'type':'range-float', 'mandatory': True,
+                                                          {'name': 'Weight', 'type': 'range-float', 'mandatory': True,
                                                            'range': self.weight_range,
                                                            'enforce-non-zero': True},
-                                                          {'name': 'Target_value', 'type':'range-float', 'mandatory': False, 'group-mandatory': True,
+                                                          {'name': 'Target_value', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
                                                            'range': self.dihed_restraint_range,
                                                            'group': {'member-with': ['RDC_lower_linear_limit', 'RDC_upper_linear_limit', 'RDC_lower_bound', 'RDC_upper_bound'],
                                                                      'coexist-with': None,
                                                                      'smaller-than': ['RDC_lower_linear_limit', 'RDC_lower_bound'],
                                                                      'larger-than': ['RDC_upper_linear_limit', 'RDC_upper_bound']}},
-                                                          {'name': 'Target_value_uncertainty', 'type':'range-float', 'mandatory': False,
+                                                          {'name': 'Target_value_uncertainty', 'type': 'range-float', 'mandatory': False,
                                                            'range': self.rdc_restraint_error},
-                                                          {'name': 'RDC_lower_bound', 'type':'range-float', 'mandatory': False, 'group-mandatory': True,
+                                                          {'name': 'RDC_lower_bound', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
                                                            'range': self.dihed_restraint_range,
                                                            'group': {'member-with': ['Target_value', 'RDC_lower_linear_limit', 'RDC_upper_linear_limit', 'RDC_upper_bound'],
                                                                      'coexist-with': ['RDC_upper_bound'],
                                                                      'smaller-than': ['RDC_lower_linear_limit'],
                                                                      'larger-than': ['RDC_upper_linear_limit', 'RDC_upper_bound']}},
-                                                          {'name': 'RDC_upper_bound', 'type':'range-float', 'mandatory': False, 'group-mandatory': True,
+                                                          {'name': 'RDC_upper_bound', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
                                                            'range': self.dihed_restraint_range,
                                                            'group': {'member-with': ['Target_value', 'RDC_lower_linear_limit', 'RDC_upper_linear_limit', 'RDC_lower_bound'],
                                                                      'coexist-with': ['RDC_lower_bound'],
                                                                      'smaller-than': ['RDC_lower_linear_limit', 'RDC_lower_bound'],
                                                                      'larger-than': ['RDC_upper_linear_limit']}},
-                                                          {'name': 'RDC_lower_linear_limit', 'type':'range-float', 'mandatory': False, 'group-mandatory': True,
+                                                          {'name': 'RDC_lower_linear_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
                                                            'range': self.dihed_restraint_range,
                                                            'group': {'member-with': ['Target_value', 'RDC_upper_linear_limit', 'RDC_lower_bound', 'RDC_upper_bound'],
                                                                      'coexist-with': ['RDC_upper_linear_limit', 'RDC_lower_bound', 'RDC_upper_bound'],
                                                                      'smaller-than': None,
                                                                      'larger-than': ['RDC_upper_linear_limit', 'RDC_lower_bound', 'RDC_upper_bound']}},
-                                                          {'name': 'RDC_upper_linear_limit', 'type':'range-float', 'mandatory': False, 'group-mandatory': True,
+                                                          {'name': 'RDC_upper_linear_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
                                                            'range': self.dihed_restraint_range,
                                                            'group': {'member-with': ['Target_value', 'RDC_upper_linear_limit', 'RDC_lower_bound', 'RDC_upper_bound'],
                                                                      'coexist-with': ['RDC_upper_linear_limit', 'RDC_lower_bound', 'RDC_upper_bound'],
                                                                      'smaller-than': None,
                                                                      'larger-than': ['RDC_upper_linear_limit', 'RDC_lower_bound', 'RDC_upper_bound']}},
-                                                          {'name': 'RDC_val_scale_factor', 'type':'range-float', 'mandatory': False,
+                                                          {'name': 'RDC_val_scale_factor', 'type': 'range-float', 'mandatory': False,
                                                            'range': self.scale_range,
                                                            'enforce-non-zero': True},
-                                                          {'name': 'RDC_distant_dependent', 'type':'bool', 'mandatory': False},
-                                                          {'name': 'Auth_asym_ID_1', 'type':'str', 'mandatory': False},
-                                                          {'name': 'Auth_seq_ID_1', 'type':'int', 'mandatory': False},
-                                                          {'name': 'Auth_comp_ID_1', 'type':'str', 'mandatory': False},
-                                                          {'name': 'Auth_atom_ID_1', 'type':'str', 'mandatory': False},
-                                                          {'name': 'Auth_asym_ID_2', 'type':'str', 'mandatory': False},
-                                                          {'name': 'Auth_seq_ID_2', 'type':'int', 'mandatory': False},
-                                                          {'name': 'Auth_comp_ID_2', 'type':'str', 'mandatory': False},
-                                                          {'name': 'Auth_atom_ID_2', 'type':'str', 'mandatory': False},
-                                                          {'name': 'RDC_constraint_list_ID', 'type':'static-index', 'mandatory': True}
+                                                          {'name': 'RDC_distant_dependent', 'type': 'bool', 'mandatory': False},
+                                                          {'name': 'Auth_asym_ID_1', 'type': 'str', 'mandatory': False},
+                                                          {'name': 'Auth_seq_ID_1', 'type': 'int', 'mandatory': False},
+                                                          {'name': 'Auth_comp_ID_1', 'type': 'str', 'mandatory': False},
+                                                          {'name': 'Auth_atom_ID_1', 'type': 'str', 'mandatory': False},
+                                                          {'name': 'Auth_asym_ID_2', 'type': 'str', 'mandatory': False},
+                                                          {'name': 'Auth_seq_ID_2', 'type': 'int', 'mandatory': False},
+                                                          {'name': 'Auth_comp_ID_2', 'type': 'str', 'mandatory': False},
+                                                          {'name': 'Auth_atom_ID_2', 'type': 'str', 'mandatory': False},
+                                                          {'name': 'RDC_constraint_list_ID', 'type': 'static-index', 'mandatory': True}
                                                           ],
-                                        'spectral_peak': [{'name': 'Index_ID', 'type':'index-int', 'mandatory': True},
-                                                          {'name': 'ID', 'type':'positive-int', 'mandatory': True,
+                                        'spectral_peak': [{'name': 'Index_ID', 'type': 'index-int', 'mandatory': True},
+                                                          {'name': 'ID', 'type': 'positive-int', 'mandatory': True,
                                                            'enforce-non-zero': True},
-                                                          {'name': 'Volume', 'type':'float', 'mandatory': False, 'group-mandatory': True,
+                                                          {'name': 'Volume', 'type': 'float', 'mandatory': False, 'group-mandatory': True,
                                                            'group': {'member-with': ['Height'],
                                                                      'coexist-with': None}},
-                                                          {'name': 'Volume_uncertainty', 'type':'positive-float', 'mandatory': False},
-                                                          {'name': 'Height', 'type':'float', 'mandatory': False, 'group-mandatory': True,
+                                                          {'name': 'Volume_uncertainty', 'type': 'positive-float', 'mandatory': False},
+                                                          {'name': 'Height', 'type': 'float', 'mandatory': False, 'group-mandatory': True,
                                                            'group': {'member-with': ['Volume'],
                                                                      'coexist-with': None}},
-                                                          {'name': 'Height_uncertainty', 'type':'positive-float', 'mandatory': False},
-                                                          {'name': 'Spectral_peak_list_ID', 'type':'static-index', 'mandatory': True}
+                                                          {'name': 'Height_uncertainty', 'type': 'positive-float', 'mandatory': False},
+                                                          {'name': 'Spectral_peak_list_ID', 'type': 'static-index', 'mandatory': True}
                                                           ]
                                         }
                            }
 
         # loop data items for spectral peak
-        self.pk_data_items = {'nef': [{'name': 'position_uncertainty_%s', 'type':'range-float', 'mandatory': False,
+        self.pk_data_items = {'nef': [{'name': 'position_uncertainty_%s', 'type': 'range-float', 'mandatory': False,
                                        'range': self.chem_shift_error},
-                                      {'name': 'chain_code_%s', 'type':'str', 'mandatory': False,
+                                      {'name': 'chain_code_%s', 'type': 'str', 'mandatory': False,
                                        'relax-key-if-exist': True},
-                                      {'name': 'sequence_code_%s', 'type':'int', 'mandatory': False,
+                                      {'name': 'sequence_code_%s', 'type': 'int', 'mandatory': False,
                                        'relax-key-if-exist': True},
-                                      {'name': 'residue_name_%s', 'type':'str', 'mandatory': False,
+                                      {'name': 'residue_name_%s', 'type': 'str', 'mandatory': False,
                                        'relax-key-if-exist': True},
-                                      {'name': 'atom_name_%s', 'type':'str', 'mandatory': False,
+                                      {'name': 'atom_name_%s', 'type': 'str', 'mandatory': False,
                                        'relax-key-if-exist': True}],
-                              'nmr-star': [{'name': 'Position_uncertainty_%s', 'type':'range-float', 'mandatory': False,
+                              'nmr-star': [{'name': 'Position_uncertainty_%s', 'type': 'range-float', 'mandatory': False,
                                             'range': self.chem_shift_error},
-                                           {'name': 'Entity_assembly_ID_%s', 'type':'positive-int', 'mandatory': False,
+                                           {'name': 'Entity_assembly_ID_%s', 'type': 'positive-int', 'mandatory': False,
                                             'enforce-non-zero': True,
                                             'relax-key-if-exist': True},
-                                           {'name': 'Comp_index_ID_%s', 'type':'int', 'mandatory': False,
+                                           {'name': 'Comp_index_ID_%s', 'type': 'int', 'mandatory': False,
                                             'relax-key-if-exist': True},
-                                           {'name': 'Comp_ID_%s', 'type':'str', 'mandatory': False,
+                                           {'name': 'Comp_ID_%s', 'type': 'str', 'mandatory': False,
                                             'relax-key-if-exist': True},
-                                           {'name': 'Atom_ID_%s', 'type':'str', 'mandatory': False,
+                                           {'name': 'Atom_ID_%s', 'type': 'str', 'mandatory': False,
                                             'relax-key-if-exist': True},
-                                           {'name': 'Auth_asym_ID_%s', 'type':'str', 'mandatory': False},
-                                           {'name': 'Auth_seq_ID_%s', 'type':'int', 'mandatory': False},
-                                           {'name': 'Auth_comp_ID_%s', 'type':'str', 'mandatory': False},
-                                           {'name': 'Auth_atom_ID_%s', 'type':'str', 'mandatory': False}]
+                                           {'name': 'Auth_asym_ID_%s', 'type': 'str', 'mandatory': False},
+                                           {'name': 'Auth_seq_ID_%s', 'type': 'int', 'mandatory': False},
+                                           {'name': 'Auth_comp_ID_%s', 'type': 'str', 'mandatory': False},
+                                           {'name': 'Auth_atom_ID_%s', 'type': 'str', 'mandatory': False}]
                               }
 
         # number of dimension of spectral peak
@@ -3195,9 +3200,7 @@ class NmrDpUtility(object):
                         if self.__verbose:
                             self.__lfh.write("+NmrDpUtility.__testDataConsistencyInAuxLoop() ++ ValueError  - %s\n" % err)
 
-                loops = sf_data.loops
-
-                for loop in loops:
+                for loop in sf_data.loops:
 
                     lp_category = loop.category
 
@@ -6698,6 +6701,8 @@ class NmrDpUtility(object):
 
                                                         lp_data = self.nef_translator.check_data(sf_data, lp_category, key_items, data_items, None, None)[0]
 
+                                                        self.lp_data[content_subtype].append({'sf_framecode': w['saveframe'], 'data': lp_data})
+
                                                     except:
                                                         pass
 
@@ -6907,7 +6912,7 @@ class NmrDpUtility(object):
         return True
 
     def __testDistRestraintAsSymmetry(self, lp_data):
-        """ Detect whether given restraints are derived from symmetry.
+        """ Detect whether given restraints are derived from symmetric assembly.
         """
 
         if lp_data is None:
@@ -6974,9 +6979,213 @@ class NmrDpUtility(object):
 
         return True
 
-    def __resetBoolValue(self):
-        """ Reset bool values depending on file type.
+    def __resetBoolValueInLoop(self):
+        """ Reset bool values in loops depending on file type.
         """
+
+        input_source = self.report.input_sources[0]
+        input_source_dic = input_source.get()
+
+        file_type = input_source_dic['file_type']
+
+        yes_value = 'true' if file_type == 'nef' else 'yes'
+        no_value = 'false' if file_type == 'nef' else 'no'
+
+        for content_subtype in input_source_dic['content_subtype'].keys():
+
+            if content_subtype == 'entry_info':
+                continue
+
+            sf_category = self.sf_categories[file_type][content_subtype]
+            lp_category = self.lp_categories[file_type][content_subtype]
+
+            for sf_data in self.__star_data.get_saveframes_by_category(sf_category):
+
+                if content_subtype == 'spectral_peak':
+
+                    try:
+
+                        _num_dim = sf_data.get_tag(self.num_dim_items[file_type])[0]
+                        num_dim = int(_num_dim)
+
+                        if not num_dim in range(1, self.lim_num_dim):
+                            raise ValueError()
+
+                    except ValueError: # raised error already at __testIndexConsistency()
+                        continue
+
+                    max_dim = num_dim + 1
+
+                    key_items = []
+                    for dim in range(1, max_dim):
+                        for k in self.pk_key_items[file_type]:
+                            _k = copy.copy(k)
+                            if '%s' in k['name']:
+                               _k['name'] = k['name'] % dim
+                            key_items.append(_k)
+
+                    data_items = []
+                    for d in self.data_items[file_type][content_subtype]:
+                        data_items.append(d)
+                    for dim in range(1, max_dim):
+                        for d in self.pk_data_items[file_type]:
+                            _d = copy.copy(d)
+                            if '%s' in d['name']:
+                                _d['name'] = d['name'] % dim
+                            data_items.append(_d)
+
+                    if max_dim < self.lim_num_dim:
+                        disallowed_tags = []
+                        for dim in range(max_dim, self.lim_num_dim):
+                            for t in self.spectral_peak_disallowed_tags[file_type]:
+                                if '%s' in t:
+                                    t = t % dim
+                                disallowed_tags.append(t)
+
+                else:
+
+                    key_items = self.key_items[file_type][content_subtype]
+                    data_items = self.data_items[file_type][content_subtype]
+
+                has_bool_key = False
+
+                if not key_items is None:
+                    has_bool_key = next((k['type'] == 'bool' for k in key_items if k['type'] == 'bool'), False)
+
+                has_bool_data = False
+
+                if not data_items is None:
+                    has_bool_data = next((d['type'] == 'bool' for d in data_items if d['type'] == 'bool'), False)
+
+                if has_bool_key or has_bool_data:
+
+                    lp_data = sf_data.get_loop_by_category(lp_category)
+
+                    if has_bool_key:
+
+                        for itName in [k['name'] for k in key_items if k['type'] == 'bool']:
+
+                            if itName in lp_data.tags:
+
+                                itCol = lp_data.tags.index(itName)
+
+                                for row in lp_data.data:
+
+                                    if row[itCol] is self.empty_value:
+                                        continue
+
+                                    if row[itCol].lower() in self.true_value:
+                                        row[itCol] = yes_value
+                                    else:
+                                        row[itCol] = no_value
+
+                    if has_bool_data:
+
+                        for itName in [d['name'] for d in data_items if d['type'] == 'bool']:
+
+                            if itName in lp_data.tags:
+
+                                itCol = lp_data.tags.index(itName)
+
+                                for row in lp_data.data:
+
+                                    if row[itCol] is self.empty_value:
+                                        continue
+
+                                    if row[itCol].lower() in self.true_value:
+                                        row[itCol] = yes_value
+                                    else:
+                                        row[itCol] = no_value
+
+        return True
+
+    def __resetBoolValueInAuxLoop(self):
+        """ Reset bool values in auxiliary loops depending on file type.
+        """
+
+        input_source = self.report.input_sources[0]
+        input_source_dic = input_source.get()
+
+        file_type = input_source_dic['file_type']
+
+        yes_value = 'true' if file_type == 'nef' else 'yes'
+        no_value = 'false' if file_type == 'nef' else 'no'
+
+        for content_subtype in input_source_dic['content_subtype'].keys():
+
+            if content_subtype == 'entry_info':
+                continue
+
+            sf_category = self.sf_categories[file_type][content_subtype]
+
+            for sf_data in self.__star_data.get_saveframes_by_category(sf_category):
+
+                sf_framecode = sf_data.get_tag('sf_framecode')[0]
+
+                for loop in sf_data.loops:
+
+                    lp_category = loop.category
+
+                    # main content of loop has been processed in __resetBoolValueInLoop()
+                    if lp_category in self.lp_categories[file_type][content_subtype]:
+                        continue
+
+                    elif lp_category in self.aux_lp_categories[file_type][content_subtype]:
+
+                        key_items = self.aux_key_items[file_type][content_subtype][lp_category]
+                        data_items = self.aux_data_items[file_type][content_subtype][lp_category]
+
+                        has_bool_key = False
+
+                        if not key_items is None:
+                            has_bool_key = next((k['type'] == 'bool' for k in key_items if k['type'] == 'bool'), False)
+
+                        has_bool_data = False
+
+                        if not data_items is None:
+                            has_bool_data = next((d['type'] == 'bool' for d in data_items if d['type'] == 'bool'), False)
+
+                        if has_bool_key or has_bool_data:
+
+                            lp_data = sf_data.get_loop_by_category(lp_category)
+
+                            if has_bool_key:
+
+                                for itName in [k['name'] for k in key_items if k['type'] == 'bool']:
+
+                                    if itName in lp_data.tags:
+
+                                        itCol = lp_data.tags.index(itName)
+
+                                        for row in lp_data.data:
+
+                                            if row[itCol] is self.empty_value:
+                                                continue
+
+                                            if row[itCol].lower() in self.true_value:
+                                                row[itCol] = yes_value
+                                            else:
+                                                row[itCol] = no_value
+
+                            if has_bool_data:
+
+                                for itName in [d['name'] for d in data_items if d['type'] == 'bool']:
+
+                                    if itName in lp_data.tags:
+
+                                        itCol = lp_data.tags.index(itName)
+
+                                        for row in lp_data.data:
+
+                                            if row[itCol] is self.empty_value:
+                                                continue
+
+                                            if row[itCol].lower() in self.true_value:
+                                                row[itCol] = yes_value
+                                            else:
+                                                row[itCol] = no_value
+
+        return True
 
     def __appendParentSfTag(self):
         """ Append parent tag in saveframe if not exists.

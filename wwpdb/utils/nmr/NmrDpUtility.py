@@ -7287,9 +7287,94 @@ class NmrDpUtility(object):
 
         return True
 
-    def __addUnnamedEntryId(self):
+    def __addUnnamedEntryId(self, entry_id='UNNAMED', apply_to_loops=True):
         """ Add UNNAMED entry id.
         """
+
+        input_source = self.report.input_sources[0]
+        input_source_dic = input_source.get()
+
+        file_type = input_source_dic['file_type']
+
+        if self.__star_data_type == 'Entry':
+            self.__star_data.entry_id = entry_id + self.content_type[file_type]
+
+        if file_type == 'nef':
+            return True
+
+        if input_source_dic['content_subtype'] is None:
+            return False
+
+        for content_subtype in input_source_dic['content_subtype'].keys():
+
+            sf_category = self.sf_categories[file_type][content_subtype]
+            lp_category = self.lp_categories[file_type][content_subtype]
+
+            for sf_data in self.__star_data.get_saveframes_by_category(sf_category):
+
+                entryIdTag = 'ID' if content_subtype == 'entry_info' else 'Entry_ID'
+
+                if entryIdTag in self.sf_allowed_tags[file_type][content_subtype]:
+
+                    if len(sf_data.get_tag(entryIdTag)) == 0:
+                            sf_data.add_tag(entryIdTag, entry_id)
+
+                    else:
+                        itCol = tagNames.index(entryIdTag)
+                        sf_data.tags[itCol][1] = entry_id
+
+                if apply_to_loops:
+
+                    entryIdTag = 'Entry_ID'
+
+                    lp_data = sf_data.get_loop_by_category(lp_category)
+
+                    if not lp_data is None:
+
+                        if entryIdTag in self.allowed_tags[file_type][content_subtype]:
+
+                            if entryIdTag in lp_data.tags:
+
+                                itCol = lp_data.tags.index(entryIdTag)
+
+                                for row in lp_data.data:
+                                    row[itCol] = entry_id
+
+                            else:
+
+                                for row in lp_data.data:
+                                    row.append(entry_id)
+
+                                lp_data.add_tag(entryIdTag)
+
+                    for loop in sf_data.loops:
+
+                        lp_category = loop.category
+
+                        if lp_category in self.lp_categories[file_type][content_subtype]:
+                            continue
+
+                        elif lp_category in self.aux_lp_categories[file_type][content_subtype]:
+
+                            lp_data = sf_data.get_loop_by_category(lp_category)
+
+                            if entryIdTag in self.aux_allowed_tags[file_type][content_subtype][lp_category]:
+
+                                if entryIdTag in lp_data.tags:
+
+                                    itCol = lp_data.tags.index(entryIdTag)
+
+                                    for row in lp_data.data:
+                                        row[itCol] = entry_id
+
+                                else:
+
+                                    for row in lp_data.data:
+                                        row.append(entry_id)
+
+                                    lp_data.add_tag(entryIdTag)
+
+        return True
 
     def __depositNmrData(self):
         """ Deposit latest NMR data file.

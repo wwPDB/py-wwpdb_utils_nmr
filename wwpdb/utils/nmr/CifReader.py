@@ -7,7 +7,7 @@
 #                     Add accessors for lists of dictionaries.
 # 12-May-2011 - rps - Added check for None when asking for category Object in __getDataList()
 # 2012-10-24    RPS   Updated to reflect reorganization of modules in pdbx packages
-# 14-Jun-2019   my  - Forked original code to wwpdb.util.nmr.CifReader
+# 19-Jun-2019   my  - Forked original code to wwpdb.util.nmr.CifReader
 ##
 """ A collection of classes for parsing CIF files.
 """
@@ -31,6 +31,8 @@ class CifReader(object):
 
         # preset values
         self.empty_value = (None, '', '.', '?')
+        self.true_value = ('true', 't', 'yes', 'y', '1')
+        self.item_types = ('str', 'bool', 'int', 'float')
 
     def setFilePath(self, filePath):
         """ Set file path and test readability.
@@ -220,8 +222,17 @@ class CifReader(object):
         """
 
         data_names = [d['name'] for d in data_items]
+
+        for d in data_items:
+            if not d['type'] in self.item_types:
+                raise TypeError("Type %s of data item %s must be one of %s." % (d['type'], d['name'], self.item_types))
+
         if not filter_items is None:
             filt_names = [f['name'] for f in filter_items]
+
+            for f in filter_items:
+                if not f['type'] in self.item_types:
+                    raise TypeError("Type %s of filter item %s must be one of %s." % (f['type'], f['name'], self.item_types))
 
         dList = []
         # get category object
@@ -253,10 +264,25 @@ class CifReader(object):
             for row in rowList:
                 filter = True
                 if not filter_items is None:
-                    for filt_item in filter_items:
-                        if row[fcolDict[filt_item['name']]] != filt_item['value']:
-                            filter = False
-                            break
+                    for filter_item in filter_items:
+                        val = row[fcolDict[filter_item['name']]]
+                        if val in self.empty_value:
+                            if not filter_item['value'] in self.empty_value:
+                                filter = False
+                                break
+                        else:
+                            filter_item_type = filter_item['type']
+                            if filter_item_type == 'str':
+                                pass
+                            elif filter_item_type == 'bool':
+                                val = val.lower() in true_value
+                            elif filter_item_type == 'int':
+                                val = int(val)
+                            else:
+                                val = float(val)
+                            if val != filter_item['value']:
+                                filter = False
+                                break
                 if filter:
                     tD = {}
                     for data_item in data_items:

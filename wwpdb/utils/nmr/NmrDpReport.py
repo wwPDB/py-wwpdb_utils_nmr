@@ -144,7 +144,7 @@ class NmrDpReport:
         self.error.put(self.__report['error'])
         self.warning.put(self.__report['warning'])
 
-        self.__immutable = True
+        self.__immutable = False
 
 class NmrDpReportInputSource:
     """ Wrapper class for data processing report of NMR unified data (input source).
@@ -273,7 +273,7 @@ class NmrDpReportError:
             if self.__contents[item] is None:
                 self.__contents[item] = []
 
-            if 'category' in value:
+            if item != 'internal_error' and 'category' in value:
                 value['category'] = value['category'].lstrip('_')
 
             if item != 'internal_error' and 'description' in value:
@@ -342,7 +342,7 @@ class NmrDpReportWarning:
             if self.__contents[item] is None:
                 self.__contents[item] = []
 
-            if 'category' in value:
+            if item != 'internal_error' and 'category' in value:
                 value['category'] = value['category'].lstrip('_')
 
             if item != 'internal_error' and 'description' in value:

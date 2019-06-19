@@ -1,10 +1,9 @@
 ##
 # File: NmrDpUtility.py
-# Date: 18-Jun-2019
+# Date: 19-Jun-2019
 #
 # Updates:
 ##
-from __builtin__ import StopIteration
 """ Wrapper class for data processing for NMR unified data.
 """
 import sys
@@ -101,6 +100,7 @@ class NmrDpUtility(object):
                                  self.__updatePolymerSequence,
                                  self.__fixDisorderedIndex,
                                  self.__removeNonSenseZeroValue,
+                                 self.__fixNonSenseNegativeValue,
                                  self.__fixEnumerationValue,
                                  self.__addUnnamedEntryId,
                                  self.__depositNmrData
@@ -402,7 +402,8 @@ class NmrDpUtility(object):
                                                       {'name': 'restraint_combination_id', 'type':'positive-int', 'mandatory': False,
                                                        'enforce-non-zero': True},
                                                       {'name': 'weight', 'type':'range-float', 'mandatory': True,
-                                                       'range': self.weight_range},
+                                                       'range': self.weight_range,
+                                                       'enforce-non-zero': True},
                                                       {'name': 'target_value', 'type':'range-float', 'mandatory': False, 'group-mandatory': True,
                                                        'range': self.dist_restraint_range,
                                                        'group': {'member-with': ['lower_linear_limit', 'lower_limit', 'upper_limit', 'upper_linear_limit'],
@@ -441,7 +442,8 @@ class NmrDpUtility(object):
                                                        {'name': 'restraint_combination_id', 'type':'positive-int', 'mandatory': False,
                                                         'enforce-non-zero': True},
                                                        {'name': 'weight', 'type':'range-float', 'mandatory': True,
-                                                        'range': self.weight_range},
+                                                        'range': self.weight_range,
+                                                        'enforce-non-zero': True},
                                                        {'name': 'target_value', 'type':'range-float', 'mandatory': False, 'group-mandatory': True,
                                                         'range': self.dihed_restraint_range,
                                                         'group': {'member-with': ['lower_linear_limit', 'lower_limit', 'upper_limit', 'upper_linear_limit'],
@@ -512,7 +514,8 @@ class NmrDpUtility(object):
                                                                 'smaller-than': ['lower_linear_limit', 'lower_limit', 'upper_limit'],
                                                                 'larger-than': None}},
                                                      {'name': 'scale', 'type':'range-float', 'mandatory': False,
-                                                      'range': self.scale_range},
+                                                      'range': self.scale_range,
+                                                      'enforce-non-zero': True},
                                                      {'name': 'distance_dependent', 'type':'bool', 'mandatory': False}
                                                      ],
                                    'spectral_peak': [{'name': 'index', 'type':'index-int', 'mandatory': True},
@@ -600,7 +603,8 @@ class NmrDpUtility(object):
                                                                       'smaller-than': ['Lower_linear_limit', 'Distance_lower_bound_val'],
                                                                       'larger-than': ['Upper_linear_limit']}},
                                                            {'name': 'Weight', 'type': 'range-float', 'mandatory': True,
-                                                            'range': self.weight_range},
+                                                            'range': self.weight_range,
+                                                            'enforce-non-zero': True},
                                                            {'name': 'Auth_asym_ID_1', 'type': 'str', 'mandatory': False},
                                                            {'name': 'Auth_seq_ID_1', 'type': 'int', 'mandatory': False},
                                                            {'name': 'Auth_comp_ID_1', 'type': 'str', 'mandatory': False},
@@ -649,7 +653,8 @@ class NmrDpUtility(object):
                                                                       'smaller-than': ['Angle_lower_linear_limit', 'Angle_lower_bound_val', 'Angle_upper_bound_val'],
                                                                       'larger-than': None}},
                                                             {'name': 'Weight', 'type':'range-float', 'mandatory': True,
-                                                             'range': self.weight_range},
+                                                             'range': self.weight_range,
+                                                             'enforce-non-zero': True},
                                                             {'name': 'Auth_asym_ID_1', 'type':'str', 'mandatory': False},
                                                             {'name': 'Auth_seq_ID_1', 'type':'int', 'mandatory': False},
                                                             {'name': 'Auth_comp_ID_1', 'type':'str', 'mandatory': False},
@@ -673,7 +678,8 @@ class NmrDpUtility(object):
                                                           {'name': 'Combination_ID', 'type':'positive-int', 'mandatory': False,
                                                            'enforce-non-zero': True},
                                                           {'name': 'Weight', 'type':'range-float', 'mandatory': True,
-                                                           'range': self.weight_range},
+                                                           'range': self.weight_range,
+                                                           'enforce-non-zero': True},
                                                           {'name': 'Target_value', 'type':'range-float', 'mandatory': False, 'group-mandatory': True,
                                                            'range': self.dihed_restraint_range,
                                                            'group': {'member-with': ['RDC_lower_linear_limit', 'RDC_upper_linear_limit', 'RDC_lower_bound', 'RDC_upper_bound'],
@@ -707,7 +713,8 @@ class NmrDpUtility(object):
                                                                      'smaller-than': None,
                                                                      'larger-than': ['RDC_upper_linear_limit', 'RDC_lower_bound', 'RDC_upper_bound']}},
                                                           {'name': 'RDC_val_scale_factor', 'type':'range-float', 'mandatory': False,
-                                                           'range': self.scale_range},
+                                                           'range': self.scale_range,
+                                                           'enforce-non-zero': True},
                                                           {'name': 'RDC_distant_dependent', 'type':'bool', 'mandatory': False},
                                                           {'name': 'Auth_asym_ID_1', 'type':'str', 'mandatory': False},
                                                           {'name': 'Auth_seq_ID_1', 'type':'int', 'mandatory': False},
@@ -3026,7 +3033,7 @@ class NmrDpUtility(object):
                 try:
 
                     lp_data = self.nef_translator.check_data(sf_data, lp_category, key_items, data_items, allowed_tags, disallowed_tags,
-                                                             inc_idx_test=True, enforce_non_zero=True, enforce_enum=True)[0]
+                                                             inc_idx_test=True, enforce_non_zero=True, enforce_sign=True, enforce_enum=True)[0]
 
                     self.lp_data[content_subtype].append({'sf_framecode': sf_framecode, 'data': lp_data})
 
@@ -3059,16 +3066,19 @@ class NmrDpUtility(object):
                     warn = str(e).strip("'")
 
                     zero = warn.startswith('[Zero value error] ')
+                    nega = warn.startswith('[Negative value error] ')
                     enum = warn.startswith('[Enumeration error] ')
 
-                    if zero or enum:
+                    if zero or nega or enum:
 
                         if zero:
                             warn = warn[19:]
+                        elif nega:
+                            warn = warn[23:]
                         else:
                             warn = warn[20:]
 
-                        self.report.warning.appendDescription('missing_data' if zero else 'enum_failure', {'file_name': file_name, 'saveframe': sf_framecode, 'category': lp_category, 'description': warn})
+                        self.report.warning.appendDescription('missing_data' if zero else ('unusual_data' if nega else 'enum_failure'), {'file_name': file_name, 'saveframe': sf_framecode, 'category': lp_category, 'description': warn})
                         self.report.setWarning()
 
                         if self.__verbose:
@@ -3078,8 +3088,7 @@ class NmrDpUtility(object):
 
                         try:
 
-                            lp_data = self.nef_translator.check_data(sf_data, lp_category, key_items, data_items, allowed_tags, disallowed_tags,
-                                                                     inc_idx_test=False, enforce_non_zero=False, enforce_enum=False)[0]
+                            lp_data = self.nef_translator.check_data(sf_data, lp_category, key_items, data_items, allowed_tags, disallowed_tags)[0]
 
                             self.lp_data[content_subtype].append({'sf_framecode': sf_framecode, 'data': lp_data})
 
@@ -3167,7 +3176,7 @@ class NmrDpUtility(object):
                         try:
 
                             aux_data = self.nef_translator.check_data(sf_data, lp_category, key_items, data_items, allowed_tags, None,
-                                                                      inc_idx_test=True, enforce_non_zero=True, enforce_enum=True)[0]
+                                                                      inc_idx_test=True, enforce_non_zero=True, enforce_sign=True, enforce_enum=True)[0]
 
                             self.aux_data[content_subtype].append({'sf_framecode': sf_framecode, 'category': lp_category, 'data': aux_data})
 
@@ -3203,16 +3212,19 @@ class NmrDpUtility(object):
                             warn = str(e).strip("'")
 
                             zero = warn.startswith('[Zero value error] ')
+                            nega = warn.startswith('[Negative value error] ')
                             enum = warn.startswith('[Enumeration error] ')
 
-                            if zero or enum:
+                            if zero or nega or enum:
 
                                 if zero:
                                     warn = warn[19:]
+                                elif nega:
+                                    warn = warn[23:]
                                 else:
                                     warn = warn[20:]
 
-                                self.report.warning.appendDescription('missing_data' if zero else 'enum_failure', {'file_name': file_name, 'saveframe': sf_framecode, 'category': lp_category, 'description': warn})
+                                self.report.warning.appendDescription('missing_data' if zero else ('unusual_data' if nega else 'enum_failure'), {'file_name': file_name, 'saveframe': sf_framecode, 'category': lp_category, 'description': warn})
                                 self.report.setWarning()
 
                                 if self.__verbose:
@@ -3222,8 +3234,7 @@ class NmrDpUtility(object):
 
                                 try:
 
-                                    aux_data = self.nef_translator.check_data(sf_data, lp_category, key_items, data_items, allowed_tags, None,
-                                                                              inc_idx_test=True, enforce_non_zero=False, enforce_enum=False)[0]
+                                    aux_data = self.nef_translator.check_data(sf_data, lp_category, key_items, data_items, allowed_tags, None)[0]
 
                                     self.aux_data[content_subtype].append({'sf_framecode': sf_framecode, 'category': lp_category, 'data': aux_data})
 
@@ -3430,7 +3441,7 @@ class NmrDpUtility(object):
                 try:
 
                     sf_tag_data = self.nef_translator.check_sf_tag(sf_data, self.sf_tag_items[file_type][content_subtype], self.sf_allowed_tags[file_type][content_subtype],
-                                                            enforce_non_zero=True, enforce_enum=True)
+                                                            enforce_non_zero=True, enforce_sign=True, enforce_enum=True)
 
                     self.__testParentChildRelation(file_name, file_type, content_subtype, parent_keys, list_id, sf_framecode, sf_tag_data)
 
@@ -3457,16 +3468,19 @@ class NmrDpUtility(object):
                     warn = str(e).strip("'")
 
                     zero = warn.startswith('[Zero value error] ')
+                    nega = warn.startswith('[Negative value error] ')
                     enum = warn.startswith('[Enumeration error] ')
 
-                    if zero or enum:
+                    if zero or nega or enum:
 
                         if zero:
                             warn = warn[19:]
+                        elif nega:
+                            warn = warn[23:]
                         else:
                             warn = warn[20:]
 
-                        self.report.warning.appendDescription('missing_data' if zero else 'enum_failure', {'file_name': file_name, 'saveframe': sf_framecode, 'description': warn})
+                        self.report.warning.appendDescription('missing_data' if zero else ('unusual_data' if nega else 'enum_failure'), {'file_name': file_name, 'saveframe': sf_framecode, 'description': warn})
                         self.report.setWarning()
 
                         if self.__verbose:
@@ -4157,7 +4171,7 @@ class NmrDpUtility(object):
 
             except StopIteration:
 
-                err = "Assigned chemical shifts are mandatory. Referred saveframe %s did not exist." % (cs_list, self.cs_list_sf_tag_name[file_type])
+                err = "Assigned chemical shifts are mandatory. Referred saveframe %s did not exist." % cs_list
 
                 self.report.error.appendDescription('missing_mandatory_content', {'file_name': file_name, 'saveframe': sf_framecode, 'description': err})
                 self.report.setError()
@@ -5434,14 +5448,26 @@ class NmrDpUtility(object):
 
             nmr2ca[ref_chain_id] = result
 
-        coord = self.__cR.getDictListWithFilter('atom_site',
-                                                [{'name': 'label_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
-                                                  {'name': 'label_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
-                                                  {'name': 'label_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
-                                                  {'name': 'label_atom_id', 'type': 'str', 'alt_name': 'atom_id'}
-                                                 ],
-                                                [{'name': 'pdbx_PDB_model_num', 'type': 'str', 'value': '1'}
-                                                 ])
+        try:
+
+            coord = self.__cR.getDictListWithFilter('atom_site',
+                                                    [{'name': 'label_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
+                                                      {'name': 'label_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
+                                                      {'name': 'label_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
+                                                      {'name': 'label_atom_id', 'type': 'str', 'alt_name': 'atom_id'}
+                                                     ],
+                                                    [{'name': 'pdbx_PDB_model_num', 'type': 'int', 'value': 1}
+                                                     ])
+
+        except Exception as e:
+
+            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__testCoordAtomIdConsistency() ++ Error  - %s" % str(e))
+            self.report.setError()
+
+            if self.__verbose:
+                self.__lfh.write("+NmrDpUtility.__testCoordAtomIdConsistency() ++ Error  - %s" % str(e))
+
+            return False
 
         for content_subtype in nmr_input_source_dic['content_subtype'].keys():
 
@@ -5545,8 +5571,6 @@ class NmrDpUtility(object):
                             if cif_seq_id is None:
                                 continue
 
-                            cif_seq_id_ = str(cif_seq_id)
-
                             cif_ps = next(ps for ps in cif_polymer_sequence if ps['chain_id'] == cif_chain_id)
 
                             cif_comp_id = None
@@ -5578,7 +5602,7 @@ class NmrDpUtility(object):
                                 atom_id_ = atom_id
                                 atom_name = atom_id
 
-                            result = next((c for c in coord if c['chain_id'] == cif_chain_id and c['seq_id'] == cif_seq_id_ and c['comp_id'] == cif_comp_id and c['atom_id'] == atom_id_), None)
+                            result = next((c for c in coord if c['chain_id'] == cif_chain_id and c['seq_id'] == cif_seq_id and c['comp_id'] == cif_comp_id and c['atom_id'] == atom_id_), None)
 
                             if result is None:
 
@@ -5720,7 +5744,7 @@ class NmrDpUtility(object):
 
                 else:
 
-                    sf_data = self.__star_data.get_saveframe_by_name('_' + w['saveframe'])
+                    sf_data = self.__star_data.get_saveframe_by_name(w['saveframe'])
 
                     if sf_data is None:
 
@@ -5805,8 +5829,7 @@ class NmrDpUtility(object):
             sf_data = self.__star_data.get_saveframes_by_category(sf_category)[0]
 
             if not sf_data is None:
-                orig_lp_data = self.nef_translator.check_data(sf_data, lp_category, key_items, data_items, None, None,
-                                                              inc_idx_test=False, enforce_non_zero=False, enforce_enum=False)[0]
+                orig_lp_data = self.nef_translator.check_data(sf_data, lp_category, key_items, data_items, None, None)[0]
 
                 if file_type == 'nef':
                     if 'residue_variant' in orig_lp_data[0]:
@@ -6117,15 +6140,27 @@ class NmrDpUtility(object):
                 beg_cif_sid = s['seq_id'][0]
                 end_cif_sid = s['seq_id'][-1]
 
-                struct_conn = self.__cR.getDictListWithFilter('struct_conn',
-                                                              [{'name': 'conn_type_id', 'type': 'str'}
-                                                               ],
-                                                              [{'name': 'pdbx_leaving_atom_flag', 'type': 'str', 'value': 'both'},
-                                                               {'name': 'ptnr1_label_asym_id', 'type': 'str', 'value': cif_chain_id},
-                                                               {'name': 'ptnr2_label_asym_id', 'type': 'str', 'value': cif_chain_id},
-                                                               {'name': 'ptnr1_label_seq_id', 'type': 'str', 'value': str(beg_cif_sid)},
-                                                               {'name': 'ptnr2_label_seq_id', 'type': 'str', 'value': str(end_cif_sid)},
-                                                               ])
+                try:
+
+                    struct_conn = self.__cR.getDictListWithFilter('struct_conn',
+                                                                  [{'name': 'conn_type_id', 'type': 'str'}
+                                                                   ],
+                                                                  [{'name': 'pdbx_leaving_atom_flag', 'type': 'str', 'value': 'both'},
+                                                                   {'name': 'ptnr1_label_asym_id', 'type': 'str', 'value': cif_chain_id},
+                                                                   {'name': 'ptnr2_label_asym_id', 'type': 'str', 'value': cif_chain_id},
+                                                                   {'name': 'ptnr1_label_seq_id', 'type': 'int', 'value': beg_cif_sid},
+                                                                   {'name': 'ptnr2_label_seq_id', 'type': 'int', 'value': end_cif_sid},
+                                                                   ])
+
+                except Exception as e:
+
+                    self.report.error.appendDescription('internal_error', "+NmrDpUtility.__isCyclicPolymer() ++ Error  - %s" % str(e))
+                    self.report.setError()
+
+                    if self.__verbose:
+                        self.__lfh.write("+NmrDpUtility.__isCyclicPolymer() ++ Error  - %s" % str(e))
+
+                    return False
 
                 if len(struct_conn) == 0:
                     return False
@@ -6185,12 +6220,24 @@ class NmrDpUtility(object):
                 if cif_seq_id is None:
                     continue
 
-                prot_cis = self.__cR.getDictListWithFilter('struct_mon_prot_cis',
-                                                           [{'name': 'pdbx_PDB_model_num', 'type': 'str'}
-                                                            ],
-                                                           [{'name': 'pdbx_label_asym_id_2', 'type': 'str', 'value': cif_chain_id},
-                                                            {'name': 'pdbx_label_seq_id_2', 'type': 'str', 'value': str(cif_seq_id)}
-                                                            ])
+                try:
+
+                    prot_cis = self.__cR.getDictListWithFilter('struct_mon_prot_cis',
+                                                               [{'name': 'pdbx_PDB_model_num', 'type': 'int'}
+                                                                ],
+                                                               [{'name': 'pdbx_label_asym_id_2', 'type': 'str', 'value': cif_chain_id},
+                                                                {'name': 'pdbx_label_seq_id_2', 'type': 'int', 'value': cif_seq_id}
+                                                                ])
+
+                except Exception as e:
+
+                    self.report.error.appendDescription('internal_error', "+NmrDpUtility.__isProtCis() ++ Error  - %s" % str(e))
+                    self.report.setError()
+
+                    if self.__verbose:
+                        self.__lfh.write("+NmrDpUtility.__isProtCis() ++ Error  - %s" % str(e))
+
+                    return False
 
                 return len(struct_conn) > 0
 
@@ -6230,7 +6277,7 @@ class NmrDpUtility(object):
 
                 else:
 
-                    sf_data = self.__star_data.get_saveframe_by_name('_' + w['saveframe'])
+                    sf_data = self.__star_data.get_saveframe_by_name(w['saveframe'])
 
                     if sf_data is None:
 
@@ -6288,6 +6335,210 @@ class NmrDpUtility(object):
     def __removeNonSenseZeroValue(self):
         """ Remove non-sense zero values.
         """
+
+        warning_dic = self.report.warning.get()
+
+        if warning_dic['missing_data'] is None:
+            return True
+
+        input_source = self.report.input_sources[0]
+        input_source_dic = input_source.get()
+
+        file_type = input_source_dic['file_type']
+        file_name = input_source_dic['file_name']
+
+        for w in warning_dic['missing_data']:
+
+            if w['file_name'] != file_name:
+                continue
+
+            if not "is non-sense zero value" in w['description']:
+                continue
+
+            if self.__star_data_type == "Entry" or self.__star_data_type == "Saveframe":
+
+                if not 'saveframe' in w:
+
+                    err = "Could not specify 'saveframe' in NMR data processing report."
+
+                    self.report.error.appendDescription('internal_error', "+NmrDpUtility.__removeNonSenseZeroValue() ++ Error  - %s" % err)
+                    self.report.setError()
+
+                    if self.__verbose:
+                        self.__lfh.write("+NmrDpUtility.__removeNonSenseZeroValue() ++ Error  - %s\n" % err)
+
+                else:
+
+                    sf_data = self.__star_data.get_saveframe_by_name(w['saveframe'])
+
+                    if sf_data is None:
+
+                        err = "Could not specify saveframe %s unexpectedly in %s file." % (w['saveframe'], file_name)
+
+                        self.report.error.appendDescription('internal_error', "+NmrDpUtility.__removeNonSenseZeroValue() ++ Error  - %s" % err)
+                        self.report.setError()
+
+                        if self.__verbose:
+                            self.__lfh.write("+NmrDpUtility.__removeNonSenseZeroValue() ++ Error  - %s\n" % err)
+
+                    else:
+
+                        if not 'category' in w:
+
+                            err = "Could not specify 'category' in NMR data processing report."
+
+                            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__removeNonSenseZeroValue() ++ Error  - %s" % err)
+                            self.report.setError()
+
+                            if self.__verbose:
+                                self.__lfh.write("+NmrDpUtility.__removeNonSenseZeroValue() ++ Error  - %s\n" % err)
+
+                        else:
+
+                            itName = w['description'].split(' ')[0]
+
+                            lp_data = sf_data.get_loop_by_category(w['category'])
+
+                            if not itName in lp_data.tags:
+
+                                err = "Could not find loop tag %s in %s category, %s saveframe, %s file." % (itName, w['category'], w['saveframe'], file_name)
+
+                                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__removeNonSenseZeroValue() ++ Error  - %s" % err)
+                                self.report.setError()
+
+                                if self.__verbose:
+                                    self.__lfh.write("+NmrDpUtility.__removeNonSenseZeroValue() ++ Error  - %s\n" % err)
+
+                            else:
+
+                                itCol = lp_data.tags.index(itName)
+
+                                for row in lp_data.data:
+
+                                    if row[itCol] is self.empty_value:
+                                        continue
+
+                                    try:
+                                        if float(row[itCol]) == 0:
+                                            row[itCol] = '.'
+                                    except ValueError:
+                                        row[itCol] = '.'
+
+            else:
+
+                err = "Unexpected PyNMRSTAR object %s found in %s file." % (self.__star_data_type, file_name)
+
+                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__removeNonSenseZeroValue() ++ Error  - %s" % err)
+                self.report.setError()
+
+                if self.__verbose:
+                    self.__lfh.write("+NmrDpUtility.__removeNonSenseZeroValue() ++ Error  - %s\n" % err)
+
+        return True
+
+    def __fixNonSenseNegativeValue(self):
+        """ Fix non-sense negative values.
+        """
+
+        warning_dic = self.report.warning.get()
+
+        if warning_dic['missing_data'] is None:
+            return True
+
+        input_source = self.report.input_sources[0]
+        input_source_dic = input_source.get()
+
+        file_type = input_source_dic['file_type']
+        file_name = input_source_dic['file_name']
+
+        for w in warning_dic['unusual_data']:
+
+            if w['file_name'] != file_name:
+                continue
+
+            if not "is non-sense negative value" in w['description']:
+                continue
+
+            if self.__star_data_type == "Entry" or self.__star_data_type == "Saveframe":
+
+                if not 'saveframe' in w:
+
+                    err = "Could not specify 'saveframe' in NMR data processing report."
+
+                    self.report.error.appendDescription('internal_error', "+NmrDpUtility.__fixNonSenseNegativeValue() ++ Error  - %s" % err)
+                    self.report.setError()
+
+                    if self.__verbose:
+                        self.__lfh.write("+NmrDpUtility.__fixNonSenseNegativeValue() ++ Error  - %s\n" % err)
+
+                else:
+
+                    sf_data = self.__star_data.get_saveframe_by_name(w['saveframe'])
+
+                    if sf_data is None:
+
+                        err = "Could not specify saveframe %s unexpectedly in %s file." % (w['saveframe'], file_name)
+
+                        self.report.error.appendDescription('internal_error', "+NmrDpUtility.__fixNonSenseNegativeValue() ++ Error  - %s" % err)
+                        self.report.setError()
+
+                        if self.__verbose:
+                            self.__lfh.write("+NmrDpUtility.__fixNonSenseNegativeValue() ++ Error  - %s\n" % err)
+
+                    else:
+
+                        if not 'category' in w:
+
+                            err = "Could not specify 'category' in NMR data processing report."
+
+                            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__fixNonSenseNegativeValue() ++ Error  - %s" % err)
+                            self.report.setError()
+
+                            if self.__verbose:
+                                self.__lfh.write("+NmrDpUtility.__fixNonSenseNegativeValue() ++ Error  - %s\n" % err)
+
+                        else:
+
+                            itName = w['description'].split(' ')[0]
+
+                            lp_data = sf_data.get_loop_by_category(w['category'])
+
+                            if not itName in lp_data.tags:
+
+                                err = "Could not find loop tag %s in %s category, %s saveframe, %s file." % (itName, w['category'], w['saveframe'], file_name)
+
+                                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__fixNonSenseNegativeValue() ++ Error  - %s" % err)
+                                self.report.setError()
+
+                                if self.__verbose:
+                                    self.__lfh.write("+NmrDpUtility.__fixNonSenseNegativeValue() ++ Error  - %s\n" % err)
+
+                            else:
+
+                                itCol = lp_data.tags.index(itName)
+
+                                for row in lp_data.data:
+
+                                    if row[itCol] is self.empty_value:
+                                        continue
+
+                                    try:
+                                        if float(row[itCol]) < 0.0:
+                                            row[itCol] = abs(float(row[itCol]))
+                                    except ValueError:
+                                        row[itCol] = '.'
+
+            else:
+
+                err = "Unexpected PyNMRSTAR object %s found in %s file." % (self.__star_data_type, file_name)
+
+                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__fixNonSenseNegativeValue() ++ Error  - %s" % err)
+                self.report.setError()
+
+                if self.__verbose:
+                    self.__lfh.write("+NmrDpUtility.__fixNonSenseNegativeValue() ++ Error  - %s\n" % err)
+
+        return True
 
     def __fixEnumerationValue(self):
         """ Fix enumeration violations.

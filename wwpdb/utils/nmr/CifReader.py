@@ -71,7 +71,7 @@ class CifReader(object):
             myBlockList = []
             pRd = PdbxReader(ifh)
             pRd.read(myBlockList)
-            if (blockId is not None):
+            if not blockId is None:
                 for block in myBlockList:
                     if (block.getType() == 'data' and block.getName() == blockId):
                         return block

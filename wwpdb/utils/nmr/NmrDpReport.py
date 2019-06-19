@@ -1,6 +1,6 @@
 ##
 # File: NmrDpReport.py
-# Date: 18-Jun-2019
+# Date: 19-Jun-2019
 #
 # Updates:
 ##
@@ -8,7 +8,6 @@
 """
 import logging
 import json
-import types
 import re
 
 class NmrDpReport:
@@ -48,11 +47,11 @@ class NmrDpReport:
 
     def getInputSourceIdOfCoord(self):
         """ Return input_source_id of coordinate file.
-            @return: index id of input_source, otherwise -1
+            @return: index id of input_source, -1 otherwise
         """
 
         for i in self.input_sources:
-            if i.get()['file_type'] is 'pdbx':
+            if i.get()['file_type'] == 'pdbx':
                 return self.input_sources.index(i)
 
         return -1
@@ -96,7 +95,7 @@ class NmrDpReport:
 
     def setDiamagnetic(self, diamagnetic):
 
-        if type(diamagnetic) is types.BooleanType:
+        if type(diamagnetic) is bool:
             self.__report['information']['diamagnetic'] = diamagnetic
 
         else:
@@ -277,7 +276,7 @@ class NmrDpReportError:
             if 'category' in value:
                 value['category'] = value['category'].lstrip('_')
 
-            if not item is 'internal_error' and 'description' in value:
+            if item != 'internal_error' and 'description' in value:
                 d = value['description']
 
                 if d.startswith('[Check row of'):
@@ -346,7 +345,7 @@ class NmrDpReportWarning:
             if 'category' in value:
                 value['category'] = value['category'].lstrip('_')
 
-            if not item is 'internal_error' and 'description' in value:
+            if item != 'internal_error' and 'description' in value:
                 d = value['description']
 
                 if d.startswith('[Check row of'):

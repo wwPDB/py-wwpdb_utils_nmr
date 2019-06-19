@@ -15,7 +15,6 @@ import json
 import itertools
 import copy
 import collections
-import types
 from munkres import Munkres
 
 from wwpdb.utils.nmr.NEFTranslator.NEFTranslator import NEFTranslator
@@ -5701,8 +5700,6 @@ class NmrDpUtility(object):
         file_type = input_source_dic['file_type']
         file_name = input_source_dic['file_name']
 
-        to_delete_lp_category = []
-
         for w in warning_dic['skipped_lp_category']:
 
             if w['file_name'] != file_name:
@@ -5795,6 +5792,13 @@ class NmrDpUtility(object):
 
         orig_lp_data = None
 
+        has_res_var_dat = False
+
+        has_auth_asym_id = False
+        has_auth_seq_id = False
+        has_auth_comp_id = False
+        has_nef_index_dat = False
+
         try:
 
             sf_data = self.__star_data.get_saveframes_by_category(sf_category)[0]
@@ -5802,6 +5806,38 @@ class NmrDpUtility(object):
             if not sf_data is None:
                 orig_lp_data = self.nef_translator.check_data(sf_data, lp_category, key_items, data_items, None, None,
                                                               inc_idx_test=False, enforce_non_zero=False, enforce_enum=False)[0]
+
+                if file_type == 'nef':
+                    if 'residue_variant' in orig_lp_data[0]:
+                        result = next((i for i in orig_lp_data if not i['residue_variant'] in self.empty_value), None)
+                        if not result is None:
+                            has_res_var_dat = True
+
+                else:
+                    if 'Auth_variant_ID' in orig_lp_data[0]:
+                        result = next((i for i in orig_lp_data if not i['Auth_variant_ID'] in self.empty_value), None)
+                        if not result is None:
+                            has_res_var_dat = True
+
+                    if 'Auth_asym_ID' in orig_lp_data[0]:
+                        result = next((i for i in orig_lp_data if not i['Auth_asym_ID'] in self.empty_value), None)
+                        if not result is None:
+                            has_auth_asym_id = True
+
+                    if 'Auth_seq_ID' in orig_lp_data[0]:
+                        result = next((i for i in orig_lp_data if not i['Auth_seq_ID'] in self.empty_value), None)
+                        if not result is None:
+                            has_auth_seq_id = True
+
+                    if 'Auth_comp_ID' in orig_lp_data[0]:
+                        result = next((i for i in orig_lp_data if not i['Auth_comp_ID'] in self.empty_value), None)
+                        if not result is None:
+                            has_auth_comp_id = True
+
+                    if 'NEF_index' in orig_lp_data[0]:
+                        result = next((i for i in orig_lp_data if not i['NEF_index'] in self.empty_value), None)
+                        if not result is None:
+                            has_nef_index_dat = True
 
         except:
             pass
@@ -5822,10 +5858,6 @@ class NmrDpUtility(object):
         lp_data = pynmrstar.Loop.from_scratch(lp_cat_name)
 
         has_index_tag = not self.index_tags[file_type][content_subtype] is None
-        has_nef_index_tag = not orig_lp_data is None and len(orig_lp_data) > 0 and 'NEF_index' in orig_lp_data[0]
-        has_res_var_dat = not orig_lp_data is None and len(orig_lp_data) > 0 and\
-                          ((file_type == 'nef' and 'residue_variant' in orig_lp_data[0]) or
-                           (file_type == 'nmr-star' and 'Auth_variant_ID' in orig_lp_data[0]))
 
         if has_index_tag:
             lp_data.add_tag(lp_cat_name + '.' + self.index_tags[file_type][content_subtype])
@@ -5842,19 +5874,17 @@ class NmrDpUtility(object):
 
         polymer_sequence = input_source_dic['polymer_sequence']
 
-        cid = []
+        chains = []
 
         for s in polymer_sequence:
-            cid.append(s['chain_id'])
-
-        sorted_cid = sorted(cid)
+            chains.append(s['chain_id'])
 
         row_id = 1
 
         for s in polymer_sequence:
 
             chain_id = s['chain_id']
-            seq_id = 1
+            seq_id_offset = 1 - s['seq_id'][0]
 
             length = len(s['seq_id'])
 
@@ -5867,9 +5897,11 @@ class NmrDpUtility(object):
                 if has_index_tag:
                     row.append(row_id)
 
-                aseq_id = s['seq_id'][j]
-                acomp_id = s['comp_id'][j]
-                comp_id = acomp_id.upper()
+                auth_seq_id = s['seq_id'][j]
+                auth_comp_id = s['comp_id'][j]
+
+                seq_id = auth_seq_id + seq_id_offset
+                comp_id = auth_comp_id.upper()
 
                 if file_type == 'nef':
 
@@ -5887,7 +5919,7 @@ class NmrDpUtility(object):
                         row.append('start')
                     elif seq_id == length:
                         row.append('end')
-                    elif aseq_id - 1 == s['seq_id'][j - 1] and aseq_id + 1 == s['seq_id'][j + 1]:
+                    elif auth_seq_id - 1 == s['seq_id'][j - 1] and auth_seq_id + 1 == s['seq_id'][j + 1]:
                         row.append('middle')
                     else:
                         row.append('break')
@@ -5895,7 +5927,7 @@ class NmrDpUtility(object):
                     # residue_variant
 
                     if has_res_var_dat:
-                        orig_row = next((i for i in orig_lp_data if i['chain_code'] == chain_id and i['sequence_code'] == aseq_id and i['residue_name'] == acomp_id), None)
+                        orig_row = next((i for i in orig_lp_data if i['chain_code'] == chain_id and i['sequence_code'] == auth_seq_id and i['residue_name'] == auth_comp_id), None)
                         if not orig_row is None:
                             row.append(orig_row['residue_variant'])
                         else:
@@ -5914,18 +5946,49 @@ class NmrDpUtility(object):
 
                 else:
 
-                    row.append(sorted_cid.index(chain_id) + 1) # Entity_assembly_ID
+                    cid = chains.index(chain_id) + 1
+
+                    row.append(cid) # Entity_assembly_ID
                     row.append(seq_id) # Comp_index_ID
                     row.append(comp_id) # Comp_ID
 
-                    row.append(chain_id) # Auth_asym_ID
-                    row.append(aseq_id) # Auth_seq_ID
-                    row.append(acomp_id) # Auth_comp_ID
+                    # Auth_asym_ID
+
+                    if has_auth_asym_id:
+                        orig_row = next((i for i in orig_lp_data if i['Entity_assembly_ID'] == cid and i['Comp_index_ID'] == auth_seq_id and i['Comp_ID'] == auth_comp_id), None)
+                        if not orig_row is None:
+                            row.append(orig_row['Auth_asym_ID'])
+                        else:
+                            row.append(chain_id)
+                    else:
+                        row.append(chain_id)
+
+                    # Auth_seq_ID
+
+                    if has_auth_seq_id:
+                        orig_row = next((i for i in orig_lp_data if i['Entity_assembly_ID'] == cid and i['Comp_index_ID'] == auth_seq_id and i['Comp_ID'] == auth_comp_id), None)
+                        if not orig_row is None:
+                            row.append(orig_row['Auth_seq_ID'])
+                        else:
+                            row.append(auth_seq_id)
+                    else:
+                        row.append(auth_seq_id)
+
+                    # Auth_comp_ID
+
+                    if has_auth_comp_id:
+                        orig_row = next((i for i in orig_lp_data if i['Entity_assembly_ID'] == cid and i['Comp_index_ID'] == auth_seq_id and i['Comp_ID'] == auth_comp_id), None)
+                        if not orig_row is None:
+                            row.append(orig_row['Auth_comp_ID'])
+                        else:
+                            row.append(auth_comp_id)
+                    else:
+                        row.append(auth_comp_id)
 
                     # Auth_variant_ID
 
                     if has_res_var_dat:
-                        orig_row = next((i for i in orig_lp_data if i['Entity_assembly_ID'] == sorted_cid.index(chain_id) + 1 and i['Comp_index_ID'] == aseq_id and i['Comp_ID'] == acomp_id), None)
+                        orig_row = next((i for i in orig_lp_data if i['Entity_assembly_ID'] == cid and i['Comp_index_ID'] == auth_seq_id and i['Comp_ID'] == auth_comp_id), None)
                         if not orig_row is None:
                             row.append(orig_row['Auth_variant_ID'])
                         else:
@@ -5935,8 +5998,6 @@ class NmrDpUtility(object):
 
                     # Sequence_linking
 
-                    aseq_id = s['seq_id'][j]
-
                     if cyclic and (seq_id == 1 or seq_id == length):
                         row.append('cyclic')
                     elif seq_id == 1 and length == 1:
@@ -5945,7 +6006,7 @@ class NmrDpUtility(object):
                         row.append('start')
                     elif seq_id == length:
                         row.append('end')
-                    elif aseq_id - 1 == s['seq_id'][j - 1] and aseq_id + 1 == s['seq_id'][j + 1]:
+                    elif auth_seq_id - 1 == s['seq_id'][j - 1] and auth_seq_id + 1 == s['seq_id'][j + 1]:
                         row.append('middle')
                     else:
                         row.append('break')
@@ -5962,7 +6023,7 @@ class NmrDpUtility(object):
                     # NEF_index
 
                     if has_nef_index_tag:
-                        orig_row = next((i for i in orig_lp_data if i['Entity_assembly_ID'] == sorted_cid.index(chain_id) + 1 and i['Comp_index_ID'] == aseq_id and i['Comp_ID'] == acomp_id), None)
+                        orig_row = next((i for i in orig_lp_data if i['Entity_assembly_ID'] == cid and i['Comp_index_ID'] == auth_seq_id and i['Comp_ID'] == auth_comp_id), None)
                         if not orig_row is None:
                             row.append(orig_row['NEF_index'])
                         else:
@@ -5970,7 +6031,6 @@ class NmrDpUtility(object):
 
                 lp_data.add_data(row)
 
-                seq_id += 1
                 row_id += 1
 
         poly_seq_sf_data.add_loop(lp_data)
@@ -6026,8 +6086,6 @@ class NmrDpUtility(object):
         cif_input_source_dic = cif_input_source.get()
 
         cif_polymer_sequence = cif_input_source_dic['polymer_sequence']
-
-        print (cif_polymer_sequence)
 
         chain_assign_dic = self.report.chain_assignment.get()
 
@@ -6140,6 +6198,22 @@ class NmrDpUtility(object):
     def __fixDisorderedIndex(self):
         """ Fix disordered indices.
         """
+
+        warning_dic = self.report.warning.get()
+
+        if warning_dic['disordered_index'] is None:
+            return True
+
+        input_source = self.report.input_sources[0]
+        input_source_dic = input_source.get()
+
+        file_type = input_source_dic['file_type']
+        file_name = input_source_dic['file_name']
+
+        for w in warning_dic['disordered_index']:
+            pass
+
+        return True
 
     def __removeNonSenseZeroValue(self):
         """ Remove non-sense zero values.

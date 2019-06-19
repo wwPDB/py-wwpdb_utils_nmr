@@ -58,8 +58,9 @@ class NmrDpUtility(object):
                                  self.__initializeDpReport,
                                  self.__instanceNEFTranslator,
                                  self.__instanceBMRBChemShiftStat,
-                                 # validate NMR data only
+                                 # set input source (srcPath)
                                  self.__validateInputSource,
+                                 # validate NMR data only
                                  self.__detectContentSubType,
                                  self.__extractPolymerSequence,
                                  self.__extractPolymerSequenceInLoop,
@@ -93,6 +94,7 @@ class NmrDpUtility(object):
                                 [self.__retrieveDpReport,
                                  self.__instanceNEFTranslator,
                                  self.__instanceBMRBChemShiftStat,
+                                 # set input source (srcPath)
                                  self.__validateInputSource,
                                  self.__parseCoordinate,
                                  # resolve minor issues
@@ -107,7 +109,39 @@ class NmrDpUtility(object):
                                  self.__resetBoolValueInAuxLoop,
                                  self.__appendParentSfTag,
                                  self.__addUnnamedEntryId,
-                                 self.__depositNmrData
+                                 self.__depositNmrData,
+                                 # re-setup
+                                 self.__initializeDpReportWithNext,
+                                 # set input source (dstPath)
+                                 self.__validateInputSourceWithNext,
+                                 # validate NMR data only
+                                 self.__detectContentSubType,
+                                 self.__extractPolymerSequence,
+                                 self.__extractPolymerSequenceInLoop,
+                                 self.__testSequenceConsistency,
+                                 self.__extractCommonPolymerSequence,
+                                 self.__extractNonStandardResidue,
+                                 self.__appendPolymerSequenceAlignment,
+                                 self.__validateAtomNomenclature,
+                                 self.__validateAtomTypeOfCSLoop,
+                                 self.__validateAmbigCodeOfCSLoop,
+                                 self.__testIndexConsistency,
+                                 self.__testDataConsistencyInLoop,
+                                 self.__testDataConsistencyInAuxLoop,
+                                 self.__testSfTagConsistency,
+                                 self.__validateCSValue,
+                                 self.__testCSValueConsistencyInPkLoop,
+                                 self.__calculateStatsOfExptlData,
+                                 # validate coordinate only
+                                 self.__detectCoordContentSubType,
+                                 self.__extractCoordPolymerSequence,
+                                 self.__extractCoordNonPolymerScheme,
+                                 self.__extractCoordPolymerSequenceInLoop,
+                                 self.__extractCoordNonStandardResidue,
+                                 self.__appendCoordPolymerSequenceAlignment,
+                                 # cross-check
+                                 self.__assignCoordPolymerSequence,
+                                 self.__testCoordAtomIdConsistency
                                  ],
                                 'nmr-nef2str-deposit':
                                 [self.__translateNef2Str
@@ -3130,7 +3164,7 @@ class NmrDpUtility(object):
                             if self.__verbose:
                                 self.__lfh.write("+NmrDpUtility.__testDataConsistencyInLoop() ++ Warning  - %s\n" % warn)
 
-                        else:
+                        elif warn != '.':
 
                             self.report.error.appendDescription('internal_error', "+NmrDpUtility.__testDataConsistencyInLoop() ++ Error  - %s" % warn)
                             self.report.setError()
@@ -3278,7 +3312,7 @@ class NmrDpUtility(object):
                                     if self.__verbose:
                                         self.__lfh.write("+NmrDpUtility.__testDataConsistencyInAuxLoop() ++ Warning  - %s\n" % warn)
 
-                                else:
+                                elif warn != '.':
 
                                     self.report.error.appendDescription('internal_error', "+NmrDpUtility.__testDataConsistencyInAuxLoop() ++ Error  - %s" % warn)
                                     self.report.setError()
@@ -3539,7 +3573,7 @@ class NmrDpUtility(object):
                             if self.__verbose:
                                 self.__lfh.write("+NmrDpUtility.__testSfTagConsistency() ++ Warning  - %s\n" % warn)
 
-                        else:
+                        elif warn != '.':
 
                             self.report.error.appendDescription('internal_error', "+NmrDpUtility.__testSfTagConsistency() ++ Error  - %s" % warn)
                             self.report.setError()
@@ -7377,7 +7411,7 @@ class NmrDpUtility(object):
         return True
 
     def __depositNmrData(self):
-        """ Deposit latest NMR data file.
+        """ Deposit next NMR unified data file.
         """
 
         if self.__dstPath is None:
@@ -7397,9 +7431,85 @@ class NmrDpUtility(object):
 
         return True
 
+    def __initializeDpReportWithNext(self):
+        """ Initialize NMR data processing report using the next version of NMR unified data.
+        """
+
+        self.report = NmrDpReport()
+
+        # set primary input source as NMR unified data
+        input_source = self.report.input_sources[0]
+
+        file_type = 'nef' if 'nef' in self.__op else 'nmr-star'
+        content_type = self.content_type[file_type]
+
+        input_source.setItemValue('file_name', os.path.basename(self.__dstPath))
+        input_source.setItemValue('file_type', file_type)
+        input_source.setItemValue('content_type', content_type)
+
+        self.__testDiamagnetism()
+
+        return input_source is not None
+
+    def __validateInputSourceWithNext(self):
+        """ Validate the next version of NMR unified data as primary input source.
+        """
+
+        is_valid, json_dumps = self.nef_translator.validate_file(self.__dstPath, 'A') # 'A' for NMR unified data, 'S' for assigned chemical shifts, 'R' for restraints.
+
+        message = json.loads(json_dumps)
+
+        _file_type = message['file_type'] # nef/nmr-star/unknown
+
+        input_source = self.report.input_sources[0]
+        input_source_dic = input_source.get()
+
+        file_name = input_source_dic['file_name']
+        file_type = input_source_dic['file_type']
+
+        if is_valid:
+
+            if _file_type != file_type:
+
+                err = "%s was selected as %s file, but recognized as %s file." % (file_name, self.readable_file_type[file_type], self.readable_file_type[_file_type])
+
+                if len(message['error']) > 0:
+                    for error_message in message['error']:
+                        err += err_message
+
+                self.report.error.appendDescription('format_issue', {'file_name': file_name, 'description': err})
+                self.report.setError()
+
+                if self.__verbose:
+                    self.__lfh.write("+NmrDpUtility.__validateOutputSource() ++ Error  - %s\n" % err)
+
+                return False
+
+            is_done, self.__star_data_type, self.__star_data = self.nef_translator.read_input_file(self.__dstPath) # NEFTranslator.validate_file() generates this object internally, but not re-used.
+
+            return True
+
+        else:
+
+            err = "%s is invalid %s file." % (file_name, self.readable_file_type[file_type])
+
+            if len(message['error']) > 0:
+                for error_message in message['error']:
+                    err += err_message
+
+            self.report.error.appendDescription('format_issue', {'file_name': file_name, 'description': err})
+            self.report.setError()
+
+            if self.__verbose:
+                self.__lfh.write("+NmrDpUtility.__validateOutputSource() ++ Error  - %s\n" % err)
+
+            return False
+
     def __translateNef2Str(self):
         """ Translate NEF to NMR-STAR V3.2 file.
         """
+
+        return True
 
 if __name__ == '__main__':
     dp = NmrDpUtility()

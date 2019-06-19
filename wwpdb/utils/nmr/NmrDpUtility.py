@@ -6713,6 +6713,9 @@ class NmrDpUtility(object):
                                                         elif self.__testDistRestraintAsDisulfideBond(lp_data):
                                                             sf_data.tags[itCol][1] = 'disulfide bond'
 
+                                                        elif self.__testDistRestraintAsSymmetry(lp_data):
+                                                            sf_data.tags[itCol][1] = 'symmetry'
+
                                                     elif content_subtype == 'dihed_restraint':
 
                                                         # 'J-couplings', 'backbone chemical shifts'
@@ -6893,11 +6896,79 @@ class NmrDpUtility(object):
 
         except Exception as e:
 
-            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__testDistRestraintAsHydrogenBond() ++ Error  - %s" % str(e))
+            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__testDistRestraintAsDisulfideBond() ++ Error  - %s" % str(e))
             self.report.setError()
 
             if self.__verbose:
-                self.__lfh.write("+NmrDpUtility.__testDistRestraintAsHydrogenBond() ++ Error  - %s" % str(e))
+                self.__lfh.write("+NmrDpUtility.__testDistRestraintAsDisulfideBond() ++ Error  - %s" % str(e))
+
+            return False
+
+        return True
+
+    def __testDistRestraintAsSymmetry(self, lp_data):
+        """ Detect whether given restraints are derived from symmetry.
+        """
+
+        if lp_data is None:
+            return False
+
+        input_source = self.report.input_sources[0]
+        input_source_dic = input_source.get()
+
+        file_type = input_source_dic['file_type']
+
+        item_names = self.item_names_in_dr_loop[file_type]
+
+        try:
+
+            for i in lp_data:
+                chain_id_1 = i[item_names['chain_id_1']]
+                chain_id_2 = i[item_names['chain_id_2']]
+                seq_id_1 = i[item_names['seq_id_1']]
+                seq_id_2 = i[item_names['seq_id_2']]
+                comp_id_1 = i[item_names['comp_id_1']]
+                comp_id_2 = i[item_names['comp_id_2']]
+
+                if chain_id_1 == chain_id_2:
+                    return False
+
+                has_symmetry = False
+
+                for j in lp_data:
+
+                    if j is i:
+                        continue
+
+                    _chain_id_1 = j[item_names['chain_id_1']]
+                    _chain_id_2 = j[item_names['chain_id_2']]
+                    _seq_id_1 = j[item_names['seq_id_1']]
+                    _seq_id_2 = j[item_names['seq_id_2']]
+                    _comp_id_1 = j[item_names['comp_id_1']]
+                    _comp_id_2 = j[item_names['comp_id_2']]
+
+                    if _chain_id_1 != _chain_id_2 and _chain_id_1 != chain_id_1 and _chain_id_2 != chain_id_2:
+
+                        if seq_id_1 == _seq_id_1 and comp_id_1 == _comp_id_1 and\
+                           seq_id_2 == _seq_id_2 and comp_id_2 == _comp_id_2:
+                            has_symmetry = True
+                            break
+
+                        elif seq_id_1 == _seq_id_2 and comp_id_1 == _comp_id_2 and\
+                             seq_id_2 == _seq_id_1 and comp_id_2 == _comp_id_1:
+                            has_symmetry = True
+                            break
+
+                if not has_symmetry:
+                    return False
+
+        except Exception as e:
+
+            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__testDistRestraintAsSymmetry() ++ Error  - %s" % str(e))
+            self.report.setError()
+
+            if self.__verbose:
+                self.__lfh.write("+NmrDpUtility.__testDistRestraintAsSymmetry() ++ Error  - %s" % str(e))
 
             return False
 

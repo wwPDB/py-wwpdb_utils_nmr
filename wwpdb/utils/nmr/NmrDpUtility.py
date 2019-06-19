@@ -4,6 +4,7 @@
 #
 # Updates:
 ##
+from __builtin__ import StopIteration
 """ Wrapper class for data processing for NMR unified data.
 """
 import sys
@@ -5719,7 +5720,7 @@ class NmrDpUtility(object):
 
                 else:
 
-                    sf_data = self.__star_data.get_saveframe_by_name(w['saveframe'])
+                    sf_data = self.__star_data.get_saveframe_by_name('_' + w['saveframe'])
 
                     if sf_data is None:
 
@@ -6211,7 +6212,76 @@ class NmrDpUtility(object):
         file_name = input_source_dic['file_name']
 
         for w in warning_dic['disordered_index']:
-            pass
+
+            if w['file_name'] != file_name:
+                continue
+
+            if self.__star_data_type == "Entry" or self.__star_data_type == "Saveframe":
+
+                if not 'saveframe' in w:
+
+                    err = "Could not specify 'saveframe' in NMR data processing report."
+
+                    self.report.error.appendDescription('internal_error', "+NmrDpUtility.__fixDisorderedIndex() ++ Error  - %s" % err)
+                    self.report.setError()
+
+                    if self.__verbose:
+                        self.__lfh.write("+NmrDpUtility.__fixDisorderedIndex() ++ Error  - %s\n" % err)
+
+                else:
+
+                    sf_data = self.__star_data.get_saveframe_by_name('_' + w['saveframe'])
+
+                    if sf_data is None:
+
+                        err = "Could not specify saveframe %s unexpectedly in %s file." % (w['saveframe'], file_name)
+
+                        self.report.error.appendDescription('internal_error', "+NmrDpUtility.__fixDisorderedIndex() ++ Error  - %s" % err)
+                        self.report.setError()
+
+                        if self.__verbose:
+                            self.__lfh.write("+NmrDpUtility.__fixDisorderedIndex() ++ Error  - %s\n" % err)
+
+                    else:
+
+                        if not 'category' in w:
+
+                            err = "Could not specify 'category' in NMR data processing report."
+
+                            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__fixDisorderedIndex() ++ Error  - %s" % err)
+                            self.report.setError()
+
+                            if self.__verbose:
+                                self.__lfh.write("+NmrDpUtility.__fixDisorderedIndex() ++ Error  - %s\n" % err)
+
+                        else:
+
+                            try:
+
+                                content_subtype = next(c for c in input_source_dic['content_subtype'].keys() if self.lp_categories[file_type][c] == w['category'] and not self.index_tags[file_type][c] is None)
+
+                                lp_data = sf_data.get_loop_by_category(w['category'])
+                                lp_data.renumber_rows(self.index_tags[file_type][content_subtype])
+
+                            except StopIteration:
+
+                                err = "Could not specify content_subtype in NMR data processing report."
+
+                                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__fixDisorderedIndex() ++ Error  - %s" % err)
+                                self.report.setError()
+
+                                if self.__verbose:
+                                    self.__lfh.write("+NmrDpUtility.__fixDisorderedIndex() ++ Error  - %s\n" % err)
+
+            else:
+
+                err = "Unexpected PyNMRSTAR object %s found in %s file." % (self.__star_data_type, file_name)
+
+                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__fixDisorderedIndex() ++ Error  - %s" % err)
+                self.report.setError()
+
+                if self.__verbose:
+                    self.__lfh.write("+NmrDpUtility.__fixDisorderedIndex() ++ Error  - %s\n" % err)
 
         return True
 

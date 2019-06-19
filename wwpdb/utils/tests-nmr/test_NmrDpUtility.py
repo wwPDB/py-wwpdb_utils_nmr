@@ -66,6 +66,7 @@ class TestNmrDpUtility(unittest.TestCase):
                 self.utility.setSource('dummydummy')
 
         self.utility.setSource(self.data_dir_path + '2l9r.str')
+        self.utility.addInput(name='coordinate_file_path', value=self.data_dir_path + '2l9r.cif', type='file')
 
         # invalid workflow operation
         with LogCapture() as logs:
@@ -90,6 +91,15 @@ class TestNmrDpUtility(unittest.TestCase):
         self.utility.setDestination(self.data_dir_path + '2l9r-next.nef')
 
         self.utility.op('nmr-nef2str-deposit')
+
+    def test_nmr_str2str_deposit_check(self):
+        self.utility.setSource(self.data_dir_path + '2l9r.str')
+        self.utility.addInput(name='coordinate_file_path', value=self.data_dir_path + '2l9r.cif', type='file')
+        self.utility.addInput(name='report_file_path', value=self.data_dir_path + '2l9r-str-consistency-log.json', type='file')
+        self.utility.setLog(self.data_dir_path + '2l9r-str2str-deposit-log.json')
+        self.utility.setDestination(self.data_dir_path + '2l9r-next.str')
+
+        self.utility.op('nmr-str2str-deposit')
 
 if __name__ == '__main__':
     unittest.main()

@@ -4,7 +4,6 @@
 #
 # Updates:
 ##
-from __builtin__ import False
 """ Wrapper class for data processing for NMR unified data.
 """
 import sys
@@ -3106,45 +3105,49 @@ class NmrDpUtility(object):
 
                 except UserWarning as e:
 
-                    warn = str(e).strip("'")
+                    warns = str(e).strip("'").split('.')
 
-                    zero = warn.startswith('[Zero value error] ')
-                    nega = warn.startswith('[Negative value error] ')
-                    enum = warn.startswith('[Enumeration error] ')
+                    for warn in warns:
 
-                    if zero or nega or enum:
+                        warn += '.'
 
-                        if zero:
-                            warn = warn[19:]
-                        elif nega:
-                            warn = warn[23:]
+                        zero = warn.startswith('[Zero value error] ')
+                        nega = warn.startswith('[Negative value error] ')
+                        enum = warn.startswith('[Enumeration error] ')
+
+                        if zero or nega or enum:
+
+                            if zero:
+                                warn = warn[19:]
+                            elif nega:
+                                warn = warn[23:]
+                            else:
+                                warn = warn[20:]
+
+                            self.report.warning.appendDescription('missing_data' if zero else ('unusual_data' if nega else 'enum_failure'), {'file_name': file_name, 'saveframe': sf_framecode, 'category': lp_category, 'description': warn})
+                            self.report.setWarning()
+
+                            if self.__verbose:
+                                self.__lfh.write("+NmrDpUtility.__testDataConsistencyInLoop() ++ Warning  - %s\n" % warn)
+
                         else:
-                            warn = warn[20:]
 
-                        self.report.warning.appendDescription('missing_data' if zero else ('unusual_data' if nega else 'enum_failure'), {'file_name': file_name, 'saveframe': sf_framecode, 'category': lp_category, 'description': warn})
-                        self.report.setWarning()
+                            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__testDataConsistencyInLoop() ++ Error  - %s" % warn)
+                            self.report.setError()
 
-                        if self.__verbose:
-                            self.__lfh.write("+NmrDpUtility.__testDataConsistencyInLoop() ++ Warning  - %s\n" % warn)
+                            if self.__verbose:
+                                self.__lfh.write("+NmrDpUtility.__testDataConsistencyInLoop() ++ Error  - %s" % warn)
 
-                        # try to parse data without constraints
+                    # try to parse data without constraints
 
-                        try:
+                    try:
 
-                            lp_data = self.nef_translator.check_data(sf_data, lp_category, key_items, data_items, allowed_tags, disallowed_tags)[0]
+                        lp_data = self.nef_translator.check_data(sf_data, lp_category, key_items, data_items, allowed_tags, disallowed_tags)[0]
 
-                            self.lp_data[content_subtype].append({'sf_framecode': sf_framecode, 'data': lp_data})
+                        self.lp_data[content_subtype].append({'sf_framecode': sf_framecode, 'data': lp_data})
 
-                        except:
-                            pass
-
-                    else:
-
-                        self.report.error.appendDescription('internal_error', "+NmrDpUtility.__testDataConsistencyInLoop() ++ Error  - %s" % str(e))
-                        self.report.setError()
-
-                        if self.__verbose:
-                            self.__lfh.write("+NmrDpUtility.__testDataConsistencyInLoop() ++ Error  - %s" % str(e))
+                    except:
+                        pass
 
                 except Exception as e:
 
@@ -3250,48 +3253,52 @@ class NmrDpUtility(object):
 
                         except UserWarning as e:
 
-                            warn = str(e).strip("'")
+                            warns = str(e).strip("'").split('.')
 
-                            zero = warn.startswith('[Zero value error] ')
-                            nega = warn.startswith('[Negative value error] ')
-                            enum = warn.startswith('[Enumeration error] ')
+                            for warn in warns:
 
-                            if zero or nega or enum:
+                                warn += '.'
 
-                                if zero:
-                                    warn = warn[19:]
-                                elif nega:
-                                    warn = warn[23:]
+                                zero = warn.startswith('[Zero value error] ')
+                                nega = warn.startswith('[Negative value error] ')
+                                enum = warn.startswith('[Enumeration error] ')
+
+                                if zero or nega or enum:
+
+                                    if zero:
+                                        warn = warn[19:]
+                                    elif nega:
+                                        warn = warn[23:]
+                                    else:
+                                        warn = warn[20:]
+
+                                    self.report.warning.appendDescription('missing_data' if zero else ('unusual_data' if nega else 'enum_failure'), {'file_name': file_name, 'saveframe': sf_framecode, 'category': lp_category, 'description': warn})
+                                    self.report.setWarning()
+
+                                    if self.__verbose:
+                                        self.__lfh.write("+NmrDpUtility.__testDataConsistencyInAuxLoop() ++ Warning  - %s\n" % warn)
+
                                 else:
-                                    warn = warn[20:]
 
-                                self.report.warning.appendDescription('missing_data' if zero else ('unusual_data' if nega else 'enum_failure'), {'file_name': file_name, 'saveframe': sf_framecode, 'category': lp_category, 'description': warn})
-                                self.report.setWarning()
+                                    self.report.error.appendDescription('internal_error', "+NmrDpUtility.__testDataConsistencyInAuxLoop() ++ Error  - %s" % warn)
+                                    self.report.setError()
 
-                                if self.__verbose:
-                                    self.__lfh.write("+NmrDpUtility.__testDataConsistencyInAuxLoop() ++ Warning  - %s\n" % warn)
+                                    if self.__verbose:
+                                        self.__lfh.write("+NmrDpUtility.__testDataConsistencyInAuxLoop() ++ Error  - %s" % warn)
 
-                                # try to parse data without constraints
+                            # try to parse data without constraints
 
-                                try:
+                            try:
 
-                                    aux_data = self.nef_translator.check_data(sf_data, lp_category, key_items, data_items, allowed_tags, None)[0]
+                                aux_data = self.nef_translator.check_data(sf_data, lp_category, key_items, data_items, allowed_tags, None)[0]
 
-                                    self.aux_data[content_subtype].append({'sf_framecode': sf_framecode, 'category': lp_category, 'data': aux_data})
+                                self.aux_data[content_subtype].append({'sf_framecode': sf_framecode, 'category': lp_category, 'data': aux_data})
 
-                                    if content_subtype == 'spectral_peak':
-                                        self.__testDataConsistencyInAuxLoopOfSpectralPeak(file_name, file_type, sf_framecode, num_dim, lp_category, aux_data)
+                                if content_subtype == 'spectral_peak':
+                                    self.__testDataConsistencyInAuxLoopOfSpectralPeak(file_name, file_type, sf_framecode, num_dim, lp_category, aux_data)
 
-                                except:
-                                    pass
-
-                            else:
-
-                                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__testDataConsistencyInAuxLoop() ++ Error  - %s" % str(e))
-                                self.report.setError()
-
-                                if self.__verbose:
-                                    self.__lfh.write("+NmrDpUtility.__testDataConsistencyInAuxLoop() ++ Error  - %s" % str(e))
+                            except:
+                                pass
 
                         except Exception as e:
 
@@ -3404,6 +3411,7 @@ class NmrDpUtility(object):
                 lp_data = next((l['data'] for l in self.lp_data[content_subtype] if l['sf_framecode'] == sf_framecode), None)
 
                 if not lp_data is None:
+
                     for i in lp_data:
                         for j in range(num_dim):
                             position = i[position_names[j]]
@@ -3506,48 +3514,52 @@ class NmrDpUtility(object):
 
                 except UserWarning as e:
 
-                    warn = str(e).strip("'")
+                    warns = str(e).strip("'").split('.')
 
-                    zero = warn.startswith('[Zero value error] ')
-                    nega = warn.startswith('[Negative value error] ')
-                    enum = warn.startswith('[Enumeration error] ')
+                    for warn in warns:
 
-                    if zero or nega or enum:
+                        warn += '.'
 
-                        if zero:
-                            warn = warn[19:]
-                        elif nega:
-                            warn = warn[23:]
+                        zero = warn.startswith('[Zero value error] ')
+                        nega = warn.startswith('[Negative value error] ')
+                        enum = warn.startswith('[Enumeration error] ')
+
+                        if zero or nega or enum:
+
+                            if zero:
+                                warn = warn[19:]
+                            elif nega:
+                                warn = warn[23:]
+                            else:
+                                warn = warn[20:]
+
+                            self.report.warning.appendDescription('missing_data' if zero else ('unusual_data' if nega else 'enum_failure'), {'file_name': file_name, 'saveframe': sf_framecode, 'description': warn})
+                            self.report.setWarning()
+
+                            if self.__verbose:
+                                self.__lfh.write("+NmrDpUtility.__testSfTagConsistency() ++ Warning  - %s\n" % warn)
+
                         else:
-                            warn = warn[20:]
 
-                        self.report.warning.appendDescription('missing_data' if zero else ('unusual_data' if nega else 'enum_failure'), {'file_name': file_name, 'saveframe': sf_framecode, 'description': warn})
-                        self.report.setWarning()
+                            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__testSfTagConsistency() ++ Error  - %s" % warn)
+                            self.report.setError()
 
-                        if self.__verbose:
-                            self.__lfh.write("+NmrDpUtility.__testSfTagConsistency() ++ Warning  - %s\n" % warn)
+                            if self.__verbose:
+                                self.__lfh.write("+NmrDpUtility.__testSfTagConsistency() ++ Error  - %s" % warn)
 
-                        # try to parse data without constraints
+                    # try to parse data without constraints
 
-                        try:
+                    try:
 
-                            sf_tag_data = self.nef_translator.check_sf_tag(sf_data, self.sf_tag_items[file_type][content_subtype], self.sf_allowed_tags[file_type][content_subtype],
-                                                                    enfoce_non_zero=False, enforce_enum=False)
+                        sf_tag_data = self.nef_translator.check_sf_tag(sf_data, self.sf_tag_items[file_type][content_subtype], self.sf_allowed_tags[file_type][content_subtype],
+                                                                enfoce_non_zero=False, enforce_enum=False)
 
-                            self.__testParentChildRelation(file_name, file_type, content_subtype, parent_keys, list_id, sf_framecode, sf_tag_data)
+                        self.__testParentChildRelation(file_name, file_type, content_subtype, parent_keys, list_id, sf_framecode, sf_tag_data)
 
-                            list_id += 1
+                        list_id += 1
 
-                        except:
-                            pass
-
-                    else:
-
-                        self.report.error.appendDescription('internal_error', "+NmrDpUtility.__testSfTagConsistency() ++ Error  - %s" % str(e))
-                        self.report.setError()
-
-                        if self.__verbose:
-                            self.__lfh.write("+NmrDpUtility.__testSfTagConsistency() ++ Error  - %s" % str(e))
+                    except:
+                        pass
 
                 except Exception as e:
 
@@ -3596,6 +3608,7 @@ class NmrDpUtility(object):
             lp_data = next((l['data'] for l in self.lp_data[content_subtype] if l['sf_framecode'] == sf_framecode), None)
 
             if not lp_data is None:
+
                 for i in lp_data:
                     if child_key_name in i and i[child_key_name] != parent_key:
 
@@ -4339,6 +4352,7 @@ class NmrDpUtility(object):
                 lp_data = next((l['data'] for l in self.lp_data[content_subtype] if l['sf_framecode'] == sf_framecode), None)
 
                 if not lp_data is None:
+
                     for i in lp_data:
                         for d in range(num_dim):
                             chain_id = i[item_names[d]['chain_id']]
@@ -4623,11 +4637,11 @@ class NmrDpUtility(object):
 
                     err = "No such %s file." % file_name
 
-                    self.report.error.appendDescription('internal_error', "+NmrDpUtility.__appendCoordinate() ++ Error  - %s" % err)
+                    self.report.error.appendDescription('internal_error', "+NmrDpUtility.__parseCoordinate() ++ Error  - %s" % err)
                     self.report.setError()
 
                     if self.__verbose:
-                        self.__lfh.write("+NmrDpUtility.__appendCoordinate() ++ Error  - %s\n" % err)
+                        self.__lfh.write("+NmrDpUtility.__parseCoordinate() ++ Error  - %s\n" % err)
 
                     return False
 
@@ -4635,11 +4649,11 @@ class NmrDpUtility(object):
 
                     err = "%s is invalid %s file." % (file_name, self.readable_file_type[file_type])
 
-                    self.report.error.appendDescription('internal_error', "+NmrDpUtility.__appendCoordinate() ++ Error  - %s" % err)
+                    self.report.error.appendDescription('internal_error', "+NmrDpUtility.__parseCoordinate() ++ Error  - %s" % err)
                     self.report.setError()
 
                     if self.__verbose:
-                        self.__lfh.write("+NmrDpUtility.__appendCoordinate() ++ Error  - %s\n" % err)
+                        self.__lfh.write("+NmrDpUtility.__parseCoordinate() ++ Error  - %s\n" % err)
 
                     return False
 
@@ -4652,11 +4666,11 @@ class NmrDpUtility(object):
 
             err = "%s formatted coordinate file is mandatory." % self.readable_file_type[file_type]
 
-            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__appendCoordinate() ++ Error  - %s" % err)
+            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__parseCoordinate() ++ Error  - %s" % err)
             self.report.setError()
 
             if self.__verbose:
-                self.__lfh.write("+NmrDpUtility.__appendCoordinate() ++ Error  - %s\n" % err)
+                self.__lfh.write("+NmrDpUtility.__parseCoordinate() ++ Error  - %s\n" % err)
 
             return False
 
@@ -5236,8 +5250,6 @@ class NmrDpUtility(object):
 
             # from model to nmr
 
-            cif2nmr = {}
-
             mat = []
 
             for s1 in cif_polymer_sequence:
@@ -5266,8 +5278,6 @@ class NmrDpUtility(object):
 
                 cid = cif_polymer_sequence[row]['chain_id']
                 cid2 = nmr_polymer_sequence[column]['chain_id']
-
-                cif2nmr[cid] = cid2
 
                 result = next(seq_align for seq_align in seq_align_dic['model_poly_seq_vs_nmr_poly_seq'] if seq_align['ref_chain_id'] == cid and seq_align['test_chain_id'] == cid2)
 
@@ -5335,8 +5345,6 @@ class NmrDpUtility(object):
 
             # from nmr to model
 
-            nmr2cif = {}
-
             mat = []
 
             for s1 in nmr_polymer_sequence:
@@ -5365,8 +5373,6 @@ class NmrDpUtility(object):
 
                 cid = nmr_polymer_sequence[row]['chain_id']
                 cid2 = cif_polymer_sequence[column]['chain_id']
-
-                nmr2cif[cid] = cid2
 
                 result = next(seq_align for seq_align in seq_align_dic['nmr_poly_seq_vs_model_poly_seq'] if seq_align['ref_chain_id'] == cid and seq_align['test_chain_id'] == cid2)
 
@@ -5492,7 +5498,7 @@ class NmrDpUtility(object):
 
             result = next((seq_align for seq_align in seq_align_dic['nmr_poly_seq_vs_model_poly_seq'] if seq_align['ref_chain_id'] == ref_chain_id and seq_align['test_chain_id'] == test_chain_id), None)
 
-            nmr2ca[ref_chain_id] = result
+            nmr2ca[str(ref_chain_id)] = result
 
         try:
 
@@ -5513,6 +5519,9 @@ class NmrDpUtility(object):
             if self.__verbose:
                 self.__lfh.write("+NmrDpUtility.__testCoordAtomIdConsistency() ++ Error  - %s" % str(e))
 
+            return False
+
+        if nmr_input_source_dic['content_subtype'] is None:
             return False
 
         for content_subtype in nmr_input_source_dic['content_subtype'].keys():
@@ -5601,10 +5610,10 @@ class NmrDpUtility(object):
                             comp_id = i[item_names[j]['comp_id']]
                             atom_id = i[item_names[j]['atom_id']]
 
-                            if content_subtype == 'sepcral_peak' and (chain_id in self.empty_value or seq_id in self.empty_value or comp_id in self.empty_value or atom_id in self.empty_value):
+                            if content_subtype == 'spectral_peak' and (chain_id in self.empty_value or seq_id in self.empty_value or comp_id in self.empty_value or atom_id in self.empty_value):
                                 continue
 
-                            ca = nmr2ca[chain_id]
+                            ca = nmr2ca[str(chain_id)]
 
                             cif_chain_id = ca['test_chain_id']
 
@@ -5950,7 +5959,7 @@ class NmrDpUtility(object):
             data_name = data_item['name']
             if data_name != 'NEF_index':
                 lp_data.add_tag(lp_cat_name + '.' + data_name)
-            elif has_nef_index_tag:
+            elif has_nef_index_dat:
                 lp_data.add_tag(lp_cat_name + '.' + data_name)
 
         polymer_sequence = input_source_dic['polymer_sequence']
@@ -6103,7 +6112,7 @@ class NmrDpUtility(object):
 
                     # NEF_index
 
-                    if has_nef_index_tag:
+                    if has_nef_index_dat:
                         orig_row = next((i for i in orig_lp_data if i['Entity_assembly_ID'] == cid and i['Comp_index_ID'] == auth_seq_id and i['Comp_ID'] == auth_comp_id), None)
                         if not orig_row is None:
                             row.append(orig_row['NEF_index'])
@@ -6991,6 +7000,9 @@ class NmrDpUtility(object):
         yes_value = 'true' if file_type == 'nef' else 'yes'
         no_value = 'false' if file_type == 'nef' else 'no'
 
+        if input_source_dic['content_subtype'] is None:
+            return False
+
         for content_subtype in input_source_dic['content_subtype'].keys():
 
             if content_subtype == 'entry_info':
@@ -7106,10 +7118,14 @@ class NmrDpUtility(object):
         input_source = self.report.input_sources[0]
         input_source_dic = input_source.get()
 
+        file_name = input_source_dic['file_name']
         file_type = input_source_dic['file_type']
 
         yes_value = 'true' if file_type == 'nef' else 'yes'
         no_value = 'false' if file_type == 'nef' else 'no'
+
+        if input_source_dic['content_subtype'] is None:
+            return False
 
         for content_subtype in input_source_dic['content_subtype'].keys():
 
@@ -7190,6 +7206,86 @@ class NmrDpUtility(object):
     def __appendParentSfTag(self):
         """ Append parent tag in saveframe if not exists.
         """
+
+        warning_dic = self.report.warning.get()
+
+        input_source = self.report.input_sources[0]
+        input_source_dic = input_source.get()
+
+        file_type = input_source_dic['file_type']
+
+        if file_type == 'nef':
+            return True
+
+        if input_source_dic['content_subtype'] is None:
+            return False
+
+        for content_subtype in input_source_dic['content_subtype'].keys():
+
+            if content_subtype == 'entry_info':
+                continue
+
+            sf_category = self.sf_categories[file_type][content_subtype]
+            lp_category = self.lp_categories[file_type][content_subtype]
+
+            data_items = self.data_items[file_type][content_subtype]
+
+            list_id_tag_in_lp = None
+
+            if not data_items is None:
+                list_id_tag_in_lp = next((d for d in data_items if d['type'] == 'static-index' and d['mandatory']), None)
+
+            if not list_id_tag_in_lp is None:
+
+                for sf_data in self.__star_data.get_saveframes_by_category(sf_category):
+
+                    sf_framecode = sf_data.get_tag('sf_framecode')[0]
+
+                    has_duplicated_index = False
+
+                    if 'duplicated_index' in warning_dic:
+
+                        for w in warning_dic['duplicated_index']:
+
+                            if w['file_name'] != file_name:
+                                continue
+
+                            if w['saveframe'] == sf_framecode:
+
+                                if w['description'].split(' ')[0] == self.sf_tag_prefixes[file_type][content_subtype].lstrip('_') + '.ID':
+                                    has_duplicated_index = True
+                                    break
+
+                    if has_duplicated_index:
+                        continue
+
+                    lp_data = sf_data.get_loop_by_category(lp_category)
+
+                    itName = list_id_tag_in_lp['name']
+
+                    if itName in lp_data.tags:
+
+                        itCol = lp_data.tags.index(itName)
+
+                        list_ids = []
+
+                        for row in lp_data.data:
+
+                            if row[itCol] is self.empty_value:
+                                continue
+
+                            list_ids.append(row[itCol])
+
+                        list_id = collections.Counter(list_ids).most_common()[0][0]
+
+                        if len(sf_data.get_tag('ID')) == 0:
+                            sf_data.add_tag('ID', list_id)
+
+                        else:
+                            itCol = tagNames.index('ID')
+                            sf_data.tags[itCol][1] = list_id
+
+        return True
 
     def __addUnnamedEntryId(self):
         """ Add UNNAMED entry id.

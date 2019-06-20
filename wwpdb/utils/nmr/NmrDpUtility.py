@@ -1364,6 +1364,12 @@ class NmrDpUtility(object):
         # CIF reader
         self.__cR = CifReader(self.__verbose, self.__lfh)
 
+    def setVerbose(self, flag):
+        """ Set verbose mode.
+        """
+
+        self.__verbose = flag
+
     def setSource(self, fPath):
         """ Set primary source file path.
         """

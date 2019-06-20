@@ -1,10 +1,9 @@
 ##
 # File: NmrDpUtility.py
-# Date: 19-Jun-2019
+# Date: 20-Jun-2019
 #
 # Updates:
 ##
-from __builtin__ import True
 """ Wrapper class for data processing for NMR unified data.
 """
 import sys
@@ -53,96 +52,80 @@ class NmrDpUtility(object):
         self.__workFlowOps = ('nmr-nef-consistency-check', 'nmr-str-consistency-check',
                               'nmr-nef2str-deposit', 'nmr-str2str-deposit')
 
+        # validation tasks for NMR data only
+        __nmrCheckTasks = [self.__detectContentSubType,
+                           self.__extractPolymerSequence,
+                           self.__extractPolymerSequenceInLoop,
+                           self.__testSequenceConsistency,
+                           self.__extractCommonPolymerSequence,
+                           self.__extractNonStandardResidue,
+                           self.__appendPolymerSequenceAlignment,
+                           self.__validateAtomNomenclature,
+                           self.__validateAtomTypeOfCSLoop,
+                           self.__validateAmbigCodeOfCSLoop,
+                           self.__testIndexConsistency,
+                           self.__testDataConsistencyInLoop,
+                           self.__testDataConsistencyInAuxLoop,
+                           self.__testSfTagConsistency,
+                           self.__validateCSValue,
+                           self.__testCSValueConsistencyInPkLoop,
+                           self.__calculateStatsOfExptlData
+                           ]
+
+        # validation tasks for coordinate file only
+        __cifCheckTasks = [self.__detectCoordContentSubType,
+                           self.__extractCoordPolymerSequence,
+                           self.__extractCoordNonPolymerScheme,
+                           self.__extractCoordPolymerSequenceInLoop,
+                           self.__extractCoordNonStandardResidue,
+                           self.__appendCoordPolymerSequenceAlignment
+                           ]
+
+        # cross validation tasks
+        __crossCheckTasks = [self.__assignCoordPolymerSequence,
+                             self.__testCoordAtomIdConsistency
+                             ]
+
+        # nmr-*-consistency-check tasks
+        __checkTasks = [self.__initializeDpReport, self.__validateInputSource]
+        __checkTasks.extend(__nmrCheckTasks)
+        __checkTasks.append(self.__validateCoordInputSource)
+        __checkTasks.extend(__cifCheckTasks)
+        __checkTasks.extend(__crossCheckTasks)
+
+        # nmr-*-deposit tasks
+        __depositTasks = [self.__retrieveDpReport, self.__validateInputSource, self.__parseCoordinate,
+                          # resolve minor issues
+                          self.__deleteSkippedSf,
+                          self.__deleteSkippedLoop,
+                          self.__updatePolymerSequence,
+                          self.__fixDisorderedIndex,
+                          self.__removeNonSenseZeroValue,
+                          self.__fixNonSenseNegativeValue,
+                          self.__fixEnumerationValue,
+                          self.__resetBoolValueInLoop,
+                          self.__resetBoolValueInAuxLoop,
+                          self.__appendParentSfTag,
+                          self.__addUnnamedEntryId,
+                          self.__depositNmrData,
+                          # re-setup for next
+                          self.__initializeDpReportForNext, self.__validateInputSourceForNext]
+
+        __depositTasks.extend(__nmrCheckTasks)
+        __depositTasks.extend(__cifCheckTasks)
+        __depositTasks.extend(__crossCheckTasks)
+
+        # additional nmr-nef2str tasks
+        __nef2strTasks = [self.__translateNef2Str, self.__dumpDpReport, self.__initResourceForNef2Str]
+
+        __nef2strTasks.extend(__checkTasks)
+        __nef2strTasks.append(self.__dumpDpReport)
+        __nef2strTasks.extend(__depositTasks)
+
         # dictionary of processing tasks of each workflow operation
-        self.__procTasksDict = {'consistency-check':
-                                [# setup
-                                 self.__initializeDpReport,
-                                 # set input source (srcPath)
-                                 self.__validateInputSource,
-                                 # validate NMR data only
-                                 self.__detectContentSubType,
-                                 self.__extractPolymerSequence,
-                                 self.__extractPolymerSequenceInLoop,
-                                 self.__testSequenceConsistency,
-                                 self.__extractCommonPolymerSequence,
-                                 self.__extractNonStandardResidue,
-                                 self.__appendPolymerSequenceAlignment,
-                                 self.__validateAtomNomenclature,
-                                 self.__validateAtomTypeOfCSLoop,
-                                 self.__validateAmbigCodeOfCSLoop,
-                                 self.__testIndexConsistency,
-                                 self.__testDataConsistencyInLoop,
-                                 self.__testDataConsistencyInAuxLoop,
-                                 self.__testSfTagConsistency,
-                                 self.__validateCSValue,
-                                 self.__testCSValueConsistencyInPkLoop,
-                                 self.__calculateStatsOfExptlData,
-                                 # validate coordinate only
-                                 self.__validateCoordInputSource,
-                                 self.__detectCoordContentSubType,
-                                 self.__extractCoordPolymerSequence,
-                                 self.__extractCoordNonPolymerScheme,
-                                 self.__extractCoordPolymerSequenceInLoop,
-                                 self.__extractCoordNonStandardResidue,
-                                 self.__appendCoordPolymerSequenceAlignment,
-                                 # cross-check
-                                 self.__assignCoordPolymerSequence,
-                                 self.__testCoordAtomIdConsistency
-                                 ],
-                                'deposit':
-                                [self.__retrieveDpReport,
-                                 # set input source (srcPath)
-                                 self.__validateInputSource,
-                                 self.__parseCoordinate,
-                                 # resolve minor issues
-                                 self.__deleteSkippedSf,
-                                 self.__deleteSkippedLoop,
-                                 self.__updatePolymerSequence,
-                                 self.__fixDisorderedIndex,
-                                 self.__removeNonSenseZeroValue,
-                                 self.__fixNonSenseNegativeValue,
-                                 self.__fixEnumerationValue,
-                                 self.__resetBoolValueInLoop,
-                                 self.__resetBoolValueInAuxLoop,
-                                 self.__appendParentSfTag,
-                                 self.__addUnnamedEntryId,
-                                 self.__depositNmrData,
-                                 # re-setup
-                                 self.__initializeDpReportWithNext,
-                                 # set input source (dstPath)
-                                 self.__validateInputSourceWithNext,
-                                 # validate NMR data only
-                                 self.__detectContentSubType,
-                                 self.__extractPolymerSequence,
-                                 self.__extractPolymerSequenceInLoop,
-                                 self.__testSequenceConsistency,
-                                 self.__extractCommonPolymerSequence,
-                                 self.__extractNonStandardResidue,
-                                 self.__appendPolymerSequenceAlignment,
-                                 self.__validateAtomNomenclature,
-                                 self.__validateAtomTypeOfCSLoop,
-                                 self.__validateAmbigCodeOfCSLoop,
-                                 self.__testIndexConsistency,
-                                 self.__testDataConsistencyInLoop,
-                                 self.__testDataConsistencyInAuxLoop,
-                                 self.__testSfTagConsistency,
-                                 self.__validateCSValue,
-                                 self.__testCSValueConsistencyInPkLoop,
-                                 self.__calculateStatsOfExptlData,
-                                 # validate coordinate only
-                                 self.__detectCoordContentSubType,
-                                 self.__extractCoordPolymerSequence,
-                                 self.__extractCoordNonPolymerScheme,
-                                 self.__extractCoordPolymerSequenceInLoop,
-                                 self.__extractCoordNonStandardResidue,
-                                 self.__appendCoordPolymerSequenceAlignment,
-                                 # cross-check
-                                 self.__assignCoordPolymerSequence,
-                                 self.__testCoordAtomIdConsistency
-                                 ],
-                                'nmr-nef2str-deposit':
-                                [self.__translateNef2Str
-                                 ]
+        self.__procTasksDict = {'consistency-check': __checkTasks,
+                                'deposit': __depositTasks,
+                                'nmr-nef2str-deposit': __nef2strTasks
                                 }
 
         # data processing report
@@ -1290,22 +1273,22 @@ class NmrDpUtility(object):
                          'U': 'U'}
 
         # main contents of loops
-        self.lp_data = {'poly_seq': [],
-                        'chem_shift': [],
-                        'dist_restraint': [],
-                        'dihed_restraint': [],
-                        'rdc_restraint': [],
-                        'spectral_peak': []
-                        }
+        self.__lp_data = {'poly_seq': [],
+                          'chem_shift': [],
+                          'dist_restraint': [],
+                          'dihed_restraint': [],
+                          'rdc_restraint': [],
+                          'spectral_peak': []
+                          }
 
         # auxiliary contents of loops
-        self.aux_data = {'poly_seq': [],
-                         'chem_shift': [],
-                         'dist_restraint': [],
-                         'dihed_restraint': [],
-                         'rdc_restraint': [],
-                         'spectral_peak': []
-                         }
+        self.__aux_data = {'poly_seq': [],
+                           'chem_shift': [],
+                           'dist_restraint': [],
+                           'dihed_restraint': [],
+                           'rdc_restraint': [],
+                           'spectral_peak': []
+                           }
 
         # Pairwise align
         self.__pA = PairwiseAlign()
@@ -1416,7 +1399,7 @@ class NmrDpUtility(object):
                 self.__inputParamDict[name] = os.path.abspath(value)
             else:
                 logging.error("+NmrDpUtility.addInput() ++ Error  - Unknown input type %s." % type)
-                raise KeyError("+NmrDpUtility.addInput() ++ Error  - Unknown input type %s." % type)
+                raise ValueError("+NmrDpUtility.addInput() ++ Error  - Unknown input type %s." % type)
 
                 return False
 
@@ -1441,7 +1424,7 @@ class NmrDpUtility(object):
                 self.__outputParamDict[name] = os.path.abspath(value)
             else:
                 logging.error("+NmrDpUtility.addOutput() ++ Error  - Unknown output type %s." % type)
-                raise KeyError("+NmrDpUtility.addOutput() ++ Error  - Unknown output type %s." % type)
+                raise ValueError("+NmrDpUtility.addOutput() ++ Error  - Unknown output type %s." % type)
 
                 return False
 
@@ -1501,16 +1484,19 @@ class NmrDpUtility(object):
                 if not task():
                     pass
 
-        self.report.writeJson(self.__logPath)
+        self.__dumpDpReport()
 
         return not self.report.isError()
 
-    def __initializeDpReport(self, op=None, srcPath=None):
-        """ Initialize NMR data processing report.
+    def __dumpDpReport(self):
+        """ Dump current NMR data processing report.
         """
 
-        if op is None:
-            op = self.__op
+        self.report.writeJson(self.__logPath)
+
+    def __initializeDpReport(self, srcPath=None):
+        """ Initialize NMR data processing report.
+        """
 
         if srcPath is None:
             srcPath = self.__srcPath
@@ -1520,7 +1506,7 @@ class NmrDpUtility(object):
         # set primary input source as NMR unified data
         input_source = self.report.input_sources[0]
 
-        file_type = 'nef' if 'nef' in op else 'nmr-star'
+        file_type = 'nef' if 'nef' in self.__op else 'nmr-star'
         content_type = self.content_type[file_type]
 
         input_source.setItemValue('file_name', os.path.basename(srcPath))
@@ -3125,7 +3111,7 @@ class NmrDpUtility(object):
                     lp_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, allowed_tags, disallowed_tags,
                                                              inc_idx_test=True, enforce_non_zero=True, enforce_sign=True, enforce_enum=True)[0]
 
-                    self.lp_data[content_subtype].append({'sf_framecode': sf_framecode, 'data': lp_data})
+                    self.__lp_data[content_subtype].append({'sf_framecode': sf_framecode, 'data': lp_data})
 
                 except KeyError as e:
 
@@ -3192,7 +3178,7 @@ class NmrDpUtility(object):
 
                         lp_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, allowed_tags, disallowed_tags)[0]
 
-                        self.lp_data[content_subtype].append({'sf_framecode': sf_framecode, 'data': lp_data})
+                        self.__lp_data[content_subtype].append({'sf_framecode': sf_framecode, 'data': lp_data})
 
                     except:
                         pass
@@ -3268,9 +3254,9 @@ class NmrDpUtility(object):
                         try:
 
                             aux_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, allowed_tags, None,
-                                                                      inc_idx_test=True, enforce_non_zero=True, enforce_sign=True, enforce_enum=True)[0]
+                                                              inc_idx_test=True, enforce_non_zero=True, enforce_sign=True, enforce_enum=True)[0]
 
-                            self.aux_data[content_subtype].append({'sf_framecode': sf_framecode, 'category': lp_category, 'data': aux_data})
+                            self.__aux_data[content_subtype].append({'sf_framecode': sf_framecode, 'category': lp_category, 'data': aux_data})
 
                             if content_subtype == 'spectral_peak':
                                 self.__testDataConsistencyInAuxLoopOfSpectralPeak(file_name, file_type, sf_framecode, num_dim, lp_category, aux_data)
@@ -3340,7 +3326,7 @@ class NmrDpUtility(object):
 
                                 aux_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, allowed_tags, None)[0]
 
-                                self.aux_data[content_subtype].append({'sf_framecode': sf_framecode, 'category': lp_category, 'data': aux_data})
+                                self.__aux_data[content_subtype].append({'sf_framecode': sf_framecode, 'category': lp_category, 'data': aux_data})
 
                                 if content_subtype == 'spectral_peak':
                                     self.__testDataConsistencyInAuxLoopOfSpectralPeak(file_name, file_type, sf_framecode, num_dim, lp_category, aux_data)
@@ -3456,7 +3442,7 @@ class NmrDpUtility(object):
                 position_names = [k['name'] for k in key_items]
                 index_tag = self.index_tags[file_type][content_subtype]
 
-                lp_data = next((l['data'] for l in self.lp_data[content_subtype] if l['sf_framecode'] == sf_framecode), None)
+                lp_data = next((l['data'] for l in self.__lp_data[content_subtype] if l['sf_framecode'] == sf_framecode), None)
 
                 if not lp_data is None:
 
@@ -3653,7 +3639,7 @@ class NmrDpUtility(object):
 
         try:
 
-            lp_data = next((l['data'] for l in self.lp_data[content_subtype] if l['sf_framecode'] == sf_framecode), None)
+            lp_data = next((l['data'] for l in self.__lp_data[content_subtype] if l['sf_framecode'] == sf_framecode), None)
 
             if not lp_data is None:
 
@@ -3670,7 +3656,7 @@ class NmrDpUtility(object):
 
             for lp_category in self.aux_lp_categories[file_type][content_subtype]:
 
-                aux_data = next((l['data'] for l in self.aux_data[content_subtype] if l['sf_framecode'] == sf_framecode and l['category'] == lp_category), None)
+                aux_data = next((l['data'] for l in self.__aux_data[content_subtype] if l['sf_framecode'] == sf_framecode and l['category'] == lp_category), None)
 
                 if not aux_data is None:
                     for i in aux_data:
@@ -3735,7 +3721,7 @@ class NmrDpUtility(object):
 
             try:
 
-                lp_data = next(l['data'] for l in self.lp_data[content_subtype] if l['sf_framecode'] == sf_framecode)
+                lp_data = next(l['data'] for l in self.__lp_data[content_subtype] if l['sf_framecode'] == sf_framecode)
 
                 item_names = self.item_names_in_cs_loop[file_type]
                 value_name = item_names['value']
@@ -4268,7 +4254,7 @@ class NmrDpUtility(object):
 
             try:
 
-                cs_data = next(l['data'] for l in self.lp_data['chem_shift'] if l['sf_framecode'] == cs_list)
+                cs_data = next(l['data'] for l in self.__lp_data['chem_shift'] if l['sf_framecode'] == cs_list)
 
                 cs_item_names = self.item_names_in_cs_loop[file_type]
                 cs_value_name = cs_item_names['value']
@@ -4301,7 +4287,7 @@ class NmrDpUtility(object):
 
             max_dim = num_dim + 1
 
-            aux_data = next((l['data'] for l in self.aux_data[content_subtype] if l['sf_framecode'] == sf_framecode and l['category'] == self.aux_lp_categories[file_type][content_subtype][0]), None)
+            aux_data = next((l['data'] for l in self.__aux_data[content_subtype] if l['sf_framecode'] == sf_framecode and l['category'] == self.aux_lp_categories[file_type][content_subtype][0]), None)
 
             axis_codes = []
             abs_pk_pos = []
@@ -4333,7 +4319,7 @@ class NmrDpUtility(object):
                 for i in range(num_dim):
                     abs_pk_pos.append(False)
 
-            aux_data = next((l['data'] for l in self.aux_data[content_subtype] if l['sf_framecode'] == sf_framecode and l['category'] == self.aux_lp_categories[file_type][content_subtype][1]), None)
+            aux_data = next((l['data'] for l in self.__aux_data[content_subtype] if l['sf_framecode'] == sf_framecode and l['category'] == self.aux_lp_categories[file_type][content_subtype][1]), None)
 
             onebond = [[False] * num_dim for i in range(num_dim)]
             if not aux_data is None:
@@ -4397,7 +4383,7 @@ class NmrDpUtility(object):
 
             try:
 
-                lp_data = next((l['data'] for l in self.lp_data[content_subtype] if l['sf_framecode'] == sf_framecode), None)
+                lp_data = next((l['data'] for l in self.__lp_data[content_subtype] if l['sf_framecode'] == sf_framecode), None)
 
                 if not lp_data is None:
 
@@ -4593,7 +4579,7 @@ class NmrDpUtility(object):
 
                 sf_framecode = sf_data.get_tag('sf_framecode')[0]
 
-                lp_data = next((l['data'] for l in self.lp_data[content_subtype] if l['sf_framecode'] == sf_framecode), None)
+                lp_data = next((l['data'] for l in self.__lp_data[content_subtype] if l['sf_framecode'] == sf_framecode), None)
 
                 if not lp_data is None:
 
@@ -5588,7 +5574,7 @@ class NmrDpUtility(object):
 
                 sf_framecode = sf_data.get_tag('sf_framecode')[0]
 
-                lp_data = next((l['data'] for l in self.lp_data[content_subtype] if l['sf_framecode'] == sf_framecode), None)
+                lp_data = next((l['data'] for l in self.__lp_data[content_subtype] if l['sf_framecode'] == sf_framecode), None)
 
                 if not lp_data is None:
 
@@ -5915,6 +5901,9 @@ class NmrDpUtility(object):
 
             return False
 
+        if self.__srcPath is self.__dstPath:
+            return True
+
         content_subtype = 'poly_seq'
 
         sf_category = self.sf_categories[file_type][content_subtype]
@@ -5942,7 +5931,7 @@ class NmrDpUtility(object):
 
                 sf_framecode = sf_data.get_tag('sf_framecode')[0]
 
-                orig_lp_data = next((l['data'] for l in self.lp_data[content_subtype] if l['sf_framecode'] == sf_framecode), None)
+                orig_lp_data = next((l['data'] for l in self.__lp_data[content_subtype] if l['sf_framecode'] == sf_framecode), None)
 
                 if orig_lp_data is None:
                     orig_lp_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, None, None)[0]
@@ -6771,7 +6760,7 @@ class NmrDpUtility(object):
 
                                             if (file_type == 'nef' and itName == 'restraint_origin') or (file_type == 'nmr-star' and itName == 'Constraint_type'):
 
-                                                lp_data = next((l['data'] for l in self.lp_data[content_subtype] if l['sf_framecode'] == w['saveframe']), None)
+                                                lp_data = next((l['data'] for l in self.__lp_data[content_subtype] if l['sf_framecode'] == w['saveframe']), None)
 
                                                 if lp_data is None:
                                                     lp_category = self.lp_categories[file_type][content_subtype]
@@ -6783,7 +6772,7 @@ class NmrDpUtility(object):
 
                                                         lp_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, None, None)[0]
 
-                                                        self.lp_data[content_subtype].append({'sf_framecode': w['saveframe'], 'data': lp_data})
+                                                        self.__lp_data[content_subtype].append({'sf_framecode': w['saveframe'], 'data': lp_data})
 
                                                     except:
                                                         pass
@@ -6819,7 +6808,7 @@ class NmrDpUtility(object):
 
                                             if (file_type == 'nef' and itName == 'potential_type') or (file_type == 'nmr-star' and itName == 'Potential_type'):
 
-                                                lp_data = next((l['data'] for l in self.lp_data[content_subtype] if l['sf_framecode'] == w['saveframe']), None)
+                                                lp_data = next((l['data'] for l in self.__lp_data[content_subtype] if l['sf_framecode'] == w['saveframe']), None)
 
                                                 if lp_data is None:
                                                     lp_category = self.lp_categories[file_type][content_subtype]
@@ -6831,7 +6820,7 @@ class NmrDpUtility(object):
 
                                                         lp_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, None, None)[0]
 
-                                                        self.lp_data[content_subtype].append({'sf_framecode': w['saveframe'], 'data': lp_data})
+                                                        self.__lp_data[content_subtype].append({'sf_framecode': w['saveframe'], 'data': lp_data})
 
                                                     except:
                                                         pass
@@ -6895,8 +6884,33 @@ class NmrDpUtility(object):
                                         continue
 
                                     if row[itCol] == itValue:
+
                                         if len(itEnum) == 1:
                                             row[itCol] = itEnum[0]
+
+                                        elif file_type == 'nef' and itName == 'folding':
+
+                                            # 'circular', 'mirror', 'none'
+
+                                            if row[itCol] in ['aliased', 'folded', 'not observed']:
+                                                if row[itCol] == 'aliased':
+                                                    row[itCol] = 'mirror'
+                                                elif row[itCol] == 'folded':
+                                                    row[itCol] = 'circular'
+                                                else:
+                                                    row[itCol] = 'none'
+
+                                        elif file_type == 'nmr-star' and itName == 'Under_sampling_type':
+
+                                            # 'aliased', 'folded', 'not observed'
+
+                                            if row[itCol] in ['circular', 'mirror', 'none']:
+                                                if row[itCol] == 'circular':
+                                                    row[itCol] = 'folded'
+                                                elif row[itCol] == 'mirror':
+                                                    row[itCol] = 'aliased'
+                                                else:
+                                                    row[itCol] = 'not observed'
 
             else:
 
@@ -7780,13 +7794,13 @@ class NmrDpUtility(object):
 
         return True
 
-    def __initializeDpReportWithNext(self):
+    def __initializeDpReportForNext(self):
         """ Initialize NMR data processing report using the next version of NMR unified data.
         """
 
         return self.__initializeDpReport(srcPath=self.__dstPath)
 
-    def __validateInputSourceWithNext(self):
+    def __validateInputSourceForNext(self):
         """ Validate the next version of NMR unified data as primary input source.
         """
 
@@ -7796,7 +7810,68 @@ class NmrDpUtility(object):
         """ Translate NEF to NMR-STAR V3.2 file.
         """
 
-        return True
+        input_source = self.report.input_sources[0]
+        input_source_dic = input_source.get()
+
+        file_name = os.path.basename(self.__dstPath)
+        file_type = input_source_dic['file_type']
+
+        if 'nmr-star_file_path' in self.__outputParamDict:
+
+            is_valid, json_dumps = self.__nefT.nef_to_nmrstar(self.__dstPath, self.__outputParamDict['nmr-star_file_path'])
+
+            if is_valid:
+                return True
+
+            else:
+
+                err = "%s is invalid %s file." % (file_name, self.readable_file_type[file_type])
+
+                if len(message['error']) > 0:
+                    for error_message in message['error']:
+                        err += err_message
+
+                self.report.error.appendDescription('format_issue', {'file_name': file_name, 'description': err})
+                self.report.setError()
+
+                if self.__verbose:
+                    self.__lfh.write("+NmrDpUtility.__translateNef2Str() ++ Error  - %s\n" % err)
+
+                return False
+
+        else:
+            logging.error("+NmrDpUtility.__translateNef2Str() ++ Error  - Could not find 'nmr-star_file_path' output parameter.")
+            raise KeyError("+NmrDpUtility.__translateNef2Str() ++ Error  - Could not find 'nmr-star_file_path' output parameter.")
+
+        return False
+
+    def __initResourceForNef2Str(self):
+        """ Initialize resources for the translated NMR-STAR V3.2 file.
+        """
+
+        try:
+
+            self.__srcPath = self.__outputParamDict['nmr-star_file_path']
+            self.__dstPath = self.__srcPath
+            self.__logPath = self.__outputParamDict['report_file_path']
+            self.addInput('report_file_path', self.__logPath, type='file')
+            self.__op = 'nmr-star-consistency-check'
+
+            # reset cache dictionaries
+
+            for content_subtype in self.__lp_data.keys():
+                self.__lp_data[content_subtype] = []
+
+            for content_subtype in self.__aux_data.keys():
+                self.__aux_data[content_subtype] = []
+
+            return True
+
+        except:
+            logging.error("+NmrDpUtility.__initReousrceForNef2Str() ++ Error  - Could not find 'nmr-star_file_path' or 'report_file_path' output parameter.")
+            raise KeyError("+NmrDpUtility.__initReousrceForNef2Str() ++ Error  - Could not find 'nmr-star_file_path' or 'report_file_path' output parameter.")
+
+        return False
 
 if __name__ == '__main__':
     dp = NmrDpUtility()

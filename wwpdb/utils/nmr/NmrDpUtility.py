@@ -56,8 +56,6 @@ class NmrDpUtility(object):
         self.__procTasksDict = {'consistency-check':
                                 [# setup
                                  self.__initializeDpReport,
-                                 self.__instanceNEFTranslator,
-                                 self.__instanceBMRBChemShiftStat,
                                  # set input source (srcPath)
                                  self.__validateInputSource,
                                  # validate NMR data only
@@ -92,8 +90,6 @@ class NmrDpUtility(object):
                                  ],
                                 'deposit':
                                 [self.__retrieveDpReport,
-                                 self.__instanceNEFTranslator,
-                                 self.__instanceBMRBChemShiftStat,
                                  # set input source (srcPath)
                                  self.__validateInputSource,
                                  self.__parseCoordinate,
@@ -152,10 +148,20 @@ class NmrDpUtility(object):
         self.report = None
 
         # NEFTranslator
-        self.nef_translator = None
+        self.__nefT = NEFTranslator()
+
+        if self.__nefT is None:
+
+            logging.error("+NmrDpUtility.__init__() ++ Error  - NEFTranslator is not available.")
+            raise IOError("+NmrDpUtility.__init__() ++ Error  - NEFTranslator is not available.")
 
         # BMRB chemical shift statistics
-        self.bmrb_cs_stat = None
+        self.__csStat = BMRBChemShiftStat()
+
+        if not self.__csStat.isOk():
+
+            logging.error("+NmrDpUtility.__init__() ++ Error  - BMRBChemShiftStat is not available.")
+            raise IOError("+NmrDpUtility.__init__() ++ Error  - BMRBChemShiftStat is not available.")
 
         # PyNMRSTAR data
         self.__star_data = None
@@ -580,7 +586,8 @@ class NmrDpUtility(object):
                                                       'enum': ('start', 'end', 'middle', 'cyclic', 'break', 'single', 'dummy'),
                                                       'enforce-enum': True},
                                                      {'name': 'Cis_residue', 'type': 'bool', 'mandatory': False},
-                                                     {'name': 'NEF_index', 'type': 'index-int', 'mandatory': False}
+                                                     {'name': 'NEF_index', 'type': 'index-int', 'mandatory': False},
+                                                     {'name': 'Assembly_ID', 'type': 'pointer-index', 'mandatory': False}
                                                      ],
                                         'chem_shift': [{'name': 'Atom_type', 'type': 'enum', 'mandatory': True,
                                                         'enum': set(self.atom_isotopes.keys()),
@@ -601,7 +608,7 @@ class NmrDpUtility(object):
                                                        {'name': 'Auth_seq_ID', 'type': 'int', 'mandatory': False},
                                                        {'name': 'Auth_comp_ID', 'type': 'str', 'mandatory': False},
                                                        {'name': 'Auth_atom_ID', 'type': 'str', 'mandatory': False},
-                                                       {'name': 'Assigned_chem_shift_list_ID', 'type': 'static-index', 'mandatory': True}
+                                                       {'name': 'Assigned_chem_shift_list_ID', 'type': 'pointer-index', 'mandatory': True}
                                                        ],
                                         'dist_restraint': [{'name': 'Index_ID', 'type': 'index-int', 'mandatory': True},
                                                            {'name': 'ID', 'type': 'positive-int', 'mandatory': True,
@@ -654,7 +661,7 @@ class NmrDpUtility(object):
                                                            {'name': 'Auth_seq_ID_2', 'type': 'int', 'mandatory': False},
                                                            {'name': 'Auth_comp_ID_2', 'type': 'str', 'mandatory': False},
                                                            {'name': 'Auth_atom_ID_2', 'type': 'str', 'mandatory': False},
-                                                           {'name': 'Gen_dist_constraint_list_ID', 'type': 'static-index', 'mandatory': True},
+                                                           {'name': 'Gen_dist_constraint_list_ID', 'type': 'pointer-index', 'mandatory': True},
                                                            ],
                                         'dihed_restraint': [{'name': 'Index_ID', 'type': 'index-int', 'mandatory': True},
                                                             {'name': 'ID', 'type': 'index-int', 'mandatory': True},
@@ -712,7 +719,7 @@ class NmrDpUtility(object):
                                                             {'name': 'Auth_seq_ID_4', 'type': 'int', 'mandatory': False},
                                                             {'name': 'Auth_comp_ID_4', 'type': 'str', 'mandatory': False},
                                                             {'name': 'Auth_atom_ID_4', 'type': 'str', 'mandatory': False},
-                                                            {'name': 'Torsion_angle_constraint_list_ID', 'type': 'static-index', 'mandatory': True},
+                                                            {'name': 'Torsion_angle_constraint_list_ID', 'type': 'pointer-index', 'mandatory': True},
                                             ],
                                         'rdc_restraint': [{'name': 'Index_ID', 'type': 'index-int', 'mandatory': True},
                                                           {'name': 'ID', 'type': 'index-int', 'mandatory': True},
@@ -765,7 +772,7 @@ class NmrDpUtility(object):
                                                           {'name': 'Auth_seq_ID_2', 'type': 'int', 'mandatory': False},
                                                           {'name': 'Auth_comp_ID_2', 'type': 'str', 'mandatory': False},
                                                           {'name': 'Auth_atom_ID_2', 'type': 'str', 'mandatory': False},
-                                                          {'name': 'RDC_constraint_list_ID', 'type': 'static-index', 'mandatory': True}
+                                                          {'name': 'RDC_constraint_list_ID', 'type': 'pointer-index', 'mandatory': True}
                                                           ],
                                         'spectral_peak': [{'name': 'Index_ID', 'type': 'index-int', 'mandatory': True},
                                                           {'name': 'ID', 'type': 'positive-int', 'mandatory': True,
@@ -778,7 +785,7 @@ class NmrDpUtility(object):
                                                            'group': {'member-with': ['Volume'],
                                                                      'coexist-with': None}},
                                                           {'name': 'Height_uncertainty', 'type': 'positive-float', 'mandatory': False},
-                                                          {'name': 'Spectral_peak_list_ID', 'type': 'static-index', 'mandatory': True}
+                                                          {'name': 'Spectral_peak_list_ID', 'type': 'pointer-index', 'mandatory': True}
                                                           ]
                                         }
                            }
@@ -1461,19 +1468,25 @@ class NmrDpUtility(object):
 
         return not self.report.isError()
 
-    def __initializeDpReport(self):
+    def __initializeDpReport(self, op=None, srcPath=None):
         """ Initialize NMR data processing report.
         """
+
+        if op is None:
+            op = self.__op
+
+        if srcPath is None:
+            srcPath = self.__srcPath
 
         self.report = NmrDpReport()
 
         # set primary input source as NMR unified data
         input_source = self.report.input_sources[0]
 
-        file_type = 'nef' if 'nef' in self.__op else 'nmr-star'
+        file_type = 'nef' if 'nef' in op else 'nmr-star'
         content_type = self.content_type[file_type]
 
-        input_source.setItemValue('file_name', os.path.basename(self.__srcPath))
+        input_source.setItemValue('file_name', os.path.basename(srcPath))
         input_source.setItemValue('file_type', file_type)
         input_source.setItemValue('content_type', content_type)
 
@@ -1514,45 +1527,6 @@ class NmrDpUtility(object):
             except:
                 pass
 
-    def __instanceNEFTranslator(self):
-        """ Instance NEFTanslator.
-        """
-
-        self.nef_translator = NEFTranslator()
-
-        if self.nef_translator is None:
-
-            err = "+NmrDpUtility.__instanceNEFTranslator() ++ Error - NEFTranslator is not available."
-
-            self.report.error.appendDescription('internal_error', err)
-            self.report.setError()
-
-            if self.__verbose:
-                self.__lfh.write(err + '\n')
-
-            return False
-
-        return True
-
-    def __instanceBMRBChemShiftStat(self):
-        """ Instance BMRBChemShiftStat.
-        """
-
-        self.bmrb_cs_stat = BMRBChemShiftStat()
-
-        if self.bmrb_cs_stat.isOk():
-            return True
-
-        err = "+NmrDpUtility.__instanceBMRBChemShiftStat() ++ Error - BMRB chemical shift statistics is not available."
-
-        self.report.error.appendDescription('internal_error', err)
-        self.report.setError()
-
-        if self.__verbose:
-            self.__lfh.write(err + '\n')
-
-        return False
-
     def __updateChemCompDict(self, comp_id):
         """ Update CCD information for a given comp_id.
         """
@@ -1568,11 +1542,14 @@ class NmrDpUtility(object):
 
         return self.__last_comp_id_test
 
-    def __validateInputSource(self):
+    def __validateInputSource(self, srcPath=None):
         """ Validate NMR unified data as primary input source.
         """
 
-        is_valid, json_dumps = self.nef_translator.validate_file(self.__srcPath, 'A') # 'A' for NMR unified data, 'S' for assigned chemical shifts, 'R' for restraints.
+        if srcPath is None:
+            srcPath = self.__srcPath
+
+        is_valid, json_dumps = self.__nefT.validate_file(srcPath, 'A') # 'A' for NMR unified data, 'S' for assigned chemical shifts, 'R' for restraints.
 
         message = json.loads(json_dumps)
 
@@ -1602,7 +1579,7 @@ class NmrDpUtility(object):
 
                 return False
 
-            is_done, self.__star_data_type, self.__star_data = self.nef_translator.read_input_file(self.__srcPath) # NEFTranslator.validate_file() generates this object internally, but not re-used.
+            is_done, self.__star_data_type, self.__star_data = self.__nefT.read_input_file(srcPath) # NEFTranslator.validate_file() generates this object internally, but not re-used.
 
             return True
 
@@ -1635,7 +1612,7 @@ class NmrDpUtility(object):
         file_name = input_source_dic['file_name']
         file_type = input_source_dic['file_type']
 
-        self.__sf_category_list, self.__lp_category_list = self.nef_translator.get_data_content(self.__star_data, self.__star_data_type)
+        self.__sf_category_list, self.__lp_category_list = self.__nefT.get_data_content(self.__star_data, self.__star_data_type)
 
         for sf_category in self.__sf_category_list:
             if not sf_category in self.sf_categories[file_type].values():
@@ -1743,9 +1720,9 @@ class NmrDpUtility(object):
         file_type = input_source_dic['file_type']
 
         if file_type == 'nef':
-            return self.nef_translator.get_nef_seq(sf_data, lp_category=self.lp_categories[file_type][content_subtype], allow_empty=(content_subtype == 'spectral_peak'))
+            return self.__nefT.get_nef_seq(sf_data, lp_category=self.lp_categories[file_type][content_subtype], allow_empty=(content_subtype == 'spectral_peak'))
         else:
-            return self.nef_translator.get_star_seq(sf_data, lp_category=self.lp_categories[file_type][content_subtype], allow_empty=(content_subtype == 'spectral_peak'))
+            return self.__nefT.get_star_seq(sf_data, lp_category=self.lp_categories[file_type][content_subtype], allow_empty=(content_subtype == 'spectral_peak'))
 
     def __extractPolymerSequence(self):
         """ Extract reference polymer sequence.
@@ -1779,7 +1756,7 @@ class NmrDpUtility(object):
             input_source.setItemValue('polymer_sequence', poly_seq)
 
             if file_type == 'nmr-star':
-                auth_poly_seq = self.nef_translator.get_star_auth_seq(sf_data, lp_category)[0]
+                auth_poly_seq = self.__nefT.get_star_auth_seq(sf_data, lp_category)[0]
 
                 for cid in range(len(poly_seq)):
                     chain_id = poly_seq[cid]['chain_id']
@@ -1965,7 +1942,7 @@ class NmrDpUtility(object):
                         has_poly_seq = True
 
                         if file_type == 'nmr-star':
-                            auth_poly_seq = self.nef_translator.get_star_auth_seq(sf_data, lp_category)[0]
+                            auth_poly_seq = self.__nefT.get_star_auth_seq(sf_data, lp_category)[0]
 
                             for cid in range(len(poly_seq)):
                                 chain_id = poly_seq[cid]['chain_id']
@@ -2377,7 +2354,7 @@ class NmrDpUtility(object):
                 sid = s['seq_id'][i]
                 seq = s['comp_id'][i]
 
-                if self.nef_translator.get_one_letter_code(seq) == '?':
+                if self.__nefT.get_one_letter_code(seq) == '?':
                     asm_has = True
                     ent_has = True
 
@@ -2557,10 +2534,10 @@ class NmrDpUtility(object):
                 try:
 
                     if file_type == 'nef':
-                        pairs = self.nef_translator.get_nef_comp_atom_pair(sf_data, lp_category,
+                        pairs = self.__nefT.get_nef_comp_atom_pair(sf_data, lp_category,
                                                                            allow_empty=(content_subtype == 'spectral_peak'))[0]
                     else:
-                        pairs = self.nef_translator.get_star_comp_atom_pair(sf_data, lp_category,
+                        pairs = self.__nefT.get_star_comp_atom_pair(sf_data, lp_category,
                                                                             allow_empty=(content_subtype == 'spectral_peak'))[0]
 
                     for pair in pairs:
@@ -2568,14 +2545,14 @@ class NmrDpUtility(object):
                         atom_ids = pair['atom_id']
 
                         # standard residue
-                        if self.nef_translator.get_one_letter_code(comp_id) != '?':
+                        if self.__nefT.get_one_letter_code(comp_id) != '?':
 
                             if file_type == 'nef':
 
                                 _atom_ids = []
                                 for atom_id in atom_ids:
 
-                                    _atom_id = self.nef_translator.get_nmrstar_atom(comp_id, atom_id)[1]
+                                    _atom_id = self.__nefT.get_nmrstar_atom(comp_id, atom_id)[1]
 
                                     if len(_atom_id) == 0:
 
@@ -2594,7 +2571,7 @@ class NmrDpUtility(object):
 
                             for atom_id in atom_ids:
 
-                                if not self.nef_translator.validate_comp_atom(comp_id, atom_id):
+                                if not self.__nefT.validate_comp_atom(comp_id, atom_id):
 
                                     err = "Invalid atom_id %s (comp_id %s) exists." % (atom_id, comp_id)
 
@@ -2640,19 +2617,19 @@ class NmrDpUtility(object):
                                 pass
 
                     if file_type == 'nmr-star':
-                        auth_pairs = self.nef_translator.get_star_auth_comp_atom_pair(sf_data, lp_category)[0]
+                        auth_pairs = self.__nefT.get_star_auth_comp_atom_pair(sf_data, lp_category)[0]
 
                         for auth_pair in auth_pairs:
                             comp_id = auth_pair['comp_id']
                             auth_atom_ids = auth_pair['atom_id']
 
                             # standard residue
-                            if self.nef_translator.get_one_letter_code(comp_id) != '?':
+                            if self.__nefT.get_one_letter_code(comp_id) != '?':
 
                                 _auth_atom_ids = []
                                 for auth_atom_id in auth_atom_ids:
 
-                                    _auth_atom_id = self.nef_translator.get_nmrstar_atom(comp_id, auth_atom_id)[1]
+                                    _auth_atom_id = self.__nefT.get_nmrstar_atom(comp_id, auth_atom_id)[1]
 
                                     if len(_auth_atom_id) == 0:
 
@@ -2671,7 +2648,7 @@ class NmrDpUtility(object):
 
                                 for auth_atom_id in auth_atom_ids:
 
-                                    if not self.nef_translator.validate_comp_atom(comp_id, auth_atom_id):
+                                    if not self.__nefT.validate_comp_atom(comp_id, auth_atom_id):
 
                                         warn = "Unmatched author atom ID %s (auth_comp_id %s) exists." % (auth_atom_id, comp_id)
 
@@ -2779,9 +2756,9 @@ class NmrDpUtility(object):
             try:
 
                 if file_type == 'nef':
-                    a_types = self.nef_translator.get_nef_atom_type_from_cs_loop(sf_data)[0]
+                    a_types = self.__nefT.get_nef_atom_type_from_cs_loop(sf_data)[0]
                 else:
-                    a_types = self.nef_translator.get_star_atom_type_from_cs_loop(sf_data)[0]
+                    a_types = self.__nefT.get_star_atom_type_from_cs_loop(sf_data)[0]
 
                 for a_type in a_types:
                     atom_type = a_type['atom_type']
@@ -2887,7 +2864,7 @@ class NmrDpUtility(object):
 
             try:
 
-                a_codes = self.nef_translator.get_star_ambig_code_from_cs_loop(sf_data)[0]
+                a_codes = self.__nefT.get_star_ambig_code_from_cs_loop(sf_data)[0]
 
                 comp_ids_wo_ambig_code = []
 
@@ -2907,7 +2884,7 @@ class NmrDpUtility(object):
 
                         for atom_id in atom_ids:
 
-                            allowed_ambig_code = self.bmrb_cs_stat.getMaxAmbigCodeWoSetId(comp_id, atom_id)
+                            allowed_ambig_code = self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id)
 
                             if ambig_code > allowed_ambig_code:
 
@@ -2984,7 +2961,7 @@ class NmrDpUtility(object):
 
                 try:
 
-                    indices = self.nef_translator.get_index(sf_data, lp_category, index_id=index_tag)[0]
+                    indices = self.__nefT.get_index(sf_data, lp_category, index_id=index_tag)[0]
 
                     if indices != range(1, len(indices) + 1):
 
@@ -3108,7 +3085,7 @@ class NmrDpUtility(object):
 
                 try:
 
-                    lp_data = self.nef_translator.check_data(sf_data, lp_category, key_items, data_items, allowed_tags, disallowed_tags,
+                    lp_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, allowed_tags, disallowed_tags,
                                                              inc_idx_test=True, enforce_non_zero=True, enforce_sign=True, enforce_enum=True)[0]
 
                     self.lp_data[content_subtype].append({'sf_framecode': sf_framecode, 'data': lp_data})
@@ -3139,7 +3116,7 @@ class NmrDpUtility(object):
 
                 except UserWarning as e:
 
-                    warns = str(e).strip("'").split('.')
+                    warns = str(e).strip("'").rstrip('.').split('.')
 
                     for warn in warns:
 
@@ -3164,7 +3141,7 @@ class NmrDpUtility(object):
                             if self.__verbose:
                                 self.__lfh.write("+NmrDpUtility.__testDataConsistencyInLoop() ++ Warning  - %s\n" % warn)
 
-                        elif warn != '.':
+                        else:
 
                             self.report.error.appendDescription('internal_error', "+NmrDpUtility.__testDataConsistencyInLoop() ++ Error  - %s" % warn)
                             self.report.setError()
@@ -3176,7 +3153,7 @@ class NmrDpUtility(object):
 
                     try:
 
-                        lp_data = self.nef_translator.check_data(sf_data, lp_category, key_items, data_items, allowed_tags, disallowed_tags)[0]
+                        lp_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, allowed_tags, disallowed_tags)[0]
 
                         self.lp_data[content_subtype].append({'sf_framecode': sf_framecode, 'data': lp_data})
 
@@ -3253,7 +3230,7 @@ class NmrDpUtility(object):
 
                         try:
 
-                            aux_data = self.nef_translator.check_data(sf_data, lp_category, key_items, data_items, allowed_tags, None,
+                            aux_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, allowed_tags, None,
                                                                       inc_idx_test=True, enforce_non_zero=True, enforce_sign=True, enforce_enum=True)[0]
 
                             self.aux_data[content_subtype].append({'sf_framecode': sf_framecode, 'category': lp_category, 'data': aux_data})
@@ -3287,7 +3264,7 @@ class NmrDpUtility(object):
 
                         except UserWarning as e:
 
-                            warns = str(e).strip("'").split('.')
+                            warns = str(e).strip("'").rstrip('.').split('.')
 
                             for warn in warns:
 
@@ -3312,7 +3289,7 @@ class NmrDpUtility(object):
                                     if self.__verbose:
                                         self.__lfh.write("+NmrDpUtility.__testDataConsistencyInAuxLoop() ++ Warning  - %s\n" % warn)
 
-                                elif warn != '.':
+                                else:
 
                                     self.report.error.appendDescription('internal_error', "+NmrDpUtility.__testDataConsistencyInAuxLoop() ++ Error  - %s" % warn)
                                     self.report.setError()
@@ -3324,7 +3301,7 @@ class NmrDpUtility(object):
 
                             try:
 
-                                aux_data = self.nef_translator.check_data(sf_data, lp_category, key_items, data_items, allowed_tags, None)[0]
+                                aux_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, allowed_tags, None)[0]
 
                                 self.aux_data[content_subtype].append({'sf_framecode': sf_framecode, 'category': lp_category, 'data': aux_data})
 
@@ -3523,7 +3500,7 @@ class NmrDpUtility(object):
 
                 try:
 
-                    sf_tag_data = self.nef_translator.check_sf_tag(sf_data, self.sf_tag_items[file_type][content_subtype], self.sf_allowed_tags[file_type][content_subtype],
+                    sf_tag_data = self.__nefT.check_sf_tag(sf_data, self.sf_tag_items[file_type][content_subtype], self.sf_allowed_tags[file_type][content_subtype],
                                                             enforce_non_zero=True, enforce_sign=True, enforce_enum=True)
 
                     self.__testParentChildRelation(file_name, file_type, content_subtype, parent_keys, list_id, sf_framecode, sf_tag_data)
@@ -3548,7 +3525,7 @@ class NmrDpUtility(object):
 
                 except UserWarning as e:
 
-                    warns = str(e).strip("'").split('.')
+                    warns = str(e).strip("'").rstrip('.').split('.')
 
                     for warn in warns:
 
@@ -3573,7 +3550,7 @@ class NmrDpUtility(object):
                             if self.__verbose:
                                 self.__lfh.write("+NmrDpUtility.__testSfTagConsistency() ++ Warning  - %s\n" % warn)
 
-                        elif warn != '.':
+                        else:
 
                             self.report.error.appendDescription('internal_error', "+NmrDpUtility.__testSfTagConsistency() ++ Error  - %s" % warn)
                             self.report.setError()
@@ -3585,7 +3562,7 @@ class NmrDpUtility(object):
 
                     try:
 
-                        sf_tag_data = self.nef_translator.check_sf_tag(sf_data, self.sf_tag_items[file_type][content_subtype], self.sf_allowed_tags[file_type][content_subtype],
+                        sf_tag_data = self.__nefT.check_sf_tag(sf_data, self.sf_tag_items[file_type][content_subtype], self.sf_allowed_tags[file_type][content_subtype],
                                                                 enfoce_non_zero=False, enforce_enum=False)
 
                         self.__testParentChildRelation(file_name, file_type, content_subtype, parent_keys, list_id, sf_framecode, sf_tag_data)
@@ -3751,9 +3728,9 @@ class NmrDpUtility(object):
                         polypeptide_like = False
 
                         for comp_id2 in neighbor_comp_ids:
-                            polypeptide_like |= self.bmrb_cs_stat.getTypeOfCompId(comp_id2)[0]
+                            polypeptide_like |= self.__csStat.getTypeOfCompId(comp_id2)[0]
 
-                        for cs_stat in self.bmrb_cs_stat.get(comp_id):
+                        for cs_stat in self.__csStat.get(comp_id):
 
                             if cs_stat['atom_id'] == atom_id_:
                                 min_value = cs_stat['min']
@@ -3797,7 +3774,7 @@ class NmrDpUtility(object):
 
                                 z_score = (value - avg_value) / std_value
 
-                                if self.bmrb_cs_stat.hasEnoughStat(comp_id, polypeptide_like):
+                                if self.__csStat.hasEnoughStat(comp_id, polypeptide_like):
                                     tolerance = std_value
 
                                     if value < min_value - tolerance or value > max_value + tolerance:
@@ -3875,7 +3852,7 @@ class NmrDpUtility(object):
                     else:
 
                         if file_type == 'nef':
-                            _atom_id = self.nef_translator.get_nmrstar_atom(comp_id, atom_id)[1]
+                            _atom_id = self.__nefT.get_nmrstar_atom(comp_id, atom_id)[1]
 
                             if len(_atom_id) == 0:
                                 continue
@@ -3899,7 +3876,7 @@ class NmrDpUtility(object):
                             atom_id_ = atom_id
                             atom_name = atom_id
 
-                        for cs_stat in self.bmrb_cs_stat.get(comp_id, self.report.isDiamagnetic()):
+                        for cs_stat in self.__csStat.get(comp_id, self.report.isDiamagnetic()):
 
                             if cs_stat['atom_id'] == atom_id_:
                                 min_value = cs_stat['min']
@@ -4008,7 +3985,7 @@ class NmrDpUtility(object):
                         if ambig_code in self.empty_value or ambig_code == 1:
                             continue
 
-                        allowed_ambig_code = self.bmrb_cs_stat.getMaxAmbigCodeWoSetId(comp_id, atom_id)
+                        allowed_ambig_code = self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id)
 
                         if ambig_code == 2 or ambig_code == 3:
 
@@ -4025,7 +4002,7 @@ class NmrDpUtility(object):
                                 if self.__verbose:
                                     self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ ValueError - %s\n" % err)
 
-                            atom_id2 = self.bmrb_cs_stat.getGeminalAtom(comp_id, atom_id)
+                            atom_id2 = self.__csStat.getGeminalAtom(comp_id, atom_id)
 
                             try:
 
@@ -5019,7 +4996,7 @@ class NmrDpUtility(object):
                 sid = s['seq_id'][i]
                 seq = s['comp_id'][i]
 
-                if self.nef_translator.get_one_letter_code(seq) == '?':
+                if self.__nefT.get_one_letter_code(seq) == '?':
                     asm_has = True
                     ent_has = True
 
@@ -5672,7 +5649,7 @@ class NmrDpUtility(object):
                                 continue
 
                             if file_type == 'nef':
-                                _atom_id = self.nef_translator.get_nmrstar_atom(comp_id, atom_id)[1]
+                                _atom_id = self.__nefT.get_nmrstar_atom(comp_id, atom_id)[1]
 
                                 if len(_atom_id) == 0:
                                     continue
@@ -5917,6 +5894,8 @@ class NmrDpUtility(object):
         has_auth_seq_id = False
         has_auth_comp_id = False
         has_nef_index_dat = False
+        has_assembly_id = False
+        has_entry_id = False
 
         try:
 
@@ -5929,7 +5908,7 @@ class NmrDpUtility(object):
                 orig_lp_data = next((l['data'] for l in self.lp_data[content_subtype] if l['sf_framecode'] == sf_framecode), None)
 
                 if orig_lp_data is None:
-                    orig_lp_data = self.nef_translator.check_data(sf_data, lp_category, key_items, data_items, None, None)[0]
+                    orig_lp_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, None, None)[0]
 
                 if file_type == 'nef':
                     if 'residue_variant' in orig_lp_data[0]:
@@ -5963,6 +5942,12 @@ class NmrDpUtility(object):
                         if not result is None:
                             has_nef_index_dat = True
 
+                    if 'Assembly_ID' in orig_lp_data[0]:
+                        has_assembly_id = True
+
+                    if 'Entry_ID' in orig_lp_data[0]:
+                        has_entry_id = True
+
         except:
             pass
 
@@ -5995,6 +5980,9 @@ class NmrDpUtility(object):
                 lp_data.add_tag(lp_cat_name + '.' + data_name)
             elif has_nef_index_dat:
                 lp_data.add_tag(lp_cat_name + '.' + data_name)
+
+        if has_entry_id:
+            lp_data.add_tag(lp_cat_name + '.Entry_ID')
 
         polymer_sequence = input_source_dic['polymer_sequence']
 
@@ -6076,10 +6064,11 @@ class NmrDpUtility(object):
                     row.append(seq_id) # Comp_index_ID
                     row.append(comp_id) # Comp_ID
 
+                    orig_row = next((i for i in orig_lp_data if i['Entity_assembly_ID'] == cid and i['Comp_index_ID'] == auth_seq_id and i['Comp_ID'] == auth_comp_id), None)
+
                     # Auth_asym_ID
 
                     if has_auth_asym_id:
-                        orig_row = next((i for i in orig_lp_data if i['Entity_assembly_ID'] == cid and i['Comp_index_ID'] == auth_seq_id and i['Comp_ID'] == auth_comp_id), None)
                         if not orig_row is None:
                             row.append(orig_row['Auth_asym_ID'])
                         else:
@@ -6090,7 +6079,6 @@ class NmrDpUtility(object):
                     # Auth_seq_ID
 
                     if has_auth_seq_id:
-                        orig_row = next((i for i in orig_lp_data if i['Entity_assembly_ID'] == cid and i['Comp_index_ID'] == auth_seq_id and i['Comp_ID'] == auth_comp_id), None)
                         if not orig_row is None:
                             row.append(orig_row['Auth_seq_ID'])
                         else:
@@ -6101,7 +6089,6 @@ class NmrDpUtility(object):
                     # Auth_comp_ID
 
                     if has_auth_comp_id:
-                        orig_row = next((i for i in orig_lp_data if i['Entity_assembly_ID'] == cid and i['Comp_index_ID'] == auth_seq_id and i['Comp_ID'] == auth_comp_id), None)
                         if not orig_row is None:
                             row.append(orig_row['Auth_comp_ID'])
                         else:
@@ -6112,7 +6099,6 @@ class NmrDpUtility(object):
                     # Auth_variant_ID
 
                     if has_res_var_dat:
-                        orig_row = next((i for i in orig_lp_data if i['Entity_assembly_ID'] == cid and i['Comp_index_ID'] == auth_seq_id and i['Comp_ID'] == auth_comp_id), None)
                         if not orig_row is None:
                             row.append(orig_row['Auth_variant_ID'])
                         else:
@@ -6147,9 +6133,25 @@ class NmrDpUtility(object):
                     # NEF_index
 
                     if has_nef_index_dat:
-                        orig_row = next((i for i in orig_lp_data if i['Entity_assembly_ID'] == cid and i['Comp_index_ID'] == auth_seq_id and i['Comp_ID'] == auth_comp_id), None)
                         if not orig_row is None:
                             row.append(orig_row['NEF_index'])
+                        else:
+                            row.append('.')
+
+                    # Assembly_ID
+
+                    if has_assembly_id:
+                        if not orig_row is None:
+                            row.append(orig_row['Assembly_ID'])
+                        else:
+                            row.append(1)
+
+                    else:
+                        row.append(1)
+
+                    if has_entry_id:
+                        if not orig_row is None:
+                            row.append(orig_row['Entry_ID'])
                         else:
                             row.append('.')
 
@@ -6742,7 +6744,7 @@ class NmrDpUtility(object):
 
                                                     try:
 
-                                                        lp_data = self.nef_translator.check_data(sf_data, lp_category, key_items, data_items, None, None)[0]
+                                                        lp_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, None, None)[0]
 
                                                         self.lp_data[content_subtype].append({'sf_framecode': w['saveframe'], 'data': lp_data})
 
@@ -7267,7 +7269,7 @@ class NmrDpUtility(object):
             list_id_tag_in_lp = None
 
             if not data_items is None:
-                list_id_tag_in_lp = next((d for d in data_items if d['type'] == 'static-index' and d['mandatory']), None)
+                list_id_tag_in_lp = next((d for d in data_items if d['type'] == 'pointer-index'), None)
 
             if not list_id_tag_in_lp is None:
 
@@ -7426,8 +7428,7 @@ class NmrDpUtility(object):
 
             return False
 
-        with open(self.__dstPath, 'w') as file:
-            file.write(str(self.__star_data))
+        self.__star_data.write_to_file(self.__dstPath)
 
         return True
 
@@ -7435,75 +7436,13 @@ class NmrDpUtility(object):
         """ Initialize NMR data processing report using the next version of NMR unified data.
         """
 
-        self.report = NmrDpReport()
-
-        # set primary input source as NMR unified data
-        input_source = self.report.input_sources[0]
-
-        file_type = 'nef' if 'nef' in self.__op else 'nmr-star'
-        content_type = self.content_type[file_type]
-
-        input_source.setItemValue('file_name', os.path.basename(self.__dstPath))
-        input_source.setItemValue('file_type', file_type)
-        input_source.setItemValue('content_type', content_type)
-
-        self.__testDiamagnetism()
-
-        return input_source is not None
+        return self.__initializeDpReport(srcPath=self.__dstPath)
 
     def __validateInputSourceWithNext(self):
         """ Validate the next version of NMR unified data as primary input source.
         """
 
-        is_valid, json_dumps = self.nef_translator.validate_file(self.__dstPath, 'A') # 'A' for NMR unified data, 'S' for assigned chemical shifts, 'R' for restraints.
-
-        message = json.loads(json_dumps)
-
-        _file_type = message['file_type'] # nef/nmr-star/unknown
-
-        input_source = self.report.input_sources[0]
-        input_source_dic = input_source.get()
-
-        file_name = input_source_dic['file_name']
-        file_type = input_source_dic['file_type']
-
-        if is_valid:
-
-            if _file_type != file_type:
-
-                err = "%s was selected as %s file, but recognized as %s file." % (file_name, self.readable_file_type[file_type], self.readable_file_type[_file_type])
-
-                if len(message['error']) > 0:
-                    for error_message in message['error']:
-                        err += err_message
-
-                self.report.error.appendDescription('format_issue', {'file_name': file_name, 'description': err})
-                self.report.setError()
-
-                if self.__verbose:
-                    self.__lfh.write("+NmrDpUtility.__validateOutputSource() ++ Error  - %s\n" % err)
-
-                return False
-
-            is_done, self.__star_data_type, self.__star_data = self.nef_translator.read_input_file(self.__dstPath) # NEFTranslator.validate_file() generates this object internally, but not re-used.
-
-            return True
-
-        else:
-
-            err = "%s is invalid %s file." % (file_name, self.readable_file_type[file_type])
-
-            if len(message['error']) > 0:
-                for error_message in message['error']:
-                    err += err_message
-
-            self.report.error.appendDescription('format_issue', {'file_name': file_name, 'description': err})
-            self.report.setError()
-
-            if self.__verbose:
-                self.__lfh.write("+NmrDpUtility.__validateOutputSource() ++ Error  - %s\n" % err)
-
-            return False
+        return self.__validateInputSource(srcPath=self.__dstPath)
 
     def __translateNef2Str(self):
         """ Translate NEF to NMR-STAR V3.2 file.

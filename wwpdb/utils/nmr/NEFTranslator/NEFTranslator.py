@@ -1159,7 +1159,7 @@ class NEFTranslator(object):
 
         dat = [] # data of all loops
 
-        item_types = ('str', 'bool', 'int', 'index-int', 'positive-int', 'static-index', 'float', 'positive-float', 'range-float', 'enum', 'enum-int')
+        item_types = ('str', 'bool', 'int', 'index-int', 'positive-int', 'pointer-index', 'float', 'positive-float', 'range-float', 'enum', 'enum-int')
 
         key_names = [k['name'] for k in key_items]
         data_names = [d['name'] for d in data_items]
@@ -1426,7 +1426,7 @@ class NEFTranslator(object):
                                 raise ValueError("%s%s '%s' must be %s." % (NEFTranslator.idx_msg(idx_tag_ids, tags, ent), name, val, type))
                             elif ent[name] == 0 and enforce_non_zero:
                                 user_warn_msg += "[Zero value error] %s%s '%s' is non-sense zero value as %s." % (NEFTranslator.idx_msg(idx_tag_ids, tags, ent), name, val, type)
-                        elif type == 'static-index':
+                        elif type == 'pointer-index':
                             try:
                                 ent[name] = int(val)
                             except:
@@ -1523,7 +1523,7 @@ class NEFTranslator(object):
                                         raise ValueError("%s%s '%s' must be %s." % (NEFTranslator.idx_msg(idx_tag_ids, tags, ent), name, val, type))
                                     elif ent[name] == 0 and enforce_non_zero:
                                         user_warn_msg += "[Zero value error] %s%s '%s' is non-sense zero value as %s." % (NEFTranslator.idx_msg(idx_tag_ids, tags, ent), name, val, type)
-                                elif type == 'static-index':
+                                elif type == 'pointer-index':
                                     try:
                                         ent[name] = int(val)
                                     except:

@@ -5818,7 +5818,7 @@ class NmrDpUtility(object):
 
             else:
 
-                err = "Unexpected PyNMRSTAR object %s found in %s file." % (self.__star_data_type, file_name)
+                err = "Unexpected PyNMRSTAR object type %s found about %s file." % (self.__star_data_type, file_name)
 
                 self.report.error.appendDescription('internal_error', "+NmrDpUtility.__deleteSkippedSf() ++ Error  - %s" % err)
                 self.report.setError()
@@ -5891,7 +5891,7 @@ class NmrDpUtility(object):
 
             else:
 
-                err = "Unexpected PyNMRSTAR object %s found in %s file." % (self.__star_data_type, file_name)
+                err = "Unexpected PyNMRSTAR object type %s found about %s file." % (self.__star_data_type, file_name)
 
                 self.report.error.appendDescription('internal_error', "+NmrDpUtility.__deleteSkippedLoop() ++ Error  - %s" % err)
                 self.report.setError()
@@ -6484,7 +6484,7 @@ class NmrDpUtility(object):
 
             else:
 
-                err = "Unexpected PyNMRSTAR object %s found in %s file." % (self.__star_data_type, file_name)
+                err = "Unexpected PyNMRSTAR object type %s found about %s file." % (self.__star_data_type, file_name)
 
                 self.report.error.appendDescription('internal_error', "+NmrDpUtility.__fixDisorderedIndex() ++ Error  - %s" % err)
                 self.report.setError()
@@ -6588,7 +6588,7 @@ class NmrDpUtility(object):
 
             else:
 
-                err = "Unexpected PyNMRSTAR object %s found in %s file." % (self.__star_data_type, file_name)
+                err = "Unexpected PyNMRSTAR object type %s found about %s file." % (self.__star_data_type, file_name)
 
                 self.report.error.appendDescription('internal_error', "+NmrDpUtility.__removeNonSenseZeroValue() ++ Error  - %s" % err)
                 self.report.setError()
@@ -6692,7 +6692,7 @@ class NmrDpUtility(object):
 
             else:
 
-                err = "Unexpected PyNMRSTAR object %s found in %s file." % (self.__star_data_type, file_name)
+                err = "Unexpected PyNMRSTAR object type %s found about %s file." % (self.__star_data_type, file_name)
 
                 self.report.error.appendDescription('internal_error', "+NmrDpUtility.__fixNonSenseNegativeValue() ++ Error  - %s" % err)
                 self.report.setError()
@@ -6783,7 +6783,7 @@ class NmrDpUtility(object):
                                     if len(itEnum) == 1:
                                         sf_data.tags[itCol][1] = itEnum[0]
 
-                                    # specific remediattion follows
+                                    # specific remediation follows
                                     else:
 
                                         sf_category = sf_data.get_tag('sf_category')[0]
@@ -6948,7 +6948,7 @@ class NmrDpUtility(object):
 
             else:
 
-                err = "Unexpected PyNMRSTAR object %s found in %s file." % (self.__star_data_type, file_name)
+                err = "Unexpected PyNMRSTAR object type %s found about %s file." % (self.__star_data_type, file_name)
 
                 self.report.error.appendDescription('internal_error', "+NmrDpUtility.__fixEnumerationValue() ++ Error  - %s" % err)
                 self.report.setError()
@@ -7295,11 +7295,11 @@ class NmrDpUtility(object):
 
         except Exception as e:
 
-            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__testRestraintPotentialUBP() ++ Error  - %s" % str(e))
+            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__testRestraintPotentialLBP() ++ Error  - %s" % str(e))
             self.report.setError()
 
             if self.__verbose:
-                self.__lfh.write("+NmrDpUtility.__testRestraintPotentialUBP() ++ Error  - %s" % str(e))
+                self.__lfh.write("+NmrDpUtility.__testRestraintPotentialLBP() ++ Error  - %s" % str(e))
 
             return False
 

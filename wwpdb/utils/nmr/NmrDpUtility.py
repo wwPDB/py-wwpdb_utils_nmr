@@ -4,7 +4,6 @@
 #
 # Updates:
 ##
-from __builtin__ import True
 """ Wrapper class for data processing for NMR unified data.
 """
 import sys

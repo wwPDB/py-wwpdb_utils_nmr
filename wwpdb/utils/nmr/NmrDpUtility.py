@@ -3730,6 +3730,14 @@ class NmrDpUtility(object):
         sf_category = self.sf_categories[file_type][content_subtype]
         lp_category = self.lp_categories[file_type][content_subtype]
 
+        item_names = self.item_names_in_cs_loop[file_type]
+        chain_id_name = item_names['chain_id']
+        seq_id_name = item_names['seq_id']
+        comp_id_name = item_names['comp_id']
+        atom_id_name = item_names['atom_id']
+        value_name = item_names['value']
+        ambig_code_name = 'Ambiguity_code' # NMR-STAR specific
+
         index_tag = self.index_tags[file_type][content_subtype]
         max_cs_err = self.chem_shift_error['max_exclusive']
 
@@ -3741,20 +3749,16 @@ class NmrDpUtility(object):
 
                 lp_data = next(l['data'] for l in self.__lp_data[content_subtype] if l['sf_framecode'] == sf_framecode)
 
-                item_names = self.item_names_in_cs_loop[file_type]
-                value_name = item_names['value']
-                ambig_code_name = 'Ambiguity_code'
-
-                chk_row_tmp = "[Check row of {0} %s, {1} %s, {2} %s, {3} %s".format(item_names['chain_id'], item_names['seq_id'], item_names['comp_id'], item_names['atom_id'])
-                row_tmp = "{0} %s, {1} %s, {2} %s, {3} %s".format(item_names['chain_id'], item_names['seq_id'], item_names['comp_id'], item_names['atom_id'])
+                chk_row_tmp = "[Check row of {0} %s, {1} %s, {2} %s, {3} %s".format(chain_id_name, seq_id_name, comp_id_name, atom_id_name)
+                row_tmp = "{0} %s, {1} %s, {2} %s, {3} %s".format(chain_id_name, seq_id_name, comp_id_name, atom_id_name)
 
                 methyl_cs_vals = {}
 
                 for i in lp_data:
-                    chain_id = i[item_names['chain_id']]
-                    seq_id = i[item_names['seq_id']]
-                    comp_id = i[item_names['comp_id']]
-                    atom_id = i[item_names['atom_id']]
+                    chain_id = i[chain_id_name]
+                    seq_id = i[seq_id_name]
+                    comp_id = i[comp_id_name]
+                    atom_id = i[atom_id_name]
                     value = i[value_name]
 
                     one_letter_code = self.__get1LetterCode(comp_id)
@@ -3764,7 +3768,7 @@ class NmrDpUtility(object):
                     # non-standard residue
                     if one_letter_code == 'X':
 
-                        neighbor_comp_ids = set([j[item_names['comp_id']] for j in lp_data if j[item_names['chain_id']] == chain_id and abs(j[item_names['seq_id']] - seq_id) < 3 and j[item_names['seq_id']] != seq_id])
+                        neighbor_comp_ids = set([j[comp_id_name] for j in lp_data if j[chain_id_name] == chain_id and abs(j[seq_id_name] - seq_id) < 3 and j[seq_id_name] != seq_id])
 
                         polypeptide_like = False
 
@@ -4047,12 +4051,12 @@ class NmrDpUtility(object):
 
                             try:
 
-                                ambig_code2 = next(j[ambig_code_name] for j in lp_data if j[item_names['chain_id']] == chain_id and j[item_names['seq_id']] == seq_id and j[item_names['comp_id']] == comp_id and j[item_names['atom_id']] == atom_id2)
+                                ambig_code2 = next(j[ambig_code_name] for j in lp_data if j[chain_id_name] == chain_id and j[seq_id_name] == seq_id and j[comp_id_name] == comp_id and j[atom_id_name] == atom_id2)
 
                                 if ambig_code2 != ambig_code:
 
                                     err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_id) + '] %s %s indicates %s. However, %s %s of %s %s is inconsistent.' %\
-                                          (ambig_code_name, ambig_code, ambig_code_desc, ambig_code_name, ambig_code2, item_names['atom_id'], atom_id2)
+                                          (ambig_code_name, ambig_code, ambig_code_desc, ambig_code_name, ambig_code2, atom_id_name, atom_id2)
 
                                     self.report.error.appendDescription('invalid_ambiguity_code', {'file_name': file_name, 'saveframe': sf_framecode, 'category': lp_category, 'description': err})
                                     self.report.setError()
@@ -4063,7 +4067,7 @@ class NmrDpUtility(object):
                             except StopIteration:
 
                                 err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_id) + '] %s %s indicates %s. However, row of %s %s of the same residue was not found.' %\
-                                      (ambig_code_name, ambig_code, ambig_code_desc, item_names['atom_id'], atom_id2)
+                                      (ambig_code_name, ambig_code, ambig_code_desc, atom_id_name, atom_id2)
 
                                 self.report.error.appendDescription('invalid_ambiguity_code', {'file_name': file_name, 'saveframe': sf_framecode, 'category': lp_category, 'description': err})
                                 self.report.setError()
@@ -4120,10 +4124,10 @@ class NmrDpUtility(object):
                                     elif ambig_code == 4:
 
                                         for j in ambig_set:
-                                            chain_id2 = j[item_names['chain_id']]
-                                            seq_id2 = j[item_names['seq_id']]
-                                            comp_id2 = j[item_names['comp_id']]
-                                            atom_id2 = j[item_names['atom_id']]
+                                            chain_id2 = j[chain_id_name]
+                                            seq_id2 = j[seq_id_name]
+                                            comp_id2 = j[comp_id_name]
+                                            atom_id2 = j[atom_id_name]
 
                                             if (chain_id2 != chain_id or seq_id2 != seq_id or comp_id2 != comp_id) and atom_id < atom_id2:
 
@@ -4141,10 +4145,10 @@ class NmrDpUtility(object):
                                     elif ambig_code == 5:
 
                                         for j in ambig_set:
-                                            chain_id2 = j[item_names['chain_id']]
-                                            seq_id2 = j[item_names['seq_id']]
-                                            comp_id2 = j[item_names['comp_id']]
-                                            atom_id2 = j[item_names['atom_id']]
+                                            chain_id2 = j[chain_id_name]
+                                            seq_id2 = j[seq_id_name]
+                                            comp_id2 = j[comp_id_name]
+                                            atom_id2 = j[atom_id_name]
 
                                             if ((chain_id2 != chain_id and chain_id < chain_id2) or (seq_id2 == seq_id and atom_id < atom_id2)):
 
@@ -4162,10 +4166,10 @@ class NmrDpUtility(object):
                                     elif ambig_code == 6:
 
                                         for j in ambig_set:
-                                            chain_id2 = j[item_names['chain_id']]
-                                            seq_id2 = j[item_names['seq_id']]
-                                            comp_id2 = j[item_names['comp_id']]
-                                            atom_id2 = j[item_names['atom_id']]
+                                            chain_id2 = j[chain_id_name]
+                                            seq_id2 = j[seq_id_name]
+                                            comp_id2 = j[comp_id_name]
+                                            atom_id2 = j[atom_id_name]
                                             value2 = j[value_name]
 
                                             if chain_id2 == chain_id and (seq_id < seq_id2 or (seq_id == seq_id2 and atom_id < atom_id2)):
@@ -4181,10 +4185,10 @@ class NmrDpUtility(object):
                                                     self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ ValueError - %s\n" % err)
 
                                     for j in ambig_set:
-                                        chain_id2 = j[item_names['chain_id']]
-                                        seq_id2 = j[item_names['seq_id']]
-                                        comp_id2 = j[item_names['comp_id']]
-                                        atom_id2 = j[item_names['atom_id']]
+                                        chain_id2 = j[chain_id_name]
+                                        seq_id2 = j[seq_id_name]
+                                        comp_id2 = j[comp_id_name]
+                                        atom_id2 = j[atom_id_name]
                                         value2 = j[value_name]
 
                                         if atom_id[0] != atom_id2[0] and atom_id < atom_id2:
@@ -4265,6 +4269,16 @@ class NmrDpUtility(object):
         sf_category = self.sf_categories[file_type][content_subtype]
         lp_category = self.lp_categories[file_type][content_subtype]
 
+        cs_item_names = self.item_names_in_cs_loop[file_type]
+        cs_chain_id_name = cs_item_names['chain_id']
+        cs_seq_id_name = cs_item_names['seq_id']
+        cs_comp_id_name = cs_item_names['comp_id']
+        cs_atom_id_name = cs_item_names['atom_id']
+        cs_value_name = cs_item_names['value']
+        cs_error_name = cs_item_names['error']
+        cs_atom_type = cs_item_names['atom_type']
+        cs_iso_number = cs_item_names['isotope_number']
+
         for sf_data in self.__star_data.get_saveframes_by_category(sf_category):
 
             sf_framecode = sf_data.get_tag('sf_framecode')[0]
@@ -4273,12 +4287,6 @@ class NmrDpUtility(object):
             try:
 
                 cs_data = next(l['data'] for l in self.__lp_data['chem_shift'] if l['sf_framecode'] == cs_list)
-
-                cs_item_names = self.item_names_in_cs_loop[file_type]
-                cs_value_name = cs_item_names['value']
-                cs_error_name = cs_item_names['error']
-                cs_atom_type = cs_item_names['atom_type']
-                cs_iso_number = cs_item_names['isotope_number']
 
             except StopIteration:
 
@@ -4396,6 +4404,19 @@ class NmrDpUtility(object):
                     _d[k] = v
                 item_names.append(_d)
 
+            chain_id_names = []
+            seq_id_names = []
+            comp_id_names = []
+            atom_id_names = []
+            position_names = []
+
+            for d in range(num_dim):
+                chain_id_names.append(item_names[d]['chain_id'])
+                seq_id_names.append(item_names[d]['seq_id'])
+                comp_id_names.append(item_names[d]['comp_id'])
+                atom_id_names.append(item_names[d]['atom_id'])
+                position_names.append(item_names[d]['position'])
+
             index_tag = self.index_tags[file_type][content_subtype]
             max_cs_err = self.chem_shift_error['max_exclusive']
 
@@ -4407,30 +4428,30 @@ class NmrDpUtility(object):
 
                     for i in lp_data:
                         for d in range(num_dim):
-                            chain_id = i[item_names[d]['chain_id']]
+                            chain_id = i[chain_id_names[d]]
                             if chain_id in self.empty_value:
                                 continue
 
-                            seq_id = i[item_names[d]['seq_id']]
+                            seq_id = i[seq_id_names[d]]
                             if seq_id in self.empty_value:
                                 continue
 
-                            comp_id = i[item_names[d]['comp_id']]
+                            comp_id = i[comp_id_names[d]]
                             if comp_id in self.empty_value:
                                 continue
 
-                            atom_id = i[item_names[d]['atom_id']]
+                            atom_id = i[atom_id_names[d]]
                             if atom_id in self.empty_value:
                                 continue
 
-                            position = i[item_names[d]['position']]
+                            position = i[position_names[d]]
 
                             try:
 
-                                cs = next(j for j in cs_data if j[cs_item_names['chain_id']] == chain_id and
-                                                                j[cs_item_names['seq_id']] == seq_id and
-                                                                j[cs_item_names['comp_id']] == comp_id and
-                                                                j[cs_item_names['atom_id']] == atom_id)
+                                cs = next(j for j in cs_data if j[cs_chain_id_name] == chain_id and
+                                                                j[cs_seq_id_name] == seq_id and
+                                                                j[cs_comp_id_name] == comp_id and
+                                                                j[cs_atom_id_name] == atom_id)
 
                                 value = cs[cs_value_name]
                                 error = cs[cs_error_name]
@@ -4453,7 +4474,7 @@ class NmrDpUtility(object):
                                     if abs(position - value) > error:
 
                                         err = '[Check row of %s %s] Peak position of spectral peak %s %s (%s %s, %s %s, %s %s, %s %s) in %s saveframe is inconsistent with the assigned chemical shift value %s (difference %s, tolerance %s) in %s saveframe.' %\
-                                              (index_tag, i[index_tag], item_names[d]['position'], position, item_names[d]['chain_id'], chain_id, item_names[d]['seq_id'], seq_id, item_names[d]['comp_id'], comp_id, item_names[d]['atom_id'], atom_id, sf_framecode, value, position - value, error, cs_list)
+                                              (index_tag, i[index_tag], position_names[d], position, chain_id_names[d], chain_id, seq_id_names[d], seq_id, comp_id_names[d], comp_id, atom_id_names[d], atom_id, sf_framecode, value, position - value, error, cs_list)
 
                                         self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'saveframe': sf_framecode, 'category': lp_category, 'description': err})
                                         self.report.setError()
@@ -4466,7 +4487,7 @@ class NmrDpUtility(object):
                                 if axis_code != axis_codes[d]:
 
                                     err = '[Check row of %s %s] Assignment of spectral peak %s %s, %s %s, %s %s, %s %s is inconsistent with axis code %s vs %s.' %\
-                                          (index_tag, i[index_tag], item_names[d]['chain_id'], chain_id, item_names[d]['seq_id'], seq_id, item_names[d]['comp_id'], comp_id, item_names[d]['atom_id'], atom_id, axis_code, axis_codes[d])
+                                          (index_tag, i[index_tag], chain_id_names[d], chain_id, seq_id_names[d], seq_id, comp_id_names[d], comp_id, atom_id_names[d], atom_id, axis_code, axis_codes[d])
 
                                     self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'saveframe': sf_framecode, 'category': lp_category, 'description': err})
                                     self.report.setError()
@@ -4477,7 +4498,7 @@ class NmrDpUtility(object):
                             except StopIteration:
 
                                 err = '[Check row of %s %s] Assignment of spectral peak %s %s, %s %s, %s %s, %s %s was not found in assigned chemical shifts in %s saveframe.' %\
-                                      (index_tag, i[index_tag], item_names[d]['chain_id'], chain_id, item_names[d]['seq_id'], seq_id, item_names[d]['comp_id'], comp_id, item_names[d]['atom_id'], atom_id, cs_list)
+                                      (index_tag, i[index_tag], chain_id_names[d], chain_id, seq_id_names[d], seq_id, comp_id_names[d], comp_id, atom_id_names[d], atom_id, cs_list)
 
                                 self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'saveframe': sf_framecode, 'category': lp_category, 'description': err})
                                 self.report.setError()
@@ -4488,10 +4509,10 @@ class NmrDpUtility(object):
                             if True in onebond[d]:
                                 for d2 in range(num_dim):
                                     if onebond[d][d2]:
-                                        chain_id2 = i[item_names[d2]['chain_id']]
-                                        seq_id2 = i[item_names[d2]['seq_id']]
-                                        comp_id2 = i[item_names[d2]['comp_id']]
-                                        atom_id2 = i[item_names[d2]['atom_id']]
+                                        chain_id2 = i[chain_id_names[d2]]
+                                        seq_id2 = i[seq_id_names[d2]]
+                                        comp_id2 = i[comp_id_names[d2]]
+                                        atom_id2 = i[atom_id_names[d2]]
 
                                         if not atom_id2 is None:
                                             diff = len(atom_id) != len(atom_id2)
@@ -4502,8 +4523,8 @@ class NmrDpUtility(object):
                                            (d < d2 and (chain_id2 != chain_id or seq_id2 != seq_id or comp_id2 != comp_id or _atom_id2 != _atom_id)):
 
                                             err = '[Check row of %s %s] Coherence transfer type is onebond. However, assignment of spectral peak is inconsistent with the type, (%s %s, %s %s, %s %s, %s %s) vs (%s %s, %s %s, %s %s, %s %s).' %\
-                                                  (index_tag, i[index_tag], item_names[d]['chain_id'], chain_id, item_names[d]['seq_id'], seq_id, item_names[d]['comp_id'], comp_id, item_names[d]['atom_id'], atom_id,
-                                                   item_names[d2]['chain_id'], chain_id2, item_names[d2]['seq_id'], seq_id2, item_names[d2]['comp_id'], comp_id2, item_names[d2]['atom_id'], atom_id2)
+                                                  (index_tag, i[index_tag], chain_id_names[d], chain_id, seq_id_names[d], seq_id, comp_id_names[d], comp_id, atom_id_names[d], atom_id,
+                                                   chain_id_names[d2], chain_id2, seq_id_names[d2], seq_id2, comp_id_names[d2], comp_id2, atom_id_names[d2], atom_id2)
 
                                             self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'saveframe': sf_framecode, 'category': lp_category, 'description': err})
                                             self.report.setError()
@@ -4514,17 +4535,17 @@ class NmrDpUtility(object):
                             if True in jcoupling[d]:
                                 for d2 in range(num_dim):
                                     if jcoupling[d][d2]:
-                                        chain_id2 = i[item_names[d2]['chain_id']]
-                                        seq_id2 = i[item_names[d2]['seq_id']]
-                                        comp_id2 = i[item_names[d2]['comp_id']]
-                                        atom_id2 = i[item_names[d2]['atom_id']]
+                                        chain_id2 = i[chain_id_names[d2]]
+                                        seq_id2 = i[seq_id_names[d2]]
+                                        comp_id2 = i[comp_id_names[d2]]
+                                        atom_id2 = i[atom_id_names[d2]]
 
                                         if chain_id2 in self.empty_value or seq_id2 in self.empty_value or comp_id2 in self.empty_value or atom_id2 in self.empty_value or\
                                            (d < d2 and (chain_id2 != chain_id or abs(seq_id2 - seq_id) > 1)):
 
                                             err = '[Check row of %s %s] Coherence transfer type is jcoupling. However, assignment of spectral peak is inconsistent with the type, (%s %s, %s %s, %s %s, %s %s) vs (%s %s, %s %s, %s %s, %s %s).' %\
-                                                  (index_tag, i[index_tag], item_names[d]['chain_id'], chain_id, item_names[d]['seq_id'], seq_id, item_names[d]['comp_id'], comp_id, item_names[d]['atom_id'], atom_id,
-                                                   item_names[d2]['chain_id'], chain_id2, item_names[d2]['seq_id'], seq_id2, item_names[d2]['comp_id'], comp_id2, item_names[d2]['atom_id'], atom_id2)
+                                                  (index_tag, i[index_tag], chain_id_names[d], chain_id, seq_id_names[d], seq_id, comp_id_names[d], comp_id, atom_id_names[d], atom_id,
+                                                   chain_id_names[d2], chain_id2, seq_id_names[d2], seq_id2, comp_id_names[d2], comp_id2, atom_id_names[d2], atom_id2)
 
                                             self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'saveframe': sf_framecode, 'category': lp_category, 'description': err})
                                             self.report.setError()
@@ -4535,17 +4556,17 @@ class NmrDpUtility(object):
                             if True in relayed[d]:
                                 for d2 in range(num_dim):
                                     if relayed[d][d2]:
-                                        chain_id2 = i[item_names[d2]['chain_id']]
-                                        seq_id2 = i[item_names[d2]['seq_id']]
-                                        comp_id2 = i[item_names[d2]['comp_id']]
-                                        atom_id2 = i[item_names[d2]['atom_id']]
+                                        chain_id2 = i[chain_id_names[d2]]
+                                        seq_id2 = i[seq_id_names[d2]]
+                                        comp_id2 = i[comp_id_names[d2]]
+                                        atom_id2 = i[atom_id_names[d2]]
 
                                         if chain_id2 in self.empty_value or seq_id2 in self.empty_value or comp_id2 in self.empty_value or atom_id2 in self.empty_value or\
                                            (d < d2 and (chain_id2 != chain_id or seq_id2 != seq_id or comp_id2 != comp_id or atom_id[0] != atom_id2[0])):
 
                                             err = '[Check row of %s %s] Coherence transfer type is relayed. However, assignment of spectral peak is inconsistent with the type, (%s %s, %s %s, %s %s, %s %s) vs (%s %s, %s %s, %s %s, %s %s).' %\
-                                                  (index_tag, i[index_tag], item_names[d]['chain_id'], chain_id, item_names[d]['seq_id'], seq_id, item_names[d]['comp_id'], comp_id, item_names[d]['atom_id'], atom_id,
-                                                   item_names[d2]['chain_id'], chain_id2, item_names[d2]['seq_id'], seq_id2, item_names[d2]['comp_id'], comp_id2, item_names[d2]['atom_id'], atom_id2)
+                                                  (index_tag, i[index_tag], chain_id_names[d], chain_id, seq_id_names[d], seq_id, comp_id_names[d], comp_id, atom_id_names[d], atom_id,
+                                                   chain_id_names[d2], chain_id2, seq_id_names[d2], seq_id2, comp_id_names[d2], comp_id2, atom_id_names[d2], atom_id2)
 
                                             self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'saveframe': sf_framecode, 'category': lp_category, 'description': err})
                                             self.report.setError()
@@ -5660,13 +5681,24 @@ class NmrDpUtility(object):
 
                     num_dim = max_dim - 1
 
+                    chain_id_names = []
+                    seq_id_names = []
+                    comp_id_names = []
+                    atom_id_names = []
+
+                    for j in range(num_dim):
+                        chain_id_names.append(item_names[j]['chain_id'])
+                        seq_id_names.append(item_names[j]['seq_id'])
+                        comp_id_names.append(item_names[j]['comp_id'])
+                        atom_id_names.append(item_names[j]['atom_id'])
+
                     for i in lp_data:
 
                         for j in range(num_dim):
-                            chain_id = i[item_names[j]['chain_id']]
-                            seq_id = i[item_names[j]['seq_id']]
-                            comp_id = i[item_names[j]['comp_id']]
-                            atom_id = i[item_names[j]['atom_id']]
+                            chain_id = i[chain_id_names[j]]
+                            seq_id = i[seq_id_names[j]]
+                            comp_id = i[comp_id_names[j]]
+                            atom_id = i[atom_id_names[j]]
 
                             if content_subtype == 'spectral_peak' and (chain_id in self.empty_value or seq_id in self.empty_value or comp_id in self.empty_value or atom_id in self.empty_value):
                                 continue
@@ -5729,7 +5761,7 @@ class NmrDpUtility(object):
                                     idx_msg = "[Check row of %s %s] " % (index_tag, i[index_tag])
 
                                 err = "%sThere is an invalid atom (%s %s, %s %s, %s %s, %s %s), not incorporated in the atomic coordinate." %\
-                                      (idx_msg, item_names[j]['chain_id'], chain_id, item_names[j]['seq_id'], seq_id, item_names[j]['comp_id'], comp_id, item_names[j]['atom_id'], atom_name)
+                                      (idx_msg, chain_id_names[j], chain_id, seq_id_names[j], seq_id, comp_id_names[j], comp_id, atom_id_names[j], atom_name)
 
                                 self.report.error.appendDescription('invalid_atom_nomenclature', {'file_name': file_name, 'saveframe': sf_framecode, 'category': lp_category, 'description': err})
                                 self.report.setError()
@@ -6971,33 +7003,44 @@ class NmrDpUtility(object):
         file_type = input_source_dic['file_type']
 
         item_names = self.item_names_in_dr_loop[file_type]
+        chain_id_1_name = item_names['chain_id_1']
+        chain_id_2_name = item_names['chain_id_2']
+        seq_id_1_name = item_names['seq_id_1']
+        seq_id_2_name = item_names['seq_id_2']
+        atom_id_1_name = item_names['atom_id_1']
+        atom_id_2_name = item_names['atom_id_2']
+        target_value_name = item_names['target_value']
+        lower_limit_name = item_names['lower_limit']
+        upper_limit_name = item_names['upper_limit']
+        lower_linear_limit_name = item_names['lower_linear_limit']
+        upper_linear_limit_name = item_names['upper_linear_limit']
 
         try:
 
             for i in lp_data:
-                chain_id_1 = i[item_names['chain_id_1']]
-                chain_id_2 = i[item_names['chain_id_2']]
-                seq_id_1 = i[item_names['seq_id_1']]
-                seq_id_2 = i[item_names['seq_id_2']]
+                chain_id_1 = i[chain_id_1_name]
+                chain_id_2 = i[chain_id_2_name]
+                seq_id_1 = i[seq_id_1_name]
+                seq_id_2 = i[seq_id_2_name]
 
                 if chain_id_1 == chain_id_2 and seq_id_1 == seq_id_2:
                     return False
 
-                target_value = i[item_names['target_value']]
+                target_value = i[target_value_name]
 
                 if target_value is None:
 
-                    if not i[item_names['lower_limit']] is None and not i[item_names['upper_limit']] is None:
-                        target_value = (i[item_names['lower_limit']] + i[item_names['upper_limit']]) / 2.0
+                    if not i[lower_limit_name] is None and not i[upper_limit_name] is None:
+                        target_value = (i[lower_limit_name] + i[upper_limit_name]) / 2.0
 
-                    elif not i[item_names['lower_linear_limit']] is None and not i[item_names['upper_linear_limit']] is None:
-                        target_value = (i[item_names['lower_linear_limit']] + i[item_names['upper_linear_limit']]) / 2.0
+                    elif not i[lower_linear_limit_name] is None and not i[upper_linear_limit_name] is None:
+                        target_value = (i[lower_linear_limit_name] + i[upper_linear_limit_name]) / 2.0
 
                     else:
                         return False
 
-                atom_id_1 = i[item_names['atom_id_1']][0]
-                atom_id_2 = i[item_names['atom_id_2']][0]
+                atom_id_1 = i[atom_id_1_name][0]
+                atom_id_2 = i[atom_id_2_name][0]
 
                 if (atom_id_1 == 'O' and atom_id_2 == 'H') or (atom_id_2 == 'O' and atom_id_1 == 'H'):
 
@@ -7037,33 +7080,44 @@ class NmrDpUtility(object):
         file_type = input_source_dic['file_type']
 
         item_names = self.item_names_in_dr_loop[file_type]
+        chain_id_1_name = item_names['chain_id_1']
+        chain_id_2_name = item_names['chain_id_2']
+        seq_id_1_name = item_names['seq_id_1']
+        seq_id_2_name = item_names['seq_id_2']
+        atom_id_1_name = item_names['atom_id_1']
+        atom_id_2_name = item_names['atom_id_2']
+        target_value_name = item_names['target_value']
+        lower_limit_name = item_names['lower_limit']
+        upper_limit_name = item_names['upper_limit']
+        lower_linear_limit_name = item_names['lower_linear_limit']
+        upper_linear_limit_name = item_names['upper_linear_limit']
 
         try:
 
             for i in lp_data:
-                chain_id_1 = i[item_names['chain_id_1']]
-                chain_id_2 = i[item_names['chain_id_2']]
-                seq_id_1 = i[item_names['seq_id_1']]
-                seq_id_2 = i[item_names['seq_id_2']]
+                chain_id_1 = i[chain_id_1_name]
+                chain_id_2 = i[chain_id_2_name]
+                seq_id_1 = i[seq_id_1_name]
+                seq_id_2 = i[seq_id_2_name]
 
                 if chain_id_1 == chain_id_2 and seq_id_1 == seq_id_2:
                     return False
 
-                target_value = i[item_names['target_value']]
+                target_value = i[target_value_name]
 
                 if target_value is None:
 
-                    if not i[item_names['lower_limit']] is None and not i[item_names['upper_limit']] is None:
-                        target_value = (i[item_names['lower_limit']] + i[item_names['upper_limit']]) / 2.0
+                    if not i[lower_limit_name] is None and not i[upper_limit_name] is None:
+                        target_value = (i[lower_limit_name] + i[upper_limit_name]) / 2.0
 
-                    elif not i[item_names['lower_linear_limit']] is None and not i[item_names['upper_linear_limit']] is None:
-                        target_value = (i[item_names['lower_linear_limit']] + i[item_names['upper_linear_limit']]) / 2.0
+                    elif not i[lower_linear_limit_name] is None and not i[upper_linear_limit_name] is None:
+                        target_value = (i[lower_linear_limit_name] + i[upper_linear_limit_name]) / 2.0
 
                     else:
                         return False
 
-                atom_id_1 = i[item_names['atom_id_1']][0]
-                atom_id_2 = i[item_names['atom_id_2']][0]
+                atom_id_1 = i[atom_id_1_name][0]
+                atom_id_2 = i[atom_id_2_name][0]
 
                 if atom_id_1 == 'S' and atom_id_2 == 'S':
 
@@ -7098,16 +7152,22 @@ class NmrDpUtility(object):
         file_type = input_source_dic['file_type']
 
         item_names = self.item_names_in_dr_loop[file_type]
+        chain_id_1_name = item_names['chain_id_1']
+        chain_id_2_name = item_names['chain_id_2']
+        seq_id_1_name = item_names['seq_id_1']
+        seq_id_2_name = item_names['seq_id_2']
+        comp_id_1_name = item_names['comp_id_1']
+        comp_id_2_name = item_names['comp_id_2']
 
         try:
 
             for i in lp_data:
-                chain_id_1 = i[item_names['chain_id_1']]
-                chain_id_2 = i[item_names['chain_id_2']]
-                seq_id_1 = i[item_names['seq_id_1']]
-                seq_id_2 = i[item_names['seq_id_2']]
-                comp_id_1 = i[item_names['comp_id_1']]
-                comp_id_2 = i[item_names['comp_id_2']]
+                chain_id_1 = i[chain_id_1_name]
+                chain_id_2 = i[chain_id_2_name]
+                seq_id_1 = i[seq_id_1_name]
+                seq_id_2 = i[seq_id_2_name]
+                comp_id_1 = i[comp_id_1_name]
+                comp_id_2 = i[comp_id_2_name]
 
                 if chain_id_1 == chain_id_2:
                     return False
@@ -7119,12 +7179,12 @@ class NmrDpUtility(object):
                     if j is i:
                         continue
 
-                    _chain_id_1 = j[item_names['chain_id_1']]
-                    _chain_id_2 = j[item_names['chain_id_2']]
-                    _seq_id_1 = j[item_names['seq_id_1']]
-                    _seq_id_2 = j[item_names['seq_id_2']]
-                    _comp_id_1 = j[item_names['comp_id_1']]
-                    _comp_id_2 = j[item_names['comp_id_2']]
+                    _chain_id_1 = j[chain_id_1_name]
+                    _chain_id_2 = j[chain_id_2_name]
+                    _seq_id_1 = j[seq_id_1_name]
+                    _seq_id_2 = j[seq_id_2_name]
+                    _comp_id_1 = j[comp_id_1_name]
+                    _comp_id_2 = j[comp_id_2_name]
 
                     if _chain_id_1 != _chain_id_2 and _chain_id_1 != chain_id_1 and _chain_id_2 != chain_id_2:
 
@@ -7168,12 +7228,16 @@ class NmrDpUtility(object):
         try:
 
             item_names = self.potential_items[file_type][content_subtype]
+            lower_limit_name = item_names['lower_limit']
+            upper_limit_name = item_names['upper_limit']
+            lower_linear_limit_name = item_names['lower_linear_limit']
+            upper_linear_limit_name = item_names['upper_linear_limit']
 
             for i in lp_data:
-                if (not i[item_names['lower_limit']] is None) and\
-                   (not i[item_names['upper_limit']] is None) and\
-                   i[item_names['lower_linear_limit']] is None and\
-                   i[item_names['upper_linear_limit']] is None:
+                if (not i[lower_limit_name] is None) and\
+                   (not i[upper_limit_name] is None) and\
+                   i[lower_linear_limit_name] is None and\
+                   i[upper_linear_limit_name] is None:
                     continue
 
                 else:
@@ -7206,12 +7270,16 @@ class NmrDpUtility(object):
         try:
 
             item_names = self.potential_items[file_type][content_subtype]
+            lower_limit_name = item_names['lower_limit']
+            upper_limit_name = item_names['upper_limit']
+            lower_linear_limit_name = item_names['lower_linear_limit']
+            upper_linear_limit_name = item_names['upper_linear_limit']
 
             for i in lp_data:
-                if (not i[item_names['lower_limit']] is None) and\
-                   (not i[item_names['upper_limit']] is None) and\
-                   (not i[item_names['lower_linear_limit']] is None) and\
-                   (not i[item_names['upper_linear_limit']] is None):
+                if (not i[lower_limit_name] is None) and\
+                   (not i[upper_limit_name] is None) and\
+                   (not i[lower_linear_limit_name] is None) and\
+                   (not i[upper_linear_limit_name] is None):
                     continue
 
                 else:
@@ -7244,12 +7312,16 @@ class NmrDpUtility(object):
         try:
 
             item_names = self.potential_items[file_type][content_subtype]
+            lower_limit_name = item_names['lower_limit']
+            upper_limit_name = item_names['upper_limit']
+            lower_linear_limit_name = item_names['lower_linear_limit']
+            upper_linear_limit_name = item_names['upper_linear_limit']
 
             for i in lp_data:
-                if i[item_names['lower_limit']] is None and\
-                   (not i[item_names['upper_limit']] is None) and\
-                   i[item_names['lower_linear_limit']] is None and\
-                   i[item_names['upper_linear_limit']] is None:
+                if i[lower_limit_name] is None and\
+                   (not i[upper_limit_name] is None) and\
+                   i[lower_linear_limit_name] is None and\
+                   i[upper_linear_limit_name] is None:
                     continue
 
                 else:
@@ -7282,12 +7354,16 @@ class NmrDpUtility(object):
         try:
 
             item_names = self.potential_items[file_type][content_subtype]
+            lower_limit_name = item_names['lower_limit']
+            upper_limit_name = item_names['upper_limit']
+            lower_linear_limit_name = item_names['lower_linear_limit']
+            upper_linear_limit_name = item_names['upper_linear_limit']
 
             for i in lp_data:
-                if (not i[item_names['lower_limit']] is None) and\
-                   i[item_names['upper_limit']] is None and\
-                   i[item_names['lower_linear_limit']] is None and\
-                   i[item_names['upper_linear_limit']] is None:
+                if (not i[lower_limit_name] is None) and\
+                   i[upper_limit_name] is None and\
+                   i[lower_linear_limit_name] is None and\
+                   i[upper_linear_limit_name] is None:
                     continue
 
                 else:
@@ -7320,12 +7396,16 @@ class NmrDpUtility(object):
         try:
 
             item_names = self.potential_items[file_type][content_subtype]
+            lower_limit_name = item_names['lower_limit']
+            upper_limit_name = item_names['upper_limit']
+            lower_linear_limit_name = item_names['lower_linear_limit']
+            upper_linear_limit_name = item_names['upper_linear_limit']
 
             for i in lp_data:
-                if i[item_names['lower_limit']] is None and\
-                   (not i[item_names['upper_limit']] is None) and\
-                   i[item_names['lower_linear_limit']] is None and\
-                   (not i[item_names['upper_linear_limit']] is None):
+                if i[lower_limit_name] is None and\
+                   (not i[upper_limit_name] is None) and\
+                   i[lower_linear_limit_name] is None and\
+                   (not i[upper_linear_limit_name] is None):
                     continue
 
                 else:
@@ -7358,12 +7438,16 @@ class NmrDpUtility(object):
         try:
 
             item_names = self.potential_items[file_type][content_subtype]
+            lower_limit_name = item_names['lower_limit']
+            upper_limit_name = item_names['upper_limit']
+            lower_linear_limit_name = item_names['lower_linear_limit']
+            upper_linear_limit_name = item_names['upper_linear_limit']
 
             for i in lp_data:
-                if (not i[item_names['lower_limit']] is None) and\
-                   i[item_names['upper_limit']] is None and\
-                   (not i[item_names['lower_linear_limit']] is None) and\
-                   i[item_names['upper_linear_limit']] is None:
+                if (not i[lower_limit_name] is None) and\
+                   i[upper_limit_name] is None and\
+                   (not i[lower_linear_limit_name] is None) and\
+                   i[upper_linear_limit_name] is None:
                     continue
 
                 else:
@@ -7396,13 +7480,18 @@ class NmrDpUtility(object):
         try:
 
             item_names = self.potential_items[file_type][content_subtype]
+            target_value_name = item_names['target_value']
+            lower_limit_name = item_names['lower_limit']
+            upper_limit_name = item_names['upper_limit']
+            lower_linear_limit_name = item_names['lower_linear_limit']
+            upper_linear_limit_name = item_names['upper_linear_limit']
 
             for i in lp_data:
-                if (not i[item_names['target_value']] is None) and\
-                   i[item_names['lower_limit']] is None and\
-                   i[item_names['upper_limit']] is None and\
-                   i[item_names['lower_linear_limit']] is None and\
-                   i[item_names['upper_linear_limit']] is None:
+                if (not i[target_value_name] is None) and\
+                   i[lower_limit_name] is None and\
+                   i[upper_limit_name] is None and\
+                   i[lower_linear_limit_name] is None and\
+                   i[upper_linear_limit_name] is None:
                     continue
 
                 else:
@@ -7737,6 +7826,8 @@ class NmrDpUtility(object):
         if input_source_dic['content_subtype'] is None:
             return False
 
+        self.__sortCSLoop()
+
         if self.__updateAtomChemShiftId():
             self.__updateAmbiguousAtomChemShift(entry_id, apply_to_loops)
 
@@ -7811,6 +7902,119 @@ class NmrDpUtility(object):
 
         return True
 
+    def __sortCSLoop(self):
+        """ Sort assigned chemical shift loop if required.
+        """
+
+        input_source = self.report.input_sources[0]
+        input_source_dic = input_source.get()
+
+        file_name = input_source_dic['file_name']
+        file_type = input_source_dic['file_type']
+
+        error_dic = self.report.error.get()
+
+        content_subtype = 'chem_shift'
+
+        if not content_subtype in input_source_dic['content_subtype'].keys():
+
+            err = "Assigned chemical shift loop did not exist in %s file." % file_name
+
+            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__sortCSLoop() ++ Error  - %s" % err)
+            self.report.setError()
+
+            if self.__verbose:
+                self.__lfh.write("+NmrDpUtility.__sortCSLoop() ++ Error  - %s\n" % err)
+
+            return False
+
+        sf_category = self.sf_categories[file_type][content_subtype]
+        lp_category = self.lp_categories[file_type][content_subtype]
+
+        key_items = self.key_items[file_type][content_subtype]
+        data_items = self.data_items[file_type][content_subtype]
+
+        item_names = self.item_names_in_cs_loop[file_type]
+        chain_id_name = item_names['chain_id']
+        seq_id_name = item_names['seq_id']
+        atom_id_name = item_names['atom_id']
+
+        for sf_data in self.__star_data.get_saveframes_by_category(sf_category):
+
+            sf_framecode = sf_data.get_tag('sf_framecode')[0]
+
+            has_error = False
+
+            for error_type in error_dic.keys():
+
+                if error_type == 'total' or error_dic[error_type] is None:
+                    continue
+
+                for error in error_dic[error_type]:
+
+                    if error['file_name'] != file_name:
+                        continue
+
+                    if 'saveframe' in error and error['saveframe'] == sf_framecode:
+                        has_error = True
+                        break
+
+            if has_error:
+                continue
+
+            lp_data = next((l['data'] for l in self.__lp_data[content_subtype] if l['sf_framecode'] == sf_framecode), None)
+
+            if lp_data is None:
+
+                try:
+
+                    lp_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, None, None)[0]
+
+                    self.__lp_data[content_subtype].append({'sf_framecode': sf_framecode, 'data': lp_data})
+
+                except:
+                    pass
+
+            if not lp_data is None:
+
+                atoms = []
+
+                id = 0
+
+                for i in lp_data:
+                    chain_id = i[chain_id_name]
+                    seq_id = i[seq_id_name]
+                    atom_id = i[atom_id_name]
+
+                    atoms.append('{:<4}:{:04d}:{:<8}:{:06d}'.format(chain_id, seq_id, atom_id, id))
+
+                    id += 1
+
+                sorted_atoms = sorted(atoms)
+
+                sorted_id = []
+
+                for j in sorted_atoms:
+                    sorted_id.append(int(j.split(':')[3]))
+
+                if sorted_id != range(id):
+
+                    lp_data = sf_data.get_loop_by_category(lp_category)
+
+                    new_lp_data = pynmrstar.Loop.from_scratch(lp_category)
+
+                    for tag in lp_data.tags:
+                        new_lp_data.add_tag(lp_category + '.' + tag)
+
+                    for i in sorted_id:
+                        new_lp_data.add_data(lp_data[i])
+
+                    del sf_data[lp_data]
+
+                    sf_data.add_loop(new_lp_data)
+
+        return True
+
     def __updateAtomChemShiftId(self):
         """ Update _Atom_chem_shift.ID.
         """
@@ -7844,6 +8048,27 @@ class NmrDpUtility(object):
         lp_category = self.lp_categories[file_type][content_subtype]
 
         for sf_data in self.__star_data.get_saveframes_by_category(sf_category):
+
+            sf_framecode = sf_data.get_tag('sf_framecode')[0]
+
+            has_error = False
+
+            for error_type in error_dic.keys():
+
+                if error_type == 'total' or error_dic[error_type] is None:
+                    continue
+
+                for error in error_dic[error_type]:
+
+                    if error['file_name'] != file_name:
+                        continue
+
+                    if 'saveframe' in error and error['saveframe'] == sf_framecode:
+                        has_error = True
+                        break
+
+            if has_error:
+                continue
 
             lp_data = sf_data.get_loop_by_category(lp_category)
 
@@ -7958,6 +8183,25 @@ class NmrDpUtility(object):
         for sf_data in self.__star_data.get_saveframes_by_category(sf_category):
 
             sf_framecode = sf_data.get_tag('sf_framecode')[0]
+
+            has_error = False
+
+            for error_type in error_dic.keys():
+
+                if error_type == 'total' or error_dic[error_type] is None:
+                    continue
+
+                for error in error_dic[error_type]:
+
+                    if error['file_name'] != file_name:
+                        continue
+
+                    if 'saveframe' in error and error['saveframe'] == sf_framecode:
+                        has_error = True
+                        break
+
+            if has_error:
+                continue
 
             lp_data = next((l['data'] for l in self.__lp_data[content_subtype] if l['sf_framecode'] == sf_framecode), None)
 

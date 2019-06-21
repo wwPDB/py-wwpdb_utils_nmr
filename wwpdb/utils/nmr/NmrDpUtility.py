@@ -4,6 +4,7 @@
 #
 # Updates:
 ##
+from __builtin__ import True
 """ Wrapper class for data processing for NMR unified data.
 """
 import sys
@@ -7737,6 +7738,9 @@ class NmrDpUtility(object):
         if input_source_dic['content_subtype'] is None:
             return False
 
+        if self.__updateAtomChemShiftId():
+            self.__updateAmbiguousAtomChemShift(entry_id, apply_to_loops)
+
         for content_subtype in input_source_dic['content_subtype'].keys():
 
             sf_category = self.sf_categories[file_type][content_subtype]
@@ -7805,6 +7809,220 @@ class NmrDpUtility(object):
                                         row.append(entry_id)
 
                                     lp_data.add_tag(entryIdTag)
+
+        return True
+
+    def __updateAtomChemShiftId(self):
+        """ Update _Atom_chem_shift.ID.
+        """
+
+        input_source = self.report.input_sources[0]
+        input_source_dic = input_source.get()
+
+        file_name = input_source_dic['file_name']
+        file_type = input_source_dic['file_type']
+
+        if file_type == 'nef':
+            return False
+
+        error_dic = self.report.error.get()
+
+        content_subtype = 'chem_shift'
+
+        if not content_subtype in input_source_dic['content_subtype'].keys():
+
+            err = "Assigned chemical shift loop did not exist in %s file." % file_name
+
+            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__updateAtomChemShiftId() ++ Error  - %s" % err)
+            self.report.setError()
+
+            if self.__verbose:
+                self.__lfh.write("+NmrDpUtility.__updateAtomChemShiftId() ++ Error  - %s\n" % err)
+
+            return False
+
+        sf_category = self.sf_categories[file_type][content_subtype]
+        lp_category = self.lp_categories[file_type][content_subtype]
+
+        for sf_data in self.__star_data.get_saveframes_by_category(sf_category):
+
+            lp_data = sf_data.get_loop_by_category(lp_category)
+
+            ambig_set_id_name = 'Ambiguity_set_ID'
+
+            ambig_set_id_dic = {}
+
+            if ambig_set_id_name in lp_data.tags and error_dic['invalid_ambiguity_code'] is None:
+
+                ambig_set_ids = []
+
+                ambig_set_id_col = lp_data.tags.index(ambig_set_id_name)
+
+                for i in lp_data:
+
+                    ambig_set_id = i[ambig_set_id_col]
+
+                    if not ambig_set_id in self.empty_value:
+                        ambig_set_ids.append(str(ambig_set_id))
+
+                if len(ambig_set_ids) > 0:
+
+                    id = 1
+
+                    for ambig_set_id in ambig_set_ids:
+
+                        if ambig_set_id in ambig_set_id_dic:
+                            continue
+
+                        ambig_set_id_dic[ambig_set_id] = str(id)
+
+                        id += 1
+
+            disordered_ambig_set_id = False
+
+            for k, v in ambig_set_id_dic.items():
+                if k != v:
+                    disordered_ambig_set_id = True
+                    break
+
+            if disordered_ambig_set_id:
+
+                ambig_set_id_col = lp_data.tags.index(ambig_set_id_name)
+
+                for i in lp_data:
+                    ambig_set_id = i[ambig_set_id_col]
+
+                    if not ambig_set_id in self.empty_value:
+                        i[ambig_set_id_col] = int(ambig_set_id_dic[str(ambig_set_id)])
+
+            if 'ID' in lp_data.tags:
+                lp_data.renumber_rows('ID')
+
+            else:
+                new_lp_data = pynmrstar.Loop.from_scratch(lp_category)
+
+                new_lp_data.add_tag(lp_category + '.ID')
+
+                for tag in lp_data.tags:
+                    new_lp_data.add_tag(lp_category + '.' + tag)
+
+                id = 1
+
+                for i in lp_data:
+                    new_lp_data.add_data([str(id)] + i)
+                    id += 1
+
+                del sf_data[lp_data]
+
+                sf_data.add_loop(new_lp_data)
+
+        return True
+
+    def __updateAmbiguousAtomChemShift(self, entry_id='UNNAMED', apply_to_loops=True):
+        """ Update _Ambiguous_atom_chem_shift loops.
+        """
+
+        input_source = self.report.input_sources[0]
+        input_source_dic = input_source.get()
+
+        file_name = input_source_dic['file_name']
+        file_type = input_source_dic['file_type']
+
+        if file_type == 'nef':
+            return False
+
+        error_dic = self.report.error.get()
+
+        if not error_dic['invalid_ambiguity_code'] is None:
+            return False
+
+        content_subtype = 'chem_shift'
+
+        if not content_subtype in input_source_dic['content_subtype'].keys():
+
+            err = "Assigned chemical shift loop did not exist in %s file." % file_name
+
+            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__updateAmbiguousAtomChemShift() ++ Error  - %s" % err)
+            self.report.setError()
+
+            if self.__verbose:
+                self.__lfh.write("+NmrDpUtility.__updateAmbiguousAtomChemShift() ++ Error  - %s\n" % err)
+
+            return False
+
+        sf_category = self.sf_categories[file_type][content_subtype]
+        lp_category = self.lp_categories[file_type][content_subtype]
+
+        key_items = self.key_items[file_type][content_subtype]
+        data_items = self.data_items[file_type][content_subtype]
+
+        for sf_data in self.__star_data.get_saveframes_by_category(sf_category):
+
+            sf_framecode = sf_data.get_tag('sf_framecode')[0]
+
+            lp_data = next((l['data'] for l in self.__lp_data[content_subtype] if l['sf_framecode'] == sf_framecode), None)
+
+            if lp_data is None:
+
+                try:
+
+                    lp_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, None, None)[0]
+
+                    self.__lp_data[content_subtype].append({'sf_framecode': sf_framecode, 'data': lp_data})
+
+                except:
+                    pass
+
+            if not lp_data is None:
+
+                ambig_set_id_name = 'Ambiguity_set_ID'
+
+                has_ambig_set_id = False
+
+                for i in lp_data:
+
+                    if ambig_set_id_name in i and not i[ambig_set_id_name] in self.empty_value:
+                        has_ambig_set_id = True
+                        break
+
+                if has_ambig_set_id:
+
+                    aux_lp_cateogry = '_Ambiguous_atom_chem_shift'
+
+                    for aux_loop in sf_data.loops:
+
+                        if aux_loop.category == aux_lp_cateogry:
+                            del sf_data[aux_loop]
+                            break
+
+                    aux_lp_data = pynmrstar.Loop.from_scratch(aux_lp_cateogry)
+                    aux_lp_data.add_tag(aux_lp_cateogry + '.' + 'Ambiguous_shift_set_ID')
+                    aux_lp_data.add_tag(aux_lp_cateogry + '.' + 'Assigned_chem_shift_list_ID')
+                    aux_lp_data.add_tag(aux_lp_cateogry + '.' + 'Atom_chem_shift_ID')
+
+                    if apply_to_loops:
+                        aux_lp_data.add_tag(aux_lp_cateogry + '.' + 'Entry_ID')
+
+                    id = 1
+
+                    for i in lp_data:
+
+                        if ambig_set_id_name in i and not i[ambig_set_id_name] in self.empty_value:
+
+                            row = []
+
+                            row.append(i[ambig_set_id_name])
+                            row.append(i['Assigned_chem_shift_list_ID'])
+                            row.append(id)
+
+                            if apply_to_loops:
+                                row.append(entry_id)
+
+                            aux_lp_data.add_data(row)
+
+                        id += 1
+
+                    sf_data.add_loop(aux_lp_data)
 
         return True
 

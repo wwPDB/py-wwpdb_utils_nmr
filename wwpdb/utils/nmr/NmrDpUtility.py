@@ -7808,14 +7808,25 @@ class NmrDpUtility(object):
 
         return True
 
-    def __addUnnamedEntryId(self, entry_id='UNNAMED', apply_to_loops=True):
+    def __addUnnamedEntryId(self, entry_id='UNNAMED', insert_entry_id_to_loops=True):
         """ Add UNNAMED entry id.
         """
+
+        if 'entry_id' in self.__inputParamDict and not self.__inputParamDict['entry_id'] is None:
+            entry_id = self.__inputParamDict['entry_id']
+
+        if 'insert_entry_id_to_loops' in self.__inputParamDict and not self.__inputParamDict['insert_entry_id_to_loops'] is None:
+            if type(self.__inputParamDict['insert_entry_id_to_loops']) is bool:
+                insert_entry_id_to_loops = self.__inputParamDict['insert_entry_id_to_loops']
+            else:
+                insert_entry_id_to_loops = self.__inputParamDict['insert_entry_id_to_loops'] in self.true_value
 
         input_source = self.report.input_sources[0]
         input_source_dic = input_source.get()
 
         file_type = input_source_dic['file_type']
+
+        # update datablock name
 
         if self.__star_data_type == 'Entry':
             self.__star_data.entry_id = entry_id + self.content_type[file_type]
@@ -7829,7 +7840,7 @@ class NmrDpUtility(object):
         self.__sortCSLoop()
 
         if self.__updateAtomChemShiftId():
-            self.__updateAmbiguousAtomChemShift(entry_id, apply_to_loops)
+            self.__updateAmbiguousAtomChemShift(entry_id, insert_entry_id_to_loops)
 
         for content_subtype in input_source_dic['content_subtype'].keys():
 
@@ -7849,7 +7860,7 @@ class NmrDpUtility(object):
                         itCol = tagNames.index(entryIdTag)
                         sf_data.tags[itCol][1] = entry_id
 
-                if apply_to_loops:
+                if insert_entry_id_to_loops:
 
                     entryIdTag = 'Entry_ID'
 
@@ -8074,13 +8085,13 @@ class NmrDpUtility(object):
 
             ambig_set_id_name = 'Ambiguity_set_ID'
 
+            ambig_set_id_col = lp_data.tags.index(ambig_set_id_name)
+
             ambig_set_id_dic = {}
 
             if ambig_set_id_name in lp_data.tags and error_dic['invalid_ambiguity_code'] is None:
 
                 ambig_set_ids = []
-
-                ambig_set_id_col = lp_data.tags.index(ambig_set_id_name)
 
                 for i in lp_data:
 
@@ -8111,8 +8122,6 @@ class NmrDpUtility(object):
 
             if disordered_ambig_set_id:
 
-                ambig_set_id_col = lp_data.tags.index(ambig_set_id_name)
-
                 for i in lp_data:
                     ambig_set_id = i[ambig_set_id_col]
 
@@ -8142,7 +8151,7 @@ class NmrDpUtility(object):
 
         return True
 
-    def __updateAmbiguousAtomChemShift(self, entry_id='UNNAMED', apply_to_loops=True):
+    def __updateAmbiguousAtomChemShift(self, entry_id='UNNAMED', insert_entry_id_to_loops=True):
         """ Update _Ambiguous_atom_chem_shift loops.
         """
 
@@ -8243,7 +8252,7 @@ class NmrDpUtility(object):
                     aux_lp_data.add_tag(aux_lp_cateogry + '.' + 'Assigned_chem_shift_list_ID')
                     aux_lp_data.add_tag(aux_lp_cateogry + '.' + 'Atom_chem_shift_ID')
 
-                    if apply_to_loops:
+                    if insert_entry_id_to_loops:
                         aux_lp_data.add_tag(aux_lp_cateogry + '.' + 'Entry_ID')
 
                     id = 1
@@ -8258,7 +8267,7 @@ class NmrDpUtility(object):
                             row.append(i['Assigned_chem_shift_list_ID'])
                             row.append(id)
 
-                            if apply_to_loops:
+                            if insert_entry_id_to_loops:
                                 row.append(entry_id)
 
                             aux_lp_data.add_data(row)

@@ -94,6 +94,7 @@ class TestNmrDpUtility(unittest.TestCase):
         self.utility.setSource(self.data_dir_path + '2l9r.nef')
         self.utility.addInput(name='coordinate_file_path', value=self.data_dir_path + '2l9r.cif', type='file')
         self.utility.addInput(name='report_file_path', value=self.data_dir_path + '2l9r-nef-consistency-log.json', type='file')
+        self.utility.addInput(name='entry_id', value='NEED_ACC_NO', type='param')
         self.utility.setLog(self.data_dir_path + '2l9r-nef2str-deposit-log.json')
         self.utility.setDestination(self.data_dir_path + '2l9r-next.nef')
         self.utility.addOutput(name='nmr-star_file_path', value=self.data_dir_path + '2l9r-nef2str.str', type='file')
@@ -105,6 +106,8 @@ class TestNmrDpUtility(unittest.TestCase):
         self.utility.setSource(self.data_dir_path + '2l9r.str')
         self.utility.addInput(name='coordinate_file_path', value=self.data_dir_path + '2l9r.cif', type='file')
         self.utility.addInput(name='report_file_path', value=self.data_dir_path + '2l9r-str-consistency-log.json', type='file')
+        self.utility.addInput(name='entry_id', value='2l9r', type='param')
+        self.utility.addInput(name='insert_entry_id_to_loops', value=True, type='param')
         self.utility.setLog(self.data_dir_path + '2l9r-str2str-deposit-log.json')
         self.utility.setDestination(self.data_dir_path + '2l9r-next.str')
 

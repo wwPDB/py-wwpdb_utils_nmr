@@ -179,11 +179,10 @@ class NmrDpUtility(object):
                              }
 
         # paramagnetic elements, except for Oxygen
-        self.paramag_elems = {'LI', 'O', 'NA', 'MG', 'AL', 'K', 'CA', 'SC', 'TI', 'V', 'MN', 'RB', 'SR', 'Y', 'ZR', 'NB', 'MO', 'TC', 'RU', 'RH', 'PD', 'SN', 'CS', 'BA', 'LA', 'CE', 'PR', 'ND', 'PM', 'SM', 'EU', 'GD', 'TB', 'DY', 'HO', 'ER', 'TM', 'YB', 'LU', 'HF', 'TA', 'W', 'RE', 'OS', 'IR', 'PT', 'FR', 'RA', 'AC'}\
-                                - {'O'}
+        self.paramag_elems = ('LI', 'NA', 'MG', 'AL', 'K', 'CA', 'SC', 'TI', 'V', 'MN', 'RB', 'SR', 'Y', 'ZR', 'NB', 'MO', 'TC', 'RU', 'RH', 'PD', 'SN', 'CS', 'BA', 'LA', 'CE', 'PR', 'ND', 'PM', 'SM', 'EU', 'GD', 'TB', 'DY', 'HO', 'ER', 'TM', 'YB', 'LU', 'HF', 'TA', 'W', 'RE', 'OS', 'IR', 'PT', 'FR', 'RA', 'AC')
 
         # ferromagnetic elements
-        self.ferromag_elems = {'CR', 'FE', 'CO', 'NI'}
+        self.ferromag_elems = ('CR', 'FE', 'CO', 'NI')
 
         # isotope numbers of NMR observable atoms
         self.atom_isotopes = {'H': {1, 2, 3},
@@ -1270,7 +1269,8 @@ class NmrDpUtility(object):
                          'G': 'G',
                          'I': 'I',
                          'T': 'T',
-                         'U': 'U'}
+                         'U': 'U'
+                         }
 
         # main contents of loops
         self.__lp_data = {'poly_seq': [],
@@ -5801,21 +5801,18 @@ class NmrDpUtility(object):
         """ Delete skipped saveframes.
         """
 
-        warning_dic = self.report.warning.get()
-
-        if warning_dic['skipped_sf_category'] is None:
-            return True
-
         input_source = self.report.input_sources[0]
         input_source_dic = input_source.get()
 
         file_type = input_source_dic['file_type']
         file_name = input_source_dic['file_name']
 
-        for w in warning_dic['skipped_sf_category']:
+        warnings = self.report.warning.getList('skipped_sf_category', file_name)
 
-            if w['file_name'] != file_name:
-                continue
+        if warnings is None:
+            return True
+
+        for w in warnings:
 
             if self.__star_data_type == "Entry" or self.__star_data_type == "Saveframe":
 
@@ -5864,21 +5861,18 @@ class NmrDpUtility(object):
         """ Delete skipped loops.
         """
 
-        warning_dic = self.report.warning.get()
-
-        if warning_dic['skipped_lp_category'] is None:
-            return True
-
         input_source = self.report.input_sources[0]
         input_source_dic = input_source.get()
 
         file_type = input_source_dic['file_type']
         file_name = input_source_dic['file_name']
 
-        for w in warning_dic['skipped_lp_category']:
+        warnings = self.report.warning.getList('skipped_lp_category', file_name)
 
-            if w['file_name'] != file_name:
-                continue
+        if warnings is None:
+            return True
+
+        for w in warnings:
 
             if self.__star_data_type == "Entry" or self.__star_data_type == "Saveframe":
 
@@ -6441,21 +6435,18 @@ class NmrDpUtility(object):
         """ Fix disordered indices.
         """
 
-        warning_dic = self.report.warning.get()
-
-        if warning_dic['disordered_index'] is None:
-            return True
-
         input_source = self.report.input_sources[0]
         input_source_dic = input_source.get()
 
         file_type = input_source_dic['file_type']
         file_name = input_source_dic['file_name']
 
-        for w in warning_dic['disordered_index']:
+        warnings = self.report.warning.getList('disordered_index', file_name)
 
-            if w['file_name'] != file_name:
-                continue
+        if warnings is None:
+            return True
+
+        for w in warnings:
 
             if self.__star_data_type == "Entry" or self.__star_data_type == "Saveframe":
 
@@ -6530,21 +6521,18 @@ class NmrDpUtility(object):
         """ Remove non-sense zero values.
         """
 
-        warning_dic = self.report.warning.get()
-
-        if warning_dic['missing_data'] is None:
-            return True
-
         input_source = self.report.input_sources[0]
         input_source_dic = input_source.get()
 
         file_type = input_source_dic['file_type']
         file_name = input_source_dic['file_name']
 
-        for w in warning_dic['missing_data']:
+        warnings = self.report.warning.getList('missing_data', file_name)
 
-            if w['file_name'] != file_name:
-                continue
+        if warnings is None:
+            return True
+
+        for w in warnings:
 
             if not "is non-sense zero value" in w['description']:
                 continue
@@ -6634,21 +6622,18 @@ class NmrDpUtility(object):
         """ Fix non-sense negative values.
         """
 
-        warning_dic = self.report.warning.get()
-
-        if warning_dic['missing_data'] is None:
-            return True
-
         input_source = self.report.input_sources[0]
         input_source_dic = input_source.get()
 
         file_type = input_source_dic['file_type']
         file_name = input_source_dic['file_name']
 
-        for w in warning_dic['unusual_data']:
+        warnings = self.report.warning.getList('unusual_data', file_name)
 
-            if w['file_name'] != file_name:
-                continue
+        if warnings is None:
+            return True
+
+        for w in warnings:
 
             if not "is non-sense negative value" in w['description']:
                 continue
@@ -6738,23 +6723,20 @@ class NmrDpUtility(object):
         """ Fix enumeration failures if possible.
         """
 
-        warning_dic = self.report.warning.get()
-
-        if warning_dic['enum_failure'] is None:
-            return True
-
         input_source = self.report.input_sources[0]
         input_source_dic = input_source.get()
 
         file_type = input_source_dic['file_type']
         file_name = input_source_dic['file_name']
 
+        warnings = self.report.warning.getList('enum_failure', file_name)
+
+        if warnings is None:
+            return True
+
         self.chk_desc_pat = re.compile(r'^(.*) \'(.*)\' should be one of \((.*)\)\.$')
 
-        for w in warning_dic['enum_failure']:
-
-            if w['file_name'] != file_name:
-                continue
+        for w in warnings:
 
             if not "should be one of" in w['description']:
                 continue
@@ -7728,11 +7710,10 @@ class NmrDpUtility(object):
         """ Append parent tag in saveframe if not exists.
         """
 
-        warning_dic = self.report.warning.get()
-
         input_source = self.report.input_sources[0]
         input_source_dic = input_source.get()
 
+        file_name = input_source_dic['file_name']
         file_type = input_source_dic['file_type']
 
         if file_type == 'nef':
@@ -7762,22 +7743,9 @@ class NmrDpUtility(object):
 
                     sf_framecode = sf_data.get_tag('sf_framecode')[0]
 
-                    has_duplicated_index = False
+                    warn_desc = self.report.warning.getDescription('duplicated_index', file_name, sf_framecode)
 
-                    if 'duplicated_index' in warning_dic:
-
-                        for w in warning_dic['duplicated_index']:
-
-                            if w['file_name'] != file_name:
-                                continue
-
-                            if w['saveframe'] == sf_framecode:
-
-                                if w['description'].split(' ')[0] == self.sf_tag_prefixes[file_type][content_subtype].lstrip('_') + '.ID':
-                                    has_duplicated_index = True
-                                    break
-
-                    if has_duplicated_index:
+                    if not warn_desc is None and warn_desc.split(' ')[0] == self.sf_tag_prefixes[file_type][content_subtype].lstrip('_') + '.ID':
                         continue
 
                     lp_data = sf_data.get_loop_by_category(lp_category)
@@ -7923,8 +7891,6 @@ class NmrDpUtility(object):
         file_name = input_source_dic['file_name']
         file_type = input_source_dic['file_type']
 
-        error_dic = self.report.error.get()
-
         content_subtype = 'chem_shift'
 
         if not content_subtype in input_source_dic['content_subtype'].keys():
@@ -7954,23 +7920,7 @@ class NmrDpUtility(object):
 
             sf_framecode = sf_data.get_tag('sf_framecode')[0]
 
-            has_error = False
-
-            for error_type in error_dic.keys():
-
-                if error_type == 'total' or error_dic[error_type] is None:
-                    continue
-
-                for error in error_dic[error_type]:
-
-                    if error['file_name'] != file_name:
-                        continue
-
-                    if 'saveframe' in error and error['saveframe'] == sf_framecode:
-                        has_error = True
-                        break
-
-            if has_error:
+            if self.report.error.exists(file_name, sf_framecode):
                 continue
 
             lp_data = next((l['data'] for l in self.__lp_data[content_subtype] if l['sf_framecode'] == sf_framecode), None)
@@ -8039,8 +7989,6 @@ class NmrDpUtility(object):
         if file_type == 'nef':
             return False
 
-        error_dic = self.report.error.get()
-
         content_subtype = 'chem_shift'
 
         if not content_subtype in input_source_dic['content_subtype'].keys():
@@ -8062,23 +8010,7 @@ class NmrDpUtility(object):
 
             sf_framecode = sf_data.get_tag('sf_framecode')[0]
 
-            has_error = False
-
-            for error_type in error_dic.keys():
-
-                if error_type == 'total' or error_dic[error_type] is None:
-                    continue
-
-                for error in error_dic[error_type]:
-
-                    if error['file_name'] != file_name:
-                        continue
-
-                    if 'saveframe' in error and error['saveframe'] == sf_framecode:
-                        has_error = True
-                        break
-
-            if has_error:
+            if self.report.error.exists(file_name, sf_framecode):
                 continue
 
             lp_data = sf_data.get_loop_by_category(lp_category)
@@ -8089,7 +8021,7 @@ class NmrDpUtility(object):
 
             ambig_set_id_dic = {}
 
-            if ambig_set_id_name in lp_data.tags and error_dic['invalid_ambiguity_code'] is None:
+            if ambig_set_id_name in lp_data.tags:
 
                 ambig_set_ids = []
 
@@ -8164,11 +8096,6 @@ class NmrDpUtility(object):
         if file_type == 'nef':
             return False
 
-        error_dic = self.report.error.get()
-
-        if not error_dic['invalid_ambiguity_code'] is None:
-            return False
-
         content_subtype = 'chem_shift'
 
         if not content_subtype in input_source_dic['content_subtype'].keys():
@@ -8193,23 +8120,7 @@ class NmrDpUtility(object):
 
             sf_framecode = sf_data.get_tag('sf_framecode')[0]
 
-            has_error = False
-
-            for error_type in error_dic.keys():
-
-                if error_type == 'total' or error_dic[error_type] is None:
-                    continue
-
-                for error in error_dic[error_type]:
-
-                    if error['file_name'] != file_name:
-                        continue
-
-                    if 'saveframe' in error and error['saveframe'] == sf_framecode:
-                        has_error = True
-                        break
-
-            if has_error:
+            if self.report.error.exists(file_name, sf_framecode):
                 continue
 
             lp_data = next((l['data'] for l in self.__lp_data[content_subtype] if l['sf_framecode'] == sf_framecode), None)
@@ -8248,12 +8159,12 @@ class NmrDpUtility(object):
                             break
 
                     aux_lp_data = pynmrstar.Loop.from_scratch(aux_lp_cateogry)
-                    aux_lp_data.add_tag(aux_lp_cateogry + '.' + 'Ambiguous_shift_set_ID')
-                    aux_lp_data.add_tag(aux_lp_cateogry + '.' + 'Assigned_chem_shift_list_ID')
-                    aux_lp_data.add_tag(aux_lp_cateogry + '.' + 'Atom_chem_shift_ID')
+                    aux_lp_data.add_tag(aux_lp_cateogry + '.Ambiguous_shift_set_ID')
+                    aux_lp_data.add_tag(aux_lp_cateogry + '.Assigned_chem_shift_list_ID')
+                    aux_lp_data.add_tag(aux_lp_cateogry + '.Atom_chem_shift_ID')
 
                     if insert_entry_id_to_loops:
-                        aux_lp_data.add_tag(aux_lp_cateogry + '.' + 'Entry_ID')
+                        aux_lp_data.add_tag(aux_lp_cateogry + '.Entry_ID')
 
                     id = 1
 

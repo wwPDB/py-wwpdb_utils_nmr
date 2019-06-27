@@ -30,11 +30,11 @@ class CifReader(object):
         self.__dBlock = None
 
         # preset values
-        self.empty_value = (None, '', '.', '?')
-        self.true_value = ('true', 't', 'yes', 'y', '1')
+        self.emptyValue = (None, '', '.', '?')
+        self.trueValue = ('true', 't', 'yes', 'y', '1')
 
-        # allowed item types 
-        self.item_types = ('str', 'bool', 'int', 'float')
+        # allowed item types
+        self.itemTypes = ('str', 'bool', 'int', 'float')
 
     def setFilePath(self, filePath):
         """ Set file path and test readability.
@@ -128,6 +128,7 @@ class CifReader(object):
 
             # get row list
             rowList = catObj.getRowList()
+
             for row in rowList:
                 tD = {}
                 for k, v in itDict.items():
@@ -136,13 +137,13 @@ class CifReader(object):
 
         return dList
 
-    def getPolymerSequence(self, catName, key_items):
+    def getPolymerSequence(self, catName, keyItems):
         """ Extracts sequence from a given loop in a CIF file
         """
 
-        key_names = [k['name'] for k in key_items]
+        keyNames = [k['name'] for k in keyItems]
 
-        key_len = len(key_items)
+        len_key = len(keyItems)
 
         asm = [] # assembly of a loop
 
@@ -160,48 +161,48 @@ class CifReader(object):
 
             for idxIt, itName in enumerate(itNameList):
                 itDict[itName] = idxIt
-                if itName in key_names:
-                    altDict[next(k['alt_name'] for k in key_items if k['name'] == itName)] = idxIt
+                if itName in keyNames:
+                    altDict[next(k['alt_name'] for k in keyItems if k['name'] == itName)] = idxIt
 
-            if set(key_names) & set(itDict.keys()) != set(key_names):
-                raise LookupError("Missing one of data items %s." % key_names)
+            if set(keyNames) & set(itDict.keys()) != set(keyNames):
+                raise LookupError("Missing one of data items %s." % keyNames)
 
             # get row list
             rowList = catObj.getRowList()
 
-            for i in rowList:
-                for j in range(key_len):
-                    if i[itDict[key_names[j]]] in self.empty_value:
+            for row in rowList:
+                for j in range(len_key):
+                    if row[itDict[keyNames[j]]] in self.emptyValue:
                         raise ValueError("%s must not be empty." % itNameList[j])
 
-            seq_dict = {}
-            sid_dict = {}
+            compDict = {}
+            seqDict = {}
 
             try:
                 chain_id_col = altDict['chain_id']
                 seq_id_col = altDict['seq_id']
                 comp_id_col = altDict['comp_id']
 
-                chains = sorted(set([i[chain_id_col] for i in rowList]))
-                sorted_seq = sorted(set(['{} {:04d} {}'.format(i[chain_id_col], int(i[seq_id_col]), i[comp_id_col]) for i in rowList]))
+                chains = sorted(set([row[chain_id_col] for row in rowList]))
+                sortedSeq = sorted(set(['{} {:04d} {}'.format(row[chain_id_col], int(row[seq_id_col]), row[comp_id_col]) for row in rowList]))
 
-                chk_dict = {'{} {:04d}'.format(i[chain_id_col], int(i[seq_id_col])):i[comp_id_col] for i in rowList}
+                keyDict = {'{} {:04d}'.format(row[chain_id_col], int(row[seq_id_col])):row[comp_id_col] for row in rowList}
 
-                for i in rowList:
-                    chk_key = '{} {:04d}'.format(i[chain_id_col], int(i[seq_id_col]))
-                    if chk_dict[chk_key] != i[comp_id_col]:
+                for row in rowList:
+                    key = '{} {:04d}'.format(row[chain_id_col], int(row[seq_id_col]))
+                    if keyDict[key] != row[comp_id_col]:
                         raise KeyError("Sequence must be unique. %s %s, %s %s, %s %s vs %s." %\
-                                       (itNameList[chain_id_col], i[chain_id_col],
-                                        itNameList[seq_id_col], i[seq_id_col],
-                                        itNameList[comp_id_col], i[comp_id_col], chk_dict[chk_key]))
+                                       (itNameList[chain_id_col], row[chain_id_col],
+                                        itNameList[seq_id_col], row[seq_id_col],
+                                        itNameList[comp_id_col], row[comp_id_col], keyDict[key]))
 
                 if len(chains) > 1:
                     for c in chains:
-                        seq_dict[c] = [i.split(' ')[-1] for i in sorted_seq if i.split(' ')[0] == c]
-                        sid_dict[c] = [int(i.split(' ')[1]) for i in sorted_seq if i.split(' ')[0] == c]
+                        compDict[c] = [s.split(' ')[-1] for s in sortedSeq if s.split(' ')[0] == c]
+                        seqDict[c] = [int(s.split(' ')[1]) for s in sortedSeq if s.split(' ')[0] == c]
                 else:
-                    seq_dict[list(chains)[0]] = [i.split(' ')[-1] for i in sorted_seq]
-                    sid_dict[list(chains)[0]] = [int(i.split(' ')[1]) for i in sorted_seq]
+                    compDict[list(chains)[0]] = [s.split(' ')[-1] for s in sortedSeq]
+                    seqDict[list(chains)[0]] = [int(s.split(' ')[1]) for s in sortedSeq]
 
                 asm = [] # assembly of a loop
 
@@ -209,8 +210,8 @@ class CifReader(object):
                     ent = {} # entity
 
                     ent['chain_id'] = c
-                    ent['seq_id'] = sid_dict[c]
-                    ent['comp_id'] = seq_dict[c]
+                    ent['seq_id'] = seqDict[c]
+                    ent['comp_id'] = compDict[c]
 
                     asm.append(ent)
 
@@ -219,24 +220,25 @@ class CifReader(object):
 
         return asm
 
-    def getDictListWithFilter(self, catName, data_items, filter_items=None):
+    def getDictListWithFilter(self, catName, dataItems, filterItems=None):
         """ Return a list of dictionaries of a given category with filter.
         """
 
-        data_names = [d['name'] for d in data_items]
+        dataNames = [d['name'] for d in dataItems]
 
-        for d in data_items:
-            if not d['type'] in self.item_types:
-                raise TypeError("Type %s of data item %s must be one of %s." % (d['type'], d['name'], self.item_types))
+        for d in dataItems:
+            if not d['type'] in self.itemTypes:
+                raise TypeError("Type %s of data item %s must be one of %s." % (d['type'], d['name'], self.itemTypes))
 
-        if not filter_items is None:
-            filt_names = [f['name'] for f in filter_items]
+        if not filterItems is None:
+            filterNames = [f['name'] for f in filterItems]
 
-            for f in filter_items:
-                if not f['type'] in self.item_types:
-                    raise TypeError("Type %s of filter item %s must be one of %s." % (f['type'], f['name'], self.item_types))
+            for f in filterItems:
+                if not f['type'] in self.itemTypes:
+                    raise TypeError("Type %s of filter item %s must be one of %s." % (f['type'], f['name'], self.itemTypes))
 
         dList = []
+
         # get category object
         catObj = self.__dBlock.getObj(catName)
 
@@ -250,58 +252,59 @@ class CifReader(object):
             itNameList = [j[len_catName:] for j in catObj.getItemNameList()]
 
             for idxIt, itName in enumerate(itNameList):
-                if itName in data_names:
+                if itName in dataNames:
                     colDict[itName] = idxIt
-                if not filter_items is None and itName in filt_names:
+                if not filterItems is None and itName in filterNames:
                     fcolDict[itName] = idxIt
 
-            if set(data_names) & set(itNameList) != set(data_names):
-                raise LookupError("Missing one of data items %s." % data_names)
+            if set(dataNames) & set(itNameList) != set(dataNames):
+                raise LookupError("Missing one of data items %s." % dataNames)
 
-            if not filter_items is None and set(filt_names) & set(itNameList) != set(filt_names):
-                raise LookupError("Missing one of filter items %s." % filt_names)
+            if not filterItems is None and set(filterNames) & set(itNameList) != set(filterNames):
+                raise LookupError("Missing one of filter items %s." % filterNames)
 
             # get row list
             rowList = catObj.getRowList()
+
             for row in rowList:
                 filter = True
-                if not filter_items is None:
-                    for filter_item in filter_items:
-                        val = row[fcolDict[filter_item['name']]]
-                        if val in self.empty_value:
-                            if not filter_item['value'] in self.empty_value:
+                if not filterItems is None:
+                    for filterItem in filterItems:
+                        val = row[fcolDict[filterItem['name']]]
+                        if val in self.emptyValue:
+                            if not filterItem['value'] in self.emptyValue:
                                 filter = False
                                 break
                         else:
-                            filter_item_type = filter_item['type']
-                            if filter_item_type == 'str':
+                            filterItemType = filterItem['type']
+                            if filterItemType == 'str':
                                 pass
-                            elif filter_item_type == 'bool':
-                                val = val.lower() in true_value
-                            elif filter_item_type == 'int':
+                            elif filterItemType == 'bool':
+                                val = val.lower() in self.trueValue
+                            elif filterItemType == 'int':
                                 val = int(val)
                             else:
                                 val = float(val)
-                            if val != filter_item['value']:
+                            if val != filterItem['value']:
                                 filter = False
                                 break
                 if filter:
                     tD = {}
-                    for data_item in data_items:
-                        val = row[colDict[data_item['name']]]
-                        data_item_type = data_item['type']
-                        if data_item_type == 'str':
+                    for dataItem in dataItems:
+                        val = row[colDict[dataItem['name']]]
+                        dataItemType = dataItem['type']
+                        if dataItemType == 'str':
                                 pass
-                        elif data_item_type == 'bool':
-                            val = val.lower() in true_value
-                        elif data_item_type == 'int':
+                        elif dataItemType == 'bool':
+                            val = val.lower() in self.trueValue
+                        elif dataItemType == 'int':
                             val = int(val)
                         else:
                             val = float(val)
-                        if 'alt_name' in data_item:
-                            tD[data_item['alt_name']] = val
+                        if 'alt_name' in dataItem:
+                            tD[dataItem['alt_name']] = val
                         else:
-                            tD[data_item['name']] = val
+                            tD[dataItem['name']] = val
                         dList.append(tD)
 
         return dList

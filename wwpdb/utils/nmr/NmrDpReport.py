@@ -4,6 +4,7 @@
 #
 # Updates:
 ##
+from __builtin__ import True
 """ Wrapper class for data processing report of NMR unified data.
 """
 import logging
@@ -21,9 +22,11 @@ class NmrDpReport:
                                          'sequence_alignments': [],
                                          'chain_assignments': [],
                                          'diamagnetic': True,
-                                         'status': 'OK'},
+                                         'status': 'OK'
+                                         },
                          'error': None,
-                         'warning': None }
+                         'warning': None
+                         }
 
         self.status_codes = ('OK', 'ERROR', 'WARNING')
 
@@ -144,7 +147,7 @@ class NmrDpReport:
         self.error.put(self.__report['error'])
         self.warning.put(self.__report['warning'])
 
-        self.__immutable = False
+        self.setMutable()
 
 class NmrDpReportInputSource:
     """ Wrapper class for data processing report of NMR unified data (input source).
@@ -320,6 +323,46 @@ class NmrDpReportError:
     def put(self, contents):
         self.__contents = contents
 
+    def exists(self, file_name, saveframe):
+        """ Return whether an error specified by file name and saveframe exists.
+            @return True for an error exists or False otherwise
+        """
+
+        for item in self.__contents.keys():
+
+            if item == 'total' or self.__contents[item] is None:
+                continue
+
+            try:
+                next(c for c in self.__contents[item] if c['file_name'] == 'file_name' and 'saveframe' in c and c['saveframe'] == saveframe)
+                return True
+            except StopIteration:
+                pass
+
+        return False
+
+    def getList(self, item, file_name):
+        """ Return list of errors specified by by item name and file name.
+        """
+
+        if item == 'total' or not item in self.__contents.keys() or self.__contents[item] is None:
+            return None
+
+        return [c for c in self.__contents[item] if c['file_name'] == file_name]
+
+    def getDescription(self, item, file_name, saveframe):
+        """ Return error description specified by item name, file name, and saveframe.
+        """
+
+        if item == 'total' or not item in self.__contents.keys() or self.__contents[item] is None:
+            return None
+
+        try:
+            c = next(c for c in self.__contents[item] if c['file_name'] == 'file_name' and 'saveframe' in c and c['saveframe'] == saveframe)
+            return c['description']
+        except StopIteration:
+            return None
+
 class NmrDpReportWarning:
     """ Wrapper class for data processing report of NMR unified data (warning).
     """
@@ -376,3 +419,43 @@ class NmrDpReportWarning:
 
     def put(self, contents):
         self.__contents = contents
+
+    def exists(self, file_name, saveframe):
+        """ Return whether a warning specified by file name and saveframe exists.
+            @return True for a warning exists or False otherwise
+        """
+
+        for item in self.__contents.keys():
+
+            if item == 'total' or self.__contents[item] is None:
+                continue
+
+            try:
+                next(c for c in self.__contents[item] if c['file_name'] == 'file_name' and 'saveframe' in c and c['saveframe'] == saveframe)
+                return True
+            except StopIteration:
+                pass
+
+        return False
+
+    def getList(self, item, file_name):
+        """ Return list of warnings specified by by item name and file name.
+        """
+
+        if item == 'total' or not item in self.__contents.keys() or self.__contents[item] is None:
+            return None
+
+        return [c for c in self.__contents[item] if c['file_name'] == file_name]
+
+    def getDescription(self, item, file_name, saveframe):
+        """ Return warning description specified by item name, file name, and saveframe.
+        """
+
+        if item == 'total' or not item in self.__contents.keys() or self.__contents[item] is None:
+            return None
+
+        try:
+            c = next(c for c in self.__contents[item] if c['file_name'] == 'file_name' and 'saveframe' in c and c['saveframe'] == saveframe)
+            return c['description']
+        except StopIteration:
+            return None

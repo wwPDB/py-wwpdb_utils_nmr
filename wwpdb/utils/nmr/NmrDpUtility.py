@@ -5807,7 +5807,7 @@ class NmrDpUtility(object):
         file_type = input_source_dic['file_type']
         file_name = input_source_dic['file_name']
 
-        warnings = self.report.warning.getList('skipped_sf_category', file_name)
+        warnings = self.report.warning.getValueList('skipped_sf_category', file_name)
 
         if warnings is None:
             return True
@@ -5867,7 +5867,7 @@ class NmrDpUtility(object):
         file_type = input_source_dic['file_type']
         file_name = input_source_dic['file_name']
 
-        warnings = self.report.warning.getList('skipped_lp_category', file_name)
+        warnings = self.report.warning.getValueList('skipped_lp_category', file_name)
 
         if warnings is None:
             return True
@@ -6441,7 +6441,7 @@ class NmrDpUtility(object):
         file_type = input_source_dic['file_type']
         file_name = input_source_dic['file_name']
 
-        warnings = self.report.warning.getList('disordered_index', file_name)
+        warnings = self.report.warning.getValueList('disordered_index', file_name)
 
         if warnings is None:
             return True
@@ -6527,7 +6527,7 @@ class NmrDpUtility(object):
         file_type = input_source_dic['file_type']
         file_name = input_source_dic['file_name']
 
-        warnings = self.report.warning.getList('missing_data', file_name)
+        warnings = self.report.warning.getValueList('missing_data', file_name)
 
         if warnings is None:
             return True
@@ -6628,7 +6628,7 @@ class NmrDpUtility(object):
         file_type = input_source_dic['file_type']
         file_name = input_source_dic['file_name']
 
-        warnings = self.report.warning.getList('unusual_data', file_name)
+        warnings = self.report.warning.getValueList('unusual_data', file_name)
 
         if warnings is None:
             return True
@@ -6729,7 +6729,7 @@ class NmrDpUtility(object):
         file_type = input_source_dic['file_type']
         file_name = input_source_dic['file_name']
 
-        warnings = self.report.warning.getList('enum_failure', file_name)
+        warnings = self.report.warning.getValueList('enum_failure', file_name)
 
         if warnings is None:
             return True

@@ -1739,6 +1739,15 @@ class NmrDpUtility(object):
                         except ValueError:
                             pass
 
+                if content_subtype == 'rdc_restraint':
+
+                    try:
+                        tag = next(tag for tag in sf_data.tags if tag[0] == 'tensor_residue_type')
+                        sf_data.add_tag(sf_category + '.tensor_residue_name', tag[1])
+                        sf_data.delete_tag('tensor_residue_type')
+                    except StopIteration:
+                        pass
+
                 if content_subtype == 'dist_restraint' or content_subtype == 'rdc_restraint':
                     max_dim = 3
 

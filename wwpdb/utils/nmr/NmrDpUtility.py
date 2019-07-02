@@ -73,7 +73,8 @@ class NmrDpUtility(object):
                            ]
 
         # validation tasks for coordinate file only
-        __cifCheckTasks = [self.__detectCoordContentSubType,
+        __cifCheckTasks = [self.__validateCoordInputSource,
+                           self.__detectCoordContentSubType,
                            self.__extractCoordPolymerSequence,
                            self.__extractCoordNonPolymerScheme,
                            self.__extractCoordPolymerSequenceInLoop,
@@ -89,7 +90,6 @@ class NmrDpUtility(object):
         # nmr-*-consistency-check tasks
         __checkTasks = [self.__initializeDpReport, self.__validateInputSource]
         __checkTasks.extend(__nmrCheckTasks)
-        __checkTasks.append(self.__validateCoordInputSource)
         __checkTasks.extend(__cifCheckTasks)
         __checkTasks.extend(__crossCheckTasks)
 

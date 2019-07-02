@@ -90,6 +90,12 @@ class TestNmrDpUtility(unittest.TestCase):
 
         self.utility.op('nmr-nef-consistency-check')
 
+    def test_nmr_nef_consistency_check_former_nef(self):
+        self.utility.setSource(self.data_dir_path + '2l9rold.nef')
+        self.utility.setLog(self.data_dir_path + '2l9rold-nef-consistency-log.json')
+
+        self.utility.op('nmr-nef-consistency-check')
+
     def test_nmr_nef2str_deposit_check(self):
         self.utility.setSource(self.data_dir_path + '2l9r.nef')
         self.utility.addInput(name='coordinate_file_path', value=self.data_dir_path + '2l9r.cif', type='file')

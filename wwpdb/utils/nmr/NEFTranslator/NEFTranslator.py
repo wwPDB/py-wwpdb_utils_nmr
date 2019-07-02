@@ -1087,8 +1087,7 @@ class NEFTranslator(object):
             if set(tags) & set(loop.tags) == set(tags):
                 index_dat = loop.get_data_by_tag(tags)
             else:
-                if not _tags_exist:
-                    raise LookupError("Missing key item %s." % index_id)
+                raise LookupError("Missing key item %s." % index_id)
 
             for i in index_dat:
                 if NEFTranslator.is_empty_data(i):

@@ -1,6 +1,6 @@
 ##
 # File: NmrDpReport.py
-# Date: 19-Jun-2019
+# Date: 02-Jul-2019
 #
 # Updates:
 ##
@@ -144,21 +144,34 @@ class NmrDpReport:
             @return: JSON content of NMR data processsing report
         """
 
+        if self.get() is None:
+            return None
+
         return json.dumps(self.get(), indent=indent_spaces)
 
     def writeJson(self, out_path):
         """ Write NMR data processing report as JSON file.
+            @return: True for success or False otherwise
         """
+
+        if self.get() is None:
+            return False
 
         with open(out_path, 'w') as file:
             file.write(json.dumps(self.get(), indent=2))
 
+        return True
+
     def loadJson(self, in_path):
         """ Retrieve NMR data processing report from JSON file.
+            @return: True for success or False otherwise
         """
 
         with open(in_path, 'r') as file:
             self.__report = json.loads(file.read())
+
+        if self.__report is None:
+            return False
 
         self.input_sources = []
 
@@ -175,6 +188,8 @@ class NmrDpReport:
         self.warning.put(self.__report['warning'])
 
         self.setMutable()
+
+        return True
 
 class NmrDpReportInputSource:
     """ Wrapper class for data processing report of NMR unified data (input source).
@@ -354,12 +369,6 @@ class NmrDpReportError:
 
         return self.__contents['total']
 
-    def getItemList(self):
-        """ Return list of effective error items.
-        """
-
-        return [item for item in self.__contents.keys() if not self._contents[item] is None]
-
     def exists(self, file_name, saveframe):
         """ Return whether an error specified by file name and saveframe exists.
             @return: True for an error exists or False otherwise
@@ -382,7 +391,7 @@ class NmrDpReportError:
         """ Return list of error values specified by by item name and file name.
         """
 
-        if item == 'total' or (not item in self.__contents.keys()) or self.__contents[item] is None:
+        if item == 'total' or self.__contents is None or (not item in self.__contents.keys()) or self.__contents[item] is None:
             return None
 
         return [c for c in self.__contents[item] if c['file_name'] == file_name]
@@ -391,7 +400,7 @@ class NmrDpReportError:
         """ Return error description specified by item name, file name, and saveframe.
         """
 
-        if item == 'total' or (not item in self.__contents.keys()) or self.__contents[item] is None:
+        if item == 'total' or self.__contents is None or (not item in self.__contents.keys()) or self.__contents[item] is None:
             return None
 
         try:
@@ -461,12 +470,6 @@ class NmrDpReportWarning:
 
         return self.__contents['total']
 
-    def getItemList(self):
-        """ Return list of effective warning items.
-        """
-
-        return [item for item in self.__contents.keys() if not self._contents[item] is None]
-
     def exists(self, file_name, saveframe):
         """ Return whether a warning specified by file name and saveframe exists.
             @return: True for a warning exists or False otherwise
@@ -489,7 +492,7 @@ class NmrDpReportWarning:
         """ Return list of warning values specified by by item name and file name.
         """
 
-        if item == 'total' or (not item in self.__contents.keys()) or self.__contents[item] is None:
+        if item == 'total' or self.__contents is None or (not item in self.__contents.keys()) or self.__contents[item] is None:
             return None
 
         return [c for c in self.__contents[item] if c['file_name'] == file_name]
@@ -498,7 +501,7 @@ class NmrDpReportWarning:
         """ Return warning description specified by item name, file name, and saveframe.
         """
 
-        if item == 'total' or (not item in self.__contents.keys()) or self.__contents[item] is None:
+        if item == 'total' or self.__contents is None or (not item in self.__contents.keys()) or self.__contents[item] is None:
             return None
 
         try:

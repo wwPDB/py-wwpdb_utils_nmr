@@ -1,6 +1,6 @@
 ##
 # File: NmrDpUtility.py
-# Date: 20-Jun-2019
+# Date: 02-Jul-2019
 #
 # Updates:
 ##
@@ -185,15 +185,15 @@ class NmrDpUtility(object):
         self.ferromag_elems = ('CR', 'FE', 'CO', 'NI')
 
         # isotope numbers of NMR observable atoms
-        self.atom_isotopes = {'H': {1, 2, 3},
-                              'C': {13},
-                              'N': {15, 14},
-                              'O': {17},
-                              'P': {31},
-                              'S': {33},
-                              'F': {19},
-                              'CD': {113, 111},
-                              'CA': {43}
+        self.atom_isotopes = {'H': [1, 2, 3],
+                              'C': [13],
+                              'N': [15, 14],
+                              'O': [17],
+                              'P': [31],
+                              'S': [33],
+                              'F': [19],
+                              'CD': [113, 111],
+                              'CA': [43]
                               }
 
         # ambiguity codes
@@ -1488,7 +1488,8 @@ class NmrDpUtility(object):
                     self.__lfh.write("+NmrDpUtility.op() starting op %s - task %s\n" % (op, task.__name__))
 
                 if not task():
-                    pass
+                    if task == self.__translateNef2Str:
+                        break
 
         self.__dumpDpReport()
 
@@ -1498,7 +1499,7 @@ class NmrDpUtility(object):
         """ Dump current NMR data processing report.
         """
 
-        self.report.writeJson(self.__logPath)
+        return self.report.writeJson(self.__logPath)
 
     def __initializeDpReport(self, srcPath=None):
         """ Initialize NMR data processing report.
@@ -1597,8 +1598,8 @@ class NmrDpUtility(object):
                 err = "%s was selected as %s file, but recognized as %s file." % (file_name, self.readable_file_type[file_type], self.readable_file_type[_file_type])
 
                 if len(message['error']) > 0:
-                    for error_message in message['error']:
-                        err += err_message
+                    for err_message in message['error']:
+                        err += ' ' + err_message
 
                 self.report.error.appendDescription('format_issue', {'file_name': file_name, 'description': err})
                 self.report.setError()
@@ -1610,6 +1611,8 @@ class NmrDpUtility(object):
 
             is_done, self.__star_data_type, self.__star_data = self.__nefT.read_input_file(srcPath) # NEFTranslator.validate_file() generates this object internally, but not re-used.
 
+            self.__rescueFormerNef()
+
             return True
 
         else:
@@ -1617,8 +1620,8 @@ class NmrDpUtility(object):
             err = "%s is invalid %s file." % (file_name, self.readable_file_type[file_type])
 
             if len(message['error']) > 0:
-                for error_message in message['error']:
-                    err += err_message
+                for err_message in message['error']:
+                    err += ' ' + err_message
 
             self.report.error.appendDescription('format_issue', {'file_name': file_name, 'description': err})
             self.report.setError()
@@ -1627,6 +1630,150 @@ class NmrDpUtility(object):
                 self.__lfh.write("+NmrDpUtility.__validateInputSource() ++ Error  - %s\n" % err)
 
             return False
+
+    def __rescueFormerNef(self):
+        """ Rescue former NEF version prior to 1.0.
+        """
+
+        input_source = self.report.input_sources[0]
+        input_source_dic = input_source.get()
+
+        file_type = input_source_dic['file_type']
+
+        if file_type != 'nef':
+            return True
+
+        content_subtype = 'entry_info'
+
+        sf_category = self.sf_categories[file_type][content_subtype]
+
+        for sf_data in self.__star_data.get_saveframes_by_category(sf_category):
+
+            version = sf_data.get_tag('format_version')[0]
+
+            if not version.startswith('0.'):
+                return True
+
+            sf_data.format_version = '1.0'
+
+        for content_subtype in self.nmr_content_subtypes:
+
+            sf_category = self.sf_categories[file_type][content_subtype]
+            lp_category = self.lp_categories[file_type][content_subtype]
+
+            for sf_data in self.__star_data.get_saveframes_by_category(sf_category):
+
+                lp_data = sf_data.get_loop_by_category(lp_category)
+
+                index_tag = self.index_tags[file_type][content_subtype]
+
+                if not index_tag is None:
+
+                    try:
+                        tag_pos = next(lp_data.tags.index(tag) for tag in lp_data.tags if tag == 'ordinal')
+                        lp_data.tags[tag_pos] = 'index'
+                    except StopIteration:
+                        pass
+
+                    try:
+                        tag_pos = next(lp_data.tags.index(tag) for tag in lp_data.tags if tag == 'index_id')
+                        lp_data.tags[tag_pos] = 'index'
+                    except StopIteration:
+                        pass
+
+                if content_subtype == 'poly_seq':
+
+                    try:
+                        tag_pos = next(lp_data.tags.index(tag) for tag in lp_data.tags if tag == 'residue_type')
+                        lp_data.tags[tag_pos] = 'residue_name'
+                    except StopIteration:
+                        pass
+
+                    if not 'index' in lp_data.tags:
+
+                        id = 1
+
+                        for i in lp_data:
+                            i.append(id)
+                            id += 1
+
+                        lp_data.add_tag(lp_category + '.index')
+
+                if content_subtype == 'chem_shift':
+
+                    try:
+                        next(tag for tag in sf_data.tags if tag[0] == 'atom_chemical_shift_units')
+                        sf_data.delete_tag('atom_chemical_shift_units')
+                    except StopIteration:
+                        pass
+
+                    try:
+                        tag_pos = next(lp_data.tags.index(tag) for tag in lp_data.tags if tag == 'residue_type')
+                        lp_data.tags[tag_pos] = 'residue_name'
+                    except StopIteration:
+                        pass
+
+                    if not 'element' in lp_data.tags:
+
+                        try:
+                            atom_name_col = lp_data.tags.index('atom_name')
+
+                            for i in lp_data:
+                                i.append(i[atom_name_col][0])
+
+                            lp_data.add_tag(lp_category + '.element')
+
+                        except ValueError:
+                            pass
+
+                    if not 'isotope_number' in lp_data.tags:
+
+                        try:
+                            atom_name_col = lp_data.tags.index('atom_name')
+
+                            for i in lp_data:
+                                i.append(self.atom_isotopes[i[atom_name_col][0]][0])
+
+                            lp_data.add_tag(lp_category + '.isotope_number')
+
+                        except ValueError:
+                            pass
+
+                if content_subtype == 'dist_restraint' or content_subtype == 'rdc_restraint':
+                    max_dim = 3
+
+                elif content_subtype == 'dihed_restraint':
+                    max_dim = 5
+
+                elif content_subtype == 'spectral_peak':
+
+                    try:
+
+                        _num_dim = sf_data.get_tag(self.num_dim_items[file_type])[0]
+                        num_dim = int(_num_dim)
+
+                        if not num_dim in range(1, self.lim_num_dim):
+                            raise ValueError()
+
+                    except ValueError: # raised error already at __testIndexConsistency()
+                        continue
+
+                    max_dim = num_dim + 1
+
+                else:
+                    continue
+
+                for j in range(1, max_dim):
+
+                    _residue_type = 'residue_type_' + str(j)
+
+                    try:
+                        tag_pos = next(lp_data.tags.index(tag) for tag in lp_data.tags if tag == _residue_type)
+                        lp_data.tags[tag_pos] = 'residue_name_' + str(j)
+                    except StopIteration:
+                        pass
+
+        return True
 
     def __detectContentSubType(self):
         """ Detect content subtypes.
@@ -5783,19 +5930,21 @@ class NmrDpUtility(object):
 
             if os.access(fPath, os.F_OK):
 
-                self.report = NmrDpReport()
-                self.report.loadJson(fPath)
+                if os.path.getsize(fPath) > 0:
 
-                return True
+                    self.report = NmrDpReport()
+                    self.report.loadJson(fPath)
+
+                    return True
+
+                logging.error("+NmrDpUtility.__retrieveDpReport() ++ Error  - Could not find any content in file path %s." % fPath)
+                raise IOError("+NmrDpUtility.__retrieveDpReport() ++ Error  - Could not find any content in file path %s." % fPath)
 
             logging.error("+NmrDpUtility.__retrieveDpReport() ++ Error  - Could not access to file path %s." % fPath)
             raise IOError("+NmrDpUtility.__retrieveDpReport() ++ Error  - Could not access to file path %s." % fPath)
 
-        else:
-            logging.error("+NmrDpUtility.__retrieveDpReport() ++ Error  - Could not find 'report_file_path' input parameter.")
-            raise KeyError("+NmrDpUtility.__retrieveDpReport() ++ Error  - Could not find 'report_file_path' input parameter.")
-
-        return False
+        logging.error("+NmrDpUtility.__retrieveDpReport() ++ Error  - Could not find 'report_file_path' input parameter.")
+        raise KeyError("+NmrDpUtility.__retrieveDpReport() ++ Error  - Could not find 'report_file_path' input parameter.")
 
     def __deleteSkippedSf(self):
         """ Delete skipped saveframes.
@@ -8207,7 +8356,7 @@ class NmrDpUtility(object):
 
         self.__star_data.write_to_file(self.__dstPath)
 
-        return True
+        return not self.report.isError()
 
     def __initializeDpReportForNext(self):
         """ Initialize NMR data processing report using the next version of NMR unified data.
@@ -8231,26 +8380,51 @@ class NmrDpUtility(object):
         file_name = os.path.basename(self.__dstPath)
         file_type = input_source_dic['file_type']
 
+        out_file_path = self.__outputParamDict['nmr-star_file_path']
+
         if 'nmr-star_file_path' in self.__outputParamDict:
 
-            is_valid, json_dumps = self.__nefT.nef_to_nmrstar(self.__dstPath, self.__outputParamDict['nmr-star_file_path'])
+            try:
 
-            if is_valid:
-                return True
+                is_valid, json_dumps = self.__nefT.nef_to_nmrstar(self.__dstPath, out_file_path)
 
-            else:
+            except Exception as e:
 
                 err = "%s is invalid %s file." % (file_name, self.readable_file_type[file_type])
-
-                if len(message['error']) > 0:
-                    for error_message in message['error']:
-                        err += err_message
+                err += ' ' + str(e)
 
                 self.report.error.appendDescription('format_issue', {'file_name': file_name, 'description': err})
                 self.report.setError()
 
                 if self.__verbose:
                     self.__lfh.write("+NmrDpUtility.__translateNef2Str() ++ Error  - %s\n" % err)
+
+                if os.path.exists(out_file_path):
+                    os.remove(out_file_path)
+
+                return False
+
+            if is_valid:
+                return True
+
+            else:
+
+                message = json.loads(json_dumps)
+
+                err = "%s is invalid %s file." % (file_name, self.readable_file_type[file_type])
+
+                if len(message['error']) > 0:
+                    for err_message in message['error']:
+                        err += ' ' + err_message
+
+                self.report.error.appendDescription('format_issue', {'file_name': file_name, 'description': err})
+                self.report.setError()
+
+                if self.__verbose:
+                    self.__lfh.write("+NmrDpUtility.__translateNef2Str() ++ Error  - %s\n" % err)
+
+                if os.path.exists(out_file_path):
+                    os.remove(out_file_path)
 
                 return False
 

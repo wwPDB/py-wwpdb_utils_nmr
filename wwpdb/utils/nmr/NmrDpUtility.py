@@ -4852,6 +4852,18 @@ class NmrDpUtility(object):
                 else:
                     ent = {'list_id': _list_id, 'sf_framecode': sf_framecode, 'number_of_rows': 0, 'valid': False}
 
+                if content_subtype == 'dist_restraint' or content_subtype == 'dihed_restraint' or content_subtype == 'rdc_restraint':
+
+                    type = sf_data.get_tag('restraint_origin' if file_type == 'nef' else 'Constraint_type')
+                    if len(type) > 0 and not type[0] in self.empty_value:
+                        ent['exp_type'] = type[0]
+
+                elif content_subtype == 'spectral_peak':
+
+                    type = sf_data.get_tag('experiment_type' if file_type == 'nef' else 'Experiment_type')
+                    if len(type) > 0 and not type[0] in self.empty_value:
+                        ent['exp_type'] = type[0]
+
                 asm.append(ent)
 
                 list_id += 1

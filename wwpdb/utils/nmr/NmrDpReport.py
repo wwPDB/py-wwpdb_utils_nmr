@@ -1,6 +1,6 @@
 ##
 # File: NmrDpReport.py
-# Date: 02-Jul-2019
+# Date: 03-Jul-2019
 #
 # Updates:
 ##
@@ -369,7 +369,7 @@ class NmrDpReportError:
 
         return self.__contents['total']
 
-    def exists(self, file_name, saveframe):
+    def exists(self, file_name, sf_framecode):
         """ Return whether an error specified by file name and saveframe exists.
             @return: True for an error exists or False otherwise
         """
@@ -380,7 +380,7 @@ class NmrDpReportError:
                 continue
 
             try:
-                next(c for c in self.__contents[item] if c['file_name'] == 'file_name' and 'saveframe' in c and c['saveframe'] == saveframe)
+                next(c for c in self.__contents[item] if c['file_name'] == 'file_name' and 'sf_framecode' in c and c['sf_framecode'] == sf_framecode)
                 return True
             except StopIteration:
                 pass
@@ -396,7 +396,7 @@ class NmrDpReportError:
 
         return [c for c in self.__contents[item] if c['file_name'] == file_name]
 
-    def getDescription(self, item, file_name, saveframe):
+    def getDescription(self, item, file_name, sf_framecode):
         """ Return error description specified by item name, file name, and saveframe.
         """
 
@@ -404,7 +404,7 @@ class NmrDpReportError:
             return None
 
         try:
-            c = next(c for c in self.__contents[item] if c['file_name'] == 'file_name' and 'saveframe' in c and c['saveframe'] == saveframe)
+            c = next(c for c in self.__contents[item] if c['file_name'] == 'file_name' and 'sf_framecode' in c and c['sf_framecode'] == sf_framecode)
             return c['description']
         except StopIteration:
             return None
@@ -470,7 +470,7 @@ class NmrDpReportWarning:
 
         return self.__contents['total']
 
-    def exists(self, file_name, saveframe):
+    def exists(self, file_name, sf_framecode):
         """ Return whether a warning specified by file name and saveframe exists.
             @return: True for a warning exists or False otherwise
         """
@@ -481,7 +481,7 @@ class NmrDpReportWarning:
                 continue
 
             try:
-                next(c for c in self.__contents[item] if c['file_name'] == 'file_name' and 'saveframe' in c and c['saveframe'] == saveframe)
+                next(c for c in self.__contents[item] if c['file_name'] == 'file_name' and 'sf_framecode' in c and c['sf_framecode'] == sf_framecode)
                 return True
             except StopIteration:
                 pass
@@ -497,7 +497,7 @@ class NmrDpReportWarning:
 
         return [c for c in self.__contents[item] if c['file_name'] == file_name]
 
-    def getDescription(self, item, file_name, saveframe):
+    def getDescription(self, item, file_name, sf_framecode):
         """ Return warning description specified by item name, file name, and saveframe.
         """
 
@@ -505,7 +505,7 @@ class NmrDpReportWarning:
             return None
 
         try:
-            c = next(c for c in self.__contents[item] if c['file_name'] == 'file_name' and 'saveframe' in c and c['saveframe'] == saveframe)
+            c = next(c for c in self.__contents[item] if c['file_name'] == 'file_name' and 'sf_framecode' in c and c['sf_framecode'] == sf_framecode)
             return c['description']
         except StopIteration:
             return None

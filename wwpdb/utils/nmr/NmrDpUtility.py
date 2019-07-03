@@ -1,6 +1,6 @@
 ##
 # File: NmrDpUtility.py
-# Date: 02-Jul-2019
+# Date: 03-Jul-2019
 #
 # Updates:
 ##
@@ -2638,15 +2638,16 @@ class NmrDpUtility(object):
                             elif myPr[0] != myPr[1]:
                                 conflict += 1
 
-                        ref_seq = self.__get1LetterCodeSequence(s1['comp_id'])
-                        tst_seq = self.__get1LetterCodeSequence(_s2['comp_id'])
-                        mid_seq = self.__getMiddleCode(ref_seq, tst_seq)
+                        ref_code = self.__get1LetterCodeSequence(s1['comp_id'])
+                        test_code = self.__get1LetterCodeSequence(_s2['comp_id'])
+                        mid_code = self.__getMiddleCode(ref_code, test_code)
+                        gauge_code = self.__getGaugeCode(s1['seq_id'])
 
                         seq_align = {'list_id': polymer_sequence_in_loop[subtype][list_id]['list_id'],
                                      'sf_framecode': polymer_sequence_in_loop[subtype][list_id]['sf_framecode'],
                                      'chain_id': cid, 'length': length, 'conflict': conflict, 'unmapped': unmapped, 'sequence_coverage': float('{:.3f}'.format(float(length - (unmapped + conflict)) / float(length))),
                                      'ref_seq_id': s1['seq_id'],
-                                     'reference_seq': ref_seq, 'middle_code': mid_seq, 'test_seq': tst_seq}
+                                     'gauge_code': gauge_code, 'ref_code': ref_code, 'mid_code': mid_code, 'test_code': test_code}
 
                         seq_align_set.append(seq_align)
 
@@ -2693,14 +2694,42 @@ class NmrDpUtility(object):
 
         return array
 
-    def __getMiddleCode(self, ref_seq, tst_seq):
+    def __getMiddleCode(self, ref_seq, test_seq):
         """ Return array of middle code of sequence alignment.
         """
 
         array = ''
 
         for i in range(len(ref_seq)):
-            array += '|' if ref_seq[i] == tst_seq[i] else ' '
+            array += '|' if ref_seq[i] == test_seq[i] else ' '
+
+        return array
+
+    def __getGaugeCode(self, seq_id):
+        """ Return gauge code for seq ID.
+        """
+
+        sid_len = len(seq_id)
+        sid_txt_len = 0
+
+        array = ''
+
+        for sid in seq_id:
+
+            if sid >= 0 and sid % 10 == 0 and sid_txt_len == 0:
+
+                sid_txt = str(sid)
+                sid_txt_len = len(sid_txt)
+
+                if len(array) + sid_txt_len < sid_len:
+
+                    for j in range(sid_txt_len):
+                        array += sid_txt[j]
+
+            if sid_txt_len > 0:
+                sid_txt_len -= 1
+            else:
+                array += '-'
 
         return array
 
@@ -5292,14 +5321,15 @@ class NmrDpUtility(object):
                                 elif myPr[0] != myPr[1]:
                                     conflict += 1
 
-                            ref_seq = self.__get1LetterCodeSequence(s1['comp_id'])
-                            tst_seq = self.__get1LetterCodeSequence(_s2['comp_id'])
-                            mid_seq = self.__getMiddleCode(ref_seq, tst_seq)
+                            ref_code = self.__get1LetterCodeSequence(s1['comp_id'])
+                            test_code = self.__get1LetterCodeSequence(_s2['comp_id'])
+                            mid_code = self.__getMiddleCode(ref_code, test_code)
+                            gauge_code = self.__getGaugeCode(s1['seq_id'])
 
                             seq_align = {'list_id': polymer_sequence_in_loop[subtype][list_id]['list_id'],
                                          'chain_id': cid, 'length': length, 'conflict': conflict, 'unmapped': unmapped, 'sequence_coverage': float('{:.3f}'.format(float(length - (unmapped + conflict)) / float(length))),
                                          'ref_seq_id': s1['seq_id'],
-                                         'reference_seq': ref_seq, 'middle_code': mid_seq, 'test_seq': tst_seq}
+                                         'gauge_code': gauge_code, 'ref_code': ref_code, 'mid_code': mid_code, 'test_code': test_code}
 
                             seq_align_set.append(seq_align)
 
@@ -5363,13 +5393,14 @@ class NmrDpUtility(object):
                     elif myPr[0] != myPr[1]:
                         conflict += 1
 
-                ref_seq = self.__get1LetterCodeSequence(s1['comp_id'])
-                tst_seq = self.__get1LetterCodeSequence(_s2['comp_id'])
-                mid_seq = self.__getMiddleCode(ref_seq, tst_seq)
+                ref_code = self.__get1LetterCodeSequence(s1['comp_id'])
+                test_code = self.__get1LetterCodeSequence(_s2['comp_id'])
+                mid_code = self.__getMiddleCode(ref_code, test_code)
+                gauge_code = self.__getGaugeCode(s1['seq_id'])
 
                 seq_align = {'ref_chain_id': cid, 'test_chain_id': cid2, 'length': length, 'conflict': conflict, 'unmapped': unmapped, 'sequence_coverage': float('{:.3f}'.format(float(length - (unmapped + conflict)) / float(length))),
                              'ref_seq_id': s1['seq_id'], 'test_seq_id': _s2['seq_id'],
-                             'reference_seq': ref_seq, 'middle_code': mid_seq, 'test_seq': tst_seq}
+                             'gauge_code': gauge_code, 'ref_code': ref_code, 'mid_code': mid_code, 'test_code': test_code}
 
                 seq_align_set.append(seq_align)
 
@@ -5409,13 +5440,14 @@ class NmrDpUtility(object):
                     elif myPr[0] != myPr[1]:
                         conflict += 1
 
-                ref_seq = self.__get1LetterCodeSequence(s1['comp_id'])
-                tst_seq = self.__get1LetterCodeSequence(_s2['comp_id'])
-                mid_seq = self.__getMiddleCode(ref_seq, tst_seq)
+                ref_code = self.__get1LetterCodeSequence(s1['comp_id'])
+                test_code = self.__get1LetterCodeSequence(_s2['comp_id'])
+                mid_code = self.__getMiddleCode(ref_code, test_code)
+                gauge_code = self.__getGaugeCode(s1['seq_id'])
 
                 seq_align = {'ref_chain_id': cid, 'test_chain_id': cid2, 'length': length, 'conflict': conflict, 'unmapped': unmapped, 'sequence_coverage': float('{:.3f}'.format(float(length - (unmapped + conflict)) / float(length))),
                              'ref_seq_id': s1['seq_id'], 'test_seq_id': _s2['seq_id'],
-                             'reference_seq': ref_seq, 'middle_code': mid_seq, 'test_seq': tst_seq}
+                             'gauge_code': gauge_code, 'ref_code': ref_code, 'mid_code': mid_code, 'test_code': test_code}
 
                 seq_align_set.append(seq_align)
 

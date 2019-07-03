@@ -4896,12 +4896,16 @@ class NmrDpUtility(object):
                     type = sf_data.get_tag('restraint_origin' if file_type == 'nef' else 'Constraint_type')
                     if len(type) > 0 and not type[0] in self.empty_value:
                         ent['exp_type'] = type[0]
+                    else:
+                        ent['exp_type'] = 'Unknown'
 
                 elif content_subtype == 'spectral_peak':
 
                     type = sf_data.get_tag('experiment_type' if file_type == 'nef' else 'Experiment_type')
                     if len(type) > 0 and not type[0] in self.empty_value:
                         ent['exp_type'] = type[0]
+                    else:
+                        ent['exp_type'] = 'Unknown'
 
                 asm.append(ent)
 

@@ -3789,7 +3789,7 @@ class NmrDpUtility(object):
                     try:
 
                         sf_tag_data = self.__nefT.check_sf_tag(sf_data, self.sf_tag_items[file_type][content_subtype], self.sf_allowed_tags[file_type][content_subtype],
-                                                                enfoce_non_zero=False, enforce_enum=False)
+                                                                enfoce_non_zero=False, enforce_sign=False, enforce_enum=False)
 
                         self.__testParentChildRelation(file_name, file_type, content_subtype, parent_keys, list_id, sf_framecode, sf_tag_data)
 
@@ -6946,16 +6946,20 @@ class NmrDpUtility(object):
             return True
 
         self.chk_desc_pat = re.compile(r'^(.*) \'(.*)\' should be one of \((.*)\)\.$')
+        self.chk_desc_pat_one = re.compile(r'^(.*) \'(.*)\' should be one of (.*)\.$')
 
         for w in warnings:
 
             if not "should be one of" in w['description']:
                 continue
 
-            g = self.chk_desc_pat.search(w['description']).groups()
+            try:
+                g = self.chk_desc_pat.search(w['description']).groups()
+            except AttributeError:
+                g = self.chk_desc_pat_one.search(w['description']).groups()
 
             itName = g[0]
-            itValue = g[1]
+            itValue = None if g[1] in self.empty_value else g[1]
             itEnum = [str(e.strip("'")) for e in re.sub(r"\', \'", "\',\'", g[2]).split(',')]
 
             if self.__star_data_type == "Entry" or self.__star_data_type == "Saveframe":
@@ -7004,7 +7008,11 @@ class NmrDpUtility(object):
 
                                 itCol = tagNames.index(itName)
 
-                                if sf_data.tags[itCol][1] == itValue:
+                                val = sf_data.tags[itCol][1]
+                                if val in self.empty_value:
+                                    val = None
+
+                                if val is itValue:
                                     if len(itEnum) == 1:
                                         sf_data.tags[itCol][1] = itEnum[0]
 

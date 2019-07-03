@@ -376,11 +376,11 @@ class NmrDpReportError:
 
         for item in self.__contents.keys():
 
-            if item == 'total' or self.__contents[item] is None:
+            if item in ['total', 'internal_error'] or self.__contents[item] is None:
                 continue
 
             try:
-                next(c for c in self.__contents[item] if c['file_name'] == 'file_name' and 'sf_framecode' in c and c['sf_framecode'] == sf_framecode)
+                next(c for c in self.__contents[item] if c['file_name'] == file_name and 'sf_framecode' in c and c['sf_framecode'] == sf_framecode)
                 return True
             except StopIteration:
                 pass
@@ -391,7 +391,7 @@ class NmrDpReportError:
         """ Return list of error values specified by by item name and file name.
         """
 
-        if item == 'total' or self.__contents is None or (not item in self.__contents.keys()) or self.__contents[item] is None:
+        if item in ['total', 'internal_error'] or self.__contents is None or (not item in self.__contents.keys()) or self.__contents[item] is None:
             return None
 
         return [c for c in self.__contents[item] if c['file_name'] == file_name]
@@ -400,11 +400,11 @@ class NmrDpReportError:
         """ Return error description specified by item name, file name, and saveframe.
         """
 
-        if item == 'total' or self.__contents is None or (not item in self.__contents.keys()) or self.__contents[item] is None:
+        if item in ['total', 'internal_error'] or self.__contents is None or (not item in self.__contents.keys()) or self.__contents[item] is None:
             return None
 
         try:
-            c = next(c for c in self.__contents[item] if c['file_name'] == 'file_name' and 'sf_framecode' in c and c['sf_framecode'] == sf_framecode)
+            c = next(c for c in self.__contents[item] if c['file_name'] == file_name and 'sf_framecode' in c and c['sf_framecode'] == sf_framecode)
             return c['description']
         except StopIteration:
             return None
@@ -431,10 +431,10 @@ class NmrDpReportWarning:
             if self.__contents[item] is None:
                 self.__contents[item] = []
 
-            if item != 'internal_error' and 'category' in value:
+            if 'category' in value:
                 value['category'] = value['category'].lstrip('_')
 
-            if item != 'internal_error' and 'description' in value:
+            if 'description' in value:
                 d = value['description']
 
                 if d.startswith('[Check row of'):
@@ -481,7 +481,7 @@ class NmrDpReportWarning:
                 continue
 
             try:
-                next(c for c in self.__contents[item] if c['file_name'] == 'file_name' and 'sf_framecode' in c and c['sf_framecode'] == sf_framecode)
+                next(c for c in self.__contents[item] if c['file_name'] == file_name and 'sf_framecode' in c and c['sf_framecode'] == sf_framecode)
                 return True
             except StopIteration:
                 pass
@@ -505,7 +505,7 @@ class NmrDpReportWarning:
             return None
 
         try:
-            c = next(c for c in self.__contents[item] if c['file_name'] == 'file_name' and 'sf_framecode' in c and c['sf_framecode'] == sf_framecode)
+            c = next(c for c in self.__contents[item] if c['file_name'] == file_name and 'sf_framecode' in c and c['sf_framecode'] == sf_framecode)
             return c['description']
         except StopIteration:
             return None

@@ -1744,7 +1744,7 @@ class NEFTranslator(object):
             for t in tag_items:
                 if t['name'] == name:
                     type = t['type']
-                    if val in empty_value:
+                    if val in empty_value and type != 'enum':
                        ent[name] = None
                     elif type == 'bool':
                         try:
@@ -1800,6 +1800,8 @@ class NEFTranslator(object):
                         elif ('min_exclusive' in _range and ent[name] <= _range['min_exclusive']) or ('min_inclusive' in _range and ent[name] < _range['min_inclusive']) or ('max_inclusive' in _range and ent[name] > _range['max_inclusive']) or ('max_exclusive' in _range and ent[name] >= _range['max_exclusive']):
                             raise ValueError("%s '%s' must be %s." % (name, val, _range))
                     elif type == 'enum':
+                        if val in empty_value:
+                            val = '?' # '.' raises internal error in NmrDpUtility
                         try:
                             enum = t['enum']
                             if not val in enum:
@@ -1807,7 +1809,7 @@ class NEFTranslator(object):
                                     raise ValueError("%s '%s' must be one of %s." % (name, val, enum))
                                 elif enforce_enum:
                                     user_warn_msg += "[Enumeration error] %s '%s' should be one of %s." % (name, val, enum)
-                            ent[name] = val
+                            ent[name] = None if val in empty_value else val
                         except KeyError:
                             raise Error('Enumeration of tag item %s is not defined.' % name)
                     elif type == 'enum-int':

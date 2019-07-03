@@ -1199,8 +1199,8 @@ class NmrDpUtility(object):
                                                    }
                                       }
 
-        # item name in distance restratin loop
-        self.item_names_in_dr_loop = {'nef': {'chain_id_1': 'chain_code_1',
+        # item name in distance restraint loop
+        self.item_names_in_ds_loop = {'nef': {'chain_id_1': 'chain_code_1',
                                               'seq_id_1': 'sequence_code_1',
                                               'comp_id_1': 'residue_name_1',
                                               'atom_id_1': 'atom_name_1',
@@ -1227,6 +1227,45 @@ class NmrDpUtility(object):
                                                    'upper_linear_limit': 'Upper_linear_limit',
                                                    'lower_limit': 'Distance_lower_bound_val',
                                                    'upper_limit': 'Distance_upper_bound_val'
+                                                   }
+                                      }
+
+        # item name in dihedral restraint loop
+        self.item_names_in_dh_loop = {'nef': {'chain_id_1': 'chain_code_1',
+                                              'seq_id_1': 'sequence_code_1',
+                                              'comp_id_1': 'residue_name_1',
+                                              'atom_id_1': 'atom_name_1',
+                                              'chain_id_2': 'chain_code_2',
+                                              'seq_id_2': 'sequence_code_2',
+                                              'comp_id_2': 'residue_name_2',
+                                              'atom_id_2': 'atom_name_2',
+                                              'chain_id_3': 'chain_code_3',
+                                              'seq_id_3': 'sequence_code_3',
+                                              'comp_id_3': 'residue_name_3',
+                                              'atom_id_3': 'atom_name_3',
+                                              'chain_id_4': 'chain_code_4',
+                                              'seq_id_4': 'sequence_code_4',
+                                              'comp_id_4': 'residue_name_4',
+                                              'atom_id_4': 'atom_name_4',
+                                              'angle_type': 'name'
+                                              },
+                                      'nmr-star': {'chain_id_1': 'Entity_assembly_ID_1',
+                                                   'seq_id_1': 'Comp_index_ID_1',
+                                                   'comp_id_1': 'Comp_ID_1',
+                                                   'atom_id_1': 'Atom_ID_1',
+                                                   'chain_id_2': 'Entity_assembly_ID_2',
+                                                   'seq_id_2': 'Comp_index_ID_2',
+                                                   'comp_id_2': 'Comp_ID_2',
+                                                   'atom_id_2': 'Atom_ID_2',
+                                                   'chain_id_3': 'Entity_assembly_ID_3',
+                                                   'seq_id_3': 'Comp_index_ID_3',
+                                                   'comp_id_3': 'Comp_ID_3',
+                                                   'atom_id_3': 'Atom_ID_3',
+                                                   'chain_id_4': 'Entity_assembly_ID_4',
+                                                   'seq_id_4': 'Comp_index_ID_4',
+                                                   'comp_id_4': 'Comp_ID_4',
+                                                   'atom_id_4': 'Atom_ID_4',
+                                                   'angle_type': 'Torsion_angle_name',
                                                    }
                                       }
 
@@ -7012,7 +7051,7 @@ class NmrDpUtility(object):
                                 if val in self.empty_value:
                                     val = None
 
-                                if val is itValue:
+                                if val is itValue or val == itValue:
                                     if len(itEnum) == 1:
                                         sf_data.tags[itCol][1] = itEnum[0]
 
@@ -7063,12 +7102,10 @@ class NmrDpUtility(object):
 
                                                         # 'J-couplings', 'backbone chemical shifts'
 
-                                                        #if self.__testDihedRestraintAsBackBone(lp_data):
-                                                        #   sf_data.tags[itCol][1] = 'backbone chemical shifts'
-                                                        #else:
-                                                        #    sf_data.tags[itCol][1] = 'J-couplings'
-
-                                                        pass
+                                                        if self.__testDihedRestraintAsBackBoneChemShifts(lp_data):
+                                                            sf_data.tags[itCol][1] = 'backbone chemical shifts'
+                                                        else:
+                                                            sf_data.tags[itCol][1] = 'J-couplings'
 
                                                     elif content_subtype == 'rdc_restraint':
                                                         sf_data.tags[itCol][1] = 'RDC'
@@ -7192,7 +7229,7 @@ class NmrDpUtility(object):
         return True
 
     def __testDistRestraintAsHydrogenBond(self, lp_data):
-        """ Detect whether given restraints are derived from hydrogen bonds.
+        """ Detect whether given distance restraints are derived from hydrogen bonds.
         """
 
         if lp_data is None:
@@ -7203,7 +7240,7 @@ class NmrDpUtility(object):
 
         file_type = input_source_dic['file_type']
 
-        item_names = self.item_names_in_dr_loop[file_type]
+        item_names = self.item_names_in_ds_loop[file_type]
         chain_id_1_name = item_names['chain_id_1']
         chain_id_2_name = item_names['chain_id_2']
         seq_id_1_name = item_names['seq_id_1']
@@ -7269,7 +7306,7 @@ class NmrDpUtility(object):
         return True
 
     def __testDistRestraintAsDisulfideBond(self, lp_data):
-        """ Detect whether given restraints are derived from disulfide bonds.
+        """ Detect whether given distance restraints are derived from disulfide bonds.
         """
 
         if lp_data is None:
@@ -7280,7 +7317,7 @@ class NmrDpUtility(object):
 
         file_type = input_source_dic['file_type']
 
-        item_names = self.item_names_in_dr_loop[file_type]
+        item_names = self.item_names_in_ds_loop[file_type]
         chain_id_1_name = item_names['chain_id_1']
         chain_id_2_name = item_names['chain_id_2']
         seq_id_1_name = item_names['seq_id_1']
@@ -7341,7 +7378,7 @@ class NmrDpUtility(object):
         return True
 
     def __testDistRestraintAsSymmetry(self, lp_data):
-        """ Detect whether given restraints are derived from symmetric assembly.
+        """ Detect whether given distance restraints are derived from symmetric assembly.
         """
 
         if lp_data is None:
@@ -7352,7 +7389,7 @@ class NmrDpUtility(object):
 
         file_type = input_source_dic['file_type']
 
-        item_names = self.item_names_in_dr_loop[file_type]
+        item_names = self.item_names_in_ds_loop[file_type]
         chain_id_1_name = item_names['chain_id_1']
         chain_id_2_name = item_names['chain_id_2']
         seq_id_1_name = item_names['seq_id_1']
@@ -7409,6 +7446,206 @@ class NmrDpUtility(object):
 
             if self.__verbose:
                 self.__lfh.write("+NmrDpUtility.__testDistRestraintAsSymmetry() ++ Error  - %s" % str(e))
+
+            return False
+
+        return True
+
+    def __testDihedRestraintAsBackBoneChemShifts(self, lp_data):
+        """ Detect whether given dihedral restraints are derived from backbone chemical shifts.
+        """
+
+        if lp_data is None:
+            return False
+
+        input_source = self.report.input_sources[0]
+        input_source_dic = input_source.get()
+
+        file_type = input_source_dic['file_type']
+        file_name = input_source_dic['file_name']
+
+        item_names = self.item_names_in_dh_loop[file_type]
+        chain_id_1_name = item_names['chain_id_1']
+        chain_id_2_name = item_names['chain_id_2']
+        chain_id_3_name = item_names['chain_id_3']
+        chain_id_4_name = item_names['chain_id_4']
+        seq_id_1_name = item_names['seq_id_1']
+        seq_id_2_name = item_names['seq_id_2']
+        seq_id_3_name = item_names['seq_id_3']
+        seq_id_4_name = item_names['seq_id_4']
+        atom_id_1_name = item_names['atom_id_1']
+        atom_id_2_name = item_names['atom_id_2']
+        atom_id_3_name = item_names['atom_id_3']
+        atom_id_4_name = item_names['atom_id_4']
+        angle_type_name = item_names['angle_type']
+
+        dihed_atom_ids = {'N', 'CA', 'C'}
+
+        dh_chains = set()
+        dh_seq_ids = {}
+        cs_chains = set()
+        cs_seq_ids = {}
+
+        try:
+
+            for i in lp_data:
+                chain_id_1 = i[chain_id_1_name]
+                chain_id_2 = i[chain_id_2_name]
+                chain_id_3 = i[chain_id_3_name]
+                chain_id_4 = i[chain_id_4_name]
+                seq_ids = []
+                seq_ids.append(i[seq_id_1_name])
+                seq_ids.append(i[seq_id_2_name])
+                seq_ids.append(i[seq_id_3_name])
+                seq_ids.append(i[seq_id_4_name])
+                atom_ids = []
+                atom_ids.append(i[atom_id_1_name])
+                atom_ids.append(i[atom_id_2_name])
+                atom_ids.append(i[atom_id_3_name])
+                atom_ids.append(i[atom_id_4_name])
+                angle_type = i[angle_type_name].lower()
+
+                if not angle_type in ['phi', 'psi']:
+                    return False
+
+                if chain_id_1 != chain_id_2 or chain_id_2 != chain_id_3 or chain_id_3 != chain_id_4:
+                    return False
+
+                dh_chains.add(chain_id_1)
+
+                seq_id_common = collections.Counter(seq_ids).most_common()
+
+                if len(seq_id_common) != 2 or seq_id_common[0][1] != 3 or seq_id_common[1][1] != 1:
+                    return False
+
+                # phi
+
+                if angle_type == 'phi':
+
+                    seq_id_prev = seq_id_common[1][0]
+
+                    if seq_id_common[0][0] != seq_id_prev + 1:
+                        return False
+
+                    for j in range(4):
+                        if seq_ids[j] == seq_id_prev:
+                            if atom_ids[j] != 'C':
+                                return False
+                            atom_ids.pop(j)
+                            if set(atom_ids) != dihed_atom_ids:
+                                return False
+                            break
+
+                # psi
+
+                else:
+
+                    seq_id_next = seq_id_common[1][0]
+
+                    if seq_id_common[0][0] != seq_id_next - 1:
+                        return False
+
+                    for j in range(4):
+                        if seq_ids[j] == seq_id_next:
+                            if atom_ids[j] != 'N':
+                                return False
+                            atom_ids.pop(j)
+                            if set(atom_ids) != dihed_atom_ids:
+                                return False
+                            break
+
+                if type(chain_id_1) is int:
+                    chain_id = str(chain_id_1)
+                else:
+                    chain_id = chain_id_1
+
+                if not chain_id in dh_seq_ids:
+                    dh_seq_ids[chain_id] = set()
+
+                dh_seq_ids[chain_id].add(seq_id_common[0][0])
+
+            # check backbone CA atoms
+
+            content_subtype = 'chem_shift'
+
+            if not content_subtype in input_source_dic['content_subtype'].keys():
+
+                err = "Assigned chemical shift loop did not exist in %s file." % file_name
+
+                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__testDihedRestraintAsBackBoneChemShifts() ++ Error  - %s" % err)
+                self.report.setError()
+
+                if self.__verbose:
+                    self.__lfh.write("+NmrDpUtility.__testDihedRestraintAsBackBoneChemShifts() ++ Error  - %s\n" % err)
+
+                return False
+
+            sf_category = self.sf_categories[file_type][content_subtype]
+            lp_category = self.lp_categories[file_type][content_subtype]
+
+            key_items = self.key_items[file_type][content_subtype]
+            data_items = self.data_items[file_type][content_subtype]
+
+            item_names = self.item_names_in_cs_loop[file_type]
+            chain_id_name = item_names['chain_id']
+            seq_id_name = item_names['seq_id']
+            atom_id_name = item_names['atom_id']
+
+            for sf_data in self.__star_data.get_saveframes_by_category(sf_category):
+
+                sf_framecode = sf_data.get_tag('sf_framecode')[0]
+
+                if self.report.error.exists(file_name, sf_framecode):
+                    continue
+
+                lp_data = next((l['data'] for l in self.__lp_data[content_subtype] if l['sf_framecode'] == sf_framecode), None)
+
+                if lp_data is None:
+
+                    try:
+
+                        lp_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, None, None)[0]
+
+                        self.__lp_data[content_subtype].append({'sf_framecode': sf_framecode, 'data': lp_data})
+
+                    except:
+                        pass
+
+                if not lp_data is None:
+
+                    for i in lp_data:
+                        _chain_id = i[chain_id_name]
+                        seq_id = i[seq_id_name]
+                        atom_id = i[atom_id_name]
+
+                        if type(_chain_id) is int:
+                            chain_id = str(_chain_id)
+                        else:
+                            chain_id = _chain_id
+
+                        if _chain_id in dh_chains and seq_id in dh_seq_ids[chain_id] and atom_id == 'CA':
+                            cs_chains.add(_chain_id)
+
+                            if not chain_id in cs_seq_ids:
+                                cs_seq_ids[chain_id] = set()
+
+                            cs_seq_ids[chain_id].add(seq_id)
+
+            if cs_chains != dh_chains:
+                return False
+
+            for chain_id in dh_seq_ids.keys():
+
+                if len(cs_seq_ids[chain_id] & dh_seq_ids[chain_id]) < len(dh_seq_ids[chain_id]) * 0.8:
+                    return False
+
+        except Exception as e:
+
+            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__testDihedRestraintAsBackBoneChemShifts() ++ Error  - %s" % str(e))
+            self.report.setError()
+
+            if self.__verbose:
+                self.__lfh.write("+NmrDpUtility.__testDihedRestraintAsBackBoneChemShifts() ++ Error  - %s" % str(e))
 
             return False
 

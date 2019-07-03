@@ -4803,18 +4803,17 @@ class NmrDpUtility(object):
 
                 sf_framecode = sf_data.get_tag('sf_framecode')[0]
 
+                _list_id = list_id
+                if file_type == 'nmr-star':
+                    val = sf_data.get_tag('ID')
+                    if len(val) > 0:
+                        _list_id = int(val[0])
+
                 lp_data = next((l['data'] for l in self.__lp_data[content_subtype] if l['sf_framecode'] == sf_framecode), None)
 
                 if not lp_data is None:
 
-                    _list_id = list_id
-                    if file_type == 'nmr-star':
-                        key = self.sf_tag_prefixes[file_type][content_subtype].lstrip('_') + '_ID'
-                        val = sf_data.get_tag(key)
-                        if len(val) > 0:
-                            _list_id = val[0]
-
-                    ent = {'list_id': _list_id, 'sf_framecode': sf_framecode, 'number_of_rows': len(lp_data)}
+                    ent = {'list_id': _list_id, 'sf_framecode': sf_framecode, 'number_of_rows': len(lp_data), 'valid': True}
 
                     if content_subtype == 'chem_shift' or content_subtype == 'dist_restraint' or content_subtype == 'dihed_restraint' or content_subtype == 'rdc_restraint' or content_subtype == 'spectral_peak':
 
@@ -4850,11 +4849,14 @@ class NmrDpUtility(object):
 
                         continue
 
-                    asm.append(ent)
+                else:
+                    ent = {'list_id': _list_id, 'sf_framecode': sf_framecode, 'number_of_rows': 0, 'valid': False}
 
-                    list_id += 1
+                asm.append(ent)
 
-            if list_id > 1:
+                list_id += 1
+
+            if len(asm) > 0:
                 stats[content_subtype] = asm
 
         input_source.setItemValue('stats_of_exptl_data', stats)

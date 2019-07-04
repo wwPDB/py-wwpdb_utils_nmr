@@ -99,6 +99,7 @@ class NmrDpUtility(object):
                           self.__deleteSkippedSf,
                           self.__deleteSkippedLoop,
                           self.__updatePolymerSequence,
+                          self.__updateDihedralAngleType,
                           self.__fixDisorderedIndex,
                           self.__removeNonSenseZeroValue,
                           self.__fixNonSenseNegativeValue,
@@ -6731,6 +6732,163 @@ class NmrDpUtility(object):
 
         return False
 
+    def __updateDihedralAngleType(self):
+        """ Update dihedral angle types (phi, psi, omega for polypeptide) if possible.
+        """
+
+        input_source = self.report.input_sources[0]
+        input_source_dic = input_source.get()
+
+        file_type = input_source_dic['file_type']
+        file_name = input_source_dic['file_name']
+
+        content_subtype = 'dihed_restraint'
+
+        if not content_subtype in input_source_dic['content_subtype'].keys():
+            return True
+
+        item_names = self.item_names_in_dh_loop[file_type]
+        index_id_name = self.index_tags[file_type][content_subtype]
+        chain_id_1_name = item_names['chain_id_1']
+        chain_id_2_name = item_names['chain_id_2']
+        chain_id_3_name = item_names['chain_id_3']
+        chain_id_4_name = item_names['chain_id_4']
+        seq_id_1_name = item_names['seq_id_1']
+        seq_id_2_name = item_names['seq_id_2']
+        seq_id_3_name = item_names['seq_id_3']
+        seq_id_4_name = item_names['seq_id_4']
+        atom_id_1_name = item_names['atom_id_1']
+        atom_id_2_name = item_names['atom_id_2']
+        atom_id_3_name = item_names['atom_id_3']
+        atom_id_4_name = item_names['atom_id_4']
+        angle_type_name = item_names['angle_type']
+
+        dihed_atom_ids = ['N', 'CA', 'C']
+
+        sf_category = self.sf_categories[file_type][content_subtype]
+        lp_category = self.lp_categories[file_type][content_subtype]
+
+        for sf_data in self.__star_data.get_saveframes_by_category(sf_category):
+
+            sf_framecode = sf_data.get_tag('sf_framecode')[0]
+
+            lp_data = next((l['data'] for l in self.__lp_data[content_subtype] if l['sf_framecode'] == sf_framecode), None)
+
+            if lp_data is None:
+
+                key_items = self.key_items[file_type][content_subtype]
+                data_items = self.data_items[file_type][content_subtype]
+
+                try:
+
+                    lp_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, None, None)[0]
+
+                    self.__lp_data[content_subtype].append({'sf_framecode': w['sf_framecode'], 'data': lp_data})
+
+                except:
+                    pass
+
+            if not lp_data is None:
+
+                phi_index = []
+                psi_index = []
+                omega_index = []
+
+                try:
+
+                    for i in lp_data:
+                        index_id = i[index_id_name]
+                        chain_id_1 = i[chain_id_1_name]
+                        chain_id_2 = i[chain_id_2_name]
+                        chain_id_3 = i[chain_id_3_name]
+                        chain_id_4 = i[chain_id_4_name]
+                        seq_ids = []
+                        seq_ids.append(i[seq_id_1_name])
+                        seq_ids.append(i[seq_id_2_name])
+                        seq_ids.append(i[seq_id_3_name])
+                        seq_ids.append(i[seq_id_4_name])
+                        atom_ids = []
+                        atom_ids.append(i[atom_id_1_name])
+                        atom_ids.append(i[atom_id_2_name])
+                        atom_ids.append(i[atom_id_3_name])
+                        atom_ids.append(i[atom_id_4_name])
+                        angle_type = i[angle_type_name]
+
+                        if not angle_type in self.empty_value:
+                           continue
+
+                        if chain_id_1 != chain_id_2 or chain_id_2 != chain_id_3 or chain_id_3 != chain_id_4:
+                            continue
+
+                        seq_id_common = collections.Counter(seq_ids).most_common()
+
+                        if len(seq_id_common) != 2:
+                            continue
+
+                        # phi or psi
+
+                        if seq_id_common[0][1] == 3 and seq_id_common[1][1] == 1:
+
+                            # phi
+
+                            seq_id_prev = seq_id_common[1][0]
+
+                            if seq_id_common[0][0] == seq_id_prev + 1:
+
+                                j = 0
+                                if seq_ids[j] == seq_id_prev and atom_ids[j] == 'C':
+                                    atom_ids.pop(j)
+                                    if atom_ids == dihed_atom_ids:
+                                        phi_index.append(index_id)
+
+                            # psi
+
+                            seq_id_next = seq_id_common[1][0]
+
+                            if seq_id_common[0][0] == seq_id_next - 1:
+
+                                j = 3
+                                if seq_ids[j] == seq_id_next and atom_ids[j] == 'N':
+                                    atom_ids.pop(j)
+                                    if atom_ids == dihed_atom_ids:
+                                        psi_index.append(index_id)
+
+                        # omega
+
+                        if atom_ids[0] == 'O' and atom_ids[1] == 'C' and atom_ids[2] == 'N' and (atom_ids[3] == 'H' or atom_ids[3] == 'CA') and\
+                           seq_ids[0] == seq_ids[1] and seq_ids[1] + 1 == seq_ids[2] and seq_ids[2] == seq_ids[3]:
+                            omega_index.append(index_id)
+
+                except Exception as e:
+
+                    self.report.error.appendDescription('internal_error', "+NmrDpUtility.__updateDihedralAngleType() ++ Error  - %s" % str(e))
+                    self.report.setError()
+
+                    if self.__verbose:
+                        self.__lfh.write("+NmrDpUtility.__updateDihedralAngleType() ++ Error  - %s" % str(e))
+
+                    return False
+
+                if len(phi_index) + len(psi_index) + len(omega_index) > 0:
+
+                    lp_data = sf_data.get_loop_by_category(lp_category)
+
+                    idxCol = lp_data.tags.index(index_id_name)
+                    aglCol = lp_data.tags.index(angle_type_name)
+
+                    for row in lp_data.data:
+
+                        index_id = int(row[idxCol])
+
+                        if index_id in phi_index:
+                            row[aglCol] = 'PHI'
+                        elif index_id in psi_index:
+                            row[aglCol] = 'PSI'
+                        elif index_id in omega_index:
+                            row[aglCol] = 'OMEGA'
+
+        return True
+
     def __fixDisorderedIndex(self):
         """ Fix disordered indices.
         """
@@ -7529,7 +7687,7 @@ class NmrDpUtility(object):
         atom_id_4_name = item_names['atom_id_4']
         angle_type_name = item_names['angle_type']
 
-        dihed_atom_ids = {'N', 'CA', 'C'}
+        dihed_atom_ids = ['N', 'CA', 'C']
 
         dh_chains = set()
         dh_seq_ids = {}
@@ -7553,10 +7711,15 @@ class NmrDpUtility(object):
                 atom_ids.append(i[atom_id_2_name])
                 atom_ids.append(i[atom_id_3_name])
                 atom_ids.append(i[atom_id_4_name])
-                angle_type = i[angle_type_name].lower()
+                angle_type = i[angle_type_name]
+
+                if angle_type in self.empty_value:
+                    continue
+
+                angle_type = angle_type.lower()
 
                 if not angle_type in ['phi', 'psi']:
-                    return False
+                    continue
 
                 if chain_id_1 != chain_id_2 or chain_id_2 != chain_id_3 or chain_id_3 != chain_id_4:
                     return False
@@ -7577,14 +7740,13 @@ class NmrDpUtility(object):
                     if seq_id_common[0][0] != seq_id_prev + 1:
                         return False
 
-                    for j in range(4):
-                        if seq_ids[j] == seq_id_prev:
-                            if atom_ids[j] != 'C':
-                                return False
-                            atom_ids.pop(j)
-                            if set(atom_ids) != dihed_atom_ids:
-                                return False
-                            break
+                    j = 0
+                    if seq_ids[j] == seq_id_prev:
+                        if atom_ids[j] != 'C':
+                            return False
+                        atom_ids.pop(j)
+                        if atom_ids != dihed_atom_ids:
+                            return False
 
                 # psi
 
@@ -7595,14 +7757,13 @@ class NmrDpUtility(object):
                     if seq_id_common[0][0] != seq_id_next - 1:
                         return False
 
-                    for j in range(4):
-                        if seq_ids[j] == seq_id_next:
-                            if atom_ids[j] != 'N':
-                                return False
-                            atom_ids.pop(j)
-                            if set(atom_ids) != dihed_atom_ids:
-                                return False
-                            break
+                    j = 3
+                    if seq_ids[j] == seq_id_next:
+                        if atom_ids[j] != 'N':
+                            return False
+                        atom_ids.pop(j)
+                        if atom_ids != dihed_atom_ids:
+                            return False
 
                 if type(chain_id_1) is int:
                     chain_id = str(chain_id_1)

@@ -1315,6 +1315,28 @@ class NmrDpUtility(object):
                          'U': 'U'
                          }
 
+        self.aaDict3 = {'ALA': 'A',
+                        'ARG': 'R',
+                        'ASN': 'N',
+                        'ASP': 'D',
+                        'CYS': 'C',
+                        'GLN': 'Q',
+                        'GLU': 'E',
+                        'GLY': 'G',
+                        'HIS': 'H',
+                        'ILE': 'I',
+                        'LEU': 'L',
+                        'LYS': 'K',
+                        'MET': 'M',
+                        'PHE': 'F',
+                        'PRO': 'P',
+                        'SER': 'S',
+                        'THR': 'T',
+                        'TRP': 'W',
+                        'TYR': 'Y',
+                        'VAL': 'V',
+                        }
+
         # main contents of loops
         self.__lp_data = {'poly_seq': [],
                           'chem_shift': [],
@@ -6733,7 +6755,7 @@ class NmrDpUtility(object):
         return False
 
     def __updateDihedralAngleType(self):
-        """ Update dihedral angle types (phi, psi, omega for polypeptide) if possible.
+        """ Update dihedral angle types (phi, psi, omega, chi[1-5] for polypeptide) if possible.
         """
 
         input_source = self.report.input_sources[0]
@@ -6757,6 +6779,7 @@ class NmrDpUtility(object):
         seq_id_2_name = item_names['seq_id_2']
         seq_id_3_name = item_names['seq_id_3']
         seq_id_4_name = item_names['seq_id_4']
+        comp_id_1_name = item_names['comp_id_1']
         atom_id_1_name = item_names['atom_id_1']
         atom_id_2_name = item_names['atom_id_2']
         atom_id_3_name = item_names['atom_id_3']
@@ -6793,6 +6816,11 @@ class NmrDpUtility(object):
                 phi_index = []
                 psi_index = []
                 omega_index = []
+                chi1_index = []
+                chi2_index = []
+                chi3_index = []
+                chi4_index = []
+                chi5_index = []
 
                 try:
 
@@ -6807,6 +6835,7 @@ class NmrDpUtility(object):
                         seq_ids.append(i[seq_id_2_name])
                         seq_ids.append(i[seq_id_3_name])
                         seq_ids.append(i[seq_id_4_name])
+                        comp_id = i[comp_id_1_name]
                         atom_ids = []
                         atom_ids.append(i[atom_id_1_name])
                         atom_ids.append(i[atom_id_2_name])
@@ -6822,42 +6851,85 @@ class NmrDpUtility(object):
 
                         seq_id_common = collections.Counter(seq_ids).most_common()
 
-                        if len(seq_id_common) != 2:
-                            continue
+                        if len(seq_id_common) == 2:
 
-                        # phi or psi
+                            # phi or psi
 
-                        if seq_id_common[0][1] == 3 and seq_id_common[1][1] == 1:
+                            if seq_id_common[0][1] == 3 and seq_id_common[1][1] == 1:
 
-                            # phi
+                                # phi
 
-                            seq_id_prev = seq_id_common[1][0]
+                                seq_id_prev = seq_id_common[1][0]
 
-                            if seq_id_common[0][0] == seq_id_prev + 1:
+                                if seq_id_common[0][0] == seq_id_prev + 1:
 
-                                j = 0
-                                if seq_ids[j] == seq_id_prev and atom_ids[j] == 'C':
-                                    atom_ids.pop(j)
-                                    if atom_ids == dihed_atom_ids:
-                                        phi_index.append(index_id)
+                                    j = 0
+                                    if seq_ids[j] == seq_id_prev and atom_ids[j] == 'C':
+                                        atom_ids.pop(j)
+                                        if atom_ids == dihed_atom_ids:
+                                            phi_index.append(index_id)
 
-                            # psi
+                                # psi
 
-                            seq_id_next = seq_id_common[1][0]
+                                seq_id_next = seq_id_common[1][0]
 
-                            if seq_id_common[0][0] == seq_id_next - 1:
+                                if seq_id_common[0][0] == seq_id_next - 1:
 
-                                j = 3
-                                if seq_ids[j] == seq_id_next and atom_ids[j] == 'N':
-                                    atom_ids.pop(j)
-                                    if atom_ids == dihed_atom_ids:
-                                        psi_index.append(index_id)
+                                    j = 3
+                                    if seq_ids[j] == seq_id_next and atom_ids[j] == 'N':
+                                        atom_ids.pop(j)
+                                        if atom_ids == dihed_atom_ids:
+                                            psi_index.append(index_id)
 
-                        # omega
+                            # omega
 
-                        if atom_ids[0] == 'O' and atom_ids[1] == 'C' and atom_ids[2] == 'N' and (atom_ids[3] == 'H' or atom_ids[3] == 'CA') and\
-                           seq_ids[0] == seq_ids[1] and seq_ids[1] + 1 == seq_ids[2] and seq_ids[2] == seq_ids[3]:
-                            omega_index.append(index_id)
+                            if atom_ids[0] == 'O' and atom_ids[1] == 'C' and atom_ids[2] == 'N' and (atom_ids[3] == 'H' or atom_ids[3] == 'CA') and\
+                               seq_ids[0] == seq_ids[1] and seq_ids[1] + 1 == seq_ids[2] and seq_ids[2] == seq_ids[3]:
+                                omega_index.append(index_id)
+
+                        elif len(seq_id_common) == 1 and comp_id in self.aaDict3.keys():
+
+                            # chi1
+
+                            if atom_ids[0] == 'N' and atom_ids[1] == 'CA' and atom_ids[2] == 'CB':
+                                if (atom_ids[3] == 'CG' and comp_id in ['ARG', 'ASN', 'ASP', 'GLN', 'GLU', 'HIS', 'LEU', 'LYS', 'MET', 'PHE', 'PRO', 'TRP', 'TYR']) or\
+                                   (atom_ids[3] == 'CG1' and comp_id in ['ILE', 'VAL']) or\
+                                   (atom_ids[3] == 'OG' and comp_id == 'SER') or\
+                                   (atom_ids[3] == 'OG1' and comp_id == 'THR') or\
+                                   (atom_ids[3] == 'SG' and comp_id == 'CYS'):
+                                    chi1_index.append(index_id)
+
+                            # chi2
+
+                            if atom_ids[0] == 'CA' and atom_ids[1] == 'CB':
+                                if (atom_ids[2] == 'CG' and atom_ids[3] == 'CD' and comp_id in ['ARG', 'GLN', 'GLU', 'LYS', 'PRO']) or\
+                                   (atom_ids[2] == 'CG' and atom_ids[3] == 'CD1' and comp_id in ['LEU', 'PHE', 'TRP', 'TYR']) or\
+                                   (atom_ids[2] == 'CG' and atom_ids[3] == 'ND1' and comp_id == 'HIS') or\
+                                   (atom_ids[2] == 'CG' and atom_ids[3] == 'OD1' and comp_id in ['ASN', 'ASP']) or\
+                                   (atom_ids[2] == 'CG' and atom_ids[3] == 'SD' and comp_id == 'MET') or\
+                                   (atom_ids[2] == 'CG1' and atom_ids[3] == 'CD' and comp_id == 'ILE'):
+                                    chi2_index.append(index_id)
+
+                            # chi3
+
+                            if atom_ids[0] == 'CB' and atom_ids[1] == 'CG':
+                                if (atom_ids[2] == 'CD' and atom_ids[3] == 'CE' and comp_id == 'LYS') or\
+                                   (atom_ids[2] == 'CD' and atom_ids[3] == 'NE' and comp_id == 'ARG') or\
+                                   (atom_ids[2] == 'CD' and atom_ids[3] == 'OE1' and comp_id in ['GLN', 'GLU']) or\
+                                   (atom_ids[2] == 'SD' and atom_ids[3] == 'CE' and comp_id == 'MET'):
+                                    chi3_index.append(index_id)
+
+                            # chi4
+
+                            if atom_ids[0] == 'CG' and atom_ids[1] == 'CD':
+                                if (atom_ids[2] == 'NE' and atom_ids[3] == 'CZ' and comp_id == 'ARG') or\
+                                   (atom_ids[2] == 'CE' and atom_ids[3] == 'NZ' and comp_id == 'LYS'):
+                                    chi4_index.append(index_id)
+
+                            # chi5
+
+                            if atom_ids == ['CD', 'NE', 'CZ', 'NH1'] and comp_id == 'ARG':
+                                chi5_index.append(index_id)
 
                 except Exception as e:
 
@@ -6869,7 +6941,8 @@ class NmrDpUtility(object):
 
                     return False
 
-                if len(phi_index) + len(psi_index) + len(omega_index) > 0:
+                if len(phi_index) + len(psi_index) + len(omega_index) +\
+                   len(chi1_index) + len(chi2_index) + len(chi3_index) + len(chi4_index) + len(chi5_index) > 0:
 
                     lp_data = sf_data.get_loop_by_category(lp_category)
 
@@ -6886,6 +6959,16 @@ class NmrDpUtility(object):
                             row[aglCol] = 'PSI'
                         elif index_id in omega_index:
                             row[aglCol] = 'OMEGA'
+                        elif index_id in chi1_index:
+                            row[aglCol] = 'CHI1'
+                        elif index_id in chi2_index:
+                            row[aglCol] = 'CHI2'
+                        elif index_id in chi3_index:
+                            row[aglCol] = 'CHI3'
+                        elif index_id in chi4_index:
+                            row[aglCol] = 'CHI4'
+                        elif index_id in chi5_index:
+                            row[aglCol] = 'CHI5'
 
         return True
 

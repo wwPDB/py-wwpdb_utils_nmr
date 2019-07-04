@@ -1,6 +1,6 @@
 ##
 # File: NmrDpReport.py
-# Date: 03-Jul-2019
+# Date: 04-Jul-2019
 #
 # Updates:
 ##
@@ -409,6 +409,30 @@ class NmrDpReportError:
         except StopIteration:
             return None
 
+    def getCombinedDescriptions(self, file_name, sf_framecode):
+        """ Return combined error descriptions specified by file name and saveframe.
+        """
+
+        if self.__contents is None:
+            return None
+
+        d = []
+
+        for item in self.items:
+
+            if item == 'internal_error' or self.__contents[item] is None:
+                continue
+
+            for c in self.__contents[item]:
+
+                if c['file_name'] == file_name and 'sf_framecode' in c and c['sf_framecode'] == sf_framecode:
+                    d.append(item + ': ' + c['description'])
+
+        if len(d) == 0:
+            return None
+
+        return d
+
 class NmrDpReportWarning:
     """ Wrapper class for data processing report of NMR unified data (warning).
     """
@@ -416,7 +440,7 @@ class NmrDpReportWarning:
     def __init__(self):
         self.items = ('missing_content', 'missing_saveframe', 'missing_data', 'enum_failure',
                       'disordered_index', 'sequence_mismatch', 'atom_nomenclature_mismatch',
-                      'skipped_sf_category', 'skipped_lp_category', 'suspicious_data', 'unusual_data', 'remarkable_data')
+                      'skipped_sf_category', 'skipped_lp_category', 'suspicious_data', 'unusual_data', 'remarkable_data', 'unsufficient_data')
 
         self.__contents = {item:None for item in self.items}
 
@@ -509,3 +533,27 @@ class NmrDpReportWarning:
             return c['description']
         except StopIteration:
             return None
+
+    def getCombinedDescriptions(self, file_name, sf_framecode):
+        """ Return combined warning descriptions specified by file name and saveframe.
+        """
+
+        if self.__contents is None:
+            return None
+
+        d = []
+
+        for item in self.items:
+
+            if self.__contents[item] is None:
+                continue
+
+            for c in self.__contents[item]:
+
+                if c['file_name'] == file_name and 'sf_framecode' in c and c['sf_framecode'] == sf_framecode:
+                    d.append(item + ': ' + c['description'])
+
+        if len(d) == 0:
+            return None
+
+        return d

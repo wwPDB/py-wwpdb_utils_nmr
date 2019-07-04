@@ -1,6 +1,6 @@
 ##
 # File: NmrDpUtility.py
-# Date: 03-Jul-2019
+# Date: 04-Jul-2019
 #
 # Updates:
 ##
@@ -265,6 +265,9 @@ class NmrDpUtility(object):
         self.weight_range = {'min_exclusive': 0.0, 'max_inclusive': 10.0}
         # allowed scale range
         self.scale_range = self.weight_range
+
+        # criterion for detection of low sequence coverage
+        self.low_sequence_coverage = 0.3
 
         # loop index tags
         self.index_tags = {'nef': {'entry_info': None,
@@ -2161,8 +2164,6 @@ class NmrDpUtility(object):
 
                         poly_seq_list_set[content_subtype].append({'list_id': list_id, 'sf_framecode': sf_framecode, 'polymer_sequence': poly_seq})
 
-                        list_id += 1
-
                         has_poly_seq = True
 
                         if file_type == 'nmr-star':
@@ -2301,6 +2302,8 @@ class NmrDpUtility(object):
 
                     if self.__verbose:
                         self.__lfh.write("+NmrDpUtility.__extractPolymerSequenceInLoop() ++ Error  - %s" % str(e))
+
+                list_id += 1
 
             if not has_poly_seq:
                 poly_seq_list_set.pop(content_subtype)
@@ -2680,13 +2683,14 @@ class NmrDpUtility(object):
                         ref_code = self.__get1LetterCodeSequence(s1['comp_id'])
                         test_code = self.__get1LetterCodeSequence(_s2['comp_id'])
                         mid_code = self.__getMiddleCode(ref_code, test_code)
-                        gauge_code = self.__getGaugeCode(s1['seq_id'])
+                        ref_gauge_code = self.__getGaugeCode(s1['seq_id'])
+                        test_gauge_code = self.__getGaugeCode(_s2['seq_id'])
 
                         seq_align = {'list_id': polymer_sequence_in_loop[subtype][list_id]['list_id'],
                                      'sf_framecode': polymer_sequence_in_loop[subtype][list_id]['sf_framecode'],
                                      'chain_id': cid, 'length': length, 'conflict': conflict, 'unmapped': unmapped, 'sequence_coverage': float('{:.3f}'.format(float(length - (unmapped + conflict)) / float(length))),
                                      'ref_seq_id': s1['seq_id'],
-                                     'gauge_code': gauge_code, 'ref_code': ref_code, 'mid_code': mid_code, 'test_code': test_code}
+                                     'ref_gauge_code': ref_gauge_code, 'ref_code': ref_code, 'mid_code': mid_code, 'test_code': test_code, 'test_gauge_code': test_gauge_code}
 
                         seq_align_set.append(seq_align)
 
@@ -3433,6 +3437,16 @@ class NmrDpUtility(object):
                     if self.__verbose:
                         self.__lfh.write("+NmrDpUtility.__testDataConsistencyInLoop() ++ Error  - %s" % str(e))
 
+                if not lp_data is None and len(lp_data) == 0:
+
+                    warn = "Unexpectedly, no rows found in a loop."
+
+                    self.report.warning.appendDescription('missing_content', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
+                    self.report.setWarning()
+
+                    if self.__verbose:
+                        self.__lfh.write("+NmrDpUtility.__testDataConsistencyInLoop() ++ Warning  - %s\n" % warn)
+
         return self.report.getTotalErrors() == __errors
 
     def __testDataConsistencyInAuxLoop(self):
@@ -3770,8 +3784,6 @@ class NmrDpUtility(object):
 
                     self.__testParentChildRelation(file_name, file_type, content_subtype, parent_keys, list_id, sf_framecode, sf_tag_data)
 
-                    list_id += 1
-
                 except LookupError as e:
 
                     self.report.error.appendDescription('missing_mandatory_item', {'file_name': file_name, 'sf_framecode': sf_framecode, 'description': str(e).strip("'")})
@@ -3832,8 +3844,6 @@ class NmrDpUtility(object):
 
                         self.__testParentChildRelation(file_name, file_type, content_subtype, parent_keys, list_id, sf_framecode, sf_tag_data)
 
-                        list_id += 1
-
                     except:
                         pass
 
@@ -3844,6 +3854,8 @@ class NmrDpUtility(object):
 
                     if self.__verbose:
                         self.__lfh.write("+NmrDpUtility.__testSfTagConsistency() ++ Error  - %s" % str(e))
+
+                list_id += 1
 
         return self.report.getTotalErrors() == __errors
 
@@ -4816,6 +4828,7 @@ class NmrDpUtility(object):
         input_source_dic = input_source.get()
 
         file_type = input_source_dic['file_type']
+        file_name = input_source_dic['file_name']
 
         if input_source_dic['content_subtype'] is None:
             return False
@@ -4850,46 +4863,7 @@ class NmrDpUtility(object):
 
                 lp_data = next((l['data'] for l in self.__lp_data[content_subtype] if l['sf_framecode'] == sf_framecode), None)
 
-                if not lp_data is None:
-
-                    ent = {'list_id': _list_id, 'sf_framecode': sf_framecode, 'number_of_rows': len(lp_data), 'valid': True}
-
-                    if content_subtype == 'chem_shift' or content_subtype == 'dist_restraint' or content_subtype == 'dihed_restraint' or content_subtype == 'rdc_restraint' or content_subtype == 'spectral_peak':
-
-                        sa_name = 'nmr_poly_seq_vs_' + content_subtype
-
-                        if sa_name in seq_align_dic and not seq_align_dic[sa_name] is None:
-
-                            seq_coverage = []
-
-                            for seq_align in seq_align_dic[sa_name]:
-
-                                if seq_align['list_id'] == list_id:
-
-                                    sc = {}
-                                    sc['chain_id'] = seq_align['chain_id']
-                                    sc['length'] = seq_align['length']
-                                    sc['sequence_coverage'] = seq_align['sequence_coverage']
-
-                                    seq_coverage.append(sc)
-
-                            if len(seq_coverage) > 0:
-                                ent['sequence_coverage'] = seq_coverage
-
-                    else:
-
-                        err = "Module for calculation of statistics on content subtype %s were not found." % content_subtype
-
-                        self.report.error.appendDescription('internal_error', "+NmrDpUtility.__calculateStatsOfExptlData() ++ Error  - %s" % err)
-                        self.report.setError()
-
-                        if self.__verbose:
-                            self.__lfh.write("+NmrDpUtility.__calculateStatsOfExptlData() ++ Error  - %s\n" % err)
-
-                        continue
-
-                else:
-                    ent = {'list_id': _list_id, 'sf_framecode': sf_framecode, 'number_of_rows': 0, 'valid': False}
+                ent = {'list_id': _list_id, 'sf_framecode': sf_framecode, 'number_of_rows': 0 if lp_data is None else len(lp_data)}
 
                 if content_subtype == 'dist_restraint' or content_subtype == 'dihed_restraint' or content_subtype == 'rdc_restraint':
 
@@ -4906,6 +4880,75 @@ class NmrDpUtility(object):
                         ent['exp_type'] = type[0]
                     else:
                         ent['exp_type'] = 'Unknown'
+
+                if not lp_data is None:
+
+                    if content_subtype == 'chem_shift' or content_subtype == 'dist_restraint' or content_subtype == 'dihed_restraint' or content_subtype == 'rdc_restraint' or content_subtype == 'spectral_peak':
+
+                        sa_name = 'nmr_poly_seq_vs_' + content_subtype
+
+                        if sa_name in seq_align_dic and not seq_align_dic[sa_name] is None:
+
+                            low_sequence_coverage = ''
+
+                            seq_coverage = []
+
+                            for seq_align in seq_align_dic[sa_name]:
+
+                                if seq_align['list_id'] == list_id:
+
+                                    sc = {}
+                                    sc['chain_id'] = seq_align['chain_id']
+                                    sc['length'] = seq_align['length']
+                                    sc['sequence_coverage'] = seq_align['sequence_coverage']
+
+                                    if seq_align['sequence_coverage'] < self.low_sequence_coverage and seq_align['length'] > 1:
+                                        if (not 'exp_type' in ent['exp_type']) or not ent['exp_type'] in ['disulfide bound', 'paramagnetic relaxation', 'symmetry', 'J-couplings']:
+                                            low_sequence_coverage += 'coverage %s for chain_id %s, length %s, ' % (seq_align['sequence_coverage'], seq_align['chain_id'], seq_align['length'])
+
+                                    seq_coverage.append(sc)
+
+                            if len(seq_coverage) > 0:
+
+                                ent['sequence_coverage'] = seq_coverage
+
+                                if len(low_sequence_coverage) > 0:
+
+                                    warn = 'Low sequence coverage of NMR experimental data was found (' + low_sequence_coverage[:-2] + ') in %s saveframe.' % sf_framecode
+
+                                    self.report.warning.appendDescription('unsufficient_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
+                                    self.report.setWarning()
+
+                                    if self.__verbose:
+                                        self.__lfh.write("+NmrDpUtility.__calculateStatsOfExptlData() ++ Warning  - %s\n" % warn)
+
+                    else:
+
+                        err = "Module for calculation of statistics on content subtype %s were not found." % content_subtype
+
+                        self.report.error.appendDescription('internal_error', "+NmrDpUtility.__calculateStatsOfExptlData() ++ Error  - %s" % err)
+                        self.report.setError()
+
+                        if self.__verbose:
+                            self.__lfh.write("+NmrDpUtility.__calculateStatsOfExptlData() ++ Error  - %s\n" % err)
+
+                        continue
+
+                has_err = self.report.error.exists(file_name, sf_framecode)
+                has_warn = self.report.warning.exists(file_name, sf_framecode)
+
+                if has_err:
+                    status = 'ERROR'
+                    ent['error_descriptions'] = self.report.error.getCombinedDescriptions(file_name, sf_framecode)
+                    if has_warn:
+                        ent['warning_descriptions'] = self.report.warning.getCombinedDescriptions(file_name, sf_framecode)
+                elif has_warn:
+                    status = 'WARNING'
+                    ent['warning_descriptions'] = self.report.warning.getCombinedDescriptions(file_name, sf_framecode)
+                else:
+                    status = 'OK'
+
+                ent['status'] = status
 
                 asm.append(ent)
 
@@ -5225,8 +5268,6 @@ class NmrDpUtility(object):
 
                     poly_seq_list_set[content_subtype].append({'list_id': list_id, 'polymer_sequence': poly_seq})
 
-                    list_id += 1
-
                     has_poly_seq = True
 
             except KeyError as e:
@@ -5260,6 +5301,8 @@ class NmrDpUtility(object):
 
                 if self.__verbose:
                     self.__lfh.write("+NmrDpUtility.__extractCoordPolymerSequenceInLoop() ++ Error  - %s" % str(e))
+
+            list_id += 1
 
             if not has_poly_seq:
                 poly_seq_list_set.pop(content_subtype)
@@ -5388,12 +5431,13 @@ class NmrDpUtility(object):
                             ref_code = self.__get1LetterCodeSequence(s1['comp_id'])
                             test_code = self.__get1LetterCodeSequence(_s2['comp_id'])
                             mid_code = self.__getMiddleCode(ref_code, test_code)
-                            gauge_code = self.__getGaugeCode(s1['seq_id'])
+                            ref_gauge_code = self.__getGaugeCode(s1['seq_id'])
+                            test_gauge_code = self.__getGaugeCode(_s2['seq_id'])
 
                             seq_align = {'list_id': polymer_sequence_in_loop[subtype][list_id]['list_id'],
                                          'chain_id': cid, 'length': length, 'conflict': conflict, 'unmapped': unmapped, 'sequence_coverage': float('{:.3f}'.format(float(length - (unmapped + conflict)) / float(length))),
                                          'ref_seq_id': s1['seq_id'],
-                                         'gauge_code': gauge_code, 'ref_code': ref_code, 'mid_code': mid_code, 'test_code': test_code}
+                                         'ref_gauge_code': ref_gauge_code, 'ref_code': ref_code, 'mid_code': mid_code, 'test_code': test_code, 'test_gauge_code': test_gauge_code}
 
                             seq_align_set.append(seq_align)
 
@@ -5460,11 +5504,12 @@ class NmrDpUtility(object):
                 ref_code = self.__get1LetterCodeSequence(s1['comp_id'])
                 test_code = self.__get1LetterCodeSequence(_s2['comp_id'])
                 mid_code = self.__getMiddleCode(ref_code, test_code)
-                gauge_code = self.__getGaugeCode(s1['seq_id'])
+                ref_gauge_code = self.__getGaugeCode(s1['seq_id'])
+                test_gauge_code = self.__getGaugeCode(_s2['seq_id'])
 
                 seq_align = {'ref_chain_id': cid, 'test_chain_id': cid2, 'length': length, 'conflict': conflict, 'unmapped': unmapped, 'sequence_coverage': float('{:.3f}'.format(float(length - (unmapped + conflict)) / float(length))),
                              'ref_seq_id': s1['seq_id'], 'test_seq_id': _s2['seq_id'],
-                             'gauge_code': gauge_code, 'ref_code': ref_code, 'mid_code': mid_code, 'test_code': test_code}
+                             'ref_gauge_code': ref_gauge_code, 'ref_code': ref_code, 'mid_code': mid_code, 'test_code': test_code, 'test_gauge_code': test_gauge_code}
 
                 seq_align_set.append(seq_align)
 
@@ -5507,11 +5552,12 @@ class NmrDpUtility(object):
                 ref_code = self.__get1LetterCodeSequence(s1['comp_id'])
                 test_code = self.__get1LetterCodeSequence(_s2['comp_id'])
                 mid_code = self.__getMiddleCode(ref_code, test_code)
-                gauge_code = self.__getGaugeCode(s1['seq_id'])
+                ref_gauge_code = self.__getGaugeCode(s1['seq_id'])
+                test_gauge_code = self.__getGaugeCode(_s2['seq_id'])
 
                 seq_align = {'ref_chain_id': cid, 'test_chain_id': cid2, 'length': length, 'conflict': conflict, 'unmapped': unmapped, 'sequence_coverage': float('{:.3f}'.format(float(length - (unmapped + conflict)) / float(length))),
                              'ref_seq_id': s1['seq_id'], 'test_seq_id': _s2['seq_id'],
-                             'gauge_code': gauge_code, 'ref_code': ref_code, 'mid_code': mid_code, 'test_code': test_code}
+                             'ref_gauge_code': ref_gauge_code, 'ref_code': ref_code, 'mid_code': mid_code, 'test_code': test_code, 'test_gauge_code': test_gauge_code}
 
                 seq_align_set.append(seq_align)
 
@@ -6021,7 +6067,7 @@ class NmrDpUtility(object):
                                 if self.__verbose:
                                     self.__lfh.write("+NmrDpUtility.__testCoordAtomIdConsistency() ++ Error  - %s\n" % err)
 
-                    list_id += 1
+                list_id += 1
 
         return self.report.getTotalErrors() == __errors
 

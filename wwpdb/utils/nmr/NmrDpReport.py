@@ -293,6 +293,25 @@ class NmrDpReportInputSource:
     def put(self, contents):
         self.__contents = contents
 
+    def updateNonStandardResidueByExptlData(self, chain_id, seq_id, content_subtype):
+        """ Update specified non_starndard_residue by experimental data.
+        """
+
+        try:
+
+            c = next(c for c in self.__contents['non_standard_residue'] if c['chain_id'] == chain_id)
+
+            if seq_id in c['seq_id']:
+                c['exptl_data'][c['seq_id'].index(seq_id)][content_subtype] = True
+
+            else:
+                logging.error('+NmrDpReportInputSource.updateNonStandardResidueByExptlData() ++ Error  - Unknown seq_id %s' % seq_id)
+                raise KeyError('+NmrDpReportInputSource.updateNonStandardResidueByExptlData() ++ Error  - Unknown seq_id %s' % seq_id)
+
+        except StopIteration:
+            logging.error('+NmrDpReportInputSource.updateNonStandardResidueByExptlData() ++ Error  - Unknown chain_id %s' % chain_id)
+            raise KeyError('+NmrDpReportInputSource.updateNonStandardResidueByExptlData() ++ Error  - Unknown chain_id %s' % chain_id)
+
 class NmrDpReportSequenceAlignment:
     """ Wrapper class for data processing report of NMR unified data (sequence alignment).
     """

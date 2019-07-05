@@ -2601,7 +2601,7 @@ class NmrDpUtility(object):
 
             ent_has = False
 
-            ent = {'chain_id': s['chain_id'], 'seq_id': [], 'comp_id': [], 'chem_comp_name': []}
+            ent = {'chain_id': s['chain_id'], 'seq_id': [], 'comp_id': [], 'chem_comp_name': [], 'exptl_data': []}
 
             for i in range(len(s['seq_id'])):
                 seq_id = s['seq_id'][i]
@@ -2630,6 +2630,8 @@ class NmrDpUtility(object):
 
                         if self.__verbose:
                            self.__lfh.write("+NmrDpUtility.__extractNonStandardResidue() ++ Warning  - %s\n" % warn)
+
+                    ent['exptl_data'].append({'chem_shift': False, 'dist_restraint': False, 'dihed_restraint': False, 'rdc_restraint': False, 'spectral_peak': False, 'coordinate': False})
 
             if ent_has:
                 asm.append(ent)
@@ -2727,6 +2729,10 @@ class NmrDpUtility(object):
                                      'ref_gauge_code': ref_gauge_code, 'ref_code': ref_code, 'mid_code': mid_code, 'test_code': test_code, 'test_gauge_code': test_gauge_code}
 
                         seq_align_set.append(seq_align)
+
+                        for j in range(length):
+                            if ref_code[j] == 'X' and test_code[j] == 'X':
+                                input_source.updateNonStandardResidueByExptlData(cid, s1['seq_id'][j], subtype)
 
                 if has_seq_align:
                     self.report.sequence_alignment.setItemValue('nmr_poly_seq_vs_' + subtype, seq_align_set)
@@ -5378,18 +5384,29 @@ class NmrDpUtility(object):
 
             ent_has = False
 
-            ent = {'chain_id': s['chain_id'], 'seq_id': [], 'comp_id': []}
+            ent = {'chain_id': s['chain_id'], 'seq_id': [], 'comp_id': [], 'chem_comp_name': [], 'exptl_data': []}
 
             for i in range(len(s['seq_id'])):
-                sid = s['seq_id'][i]
-                seq = s['comp_id'][i]
+                seq_id = s['seq_id'][i]
+                comp_id = s['comp_id'][i]
 
-                if self.__nefT.get_one_letter_code(seq) == '?':
+                if self.__nefT.get_one_letter_code(comp_id) == '?':
                     asm_has = True
                     ent_has = True
 
-                    ent['seq_id'].append(sid)
-                    ent['comp_id'].append(seq)
+                    ent['seq_id'].append(seq_id)
+                    ent['comp_id'].append(comp_id)
+
+                    self.__updateChemCompDict(comp_id)
+
+                    if self.__last_comp_id_test: # matches with comp_id in CCD
+                        cc_name = self.__last_chem_comp_dict['_chem_comp.name']
+                        ent['chem_comp_name'].append(cc_name)
+
+                    else:
+                        ent['chem_comp_name'].append(None)
+
+                        ent['exptl_data'].append({'coordinate': False})
 
             if ent_has:
                 asm.append(ent)
@@ -5691,23 +5708,33 @@ class NmrDpUtility(object):
 
                 chain_assign = {'ref_chain_id': cid, 'test_chain_id': cid2, 'length': result['length'], 'conflict': result['conflict'], 'unmapped': result['unmapped'], 'sequence_coverage': result['sequence_coverage']}
 
+                s1 = next(s for s in cif_polymer_sequence if s['chain_id'] == cid)
+                s2 = next(s for s in nmr_polymer_sequence if s['chain_id'] == cid2)
+
+                _s2 = self.__fillBlankedCompId(s1, s2)
+
+                self.__pA.setReferenceSequence(s1['comp_id'], 'REF' + cid)
+                self.__pA.addTestSequence(_s2['comp_id'], cid2)
+                self.__pA.doAlign()
+                #self.__pA.prAlignmentConflicts(cid)
+                myAlign = self.__pA.getAlignment(cid)
+
+                length = len(myAlign)
+
+                ref_code = self.__get1LetterCodeSequence(s1['comp_id'])
+                test_code = self.__get1LetterCodeSequence(_s2['comp_id'])
+
+                for j in range(length):
+                    if ref_code[j] == 'X' and test_code[j] == 'X':
+                        nmr_input_source.updateNonStandardResidueByExptlData(cid2, _s2['seq_id'][j], 'coordinate')
+                        cif_input_source.updateNonStandardResidueByExptlData(cid, s1['seq_id'][j], 'coordinate')
+
                 if result['unmapped'] > 0 or result['conflict'] > 0:
 
                     unmapped = []
                     conflict = []
 
-                    s1 = next(s for s in cif_polymer_sequence if s['chain_id'] == cid)
-                    s2 = next(s for s in nmr_polymer_sequence if s['chain_id'] == cid2)
-
-                    _s2 = self.__fillBlankedCompId(s1, s2)
-
-                    self.__pA.setReferenceSequence(s1['comp_id'], 'REF' + cid)
-                    self.__pA.addTestSequence(_s2['comp_id'], cid2)
-                    self.__pA.doAlign()
-                    #self.__pA.prAlignmentConflicts(cid)
-                    myAlign = self.__pA.getAlignment(cid)
-
-                    for i in range(len(myAlign)):
+                    for i in range(length):
                         myPr = myAlign[i]
                         if myPr[0] == myPr[1]:
                             continue

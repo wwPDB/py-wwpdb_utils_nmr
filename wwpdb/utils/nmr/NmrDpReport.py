@@ -1,6 +1,6 @@
 ##
 # File: NmrDpReport.py
-# Date: 04-Jul-2019
+# Date: 05-Jul-2019
 #
 # Updates:
 ##
@@ -24,7 +24,8 @@ class NmrDpReport:
                                          'status': 'OK'
                                          },
                          'error': None,
-                         'warning': None
+                         'warning': None,
+                         'corrected_warning': None
                          }
 
         self.status_codes = ('OK', 'ERROR', 'WARNING')
@@ -34,6 +35,7 @@ class NmrDpReport:
         self.chain_assignment = NmrDpReportChainAssignment()
         self.error = NmrDpReportError()
         self.warning = NmrDpReportWarning()
+        self.corrected_warning = None
 
     def appendInputSource(self):
         self.input_sources.append(NmrDpReportInputSource())
@@ -190,6 +192,50 @@ class NmrDpReport:
         self.setMutable()
 
         return True
+
+    def setCorrectedWarning(self, prev_report):
+        """ Initialize history of corrected warnings in previous report.
+        """
+
+        if not self.__immutable:
+
+            self.corrected_warning = NmrDpReportWarning()
+
+            file_name = self.input_sources[self.getInputSourceIdOfNmrUnifiedData()].get()['file_name']
+            _file_name = prev_report.input_sources[prev_report.getInputSourceIdOfNmrUnifiedData()].get()['file_name']
+
+            for item in prev_report.warning.get().keys():
+
+                if item == 'total':
+                    continue
+
+                value_list = self.warning.getValueList(item, file_name)
+                _value_list = prev_report.warning.getUniqueValueList(item, _file_name)
+
+                if _value_list is None:
+                    continue
+
+                list = []
+
+                for _c in _value_list:
+
+                    if value_list is None:
+                        list.append(_c)
+
+                    else:
+                        try:
+                            next(c for c in value_list if c['sf_framecode'] == _c['sf_framecode'] and c['description'] == _c['description'])
+                        except StopIteration:
+                            list.append(_c)
+
+                for c in list:
+                    self.corrected_warning.appendDescription(item, c)
+
+            self.__report['corrected_warning'] = self.corrected_warning.get()
+
+        else:
+            logging.warning('+NmrDpReport.setResolvedWarning() ++ Warning  - No effects on NMR data processing report because the report is immutable')
+            raise UserWarning('+NmrDpReport.setResolvedWarning() ++ Warning  - No effects on NMR data processing report because the report is immutable')
 
 class NmrDpReportInputSource:
     """ Wrapper class for data processing report of NMR unified data (input source).
@@ -388,13 +434,43 @@ class NmrDpReportError:
         return False
 
     def getValueList(self, item, file_name):
-        """ Return list of error values specified by by item name and file name.
+        """ Return list of error values specified by item name and file name.
         """
 
         if item in ['total', 'internal_error'] or self.__contents is None or (not item in self.__contents.keys()) or self.__contents[item] is None:
             return None
 
         return [c for c in self.__contents[item] if c['file_name'] == file_name]
+
+    def getUniqueValueList(self, item, file_name):
+        """ Return list of error values having unique sf_framecode and description.
+        """
+
+        if item in ['total', 'internal_error'] or self.__contents is None or (not item in self.__contents.keys()) or self.__contents[item] is None:
+            return None
+
+        list = []
+
+        keys = set()
+
+        for c in self.getValueList(item, file_name):
+
+            key = c['sf_framecode'] + c['description']
+
+            if key in keys:
+                continue
+
+            if 'row_location' in c:
+                del c['row_location']
+
+            elif 'row_locations' in c:
+                del c['row_locations']
+
+            list.append(c)
+
+            keys.add(key)
+
+        return list
 
     def getDescription(self, item, file_name, sf_framecode):
         """ Return error description specified by item name, file name, and saveframe.
@@ -513,13 +589,43 @@ class NmrDpReportWarning:
         return False
 
     def getValueList(self, item, file_name):
-        """ Return list of warning values specified by by item name and file name.
+        """ Return list of warning values specified by item name and file name.
         """
 
         if item == 'total' or self.__contents is None or (not item in self.__contents.keys()) or self.__contents[item] is None:
             return None
 
         return [c for c in self.__contents[item] if c['file_name'] == file_name]
+
+    def getUniqueValueList(self, item, file_name):
+        """ Return list of warning values having unique sf_framecode and description.
+        """
+
+        if item == 'total' or self.__contents is None or (not item in self.__contents.keys()) or self.__contents[item] is None:
+            return None
+
+        list = []
+
+        keys = set()
+
+        for c in self.getValueList(item, file_name):
+
+            key = c['sf_framecode'] + c['description']
+
+            if key in keys:
+                continue
+
+            if 'row_location' in c:
+                del c['row_location']
+
+            elif 'row_locations' in c:
+                del c['row_locations']
+
+            list.append(c)
+
+            keys.add(key)
+
+        return list
 
     def getDescription(self, item, file_name, sf_framecode):
         """ Return warning description specified by item name, file name, and saveframe.

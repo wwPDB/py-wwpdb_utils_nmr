@@ -1,6 +1,6 @@
 ##
 # File: NmrDpUtility.py
-# Date: 04-Jul-2019
+# Date: 05-Jul-2019
 #
 # Updates:
 ##
@@ -131,6 +131,7 @@ class NmrDpUtility(object):
 
         # data processing report
         self.report = None
+        self.report_prev = None
 
         # NEFTranslator
         self.__nefT = NEFTranslator()
@@ -1541,6 +1542,9 @@ class NmrDpUtility(object):
     def __dumpDpReport(self):
         """ Dump current NMR data processing report.
         """
+
+        if self.report_prev != None:
+            self.report.setCorrectedWarning(self.report_prev)
 
         return self.report.writeJson(self.__logPath)
 
@@ -6086,6 +6090,9 @@ class NmrDpUtility(object):
 
                     self.report = NmrDpReport()
                     self.report.loadJson(fPath)
+
+                    self.report_prev = NmrDpReport()
+                    self.report_prev.loadJson(fPath)
 
                     return True
 

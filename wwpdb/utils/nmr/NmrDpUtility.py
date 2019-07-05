@@ -1315,28 +1315,6 @@ class NmrDpUtility(object):
                          'U': 'U'
                          }
 
-        self.aaDict3 = {'ALA': 'A',
-                        'ARG': 'R',
-                        'ASN': 'N',
-                        'ASP': 'D',
-                        'CYS': 'C',
-                        'GLN': 'Q',
-                        'GLU': 'E',
-                        'GLY': 'G',
-                        'HIS': 'H',
-                        'ILE': 'I',
-                        'LEU': 'L',
-                        'LYS': 'K',
-                        'MET': 'M',
-                        'PHE': 'F',
-                        'PRO': 'P',
-                        'SER': 'S',
-                        'THR': 'T',
-                        'TRP': 'W',
-                        'TYR': 'Y',
-                        'VAL': 'V',
-                        }
-
         # main contents of loops
         self.__lp_data = {'poly_seq': [],
                           'chem_shift': [],
@@ -6755,7 +6733,7 @@ class NmrDpUtility(object):
         return False
 
     def __updateDihedralAngleType(self):
-        """ Update dihedral angle types (phi, psi, omega, chi[1-5] for polypeptide) if possible.
+        """ Update dihedral angle types (phi, psi, omega, chi[1-5] for polypeptide-like residue) if possible.
         """
 
         input_source = self.report.input_sources[0]
@@ -6787,6 +6765,14 @@ class NmrDpUtility(object):
         angle_type_name = item_names['angle_type']
 
         dihed_atom_ids = ['N', 'CA', 'C']
+
+        chi1_atom_id_4_pat = re.compile(r'^[COS]G1?$')
+        chi2_atom_id_3_pat = re.compile(r'^CG1?$')
+        chi2_atom_id_4_pat = re.compile(r'^[CNOS]D1?$')
+        chi3_atom_id_3_pat = re.compile(r'^[CS]D$')
+        chi3_atom_id_4_pat = re.compile(r'^[CNO]E1?$')
+        chi4_atom_id_3_pat = re.compile(r'^[CN]E$')
+        chi4_atom_id_4_pat = re.compile(r'^[CN]Z$')
 
         sf_category = self.sf_categories[file_type][content_subtype]
         lp_category = self.lp_categories[file_type][content_subtype]
@@ -6849,6 +6835,11 @@ class NmrDpUtility(object):
                         if chain_id_1 != chain_id_2 or chain_id_2 != chain_id_3 or chain_id_3 != chain_id_4:
                             continue
 
+                        polypeptide_like = self.__csStat.getTypeOfCompId(comp_id)[0]
+
+                        if not polypeptide_like:
+                            continue
+
                         seq_id_common = collections.Counter(seq_ids).most_common()
 
                         if len(seq_id_common) == 2:
@@ -6887,48 +6878,48 @@ class NmrDpUtility(object):
                                seq_ids[0] == seq_ids[1] and seq_ids[1] + 1 == seq_ids[2] and seq_ids[2] == seq_ids[3]:
                                 omega_index.append(index_id)
 
-                        elif len(seq_id_common) == 1 and comp_id in self.aaDict3.keys():
+                        elif len(seq_id_common) == 1:
 
                             # chi1
 
-                            if atom_ids[0] == 'N' and atom_ids[1] == 'CA' and atom_ids[2] == 'CB':
-                                if (atom_ids[3] == 'CG' and comp_id in ['ARG', 'ASN', 'ASP', 'GLN', 'GLU', 'HIS', 'LEU', 'LYS', 'MET', 'PHE', 'PRO', 'TRP', 'TYR']) or\
-                                   (atom_ids[3] == 'CG1' and comp_id in ['ILE', 'VAL']) or\
-                                   (atom_ids[3] == 'OG' and comp_id == 'SER') or\
-                                   (atom_ids[3] == 'OG1' and comp_id == 'THR') or\
-                                   (atom_ids[3] == 'SG' and comp_id == 'CYS'):
-                                    chi1_index.append(index_id)
+                            if atom_ids[0] == 'N' and atom_ids[1] == 'CA' and atom_ids[2] == 'CB' and chi1_atom_id_4_pat.match(atom_ids[3]):
+                                #if (atom_ids[3] == 'CG' and comp_id in ['ARG', 'ASN', 'ASP', 'GLN', 'GLU', 'HIS', 'LEU', 'LYS', 'MET', 'PHE', 'PRO', 'TRP', 'TYR']) or\
+                                #   (atom_ids[3] == 'CG1' and comp_id in ['ILE', 'VAL']) or\
+                                #   (atom_ids[3] == 'OG' and comp_id == 'SER') or\
+                                #   (atom_ids[3] == 'OG1' and comp_id == 'THR') or\
+                                #   (atom_ids[3] == 'SG' and comp_id == 'CYS'):
+                               chi1_index.append(index_id)
 
                             # chi2
 
-                            if atom_ids[0] == 'CA' and atom_ids[1] == 'CB':
-                                if (atom_ids[2] == 'CG' and atom_ids[3] == 'CD' and comp_id in ['ARG', 'GLN', 'GLU', 'LYS', 'PRO']) or\
-                                   (atom_ids[2] == 'CG' and atom_ids[3] == 'CD1' and comp_id in ['LEU', 'PHE', 'TRP', 'TYR']) or\
-                                   (atom_ids[2] == 'CG' and atom_ids[3] == 'ND1' and comp_id == 'HIS') or\
-                                   (atom_ids[2] == 'CG' and atom_ids[3] == 'OD1' and comp_id in ['ASN', 'ASP']) or\
-                                   (atom_ids[2] == 'CG' and atom_ids[3] == 'SD' and comp_id == 'MET') or\
-                                   (atom_ids[2] == 'CG1' and atom_ids[3] == 'CD' and comp_id == 'ILE'):
-                                    chi2_index.append(index_id)
+                            if atom_ids[0] == 'CA' and atom_ids[1] == 'CB' and chi2_atom_id_3_pat(atom_ids[2]) and chi2_atom_id_4_pat(atom_ids[3]):
+                                #if (atom_ids[2] == 'CG' and atom_ids[3] == 'CD' and comp_id in ['ARG', 'GLN', 'GLU', 'LYS', 'PRO']) or\
+                                #   (atom_ids[2] == 'CG' and atom_ids[3] == 'CD1' and comp_id in ['LEU', 'PHE', 'TRP', 'TYR']) or\
+                                #   (atom_ids[2] == 'CG' and atom_ids[3] == 'ND1' and comp_id == 'HIS') or\
+                                #   (atom_ids[2] == 'CG' and atom_ids[3] == 'OD1' and comp_id in ['ASN', 'ASP']) or\
+                                #   (atom_ids[2] == 'CG' and atom_ids[3] == 'SD' and comp_id == 'MET') or\
+                                #   (atom_ids[2] == 'CG1' and atom_ids[3] == 'CD' and comp_id == 'ILE'):
+                                chi2_index.append(index_id)
 
                             # chi3
 
-                            if atom_ids[0] == 'CB' and atom_ids[1] == 'CG':
-                                if (atom_ids[2] == 'CD' and atom_ids[3] == 'CE' and comp_id == 'LYS') or\
-                                   (atom_ids[2] == 'CD' and atom_ids[3] == 'NE' and comp_id == 'ARG') or\
-                                   (atom_ids[2] == 'CD' and atom_ids[3] == 'OE1' and comp_id in ['GLN', 'GLU']) or\
-                                   (atom_ids[2] == 'SD' and atom_ids[3] == 'CE' and comp_id == 'MET'):
-                                    chi3_index.append(index_id)
+                            if atom_ids[0] == 'CB' and atom_ids[1] == 'CG' and chi3_atom_id_3_pat(atom_ids[2]) and chi3_atom_id_4_pat(atom_ids[3]):
+                                #if (atom_ids[2] == 'CD' and atom_ids[3] == 'CE' and comp_id == 'LYS') or\
+                                #   (atom_ids[2] == 'CD' and atom_ids[3] == 'NE' and comp_id == 'ARG') or\
+                                #   (atom_ids[2] == 'CD' and atom_ids[3] == 'OE1' and comp_id in ['GLN', 'GLU']) or\
+                                #   (atom_ids[2] == 'SD' and atom_ids[3] == 'CE' and comp_id == 'MET'):
+                                chi3_index.append(index_id)
 
                             # chi4
 
-                            if atom_ids[0] == 'CG' and atom_ids[1] == 'CD':
-                                if (atom_ids[2] == 'NE' and atom_ids[3] == 'CZ' and comp_id == 'ARG') or\
-                                   (atom_ids[2] == 'CE' and atom_ids[3] == 'NZ' and comp_id == 'LYS'):
-                                    chi4_index.append(index_id)
+                            if atom_ids[0] == 'CG' and atom_ids[1] == 'CD' and chi4_atom_id_3_pat(atom_ids[2]) and chi4_atom_id_4_par(atom_ids[3]):
+                                #if (atom_ids[2] == 'NE' and atom_ids[3] == 'CZ' and comp_id == 'ARG') or\
+                                #  (atom_ids[2] == 'CE' and atom_ids[3] == 'NZ' and comp_id == 'LYS'):
+                                chi4_index.append(index_id)
 
                             # chi5
 
-                            if atom_ids == ['CD', 'NE', 'CZ', 'NH1'] and comp_id == 'ARG':
+                            if atom_ids == ['CD', 'NE', 'CZ', 'NH1']: # and comp_id == 'ARG':
                                 chi5_index.append(index_id)
 
                 except Exception as e:
@@ -7764,6 +7755,7 @@ class NmrDpUtility(object):
         seq_id_2_name = item_names['seq_id_2']
         seq_id_3_name = item_names['seq_id_3']
         seq_id_4_name = item_names['seq_id_4']
+        comp_id_1_name = item_names['comp_id_1']
         atom_id_1_name = item_names['atom_id_1']
         atom_id_2_name = item_names['atom_id_2']
         atom_id_3_name = item_names['atom_id_3']
@@ -7789,6 +7781,7 @@ class NmrDpUtility(object):
                 seq_ids.append(i[seq_id_2_name])
                 seq_ids.append(i[seq_id_3_name])
                 seq_ids.append(i[seq_id_4_name])
+                comp_id = i[comp_id_1_name]
                 atom_ids = []
                 atom_ids.append(i[atom_id_1_name])
                 atom_ids.append(i[atom_id_2_name])
@@ -7805,6 +7798,11 @@ class NmrDpUtility(object):
                     continue
 
                 if chain_id_1 != chain_id_2 or chain_id_2 != chain_id_3 or chain_id_3 != chain_id_4:
+                    return False
+
+                polypeptide_like = self.__csStat.getTypeOfCompId(comp_id)[0]
+
+                if not polypeptide_like:
                     return False
 
                 dh_chains.add(chain_id_1)

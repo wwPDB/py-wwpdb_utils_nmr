@@ -2571,6 +2571,11 @@ class NmrDpUtility(object):
         input_source = self.report.input_sources[0]
         input_source_dic = input_source.get()
 
+        file_type = input_source_dic['file_type']
+        file_name = input_source_dic['file_name']
+
+        content_subtype = 'poly_seq'
+
         has_poly_seq = 'polymer_sequence' in input_source_dic
 
         if not has_poly_seq:
@@ -2581,6 +2586,13 @@ class NmrDpUtility(object):
         if polymer_sequence is None:
             return False
 
+        sf_category = self.sf_categories[file_type][content_subtype]
+        lp_category = self.lp_categories[file_type][content_subtype]
+
+        sf_data = self.__star_data.get_saveframes_by_category(sf_category)[0]
+
+        sf_framecode = sf_data.get_tag('sf_framecode')[0]
+
         asm_has = False
 
         asm = []
@@ -2589,18 +2601,35 @@ class NmrDpUtility(object):
 
             ent_has = False
 
-            ent = {'chain_id': s['chain_id'], 'seq_id': [], 'comp_id': []}
+            ent = {'chain_id': s['chain_id'], 'seq_id': [], 'comp_id': [], 'chem_comp_name': []}
 
             for i in range(len(s['seq_id'])):
-                sid = s['seq_id'][i]
-                seq = s['comp_id'][i]
+                seq_id = s['seq_id'][i]
+                comp_id = s['comp_id'][i]
 
-                if self.__nefT.get_one_letter_code(seq) == '?':
+                if self.__nefT.get_one_letter_code(comp_id) == '?':
                     asm_has = True
                     ent_has = True
 
-                    ent['seq_id'].append(sid)
-                    ent['comp_id'].append(seq)
+                    ent['seq_id'].append(seq_id)
+                    ent['comp_id'].append(comp_id)
+
+                    self.__updateChemCompDict(comp_id)
+
+                    if self.__last_comp_id_test: # matches with comp_id in CCD
+                        cc_name = self.__last_chem_comp_dict['_chem_comp.name']
+                        ent['chem_comp_name'].append(cc_name)
+
+                    else:
+                        ent['chem_comp_name'].append(None)
+
+                        warn = 'Non standard residue (chain_id %s, seq_id %s, comp_id %s) did not match with chemical component dictionary (CCD).'
+
+                        self.report.warning.appendDescription('ccd_mismatch', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
+                        self.report.setWarning()
+
+                        if self.__verbose:
+                           self.__lfh.write("+NmrDpUtility.__extractNonStandardResidue() ++ Warning  - %s\n" % warn)
 
             if ent_has:
                 asm.append(ent)
@@ -2872,7 +2901,7 @@ class NmrDpUtility(object):
                                 if len(unk_atom_ids) > 0:
                                     cc_name = self.__last_chem_comp_dict['_chem_comp.name']
 
-                                    warn = "Unknown atom_id %s (comp_id %s, comp_name %s) exist." % (unk_atom_ids, comp_id, cc_name)
+                                    warn = "Unknown atom_id %s (comp_id %s, chem_comp_name %s) exist." % (unk_atom_ids, comp_id, cc_name)
 
                                     self.report.warning.appendDescription('atom_nomenclature_mismatch', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
                                     self.report.setWarning()

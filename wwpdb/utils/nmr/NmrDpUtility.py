@@ -104,6 +104,7 @@ class NmrDpUtility(object):
                           self.__removeNonSenseZeroValue,
                           self.__fixNonSenseNegativeValue,
                           self.__fixEnumerationValue,
+                          self.__resetCapitalStringInLoop,
                           self.__resetBoolValueInLoop,
                           self.__resetBoolValueInAuxLoop,
                           self.__appendParentSfTag,
@@ -2379,7 +2380,9 @@ class NmrDpUtility(object):
 
                     for s2 in ps2:
 
-                        if not s2['chain_id'] in ref_cids:
+                        cid = s2['chain_id']
+
+                        if not cid in ref_cids:
 
                             err = "Invalid chain_id %s exists." % cid
 
@@ -7192,11 +7195,13 @@ class NmrDpUtility(object):
 
                                 for row in lp_data.data:
 
-                                    if row[itCol] is self.empty_value:
+                                    val = row[itCol]
+
+                                    if val is self.empty_value:
                                         continue
 
                                     try:
-                                        if float(row[itCol]) == 0:
+                                        if float(val) == 0:
                                             row[itCol] = '.'
                                     except ValueError:
                                         row[itCol] = '.'
@@ -7293,12 +7298,14 @@ class NmrDpUtility(object):
 
                                 for row in lp_data.data:
 
-                                    if row[itCol] is self.empty_value:
+                                    val = row[itCol]
+
+                                    if val is self.empty_value:
                                         continue
 
                                     try:
-                                        if float(row[itCol]) < 0.0:
-                                            row[itCol] = abs(float(row[itCol]))
+                                        if float(val) < 0.0:
+                                            row[itCol] = abs(float(val))
                                     except ValueError:
                                         row[itCol] = '.'
 
@@ -7529,10 +7536,12 @@ class NmrDpUtility(object):
 
                                 for row in lp_data.data:
 
-                                    if row[itCol] is self.empty_value:
+                                    val = row[itCol]
+
+                                    if val is self.empty_value:
                                         continue
 
-                                    if row[itCol] == itValue:
+                                    if val == itValue:
 
                                         if len(itEnum) == 1:
                                             row[itCol] = itEnum[0]
@@ -7541,10 +7550,10 @@ class NmrDpUtility(object):
 
                                             # 'circular', 'mirror', 'none'
 
-                                            if row[itCol] in ['aliased', 'folded', 'not observed']:
-                                                if row[itCol] == 'aliased':
+                                            if val in ['aliased', 'folded', 'not observed']:
+                                                if val == 'aliased':
                                                     row[itCol] = 'mirror'
-                                                elif row[itCol] == 'folded':
+                                                elif val == 'folded':
                                                     row[itCol] = 'circular'
                                                 else:
                                                     row[itCol] = 'none'
@@ -7553,10 +7562,10 @@ class NmrDpUtility(object):
 
                                             # 'aliased', 'folded', 'not observed'
 
-                                            if row[itCol] in ['circular', 'mirror', 'none']:
-                                                if row[itCol] == 'circular':
+                                            if val in ['circular', 'mirror', 'none']:
+                                                if val == 'circular':
                                                     row[itCol] = 'folded'
-                                                elif row[itCol] == 'mirror':
+                                                elif val == 'mirror':
                                                     row[itCol] = 'aliased'
                                                 else:
                                                     row[itCol] = 'not observed'
@@ -8302,6 +8311,118 @@ class NmrDpUtility(object):
 
         return True
 
+    def __resetCapitalStringInLoop(self):
+        """ Reset capital string values (chain_id, comp_id, atom_id) in loops depending on file type.
+        """
+
+        input_source = self.report.input_sources[0]
+        input_source_dic = input_source.get()
+
+        file_type = input_source_dic['file_type']
+
+        if input_source_dic['content_subtype'] is None:
+            return False
+
+        for content_subtype in input_source_dic['content_subtype'].keys():
+
+            if content_subtype == 'entry_info':
+                continue
+
+            sf_category = self.sf_categories[file_type][content_subtype]
+            lp_category = self.lp_categories[file_type][content_subtype]
+
+            for sf_data in self.__star_data.get_saveframes_by_category(sf_category):
+
+                if content_subtype == 'spectral_peak':
+
+                    try:
+
+                        _num_dim = sf_data.get_tag(self.num_dim_items[file_type])[0]
+                        num_dim = int(_num_dim)
+
+                        if not num_dim in range(1, self.lim_num_dim):
+                            raise ValueError()
+
+                    except ValueError: # raised error already at __testIndexConsistency()
+                        continue
+
+                    max_dim = num_dim + 1
+
+                    key_items = []
+                    for dim in range(1, max_dim):
+                        for k in self.pk_key_items[file_type]:
+                            _k = copy.copy(k)
+                            if '%s' in k['name']:
+                               _k['name'] = k['name'] % dim
+                            key_items.append(_k)
+
+                    data_items = []
+                    for d in self.data_items[file_type][content_subtype]:
+                        data_items.append(d)
+                    for dim in range(1, max_dim):
+                        for d in self.pk_data_items[file_type]:
+                            _d = copy.copy(d)
+                            if '%s' in d['name']:
+                                _d['name'] = d['name'] % dim
+                            data_items.append(_d)
+
+                    if max_dim < self.lim_num_dim:
+                        disallowed_tags = []
+                        for dim in range(max_dim, self.lim_num_dim):
+                            for t in self.spectral_peak_disallowed_tags[file_type]:
+                                if '%s' in t:
+                                    t = t % dim
+                                disallowed_tags.append(t)
+
+                else:
+
+                    key_items = self.key_items[file_type][content_subtype]
+                    data_items = self.data_items[file_type][content_subtype]
+
+                lp_data = sf_data.get_loop_by_category(lp_category)
+
+                if file_type == 'nef':
+                    key_names = [k['name'] for k in key_items if k['name'].startswith('chain_code') or k['name'].startswith('residue_name') or k['name'].startswith('atom_name') or k['name'] == 'element']
+                else:
+                    key_names = [k['name'] for k in key_items if k['name'].startswith('Comp_ID') or k['name'].startswith('Atom_ID') or k['name'] == 'Atom_type']
+
+                for itName in key_names:
+
+                    if itName in lp_data.tags:
+
+                        itCol = lp_data.tags.index(itName)
+
+                        for row in lp_data.data:
+
+                            val = row[itCol]
+
+                            if val is self.empty_value:
+                                continue
+
+                            row[itCol] = val.upper()
+
+                if file_type == 'nef':
+                    data_names = [d['name'] for d in data_items if d['name'].startswith('chain_code') or d['name'].startswith('residue_name') or d['name'].startswith('atom_name') or d['name'] == 'element']
+                else:
+                    data_names = [d['name'] for d in data_items if d['name'].startswith('Comp_ID') or d['name'].startswith('Atom_ID') or d['name'] == 'Atom_type']
+
+                for itName in data_names:
+
+                    if itName in lp_data.tags:
+
+                        itCol = lp_data.tags.index(itName)
+
+                        for row in lp_data.data:
+
+                            val = row[itCol]
+
+                            if val is self.empty_value:
+                                continue
+
+                            row[itCol] = val.upper()
+
+        return True
+
     def __resetBoolValueInLoop(self):
         """ Reset bool values in loops depending on file type.
         """
@@ -8397,10 +8518,12 @@ class NmrDpUtility(object):
 
                                 for row in lp_data.data:
 
-                                    if row[itCol] is self.empty_value:
+                                    val = row[itCol]
+
+                                    if val is self.empty_value:
                                         continue
 
-                                    if row[itCol].lower() in self.true_value:
+                                    if val.lower() in self.true_value:
                                         row[itCol] = yes_value
                                     else:
                                         row[itCol] = no_value
@@ -8415,10 +8538,12 @@ class NmrDpUtility(object):
 
                                 for row in lp_data.data:
 
-                                    if row[itCol] is self.empty_value:
+                                    val = row[itCol]
+
+                                    if val is self.empty_value:
                                         continue
 
-                                    if row[itCol].lower() in self.true_value:
+                                    if val.lower() in self.true_value:
                                         row[itCol] = yes_value
                                     else:
                                         row[itCol] = no_value
@@ -8489,10 +8614,12 @@ class NmrDpUtility(object):
 
                                         for row in lp_data.data:
 
-                                            if row[itCol] is self.empty_value:
+                                            val = row[itCol]
+
+                                            if val is self.empty_value:
                                                 continue
 
-                                            if row[itCol].lower() in self.true_value:
+                                            if val.lower() in self.true_value:
                                                 row[itCol] = yes_value
                                             else:
                                                 row[itCol] = no_value
@@ -8507,10 +8634,12 @@ class NmrDpUtility(object):
 
                                         for row in lp_data.data:
 
-                                            if row[itCol] is self.empty_value:
+                                            val = row[itCol]
+
+                                            if val is self.empty_value:
                                                 continue
 
-                                            if row[itCol].lower() in self.true_value:
+                                            if val.lower() in self.true_value:
                                                 row[itCol] = yes_value
                                             else:
                                                 row[itCol] = no_value
@@ -8571,10 +8700,12 @@ class NmrDpUtility(object):
 
                         for row in lp_data.data:
 
-                            if row[itCol] is self.empty_value:
+                            val = row[itCol]
+
+                            if val is self.empty_value:
                                 continue
 
-                            list_ids.append(row[itCol])
+                            list_ids.append(val)
 
                         list_id = collections.Counter(list_ids).most_common()[0][0]
 

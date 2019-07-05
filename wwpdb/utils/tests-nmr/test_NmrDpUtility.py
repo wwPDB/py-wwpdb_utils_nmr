@@ -16,7 +16,7 @@ class TestNmrDpUtility(unittest.TestCase):
 
     def tearDown(self):
         pass
-
+    """
     def test_init(self):
         nmr_content_subtypes = set(self.utility.nmr_content_subtypes)
 
@@ -83,13 +83,13 @@ class TestNmrDpUtility(unittest.TestCase):
         self.utility.setLog(self.data_dir_path + '2l9r-nef2str-str-consistency-log.json')
 
         self.utility.op('nmr-str-consistency-check')
-
+    """
     def test_nmr_nef_consistency_check_non_std_residue(self):
         self.utility.setSource(self.data_dir_path + '2l9rnonstandard.nef')
         self.utility.setLog(self.data_dir_path + '2l9rnonstandard-nef-consistency-log.json')
 
         self.utility.op('nmr-nef-consistency-check')
-
+    """
     def test_nmr_nef_consistency_check_former_nef(self):
         self.utility.setSource(self.data_dir_path + '2l9rold.nef')
         self.utility.setLog(self.data_dir_path + '2l9rold-nef-consistency-log.json')
@@ -118,6 +118,18 @@ class TestNmrDpUtility(unittest.TestCase):
         self.utility.setDestination(self.data_dir_path + '2l9r-next.str')
 
         self.utility.op('nmr-str2str-deposit')
+    """
+    def test_nmr_nef2str_deposit_check_non_std_residue(self):
+        self.utility.setSource(self.data_dir_path + '2l9rnonstandard.nef')
+        self.utility.addInput(name='coordinate_file_path', value=self.data_dir_path + '2l9r.cif', type='file')
+        self.utility.addInput(name='report_file_path', value=self.data_dir_path + '2l9rnonstandard-nef-consistency-log.json', type='file')
+        self.utility.addInput(name='entry_id', value='NEED_ACC_NO', type='param')
+        self.utility.setLog(self.data_dir_path + '2l9rnonstandard-nef2str-deposit-log.json')
+        self.utility.setDestination(self.data_dir_path + '2l9rnonstandard-next.nef')
+        self.utility.addOutput(name='nmr-star_file_path', value=self.data_dir_path + '2l9rnonstandard-nef2str.str', type='file')
+        self.utility.addOutput(name='report_file_path', value=self.data_dir_path + '2l9rnonstandard-nef2str-str-deposit-log.json', type='file')
+
+        self.utility.op('nmr-nef2str-deposit')
 
 if __name__ == '__main__':
     unittest.main()

@@ -1,4 +1,10 @@
-#!/usr/bin/env python
+#.!/usr/bin/env python
+##
+# File: NEFTranslator.py
+# Date: 05-Jul-2019
+#
+# Updates:
+##
 
 """
 This module does the following jobs
@@ -7,6 +13,7 @@ This module does the following jobs
 3. Format conversion
 
 @author: Kumaran Baskaran
+@author: Masashi Yokochi
 """
 
 # Make sure print function work in python2 and python3
@@ -22,6 +29,9 @@ import csv
 import datetime
 import pynmrstar
 from pytz import utc
+
+from wwpdb.utils.config.ConfigInfo import ConfigInfo, getSiteId
+from wwpdb.apps.ccmodule.io.ChemCompIo import ChemCompReader
 
 PY3 = (sys.version_info[0] == 3)
 
@@ -70,6 +80,76 @@ class NEFTranslator(object):
             self.logger.error(msg)
 
         ch.flush()
+
+        # empty value
+        self.empty_value = (None, '', '.', '?')
+
+        # CCD accessing utility
+        self.__cI = ConfigInfo(getSiteId())
+        self.__ccCvsPath = self.__cI.get('SITE_CC_CVS_PATH')
+
+        self.__ccR = ChemCompReader(False, sys.stderr)
+        self.__ccR.setCachePath(self.__ccCvsPath)
+
+        self.__last_comp_id = None
+        self.__last_comp_id_test = False
+        self.__last_chem_comp_dict = None
+        self.__last_chem_comp_atoms = None
+        self.__last_chem_comp_bonds = None
+
+        # taken from wwpdb.apps.ccmodule.io.ChemCompIo
+        self.__chem_comp_atom_dict = [
+                ('_chem_comp_atom.comp_id','%s','str',''),
+                ('_chem_comp_atom.atom_id','%s','str',''),
+                ('_chem_comp_atom.alt_atom_id','%s','str',''),
+                ('_chem_comp_atom.type_symbol','%s','str',''),
+                ('_chem_comp_atom.charge','%s','str',''),
+                ('_chem_comp_atom.pdbx_align','%s','str',''),
+                ('_chem_comp_atom.pdbx_aromatic_flag','%s','str',''),
+                ('_chem_comp_atom.pdbx_leaving_atom_flag','%s','str',''),
+                ('_chem_comp_atom.pdbx_stereo_config','%s','str',''),
+                ('_chem_comp_atom.model_Cartn_x','%s','str',''),
+                ('_chem_comp_atom.model_Cartn_y','%s','str',''),
+                ('_chem_comp_atom.model_Cartn_z','%s','str',''),
+                ('_chem_comp_atom.pdbx_model_Cartn_x_ideal','%s','str',''),
+                ('_chem_comp_atom.pdbx_model_Cartn_y_ideal','%s','str',''),
+                ('_chem_comp_atom.pdbx_model_Cartn_z_ideal','%s','str',''),
+                ('_chem_comp_atom.pdbx_component_atom_id','%s','str',''),
+                ('_chem_comp_atom.pdbx_component_comp_id','%s','str',''),
+                ('_chem_comp_atom.pdbx_ordinal','%s','str','')
+                ]
+
+        atom_id = next(d for d in self.__chem_comp_atom_dict if d[0] == '_chem_comp_atom.atom_id')
+        self.__cca_atom_id = self.__chem_comp_atom_dict.index(atom_id)
+
+        aromatic_flag = next(d for d in self.__chem_comp_atom_dict if d[0] == '_chem_comp_atom.pdbx_aromatic_flag')
+        self.__cca_aromatic_flag = self.__chem_comp_atom_dict.index(aromatic_flag)
+
+        leaving_atom_flag = next(d for d in self.__chem_comp_atom_dict if d[0] == '_chem_comp_atom.pdbx_leaving_atom_flag')
+        self.__cca_leaving_atom_flag = self.__chem_comp_atom_dict.index(leaving_atom_flag)
+
+        type_symbol = next(d for d in self.__chem_comp_atom_dict if d[0] == '_chem_comp_atom.type_symbol')
+        self.__cca_type_symbol = self.__chem_comp_atom_dict.index(type_symbol)
+
+        # taken from wwpdb.apps.ccmodule.io.ChemCompIo
+        self.__chem_comp_bond_dict = [
+                ('_chem_comp_bond.comp_id','%s','str',''),
+                ('_chem_comp_bond.atom_id_1','%s','str',''),
+                ('_chem_comp_bond.atom_id_2','%s','str',''),
+                ('_chem_comp_bond.value_order','%s','str',''),
+                ('_chem_comp_bond.pdbx_aromatic_flag','%s','str',''),
+                ('_chem_comp_bond.pdbx_stereo_config','%s','str',''),
+                ('_chem_comp_bond.pdbx_ordinal','%s','str','')
+                ]
+
+        atom_id_1 = next(d for d in self.__chem_comp_bond_dict if d[0] == '_chem_comp_bond.atom_id_1')
+        self.__ccb_atom_id_1 = self.__chem_comp_bond_dict.index(atom_id_1)
+
+        atom_id_2 = next(d for d in self.__chem_comp_bond_dict if d[0] == '_chem_comp_bond.atom_id_2')
+        self.__ccb_atom_id_2 = self.__chem_comp_bond_dict.index(atom_id_2)
+
+        aromatic_flag = next(d for d in self.__chem_comp_bond_dict if d[0] == '_chem_comp_bond.pdbx_aromatic_flag')
+        self.__ccb_aromatic_flag = self.__chem_comp_bond_dict.index(aromatic_flag)
 
     @staticmethod
     def read_input_file(in_file):
@@ -162,17 +242,18 @@ class NEFTranslator(object):
         return is_ok, msg, csv_map
 
     def get_one_letter_code(self, comp_id):
-        """ Returns one letter code of component ID
-        :param comp_id: Component ID
-        :return one-letter code
+        """ Convert comp ID to 1-letter code.
+            extended by Masashi Yokochi
         """
 
-        try:
-            code = self.codeDict[comp_id.upper()]
-        except KeyError:
-            code = '?'
+        comp_id = comp_id.upper()
 
-        return code
+        if comp_id in self.codeDict:
+            return self.codeDict[comp_id]
+        elif comp_id in self.empty_value:
+            return '.'
+        else:
+            return 'X'
 
     @staticmethod
     def time_stamp(time):
@@ -344,7 +425,7 @@ class NEFTranslator(object):
 
     @staticmethod
     def is_empty_data(data):
-        """ Check if given data has empty code
+        """ Check if given data has empty code.
             @author: Masashi Yokochi
             @return: True for empty data, False otherwise
         """
@@ -357,7 +438,7 @@ class NEFTranslator(object):
 
     @staticmethod
     def is_data(data):
-        """ Check if given data has no empty code
+        """ Check if given data has no empty code.
             @author: Masashi Yokochi
             @return: True for non-empty data, False for empty data
         """
@@ -447,7 +528,7 @@ class NEFTranslator(object):
     @staticmethod
     def get_nef_seq(star_data, lp_category='nef_chemical_shift', seq_id='sequence_code', comp_id='residue_name',
                     chain_id='chain_code', allow_empty=False):
-        """ Extracts sequence from any given loops in an NEF file
+        """ Extracts sequence from any given loops in an NEF file.
             extended by Masashi Yokochi
         """
 
@@ -544,7 +625,7 @@ class NEFTranslator(object):
     @staticmethod
     def get_star_seq(star_data, lp_category='Atom_chem_shift', seq_id='Comp_index_ID', comp_id='Comp_ID',
                      chain_id='Entity_assembly_ID', allow_empty=False):
-        """ Extracts sequence from any given loops in an NMR-STAR file
+        """ Extracts sequence from any given loops in an NMR-STAR file.
             extended by Masashi Yokochi
         """
 
@@ -653,7 +734,7 @@ class NEFTranslator(object):
     @staticmethod
     def get_star_auth_seq(star_data, lp_category='Atom_chem_shift', aseq_id='Auth_seq_ID', acomp_id='Auth_comp_ID',
                           asym_id='Auth_asym_ID', seq_id='Comp_index_ID', chain_id='Entity_assembly_ID', allow_empty=True):
-        """ Extracts author sequence from any given loops in an NMR-STAR file
+        """ Extracts author sequence from any given loops in an NMR-STAR file.
             @author: Masashi Yokochi
         """
 
@@ -776,7 +857,7 @@ class NEFTranslator(object):
     @staticmethod
     def get_nef_comp_atom_pair(star_data, lp_category='nef_chemical_shift', comp_id='residue_name', atom_id='atom_name',
                                allow_empty=False):
-        """ Wrapper function of get_comp_atom_pair() for an NEF file
+        """ Wrapper function of get_comp_atom_pair() for an NEF file.
             @author: Masashi Yokochi
         """
 
@@ -785,7 +866,7 @@ class NEFTranslator(object):
     @staticmethod
     def get_star_comp_atom_pair(star_data, lp_category='Atom_chem_shift', comp_id='Comp_ID', atom_id='Atom_ID',
                                 allow_empty=False):
-        """ Wrapper function of get_comp_atom_pair() for an NMR-STAR file
+        """ Wrapper function of get_comp_atom_pair() for an NMR-STAR file.
             @author: Masashi Yokochi
         """
 
@@ -794,7 +875,7 @@ class NEFTranslator(object):
     @staticmethod
     def get_star_auth_comp_atom_pair(star_data, lp_category='Atom_chem_shift', comp_id='Auth_comp_ID', atom_id='Auth_atom_ID',
                                      allow_empty=True):
-        """ Wrapper function of get_comp_atom_pair() for pairs of author comp_id and author atom_id in an NMR-STAR file
+        """ Wrapper function of get_comp_atom_pair() for pairs of author comp_id and author atom_id in an NMR-STAR file.
             @author: Masashi Yokochi
         """
 
@@ -802,7 +883,7 @@ class NEFTranslator(object):
 
     @staticmethod
     def get_comp_atom_pair(star_data, lp_category, comp_id, atom_id, allow_empty):
-        """ Extracts unique pairs of comp_id and atom_id from any given loops in an NEF/NMR-STAR file
+        """ Extracts unique pairs of comp_id and atom_id from any given loops in an NEF/NMR-STAR file.
             @author: Masashi Yokochi
         """
 
@@ -871,7 +952,7 @@ class NEFTranslator(object):
     @staticmethod
     def get_nef_atom_type_from_cs_loop(star_data, lp_category='nef_chemical_shift', atom_type='element', isotope_number='isotope_number', atom_id='atom_name',
                                        allow_empty=False):
-        """ Wrapper function of get_atom_type_from_cs_loop() for an NEF file
+        """ Wrapper function of get_atom_type_from_cs_loop() for an NEF file.
             @author: Masashi Yokochi
         """
 
@@ -880,7 +961,7 @@ class NEFTranslator(object):
     @staticmethod
     def get_star_atom_type_from_cs_loop(star_data, lp_category='Atom_chem_shift', atom_type='Atom_type', isotope_number='Atom_isotope_number', atom_id='Atom_ID',
                                         allow_empty=False):
-        """ Wrapper function of get_atom_type_from_cs_loop() for an NMR-SAR file
+        """ Wrapper function of get_atom_type_from_cs_loop() for an NMR-SAR file.
             @author: Masashi Yokochi
         """
 
@@ -888,7 +969,7 @@ class NEFTranslator(object):
 
     @staticmethod
     def get_atom_type_from_cs_loop(star_data, lp_category, atom_type, isotope_number, atom_id, allow_empty):
-        """ Extracts unique pairs of atom_type, isotope number, and atom_id from assigned chemical shifts in n NEF/NMR-SAR file
+        """ Extracts unique pairs of atom_type, isotope number, and atom_id from assigned chemical shifts in n NEF/NMR-SAR file.
             @author: Masashi Yokochi
         """
 
@@ -958,7 +1039,7 @@ class NEFTranslator(object):
 
     @staticmethod
     def get_star_ambig_code_from_cs_loop(star_data, lp_category='Atom_chem_shift', comp_id='Comp_ID', atom_id='Atom_ID', ambig_code='Ambiguity_code', ambig_set_id='Ambiguity_set_ID'):
-        """ Extracts unique pairs of comp_id, atom_id, and ambiguity code from assigned chemical shifts in an NMR-SAR file
+        """ Extracts unique pairs of comp_id, atom_id, and ambiguity code from assigned chemical shifts in an NMR-SAR file.
             @author: Masashi Yokochi
         """
 
@@ -1049,7 +1130,7 @@ class NEFTranslator(object):
 
     @staticmethod
     def get_nef_index(star_data, lp_category='nef_sequence', index_id='index'):
-        """ Wrapper function of get_index() for an NEF file
+        """ Wrapper function of get_index() for an NEF file.
             @author: Masashi Yokochi
         """
 
@@ -1057,7 +1138,7 @@ class NEFTranslator(object):
 
     @staticmethod
     def get_star_index(star_data, lp_category='Chem_comp_assembly', index_id='NEF_index'):
-        """ Wrapper function of get_index() for an NMR-STAR file
+        """ Wrapper function of get_index() for an NMR-STAR file.
             @author: Masashi Yokochi
         """
 
@@ -1065,7 +1146,7 @@ class NEFTranslator(object):
 
     @staticmethod
     def get_index(star_data, lp_category, index_id):
-        """ Extracts index_id from any given loops in an NEF/NMR-STAR file
+        """ Extracts index_id from any given loops in an NEF/NMR-STAR file.
             @author: Masashi Yokochi
         """
 
@@ -1120,7 +1201,7 @@ class NEFTranslator(object):
                                   {'name': 'atom_name', 'type': 'str'}],
                        data_items=[{'name': 'value', 'type': 'float', 'mandatory': True},
                                    {'name': 'value_uncertainty', 'type': 'positive-float', 'mandatory': False}]):
-        """ Wrapper function of check_data() for an NEF file
+        """ Wrapper function of check_data() for an NEF file.
             @author: Masashi Yokochi
         """
 
@@ -1134,7 +1215,7 @@ class NEFTranslator(object):
                                    {'name': 'Atom_ID', 'type': 'str'}],
                         data_items=[{'name': 'Val', 'type': 'float', 'mandatory': True},
                                     {'name': 'Val_err', 'type': 'positive-float', 'mandatory': False}]):
-        """ Wrapper function of check_data() for an NMR-STAR file
+        """ Wrapper function of check_data() for an NMR-STAR file.
             @author: Masashi Yokochi
         """
 
@@ -1142,7 +1223,7 @@ class NEFTranslator(object):
 
     @staticmethod
     def check_data(star_data, lp_category, key_items, data_items, allowed_tags=None, disallowed_tags=None, inc_idx_test=False, enforce_non_zero=False, enforce_sign=False, enforce_enum=False):
-        """ Extracts unique data with sanity check from any given loops in an NEF/NMR-STAR file
+        """ Extracts unique data with sanity check from any given loops in an NEF/NMR-STAR file.
             @author: Masashi Yokochi
         """
 
@@ -1662,7 +1743,7 @@ class NEFTranslator(object):
 
     @staticmethod
     def check_sf_tag(star_data, tag_items, allowed_tags=None, enforce_non_zero=False, enforce_sign=False, enforce_enum=False):
-        """ Extracts saveframe tags with sanity check in an NEF/NMR-STAR file
+        """ Extracts saveframe tags with sanity check in an NEF/NMR-STAR file.
             @author: Masashi Yokochi
         """
 
@@ -1871,15 +1952,50 @@ class NEFTranslator(object):
 
         return ent
 
-    def validate_comp_atom(self, comp_id, atom_id):
-        """ Validate input atom_id of comp_id
+    def __updateChemCompDict(self, comp_id):
+        """ Update CCD information for a given comp_id.
         """
 
-        return True if atom_id.upper() in self.atomDict[comp_id.upper()] else False
+        if comp_id != self.__last_comp_id:
+            self.__last_comp_id_test = self.__ccR.setCompId(comp_id)
+            self.__last_comp_id = comp_id
 
-    def validate_atom(self, star_data, lp_category='Atom_chem_shift', seq_id='Comp_index_ID', comp_id='Comp_ID',
-                      atom_id='Atom_ID'):
-        """ Validates the atoms in a given loop against IUPAC standard
+            if self.__last_comp_id_test:
+                self.__last_chem_comp_dict = self.__ccR.getChemCompDict()
+                self.__last_chem_comp_atoms = self.__ccR.getAtoms()
+                self.__last_chem_comp_bonds = self.__ccR.getBonds()
+
+        return self.__last_comp_id_test
+
+    def validate_comp_atom(self, comp_id, atom_id):
+        """ Validate input atom_id of comp_id.
+            extended by Masashi Yokochi for supporting non-standard residue
+        """
+
+        comp_id = comp_id.upper()
+
+        if comp_id in self.empty_value:
+            return False
+
+        atoms = []
+
+        if comp_id in self.atomDict:
+            atoms = self.atomDict[comp_id]
+
+        else:
+            self.__updateChemCompDict(comp_id)
+
+            if self.__last_comp_id_test: # matches with comp_id in CCD
+                atoms = [a[self.__cca_atom_id] for a in self.__last_chem_comp_atoms]
+            else:
+                return False
+
+        return atom_id.upper() in atoms
+
+    def validate_atom(self, star_data, lp_category='Atom_chem_shift', seq_id='Comp_index_ID', comp_id='Comp_ID', atom_id='Atom_ID'):
+        """ Validates atom_id in a given loop against CCD.
+            @return: list of unmatched row data [seq_id, comp_id, atom_id]
+            extended by Masashi Yokochi for supporting non-standard residue
         """
 
         try:
@@ -1891,27 +2007,48 @@ class NEFTranslator(object):
                 loop_data = [star_data]
 
         ns = []
+
         for lp in loop_data:
+
             try:
+
                 atm_data = lp.get_data_by_tag([seq_id, comp_id, atom_id])
+
                 for i in atm_data:
-                    try:
-                        if i[2] not in self.atomDict[i[1].upper()]:
-                            ns.append(i)
-                    except KeyError:
+
+                    _comp_id_ = i[1].upper()
+                    _atom_id_ = i[2].upper()
+
+                    if _comp_id_ in self.empty_value:
                         ns.append(i)
+
+                    elif _comp_id in self.atomDict:
+                        if not _atom_id_ in self.atomDict[_comp_id_]:
+                            ns.append(i)
+
+                    else:
+                        self.__updateChemCompDict(_comp_id_)
+
+                        if self.__last_comp_id_test: # matches with comp_id in CCD
+                            if not _atom_id_ in [a[self.__cca_atom_id] for a in self.__last_chem_comp_atoms]:
+                                ns.append(i)
+
+                        else:
+                            ns.append(i)
+
             except ValueError:
                 self.logger.error('Missing one of data items %s' % (seq_id, comp_id, atom_id))
 
-            # nonStandard = [i for i in atm_data if i[2] not in self.atomDict[i[1].upper]]
-            # ns.append(nonStandard)
         return ns
 
     def get_nmrstar_tag(self, tag):
+
         n = self.tagMap[0].index(tag)
+
         return [self.tagMap[1][n], self.tagMap[2][n]]
 
     def get_nmrstar_loop_tags(self, nef_loop_tags):
+
         aut_tag = []
         nt = []
 
@@ -1951,79 +2088,120 @@ class NEFTranslator(object):
         return out_tag
 
     def get_nmrstar_atom(self, comp_id, nef_atom):
-        """ Returns (atom with out wildcard, [IUPAC atom list], ambiguity code)
+        """ Returns list of instanced atom_id of a given NEF atom (including wildcard codes).
+            @return: atom type, list of instanced atom_id of a given NEF atom, ambiguity_code.
+            extended by Masashi Yokochi for supporting non-standard residue
         """
+
+        comp_id = comp_id.upper()
 
         ambiguity_code = 1
         atom_type = None
-        try:
-            atoms = self.atomDict[comp_id]
-            atom_list = []
-            try:
-                ref_atom = re.findall(r'(\S+)([xyXY])([%*])$|(\S+)([%*])$|(\S+)([xyXY]$)', nef_atom)[0]
-                atm_set = [ref_atom.index(i) for i in ref_atom if i != '']
-                pattern = None
-                if atm_set == [0, 1, 2]:
-                    atom_type = ref_atom[0]
-                    pattern = re.compile(r'%s\S\d+' % (ref_atom[0]))
-                    alist2 = [i for i in atoms if re.search(pattern, i)]
-                    xid = sorted(set([int(i[len(ref_atom[0])]) for i in alist2]))
-                    if ref_atom[1] == 'x' or ref_atom[1] == 'X':
-                        atom_list = [i for i in alist2 if int(i[len(ref_atom[0])]) == xid[0]]
-                    else:
-                        atom_list = [i for i in alist2 if int(i[len(ref_atom[0])]) == xid[1]]
-                    ambiguity_code = 2
-                elif atm_set == [3, 4]:
-                    atom_type = ref_atom[3]
-                    if ref_atom[4] == '%':
-                        pattern = re.compile(r'%s\d+' % (ref_atom[3]))
-                    elif ref_atom[4] == '*':
-                        pattern = re.compile(r'%s\S+' % (ref_atom[3]))
-                    else:
-                        logging.critical('Wrong NEF atom {}'.format(nef_atom))
-                    atom_list = [i for i in atoms if re.search(pattern, i)]
-                    ambiguity_code = 1
+        atom_list = []
 
-                elif atm_set == [5, 6]:
-                    atom_type = ref_atom[5]
-                    pattern = re.compile(r'%s\S+' % (ref_atom[5]))
-                    atom_list = [i for i in atoms if re.search(pattern, i)]
-                    if len(atom_list) != 2:
-                        atom_list = []
-                    elif ref_atom[6] == 'y' or ref_atom[6] == 'Y':
-                        # atom_list.reverse()[]
-                        atom_list = atom_list[-1:]
-                    elif ref_atom[6] == 'x' or ref_atom[6] == 'X':
-                        atom_list = atom_list[:1]
-                    else:
-                        logging.critical('Wrong NEF atom {}'.format(nef_atom))
-                    ambiguity_code = 2
+        if comp_id in self.empty_value:
 
-                else:
-                    logging.critical('Wrong NEF atom {}'.format(nef_atom))
-            except IndexError:
-
-                # print nef_atom
-                pass
-                atom_type = nef_atom
-            if len(atom_list) == 0:
-                if nef_atom in atoms:
-                    atom_list.append(nef_atom)
-                else:
-                    if nef_atom == 'H%':  # To handle terminal protons
-                        atom_list = ['H1', 'H2', 'H3']
-                        atom_type = 'H'
-        except KeyError:
-            # self.logfile.write('%s\tResidue not found,%s,%s\n'%(self.TimeStamp(time.time()),comp_id,nef_atom))
-            # print 'Residue not found',comp_id,nef_atom
-            if comp_id != '.':
-                self.logger.critical('Non-standard residue found {}'.format(comp_id))
-            atom_list = []
             atom_type = nef_atom
 
             if nef_atom == 'H%':
-                atom_list = ['H1', 'H2', 'H3']
                 atom_type = 'H'
+                atom_list = ['H1', 'H2', 'H3']
+
+            return atom_type, atom_list, ambiguity_code
+
+        atoms = []
+
+        if comp_id in self.atomDict:
+            atoms = self.atomDict[comp_id]
+
+        else:
+            self.__updateChemCompDict(comp_id)
+
+            if self.__last_comp_id_test: # matches with comp_id in CCD
+                atoms = [a[self.__cca_atom_id] for a in self.__last_chem_comp_atoms]
+            else:
+                self.logger.critical('Non-standard residue found {}'.format(comp_id))
+
+        try:
+
+            ref_atom = re.findall(r'(\S+)([xyXY])([%*])$|(\S+)([%*])$|(\S+)([xyXY]$)', nef_atom)[0]
+
+            atm_set = [ref_atom.index(i) for i in ref_atom if i != '']
+
+            pattern = None
+
+            if atm_set == [0, 1, 2]: # endswith [xyXY]%
+
+                atom_type = ref_atom[0]
+                xy_code = ref_atom[1].lower()
+
+                len_atom_type = len(atom_type)
+
+                pattern = re.compile(r'%s\S\d+' % (atom_type))
+
+                alist2 = [i for i in atoms if re.search(pattern, i)]
+
+                xid = sorted(set([int(i[len_atom_type]) for i in alist2]))
+
+                if xy_code == 'x':
+                    atom_list = [i for i in alist2 if int(i[len_atom_type]) == xid[0]]
+                else:
+                    atom_list = [i for i in alist2 if int(i[len_atom_type]) == xid[1]]
+
+                ambiguity_code = 2
+
+            elif atm_set == [3, 4]: # endswith [%*] but neither [xyXY][%*]
+
+                atom_type = ref_atom[3]
+                wc_code = ref_atom[4]
+
+                if wc_code == '%':
+                    pattern = re.compile(r'%s\d+' % atom_type)
+                elif wc_code == '*':
+                    pattern = re.compile(r'%s\S+' % atom_type)
+                else:
+                    logging.critical('Wrong NEF atom {}'.format(nef_atom))
+
+                atom_list = [i for i in atoms if re.search(pattern, i)]
+
+                ambiguity_code = 1
+
+            elif atm_set == [5, 6]: # endswith [xyXY]
+
+                atom_type = ref_atom[5]
+                xy_code = ref_atom[6].lower()
+
+                pattern = re.compile(r'%s\S+' % atom_type)
+
+                atom_list = [i for i in atoms if re.search(pattern, i)]
+
+                if len(atom_list) != 2:
+                    atom_list = []
+                elif xy_code == 'y':
+                    atom_list = atom_list[-1:]
+                elif xy_code == 'x':
+                    atom_list = atom_list[:1]
+                else:
+                    logging.critical('Wrong NEF atom {}'.format(nef_atom))
+
+                ambiguity_code = 2
+
+            else:
+                logging.critical('Wrong NEF atom {}'.format(nef_atom))
+
+        except IndexError:
+
+            atom_type = nef_atom
+
+        if len(atom_list) == 0:
+
+            if nef_atom in atoms:
+                atom_list.append(nef_atom)
+
+            elif nef_atom == 'H%': # To handle terminal protons
+                atom_type = 'H'
+                atom_list = ['H1', 'H2', 'H3']
+
         return atom_type, atom_list, ambiguity_code
 
     def translate_cs_row(self, f_tags, t_tags, row_data):
@@ -2150,8 +2328,6 @@ class NEFTranslator(object):
                         out[t_tags.index(stgs[0])] = row_data[f_tags.index(j)]
                         out[t_tags.index(stgs[1])] = row_data[f_tags.index(j)]
 
-                # else:
-                #   print ('ERROR',f_tags)
             out_row.append(out)
 
         else:
@@ -2382,7 +2558,6 @@ class NEFTranslator(object):
                                 dd = self.translate_row(loop.get_tag_names(), lp.get_tag_names(), dat)
                                 for d in dd:
                                     lp.add_data(d)
-
                         # print (loop.data[0])
                         sf.add_loop(lp)
                     star_data.add_saveframe(sf)
@@ -2476,7 +2651,6 @@ class NEFTranslator(object):
                             dd = self.translate_row(loop.get_tag_names(), lp.get_tag_names(), dat)
                             for d in dd:
                                 lp.add_data(d)
-
                     # print (loop.data[0])
                     sf.add_loop(lp)
                 star_data.add_saveframe(sf)
@@ -2490,14 +2664,9 @@ class NEFTranslator(object):
             error.append('Input file not readable')
         return is_done, json.dumps({'info': info, 'warning': warning, 'error': error})
 
-
 if __name__ == '__main__':
     bt = NEFTranslator()
+
     bt.nef_to_nmrstar('data/2l9r.nef')
+
     print (bt.validate_file('data/2l9r.str','A'))
-    #fname = sys.argv[1]
-    # f = open('neflist.txt','r').read().split('\n')
-    # for fname in f:
-    #     print ('Working on {}'.format(fname))
-    #     bt = NEFTranslator()
-    #     bt.nef_to_nmrstar(fname)

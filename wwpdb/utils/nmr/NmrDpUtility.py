@@ -1609,6 +1609,8 @@ class NmrDpUtility(object):
         """ Update CCD information for a given comp_id.
         """
 
+        comp_id = comp_id.upper()
+
         if comp_id != self.__last_comp_id:
             self.__last_comp_id_test = self.__ccR.setCompId(comp_id)
             self.__last_comp_id = comp_id
@@ -2610,7 +2612,7 @@ class NmrDpUtility(object):
                 seq_id = s['seq_id'][i]
                 comp_id = s['comp_id'][i]
 
-                if self.__nefT.get_one_letter_code(comp_id) == '?':
+                if self.__get1LetterCode(comp_id) == 'X':
                     asm_has = True
                     ent_has = True
 
@@ -2713,10 +2715,10 @@ class NmrDpUtility(object):
 
                         unmapped = 0
                         conflict = 0
-                        for myPr in myAlign:
-                            if myPr[0] == '.' or myPr[1] == '.':
+                        for j in range(len(s1['seq_id'])):
+                            if s1['comp_id'][j] == '.' or _s2['comp_id'][j] == '.':
                                 unmapped += 1
-                            elif myPr[0] != myPr[1]:
+                            elif s1['comp_id'][j] != _s2['comp_id'][j]:
                                 conflict += 1
 
                         ref_code = self.__get1LetterCodeSequence(s1['comp_id'])
@@ -2761,6 +2763,8 @@ class NmrDpUtility(object):
     def __get1LetterCode(self, comp_id):
         """ Convert comp ID to 1-letter code.
         """
+
+        comp_id = comp_id.upper()
 
         if comp_id in self.monDict3:
             return self.monDict3[comp_id]
@@ -2857,7 +2861,7 @@ class NmrDpUtility(object):
                         atom_ids = pair['atom_id']
 
                         # standard residue
-                        if self.__nefT.get_one_letter_code(comp_id) != '?':
+                        if self.__nefT.get_one_letter_code(comp_id) != 'X':
 
                             if file_type == 'nef':
 
@@ -2936,7 +2940,7 @@ class NmrDpUtility(object):
                             auth_atom_ids = auth_pair['atom_id']
 
                             # standard residue
-                            if self.__nefT.get_one_letter_code(comp_id) != '?':
+                            if self.__nefT.get_one_letter_code(comp_id) != 'X':
 
                                 _auth_atom_ids = []
                                 for auth_atom_id in auth_atom_ids:
@@ -5393,7 +5397,7 @@ class NmrDpUtility(object):
                 seq_id = s['seq_id'][i]
                 comp_id = s['comp_id'][i]
 
-                if self.__nefT.get_one_letter_code(comp_id) == '?':
+                if self.__get1LetterCode(comp_id) == 'X':
                     asm_has = True
                     ent_has = True
 
@@ -5476,10 +5480,10 @@ class NmrDpUtility(object):
 
                             unmapped = 0
                             conflict = 0
-                            for myPr in myAlign:
-                                if myPr[0] == '.' or myPr[1] == '.':
+                            for j in range(len(s1['seq_id'])):
+                                if s1['comp_id'][j] == '.' or _s2['comp_id'][j] == '.':
                                     unmapped += 1
-                                elif myPr[0] != myPr[1]:
+                                elif s1['comp_id'][j] != _s2['comp_id'][j]:
                                     conflict += 1
 
                             ref_code = self.__get1LetterCodeSequence(s1['comp_id'])
@@ -5549,10 +5553,10 @@ class NmrDpUtility(object):
 
                 unmapped = 0
                 conflict = 0
-                for myPr in myAlign:
-                    if myPr[0] == '.' or myPr[1] == '.':
+                for j in range(len(s1['seq_id'])):
+                    if s1['comp_id'][j] == '.' or _s2['comp_id'][j] == '.':
                         unmapped += 1
-                    elif myPr[0] != myPr[1]:
+                    elif s1['comp_id'][j] != _s2['comp_id'][j]:
                         conflict += 1
 
                 ref_code = self.__get1LetterCodeSequence(s1['comp_id'])
@@ -5597,10 +5601,10 @@ class NmrDpUtility(object):
 
                 unmapped = 0
                 conflict = 0
-                for myPr in myAlign:
-                    if myPr[0] == '.' or myPr[1] == '.':
+                for j in range(len(s1['seq_id'])):
+                    if s1['comp_id'][j] == '.' or _s2['comp_id'][j] == '.':
                         unmapped += 1
-                    elif myPr[0] != myPr[1]:
+                    elif s1['comp_id'][j] != _s2['comp_id'][j]:
                         conflict += 1
 
                 ref_code = self.__get1LetterCodeSequence(s1['comp_id'])
@@ -8399,6 +8403,9 @@ class NmrDpUtility(object):
                             if val is self.empty_value:
                                 continue
 
+                            if file_type == 'nef' and itName.startswith('atom_name') and ('x' in val or 'y' in val):
+                                continue
+
                             row[itCol] = val.upper()
 
                 if file_type == 'nef':
@@ -8417,6 +8424,9 @@ class NmrDpUtility(object):
                             val = row[itCol]
 
                             if val is self.empty_value:
+                                continue
+
+                            if file_type == 'nef' and itName.startswith('atom_name') and ('x' in val or 'y' in val):
                                 continue
 
                             row[itCol] = val.upper()

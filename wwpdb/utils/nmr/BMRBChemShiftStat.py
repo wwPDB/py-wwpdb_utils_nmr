@@ -1,6 +1,6 @@
 ##
 # File: BMRBChemShiftStat.py
-# Date: 11-Jun-2019
+# Date: 05-Jul-2019
 #
 # Updates:
 ##
@@ -559,6 +559,8 @@ class BMRBChemShiftStat:
     def __updateChemCompDict(self, comp_id):
         """ Update CCD information for a given comp_id.
         """
+
+        comp_id = comp_id.upper()
 
         if comp_id != self.__last_comp_id:
             self.__last_comp_id_test = self.__ccR.setCompId(comp_id)

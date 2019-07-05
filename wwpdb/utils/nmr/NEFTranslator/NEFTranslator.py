@@ -2232,8 +2232,7 @@ class NEFTranslator(object):
         if len(f_tags) != len(t_tags):
             atm_index = f_tags.index('_nef_chemical_shift.atom_name')
             res_index = f_tags.index('_nef_chemical_shift.residue_name')
-            n_atm = self.get_nmrstar_atom(row_data[res_index], row_data[atm_index])[1]
-            ambi = self.get_nmrstar_atom(row_data[res_index], row_data[atm_index])[2]
+            atm_type, n_atm, ambi = self.get_nmrstar_atom(row_data[res_index], row_data[atm_index])
 
             for i in n_atm:
                 out = [None] * len(t_tags)

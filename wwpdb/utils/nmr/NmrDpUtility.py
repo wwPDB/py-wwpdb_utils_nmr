@@ -2683,6 +2683,11 @@ class NmrDpUtility(object):
         for s1 in polymer_sequence:
             cid = s1['chain_id']
 
+            if type(cid) == int:
+                _cid = str(cid)
+            else:
+                _cid = cid
+
             for subtype in polymer_sequence_in_loop.keys():
                 list_len = len(polymer_sequence_in_loop[subtype])
 
@@ -2700,11 +2705,11 @@ class NmrDpUtility(object):
 
                         _s2 = self.__fillBlankedCompId(s1, s2)
 
-                        self.__pA.setReferenceSequence(s1['comp_id'], 'REF' + cid)
-                        self.__pA.addTestSequence(_s2['comp_id'], cid)
+                        self.__pA.setReferenceSequence(s1['comp_id'], 'REF' + _cid)
+                        self.__pA.addTestSequence(_s2['comp_id'], _cid)
                         self.__pA.doAlign()
-                        #self.__pA.prAlignmentConflicts(cid)
-                        myAlign = self.__pA.getAlignment(cid)
+                        #self.__pA.prAlignmentConflicts(_cid)
+                        myAlign = self.__pA.getAlignment(_cid)
 
                         length = len(myAlign)
 
@@ -2715,10 +2720,11 @@ class NmrDpUtility(object):
 
                         unmapped = 0
                         conflict = 0
-                        for j in range(len(s1['seq_id'])):
-                            if s1['comp_id'][j] == '.' or _s2['comp_id'][j] == '.':
+                        for i in range(length):
+                            myPr = myAlign[i]
+                            if myPr[0].encode() == '.' or myPr[1].encode() == '.':
                                 unmapped += 1
-                            elif s1['comp_id'][j] != _s2['comp_id'][j]:
+                            elif myPr[0] != myPr[1]:
                                 conflict += 1
 
                         ref_code = self.__get1LetterCodeSequence(s1['comp_id'])
@@ -5448,6 +5454,11 @@ class NmrDpUtility(object):
             for s1 in polymer_sequence:
                 cid = s1['chain_id']
 
+                if type(cid) == int:
+                    _cid = str(cid)
+                else:
+                    _cid = cid
+
                 for subtype in polymer_sequence_in_loop.keys():
                     list_len = len(polymer_sequence_in_loop[subtype])
 
@@ -5465,11 +5476,11 @@ class NmrDpUtility(object):
 
                             _s2 = self.__fillBlankedCompId(s1, s2)
 
-                            self.__pA.setReferenceSequence(s1['comp_id'], 'REF' + cid)
-                            self.__pA.addTestSequence(_s2['comp_id'], cid)
+                            self.__pA.setReferenceSequence(s1['comp_id'], 'REF' + _cid)
+                            self.__pA.addTestSequence(_s2['comp_id'], _cid)
                             self.__pA.doAlign()
-                            #self.__pA.prAlignmentConflicts(cid)
-                            myAlign = self.__pA.getAlignment(cid)
+                            #self.__pA.prAlignmentConflicts(_cid)
+                            myAlign = self.__pA.getAlignment(_cid)
 
                             length = len(myAlign)
 
@@ -5480,10 +5491,11 @@ class NmrDpUtility(object):
 
                             unmapped = 0
                             conflict = 0
-                            for j in range(len(s1['seq_id'])):
-                                if s1['comp_id'][j] == '.' or _s2['comp_id'][j] == '.':
+                            for i in range(length):
+                                myPr = myAlign[i]
+                                if myPr[0].encode() == '.' or myPr[1].encode() == '.':
                                     unmapped += 1
-                                elif s1['comp_id'][j] != _s2['comp_id'][j]:
+                                elif myPr[0] != myPr[1]:
                                     conflict += 1
 
                             ref_code = self.__get1LetterCodeSequence(s1['comp_id'])
@@ -5529,6 +5541,11 @@ class NmrDpUtility(object):
         for s1 in polymer_sequence:
             cid = s1['chain_id']
 
+            if type(cid) == int:
+                _cid = str(cid)
+            else:
+                _cid = cid
+
             has_seq_align = False
 
             seq_align_set = []
@@ -5538,11 +5555,11 @@ class NmrDpUtility(object):
 
                 _s2 = self.__fillBlankedCompId(s1, s2)
 
-                self.__pA.setReferenceSequence(s1['comp_id'], 'REF' + cid)
-                self.__pA.addTestSequence(_s2['comp_id'], cid2)
+                self.__pA.setReferenceSequence(s1['comp_id'], 'REF' + _cid)
+                self.__pA.addTestSequence(_s2['comp_id'], _cid)
                 self.__pA.doAlign()
-                #self.__pA.prAlignmentConflicts(cid)
-                myAlign = self.__pA.getAlignment(cid)
+                #self.__pA.prAlignmentConflicts(_cid)
+                myAlign = self.__pA.getAlignment(_cid)
 
                 length = len(myAlign)
 
@@ -5553,10 +5570,11 @@ class NmrDpUtility(object):
 
                 unmapped = 0
                 conflict = 0
-                for j in range(len(s1['seq_id'])):
-                    if s1['comp_id'][j] == '.' or _s2['comp_id'][j] == '.':
+                for i in range(length):
+                    myPr = myAlign[i]
+                    if myPr[0].encode() == '.' or myPr[1].encode() == '.':
                         unmapped += 1
-                    elif s1['comp_id'][j] != _s2['comp_id'][j]:
+                    elif myPr[0] != myPr[1]:
                         conflict += 1
 
                 ref_code = self.__get1LetterCodeSequence(s1['comp_id'])
@@ -5577,6 +5595,11 @@ class NmrDpUtility(object):
         for s1 in nmr_polymer_sequence:
             cid = s1['chain_id']
 
+            if type(cid) == int:
+                _cid = str(cid)
+            else:
+                _cid = cid
+
             has_seq_align = False
 
             seq_align_set = []
@@ -5586,11 +5609,11 @@ class NmrDpUtility(object):
 
                 _s2 = self.__fillBlankedCompId(s1, s2)
 
-                self.__pA.setReferenceSequence(s1['comp_id'], 'REF' + cid)
-                self.__pA.addTestSequence(_s2['comp_id'], cid2)
+                self.__pA.setReferenceSequence(s1['comp_id'], 'REF' + _cid)
+                self.__pA.addTestSequence(_s2['comp_id'], _cid)
                 self.__pA.doAlign()
-                #self.__pA.prAlignmentConflicts(cid)
-                myAlign = self.__pA.getAlignment(cid)
+                #self.__pA.prAlignmentConflicts(_cid)
+                myAlign = self.__pA.getAlignment(_cid)
 
                 length = len(myAlign)
 
@@ -5601,10 +5624,11 @@ class NmrDpUtility(object):
 
                 unmapped = 0
                 conflict = 0
-                for j in range(len(s1['seq_id'])):
-                    if s1['comp_id'][j] == '.' or _s2['comp_id'][j] == '.':
+                for i in range(length):
+                    myPr = myAlign[i]
+                    if myPr[0].encode() == '.' or myPr[1].encode() == '.':
                         unmapped += 1
-                    elif s1['comp_id'][j] != _s2['comp_id'][j]:
+                    elif myPr[0] != myPr[1]:
                         conflict += 1
 
                 ref_code = self.__get1LetterCodeSequence(s1['comp_id'])
@@ -5711,6 +5735,11 @@ class NmrDpUtility(object):
                 cid = cif_polymer_sequence[row]['chain_id']
                 cid2 = nmr_polymer_sequence[column]['chain_id']
 
+                if type(cid) == int:
+                    _cid = str(cid)
+                else:
+                    _cid = cid
+
                 result = next(seq_align for seq_align in seq_align_dic['model_poly_seq_vs_nmr_poly_seq'] if seq_align['ref_chain_id'] == cid and seq_align['test_chain_id'] == cid2)
 
                 chain_assign = {'ref_chain_id': cid, 'test_chain_id': cid2, 'length': result['length'], 'conflict': result['conflict'], 'unmapped': result['unmapped'], 'sequence_coverage': result['sequence_coverage']}
@@ -5720,11 +5749,11 @@ class NmrDpUtility(object):
 
                 _s2 = self.__fillBlankedCompId(s1, s2)
 
-                self.__pA.setReferenceSequence(s1['comp_id'], 'REF' + cid)
-                self.__pA.addTestSequence(_s2['comp_id'], cid2)
+                self.__pA.setReferenceSequence(s1['comp_id'], 'REF' + _cid)
+                self.__pA.addTestSequence(_s2['comp_id'], _cid)
                 self.__pA.doAlign()
-                #self.__pA.prAlignmentConflicts(cid)
-                myAlign = self.__pA.getAlignment(cid)
+                #self.__pA.prAlignmentConflicts(_cid)
+                myAlign = self.__pA.getAlignment(_cid)
 
                 length = len(myAlign)
 
@@ -5816,6 +5845,11 @@ class NmrDpUtility(object):
                 cid = nmr_polymer_sequence[row]['chain_id']
                 cid2 = cif_polymer_sequence[column]['chain_id']
 
+                if type(cid) == int:
+                    _cid = str(cid)
+                else:
+                    _cid = cid
+
                 result = next(seq_align for seq_align in seq_align_dic['nmr_poly_seq_vs_model_poly_seq'] if seq_align['ref_chain_id'] == cid and seq_align['test_chain_id'] == cid2)
 
                 chain_assign = {'ref_chain_id': cid, 'test_chain_id': cid2, 'length': result['length'], 'conflict': result['conflict'], 'unmapped': result['unmapped'], 'sequence_coverage': result['sequence_coverage']}
@@ -5830,11 +5864,11 @@ class NmrDpUtility(object):
 
                     _s2 = self.__fillBlankedCompId(s1, s2)
 
-                    self.__pA.setReferenceSequence(s1['comp_id'], 'REF' + cid)
-                    self.__pA.addTestSequence(_s2['comp_id'], cid2)
+                    self.__pA.setReferenceSequence(s1['comp_id'], 'REF' + _cid)
+                    self.__pA.addTestSequence(_s2['comp_id'], _cid)
                     self.__pA.doAlign()
-                    #self.__pA.prAlignmentConflicts(cid)
-                    myAlign = self.__pA.getAlignment(cid)
+                    #self.__pA.prAlignmentConflicts(_cid)
+                    myAlign = self.__pA.getAlignment(_cid)
 
                     for i in range(len(myAlign)):
                         myPr = myAlign[i]

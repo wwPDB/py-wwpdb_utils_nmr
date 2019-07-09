@@ -1,34 +1,33 @@
-from unittest import TestCase
-import sys
+import unittest
 import os
+import sys
 import pynmrstar
 import json
 
-# Local imports
-#sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)), ".."))
-#print (os.path.join(os.path.dirname(os.path.realpath(__file__)), ".."))
-import NEFTranslator as NEFT
+from wwpdb.utils.nmr.NEFTranslator.NEFTranslator import NEFTranslator
 
-class TestNEFTranslator(TestCase):
+class TestNEFTranslator(unittest.TestCase):
 
     def setUp(self):
-        self.neft = NEFT.NEFTranslator()
+        here = os.path.abspath(os.path.dirname(__file__))
+        self.data_dir_path = os.path.join(here, 'data/')
+        self.neft = NEFTranslator()
         pass
 
     def tearDown(self):
         pass
 
     def test_read_input_file(self):
-        read_out = self.neft.read_input_file('data/2mtv.nef')
+        read_out = self.neft.read_input_file(self.data_dir_path  + '2mtv.nef')
         self.assertEqual(read_out[0], True)
         self.assertEqual(read_out[1], 'Entry')
-        read_out = self.neft.read_input_file('data/saveframeonly.nef')
+        read_out = self.neft.read_input_file(self.data_dir_path + 'saveframeonly.nef')
         self.assertEqual(read_out[0], True)
         self.assertEqual(read_out[1], 'Saveframe')
-        read_out = self.neft.read_input_file('data/loopOnly1.nef')
+        read_out = self.neft.read_input_file(self.data_dir_path + 'loopOnly1.nef')
         self.assertEqual(read_out[0], True)
         self.assertEqual(read_out[1], 'Loop')
-        read_out = self.neft.read_input_file('data/nonsense.nef')
+        read_out = self.neft.read_input_file(self.data_dir_path + 'nonsense.nef')
         self.assertEqual(read_out[0], False)
         self.assertEqual(read_out[1], '("Invalid token found in saveframe \'internaluseyoushouldntseethis_frame\': \'A\'", 2)')
 
@@ -43,55 +42,55 @@ class TestNEFTranslator(TestCase):
     def test_get_one_letter_code(self):
         self.assertTrue(self.neft.get_one_letter_code('ALA') == 'A')
         self.assertTrue(self.neft.get_one_letter_code('Ala') == 'A')
-        self.assertTrue(self.neft.get_one_letter_code('Axy') == '?')
+        self.assertTrue(self.neft.get_one_letter_code('Axy') == 'X')
 
-    def test_time_stamp(self):
-        self.assertEqual(self.neft.time_stamp(1556036192.7247672), '2019-04-23 16:16:32') # CDT to UTC
+    def test_get_readable_time_stamp(self):
+        self.assertEqual(self.neft.get_readable_time_stamp(1556036192.7247672), '2019-04-23 16:16:32') # CDT to UTC
 
     def test_validate_file(self):
-        self.assertEqual(self.neft.validate_file('data/xxx.xx', 'A')[0], False)  # File not found
-        self.assertEqual(self.neft.validate_file('data/2l9r.nef', 'A')[0], True)
-        self.assertEqual(self.neft.validate_file('data/2l9r.nef', 'S')[0], True)
-        self.assertEqual(self.neft.validate_file('data/2l9r.nef', 'R')[0], True)
-        self.assertEqual(self.neft.validate_file('data/2l9r.nef', 'X')[0], False)
-        self.assertEqual(self.neft.validate_file('data/2l9r.str', 'A')[0], True)
-        self.assertEqual(self.neft.validate_file('data/2l9r.str', 'S')[0], True)
-        self.assertEqual(self.neft.validate_file('data/2l9r.str', 'R')[0], True)
-        self.assertEqual(self.neft.validate_file('data/2l9r.str', 'X')[0], False)
-        self.assertEqual(self.neft.validate_file('data/nocs.nef', 'A')[0], False)
-        self.assertEqual(self.neft.validate_file('data/nocs.nef', 'S')[0], False)
-        self.assertEqual(self.neft.validate_file('data/nocs.nef', 'R')[0], True)
-        self.assertEqual(self.neft.validate_file('data/norest.nef', 'A')[0], False)
-        self.assertEqual(self.neft.validate_file('data/norest.nef', 'S')[0], True)
-        self.assertEqual(self.neft.validate_file('data/norest.nef', 'R')[0], False)
-        self.assertEqual(self.neft.validate_file('data/norestcs.nef', 'A')[0], False)
-        self.assertEqual(self.neft.validate_file('data/norestcs.nef', 'S')[0], False)
-        self.assertEqual(self.neft.validate_file('data/norestcs.nef', 'R')[0], False)
-        self.assertEqual(self.neft.validate_file('data/nocs.str', 'A')[0], False)
-        self.assertEqual(self.neft.validate_file('data/nocs.str', 'S')[0], False)
-        self.assertEqual(self.neft.validate_file('data/nocs.str', 'R')[0], True)
-        self.assertEqual(self.neft.validate_file('data/norest.str', 'A')[0], False)
-        self.assertEqual(self.neft.validate_file('data/norest.str', 'S')[0], True)
-        self.assertEqual(self.neft.validate_file('data/norest.str', 'R')[0], False)
-        self.assertEqual(self.neft.validate_file('data/norestcs.str', 'A')[0], False)
-        self.assertEqual(self.neft.validate_file('data/norestcs.str', 'S')[0], False)
-        self.assertEqual(self.neft.validate_file('data/norestcs.str', 'R')[0], False)
-        self.assertEqual(self.neft.validate_file('data/nodat.str', 'R')[0], False)
-        self.assertEqual(self.neft.validate_file('data/nodat.nef', 'R')[0], False)
-        self.assertEqual(self.neft.validate_file('data/saveframeonly.nef', 'S')[0], True)
-        self.assertEqual(self.neft.validate_file('data/loopOnly1.nef', 'S')[0], True)
-        self.assertEqual(self.neft.validate_file('data/nonsense.nef', 'R')[0], False)
+        self.assertEqual(self.neft.validate_file(self.data_dir_path + 'xxx.xx', 'A')[0], False)  # File not found
+        self.assertEqual(self.neft.validate_file(self.data_dir_path + '2l9r.nef', 'A')[0], True)
+        self.assertEqual(self.neft.validate_file(self.data_dir_path + '2l9r.nef', 'S')[0], True)
+        self.assertEqual(self.neft.validate_file(self.data_dir_path + '2l9r.nef', 'R')[0], True)
+        self.assertEqual(self.neft.validate_file(self.data_dir_path + '2l9r.nef', 'X')[0], False)
+        self.assertEqual(self.neft.validate_file(self.data_dir_path + '2l9r.str', 'A')[0], True)
+        self.assertEqual(self.neft.validate_file(self.data_dir_path + '2l9r.str', 'S')[0], True)
+        self.assertEqual(self.neft.validate_file(self.data_dir_path + '2l9r.str', 'R')[0], True)
+        self.assertEqual(self.neft.validate_file(self.data_dir_path + '2l9r.str', 'X')[0], False)
+        self.assertEqual(self.neft.validate_file(self.data_dir_path + 'nocs.nef', 'A')[0], False)
+        self.assertEqual(self.neft.validate_file(self.data_dir_path + 'nocs.nef', 'S')[0], False)
+        self.assertEqual(self.neft.validate_file(self.data_dir_path + 'nocs.nef', 'R')[0], True)
+        self.assertEqual(self.neft.validate_file(self.data_dir_path + 'norest.nef', 'A')[0], False)
+        self.assertEqual(self.neft.validate_file(self.data_dir_path + 'norest.nef', 'S')[0], True)
+        self.assertEqual(self.neft.validate_file(self.data_dir_path + 'norest.nef', 'R')[0], False)
+        self.assertEqual(self.neft.validate_file(self.data_dir_path + 'norestcs.nef', 'A')[0], False)
+        self.assertEqual(self.neft.validate_file(self.data_dir_path + 'norestcs.nef', 'S')[0], False)
+        self.assertEqual(self.neft.validate_file(self.data_dir_path + 'norestcs.nef', 'R')[0], False)
+        self.assertEqual(self.neft.validate_file(self.data_dir_path + 'nocs.str', 'A')[0], False)
+        self.assertEqual(self.neft.validate_file(self.data_dir_path + 'nocs.str', 'S')[0], False)
+        self.assertEqual(self.neft.validate_file(self.data_dir_path + 'nocs.str', 'R')[0], True)
+        self.assertEqual(self.neft.validate_file(self.data_dir_path + 'norest.str', 'A')[0], False)
+        self.assertEqual(self.neft.validate_file(self.data_dir_path + 'norest.str', 'S')[0], True)
+        self.assertEqual(self.neft.validate_file(self.data_dir_path + 'norest.str', 'R')[0], False)
+        self.assertEqual(self.neft.validate_file(self.data_dir_path + 'norestcs.str', 'A')[0], False)
+        self.assertEqual(self.neft.validate_file(self.data_dir_path + 'norestcs.str', 'S')[0], False)
+        self.assertEqual(self.neft.validate_file(self.data_dir_path + 'norestcs.str', 'R')[0], False)
+        self.assertEqual(self.neft.validate_file(self.data_dir_path + 'nodat.str', 'R')[0], False)
+        self.assertEqual(self.neft.validate_file(self.data_dir_path + 'nodat.nef', 'R')[0], False)
+        self.assertEqual(self.neft.validate_file(self.data_dir_path + 'saveframeonly.nef', 'S')[0], True)
+        self.assertEqual(self.neft.validate_file(self.data_dir_path + 'loopOnly1.nef', 'S')[0], True)
+        self.assertEqual(self.neft.validate_file(self.data_dir_path + 'nonsense.nef', 'R')[0], False)
 
     def test_is_empty_loop(self):
-        dat = pynmrstar.Entry.from_file('data/nodat.nef')
+        dat = pynmrstar.Entry.from_file(self.data_dir_path + 'nodat.nef')
         self.assertEqual(self.neft.is_empty_loop(dat, '_nef_chemical_shift', 'Entry'), False)
         self.assertEqual(self.neft.is_empty_loop(dat, '_nef_distance_restraint', 'Entry'), True)
-        dat = pynmrstar.Entry.from_file('data/nodat.str')
+        dat = pynmrstar.Entry.from_file(self.data_dir_path + 'nodat.str')
         self.assertEqual(self.neft.is_empty_loop(dat, '_Atom_chem_shift', 'Entry'), False)
         self.assertEqual(self.neft.is_empty_loop(dat, '_Gen_dist_constraint', 'Entry'), True)
 
     def test_get_data_content(self):
-        (isValid, content, data) = self.neft.read_input_file('data/2mqq.nef')
+        (isValid, content, data) = self.neft.read_input_file(self.data_dir_path + '2mqq.nef')
         self.assertTrue(isValid)
         datacontent = self.neft.get_data_content(data, content)
         self.assertEqual(datacontent[0], ['nef_nmr_meta_data', 'nef_molecular_system', 'nef_chemical_shift_list',
@@ -102,7 +101,7 @@ class TestNEFTranslator(TestCase):
                          ['_nef_program_script', '_nef_sequence', '_nef_chemical_shift', '_nef_chemical_shift',
                           '_nef_chemical_shift', '_nef_distance_restraint', '_nef_distance_restraint',
                           '_nef_dihedral_restraint'])
-        (isValid, content, data) = self.neft.read_input_file('data/2mqq.str')
+        (isValid, content, data) = self.neft.read_input_file(self.data_dir_path + '2mqq.str')
         self.assertTrue(isValid)
         datacontent = self.neft.get_data_content(data, content)
         self.assertEqual(datacontent[0], ['entry_information', 'assembly', 'assigned_chemical_shifts',
@@ -115,14 +114,14 @@ class TestNEFTranslator(TestCase):
                           '_Torsion_angle_constraint'])
 
     def test_get_seq_from_cs_loop(self):
-        (isValid, jsondata) = self.neft.get_seq_from_cs_loop('data/2mqq.nef')
+        (isValid, jsondata) = self.neft.get_seq_from_cs_loop(self.data_dir_path + '2mqq.nef')
         dat = json.loads(jsondata)
         self.assertTrue(isValid)
         self.assertEqual(dat['file_type'], 'nef')
         self.assertEqual(len(dat['data'][0][0]['seq_id']), 214)
         self.assertEqual(len(dat['data'][1][0]['seq_id']), 5)
         self.assertEqual(len(dat['data'][2][0]['seq_id']), 5)
-        (isValid, jsondata) = self.neft.get_seq_from_cs_loop('data/2mqq.str')
+        (isValid, jsondata) = self.neft.get_seq_from_cs_loop(self.data_dir_path + '2mqq.str')
         dat = json.loads(jsondata)
         self.assertTrue(isValid)
         self.assertEqual(dat['file_type'], 'nmr-star')
@@ -131,7 +130,7 @@ class TestNEFTranslator(TestCase):
         self.assertEqual(len(dat['data'][2][0]['seq_id']), 5)
 
     def test_get_nef_seq(self):
-        dat = pynmrstar.Entry.from_file('data/2mqq.nef')
+        dat = pynmrstar.Entry.from_file(self.data_dir_path + '2mqq.nef')
         self.assertEqual(self.neft.get_nef_seq(dat),
                          [[{'chain_id': 'A', 'seq_id': [372, 373, 375, 376, 377, 378, 379, 380, 381, 382, 383, 384, 385, 386, 387, 388, 389, 390, 391, 392, 393, 394, 395, 396, 397, 398, 399, 400, 401, 402, 403, 404, 405, 406, 407, 408, 409, 410, 411, 412, 413, 414, 415, 416, 417, 418, 419, 420, 421, 422, 423, 424, 425, 426, 427, 428, 429, 430, 431, 432, 433, 434, 435, 436, 437, 438, 439, 440, 441, 442, 443, 444, 445, 446, 447, 448, 449, 450, 451, 452, 453, 454, 455, 456, 457, 458, 459, 460, 461, 462, 463, 464, 465, 466, 467, 468, 469, 470, 471, 472, 473, 474, 475, 476, 477, 478, 479, 480, 481, 482, 483, 484, 485, 486, 487, 488, 489, 490, 491, 492, 493, 494, 495, 496, 497, 498, 499, 500, 501, 502, 503, 504, 505, 506, 507, 508, 509, 510, 511, 512, 513, 514, 515, 516, 517, 518, 519, 520, 521, 522, 523, 524, 525, 526, 527, 528, 529, 530, 531, 532, 533, 534, 535, 536, 537, 538, 539, 540, 541, 542, 543, 544, 545, 546, 547, 548, 549, 550, 551, 552, 553, 554, 555, 556, 557, 558, 559, 560, 561, 562, 563, 564, 565, 566, 567, 568, 569, 570, 571, 572, 573, 574, 575, 576, 577, 578, 579, 580, 581, 582, 583, 584, 585, 586],
                             'comp_id': ['TYR', 'GLY', 'HIS', 'ALA', 'ASP', 'SER', 'PRO', 'VAL', 'LEU', 'MET', 'VAL', 'TYR', 'GLY', 'LEU', 'ASP', 'GLN', 'SER', 'LYS', 'MET', 'ASN', 'CYS', 'ASP', 'ARG', 'VAL', 'PHE', 'ASN', 'VAL', 'PHE', 'CYS', 'LEU', 'TYR', 'GLY', 'ASN', 'VAL', 'GLU', 'LYS', 'VAL', 'LYS', 'PHE', 'MET', 'LYS', 'SER', 'LYS', 'PRO', 'GLY', 'ALA', 'ALA', 'MET', 'VAL', 'GLU', 'MET', 'ALA', 'ASP', 'GLY', 'TYR', 'ALA', 'VAL', 'ASP', 'ARG', 'ALA', 'ILE', 'THR', 'HIS', 'LEU', 'ASN', 'ASN', 'ASN', 'PHE', 'MET', 'PHE', 'GLY', 'GLN', 'LYS', 'MET', 'ASN', 'VAL', 'CYS', 'VAL', 'SER', 'LYS', 'GLN', 'PRO', 'ALA', 'ILE', 'MET', 'PRO', 'GLY', 'GLN', 'SER', 'TYR', 'GLY', 'LEU', 'GLU', 'ASP', 'GLY', 'SER', 'CYS', 'SER', 'TYR', 'LYS', 'ASP', 'PHE', 'SER', 'GLU', 'SER', 'ARG', 'ASN', 'ASN', 'ARG', 'PHE', 'SER', 'THR', 'PRO', 'GLU', 'GLN', 'ALA', 'ALA', 'LYS', 'ASN', 'ARG', 'ILE', 'GLN', 'HIS', 'PRO', 'SER', 'ASN', 'VAL', 'LEU', 'HIS', 'PHE', 'PHE', 'ASN', 'ALA', 'PRO', 'LEU', 'GLU', 'VAL', 'THR', 'GLU', 'GLU', 'ASN', 'PHE', 'PHE', 'GLU', 'ILE', 'CYS', 'ASP', 'GLU', 'LEU', 'GLY', 'VAL', 'LYS', 'ARG', 'PRO', 'THR', 'SER', 'VAL', 'LYS', 'VAL', 'PHE', 'SER', 'GLY', 'LYS', 'SER', 'GLU', 'ARG', 'SER', 'SER', 'SER', 'GLY', 'LEU', 'LEU', 'GLU', 'TRP', 'ASP', 'SER', 'LYS', 'SER', 'ASP', 'ALA', 'LEU', 'GLU', 'THR', 'LEU', 'GLY', 'PHE', 'LEU', 'ASN', 'HIS', 'TYR', 'GLN', 'MET', 'LYS', 'ASN', 'PRO', 'ASN', 'GLY', 'PRO', 'TYR', 'PRO', 'TYR', 'THR', 'LEU', 'LYS', 'LEU', 'CYS', 'PHE', 'SER', 'THR', 'ALA', 'GLN', 'HIS', 'ALA', 'SER']}],
@@ -142,7 +141,7 @@ class TestNEFTranslator(TestCase):
                             'comp_id': ['TYR', 'GLY', 'PRO', 'HIS', 'ALA', 'ASP', 'SER', 'PRO', 'VAL', 'LEU', 'MET', 'VAL', 'TYR', 'GLY', 'LEU', 'ASP', 'GLN', 'SER', 'LYS', 'MET', 'ASN', 'CYS', 'ASP', 'ARG', 'VAL', 'PHE', 'ASN', 'VAL', 'PHE', 'CYS', 'LEU', 'TYR', 'GLY', 'ASN', 'VAL', 'GLU', 'LYS', 'VAL', 'LYS', 'PHE', 'MET', 'LYS', 'SER', 'LYS', 'PRO', 'GLY', 'ALA', 'ALA', 'MET', 'VAL', 'GLU', 'MET', 'ALA', 'ASP', 'GLY', 'TYR', 'ALA', 'VAL', 'ASP', 'ARG', 'ALA', 'ILE', 'THR', 'HIS', 'LEU', 'ASN', 'ASN', 'ASN', 'PHE', 'MET', 'PHE', 'GLY', 'GLN', 'LYS', 'MET', 'ASN', 'VAL', 'CYS', 'VAL', 'SER', 'LYS', 'GLN', 'PRO', 'ALA', 'ILE', 'MET', 'PRO', 'GLY', 'GLN', 'SER', 'TYR', 'GLY', 'LEU', 'GLU', 'ASP', 'GLY', 'SER', 'CYS', 'SER', 'TYR', 'LYS', 'ASP', 'PHE', 'SER', 'GLU', 'SER', 'ARG', 'ASN', 'ASN', 'ARG', 'PHE', 'SER', 'THR', 'PRO', 'GLU', 'GLN', 'ALA', 'ALA', 'LYS', 'ASN', 'ARG', 'ILE', 'GLN', 'HIS', 'PRO', 'SER', 'ASN', 'VAL', 'LEU', 'HIS', 'PHE', 'PHE', 'ASN', 'ALA', 'PRO', 'LEU', 'GLU', 'VAL', 'THR', 'GLU', 'GLU', 'ASN', 'PHE', 'PHE', 'GLU', 'ILE', 'CYS', 'ASP', 'GLU', 'LEU', 'GLY', 'VAL', 'LYS', 'ARG', 'PRO', 'THR', 'SER', 'VAL', 'LYS', 'VAL', 'PHE', 'SER', 'GLY', 'LYS', 'SER', 'GLU', 'ARG', 'SER', 'SER', 'SER', 'GLY', 'LEU', 'LEU', 'GLU', 'TRP', 'ASP', 'SER', 'LYS', 'SER', 'ASP', 'ALA', 'LEU', 'GLU', 'THR', 'LEU', 'GLY', 'PHE', 'LEU', 'ASN', 'HIS', 'TYR', 'GLN', 'MET', 'LYS', 'ASN', 'PRO', 'ASN', 'GLY', 'PRO', 'TYR', 'PRO', 'TYR', 'THR', 'LEU', 'LYS', 'LEU', 'CYS', 'PHE', 'SER', 'THR', 'ALA', 'GLN', 'HIS', 'ALA', 'SER']},
                            {'chain_id': 'B', 'seq_id': [i for i in range(1, 6)], 'comp_id': ['A', 'C', 'A', 'C', 'A']},
                            {'chain_id': 'C', 'seq_id': [i for i in range(1, 6)], 'comp_id': ['A', 'C', 'A', 'C', 'A']}]])
-        dat = self.neft.read_input_file('data/saveframeonly.nef')[2]
+        dat = self.neft.read_input_file(self.data_dir_path + 'saveframeonly.nef')[2]
         self.assertEqual(self.neft.get_nef_seq(dat),
                          [[{'chain_id': 'A', 'seq_id': [i for i in range(10, 70)],
                             'comp_id': ['HIS', 'MET', 'SER', 'HIS', 'THR', 'GLN', 'VAL', 'ILE', 'GLU',
@@ -152,7 +151,7 @@ class TestNEFTranslator(TestCase):
                                         'THR', 'GLN', 'VAL', 'LYS', 'ILE', 'TRP', 'PHE', 'GLN', 'ASN',
                                         'ARG', 'ARG', 'TYR', 'LYS', 'THR', 'LYS', 'ARG', 'LYS', 'GLN',
                                         'LEU', 'SER', 'SER', 'GLU', 'LEU', 'GLY']}]])
-        dat = self.neft.read_input_file('data/loopOnly1.nef')[2]
+        dat = self.neft.read_input_file(self.data_dir_path + 'loopOnly1.nef')[2]
         self.assertEqual(self.neft.get_nef_seq(dat),
                          [[{'chain_id': 'A', 'seq_id': [i for i in range(10, 120)],
                             'comp_id': ['HIS', 'MET', 'ASN', 'SER', 'GLN', 'ARG', 'LEU', 'ILE', 'HIS',
@@ -168,7 +167,7 @@ class TestNEFTranslator(TestCase):
                                         'GLU', 'ILE', 'ILE', 'ASP', 'LEU', 'LEU', 'THR', 'LYS', 'GLN',
                                         'LEU', 'ALA', 'TYR', 'GLY', 'GLU', 'ASP', 'VAL', 'ILE', 'SER',
                                         'LYS', 'GLU']}]])
-        entry = pynmrstar.Entry.from_file('data/2l9r.nef')
+        entry = pynmrstar.Entry.from_file(self.data_dir_path + '2l9r.nef')
         # extract polymer sequence from nef_molecular_system category
         self.assertEqual(self.neft.get_nef_seq(entry['nef_molecular_system'], lp_category='nef_sequence'),
                          [[{'chain_id': 'A', 'seq_id': [i for i in range(1, 70)], 'comp_id':
@@ -203,7 +202,7 @@ class TestNEFTranslator(TestCase):
                             'ARG', 'LYS', 'GLN', 'LEU', 'SER', 'SER', 'GLU', 'LEU', 'GLY']}]])
 
     def test_get_star_seq(self):
-        dat = pynmrstar.Entry.from_file('data/2mqq.str')
+        dat = pynmrstar.Entry.from_file(self.data_dir_path + '2mqq.str')
         self.assertEqual(self.neft.get_star_seq(dat),
                          [[{'chain_id': '1', 'seq_id': [1, 2, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123, 124, 125, 126, 127, 128, 129, 130, 131, 132, 133, 134, 135, 136, 137, 138, 139, 140, 141, 142, 143, 144, 145, 146, 147, 148, 149, 150, 151, 152, 153, 154, 155, 156, 157, 158, 159, 160, 161, 162, 163, 164, 165, 166, 167, 168, 169, 170, 171, 172, 173, 174, 175, 176, 177, 178, 179, 180, 181, 182, 183, 184, 185, 186, 187, 188, 189, 190, 191, 192, 193, 194, 195, 196, 197, 198, 199, 200, 201, 202, 203, 204, 205, 206, 207, 208, 209, 210, 211, 212, 213, 214, 215],
                             'comp_id': ['TYR', 'GLY', 'HIS', 'ALA', 'ASP', 'SER', 'PRO', 'VAL', 'LEU', 'MET', 'VAL', 'TYR', 'GLY', 'LEU', 'ASP', 'GLN', 'SER', 'LYS', 'MET', 'ASN', 'CYS', 'ASP', 'ARG', 'VAL', 'PHE', 'ASN', 'VAL', 'PHE', 'CYS', 'LEU', 'TYR', 'GLY', 'ASN', 'VAL', 'GLU', 'LYS', 'VAL', 'LYS', 'PHE', 'MET', 'LYS', 'SER', 'LYS', 'PRO', 'GLY', 'ALA', 'ALA', 'MET', 'VAL', 'GLU', 'MET', 'ALA', 'ASP', 'GLY', 'TYR', 'ALA', 'VAL', 'ASP', 'ARG', 'ALA', 'ILE', 'THR', 'HIS', 'LEU', 'ASN', 'ASN', 'ASN', 'PHE', 'MET', 'PHE', 'GLY', 'GLN', 'LYS', 'MET', 'ASN', 'VAL', 'CYS', 'VAL', 'SER', 'LYS', 'GLN', 'PRO', 'ALA', 'ILE', 'MET', 'PRO', 'GLY', 'GLN', 'SER', 'TYR', 'GLY', 'LEU', 'GLU', 'ASP', 'GLY', 'SER', 'CYS', 'SER', 'TYR', 'LYS', 'ASP', 'PHE', 'SER', 'GLU', 'SER', 'ARG', 'ASN', 'ASN', 'ARG', 'PHE', 'SER', 'THR', 'PRO', 'GLU', 'GLN', 'ALA', 'ALA', 'LYS', 'ASN', 'ARG', 'ILE', 'GLN', 'HIS', 'PRO', 'SER', 'ASN', 'VAL', 'LEU', 'HIS', 'PHE', 'PHE', 'ASN', 'ALA', 'PRO', 'LEU', 'GLU', 'VAL', 'THR', 'GLU', 'GLU', 'ASN', 'PHE', 'PHE', 'GLU', 'ILE', 'CYS', 'ASP', 'GLU', 'LEU', 'GLY', 'VAL', 'LYS', 'ARG', 'PRO', 'THR', 'SER', 'VAL', 'LYS', 'VAL', 'PHE', 'SER', 'GLY', 'LYS', 'SER', 'GLU', 'ARG', 'SER', 'SER', 'SER', 'GLY', 'LEU', 'LEU', 'GLU', 'TRP', 'ASP', 'SER', 'LYS', 'SER', 'ASP', 'ALA', 'LEU', 'GLU', 'THR', 'LEU', 'GLY', 'PHE', 'LEU', 'ASN', 'HIS', 'TYR', 'GLN', 'MET', 'LYS', 'ASN', 'PRO', 'ASN', 'GLY', 'PRO', 'TYR', 'PRO', 'TYR', 'THR', 'LEU', 'LYS', 'LEU', 'CYS', 'PHE', 'SER', 'THR', 'ALA', 'GLN', 'HIS', 'ALA', 'SER']}],
@@ -214,7 +213,7 @@ class TestNEFTranslator(TestCase):
                             'comp_id': ['TYR', 'GLY', 'PRO', 'HIS', 'ALA', 'ASP', 'SER', 'PRO', 'VAL', 'LEU', 'MET', 'VAL', 'TYR', 'GLY', 'LEU', 'ASP', 'GLN', 'SER', 'LYS', 'MET', 'ASN', 'CYS', 'ASP', 'ARG', 'VAL', 'PHE', 'ASN', 'VAL', 'PHE', 'CYS', 'LEU', 'TYR', 'GLY', 'ASN', 'VAL', 'GLU', 'LYS', 'VAL', 'LYS', 'PHE', 'MET', 'LYS', 'SER', 'LYS', 'PRO', 'GLY', 'ALA', 'ALA', 'MET', 'VAL', 'GLU', 'MET', 'ALA', 'ASP', 'GLY', 'TYR', 'ALA', 'VAL', 'ASP', 'ARG', 'ALA', 'ILE', 'THR', 'HIS', 'LEU', 'ASN', 'ASN', 'ASN', 'PHE', 'MET', 'PHE', 'GLY', 'GLN', 'LYS', 'MET', 'ASN', 'VAL', 'CYS', 'VAL', 'SER', 'LYS', 'GLN', 'PRO', 'ALA', 'ILE', 'MET', 'PRO', 'GLY', 'GLN', 'SER', 'TYR', 'GLY', 'LEU', 'GLU', 'ASP', 'GLY', 'SER', 'CYS', 'SER', 'TYR', 'LYS', 'ASP', 'PHE', 'SER', 'GLU', 'SER', 'ARG', 'ASN', 'ASN', 'ARG', 'PHE', 'SER', 'THR', 'PRO', 'GLU', 'GLN', 'ALA', 'ALA', 'LYS', 'ASN', 'ARG', 'ILE', 'GLN', 'HIS', 'PRO', 'SER', 'ASN', 'VAL', 'LEU', 'HIS', 'PHE', 'PHE', 'ASN', 'ALA', 'PRO', 'LEU', 'GLU', 'VAL', 'THR', 'GLU', 'GLU', 'ASN', 'PHE', 'PHE', 'GLU', 'ILE', 'CYS', 'ASP', 'GLU', 'LEU', 'GLY', 'VAL', 'LYS', 'ARG', 'PRO', 'THR', 'SER', 'VAL', 'LYS', 'VAL', 'PHE', 'SER', 'GLY', 'LYS', 'SER', 'GLU', 'ARG', 'SER', 'SER', 'SER', 'GLY', 'LEU', 'LEU', 'GLU', 'TRP', 'ASP', 'SER', 'LYS', 'SER', 'ASP', 'ALA', 'LEU', 'GLU', 'THR', 'LEU', 'GLY', 'PHE', 'LEU', 'ASN', 'HIS', 'TYR', 'GLN', 'MET', 'LYS', 'ASN', 'PRO', 'ASN', 'GLY', 'PRO', 'TYR', 'PRO', 'TYR', 'THR', 'LEU', 'LYS', 'LEU', 'CYS', 'PHE', 'SER', 'THR', 'ALA', 'GLN', 'HIS', 'ALA', 'SER']},
                            {'chain_id': '2', 'seq_id': [i for i in range(1, 6)], 'comp_id': ['A', 'C', 'A', 'C', 'A']},
                            {'chain_id': '3', 'seq_id': [i for i in range(1, 6)], 'comp_id': ['A', 'C', 'A', 'C', 'A']}]])
-        entry = pynmrstar.Entry.from_file('data/2l9r.str')
+        entry = pynmrstar.Entry.from_file(self.data_dir_path + '2l9r.str')
         # extract polymer sequence from assembly category
         self.assertEqual(self.neft.get_star_seq(entry['nef_molecular_system'], lp_category='Chem_comp_assembly'),
                          [[{'chain_id': '1', 'seq_id': [i for i in range(1, 70)], 'comp_id':
@@ -249,7 +248,7 @@ class TestNEFTranslator(TestCase):
                             'ARG', 'LYS', 'GLN', 'LEU', 'SER', 'SER', 'GLU', 'LEU', 'GLY']}]])
 
     def test_get_star_auth_seq(self):
-        entry = pynmrstar.Entry.from_file('data/2l9r.str')
+        entry = pynmrstar.Entry.from_file(self.data_dir_path + '2l9r.str')
         # extract polymer sequence from assembly category
         self.assertEqual(self.neft.get_star_auth_seq(entry['nef_molecular_system'], lp_category='Chem_comp_assembly'),
                          [[{'chain_id': '1', 'seq_id': [i for i in range(1, 70)],
@@ -264,7 +263,7 @@ class TestNEFTranslator(TestCase):
                             'ARG', 'LYS', 'GLN', 'LEU', 'SER', 'SER', 'GLU', 'LEU', 'GLY']}]])
 
     def test_get_nef_comp_atom_pair(self):
-        entry = pynmrstar.Entry.from_file('data/2l9r.nef')
+        entry = pynmrstar.Entry.from_file(self.data_dir_path + '2l9r.nef')
         # extract comp/atom pair from the first cs loop in nef_chemical_shift_list category
         cs_loops = entry.get_saveframes_by_category('nef_chemical_shift_list')
         self.assertEqual(len(cs_loops), 1) # assert single cs loop
@@ -272,7 +271,7 @@ class TestNEFTranslator(TestCase):
                          [[{'comp_id': 'ALA', 'atom_id': ['C', 'CA', 'CB', 'H', 'HA', 'HB%', 'N']}, {'comp_id': 'ARG', 'atom_id': ['C', 'CA', 'CB', 'CD', 'CG', 'H', 'HA', 'HBX', 'HBY', 'HD2', 'HD3', 'HDX', 'HDY', 'HG2', 'HG3', 'HGX', 'HGY', 'N']}, {'comp_id': 'ASN', 'atom_id': ['C', 'CA', 'CB', 'H', 'HA', 'HBX', 'HBY', 'HD2X', 'HD2Y', 'N', 'ND2']}, {'comp_id': 'GLN', 'atom_id': ['C', 'CA', 'CB', 'CG', 'H', 'HA', 'HB2', 'HB3', 'HBX', 'HBY', 'HE2X', 'HE2Y', 'HG2', 'HG3', 'HGX', 'HGY', 'N', 'NE2']}, {'comp_id': 'GLU', 'atom_id': ['C', 'CA', 'CB', 'CG', 'H', 'HA', 'HB2', 'HB3', 'HBX', 'HBY', 'HGX', 'HGY', 'N']}, {'comp_id': 'GLY', 'atom_id': ['CA', 'H', 'HA2', 'HA3', 'N']}, {'comp_id': 'HIS', 'atom_id': ['C', 'CA', 'CB', 'CD2', 'H', 'HA', 'HB2', 'HB3', 'HBX', 'HBY', 'HD2', 'N']}, {'comp_id': 'ILE', 'atom_id': ['C', 'CA', 'CB', 'CD1', 'CG1', 'CG2', 'H', 'HA', 'HB', 'HD1%', 'HG1X', 'HG1Y', 'HG2%', 'N']}, {'comp_id': 'LEU', 'atom_id': ['C', 'CA', 'CB', 'CDX', 'CDY', 'CG', 'H', 'HA', 'HBX', 'HBY', 'HDX%', 'HDY%', 'HG', 'N']}, {'comp_id': 'LYS', 'atom_id': ['C', 'CA', 'CB', 'CD', 'CE', 'CG', 'H', 'HA', 'HBX', 'HBY', 'HD2', 'HD3', 'HDX', 'HDY', 'HE2', 'HE3', 'HEX', 'HEY', 'HG2', 'HG3', 'HGX', 'HGY', 'N']}, {'comp_id': 'MET', 'atom_id': ['C', 'CA', 'CB', 'CG', 'H', 'HA', 'HBX', 'HBY', 'HGX', 'HGY', 'N']}, {'comp_id': 'PHE', 'atom_id': ['C', 'CA', 'CB', 'CD1', 'CD2', 'CE1', 'CE2', 'CZ', 'H', 'HA', 'HBX', 'HBY', 'HD1', 'HD2', 'HE1', 'HE2', 'HZ', 'N']}, {'comp_id': 'PRO', 'atom_id': ['C', 'CA', 'CB', 'CD', 'CG', 'HA', 'HBX', 'HBY', 'HDX', 'HDY', 'HGX', 'HGY']}, {'comp_id': 'SER', 'atom_id': ['C', 'CA', 'CB', 'H', 'HA', 'HBX', 'HBY', 'N']}, {'comp_id': 'THR', 'atom_id': ['C', 'CA', 'CB', 'CG2', 'H', 'HA', 'HB', 'HG2%', 'N']}, {'comp_id': 'TRP', 'atom_id': ['C', 'CA', 'CB', 'CD1', 'CE3', 'CH2', 'CZ2', 'CZ3', 'H', 'HA', 'HBX', 'HBY', 'HD1', 'HE1', 'HE3', 'HH2', 'HZ2', 'HZ3', 'N', 'NE1']}, {'comp_id': 'TYR', 'atom_id': ['C', 'CA', 'CB', 'CD1', 'CD2', 'CE1', 'CE2', 'H', 'HA', 'HBX', 'HBY', 'HD1', 'HD2', 'HE1', 'HE2', 'N']}, {'comp_id': 'VAL', 'atom_id': ['C', 'CA', 'CB', 'CGX', 'CGY', 'H', 'HA', 'HB', 'HGX%', 'HGY%', 'N']}]])
 
     def test_get_star_comp_atom_pair(self):
-        entry = pynmrstar.Entry.from_file('data/2l9r.str')
+        entry = pynmrstar.Entry.from_file(self.data_dir_path + '2l9r.str')
         # extract polymer sequence from the first cs loop in nef_chemical_shift_list category
         cs_loops = entry.get_saveframes_by_category('assigned_chemical_shifts')
         self.assertEqual(len(cs_loops), 1) # assert single cs loop
@@ -280,7 +279,7 @@ class TestNEFTranslator(TestCase):
                          [[{'comp_id': 'ALA', 'atom_id': ['C', 'CA', 'CB', 'H', 'HA', 'HB1', 'HB2', 'HB3', 'N']}, {'comp_id': 'ARG', 'atom_id': ['C', 'CA', 'CB', 'CD', 'CG', 'H', 'HA', 'HB2', 'HB3', 'HD2', 'HD3', 'HG2', 'HG3', 'N']}, {'comp_id': 'ASN', 'atom_id': ['C', 'CA', 'CB', 'H', 'HA', 'HB2', 'HB3', 'HD21', 'HD22', 'N', 'ND2']}, {'comp_id': 'GLN', 'atom_id': ['C', 'CA', 'CB', 'CG', 'H', 'HA', 'HB2', 'HB3', 'HE21', 'HE22', 'HG2', 'HG3', 'N', 'NE2']}, {'comp_id': 'GLU', 'atom_id': ['C', 'CA', 'CB', 'CG', 'H', 'HA', 'HB2', 'HB3', 'HG2', 'HG3', 'N']}, {'comp_id': 'GLY', 'atom_id': ['CA', 'H', 'HA2', 'HA3', 'N']}, {'comp_id': 'HIS', 'atom_id': ['C', 'CA', 'CB', 'CD2', 'H', 'HA', 'HB2', 'HB3', 'HD2', 'N']}, {'comp_id': 'ILE', 'atom_id': ['C', 'CA', 'CB', 'CD1', 'CG1', 'CG2', 'H', 'HA', 'HB', 'HD11', 'HD12', 'HD13', 'HG12', 'HG13', 'HG21', 'HG22', 'HG23', 'N']}, {'comp_id': 'LEU', 'atom_id': ['C', 'CA', 'CB', 'CD1', 'CD2', 'CG', 'H', 'HA', 'HB2', 'HB3', 'HD11', 'HD12', 'HD13', 'HD21', 'HD22', 'HD23', 'HG', 'N']}, {'comp_id': 'LYS', 'atom_id': ['C', 'CA', 'CB', 'CD', 'CE', 'CG', 'H', 'HA', 'HB2', 'HB3', 'HD2', 'HD3', 'HE2', 'HE3', 'HG2', 'HG3', 'N']}, {'comp_id': 'MET', 'atom_id': ['C', 'CA', 'CB', 'CG', 'H', 'HA', 'HB2', 'HB3', 'HG2', 'HG3', 'N']}, {'comp_id': 'PHE', 'atom_id': ['C', 'CA', 'CB', 'CD1', 'CD2', 'CE1', 'CE2', 'CZ', 'H', 'HA', 'HB2', 'HB3', 'HD1', 'HD2', 'HE1', 'HE2', 'HZ', 'N']}, {'comp_id': 'PRO', 'atom_id': ['C', 'CA', 'CB', 'CD', 'CG', 'HA', 'HB2', 'HB3', 'HD2', 'HD3', 'HG2', 'HG3']}, {'comp_id': 'SER', 'atom_id': ['C', 'CA', 'CB', 'H', 'HA', 'HB2', 'HB3', 'N']}, {'comp_id': 'THR', 'atom_id': ['C', 'CA', 'CB', 'CG2', 'H', 'HA', 'HB', 'HG21', 'HG22', 'HG23', 'N']}, {'comp_id': 'TRP', 'atom_id': ['C', 'CA', 'CB', 'CD1', 'CE3', 'CH2', 'CZ2', 'CZ3', 'H', 'HA', 'HB2', 'HB3', 'HD1', 'HE1', 'HE3', 'HH2', 'HZ2', 'HZ3', 'N', 'NE1']}, {'comp_id': 'TYR', 'atom_id': ['C', 'CA', 'CB', 'CD1', 'CD2', 'CE1', 'CE2', 'H', 'HA', 'HB2', 'HB3', 'HD1', 'HD2', 'HE1', 'HE2', 'N']}, {'comp_id': 'VAL', 'atom_id': ['C', 'CA', 'CB', 'CG1', 'CG2', 'H', 'HA', 'HB', 'HG11', 'HG12', 'HG13', 'HG21', 'HG22', 'HG23', 'N']}]])
 
     def test_get_nef_atom_type_from_cs_loop(self):
-        entry = pynmrstar.Entry.from_file('data/2l9r.nef')
+        entry = pynmrstar.Entry.from_file(self.data_dir_path + '2l9r.nef')
         # extract comp/atom pair from the first cs loop in nef_chemical_shift_list category
         cs_loops = entry.get_saveframes_by_category('nef_chemical_shift_list')
         self.assertEqual(len(cs_loops), 1) # assert single cs loop
@@ -288,7 +287,7 @@ class TestNEFTranslator(TestCase):
                          [[{'isotope_number': [13], 'atom_id': ['C', 'CA', 'CB', 'CD', 'CD1', 'CD2', 'CDX', 'CDY', 'CE', 'CE1', 'CE2', 'CE3', 'CG', 'CG1', 'CG2', 'CGX', 'CGY', 'CH2', 'CZ', 'CZ2', 'CZ3'], 'atom_type': 'C'}, {'isotope_number': [1], 'atom_id': ['H', 'HA', 'HA2', 'HA3', 'HB', 'HB%', 'HB2', 'HB3', 'HBX', 'HBY', 'HD1', 'HD1%', 'HD2', 'HD2X', 'HD2Y', 'HD3', 'HDX', 'HDX%', 'HDY', 'HDY%', 'HE1', 'HE2', 'HE2X', 'HE2Y', 'HE3', 'HEX', 'HEY', 'HG', 'HG1X', 'HG1Y', 'HG2', 'HG2%', 'HG3', 'HGX', 'HGX%', 'HGY', 'HGY%', 'HH2', 'HZ', 'HZ2', 'HZ3'], 'atom_type': 'H'}, {'isotope_number': [15], 'atom_id': ['N', 'ND2', 'NE1', 'NE2'], 'atom_type': 'N'}]])
 
     def test_get_star_atom_type_from_cs_loop(self):
-        entry = pynmrstar.Entry.from_file('data/2l9r.str')
+        entry = pynmrstar.Entry.from_file(self.data_dir_path + '2l9r.str')
         # extract polymer sequence from the first cs loop in nef_chemical_shift_list category
         cs_loops = entry.get_saveframes_by_category('assigned_chemical_shifts')
         self.assertEqual(len(cs_loops), 1) # assert single cs loop
@@ -296,7 +295,7 @@ class TestNEFTranslator(TestCase):
                          [[{'isotope_number': [13], 'atom_id': ['C', 'CA', 'CB', 'CD', 'CD1', 'CD2', 'CE', 'CE1', 'CE2', 'CE3', 'CG', 'CG1', 'CG2', 'CH2', 'CZ', 'CZ2', 'CZ3'], 'atom_type': 'C'}, {'isotope_number': [1], 'atom_id': ['H', 'HA', 'HA2', 'HA3', 'HB', 'HB1', 'HB2', 'HB3', 'HD1', 'HD11', 'HD12', 'HD13', 'HD2', 'HD21', 'HD22', 'HD23', 'HD3', 'HE1', 'HE2', 'HE21', 'HE22', 'HE3', 'HG', 'HG11', 'HG12', 'HG13', 'HG2', 'HG21', 'HG22', 'HG23', 'HG3', 'HH2', 'HZ', 'HZ2', 'HZ3'], 'atom_type': 'H'}, {'isotope_number': [15], 'atom_id': ['N', 'ND2', 'NE1', 'NE2'], 'atom_type': 'N'}]])
 
     def test_get_star_ambig_code_from_cs_loop(self):
-        entry = pynmrstar.Entry.from_file('data/2l9r.str')
+        entry = pynmrstar.Entry.from_file(self.data_dir_path + '2l9r.str')
         # extract polymer sequence from the first cs loop in nef_chemical_shift_list category
         cs_loops = entry.get_saveframes_by_category('assigned_chemical_shifts')
         self.assertEqual(len(cs_loops), 1) # assert single cs loop
@@ -304,40 +303,39 @@ class TestNEFTranslator(TestCase):
                          [[{'comp_id': 'ALA', 'ambig_code': 1, 'atom_id': ['C', 'CA', 'CB', 'H', 'HA', 'HB1', 'HB2', 'HB3', 'N']}, {'comp_id': 'ARG', 'ambig_code': 1, 'atom_id': ['C', 'CA', 'CB', 'CD', 'CG', 'H', 'HA', 'HD2', 'HD3', 'HG2', 'HG3', 'N']}, {'comp_id': 'ARG', 'ambig_code': 2, 'atom_id': ['HB2', 'HB3', 'HD2', 'HD3', 'HG2', 'HG3']}, {'comp_id': 'ASN', 'ambig_code': 1, 'atom_id': ['C', 'CA', 'CB', 'H', 'HA', 'N', 'ND2']}, {'comp_id': 'ASN', 'ambig_code': 2, 'atom_id': ['HB2', 'HB3', 'HD21', 'HD22']}, {'comp_id': 'GLN', 'ambig_code': 1, 'atom_id': ['C', 'CA', 'CB', 'CG', 'H', 'HA', 'HB2', 'HB3', 'HG2', 'HG3', 'N', 'NE2']}, {'comp_id': 'GLN', 'ambig_code': 2, 'atom_id': ['HB2', 'HB3', 'HE21', 'HE22', 'HG2', 'HG3']}, {'comp_id': 'GLU', 'ambig_code': 1, 'atom_id': ['C', 'CA', 'CB', 'CG', 'H', 'HA', 'HB2', 'HB3', 'N']}, {'comp_id': 'GLU', 'ambig_code': 2, 'atom_id': ['HB2', 'HB3', 'HG2', 'HG3']}, {'comp_id': 'GLY', 'ambig_code': 1, 'atom_id': ['CA', 'H', 'HA2', 'HA3', 'N']}, {'comp_id': 'HIS', 'ambig_code': 1, 'atom_id': ['C', 'CA', 'CB', 'CD2', 'H', 'HA', 'HB2', 'HB3', 'HD2', 'N']}, {'comp_id': 'HIS', 'ambig_code': 2, 'atom_id': ['HB2', 'HB3']}, {'comp_id': 'ILE', 'ambig_code': 1, 'atom_id': ['C', 'CA', 'CB', 'CD1', 'CG1', 'CG2', 'H', 'HA', 'HB', 'HD11', 'HD12', 'HD13', 'HG21', 'HG22', 'HG23', 'N']}, {'comp_id': 'ILE', 'ambig_code': 2, 'atom_id': ['HG12', 'HG13']}, {'comp_id': 'LEU', 'ambig_code': 1, 'atom_id': ['C', 'CA', 'CB', 'CG', 'H', 'HA', 'HG', 'N']}, {'comp_id': 'LEU', 'ambig_code': 2, 'atom_id': ['CD1', 'CD2', 'HB2', 'HB3', 'HD11', 'HD12', 'HD13', 'HD21', 'HD22', 'HD23']}, {'comp_id': 'LYS', 'ambig_code': 1, 'atom_id': ['C', 'CA', 'CB', 'CD', 'CE', 'CG', 'H', 'HA', 'HD2', 'HD3', 'HE2', 'HE3', 'HG2', 'HG3', 'N']}, {'comp_id': 'LYS', 'ambig_code': 2, 'atom_id': ['HB2', 'HB3', 'HD2', 'HD3', 'HE2', 'HE3', 'HG2', 'HG3']}, {'comp_id': 'MET', 'ambig_code': 1, 'atom_id': ['C', 'CA', 'CB', 'CG', 'H', 'HA', 'N']}, {'comp_id': 'MET', 'ambig_code': 2, 'atom_id': ['HB2', 'HB3', 'HG2', 'HG3']}, {'comp_id': 'PHE', 'ambig_code': 1, 'atom_id': ['C', 'CA', 'CB', 'CD1', 'CD2', 'CE1', 'CE2', 'CZ', 'H', 'HA', 'HD1', 'HD2', 'HE1', 'HE2', 'HZ', 'N']}, {'comp_id': 'PHE', 'ambig_code': 2, 'atom_id': ['HB2', 'HB3']}, {'comp_id': 'PRO', 'ambig_code': 1, 'atom_id': ['C', 'CA', 'CB', 'CD', 'CG', 'HA']}, {'comp_id': 'PRO', 'ambig_code': 2, 'atom_id': ['HB2', 'HB3', 'HD2', 'HD3', 'HG2', 'HG3']}, {'comp_id': 'SER', 'ambig_code': 1, 'atom_id': ['C', 'CA', 'CB', 'H', 'HA', 'N']}, {'comp_id': 'SER', 'ambig_code': 2, 'atom_id': ['HB2', 'HB3']}, {'comp_id': 'THR', 'ambig_code': 1, 'atom_id': ['C', 'CA', 'CB', 'CG2', 'H', 'HA', 'HB', 'HG21', 'HG22', 'HG23', 'N']}, {'comp_id': 'TRP', 'ambig_code': 1, 'atom_id': ['C', 'CA', 'CB', 'CD1', 'CE3', 'CH2', 'CZ2', 'CZ3', 'H', 'HA', 'HD1', 'HE1', 'HE3', 'HH2', 'HZ2', 'HZ3', 'N', 'NE1']}, {'comp_id': 'TRP', 'ambig_code': 2, 'atom_id': ['HB2', 'HB3']}, {'comp_id': 'TYR', 'ambig_code': 1, 'atom_id': ['C', 'CA', 'CB', 'CD1', 'CD2', 'CE1', 'CE2', 'H', 'HA', 'HD1', 'HD2', 'HE1', 'HE2', 'N']}, {'comp_id': 'TYR', 'ambig_code': 2, 'atom_id': ['HB2', 'HB3']}, {'comp_id': 'VAL', 'ambig_code': 1, 'atom_id': ['C', 'CA', 'CB', 'H', 'HA', 'HB', 'N']}, {'comp_id': 'VAL', 'ambig_code': 2, 'atom_id': ['CG1', 'CG2', 'HG11', 'HG12', 'HG13', 'HG21', 'HG22', 'HG23']}]])
 
     def test_get_nef_index(self):
-        dat = pynmrstar.Entry.from_file('data/2l9r.nef')
+        dat = pynmrstar.Entry.from_file(self.data_dir_path + '2l9r.nef')
         self.assertEqual(self.neft.get_nef_index(dat), [[i for i in range(1, 70)]])
 
     def test_get_star_index(self):
-        dat = pynmrstar.Entry.from_file('data/2l9r.str')
+        dat = pynmrstar.Entry.from_file(self.data_dir_path + '2l9r.str')
         self.assertEqual(self.neft.get_star_index(dat), [[i for i in range(1, 70)]])
 
     def test_check_nef_data(self):
-        dat = pynmrstar.Entry.from_file('data/2l9r.nef')
+        dat = pynmrstar.Entry.from_file(self.data_dir_path + '2l9r.nef')
         self.assertEqual(self.neft.check_nef_data(dat)[0][1]['value'], 56.002)
 
     def test_check_star_data(self):
-        dat = pynmrstar.Entry.from_file('data/2l9r.str')
+        dat = pynmrstar.Entry.from_file(self.data_dir_path + '2l9r.str')
         self.assertEqual(self.neft.check_star_data(dat)[0][1]['Val'], 56.002)
 
     def test_validate_comp_atom(self):
         self.assertEqual(self.neft.validate_comp_atom('ALA', 'HB1'), True)
         self.assertEqual(self.neft.validate_comp_atom('ALA', 'HB'), False)
-        with self.assertRaises(KeyError):
-            self.neft.validate_comp_atom('AXA', 'HB')
+        self.assertEqual(self.neft.validate_comp_atom('AXA', 'HB'), False)
 
     def test_validate_atom(self):
-        dat = pynmrstar.Entry.from_file('data/2mqq.nef')
-        self.assertEqual(len(self.neft.validate_atom(dat, 'nef_chemical_shift', 'sequence_code', 'residue_name', 'atom_name')),
+        dat = pynmrstar.Entry.from_file(self.data_dir_path + '2mqq.nef')
+        self.assertEqual(len(self.neft.validate_atom(dat, 'nef_chemical_shift', 'residue_name', 'atom_name')),
                          567)
-        self.assertEqual(len(self.neft.validate_atom(dat, 'nef_distance_restraint', 'sequence_code_1', 'residue_name_1', 'atom_name_1')),
+        self.assertEqual(len(self.neft.validate_atom(dat, 'nef_distance_restraint', 'residue_name_1', 'atom_name_1')),
                          2960)
-        self.assertEqual(len(self.neft.validate_atom(dat, 'nef_distance_restraint', 'sequence_code_2', 'residue_name_2', 'atom_name_2')),
+        self.assertEqual(len(self.neft.validate_atom(dat, 'nef_distance_restraint', 'residue_name_2', 'atom_name_2')),
                          3147)
-        dat = pynmrstar.Entry.from_file('data/2mqq.str')
+        dat = pynmrstar.Entry.from_file(self.data_dir_path + '2mqq.str')
         self.assertEqual(len(self.neft.validate_atom(dat)), 0)
-        self.assertEqual(len(self.neft.validate_atom(dat, 'Gen_dist_constraint', 'Comp_index_ID_1', 'Comp_ID_1', 'Atom_ID_1')),
+        self.assertEqual(len(self.neft.validate_atom(dat, 'Gen_dist_constraint', 'Comp_ID_1', 'Atom_ID_1')),
                          0)
-        self.assertEqual(len(self.neft.validate_atom(dat, 'Gen_dist_constraint', 'Comp_index_ID_2', 'Comp_ID_2', 'Atom_ID_2')),
+        self.assertEqual(len(self.neft.validate_atom(dat, 'Gen_dist_constraint', 'Comp_ID_2', 'Atom_ID_2')),
                          0)
 
     def test_get_nmrstar_tag(self):
@@ -856,6 +854,9 @@ class TestNEFTranslator(TestCase):
         self.assertEqual(self.neft.translate_restraint_row(intag, outtag, indat), outdat)
 
     def test_nef_nmrstar(self):
-        self.neft.nef_to_nmrstar('data/2mqq.nef', star_file='data/test_out.str')
-        self.assertTrue(self.neft.validate_file('data/test_out.str', 'A')[0])
-        self.assertTrue(self.neft.validate_file('data/test_out.str')[0])
+        self.neft.nef_to_nmrstar(self.data_dir_path + '2mqq.nef', star_file=self.data_dir_path + 'test_out.str')
+        self.assertTrue(self.neft.validate_file(self.data_dir_path + 'test_out.str', 'A')[0])
+        self.assertTrue(self.neft.validate_file(self.data_dir_path + 'test_out.str')[0])
+
+if __name__ == '__main__':
+    unittest.main()

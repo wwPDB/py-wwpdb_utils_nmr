@@ -2874,7 +2874,7 @@ class NmrDpUtility(object):
                                 _atom_ids = []
                                 for atom_id in atom_ids:
 
-                                    _atom_id = self.__nefT.get_nmrstar_atom(comp_id, atom_id)[1]
+                                    _atom_id = self.__nefT.get_nmrstar_atom(comp_id, atom_id)[0]
 
                                     if len(_atom_id) == 0:
 
@@ -2951,7 +2951,7 @@ class NmrDpUtility(object):
                                 _auth_atom_ids = []
                                 for auth_atom_id in auth_atom_ids:
 
-                                    _auth_atom_id = self.__nefT.get_nmrstar_atom(comp_id, auth_atom_id)[1]
+                                    _auth_atom_id = self.__nefT.get_nmrstar_atom(comp_id, auth_atom_id)[0]
 
                                     if len(_auth_atom_id) == 0:
 
@@ -4186,7 +4186,7 @@ class NmrDpUtility(object):
                     else:
 
                         if file_type == 'nef':
-                            _atom_id = self.__nefT.get_nmrstar_atom(comp_id, atom_id)[1]
+                            _atom_id = self.__nefT.get_nmrstar_atom(comp_id, atom_id)[0]
 
                             if len(_atom_id) == 0:
                                 continue
@@ -6128,7 +6128,7 @@ class NmrDpUtility(object):
                                 continue
 
                             if file_type == 'nef':
-                                _atom_id = self.__nefT.get_nmrstar_atom(comp_id, atom_id)[1]
+                                _atom_id = self.__nefT.get_nmrstar_atom(comp_id, atom_id)[0]
 
                                 if len(_atom_id) == 0:
                                     continue

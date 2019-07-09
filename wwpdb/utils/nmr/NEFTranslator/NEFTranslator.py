@@ -2056,26 +2056,22 @@ class NEFTranslator(object):
         return out_tag
 
     def get_nmrstar_atom(self, comp_id, nef_atom):
-        """ Return list of instanced atom_id of a given NEF atom (including wildcard codes).
-            @return: atom type, list of instanced atom_id of a given NEF atom, ambiguity_code.
+        """ Return list of instanced atom_id of a given NEF atom (including wildcard codes) and its ambiguity code.
+            @return: list of instanced atom_id of a given NEF atom, ambiguity_code.
             extended by Masashi Yokochi for supporting non-standard residue
         """
 
         comp_id = comp_id.upper()
 
         ambiguity_code = 1
-        atom_type = None
         atom_list = []
 
         if comp_id in self.empty_value:
 
-            atom_type = nef_atom
-
             if nef_atom == 'H%':
-                atom_type = 'H'
                 atom_list = ['H1', 'H2', 'H3']
 
-            return atom_type, atom_list, ambiguity_code
+            return atom_list, ambiguity_code
 
         atoms = []
 
@@ -2158,8 +2154,7 @@ class NEFTranslator(object):
                 logging.critical('Wrong NEF atom {}'.format(nef_atom))
 
         except IndexError:
-
-            atom_type = nef_atom
+            pass
 
         if len(atom_list) == 0:
 
@@ -2167,20 +2162,16 @@ class NEFTranslator(object):
                 atom_list.append(nef_atom)
 
             elif nef_atom == 'H%': # To handle terminal protons
-                atom_type = 'H'
                 atom_list = ['H1', 'H2', 'H3']
 
-        return atom_type, atom_list, ambiguity_code
+        return atom_list, ambiguity_code
 
-    def translate_cs_row(self, f_tags, t_tags, row_data):
-        """ Translate row of data in chemical shift loop from NEF into NMR-STAR
-        :param f_tags: NEF tags
-        :type f_tags: list
-        :param t_tags: List NMR-STAR tags
-        :type t_tags: list
-        :param row_data: List NEF data
-        :type row_data: list
-        :return list of NMR-STAR row
+    def translate_cs_row(self, f_tags, t_tags, in_row):
+        """ Translate data in chemical shift loop from NEF into NMR-STAR
+        :param f_tags: list of NEF tags
+        :param t_tags: list of NMR-STAR tags
+        :param in_row: rows of NEF data
+        :return rows of NMR-STAR data
         """
 
         out_row = []
@@ -2191,7 +2182,7 @@ class NEFTranslator(object):
             cci = f_tags.index('_nef_chemical_shift.chain_code')
             sci = f_tags.index('_nef_chemical_shift.sequence_code')
             try:
-                old_id = [i for i in self.seqDict.keys() if i[0] == row_data[cci] and i[1] == row_data[sci]][0]
+                old_id = [i for i in self.seqDict.keys() if i[0] == in_row[cci] and i[1] == in_row[sci]][0]
                 new_id = self.seqDict[old_id]
             except AttributeError:
                 new_id = (cci, sci)
@@ -2200,34 +2191,34 @@ class NEFTranslator(object):
         if len(f_tags) != len(t_tags):
             atm_index = f_tags.index('_nef_chemical_shift.atom_name')
             res_index = f_tags.index('_nef_chemical_shift.residue_name')
-            atm_type, n_atm, ambi = self.get_nmrstar_atom(row_data[res_index], row_data[atm_index])
+            n_atm, ambi = self.get_nmrstar_atom(in_row[res_index], in_row[atm_index])
 
             for i in n_atm:
                 out = [None] * len(t_tags)
                 for j in f_tags:
                     stgs = self.get_nmrstar_tag(j)
                     if stgs[0] == stgs[1]:
-                        out[t_tags.index(stgs[0])] = row_data[f_tags.index(j)]
+                        out[t_tags.index(stgs[0])] = in_row[f_tags.index(j)]
                     else:
                         if j == '_nef_chemical_shift.atom_name':
-                            out[t_tags.index(stgs[0])] = row_data[f_tags.index(j)]
+                            out[t_tags.index(stgs[0])] = in_row[f_tags.index(j)]
                             out[t_tags.index(stgs[1])] = i
                         elif j == '_nef_chemical_shift.chain_code':
-                            out[t_tags.index(stgs[0])] = row_data[f_tags.index(j)]
+                            out[t_tags.index(stgs[0])] = in_row[f_tags.index(j)]
                             out[t_tags.index(stgs[1])] = new_id[0]
                         elif j == '_nef_chemical_shift.sequence_code':
-                            out[t_tags.index(stgs[0])] = row_data[f_tags.index(j)]
+                            out[t_tags.index(stgs[0])] = in_row[f_tags.index(j)]
                             out[t_tags.index(stgs[1])] = new_id[1]
                         else:
-                            out[t_tags.index(stgs[0])] = row_data[f_tags.index(j)]
-                            out[t_tags.index(stgs[1])] = row_data[f_tags.index(j)]
+                            out[t_tags.index(stgs[0])] = in_row[f_tags.index(j)]
+                            out[t_tags.index(stgs[1])] = in_row[f_tags.index(j)]
                     out[t_tags.index('_Atom_chem_shift.Ambiguity_code')] = ambi
                     out[t_tags.index('_Atom_chem_shift.Ambiguity_set_ID')] = '.'
 
                 out_row.append(out)
 
         else:
-            out_row.append(row_data)
+            out_row.append(in_row)
 
         return out_row
 
@@ -2255,15 +2246,12 @@ class NEFTranslator(object):
 
         return out_list
 
-    def translate_row(self, f_tags, t_tags, row_data):
-        """ Translate row of data in a loop from NEF into NMR-STAR
-        :param f_tags: NEF tags
-        :type f_tags: list
-        :param t_tags: NMR-STAR tags
-        :type t_tags: list
-        :param row_data: NEF data
-        :type row_data: list
-        :return list of NMR-STAR row
+    def translate_row(self, f_tags, t_tags, in_row):
+        """ Translate rows of data in a loop from NEF into NMR-STAR
+        :param f_tags: list of NEF tags
+        :param t_tags: list of NMR-STAR tags
+        :param in_row: rows of NEF data
+        :return rows of NMR-STAR data
         """
 
         out_row = []
@@ -2272,44 +2260,41 @@ class NEFTranslator(object):
         tmp_dict = {}
         for res1 in res_list:
             try:
-                tmp_dict[res1[0]] = self.seqDict[(row_data[f_tags.index(res1[0])], row_data[f_tags.index(res1[1])])][0]
+                tmp_dict[res1[0]] = self.seqDict[(in_row[f_tags.index(res1[0])], in_row[f_tags.index(res1[1])])][0]
             except KeyError:
-                tmp_dict[res1[0]] = row_data[f_tags.index(res1[0])]
+                tmp_dict[res1[0]] = in_row[f_tags.index(res1[0])]
             try:
-                tmp_dict[res1[1]] = self.seqDict[(row_data[f_tags.index(res1[0])], row_data[f_tags.index(res1[1])])][1]
+                tmp_dict[res1[1]] = self.seqDict[(in_row[f_tags.index(res1[0])], in_row[f_tags.index(res1[1])])][1]
             except KeyError:
-                tmp_dict[res1[1]] = row_data[f_tags.index(res1[1])]
+                tmp_dict[res1[1]] = in_row[f_tags.index(res1[1])]
         # print (tmp_dict)
         if len(f_tags) != len(t_tags):
             out = [None] * len(t_tags)
             for j in f_tags:
                 stgs = self.get_nmrstar_tag(j)
                 if stgs[0] == stgs[1]:
-                    out[t_tags.index(stgs[0])] = row_data[f_tags.index(j)]
+                    out[t_tags.index(stgs[0])] = in_row[f_tags.index(j)]
                 else:
                     if 'chain_code' in j or 'sequence_code' in j:
-                        out[t_tags.index(stgs[0])] = row_data[f_tags.index(j)]
+                        out[t_tags.index(stgs[0])] = in_row[f_tags.index(j)]
                         out[t_tags.index(stgs[1])] = tmp_dict[j]
                     else:
-                        out[t_tags.index(stgs[0])] = row_data[f_tags.index(j)]
-                        out[t_tags.index(stgs[1])] = row_data[f_tags.index(j)]
+                        out[t_tags.index(stgs[0])] = in_row[f_tags.index(j)]
+                        out[t_tags.index(stgs[1])] = in_row[f_tags.index(j)]
 
             out_row.append(out)
 
         else:
-            out_row.append(row_data)
+            out_row.append(in_row)
 
         return out_row
 
-    def translate_seq_row(self, f_tags, t_tags, row_data):
-        """ Translate row of data in sequence loop from NEF into NMR-STAR
-        :param f_tags: NEF tags
-        :type f_tags: list
-        :param t_tags: NMR-STAR tags
-        :type t_tags: list
-        :param row_data: NEF data
-        :type row_data: list
-        :return list of NMR-STAR row
+    def translate_seq_row(self, f_tags, t_tags, in_row):
+        """ Translate rows of data in sequence loop from NEF into NMR-STAR
+        :param f_tags: list of NEF tags
+        :param t_tags: list of NMR-STAR tags
+        :param in_row: rows of NEF data
+        :return rows of NMR-STAR data
         """
 
         out_row = []
@@ -2319,35 +2304,32 @@ class NEFTranslator(object):
             for j in f_tags:
                 stgs = self.get_nmrstar_tag(j)
                 if stgs[0] == stgs[1]:
-                    out[t_tags.index(stgs[0])] = row_data[f_tags.index(j)]
+                    out[t_tags.index(stgs[0])] = in_row[f_tags.index(j)]
                 else:
                     if j == '_nef_sequence.chain_code':
-                        out[t_tags.index(stgs[0])] = row_data[f_tags.index(j)]
-                        out[t_tags.index(stgs[1])] = self.chains.index(row_data[f_tags.index(j)]) + 1
+                        out[t_tags.index(stgs[0])] = in_row[f_tags.index(j)]
+                        out[t_tags.index(stgs[1])] = self.chains.index(in_row[f_tags.index(j)]) + 1
                     elif j == '_nef_sequence.sequence_code':
-                        out[t_tags.index(stgs[0])] = row_data[f_tags.index(j)]
+                        out[t_tags.index(stgs[0])] = in_row[f_tags.index(j)]
                         out[t_tags.index(stgs[1])] = self.cid[
-                            self.chains.index(row_data[f_tags.index('_nef_sequence.chain_code')])]
+                            self.chains.index(in_row[f_tags.index('_nef_sequence.chain_code')])]
                     else:
-                        out[t_tags.index(stgs[0])] = row_data[f_tags.index(j)]
-                        out[t_tags.index(stgs[1])] = row_data[f_tags.index(j)]
+                        out[t_tags.index(stgs[0])] = in_row[f_tags.index(j)]
+                        out[t_tags.index(stgs[1])] = in_row[f_tags.index(j)]
 
             out_row.append(out)
 
         else:
-            out_row.append(row_data)
+            out_row.append(in_row)
 
         return out_row
 
-    def translate_restraint_row(self, f_tags, t_tags, row_data):
-        """ Translate row of data in restraint loop from NEF into NMR-STAR
-        :param f_tags: NEF tags
-        :type f_tags: list
-        :param t_tags: NMR-STAR tags
-        :type t_tags: list
-        :param row_data: NEF data
-        :type row_data: list
-        :return list of NMR-STAR row
+    def translate_restraint_row(self, f_tags, t_tags, in_row):
+        """ Translate rows of data in restraint loop from NEF into NMR-STAR
+        :param f_tags: list of NEF tags
+        :param t_tags: list of NMR-STAR tags
+        :param in_row: rows of NEF data
+        :return rows of NMR-STAR data
         """
 
         out_row = []
@@ -2356,20 +2338,20 @@ class NEFTranslator(object):
         tmp_dict = {}
         for res1 in res_list:
             try:
-                tmp_dict[res1[0]] = self.seqDict[(row_data[f_tags.index(res1[0])], row_data[f_tags.index(res1[1])])][0]
+                tmp_dict[res1[0]] = self.seqDict[(in_row[f_tags.index(res1[0])], in_row[f_tags.index(res1[1])])][0]
             except KeyError:
-                tmp_dict[res1[0]] = row_data[f_tags.index(res1[0])]
+                tmp_dict[res1[0]] = in_row[f_tags.index(res1[0])]
             try:
-                tmp_dict[res1[1]] = self.seqDict[(row_data[f_tags.index(res1[0])], row_data[f_tags.index(res1[1])])][1]
+                tmp_dict[res1[1]] = self.seqDict[(in_row[f_tags.index(res1[0])], in_row[f_tags.index(res1[1])])][1]
             except KeyError:
-                tmp_dict[res1[1]] = row_data[f_tags.index(res1[1])]
+                tmp_dict[res1[1]] = in_row[f_tags.index(res1[1])]
         if len(f_tags) != len(t_tags):
             atm_index1 = f_tags.index('_nef_distance_restraint.atom_name_1')
             res_index1 = f_tags.index('_nef_distance_restraint.residue_name_1')
             atm_index2 = f_tags.index('_nef_distance_restraint.atom_name_2')
             res_index2 = f_tags.index('_nef_distance_restraint.residue_name_2')
-            n_atm1 = self.get_nmrstar_atom(row_data[res_index1], row_data[atm_index1])[1]
-            n_atm2 = self.get_nmrstar_atom(row_data[res_index2], row_data[atm_index2])[1]
+            n_atm1 = self.get_nmrstar_atom(in_row[res_index1], in_row[atm_index1])[0]
+            n_atm2 = self.get_nmrstar_atom(in_row[res_index2], in_row[atm_index2])[0]
 
             for i in n_atm1:
                 for k in n_atm2:
@@ -2377,33 +2359,33 @@ class NEFTranslator(object):
                     for j in f_tags:
                         stgs = self.get_nmrstar_tag(j)
                         if stgs[0] == stgs[1]:
-                            out[t_tags.index(stgs[0])] = row_data[f_tags.index(j)]
+                            out[t_tags.index(stgs[0])] = in_row[f_tags.index(j)]
                         else:
                             if j == '_nef_distance_restraint.atom_name_1':
-                                out[t_tags.index(stgs[0])] = row_data[f_tags.index(j)]
+                                out[t_tags.index(stgs[0])] = in_row[f_tags.index(j)]
                                 out[t_tags.index(stgs[1])] = i
                             elif 'chain_code_1' in j or 'sequence_code_1' in j:
-                                out[t_tags.index(stgs[0])] = row_data[f_tags.index(j)]
+                                out[t_tags.index(stgs[0])] = in_row[f_tags.index(j)]
                                 out[t_tags.index(stgs[1])] = tmp_dict[j]
                             elif j == '_nef_distance_restraint.atom_name_2':
-                                out[t_tags.index(stgs[0])] = row_data[f_tags.index(j)]
+                                out[t_tags.index(stgs[0])] = in_row[f_tags.index(j)]
                                 out[t_tags.index(stgs[1])] = k
                             elif 'chain_code_2' in j or 'sequence_code_2' in j:
-                                out[t_tags.index(stgs[0])] = row_data[f_tags.index(j)]
+                                out[t_tags.index(stgs[0])] = in_row[f_tags.index(j)]
                                 out[t_tags.index(stgs[1])] = tmp_dict[j]
                             else:
-                                out[t_tags.index(stgs[0])] = row_data[f_tags.index(j)]
-                                out[t_tags.index(stgs[1])] = row_data[f_tags.index(j)]
+                                out[t_tags.index(stgs[0])] = in_row[f_tags.index(j)]
+                                out[t_tags.index(stgs[1])] = in_row[f_tags.index(j)]
 
                     out_row.append(out)
 
         else:
-            out_row.append(row_data)
+            out_row.append(in_row)
 
         return out_row
 
     def nef_to_nmrstar(self, nef_file, star_file=None):
-        """ Translate NEF file to NMR-STAR file.
+        """ Convert NEF file to NMR-STAR file.
         """
 
         (file_path, file_name) = ntpath.split(os.path.realpath(nef_file))

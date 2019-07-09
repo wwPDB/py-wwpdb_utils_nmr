@@ -527,12 +527,12 @@ class TestNEFTranslator(unittest.TestCase):
                           '_Gen_dist_constraint.Member_logic_code','_Gen_dist_constraint.Gen_dist_constraint_list_ID'])
 
     def test_get_nmrstar_atom(self):
-        self.assertEqual(self.neft.get_nmrstar_atom('CYS', 'HB%'), ('HB', ['HB2', 'HB3'], 1))
-        self.assertEqual(self.neft.get_nmrstar_atom('TRP', 'CE%'), ('CE', ['CE2', 'CE3'], 1))
-        self.assertEqual(self.neft.get_nmrstar_atom('TRP', 'CEX'), ('CE', ['CE2'], 2))
-        self.assertEqual(self.neft.get_nmrstar_atom('TRP', 'CEY'), ('CE', ['CE3'], 2))
-        self.assertEqual(self.neft.get_nmrstar_atom('LEU', 'HDY%'), ('HD', ['HD21', 'HD22', 'HD23'], 2))
-        self.assertEqual(self.neft.get_nmrstar_atom('LEU', 'HD1%'), ('HD1', ['HD11', 'HD12', 'HD13'], 1))
+        self.assertEqual(self.neft.get_nmrstar_atom('CYS', 'HB%'), (['HB2', 'HB3'], 1))
+        self.assertEqual(self.neft.get_nmrstar_atom('TRP', 'CE%'), (['CE2', 'CE3'], 1))
+        self.assertEqual(self.neft.get_nmrstar_atom('TRP', 'CEX'), (['CE2'], 2))
+        self.assertEqual(self.neft.get_nmrstar_atom('TRP', 'CEY'), (['CE3'], 2))
+        self.assertEqual(self.neft.get_nmrstar_atom('LEU', 'HDY%'), (['HD21', 'HD22', 'HD23'], 2))
+        self.assertEqual(self.neft.get_nmrstar_atom('LEU', 'HD1%'), (['HD11', 'HD12', 'HD13'], 1))
 
     def test_translate_cs_row(self):
         self.neft.seqDict = {('A', '372'): (1, 1), ('A', '373'): (1, 2), ('A', '374'): (1, 3), ('A', '375'): (1, 4),

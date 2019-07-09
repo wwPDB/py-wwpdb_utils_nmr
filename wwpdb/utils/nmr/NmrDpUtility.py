@@ -42,6 +42,8 @@ class NmrDpUtility(object):
         self.__dstPath = None
         self.__logPath = None
 
+        self.__cifPath = None
+
         # auxiliary input resource.
         self.__inputParamDict = {}
 
@@ -1576,11 +1578,15 @@ class NmrDpUtility(object):
         """ Test diamagnetism of molecular assembly.
         """
 
-        if 'coordinate_file_path' in self.__inputParamDict:
+        if self.__cifPath is None:
+            self.__setCoordFilePath()
+
+        if self.__cifPath is None:
+            return
 
             try:
 
-                if not self.__cR.setFilePath(file_path) or not self.__cR.parse():
+                if not self.__cR.parse():
                     return
 
                 comp_comp_list = cR.getDictList('chem_comp')
@@ -5023,8 +5029,7 @@ class NmrDpUtility(object):
 
         if self.__parseCoordinate():
 
-            fPath = self.__inputParamDict['coordinate_file_path']
-            file_name = os.path.basename(fPath)
+            file_name = os.path.basename(self.__cifPath)
 
             self.report.appendInputSource()
 
@@ -5044,53 +5049,79 @@ class NmrDpUtility(object):
 
         file_type = 'pdbx'
 
+        if self.__cifPath is None:
+            self.__setCoordFilePath()
+
+        if self.__cifPath is None:
+
+            if 'coordinate_file_path' in self.__inputParamDict:
+
+                err = "No such %s file." % self.__inputParamDict['coordinate_file_path']
+
+                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__parseCoordinate() ++ Error  - %s" % err)
+                self.report.setError()
+
+                if self.__verbose:
+                    self.__lfh.write("+NmrDpUtility.__parseCoordinate() ++ Error  - %s\n" % err)
+
+                return False
+
+            else:
+
+                err = "%s formatted coordinate file is mandatory." % self.readable_file_type[file_type]
+
+                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__parseCoordinate() ++ Error  - %s" % err)
+                self.report.setError()
+
+                if self.__verbose:
+                    self.__lfh.write("+NmrDpUtility.__parseCoordinate() ++ Error  - %s\n" % err)
+
+                return False
+
+        file_name = os.path.basename(self.__cifPath)
+
+        try:
+
+            if not self.__cR.parse():
+
+                err = "%s is invalid %s file." % (file_name, self.readable_file_type[file_type])
+
+                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__parseCoordinate() ++ Error  - %s" % err)
+                self.report.setError()
+
+                if self.__verbose:
+                    self.__lfh.write("+NmrDpUtility.__parseCoordinate() ++ Error  - %s\n" % err)
+
+                return False
+
+            return True
+
+        except:
+            return False
+
+    def __setCoordFilePath(self):
+        """ Set effective coordinate file path.
+        """
+
         if 'coordinate_file_path' in self.__inputParamDict:
 
             fPath = self.__inputParamDict['coordinate_file_path']
-            file_name = os.path.basename(fPath)
 
             try:
 
-                if not self.__cR.setFilePath(fPath):
+                if self.__cR.setFilePath(fPath):
+                    self.__cifPath = fPath
 
-                    err = "No such %s file." % file_name
+                # try deposit storage if possible
+                elif 'proc_coord_file_path' in self.__inputParamDict:
 
-                    self.report.error.appendDescription('internal_error', "+NmrDpUtility.__parseCoordinate() ++ Error  - %s" % err)
-                    self.report.setError()
+                    fPath = self.__inputParamDict['proc_coord_file_path']
 
-                    if self.__verbose:
-                        self.__lfh.write("+NmrDpUtility.__parseCoordinate() ++ Error  - %s\n" % err)
-
-                    return False
-
-                if not self.__cR.parse():
-
-                    err = "%s is invalid %s file." % (file_name, self.readable_file_type[file_type])
-
-                    self.report.error.appendDescription('internal_error', "+NmrDpUtility.__parseCoordinate() ++ Error  - %s" % err)
-                    self.report.setError()
-
-                    if self.__verbose:
-                        self.__lfh.write("+NmrDpUtility.__parseCoordinate() ++ Error  - %s\n" % err)
-
-                    return False
-
-                return True
+                    if self.__cR.setFilePath(fPath):
+                        self.__cifPath = fPath
 
             except:
-                return False
-
-        else:
-
-            err = "%s formatted coordinate file is mandatory." % self.readable_file_type[file_type]
-
-            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__parseCoordinate() ++ Error  - %s" % err)
-            self.report.setError()
-
-            if self.__verbose:
-                self.__lfh.write("+NmrDpUtility.__parseCoordinate() ++ Error  - %s\n" % err)
-
-            return False
+                pass
 
     def __detectCoordContentSubType(self):
         """ Detect content subtypes of coordinate file.

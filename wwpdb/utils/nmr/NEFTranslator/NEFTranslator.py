@@ -15,9 +15,6 @@ This module does the following jobs
 @author: Masashi Yokochi
 """
 
-# Make sure print function work in python2 and python3
-from __future__ import print_function
-
 import sys
 import os
 import ntpath
@@ -32,11 +29,9 @@ from pytz import utc
 from wwpdb.utils.config.ConfigInfo import ConfigInfo, getSiteId
 from wwpdb.apps.ccmodule.io.ChemCompIo import ChemCompReader
 
-PY3 = (sys.version_info[0] == 3)
-
 (scriptPath, scriptName) = ntpath.split(os.path.realpath(__file__))
 
-__version__ = 'v1.2.0'
+__version__ = 'v1.3.0'
 
 class NEFTranslator(object):
     """ NEF to NMR-STAR translator
@@ -2038,10 +2033,12 @@ class NEFTranslator(object):
         if lp_category == '_nef_chemical_shift':
             out_tag.append('_Atom_chem_shift.Ambiguity_code')
             out_tag.append('_Atom_chem_shift.Ambiguity_set_ID')
+            out_tag.append('_Atom_chem_shift.Details')
             out_tag.append('_Atom_chem_shift.Assigned_chem_shift_list_ID')
 
         elif lp_category == '_nef_distance_restraint':
             out_tag.append('_Gen_dist_constraint.Member_logic_code')
+            out_tag.append('_Gen_dist_constraint.Details')
             out_tag.append('_Gen_dist_constraint.Gen_dist_constraint_list_ID')
 
         elif lp_category == '_nef_dihedral_restraint':
@@ -2055,9 +2052,9 @@ class NEFTranslator(object):
 
         return out_tag
 
-    def get_nmrstar_atom(self, comp_id, nef_atom):
+    def get_nmrstar_atom(self, comp_id, nef_atom, leave_unmatched=True):
         """ Return list of instanced atom_id of a given NEF atom (including wildcard codes) and its ambiguity code.
-            @return: list of instanced atom_id of a given NEF atom, ambiguity_code.
+            @return: list of instanced atom_id of a given NEF atom, ambiguity_code, and error description
             extended by Masashi Yokochi for supporting non-standard residue
         """
 
@@ -2065,13 +2062,14 @@ class NEFTranslator(object):
 
         ambiguity_code = 1
         atom_list = []
+        details = None
 
         if comp_id in self.empty_value:
 
             if nef_atom == 'H%':
                 atom_list = ['H1', 'H2', 'H3']
 
-            return atom_list, ambiguity_code
+            return atom_list, ambiguity_code, 'Residue name is not specified.'
 
         atoms = []
 
@@ -2164,7 +2162,11 @@ class NEFTranslator(object):
             elif nef_atom == 'H%': # To handle terminal protons
                 atom_list = ['H1', 'H2', 'H3']
 
-        return atom_list, ambiguity_code
+            elif leave_unmatched:
+                atom_list.append(nef_atom)
+                details = '%s is an invalid atom ID of comp ID %s.' % (nef_atom, comp_id)
+
+        return atom_list, ambiguity_code, details
 
     def translate_cs_row(self, f_tags, t_tags, in_row):
         """ Translate data in chemical shift loop from NEF into NMR-STAR
@@ -2191,7 +2193,7 @@ class NEFTranslator(object):
         if len(f_tags) != len(t_tags):
             atm_index = f_tags.index('_nef_chemical_shift.atom_name')
             res_index = f_tags.index('_nef_chemical_shift.residue_name')
-            n_atm, ambi = self.get_nmrstar_atom(in_row[res_index], in_row[atm_index])
+            n_atm, ambi, details = self.get_nmrstar_atom(in_row[res_index], in_row[atm_index])
 
             for i in n_atm:
                 out = [None] * len(t_tags)
@@ -2213,7 +2215,8 @@ class NEFTranslator(object):
                             out[t_tags.index(stgs[0])] = in_row[f_tags.index(j)]
                             out[t_tags.index(stgs[1])] = in_row[f_tags.index(j)]
                     out[t_tags.index('_Atom_chem_shift.Ambiguity_code')] = ambi
-                    out[t_tags.index('_Atom_chem_shift.Ambiguity_set_ID')] = '.'
+                    out[t_tags.index('_Atom_chem_shift.Ambiguity_set_ID')] = None
+                    out[t_tags.index('_Atom_chem_shift.Details')] = details
 
                 out_row.append(out)
 
@@ -2325,7 +2328,7 @@ class NEFTranslator(object):
         return out_row
 
     def translate_restraint_row(self, f_tags, t_tags, in_row):
-        """ Translate rows of data in restraint loop from NEF into NMR-STAR
+        """ Translate rows of data in distance restraint loop from NEF into NMR-STAR
         :param f_tags: list of NEF tags
         :param t_tags: list of NMR-STAR tags
         :param in_row: rows of NEF data
@@ -2350,8 +2353,8 @@ class NEFTranslator(object):
             res_index1 = f_tags.index('_nef_distance_restraint.residue_name_1')
             atm_index2 = f_tags.index('_nef_distance_restraint.atom_name_2')
             res_index2 = f_tags.index('_nef_distance_restraint.residue_name_2')
-            n_atm1 = self.get_nmrstar_atom(in_row[res_index1], in_row[atm_index1])[0]
-            n_atm2 = self.get_nmrstar_atom(in_row[res_index2], in_row[atm_index2])[0]
+            n_atm1, ambi1, details1 = self.get_nmrstar_atom(in_row[res_index1], in_row[atm_index1])
+            n_atm2, ambi2, details2 = self.get_nmrstar_atom(in_row[res_index2], in_row[atm_index2])
 
             for i in n_atm1:
                 for k in n_atm2:
@@ -2376,6 +2379,15 @@ class NEFTranslator(object):
                             else:
                                 out[t_tags.index(stgs[0])] = in_row[f_tags.index(j)]
                                 out[t_tags.index(stgs[1])] = in_row[f_tags.index(j)]
+                        if details1 is None and details2 is None:
+                            out[t_tags.index('_Gen_dist_constraint.Details')] = None
+                        else:
+                            if not details1 is None and details2 is None:
+                                out[t_tags.index('_Gen_dist_constraint.Details')] = details1
+                            elif not details2 is None and details1 is None:
+                                out[t_tags.index('_Gen_dist_constraint.Details')] = details1
+                            else:
+                                out[t_tags.index('_Gen_dist_constraint.Details')] = details1 + ' ' + details2
 
                     out_row.append(out)
 

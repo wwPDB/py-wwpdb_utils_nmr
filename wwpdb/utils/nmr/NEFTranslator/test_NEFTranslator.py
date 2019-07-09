@@ -454,12 +454,12 @@ class TestNEFTranslator(unittest.TestCase):
         self.assertEqual(self.neft.get_nmrstar_loop_tags(
             ['_nef_sequence.index', '_nef_sequence.chain_code', '_nef_sequence.sequence_code',
              '_nef_sequence.residue_name', '_nef_sequence.linking', '_nef_sequence.residue_variant',
-             '_nef_sequence.cis_peptide']), ['_Chem_comp_assembly.NEF_index', '_Chem_comp_assembly.Auth_asym_ID',
-                                             '_Chem_comp_assembly.Auth_seq_ID', '_Chem_comp_assembly.Auth_comp_ID',
-                                             '_Chem_comp_assembly.Sequence_linking',
-                                             '_Chem_comp_assembly.Auth_variant_ID', '_Chem_comp_assembly.Cis_residue',
-                                             '_Chem_comp_assembly.Entity_assembly_ID',
-                                             '_Chem_comp_assembly.Comp_index_ID', '_Chem_comp_assembly.Comp_ID'])
+             '_nef_sequence.cis_peptide']),
+            ['_Chem_comp_assembly.NEF_index', '_Chem_comp_assembly.Auth_asym_ID',
+             '_Chem_comp_assembly.Auth_seq_ID', '_Chem_comp_assembly.Auth_comp_ID',
+             '_Chem_comp_assembly.Sequence_linking', '_Chem_comp_assembly.Auth_variant_ID',
+             '_Chem_comp_assembly.Cis_residue', '_Chem_comp_assembly.Entity_assembly_ID',
+             '_Chem_comp_assembly.Comp_index_ID', '_Chem_comp_assembly.Comp_ID'])
         self.assertEqual(self.neft.get_nmrstar_loop_tags(
             ['_nef_chemical_shift.chain_code', '_nef_chemical_shift.sequence_code', '_nef_chemical_shift.residue_name',
              '_nef_chemical_shift.atom_name', '_nef_chemical_shift.value', '_nef_chemical_shift.value_uncertainty',
@@ -470,69 +470,40 @@ class TestNEFTranslator(unittest.TestCase):
              '_Atom_chem_shift.Atom_isotope_number', '_Atom_chem_shift.Entity_assembly_ID',
              '_Atom_chem_shift.Comp_index_ID', '_Atom_chem_shift.Comp_ID', '_Atom_chem_shift.Atom_ID',
              '_Atom_chem_shift.Ambiguity_code', '_Atom_chem_shift.Ambiguity_set_ID',
-             '_Atom_chem_shift.Assigned_chem_shift_list_ID'])
+             '_Atom_chem_shift.Details', '_Atom_chem_shift.Assigned_chem_shift_list_ID'])
         self.assertEqual(self.neft.get_nmrstar_loop_tags(
-            ['_nef_chemical_shift.chain_code', '_nef_chemical_shift.sequence_code', '_nef_chemical_shift.residue_name',
-             '_nef_chemical_shift.atom_name', '_nef_chemical_shift.value', '_nef_chemical_shift.value_uncertainty',
-             '_nef_chemical_shift.element', '_nef_chemical_shift.isotope_number']),
-            ['_Atom_chem_shift.Auth_asym_ID', '_Atom_chem_shift.Auth_seq_ID',
-             '_Atom_chem_shift.Auth_comp_ID', '_Atom_chem_shift.Auth_atom_ID', '_Atom_chem_shift.Val',
-             '_Atom_chem_shift.Val_err', '_Atom_chem_shift.Atom_type',
-             '_Atom_chem_shift.Atom_isotope_number', '_Atom_chem_shift.Entity_assembly_ID',
-             '_Atom_chem_shift.Comp_index_ID', '_Atom_chem_shift.Comp_ID', '_Atom_chem_shift.Atom_ID',
-             '_Atom_chem_shift.Ambiguity_code', '_Atom_chem_shift.Ambiguity_set_ID',
-             '_Atom_chem_shift.Assigned_chem_shift_list_ID'])
-        self.assertEqual(self.neft.get_nmrstar_loop_tags(
-            ['_nef_chemical_shift.chain_code', '_nef_chemical_shift.sequence_code', '_nef_chemical_shift.residue_name',
-             '_nef_chemical_shift.atom_name', '_nef_chemical_shift.value', '_nef_chemical_shift.value_uncertainty',
-             '_nef_chemical_shift.element', '_nef_chemical_shift.isotope_number']),
-            ['_Atom_chem_shift.Auth_asym_ID', '_Atom_chem_shift.Auth_seq_ID',
-             '_Atom_chem_shift.Auth_comp_ID', '_Atom_chem_shift.Auth_atom_ID', '_Atom_chem_shift.Val',
-             '_Atom_chem_shift.Val_err', '_Atom_chem_shift.Atom_type',
-             '_Atom_chem_shift.Atom_isotope_number', '_Atom_chem_shift.Entity_assembly_ID',
-             '_Atom_chem_shift.Comp_index_ID', '_Atom_chem_shift.Comp_ID', '_Atom_chem_shift.Atom_ID',
-             '_Atom_chem_shift.Ambiguity_code', '_Atom_chem_shift.Ambiguity_set_ID',
-             '_Atom_chem_shift.Assigned_chem_shift_list_ID'])
-        self.assertEqual(self.neft.get_nmrstar_loop_tags(['_nef_distance_restraint.index',
-                                                   '_nef_distance_restraint.restraint_id',
-                                                   '_nef_distance_restraint.restraint_combination_id',
-                                                   '_nef_distance_restraint.chain_code_1',
-                                                   '_nef_distance_restraint.sequence_code_1',
-                                                   '_nef_distance_restraint.residue_name_1',
-                                                   '_nef_distance_restraint.atom_name_1',
-                                                   '_nef_distance_restraint.chain_code_2',
-                                                   '_nef_distance_restraint.sequence_code_2',
-                                                   '_nef_distance_restraint.residue_name_2',
-                                                   '_nef_distance_restraint.atom_name_2',
-                                                   '_nef_distance_restraint.weight',
-                                                   '_nef_distance_restraint.target_value',
-                                                   '_nef_distance_restraint.target_value_uncertainty',
-                                                   '_nef_distance_restraint.lower_linear_limit',
-                                                   '_nef_distance_restraint.lower_limit',
-                                                   '_nef_distance_restraint.upper_limit',
-                                                   '_nef_distance_restraint.upper_linear_limit']),
-                         ['_Gen_dist_constraint.Index_ID', '_Gen_dist_constraint.ID',
-                          '_Gen_dist_constraint.Combination_ID', '_Gen_dist_constraint.Auth_asym_ID_1',
-                          '_Gen_dist_constraint.Auth_seq_ID_1', '_Gen_dist_constraint.Auth_comp_ID_1',
-                          '_Gen_dist_constraint.Auth_atom_ID_1', '_Gen_dist_constraint.Auth_asym_ID_2',
-                          '_Gen_dist_constraint.Auth_seq_ID_2', '_Gen_dist_constraint.Auth_comp_ID_2',
-                          '_Gen_dist_constraint.Auth_atom_ID_2', '_Gen_dist_constraint.Weight',
-                          '_Gen_dist_constraint.Target_val', '_Gen_dist_constraint.Target_val_uncertainty',
-                          '_Gen_dist_constraint.Lower_linear_limit', '_Gen_dist_constraint.Distance_lower_bound_val',
-                          '_Gen_dist_constraint.Distance_upper_bound_val', '_Gen_dist_constraint.Upper_linear_limit',
-                          '_Gen_dist_constraint.Entity_assembly_ID_1', '_Gen_dist_constraint.Comp_index_ID_1',
-                          '_Gen_dist_constraint.Comp_ID_1', '_Gen_dist_constraint.Atom_ID_1',
-                          '_Gen_dist_constraint.Entity_assembly_ID_2', '_Gen_dist_constraint.Comp_index_ID_2',
-                          '_Gen_dist_constraint.Comp_ID_2', '_Gen_dist_constraint.Atom_ID_2',
-                          '_Gen_dist_constraint.Member_logic_code','_Gen_dist_constraint.Gen_dist_constraint_list_ID'])
+            ['_nef_distance_restraint.index', '_nef_distance_restraint.restraint_id',
+             '_nef_distance_restraint.restraint_combination_id', '_nef_distance_restraint.chain_code_1',
+             '_nef_distance_restraint.sequence_code_1', '_nef_distance_restraint.residue_name_1',
+             '_nef_distance_restraint.atom_name_1', '_nef_distance_restraint.chain_code_2',
+             '_nef_distance_restraint.sequence_code_2', '_nef_distance_restraint.residue_name_2',
+             '_nef_distance_restraint.atom_name_2', '_nef_distance_restraint.weight',
+             '_nef_distance_restraint.target_value', '_nef_distance_restraint.target_value_uncertainty',
+             '_nef_distance_restraint.lower_linear_limit', '_nef_distance_restraint.lower_limit',
+             '_nef_distance_restraint.upper_limit', '_nef_distance_restraint.upper_linear_limit']),
+            ['_Gen_dist_constraint.Index_ID', '_Gen_dist_constraint.ID',
+             '_Gen_dist_constraint.Combination_ID', '_Gen_dist_constraint.Auth_asym_ID_1',
+             '_Gen_dist_constraint.Auth_seq_ID_1', '_Gen_dist_constraint.Auth_comp_ID_1',
+             '_Gen_dist_constraint.Auth_atom_ID_1', '_Gen_dist_constraint.Auth_asym_ID_2',
+             '_Gen_dist_constraint.Auth_seq_ID_2', '_Gen_dist_constraint.Auth_comp_ID_2',
+             '_Gen_dist_constraint.Auth_atom_ID_2', '_Gen_dist_constraint.Weight',
+             '_Gen_dist_constraint.Target_val', '_Gen_dist_constraint.Target_val_uncertainty',
+             '_Gen_dist_constraint.Lower_linear_limit', '_Gen_dist_constraint.Distance_lower_bound_val',
+             '_Gen_dist_constraint.Distance_upper_bound_val', '_Gen_dist_constraint.Upper_linear_limit',
+             '_Gen_dist_constraint.Entity_assembly_ID_1', '_Gen_dist_constraint.Comp_index_ID_1',
+             '_Gen_dist_constraint.Comp_ID_1', '_Gen_dist_constraint.Atom_ID_1',
+             '_Gen_dist_constraint.Entity_assembly_ID_2', '_Gen_dist_constraint.Comp_index_ID_2',
+             '_Gen_dist_constraint.Comp_ID_2', '_Gen_dist_constraint.Atom_ID_2',
+             '_Gen_dist_constraint.Member_logic_code', '_Gen_dist_constraint.Details',
+             '_Gen_dist_constraint.Gen_dist_constraint_list_ID'])
 
     def test_get_nmrstar_atom(self):
-        self.assertEqual(self.neft.get_nmrstar_atom('CYS', 'HB%'), (['HB2', 'HB3'], 1))
-        self.assertEqual(self.neft.get_nmrstar_atom('TRP', 'CE%'), (['CE2', 'CE3'], 1))
-        self.assertEqual(self.neft.get_nmrstar_atom('TRP', 'CEX'), (['CE2'], 2))
-        self.assertEqual(self.neft.get_nmrstar_atom('TRP', 'CEY'), (['CE3'], 2))
-        self.assertEqual(self.neft.get_nmrstar_atom('LEU', 'HDY%'), (['HD21', 'HD22', 'HD23'], 2))
-        self.assertEqual(self.neft.get_nmrstar_atom('LEU', 'HD1%'), (['HD11', 'HD12', 'HD13'], 1))
+        self.assertEqual(self.neft.get_nmrstar_atom('CYS', 'HB%'), (['HB2', 'HB3'], 1, None))
+        self.assertEqual(self.neft.get_nmrstar_atom('TRP', 'CE%'), (['CE2', 'CE3'], 1, None))
+        self.assertEqual(self.neft.get_nmrstar_atom('TRP', 'CEX'), (['CE2'], 2, None))
+        self.assertEqual(self.neft.get_nmrstar_atom('TRP', 'CEY'), (['CE3'], 2, None))
+        self.assertEqual(self.neft.get_nmrstar_atom('LEU', 'HDY%'), (['HD21', 'HD22', 'HD23'], 2, None))
+        self.assertEqual(self.neft.get_nmrstar_atom('LEU', 'HD1%'), (['HD11', 'HD12', 'HD13'], 1, None))
 
     def test_translate_cs_row(self):
         self.neft.seqDict = {('A', '372'): (1, 1), ('A', '373'): (1, 2), ('A', '374'): (1, 3), ('A', '375'): (1, 4),
@@ -602,30 +573,30 @@ class TestNEFTranslator(unittest.TestCase):
                        '_Atom_chem_shift.Atom_isotope_number', '_Atom_chem_shift.Entity_assembly_ID',
                        '_Atom_chem_shift.Comp_index_ID', '_Atom_chem_shift.Comp_ID', '_Atom_chem_shift.Atom_ID',
                        '_Atom_chem_shift.Ambiguity_code', '_Atom_chem_shift.Ambiguity_set_ID',
-                       '_Atom_chem_shift.Assigned_chem_shift_list_ID']
+                       '_Atom_chem_shift.Details', '_Atom_chem_shift.Assigned_chem_shift_list_ID']
         data = ['A', '484', 'THR', 'N', '108.193', '0.4', 'N', '15']
-        data_out = [['A', '484', 'THR', 'N', '108.193', '0.4', 'N', '15', 1, 113, 'THR', 'N', 1, '.', None]]
+        data_out = [['A', '484', 'THR', 'N', '108.193', '0.4', 'N', '15', 1, 113, 'THR', 'N', 1, None, None, None]]
         self.assertEqual(self.neft.translate_cs_row(input_tags, output_tags, data), data_out)
         data = ['A', '488', 'ALA', 'HB%', '1.625', '0.02', 'H', '1']
-        data_out = [['A', '488', 'ALA', 'HB%', '1.625', '0.02', 'H', '1', 1, 117, 'ALA', u'HB1', 1, '.', None],
-                    ['A', '488', 'ALA', 'HB%', '1.625', '0.02', 'H', '1', 1, 117, 'ALA', u'HB2', 1, '.', None],
-                    ['A', '488', 'ALA', 'HB%', '1.625', '0.02', 'H', '1', 1, 117, 'ALA', u'HB3', 1, '.', None]]
+        data_out = [['A', '488', 'ALA', 'HB%', '1.625', '0.02', 'H', '1', 1, 117, 'ALA', u'HB1', 1, None, None, None],
+                    ['A', '488', 'ALA', 'HB%', '1.625', '0.02', 'H', '1', 1, 117, 'ALA', u'HB2', 1, None, None, None],
+                    ['A', '488', 'ALA', 'HB%', '1.625', '0.02', 'H', '1', 1, 117, 'ALA', u'HB3', 1, None, None, None]]
         self.assertEqual(self.neft.translate_cs_row(input_tags, output_tags, data), data_out)
         data = ['A', '493', 'ILE', 'HD1%', '0.996', '0.02', 'H', '1']
-        data_out = [['A', '493', 'ILE', 'HD1%', '0.996', '0.02', 'H', '1', 1, 122, 'ILE', u'HD11', 1, '.', None],
-                    ['A', '493', 'ILE', 'HD1%', '0.996', '0.02', 'H', '1', 1, 122, 'ILE', u'HD12', 1, '.', None],
-                    ['A', '493', 'ILE', 'HD1%', '0.996', '0.02', 'H', '1', 1, 122, 'ILE', u'HD13', 1, '.', None]]
+        data_out = [['A', '493', 'ILE', 'HD1%', '0.996', '0.02', 'H', '1', 1, 122, 'ILE', u'HD11', 1, None, None, None],
+                    ['A', '493', 'ILE', 'HD1%', '0.996', '0.02', 'H', '1', 1, 122, 'ILE', u'HD12', 1, None, None, None],
+                    ['A', '493', 'ILE', 'HD1%', '0.996', '0.02', 'H', '1', 1, 122, 'ILE', u'HD13', 1, None, None, None]]
         self.assertEqual(self.neft.translate_cs_row(input_tags, output_tags, data), data_out)
         data = ['A', '493', 'ILE', 'HG1x', '1.627', '0.02', 'H', '1']
-        data_out = [['A', '493', 'ILE', 'HG1x', '1.627', '0.02', 'H', '1', 1, 122, 'ILE', u'HG12', 2, '.', None]]
+        data_out = [['A', '493', 'ILE', 'HG1x', '1.627', '0.02', 'H', '1', 1, 122, 'ILE', u'HG12', 2, None, None, None]]
         self.assertEqual(self.neft.translate_cs_row(input_tags, output_tags, data), data_out)
         data = ['A', '493', 'ILE', 'HG1y', '1.536', '0.02', 'H', '1']
-        data_out = [['A', '493', 'ILE', 'HG1y', '1.536', '0.02', 'H', '1', 1, 122, 'ILE', u'HG13', 2, '.', None]]
+        data_out = [['A', '493', 'ILE', 'HG1y', '1.536', '0.02', 'H', '1', 1, 122, 'ILE', u'HG13', 2, None, None, None]]
         self.assertEqual(self.neft.translate_cs_row(input_tags, output_tags, data), data_out)
         data = ['A', '493', 'ILE', 'HG2%', '0.859', '0.02', 'H', '1']
-        data_out = [['A', '493', 'ILE', 'HG2%', '0.859', '0.02', 'H', '1', 1, 122, 'ILE', u'HG21', 1, '.', None],
-                    ['A', '493', 'ILE', 'HG2%', '0.859', '0.02', 'H', '1', 1, 122, 'ILE', u'HG22', 1, '.', None],
-                    ['A', '493', 'ILE', 'HG2%', '0.859', '0.02', 'H', '1', 1, 122, 'ILE', u'HG23', 1, '.', None]]
+        data_out = [['A', '493', 'ILE', 'HG2%', '0.859', '0.02', 'H', '1', 1, 122, 'ILE', u'HG21', 1, None, None, None],
+                    ['A', '493', 'ILE', 'HG2%', '0.859', '0.02', 'H', '1', 1, 122, 'ILE', u'HG22', 1, None, None, None],
+                    ['A', '493', 'ILE', 'HG2%', '0.859', '0.02', 'H', '1', 1, 122, 'ILE', u'HG23', 1, None, None, None]]
         self.assertEqual(self.neft.translate_cs_row(input_tags, output_tags, data), data_out)
 
     def test_get_residue_identifier(self):
@@ -844,13 +815,14 @@ class TestNEFTranslator(unittest.TestCase):
                   '_Gen_dist_constraint.Comp_index_ID_1', '_Gen_dist_constraint.Comp_ID_1',
                   '_Gen_dist_constraint.Atom_ID_1', '_Gen_dist_constraint.Entity_assembly_ID_2',
                   '_Gen_dist_constraint.Comp_index_ID_2', '_Gen_dist_constraint.Comp_ID_2',
-                  '_Gen_dist_constraint.Atom_ID_2', '_Gen_dist_constraint.Member_logic_code']
+                  '_Gen_dist_constraint.Atom_ID_2', '_Gen_dist_constraint.Member_logic_code',
+                  '_Gen_dist_constraint.Details']
         indat = ['549', '389', '.', 'A', '384', 'TYR', 'HD%', 'A', '449', 'CYS', 'HBy', '1', '.', '.', '.', '.',
                  '5.7', '.']
         outdat = [['549', '389', '.', 'A', '384', 'TYR', 'HD%', 'A', '449', 'CYS', 'HBy', '1', '.', '.', '.', '.',
-                   '5.7', '.', 1, 13, 'TYR', 'HD1', 1, 78, 'CYS', 'HB3', None],
+                   '5.7', '.', 1, 13, 'TYR', 'HD1', 1, 78, 'CYS', 'HB3', None, None],
                   ['549', '389', '.', 'A', '384', 'TYR', 'HD%', 'A', '449', 'CYS', 'HBy', '1', '.', '.', '.', '.',
-                   '5.7', '.', 1, 13, 'TYR', 'HD2', 1, 78, 'CYS', 'HB3', None]]
+                   '5.7', '.', 1, 13, 'TYR', 'HD2', 1, 78, 'CYS', 'HB3', None, None]]
         self.assertEqual(self.neft.translate_restraint_row(intag, outtag, indat), outdat)
 
     def test_nef_nmrstar(self):

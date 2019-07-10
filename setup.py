@@ -43,7 +43,7 @@ setup(
     #
     # munkres 1.0.12 last to support python 2
     # wwpdb.apps.ccmodule will need to be changed
-    install_requires=['wwpdb.utils.config', 'wwpdb.utils.align',
+    install_requires=['wwpdb.utils.config ~= 0.9.dev1', 'wwpdb.utils.align',
                       'pynmrstar', 'pytz', 'munkres==1.0.12',
                       'wwpdb.apps.ccmodule'],
     packages=find_packages(exclude=['wwpdb.utils.tests-nmr', 'mock-data']),

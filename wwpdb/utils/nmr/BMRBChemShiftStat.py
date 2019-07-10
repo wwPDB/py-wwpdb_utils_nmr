@@ -298,6 +298,22 @@ class BMRBChemShiftStat:
         except StopIteration:
             return None
 
+    def getAllAtoms(self, comp_id, excl_minor_atom=False, primary=False):
+        """ Return all atoms of a given comp_id.
+        """
+
+        if not comp_id in self.__all_comp_ids:
+            self.__appendExtraFromCcd(comp_id)
+
+        cs_stat = self.__get(comp_id)
+
+        if comp_id in self.__std_comp_ids or primary:
+            return [i['atom_id'] for i in cs_stat if\
+                    (not excl_minor_atom or (excl_minor_atom and i['primary']))]
+
+        return [i['atom_id'] for i in cs_stat if\
+                (not excl_minor_atom or not 'secondary' in i or (excl_minor_atom and i['secondary']))]
+
     def getBackBoneAtoms(self, comp_id, excl_minor_atom=False, polypeptide_like=False, polynucleotide_like=False, carbohydrates_like=False):
         """ Return backbone atoms of a given comp_id.
         """
@@ -554,7 +570,7 @@ class BMRBChemShiftStat:
         self.__detectGeminalNitrogen(list)
 
         for i in list:
-            self.extra.append(i)
+            self.extras.append(i)
 
     def __updateChemCompDict(self, comp_id):
         """ Update CCD information for a given comp_id.

@@ -2379,7 +2379,7 @@ class NmrDpUtility(object):
             if has_poly_seq and subtype1 == poly_seq:
                 ps1 = polymer_sequence
 
-                ref_cids = {s1['chain_id'] for s1 in ps1}
+                ref_chain_ids = {s1['chain_id'] for s1 in ps1}
 
                 list_len2 = len(polymer_sequence_in_loop[subtype2])
 
@@ -2390,11 +2390,11 @@ class NmrDpUtility(object):
 
                     for s2 in ps2:
 
-                        cid = s2['chain_id']
+                        chain_id = s2['chain_id']
 
-                        if not cid in ref_cids:
+                        if not chain_id in ref_chain_ids:
 
-                            err = "Invalid chain_id %s exists." % cid
+                            err = "Invalid chain_id %s exists." % chain_id
 
                             self.report.error.appendDescription('sequence_mismatch', {'file_name': file_name, 'sf_framecode': sf_framecode2, 'category': lp_category2, 'description': err})
                             self.report.setError()
@@ -2410,12 +2410,12 @@ class NmrDpUtility(object):
                                     continue
 
                                 for j in range(len(s2['seq_id'])):
-                                    sid = s2['seq_id'][j]
-                                    seq = s2['comp_id'][j]
+                                    seq_id = s2['seq_id'][j]
+                                    comp_id = s2['comp_id'][j]
 
-                                    if not sid in s1['seq_id']:
+                                    if not seq_id in s1['seq_id']:
 
-                                        err = "Invalid seq_id %s (chain_id %s) exists." % (sid, cid)
+                                        err = "Invalid seq_id %s (chain_id %s) exists." % (seq_id, chain_id)
 
                                         self.report.error.appendDescription('sequence_mismatch', {'file_name': file_name, 'sf_framecode': sf_framecode2, 'category': lp_category2, 'description': err})
                                         self.report.setError()
@@ -2424,11 +2424,11 @@ class NmrDpUtility(object):
                                             self.__lfh.write("+NmrDpUtility.__testSequenceConsistency() ++ Error  - %s\n" % err)
 
                                     else:
-                                        i = s1['seq_id'].index(sid)
+                                        i = s1['seq_id'].index(seq_id)
 
-                                        if seq != s1['comp_id'][i]:
+                                        if comp_id != s1['comp_id'][i]:
 
-                                            err = "Invalid comp_id %s vs %s (seq_id %s, chain_id %s) exists." % (seq, s1['comp_id'][i], sid, cid)
+                                            err = "Invalid comp_id %s vs %s (seq_id %s, chain_id %s) exists." % (comp_id, s1['comp_id'][i], seq_id, chain_id)
 
                                             self.report.error.appendDescription('sequence_mismatch', {'file_name': file_name, 'sf_framecode': sf_framecode2, 'category': lp_category2, 'description': err})
                                             self.report.setError()
@@ -2458,23 +2458,23 @@ class NmrDpUtility(object):
 
                         for s2 in ps2:
 
-                            cid = s2['chain_id']
+                            chain_id = s2['chain_id']
 
                             for s1 in ps1:
 
-                                if cid != s1['chain_id']:
+                                if chain_id != s1['chain_id']:
                                     continue
 
                                 for j in range(len(s2['seq_id'])):
-                                    sid = s2['seq_id'][j]
-                                    seq = s2['comp_id'][j]
+                                    seq_id = s2['seq_id'][j]
+                                    comp_id = s2['comp_id'][j]
 
-                                    if sid in s1['seq_id']:
-                                        i = s1['seq_id'].index(sid)
+                                    if seq_id in s1['seq_id']:
+                                        i = s1['seq_id'].index(seq_id)
 
-                                        if seq != s1['comp_id'][i]:
+                                        if comp_id != s1['comp_id'][i]:
 
-                                            err = "Unmatched comp_id %s vs %s (seq_id %s, chain_id %s) exists against %s saveframe." % (seq, s1['comp_id'][i], sid, cid, sf_framecode1)
+                                            err = "Unmatched comp_id %s vs %s (seq_id %s, chain_id %s) exists against %s saveframe." % (comp_id, s1['comp_id'][i], seq_id, chain_id, sf_framecode1)
 
                                             self.report.error.appendDescription('sequence_mismatch', {'file_name': file_name, 'sf_framecode': sf_framecode2, 'category': lp_category2, 'description': err})
                                             self.report.setError()
@@ -2485,23 +2485,23 @@ class NmrDpUtility(object):
                         # inverse check required for unverified sequences
                         for s1 in ps1:
 
-                            cid = s1['chain_id']
+                            chain_id = s1['chain_id']
 
                             for s2 in ps2:
 
-                                if cid != s2['chain_id]']:
+                                if chain_id != s2['chain_id]']:
                                     continue
 
                                 for i in range(len(s1['seq_id'])):
-                                    sid = s1['seq_id'][i]
-                                    seq = s1['comp_id'][i]
+                                    seq_id = s1['seq_id'][i]
+                                    comp_id = s1['comp_id'][i]
 
-                                    if sid in s2['seq_id']:
-                                        j = s2['seq_id'].index(sid)
+                                    if seq_id in s2['seq_id']:
+                                        j = s2['seq_id'].index(seq_id)
 
-                                        if seq != s2['comp_id'][j]:
+                                        if comp_id != s2['comp_id'][j]:
 
-                                            err = "Unmatched comp_id %s vs %s (seq_id %s, chain_id %s) exists against %s saveframe." % (seq, s2['comp_id'][j], sid, cid, sf_framecode2)
+                                            err = "Unmatched comp_id %s vs %s (seq_id %s, chain_id %s) exists against %s saveframe." % (comp_id, s2['comp_id'][j], seq_id, chain_id, sf_framecode2)
 
                                             self.report.error.appendDescription('sequence_mismatch', {'file_name': file_name, 'sf_framecode': sf_framecode1, 'category': lp_category1, 'description': err})
                                             self.report.setError()
@@ -2542,10 +2542,10 @@ class NmrDpUtility(object):
                 ps = polymer_sequence_in_loop[subtype][list_id]['polymer_sequence']
 
                 for s in ps:
-                    cid = s['chain_id']
+                    chain_id = s['chain_id']
 
-                    if not cid in common_poly_seq:
-                        common_poly_seq[cid] = set()
+                    if not chain_id in common_poly_seq:
+                        common_poly_seq[chain_id] = set()
 
         for subtype in polymer_sequence_in_loop.keys():
             list_len = len(polymer_sequence_in_loop[subtype])
@@ -2553,21 +2553,21 @@ class NmrDpUtility(object):
             for list_id in range(list_len):
                 ps = polymer_sequence_in_loop[subtype][list_id]['polymer_sequence']
 
-                cid = s['chain_id']
+                chain_id = s['chain_id']
 
                 for i in range(len(s['seq_id'])):
-                    sid = s['seq_id'][i]
-                    seq = s['comp_id'][i]
+                    seq_id = s['seq_id'][i]
+                    comp_id = s['comp_id'][i]
 
-                    common_poly_seq[cid].add('{:04d} {}'.format(sid, seq))
+                    common_poly_seq[chain_id].add('{:04d} {}'.format(seq_id, comp_id))
 
         asm = [] # molecular assembly of a loop
 
-        for cid in sorted(common_poly_seq.keys()):
+        for chain_id in sorted(common_poly_seq.keys()):
 
-            if len(common_poly_seq[cid]) > 0:
-                sorted_poly_seq = sorted(common_poly_seq[cid])
-                asm.append({'chain_id': cid, 'seq_id': [int(i.split(' ')[0]) for i in sorted_poly_seq], 'comp_id': [i.split(' ')[1] for i in sorted_poly_seq]})
+            if len(common_poly_seq[chain_id]) > 0:
+                sorted_poly_seq = sorted(common_poly_seq[chain_id])
+                asm.append({'chain_id': chain_id, 'seq_id': [int(i.split(' ')[0]) for i in sorted_poly_seq], 'comp_id': [i.split(' ')[1] for i in sorted_poly_seq]})
 
         if len(asm) > 0:
             input_source.setItemValue('polymer_sequence', asm)
@@ -2689,12 +2689,12 @@ class NmrDpUtility(object):
             return False
 
         for s1 in polymer_sequence:
-            cid = s1['chain_id']
+            chain_id = s1['chain_id']
 
-            if type(cid) == int:
-                _cid = str(cid)
+            if type(chain_id) == int:
+                _chain_id = str(chain_id)
             else:
-                _cid = cid
+                _chain_id = chain_id
 
             for subtype in polymer_sequence_in_loop.keys():
                 list_len = len(polymer_sequence_in_loop[subtype])
@@ -2708,16 +2708,16 @@ class NmrDpUtility(object):
 
                     for s2 in ps2:
 
-                        if cid != s2['chain_id']:
+                        if chain_id != s2['chain_id']:
                             continue
 
                         _s2 = self.__fillBlankedCompId(s1, s2)
 
-                        self.__pA.setReferenceSequence(s1['comp_id'], 'REF' + _cid)
-                        self.__pA.addTestSequence(_s2['comp_id'], _cid)
+                        self.__pA.setReferenceSequence(s1['comp_id'], 'REF' + _chain_id)
+                        self.__pA.addTestSequence(_s2['comp_id'], _chain_id)
                         self.__pA.doAlign()
-                        #self.__pA.prAlignmentConflicts(_cid)
-                        myAlign = self.__pA.getAlignment(_cid)
+                        #self.__pA.prAlignmentConflicts(_chain_id)
+                        myAlign = self.__pA.getAlignment(_chain_id)
 
                         length = len(myAlign)
 
@@ -2743,7 +2743,7 @@ class NmrDpUtility(object):
 
                         seq_align = {'list_id': polymer_sequence_in_loop[subtype][list_id]['list_id'],
                                      'sf_framecode': polymer_sequence_in_loop[subtype][list_id]['sf_framecode'],
-                                     'chain_id': cid, 'length': length, 'conflict': conflict, 'unmapped': unmapped, 'sequence_coverage': float('{:.3f}'.format(float(length - (unmapped + conflict)) / float(length))),
+                                     'chain_id': chain_id, 'length': length, 'conflict': conflict, 'unmapped': unmapped, 'sequence_coverage': float('{:.3f}'.format(float(length - (unmapped + conflict)) / float(length))),
                                      'ref_seq_id': s1['seq_id'],
                                      'ref_gauge_code': ref_gauge_code, 'ref_code': ref_code, 'mid_code': mid_code, 'test_code': test_code, 'test_gauge_code': test_gauge_code}
 
@@ -2751,7 +2751,7 @@ class NmrDpUtility(object):
 
                         for j in range(length):
                             if ref_code[j] == 'X' and test_code[j] == 'X':
-                                input_source.updateNonStandardResidueByExptlData(cid, s1['seq_id'][j], subtype)
+                                input_source.updateNonStandardResidueByExptlData(chain_id, s1['seq_id'][j], subtype)
 
                 if has_seq_align:
                     self.report.sequence_alignment.setItemValue('nmr_poly_seq_vs_' + subtype, seq_align_set)
@@ -2762,17 +2762,17 @@ class NmrDpUtility(object):
         """ Fill blanked comp ID in s2 against s1.
         """
 
-        sid = sorted(set(s1['seq_id']) | set(s2['seq_id']))
-        seq = []
+        seq_ids = sorted(set(s1['seq_id']) | set(s2['seq_id']))
+        comp_ids = []
 
-        for i in sid:
+        for i in seq_ids:
             if i in s2['seq_id']:
                 j = s2['seq_id'].index(i)
-                seq.append(s2['comp_id'][j])
+                comp_ids.append(s2['comp_id'][j])
             else:
-                seq.append('.') # blank comp id
+                comp_ids.append('.') # blank comp id
 
-        return {'chain_id': s2['chain_id'], 'seq_id': sid, 'comp_id': seq}
+        return {'chain_id': s2['chain_id'], 'seq_id': seq_ids, 'comp_id': comp_ids}
 
     def __get1LetterCode(self, comp_id):
         """ Convert comp ID to 1-letter code.
@@ -4986,6 +4986,21 @@ class NmrDpUtility(object):
                                     if self.__verbose:
                                         self.__lfh.write("+NmrDpUtility.__calculateStatsOfExptlData() ++ Warning  - %s\n" % warn)
 
+                        if content_subtype == 'chem_shift':
+                            self.__calculateStatsOfCSLoop(lp_data, ent)
+
+                        elif content_subtype == 'dist_restraint':
+                            pass
+
+                        elif content_subtype == 'dihed_restraint':
+                            pass
+
+                        elif content_subtype == 'rdc_restraint':
+                            pass
+
+                        elif content_subtype == 'spectral_peak':
+                            pass
+
                     else:
 
                         err = "Module for calculation of statistics on content subtype %s were not found." % content_subtype
@@ -5024,6 +5039,639 @@ class NmrDpUtility(object):
         input_source.setItemValue('stats_of_exptl_data', stats)
 
         return self.report.getTotalErrors() == __errors
+
+    def __calculateStatsOfCSLoop(self, lp_data, ent):
+
+        input_source = self.report.input_sources[0]
+        input_source_dic = input_source.get()
+
+        file_type = input_source_dic['file_type']
+
+        cs_item_names = self.item_names_in_cs_loop[file_type]
+        cs_chain_id_name = cs_item_names['chain_id']
+        cs_seq_id_name = cs_item_names['seq_id']
+        cs_comp_id_name = cs_item_names['comp_id']
+        cs_atom_id_name = cs_item_names['atom_id']
+        cs_value_name = cs_item_names['value']
+        cs_atom_type = cs_item_names['atom_type']
+        cs_iso_number = cs_item_names['isotope_number']
+
+        count = {}
+
+        for i in lp_data:
+
+            if i[cs_atom_type] in self.empty_value or i[cs_iso_number] in self.empty_value or cs_value_name in self.empty_value:
+                continue
+
+            data_type = str(i[cs_iso_number]) + i[cs_atom_type] + '_chem_shifts'
+
+            if data_type in count:
+                count[data_type] += 1
+            else:
+                count[data_type] = 1
+
+        if len(count) > 0:
+            ent['count'] = count
+
+        polymer_sequence = input_source_dic['polymer_sequence']
+
+        if polymer_sequence is None:
+            return
+
+        if 'sequence_coverage' in ent:
+
+            completeness = {}
+
+            # all atoms
+
+            for sc in ent['sequence_coverage']:
+
+                chain_id = sc['chain_id']
+
+                completeness['chain_id'] = chain_id
+                completeness['all_completeness'] = []
+
+                excluded_sequence = []
+
+                id = 0
+
+                h1_col = -1
+                c13_col = -1
+                n15_col = -1
+                p31_col = -1
+
+                for data_type in count:
+
+                    atom_group = {}
+                    atom_group['atom_group'] = 'all_' + data_type
+                    atom_group['number_of_assigned_shifts'] = 0
+                    atom_group['number_of_target_shifts'] = 0
+                    atom_group['completeness'] = 0.0
+
+                    if data_type.startswith('1H'):
+                        h1_col = id
+
+                    elif data_type.startswith('13C'):
+                        c13_col = id
+
+                    elif data_type.startswith('15N'):
+                        n15_col = id
+
+                    elif data_type.startswith('31P'):
+                        p31_col = id
+
+                    id += 1
+
+                    completeness['all_completeness'].append(atom_group)
+
+                for s in polymer_sequence:
+
+                    if s['chain_id'] == chain_id:
+
+                        for i in range(len(s['seq_id'])):
+                            seq_id = s['seq_id'][i]
+                            comp_id = s['comp_id'][i]
+
+                            polypeptide_like = self.__csStat.getTypeOfCompId(comp_id)[0]
+
+                            if self.__csStat.hasEnoughStat(comp_id, polypeptide_like):
+
+                                all_atoms = self.__csStat.getAllAtoms(comp_id, excl_minor_atom=True, primary=polypeptide_like)
+
+                                for a in all_atoms:
+
+                                    if a.startswith('H') and h1_col != -1:
+                                        completeness['all_completeness'][h1_col]['number_of_target_shifts'] += 1
+
+                                    elif a.startswith('C') and c13_col != -1:
+                                        completeness['all_completeness'][c13_col]['number_of_target_shifts'] += 1
+
+                                    elif a.startswith('N') and n15_col != -1:
+                                        completeness['all_completeness'][n15_col]['number_of_target_shifts'] += 1
+
+                                    elif a.startswith('P') and p31_col != -1:
+                                        completeness['all_completeness'][p31_col]['number_of_target_shifts'] += 1
+
+                                for i in lp_data:
+
+                                    if i[cs_chain_id_name] != chain_id or i[cs_seq_id_name] != seq_id or i[cs_comp_id_name] != comp_id or i[cs_value_name] in self.empty_value:
+                                        continue
+
+                                    data_type = str(i[cs_iso_number]) + i[cs_atom_type]
+
+                                    if file_type == 'nef':
+
+                                        atom_id_len = len(self.__nefT.get_nmrstar_atom(comp_id, i[cs_atom_id_name], leave_unmatched=False)[0])
+
+                                        if atom_id_len == 0:
+                                            continue
+
+                                        if data_type == '1H':
+                                            completeness['all_completeness'][h1_col]['number_of_assigned_shifts'] += atom_id_len
+
+                                        elif data_type == '13C':
+                                            completeness['all_completeness'][c13_col]['number_of_assigned_shifts'] += atom_id_len
+
+                                        elif data_type == '15N':
+                                            completeness['all_completeness'][n15_col]['number_of_assigned_shifts'] += atom_id_len
+
+                                        elif data_type == '31P':
+                                            completeness['all_completeness'][p31_col]['number_of_assigned_shifts'] += atom_id_len
+
+                                    else:
+
+                                        if data_type == '1H':
+                                            completeness['all_completeness'][h1_col]['number_of_assigned_shifts'] += 1
+
+                                        elif data_type == '13C':
+                                            completeness['all_completeness'][c13_col]['number_of_assigned_shifts'] += 1
+
+                                        elif data_type == '15N':
+                                            completeness['all_completeness'][n15_col]['number_of_assigned_shifts'] += 1
+
+                                        elif data_type == '31P':
+                                            completeness['all_completeness'][p31_col]['number_of_assigned_shifts'] += 1
+
+                            else:
+                                excluded_sequence.append({'seq_id': seq_id, 'comp_id': comp_id})
+
+                        for c in completeness['all_completeness']:
+                            if c['number_of_target_shifts'] > 0:
+                                c['completeness'] = float('{:.3f}'.format(float(c['number_of_assigned_shifts']) / float(c['number_of_target_shifts'])))
+
+                        break
+
+                if len(excluded_sequence) > 0:
+                    completeness['excluded_sequence'] = excluded_sequence
+
+            # backbone atoms (bb)
+
+            for sc in ent['sequence_coverage']:
+
+                chain_id = sc['chain_id']
+
+                completeness['bb_completeness'] = []
+
+                excluded_sequence = []
+
+                id = 0
+
+                h1_col = -1
+                c13_col = -1
+                n15_col = -1
+                p31_col = -1
+
+                for data_type in count:
+
+                    atom_group = {}
+                    atom_group['atom_group'] = 'bb_' + data_type
+                    atom_group['number_of_assigned_shifts'] = 0
+                    atom_group['number_of_target_shifts'] = 0
+                    atom_group['completeness'] = 0.0
+
+                    if data_type.startswith('1H'):
+                        h1_col = id
+
+                    elif data_type.startswith('13C'):
+                        c13_col = id
+
+                    elif data_type.startswith('15N'):
+                        n15_col = id
+
+                    elif data_type.startswith('31P'):
+                        p31_col = id
+
+                    id += 1
+
+                    completeness['bb_completeness'].append(atom_group)
+
+                for s in polymer_sequence:
+
+                    if s['chain_id'] == chain_id:
+
+                        for i in range(len(s['seq_id'])):
+                            seq_id = s['seq_id'][i]
+                            comp_id = s['comp_id'][i]
+
+                            polypeptide_like = self.__csStat.getTypeOfCompId(comp_id)[0]
+
+                            if self.__csStat.hasEnoughStat(comp_id, polypeptide_like):
+
+                                bb_atoms = self.__csStat.getBackBoneAtoms(comp_id, excl_minor_atom=True)
+
+                                for a in bb_atoms:
+
+                                    if a.startswith('H') and h1_col != -1:
+                                        completeness['bb_completeness'][h1_col]['number_of_target_shifts'] += 1
+
+                                    elif a.startswith('C') and c13_col != -1:
+                                        completeness['bb_completeness'][c13_col]['number_of_target_shifts'] += 1
+
+                                    elif a.startswith('N') and n15_col != -1:
+                                        completeness['bb_completeness'][n15_col]['number_of_target_shifts'] += 1
+
+                                    elif a.startswith('P') and p31_col != -1:
+                                        completeness['bb_completeness'][p31_col]['number_of_target_shifts'] += 1
+
+                                for i in lp_data:
+
+                                    if i[cs_chain_id_name] != chain_id or i[cs_seq_id_name] != seq_id or i[cs_comp_id_name] != comp_id or i[cs_value_name] in self.empty_value:
+                                        continue
+
+                                    data_type = str(i[cs_iso_number]) + i[cs_atom_type]
+
+                                    if file_type == 'nef':
+
+                                        atom_ids = self.__nefT.get_nmrstar_atom(comp_id, i[cs_atom_id_name], leave_unmatched=False)[0]
+
+                                        if len(atom_ids) == 0:
+                                            continue
+
+                                        for a in atom_ids:
+
+                                            if a in bb_atoms:
+
+                                                if data_type == '1H':
+                                                    completeness['bb_completeness'][h1_col]['number_of_assigned_shifts'] += 1
+
+                                                elif data_type == '13C':
+                                                    completeness['bb_completeness'][c13_col]['number_of_assigned_shifts'] += 1
+
+                                                elif data_type == '15N':
+                                                    completeness['bb_completeness'][n15_col]['number_of_assigned_shifts'] += 1
+
+                                                elif data_type == '31P':
+                                                    completeness['bb_completeness'][p31_col]['number_of_assigned_shifts'] += 1
+
+                                    elif i[cs_atom_id_name] in bb_atoms:
+
+                                        if data_type == '1H':
+                                            completeness['bb_completeness'][h1_col]['number_of_assigned_shifts'] += 1
+
+                                        elif data_type == '13C':
+                                            completeness['bb_completeness'][c13_col]['number_of_assigned_shifts'] += 1
+
+                                        elif data_type == '15N':
+                                            completeness['bb_completeness'][n15_col]['number_of_assigned_shifts'] += 1
+
+                                        elif data_type == '31P':
+                                            completeness['bb_completeness'][p31_col]['number_of_assigned_shifts'] += 1
+
+                            else:
+                                excluded_sequence.append({'seq_id': seq_id, 'comp_id': comp_id})
+
+                        for c in completeness['bb_completeness']:
+                            if c['number_of_target_shifts'] > 0:
+                                c['completeness'] = float('{:.3f}'.format(float(c['number_of_assigned_shifts']) / float(c['number_of_target_shifts'])))
+
+                        break
+
+                if len(excluded_sequence) > 0:
+                    completeness['excluded_sequence'] = excluded_sequence
+
+            # sidechain atoms (sc)
+
+            for sc in ent['sequence_coverage']:
+
+                chain_id = sc['chain_id']
+
+                completeness['sc_completeness'] = []
+
+                excluded_sequence = []
+
+                id = 0
+
+                h1_col = -1
+                c13_col = -1
+                n15_col = -1
+                p31_col = -1
+
+                for data_type in count:
+
+                    atom_group = {}
+                    atom_group['atom_group'] = 'sc_' + data_type
+                    atom_group['number_of_assigned_shifts'] = 0
+                    atom_group['number_of_target_shifts'] = 0
+                    atom_group['completeness'] = 0.0
+
+                    if data_type.startswith('1H'):
+                        h1_col = id
+
+                    elif data_type.startswith('13C'):
+                        c13_col = id
+
+                    elif data_type.startswith('15N'):
+                        n15_col = id
+
+                    elif data_type.startswith('31P'):
+                        p31_col = id
+
+                    id += 1
+
+                    completeness['sc_completeness'].append(atom_group)
+
+                for s in polymer_sequence:
+
+                    if s['chain_id'] == chain_id:
+
+                        for i in range(len(s['seq_id'])):
+                            seq_id = s['seq_id'][i]
+                            comp_id = s['comp_id'][i]
+
+                            polypeptide_like = self.__csStat.getTypeOfCompId(comp_id)[0]
+
+                            if self.__csStat.hasEnoughStat(comp_id, polypeptide_like):
+
+                                sc_atoms = self.__csStat.getSideChainAtoms(comp_id, excl_minor_atom=True)
+
+                                for a in sc_atoms:
+
+                                    if a.startswith('H') and h1_col != -1:
+                                        completeness['sc_completeness'][h1_col]['number_of_target_shifts'] += 1
+
+                                    elif a.startswith('C') and c13_col != -1:
+                                        completeness['sc_completeness'][c13_col]['number_of_target_shifts'] += 1
+
+                                    elif a.startswith('N') and n15_col != -1:
+                                        completeness['sc_completeness'][n15_col]['number_of_target_shifts'] += 1
+
+                                    elif a.startswith('P') and p31_col != -1:
+                                        completeness['sc_completeness'][p31_col]['number_of_target_shifts'] += 1
+
+                                for i in lp_data:
+
+                                    if i[cs_chain_id_name] != chain_id or i[cs_seq_id_name] != seq_id or i[cs_comp_id_name] != comp_id or i[cs_value_name] in self.empty_value:
+                                        continue
+
+                                    data_type = str(i[cs_iso_number]) + i[cs_atom_type]
+
+                                    if file_type == 'nef':
+
+                                        atom_ids = self.__nefT.get_nmrstar_atom(comp_id, i[cs_atom_id_name], leave_unmatched=False)[0]
+
+                                        if len(atom_ids) == 0:
+                                            continue
+
+                                        for a in atom_ids:
+
+                                            if a in sc_atoms:
+
+                                                if data_type == '1H':
+                                                    completeness['sc_completeness'][h1_col]['number_of_assigned_shifts'] += 1
+
+                                                elif data_type == '13C':
+                                                    completeness['sc_completeness'][c13_col]['number_of_assigned_shifts'] += 1
+
+                                                elif data_type == '15N':
+                                                    completeness['sc_completeness'][n15_col]['number_of_assigned_shifts'] += 1
+
+                                                elif data_type == '31P':
+                                                    completeness['sc_completeness'][p31_col]['number_of_assigned_shifts'] += 1
+
+                                    elif i[cs_atom_id_name] in sc_atoms:
+
+                                        if data_type == '1H':
+                                            completeness['sc_completeness'][h1_col]['number_of_assigned_shifts'] += 1
+
+                                        elif data_type == '13C':
+                                            completeness['sc_completeness'][c13_col]['number_of_assigned_shifts'] += 1
+
+                                        elif data_type == '15N':
+                                            completeness['sc_completeness'][n15_col]['number_of_assigned_shifts'] += 1
+
+                                        elif data_type == '31P':
+                                            completeness['sc_completeness'][p31_col]['number_of_assigned_shifts'] += 1
+
+                            else:
+                                excluded_sequence.append({'seq_id': seq_id, 'comp_id': comp_id})
+
+                        for c in completeness['sc_completeness']:
+                            if c['number_of_target_shifts'] > 0:
+                                c['completeness'] = float('{:.3f}'.format(float(c['number_of_assigned_shifts']) / float(c['number_of_target_shifts'])))
+
+                        break
+
+                if len(excluded_sequence) > 0:
+                    completeness['excluded_sequence'] = excluded_sequence
+
+            # methyl atoms (ch3)
+
+            for sc in ent['sequence_coverage']:
+
+                chain_id = sc['chain_id']
+
+                completeness['ch3_completeness'] = []
+
+                excluded_sequence = []
+
+                id = 0
+
+                h1_col = -1
+                c13_col = -1
+
+                for data_type in count:
+
+                    atom_group = {}
+                    atom_group['atom_group'] = 'ch3_' + data_type
+                    atom_group['number_of_assigned_shifts'] = 0
+                    atom_group['number_of_target_shifts'] = 0
+                    atom_group['completeness'] = 0.0
+
+                    if data_type.startswith('1H'):
+                        h1_col = id
+
+                    elif data_type.startswith('13C'):
+                        c13_col = id
+
+                    else:
+                        continue
+
+                    id += 1
+
+                    completeness['ch3_completeness'].append(atom_group)
+
+                for s in polymer_sequence:
+
+                    if s['chain_id'] == chain_id:
+
+                        for i in range(len(s['seq_id'])):
+                            seq_id = s['seq_id'][i]
+                            comp_id = s['comp_id'][i]
+
+                            polypeptide_like = self.__csStat.getTypeOfCompId(comp_id)[0]
+
+                            if self.__csStat.hasEnoughStat(comp_id, polypeptide_like):
+
+                                ch3_atoms = self.__csStat.getMethylAtoms(comp_id, excl_minor_atom=True, primary=polypeptide_like)
+
+                                for a in ch3_atoms:
+
+                                    if a.startswith('H') and h1_col != -1:
+                                        completeness['ch3_completeness'][h1_col]['number_of_target_shifts'] += 1
+
+                                    elif a.startswith('C') and c13_col != -1:
+                                        completeness['ch3_completeness'][c13_col]['number_of_target_shifts'] += 1
+
+                                for i in lp_data:
+
+                                    if i[cs_chain_id_name] != chain_id or i[cs_seq_id_name] != seq_id or i[cs_comp_id_name] != comp_id or i[cs_value_name] in self.empty_value:
+                                        continue
+
+                                    data_type = str(i[cs_iso_number]) + i[cs_atom_type]
+
+                                    if file_type == 'nef':
+
+                                        atom_ids = self.__nefT.get_nmrstar_atom(comp_id, i[cs_atom_id_name], leave_unmatched=False)[0]
+
+                                        if len(atom_ids) == 0:
+                                            continue
+
+                                        for a in atom_ids:
+
+                                            if a in ch3_atoms:
+
+                                                if data_type == '1H':
+                                                    completeness['ch3_completeness'][h1_col]['number_of_assigned_shifts'] += 1
+
+                                                elif data_type == '13C':
+                                                    completeness['ch3_completeness'][c13_col]['number_of_assigned_shifts'] += 1
+
+                                    elif i[cs_atom_id_name] in ch3_atoms:
+
+                                        if data_type == '1H':
+                                            completeness['ch3_completeness'][h1_col]['number_of_assigned_shifts'] += 1
+
+                                        elif data_type == '13C':
+                                            completeness['ch3_completeness'][c13_col]['number_of_assigned_shifts'] += 1
+
+                            else:
+                                excluded_sequence.append({'seq_id': seq_id, 'comp_id': comp_id})
+
+                        for c in completeness['ch3_completeness']:
+                            if c['number_of_target_shifts'] > 0:
+                                c['completeness'] = float('{:.3f}'.format(float(c['number_of_assigned_shifts']) / float(c['number_of_target_shifts'])))
+
+                        break
+
+                if len(excluded_sequence) > 0:
+                    completeness['excluded_sequence'] = excluded_sequence
+
+            # aromatic atoms (aro)
+
+            for sc in ent['sequence_coverage']:
+
+                chain_id = sc['chain_id']
+
+                completeness['aro_completeness'] = []
+
+                excluded_sequence = []
+
+                id = 0
+
+                h1_col = -1
+                c13_col = -1
+                n15_col = -1
+
+                for data_type in count:
+
+                    atom_group = {}
+                    atom_group['atom_group'] = 'aro_' + data_type
+                    atom_group['number_of_assigned_shifts'] = 0
+                    atom_group['number_of_target_shifts'] = 0
+                    atom_group['completeness'] = 0.0
+
+                    if data_type.startswith('1H'):
+                        h1_col = id
+
+                    elif data_type.startswith('13C'):
+                        c13_col = id
+
+                    elif data_type.startswith('15N'):
+                        n15_col = id
+
+                    else:
+                        continue
+
+                    id += 1
+
+                    completeness['aro_completeness'].append(atom_group)
+
+                for s in polymer_sequence:
+
+                    if s['chain_id'] == chain_id:
+
+                        for i in range(len(s['seq_id'])):
+                            seq_id = s['seq_id'][i]
+                            comp_id = s['comp_id'][i]
+
+                            polypeptide_like = self.__csStat.getTypeOfCompId(comp_id)[0]
+
+                            if self.__csStat.hasEnoughStat(comp_id, polypeptide_like):
+
+                                aro_atoms = self.__csStat.getAromaticAtoms(comp_id, excl_minor_atom=True, primary=polypeptide_like)
+
+                                for a in aro_atoms:
+
+                                    if a.startswith('H') and h1_col != -1:
+                                        completeness['aro_completeness'][h1_col]['number_of_target_shifts'] += 1
+
+                                    elif a.startswith('C') and c13_col != -1:
+                                        completeness['aro_completeness'][c13_col]['number_of_target_shifts'] += 1
+
+                                    elif a.startswith('N') and n15_col != -1:
+                                        completeness['aro_completeness'][n15_col]['number_of_target_shifts'] += 1
+
+                                for i in lp_data:
+
+                                    if i[cs_chain_id_name] != chain_id or i[cs_seq_id_name] != seq_id or i[cs_comp_id_name] != comp_id or i[cs_value_name] in self.empty_value:
+                                        continue
+
+                                    data_type = str(i[cs_iso_number]) + i[cs_atom_type]
+
+                                    if file_type == 'nef':
+
+                                        atom_ids = self.__nefT.get_nmrstar_atom(comp_id, i[cs_atom_id_name], leave_unmatched=False)[0]
+
+                                        if len(atom_ids) == 0:
+                                            continue
+
+                                        for a in atom_ids:
+
+                                            if a in aro_atoms:
+
+                                                if data_type == '1H':
+                                                    completeness['aro_completeness'][h1_col]['number_of_assigned_shifts'] += 1
+
+                                                elif data_type == '13C':
+                                                    completeness['aro_completeness'][c13_col]['number_of_assigned_shifts'] += 1
+
+                                                elif data_type == '15N':
+                                                    completeness['aro_completeness'][n15_col]['number_of_assigned_shifts'] += 1
+
+                                    elif i[cs_atom_id_name] in aro_atoms:
+
+                                        if data_type == '1H':
+                                            completeness['aro_completeness'][h1_col]['number_of_assigned_shifts'] += 1
+
+                                        elif data_type == '13C':
+                                            completeness['aro_completeness'][c13_col]['number_of_assigned_shifts'] += 1
+
+                                        elif data_type == '15N':
+                                            completeness['aro_completeness'][n15_col]['number_of_assigned_shifts'] += 1
+                            else:
+                                excluded_sequence.append({'seq_id': seq_id, 'comp_id': comp_id})
+
+                        for c in completeness['aro_completeness']:
+                            if c['number_of_target_shifts'] > 0:
+                                c['completeness'] = float('{:.3f}'.format(float(c['number_of_assigned_shifts']) / float(c['number_of_target_shifts'])))
+
+                        break
+
+                if len(excluded_sequence) > 0:
+                    completeness['excluded_sequence'] = excluded_sequence
+
+            if len(completeness) > 0:
+                ent['completeness'] = completeness
 
     def __validateCoordInputSource(self):
         """ Validate coordinate file as secondary input resource.
@@ -5488,12 +6136,12 @@ class NmrDpUtility(object):
             polymer_sequence_in_loop = input_source_dic['polymer_sequence_in_loop']
 
             for s1 in polymer_sequence:
-                cid = s1['chain_id']
+                chain_id = s1['chain_id']
 
-                if type(cid) == int:
-                    _cid = str(cid)
+                if type(chain_id) == int:
+                    _chain_id = str(chain_id)
                 else:
-                    _cid = cid
+                    _chain_id = chain_id
 
                 for subtype in polymer_sequence_in_loop.keys():
                     list_len = len(polymer_sequence_in_loop[subtype])
@@ -5507,16 +6155,16 @@ class NmrDpUtility(object):
 
                         for s2 in ps2:
 
-                            if cid != s2['chain_id']:
+                            if chain_id != s2['chain_id']:
                                 continue
 
                             _s2 = self.__fillBlankedCompId(s1, s2)
 
-                            self.__pA.setReferenceSequence(s1['comp_id'], 'REF' + _cid)
-                            self.__pA.addTestSequence(_s2['comp_id'], _cid)
+                            self.__pA.setReferenceSequence(s1['comp_id'], 'REF' + _chain_id)
+                            self.__pA.addTestSequence(_s2['comp_id'], _chain_id)
                             self.__pA.doAlign()
-                            #self.__pA.prAlignmentConflicts(_cid)
-                            myAlign = self.__pA.getAlignment(_cid)
+                            #self.__pA.prAlignmentConflicts(_chain_id)
+                            myAlign = self.__pA.getAlignment(_chain_id)
 
                             length = len(myAlign)
 
@@ -5541,7 +6189,7 @@ class NmrDpUtility(object):
                             test_gauge_code = self.__getGaugeCode(_s2['seq_id'])
 
                             seq_align = {'list_id': polymer_sequence_in_loop[subtype][list_id]['list_id'],
-                                         'chain_id': cid, 'length': length, 'conflict': conflict, 'unmapped': unmapped, 'sequence_coverage': float('{:.3f}'.format(float(length - (unmapped + conflict)) / float(length))),
+                                         'chain_id': chain_id, 'length': length, 'conflict': conflict, 'unmapped': unmapped, 'sequence_coverage': float('{:.3f}'.format(float(length - (unmapped + conflict)) / float(length))),
                                          'ref_seq_id': s1['seq_id'],
                                          'ref_gauge_code': ref_gauge_code, 'ref_code': ref_code, 'mid_code': mid_code, 'test_code': test_code, 'test_gauge_code': test_gauge_code}
 
@@ -5575,27 +6223,27 @@ class NmrDpUtility(object):
             return False
 
         for s1 in polymer_sequence:
-            cid = s1['chain_id']
+            chain_id = s1['chain_id']
 
-            if type(cid) == int:
-                _cid = str(cid)
+            if type(chain_id) == int:
+                _chain_id = str(chain_id)
             else:
-                _cid = cid
+                _chain_id = chain_id
 
             has_seq_align = False
 
             seq_align_set = []
 
             for s2 in nmr_polymer_sequence:
-                cid2 = s2['chain_id']
+                chain_id2 = s2['chain_id']
 
                 _s2 = self.__fillBlankedCompId(s1, s2)
 
-                self.__pA.setReferenceSequence(s1['comp_id'], 'REF' + _cid)
-                self.__pA.addTestSequence(_s2['comp_id'], _cid)
+                self.__pA.setReferenceSequence(s1['comp_id'], 'REF' + _chain_id)
+                self.__pA.addTestSequence(_s2['comp_id'], _chain_id)
                 self.__pA.doAlign()
-                #self.__pA.prAlignmentConflicts(_cid)
-                myAlign = self.__pA.getAlignment(_cid)
+                #self.__pA.prAlignmentConflicts(_chain_id)
+                myAlign = self.__pA.getAlignment(_chain_id)
 
                 length = len(myAlign)
 
@@ -5619,7 +6267,7 @@ class NmrDpUtility(object):
                 ref_gauge_code = self.__getGaugeCode(s1['seq_id'])
                 test_gauge_code = self.__getGaugeCode(_s2['seq_id'])
 
-                seq_align = {'ref_chain_id': cid, 'test_chain_id': cid2, 'length': length, 'conflict': conflict, 'unmapped': unmapped, 'sequence_coverage': float('{:.3f}'.format(float(length - (unmapped + conflict)) / float(length))),
+                seq_align = {'ref_chain_id': chain_id, 'test_chain_id': chain_id2, 'length': length, 'conflict': conflict, 'unmapped': unmapped, 'sequence_coverage': float('{:.3f}'.format(float(length - (unmapped + conflict)) / float(length))),
                              'ref_seq_id': s1['seq_id'], 'test_seq_id': _s2['seq_id'],
                              'ref_gauge_code': ref_gauge_code, 'ref_code': ref_code, 'mid_code': mid_code, 'test_code': test_code, 'test_gauge_code': test_gauge_code}
 
@@ -5629,27 +6277,27 @@ class NmrDpUtility(object):
                 self.report.sequence_alignment.setItemValue('model_poly_seq_vs_nmr_poly_seq', seq_align_set)
 
         for s1 in nmr_polymer_sequence:
-            cid = s1['chain_id']
+            chain_id = s1['chain_id']
 
-            if type(cid) == int:
-                _cid = str(cid)
+            if type(chain_id) == int:
+                _chain_id = str(chain_id)
             else:
-                _cid = cid
+                _chain_id = chain_id
 
             has_seq_align = False
 
             seq_align_set = []
 
             for s2 in polymer_sequence:
-                cid2 = s2['chain_id']
+                chain_id2 = s2['chain_id']
 
                 _s2 = self.__fillBlankedCompId(s1, s2)
 
-                self.__pA.setReferenceSequence(s1['comp_id'], 'REF' + _cid)
-                self.__pA.addTestSequence(_s2['comp_id'], _cid)
+                self.__pA.setReferenceSequence(s1['comp_id'], 'REF' + _chain_id)
+                self.__pA.addTestSequence(_s2['comp_id'], _chain_id)
                 self.__pA.doAlign()
-                #self.__pA.prAlignmentConflicts(_cid)
-                myAlign = self.__pA.getAlignment(_cid)
+                #self.__pA.prAlignmentConflicts(_chain_id)
+                myAlign = self.__pA.getAlignment(_chain_id)
 
                 length = len(myAlign)
 
@@ -5673,7 +6321,7 @@ class NmrDpUtility(object):
                 ref_gauge_code = self.__getGaugeCode(s1['seq_id'])
                 test_gauge_code = self.__getGaugeCode(_s2['seq_id'])
 
-                seq_align = {'ref_chain_id': cid, 'test_chain_id': cid2, 'length': length, 'conflict': conflict, 'unmapped': unmapped, 'sequence_coverage': float('{:.3f}'.format(float(length - (unmapped + conflict)) / float(length))),
+                seq_align = {'ref_chain_id': chain_id, 'test_chain_id': chain_id2, 'length': length, 'conflict': conflict, 'unmapped': unmapped, 'sequence_coverage': float('{:.3f}'.format(float(length - (unmapped + conflict)) / float(length))),
                              'ref_seq_id': s1['seq_id'], 'test_seq_id': _s2['seq_id'],
                              'ref_gauge_code': ref_gauge_code, 'ref_code': ref_code, 'mid_code': mid_code, 'test_code': test_code, 'test_gauge_code': test_gauge_code}
 
@@ -5745,14 +6393,14 @@ class NmrDpUtility(object):
             mat = []
 
             for s1 in cif_polymer_sequence:
-                cid = s1['chain_id']
+                chain_id = s1['chain_id']
 
                 cost = [0 * nmr_chains]
 
                 for s2 in nmr_polymer_sequence:
-                    cid2 = s2['chain_id']
+                    chain_id2 = s2['chain_id']
 
-                    result = next((seq_align for seq_align in seq_align_dic['model_poly_seq_vs_nmr_poly_seq'] if seq_align['ref_chain_id'] == cid and seq_align['test_chain_id'] == cid2), None)
+                    result = next((seq_align for seq_align in seq_align_dic['model_poly_seq_vs_nmr_poly_seq'] if seq_align['ref_chain_id'] == chain_id and seq_align['test_chain_id'] == chain_id2), None)
 
                     if not result is None:
                         cost[nmr_polymer_sequence.index(s2)] = result['unmapped'] + result['conflict'] - result['length']
@@ -5768,28 +6416,28 @@ class NmrDpUtility(object):
                 if mat[row][column] >= 0:
                     continue
 
-                cid = cif_polymer_sequence[row]['chain_id']
-                cid2 = nmr_polymer_sequence[column]['chain_id']
+                chain_id = cif_polymer_sequence[row]['chain_id']
+                chain_id2 = nmr_polymer_sequence[column]['chain_id']
 
-                if type(cid) == int:
-                    _cid = str(cid)
+                if type(chain_id) == int:
+                    _chain_id = str(chain_id)
                 else:
-                    _cid = cid
+                    _chain_id = chain_id
 
-                result = next(seq_align for seq_align in seq_align_dic['model_poly_seq_vs_nmr_poly_seq'] if seq_align['ref_chain_id'] == cid and seq_align['test_chain_id'] == cid2)
+                result = next(seq_align for seq_align in seq_align_dic['model_poly_seq_vs_nmr_poly_seq'] if seq_align['ref_chain_id'] == chain_id and seq_align['test_chain_id'] == chain_id2)
 
-                chain_assign = {'ref_chain_id': cid, 'test_chain_id': cid2, 'length': result['length'], 'conflict': result['conflict'], 'unmapped': result['unmapped'], 'sequence_coverage': result['sequence_coverage']}
+                chain_assign = {'ref_chain_id': chain_id, 'test_chain_id': chain_id2, 'length': result['length'], 'conflict': result['conflict'], 'unmapped': result['unmapped'], 'sequence_coverage': result['sequence_coverage']}
 
-                s1 = next(s for s in cif_polymer_sequence if s['chain_id'] == cid)
-                s2 = next(s for s in nmr_polymer_sequence if s['chain_id'] == cid2)
+                s1 = next(s for s in cif_polymer_sequence if s['chain_id'] == chain_id)
+                s2 = next(s for s in nmr_polymer_sequence if s['chain_id'] == chain_id2)
 
                 _s2 = self.__fillBlankedCompId(s1, s2)
 
-                self.__pA.setReferenceSequence(s1['comp_id'], 'REF' + _cid)
-                self.__pA.addTestSequence(_s2['comp_id'], _cid)
+                self.__pA.setReferenceSequence(s1['comp_id'], 'REF' + _chain_id)
+                self.__pA.addTestSequence(_s2['comp_id'], _chain_id)
                 self.__pA.doAlign()
-                #self.__pA.prAlignmentConflicts(_cid)
-                myAlign = self.__pA.getAlignment(_cid)
+                #self.__pA.prAlignmentConflicts(_chain_id)
+                myAlign = self.__pA.getAlignment(_chain_id)
 
                 length = len(myAlign)
 
@@ -5798,8 +6446,8 @@ class NmrDpUtility(object):
 
                 for j in range(length):
                     if ref_code[j] == 'X' and test_code[j] == 'X':
-                        nmr_input_source.updateNonStandardResidueByExptlData(cid2, _s2['seq_id'][j], 'coordinate')
-                        cif_input_source.updateNonStandardResidueByExptlData(cid, s1['seq_id'][j], 'coordinate')
+                        nmr_input_source.updateNonStandardResidueByExptlData(chain_id2, _s2['seq_id'][j], 'coordinate')
+                        cif_input_source.updateNonStandardResidueByExptlData(chain_id, s1['seq_id'][j], 'coordinate')
 
                 if result['unmapped'] > 0 or result['conflict'] > 0:
 
@@ -5818,7 +6466,7 @@ class NmrDpUtility(object):
                             unmapped.append({'ref_seq_id': s1['seq_id'][i], 'ref_comp_id': cif_comp_id})
 
                             warn = "%s's sequence (chain_id %s, seq_id %s, comp_id %s) could not mapped to anything in %s." %\
-                                   (cif_file_name, cid, s1['seq_id'][i], cif_comp_id, nmr_file_name)
+                                   (cif_file_name, chain_id, s1['seq_id'][i], cif_comp_id, nmr_file_name)
 
                             self.report.warning.appendDescription('sequence_mismatch', {'file_name': cif_file_name, 'description': warn})
                             self.report.setWarning()
@@ -5831,7 +6479,7 @@ class NmrDpUtility(object):
                                              'test_seq_id': _s2['seq_id'][i], 'test_comp_id': nmr_comp_id})
 
                             err = "Sequence alignment error between %s (chain_id %s, seq_id %s, comp_id %s) and %s (chain_id %s, seq_id %s, comp_id %s)." %\
-                                  (cif_file_name, cid, s1['seq_id'][i], cif_comp_id, nmr_file_name, cid2, _s2['seq_id'][i], nmr_comp_id)
+                                  (cif_file_name, chain_id, s1['seq_id'][i], cif_comp_id, nmr_file_name, chain_id2, _s2['seq_id'][i], nmr_comp_id)
 
                             self.report.error.appendDescription('sequence_mismatch', {'file_name': cif_file_name, 'description': err})
                             self.report.setError()
@@ -5855,14 +6503,14 @@ class NmrDpUtility(object):
             mat = []
 
             for s1 in nmr_polymer_sequence:
-                cid = s1['chain_id']
+                chain_id = s1['chain_id']
 
                 cost = [0 * cif_chains]
 
                 for s2 in cif_polymer_sequence:
-                    cid2 = s2['chain_id']
+                    chain_id2 = s2['chain_id']
 
-                    result = next((seq_align for seq_align in seq_align_dic['nmr_poly_seq_vs_model_poly_seq'] if seq_align['ref_chain_id'] == cid and seq_align['test_chain_id'] == cid2), None)
+                    result = next((seq_align for seq_align in seq_align_dic['nmr_poly_seq_vs_model_poly_seq'] if seq_align['ref_chain_id'] == chain_id and seq_align['test_chain_id'] == chain_id2), None)
 
                     if not result is None:
                         cost[cif_polymer_sequence.index(s2)] = result['unmapped'] + result['conflict'] - result['length']
@@ -5878,33 +6526,33 @@ class NmrDpUtility(object):
                 if mat[row][column] >= 0:
                     continue
 
-                cid = nmr_polymer_sequence[row]['chain_id']
-                cid2 = cif_polymer_sequence[column]['chain_id']
+                chain_id = nmr_polymer_sequence[row]['chain_id']
+                chain_id2 = cif_polymer_sequence[column]['chain_id']
 
-                if type(cid) == int:
-                    _cid = str(cid)
+                if type(chain_id) == int:
+                    _chain_id = str(chain_id)
                 else:
-                    _cid = cid
+                    _chain_id = chain_id
 
-                result = next(seq_align for seq_align in seq_align_dic['nmr_poly_seq_vs_model_poly_seq'] if seq_align['ref_chain_id'] == cid and seq_align['test_chain_id'] == cid2)
+                result = next(seq_align for seq_align in seq_align_dic['nmr_poly_seq_vs_model_poly_seq'] if seq_align['ref_chain_id'] == chain_id and seq_align['test_chain_id'] == chain_id2)
 
-                chain_assign = {'ref_chain_id': cid, 'test_chain_id': cid2, 'length': result['length'], 'conflict': result['conflict'], 'unmapped': result['unmapped'], 'sequence_coverage': result['sequence_coverage']}
+                chain_assign = {'ref_chain_id': chain_id, 'test_chain_id': chain_id2, 'length': result['length'], 'conflict': result['conflict'], 'unmapped': result['unmapped'], 'sequence_coverage': result['sequence_coverage']}
 
                 if result['unmapped'] > 0 or result['conflict'] > 0:
 
                     unmapped = []
                     conflict = []
 
-                    s1 = next(s for s in nmr_polymer_sequence if s['chain_id'] == cid)
-                    s2 = next(s for s in cif_polymer_sequence if s['chain_id'] == cid2)
+                    s1 = next(s for s in nmr_polymer_sequence if s['chain_id'] == chain_id)
+                    s2 = next(s for s in cif_polymer_sequence if s['chain_id'] == chain_id2)
 
                     _s2 = self.__fillBlankedCompId(s1, s2)
 
-                    self.__pA.setReferenceSequence(s1['comp_id'], 'REF' + _cid)
-                    self.__pA.addTestSequence(_s2['comp_id'], _cid)
+                    self.__pA.setReferenceSequence(s1['comp_id'], 'REF' + _chain_id)
+                    self.__pA.addTestSequence(_s2['comp_id'], _chain_id)
                     self.__pA.doAlign()
-                    #self.__pA.prAlignmentConflicts(_cid)
-                    myAlign = self.__pA.getAlignment(_cid)
+                    #self.__pA.prAlignmentConflicts(_chain_id)
+                    myAlign = self.__pA.getAlignment(_chain_id)
 
                     for i in range(len(myAlign)):
                         myPr = myAlign[i]
@@ -5918,7 +6566,7 @@ class NmrDpUtility(object):
                             unmapped.append({'ref_seq_id': s1['seq_id'][i], 'ref_comp_id': nmr_comp_id})
 
                             warn = "%s's sequence (chain_id %s, seq_id %s, comp_id %s) could not mapped to anything in %s." %\
-                                   (nmr_file_name, cid, s1['seq_id'][i], nmr_comp_id, cif_file_name)
+                                   (nmr_file_name, chain_id, s1['seq_id'][i], nmr_comp_id, cif_file_name)
 
                             self.report.warning.appendDescription('sequence_mismatch', {'file_name': nmr_file_name, 'description': warn})
                             self.report.setWarning()
@@ -5931,7 +6579,7 @@ class NmrDpUtility(object):
                                              'test_seq_id': _s2['seq_id'][i], 'test_comp_id': cif_comp_id})
 
                             err = "Sequence alignment error between %s (chain_id %s, seq_id %s, comp_id %s) and %s (chain_id %s, seq_id %s, comp_id %s)." %\
-                                  (nmr_file_name, cid, s1['seq_id'][i], nmr_comp_id, cif_file_name, cid2, _s2['seq_id'][i], cif_comp_id)
+                                  (nmr_file_name, chain_id, s1['seq_id'][i], nmr_comp_id, cif_file_name, chain_id2, _s2['seq_id'][i], cif_comp_id)
 
                             self.report.error.appendDescription('sequence_mismatch', {'file_name': nmr_file_name, 'description': err})
                             self.report.setError()
@@ -6766,8 +7414,8 @@ class NmrDpUtility(object):
                 if s['chain_id'] != cif_chain_id:
                     continue
 
-                beg_cif_sid = s['seq_id'][0]
-                end_cif_sid = s['seq_id'][-1]
+                beg_cif_seq_id = s['seq_id'][0]
+                end_cif_seq_id = s['seq_id'][-1]
 
                 try:
 
@@ -6777,8 +7425,8 @@ class NmrDpUtility(object):
                                                                   [{'name': 'pdbx_leaving_atom_flag', 'type': 'str', 'value': 'both'},
                                                                    {'name': 'ptnr1_label_asym_id', 'type': 'str', 'value': cif_chain_id},
                                                                    {'name': 'ptnr2_label_asym_id', 'type': 'str', 'value': cif_chain_id},
-                                                                   {'name': 'ptnr1_label_seq_id', 'type': 'int', 'value': beg_cif_sid},
-                                                                   {'name': 'ptnr2_label_seq_id', 'type': 'int', 'value': end_cif_sid},
+                                                                   {'name': 'ptnr1_label_seq_id', 'type': 'int', 'value': beg_cif_seq_id},
+                                                                   {'name': 'ptnr2_label_seq_id', 'type': 'int', 'value': end_cif_seq_id},
                                                                    ])
 
                 except Exception as e:

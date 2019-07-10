@@ -1546,7 +1546,7 @@ class NmrDpUtility(object):
         """ Dump current NMR data processing report.
         """
 
-        if self.report_prev != None:
+        if self.report_prev != None and not self.report_prev.warning.get() is None:
             self.report.setCorrectedWarning(self.report_prev)
 
         return self.report.writeJson(self.__logPath)
@@ -1655,7 +1655,8 @@ class NmrDpUtility(object):
 
                 if len(message['error']) > 0:
                     for err_message in message['error']:
-                        err += ' ' + err_message
+                        if not 'No such file or directory' in err_message:
+                            err += ' ' + err_message
 
                 self.report.error.appendDescription('format_issue', {'file_name': file_name, 'description': err})
                 self.report.setError()
@@ -1677,7 +1678,8 @@ class NmrDpUtility(object):
 
             if len(message['error']) > 0:
                 for err_message in message['error']:
-                    err += ' ' + err_message
+                    if not 'No such file or directory' in err_message:
+                        err += ' ' + err_message
 
             self.report.error.appendDescription('format_issue', {'file_name': file_name, 'description': err})
             self.report.setError()
@@ -6701,7 +6703,7 @@ class NmrDpUtility(object):
                 if not polymer_sequence is None:
                     norm_star_data.add_saveframe(poly_seq_sf_data)
 
-            elif content_subtype in input_source_dic['content_subtype']:
+            elif (not input_source_dic['content_subtype'] is None) and content_subtype in input_source_dic['content_subtype']:
 
                 sf_list = self.__star_data.get_saveframes_by_category(sf_category)
 
@@ -6884,6 +6886,9 @@ class NmrDpUtility(object):
         file_name = input_source_dic['file_name']
 
         content_subtype = 'dihed_restraint'
+
+        if input_source_dic['content_subtype'] is None:
+            return True
 
         if not content_subtype in input_source_dic['content_subtype'].keys():
             return True
@@ -9228,6 +9233,9 @@ class NmrDpUtility(object):
 
             return False
 
+        if self.__star_data is None:
+            return False
+
         self.__star_data.write_to_file(self.__dstPath)
 
         return not self.report.isError()
@@ -9265,7 +9273,8 @@ class NmrDpUtility(object):
             except Exception as e:
 
                 err = "%s is invalid %s file." % (file_name, self.readable_file_type[file_type])
-                err += ' ' + str(e)
+                if not 'No such file or directory' in str(e):
+                    err += ' ' + str(e)
 
                 self.report.error.appendDescription('format_issue', {'file_name': file_name, 'description': err})
                 self.report.setError()
@@ -9289,7 +9298,8 @@ class NmrDpUtility(object):
 
                 if len(message['error']) > 0:
                     for err_message in message['error']:
-                        err += ' ' + err_message
+                        if not 'No such file or directory' in err_message:
+                            err += ' ' + err_message
 
                 self.report.error.appendDescription('format_issue', {'file_name': file_name, 'description': err})
                 self.report.setError()

@@ -2164,7 +2164,7 @@ class NEFTranslator(object):
 
             elif leave_unmatched:
                 atom_list.append(nef_atom)
-                details = '%s is an invalid atom ID of comp ID %s.' % (nef_atom, comp_id)
+                details = '%s is invalid atom name of residue %s.' % (nef_atom, comp_id)
 
         return atom_list, ambiguity_code, details
 

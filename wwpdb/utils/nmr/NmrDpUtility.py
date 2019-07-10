@@ -4192,7 +4192,7 @@ class NmrDpUtility(object):
                     else:
 
                         if file_type == 'nef':
-                            _atom_id = self.__nefT.get_nmrstar_atom(comp_id, atom_id, leave_unmatched=False)[0]
+                            _atom_id, ambig_code, details = self.__nefT.get_nmrstar_atom(comp_id, atom_id, leave_unmatched=True)
 
                             if len(_atom_id) == 0:
                                 continue
@@ -4200,6 +4200,9 @@ class NmrDpUtility(object):
                             if len(_atom_id) == 1 and atom_id == _atom_id[0]:
                                 atom_id_ = atom_id
                                 atom_name = atom_id
+
+                                if not details is None:
+                                    atom_name += ', ' + details.rstrip('.')
 
                             else:
                                 atom_name = atom_id + ' (e.g. '
@@ -6159,7 +6162,7 @@ class NmrDpUtility(object):
                                 continue
 
                             if file_type == 'nef':
-                                _atom_id = self.__nefT.get_nmrstar_atom(comp_id, atom_id, leave_unmatched=False)[0]
+                                _atom_id, ambig_code, details = self.__nefT.get_nmrstar_atom(comp_id, atom_id, leave_unmatched=True)
 
                                 if len(_atom_id) == 0:
                                     continue
@@ -6167,6 +6170,9 @@ class NmrDpUtility(object):
                                 if len(_atom_id) == 1 and atom_id == _atom_id[0]:
                                     atom_id_ = atom_id
                                     atom_name = atom_id
+
+                                    if not details is None:
+                                        atom_name += ', ' + details.rstrip('.')
 
                                 else:
                                     atom_name = atom_id + ' (e.g. '
@@ -6191,7 +6197,7 @@ class NmrDpUtility(object):
                                 if not index_tag is None:
                                     idx_msg = "[Check row of %s %s] " % (index_tag, i[index_tag])
 
-                                err = "%sThere is an invalid atom (%s %s, %s %s, %s %s, %s %s), not incorporated in the atomic coordinate." %\
+                                err = "%sThere is an invalid atom (%s %s, %s %s, %s %s, %s %s), which is not incorporated in the atomic coordinate." %\
                                       (idx_msg, chain_id_names[j], chain_id, seq_id_names[j], seq_id, comp_id_names[j], comp_id, atom_id_names[j], atom_name)
 
                                 self.report.error.appendDescription('invalid_atom_nomenclature', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})

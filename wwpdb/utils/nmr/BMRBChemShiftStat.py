@@ -1,6 +1,6 @@
 ##
 # File: BMRBChemShiftStat.py
-# Date: 05-Jul-2019
+# Date: 10-Jul-2019
 #
 # Updates:
 ##
@@ -222,7 +222,7 @@ class BMRBChemShiftStat:
         """
 
         if not comp_id in self.__all_comp_ids:
-            self.appendExtraFromCcd(comp_id)
+            self.__appendExtraFromCcd(comp_id)
 
         if comp_id in self.__aa_comp_ids:
 
@@ -259,7 +259,7 @@ class BMRBChemShiftStat:
         """
 
         if not comp_id in self.__all_comp_ids:
-            self.appendExtraFromCcd(comp_id)
+            self.__appendExtraFromCcd(comp_id)
 
         try:
 
@@ -280,7 +280,7 @@ class BMRBChemShiftStat:
         """
 
         if not comp_id in self.__all_comp_ids:
-            self.appendExtraFromCcd(comp_id)
+            self.__appendExtraFromCcd(comp_id)
 
         cs_stat = self.__get(comp_id)
 
@@ -303,7 +303,7 @@ class BMRBChemShiftStat:
         """
 
         if not comp_id in self.__all_comp_ids:
-            self.appendExtraFromCcd(comp_id)
+            self.__appendExtraFromCcd(comp_id)
 
         if polypeptide_like == False and polynucleotide_like == False and carbohydrates_like == False:
             polypeptide_like, polynucleotide_like, carbohydrates_like = self.getTypeOfCompId(comp_id)
@@ -341,7 +341,7 @@ class BMRBChemShiftStat:
         """
 
         if not comp_id in self.__all_comp_ids:
-            self.appendExtraFromCcd(comp_id)
+            self.__appendExtraFromCcd(comp_id)
 
         cs_stat = self.__get(comp_id)
 
@@ -357,7 +357,7 @@ class BMRBChemShiftStat:
         """
 
         if not comp_id in self.__all_comp_ids:
-            self.appendExtraFromCcd(comp_id)
+            self.__appendExtraFromCcd(comp_id)
 
         cs_stat = self.__get(comp_id)
 
@@ -373,7 +373,7 @@ class BMRBChemShiftStat:
         """
 
         if not comp_id in self.__all_comp_ids:
-            self.appendExtraFromCcd(comp_id)
+            self.__appendExtraFromCcd(comp_id)
 
         if polypeptide_like == False and polynucleotide_like == False and carbohydrates_like == False:
             polypeptide_like, polynucleotide_like, carbohydrates_like = self.getTypeOfCompId(comp_id)
@@ -519,7 +519,7 @@ class BMRBChemShiftStat:
 
         return list
 
-    def appendExtraFromCcd(self, comp_id):
+    def __appendExtraFromCcd(self, comp_id):
         """ Append atom list as extra residue for a given comp_id.
         """
 
@@ -528,14 +528,14 @@ class BMRBChemShiftStat:
 
         list = []
 
-        for i in self.__last_chem_comp_atoms:
+        for a in self.__last_chem_comp_atoms:
 
-            if i[self.__cca_leaving_atom_flag] == 'Y' or not i[self.__cca_type_symbol] in ['H', 'C', 'N', 'P']:
+            if a[self.__cca_leaving_atom_flag] == 'Y' or not a[self.__cca_type_symbol] in ['H', 'C', 'N', 'P']:
                 continue
 
             _row = {}
             _row['comp_id'] = comp_id
-            _row['atom_id'] = _atom_id + str(i)
+            _row['atom_id'] = a[self.__cca_atom_id]
             _row['desc'] = 'isolated'
             _row['primary'] = False
             _row['norm_freq'] = None

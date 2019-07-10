@@ -1,6 +1,6 @@
 ##
 # File: NmrDpUtility.py
-# Date: 05-Jul-2019
+# Date: 10-Jul-2019
 #
 # Updates:
 ##
@@ -70,8 +70,7 @@ class NmrDpUtility(object):
                            self.__testDataConsistencyInAuxLoop,
                            self.__testSfTagConsistency,
                            self.__validateCSValue,
-                           self.__testCSValueConsistencyInPkLoop,
-                           self.__calculateStatsOfExptlData
+                           self.__testCSValueConsistencyInPkLoop
                            ]
 
         # validation tasks for coordinate file only
@@ -86,7 +85,8 @@ class NmrDpUtility(object):
 
         # cross validation tasks
         __crossCheckTasks = [self.__assignCoordPolymerSequence,
-                             self.__testCoordAtomIdConsistency
+                             self.__testCoordAtomIdConsistency,
+                             self.__calculateStatsOfExptlData
                              ]
 
         # nmr-*-consistency-check tasks
@@ -4997,12 +4997,12 @@ class NmrDpUtility(object):
                 has_warn = self.report.warning.exists(file_name, sf_framecode)
 
                 if has_err:
-                    status = 'ERROR'
+                    status = 'Error'
                     ent['error_descriptions'] = self.report.error.getCombinedDescriptions(file_name, sf_framecode)
                     if has_warn:
                         ent['warning_descriptions'] = self.report.warning.getCombinedDescriptions(file_name, sf_framecode)
                 elif has_warn:
-                    status = 'WARNING'
+                    status = 'Warning'
                     ent['warning_descriptions'] = self.report.warning.getCombinedDescriptions(file_name, sf_framecode)
                 else:
                     status = 'OK'

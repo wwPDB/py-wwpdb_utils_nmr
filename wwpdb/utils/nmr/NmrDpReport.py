@@ -28,7 +28,7 @@ class NmrDpReport:
                          'corrected_warning': None
                          }
 
-        self.status_codes = ('OK', 'ERROR', 'WARNING')
+        self.status_codes = ('OK', 'Error', 'Warning')
 
         self.input_sources = [NmrDpReportInputSource()]
         self.sequence_alignment = NmrDpReportSequenceAlignment()
@@ -44,7 +44,7 @@ class NmrDpReport:
         return self.__report['information']['status'] == 'OK'
 
     def isError(self):
-        return self.__report['information']['status'] == 'ERROR'
+        return self.__report['information']['status'] == 'Error'
 
     def isDiamagnetic(self):
         return self.__report['information']['diamagnetic']
@@ -100,7 +100,7 @@ class NmrDpReport:
         if not self.__immutable:
             self.__report['error'] = self.error.get()
 
-            self.__setStatus('ERROR')
+            self.__setStatus('Error')
 
         else:
             logging.warning('+NmrDpReport.setError() ++ Warning  - No effects on NMR data processing report because the report is immutable')
@@ -112,7 +112,7 @@ class NmrDpReport:
             self.__report['warning'] = self.warning.get()
 
             if not self.isError():
-                self.__setStatus('WARNING')
+                self.__setStatus('Warning')
 
         else:
             logging.warning('+NmrDpReport.setWarning() ++ Warning  - No effects on NMR data processing report because the report is immutable')
@@ -143,7 +143,7 @@ class NmrDpReport:
 
     def getJson(self, indent_spaces=None):
         """ Return JSON content of NMR data processing report.
-            @return: JSON content of NMR data processsing report
+            @return: JSON content of NMR data processing report
         """
 
         if self.get() is None:

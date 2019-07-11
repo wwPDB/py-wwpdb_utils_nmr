@@ -4,7 +4,6 @@
 #
 # Updates:
 ##
-from __builtin__ import False
 """ Wrapper class for data processing for NMR unified data.
 """
 import sys
@@ -17,6 +16,7 @@ import itertools
 import copy
 import collections
 import re
+
 from munkres import Munkres
 
 from wwpdb.utils.nmr.NEFTranslator.NEFTranslator import NEFTranslator
@@ -4999,7 +4999,7 @@ class NmrDpUtility(object):
                             self.__calculateStatsOfDihedralRestraint(lp_data, ent)
 
                         elif content_subtype == 'rdc_restraint':
-                            pass
+                            self.__calculateStatsOfRdcRestraint(lp_data, ent)
 
                         elif content_subtype == 'spectral_peak':
                             pass
@@ -6018,6 +6018,105 @@ class NmrDpUtility(object):
 
         if len(count) > 0:
             ent['number_of_constraints'] = count
+
+    def __calculateStatsOfRdcRestraint(self, lp_data, ent):
+        """ Calculate statistics of RDC restraints.
+        """
+
+        input_source = self.report.input_sources[0]
+        input_source_dic = input_source.get()
+
+        file_type = input_source_dic['file_type']
+
+        item_names = self.potential_items[file_type]['rdc_restraint']
+        target_value_name = item_names['target_value']
+        lower_limit_name = item_names['lower_limit']
+        upper_limit_name = item_names['upper_limit']
+        lower_linear_limit_name = item_names['lower_linear_limit']
+        upper_linear_limit_name = item_names['upper_linear_limit']
+
+        rdc_max = 0.0
+        rdc_min = 0.0
+
+        rdc_max_ = -100.0
+        rdc_min_ = 100.0
+
+        for i in lp_data:
+            target_value = i[target_value_name]
+
+            if target_value is None:
+
+                if not i[lower_limit_name] is None and not i[upper_limit_name] is None:
+                    target_value = (i[lower_limit_name] + i[upper_limit_name]) / 2.0
+
+                elif not i[lower_linear_limit_name] is None and not i[upper_linear_limit_name] is None:
+                    target_value = (i[lower_linear_limit_name] + i[upper_linear_limit_name]) / 2.0
+
+                else:
+                    continue
+
+            if target_value > rdc_max:
+                rdc_max = target_value
+
+            elif target_value < rdc_min:
+                rdc_min = target_value
+
+            if target_value > rdc_max_:
+                rdc_max_ = target_value
+
+            if target_value < rdc_min_:
+                rdc_min_ = target_value
+
+        if rdc_max == rdc_min:
+            return
+
+        target_scale = (rdc_max - rdc_min) / 16.0
+
+        scale = 1.0
+
+        while scale < target_scale:
+            scale *= 2.0
+
+        while scale > target_scale:
+            scale /= 2.0
+
+        rdc_value = []
+        rdc_count = []
+
+        v = 0.0
+        while v > rdc_min:
+            v -= scale
+
+        v -= scale
+
+        while v - scale < rdc_max:
+
+            count = 0
+
+            for i in lp_data:
+                target_value = i[target_value_name]
+
+                if target_value is None:
+
+                    if not i[lower_limit_name] is None and not i[upper_limit_name] is None:
+                        target_value = (i[lower_limit_name] + i[upper_limit_name]) / 2.0
+
+                    elif not i[lower_linear_limit_name] is None and not i[upper_linear_limit_name] is None:
+                        target_value = (i[lower_linear_limit_name] + i[upper_linear_limit_name]) / 2.0
+
+                    else:
+                        continue
+
+                if target_value >= v and target_value < v + scale:
+                    count += 1
+
+            rdc_value.append(v)
+            rdc_count.append(count)
+
+            v += scale
+
+        ent['histogram_of_rdc_values'] = {'rdc_value': rdc_value, 'rdc_count': rdc_count}
+        ent['range_of_rdc_values'] = {'max_value': rdc_max_, 'min_value': rdc_min_}
 
     def __validateCoordInputSource(self):
         """ Validate coordinate file as secondary input resource.

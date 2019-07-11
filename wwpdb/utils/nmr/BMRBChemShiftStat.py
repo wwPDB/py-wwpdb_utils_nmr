@@ -14,6 +14,7 @@ import re
 import copy
 import pickle
 import collections
+
 from wwpdb.utils.config.ConfigInfo import ConfigInfo, getSiteId
 from wwpdb.apps.ccmodule.io.ChemCompIo import ChemCompReader
 

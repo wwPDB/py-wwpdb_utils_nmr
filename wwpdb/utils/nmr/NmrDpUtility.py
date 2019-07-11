@@ -4996,7 +4996,7 @@ class NmrDpUtility(object):
                             self.__calculateStatsOfDistanceRestraint(lp_data, ent)
 
                         elif content_subtype == 'dihed_restraint':
-                            pass
+                            self.__calculateStatsOfDihedralRestraint(lp_data, ent)
 
                         elif content_subtype == 'rdc_restraint':
                             pass
@@ -5068,7 +5068,7 @@ class NmrDpUtility(object):
             if i[cs_atom_type] in self.empty_value or i[cs_iso_number] in self.empty_value or cs_value_name in self.empty_value:
                 continue
 
-            data_type = str(i[cs_iso_number]) + i[cs_atom_type] + '_assigned_chemical_shifts'
+            data_type = str(i[cs_iso_number]) + i[cs_atom_type].lower() + '_assigned_chemical_shifts'
 
             if data_type in count:
                 count[data_type] += 1
@@ -5115,16 +5115,16 @@ class NmrDpUtility(object):
                     atom_group['number_of_target_shifts'] = 0
                     atom_group['completeness'] = 0.0
 
-                    if data_type.startswith('1H'):
+                    if data_type.startswith('1h'):
                         h1_col = id
 
-                    elif data_type.startswith('13C'):
+                    elif data_type.startswith('13c'):
                         c13_col = id
 
-                    elif data_type.startswith('15N'):
+                    elif data_type.startswith('15n'):
                         n15_col = id
 
-                    elif data_type.startswith('31P'):
+                    elif data_type.startswith('31p'):
                         p31_col = id
 
                     id += 1
@@ -5245,16 +5245,16 @@ class NmrDpUtility(object):
                     atom_group['number_of_target_shifts'] = 0
                     atom_group['completeness'] = 0.0
 
-                    if data_type.startswith('1H'):
+                    if data_type.startswith('1h'):
                         h1_col = id
 
-                    elif data_type.startswith('13C'):
+                    elif data_type.startswith('13c'):
                         c13_col = id
 
-                    elif data_type.startswith('15N'):
+                    elif data_type.startswith('15n'):
                         n15_col = id
 
-                    elif data_type.startswith('31P'):
+                    elif data_type.startswith('31p'):
                         p31_col = id
 
                     id += 1
@@ -5363,16 +5363,16 @@ class NmrDpUtility(object):
                     atom_group['number_of_target_shifts'] = 0
                     atom_group['completeness'] = 0.0
 
-                    if data_type.startswith('1H'):
+                    if data_type.startswith('1h'):
                         h1_col = id
 
-                    elif data_type.startswith('13C'):
+                    elif data_type.startswith('13c'):
                         c13_col = id
 
-                    elif data_type.startswith('15N'):
+                    elif data_type.startswith('15n'):
                         n15_col = id
 
-                    elif data_type.startswith('31P'):
+                    elif data_type.startswith('31p'):
                         p31_col = id
 
                     id += 1
@@ -5479,10 +5479,10 @@ class NmrDpUtility(object):
                     atom_group['number_of_target_shifts'] = 0
                     atom_group['completeness'] = 0.0
 
-                    if data_type.startswith('1H'):
+                    if data_type.startswith('1h'):
                         h1_col = id
 
-                    elif data_type.startswith('13C'):
+                    elif data_type.startswith('13c'):
                         c13_col = id
 
                     else:
@@ -5575,13 +5575,13 @@ class NmrDpUtility(object):
                     atom_group['number_of_target_shifts'] = 0
                     atom_group['completeness'] = 0.0
 
-                    if data_type.startswith('1H'):
+                    if data_type.startswith('1h'):
                         h1_col = id
 
-                    elif data_type.startswith('13C'):
+                    elif data_type.startswith('13c'):
                         c13_col = id
 
-                    elif data_type.startswith('15N'):
+                    elif data_type.startswith('15n'):
                         n15_col = id
 
                     else:
@@ -5698,7 +5698,6 @@ class NmrDpUtility(object):
         comb_id_set = set()
 
         for i in lp_data:
-
             comb_id = i[comb_id_name]
             chain_id_1 = i[chain_id_1_name]
             chain_id_2 = i[chain_id_2_name]
@@ -5859,6 +5858,166 @@ class NmrDpUtility(object):
             ent['number_of_constraints'] = count
 
             ent['ambiguous_constraint_sets'] = len(comb_id_set)
+
+    def __calculateStatsOfDihedralRestraint(self, lp_data, ent):
+        """ Calculate statistics of dihedral angle restraints.
+        """
+
+        input_source = self.report.input_sources[0]
+        input_source_dic = input_source.get()
+
+        file_type = input_source_dic['file_type']
+
+        item_names = self.item_names_in_dh_loop[file_type]
+        chain_id_1_name = item_names['chain_id_1']
+        chain_id_2_name = item_names['chain_id_2']
+        chain_id_3_name = item_names['chain_id_3']
+        chain_id_4_name = item_names['chain_id_4']
+        seq_id_1_name = item_names['seq_id_1']
+        seq_id_2_name = item_names['seq_id_2']
+        seq_id_3_name = item_names['seq_id_3']
+        seq_id_4_name = item_names['seq_id_4']
+        comp_id_1_name = item_names['comp_id_1']
+        atom_id_1_name = item_names['atom_id_1']
+        atom_id_2_name = item_names['atom_id_2']
+        atom_id_3_name = item_names['atom_id_3']
+        atom_id_4_name = item_names['atom_id_4']
+        angle_type_name = item_names['angle_type']
+
+        dihed_atom_ids = ['N', 'CA', 'C']
+
+        chi1_atom_id_4_pat = re.compile(r'^[COS]G1?$')
+        chi2_atom_id_3_pat = re.compile(r'^CG1?$')
+        chi2_atom_id_4_pat = re.compile(r'^[CNOS]D1?$')
+        chi3_atom_id_3_pat = re.compile(r'^[CS]D$')
+        chi3_atom_id_4_pat = re.compile(r'^[CNO]E1?$')
+        chi4_atom_id_3_pat = re.compile(r'^[CN]E$')
+        chi4_atom_id_4_pat = re.compile(r'^[CN]Z$')
+
+        count = {}
+
+        for i in lp_data:
+            chain_id_1 = i[chain_id_1_name]
+            chain_id_2 = i[chain_id_2_name]
+            chain_id_3 = i[chain_id_3_name]
+            chain_id_4 = i[chain_id_4_name]
+            seq_ids = []
+            seq_ids.append(i[seq_id_1_name])
+            seq_ids.append(i[seq_id_2_name])
+            seq_ids.append(i[seq_id_3_name])
+            seq_ids.append(i[seq_id_4_name])
+            comp_id = i[comp_id_1_name]
+            atom_ids = []
+            atom_ids.append(i[atom_id_1_name])
+            atom_ids.append(i[atom_id_2_name])
+            atom_ids.append(i[atom_id_3_name])
+            atom_ids.append(i[atom_id_4_name])
+            data_type = i[angle_type_name]
+
+            if data_type in self.empty_value:
+
+                data_type = 'unknown'
+
+                if chain_id_1 == chain_id_2 and chain_id_2 == chain_id_3 and chain_id_3 == chain_id_4:
+
+                    polypeptide_like = self.__csStat.getTypeOfCompId(comp_id)[0]
+
+                    if polypeptide_like:
+
+                        seq_id_common = collections.Counter(seq_ids).most_common()
+
+                        if len(seq_id_common) == 2:
+
+                            # phi or psi
+
+                            if seq_id_common[0][1] == 3 and seq_id_common[1][1] == 1:
+
+                                # phi
+
+                                seq_id_prev = seq_id_common[1][0]
+
+                                if seq_id_common[0][0] == seq_id_prev + 1:
+
+                                    j = 0
+                                    if seq_ids[j] == seq_id_prev and atom_ids[j] == 'C':
+                                        atom_ids.pop(j)
+                                        if atom_ids == dihed_atom_ids:
+                                            data_type = 'phi'
+
+                                # psi
+
+                                seq_id_next = seq_id_common[1][0]
+
+                                if seq_id_common[0][0] == seq_id_next - 1:
+
+                                    j = 3
+                                    if seq_ids[j] == seq_id_next and atom_ids[j] == 'N':
+                                        atom_ids.pop(j)
+                                        if atom_ids == dihed_atom_ids:
+                                            data_type = 'psi'
+
+                            # omega
+
+                            if atom_ids[0] == 'O' and atom_ids[1] == 'C' and atom_ids[2] == 'N' and (atom_ids[3] == 'H' or atom_ids[3] == 'CA') and\
+                               seq_ids[0] == seq_ids[1] and seq_ids[1] + 1 == seq_ids[2] and seq_ids[2] == seq_ids[3]:
+                                data_type = 'omega'
+
+                        elif len(seq_id_common) == 1:
+
+                            # chi1
+
+                            if atom_ids[0] == 'N' and atom_ids[1] == 'CA' and atom_ids[2] == 'CB' and chi1_atom_id_4_pat.match(atom_ids[3]):
+                                #if (atom_ids[3] == 'CG' and comp_id in ['ARG', 'ASN', 'ASP', 'GLN', 'GLU', 'HIS', 'LEU', 'LYS', 'MET', 'PHE', 'PRO', 'TRP', 'TYR']) or\
+                                #   (atom_ids[3] == 'CG1' and comp_id in ['ILE', 'VAL']) or\
+                                #   (atom_ids[3] == 'OG' and comp_id == 'SER') or\
+                                #   (atom_ids[3] == 'OG1' and comp_id == 'THR') or\
+                                #   (atom_ids[3] == 'SG' and comp_id == 'CYS'):
+                                data_type = 'chi1'
+
+                            # chi2
+
+                            if atom_ids[0] == 'CA' and atom_ids[1] == 'CB' and chi2_atom_id_3_pat(atom_ids[2]) and chi2_atom_id_4_pat(atom_ids[3]):
+                                #if (atom_ids[2] == 'CG' and atom_ids[3] == 'CD' and comp_id in ['ARG', 'GLN', 'GLU', 'LYS', 'PRO']) or\
+                                #   (atom_ids[2] == 'CG' and atom_ids[3] == 'CD1' and comp_id in ['LEU', 'PHE', 'TRP', 'TYR']) or\
+                                #   (atom_ids[2] == 'CG' and atom_ids[3] == 'ND1' and comp_id == 'HIS') or\
+                                #   (atom_ids[2] == 'CG' and atom_ids[3] == 'OD1' and comp_id in ['ASN', 'ASP']) or\
+                                #   (atom_ids[2] == 'CG' and atom_ids[3] == 'SD' and comp_id == 'MET') or\
+                                #   (atom_ids[2] == 'CG1' and atom_ids[3] == 'CD' and comp_id == 'ILE'):
+                                data_type = 'chi2'
+
+                            # chi3
+
+                            if atom_ids[0] == 'CB' and atom_ids[1] == 'CG' and chi3_atom_id_3_pat(atom_ids[2]) and chi3_atom_id_4_pat(atom_ids[3]):
+                                #if (atom_ids[2] == 'CD' and atom_ids[3] == 'CE' and comp_id == 'LYS') or\
+                                #   (atom_ids[2] == 'CD' and atom_ids[3] == 'NE' and comp_id == 'ARG') or\
+                                #   (atom_ids[2] == 'CD' and atom_ids[3] == 'OE1' and comp_id in ['GLN', 'GLU']) or\
+                                #   (atom_ids[2] == 'SD' and atom_ids[3] == 'CE' and comp_id == 'MET'):
+                                data_type = 'chi3'
+
+                            # chi4
+
+                            if atom_ids[0] == 'CG' and atom_ids[1] == 'CD' and chi4_atom_id_3_pat(atom_ids[2]) and chi4_atom_id_4_par(atom_ids[3]):
+                                #if (atom_ids[2] == 'NE' and atom_ids[3] == 'CZ' and comp_id == 'ARG') or\
+                                #  (atom_ids[2] == 'CE' and atom_ids[3] == 'NZ' and comp_id == 'LYS'):
+                                data_type = 'chi4'
+
+                            # chi5
+
+                            if atom_ids == ['CD', 'NE', 'CZ', 'NH1']: # and comp_id == 'ARG':
+                                data_type = 'chi5'
+
+            else:
+                data_type = data_type.lower()
+
+            data_type += '_angle_constraints'
+
+            if data_type in count:
+                count[data_type] += 1
+            else:
+                count[data_type] = 1
+
+        if len(count) > 0:
+            ent['number_of_constraints'] = count
 
     def __validateCoordInputSource(self):
         """ Validate coordinate file as secondary input resource.

@@ -2868,10 +2868,10 @@ class NmrDpUtility(object):
 
                     if file_type == 'nef':
                         pairs = self.__nefT.get_nef_comp_atom_pair(sf_data, lp_category,
-                                                                           allow_empty=(content_subtype == 'spectral_peak'))[0]
+                                                                   allow_empty=(content_subtype == 'spectral_peak'))[0]
                     else:
                         pairs = self.__nefT.get_star_comp_atom_pair(sf_data, lp_category,
-                                                                            allow_empty=(content_subtype == 'spectral_peak'))[0]
+                                                                    allow_empty=(content_subtype == 'spectral_peak'))[0]
 
                     for pair in pairs:
                         comp_id = pair['comp_id']
@@ -3419,7 +3419,7 @@ class NmrDpUtility(object):
                 try:
 
                     lp_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, allowed_tags, disallowed_tags,
-                                                             inc_idx_test=True, enforce_non_zero=True, enforce_sign=True, enforce_enum=True)[0]
+                                                     inc_idx_test=True, enforce_non_zero=True, enforce_sign=True, enforce_enum=True)[0]
 
                     self.__lp_data[content_subtype].append({'sf_framecode': sf_framecode, 'data': lp_data})
 
@@ -5002,7 +5002,19 @@ class NmrDpUtility(object):
                             self.__calculateStatsOfRdcRestraint(lp_data, ent)
 
                         elif content_subtype == 'spectral_peak':
-                            pass
+
+                            try:
+
+                                _num_dim = sf_data.get_tag(self.num_dim_items[file_type])[0]
+                                num_dim = int(_num_dim)
+
+                                if not num_dim in range(1, self.lim_num_dim):
+                                    raise ValueError()
+
+                            except ValueError: # raised error already at __testIndexConsistency()
+                                continue
+
+                            self.__calculateStatsOfSpectralPeak(num_dim, lp_data, ent)
 
                     else:
 
@@ -6117,6 +6129,60 @@ class NmrDpUtility(object):
 
         ent['histogram_of_rdc_values'] = {'rdc_value': rdc_value, 'rdc_count': rdc_count}
         ent['range_of_rdc_values'] = {'max_value': rdc_max_, 'min_value': rdc_min_}
+
+    def __calculateStatsOfSpectralPeak(self, num_dim, lp_data, ent):
+        """ Calculate statistics of spectral peaks.
+        """
+
+        input_source = self.report.input_sources[0]
+        input_source_dic = input_source.get()
+
+        file_type = input_source_dic['file_type']
+
+        max_dim = num_dim + 1
+
+        item_names = []
+        for dim in range(1, max_dim):
+            _d = {}
+            for k, v in self.item_names_in_pk_loop[file_type].items():
+                if '%s' in v:
+                    v = v % dim
+                _d[k] = v
+            item_names.append(_d)
+
+        chain_id_names = []
+        seq_id_names = []
+        comp_id_names = []
+        atom_id_names = []
+
+        count = {'assigned_spectral_peaks': 0, 'unassigned_spectral_peaks': 0}
+
+        for j in range(num_dim):
+            chain_id_names.append(item_names[j]['chain_id'])
+            seq_id_names.append(item_names[j]['seq_id'])
+            comp_id_names.append(item_names[j]['comp_id'])
+            atom_id_names.append(item_names[j]['atom_id'])
+
+        for i in lp_data:
+
+            has_assignment = True
+
+            for j in range(num_dim):
+                chain_id = i[chain_id_names[j]]
+                seq_id = i[seq_id_names[j]]
+                comp_id = i[comp_id_names[j]]
+                atom_id = i[atom_id_names[j]]
+
+                if chain_id in self.empty_value or seq_id in self.empty_value or comp_id in self.empty_value or atom_id in self.empty_value:
+                    has_assignment = False
+                    break
+
+            if has_assignment:
+                count['assigned_spectral_peaks'] += 1
+            else:
+                count['unassigned_spectral_peaks'] += 1
+
+        ent['number_of_spectral_peaks'] = count
 
     def __validateCoordInputSource(self):
         """ Validate coordinate file as secondary input resource.

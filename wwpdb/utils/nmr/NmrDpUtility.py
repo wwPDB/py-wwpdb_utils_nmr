@@ -5831,7 +5831,12 @@ class NmrDpUtility(object):
                 else:
                     data_type = 'hydrogen_bonds'
             elif disulfide_bond:
-                data_type = 'disulfide_bonds'
+                if chain_id_1 != chain_id_2:
+                    data_type = 'inter-chain_disulfide_bonds'
+                elif range > 5:
+                    data_type = 'long_range_disulfide_bonds'
+                else:
+                    data_type = 'disulfide_bonds'
             elif symmetry:
                 data_type = 'symmetric_constraints'
             elif chain_id_1 != chain_id_2:

@@ -1486,7 +1486,8 @@ class NmrDpUtility(object):
 
             return True
 
-        except:
+        except Exception as e:
+
             logging.error("+NmrDpUtility.addOutput() ++ Error  - %s" % str(e))
             raise ValueError("+NmrDpUtility.addOutput() ++ Error  - %s" % str(e))
 
@@ -1549,8 +1550,11 @@ class NmrDpUtility(object):
         """ Dump current NMR data processing report.
         """
 
-        if self.report_prev != None and not self.report_prev.warning.get() is None:
-            self.report.setCorrectedWarning(self.report_prev)
+        if self.report_prev != None:
+            self.report.inheritFormatIssueErrors(self.report_prev)
+
+            if not self.report_prev.warning.get() is None:
+                self.report.setCorrectedWarning(self.report_prev)
 
         return self.report.writeJson(self.__logPath)
 

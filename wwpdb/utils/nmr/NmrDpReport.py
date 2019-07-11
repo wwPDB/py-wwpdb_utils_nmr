@@ -1,6 +1,6 @@
 ##
 # File: NmrDpReport.py
-# Date: 05-Jul-2019
+# Date: 11-Jul-2019
 #
 # Updates:
 ##
@@ -193,6 +193,33 @@ class NmrDpReport:
 
         return True
 
+    def inheritFormatIssueErrors(self, prev_report):
+        """ Inherit format issue errors from previous report (e.g. nmr-*-consistency-check workflow operation).
+        """
+
+        item = 'format_issue'
+
+        if not self.__immutable:
+
+            file_name = self.input_sources[self.getInputSourceIdOfNmrUnifiedData()].get()['file_name']
+            _file_name = prev_report.input_sources[prev_report.getInputSourceIdOfNmrUnifiedData()].get()['file_name']
+
+            value_list = prev_report.error.getValueList(item, _file_name)
+
+            if value_list is None:
+                return
+
+            for c in value_list:
+
+                if 'file_name' in c:
+                    c['file_name'] = file_name
+
+                self.error.appendDescription(item, c)
+
+        else:
+            logging.warning('+NmrDpReport.inheritFormatIssueErrors() ++ Warning  - No effects on NMR data processing report because the report is immutable')
+            raise UserWarning('+NmrDpReport.inheritFormatIssueErrors() ++ Warning  - No effects on NMR data processing report because the report is immutable')
+
     def setCorrectedWarning(self, prev_report):
         """ Initialize history of corrected warnings in previous report.
         """
@@ -234,8 +261,8 @@ class NmrDpReport:
             self.__report['corrected_warning'] = self.corrected_warning.get()
 
         else:
-            logging.warning('+NmrDpReport.setResolvedWarning() ++ Warning  - No effects on NMR data processing report because the report is immutable')
-            raise UserWarning('+NmrDpReport.setResolvedWarning() ++ Warning  - No effects on NMR data processing report because the report is immutable')
+            logging.warning('+NmrDpReport.setCorrectedWarning() ++ Warning  - No effects on NMR data processing report because the report is immutable')
+            raise UserWarning('+NmrDpReport.setCorrectedWarning() ++ Warning  - No effects on NMR data processing report because the report is immutable')
 
 class NmrDpReportInputSource:
     """ Wrapper class for data processing report of NMR unified data (input source).

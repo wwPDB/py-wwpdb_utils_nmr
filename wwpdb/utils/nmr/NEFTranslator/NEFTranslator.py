@@ -4,7 +4,6 @@
 #
 # Updates:
 ##
-
 """
 This module does the following jobs
 1. Validate the NEF and NMR-STAR files
@@ -181,7 +180,7 @@ class NEFTranslator(object):
                     is_ok = False
                     msg = str(e) # '%s contains no valid saveframe or loop. PyNMRSTAR ++ Error  - %s' % (os.path.basename(in_file), str(e))
 
-        except IOError as e:
+        except Exception as e:
             is_ok = False
             msg = str(e)
 
@@ -199,7 +198,7 @@ class NEFTranslator(object):
             with open(json_file, 'r') as jsonF:
                 data_dict = json.loads(jsonF.read())
 
-        except IOError as e:
+        except Exception as e:
             is_ok = False
             msg = str(e)
 
@@ -229,7 +228,7 @@ class NEFTranslator(object):
             else:
                 csv_map = csv_dat
 
-        except IOError as e:
+        except Exception as e:
             is_ok = False
             msg = str(e)
 
@@ -387,7 +386,7 @@ class NEFTranslator(object):
                 is_valid = False
                 error.append(data_type)
 
-        except IOError as e:
+        except Exception as e:
             is_valid = False
             error.append(str(e))
 

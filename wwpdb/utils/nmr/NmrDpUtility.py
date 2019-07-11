@@ -4,6 +4,7 @@
 #
 # Updates:
 ##
+from __builtin__ import False
 """ Wrapper class for data processing for NMR unified data.
 """
 import sys
@@ -1208,7 +1209,8 @@ class NmrDpUtility(object):
                                       }
 
         # item name in distance restraint loop
-        self.item_names_in_ds_loop = {'nef': {'chain_id_1': 'chain_code_1',
+        self.item_names_in_ds_loop = {'nef': {'combination_id': 'restraint_combination_id',
+                                              'chain_id_1': 'chain_code_1',
                                               'seq_id_1': 'sequence_code_1',
                                               'comp_id_1': 'residue_name_1',
                                               'atom_id_1': 'atom_name_1',
@@ -1222,7 +1224,8 @@ class NmrDpUtility(object):
                                               'lower_limit': 'lower_limit',
                                               'upper_limit': 'upper_limit'
                                               },
-                                      'nmr-star': {'chain_id_1': 'Entity_assembly_ID_1',
+                                      'nmr-star': {'combination_id': 'Combination_ID',
+                                                   'chain_id_1': 'Entity_assembly_ID_1',
                                                    'seq_id_1': 'Comp_index_ID_1',
                                                    'comp_id_1': 'Comp_ID_1',
                                                    'atom_id_1': 'Atom_ID_1',
@@ -4987,10 +4990,10 @@ class NmrDpUtility(object):
                                         self.__lfh.write("+NmrDpUtility.__calculateStatsOfExptlData() ++ Warning  - %s\n" % warn)
 
                         if content_subtype == 'chem_shift':
-                            self.__calculateStatsOfCSLoop(lp_data, ent)
+                            self.__calculateStatsOfAssignedChemShift(lp_data, ent)
 
                         elif content_subtype == 'dist_restraint':
-                            pass
+                            self.__calculateStatsOfDistanceRestraint(lp_data, ent)
 
                         elif content_subtype == 'dihed_restraint':
                             pass
@@ -5040,7 +5043,9 @@ class NmrDpUtility(object):
 
         return self.report.getTotalErrors() == __errors
 
-    def __calculateStatsOfCSLoop(self, lp_data, ent):
+    def __calculateStatsOfAssignedChemShift(self, lp_data, ent):
+        """ Calculate statistics of assigned chemical shifts.
+        """
 
         input_source = self.report.input_sources[0]
         input_source_dic = input_source.get()
@@ -5188,7 +5193,7 @@ class NmrDpUtility(object):
                                                     all_c[p31_col]['number_of_assigned_shifts'] += 1
 
                                             elif a in non_excl_atoms:
-                                                excluded_atom_id.append({'seq_id': seq_id, 'comp_id': comp_id, 'atom_id': a})
+                                                excluded_atom_id.append({'seq_id': seq_id, 'comp_id': comp_id, 'atom_id': a, 'value': i[cs_value_name]})
 
                                     elif atom_id in all_atoms:
 
@@ -5205,7 +5210,7 @@ class NmrDpUtility(object):
                                             all_c[p31_col]['number_of_assigned_shifts'] += 1
 
                                     elif atom_id in non_excl_atoms:
-                                        excluded_atom_id.append({'seq_id': seq_id, 'comp_id': comp_id, 'atom_id': atom_id})
+                                        excluded_atom_id.append({'seq_id': seq_id, 'comp_id': comp_id, 'atom_id': atom_id, 'value': i[cs_value_name]})
 
                             else:
                                 excluded_comp_id.append({'seq_id': seq_id, 'comp_id': comp_id})
@@ -5662,6 +5667,198 @@ class NmrDpUtility(object):
 
             if len(completeness) > 0:
                 ent['completeness'] = completeness
+
+    def __calculateStatsOfDistanceRestraint(self, lp_data, ent):
+        """ Calculate statistics of distance restraints.
+        """
+
+        input_source = self.report.input_sources[0]
+        input_source_dic = input_source.get()
+
+        file_type = input_source_dic['file_type']
+
+        item_names = self.item_names_in_ds_loop[file_type]
+        comb_id_name = item_names['combination_id']
+        chain_id_1_name = item_names['chain_id_1']
+        chain_id_2_name = item_names['chain_id_2']
+        seq_id_1_name = item_names['seq_id_1']
+        seq_id_2_name = item_names['seq_id_2']
+        comp_id_1_name = item_names['comp_id_1']
+        comp_id_2_name = item_names['comp_id_2']
+        atom_id_1_name = item_names['atom_id_1']
+        atom_id_2_name = item_names['atom_id_2']
+        target_value_name = item_names['target_value']
+        lower_limit_name = item_names['lower_limit']
+        upper_limit_name = item_names['upper_limit']
+        lower_linear_limit_name = item_names['lower_linear_limit']
+        upper_linear_limit_name = item_names['upper_linear_limit']
+
+        count = {}
+
+        comb_id_set = set()
+
+        for i in lp_data:
+
+            comb_id = i[comb_id_name]
+            chain_id_1 = i[chain_id_1_name]
+            chain_id_2 = i[chain_id_2_name]
+            seq_id_1 = i[seq_id_1_name]
+            seq_id_2 = i[seq_id_2_name]
+            comp_id_1 = i[comp_id_1_name]
+            comp_id_2 = i[comp_id_2_name]
+            atom_id_1 = i[atom_id_1_name]
+            atom_id_2 = i[atom_id_2_name]
+
+            target_value = i[target_value_name]
+
+            if target_value is None:
+
+                if not i[lower_limit_name] is None and not i[upper_limit_name] is None:
+                    target_value = (i[lower_limit_name] + i[upper_limit_name]) / 2.0
+
+                elif not i[lower_linear_limit_name] is None and not i[upper_linear_limit_name] is None:
+                    target_value = (i[lower_linear_limit_name] + i[upper_linear_limit_name]) / 2.0
+
+                else:
+                    continue
+
+            if not comb_id in self.empty_value:
+                comb_id_set.add(comp_id)
+
+            hydrogen_bond = False
+            disulfide_bond = False
+            symmetry = False
+
+            if chain_id_1 != chain_id_2 or seq_id_1 != seq_id_2:
+
+                atom_id_1_ = atom_id_1[0]
+                atom_id_2_ = atom_id_2[0]
+
+                if (atom_id_1_ == 'O' and atom_id_2_ == 'H') or (atom_id_2_ == 'O' and atom_id_1_ == 'H'):
+
+                    if target_value >= 1.8 and target_value <= 2.1:
+                       hydrogen_bond = True
+
+                elif (atom_id_1_ == 'O' and atom_id_2_ == 'N') or (atom_id_2_ == 'O' and atom_id_1_ == 'N'):
+
+                    if target_value >= 2.7 or target_value <= 3.1:
+                        hydrogen_bond = True
+
+                elif atom_id_1_ == 'S' and atom_id_2_ == 'S':
+
+                    if target_value >= 1.9 or target_value <= 2.3:
+                        disulfide_bond = True
+
+                else:
+
+                    for j in lp_data:
+
+                        if j is i:
+                            continue
+
+                        _chain_id_1 = j[chain_id_1_name]
+                        _chain_id_2 = j[chain_id_2_name]
+                        _seq_id_1 = j[seq_id_1_name]
+                        _seq_id_2 = j[seq_id_2_name]
+                        _comp_id_1 = j[comp_id_1_name]
+                        _comp_id_2 = j[comp_id_2_name]
+
+                        if _chain_id_1 != _chain_id_2 and _chain_id_1 != chain_id_1 and _chain_id_2 != chain_id_2:
+
+                            if seq_id_1 == _seq_id_1 and comp_id_1 == _comp_id_1 and\
+                               seq_id_2 == _seq_id_2 and comp_id_2 == _comp_id_2:
+                                symmetry = True
+                                break
+
+                            elif seq_id_1 == _seq_id_2 and comp_id_1 == _comp_id_2 and\
+                                 seq_id_2 == _seq_id_1 and comp_id_2 == _comp_id_1:
+                                symmetry = True
+                                break
+
+            range = abs(seq_id_1 - seq_id_2)
+
+            if hydrogen_bond:
+                if chain_id_1 != chain_id_2:
+                    data_type = 'inter-chain_hydrogen_bonds'
+                elif range > 5:
+                    data_type = 'long_range_hydrogen_bonds'
+                else:
+                    data_type = 'hydrogen_bonds'
+            elif disulfide_bond:
+                data_type = 'disulfide_bonds'
+            elif symmetry:
+                data_type = 'symmetric_constraints'
+            elif chain_id_1 != chain_id_2:
+                data_type = 'inter-chain_constraints'
+            elif range == 0:
+                data_type = 'intra-residue_constraints'
+            elif range < 5:
+
+                if file_type == 'nef':
+                    _atom_id_1 = self.__nefT.get_nmrstar_atom(comp_id_1, atom_id_1, leave_unmatched=False)[0]
+                    _atom_id_2 = self.__nefT.get_nmrstar_atom(comp_id_2, atom_id_2, leave_unmatched=False)[0]
+
+                    if len(_atom_id_1) > 0 and len(_atom_id_2) > 0:
+                        is_sc_atom_1 = _atom_id_1[0] in self.__csStat.getSideChainAtoms(comp_id_1)
+                        is_sc_atom_2 = _atom_id_2[0] in self.__csStat.getSideChainAtoms(comp_id_2)
+
+                        if is_sc_atom_1:
+                            is_bb_atom_1 = False
+                        else:
+                            is_bb_atom_1 = _atom_id_1[0] in self.__csStat.getBackBoneAtoms(comp_id_1)
+
+                        if is_sc_atom_2:
+                            is_bb_atom_2 = False
+                        else:
+                            is_bb_atom_2 = _atom_id_2[0] in self.__csStat.getBackBoneAtoms(comp_id_2)
+
+                    else:
+                        is_bb_atom_1 = False
+                        is_bb_atom_2 = False
+                        is_sc_atom_1 = False
+                        is_sc_atom_2 = False
+
+                else:
+                    is_sc_atom_1 = atom_id_1 in self.__csStat.getSideChainAtoms(comp_id_1)
+                    is_sc_atom_2 = atom_id_2 in self.__csStat.getSideChainAtoms(comp_id_2)
+
+                    if is_sc_atom_1:
+                        is_bb_atom_1 = False
+                    else:
+                        is_bb_atom_1 = atom_id_1 in self.__csStat.getBackBoneAtoms(comp_id_1)
+
+                    if is_sc_atom_2:
+                        is_bb_atom_2 = False
+                    else:
+                        is_bb_atom_2 = atom_id_2 in self.__csStat.getBackBoneAtoms(comp_id_2)
+
+                is_bb_bb = is_bb_atom_1 and is_bb_atom_2
+                is_bb_sc = (is_bb_atom_1 and is_sc_atom_2) or (is_sc_atom_1 and is_bb_atom_2)
+                is_sc_sc = is_sc_atom_1 and is_sc_atom_2
+
+                if range == 1:
+                    data_type = 'sequential_constraints'
+                else:
+                    data_type = 'medium_range_constraints'
+
+                if is_bb_bb:
+                    data_type += '_backbone-backbone'
+                elif is_bb_sc:
+                    data_type += '_backbone-sidechain'
+                elif is_sc_sc:
+                    data_type += '_sidechain-sidechain'
+            else:
+                data_type = 'long_range_constraints'
+
+            if data_type in count:
+                count[data_type] += 1
+            else:
+                count[data_type] = 1
+
+        if len(count) > 0:
+            ent['number_of_constraints'] = count
+
+            ent['ambiguous_constraint_sets'] = len(comb_id_set)
 
     def __validateCoordInputSource(self):
         """ Validate coordinate file as secondary input resource.
@@ -8349,15 +8546,15 @@ class NmrDpUtility(object):
                     else:
                         return False
 
-                atom_id_1 = i[atom_id_1_name][0]
-                atom_id_2 = i[atom_id_2_name][0]
+                atom_id_1_ = i[atom_id_1_name][0]
+                atom_id_2_ = i[atom_id_2_name][0]
 
-                if (atom_id_1 == 'O' and atom_id_2 == 'H') or (atom_id_2 == 'O' and atom_id_1 == 'H'):
+                if (atom_id_1_ == 'O' and atom_id_2_ == 'H') or (atom_id_2_ == 'O' and atom_id_1_ == 'H'):
 
                     if target_value < 1.8 or target_value > 2.1:
                         return False
 
-                elif (atom_id_1 == 'O' and atom_id_2 == 'N') or (atom_id_2 == 'O' and atom_id_1 == 'N'):
+                elif (atom_id_1_ == 'O' and atom_id_2_ == 'N') or (atom_id_2_ == 'O' and atom_id_1_ == 'N'):
 
                     if target_value < 2.7 or target_value > 3.1:
                         return False
@@ -8426,10 +8623,10 @@ class NmrDpUtility(object):
                     else:
                         return False
 
-                atom_id_1 = i[atom_id_1_name][0]
-                atom_id_2 = i[atom_id_2_name][0]
+                atom_id_1_ = i[atom_id_1_name][0]
+                atom_id_2_ = i[atom_id_2_name][0]
 
-                if atom_id_1 == 'S' and atom_id_2 == 'S':
+                if atom_id_1_ == 'S' and atom_id_2_ == 'S':
 
                     if target_value < 1.9 or target_value > 2.3:
                         return False

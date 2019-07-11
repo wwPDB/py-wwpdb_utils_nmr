@@ -5084,7 +5084,7 @@ class NmrDpUtility(object):
             if i[cs_atom_type] in self.empty_value or i[cs_iso_number] in self.empty_value or cs_value_name in self.empty_value:
                 continue
 
-            data_type = str(i[cs_iso_number]) + i[cs_atom_type].lower() + '_assigned_chemical_shifts'
+            data_type = str(i[cs_iso_number]) + i[cs_atom_type].lower() + '_chemical_shifts'
 
             if data_type in count:
                 count[data_type] += 1
@@ -5101,13 +5101,15 @@ class NmrDpUtility(object):
 
         if 'sequence_coverage' in ent:
 
-            completeness = {}
+            completeness = []
 
             for sc in ent['sequence_coverage']:
 
+                cc = {}
+
                 chain_id = sc['chain_id']
 
-                completeness['chain_id'] = chain_id
+                cc['chain_id'] = chain_id
 
                 # all atoms
 
@@ -5179,7 +5181,12 @@ class NmrDpUtility(object):
 
                                 for i in lp_data:
 
-                                    if i[cs_chain_id_name] != chain_id or i[cs_seq_id_name] != seq_id or i[cs_comp_id_name] != comp_id or i[cs_value_name] in self.empty_value:
+                                    if file_type == 'nef':
+                                        _chain_id = i[cs_chain_id_name]
+                                    else:
+                                        _chain_id = str(i[cs_chain_id_name])
+
+                                    if _chain_id != chain_id or i[cs_seq_id_name] != seq_id or i[cs_comp_id_name] != comp_id or i[cs_value_name] in self.empty_value:
                                         continue
 
                                     atom_id = i[cs_atom_id_name]
@@ -5211,22 +5218,24 @@ class NmrDpUtility(object):
                                             elif a in non_excl_atoms:
                                                 excluded_atom_id.append({'seq_id': seq_id, 'comp_id': comp_id, 'atom_id': a, 'value': i[cs_value_name]})
 
-                                    elif atom_id in all_atoms:
+                                    else:
 
-                                        if data_type == '1H' and not atom_id in non_rep_methyl_pros:
-                                            all_c[h1_col]['number_of_assigned_shifts'] += 1
+                                        if atom_id in all_atoms:
 
-                                        elif data_type == '13C':
-                                            all_c[c13_col]['number_of_assigned_shifts'] += 1
+                                            if data_type == '1H' and not atom_id in non_rep_methyl_pros:
+                                                all_c[h1_col]['number_of_assigned_shifts'] += 1
 
-                                        elif data_type == '15N':
-                                            all_c[n15_col]['number_of_assigned_shifts'] += 1
+                                            elif data_type == '13C':
+                                                all_c[c13_col]['number_of_assigned_shifts'] += 1
 
-                                        elif data_type == '31P':
-                                            all_c[p31_col]['number_of_assigned_shifts'] += 1
+                                            elif data_type == '15N':
+                                                all_c[n15_col]['number_of_assigned_shifts'] += 1
 
-                                    elif atom_id in non_excl_atoms:
-                                        excluded_atom_id.append({'seq_id': seq_id, 'comp_id': comp_id, 'atom_id': atom_id, 'value': i[cs_value_name]})
+                                            elif data_type == '31P':
+                                                all_c[p31_col]['number_of_assigned_shifts'] += 1
+
+                                        elif atom_id in non_excl_atoms:
+                                            excluded_atom_id.append({'seq_id': seq_id, 'comp_id': comp_id, 'atom_id': atom_id, 'value': i[cs_value_name]})
 
                             else:
                                 excluded_comp_id.append({'seq_id': seq_id, 'comp_id': comp_id})
@@ -5237,10 +5246,10 @@ class NmrDpUtility(object):
 
                         break
 
-                completeness['completeness_of_all_assignments'] = all_c
+                cc['completeness_of_all_assignments'] = all_c
 
-                completeness['excluded_comp_id_in_statistics'] = excluded_comp_id if len(excluded_comp_id) > 0 else None
-                completeness['excluded_atom_id_in_statistics'] = excluded_atom_id if len(excluded_atom_id) > 0 else None
+                cc['excluded_comp_id_in_statistics'] = excluded_comp_id if len(excluded_comp_id) > 0 else None
+                cc['excluded_atom_id_in_statistics'] = excluded_atom_id if len(excluded_atom_id) > 0 else None
 
                 # backbone atoms (bb)
 
@@ -5308,7 +5317,12 @@ class NmrDpUtility(object):
 
                                 for i in lp_data:
 
-                                    if i[cs_chain_id_name] != chain_id or i[cs_seq_id_name] != seq_id or i[cs_comp_id_name] != comp_id or i[cs_value_name] in self.empty_value:
+                                    if file_type == 'nef':
+                                        _chain_id = i[cs_chain_id_name]
+                                    else:
+                                        _chain_id = str(i[cs_chain_id_name])
+
+                                    if _chain_id != chain_id or i[cs_seq_id_name] != seq_id or i[cs_comp_id_name] != comp_id or i[cs_value_name] in self.empty_value:
                                         continue
 
                                     atom_id = i[cs_atom_id_name]
@@ -5358,7 +5372,7 @@ class NmrDpUtility(object):
                         break
 
                 if len(bb_c) > 0:
-                    completeness['completeness_of_backbone_assignments'] = bb_c
+                    cc['completeness_of_backbone_assignments'] = bb_c
 
                 # sidechain atoms (sc)
 
@@ -5426,7 +5440,12 @@ class NmrDpUtility(object):
 
                                 for i in lp_data:
 
-                                    if i[cs_chain_id_name] != chain_id or i[cs_seq_id_name] != seq_id or i[cs_comp_id_name] != comp_id or i[cs_value_name] in self.empty_value:
+                                    if file_type == 'nef':
+                                        _chain_id = i[cs_chain_id_name]
+                                    else:
+                                        _chain_id = str(i[cs_chain_id_name])
+
+                                    if _chain_id != chain_id or i[cs_seq_id_name] != seq_id or i[cs_comp_id_name] != comp_id or i[cs_value_name] in self.empty_value:
                                         continue
 
                                     atom_id = i[cs_atom_id_name]
@@ -5476,7 +5495,7 @@ class NmrDpUtility(object):
                         break
 
                 if len(sc_c) > 0:
-                    completeness['completeness_sidechain'] = sc_c
+                    cc['completeness_of_sidechain_assignments'] = sc_c
 
                 # methyl group atoms (ch3)
 
@@ -5533,7 +5552,12 @@ class NmrDpUtility(object):
 
                                 for i in lp_data:
 
-                                    if i[cs_chain_id_name] != chain_id or i[cs_seq_id_name] != seq_id or i[cs_comp_id_name] != comp_id or i[cs_value_name] in self.empty_value:
+                                    if file_type == 'nef':
+                                        _chain_id = i[cs_chain_id_name]
+                                    else:
+                                        _chain_id = str(i[cs_chain_id_name])
+
+                                    if _chain_id != chain_id or i[cs_seq_id_name] != seq_id or i[cs_comp_id_name] != comp_id or i[cs_value_name] in self.empty_value:
                                         continue
 
                                     atom_id = i[cs_atom_id_name]
@@ -5558,7 +5582,7 @@ class NmrDpUtility(object):
 
                                     elif atom_id in ch3_atoms:
 
-                                        if data_type == '1H' and not a in non_rep_methyl_pros:
+                                        if data_type == '1H' and not atom_id in non_rep_methyl_pros:
                                             ch3_c[h1_col]['number_of_assigned_shifts'] += 1
 
                                         elif data_type == '13C':
@@ -5571,7 +5595,7 @@ class NmrDpUtility(object):
                         break
 
                 if len(ch3_c) > 0:
-                    completeness['completeness_of_methyl_assignments'] = ch3_c
+                    cc['completeness_of_methyl_assignments'] = ch3_c
 
                 # aromatic atoms (aro)
 
@@ -5635,7 +5659,12 @@ class NmrDpUtility(object):
 
                                 for i in lp_data:
 
-                                    if i[cs_chain_id_name] != chain_id or i[cs_seq_id_name] != seq_id or i[cs_comp_id_name] != comp_id or i[cs_value_name] in self.empty_value:
+                                    if file_type == 'nef':
+                                        _chain_id = i[cs_chain_id_name]
+                                    else:
+                                        _chain_id = str(i[cs_chain_id_name])
+
+                                    if _chain_id != chain_id or i[cs_seq_id_name] != seq_id or i[cs_comp_id_name] != comp_id or i[cs_value_name] in self.empty_value:
                                         continue
 
                                     atom_id = i[cs_atom_id_name]
@@ -5679,7 +5708,9 @@ class NmrDpUtility(object):
                         break
 
                 if len(aro_c) > 0:
-                    completeness['completeness_of_aromatic_assignments'] = aro_c
+                    cc['completeness_of_aromatic_assignments'] = aro_c
+
+                completeness.append(cc)
 
             if len(completeness) > 0:
                 ent['completeness'] = completeness

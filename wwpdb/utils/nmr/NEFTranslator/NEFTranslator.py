@@ -1,6 +1,6 @@
 ##
 # File: NEFTranslator.py
-# Date: 09-Jul-2019
+# Date: 11-Jul-2019
 #
 # Updates:
 ##
@@ -2164,6 +2164,7 @@ class NEFTranslator(object):
 
             elif leave_unmatched:
                 atom_list.append(nef_atom)
+                ambiguity_code = None
                 details = '%s is invalid atom name of residue %s.' % (nef_atom, comp_id)
 
         return atom_list, ambiguity_code, details

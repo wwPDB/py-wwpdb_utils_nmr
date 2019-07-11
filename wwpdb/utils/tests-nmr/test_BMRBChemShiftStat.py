@@ -73,6 +73,8 @@ class TestBMRBChemShiftStat(unittest.TestCase):
         self.assertEqual(self.bmrb_cs_stat.getMethylAtoms('VAL'), ['CG1', 'CG2', 'HG11', 'HG12', 'HG13', 'HG21', 'HG22', 'HG23'])
         self.assertEqual(self.bmrb_cs_stat.getMethylAtoms('LEU'), ['CD1', 'CD2', 'HD11', 'HD12', 'HD13', 'HD21', 'HD22', 'HD23'])
         self.assertEqual(self.bmrb_cs_stat.getMethylAtoms('DT'), ['C7', 'H71', 'H72', 'H73'])
+        self.assertEqual(self.bmrb_cs_stat.getRepresentativeMethylProtons('ALA'), ['HB1'])
+        self.assertEqual(self.bmrb_cs_stat.getNonRepresentativeMethylProtons('ALA'), ['HB2', 'HB3'])
 
     def test_sc_atoms(self):
         self.assertEqual(self.bmrb_cs_stat.getSideChainAtoms('GLY'), [])

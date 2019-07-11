@@ -1,6 +1,6 @@
 ##
 # File: BMRBChemShiftStat.py
-# Date: 10-Jul-2019
+# Date: 11-Jul-2019
 #
 # Updates:
 ##
@@ -369,7 +369,7 @@ class BMRBChemShiftStat:
                 (not excl_minor_atom or not 'secondary' in i or (excl_minor_atom and i['secondary']))]
 
     def getMethylAtoms(self, comp_id, excl_minor_atom=False, primary=False):
-        """ Return atoms in methyl group of a geven comp_id.
+        """ Return atoms in methyl group of a given comp_id.
         """
 
         if not comp_id in self.__all_comp_ids:
@@ -383,6 +383,18 @@ class BMRBChemShiftStat:
 
         return [i['atom_id'] for i in cs_stat if 'methyl' in i['desc'] and
                 (not excl_minor_atom or not 'secondary' in i or (excl_minor_atom and i['secondary']))]
+
+    def getRepresentativeMethylProtons(self, comp_id, excl_minor_atom=False, primary=False):
+        """ Return representative protons in methyl group of a given comp_id.
+        """
+
+        return [a for a in self.getMethylAtoms(comp_id, excl_minor_atom, primary) if a.startswith('H') and a.endswith('1')]
+
+    def getNonRepresentativeMethylProtons(self, comp_id, excl_minor_atom=False, primary=False):
+        """ Return non-representative protons in methyl group of a given comp_id.
+        """
+
+        return [a for a in self.getMethylAtoms(comp_id, excl_minor_atom, primary) if a.startswith('H') and not a.endswith('1')]
 
     def getSideChainAtoms(self, comp_id, excl_minor_atom=False, polypeptide_like=False, polynucleotide_like=False, carbohydrates_like=False):
         """ Return sidechain atoms of a given comp_id.

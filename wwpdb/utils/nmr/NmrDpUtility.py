@@ -5022,7 +5022,7 @@ class NmrDpUtility(object):
 
                     else:
 
-                        self.__updateChemCompDict(comp_id)
+                        self.__updateChemCompDict(comp_id_1)
 
                         if self.__last_comp_id_test: # matches with comp_id in CCD
 

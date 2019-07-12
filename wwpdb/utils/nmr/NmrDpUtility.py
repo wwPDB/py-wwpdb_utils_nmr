@@ -4914,7 +4914,7 @@ class NmrDpUtility(object):
         return self.report.getTotalErrors() == __errors
 
     def __testRDCVector(self):
-        """ Perform consistency test on RDC vectors.
+        """ Perform consistency test on RDC bond vectors.
         """
 
         input_source = self.report.input_sources[0]
@@ -6306,9 +6306,7 @@ class NmrDpUtility(object):
         while v > rdc_min:
             v -= scale
 
-        v -= scale
-
-        while v - scale < rdc_max:
+        while v < rdc_max:
 
             count = 0
 
@@ -6345,7 +6343,7 @@ class NmrDpUtility(object):
 
         for i in lp_data:
 
-            data_type = i[atom_id_1_name] + '-' + i[atom_id_2_name] + '_vectors'
+            data_type = i[atom_id_1_name] + '-' + i[atom_id_2_name] + '_bond_vectors'
 
             if data_type in count:
                 count[data_type] += 1

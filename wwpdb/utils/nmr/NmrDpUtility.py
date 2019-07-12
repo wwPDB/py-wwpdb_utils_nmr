@@ -71,7 +71,8 @@ class NmrDpUtility(object):
                            self.__testDataConsistencyInAuxLoop,
                            self.__testSfTagConsistency,
                            self.__validateCSValue,
-                           self.__testCSValueConsistencyInPkLoop
+                           self.__testCSValueConsistencyInPkLoop,
+                           self.__testRDCVector
                            ]
 
         # validation tasks for coordinate file only
@@ -1279,6 +1280,27 @@ class NmrDpUtility(object):
                                                    'angle_type': 'Torsion_angle_name',
                                                    }
                                       }
+
+        # item name in rdc restraint loop
+        self.item_names_in_rdc_loop = {'nef': {'chain_id_1': 'chain_code_1',
+                                               'seq_id_1': 'sequence_code_1',
+                                               'comp_id_1': 'residue_name_1',
+                                               'atom_id_1': 'atom_name_1',
+                                               'chain_id_2': 'chain_code_2',
+                                               'seq_id_2': 'sequence_code_2',
+                                               'comp_id_2': 'residue_name_2',
+                                               'atom_id_2': 'atom_name_2'
+                                               },
+                                       'nmr-star': {'chain_id_1': 'Entity_assembly_ID_1',
+                                                    'seq_id_1': 'Comp_index_ID_1',
+                                                    'comp_id_1': 'Comp_ID_1',
+                                                    'atom_id_1': 'Atom_ID_1',
+                                                    'chain_id_2': 'Entity_assembly_ID_2',
+                                                    'seq_id_2': 'Comp_index_ID_2',
+                                                    'comp_id_2': 'Comp_ID_2',
+                                                    'atom_id_2': 'Atom_ID_2'
+                                                    }
+                                       }
 
         # saveframe tag name for chemical shift list in spectral peak
         self.cs_list_sf_tag_name = {'nef': 'chemical_shift_list',
@@ -4891,6 +4913,151 @@ class NmrDpUtility(object):
 
         return self.report.getTotalErrors() == __errors
 
+    def __testRDCVector(self):
+        """ Perform consistency test on RDC vectors.
+        """
+
+        input_source = self.report.input_sources[0]
+        input_source_dic = input_source.get()
+
+        file_name = input_source_dic['file_name']
+        file_type = input_source_dic['file_type']
+
+        if input_source_dic['content_subtype'] is None:
+            return False
+
+        __errors = self.report.getTotalErrors()
+
+        content_subtype = 'rdc_restraint'
+
+        if not content_subtype in input_source_dic['content_subtype'].keys():
+            return True
+
+        sf_category = self.sf_categories[file_type][content_subtype]
+        lp_category = self.lp_categories[file_type][content_subtype]
+
+        item_names = self.item_names_in_rdc_loop[file_type]
+        index_tag = self.index_tags[file_type][content_subtype]
+        chain_id_1_name = item_names['chain_id_1']
+        chain_id_2_name = item_names['chain_id_2']
+        seq_id_1_name = item_names['seq_id_1']
+        seq_id_2_name = item_names['seq_id_2']
+        comp_id_1_name = item_names['comp_id_1']
+        comp_id_2_name = item_names['comp_id_2']
+        atom_id_1_name = item_names['atom_id_1']
+        atom_id_2_name = item_names['atom_id_2']
+
+        for sf_data in self.__star_data.get_saveframes_by_category(sf_category):
+
+            sf_framecode = sf_data.get_tag('sf_framecode')[0]
+
+            try:
+
+                lp_data = next(l['data'] for l in self.__lp_data[content_subtype] if l['sf_framecode'] == sf_framecode)
+
+                for i in lp_data:
+                    chain_id_1 = i[chain_id_1_name]
+                    seq_id_1 = i[seq_id_1_name]
+                    comp_id_1 = i[comp_id_1_name]
+                    atom_id_1 = i[atom_id_1_name]
+                    chain_id_2 = i[chain_id_2_name]
+                    seq_id_2 = i[seq_id_2_name]
+                    comp_id_2 = i[comp_id_2_name]
+                    atom_id_2 = i[atom_id_2_name]
+
+                    if chain_id_1 != chain_id_2:
+
+                        idx_msg = "[Check row of %s %s] " % (index_tag, i[index_tag])
+
+                        err = "%sInvalid inter-chain RDC vector (chain_id_1 %s, seq_id_1 %s, comp_id_1 %s, atom_id_1 %s, chain_id_2 %s, seq_id_2 %s, comp_id_2 %s, atom_id_2) exists." %\
+                              (idx_msg, chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2)
+
+                        self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
+                        self.report.setError()
+
+                        if self.__verbose:
+                            self.__lfh.write("+NmrDpUtility.__testRDCVector() ++ Error  - %s\n" % err)
+
+                    elif abs(seq_id_1 - seq_id_2) > 1:
+
+                        idx_msg = "[Check row of %s %s] " % (index_tag, i[index_tag])
+
+                        err = "%sInvalid inter-residue RDC vector (chain_id_1 %s, seq_id_1 %s, comp_id_1 %s, atom_id_1 %s, chain_id_2 %s, seq_id_2 %s, comp_id_2 %s, atom_id_2) exists." %\
+                              (idx_msg, chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2)
+
+                        self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
+                        self.report.setError()
+
+                        if self.__verbose:
+                            self.__lfh.write("+NmrDpUtility.__testRDCVector() ++ Error  - %s\n" % err)
+
+                    elif abs(seq_id_1 - seq_id_2) == 1:
+
+                        if self.__csStat.getTypeOfCompId(comp_id_1)[0] and self.__csStat.getTypeOfCompId(comp_id_2)[0] and\
+                           ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 == 'N') or (seq_id_1 > seq_id_2 and atom_id_1 == 'N' and atom_id_2 == 'C')):
+                            pass
+
+                        else:
+                            err = "%sInvalid inter-residue RDC vector (chain_id_1 %s, seq_id_1 %s, comp_id_1 %s, atom_id_1 %s, chain_id_2 %s, seq_id_2 %s, comp_id_2 %s, atom_id_2) exists." %\
+                                  (idx_msg, chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2)
+
+                            self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
+                            self.report.setError()
+
+                            if self.__verbose:
+                                self.__lfh.write("+NmrDpUtility.__testRDCVector() ++ Error  - %s\n" % err)
+
+                    elif atom_id_1 == atom_id_2:
+
+                        idx_msg = "[Check row of %s %s] " % (index_tag, i[index_tag])
+
+                        err = "%sZero RDC vector (chain_id_1 %s, seq_id_1 %s, comp_id_1 %s, atom_id_1 %s, chain_id_2 %s, seq_id_2 %s, comp_id_2 %s, atom_id_2) exists." %\
+                              (idx_msg, chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2)
+
+                        self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
+                        self.report.setError()
+
+                        if self.__verbose:
+                            self.__lfh.write("+NmrDpUtility.__testRDCVector() ++ Error  - %s\n" % err)
+
+                    else:
+
+                        self.__updateChemCompDict(comp_id)
+
+                        if self.__last_comp_id_test: # matches with comp_id in CCD
+
+                            try:
+                                next(b for b in self.__last_chem_comp_bonds if\
+                                     ((b[self.__ccb_atom_id_1] == atom_id_1 and b[self.__ccb_atom_id_2] == atom_id_2) or\
+                                      (b[self.__ccb_atom_id_1] == atom_id_2 and b[self.__ccb_atom_id_2] == atom_id_1)))
+                            except StopIteration:
+
+                                idx_msg = "[Check row of %s %s] " % (index_tag, i[index_tag])
+
+                                warn = "%sMultiple bonds' RDC vector (chain_id_1 %s, seq_id_1 %s, comp_id_1 %s, atom_id_1 %s, chain_id_2 %s, seq_id_2 %s, comp_id_2 %s, atom_id_2) exists." %\
+                                       (idx_msg, chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2)
+
+                                self.report.warning.appendDescription('remarkable_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
+                                self.report.setWarning()
+
+                                if self.__verbose:
+                                    self.__lfh.write("+NmrDpUtility.__testRDCVector() ++ Warning  - %s\n" % warn)
+
+                                pass
+
+                        else: # raised warning already somewhere
+                            pass
+
+            except Exception as e:
+
+                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__testRDCVector() ++ Error  - %s" % str(e))
+                self.report.setError()
+
+                if self.__verbose:
+                    self.__lfh.write("+NmrDpUtility.__testRDCVector() ++ Error  - %s" % str(e))
+
+        return self.report.getTotalErrors() == __errors
+
     def __calculateStatsOfExptlData(self):
         """ Calculate statistics of experimental data.
         """
@@ -6169,6 +6336,23 @@ class NmrDpUtility(object):
 
         ent['histogram_of_rdc_values'] = {'rdc_value': rdc_value, 'rdc_count': rdc_count}
         ent['range_of_rdc_values'] = {'max_value': rdc_max_, 'min_value': rdc_min_}
+
+        item_names = self.item_names_in_rdc_loop[file_type]
+        atom_id_1_name = item_names['atom_id_1']
+        atom_id_2_name = item_names['atom_id_2']
+
+        count = {}
+
+        for i in lp_data:
+
+            data_type = i[atom_id_1_name] + '-' + i[atom_id_2_name] + '_vector'
+
+            if data_type in count:
+                count[data_type] += 1
+            else:
+                count[data_type] = 1
+
+        ent['number_of_constraints'] = count
 
     def __calculateStatsOfSpectralPeak(self, num_dim, lp_data, ent):
         """ Calculate statistics of spectral peaks.

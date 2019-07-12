@@ -6345,7 +6345,7 @@ class NmrDpUtility(object):
 
         for i in lp_data:
 
-            data_type = i[atom_id_1_name] + '-' + i[atom_id_2_name] + '_vector'
+            data_type = i[atom_id_1_name] + '-' + i[atom_id_2_name] + '_vectors'
 
             if data_type in count:
                 count[data_type] += 1

@@ -24,7 +24,7 @@ from wwpdb.utils.nmr.NmrDpReport import NmrDpReport
 from wwpdb.utils.align.alignlib import PairwiseAlign
 from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
 from wwpdb.utils.config.ConfigInfo import ConfigInfo, getSiteId
-from wwpdb.apps.ccmodule.io.ChemCompIo import ChemCompReader
+from wwpdb.utils.nmr.io.ChemCompIo import ChemCompReader
 from wwpdb.utils.nmr.CifReader import CifReader
 
 class NmrDpUtility(object):
@@ -1652,7 +1652,7 @@ class NmrDpUtility(object):
 
             if self.__last_comp_id_test:
                 self.__last_chem_comp_dict = self.__ccR.getChemCompDict()
-                self.__last_chem_comp_atoms = self.__ccR.getAtoms()
+                self.__last_chem_comp_atoms = self.__ccR.getAtomList()
                 self.__last_chem_comp_bonds = self.__ccR.getBonds()
 
         return self.__last_comp_id_test

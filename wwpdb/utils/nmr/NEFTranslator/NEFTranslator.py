@@ -27,7 +27,7 @@ import pynmrstar
 from pytz import utc
 
 from wwpdb.utils.config.ConfigInfo import ConfigInfo, getSiteId
-from wwpdb.apps.ccmodule.io.ChemCompIo import ChemCompReader
+from wwpdb.utils.nmr.io.ChemCompIo import ChemCompReader
 
 (scriptPath, scriptName) = ntpath.split(os.path.realpath(__file__))
 
@@ -1925,7 +1925,7 @@ class NEFTranslator(object):
 
             if self.__last_comp_id_test:
                 self.__last_chem_comp_dict = self.__ccR.getChemCompDict()
-                self.__last_chem_comp_atoms = self.__ccR.getAtoms()
+                self.__last_chem_comp_atoms = self.__ccR.getAtomList()
                 self.__last_chem_comp_bonds = self.__ccR.getBonds()
 
         return self.__last_comp_id_test

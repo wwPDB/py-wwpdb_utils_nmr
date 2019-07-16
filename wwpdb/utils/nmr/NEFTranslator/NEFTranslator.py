@@ -1917,6 +1917,7 @@ class NEFTranslator(object):
 
     def __updateChemCompDict(self, comp_id):
         """ Update CCD information for a given comp_id.
+            @return: True for successfully update CCD information or False for the case a given comp_id does not exist in CCD
         """
 
         if comp_id != self.__last_comp_id:

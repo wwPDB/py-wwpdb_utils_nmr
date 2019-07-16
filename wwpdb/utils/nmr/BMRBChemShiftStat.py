@@ -587,6 +587,7 @@ class BMRBChemShiftStat:
 
     def __updateChemCompDict(self, comp_id):
         """ Update CCD information for a given comp_id.
+            @return: True for successfully update CCD information or False for the case a given comp_id does not exist in CCD
         """
 
         comp_id = comp_id.upper()

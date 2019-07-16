@@ -2661,7 +2661,11 @@ class NmrDpUtility(object):
 
                     if self.__last_comp_id_test: # matches with comp_id in CCD
                         cc_name = self.__last_chem_comp_dict['_chem_comp.name']
-                        ent['chem_comp_name'].append(cc_name)
+                        cc_rel_status = self.__last_chem_comp_dict['_chem_comp.pdbx_release_status']
+                        if cc_rel_status == 'REL':
+                            ent['chem_comp_name'].append(cc_name)
+                        else:
+                            ent['chem_comp_name'].append('(Not available due to CCD status code %s)' % cc_rel_status)
 
                     else:
                         ent['chem_comp_name'].append(None)
@@ -2956,7 +2960,11 @@ class NmrDpUtility(object):
                                         unk_atom_ids.append(atom_id)
 
                                 if len(unk_atom_ids) > 0:
-                                    cc_name = self.__last_chem_comp_dict['_chem_comp.name']
+                                    cc_rel_status = self.__last_chem_comp_dict['_chem_comp.pdbx_release_status']
+                                    if cc_rel_status == 'REL':
+                                        cc_name = self.__last_chem_comp_dict['_chem_comp.name']
+                                    else:
+                                        cc_name = '(Not available due to CCD status code %s)' % cc_rel_status
 
                                     warn = "Unknown atom_id %s (comp_id %s, chem_comp_name %s) exist." % (unk_atom_ids, comp_id, cc_name)
 

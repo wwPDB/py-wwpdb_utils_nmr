@@ -1,6 +1,6 @@
 ##
 # File: NmrDpReport.py
-# Date: 11-Jul-2019
+# Date: 17-Jul-2019
 #
 # Updates:
 ##
@@ -479,14 +479,23 @@ class NmrDpReportError:
 
         return False
 
-    def getValueList(self, item, file_name):
+    def getValueList(self, item, file_name, key=None):
         """ Return list of error values specified by item name and file name.
         """
 
         if item in ['total', 'internal_error'] or self.__contents is None or (not item in self.__contents.keys()) or self.__contents[item] is None:
             return None
 
-        return [c for c in self.__contents[item] if c['file_name'] == file_name]
+        return [c for c in self.__contents[item] if c['file_name'] == file_name or (key is None or key in c['description'])]
+
+    def getValueListWithSf(self, item, file_name, sf_framecode, key=None):
+        """ Return list of error values specified by item name, file name, and saveframe.
+        """
+
+        if item in ['total', 'internal_error'] or self.__contents is None or (not item in self.__contents.keys()) or self.__contents[item] is None:
+            return None
+
+        return [c for c in self.__contents[item] if c['file_name'] == file_name and c['sf_framecode'] == sf_framecode and (key is None or key in c['description'])]
 
     def getUniqueValueList(self, item, file_name):
         """ Return list of error values having unique sf_framecode and description.
@@ -634,14 +643,23 @@ class NmrDpReportWarning:
 
         return False
 
-    def getValueList(self, item, file_name):
+    def getValueList(self, item, file_name, key=None):
         """ Return list of warning values specified by item name and file name.
         """
 
         if item == 'total' or self.__contents is None or (not item in self.__contents.keys()) or self.__contents[item] is None:
             return None
 
-        return [c for c in self.__contents[item] if c['file_name'] == file_name]
+        return [c for c in self.__contents[item] if c['file_name'] == file_name and (key is None or key in c['description'])]
+
+    def getValueListWithSf(self, item, file_name, sf_framecode, key=None):
+        """ Return list of warning values specified by item name, file name, and saveframe.
+        """
+
+        if item == 'total' or self.__contents is None or (not item in self.__contents.keys()) or self.__contents[item] is None:
+            return None
+
+        return [c for c in self.__contents[item] if c['file_name'] == file_name and c['sf_framecode'] == sf_framecode and (key is None or key in c['description'])]
 
     def getUniqueValueList(self, item, file_name):
         """ Return list of warning values having unique sf_framecode and description.

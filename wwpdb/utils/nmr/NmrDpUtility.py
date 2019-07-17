@@ -4096,6 +4096,34 @@ class NmrDpUtility(object):
                     atom_id = i[atom_id_name]
                     value = i[value_name]
 
+                    if file_type == 'nef':
+                        _atom_id, ambig_code, details = self.__nefT.get_nmrstar_atom(comp_id, atom_id, leave_unmatched=True)
+
+                        if len(_atom_id) == 0:
+                            continue
+
+                        if len(_atom_id) == 1 and atom_id == _atom_id[0]:
+                            atom_id_ = atom_id
+                            atom_name = atom_id
+
+                            if not details is None:
+                                atom_name += ', ' + details.rstrip('.')
+
+                        else:
+                            atom_name = atom_id + ' (e.g. '
+
+                            for atom_id_ in _atom_id:
+                                atom_name += atom_id_ + ' '
+
+                            atom_name = atom_name.rstrip() + ')'
+
+                            # representative atom id
+                            atom_id_ = _atom_id[0]
+
+                    else:
+                        atom_id_ = atom_id
+                        atom_name = atom_id
+
                     one_letter_code = self.__get1LetterCode(comp_id)
 
                     has_cs_stat = False
@@ -4128,7 +4156,7 @@ class NmrDpUtility(object):
 
                                     elif value != methyl_cs_vals[methyl_cs_key]:
 
-                                        err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_id) + '] Chemical shift values in the same methyl group %s %s vs %s are inconsistent.' %\
+                                        err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] Chemical shift values in the same methyl group %s %s vs %s are inconsistent.' %\
                                               (value_name, value, methyl_cs_vals[methyl_cs_key])
 
                                         self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
@@ -4141,7 +4169,7 @@ class NmrDpUtility(object):
 
                                 if std_value is None:
 
-                                    warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_id) + '] Insufficient chemical shift statistics is available to verify %s %s (avg %s).' %\
+                                    warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] Insufficient chemical shift statistics is available to verify %s %s (avg %s).' %\
                                            (value_name, value, avg_value)
 
                                     self.report.warning.appendDescription('unusual_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
@@ -4159,7 +4187,7 @@ class NmrDpUtility(object):
 
                                     if value < min_value - tolerance or value > max_value + tolerance:
 
-                                        err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_id) + '] %s %s is out of range (avg %s, std %s, min %s, max %s, Z_score %.2f).' %\
+                                        err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] %s %s is out of range (avg %s, std %s, min %s, max %s, Z_score %.2f).' %\
                                               (value_name, value, avg_value, std_value, min_value, max_value, z_score)
 
                                         self.report.error.appendDescription('anomalous_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
@@ -4170,7 +4198,7 @@ class NmrDpUtility(object):
 
                                     elif abs(z_score) > 7.5:
 
-                                        warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_id) + '] %s %s must be verified (avg %s, std %s, min %s, max %s, Z_score %.2f).' %\
+                                        warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] %s %s must be verified (avg %s, std %s, min %s, max %s, Z_score %.2f).' %\
                                                (value_name, value, avg_value, std_value, min_value, max_value, z_score)
 
                                         self.report.warning.appendDescription('suspicious_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
@@ -4181,7 +4209,7 @@ class NmrDpUtility(object):
 
                                     elif abs(z_score) > 5.3:
 
-                                        warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_id) + '] %s %s should be verified (avg %s, std %s, min %s, max %s, Z_score %.2f).' %\
+                                        warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] %s %s should be verified (avg %s, std %s, min %s, max %s, Z_score %.2f).' %\
                                                (value_name, value, avg_value, std_value, min_value, max_value, z_score)
 
                                         self.report.warning.appendDescription('unusual_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
@@ -4192,7 +4220,7 @@ class NmrDpUtility(object):
 
                                     elif not cs_stat['primary']:
 
-                                        warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_id) + '] %s %s is remarkable assignment (appearance rate %s).' %\
+                                        warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] %s %s is remarkable assignment (appearance rate %s).' %\
                                                (value_name, value, cs_stat['norm_freq'], lp_category)
 
                                         self.report.warning.appendDescription('remarkable_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
@@ -4206,7 +4234,7 @@ class NmrDpUtility(object):
 
                                     if value < min_value - tolerance or value > max_value + tolerance:
 
-                                        err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_id) + '] %s %s is out of range (avg %s, std %s, min %s, max %s, Z_score %.2f).' %\
+                                        err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] %s %s is out of range (avg %s, std %s, min %s, max %s, Z_score %.2f).' %\
                                               (value_name, value, avg_value, std_value, min_value, max_value, z_score)
 
                                         self.report.error.appendDescription('anomalous_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
@@ -4217,7 +4245,7 @@ class NmrDpUtility(object):
 
                                     elif abs(z_score) > 10.0:
 
-                                        warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_id) + '] %s %s must be verified (avg %s, std %s, min %s, max %s, Z_score %.2f).' %\
+                                        warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] %s %s must be verified (avg %s, std %s, min %s, max %s, Z_score %.2f).' %\
                                                (value_name, value, avg_value, std_value, min_value, max_value, z_score)
 
                                         self.report.warning.appendDescription('suspicious_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
@@ -4230,34 +4258,6 @@ class NmrDpUtility(object):
 
                     # standard residue
                     else:
-
-                        if file_type == 'nef':
-                            _atom_id, ambig_code, details = self.__nefT.get_nmrstar_atom(comp_id, atom_id, leave_unmatched=True)
-
-                            if len(_atom_id) == 0:
-                                continue
-
-                            if len(_atom_id) == 1 and atom_id == _atom_id[0]:
-                                atom_id_ = atom_id
-                                atom_name = atom_id
-
-                                if not details is None:
-                                    atom_name += ', ' + details.rstrip('.')
-
-                            else:
-                                atom_name = atom_id + ' (e.g. '
-
-                                for atom_id_ in _atom_id:
-                                    atom_name += atom_id_ + ' '
-
-                                atom_name = atom_name.rstrip() + ')'
-
-                                # representative atom id
-                                atom_id_ = _atom_id[0]
-
-                        else:
-                            atom_id_ = atom_id
-                            atom_name = atom_id
 
                         for cs_stat in self.__csStat.get(comp_id, self.report.isDiamagnetic()):
 
@@ -4352,7 +4352,7 @@ class NmrDpUtility(object):
 
                     if not has_cs_stat:
 
-                        warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_id) + '] No chemical shift statistics is available to verify %s %s.' %\
+                        warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] No chemical shift statistics is available to verify %s %s.' %\
                                (value_name, value)
 
                         self.report.warning.appendDescription('unusual_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
@@ -5186,7 +5186,108 @@ class NmrDpUtility(object):
                                         self.__lfh.write("+NmrDpUtility.__calculateStatsOfExptlData() ++ Warning  - %s\n" % warn)
 
                         if content_subtype == 'chem_shift':
-                            self.__calculateStatsOfAssignedChemShift(lp_data, ent)
+
+                            try:
+
+                                item_names = self.item_names_in_cs_loop[file_type]
+
+                                anomalous_errs = self.report.error.getValueListWithSf('anomalous_data', file_name, sf_framecode, key='Z_score')
+                                suspicious_warns = self.report.warning.getValueListWithSf('suspicious_data', file_name, sf_framecode, key='Z_score')
+                                unusual_warns = self.report.warning.getValueListWithSf('unusual_data', file_name, sf_framecode, key='Z_score')
+
+                                pattern = r'^' + item_names['value'] + r' ([+-]?([0-9]*[.])?[0-9]+) (.*) Z_score ([+-]?([0-9]*[.])?[0-9]+)\)\.$'
+
+                                p = re.compile(pattern)
+
+                                cs_ann = []
+
+                                if not anomalous_errs is None:
+
+                                    for a_err in anomalous_errs:
+                                        ann = {}
+                                        ann['level'] = 'anomalous'
+                                        ann['chain_id'] = a_err['row_location'][item_names['chain_id']]
+                                        ann['seq_id'] = int(a_err['row_location'][item_names['seq_id']])
+                                        ann['comp_id'] = a_err['row_location'][item_names['comp_id']]
+                                        ann['atom_id'] = a_err['row_location'][item_names['atom_id']]
+                                        g = p.search(a_err['description']).groups()
+                                        ann['value'] = float(g[0])
+                                        ann['z_score'] = float(g[3])
+
+                                        comp_id = ann['comp_id']
+                                        atom_id = ann['atom_id'].split(' ')[0]
+
+                                        polypeptide_like = self.__csStat.getTypeOfCompId(comp_id)[0]
+
+                                        if self.__csStat.hasEnoughStat(comp_id, polypeptide_like):
+                                            non_rep_methyl_pros = self.__csStat.getNonRepresentativeMethylProtons(comp_id, excl_minor_atom=True, primary=polypeptide_like)
+
+                                            if atom_id in non_rep_methyl_pros:
+                                                continue
+
+                                        cs_ann.append(ann)
+
+                                if not suspicious_warns is None:
+
+                                    for s_warn in suspicious_warns:
+                                        ann = {}
+                                        ann['level'] = 'suspicious'
+                                        ann['chain_id'] = s_warn['row_location'][item_names['chain_id']]
+                                        ann['seq_id'] = int(s_warn['row_location'][item_names['seq_id']])
+                                        ann['comp_id'] = s_warn['row_location'][item_names['comp_id']]
+                                        ann['atom_id'] = s_warn['row_location'][item_names['atom_id']]
+                                        g = p.search(s_warn['description']).groups()
+                                        ann['value'] = float(g[0])
+                                        ann['z_score'] = float(g[3])
+
+                                        comp_id = ann['comp_id']
+                                        atom_id = ann['atom_id'].split(' ')[0]
+
+                                        polypeptide_like = self.__csStat.getTypeOfCompId(comp_id)[0]
+
+                                        if self.__csStat.hasEnoughStat(comp_id, polypeptide_like):
+                                            non_rep_methyl_pros = self.__csStat.getNonRepresentativeMethylProtons(comp_id, excl_minor_atom=True, primary=polypeptide_like)
+
+                                            if atom_id in non_rep_methyl_pros:
+                                                continue
+
+                                        cs_ann.append(ann)
+
+                                if not unusual_warns is None:
+
+                                    for u_warn in unusual_warns:
+                                        ann = {}
+                                        ann['level'] = 'unusual'
+                                        ann['chain_id'] = u_warn['row_location'][item_names['chain_id']]
+                                        ann['seq_id'] = int(u_warn['row_location'][item_names['seq_id']])
+                                        ann['comp_id'] = u_warn['row_location'][item_names['comp_id']]
+                                        ann['atom_id'] = u_warn['row_location'][item_names['atom_id']]
+                                        g = p.search(u_warn['description']).groups()
+                                        ann['value'] = float(g[0])
+                                        ann['z_score'] = float(g[3])
+
+                                        comp_id = ann['comp_id']
+                                        atom_id = ann['atom_id'].split(' ')[0]
+
+                                        polypeptide_like = self.__csStat.getTypeOfCompId(comp_id)[0]
+
+                                        if self.__csStat.hasEnoughStat(comp_id, polypeptide_like):
+                                            non_rep_methyl_pros = self.__csStat.getNonRepresentativeMethylProtons(comp_id, excl_minor_atom=True, primary=polypeptide_like)
+
+                                            if atom_id in non_rep_methyl_pros:
+                                                continue
+
+                                        cs_ann.append(ann)
+
+                            except Exception as e:
+
+                                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__calculateStatsOfExptlData() ++ Error  - %s" % str(e))
+                                self.report.setError()
+
+                                if self.__verbose:
+                                    self.__lfh.write("+NmrDpUtility.__calculateStatsOfExptlData() ++ Error  - %s" % str(e))
+
+                            self.__calculateStatsOfAssignedChemShift(lp_data, cs_ann, ent)
 
                         elif content_subtype == 'dist_restraint':
                             self.__calculateStatsOfDistanceRestraint(lp_data, ent)
@@ -5251,7 +5352,7 @@ class NmrDpUtility(object):
 
         return self.report.getTotalErrors() == __errors
 
-    def __calculateStatsOfAssignedChemShift(self, lp_data, ent):
+    def __calculateStatsOfAssignedChemShift(self, lp_data, cs_ann, ent):
         """ Calculate statistics of assigned chemical shifts.
         """
 
@@ -5260,142 +5361,163 @@ class NmrDpUtility(object):
 
         file_type = input_source_dic['file_type']
 
-        cs_item_names = self.item_names_in_cs_loop[file_type]
-        cs_chain_id_name = cs_item_names['chain_id']
-        cs_seq_id_name = cs_item_names['seq_id']
-        cs_comp_id_name = cs_item_names['comp_id']
-        cs_atom_id_name = cs_item_names['atom_id']
-        cs_value_name = cs_item_names['value']
-        cs_atom_type = cs_item_names['atom_type']
-        cs_iso_number = cs_item_names['isotope_number']
+        item_names = self.item_names_in_cs_loop[file_type]
+        chain_id_name = item_names['chain_id']
+        seq_id_name = item_names['seq_id']
+        comp_id_name = item_names['comp_id']
+        atom_id_name = item_names['atom_id']
+        value_name = item_names['value']
+        atom_type = item_names['atom_type']
+        iso_number = item_names['isotope_number']
 
-        count = {}
+        try:
 
-        for i in lp_data:
+            count = {}
 
-            if i[cs_atom_type] in self.empty_value or i[cs_iso_number] in self.empty_value or cs_value_name in self.empty_value:
-                continue
+            for i in lp_data:
 
-            data_type = str(i[cs_iso_number]) + i[cs_atom_type].lower() + '_chemical_shifts'
+                if i[atom_type] in self.empty_value or i[iso_number] in self.empty_value or value_name in self.empty_value:
+                    continue
 
-            if data_type in count:
-                count[data_type] += 1
-            else:
-                count[data_type] = 1
+                data_type = str(i[iso_number]) + i[atom_type].lower() + '_chemical_shifts'
 
-        if len(count) > 0:
-            ent['number_of_assignments'] = count
+                if data_type in count:
+                    count[data_type] += 1
+                else:
+                    count[data_type] = 1
 
-        polymer_sequence = input_source_dic['polymer_sequence']
+            if len(count) > 0:
+                ent['number_of_assignments'] = count
 
-        if polymer_sequence is None:
-            return
+            polymer_sequence = input_source_dic['polymer_sequence']
 
-        if 'sequence_coverage' in ent:
+            if polymer_sequence is None:
+                return
 
-            completeness = []
+            if 'sequence_coverage' in ent:
 
-            for sc in ent['sequence_coverage']:
+                completeness = []
 
-                cc = {}
+                for sc in ent['sequence_coverage']:
 
-                chain_id = sc['chain_id']
+                    cc = {}
 
-                cc['chain_id'] = chain_id
+                    chain_id = sc['chain_id']
 
-                # all atoms
+                    cc['chain_id'] = chain_id
 
-                all_c = []
+                    # all atoms
 
-                excluded_comp_id = []
-                excluded_atom_id = []
+                    all_c = []
 
-                id = 0
+                    excluded_comp_id = []
+                    excluded_atom_id = []
 
-                h1_col = -1
-                c13_col = -1
-                n15_col = -1
-                p31_col = -1
+                    id = 0
 
-                for data_type in count:
+                    h1_col = -1
+                    c13_col = -1
+                    n15_col = -1
+                    p31_col = -1
 
-                    atom_group = {}
-                    atom_group['atom_group'] = 'all_' + data_type
-                    atom_group['number_of_assigned_shifts'] = 0
-                    atom_group['number_of_target_shifts'] = 0
-                    atom_group['completeness'] = 0.0
+                    for data_type in count:
 
-                    if data_type.startswith('1h'):
-                        h1_col = id
+                        atom_group = {}
+                        atom_group['atom_group'] = 'all_' + data_type
+                        atom_group['number_of_assigned_shifts'] = 0
+                        atom_group['number_of_target_shifts'] = 0
+                        atom_group['completeness'] = 0.0
 
-                    elif data_type.startswith('13c'):
-                        c13_col = id
+                        if data_type.startswith('1h'):
+                            h1_col = id
 
-                    elif data_type.startswith('15n'):
-                        n15_col = id
+                        elif data_type.startswith('13c'):
+                            c13_col = id
 
-                    elif data_type.startswith('31p'):
-                        p31_col = id
+                        elif data_type.startswith('15n'):
+                            n15_col = id
 
-                    id += 1
+                        elif data_type.startswith('31p'):
+                            p31_col = id
 
-                    all_c.append(atom_group)
+                        id += 1
 
-                for s in polymer_sequence:
+                        all_c.append(atom_group)
 
-                    if s['chain_id'] == chain_id:
+                    for s in polymer_sequence:
 
-                        for i in range(len(s['seq_id'])):
-                            seq_id = s['seq_id'][i]
-                            comp_id = s['comp_id'][i]
+                        if s['chain_id'] == chain_id:
 
-                            polypeptide_like = self.__csStat.getTypeOfCompId(comp_id)[0]
+                            for i in range(len(s['seq_id'])):
+                                seq_id = s['seq_id'][i]
+                                comp_id = s['comp_id'][i]
 
-                            if self.__csStat.hasEnoughStat(comp_id, polypeptide_like):
+                                polypeptide_like = self.__csStat.getTypeOfCompId(comp_id)[0]
 
-                                all_atoms = self.__csStat.getAllAtoms(comp_id, excl_minor_atom=True, primary=polypeptide_like)
-                                non_excl_atoms = self.__csStat.getAllAtoms(comp_id, excl_minor_atom=False)
-                                non_rep_methyl_pros = self.__csStat.getNonRepresentativeMethylProtons(comp_id, excl_minor_atom=True, primary=polypeptide_like)
+                                if self.__csStat.hasEnoughStat(comp_id, polypeptide_like):
 
-                                for a in all_atoms:
+                                    all_atoms = self.__csStat.getAllAtoms(comp_id, excl_minor_atom=True, primary=polypeptide_like)
+                                    non_excl_atoms = self.__csStat.getAllAtoms(comp_id, excl_minor_atom=False)
+                                    non_rep_methyl_pros = self.__csStat.getNonRepresentativeMethylProtons(comp_id, excl_minor_atom=True, primary=polypeptide_like)
 
-                                    if a.startswith('H') and not a in non_rep_methyl_pros:
-                                        all_c[h1_col]['number_of_target_shifts'] += 1
+                                    for a in all_atoms:
 
-                                    elif a.startswith('C') and c13_col != -1:
-                                        all_c[c13_col]['number_of_target_shifts'] += 1
+                                        if a.startswith('H') and not a in non_rep_methyl_pros:
+                                            all_c[h1_col]['number_of_target_shifts'] += 1
 
-                                    elif a.startswith('N') and n15_col != -1:
-                                        all_c[n15_col]['number_of_target_shifts'] += 1
+                                        elif a.startswith('C') and c13_col != -1:
+                                            all_c[c13_col]['number_of_target_shifts'] += 1
 
-                                    elif a.startswith('P') and p31_col != -1:
-                                        all_c[p31_col]['number_of_target_shifts'] += 1
+                                        elif a.startswith('N') and n15_col != -1:
+                                            all_c[n15_col]['number_of_target_shifts'] += 1
 
-                                for i in lp_data:
+                                        elif a.startswith('P') and p31_col != -1:
+                                            all_c[p31_col]['number_of_target_shifts'] += 1
 
-                                    if file_type == 'nef':
-                                        _chain_id = i[cs_chain_id_name]
-                                    else:
-                                        _chain_id = str(i[cs_chain_id_name])
+                                    for i in lp_data:
 
-                                    if _chain_id != chain_id or i[cs_seq_id_name] != seq_id or i[cs_comp_id_name] != comp_id or i[cs_value_name] in self.empty_value:
-                                        continue
+                                        if file_type == 'nef':
+                                            _chain_id = i[chain_id_name]
+                                        else:
+                                            _chain_id = str(i[chain_id_name])
 
-                                    atom_id = i[cs_atom_id_name]
-                                    data_type = str(i[cs_iso_number]) + i[cs_atom_type]
-
-                                    if file_type == 'nef':
-
-                                        atom_ids = self.__nefT.get_nmrstar_atom(comp_id, atom_id, leave_unmatched=False)[0]
-
-                                        if len(atom_ids) == 0:
+                                        if _chain_id != chain_id or i[seq_id_name] != seq_id or i[comp_id_name] != comp_id or i[value_name] in self.empty_value:
                                             continue
 
-                                        for a in atom_ids:
+                                        atom_id = i[atom_id_name]
+                                        data_type = str(i[iso_number]) + i[atom_type]
 
-                                            if a in all_atoms:
+                                        if file_type == 'nef':
 
-                                                if data_type == '1H' and not a in non_rep_methyl_pros:
+                                            atom_ids = self.__nefT.get_nmrstar_atom(comp_id, atom_id, leave_unmatched=False)[0]
+
+                                            if len(atom_ids) == 0:
+                                                continue
+
+                                            for a in atom_ids:
+
+                                                if a in all_atoms:
+
+                                                    if data_type == '1H' and not a in non_rep_methyl_pros:
+                                                        all_c[h1_col]['number_of_assigned_shifts'] += 1
+
+                                                    elif data_type == '13C':
+                                                        all_c[c13_col]['number_of_assigned_shifts'] += 1
+
+                                                    elif data_type == '15N':
+                                                        all_c[n15_col]['number_of_assigned_shifts'] += 1
+
+                                                    elif data_type == '31P':
+                                                        all_c[p31_col]['number_of_assigned_shifts'] += 1
+
+                                                elif a in non_excl_atoms:
+                                                    excluded_atom_id.append({'seq_id': seq_id, 'comp_id': comp_id, 'atom_id': a, 'value': i[value_name]})
+
+                                        else:
+
+                                            if atom_id in all_atoms:
+
+                                                if data_type == '1H' and not atom_id in non_rep_methyl_pros:
                                                     all_c[h1_col]['number_of_assigned_shifts'] += 1
 
                                                 elif data_type == '13C':
@@ -5407,505 +5529,634 @@ class NmrDpUtility(object):
                                                 elif data_type == '31P':
                                                     all_c[p31_col]['number_of_assigned_shifts'] += 1
 
-                                            elif a in non_excl_atoms:
-                                                excluded_atom_id.append({'seq_id': seq_id, 'comp_id': comp_id, 'atom_id': a, 'value': i[cs_value_name]})
+                                            elif atom_id in non_excl_atoms:
+                                                excluded_atom_id.append({'seq_id': seq_id, 'comp_id': comp_id, 'atom_id': atom_id, 'value': i[value_name]})
 
-                                    else:
+                                else:
+                                    excluded_comp_id.append({'seq_id': seq_id, 'comp_id': comp_id})
 
-                                        if atom_id in all_atoms:
+                            for c in all_c:
+                                if c['number_of_target_shifts'] > 0:
+                                    c['completeness'] = float('{:.3f}'.format(float(c['number_of_assigned_shifts']) / float(c['number_of_target_shifts'])))
+
+                            break
+
+                    cc['completeness_of_all_assignments'] = all_c
+
+                    cc['excluded_comp_id_in_statistics'] = excluded_comp_id if len(excluded_comp_id) > 0 else None
+                    cc['excluded_atom_id_in_statistics'] = excluded_atom_id if len(excluded_atom_id) > 0 else None
+
+                    # backbone atoms (bb)
+
+                    bb_c = []
+
+                    id = 0
+
+                    h1_col = -1
+                    c13_col = -1
+                    n15_col = -1
+                    p31_col = -1
+
+                    for data_type in count:
+
+                        atom_group = {}
+                        atom_group['atom_group'] = 'backbone_' + data_type
+                        atom_group['number_of_assigned_shifts'] = 0
+                        atom_group['number_of_target_shifts'] = 0
+                        atom_group['completeness'] = 0.0
+
+                        if data_type.startswith('1h'):
+                            h1_col = id
+
+                        elif data_type.startswith('13c'):
+                            c13_col = id
+
+                        elif data_type.startswith('15n'):
+                            n15_col = id
+
+                        elif data_type.startswith('31p'):
+                            p31_col = id
+
+                        id += 1
+
+                        bb_c.append(atom_group)
+
+                    for s in polymer_sequence:
+
+                        if s['chain_id'] == chain_id:
+
+                            for i in range(len(s['seq_id'])):
+                                seq_id = s['seq_id'][i]
+                                comp_id = s['comp_id'][i]
+
+                                polypeptide_like = self.__csStat.getTypeOfCompId(comp_id)[0]
+
+                                if self.__csStat.hasEnoughStat(comp_id, polypeptide_like):
+
+                                    bb_atoms = self.__csStat.getBackBoneAtoms(comp_id, excl_minor_atom=True)
+                                    non_rep_methyl_pros = self.__csStat.getNonRepresentativeMethylProtons(comp_id, excl_minor_atom=True, primary=polypeptide_like)
+
+                                    for a in bb_atoms:
+
+                                        if a.startswith('H') and h1_col != -1 and not a in non_rep_methyl_pros:
+                                            bb_c[h1_col]['number_of_target_shifts'] += 1
+
+                                        elif a.startswith('C') and c13_col != -1:
+                                            bb_c[c13_col]['number_of_target_shifts'] += 1
+
+                                        elif a.startswith('N') and n15_col != -1:
+                                            bb_c[n15_col]['number_of_target_shifts'] += 1
+
+                                        elif a.startswith('P') and p31_col != -1:
+                                            bb_c[p31_col]['number_of_target_shifts'] += 1
+
+                                    for i in lp_data:
+
+                                        if file_type == 'nef':
+                                            _chain_id = i[chain_id_name]
+                                        else:
+                                            _chain_id = str(i[chain_id_name])
+
+                                        if _chain_id != chain_id or i[seq_id_name] != seq_id or i[comp_id_name] != comp_id or i[value_name] in self.empty_value:
+                                            continue
+
+                                        atom_id = i[atom_id_name]
+                                        data_type = str(i[iso_number]) + i[atom_type]
+
+                                        if file_type == 'nef':
+
+                                            atom_ids = self.__nefT.get_nmrstar_atom(comp_id, atom_id, leave_unmatched=False)[0]
+
+                                            if len(atom_ids) == 0:
+                                                continue
+
+                                            for a in atom_ids:
+
+                                                if a in bb_atoms:
+
+                                                    if data_type == '1H' and not a in non_rep_methyl_pros:
+                                                        bb_c[h1_col]['number_of_assigned_shifts'] += 1
+
+                                                    elif data_type == '13C':
+                                                        bb_c[c13_col]['number_of_assigned_shifts'] += 1
+
+                                                    elif data_type == '15N':
+                                                        bb_c[n15_col]['number_of_assigned_shifts'] += 1
+
+                                                    elif data_type == '31P':
+                                                        bb_c[p31_col]['number_of_assigned_shifts'] += 1
+
+                                        elif atom_id in bb_atoms:
 
                                             if data_type == '1H' and not atom_id in non_rep_methyl_pros:
-                                                all_c[h1_col]['number_of_assigned_shifts'] += 1
+                                                bb_c[h1_col]['number_of_assigned_shifts'] += 1
 
                                             elif data_type == '13C':
-                                                all_c[c13_col]['number_of_assigned_shifts'] += 1
+                                                bb_c[c13_col]['number_of_assigned_shifts'] += 1
 
                                             elif data_type == '15N':
-                                                all_c[n15_col]['number_of_assigned_shifts'] += 1
+                                                bb_c[n15_col]['number_of_assigned_shifts'] += 1
 
                                             elif data_type == '31P':
-                                                all_c[p31_col]['number_of_assigned_shifts'] += 1
+                                                bb_c[p31_col]['number_of_assigned_shifts'] += 1
 
-                                        elif atom_id in non_excl_atoms:
-                                            excluded_atom_id.append({'seq_id': seq_id, 'comp_id': comp_id, 'atom_id': atom_id, 'value': i[cs_value_name]})
+                            for c in bb_c:
+                                if c['number_of_target_shifts'] > 0:
+                                    c['completeness'] = float('{:.3f}'.format(float(c['number_of_assigned_shifts']) / float(c['number_of_target_shifts'])))
 
-                            else:
-                                excluded_comp_id.append({'seq_id': seq_id, 'comp_id': comp_id})
+                            break
 
-                        for c in all_c:
-                            if c['number_of_target_shifts'] > 0:
-                                c['completeness'] = float('{:.3f}'.format(float(c['number_of_assigned_shifts']) / float(c['number_of_target_shifts'])))
+                    if len(bb_c) > 0:
+                        cc['completeness_of_backbone_assignments'] = bb_c
 
-                        break
+                    # sidechain atoms (sc)
 
-                cc['completeness_of_all_assignments'] = all_c
+                    sc_c = []
 
-                cc['excluded_comp_id_in_statistics'] = excluded_comp_id if len(excluded_comp_id) > 0 else None
-                cc['excluded_atom_id_in_statistics'] = excluded_atom_id if len(excluded_atom_id) > 0 else None
+                    id = 0
 
-                # backbone atoms (bb)
+                    h1_col = -1
+                    c13_col = -1
+                    n15_col = -1
+                    p31_col = -1
 
-                bb_c = []
+                    for data_type in count:
 
-                id = 0
+                        atom_group = {}
+                        atom_group['atom_group'] = 'sidechain_' + data_type
+                        atom_group['number_of_assigned_shifts'] = 0
+                        atom_group['number_of_target_shifts'] = 0
+                        atom_group['completeness'] = 0.0
 
-                h1_col = -1
-                c13_col = -1
-                n15_col = -1
-                p31_col = -1
+                        if data_type.startswith('1h'):
+                            h1_col = id
 
-                for data_type in count:
+                        elif data_type.startswith('13c'):
+                            c13_col = id
 
-                    atom_group = {}
-                    atom_group['atom_group'] = 'backbone_' + data_type
-                    atom_group['number_of_assigned_shifts'] = 0
-                    atom_group['number_of_target_shifts'] = 0
-                    atom_group['completeness'] = 0.0
+                        elif data_type.startswith('15n'):
+                            n15_col = id
 
-                    if data_type.startswith('1h'):
-                        h1_col = id
+                        elif data_type.startswith('31p'):
+                            p31_col = id
 
-                    elif data_type.startswith('13c'):
-                        c13_col = id
+                        id += 1
 
-                    elif data_type.startswith('15n'):
-                        n15_col = id
+                        sc_c.append(atom_group)
 
-                    elif data_type.startswith('31p'):
-                        p31_col = id
+                    for s in polymer_sequence:
 
-                    id += 1
+                        if s['chain_id'] == chain_id:
 
-                    bb_c.append(atom_group)
+                            for i in range(len(s['seq_id'])):
+                                seq_id = s['seq_id'][i]
+                                comp_id = s['comp_id'][i]
 
-                for s in polymer_sequence:
+                                polypeptide_like = self.__csStat.getTypeOfCompId(comp_id)[0]
 
-                    if s['chain_id'] == chain_id:
+                                if self.__csStat.hasEnoughStat(comp_id, polypeptide_like):
 
-                        for i in range(len(s['seq_id'])):
-                            seq_id = s['seq_id'][i]
-                            comp_id = s['comp_id'][i]
+                                    sc_atoms = self.__csStat.getSideChainAtoms(comp_id, excl_minor_atom=True)
+                                    non_rep_methyl_pros = self.__csStat.getNonRepresentativeMethylProtons(comp_id, excl_minor_atom=True, primary=polypeptide_like)
 
-                            polypeptide_like = self.__csStat.getTypeOfCompId(comp_id)[0]
+                                    for a in sc_atoms:
 
-                            if self.__csStat.hasEnoughStat(comp_id, polypeptide_like):
+                                        if a.startswith('H') and h1_col != -1 and not a in non_rep_methyl_pros:
+                                            sc_c[h1_col]['number_of_target_shifts'] += 1
 
-                                bb_atoms = self.__csStat.getBackBoneAtoms(comp_id, excl_minor_atom=True)
-                                non_rep_methyl_pros = self.__csStat.getNonRepresentativeMethylProtons(comp_id, excl_minor_atom=True, primary=polypeptide_like)
+                                        elif a.startswith('C') and c13_col != -1:
+                                            sc_c[c13_col]['number_of_target_shifts'] += 1
 
-                                for a in bb_atoms:
+                                        elif a.startswith('N') and n15_col != -1:
+                                            sc_c[n15_col]['number_of_target_shifts'] += 1
 
-                                    if a.startswith('H') and h1_col != -1 and not a in non_rep_methyl_pros:
-                                        bb_c[h1_col]['number_of_target_shifts'] += 1
+                                        elif a.startswith('P') and p31_col != -1:
+                                            sc_c[p31_col]['number_of_target_shifts'] += 1
 
-                                    elif a.startswith('C') and c13_col != -1:
-                                        bb_c[c13_col]['number_of_target_shifts'] += 1
+                                    for i in lp_data:
 
-                                    elif a.startswith('N') and n15_col != -1:
-                                        bb_c[n15_col]['number_of_target_shifts'] += 1
+                                        if file_type == 'nef':
+                                            _chain_id = i[chain_id_name]
+                                        else:
+                                            _chain_id = str(i[chain_id_name])
 
-                                    elif a.startswith('P') and p31_col != -1:
-                                        bb_c[p31_col]['number_of_target_shifts'] += 1
-
-                                for i in lp_data:
-
-                                    if file_type == 'nef':
-                                        _chain_id = i[cs_chain_id_name]
-                                    else:
-                                        _chain_id = str(i[cs_chain_id_name])
-
-                                    if _chain_id != chain_id or i[cs_seq_id_name] != seq_id or i[cs_comp_id_name] != comp_id or i[cs_value_name] in self.empty_value:
-                                        continue
-
-                                    atom_id = i[cs_atom_id_name]
-                                    data_type = str(i[cs_iso_number]) + i[cs_atom_type]
-
-                                    if file_type == 'nef':
-
-                                        atom_ids = self.__nefT.get_nmrstar_atom(comp_id, atom_id, leave_unmatched=False)[0]
-
-                                        if len(atom_ids) == 0:
+                                        if _chain_id != chain_id or i[seq_id_name] != seq_id or i[comp_id_name] != comp_id or i[value_name] in self.empty_value:
                                             continue
 
-                                        for a in atom_ids:
+                                        atom_id = i[atom_id_name]
+                                        data_type = str(i[iso_number]) + i[atom_type]
 
-                                            if a in bb_atoms:
+                                        if file_type == 'nef':
 
-                                                if data_type == '1H' and not a in non_rep_methyl_pros:
-                                                    bb_c[h1_col]['number_of_assigned_shifts'] += 1
+                                            atom_ids = self.__nefT.get_nmrstar_atom(comp_id, atom_id, leave_unmatched=False)[0]
 
-                                                elif data_type == '13C':
-                                                    bb_c[c13_col]['number_of_assigned_shifts'] += 1
+                                            if len(atom_ids) == 0:
+                                                continue
 
-                                                elif data_type == '15N':
-                                                    bb_c[n15_col]['number_of_assigned_shifts'] += 1
+                                            for a in atom_ids:
 
-                                                elif data_type == '31P':
-                                                    bb_c[p31_col]['number_of_assigned_shifts'] += 1
+                                                if a in sc_atoms:
 
-                                    elif atom_id in bb_atoms:
+                                                    if data_type == '1H' and not a in non_rep_methyl_pros:
+                                                        sc_c[h1_col]['number_of_assigned_shifts'] += 1
 
-                                        if data_type == '1H' and not atom_id in non_rep_methyl_pros:
-                                            bb_c[h1_col]['number_of_assigned_shifts'] += 1
+                                                    elif data_type == '13C':
+                                                        sc_c[c13_col]['number_of_assigned_shifts'] += 1
 
-                                        elif data_type == '13C':
-                                            bb_c[c13_col]['number_of_assigned_shifts'] += 1
+                                                    elif data_type == '15N':
+                                                        sc_c[n15_col]['number_of_assigned_shifts'] += 1
 
-                                        elif data_type == '15N':
-                                            bb_c[n15_col]['number_of_assigned_shifts'] += 1
+                                                    elif data_type == '31P':
+                                                        sc_c[p31_col]['number_of_assigned_shifts'] += 1
 
-                                        elif data_type == '31P':
-                                            bb_c[p31_col]['number_of_assigned_shifts'] += 1
+                                        elif atom_id in sc_atoms:
 
-                        for c in bb_c:
-                            if c['number_of_target_shifts'] > 0:
-                                c['completeness'] = float('{:.3f}'.format(float(c['number_of_assigned_shifts']) / float(c['number_of_target_shifts'])))
+                                            if data_type == '1H' and not atom_id in non_rep_methyl_pros:
+                                                sc_c[h1_col]['number_of_assigned_shifts'] += 1
 
-                        break
+                                            elif data_type == '13C':
+                                                sc_c[c13_col]['number_of_assigned_shifts'] += 1
 
-                if len(bb_c) > 0:
-                    cc['completeness_of_backbone_assignments'] = bb_c
+                                            elif data_type == '15N':
+                                                sc_c[n15_col]['number_of_assigned_shifts'] += 1
 
-                # sidechain atoms (sc)
+                                            elif data_type == '31P':
+                                                sc_c[p31_col]['number_of_assigned_shifts'] += 1
 
-                sc_c = []
+                            for c in sc_c:
+                                if c['number_of_target_shifts'] > 0:
+                                    c['completeness'] = float('{:.3f}'.format(float(c['number_of_assigned_shifts']) / float(c['number_of_target_shifts'])))
 
-                id = 0
+                            break
 
-                h1_col = -1
-                c13_col = -1
-                n15_col = -1
-                p31_col = -1
+                    if len(sc_c) > 0:
+                        cc['completeness_of_sidechain_assignments'] = sc_c
 
-                for data_type in count:
+                    # methyl group atoms (ch3)
 
-                    atom_group = {}
-                    atom_group['atom_group'] = 'sidechain_' + data_type
-                    atom_group['number_of_assigned_shifts'] = 0
-                    atom_group['number_of_target_shifts'] = 0
-                    atom_group['completeness'] = 0.0
+                    ch3_c = []
 
-                    if data_type.startswith('1h'):
-                        h1_col = id
+                    id = 0
 
-                    elif data_type.startswith('13c'):
-                        c13_col = id
+                    h1_col = -1
+                    c13_col = -1
 
-                    elif data_type.startswith('15n'):
-                        n15_col = id
+                    for data_type in count:
 
-                    elif data_type.startswith('31p'):
-                        p31_col = id
+                        atom_group = {}
+                        atom_group['atom_group'] = 'methyl_' + data_type
+                        atom_group['number_of_assigned_shifts'] = 0
+                        atom_group['number_of_target_shifts'] = 0
+                        atom_group['completeness'] = 0.0
 
-                    id += 1
+                        if data_type.startswith('1h'):
+                            h1_col = id
 
-                    sc_c.append(atom_group)
+                        elif data_type.startswith('13c'):
+                            c13_col = id
 
-                for s in polymer_sequence:
+                        else:
+                            continue
 
-                    if s['chain_id'] == chain_id:
+                        id += 1
 
-                        for i in range(len(s['seq_id'])):
-                            seq_id = s['seq_id'][i]
-                            comp_id = s['comp_id'][i]
+                        ch3_c.append(atom_group)
 
-                            polypeptide_like = self.__csStat.getTypeOfCompId(comp_id)[0]
+                    for s in polymer_sequence:
 
-                            if self.__csStat.hasEnoughStat(comp_id, polypeptide_like):
+                        if s['chain_id'] == chain_id:
 
-                                sc_atoms = self.__csStat.getSideChainAtoms(comp_id, excl_minor_atom=True)
-                                non_rep_methyl_pros = self.__csStat.getNonRepresentativeMethylProtons(comp_id, excl_minor_atom=True, primary=polypeptide_like)
+                            for i in range(len(s['seq_id'])):
+                                seq_id = s['seq_id'][i]
+                                comp_id = s['comp_id'][i]
 
-                                for a in sc_atoms:
+                                polypeptide_like = self.__csStat.getTypeOfCompId(comp_id)[0]
 
-                                    if a.startswith('H') and h1_col != -1 and not a in non_rep_methyl_pros:
-                                        sc_c[h1_col]['number_of_target_shifts'] += 1
+                                if self.__csStat.hasEnoughStat(comp_id, polypeptide_like):
 
-                                    elif a.startswith('C') and c13_col != -1:
-                                        sc_c[c13_col]['number_of_target_shifts'] += 1
+                                    ch3_atoms = self.__csStat.getMethylAtoms(comp_id, excl_minor_atom=True, primary=polypeptide_like)
+                                    non_rep_methyl_pros = self.__csStat.getNonRepresentativeMethylProtons(comp_id, excl_minor_atom=True, primary=polypeptide_like)
 
-                                    elif a.startswith('N') and n15_col != -1:
-                                        sc_c[n15_col]['number_of_target_shifts'] += 1
+                                    for a in ch3_atoms:
 
-                                    elif a.startswith('P') and p31_col != -1:
-                                        sc_c[p31_col]['number_of_target_shifts'] += 1
+                                        if a.startswith('H') and h1_col != -1 and not a in non_rep_methyl_pros:
+                                            ch3_c[h1_col]['number_of_target_shifts'] += 1
 
-                                for i in lp_data:
+                                        elif a.startswith('C') and c13_col != -1:
+                                            ch3_c[c13_col]['number_of_target_shifts'] += 1
 
-                                    if file_type == 'nef':
-                                        _chain_id = i[cs_chain_id_name]
-                                    else:
-                                        _chain_id = str(i[cs_chain_id_name])
+                                    for i in lp_data:
 
-                                    if _chain_id != chain_id or i[cs_seq_id_name] != seq_id or i[cs_comp_id_name] != comp_id or i[cs_value_name] in self.empty_value:
-                                        continue
+                                        if file_type == 'nef':
+                                            _chain_id = i[chain_id_name]
+                                        else:
+                                            _chain_id = str(i[chain_id_name])
 
-                                    atom_id = i[cs_atom_id_name]
-                                    data_type = str(i[cs_iso_number]) + i[cs_atom_type]
-
-                                    if file_type == 'nef':
-
-                                        atom_ids = self.__nefT.get_nmrstar_atom(comp_id, atom_id, leave_unmatched=False)[0]
-
-                                        if len(atom_ids) == 0:
+                                        if _chain_id != chain_id or i[seq_id_name] != seq_id or i[comp_id_name] != comp_id or i[value_name] in self.empty_value:
                                             continue
 
-                                        for a in atom_ids:
+                                        atom_id = i[atom_id_name]
+                                        data_type = str(i[iso_number]) + i[atom_type]
 
-                                            if a in sc_atoms:
+                                        if file_type == 'nef':
 
-                                                if data_type == '1H' and not a in non_rep_methyl_pros:
-                                                    sc_c[h1_col]['number_of_assigned_shifts'] += 1
+                                            atom_ids = self.__nefT.get_nmrstar_atom(comp_id, atom_id, leave_unmatched=False)[0]
 
-                                                elif data_type == '13C':
-                                                    sc_c[c13_col]['number_of_assigned_shifts'] += 1
+                                            if len(atom_ids) == 0:
+                                                continue
 
-                                                elif data_type == '15N':
-                                                    sc_c[n15_col]['number_of_assigned_shifts'] += 1
+                                            for a in atom_ids:
 
-                                                elif data_type == '31P':
-                                                    sc_c[p31_col]['number_of_assigned_shifts'] += 1
+                                                if a in ch3_atoms:
 
-                                    elif atom_id in sc_atoms:
+                                                    if data_type == '1H' and not a in non_rep_methyl_pros:
+                                                        ch3_c[h1_col]['number_of_assigned_shifts'] += 1
 
-                                        if data_type == '1H' and not atom_id in non_rep_methyl_pros:
-                                            sc_c[h1_col]['number_of_assigned_shifts'] += 1
+                                                    elif data_type == '13C':
+                                                        ch3_c[c13_col]['number_of_assigned_shifts'] += 1
 
-                                        elif data_type == '13C':
-                                            sc_c[c13_col]['number_of_assigned_shifts'] += 1
+                                        elif atom_id in ch3_atoms:
 
-                                        elif data_type == '15N':
-                                            sc_c[n15_col]['number_of_assigned_shifts'] += 1
+                                            if data_type == '1H' and not atom_id in non_rep_methyl_pros:
+                                                ch3_c[h1_col]['number_of_assigned_shifts'] += 1
 
-                                        elif data_type == '31P':
-                                            sc_c[p31_col]['number_of_assigned_shifts'] += 1
+                                            elif data_type == '13C':
+                                                ch3_c[c13_col]['number_of_assigned_shifts'] += 1
 
-                        for c in sc_c:
-                            if c['number_of_target_shifts'] > 0:
-                                c['completeness'] = float('{:.3f}'.format(float(c['number_of_assigned_shifts']) / float(c['number_of_target_shifts'])))
+                            for c in ch3_c:
+                                if c['number_of_target_shifts'] > 0:
+                                    c['completeness'] = float('{:.3f}'.format(float(c['number_of_assigned_shifts']) / float(c['number_of_target_shifts'])))
 
-                        break
+                            break
 
-                if len(sc_c) > 0:
-                    cc['completeness_of_sidechain_assignments'] = sc_c
+                    if len(ch3_c) > 0:
+                        cc['completeness_of_methyl_assignments'] = ch3_c
 
-                # methyl group atoms (ch3)
+                    # aromatic atoms (aro)
 
-                ch3_c = []
+                    aro_c = []
 
-                id = 0
+                    id = 0
 
-                h1_col = -1
-                c13_col = -1
+                    h1_col = -1
+                    c13_col = -1
+                    n15_col = -1
 
-                for data_type in count:
+                    for data_type in count:
 
-                    atom_group = {}
-                    atom_group['atom_group'] = 'methyl_' + data_type
-                    atom_group['number_of_assigned_shifts'] = 0
-                    atom_group['number_of_target_shifts'] = 0
-                    atom_group['completeness'] = 0.0
+                        atom_group = {}
+                        atom_group['atom_group'] = 'aromatic_' + data_type
+                        atom_group['number_of_assigned_shifts'] = 0
+                        atom_group['number_of_target_shifts'] = 0
+                        atom_group['completeness'] = 0.0
 
-                    if data_type.startswith('1h'):
-                        h1_col = id
+                        if data_type.startswith('1h'):
+                            h1_col = id
 
-                    elif data_type.startswith('13c'):
-                        c13_col = id
+                        elif data_type.startswith('13c'):
+                            c13_col = id
 
-                    else:
+                        elif data_type.startswith('15n'):
+                            n15_col = id
+
+                        else:
+                            continue
+
+                        id += 1
+
+                        aro_c.append(atom_group)
+
+                    for s in polymer_sequence:
+
+                        if s['chain_id'] == chain_id:
+
+                            for i in range(len(s['seq_id'])):
+                                seq_id = s['seq_id'][i]
+                                comp_id = s['comp_id'][i]
+
+                                polypeptide_like = self.__csStat.getTypeOfCompId(comp_id)[0]
+
+                                if self.__csStat.hasEnoughStat(comp_id, polypeptide_like):
+
+                                    aro_atoms = self.__csStat.getAromaticAtoms(comp_id, excl_minor_atom=True, primary=polypeptide_like)
+                                    non_rep_methyl_pros = self.__csStat.getNonRepresentativeMethylProtons(comp_id, excl_minor_atom=True, primary=polypeptide_like)
+
+                                    for a in aro_atoms:
+
+                                        if a.startswith('H') and h1_col != -1 and not a in non_rep_methyl_pros:
+                                            aro_c[h1_col]['number_of_target_shifts'] += 1
+
+                                        elif a.startswith('C') and c13_col != -1:
+                                            aro_c[c13_col]['number_of_target_shifts'] += 1
+
+                                        elif a.startswith('N') and n15_col != -1:
+                                            aro_c[n15_col]['number_of_target_shifts'] += 1
+
+                                    for i in lp_data:
+
+                                        if file_type == 'nef':
+                                            _chain_id = i[chain_id_name]
+                                        else:
+                                            _chain_id = str(i[chain_id_name])
+
+                                        if _chain_id != chain_id or i[seq_id_name] != seq_id or i[comp_id_name] != comp_id or i[value_name] in self.empty_value:
+                                            continue
+
+                                        atom_id = i[atom_id_name]
+                                        data_type = str(i[iso_number]) + i[atom_type]
+
+                                        if file_type == 'nef':
+
+                                            atom_ids = self.__nefT.get_nmrstar_atom(comp_id, atom_id, leave_unmatched=False)[0]
+
+                                            if len(atom_ids) == 0:
+                                                continue
+
+                                            for a in atom_ids:
+
+                                                if a in aro_atoms:
+
+                                                    if data_type == '1H' and not a in non_rep_methyl_pros:
+                                                        aro_c[h1_col]['number_of_assigned_shifts'] += 1
+
+                                                    elif data_type == '13C':
+                                                        aro_c[c13_col]['number_of_assigned_shifts'] += 1
+
+                                                    elif data_type == '15N':
+                                                        aro_c[n15_col]['number_of_assigned_shifts'] += 1
+
+                                        elif atom_id in aro_atoms:
+
+                                            if data_type == '1H' and not atom_id in non_rep_methyl_pros:
+                                                aro_c[h1_col]['number_of_assigned_shifts'] += 1
+
+                                            elif data_type == '13C':
+                                                aro_c[c13_col]['number_of_assigned_shifts'] += 1
+
+                                            elif data_type == '15N':
+                                                aro_c[n15_col]['number_of_assigned_shifts'] += 1
+
+                            for c in aro_c:
+                                if c['number_of_target_shifts'] > 0:
+                                    c['completeness'] = float('{:.3f}'.format(float(c['number_of_assigned_shifts']) / float(c['number_of_target_shifts'])))
+
+                            break
+
+                    if len(aro_c) > 0:
+                        cc['completeness_of_aromatic_assignments'] = aro_c
+
+                    completeness.append(cc)
+
+                if len(completeness) > 0:
+                    ent['completeness'] = completeness
+
+            z_scores = {}
+
+            for k in count.keys():
+                z_scores[k] = []
+
+            max_val = 0.0
+            min_val = 0.0
+
+            for i in lp_data:
+
+                if i[atom_type] in self.empty_value or i[iso_number] in self.empty_value or value_name in self.empty_value:
+                    continue
+
+                data_type = str(i[iso_number]) + i[atom_type].lower() + '_chemical_shifts'
+
+                chain_id = i[chain_id_name]
+                seq_id = i[seq_id_name]
+                comp_id = i[comp_id_name]
+                atom_id = i[atom_id_name]
+                value = i[value_name]
+
+                if file_type == 'nef':
+                    _atom_id, ambig_code, details = self.__nefT.get_nmrstar_atom(comp_id, atom_id, leave_unmatched=True)
+
+                    if len(_atom_id) == 0:
                         continue
 
-                    id += 1
-
-                    ch3_c.append(atom_group)
-
-                for s in polymer_sequence:
-
-                    if s['chain_id'] == chain_id:
-
-                        for i in range(len(s['seq_id'])):
-                            seq_id = s['seq_id'][i]
-                            comp_id = s['comp_id'][i]
-
-                            polypeptide_like = self.__csStat.getTypeOfCompId(comp_id)[0]
-
-                            if self.__csStat.hasEnoughStat(comp_id, polypeptide_like):
-
-                                ch3_atoms = self.__csStat.getMethylAtoms(comp_id, excl_minor_atom=True, primary=polypeptide_like)
-                                non_rep_methyl_pros = self.__csStat.getNonRepresentativeMethylProtons(comp_id, excl_minor_atom=True, primary=polypeptide_like)
-
-                                for a in ch3_atoms:
-
-                                    if a.startswith('H') and h1_col != -1 and not a in non_rep_methyl_pros:
-                                        ch3_c[h1_col]['number_of_target_shifts'] += 1
-
-                                    elif a.startswith('C') and c13_col != -1:
-                                        ch3_c[c13_col]['number_of_target_shifts'] += 1
-
-                                for i in lp_data:
-
-                                    if file_type == 'nef':
-                                        _chain_id = i[cs_chain_id_name]
-                                    else:
-                                        _chain_id = str(i[cs_chain_id_name])
-
-                                    if _chain_id != chain_id or i[cs_seq_id_name] != seq_id or i[cs_comp_id_name] != comp_id or i[cs_value_name] in self.empty_value:
-                                        continue
-
-                                    atom_id = i[cs_atom_id_name]
-                                    data_type = str(i[cs_iso_number]) + i[cs_atom_type]
-
-                                    if file_type == 'nef':
-
-                                        atom_ids = self.__nefT.get_nmrstar_atom(comp_id, atom_id, leave_unmatched=False)[0]
-
-                                        if len(atom_ids) == 0:
-                                            continue
-
-                                        for a in atom_ids:
-
-                                            if a in ch3_atoms:
-
-                                                if data_type == '1H' and not a in non_rep_methyl_pros:
-                                                    ch3_c[h1_col]['number_of_assigned_shifts'] += 1
-
-                                                elif data_type == '13C':
-                                                    ch3_c[c13_col]['number_of_assigned_shifts'] += 1
-
-                                    elif atom_id in ch3_atoms:
-
-                                        if data_type == '1H' and not atom_id in non_rep_methyl_pros:
-                                            ch3_c[h1_col]['number_of_assigned_shifts'] += 1
-
-                                        elif data_type == '13C':
-                                            ch3_c[c13_col]['number_of_assigned_shifts'] += 1
-
-                        for c in ch3_c:
-                            if c['number_of_target_shifts'] > 0:
-                                c['completeness'] = float('{:.3f}'.format(float(c['number_of_assigned_shifts']) / float(c['number_of_target_shifts'])))
-
-                        break
-
-                if len(ch3_c) > 0:
-                    cc['completeness_of_methyl_assignments'] = ch3_c
-
-                # aromatic atoms (aro)
-
-                aro_c = []
-
-                id = 0
-
-                h1_col = -1
-                c13_col = -1
-                n15_col = -1
-
-                for data_type in count:
-
-                    atom_group = {}
-                    atom_group['atom_group'] = 'aromatic_' + data_type
-                    atom_group['number_of_assigned_shifts'] = 0
-                    atom_group['number_of_target_shifts'] = 0
-                    atom_group['completeness'] = 0.0
-
-                    if data_type.startswith('1h'):
-                        h1_col = id
-
-                    elif data_type.startswith('13c'):
-                        c13_col = id
-
-                    elif data_type.startswith('15n'):
-                        n15_col = id
+                    if len(_atom_id) == 1 and atom_id == _atom_id[0]:
+                        atom_id_ = atom_id
 
                     else:
+                        # representative atom id
+                        atom_id_ = _atom_id[0]
+
+                else:
+                    atom_id_ = atom_id
+
+                    one_letter_code = self.__get1LetterCode(comp_id)
+
+                    has_cs_stat = False
+
+                    # non-standard residue
+                    if one_letter_code == 'X':
+
+                        neighbor_comp_ids = set([j[comp_id_name] for j in lp_data if j[chain_id_name] == chain_id and abs(j[seq_id_name] - seq_id) < 3 and j[seq_id_name] != seq_id])
+
+                        polypeptide_like = False
+
+                        for comp_id2 in neighbor_comp_ids:
+                            polypeptide_like |= self.__csStat.getTypeOfCompId(comp_id2)[0]
+
+                        for cs_stat in self.__csStat.get(comp_id):
+
+                            if cs_stat['atom_id'] == atom_id_:
+                                avg_value = cs_stat['avg']
+                                std_value = cs_stat['std']
+
+                                has_cs_stat = True
+
+                                break
+
+                    # standard residue
+                    else:
+
+                        for cs_stat in self.__csStat.get(comp_id, self.report.isDiamagnetic()):
+
+                            if cs_stat['atom_id'] == atom_id_:
+                                avg_value = cs_stat['avg']
+                                std_value = cs_stat['std']
+
+                                has_cs_stat = True
+
+                                break
+
+                    if not has_cs_stat or std_value is None:
                         continue
 
-                    id += 1
+                    z_score = (value - avg_value) / std_value
 
-                    aro_c.append(atom_group)
+                    if z_score > max_val:
+                        max_val = z_score
 
-                for s in polymer_sequence:
+                    elif z_score < min_val:
+                        min_val = z_score
 
-                    if s['chain_id'] == chain_id:
+                    z_scores[data_type].append(z_score)
 
-                        for i in range(len(s['seq_id'])):
-                            seq_id = s['seq_id'][i]
-                            comp_id = s['comp_id'][i]
+            target_scale = (max_val - min_val) / 20.0
 
-                            polypeptide_like = self.__csStat.getTypeOfCompId(comp_id)[0]
+            scale = 1.0
 
-                            if self.__csStat.hasEnoughStat(comp_id, polypeptide_like):
+            while scale < target_scale:
+                scale *= 2.0
 
-                                aro_atoms = self.__csStat.getAromaticAtoms(comp_id, excl_minor_atom=True, primary=polypeptide_like)
-                                non_rep_methyl_pros = self.__csStat.getNonRepresentativeMethylProtons(comp_id, excl_minor_atom=True, primary=polypeptide_like)
+            while scale > target_scale:
+                scale /= 2.0
 
-                                for a in aro_atoms:
+            range_of_vals = []
+            count_of_vals = []
 
-                                    if a.startswith('H') and h1_col != -1 and not a in non_rep_methyl_pros:
-                                        aro_c[h1_col]['number_of_target_shifts'] += 1
+            v = 0.0
+            while v < min_val:
+                v += scale
 
-                                    elif a.startswith('C') and c13_col != -1:
-                                        aro_c[c13_col]['number_of_target_shifts'] += 1
+            while v > min_val:
+                v -= scale
 
-                                    elif a.startswith('N') and n15_col != -1:
-                                        aro_c[n15_col]['number_of_target_shifts'] += 1
+            while v < max_val:
 
-                                for i in lp_data:
+                _count = copy.copy(count)
 
-                                    if file_type == 'nef':
-                                        _chain_id = i[cs_chain_id_name]
-                                    else:
-                                        _chain_id = str(i[cs_chain_id_name])
+                for k in count.keys():
+                    _count[k] = len([z for z in z_scores[k] if z >= v and z < v + scale])
 
-                                    if _chain_id != chain_id or i[cs_seq_id_name] != seq_id or i[cs_comp_id_name] != comp_id or i[cs_value_name] in self.empty_value:
-                                        continue
+                range_of_vals.append(v)
+                count_of_vals.append(_count)
 
-                                    atom_id = i[cs_atom_id_name]
-                                    data_type = str(i[cs_iso_number]) + i[cs_atom_type]
+                v += scale
 
-                                    if file_type == 'nef':
+            transposed = {}
 
-                                        atom_ids = self.__nefT.get_nmrstar_atom(comp_id, atom_id, leave_unmatched=False)[0]
+            for k in count.keys():
+                transposed[k] = []
 
-                                        if len(atom_ids) == 0:
-                                            continue
+                for j in range(len(range_of_vals)):
+                    transposed[k].append(count_of_vals[j][k])
 
-                                        for a in atom_ids:
-
-                                            if a in aro_atoms:
-
-                                                if data_type == '1H' and not a in non_rep_methyl_pros:
-                                                    aro_c[h1_col]['number_of_assigned_shifts'] += 1
-
-                                                elif data_type == '13C':
-                                                    aro_c[c13_col]['number_of_assigned_shifts'] += 1
-
-                                                elif data_type == '15N':
-                                                    aro_c[n15_col]['number_of_assigned_shifts'] += 1
-
-                                    elif atom_id in aro_atoms:
-
-                                        if data_type == '1H' and not atom_id in non_rep_methyl_pros:
-                                            aro_c[h1_col]['number_of_assigned_shifts'] += 1
-
-                                        elif data_type == '13C':
-                                            aro_c[c13_col]['number_of_assigned_shifts'] += 1
-
-                                        elif data_type == '15N':
-                                            aro_c[n15_col]['number_of_assigned_shifts'] += 1
-
-                        for c in aro_c:
-                            if c['number_of_target_shifts'] > 0:
-                                c['completeness'] = float('{:.3f}'.format(float(c['number_of_assigned_shifts']) / float(c['number_of_target_shifts'])))
-
+            if len(range_of_vals) > 2:
+                has_value = False
+                for j in range(1, len(range_of_vals) - 1):
+                    for k in count.keys():
+                        if transposed[k][j] > 0:
+                            has_value = True
+                            break
+                    if has_value:
                         break
 
-                if len(aro_c) > 0:
-                    cc['completeness_of_aromatic_assignments'] = aro_c
+                if has_value:
+                    ent['histogram'] = {'range_of_values': range_of_vals, 'number_of_values': transposed, 'annotations': cs_ann}
 
-                completeness.append(cc)
+        except Exception as e:
 
-            if len(completeness) > 0:
-                ent['completeness'] = completeness
+            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__calculateStatsOfAssignedChemShift() ++ Error  - %s" % str(e))
+            self.report.setError()
+
+            if self.__verbose:
+                self.__lfh.write("+NmrDpUtility.__calculateStatsOfAssignedChemShift() ++ Error  - %s" % str(e))
 
     def __calculateStatsOfDistanceRestraint(self, lp_data, ent):
         """ Calculate statistics of distance restraints.
@@ -5932,250 +6183,17 @@ class NmrDpUtility(object):
         lower_linear_limit_name = item_names['lower_linear_limit']
         upper_linear_limit_name = item_names['upper_linear_limit']
 
-        max_val = -100.0
-        min_val = 100.0
+        try:
 
-        count = {}
+            max_val = -100.0
+            min_val = 100.0
 
-        comb_id_set = set()
+            count = {}
 
-        for i in lp_data:
-            comb_id = i[comb_id_name]
-            chain_id_1 = i[chain_id_1_name]
-            chain_id_2 = i[chain_id_2_name]
-            seq_id_1 = i[seq_id_1_name]
-            seq_id_2 = i[seq_id_2_name]
-            comp_id_1 = i[comp_id_1_name]
-            comp_id_2 = i[comp_id_2_name]
-            atom_id_1 = i[atom_id_1_name]
-            atom_id_2 = i[atom_id_2_name]
-
-            target_value = i[target_value_name]
-
-            if target_value is None:
-
-                if not i[lower_limit_name] is None and not i[upper_limit_name] is None:
-                    target_value = (i[lower_limit_name] + i[upper_limit_name]) / 2.0
-
-                elif not i[lower_linear_limit_name] is None and not i[upper_linear_limit_name] is None:
-                    target_value = (i[lower_linear_limit_name] + i[upper_linear_limit_name]) / 2.0
-
-                else:
-                    continue
-
-            if target_value > max_val:
-                max_val = target_value
-
-            if target_value < min_val:
-                min_val = target_value
-
-            if not comb_id in self.empty_value:
-                comb_id_set.add(comp_id)
-
-            hydrogen_bond_type = None
-            hydrogen_bond = False
-            disulfide_bond = False
-            symmetry = False
-
-            if chain_id_1 != chain_id_2 or seq_id_1 != seq_id_2:
-
-                atom_id_1_ = atom_id_1[0]
-                atom_id_2_ = atom_id_2[0]
-
-                if (atom_id_1_ == 'F' and atom_id_2_ == 'H') or (atom_id_2_ == 'F' and atom_id_1_ == 'H'):
-
-                    if target_value >= 1.2 and target_value <= 1.5:
-                        hydrogen_bond_type = 'F...H-F'
-                        hydrogen_bond = True
-
-                elif (atom_id_1_ == 'F' and atom_id_2_ == 'F') or (atom_id_2_ == 'F' and atom_id_1_ == 'F'):
-
-                    if target_value >= 2.2 and target_value <= 2.5:
-                        hydrogen_bond_type = 'F...h-F'
-                        hydrogen_bond = True
-
-                elif (atom_id_1_ == 'O' and atom_id_2_ == 'H') or (atom_id_2_ == 'O' and atom_id_1_ == 'H'):
-
-                    if target_value >= 1.5 and target_value <= 2.2:
-                        hydrogen_bond_type = 'O...H-x'
-                        hydrogen_bond = True
-
-                elif (atom_id_1_ == 'O' and atom_id_2_ == 'N') or (atom_id_2_ == 'O' and atom_id_1_ == 'N'):
-
-                    if target_value >= 2.5 and target_value <= 3.2:
-                        hydrogen_bond_type = 'O...h-N'
-                        hydrogen_bond = True
-
-                elif (atom_id_1_ == 'O' and atom_id_2_ == 'O') or (atom_id_2_ == 'O' and atom_id_1_ == 'O'):
-
-                    if target_value >= 2.5 and target_value <= 3.2:
-                        hydrogen_bond_type = 'O...h-O'
-                        hydrogen_bond = True
-
-                elif (atom_id_1_ == 'N' and atom_id_2_ == 'H') or (atom_id_2_ == 'N' and atom_id_1_ == 'H'):
-
-                    if target_value >= 1.5 and target_value <= 2.2:
-                        hydrogen_bond_type = 'N...H-x'
-                        hydrogen_bond = True
-
-                elif (atom_id_1_ == 'N' and atom_id_2_ == 'N') or (atom_id_2_ == 'N' and atom_id_1_ == 'N'):
-
-                    if target_value >= 2.5 and target_value <= 3.2:
-                        hydrogen_bond_type = 'N...h_N'
-                        hydrogen_bond = True
-
-                elif atom_id_1_ == 'S' and atom_id_2_ == 'S':
-
-                    if target_value >= 1.9 and target_value <= 2.3:
-                        disulfide_bond = True
-
-                else:
-
-                    for j in lp_data:
-
-                        if j is i:
-                            continue
-
-                        _chain_id_1 = j[chain_id_1_name]
-                        _chain_id_2 = j[chain_id_2_name]
-                        _seq_id_1 = j[seq_id_1_name]
-                        _seq_id_2 = j[seq_id_2_name]
-                        _comp_id_1 = j[comp_id_1_name]
-                        _comp_id_2 = j[comp_id_2_name]
-
-                        if _chain_id_1 != _chain_id_2 and _chain_id_1 != chain_id_1 and _chain_id_2 != chain_id_2:
-
-                            if seq_id_1 == _seq_id_1 and comp_id_1 == _comp_id_1 and\
-                               seq_id_2 == _seq_id_2 and comp_id_2 == _comp_id_2:
-                                symmetry = True
-                                break
-
-                            elif seq_id_1 == _seq_id_2 and comp_id_1 == _comp_id_2 and\
-                                 seq_id_2 == _seq_id_1 and comp_id_2 == _comp_id_1:
-                                symmetry = True
-                                break
-
-            range_of_seq = abs(seq_id_1 - seq_id_2)
-
-            if hydrogen_bond:
-                if chain_id_1 != chain_id_2:
-                    data_type = 'inter-chain_hydrogen_bonds'
-                elif range_of_seq > 5:
-                    data_type = 'long_range_hydrogen_bonds'
-                else:
-                    data_type = 'hydrogen_bonds'
-                data_type += '_' + hydrogen_bond_type
-            elif disulfide_bond:
-                if chain_id_1 != chain_id_2:
-                    data_type = 'inter-chain_disulfide_bonds'
-                elif range_of_seq > 5:
-                    data_type = 'long_range_disulfide_bonds'
-                else:
-                    data_type = 'disulfide_bonds'
-            elif symmetry:
-                data_type = 'symmetric_constraints'
-            elif chain_id_1 != chain_id_2:
-                data_type = 'inter-chain_constraints'
-            elif range_of_seq == 0:
-                data_type = 'intra-residue_constraints'
-            elif range_of_seq < 5:
-
-                if file_type == 'nef':
-                    _atom_id_1 = self.__nefT.get_nmrstar_atom(comp_id_1, atom_id_1, leave_unmatched=False)[0]
-                    _atom_id_2 = self.__nefT.get_nmrstar_atom(comp_id_2, atom_id_2, leave_unmatched=False)[0]
-
-                    if len(_atom_id_1) > 0 and len(_atom_id_2) > 0:
-                        is_sc_atom_1 = _atom_id_1[0] in self.__csStat.getSideChainAtoms(comp_id_1)
-                        is_sc_atom_2 = _atom_id_2[0] in self.__csStat.getSideChainAtoms(comp_id_2)
-
-                        if is_sc_atom_1:
-                            is_bb_atom_1 = False
-                        else:
-                            is_bb_atom_1 = _atom_id_1[0] in self.__csStat.getBackBoneAtoms(comp_id_1)
-
-                        if is_sc_atom_2:
-                            is_bb_atom_2 = False
-                        else:
-                            is_bb_atom_2 = _atom_id_2[0] in self.__csStat.getBackBoneAtoms(comp_id_2)
-
-                    else:
-                        is_bb_atom_1 = False
-                        is_bb_atom_2 = False
-                        is_sc_atom_1 = False
-                        is_sc_atom_2 = False
-
-                else:
-                    is_sc_atom_1 = atom_id_1 in self.__csStat.getSideChainAtoms(comp_id_1)
-                    is_sc_atom_2 = atom_id_2 in self.__csStat.getSideChainAtoms(comp_id_2)
-
-                    if is_sc_atom_1:
-                        is_bb_atom_1 = False
-                    else:
-                        is_bb_atom_1 = atom_id_1 in self.__csStat.getBackBoneAtoms(comp_id_1)
-
-                    if is_sc_atom_2:
-                        is_bb_atom_2 = False
-                    else:
-                        is_bb_atom_2 = atom_id_2 in self.__csStat.getBackBoneAtoms(comp_id_2)
-
-                is_bb_bb = is_bb_atom_1 and is_bb_atom_2
-                is_bb_sc = (is_bb_atom_1 and is_sc_atom_2) or (is_sc_atom_1 and is_bb_atom_2)
-                is_sc_sc = is_sc_atom_1 and is_sc_atom_2
-
-                if range_of_seq == 1:
-                    data_type = 'sequential_constraints'
-                else:
-                    data_type = 'medium_range_constraints'
-
-                if is_bb_bb:
-                    data_type += '_backbone-backbone'
-                elif is_bb_sc:
-                    data_type += '_backbone-sidechain'
-                elif is_sc_sc:
-                    data_type += '_sidechain-sidechain'
-            else:
-                data_type = 'long_range_constraints'
-
-            if data_type in count:
-                count[data_type] += 1
-            else:
-                count[data_type] = 1
-
-        if len(count) == 0:
-            return
-
-        ent['number_of_constraints'] = count
-        ent['range'] = {'max_value': max_val, 'min_value': min_val}
-        ent['ambiguous_constraint_sets'] = len(comb_id_set)
-
-        target_scale = (max_val - min_val) / 10.0
-
-        scale = 1.0
-
-        while scale < target_scale:
-            scale *= 2.0
-
-        while scale > target_scale:
-            scale /= 2.0
-
-        range_of_vals = []
-        count_of_vals = []
-
-        v = 0.0
-        while v < min_val:
-            v += scale
-
-        while v > min_val:
-            v -= scale
-
-        while v < max_val:
-
-            _count = copy.copy(count)
-
-            for k in count.keys():
-                _count[k] = 0
+            comb_id_set = set()
 
             for i in lp_data:
+                comb_id = i[comb_id_name]
                 chain_id_1 = i[chain_id_1_name]
                 chain_id_2 = i[chain_id_2_name]
                 seq_id_1 = i[seq_id_1_name]
@@ -6184,6 +6202,7 @@ class NmrDpUtility(object):
                 comp_id_2 = i[comp_id_2_name]
                 atom_id_1 = i[atom_id_1_name]
                 atom_id_2 = i[atom_id_2_name]
+
                 target_value = i[target_value_name]
 
                 if target_value is None:
@@ -6197,8 +6216,14 @@ class NmrDpUtility(object):
                     else:
                         continue
 
-                if target_value < v or target_value >= v + scale:
-                    continue
+                if target_value > max_val:
+                    max_val = target_value
+
+                if target_value < min_val:
+                    min_val = target_value
+
+                if not comb_id in self.empty_value:
+                    comb_id_set.add(comp_id)
 
                 hydrogen_bond_type = None
                 hydrogen_bond = False
@@ -6364,33 +6389,269 @@ class NmrDpUtility(object):
                 else:
                     data_type = 'long_range_constraints'
 
-                _count[data_type] += 1
+                if data_type in count:
+                    count[data_type] += 1
+                else:
+                    count[data_type] = 1
 
-            range_of_vals.append(v)
-            count_of_vals.append(_count)
+            if len(count) == 0:
+                return
 
-            v += scale
+            ent['number_of_constraints'] = count
+            ent['range'] = {'max_value': max_val, 'min_value': min_val}
+            ent['ambiguous_constraint_sets'] = len(comb_id_set)
 
-        transposed = {}
+            target_scale = (max_val - min_val) / 10.0
 
-        for k in count.keys():
-            transposed[k] = []
+            scale = 1.0
 
-            for j in range(len(range_of_vals)):
-                transposed[k].append(count_of_vals[j][k])
+            while scale < target_scale:
+                scale *= 2.0
 
-        if len(range_of_vals) > 2:
-            has_value = False
-            for j in range(1, len(range_of_vals) - 1):
+            while scale > target_scale:
+                scale /= 2.0
+
+            range_of_vals = []
+            count_of_vals = []
+
+            v = 0.0
+            while v < min_val:
+                v += scale
+
+            while v > min_val:
+                v -= scale
+
+            while v < max_val:
+
+                _count = copy.copy(count)
+
                 for k in count.keys():
-                    if transposed[k][j] > 0:
-                        has_value = True
-                        break
-                if has_value:
-                    break
+                    _count[k] = 0
 
-            if has_value:
-                ent['histogram'] = {'range_of_values': range_of_vals, 'number_of_values': transposed}
+                for i in lp_data:
+                    chain_id_1 = i[chain_id_1_name]
+                    chain_id_2 = i[chain_id_2_name]
+                    seq_id_1 = i[seq_id_1_name]
+                    seq_id_2 = i[seq_id_2_name]
+                    comp_id_1 = i[comp_id_1_name]
+                    comp_id_2 = i[comp_id_2_name]
+                    atom_id_1 = i[atom_id_1_name]
+                    atom_id_2 = i[atom_id_2_name]
+                    target_value = i[target_value_name]
+
+                    if target_value is None:
+
+                        if not i[lower_limit_name] is None and not i[upper_limit_name] is None:
+                            target_value = (i[lower_limit_name] + i[upper_limit_name]) / 2.0
+
+                        elif not i[lower_linear_limit_name] is None and not i[upper_linear_limit_name] is None:
+                            target_value = (i[lower_linear_limit_name] + i[upper_linear_limit_name]) / 2.0
+
+                        else:
+                            continue
+
+                    if target_value < v or target_value >= v + scale:
+                        continue
+
+                    hydrogen_bond_type = None
+                    hydrogen_bond = False
+                    disulfide_bond = False
+                    symmetry = False
+
+                    if chain_id_1 != chain_id_2 or seq_id_1 != seq_id_2:
+
+                        atom_id_1_ = atom_id_1[0]
+                        atom_id_2_ = atom_id_2[0]
+
+                        if (atom_id_1_ == 'F' and atom_id_2_ == 'H') or (atom_id_2_ == 'F' and atom_id_1_ == 'H'):
+
+                            if target_value >= 1.2 and target_value <= 1.5:
+                                hydrogen_bond_type = 'F...H-F'
+                                hydrogen_bond = True
+
+                        elif (atom_id_1_ == 'F' and atom_id_2_ == 'F') or (atom_id_2_ == 'F' and atom_id_1_ == 'F'):
+
+                            if target_value >= 2.2 and target_value <= 2.5:
+                                hydrogen_bond_type = 'F...h-F'
+                                hydrogen_bond = True
+
+                        elif (atom_id_1_ == 'O' and atom_id_2_ == 'H') or (atom_id_2_ == 'O' and atom_id_1_ == 'H'):
+
+                            if target_value >= 1.5 and target_value <= 2.2:
+                                hydrogen_bond_type = 'O...H-x'
+                                hydrogen_bond = True
+
+                        elif (atom_id_1_ == 'O' and atom_id_2_ == 'N') or (atom_id_2_ == 'O' and atom_id_1_ == 'N'):
+
+                            if target_value >= 2.5 and target_value <= 3.2:
+                                hydrogen_bond_type = 'O...h-N'
+                                hydrogen_bond = True
+
+                        elif (atom_id_1_ == 'O' and atom_id_2_ == 'O') or (atom_id_2_ == 'O' and atom_id_1_ == 'O'):
+
+                            if target_value >= 2.5 and target_value <= 3.2:
+                                hydrogen_bond_type = 'O...h-O'
+                                hydrogen_bond = True
+
+                        elif (atom_id_1_ == 'N' and atom_id_2_ == 'H') or (atom_id_2_ == 'N' and atom_id_1_ == 'H'):
+
+                            if target_value >= 1.5 and target_value <= 2.2:
+                                hydrogen_bond_type = 'N...H-x'
+                                hydrogen_bond = True
+
+                        elif (atom_id_1_ == 'N' and atom_id_2_ == 'N') or (atom_id_2_ == 'N' and atom_id_1_ == 'N'):
+
+                            if target_value >= 2.5 and target_value <= 3.2:
+                                hydrogen_bond_type = 'N...h_N'
+                                hydrogen_bond = True
+
+                        elif atom_id_1_ == 'S' and atom_id_2_ == 'S':
+
+                            if target_value >= 1.9 and target_value <= 2.3:
+                                disulfide_bond = True
+
+                        else:
+
+                            for j in lp_data:
+
+                                if j is i:
+                                    continue
+
+                                _chain_id_1 = j[chain_id_1_name]
+                                _chain_id_2 = j[chain_id_2_name]
+                                _seq_id_1 = j[seq_id_1_name]
+                                _seq_id_2 = j[seq_id_2_name]
+                                _comp_id_1 = j[comp_id_1_name]
+                                _comp_id_2 = j[comp_id_2_name]
+
+                                if _chain_id_1 != _chain_id_2 and _chain_id_1 != chain_id_1 and _chain_id_2 != chain_id_2:
+
+                                    if seq_id_1 == _seq_id_1 and comp_id_1 == _comp_id_1 and\
+                                       seq_id_2 == _seq_id_2 and comp_id_2 == _comp_id_2:
+                                        symmetry = True
+                                        break
+
+                                    elif seq_id_1 == _seq_id_2 and comp_id_1 == _comp_id_2 and\
+                                         seq_id_2 == _seq_id_1 and comp_id_2 == _comp_id_1:
+                                        symmetry = True
+                                        break
+
+                    range_of_seq = abs(seq_id_1 - seq_id_2)
+
+                    if hydrogen_bond:
+                        if chain_id_1 != chain_id_2:
+                            data_type = 'inter-chain_hydrogen_bonds'
+                        elif range_of_seq > 5:
+                            data_type = 'long_range_hydrogen_bonds'
+                        else:
+                            data_type = 'hydrogen_bonds'
+                        data_type += '_' + hydrogen_bond_type
+                    elif disulfide_bond:
+                        if chain_id_1 != chain_id_2:
+                            data_type = 'inter-chain_disulfide_bonds'
+                        elif range_of_seq > 5:
+                            data_type = 'long_range_disulfide_bonds'
+                        else:
+                            data_type = 'disulfide_bonds'
+                    elif symmetry:
+                        data_type = 'symmetric_constraints'
+                    elif chain_id_1 != chain_id_2:
+                        data_type = 'inter-chain_constraints'
+                    elif range_of_seq == 0:
+                        data_type = 'intra-residue_constraints'
+                    elif range_of_seq < 5:
+
+                        if file_type == 'nef':
+                            _atom_id_1 = self.__nefT.get_nmrstar_atom(comp_id_1, atom_id_1, leave_unmatched=False)[0]
+                            _atom_id_2 = self.__nefT.get_nmrstar_atom(comp_id_2, atom_id_2, leave_unmatched=False)[0]
+
+                            if len(_atom_id_1) > 0 and len(_atom_id_2) > 0:
+                                is_sc_atom_1 = _atom_id_1[0] in self.__csStat.getSideChainAtoms(comp_id_1)
+                                is_sc_atom_2 = _atom_id_2[0] in self.__csStat.getSideChainAtoms(comp_id_2)
+
+                                if is_sc_atom_1:
+                                    is_bb_atom_1 = False
+                                else:
+                                    is_bb_atom_1 = _atom_id_1[0] in self.__csStat.getBackBoneAtoms(comp_id_1)
+
+                                if is_sc_atom_2:
+                                    is_bb_atom_2 = False
+                                else:
+                                    is_bb_atom_2 = _atom_id_2[0] in self.__csStat.getBackBoneAtoms(comp_id_2)
+
+                            else:
+                                is_bb_atom_1 = False
+                                is_bb_atom_2 = False
+                                is_sc_atom_1 = False
+                                is_sc_atom_2 = False
+
+                        else:
+                            is_sc_atom_1 = atom_id_1 in self.__csStat.getSideChainAtoms(comp_id_1)
+                            is_sc_atom_2 = atom_id_2 in self.__csStat.getSideChainAtoms(comp_id_2)
+
+                            if is_sc_atom_1:
+                                is_bb_atom_1 = False
+                            else:
+                                is_bb_atom_1 = atom_id_1 in self.__csStat.getBackBoneAtoms(comp_id_1)
+
+                            if is_sc_atom_2:
+                                is_bb_atom_2 = False
+                            else:
+                                is_bb_atom_2 = atom_id_2 in self.__csStat.getBackBoneAtoms(comp_id_2)
+
+                        is_bb_bb = is_bb_atom_1 and is_bb_atom_2
+                        is_bb_sc = (is_bb_atom_1 and is_sc_atom_2) or (is_sc_atom_1 and is_bb_atom_2)
+                        is_sc_sc = is_sc_atom_1 and is_sc_atom_2
+
+                        if range_of_seq == 1:
+                            data_type = 'sequential_constraints'
+                        else:
+                            data_type = 'medium_range_constraints'
+
+                        if is_bb_bb:
+                            data_type += '_backbone-backbone'
+                        elif is_bb_sc:
+                            data_type += '_backbone-sidechain'
+                        elif is_sc_sc:
+                            data_type += '_sidechain-sidechain'
+                    else:
+                        data_type = 'long_range_constraints'
+
+                    _count[data_type] += 1
+
+                range_of_vals.append(v)
+                count_of_vals.append(_count)
+
+                v += scale
+
+            transposed = {}
+
+            for k in count.keys():
+                transposed[k] = []
+
+                for j in range(len(range_of_vals)):
+                    transposed[k].append(count_of_vals[j][k])
+
+            if len(range_of_vals) > 2:
+                has_value = False
+                for j in range(1, len(range_of_vals) - 1):
+                    for k in count.keys():
+                        if transposed[k][j] > 0:
+                            has_value = True
+                            break
+                    if has_value:
+                        break
+
+                if has_value:
+                    ent['histogram'] = {'range_of_values': range_of_vals, 'number_of_values': transposed}
+
+        except Exception as e:
+
+            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__calculateStatsOfDistanceRestraint() ++ Error  - %s" % str(e))
+            self.report.setError()
+
+            if self.__verbose:
+                self.__lfh.write("+NmrDpUtility.__calculateStatsOfDistanceRestraint() ++ Error  - %s" % str(e))
 
     def __calculateStatsOfDihedralRestraint(self, lp_data, ent):
         """ Calculate statistics of dihedral angle restraints.
@@ -6427,130 +6688,140 @@ class NmrDpUtility(object):
         chi4_atom_id_3_pat = re.compile(r'^[CN]E$')
         chi4_atom_id_4_pat = re.compile(r'^[CN]Z$')
 
-        count = {}
+        try:
 
-        for i in lp_data:
-            chain_id_1 = i[chain_id_1_name]
-            chain_id_2 = i[chain_id_2_name]
-            chain_id_3 = i[chain_id_3_name]
-            chain_id_4 = i[chain_id_4_name]
-            seq_ids = []
-            seq_ids.append(i[seq_id_1_name])
-            seq_ids.append(i[seq_id_2_name])
-            seq_ids.append(i[seq_id_3_name])
-            seq_ids.append(i[seq_id_4_name])
-            comp_id = i[comp_id_1_name]
-            atom_ids = []
-            atom_ids.append(i[atom_id_1_name])
-            atom_ids.append(i[atom_id_2_name])
-            atom_ids.append(i[atom_id_3_name])
-            atom_ids.append(i[atom_id_4_name])
-            data_type = i[angle_type_name]
+            count = {}
 
-            if data_type in self.empty_value:
+            for i in lp_data:
+                chain_id_1 = i[chain_id_1_name]
+                chain_id_2 = i[chain_id_2_name]
+                chain_id_3 = i[chain_id_3_name]
+                chain_id_4 = i[chain_id_4_name]
+                seq_ids = []
+                seq_ids.append(i[seq_id_1_name])
+                seq_ids.append(i[seq_id_2_name])
+                seq_ids.append(i[seq_id_3_name])
+                seq_ids.append(i[seq_id_4_name])
+                comp_id = i[comp_id_1_name]
+                atom_ids = []
+                atom_ids.append(i[atom_id_1_name])
+                atom_ids.append(i[atom_id_2_name])
+                atom_ids.append(i[atom_id_3_name])
+                atom_ids.append(i[atom_id_4_name])
+                data_type = i[angle_type_name]
 
-                data_type = 'unknown'
+                if data_type in self.empty_value:
 
-                if chain_id_1 == chain_id_2 and chain_id_2 == chain_id_3 and chain_id_3 == chain_id_4:
+                    data_type = 'unknown'
 
-                    polypeptide_like = self.__csStat.getTypeOfCompId(comp_id)[0]
+                    if chain_id_1 == chain_id_2 and chain_id_2 == chain_id_3 and chain_id_3 == chain_id_4:
 
-                    if polypeptide_like:
+                        polypeptide_like = self.__csStat.getTypeOfCompId(comp_id)[0]
 
-                        seq_id_common = collections.Counter(seq_ids).most_common()
+                        if polypeptide_like:
 
-                        if len(seq_id_common) == 2:
+                            seq_id_common = collections.Counter(seq_ids).most_common()
 
-                            # phi or psi
+                            if len(seq_id_common) == 2:
 
-                            if seq_id_common[0][1] == 3 and seq_id_common[1][1] == 1:
+                                # phi or psi
 
-                                # phi
+                                if seq_id_common[0][1] == 3 and seq_id_common[1][1] == 1:
 
-                                seq_id_prev = seq_id_common[1][0]
+                                    # phi
 
-                                if seq_id_common[0][0] == seq_id_prev + 1:
+                                    seq_id_prev = seq_id_common[1][0]
 
-                                    j = 0
-                                    if seq_ids[j] == seq_id_prev and atom_ids[j] == 'C':
-                                        atom_ids.pop(j)
-                                        if atom_ids == dihed_atom_ids:
-                                            data_type = 'phi'
+                                    if seq_id_common[0][0] == seq_id_prev + 1:
 
-                                # psi
+                                        j = 0
+                                        if seq_ids[j] == seq_id_prev and atom_ids[j] == 'C':
+                                            atom_ids.pop(j)
+                                            if atom_ids == dihed_atom_ids:
+                                                data_type = 'phi'
 
-                                seq_id_next = seq_id_common[1][0]
+                                    # psi
 
-                                if seq_id_common[0][0] == seq_id_next - 1:
+                                    seq_id_next = seq_id_common[1][0]
 
-                                    j = 3
-                                    if seq_ids[j] == seq_id_next and atom_ids[j] == 'N':
-                                        atom_ids.pop(j)
-                                        if atom_ids == dihed_atom_ids:
-                                            data_type = 'psi'
+                                    if seq_id_common[0][0] == seq_id_next - 1:
 
-                            # omega
+                                        j = 3
+                                        if seq_ids[j] == seq_id_next and atom_ids[j] == 'N':
+                                            atom_ids.pop(j)
+                                            if atom_ids == dihed_atom_ids:
+                                                data_type = 'psi'
 
-                            if atom_ids[0] == 'O' and atom_ids[1] == 'C' and atom_ids[2] == 'N' and (atom_ids[3] == 'H' or atom_ids[3] == 'CA') and\
-                               seq_ids[0] == seq_ids[1] and seq_ids[1] + 1 == seq_ids[2] and seq_ids[2] == seq_ids[3]:
-                                data_type = 'omega'
+                                # omega
 
-                        elif len(seq_id_common) == 1:
+                                if atom_ids[0] == 'O' and atom_ids[1] == 'C' and atom_ids[2] == 'N' and (atom_ids[3] == 'H' or atom_ids[3] == 'CA') and\
+                                   seq_ids[0] == seq_ids[1] and seq_ids[1] + 1 == seq_ids[2] and seq_ids[2] == seq_ids[3]:
+                                    data_type = 'omega'
 
-                            # chi1
+                            elif len(seq_id_common) == 1:
 
-                            if atom_ids[0] == 'N' and atom_ids[1] == 'CA' and atom_ids[2] == 'CB' and chi1_atom_id_4_pat.match(atom_ids[3]):
-                                #if (atom_ids[3] == 'CG' and comp_id in ['ARG', 'ASN', 'ASP', 'GLN', 'GLU', 'HIS', 'LEU', 'LYS', 'MET', 'PHE', 'PRO', 'TRP', 'TYR']) or\
-                                #   (atom_ids[3] == 'CG1' and comp_id in ['ILE', 'VAL']) or\
-                                #   (atom_ids[3] == 'OG' and comp_id == 'SER') or\
-                                #   (atom_ids[3] == 'OG1' and comp_id == 'THR') or\
-                                #   (atom_ids[3] == 'SG' and comp_id == 'CYS'):
-                                data_type = 'chi1'
+                                # chi1
 
-                            # chi2
+                                if atom_ids[0] == 'N' and atom_ids[1] == 'CA' and atom_ids[2] == 'CB' and chi1_atom_id_4_pat.match(atom_ids[3]):
+                                    #if (atom_ids[3] == 'CG' and comp_id in ['ARG', 'ASN', 'ASP', 'GLN', 'GLU', 'HIS', 'LEU', 'LYS', 'MET', 'PHE', 'PRO', 'TRP', 'TYR']) or\
+                                    #   (atom_ids[3] == 'CG1' and comp_id in ['ILE', 'VAL']) or\
+                                    #   (atom_ids[3] == 'OG' and comp_id == 'SER') or\
+                                    #   (atom_ids[3] == 'OG1' and comp_id == 'THR') or\
+                                    #   (atom_ids[3] == 'SG' and comp_id == 'CYS'):
+                                    data_type = 'chi1'
 
-                            if atom_ids[0] == 'CA' and atom_ids[1] == 'CB' and chi2_atom_id_3_pat(atom_ids[2]) and chi2_atom_id_4_pat(atom_ids[3]):
-                                #if (atom_ids[2] == 'CG' and atom_ids[3] == 'CD' and comp_id in ['ARG', 'GLN', 'GLU', 'LYS', 'PRO']) or\
-                                #   (atom_ids[2] == 'CG' and atom_ids[3] == 'CD1' and comp_id in ['LEU', 'PHE', 'TRP', 'TYR']) or\
-                                #   (atom_ids[2] == 'CG' and atom_ids[3] == 'ND1' and comp_id == 'HIS') or\
-                                #   (atom_ids[2] == 'CG' and atom_ids[3] == 'OD1' and comp_id in ['ASN', 'ASP']) or\
-                                #   (atom_ids[2] == 'CG' and atom_ids[3] == 'SD' and comp_id == 'MET') or\
-                                #   (atom_ids[2] == 'CG1' and atom_ids[3] == 'CD' and comp_id == 'ILE'):
-                                data_type = 'chi2'
+                                # chi2
 
-                            # chi3
+                                if atom_ids[0] == 'CA' and atom_ids[1] == 'CB' and chi2_atom_id_3_pat(atom_ids[2]) and chi2_atom_id_4_pat(atom_ids[3]):
+                                    #if (atom_ids[2] == 'CG' and atom_ids[3] == 'CD' and comp_id in ['ARG', 'GLN', 'GLU', 'LYS', 'PRO']) or\
+                                    #   (atom_ids[2] == 'CG' and atom_ids[3] == 'CD1' and comp_id in ['LEU', 'PHE', 'TRP', 'TYR']) or\
+                                    #   (atom_ids[2] == 'CG' and atom_ids[3] == 'ND1' and comp_id == 'HIS') or\
+                                    #   (atom_ids[2] == 'CG' and atom_ids[3] == 'OD1' and comp_id in ['ASN', 'ASP']) or\
+                                    #   (atom_ids[2] == 'CG' and atom_ids[3] == 'SD' and comp_id == 'MET') or\
+                                    #   (atom_ids[2] == 'CG1' and atom_ids[3] == 'CD' and comp_id == 'ILE'):
+                                    data_type = 'chi2'
 
-                            if atom_ids[0] == 'CB' and atom_ids[1] == 'CG' and chi3_atom_id_3_pat(atom_ids[2]) and chi3_atom_id_4_pat(atom_ids[3]):
-                                #if (atom_ids[2] == 'CD' and atom_ids[3] == 'CE' and comp_id == 'LYS') or\
-                                #   (atom_ids[2] == 'CD' and atom_ids[3] == 'NE' and comp_id == 'ARG') or\
-                                #   (atom_ids[2] == 'CD' and atom_ids[3] == 'OE1' and comp_id in ['GLN', 'GLU']) or\
-                                #   (atom_ids[2] == 'SD' and atom_ids[3] == 'CE' and comp_id == 'MET'):
-                                data_type = 'chi3'
+                                # chi3
 
-                            # chi4
+                                if atom_ids[0] == 'CB' and atom_ids[1] == 'CG' and chi3_atom_id_3_pat(atom_ids[2]) and chi3_atom_id_4_pat(atom_ids[3]):
+                                    #if (atom_ids[2] == 'CD' and atom_ids[3] == 'CE' and comp_id == 'LYS') or\
+                                    #   (atom_ids[2] == 'CD' and atom_ids[3] == 'NE' and comp_id == 'ARG') or\
+                                    #   (atom_ids[2] == 'CD' and atom_ids[3] == 'OE1' and comp_id in ['GLN', 'GLU']) or\
+                                    #   (atom_ids[2] == 'SD' and atom_ids[3] == 'CE' and comp_id == 'MET'):
+                                    data_type = 'chi3'
 
-                            if atom_ids[0] == 'CG' and atom_ids[1] == 'CD' and chi4_atom_id_3_pat(atom_ids[2]) and chi4_atom_id_4_par(atom_ids[3]):
-                                #if (atom_ids[2] == 'NE' and atom_ids[3] == 'CZ' and comp_id == 'ARG') or\
-                                #  (atom_ids[2] == 'CE' and atom_ids[3] == 'NZ' and comp_id == 'LYS'):
-                                data_type = 'chi4'
+                                # chi4
 
-                            # chi5
+                                if atom_ids[0] == 'CG' and atom_ids[1] == 'CD' and chi4_atom_id_3_pat(atom_ids[2]) and chi4_atom_id_4_par(atom_ids[3]):
+                                    #if (atom_ids[2] == 'NE' and atom_ids[3] == 'CZ' and comp_id == 'ARG') or\
+                                    #  (atom_ids[2] == 'CE' and atom_ids[3] == 'NZ' and comp_id == 'LYS'):
+                                    data_type = 'chi4'
 
-                            if atom_ids == ['CD', 'NE', 'CZ', 'NH1']: # and comp_id == 'ARG':
-                                data_type = 'chi5'
+                                # chi5
 
-            else:
-                data_type = data_type.lower()
+                                if atom_ids == ['CD', 'NE', 'CZ', 'NH1']: # and comp_id == 'ARG':
+                                    data_type = 'chi5'
 
-            data_type += '_angle_constraints'
+                else:
+                    data_type = data_type.lower()
 
-            if data_type in count:
-                count[data_type] += 1
-            else:
-                count[data_type] = 1
+                data_type += '_angle_constraints'
 
-        if len(count) > 0:
-            ent['number_of_constraints'] = count
+                if data_type in count:
+                    count[data_type] += 1
+                else:
+                    count[data_type] = 1
+
+            if len(count) > 0:
+                ent['number_of_constraints'] = count
+
+        except Exception as e:
+
+            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__calculateStatsOfDihedralRestraint() ++ Error  - %s" % str(e))
+            self.report.setError()
+
+            if self.__verbose:
+                self.__lfh.write("+NmrDpUtility.__calculateStatsOfDihedralRestraint() ++ Error  - %s" % str(e))
 
     def __calculateStatsOfRdcRestraint(self, lp_data, ent):
         """ Calculate statistics of RDC restraints.
@@ -6568,100 +6839,13 @@ class NmrDpUtility(object):
         lower_linear_limit_name = item_names['lower_linear_limit']
         upper_linear_limit_name = item_names['upper_linear_limit']
 
-        max_val = 0.0
-        min_val = 0.0
+        try:
 
-        max_val_ = -100.0
-        min_val_ = 100.0
+            max_val = 0.0
+            min_val = 0.0
 
-        for i in lp_data:
-            target_value = i[target_value_name]
-
-            if target_value is None:
-
-                if not i[lower_limit_name] is None and not i[upper_limit_name] is None:
-                    target_value = (i[lower_limit_name] + i[upper_limit_name]) / 2.0
-
-                elif not i[lower_linear_limit_name] is None and not i[upper_linear_limit_name] is None:
-                    target_value = (i[lower_linear_limit_name] + i[upper_linear_limit_name]) / 2.0
-
-                else:
-                    continue
-
-            if target_value > max_val:
-                max_val = target_value
-
-            elif target_value < min_val:
-                min_val = target_value
-
-            if target_value > max_val_:
-                max_val_ = target_value
-
-            if target_value < min_val_:
-                min_val_ = target_value
-
-        item_names = self.item_names_in_rdc_loop[file_type]
-        atom_id_1_name = item_names['atom_id_1']
-        atom_id_2_name = item_names['atom_id_2']
-
-        count = {}
-
-        for i in lp_data:
-            atom_id_1 = i[atom_id_1_name]
-            atom_id_2 = i[atom_id_2_name]
-
-            try:
-                iso_number_1 = self.atom_isotopes[atom_id_1[0]][0]
-                iso_number_2 = self.atom_isotopes[atom_id_2[0]][0]
-            except KeyError:
-                pass
-
-            if iso_number_1 < iso_number_2:
-                vector_type = atom_id_1 + '-' + atom_id_2
-            elif iso_number_2 > iso_number_1:
-                vector_type = atom_id_2 + '-' + atom_id_1
-            else:
-                vector_type = sorted(atom_id_1, atom_id_2)
-
-            data_type = vector_type + '_bond_vectors'
-
-            if data_type in count:
-                count[data_type] += 1
-            else:
-                count[data_type] = 1
-
-        if len(count) == 0:
-            return
-
-        ent['number_of_constraints'] = count
-        ent['range'] = {'max_value': max_val_, 'min_value': min_val_}
-
-        target_scale = (max_val - min_val) / 12.0
-
-        scale = 1.0
-
-        while scale < target_scale:
-            scale *= 2.0
-
-        while scale > target_scale:
-            scale /= 2.0
-
-        range_of_vals = []
-        count_of_vals = []
-
-        v = 0.0
-        while v < min_val:
-            v += scale
-
-        while v > min_val:
-            v -= scale
-
-        while v < max_val:
-
-            _count = copy.copy(count)
-
-            for k in count.keys():
-                _count[k] = 0
+            max_val_ = -100.0
+            min_val_ = 100.0
 
             for i in lp_data:
                 target_value = i[target_value_name]
@@ -6677,9 +6861,25 @@ class NmrDpUtility(object):
                     else:
                         continue
 
-                if target_value < v or target_value >= v + scale:
-                    continue
+                if target_value > max_val:
+                    max_val = target_value
 
+                elif target_value < min_val:
+                    min_val = target_value
+
+                if target_value > max_val_:
+                    max_val_ = target_value
+
+                if target_value < min_val_:
+                    min_val_ = target_value
+
+            item_names = self.item_names_in_rdc_loop[file_type]
+            atom_id_1_name = item_names['atom_id_1']
+            atom_id_2_name = item_names['atom_id_2']
+
+            count = {}
+
+            for i in lp_data:
                 atom_id_1 = i[atom_id_1_name]
                 atom_id_2 = i[atom_id_2_name]
 
@@ -6697,33 +6897,114 @@ class NmrDpUtility(object):
                     vector_type = sorted(atom_id_1, atom_id_2)
 
                 data_type = vector_type + '_bond_vectors'
-                _count[data_type] += 1
 
-            range_of_vals.append(v)
-            count_of_vals.append(_count)
+                if data_type in count:
+                    count[data_type] += 1
+                else:
+                    count[data_type] = 1
 
-            v += scale
+            if len(count) == 0:
+                return
 
-        transposed = {}
+            ent['number_of_constraints'] = count
+            ent['range'] = {'max_value': max_val_, 'min_value': min_val_}
 
-        for k in count.keys():
-            transposed[k] = []
+            target_scale = (max_val - min_val) / 12.0
 
-            for j in range(len(range_of_vals)):
-                transposed[k].append(count_of_vals[j][k])
+            scale = 1.0
 
-        if len(range_of_vals) > 2:
-            has_value = False
-            for j in range(1, len(range_of_vals) - 1):
+            while scale < target_scale:
+                scale *= 2.0
+
+            while scale > target_scale:
+                scale /= 2.0
+
+            range_of_vals = []
+            count_of_vals = []
+
+            v = 0.0
+            while v < min_val:
+                v += scale
+
+            while v > min_val:
+                v -= scale
+
+            while v < max_val:
+
+                _count = copy.copy(count)
+
                 for k in count.keys():
-                    if transposed[k][j] > 0:
-                        has_value = True
-                        break
-                if has_value:
-                    break
+                    _count[k] = 0
 
-            if has_value:
-                ent['histogram'] = {'range_of_values': range_of_vals, 'number_of_values': transposed}
+                for i in lp_data:
+                    target_value = i[target_value_name]
+
+                    if target_value is None:
+
+                        if not i[lower_limit_name] is None and not i[upper_limit_name] is None:
+                            target_value = (i[lower_limit_name] + i[upper_limit_name]) / 2.0
+
+                        elif not i[lower_linear_limit_name] is None and not i[upper_linear_limit_name] is None:
+                            target_value = (i[lower_linear_limit_name] + i[upper_linear_limit_name]) / 2.0
+
+                        else:
+                            continue
+
+                    if target_value < v or target_value >= v + scale:
+                        continue
+
+                    atom_id_1 = i[atom_id_1_name]
+                    atom_id_2 = i[atom_id_2_name]
+
+                    try:
+                        iso_number_1 = self.atom_isotopes[atom_id_1[0]][0]
+                        iso_number_2 = self.atom_isotopes[atom_id_2[0]][0]
+                    except KeyError:
+                        pass
+
+                    if iso_number_1 < iso_number_2:
+                        vector_type = atom_id_1 + '-' + atom_id_2
+                    elif iso_number_2 > iso_number_1:
+                        vector_type = atom_id_2 + '-' + atom_id_1
+                    else:
+                        vector_type = sorted(atom_id_1, atom_id_2)
+
+                    data_type = vector_type + '_bond_vectors'
+                    _count[data_type] += 1
+
+                range_of_vals.append(v)
+                count_of_vals.append(_count)
+
+                v += scale
+
+            transposed = {}
+
+            for k in count.keys():
+                transposed[k] = []
+
+                for j in range(len(range_of_vals)):
+                    transposed[k].append(count_of_vals[j][k])
+
+            if len(range_of_vals) > 2:
+                has_value = False
+                for j in range(1, len(range_of_vals) - 1):
+                    for k in count.keys():
+                        if transposed[k][j] > 0:
+                            has_value = True
+                            break
+                    if has_value:
+                        break
+
+                if has_value:
+                    ent['histogram'] = {'range_of_values': range_of_vals, 'number_of_values': transposed}
+
+        except Exception as e:
+
+            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__calculateStatsOfRdcRestraint() ++ Error  - %s" % str(e))
+            self.report.setError()
+
+            if self.__verbose:
+                self.__lfh.write("+NmrDpUtility.__calculateStatsOfRdcRestraint() ++ Error  - %s" % str(e))
 
     def __calculateStatsOfSpectralPeak(self, num_dim, lp_data, ent):
         """ Calculate statistics of spectral peaks.
@@ -6750,34 +7031,44 @@ class NmrDpUtility(object):
         comp_id_names = []
         atom_id_names = []
 
-        count = {'assigned_spectral_peaks': 0, 'unassigned_spectral_peaks': 0}
+        try:
 
-        for j in range(num_dim):
-            chain_id_names.append(item_names[j]['chain_id'])
-            seq_id_names.append(item_names[j]['seq_id'])
-            comp_id_names.append(item_names[j]['comp_id'])
-            atom_id_names.append(item_names[j]['atom_id'])
-
-        for i in lp_data:
-
-            has_assignment = True
+            count = {'assigned_spectral_peaks': 0, 'unassigned_spectral_peaks': 0}
 
             for j in range(num_dim):
-                chain_id = i[chain_id_names[j]]
-                seq_id = i[seq_id_names[j]]
-                comp_id = i[comp_id_names[j]]
-                atom_id = i[atom_id_names[j]]
+                chain_id_names.append(item_names[j]['chain_id'])
+                seq_id_names.append(item_names[j]['seq_id'])
+                comp_id_names.append(item_names[j]['comp_id'])
+                atom_id_names.append(item_names[j]['atom_id'])
 
-                if chain_id in self.empty_value or seq_id in self.empty_value or comp_id in self.empty_value or atom_id in self.empty_value:
-                    has_assignment = False
-                    break
+            for i in lp_data:
 
-            if has_assignment:
-                count['assigned_spectral_peaks'] += 1
-            else:
-                count['unassigned_spectral_peaks'] += 1
+                has_assignment = True
 
-        ent['number_of_spectral_peaks'] = count
+                for j in range(num_dim):
+                    chain_id = i[chain_id_names[j]]
+                    seq_id = i[seq_id_names[j]]
+                    comp_id = i[comp_id_names[j]]
+                    atom_id = i[atom_id_names[j]]
+
+                    if chain_id in self.empty_value or seq_id in self.empty_value or comp_id in self.empty_value or atom_id in self.empty_value:
+                        has_assignment = False
+                        break
+
+                if has_assignment:
+                    count['assigned_spectral_peaks'] += 1
+                else:
+                    count['unassigned_spectral_peaks'] += 1
+
+            ent['number_of_spectral_peaks'] = count
+
+        except Exception as e:
+
+            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__calculateStatsOfSpectralPeak() ++ Error  - %s" % str(e))
+            self.report.setError()
+
+            if self.__verbose:
+                self.__lfh.write("+NmrDpUtility.__calculateStatsOfSpectralPeak() ++ Error  - %s" % str(e))
 
     def __validateCoordInputSource(self):
         """ Validate coordinate file as secondary input resource.

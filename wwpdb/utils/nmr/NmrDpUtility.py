@@ -1,6 +1,6 @@
 ##
 # File: NmrDpUtility.py
-# Date: 11-Jul-2019
+# Date: 17-Jul-2019
 #
 # Updates:
 ##
@@ -6662,21 +6662,31 @@ class NmrDpUtility(object):
 
         file_type = input_source_dic['file_type']
 
-        item_names = self.item_names_in_dh_loop[file_type]
-        chain_id_1_name = item_names['chain_id_1']
-        chain_id_2_name = item_names['chain_id_2']
-        chain_id_3_name = item_names['chain_id_3']
-        chain_id_4_name = item_names['chain_id_4']
-        seq_id_1_name = item_names['seq_id_1']
-        seq_id_2_name = item_names['seq_id_2']
-        seq_id_3_name = item_names['seq_id_3']
-        seq_id_4_name = item_names['seq_id_4']
-        comp_id_1_name = item_names['comp_id_1']
-        atom_id_1_name = item_names['atom_id_1']
-        atom_id_2_name = item_names['atom_id_2']
-        atom_id_3_name = item_names['atom_id_3']
-        atom_id_4_name = item_names['atom_id_4']
-        angle_type_name = item_names['angle_type']
+        item_names = self.potential_items[file_type]['dihed_restraint']
+        target_value_name = item_names['target_value']
+        lower_limit_name = item_names['lower_limit']
+        upper_limit_name = item_names['upper_limit']
+        lower_linear_limit_name = item_names['lower_linear_limit']
+        upper_linear_limit_name = item_names['upper_linear_limit']
+
+        dh_item_names = self.item_names_in_dh_loop[file_type]
+        chain_id_1_name = dh_item_names['chain_id_1']
+        chain_id_2_name = dh_item_names['chain_id_2']
+        chain_id_3_name = dh_item_names['chain_id_3']
+        chain_id_4_name = dh_item_names['chain_id_4']
+        seq_id_1_name = dh_item_names['seq_id_1']
+        seq_id_2_name = dh_item_names['seq_id_2']
+        seq_id_3_name = dh_item_names['seq_id_3']
+        seq_id_4_name = dh_item_names['seq_id_4']
+        comp_id_1_name = dh_item_names['comp_id_1']
+        comp_id_2_name = dh_item_names['comp_id_2']
+        comp_id_3_name = dh_item_names['comp_id_3']
+        comp_id_4_name = dh_item_names['comp_id_4']
+        atom_id_1_name = dh_item_names['atom_id_1']
+        atom_id_2_name = dh_item_names['atom_id_2']
+        atom_id_3_name = dh_item_names['atom_id_3']
+        atom_id_4_name = dh_item_names['atom_id_4']
+        angle_type_name = dh_item_names['angle_type']
 
         dihed_atom_ids = ['N', 'CA', 'C']
 
@@ -6692,7 +6702,39 @@ class NmrDpUtility(object):
 
             count = {}
 
+            phi_list = []
+            psi_list = []
+            chi1_list = []
+            chi2_list = []
+
             for i in lp_data:
+                target_value = i[target_value_name]
+
+                if target_value is None:
+
+                    if not i[lower_limit_name] is None and not i[upper_limit_name] is None:
+                        target_value = (i[lower_limit_name] + i[upper_limit_name]) / 2.0
+
+                    elif not i[lower_linear_limit_name] is None and not i[upper_linear_limit_name] is None:
+                        target_value = (i[lower_linear_limit_name] + i[upper_linear_limit_name]) / 2.0
+
+                    else:
+                        continue
+
+                target_value = float('{:.1f}'.format(target_value))
+
+                if not i[lower_limit_name] is None and not i[upper_limit_name] is None:
+                    lower_limit = i[lower_limit_name]
+                    upper_limit = i[upper_limit_name]
+
+                elif not i[lower_linear_limit_name] is None and not i[upper_linear_limit_name] is None:
+                    lower_limit = i[lower_linear_limit_name]
+                    upper_limit = i[upper_linear_limit_name]
+
+                else:
+                    lower_limit = None
+                    upper_limit = None
+
                 chain_id_1 = i[chain_id_1_name]
                 chain_id_2 = i[chain_id_2_name]
                 chain_id_3 = i[chain_id_3_name]
@@ -6703,12 +6745,20 @@ class NmrDpUtility(object):
                 seq_ids.append(i[seq_id_3_name])
                 seq_ids.append(i[seq_id_4_name])
                 comp_id = i[comp_id_1_name]
+                comp_ids = []
+                comp_ids.append(i[comp_id_1_name])
+                comp_ids.append(i[comp_id_2_name])
+                comp_ids.append(i[comp_id_3_name])
+                comp_ids.append(i[comp_id_4_name])
                 atom_ids = []
                 atom_ids.append(i[atom_id_1_name])
                 atom_ids.append(i[atom_id_2_name])
                 atom_ids.append(i[atom_id_3_name])
                 atom_ids.append(i[atom_id_4_name])
                 data_type = i[angle_type_name]
+
+                seq_id_common = collections.Counter(seq_ids).most_common()
+                comp_id_common = collections.Counter(comp_ids).most_common()
 
                 if data_type in self.empty_value:
 
@@ -6719,8 +6769,6 @@ class NmrDpUtility(object):
                         polypeptide_like = self.__csStat.getTypeOfCompId(comp_id)[0]
 
                         if polypeptide_like:
-
-                            seq_id_common = collections.Counter(seq_ids).most_common()
 
                             if len(seq_id_common) == 2:
 
@@ -6812,8 +6860,118 @@ class NmrDpUtility(object):
                 else:
                     count[data_type] = 1
 
+                if data_type.startswith('phi_'):
+                    phi = {}
+                    phi['chain_id'] = chain_id_1
+                    phi['seq_id'] = seq_id_common[0][0]
+                    phi['comp_id'] = comp_id_common[0][0]
+                    phi['value'] = target_value
+                    phi['error'] = None if lower_limit is None or upper_limit is None else [lower_limit, upper_limit]
+                    phi_list.append(phi)
+
+                elif data_type.startswith('psi_'):
+                    psi = {}
+                    psi['chain_id'] = chain_id_1
+                    psi['seq_id'] = seq_id_common[0][0]
+                    psi['comp_id'] = comp_id_common[0][0]
+                    psi['value'] = target_value
+                    psi['error'] = None if lower_limit is None or upper_limit is None else [lower_limit, upper_limit]
+                    psi_list.append(psi)
+
+                elif data_type.startswith('chi1_'):
+                    chi1 = {}
+                    chi1['chain_id'] = chain_id_1
+                    chi1['seq_id'] = seq_id_common[0][0]
+                    chi1['comp_id'] = comp_id_common[0][0]
+                    chi1['value'] = target_value
+                    chi1['error'] = None if lower_limit is None or upper_limit is None else [lower_limit, upper_limit]
+                    chi1_list.append(chi1)
+
+                elif data_type.startswith('chi2_'):
+                    chi2 = {}
+                    chi2['chain_id'] = chain_id_1
+                    chi2['seq_id'] = seq_id_common[0][0]
+                    chi2['comp_id'] = comp_id_common[0][0]
+                    chi2['value'] = target_value
+                    chi2['error'] = None if lower_limit is None or upper_limit is None else [lower_limit, upper_limit]
+                    chi2_list.append(chi2)
+
             if len(count) > 0:
                 ent['number_of_constraints'] = count
+
+            if 'phi_angle_constraints' in count and 'psi_angle_constraints' in count:
+
+                phi_psi_value = {}
+                phi_psi_error = {}
+
+                for phi in phi_list:
+                    try:
+                        psi = next(psi for psi in psi_list if psi['chain_id'] == phi['chain_id'] and psi['seq_id'] == phi['seq_id'])
+
+                        comp_id = phi['comp_id']
+
+                        if not comp_id in phi_psi_value:
+                            phi_psi_value[comp_id] = []
+
+                        phi_psi_value[comp_id].append([phi['value'], psi['value']])
+
+                        if not phi['error'] is None:
+
+                            if not comp_id in phi_psi_error:
+                                phi_psi_error[comp_id] = []
+
+                            phi_psi_error[comp_id].append([phi['value'], psi['value'], phi['error'][0], phi['error'][1], psi['error'][0], psi['error'][1]])
+
+                    except StopIteration:
+                        pass
+
+                if len(phi_psi_value) > 0:
+
+                    phi_psi_plot = {}
+
+                    phi_psi_plot['values'] = phi_psi_value
+
+                    if len(phi_psi_error) > 0:
+                        phi_psi_plot['errors'] = phi_psi_error
+
+                    ent['phi_psi_plot'] = phi_psi_plot
+
+            if 'chi1_angle_constraints' in count and 'chi2_angle_constraints' in count:
+
+                chi1_chi2_value = {}
+                chi1_chi2_error = {}
+
+                for chi1 in chi1_list:
+                    try:
+                        chi2 = next(chi2 for chi2 in chi2_list if chi2['chain_id'] == chi1['chain_id'] and chi2['seq_id'] == chi1['seq_id'])
+
+                        comp_id = chi1['comp_id']
+
+                        if not comp_id in chi1_chi2_value:
+                            chi1_chi2_value[comp_id] = []
+
+                        chi1_chi2_value[comp_id].append([chi1['value'], chi2['value']])
+
+                        if not chi1['error'] is None and not chi2['error'] is None:
+
+                            if not comp_id in chi1_chi2_error:
+                                chi1_chi2_error[comp_id] = []
+
+                            chi1_chi2_error[comp_id].append([chi1['value'], chi2['value'], chi1['error'][0], chi1['error'][1], chi2['error'][0], chi2['error'][1]])
+
+                    except StopIteration:
+                        pass
+
+                if len(chi1_chi2_value) > 0:
+
+                    chi1_chi2_plot = {}
+
+                    chi1_chi2_plot['values'] = chi1_chi2_value
+
+                    if len(chi1_chi2_error) > 0:
+                        chi1_chi2_plot['errors'] = chi1_chi2_error
+
+                    ent['chi1_chi2_plot'] = chi1_chi2_plot
 
         except Exception as e:
 

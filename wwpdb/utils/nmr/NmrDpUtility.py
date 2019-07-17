@@ -4974,6 +4974,22 @@ class NmrDpUtility(object):
                     comp_id_2 = i[comp_id_2_name]
                     atom_id_2 = i[atom_id_2_name]
 
+                    try:
+                        self.atom_isotopes[atom_id_1[0]]
+                        self.atom_isotopes[atom_id_2[0]]
+                    except KeyError:
+
+                        idx_msg = "[Check row of %s %s] " % (index_tag, i[index_tag])
+
+                        err = "%sNon-magnetic susceptible spins appeared in RDC vector (chain_id_1 %s, seq_id_1 %s, comp_id_1 %s, atom_id_1 %s, chain_id_2 %s, seq_id_2 %s, comp_id_2 %s, atom_id_2)." %\
+                              (idx_msg, chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2)
+
+                        self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
+                        self.report.setError()
+
+                        if self.__verbose:
+                            self.__lfh.write("+NmrDpUtility.__testRDCVector() ++ Error  - %s\n" % err)
+
                     if chain_id_1 != chain_id_2:
 
                         idx_msg = "[Check row of %s %s] " % (index_tag, i[index_tag])
@@ -5956,6 +5972,7 @@ class NmrDpUtility(object):
             if not comb_id in self.empty_value:
                 comb_id_set.add(comp_id)
 
+            hydrogen_bond_type = None
             hydrogen_bond = False
             disulfide_bond = False
             symmetry = False
@@ -5965,19 +5982,51 @@ class NmrDpUtility(object):
                 atom_id_1_ = atom_id_1[0]
                 atom_id_2_ = atom_id_2[0]
 
-                if (atom_id_1_ == 'O' and atom_id_2_ == 'H') or (atom_id_2_ == 'O' and atom_id_1_ == 'H'):
+                if (atom_id_1_ == 'F' and atom_id_2_ == 'H') or (atom_id_2_ == 'F' and atom_id_1_ == 'H'):
 
-                    if target_value >= 1.8 and target_value <= 2.1:
-                       hydrogen_bond = True
+                    if target_value >= 1.2 and target_value <= 1.5:
+                        hydrogen_bond_type = 'F...H-F'
+                        hydrogen_bond = True
+
+                elif (atom_id_1_ == 'F' and atom_id_2_ == 'F') or (atom_id_2_ == 'F' and atom_id_1_ == 'F'):
+
+                    if target_value >= 2.2 and target_value <= 2.5:
+                        hydrogen_bond_type = 'F...h-F'
+                        hydrogen_bond = True
+
+                elif (atom_id_1_ == 'O' and atom_id_2_ == 'H') or (atom_id_2_ == 'O' and atom_id_1_ == 'H'):
+
+                    if target_value >= 1.5 and target_value <= 2.2:
+                        hydrogen_bond_type = 'O...H-x'
+                        hydrogen_bond = True
 
                 elif (atom_id_1_ == 'O' and atom_id_2_ == 'N') or (atom_id_2_ == 'O' and atom_id_1_ == 'N'):
 
-                    if target_value >= 2.7 or target_value <= 3.1:
+                    if target_value >= 2.5 and target_value <= 3.2:
+                        hydrogen_bond_type = 'O...h-N'
+                        hydrogen_bond = True
+
+                elif (atom_id_1_ == 'O' and atom_id_2_ == 'O') or (atom_id_2_ == 'O' and atom_id_1_ == 'O'):
+
+                    if target_value >= 2.5 and target_value <= 3.2:
+                        hydrogen_bond_type = 'O...h-O'
+                        hydrogen_bond = True
+
+                elif (atom_id_1_ == 'N' and atom_id_2_ == 'H') or (atom_id_2_ == 'N' and atom_id_1_ == 'H'):
+
+                    if target_value >= 1.5 and target_value <= 2.2:
+                        hydrogen_bond_type = 'N...H-x'
+                        hydrogen_bond = True
+
+                elif (atom_id_1_ == 'N' and atom_id_2_ == 'N') or (atom_id_2_ == 'N' and atom_id_1_ == 'N'):
+
+                    if target_value >= 2.5 and target_value <= 3.2:
+                        hydrogen_bond_type = 'N...h_N'
                         hydrogen_bond = True
 
                 elif atom_id_1_ == 'S' and atom_id_2_ == 'S':
 
-                    if target_value >= 1.9 or target_value <= 2.3:
+                    if target_value >= 1.9 and target_value <= 2.3:
                         disulfide_bond = True
 
                 else:
@@ -6015,6 +6064,7 @@ class NmrDpUtility(object):
                     data_type = 'long_range_hydrogen_bonds'
                 else:
                     data_type = 'hydrogen_bonds'
+                data_type += '_' + hydrogen_bond_type
             elif disulfide_bond:
                 if chain_id_1 != chain_id_2:
                     data_type = 'inter-chain_disulfide_bonds'
@@ -6150,6 +6200,7 @@ class NmrDpUtility(object):
                 if target_value < v or target_value >= v + scale:
                     continue
 
+                hydrogen_bond_type = None
                 hydrogen_bond = False
                 disulfide_bond = False
                 symmetry = False
@@ -6159,19 +6210,51 @@ class NmrDpUtility(object):
                     atom_id_1_ = atom_id_1[0]
                     atom_id_2_ = atom_id_2[0]
 
-                    if (atom_id_1_ == 'O' and atom_id_2_ == 'H') or (atom_id_2_ == 'O' and atom_id_1_ == 'H'):
+                    if (atom_id_1_ == 'F' and atom_id_2_ == 'H') or (atom_id_2_ == 'F' and atom_id_1_ == 'H'):
 
-                        if target_value >= 1.8 and target_value <= 2.1:
-                           hydrogen_bond = True
+                        if target_value >= 1.2 and target_value <= 1.5:
+                            hydrogen_bond_type = 'F...H-F'
+                            hydrogen_bond = True
+
+                    elif (atom_id_1_ == 'F' and atom_id_2_ == 'F') or (atom_id_2_ == 'F' and atom_id_1_ == 'F'):
+
+                        if target_value >= 2.2 and target_value <= 2.5:
+                            hydrogen_bond_type = 'F...h-F'
+                            hydrogen_bond = True
+
+                    elif (atom_id_1_ == 'O' and atom_id_2_ == 'H') or (atom_id_2_ == 'O' and atom_id_1_ == 'H'):
+
+                        if target_value >= 1.5 and target_value <= 2.2:
+                            hydrogen_bond_type = 'O...H-x'
+                            hydrogen_bond = True
 
                     elif (atom_id_1_ == 'O' and atom_id_2_ == 'N') or (atom_id_2_ == 'O' and atom_id_1_ == 'N'):
 
-                        if target_value >= 2.7 or target_value <= 3.1:
+                        if target_value >= 2.5 and target_value <= 3.2:
+                            hydrogen_bond_type = 'O...h-N'
+                            hydrogen_bond = True
+
+                    elif (atom_id_1_ == 'O' and atom_id_2_ == 'O') or (atom_id_2_ == 'O' and atom_id_1_ == 'O'):
+
+                        if target_value >= 2.5 and target_value <= 3.2:
+                            hydrogen_bond_type = 'O...h-O'
+                            hydrogen_bond = True
+
+                    elif (atom_id_1_ == 'N' and atom_id_2_ == 'H') or (atom_id_2_ == 'N' and atom_id_1_ == 'H'):
+
+                        if target_value >= 1.5 and target_value <= 2.2:
+                            hydrogen_bond_type = 'N...H-x'
+                            hydrogen_bond = True
+
+                    elif (atom_id_1_ == 'N' and atom_id_2_ == 'N') or (atom_id_2_ == 'N' and atom_id_1_ == 'N'):
+
+                        if target_value >= 2.5 and target_value <= 3.2:
+                            hydrogen_bond_type = 'N...h_N'
                             hydrogen_bond = True
 
                     elif atom_id_1_ == 'S' and atom_id_2_ == 'S':
 
-                        if target_value >= 1.9 or target_value <= 2.3:
+                        if target_value >= 1.9 and target_value <= 2.3:
                             disulfide_bond = True
 
                     else:
@@ -6209,6 +6292,7 @@ class NmrDpUtility(object):
                         data_type = 'long_range_hydrogen_bonds'
                     else:
                         data_type = 'hydrogen_bonds'
+                    data_type += '_' + hydrogen_bond_type
                 elif disulfide_bond:
                     if chain_id_1 != chain_id_2:
                         data_type = 'inter-chain_disulfide_bonds'
@@ -6296,16 +6380,16 @@ class NmrDpUtility(object):
                 transposed[k].append(count_of_vals[j][k])
 
         if len(range_of_vals) > 2:
-            has_middle = False
+            has_value = False
             for j in range(1, len(range_of_vals) - 1):
                 for k in count.keys():
                     if transposed[k][j] > 0:
-                        has_middle = True
+                        has_value = True
                         break
-                if has_middle:
+                if has_value:
                     break
 
-            if has_middle:
+            if has_value:
                 ent['histogram'] = {'range_of_values': range_of_vals, 'number_of_values': transposed}
 
     def __calculateStatsOfDihedralRestraint(self, lp_data, ent):
@@ -6523,8 +6607,23 @@ class NmrDpUtility(object):
         count = {}
 
         for i in lp_data:
+            atom_id_1 = i[atom_id_1_name]
+            atom_id_2 = i[atom_id_2_name]
 
-            data_type = i[atom_id_1_name] + '-' + i[atom_id_2_name] + '_bond_vectors'
+            try:
+                iso_number_1 = self.atom_isotopes[atom_id_1[0]][0]
+                iso_number_2 = self.atom_isotopes[atom_id_2[0]][0]
+            except KeyError:
+                pass
+
+            if iso_number_1 < iso_number_2:
+                vector_type = atom_id_1 + '-' + atom_id_2
+            elif iso_number_2 > iso_number_1:
+                vector_type = atom_id_2 + '-' + atom_id_1
+            else:
+                vector_type = sorted(atom_id_1, atom_id_2)
+
+            data_type = vector_type + '_bond_vectors'
 
             if data_type in count:
                 count[data_type] += 1
@@ -6581,7 +6680,23 @@ class NmrDpUtility(object):
                 if target_value < v or target_value >= v + scale:
                     continue
 
-                data_type = i[atom_id_1_name] + '-' + i[atom_id_2_name] + '_bond_vectors'
+                atom_id_1 = i[atom_id_1_name]
+                atom_id_2 = i[atom_id_2_name]
+
+                try:
+                    iso_number_1 = self.atom_isotopes[atom_id_1[0]][0]
+                    iso_number_2 = self.atom_isotopes[atom_id_2[0]][0]
+                except KeyError:
+                    pass
+
+                if iso_number_1 < iso_number_2:
+                    vector_type = atom_id_1 + '-' + atom_id_2
+                elif iso_number_2 > iso_number_1:
+                    vector_type = atom_id_2 + '-' + atom_id_1
+                else:
+                    vector_type = sorted(atom_id_1, atom_id_2)
+
+                data_type = vector_type + '_bond_vectors'
                 _count[data_type] += 1
 
             range_of_vals.append(v)
@@ -6598,16 +6713,16 @@ class NmrDpUtility(object):
                 transposed[k].append(count_of_vals[j][k])
 
         if len(range_of_vals) > 2:
-            has_middle = False
+            has_value = False
             for j in range(1, len(range_of_vals) - 1):
                 for k in count.keys():
                     if transposed[k][j] > 0:
-                        has_middle = True
+                        has_value = True
                         break
-                if has_middle:
+                if has_value:
                     break
 
-            if has_middle:
+            if has_value:
                 ent['histogram'] = {'range_of_values': range_of_vals, 'number_of_values': transposed}
 
     def __calculateStatsOfSpectralPeak(self, num_dim, lp_data, ent):
@@ -9353,14 +9468,39 @@ class NmrDpUtility(object):
                 atom_id_1_ = i[atom_id_1_name][0]
                 atom_id_2_ = i[atom_id_2_name][0]
 
-                if (atom_id_1_ == 'O' and atom_id_2_ == 'H') or (atom_id_2_ == 'O' and atom_id_1_ == 'H'):
+                if (atom_id_1_ == 'F' and atom_id_2_ == 'H') or (atom_id_2_ == 'F' and atom_id_1_ == 'H'):
 
-                    if target_value < 1.8 or target_value > 2.1:
+                    if target_value < 1.2 or target_value > 1.5:
+                        return False
+
+                elif (atom_id_1_ == 'F' and atom_id_2_ == 'F') or (atom_id_2_ == 'F' and atom_id_1_ == 'F'):
+
+                    if target_value < 2.2 or target_value > 2.5:
+                        return False
+
+                elif (atom_id_1_ == 'O' and atom_id_2_ == 'H') or (atom_id_2_ == 'O' and atom_id_1_ == 'H'):
+
+                    if target_value < 1.5 or target_value > 2.2:
                         return False
 
                 elif (atom_id_1_ == 'O' and atom_id_2_ == 'N') or (atom_id_2_ == 'O' and atom_id_1_ == 'N'):
 
-                    if target_value < 2.7 or target_value > 3.1:
+                    if target_value < 2.5 or target_value > 3.2:
+                        return False
+
+                elif (atom_id_1_ == 'O' and atom_id_2_ == 'O') or (atom_id_2_ == 'O' and atom_id_1_ == 'O'):
+
+                    if target_value < 2.5 or target_value > 3.2:
+                        return False
+
+                elif (atom_id_1_ == 'N' and atom_id_2_ == 'H') or (atom_id_2_ == 'N' and atom_id_1_ == 'H'):
+
+                    if target_value < 1.5 or target_value > 2.2:
+                        return False
+
+                elif (atom_id_1_ == 'N' and atom_id_2_ == 'N') or (atom_id_2_ == 'N' and atom_id_1_ == 'N'):
+
+                    if target_value < 2.5 or target_value > 3.2:
                         return False
 
                 else:

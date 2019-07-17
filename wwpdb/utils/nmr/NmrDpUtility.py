@@ -8725,7 +8725,16 @@ class NmrDpUtility(object):
 
                 length = len(s['seq_id'])
 
+                if self.__hasDisulfideBond(chain_id):
+                    self.report.setDisulfideBond(True)
+
+                if self.__hasOtherBond(chain_id):
+                    self.report.setOtherBond(True)
+
                 cyclic = self.__isCyclicPolymer(chain_id)
+
+                if cyclic:
+                    self.report.setCyclicPolymer(cyclic)
 
                 for j in range(length):
 
@@ -8924,6 +8933,156 @@ class NmrDpUtility(object):
         #   self.__star_data.normalize()
 
         return True
+
+    def __hasDisulfideBond(self, nmr_chain_id):
+        """ Return whether a given chain has disulfide bond based on coordinate annotation.
+            @return: True for a given chain has disulfide bond or False otherwise
+        """
+
+        id = self.report.getInputSourceIdOfCoord()
+
+        if id < 0:
+            return False
+
+        cif_input_source = self.report.input_sources[id]
+        cif_input_source_dic = cif_input_source.get()
+
+        cif_polymer_sequence = cif_input_source_dic['polymer_sequence']
+
+        chain_assign_dic = self.report.chain_assignment.get()
+
+        if not 'nmr_poly_seq_vs_model_poly_seq' in chain_assign_dic:
+
+            err = "Chain assignment did not exist, __assignCoordPolymerSequence() should be invoked."
+
+            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__hasDisulfideBond() ++ Error  - %s" % err)
+            self.report.setError()
+
+            if self.__verbose:
+                self.__lfh.write("+NmrDpUtility.__hasDisulfideBond() ++ Error  - %s\n" % err)
+
+            return False
+
+        if chain_assign_dic['nmr_poly_seq_vs_model_poly_seq'] is None:
+            return False
+
+        for chain_assign in chain_assign_dic['nmr_poly_seq_vs_model_poly_seq']:
+
+            if chain_assign['ref_chain_id'] != nmr_chain_id:
+                continue
+
+            cif_chain_id = chain_assign['test_chain_id']
+
+            for s in cif_polymer_sequence:
+
+                if s['chain_id'] != cif_chain_id:
+                    continue
+
+                try:
+
+                    struct_conn = self.__cR.getDictListWithFilter('struct_conn',
+                                                                  [{'name': 'conn_type_id', 'type': 'str'},
+                                                                   {'name': 'ptnr1_label_asym_id', 'type': 'str'},
+                                                                   {'name': 'ptnr2_label_asym_id', 'type': 'str'}
+                                                                   ])
+
+                except Exception as e:
+
+                    self.report.error.appendDescription('internal_error', "+NmrDpUtility.__hasDisulfideBond() ++ Error  - %s" % str(e))
+                    self.report.setError()
+
+                    if self.__verbose:
+                        self.__lfh.write("+NmrDpUtility.__hasDisulfideBond() ++ Error  - %s" % str(e))
+
+                    return False
+
+                if len(struct_conn) == 0:
+                    return False
+
+                else:
+
+                    try:
+                        next(sc for sc in struct_conn if sc['conn_type_id'] == 'disulf' and (sc['ptnr1_label_asym_id'] == cif_chain_id or sc['ptnr2_label_asym_id'] == cif_chain_id))
+                        return True
+                    except StopIteration:
+                        pass
+
+        return False
+
+    def __hasOtherBond(self, nmr_chain_id):
+        """ Return whether a given chain has other bond (neither disulfide nor covalent) based on coordinate annotation.
+            @return: True for a given chain has other bond (neither disulfide nor covalent) or False otherwise
+        """
+
+        id = self.report.getInputSourceIdOfCoord()
+
+        if id < 0:
+            return False
+
+        cif_input_source = self.report.input_sources[id]
+        cif_input_source_dic = cif_input_source.get()
+
+        cif_polymer_sequence = cif_input_source_dic['polymer_sequence']
+
+        chain_assign_dic = self.report.chain_assignment.get()
+
+        if not 'nmr_poly_seq_vs_model_poly_seq' in chain_assign_dic:
+
+            err = "Chain assignment did not exist, __assignCoordPolymerSequence() should be invoked."
+
+            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__hasOtherBond() ++ Error  - %s" % err)
+            self.report.setError()
+
+            if self.__verbose:
+                self.__lfh.write("+NmrDpUtility.__hasOtherBond() ++ Error  - %s\n" % err)
+
+            return False
+
+        if chain_assign_dic['nmr_poly_seq_vs_model_poly_seq'] is None:
+            return False
+
+        for chain_assign in chain_assign_dic['nmr_poly_seq_vs_model_poly_seq']:
+
+            if chain_assign['ref_chain_id'] != nmr_chain_id:
+                continue
+
+            cif_chain_id = chain_assign['test_chain_id']
+
+            for s in cif_polymer_sequence:
+
+                if s['chain_id'] != cif_chain_id:
+                    continue
+
+                try:
+
+                    struct_conn = self.__cR.getDictListWithFilter('struct_conn',
+                                                                  [{'name': 'conn_type_id', 'type': 'str'},
+                                                                   {'name': 'ptnr1_label_asym_id', 'type': 'str'},
+                                                                   {'name': 'ptnr2_label_asym_id', 'type': 'str'}
+                                                                   ])
+
+                except Exception as e:
+
+                    self.report.error.appendDescription('internal_error', "+NmrDpUtility.__hasOtherBond() ++ Error  - %s" % str(e))
+                    self.report.setError()
+
+                    if self.__verbose:
+                        self.__lfh.write("+NmrDpUtility.__hasOtherBond() ++ Error  - %s" % str(e))
+
+                    return False
+
+                if len(struct_conn) == 0:
+                    return False
+
+                else:
+
+                    try:
+                        next(sc for sc in struct_conn if sc['conn_type_id'] != 'covale' and sc['conn_type_id'] != 'disulf' and (sc['ptnr1_label_asym_id'] == cif_chain_id or sc['ptnr2_label_asym_id'] == cif_chain_id))
+                        return True
+                    except StopIteration:
+                        pass
+
+        return False
 
     def __isCyclicPolymer(self, nmr_chain_id):
         """ Return whether a given chain is cyclic polymer based on coordinate annotation.

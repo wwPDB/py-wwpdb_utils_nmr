@@ -21,6 +21,9 @@ class NmrDpReport:
                                          'sequence_alignments': [],
                                          'chain_assignments': [],
                                          'diamagnetic': True,
+                                         'disulfide_bond': False,
+                                         'other_bond': False,
+                                         'cyclic_polymer': False,
                                          'status': 'OK'
                                          },
                          'error': None,
@@ -48,6 +51,15 @@ class NmrDpReport:
 
     def isDiamagnetic(self):
         return self.__report['information']['diamagnetic']
+
+    def hasDisulfideBond(self):
+        return self.__report['information']['disulfide_bond']
+
+    def hasOtherBond(self):
+        return self.__report['information']['other_bond']
+
+    def hasCyclicPolymer(self):
+        return self.__report['information']['cyclic_polymer']
 
     def getInputSource(self, id):
         """ Return input source of a given index.
@@ -125,7 +137,34 @@ class NmrDpReport:
 
         else:
             logging.warning('+NmrDpReport.setDiamagnetic() ++ Warning  - No effects on NMR data processing report because input variable is not boolean type')
-            raise UserDiamagnetic('+NmrDpReport.setWarning() ++ Warning  - No effects on NMR data processing report because input variable is not boolean type')
+            raise UserDiamagnetic('+NmrDpReport.setDiamagnetic() ++ Warning  - No effects on NMR data processing report because input variable is not boolean type')
+
+    def setDisulfideBond(self, disulfide_bond):
+
+        if type(disulfide_bond) is bool:
+            self.__report['information']['disulfide_bond'] = disulfide_bond
+
+        else:
+            logging.warning('+NmrDpReport.setDisulfideBond() ++ Warning  - No effects on NMR data processing report because input variable is not boolean type')
+            raise UserDiamagnetic('+NmrDpReport.setDisulfideBond() ++ Warning  - No effects on NMR data processing report because input variable is not boolean type')
+
+    def setOtherBond(self, other_bond):
+
+        if type(other_bond) is bool:
+            self.__report['information']['other_bond'] = other_bond
+
+        else:
+            logging.warning('+NmrDpReport.setOtherBond() ++ Warning  - No effects on NMR data processing report because input variable is not boolean type')
+            raise UserDiamagnetic('+NmrDpReport.setOtherBond() ++ Warning  - No effects on NMR data processing report because input variable is not boolean type')
+
+    def setCyclicPolymer(self, cyclic_polymer):
+
+        if type(cyclic_polymer) is bool:
+            self.__report['information']['cyclic_polymer'] = cyclic_polymer
+
+        else:
+            logging.warning('+NmrDpReport.setCyclicPolymer() ++ Warning  - No effects on NMR data processing report because input variable is not boolean type')
+            raise UserDiamagnetic('+NmrDpReport.setCyclicPolymer() ++ Warning  - No effects on NMR data processing report because input variable is not boolean type')
 
     def setMutable(self):
         self.__immutable = False

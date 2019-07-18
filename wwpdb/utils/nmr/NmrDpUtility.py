@@ -6913,14 +6913,18 @@ class NmrDpUtility(object):
                         if not comp_id in phi_psi_value:
                             phi_psi_value[comp_id] = []
 
-                        phi_psi_value[comp_id].append([phi['value'], psi['value']])
+                        phi_psi_value[comp_id].append([phi['value'], psi['value'], str(phi['chain_id']) + ':' + str(phi['seq_id']) + ':' + phi['comp_id']])
 
-                        if not phi['error'] is None:
+                        if not phi['error'] is None or not psi['error'] is None:
 
                             if not comp_id in phi_psi_error:
                                 phi_psi_error[comp_id] = []
 
-                            phi_psi_error[comp_id].append([phi['value'], psi['value'], phi['error'][0], phi['error'][1], psi['error'][0], psi['error'][1]])
+                            phi_psi_error[comp_id].append([phi['value'], psi['value'],
+                                                           None if phi['error'] is None else phi['error'][0],
+                                                           None if phi['error'] is None else phi['error'][1],
+                                                           None if psi['error'] is None else psi['error'][0],
+                                                           None if psi['error'] is None else psi['error'][1]])
 
                     except StopIteration:
                         pass
@@ -6950,14 +6954,18 @@ class NmrDpUtility(object):
                         if not comp_id in chi1_chi2_value:
                             chi1_chi2_value[comp_id] = []
 
-                        chi1_chi2_value[comp_id].append([chi1['value'], chi2['value']])
+                        chi1_chi2_value[comp_id].append([chi1['value'], chi2['value'], str(chi1['chain_id']) + ':' + str(chi1['seq_id']) + ':' + chi1['comp_id']])
 
-                        if not chi1['error'] is None and not chi2['error'] is None:
+                        if not chi1['error'] is None or not chi2['error'] is None:
 
                             if not comp_id in chi1_chi2_error:
                                 chi1_chi2_error[comp_id] = []
 
-                            chi1_chi2_error[comp_id].append([chi1['value'], chi2['value'], chi1['error'][0], chi1['error'][1], chi2['error'][0], chi2['error'][1]])
+                            chi1_chi2_error[comp_id].append([chi1['value'], chi2['value'],
+                                                            None if chi1['error'] is None else chi1['error'][0],
+                                                            None if chi1['error'] is None else chi1['error'][1],
+                                                            None if chi2['error'] is None else chi2['error'][0],
+                                                            None if chi2['error'] is None else chi2['error'][1]])
 
                     except StopIteration:
                         pass

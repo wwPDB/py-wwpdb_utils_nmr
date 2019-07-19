@@ -1,6 +1,6 @@
 ##
 # File: NmrDpReport.py
-# Date: 17-Jul-2019
+# Date: 19-Jul-2019
 #
 # Updates:
 ##
@@ -310,7 +310,7 @@ class NmrDpReportInputSource:
     def __init__(self):
         self.items = ('file_name', 'file_type', 'content_type', 'content_subtype',
                       'polymer_sequence', 'polymer_sequence_in_loop',
-                      'non_standard_residue', 'disulfide_bond',
+                      'non_standard_residue', 'disulfide_bond', 'other_bond',
                       'stats_of_exptl_data')
         self.file_types = ('pdbx', 'nef', 'nmr-star')
         self.content_types = ('model', 'nmr-unified-data-nef', 'nmr-unified-data-str')

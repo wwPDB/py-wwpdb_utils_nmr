@@ -1,6 +1,6 @@
 ##
 # File: NmrDpUtility.py
-# Date: 17-Jul-2019
+# Date: 19-Jul-2019
 #
 # Updates:
 ##
@@ -90,6 +90,7 @@ class NmrDpUtility(object):
         __crossCheckTasks = [self.__assignCoordPolymerSequence,
                              self.__testCoordAtomIdConsistency,
                              self.__extractCoordDisulfideBond,
+                             self.__extractCoordOtherBond,
                              self.__calculateStatsOfExptlData
                              ]
 
@@ -8729,9 +8730,6 @@ class NmrDpUtility(object):
 
                 length = len(s['seq_id'])
 
-                if self.__hasOtherBond(chain_id):
-                    self.report.setOtherBond(True)
-
                 cyclic = self.__isCyclicPolymer(chain_id)
 
                 if cyclic:
@@ -8786,7 +8784,7 @@ class NmrDpUtility(object):
 
                         if self.__isProtCis(chain_id, seq_id):
                             row.append('true')
-                        elif comp_id == 'PRO':
+                        elif comp_id == 'PRO' or comp_id == 'GLY':
                             row.append('false')
                         else:
                             row.append('.')
@@ -8860,7 +8858,7 @@ class NmrDpUtility(object):
 
                         if self.__isProtCis(chain_id, seq_id):
                             row.append('yes')
-                        elif comp_id == 'PRO':
+                        elif comp_id == 'PRO' or comp_id == 'GLY':
                             row.append('no')
                         else:
                             row.append('.')
@@ -8934,76 +8932,6 @@ class NmrDpUtility(object):
         #   self.__star_data.normalize()
 
         return True
-
-    def __hasOtherBond(self, nmr_chain_id):
-        """ Return whether a given chain has other bond (neither disulfide nor covalent) based on coordinate annotation.
-            @return: True for a given chain has other bond (neither disulfide nor covalent) or False otherwise
-        """
-
-        id = self.report.getInputSourceIdOfCoord()
-
-        if id < 0:
-            return False
-
-        cif_input_source = self.report.input_sources[id]
-        cif_input_source_dic = cif_input_source.get()
-
-        cif_polymer_sequence = cif_input_source_dic['polymer_sequence']
-
-        chain_assign_dic = self.report.chain_assignment.get()
-
-        if not 'nmr_poly_seq_vs_model_poly_seq' in chain_assign_dic:
-
-            err = "Chain assignment did not exist, __assignCoordPolymerSequence() should be invoked."
-
-            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__hasOtherBond() ++ Error  - %s" % err)
-            self.report.setError()
-
-            if self.__verbose:
-                self.__lfh.write("+NmrDpUtility.__hasOtherBond() ++ Error  - %s\n" % err)
-
-            return False
-
-        if chain_assign_dic['nmr_poly_seq_vs_model_poly_seq'] is None:
-            return False
-
-        for chain_assign in chain_assign_dic['nmr_poly_seq_vs_model_poly_seq']:
-
-            if chain_assign['ref_chain_id'] != nmr_chain_id:
-                continue
-
-            cif_chain_id = chain_assign['test_chain_id']
-
-            try:
-
-                struct_conn = self.__cR.getDictListWithFilter('struct_conn',
-                                                              [{'name': 'conn_type_id', 'type': 'str'},
-                                                               {'name': 'ptnr1_label_asym_id', 'type': 'str'},
-                                                               {'name': 'ptnr2_label_asym_id', 'type': 'str'}
-                                                               ])
-
-            except Exception as e:
-
-                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__hasOtherBond() ++ Error  - %s" % str(e))
-                self.report.setError()
-
-                if self.__verbose:
-                    self.__lfh.write("+NmrDpUtility.__hasOtherBond() ++ Error  - %s" % str(e))
-
-                return False
-
-            if len(struct_conn) == 0:
-                return False
-
-            else:
-
-                try:
-                    next(sc for sc in struct_conn if sc['conn_type_id'] != 'covale' and sc['conn_type_id'] != 'disulf' and (sc['ptnr1_label_asym_id'] == cif_chain_id or sc['ptnr2_label_asym_id'] == cif_chain_id))
-                    return True
-                except StopIteration:
-                    pass
-
-        return False
 
     def __isCyclicPolymer(self, nmr_chain_id):
         """ Return whether a given chain is cyclic polymer based on coordinate annotation.
@@ -9384,13 +9312,13 @@ class NmrDpUtility(object):
             disulf['comp_id_2'] = nmr_comp_id_2
             disulf['atom_id_2'] = bond['atom_id_2']
             disulf['distance_value'] = bond['distance_value']
+            disulf['warning_description_1'] = None
+            disulf['warning_description_2'] = None
 
             cs_ca_1 = None
             cs_cb_1 = None
             cs_ca_2 = None
             cs_cb_2 = None
-
-            has_any_cb_cs = False
 
             for sf_data in self.__star_data.get_saveframes_by_category(sf_category):
 
@@ -9419,9 +9347,6 @@ class NmrDpUtility(object):
                         seq_id = i[seq_id_name]
                         comp_id = i[comp_id_name]
                         atom_id = i[atom_id_name]
-
-                        if atom_id == 'CB':
-                            has_any_cb_cs = True
 
                         if type(_chain_id) is int:
                             chain_id = str(_chain_id)
@@ -9469,6 +9394,8 @@ class NmrDpUtility(object):
                         disulf['redox_state_pred_1'] = 'ambiguous'
                 else:
                     disulf['redox_state_pred_1'] = 'ambiguous'
+            else:
+                disulf['redox_state_pred_1'] = 'unknown'
 
             if not cb_cs_2 is None:
                 if cb_cs_2 < 32.0:
@@ -9484,6 +9411,8 @@ class NmrDpUtility(object):
                         disulf['redox_state_pred_2'] = 'ambiguous'
                 else:
                     disulf['redox_state_pred_2'] = 'ambiguous'
+            else:
+                disulf['refox_state_pred_2'] = 'unknown'
 
             if disulf['redox_state_pred_1'] == 'ambiguous' and (not ca_cs_1 is None or not cb_cs_1 is None):
                 ox = 0.0
@@ -9509,21 +9438,430 @@ class NmrDpUtility(object):
 
                 disulf['redox_state_pred_2'] = 'oxidized %s, reduced %s %%' % ('{:.1f}'.format(ox / (ox + rd) * 100.0), '{:1f}'.format(rd / (ox + rd) * 100.0))
 
-            if has_any_cb_cs and (disulf['redox_state_pred_1'] != 'oxidized' or disulf['redox_state_pred_2'] != 'oxidized'):
+            if disulf['redox_state_pred_1'] != 'oxidized' and disulf['refox_state_pred_1'] != 'unknown':
 
-                warn = "Disulfide bond (chain_id_1 %s seq_id_1 %s comp_id_1 %s, chain_id_2 %s, seq_id_2 %s, comp_id_2 %s) could not supported by assigned chemical shift values (CA_1 %s, CB_1 %s, redox_state_pred_1 %s, CA_2 %s, CB_2 %s, redox_state_pred_2 %s)." %\
-                       (nmr_chain_id_1, nmr_seq_id_1, nmr_comp_id_1, nmr_chain_id_2, nmr_seq_id_2, nmr_comp_id_2, ca_cs_1, cb_cs_1, disulf['redox_state_pred_1'], ca_cs_2, cb_cs_2, disulf['redox_state_pred_2'])
+                warn = "Disulfide bond (chain_id_1 %s seq_id_1 %s comp_id_1 %s, chain_id_2 %s, seq_id_2 %s, comp_id_2 %s) could not supported by assigned chemical shift values (CA_1 %s, CB_1 %s, redox_state_pred_1 %s)." %\
+                       (nmr_chain_id_1, nmr_seq_id_1, nmr_comp_id_1, nmr_chain_id_2, nmr_seq_id_2, nmr_comp_id_2, ca_cs_1, cb_cs_1, disulf['redox_state_pred_1'])
 
-                self.report.warning.appendDescription('suspicious_data' if disulf['redox_state_pred_1'] == 'reduced' or disulf['refox_state_pred_2'] == 'reduced' else 'unusual_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'description': warn})
+                item = 'suspicious_data' if disulf['redox_state_pred_1'] == 'reduced' else 'unusual_data'
+
+                self.report.warning.appendDescription(item, {'file_name': file_name, 'sf_framecode': sf_framecode, 'description': warn})
                 self.report.setWarning()
 
                 if self.__verbose:
                     self.__lfh.write("+NmrDpUtility.__mapCoordDisulfideBond2Nmr() ++ Warning  - %s\n" % warn)
 
+                disulf['warning_description_1'] = item + ': warn'
+
+            if disulf['redox_state_pred_2'] != 'oxidized' and disulf['refox_state_pred_2'] != 'unknown':
+
+                warn = "Disulfide bond (chain_id_1 %s seq_id_1 %s comp_id_1 %s, chain_id_2 %s, seq_id_2 %s, comp_id_2 %s) could not supported by assigned chemical shift values (CA_2 %s, CB_2 %s, redox_state_pred_2 %s)." %\
+                       (nmr_chain_id_1, nmr_seq_id_1, nmr_comp_id_1, nmr_chain_id_2, nmr_seq_id_2, nmr_comp_id_2, ca_cs_2, cb_cs_2, disulf['redox_state_pred_2'])
+
+                item = 'suspicious_data' if disulf['refox_state_pred_2'] == 'reduced' else 'unusual_data'
+
+                self.report.warning.appendDescription(item, {'file_name': file_name, 'sf_framecode': sf_framecode, 'description': warn})
+                self.report.setWarning()
+
+                if self.__verbose:
+                    self.__lfh.write("+NmrDpUtility.__mapCoordDisulfideBond2Nmr() ++ Warning  - %s\n" % warn)
+
+                disulf['warning_description_2'] = item + ': warn'
+
             asm.append(disulf)
 
         if len(asm) > 0:
             input_source.setItemValue('disulfide_bond', asm)
+            return True
+
+        return False
+
+    def __extractCoordOtherBond(self):
+        """ Extract other bond (neither disulfide nor covalent bond) of coordinate file.
+        """
+
+        id = self.report.getInputSourceIdOfCoord()
+
+        if id < 0:
+            return False
+
+        input_source = self.report.input_sources[id]
+
+        chain_assign_dic = self.report.chain_assignment.get()
+
+        if not 'model_poly_seq_vs_nmr_poly_seq' in chain_assign_dic:
+
+            err = "Chain assignment did not exist, __assignCoordPolymerSequence() should be invoked."
+
+            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__extractCoodOtherBond() ++ Error  - %s" % err)
+            self.report.setError()
+
+            if self.__verbose:
+                self.__lfh.write("+NmrDpUtility.__extractCoodOtherBond() ++ Error  - %s\n" % err)
+
+            return False
+
+        if chain_assign_dic['model_poly_seq_vs_nmr_poly_seq'] is None:
+            return False
+
+        try:
+
+            struct_conn = self.__cR.getDictListWithFilter('struct_conn',
+                                                          [{'name': 'conn_type_id', 'type': 'str'},
+                                                           {'name': 'ptnr1_label_asym_id', 'type': 'str'},
+                                                           {'name': 'ptnr1_label_seq_id', 'type': 'int'},
+                                                           {'name': 'ptnr1_label_comp_id', 'type': 'str'},
+                                                           {'name': 'ptnr1_label_atom_id', 'type': 'str'},
+                                                           {'name': 'ptnr2_label_asym_id', 'type': 'str'},
+                                                           {'name': 'ptnr2_label_seq_id', 'type': 'int'},
+                                                           {'name': 'ptnr2_label_comp_id', 'type': 'str'},
+                                                           {'name': 'ptnr2_label_atom_id', 'type': 'str'},
+                                                           {'name': 'pdbx_dist_value', 'type': 'float'}
+                                                           ])
+
+        except Exception as e:
+
+            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__extractCoodOtherBond() ++ Error  - %s" % str(e))
+            self.report.setError()
+
+            if self.__verbose:
+                self.__lfh.write("+NmrDpUtility.__extractCoodOtherBond() ++ Error  - %s" % str(e))
+
+            return False
+
+        if len(struct_conn) > 0:
+
+            asm = []
+
+            for sc in struct_conn:
+
+                if sc['conn_type_id'] == 'disulf' or sc['conn_type_id'] == 'covale':
+                    continue
+
+                other = {}
+                other['chain_id_1'] = sc['ptnr1_label_asym_id']
+                other['seq_id_1'] = sc['ptnr1_label_seq_id']
+                other['comp_id_1'] = sc['ptnr1_label_comp_id']
+                other['atom_id_1'] = sc['ptnr1_label_atom_id']
+                other['chain_id_2'] = sc['ptnr2_label_asym_id']
+                other['seq_id_2'] = sc['ptnr2_label_seq_id']
+                other['comp_id_2'] = sc['ptnr2_label_comp_id']
+                other['atom_id_2'] = sc['ptnr2_label_atom_id']
+                other['distance_value'] = sc['pdbx_dist_value']
+                asm.append(other)
+
+            if len(asm) > 0:
+                input_source.setItemValue('other_bond', asm)
+
+                self.report.setOtherBond(True)
+
+                return self.__mapCoordOtherBond2Nmr(asm)
+
+        return True
+
+    def __mapCoordOtherBond2Nmr(self, bond_list):
+        """ Map other bond (neither disulfide nor covalent bond) of coordinate file to NMR data.
+        """
+
+        input_source = self.report.input_sources[0]
+        input_source_dic = input_source.get()
+
+        polymer_sequence = input_source_dic['polymer_sequence']
+
+        if polymer_sequence is None:
+            return False
+
+        chain_assign_dic = self.report.chain_assignment.get()
+
+        if not 'nmr_poly_seq_vs_model_poly_seq' in chain_assign_dic:
+
+            err = "Chain assignment did not exist, __assignCoordPolymerSequence() should be invoked."
+
+            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__mapCoordOtherBond2Nmr() ++ Error  - %s" % err)
+            self.report.setError()
+
+            if self.__verbose:
+                self.__lfh.write("+NmrDpUtility.__mapCoordOtherBond2Nmr() ++ Error  - %s\n" % err)
+
+            return False
+
+        if chain_assign_dic['model_poly_seq_vs_nmr_poly_seq'] is None:
+            return False
+
+        content_subtype = 'chem_shift'
+
+        if not content_subtype in input_source_dic['content_subtype'].keys():
+
+            err = "Assigned chemical shift loop did not exist in %s file." % file_name
+
+            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__mapCoordOtherBond2Nmr() ++ Error  - %s" % err)
+            self.report.setError()
+
+            if self.__verbose:
+                self.__lfh.write("+NmrDpUtility.__mapCoordOtherBond2Nmr() ++ Error  - %s\n" % err)
+
+            return False
+
+        sf_category = self.sf_categories[file_type][content_subtype]
+        lp_category = self.lp_categories[file_type][content_subtype]
+
+        key_items = self.key_items[file_type][content_subtype]
+        data_items = self.data_items[file_type][content_subtype]
+
+        item_names = self.item_names_in_cs_loop[file_type]
+        chain_id_name = item_names['chain_id']
+        seq_id_name = item_names['seq_id']
+        comp_id_name = item_names['comp_id']
+        atom_id_name = item_names['atom_id']
+        value_name = item_names['value']
+
+        asm = []
+
+        for bond in bond_list:
+
+            cif_chain_id_1 = bond['chain_id_1']
+            cif_seq_id_1 = bond['seq_id_1']
+            cif_chain_id_2 = bond['chain_id_2']
+            cif_seq_id_2 = bond['seq_id_2']
+
+            try:
+                ca = next(ca for ca in chain_assign_dic['model_poly_seq_vs_nmr_poly_seq'] if ca['ref_chain_id'] == cif_chain_id_1)
+                nmr_chain_id_1 = ca['test_chain_id']
+            except StopIteration:
+                continue
+
+            result = next((seq_align for seq_align in seq_align_dic['model_poly_seq_vs_nmr_poly_seq'] if seq_align['ref_chain_id'] == cif_chain_id_1 and seq_align['test_chain_id'] == nmr_chain_id_1), None)
+
+            if result is None:
+                continue
+
+            nmr_seq_id_1 = None
+            for k in range(result['length']):
+                if result['ref_seq_id'][k] == cif_seq_id_1:
+                    nmr_seq_id_1 = result['test_seq_id'][k]
+                    break
+
+            if nmr_seq_id_1 is None:
+                continue
+
+            ps1 = next((ps1 for ps1 in polymer_sequence if ps1['chain_id'] == nmr_chain_id_1), None)
+
+            if ps1 is None:
+                continue
+
+            nmr_comp_id_1 = None
+            for k in range(len(ps1['seq_id'])):
+                if ps1['seq_id'][k] == nmr_seq_id_1:
+                    nmr_comp_id_1 = ps1['comp_id'][k]
+                    break
+
+            if nmr_comp_id_1 is None:
+                continue
+
+            try:
+                ca = next(ca for ca in chain_assign_dic['model_poly_seq_vs_nmr_poly_seq'] if ca['ref_chain_id'] == cif_chain_id_2)
+                nmr_chain_id_2 = ca['test_chain_id']
+            except StopIteration:
+                continue
+
+            result = next((seq_align for seq_align in seq_align_dic['model_poly_seq_vs_nmr_poly_seq'] if seq_align['ref_chain_id'] == cif_chain_id_2 and seq_align['test_chain_id'] == nmr_chain_id_2), None)
+
+            if result is None:
+                continue
+
+            nmr_seq_id_2 = None
+            for k in range(result['length']):
+                if result['ref_seq_id'][k] == cif_seq_id_2:
+                    nmr_seq_id_2 = result['test_seq_id'][k]
+                    break
+
+            if nmr_seq_id_2 is None:
+                continue
+
+            ps2 = next((ps2 for ps2 in polymer_sequence if ps2['chain_id'] == nmr_chain_id_2), None)
+
+            if ps2 is None:
+                continue
+
+            nmr_comp_id_2 = None
+            for k in range(len(ps2['seq_id'])):
+                if ps2['seq_id'][k] == nmr_seq_id_2:
+                    nmr_comp_id_2 = ps2['comp_id'][k]
+                    break
+
+            if nmr_comp_id_2 is None:
+                continue
+
+            other = {}
+            other['chain_id_1'] = nmr_chain_id_1
+            other['seq_id_1'] = nmr_seq_id_1
+            other['comp_id_1'] = nmr_comp_id_1
+            other['atom_id_1'] = bond['atom_id_1']
+            other['chain_id_2'] = nmr_chain_id_2
+            other['seq_id_2'] = nmr_seq_id_2
+            other['comp_id_2'] = nmr_comp_id_2
+            other['atom_id_2'] = bond['atom_id_2']
+            other['distance_value'] = bond['distance_value']
+            other['warning_description_1'] = None
+            other['warning_description_2'] = None
+
+            cs_ca_1 = None
+            cs_cb_1 = None
+            cs_ca_2 = None
+            cs_cb_2 = None
+
+            for sf_data in self.__star_data.get_saveframes_by_category(sf_category):
+
+                sf_framecode = sf_data.get_tag('sf_framecode')[0]
+
+                if self.report.error.exists(file_name, sf_framecode):
+                    continue
+
+                lp_data = next((l['data'] for l in self.__lp_data[content_subtype] if l['sf_framecode'] == sf_framecode), None)
+
+                if lp_data is None:
+
+                    try:
+
+                        lp_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, None, None)[0]
+
+                        self.__lp_data[content_subtype].append({'sf_framecode': sf_framecode, 'data': lp_data})
+
+                    except:
+                        pass
+
+                if not lp_data is None:
+
+                    for i in lp_data:
+                        _chain_id = i[chain_id_name]
+                        seq_id = i[seq_id_name]
+                        comp_id = i[comp_id_name]
+                        atom_id = i[atom_id_name]
+
+                        if type(_chain_id) is int:
+                            chain_id = str(_chain_id)
+                        else:
+                            chain_id = _chain_id
+
+                        if chain_id == nmr_chain_id_1 and seq_id == nmr_seq_id_1 and comp_id == nmr_comp_id_1:
+                            if atom_id == 'CA' and cs_ca_1 is None:
+                                cs_ca_1 = i[value_name]
+                            elif atom_id == 'CB' and cs_cb_1 is None:
+                                cs_cb_1 = i[value_name]
+
+                        elif chain_id == nmr_chain_id_2 and seq_id == nmr_seq_id_2 and comp_id == nmr_comp_id_2:
+                            if atom_id == 'CA' and cs_ca_2 is None:
+                                cs_ca_2 = i[value_name]
+                            elif atom_id == 'CB' and cs_cb_2 is None:
+                                cs_cb_2 = i[value_name]
+
+                        if cs_ca_1 is None or cs_cb_1 is None or cs_ca_2 is None or cs_cb_2 is None:
+                            pass
+                        else:
+                            break
+
+                    if cs_ca_1 is None or cs_cb_1 is None or cs_ca_2 is None or cs_cb_2 is None:
+                        pass
+                    else:
+                        break
+
+            other['ca_cs_value_1'] = ca_cs_1
+            other['cb_cs_value_1'] = cb_cs_1
+            other['ca_cs_value_2'] = ca_cs_2
+            other['cb_cs_value_2'] = cb_cs_2
+
+            if not cb_cs_1 is None:
+                if cb_cs_1 < 32.0:
+                    other['redox_state_pred_1'] = 'reduced'
+                elif cb_cs_1 > 35.0:
+                    other['redox_state_pred_1'] = 'oxidized'
+                elif not cb_cs_2 is None:
+                    if cb_cs_2 < 32.0:
+                        other['redox_state_pred_1'] = 'reduced'
+                    elif cb_cs_2 > 35.0:
+                        other['redox_state_pred_1'] = 'oxidized'
+                    else:
+                        other['redox_state_pred_1'] = 'ambiguous'
+                else:
+                    other['redox_state_pred_1'] = 'ambiguous'
+            else:
+                other['redox_state_pred_1'] = 'unknown'
+
+            if not cb_cs_2 is None:
+                if cb_cs_2 < 32.0:
+                    other['redox_state_pred_2'] = 'reduced'
+                elif cb_cs_2 > 35.0:
+                    other['redox_state_pred_2'] = 'oxidized'
+                elif not cb_cs_1 is None:
+                    if cb_cs_1 < 32.0:
+                        other['redox_state_pred_2'] = 'reduced'
+                    elif cb_cs_1 > 35.0:
+                        other['redox_state_pred_2'] = 'oxidized'
+                    else:
+                        other['redox_state_pred_2'] = 'ambiguous'
+                else:
+                    other['redox_state_pred_2'] = 'ambiguous'
+            else:
+                other['redox_state_pred_2'] = 'unknown'
+
+            if other['redox_state_pred_1'] == 'ambiguous' and (not ca_cs_1 is None or not cb_cs_1 is None):
+                ox = 0.0
+                rd = 0.0
+                if not ca_cs_1 is None:
+                    ox += self.__probabilityDensity(ca_cs_1, 55.5, 2.5)
+                    rd += self.__probabilityDensity(ca_cs_1, 59.3, 3.2)
+                if not cb_cs_1 is None:
+                    ox += self.__probabilityDensity(cb_cs_1, 40.7, 3.8)
+                    rd += self.__probabilityDensity(cb_cs_1, 28.3, 2.2)
+
+                other['redox_state_pred_1'] = 'oxidized %s, reduced %s %%' % ('{:.1f}'.format(ox / (ox + rd) * 100.0), '{:1f}'.format(rd / (ox + rd) * 100.0))
+
+            if other['redox_state_pred_2'] == 'ambiguous' and (not ca_cs_2 is None or not cb_cs_2 is None):
+                ox = 0.0
+                rd = 0.0
+                if not ca_cs_2 is None:
+                    ox += self.__probabilityDensity(ca_cs_2, 55.5, 2.5)
+                    rd += self.__probabilityDensity(ca_cs_2, 59.3, 3.2)
+                if not cb_cs_2 is None:
+                    ox += self.__probabilityDensity(cb_cs_2, 40.7, 3.8)
+                    rd += self.__probabilityDensity(cb_cs_2, 28.3, 2.2)
+
+                other['redox_state_pred_2'] = 'oxidized %s, reduced %s %%' % ('{:.1f}'.format(ox / (ox + rd) * 100.0), '{:1f}'.format(rd / (ox + rd) * 100.0))
+
+            if other['redox_state_pred_1'] != 'oxidized' and other['refox_state_pred_1'] != 'unknown':
+
+                warn = "Other bond (chain_id_1 %s seq_id_1 %s comp_id_1 %s, chain_id_2 %s, seq_id_2 %s, comp_id_2 %s) could not supported by assigned chemical shift values (CA_1 %s, CB_1 %s, redox_state_pred_1 %s)." %\
+                       (nmr_chain_id_1, nmr_seq_id_1, nmr_comp_id_1, nmr_chain_id_2, nmr_seq_id_2, nmr_comp_id_2, ca_cs_1, cb_cs_1, other['redox_state_pred_1'])
+
+                item = 'suspicious_data' if other['redox_state_pred_1'] == 'reduced' else 'unusual_data'
+
+                self.report.warning.appendDescription(item, {'file_name': file_name, 'sf_framecode': sf_framecode, 'description': warn})
+                self.report.setWarning()
+
+                if self.__verbose:
+                    self.__lfh.write("+NmrDpUtility.__mapCoordOtherBond2Nmr() ++ Warning  - %s\n" % warn)
+
+                other['warning_description_1'] = item + ': warn'
+
+            if other['redox_state_pred_2'] != 'oxidized' and other['refox_state_pred_2'] != 'unknown':
+
+                warn = "Other bond (chain_id_1 %s seq_id_1 %s comp_id_1 %s, chain_id_2 %s, seq_id_2 %s, comp_id_2 %s) could not supported by assigned chemical shift values (CA_2 %s, CB_2 %s, redox_state_pred_2 %s)." %\
+                       (nmr_chain_id_1, nmr_seq_id_1, nmr_comp_id_1, nmr_chain_id_2, nmr_seq_id_2, nmr_comp_id_2, ca_cs_2, cb_cs_2, other['redox_state_pred_2'])
+
+                item = 'suspicious_data' if other['refox_state_pred_2'] == 'reduced' else 'unusual_data'
+
+                self.report.warning.appendDescription(item, {'file_name': file_name, 'sf_framecode': sf_framecode, 'description': warn})
+                self.report.setWarning()
+
+                if self.__verbose:
+                    self.__lfh.write("+NmrDpUtility.__mapCoordOtherBond2Nmr() ++ Warning  - %s\n" % warn)
+
+                other['warning_description_2'] = item + ': warn'
+
+            asm.append(other)
+
+        if len(asm) > 0:
+            input_source.setItemValue('other_bond', asm)
             return True
 
         return False

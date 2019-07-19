@@ -16,6 +16,7 @@ import itertools
 import copy
 import collections
 import re
+import math
 
 from munkres import Munkres
 
@@ -88,6 +89,7 @@ class NmrDpUtility(object):
         # cross validation tasks
         __crossCheckTasks = [self.__assignCoordPolymerSequence,
                              self.__testCoordAtomIdConsistency,
+                             self.__extractCoordDisulfideBond,
                              self.__calculateStatsOfExptlData
                              ]
 
@@ -1892,7 +1894,7 @@ class NmrDpUtility(object):
 
                 warn = "Unsupported %s saveframe category exists in %s file." % (sf_category, file_name)
 
-                self.report.warning.appendDescription('skipped_sf_category', {'file_name': file_name, 'sf_category': sf_category, 'description': warn})
+                self.report.warning.appendDescription('skipped_sf_category', {'file_name': file_name, 'description': warn})
                 self.report.setWarning()
 
                 if self.__verbose:
@@ -2636,13 +2638,11 @@ class NmrDpUtility(object):
 
         sf_framecode = sf_data.get_tag('sf_framecode')[0]
 
-        asm_has = False
-
         asm = []
 
         for s in polymer_sequence:
 
-            ent_has = False
+            has_non_std_comp_id = False
 
             ent = {'chain_id': s['chain_id'], 'seq_id': [], 'comp_id': [], 'chem_comp_name': [], 'exptl_data': []}
 
@@ -2651,8 +2651,7 @@ class NmrDpUtility(object):
                 comp_id = s['comp_id'][i]
 
                 if self.__get1LetterCode(comp_id) == 'X':
-                    asm_has = True
-                    ent_has = True
+                    has_non_std_comp_id = True
 
                     ent['seq_id'].append(seq_id)
                     ent['comp_id'].append(comp_id)
@@ -2680,10 +2679,10 @@ class NmrDpUtility(object):
 
                     ent['exptl_data'].append({'chem_shift': False, 'dist_restraint': False, 'dihed_restraint': False, 'rdc_restraint': False, 'spectral_peak': False, 'coordinate': False})
 
-            if ent_has:
+            if has_non_std_comp_id:
                 asm.append(ent)
 
-        if asm_has:
+        if len(asm) > 0:
             input_source.setItemValue('non_standard_residue', asm)
 
         return True
@@ -6915,7 +6914,7 @@ class NmrDpUtility(object):
 
                         phi_psi_value[comp_id].append([phi['value'], psi['value'], str(phi['chain_id']) + ':' + str(phi['seq_id']) + ':' + phi['comp_id']])
 
-                        if not phi['error'] is None or not psi['error'] is None:
+                        if (not phi['error'] is None) or (not psi['error'] is None):
 
                             if not comp_id in phi_psi_error:
                                 phi_psi_error[comp_id] = []
@@ -6956,7 +6955,7 @@ class NmrDpUtility(object):
 
                         chi1_chi2_value[comp_id].append([chi1['value'], chi2['value'], str(chi1['chain_id']) + ':' + str(chi1['seq_id']) + ':' + chi1['comp_id']])
 
-                        if not chi1['error'] is None or not chi2['error'] is None:
+                        if (not chi1['error'] is None) or (not chi2['error'] is None):
 
                             if not comp_id in chi1_chi2_error:
                                 chi1_chi2_error[comp_id] = []
@@ -7636,13 +7635,11 @@ class NmrDpUtility(object):
 
         polymer_sequence = input_source_dic['polymer_sequence']
 
-        asm_has = False
-
         asm = []
 
         for s in polymer_sequence:
 
-            ent_has = False
+            has_non_std_comp_id = False
 
             ent = {'chain_id': s['chain_id'], 'seq_id': [], 'comp_id': [], 'chem_comp_name': [], 'exptl_data': []}
 
@@ -7651,8 +7648,7 @@ class NmrDpUtility(object):
                 comp_id = s['comp_id'][i]
 
                 if self.__get1LetterCode(comp_id) == 'X':
-                    asm_has = True
-                    ent_has = True
+                    has_non_std_comp_id = True
 
                     ent['seq_id'].append(seq_id)
                     ent['comp_id'].append(comp_id)
@@ -7668,10 +7664,10 @@ class NmrDpUtility(object):
 
                         ent['exptl_data'].append({'coordinate': False})
 
-            if ent_has:
+            if has_non_std_comp_id:
                 asm.append(ent)
 
-        if asm_has:
+        if len(asm) > 0:
             input_source.setItemValue('non_standard_residue', asm)
 
         return True
@@ -8733,9 +8729,6 @@ class NmrDpUtility(object):
 
                 length = len(s['seq_id'])
 
-                if self.__hasDisulfideBond(chain_id):
-                    self.report.setDisulfideBond(True)
-
                 if self.__hasOtherBond(chain_id):
                     self.report.setOtherBond(True)
 
@@ -8942,81 +8935,6 @@ class NmrDpUtility(object):
 
         return True
 
-    def __hasDisulfideBond(self, nmr_chain_id):
-        """ Return whether a given chain has disulfide bond based on coordinate annotation.
-            @return: True for a given chain has disulfide bond or False otherwise
-        """
-
-        id = self.report.getInputSourceIdOfCoord()
-
-        if id < 0:
-            return False
-
-        cif_input_source = self.report.input_sources[id]
-        cif_input_source_dic = cif_input_source.get()
-
-        cif_polymer_sequence = cif_input_source_dic['polymer_sequence']
-
-        chain_assign_dic = self.report.chain_assignment.get()
-
-        if not 'nmr_poly_seq_vs_model_poly_seq' in chain_assign_dic:
-
-            err = "Chain assignment did not exist, __assignCoordPolymerSequence() should be invoked."
-
-            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__hasDisulfideBond() ++ Error  - %s" % err)
-            self.report.setError()
-
-            if self.__verbose:
-                self.__lfh.write("+NmrDpUtility.__hasDisulfideBond() ++ Error  - %s\n" % err)
-
-            return False
-
-        if chain_assign_dic['nmr_poly_seq_vs_model_poly_seq'] is None:
-            return False
-
-        for chain_assign in chain_assign_dic['nmr_poly_seq_vs_model_poly_seq']:
-
-            if chain_assign['ref_chain_id'] != nmr_chain_id:
-                continue
-
-            cif_chain_id = chain_assign['test_chain_id']
-
-            for s in cif_polymer_sequence:
-
-                if s['chain_id'] != cif_chain_id:
-                    continue
-
-                try:
-
-                    struct_conn = self.__cR.getDictListWithFilter('struct_conn',
-                                                                  [{'name': 'conn_type_id', 'type': 'str'},
-                                                                   {'name': 'ptnr1_label_asym_id', 'type': 'str'},
-                                                                   {'name': 'ptnr2_label_asym_id', 'type': 'str'}
-                                                                   ])
-
-                except Exception as e:
-
-                    self.report.error.appendDescription('internal_error', "+NmrDpUtility.__hasDisulfideBond() ++ Error  - %s" % str(e))
-                    self.report.setError()
-
-                    if self.__verbose:
-                        self.__lfh.write("+NmrDpUtility.__hasDisulfideBond() ++ Error  - %s" % str(e))
-
-                    return False
-
-                if len(struct_conn) == 0:
-                    return False
-
-                else:
-
-                    try:
-                        next(sc for sc in struct_conn if sc['conn_type_id'] == 'disulf' and (sc['ptnr1_label_asym_id'] == cif_chain_id or sc['ptnr2_label_asym_id'] == cif_chain_id))
-                        return True
-                    except StopIteration:
-                        pass
-
-        return False
-
     def __hasOtherBond(self, nmr_chain_id):
         """ Return whether a given chain has other bond (neither disulfide nor covalent) based on coordinate annotation.
             @return: True for a given chain has other bond (neither disulfide nor covalent) or False otherwise
@@ -9056,39 +8974,34 @@ class NmrDpUtility(object):
 
             cif_chain_id = chain_assign['test_chain_id']
 
-            for s in cif_polymer_sequence:
+            try:
 
-                if s['chain_id'] != cif_chain_id:
-                    continue
+                struct_conn = self.__cR.getDictListWithFilter('struct_conn',
+                                                              [{'name': 'conn_type_id', 'type': 'str'},
+                                                               {'name': 'ptnr1_label_asym_id', 'type': 'str'},
+                                                               {'name': 'ptnr2_label_asym_id', 'type': 'str'}
+                                                               ])
+
+            except Exception as e:
+
+                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__hasOtherBond() ++ Error  - %s" % str(e))
+                self.report.setError()
+
+                if self.__verbose:
+                    self.__lfh.write("+NmrDpUtility.__hasOtherBond() ++ Error  - %s" % str(e))
+
+                return False
+
+            if len(struct_conn) == 0:
+                return False
+
+            else:
 
                 try:
-
-                    struct_conn = self.__cR.getDictListWithFilter('struct_conn',
-                                                                  [{'name': 'conn_type_id', 'type': 'str'},
-                                                                   {'name': 'ptnr1_label_asym_id', 'type': 'str'},
-                                                                   {'name': 'ptnr2_label_asym_id', 'type': 'str'}
-                                                                   ])
-
-                except Exception as e:
-
-                    self.report.error.appendDescription('internal_error', "+NmrDpUtility.__hasOtherBond() ++ Error  - %s" % str(e))
-                    self.report.setError()
-
-                    if self.__verbose:
-                        self.__lfh.write("+NmrDpUtility.__hasOtherBond() ++ Error  - %s" % str(e))
-
-                    return False
-
-                if len(struct_conn) == 0:
-                    return False
-
-                else:
-
-                    try:
-                        next(sc for sc in struct_conn if sc['conn_type_id'] != 'covale' and sc['conn_type_id'] != 'disulf' and (sc['ptnr1_label_asym_id'] == cif_chain_id or sc['ptnr2_label_asym_id'] == cif_chain_id))
-                        return True
-                    except StopIteration:
-                        pass
+                    next(sc for sc in struct_conn if sc['conn_type_id'] != 'covale' and sc['conn_type_id'] != 'disulf' and (sc['ptnr1_label_asym_id'] == cif_chain_id or sc['ptnr2_label_asym_id'] == cif_chain_id))
+                    return True
+                except StopIteration:
+                    pass
 
         return False
 
@@ -9211,7 +9124,7 @@ class NmrDpUtility(object):
 
             result = next((seq_align for seq_align in seq_align_dic['nmr_poly_seq_vs_model_poly_seq'] if seq_align['ref_chain_id'] == nmr_chain_id and seq_align['test_chain_id'] == cif_chain_id), None)
 
-            if result is None:
+            if not result is None:
 
                 cif_seq_id = None
                 for k in range(result['length']):
@@ -9241,9 +9154,385 @@ class NmrDpUtility(object):
 
                     return False
 
-                return len(struct_conn) > 0
+                return len(prot_cis) > 0
 
         return False
+
+    def __extractCoordDisulfideBond(self):
+        """ Extract disulfide bond of coordinate file.
+        """
+
+        id = self.report.getInputSourceIdOfCoord()
+
+        if id < 0:
+            return False
+
+        input_source = self.report.input_sources[id]
+
+        chain_assign_dic = self.report.chain_assignment.get()
+
+        if not 'model_poly_seq_vs_nmr_poly_seq' in chain_assign_dic:
+
+            err = "Chain assignment did not exist, __assignCoordPolymerSequence() should be invoked."
+
+            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__extractCoodDisulfideBond() ++ Error  - %s" % err)
+            self.report.setError()
+
+            if self.__verbose:
+                self.__lfh.write("+NmrDpUtility.__extractCoodDisulfideBond() ++ Error  - %s\n" % err)
+
+            return False
+
+        if chain_assign_dic['model_poly_seq_vs_nmr_poly_seq'] is None:
+            return False
+
+        try:
+
+            struct_conn = self.__cR.getDictListWithFilter('struct_conn',
+                                                          [{'name': 'conn_type_id', 'type': 'str'},
+                                                           {'name': 'ptnr1_label_asym_id', 'type': 'str'},
+                                                           {'name': 'ptnr1_label_seq_id', 'type': 'int'},
+                                                           {'name': 'ptnr1_label_comp_id', 'type': 'str'},
+                                                           {'name': 'ptnr1_label_atom_id', 'type': 'str'},
+                                                           {'name': 'ptnr2_label_asym_id', 'type': 'str'},
+                                                           {'name': 'ptnr2_label_seq_id', 'type': 'int'},
+                                                           {'name': 'ptnr2_label_comp_id', 'type': 'str'},
+                                                           {'name': 'ptnr2_label_atom_id', 'type': 'str'},
+                                                           {'name': 'pdbx_dist_value', 'type': 'float'}
+                                                           ])
+
+        except Exception as e:
+
+            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__extractCoodDisulfideBond() ++ Error  - %s" % str(e))
+            self.report.setError()
+
+            if self.__verbose:
+                self.__lfh.write("+NmrDpUtility.__extractCoodDisulfideBond() ++ Error  - %s" % str(e))
+
+            return False
+
+        if len(struct_conn) > 0:
+
+            asm = []
+
+            for sc in struct_conn:
+
+                if sc['conn_type_id'] != 'disulf':
+                    continue
+
+                disulf = {}
+                disulf['chain_id_1'] = sc['ptnr1_label_asym_id']
+                disulf['seq_id_1'] = sc['ptnr1_label_seq_id']
+                disulf['comp_id_1'] = sc['ptnr1_label_comp_id']
+                disulf['atom_id_1'] = sc['ptnr1_label_atom_id']
+                disulf['chain_id_2'] = sc['ptnr2_label_asym_id']
+                disulf['seq_id_2'] = sc['ptnr2_label_seq_id']
+                disulf['comp_id_2'] = sc['ptnr2_label_comp_id']
+                disulf['atom_id_2'] = sc['ptnr2_label_atom_id']
+                disulf['distance_value'] = sc['pdbx_dist_value']
+                asm.append(disulf)
+
+            if len(asm) > 0:
+                input_source.setItemValue('disulfide_bond', asm)
+
+                self.report.setDisulfideBond(True)
+
+                return self.__mapCoordDisulfideBond2Nmr(asm)
+
+        return True
+
+    def __mapCoordDisulfideBond2Nmr(self, bond_list):
+        """ Map disulfide bond of coordinate file to NMR data.
+        """
+
+        input_source = self.report.input_sources[0]
+        input_source_dic = input_source.get()
+
+        polymer_sequence = input_source_dic['polymer_sequence']
+
+        if polymer_sequence is None:
+            return False
+
+        chain_assign_dic = self.report.chain_assignment.get()
+
+        if not 'nmr_poly_seq_vs_model_poly_seq' in chain_assign_dic:
+
+            err = "Chain assignment did not exist, __assignCoordPolymerSequence() should be invoked."
+
+            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__mapCoordDisulfideBond2Nmr() ++ Error  - %s" % err)
+            self.report.setError()
+
+            if self.__verbose:
+                self.__lfh.write("+NmrDpUtility.__mapCoordDisulfideBond2Nmr() ++ Error  - %s\n" % err)
+
+            return False
+
+        if chain_assign_dic['model_poly_seq_vs_nmr_poly_seq'] is None:
+            return False
+
+        content_subtype = 'chem_shift'
+
+        if not content_subtype in input_source_dic['content_subtype'].keys():
+
+            err = "Assigned chemical shift loop did not exist in %s file." % file_name
+
+            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__mapCoordDisulfideBond2Nmr() ++ Error  - %s" % err)
+            self.report.setError()
+
+            if self.__verbose:
+                self.__lfh.write("+NmrDpUtility.__mapCoordDisulfideBond2Nmr() ++ Error  - %s\n" % err)
+
+            return False
+
+        sf_category = self.sf_categories[file_type][content_subtype]
+        lp_category = self.lp_categories[file_type][content_subtype]
+
+        key_items = self.key_items[file_type][content_subtype]
+        data_items = self.data_items[file_type][content_subtype]
+
+        item_names = self.item_names_in_cs_loop[file_type]
+        chain_id_name = item_names['chain_id']
+        seq_id_name = item_names['seq_id']
+        comp_id_name = item_names['comp_id']
+        atom_id_name = item_names['atom_id']
+        value_name = item_names['value']
+
+        asm = []
+
+        for bond in bond_list:
+
+            cif_chain_id_1 = bond['chain_id_1']
+            cif_seq_id_1 = bond['seq_id_1']
+            cif_chain_id_2 = bond['chain_id_2']
+            cif_seq_id_2 = bond['seq_id_2']
+
+            try:
+                ca = next(ca for ca in chain_assign_dic['model_poly_seq_vs_nmr_poly_seq'] if ca['ref_chain_id'] == cif_chain_id_1)
+                nmr_chain_id_1 = ca['test_chain_id']
+            except StopIteration:
+                continue
+
+            result = next((seq_align for seq_align in seq_align_dic['model_poly_seq_vs_nmr_poly_seq'] if seq_align['ref_chain_id'] == cif_chain_id_1 and seq_align['test_chain_id'] == nmr_chain_id_1), None)
+
+            if result is None:
+                continue
+
+            nmr_seq_id_1 = None
+            for k in range(result['length']):
+                if result['ref_seq_id'][k] == cif_seq_id_1:
+                    nmr_seq_id_1 = result['test_seq_id'][k]
+                    break
+
+            if nmr_seq_id_1 is None:
+                continue
+
+            ps1 = next((ps1 for ps1 in polymer_sequence if ps1['chain_id'] == nmr_chain_id_1), None)
+
+            if ps1 is None:
+                continue
+
+            nmr_comp_id_1 = None
+            for k in range(len(ps1['seq_id'])):
+                if ps1['seq_id'][k] == nmr_seq_id_1:
+                    nmr_comp_id_1 = ps1['comp_id'][k]
+                    break
+
+            if nmr_comp_id_1 is None:
+                continue
+
+            try:
+                ca = next(ca for ca in chain_assign_dic['model_poly_seq_vs_nmr_poly_seq'] if ca['ref_chain_id'] == cif_chain_id_2)
+                nmr_chain_id_2 = ca['test_chain_id']
+            except StopIteration:
+                continue
+
+            result = next((seq_align for seq_align in seq_align_dic['model_poly_seq_vs_nmr_poly_seq'] if seq_align['ref_chain_id'] == cif_chain_id_2 and seq_align['test_chain_id'] == nmr_chain_id_2), None)
+
+            if result is None:
+                continue
+
+            nmr_seq_id_2 = None
+            for k in range(result['length']):
+                if result['ref_seq_id'][k] == cif_seq_id_2:
+                    nmr_seq_id_2 = result['test_seq_id'][k]
+                    break
+
+            if nmr_seq_id_2 is None:
+                continue
+
+            ps2 = next((ps2 for ps2 in polymer_sequence if ps2['chain_id'] == nmr_chain_id_2), None)
+
+            if ps2 is None:
+                continue
+
+            nmr_comp_id_2 = None
+            for k in range(len(ps2['seq_id'])):
+                if ps2['seq_id'][k] == nmr_seq_id_2:
+                    nmr_comp_id_2 = ps2['comp_id'][k]
+                    break
+
+            if nmr_comp_id_2 is None:
+                continue
+
+            disulf = {}
+            disulf['chain_id_1'] = nmr_chain_id_1
+            disulf['seq_id_1'] = nmr_seq_id_1
+            disulf['comp_id_1'] = nmr_comp_id_1
+            disulf['atom_id_1'] = bond['atom_id_1']
+            disulf['chain_id_2'] = nmr_chain_id_2
+            disulf['seq_id_2'] = nmr_seq_id_2
+            disulf['comp_id_2'] = nmr_comp_id_2
+            disulf['atom_id_2'] = bond['atom_id_2']
+            disulf['distance_value'] = bond['distance_value']
+
+            cs_ca_1 = None
+            cs_cb_1 = None
+            cs_ca_2 = None
+            cs_cb_2 = None
+
+            has_any_cb_cs = False
+
+            for sf_data in self.__star_data.get_saveframes_by_category(sf_category):
+
+                sf_framecode = sf_data.get_tag('sf_framecode')[0]
+
+                if self.report.error.exists(file_name, sf_framecode):
+                    continue
+
+                lp_data = next((l['data'] for l in self.__lp_data[content_subtype] if l['sf_framecode'] == sf_framecode), None)
+
+                if lp_data is None:
+
+                    try:
+
+                        lp_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, None, None)[0]
+
+                        self.__lp_data[content_subtype].append({'sf_framecode': sf_framecode, 'data': lp_data})
+
+                    except:
+                        pass
+
+                if not lp_data is None:
+
+                    for i in lp_data:
+                        _chain_id = i[chain_id_name]
+                        seq_id = i[seq_id_name]
+                        comp_id = i[comp_id_name]
+                        atom_id = i[atom_id_name]
+
+                        if atom_id == 'CB':
+                            has_any_cb_cs = True
+
+                        if type(_chain_id) is int:
+                            chain_id = str(_chain_id)
+                        else:
+                            chain_id = _chain_id
+
+                        if chain_id == nmr_chain_id_1 and seq_id == nmr_seq_id_1 and comp_id == nmr_comp_id_1:
+                            if atom_id == 'CA' and cs_ca_1 is None:
+                                cs_ca_1 = i[value_name]
+                            elif atom_id == 'CB' and cs_cb_1 is None:
+                                cs_cb_1 = i[value_name]
+
+                        elif chain_id == nmr_chain_id_2 and seq_id == nmr_seq_id_2 and comp_id == nmr_comp_id_2:
+                            if atom_id == 'CA' and cs_ca_2 is None:
+                                cs_ca_2 = i[value_name]
+                            elif atom_id == 'CB' and cs_cb_2 is None:
+                                cs_cb_2 = i[value_name]
+
+                        if cs_ca_1 is None or cs_cb_1 is None or cs_ca_2 is None or cs_cb_2 is None:
+                            pass
+                        else:
+                            break
+
+                    if cs_ca_1 is None or cs_cb_1 is None or cs_ca_2 is None or cs_cb_2 is None:
+                        pass
+                    else:
+                        break
+
+            disulf['ca_cs_value_1'] = ca_cs_1
+            disulf['cb_cs_value_1'] = cb_cs_1
+            disulf['ca_cs_value_2'] = ca_cs_2
+            disulf['cb_cs_value_2'] = cb_cs_2
+
+            if not cb_cs_1 is None:
+                if cb_cs_1 < 32.0:
+                    disulf['redox_state_pred_1'] = 'reduced'
+                elif cb_cs_1 > 35.0:
+                    disulf['redox_state_pred_1'] = 'oxidized'
+                elif not cb_cs_2 is None:
+                    if cb_cs_2 < 32.0:
+                        disulf['redox_state_pred_1'] = 'reduced'
+                    elif cb_cs_2 > 35.0:
+                        disulf['redox_state_pred_1'] = 'oxidized'
+                    else:
+                        disulf['redox_state_pred_1'] = 'ambiguous'
+                else:
+                    disulf['redox_state_pred_1'] = 'ambiguous'
+
+            if not cb_cs_2 is None:
+                if cb_cs_2 < 32.0:
+                    disulf['redox_state_pred_2'] = 'reduced'
+                elif cb_cs_2 > 35.0:
+                    disulf['redox_state_pred_2'] = 'oxidized'
+                elif not cb_cs_1 is None:
+                    if cb_cs_1 < 32.0:
+                        disulf['redox_state_pred_2'] = 'reduced'
+                    elif cb_cs_1 > 35.0:
+                        disulf['redox_state_pred_2'] = 'oxidized'
+                    else:
+                        disulf['redox_state_pred_2'] = 'ambiguous'
+                else:
+                    disulf['redox_state_pred_2'] = 'ambiguous'
+
+            if disulf['redox_state_pred_1'] == 'ambiguous' and (not ca_cs_1 is None or not cb_cs_1 is None):
+                ox = 0.0
+                rd = 0.0
+                if not ca_cs_1 is None:
+                    ox += self.__probabilityDensity(ca_cs_1, 55.5, 2.5)
+                    rd += self.__probabilityDensity(ca_cs_1, 59.3, 3.2)
+                if not cb_cs_1 is None:
+                    ox += self.__probabilityDensity(cb_cs_1, 40.7, 3.8)
+                    rd += self.__probabilityDensity(cb_cs_1, 28.3, 2.2)
+
+                disulf['redox_state_pred_1'] = 'oxidized %s, reduced %s %%' % ('{:.1f}'.format(ox / (ox + rd) * 100.0), '{:1f}'.format(rd / (ox + rd) * 100.0))
+
+            if disulf['redox_state_pred_2'] == 'ambiguous' and (not ca_cs_2 is None or not cb_cs_2 is None):
+                ox = 0.0
+                rd = 0.0
+                if not ca_cs_2 is None:
+                    ox += self.__probabilityDensity(ca_cs_2, 55.5, 2.5)
+                    rd += self.__probabilityDensity(ca_cs_2, 59.3, 3.2)
+                if not cb_cs_2 is None:
+                    ox += self.__probabilityDensity(cb_cs_2, 40.7, 3.8)
+                    rd += self.__probabilityDensity(cb_cs_2, 28.3, 2.2)
+
+                disulf['redox_state_pred_2'] = 'oxidized %s, reduced %s %%' % ('{:.1f}'.format(ox / (ox + rd) * 100.0), '{:1f}'.format(rd / (ox + rd) * 100.0))
+
+            if has_any_cb_cs and (disulf['redox_state_pred_1'] != 'oxidized' or disulf['redox_state_pred_2'] != 'oxidized'):
+
+                warn = "Disulfide bond (chain_id_1 %s seq_id_1 %s comp_id_1 %s, chain_id_2 %s, seq_id_2 %s, comp_id_2 %s) could not supported by assigned chemical shift values (CA_1 %s, CB_1 %s, redox_state_pred_1 %s, CA_2 %s, CB_2 %s, redox_state_pred_2 %s)." %\
+                       (nmr_chain_id_1, nmr_seq_id_1, nmr_comp_id_1, nmr_chain_id_2, nmr_seq_id_2, nmr_comp_id_2, ca_cs_1, cb_cs_1, disulf['redox_state_pred_1'], ca_cs_2, cb_cs_2, disulf['redox_state_pred_2'])
+
+                self.report.warning.appendDescription('suspicious_data' if disulf['redox_state_pred_1'] == 'reduced' or disulf['refox_state_pred_2'] == 'reduced' else 'unusual_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'description': warn})
+                self.report.setWarning()
+
+                if self.__verbose:
+                    self.__lfh.write("+NmrDpUtility.__mapCoordDisulfideBond2Nmr() ++ Warning  - %s\n" % warn)
+
+            asm.append(disulf)
+
+        if len(asm) > 0:
+            input_source.setItemValue('disulfide_bond', asm)
+            return True
+
+        return False
+
+    def __probabilityDensity(self, value, mean, stddev):
+        """ Return probability density.
+        """
+
+        return exp(-((value - mean) ** 2.0) / (2.0 * (stddev ** 2))) / ((2.0 * math.pi * (stddev ** 2.0)) ** 0.5)
 
     def __updateDihedralAngleType(self):
         """ Update dihedral angle types (phi, psi, omega, chi[1-5] for polypeptide-like residue) if possible.

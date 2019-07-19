@@ -6196,7 +6196,8 @@ class NmrDpUtility(object):
                                         cb_chem_shift = j[value_name]
 
                                 if ca_chem_shift is None or cb_chem_shift is None:
-                                    pass
+                                    if __chain_id == chain_id and j[seq_id_name] > seq_id:
+                                        break
                                 else:
                                     break
 
@@ -6214,8 +6215,8 @@ class NmrDpUtility(object):
                                 cys['redox_state_pred'] = 'unknown'
 
                             if cys['redox_state_pred'] == 'ambiguous':
-                                ox, rd = self.__predictRedoxStateOfCystein(ca_chem_shift, cb_chem_shift)
-                                cys['redox_state_pred'] = 'oxidized %s (%%), reduced %s (%%)' % ('{:.1f}'.format(ox * 100.0), '{:.1f}'.format(rd * 100.0))
+                                oxi, red = self.__predictRedoxStateOfCystein(ca_chem_shift, cb_chem_shift)
+                                cys['redox_state_pred'] = 'oxidized %s (%%), reduced %s (%%)' % ('{:.1f}'.format(oxi * 100.0), '{:.1f}'.format(red * 100.0))
 
                             cys['in_disulfide_bond'] = False
                             if not input_source_dic['disulfide_bond'] is None:
@@ -6237,6 +6238,77 @@ class NmrDpUtility(object):
 
                 if len(cys_redox_state) > 0:
                     ent['cys_redox_state'] = cys_redox_state
+
+            # prediction of cis-trans peptide of PRO
+
+            pro_cis_trans = []
+
+            for sc in ent['sequence_coverage']:
+
+                chain_id = sc['chain_id']
+
+                for s in polymer_sequence:
+
+                    if s['chain_id'] == chain_id:
+
+                        for i in range(len(s['seq_id'])):
+                            seq_id = s['seq_id'][i]
+                            comp_id = s['comp_id'][i]
+
+                            if comp_id != 'PRO':
+                                continue
+
+                            pro = {'chain_id': chain_id, 'seq_id': seq_id}
+
+                            cb_chem_shift = None
+                            cg_chem_shift = None
+
+                            for j in lp_data:
+
+                                _chain_id = j[chain_id_name]
+                                atom_id = j[atom_id_name]
+
+                                if type(_chain_id) is int:
+                                    __chain_id = str(_chain_id)
+                                else:
+                                    __chain_id = _chain_id
+
+                                if __chain_id == chain_id and j[seq_id_name] == seq_id and j[comp_id_name] == comp_id:
+                                    if atom_id == 'CB':
+                                        cb_chem_shift = j[value_name]
+                                    elif atom_id == 'CG':
+                                        cg_chem_shift = j[value_name]
+
+                                if cb_chem_shift is None or cg_chem_shift is None:
+                                    if __chain_id == chain_id and j[seq_id_name] > seq_id:
+                                        break
+                                else:
+                                    break
+
+                            pro['cb_chem_shift'] = cb_chem_shift
+                            pro['cg_chem_shift'] = cg_chem_shift
+
+                            if not cb_chem_shift is None and not cg_chem_shift is None:
+                                delta = cb_chem_shift - cg_chem_shift
+                                if delta < 4.8:
+                                    pro['cis_trans_pred'] = 'trans'
+                                elif delta > 9.15:
+                                    pro['cis_trans_pred'] = 'cis'
+                                else:
+                                    pro['cis_trans_pred'] = 'ambiguous'
+                            else:
+                                pro['cis_trans_pred'] = 'unknown'
+
+                            if pro['cis_trans_pred'] == 'ambiguous':
+                                cis, trs = self.__predictCisTransPeptideOfProline(cb_chem_shift, cg_chem_shift)
+                                pro['cis_trans_pred'] = 'cis %s (%%), trans %s (%%)' % ('{:.1f}'.format(cis * 100.0), '{:.1f}'.format(trs * 100.0))
+
+                            pro['in_cis_peptide_bond'] = self.__isProtCis(chain_id, seq_id)
+
+                            pro_cis_trans.append(pro)
+
+                if len(pro_cis_trans) > 0:
+                    ent['pro_cis_trans'] = pro_cis_trans
 
         except Exception as e:
 
@@ -9508,12 +9580,12 @@ class NmrDpUtility(object):
                 disulf['refox_state_pred_2'] = 'unknown'
 
             if disulf['redox_state_pred_1'] == 'ambiguous' and (not ca_chem_shift_1 is None or not cb_chem_shift_1 is None):
-                ox, rd = self.__predictRedoxStateOfCystein(ca_chem_shift_1, cb_chem_shift_1)
-                disulf['redox_state_pred_1'] = 'oxidized %s (%%), reduced %s (%%)' % ('{:.1f}'.format(ox * 100.0), '{:.1f}'.format(rd * 100.0))
+                oxi, red = self.__predictRedoxStateOfCystein(ca_chem_shift_1, cb_chem_shift_1)
+                disulf['redox_state_pred_1'] = 'oxidized %s (%%), reduced %s (%%)' % ('{:.1f}'.format(oxi * 100.0), '{:.1f}'.format(red * 100.0))
 
             if disulf['redox_state_pred_2'] == 'ambiguous' and (not ca_chem_shift_2 is None or not cb_chem_shift_2 is None):
-                ox, rd = self.__predictRedoxStateOfCystein(ca_chem_shift_2, cb_chem_shift_2)
-                disulf['redox_state_pred_2'] = 'oxidized %s (%%), reduced %s (%%)' % ('{:.1f}'.format(ox * 100.0), '{:.1f}'.format(rd * 100.0))
+                oxi, red = self.__predictRedoxStateOfCystein(ca_chem_shift_2, cb_chem_shift_2)
+                disulf['redox_state_pred_2'] = 'oxidized %s (%%), reduced %s (%%)' % ('{:.1f}'.format(oxi * 100.0), '{:.1f}'.format(red * 100.0))
 
             if disulf['redox_state_pred_1'] != 'oxidized' and disulf['refox_state_pred_1'] != 'unknown':
 
@@ -9885,12 +9957,12 @@ class NmrDpUtility(object):
                 other['redox_state_pred_2'] = 'unknown'
 
             if other['redox_state_pred_1'] == 'ambiguous' and (not ca_chem_shift_1 is None or not cb_chem_shift_1 is None):
-                ox, rd = self.__predictRedoxStateOfCystein(ca_chem_shift_1, cb_chem_shift_1)
-                other['redox_state_pred_1'] = 'oxidized %s (%%), reduced %s (%%)' % ('{:.1f}'.format(ox * 100.0), '{:.1f}'.format(rd * 100.0))
+                oxi, red = self.__predictRedoxStateOfCystein(ca_chem_shift_1, cb_chem_shift_1)
+                other['redox_state_pred_1'] = 'oxidized %s (%%), reduced %s (%%)' % ('{:.1f}'.format(oxi * 100.0), '{:.1f}'.format(red * 100.0))
 
             if other['redox_state_pred_2'] == 'ambiguous' and (not ca_chem_shift_2 is None or not cb_chem_shift_2 is None):
-                ox, rd = self.__predictRedoxStateOfCystein(ca_chem_shift_2, cb_chem_shift_2)
-                other['redox_state_pred_2'] = 'oxidized %s (%%), reduced %s (%%)' % ('{:.1f}'.format(ox * 100.0), '{:.1f}'.format(rd * 100.0))
+                oxi, red = self.__predictRedoxStateOfCystein(ca_chem_shift_2, cb_chem_shift_2)
+                other['redox_state_pred_2'] = 'oxidized %s (%%), reduced %s (%%)' % ('{:.1f}'.format(oxi * 100.0), '{:.1f}'.format(red * 100.0))
 
             if other['redox_state_pred_1'] != 'oxidized' and other['refox_state_pred_1'] != 'unknown':
 
@@ -9935,20 +10007,84 @@ class NmrDpUtility(object):
             @return: probability of oxidized state, probability of reduced state
         """
 
-        ox = 0.0
-        rd = 0.0
+        oxi_ca = {'avr': 55.5, 'std': 2.5}
+        oxi_cb = {'avr': 40.7, 'std': 3.8}
+
+        red_ca = {'avr': 59.3, 'std': 3.2}
+        red_cb = {'avr': 28.3, 'std': 2.2}
+
+        oxi = 1.0
+        red = 1.0
 
         if not ca_chem_shift is None:
-            ox += self.__probabilityDensity(ca_chem_shift, 55.5, 2.5)
-            rd += self.__probabilityDensity(ca_chem_shift, 59.3, 3.2)
+            oxi *= self.__probabilityDensity(ca_chem_shift, oxi_ca['avr'], oxi_ca['std'])
+            red *= self.__probabilityDensity(ca_chem_shift, red_ca['avr'], red_ca['std'])
 
         if not cb_chem_shift is None:
-            ox += self.__probabilityDensity(cb_chem_shift, 40.7, 3.8)
-            rd += self.__probabilityDensity(cb_chem_shift, 28.3, 2.2)
+            if cb_chem_shift < 32.0:
+                oxi = 0.0
+            else:
+                oxi *= self.__probabilityDensity(cb_chem_shift, oxi_cb['avr'], oxi_cb['std'])
+            if cb_chem_shift > 35.0:
+                red = 0.0
+            else:
+                red *= self.__probabilityDensity(cb_chem_shift, red_cb['avr'], red_cb['std'])
 
-        sum = ox + rd
+        sum = oxi + red
 
-        return ox / sum, rd / sum
+        if sum == 0.0:
+            return 0.0, 0.0
+
+        return oxi / sum, red / sum
+
+    def __predictCisTransPeptideOfProline(self, cb_chem_shift, cg_chem_shift):
+        """ Return prediction of cis-trans peptide bond of Proline using assigned CB, CG chemical shifts.
+            @return: probability of cis-peptide bond, probability of trans-peptide bond
+        """
+
+        cis_cb = {'avr': 34.16, 'std': 1.15, 'max': 36.23, 'min': 30.74}
+        cis_cg = {'avr': 24.52, 'std': 1.09, 'max': 27.01, 'min': 22.10}
+        cis_dl = {'avr': 9.64, 'std': 1.27}
+
+        trs_cb = {'avr': 31.75, 'std': 0.98, 'max': 35.83, 'min': 26.30}
+        trs_cg = {'avr': 27.26, 'std': 1.05, 'max': 33.39, 'min': 19.31}
+        trs_dl = {'avr': 4.51, 'std': 1.17}
+
+        cis = 1.0
+        trs = 1.0
+
+        if not cb_chem_shift is None:
+            if cb_chem_shift < cis_cb['min'] - cis_cb['std'] or cb_chem_shift > cis_cb['max'] + cis_cb['std']:
+                cis = 0.0
+            else:
+                cis *= self.__probabilityDensity(cb_chem_shift, cis_cb['avr'], cis_cb['std'])
+            if cb_chem_shift < trs_cb['min'] - trs_cb['std'] or cb_chem_shift > trs_cb['max'] + trs_cb['std']:
+                trs = 0.0
+            else:
+                trs *= self.__probabilityDensity(cb_chem_shift, trs_cb['avr'], trs_cb['std'])
+
+        if not cg_chem_shift is None:
+            if cg_chem_shift < cis_cg['min'] - cis_cg['std'] or cg_chem_shift > cis_cg['max'] + cis_cg['std']:
+                cis = 0.0
+            else:
+                cis *= self.__probabilityDensity(cg_chem_shift, cis_cg['avr'], cis_cg['std'])
+            if cg_chem_shift < trs_cg['min'] - trs_cg['std'] or cg_chem_shift > trs_cg['max'] + trs_cg['std']:
+                trs = 0.0
+            else:
+                trs *= self.__probabilityDensity(cg_chem_shift, trs_cg['avr'], trs_cg['std'])
+
+        if not cb_chem_shift is None and not cg_chem_shift:
+            delta_shift = cb_chem_shift - cg_chem_shift
+
+            cis *= self.__probabilityDensity(delta_shift, cis_dl['avr'], cis_dl['std'])
+            trs *= self.__probabilityDensity(delta_shift, trs_dl['avr'], trs_dl['std'])
+
+        sum = cis + trs
+
+        if sum == 0.0:
+            return 0.0, 0.0
+
+        return cis / sum, trs / sum
 
     def __probabilityDensity(self, value, mean, stddev):
         """ Return probability density.

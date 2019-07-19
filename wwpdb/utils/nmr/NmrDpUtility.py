@@ -6310,6 +6310,77 @@ class NmrDpUtility(object):
                 if len(pro_cis_trans) > 0:
                     ent['pro_cis_trans'] = pro_cis_trans
 
+            # prediction of tautomeric state of PRO
+
+            his_tautomeric_state = []
+
+            for sc in ent['sequence_coverage']:
+
+                chain_id = sc['chain_id']
+
+                for s in polymer_sequence:
+
+                    if s['chain_id'] == chain_id:
+
+                        for i in range(len(s['seq_id'])):
+                            seq_id = s['seq_id'][i]
+                            comp_id = s['comp_id'][i]
+
+                            if comp_id != 'HIS':
+                                continue
+
+                            his = {'chain_id': chain_id, 'seq_id': seq_id}
+
+                            cd2_chem_shift = None
+                            nd1_chem_shift = None
+                            nd2_chem_shift = None
+
+                            for j in lp_data:
+
+                                _chain_id = j[chain_id_name]
+                                atom_id = j[atom_id_name]
+
+                                if type(_chain_id) is int:
+                                    __chain_id = str(_chain_id)
+                                else:
+                                    __chain_id = _chain_id
+
+                                if __chain_id == chain_id and j[seq_id_name] == seq_id and j[comp_id_name] == comp_id:
+                                    if atom_id == 'CD2':
+                                        cd2_chem_shift = j[value_name]
+                                    elif atom_id == 'ND1':
+                                        nd1_chem_shift = j[value_name]
+                                    elif atom_id == 'ND2':
+                                        nd2_chem_shift = j[value_name]
+
+                                if cd2_chem_shift is None or nd1_chem_shift is None or nd2_chem_shift is None:
+                                    if __chain_id == chain_id and j[seq_id_name] > seq_id:
+                                        break
+                                else:
+                                    break
+
+                            his['cd2_chem_shift'] = cd2_chem_shift
+                            his['nd1_chem_shift'] = nd1_chem_shift
+                            his['nd2_chem_shift'] = nd2_chem_shift
+
+                            if not cd2_chem_shift is None or not nd1_chem_shift is None or not nd2_chem_shift is None:
+                                bip, tau, pi = self.__predictTautomerOfHistidine(cd2_chem_shift, nd1_chem_shift, nd2_chem_shift)
+                                if tau < 0.001 and pi < 0.001:
+                                    his['tautomeric_state_pred'] = 'biprotonated'
+                                elif bip < 0.001 and pi < 0.001:
+                                    his['tautomeric_state_pred'] = 'tau-tautomer'
+                                elif bip < 0.001 and tau < 0.001:
+                                    his['tautomeric_statem_pred'] = 'pi-tautomer'
+                                else:
+                                    his['tautomeric_state_pred'] = 'biprotonated %s (%%), tau-tautomer %s (%%), pi-tautomer %s (%%)' % ('{:.1f}'.format(bip * 100.0), '{:.1f}'.format(tau * 100.0), '{:.1f}'.format(pi * 100.0))
+                            else:
+                                his['tautomeric_state_pred'] = 'unknown'
+
+                            his_tautomeric_state.append(his)
+
+                if len(his_tautomeric_state) > 0:
+                    ent['his_tautomeric_state'] = his_tautomeric_state
+
         except Exception as e:
 
             self.report.error.appendDescription('internal_error', "+NmrDpUtility.__calculateStatsOfAssignedChemShift() ++ Error  - %s" % str(e))
@@ -10032,7 +10103,7 @@ class NmrDpUtility(object):
 
         sum = oxi + red
 
-        if sum == 0.0:
+        if sum == 0.0 or sum == 2.0:
             return 0.0, 0.0
 
         return oxi / sum, red / sum
@@ -10081,10 +10152,53 @@ class NmrDpUtility(object):
 
         sum = cis + trs
 
-        if sum == 0.0:
+        if sum == 0.0 or sum == 2.0:
             return 0.0, 0.0
 
         return cis / sum, trs / sum
+
+    def __predictTautomerOfHistidine(self, cd2_chem_shift, nd1_chem_shift, nd2_chem_shift):
+        """ Return prediction of tautomeric state of Histidine using assigned CD2, ND1, and ND2 chemical shifts.
+            @return: probability of biprotonated, probability of tau tautomer, probability of pi tautomer
+        """
+
+        bip_cd2 = {'avr': 119.4, 'std': 1.3}
+        bip_nd1 = {'avr': 190.0, 'std': 1.9}
+        bip_nd2 = {'avr': 176.3, 'std': 1.9}
+
+        tau_cd2 = {'avr': 113.6, 'std': 1.3}
+        tau_nd1 = {'avr': 249.4, 'std': 1.9}
+        tau_nd2 = {'avr': 171.1, 'std': 1.9}
+
+        pi_cd2 = {'avr': 125.4, 'std': 1.3}
+        pi_nd1 = {'avr': 171.8, 'std': 1.9}
+        pi_nd2 = {'avr': 248.2, 'std': 1.9}
+
+        bip = 1.0
+        tau = 1.0
+        pi = 1.0
+
+        if not cd2_chem_shift is None:
+            bip *= self.__probabilityDensity(cd2_chem_shift, bip_cd2['avr'], bip_cd2['std'])
+            tau *= self.__probabilityDensity(cd2_chem_shift, tau_cd2['avr'], tau_cd2['std'])
+            pi *= self.__probabilityDensity(cd2_chem_shift, pi_cd2['avr'], pi_cd2['std'])
+
+        if not nd1_chem_shift is None:
+            bip *= self.__probabilityDensity(nd1_chem_shift, bip_nd1['avr'], bip_nd1['std'])
+            tau *= self.__probabilityDensity(nd1_chem_shift, tau_nd1['avr'], tau_nd1['std'])
+            pi *= self.__probabilityDensity(nd1_chem_shift, pi_nd1['avr'], pi_nd1['std'])
+
+        if not nd2_chem_shift is None:
+            bip *= self.__probabilityDensity(nd2_chem_shift, bip_nd2['avr'], bip_nd2['std'])
+            tau *= self.__probabilityDensity(nd2_chem_shift, tau_nd2['avr'], tau_nd2['std'])
+            pi *= self.__probabilityDensity(nd2_chem_shift, pi_nd2['avr'], pi_nd2['std'])
+
+        sum = bip + tau + pi
+
+        if sum == 0.0 or sum == 3.0:
+            return 0.0, 0.0, 0.0
+
+        return bip / sum, tau / sum, pi / sum
 
     def __probabilityDensity(self, value, mean, stddev):
         """ Return probability density.

@@ -5474,18 +5474,18 @@ class NmrDpUtility(object):
                                         elif a.startswith('P') and p31_col != -1:
                                             all_c[p31_col]['number_of_target_shifts'] += 1
 
-                                    for i in lp_data:
+                                    for j in lp_data:
 
                                         if file_type == 'nef':
-                                            _chain_id = i[chain_id_name]
+                                            _chain_id = j[chain_id_name]
                                         else:
-                                            _chain_id = str(i[chain_id_name])
+                                            _chain_id = str(j[chain_id_name])
 
-                                        if _chain_id != chain_id or i[seq_id_name] != seq_id or i[comp_id_name] != comp_id or i[value_name] in self.empty_value:
+                                        if _chain_id != chain_id or j[seq_id_name] != seq_id or j[comp_id_name] != comp_id or j[value_name] in self.empty_value:
                                             continue
 
-                                        atom_id = i[atom_id_name]
-                                        data_type = str(i[iso_number]) + i[atom_type]
+                                        atom_id = j[atom_id_name]
+                                        data_type = str(j[iso_number]) + j[atom_type]
 
                                         if file_type == 'nef':
 
@@ -5511,7 +5511,7 @@ class NmrDpUtility(object):
                                                         all_c[p31_col]['number_of_assigned_shifts'] += 1
 
                                                 elif a in non_excl_atoms:
-                                                    excluded_atom_id.append({'seq_id': seq_id, 'comp_id': comp_id, 'atom_id': a, 'value': i[value_name]})
+                                                    excluded_atom_id.append({'seq_id': seq_id, 'comp_id': comp_id, 'atom_id': a, 'value': j[value_name]})
 
                                         else:
 
@@ -5530,7 +5530,7 @@ class NmrDpUtility(object):
                                                     all_c[p31_col]['number_of_assigned_shifts'] += 1
 
                                             elif atom_id in non_excl_atoms:
-                                                excluded_atom_id.append({'seq_id': seq_id, 'comp_id': comp_id, 'atom_id': atom_id, 'value': i[value_name]})
+                                                excluded_atom_id.append({'seq_id': seq_id, 'comp_id': comp_id, 'atom_id': atom_id, 'value': j[value_name]})
 
                                 else:
                                     excluded_comp_id.append({'seq_id': seq_id, 'comp_id': comp_id})
@@ -5610,18 +5610,18 @@ class NmrDpUtility(object):
                                         elif a.startswith('P') and p31_col != -1:
                                             bb_c[p31_col]['number_of_target_shifts'] += 1
 
-                                    for i in lp_data:
+                                    for j in lp_data:
 
                                         if file_type == 'nef':
-                                            _chain_id = i[chain_id_name]
+                                            _chain_id = j[chain_id_name]
                                         else:
-                                            _chain_id = str(i[chain_id_name])
+                                            _chain_id = str(j[chain_id_name])
 
-                                        if _chain_id != chain_id or i[seq_id_name] != seq_id or i[comp_id_name] != comp_id or i[value_name] in self.empty_value:
+                                        if _chain_id != chain_id or j[seq_id_name] != seq_id or j[comp_id_name] != comp_id or j[value_name] in self.empty_value:
                                             continue
 
-                                        atom_id = i[atom_id_name]
-                                        data_type = str(i[iso_number]) + i[atom_type]
+                                        atom_id = j[atom_id_name]
+                                        data_type = str(j[iso_number]) + j[atom_type]
 
                                         if file_type == 'nef':
 
@@ -5733,18 +5733,18 @@ class NmrDpUtility(object):
                                         elif a.startswith('P') and p31_col != -1:
                                             sc_c[p31_col]['number_of_target_shifts'] += 1
 
-                                    for i in lp_data:
+                                    for j in lp_data:
 
                                         if file_type == 'nef':
-                                            _chain_id = i[chain_id_name]
+                                            _chain_id = j[chain_id_name]
                                         else:
-                                            _chain_id = str(i[chain_id_name])
+                                            _chain_id = str(j[chain_id_name])
 
-                                        if _chain_id != chain_id or i[seq_id_name] != seq_id or i[comp_id_name] != comp_id or i[value_name] in self.empty_value:
+                                        if _chain_id != chain_id or j[seq_id_name] != seq_id or j[comp_id_name] != comp_id or j[value_name] in self.empty_value:
                                             continue
 
-                                        atom_id = i[atom_id_name]
-                                        data_type = str(i[iso_number]) + i[atom_type]
+                                        atom_id = j[atom_id_name]
+                                        data_type = str(j[iso_number]) + j[atom_type]
 
                                         if file_type == 'nef':
 
@@ -5845,18 +5845,18 @@ class NmrDpUtility(object):
                                         elif a.startswith('C') and c13_col != -1:
                                             ch3_c[c13_col]['number_of_target_shifts'] += 1
 
-                                    for i in lp_data:
+                                    for j in lp_data:
 
                                         if file_type == 'nef':
-                                            _chain_id = i[chain_id_name]
+                                            _chain_id = j[chain_id_name]
                                         else:
-                                            _chain_id = str(i[chain_id_name])
+                                            _chain_id = str(j[chain_id_name])
 
-                                        if _chain_id != chain_id or i[seq_id_name] != seq_id or i[comp_id_name] != comp_id or i[value_name] in self.empty_value:
+                                        if _chain_id != chain_id or j[seq_id_name] != seq_id or j[comp_id_name] != comp_id or j[value_name] in self.empty_value:
                                             continue
 
-                                        atom_id = i[atom_id_name]
-                                        data_type = str(i[iso_number]) + i[atom_type]
+                                        atom_id = j[atom_id_name]
+                                        data_type = str(j[iso_number]) + j[atom_type]
 
                                         if file_type == 'nef':
 
@@ -5952,18 +5952,18 @@ class NmrDpUtility(object):
                                         elif a.startswith('N') and n15_col != -1:
                                             aro_c[n15_col]['number_of_target_shifts'] += 1
 
-                                    for i in lp_data:
+                                    for j in lp_data:
 
                                         if file_type == 'nef':
-                                            _chain_id = i[chain_id_name]
+                                            _chain_id = j[chain_id_name]
                                         else:
-                                            _chain_id = str(i[chain_id_name])
+                                            _chain_id = str(j[chain_id_name])
 
-                                        if _chain_id != chain_id or i[seq_id_name] != seq_id or i[comp_id_name] != comp_id or i[value_name] in self.empty_value:
+                                        if _chain_id != chain_id or j[seq_id_name] != seq_id or j[comp_id_name] != comp_id or j[value_name] in self.empty_value:
                                             continue
 
-                                        atom_id = i[atom_id_name]
-                                        data_type = str(i[iso_number]) + i[atom_type]
+                                        atom_id = j[atom_id_name]
+                                        data_type = str(j[iso_number]) + j[atom_type]
 
                                         if file_type == 'nef':
 
@@ -6149,6 +6149,89 @@ class NmrDpUtility(object):
 
                 if has_value:
                     ent['histogram'] = {'range_of_values': range_of_vals, 'number_of_values': transposed, 'annotations': cs_ann}
+
+            # prediction of redox state of CYS
+
+            cys_redox_state = []
+
+            for sc in ent['sequence_coverage']:
+
+                chain_id = sc['chain_id']
+
+                for s in polymer_sequence:
+
+                    if s['chain_id'] == chain_id:
+
+                        for i in range(len(s['seq_id'])):
+                            seq_id = s['seq_id'][i]
+                            comp_id = s['comp_id'][i]
+
+                            if comp_id != 'CYS':
+                                continue
+
+                            cys = {'chain_id': chain_id, 'seq_id': seq_id}
+
+                            ca_chem_shift = None
+                            cb_chem_shift = None
+
+                            for j in lp_data:
+
+                                _chain_id = j[chain_id_name]
+                                atom_id = j[atom_id_name]
+
+                                if type(_chain_id) is int:
+                                    __chain_id = str(_chain_id)
+                                else:
+                                    __chain_id = _chain_id
+
+                                if __chain_id == chain_id and j[seq_id_name] == seq_id and j[comp_id_name] == comp_id:
+                                    if atom_id == 'CA':
+                                        ca_chem_shift = j[value_name]
+                                    elif atom_id == 'CB':
+                                        cb_chem_shift = j[value_name]
+
+                                if ca_chem_shift is None or cb_chem_shift is None:
+                                    pass
+                                else:
+                                    break
+
+                            cys['ca_chem_shift'] = ca_chem_shift
+                            cys['cb_chem_shift'] = cb_chem_shift
+
+                            if not cb_chem_shift is None:
+                                if cb_chem_shift < 32.0:
+                                    cys['redox_state_pred'] = 'reduced'
+                                elif cb_chem_shift_1 > 35.0:
+                                    cys['redox_state_pred'] = 'oxidized'
+                                else:
+                                    cys['redox_state_pred'] = 'ambiguous'
+                            else:
+                                cys['redox_state_pred'] = 'unknown'
+
+                            if cys['redox_state_pred'] == 'ambiguous':
+                                ox, rd = self.__predictRedoxStateOfCystein(ca_chem_shift, cb_chem_shift)
+                                cys['redox_state_pred'] = 'oxidized %s, reduced %s %%' % ('{:.1f}'.format(ox * 100.0), '{:1f}'.format(rd * 100.0))
+
+                            cys['in_disulfide_bond'] = False
+                            if not input_source_dic['disulfide_bond'] is None:
+                                try:
+                                    next(b for b in input_source_dic['disulfide_bond'] if (b['chain_id_1'] == chain_id and b['seq_id_1'] == seq_id) or (b['chain_id_2'] == chain_id and b['seq_id_2'] == seq_id))
+                                    cys['in_disulfide_bond'] = True
+                                except StopIteration:
+                                    pass
+
+                            cys['in_other_bond'] = False
+                            if not input_source_dic['other_bond'] is None:
+                                try:
+                                    next(b for b in input_source_dic['other_bond'] if (b['chain_id_1'] == chain_id and b['seq_id_1'] == seq_id) or (b['chain_id_2'] == chain_id and b['seq_id_2'] == seq_id))
+                                    cys['in_other_bond'] = True
+                                except StopIteration:
+                                    pass
+
+                            cys_redox_state.append(cys)
+
+                if len(cys_redox_state) > 0:
+                    ent['cys_redox_state'] = cys_redox_state
 
         except Exception as e:
 
@@ -9315,10 +9398,10 @@ class NmrDpUtility(object):
             disulf['warning_description_1'] = None
             disulf['warning_description_2'] = None
 
-            cs_ca_1 = None
-            cs_cb_1 = None
-            cs_ca_2 = None
-            cs_cb_2 = None
+            ca_chem_shift_1 = None
+            cb_chem_shift_1 = None
+            ca_chem_shift_2 = None
+            cb_chem_shift_2 = None
 
             for sf_data in self.__star_data.get_saveframes_by_category(sf_category):
 
@@ -9354,41 +9437,41 @@ class NmrDpUtility(object):
                             chain_id = _chain_id
 
                         if chain_id == nmr_chain_id_1 and seq_id == nmr_seq_id_1 and comp_id == nmr_comp_id_1:
-                            if atom_id == 'CA' and cs_ca_1 is None:
-                                cs_ca_1 = i[value_name]
-                            elif atom_id == 'CB' and cs_cb_1 is None:
-                                cs_cb_1 = i[value_name]
+                            if atom_id == 'CA' and ca_chem_shift_1 is None:
+                                ca_chem_shift_1 = i[value_name]
+                            elif atom_id == 'CB' and cb_chem_shift_1 is None:
+                                cb_chem_shift_1 = i[value_name]
 
                         elif chain_id == nmr_chain_id_2 and seq_id == nmr_seq_id_2 and comp_id == nmr_comp_id_2:
-                            if atom_id == 'CA' and cs_ca_2 is None:
-                                cs_ca_2 = i[value_name]
-                            elif atom_id == 'CB' and cs_cb_2 is None:
-                                cs_cb_2 = i[value_name]
+                            if atom_id == 'CA' and ca_chem_shift_2 is None:
+                                ca_chem_shift_2 = i[value_name]
+                            elif atom_id == 'CB' and cb_chem_shift_2 is None:
+                                cb_chem_shift_2 = i[value_name]
 
-                        if cs_ca_1 is None or cs_cb_1 is None or cs_ca_2 is None or cs_cb_2 is None:
+                        if ca_chem_shift_1 is None or cb_chem_shift_1 is None or ca_chem_shift_2 is None or cb_chem_shift_2 is None:
                             pass
                         else:
                             break
 
-                    if cs_ca_1 is None or cs_cb_1 is None or cs_ca_2 is None or cs_cb_2 is None:
+                    if ca_chem_shift_1 is None or cb_chem_shift_1 is None or ca_chem_shift_2 is None or cb_chem_shift_2 is None:
                         pass
                     else:
                         break
 
-            disulf['ca_cs_value_1'] = ca_cs_1
-            disulf['cb_cs_value_1'] = cb_cs_1
-            disulf['ca_cs_value_2'] = ca_cs_2
-            disulf['cb_cs_value_2'] = cb_cs_2
+            disulf['ca_chem_shift_1'] = ca_chem_shift_1
+            disulf['cb_chem_shift_1'] = cb_chem_shift_1
+            disulf['ca_chem_shift_2'] = ca_chem_shift_2
+            disulf['cb_chem_shift_2'] = cb_chem_shift_2
 
-            if not cb_cs_1 is None:
-                if cb_cs_1 < 32.0:
+            if not cb_chem_shift_1 is None:
+                if cb_chem_shift_1 < 32.0:
                     disulf['redox_state_pred_1'] = 'reduced'
-                elif cb_cs_1 > 35.0:
+                elif cb_chem_shift_1 > 35.0:
                     disulf['redox_state_pred_1'] = 'oxidized'
-                elif not cb_cs_2 is None:
-                    if cb_cs_2 < 32.0:
+                elif not cb_chem_shift_2 is None:
+                    if cb_chem_shift_2 < 32.0:
                         disulf['redox_state_pred_1'] = 'reduced'
-                    elif cb_cs_2 > 35.0:
+                    elif cb_chem_shift_2 > 35.0:
                         disulf['redox_state_pred_1'] = 'oxidized'
                     else:
                         disulf['redox_state_pred_1'] = 'ambiguous'
@@ -9397,15 +9480,15 @@ class NmrDpUtility(object):
             else:
                 disulf['redox_state_pred_1'] = 'unknown'
 
-            if not cb_cs_2 is None:
-                if cb_cs_2 < 32.0:
+            if not cb_chem_shift_2 is None:
+                if cb_chem_shift_2 < 32.0:
                     disulf['redox_state_pred_2'] = 'reduced'
-                elif cb_cs_2 > 35.0:
+                elif cb_chem_shift_2 > 35.0:
                     disulf['redox_state_pred_2'] = 'oxidized'
-                elif not cb_cs_1 is None:
-                    if cb_cs_1 < 32.0:
+                elif not cb_chem_shift_1 is None:
+                    if cb_chem_shift_1 < 32.0:
                         disulf['redox_state_pred_2'] = 'reduced'
-                    elif cb_cs_1 > 35.0:
+                    elif cb_chem_shift_1 > 35.0:
                         disulf['redox_state_pred_2'] = 'oxidized'
                     else:
                         disulf['redox_state_pred_2'] = 'ambiguous'
@@ -9414,34 +9497,18 @@ class NmrDpUtility(object):
             else:
                 disulf['refox_state_pred_2'] = 'unknown'
 
-            if disulf['redox_state_pred_1'] == 'ambiguous' and (not ca_cs_1 is None or not cb_cs_1 is None):
-                ox = 0.0
-                rd = 0.0
-                if not ca_cs_1 is None:
-                    ox += self.__probabilityDensity(ca_cs_1, 55.5, 2.5)
-                    rd += self.__probabilityDensity(ca_cs_1, 59.3, 3.2)
-                if not cb_cs_1 is None:
-                    ox += self.__probabilityDensity(cb_cs_1, 40.7, 3.8)
-                    rd += self.__probabilityDensity(cb_cs_1, 28.3, 2.2)
+            if disulf['redox_state_pred_1'] == 'ambiguous' and (not ca_chem_shift_1 is None or not cb_chem_shift_1 is None):
+                ox, rd = self.__predictRedoxStateOfCystein(ca_chem_shift_1, cb_chem_shift_1)
+                disulf['redox_state_pred_1'] = 'oxidized %s, reduced %s %%' % ('{:.1f}'.format(ox * 100.0), '{:1f}'.format(rd * 100.0))
 
-                disulf['redox_state_pred_1'] = 'oxidized %s, reduced %s %%' % ('{:.1f}'.format(ox / (ox + rd) * 100.0), '{:1f}'.format(rd / (ox + rd) * 100.0))
-
-            if disulf['redox_state_pred_2'] == 'ambiguous' and (not ca_cs_2 is None or not cb_cs_2 is None):
-                ox = 0.0
-                rd = 0.0
-                if not ca_cs_2 is None:
-                    ox += self.__probabilityDensity(ca_cs_2, 55.5, 2.5)
-                    rd += self.__probabilityDensity(ca_cs_2, 59.3, 3.2)
-                if not cb_cs_2 is None:
-                    ox += self.__probabilityDensity(cb_cs_2, 40.7, 3.8)
-                    rd += self.__probabilityDensity(cb_cs_2, 28.3, 2.2)
-
-                disulf['redox_state_pred_2'] = 'oxidized %s, reduced %s %%' % ('{:.1f}'.format(ox / (ox + rd) * 100.0), '{:1f}'.format(rd / (ox + rd) * 100.0))
+            if disulf['redox_state_pred_2'] == 'ambiguous' and (not ca_chem_shift_2 is None or not cb_chem_shift_2 is None):
+                ox, rd = self.__predictRedoxStateOfCystein(ca_chem_shift_2, cb_chem_shift_2)
+                disulf['redox_state_pred_2'] = 'oxidized %s, reduced %s %%' % ('{:.1f}'.format(ox * 100.0), '{:1f}'.format(rd * 100.0))
 
             if disulf['redox_state_pred_1'] != 'oxidized' and disulf['refox_state_pred_1'] != 'unknown':
 
                 warn = "Disulfide bond (chain_id_1 %s seq_id_1 %s comp_id_1 %s, chain_id_2 %s, seq_id_2 %s, comp_id_2 %s) could not supported by assigned chemical shift values (CA_1 %s, CB_1 %s, redox_state_pred_1 %s)." %\
-                       (nmr_chain_id_1, nmr_seq_id_1, nmr_comp_id_1, nmr_chain_id_2, nmr_seq_id_2, nmr_comp_id_2, ca_cs_1, cb_cs_1, disulf['redox_state_pred_1'])
+                       (nmr_chain_id_1, nmr_seq_id_1, nmr_comp_id_1, nmr_chain_id_2, nmr_seq_id_2, nmr_comp_id_2, ca_chem_shift_1, cb_chem_shift_1, disulf['redox_state_pred_1'])
 
                 item = 'suspicious_data' if disulf['redox_state_pred_1'] == 'reduced' else 'unusual_data'
 
@@ -9451,12 +9518,12 @@ class NmrDpUtility(object):
                 if self.__verbose:
                     self.__lfh.write("+NmrDpUtility.__mapCoordDisulfideBond2Nmr() ++ Warning  - %s\n" % warn)
 
-                disulf['warning_description_1'] = item + ': warn'
+                disulf['warning_description_1'] = item + ': ' + warn
 
             if disulf['redox_state_pred_2'] != 'oxidized' and disulf['refox_state_pred_2'] != 'unknown':
 
                 warn = "Disulfide bond (chain_id_1 %s seq_id_1 %s comp_id_1 %s, chain_id_2 %s, seq_id_2 %s, comp_id_2 %s) could not supported by assigned chemical shift values (CA_2 %s, CB_2 %s, redox_state_pred_2 %s)." %\
-                       (nmr_chain_id_1, nmr_seq_id_1, nmr_comp_id_1, nmr_chain_id_2, nmr_seq_id_2, nmr_comp_id_2, ca_cs_2, cb_cs_2, disulf['redox_state_pred_2'])
+                       (nmr_chain_id_1, nmr_seq_id_1, nmr_comp_id_1, nmr_chain_id_2, nmr_seq_id_2, nmr_comp_id_2, ca_chem_shift_2, cb_chem_shift_2, disulf['redox_state_pred_2'])
 
                 item = 'suspicious_data' if disulf['refox_state_pred_2'] == 'reduced' else 'unusual_data'
 
@@ -9466,7 +9533,7 @@ class NmrDpUtility(object):
                 if self.__verbose:
                     self.__lfh.write("+NmrDpUtility.__mapCoordDisulfideBond2Nmr() ++ Warning  - %s\n" % warn)
 
-                disulf['warning_description_2'] = item + ': warn'
+                disulf['warning_description_2'] = item + ': ' + warn
 
             asm.append(disulf)
 
@@ -9705,10 +9772,10 @@ class NmrDpUtility(object):
             other['warning_description_1'] = None
             other['warning_description_2'] = None
 
-            cs_ca_1 = None
-            cs_cb_1 = None
-            cs_ca_2 = None
-            cs_cb_2 = None
+            ca_chem_shift_1 = None
+            cb_chem_shift_1 = None
+            ca_chem_shift_2 = None
+            cb_chem_shift_2 = None
 
             for sf_data in self.__star_data.get_saveframes_by_category(sf_category):
 
@@ -9744,41 +9811,41 @@ class NmrDpUtility(object):
                             chain_id = _chain_id
 
                         if chain_id == nmr_chain_id_1 and seq_id == nmr_seq_id_1 and comp_id == nmr_comp_id_1:
-                            if atom_id == 'CA' and cs_ca_1 is None:
-                                cs_ca_1 = i[value_name]
-                            elif atom_id == 'CB' and cs_cb_1 is None:
-                                cs_cb_1 = i[value_name]
+                            if atom_id == 'CA' and ca_chem_shift_1 is None:
+                                ca_chem_shift_1 = i[value_name]
+                            elif atom_id == 'CB' and cb_chem_shift_1 is None:
+                                cb_chem_shift_1 = i[value_name]
 
                         elif chain_id == nmr_chain_id_2 and seq_id == nmr_seq_id_2 and comp_id == nmr_comp_id_2:
-                            if atom_id == 'CA' and cs_ca_2 is None:
-                                cs_ca_2 = i[value_name]
-                            elif atom_id == 'CB' and cs_cb_2 is None:
-                                cs_cb_2 = i[value_name]
+                            if atom_id == 'CA' and ca_chem_shift_2 is None:
+                                ca_chem_shift_2 = i[value_name]
+                            elif atom_id == 'CB' and cb_chem_shift_2 is None:
+                                cb_chem_shift_2 = i[value_name]
 
-                        if cs_ca_1 is None or cs_cb_1 is None or cs_ca_2 is None or cs_cb_2 is None:
+                        if ca_chem_shift_1 is None or cb_chem_shift_1 is None or ca_chem_shift_2 is None or cb_chem_shift_2 is None:
                             pass
                         else:
                             break
 
-                    if cs_ca_1 is None or cs_cb_1 is None or cs_ca_2 is None or cs_cb_2 is None:
+                    if ca_chem_shift_1 is None or cb_chem_shift_1 is None or ca_chem_shift_2 is None or cb_chem_shift_2 is None:
                         pass
                     else:
                         break
 
-            other['ca_cs_value_1'] = ca_cs_1
-            other['cb_cs_value_1'] = cb_cs_1
-            other['ca_cs_value_2'] = ca_cs_2
-            other['cb_cs_value_2'] = cb_cs_2
+            other['ca_chem_shift_1'] = ca_chem_shift_1
+            other['cb_chem_shift_1'] = cb_chem_shift_1
+            other['ca_chem_shift_2'] = ca_chem_shift_2
+            other['cb_chem_shift_2'] = cb_chem_shift_2
 
-            if not cb_cs_1 is None:
-                if cb_cs_1 < 32.0:
+            if not cb_chem_shift_1 is None:
+                if cb_chem_shift_1 < 32.0:
                     other['redox_state_pred_1'] = 'reduced'
-                elif cb_cs_1 > 35.0:
+                elif cb_chem_shift_1 > 35.0:
                     other['redox_state_pred_1'] = 'oxidized'
-                elif not cb_cs_2 is None:
-                    if cb_cs_2 < 32.0:
+                elif not cb_chem_shift_2 is None:
+                    if cb_chem_shift_2 < 32.0:
                         other['redox_state_pred_1'] = 'reduced'
-                    elif cb_cs_2 > 35.0:
+                    elif cb_chem_shift_2 > 35.0:
                         other['redox_state_pred_1'] = 'oxidized'
                     else:
                         other['redox_state_pred_1'] = 'ambiguous'
@@ -9787,15 +9854,15 @@ class NmrDpUtility(object):
             else:
                 other['redox_state_pred_1'] = 'unknown'
 
-            if not cb_cs_2 is None:
-                if cb_cs_2 < 32.0:
+            if not cb_chem_shift_2 is None:
+                if cb_chem_shift_2 < 32.0:
                     other['redox_state_pred_2'] = 'reduced'
-                elif cb_cs_2 > 35.0:
+                elif cb_chem_shift_2 > 35.0:
                     other['redox_state_pred_2'] = 'oxidized'
-                elif not cb_cs_1 is None:
-                    if cb_cs_1 < 32.0:
+                elif not cb_chem_shift_1 is None:
+                    if cb_chem_shift_1 < 32.0:
                         other['redox_state_pred_2'] = 'reduced'
-                    elif cb_cs_1 > 35.0:
+                    elif cb_chem_shift_1 > 35.0:
                         other['redox_state_pred_2'] = 'oxidized'
                     else:
                         other['redox_state_pred_2'] = 'ambiguous'
@@ -9804,34 +9871,18 @@ class NmrDpUtility(object):
             else:
                 other['redox_state_pred_2'] = 'unknown'
 
-            if other['redox_state_pred_1'] == 'ambiguous' and (not ca_cs_1 is None or not cb_cs_1 is None):
-                ox = 0.0
-                rd = 0.0
-                if not ca_cs_1 is None:
-                    ox += self.__probabilityDensity(ca_cs_1, 55.5, 2.5)
-                    rd += self.__probabilityDensity(ca_cs_1, 59.3, 3.2)
-                if not cb_cs_1 is None:
-                    ox += self.__probabilityDensity(cb_cs_1, 40.7, 3.8)
-                    rd += self.__probabilityDensity(cb_cs_1, 28.3, 2.2)
+            if other['redox_state_pred_1'] == 'ambiguous' and (not ca_chem_shift_1 is None or not cb_chem_shift_1 is None):
+                ox, rd = self.__predictRedoxStateOfCystein(ca_chem_shift_1, cb_chem_shift_1)
+                other['redox_state_pred_1'] = 'oxidized %s, reduced %s %%' % ('{:.1f}'.format(ox * 100.0), '{:1f}'.format(rd * 100.0))
 
-                other['redox_state_pred_1'] = 'oxidized %s, reduced %s %%' % ('{:.1f}'.format(ox / (ox + rd) * 100.0), '{:1f}'.format(rd / (ox + rd) * 100.0))
-
-            if other['redox_state_pred_2'] == 'ambiguous' and (not ca_cs_2 is None or not cb_cs_2 is None):
-                ox = 0.0
-                rd = 0.0
-                if not ca_cs_2 is None:
-                    ox += self.__probabilityDensity(ca_cs_2, 55.5, 2.5)
-                    rd += self.__probabilityDensity(ca_cs_2, 59.3, 3.2)
-                if not cb_cs_2 is None:
-                    ox += self.__probabilityDensity(cb_cs_2, 40.7, 3.8)
-                    rd += self.__probabilityDensity(cb_cs_2, 28.3, 2.2)
-
-                other['redox_state_pred_2'] = 'oxidized %s, reduced %s %%' % ('{:.1f}'.format(ox / (ox + rd) * 100.0), '{:1f}'.format(rd / (ox + rd) * 100.0))
+            if other['redox_state_pred_2'] == 'ambiguous' and (not ca_chem_shift_2 is None or not cb_chem_shift_2 is None):
+                ox, rd = self.__predictRedoxStateOfCystein(ca_chem_shift_2, cb_chem_shift_2)
+                other['redox_state_pred_2'] = 'oxidized %s, reduced %s %%' % ('{:.1f}'.format(ox * 100.0), '{:1f}'.format(rd * 100.0))
 
             if other['redox_state_pred_1'] != 'oxidized' and other['refox_state_pred_1'] != 'unknown':
 
                 warn = "Other bond (chain_id_1 %s seq_id_1 %s comp_id_1 %s, chain_id_2 %s, seq_id_2 %s, comp_id_2 %s) could not supported by assigned chemical shift values (CA_1 %s, CB_1 %s, redox_state_pred_1 %s)." %\
-                       (nmr_chain_id_1, nmr_seq_id_1, nmr_comp_id_1, nmr_chain_id_2, nmr_seq_id_2, nmr_comp_id_2, ca_cs_1, cb_cs_1, other['redox_state_pred_1'])
+                       (nmr_chain_id_1, nmr_seq_id_1, nmr_comp_id_1, nmr_chain_id_2, nmr_seq_id_2, nmr_comp_id_2, ca_chem_shift_1, cb_chem_shift_1, other['redox_state_pred_1'])
 
                 item = 'suspicious_data' if other['redox_state_pred_1'] == 'reduced' else 'unusual_data'
 
@@ -9841,12 +9892,12 @@ class NmrDpUtility(object):
                 if self.__verbose:
                     self.__lfh.write("+NmrDpUtility.__mapCoordOtherBond2Nmr() ++ Warning  - %s\n" % warn)
 
-                other['warning_description_1'] = item + ': warn'
+                other['warning_description_1'] = item + ': ' + warn
 
             if other['redox_state_pred_2'] != 'oxidized' and other['refox_state_pred_2'] != 'unknown':
 
                 warn = "Other bond (chain_id_1 %s seq_id_1 %s comp_id_1 %s, chain_id_2 %s, seq_id_2 %s, comp_id_2 %s) could not supported by assigned chemical shift values (CA_2 %s, CB_2 %s, redox_state_pred_2 %s)." %\
-                       (nmr_chain_id_1, nmr_seq_id_1, nmr_comp_id_1, nmr_chain_id_2, nmr_seq_id_2, nmr_comp_id_2, ca_cs_2, cb_cs_2, other['redox_state_pred_2'])
+                       (nmr_chain_id_1, nmr_seq_id_1, nmr_comp_id_1, nmr_chain_id_2, nmr_seq_id_2, nmr_comp_id_2, ca_chem_shift_2, cb_chem_shift_2, other['redox_state_pred_2'])
 
                 item = 'suspicious_data' if other['refox_state_pred_2'] == 'reduced' else 'unusual_data'
 
@@ -9856,7 +9907,7 @@ class NmrDpUtility(object):
                 if self.__verbose:
                     self.__lfh.write("+NmrDpUtility.__mapCoordOtherBond2Nmr() ++ Warning  - %s\n" % warn)
 
-                other['warning_description_2'] = item + ': warn'
+                other['warning_description_2'] = item + ': ' + warn
 
             asm.append(other)
 
@@ -9865,6 +9916,26 @@ class NmrDpUtility(object):
             return True
 
         return False
+
+    def __predictRedoxStateOfCystein(self, ca_chem_shift, cb_chem_shift):
+        """ Return prediction of redox state of Cystein using assigned CA, CB chemical shifts.
+            @return: probability of oxidized state, probability of reduced state
+        """
+
+        ox = 0.0
+        rd = 0.0
+
+        if not ca_chem_shift_1 is None:
+            ox += self.__probabilityDensity(ca_chem_shift_1, 55.5, 2.5)
+            rd += self.__probabilityDensity(ca_chem_shift_1, 59.3, 3.2)
+
+        if not cb_chem_shift_1 is None:
+            ox += self.__probabilityDensity(cb_chem_shift_1, 40.7, 3.8)
+            rd += self.__probabilityDensity(cb_chem_shift_1, 28.3, 2.2)
+
+        sum = ox + rd
+
+        return ox / sum, rd / sum
 
     def __probabilityDensity(self, value, mean, stddev):
         """ Return probability density.

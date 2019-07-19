@@ -7,7 +7,7 @@
 #                     Add accessors for lists of dictionaries.
 # 12-May-2011 - rps - Added check for None when asking for category Object in __getDataList()
 # 2012-10-24    RPS   Updated to reflect reorganization of modules in pdbx packages
-# 19-Jun-2019   my  - Forked original code to wwpdb.util.nmr.CifReader
+# 19-Jul-2019   my  - Forked original code to wwpdb.util.nmr.CifReader
 ##
 """ A collection of classes for parsing CIF files.
 """
@@ -305,6 +305,6 @@ class CifReader(object):
                             tD[dataItem['alt_name']] = val
                         else:
                             tD[dataItem['name']] = val
-                        dList.append(tD)
+                    dList.append(tD)
 
         return dList

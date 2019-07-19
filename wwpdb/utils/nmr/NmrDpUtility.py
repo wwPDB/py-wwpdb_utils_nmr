@@ -2360,9 +2360,23 @@ class NmrDpUtility(object):
         if self.report.isError():
             return False
 
-        input_source.setItemValue('polymer_sequence_in_loop', poly_seq_list_set)
+        if len(poly_seq_list_set) > 0:
+            input_source.setItemValue('polymer_sequence_in_loop', poly_seq_list_set)
 
         return True
+
+    def __hasKeyValue(self, dict=None, key=None):
+        """ Return whether a given dictionary has effective value for a key.
+            @return: True if dict[key] has effective value, False otherwise
+        """
+
+        if dict is None or key is None:
+            return False
+
+        if key in dict:
+            return False if dict[key] is None else True
+
+        return False
 
     def __testSequenceConsistency(self):
         """ Perform sequence consistency test among extracted polymer sequences.
@@ -2377,17 +2391,14 @@ class NmrDpUtility(object):
         file_name = input_source_dic['file_name']
         file_type = input_source_dic['file_type']
 
-        has_poly_seq = 'polymer_sequence' in input_source_dic
-        has_poly_seq_in_loop = 'polymer_sequence_in_loop' in input_source_dic
+        has_poly_seq = self.__hasKeyValue(input_source_dic, 'polymer_sequence')
+        has_poly_seq_in_loop = self.__hasKeyValue(input_source_dic, 'polymer_sequence_in_loop')
 
         if not has_poly_seq and not has_poly_seq_in_loop:
             return True
 
         polymer_sequence = input_source_dic['polymer_sequence']
         polymer_sequence_in_loop = input_source_dic['polymer_sequence_in_loop']
-
-        if polymer_sequence is None:
-            return False
 
         poly_seq = 'poly_seq'
 
@@ -2554,11 +2565,8 @@ class NmrDpUtility(object):
         input_source = self.report.input_sources[0]
         input_source_dic = input_source.get()
 
-        has_poly_seq = 'polymer_sequence' in input_source_dic
-        has_poly_seq_in_loop = 'polymer_sequence_in_loop' in input_source_dic
-
-        if has_poly_seq and input_source_dic['polymer_sequence'] is None:
-            has_poly_seq = False
+        has_poly_seq = self.__hasKeyValue(input_source_dic, 'polymer_sequence')
+        has_poly_seq_in_loop = self.__hasKeyValue(input_source_dic, 'polymer_sequence_in_loop')
 
         # pass if poly_seq exists
         if has_poly_seq or not has_poly_seq_in_loop:
@@ -2622,15 +2630,12 @@ class NmrDpUtility(object):
 
         content_subtype = 'poly_seq'
 
-        has_poly_seq = 'polymer_sequence' in input_source_dic
+        has_poly_seq = self.__hasKeyValue(input_source_dic, 'polymer_sequence')
 
         if not has_poly_seq:
             return True
 
         polymer_sequence = input_source_dic['polymer_sequence']
-
-        if polymer_sequence is None:
-            return False
 
         sf_category = self.sf_categories[file_type][content_subtype]
         lp_category = self.lp_categories[file_type][content_subtype]
@@ -2698,8 +2703,8 @@ class NmrDpUtility(object):
         input_source = self.report.input_sources[0]
         input_source_dic = input_source.get()
 
-        has_poly_seq = 'polymer_sequence' in input_source_dic
-        has_poly_seq_in_loop = 'polymer_sequence_in_loop' in input_source_dic
+        has_poly_seq = self.__hasKeyValue(input_source_dic, 'polymer_sequence')
+        has_poly_seq_in_loop = self.__hasKeyValue(input_source_dic, 'polymer_sequence_in_loop')
 
         if not has_poly_seq:
 
@@ -6201,7 +6206,7 @@ class NmrDpUtility(object):
                             if not cb_chem_shift is None:
                                 if cb_chem_shift < 32.0:
                                     cys['redox_state_pred'] = 'reduced'
-                                elif cb_chem_shift_1 > 35.0:
+                                elif cb_chem_shift > 35.0:
                                     cys['redox_state_pred'] = 'oxidized'
                                 else:
                                     cys['redox_state_pred'] = 'ambiguous'
@@ -6210,7 +6215,7 @@ class NmrDpUtility(object):
 
                             if cys['redox_state_pred'] == 'ambiguous':
                                 ox, rd = self.__predictRedoxStateOfCystein(ca_chem_shift, cb_chem_shift)
-                                cys['redox_state_pred'] = 'oxidized %s, reduced %s %%' % ('{:.1f}'.format(ox * 100.0), '{:1f}'.format(rd * 100.0))
+                                cys['redox_state_pred'] = 'oxidized %s (%%), reduced %s (%%)' % ('{:.1f}'.format(ox * 100.0), '{:.1f}'.format(rd * 100.0))
 
                             cys['in_disulfide_bond'] = False
                             if not input_source_dic['disulfide_bond'] is None:
@@ -7693,7 +7698,8 @@ class NmrDpUtility(object):
         if self.report.getTotalErrors() > __errors:
             return False
 
-        input_source.setItemValue('polymer_sequence_in_loop', poly_seq_list_set)
+        if len(poly_seq_list_set) > 0:
+            input_source.setItemValue('polymer_sequence_in_loop', poly_seq_list_set)
 
         return True
 
@@ -7712,7 +7718,7 @@ class NmrDpUtility(object):
         file_name = input_source_dic['file_name']
         file_type = input_source_dic['file_type']
 
-        has_poly_seq = 'polymer_sequence' in input_source_dic
+        has_poly_seq = self.__hasKeyValue(input_source_dic, 'polymer_sequence')
 
         if not has_poly_seq:
             return True
@@ -7770,12 +7776,16 @@ class NmrDpUtility(object):
         input_source = self.report.input_sources[id]
         input_source_dic = input_source.get()
 
-        has_poly_seq = 'polymer_sequence' in input_source_dic
-        has_poly_seq_in_loop = 'polymer_sequence_in_loop' in input_source_dic
+        has_poly_seq = self.__hasKeyValue(input_source_dic, 'polymer_sequence')
+        has_poly_seq_in_loop = self.__hasKeyValue(input_source_dic, 'polymer_sequence_in_loop')
+
+        if not has_poly_seq:
+            return False
+
+        polymer_sequence = input_source_dic['polymer_sequence']
 
         if has_poly_seq_in_loop:
 
-            polymer_sequence = input_source_dic['polymer_sequence']
             polymer_sequence_in_loop = input_source_dic['polymer_sequence_in_loop']
 
             for s1 in polymer_sequence:
@@ -7846,7 +7856,7 @@ class NmrDpUtility(object):
         nmr_input_source = self.report.input_sources[0]
         nmr_input_source_dic = nmr_input_source.get()
 
-        has_nmr_poly_seq = 'polymer_sequence' in nmr_input_source_dic
+        has_nmr_poly_seq = self.__hasKeyValue(nmr_input_source_dic, 'polymer_sequence')
 
         if not has_nmr_poly_seq:
 
@@ -7861,9 +7871,6 @@ class NmrDpUtility(object):
             return False
 
         nmr_polymer_sequence = nmr_input_source_dic['polymer_sequence']
-
-        if nmr_polymer_sequence is None:
-            return False
 
         for s1 in polymer_sequence:
             chain_id = s1['chain_id']
@@ -7989,7 +7996,7 @@ class NmrDpUtility(object):
 
         cif_file_name = cif_input_source_dic['file_name']
 
-        has_cif_poly_seq = 'polymer_sequence' in cif_input_source_dic
+        has_cif_poly_seq = self.__hasKeyValue(cif_input_source_dic, 'polymer_sequence')
 
         if not has_cif_poly_seq:
             return False
@@ -7999,7 +8006,7 @@ class NmrDpUtility(object):
 
         nmr_file_name = nmr_input_source_dic['file_name']
 
-        has_nmr_poly_seq = 'polymer_sequence' in nmr_input_source_dic
+        has_nmr_poly_seq = self.__hasKeyValue(nmr_input_source_dic, 'polymer_sequence')
 
         if not has_nmr_poly_seq:
 
@@ -8672,7 +8679,7 @@ class NmrDpUtility(object):
         file_name = input_source_dic['file_name']
         file_type = input_source_dic['file_type']
 
-        has_poly_seq = 'polymer_sequence' in input_source_dic
+        has_poly_seq = self.__hasKeyValue(input_source_dic, 'polymer_sequence')
 
         if not has_poly_seq:
 
@@ -9259,11 +9266,14 @@ class NmrDpUtility(object):
         input_source = self.report.input_sources[0]
         input_source_dic = input_source.get()
 
+        file_type = input_source_dic['file_type']
+
         polymer_sequence = input_source_dic['polymer_sequence']
 
         if polymer_sequence is None:
             return False
 
+        seq_align_dic = self.report.sequence_alignment.get()
         chain_assign_dic = self.report.chain_assignment.get()
 
         if not 'nmr_poly_seq_vs_model_poly_seq' in chain_assign_dic:
@@ -9499,11 +9509,11 @@ class NmrDpUtility(object):
 
             if disulf['redox_state_pred_1'] == 'ambiguous' and (not ca_chem_shift_1 is None or not cb_chem_shift_1 is None):
                 ox, rd = self.__predictRedoxStateOfCystein(ca_chem_shift_1, cb_chem_shift_1)
-                disulf['redox_state_pred_1'] = 'oxidized %s, reduced %s %%' % ('{:.1f}'.format(ox * 100.0), '{:1f}'.format(rd * 100.0))
+                disulf['redox_state_pred_1'] = 'oxidized %s (%%), reduced %s (%%)' % ('{:.1f}'.format(ox * 100.0), '{:.1f}'.format(rd * 100.0))
 
             if disulf['redox_state_pred_2'] == 'ambiguous' and (not ca_chem_shift_2 is None or not cb_chem_shift_2 is None):
                 ox, rd = self.__predictRedoxStateOfCystein(ca_chem_shift_2, cb_chem_shift_2)
-                disulf['redox_state_pred_2'] = 'oxidized %s, reduced %s %%' % ('{:.1f}'.format(ox * 100.0), '{:1f}'.format(rd * 100.0))
+                disulf['redox_state_pred_2'] = 'oxidized %s (%%), reduced %s (%%)' % ('{:.1f}'.format(ox * 100.0), '{:.1f}'.format(rd * 100.0))
 
             if disulf['redox_state_pred_1'] != 'oxidized' and disulf['refox_state_pred_1'] != 'unknown':
 
@@ -9633,11 +9643,14 @@ class NmrDpUtility(object):
         input_source = self.report.input_sources[0]
         input_source_dic = input_source.get()
 
+        file_type = input_source_dic['file_type']
+
         polymer_sequence = input_source_dic['polymer_sequence']
 
         if polymer_sequence is None:
             return False
 
+        seq_align_dic = self.report.sequence_alignment.get()
         chain_assign_dic = self.report.chain_assignment.get()
 
         if not 'nmr_poly_seq_vs_model_poly_seq' in chain_assign_dic:
@@ -9873,11 +9886,11 @@ class NmrDpUtility(object):
 
             if other['redox_state_pred_1'] == 'ambiguous' and (not ca_chem_shift_1 is None or not cb_chem_shift_1 is None):
                 ox, rd = self.__predictRedoxStateOfCystein(ca_chem_shift_1, cb_chem_shift_1)
-                other['redox_state_pred_1'] = 'oxidized %s, reduced %s %%' % ('{:.1f}'.format(ox * 100.0), '{:1f}'.format(rd * 100.0))
+                other['redox_state_pred_1'] = 'oxidized %s (%%), reduced %s (%%)' % ('{:.1f}'.format(ox * 100.0), '{:.1f}'.format(rd * 100.0))
 
             if other['redox_state_pred_2'] == 'ambiguous' and (not ca_chem_shift_2 is None or not cb_chem_shift_2 is None):
                 ox, rd = self.__predictRedoxStateOfCystein(ca_chem_shift_2, cb_chem_shift_2)
-                other['redox_state_pred_2'] = 'oxidized %s, reduced %s %%' % ('{:.1f}'.format(ox * 100.0), '{:1f}'.format(rd * 100.0))
+                other['redox_state_pred_2'] = 'oxidized %s (%%), reduced %s (%%)' % ('{:.1f}'.format(ox * 100.0), '{:.1f}'.format(rd * 100.0))
 
             if other['redox_state_pred_1'] != 'oxidized' and other['refox_state_pred_1'] != 'unknown':
 
@@ -9925,13 +9938,13 @@ class NmrDpUtility(object):
         ox = 0.0
         rd = 0.0
 
-        if not ca_chem_shift_1 is None:
-            ox += self.__probabilityDensity(ca_chem_shift_1, 55.5, 2.5)
-            rd += self.__probabilityDensity(ca_chem_shift_1, 59.3, 3.2)
+        if not ca_chem_shift is None:
+            ox += self.__probabilityDensity(ca_chem_shift, 55.5, 2.5)
+            rd += self.__probabilityDensity(ca_chem_shift, 59.3, 3.2)
 
-        if not cb_chem_shift_1 is None:
-            ox += self.__probabilityDensity(cb_chem_shift_1, 40.7, 3.8)
-            rd += self.__probabilityDensity(cb_chem_shift_1, 28.3, 2.2)
+        if not cb_chem_shift is None:
+            ox += self.__probabilityDensity(cb_chem_shift, 40.7, 3.8)
+            rd += self.__probabilityDensity(cb_chem_shift, 28.3, 2.2)
 
         sum = ox + rd
 
@@ -9941,7 +9954,7 @@ class NmrDpUtility(object):
         """ Return probability density.
         """
 
-        return exp(-((value - mean) ** 2.0) / (2.0 * (stddev ** 2))) / ((2.0 * math.pi * (stddev ** 2.0)) ** 0.5)
+        return math.exp(-((value - mean) ** 2.0) / (2.0 * (stddev ** 2))) / ((2.0 * math.pi * (stddev ** 2.0)) ** 0.5)
 
     def __updateDihedralAngleType(self):
         """ Update dihedral angle types (phi, psi, omega, chi[1-5] for polypeptide-like residue) if possible.

@@ -1,6 +1,6 @@
 ##
 # File: NmrDpReport.py
-# Date: 19-Jul-2019
+# Date: 22-Jul-2019
 #
 # Updates:
 ##
@@ -712,6 +712,9 @@ class NmrDpReportWarning:
         keys = set()
 
         for c in self.getValueList(item, file_name):
+
+            if not 'sf_framecode' in c:
+                continue
 
             key = c['sf_framecode'] + c['description']
 

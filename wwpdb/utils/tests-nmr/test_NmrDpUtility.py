@@ -96,23 +96,18 @@ class TestNmrDpUtility(unittest.TestCase):
 
         self.utility.op('nmr-nef-consistency-check')
 
+    def test_nmr_nef_consistency_check_multi_cs_sf(self):
+        self.utility.setSource(self.data_dir_path + '2mtv.nef')
+        self.utility.addInput(name='coordinate_file_path', value=self.data_dir_path + '2mtv.cif', type='file')
+        self.utility.setLog(self.data_dir_path + '2mtv-nef-consistency-log.json')
+
+        self.utility.op('nmr-nef-consistency-check')
+
     def test_nmr_nef_consistency_check_cys(self):
         self.utility.setSource(self.data_dir_path + '2l9r-cys.nef')
         self.utility.setLog(self.data_dir_path + '2l9r-cys-nef-consistency-log.json')
 
         self.utility.op('nmr-nef-consistency-check')
-
-    def test_nmr_nef2str_deposit_check_cys(self):
-        self.utility.setSource(self.data_dir_path + '2l9r-cys.nef')
-        self.utility.addInput(name='coordinate_file_path', value=self.data_dir_path + '2l9r-cys.cif', type='file')
-        self.utility.addInput(name='report_file_path', value=self.data_dir_path + '2l9r-cys-nef-consistency-log.json', type='file')
-        self.utility.addInput(name='entry_id', value='NEED_ACC_NO', type='param')
-        self.utility.setLog(self.data_dir_path + '2l9r-cys-nef2str-deposit-log.json')
-        self.utility.setDestination(self.data_dir_path + '2l9r-cys-next.nef')
-        self.utility.addOutput(name='nmr-star_file_path', value=self.data_dir_path + '2l9r-cys-nef2str.str', type='file')
-        self.utility.addOutput(name='report_file_path', value=self.data_dir_path + '2l9r-cys-nef2str-str-deposit-log.json', type='file')
-
-        self.utility.op('nmr-nef2str-deposit')
 
     def test_nmr_nef2str_deposit_check(self):
         self.utility.setSource(self.data_dir_path + '2l9r.nef')
@@ -123,6 +118,33 @@ class TestNmrDpUtility(unittest.TestCase):
         self.utility.setDestination(self.data_dir_path + '2l9r-next.nef')
         self.utility.addOutput(name='nmr-star_file_path', value=self.data_dir_path + '2l9r-nef2str.str', type='file')
         self.utility.addOutput(name='report_file_path', value=self.data_dir_path + '2l9r-nef2str-str-deposit-log.json', type='file')
+        self.utility.setVerbose(False)
+
+        self.utility.op('nmr-nef2str-deposit')
+
+    def test_nmr_nef2str_deposit_check_cys(self):
+        self.utility.setSource(self.data_dir_path + '2l9r-cys.nef')
+        self.utility.addInput(name='coordinate_file_path', value=self.data_dir_path + '2l9r-cys.cif', type='file')
+        self.utility.addInput(name='report_file_path',value=self.data_dir_path + '2l9r-cys-nef-consistency-log.json', type='file')
+        self.utility.addInput(name='entry_id', value='NEED_ACC_NO', type='param')
+        self.utility.setLog(self.data_dir_path + '2l9r-cys-nef2str-deposit-log.json')
+        self.utility.setDestination(self.data_dir_path + '2l9r-cys-next.nef')
+        self.utility.addOutput(name='nmr-star_file_path', value=self.data_dir_path + '2l9r-cys-nef2str.str', type='file')
+        self.utility.addOutput(name='report_file_path', value=self.data_dir_path + '2l9r-cys-nef2str-str-deposit-log.json', type='file')
+        self.utility.setVerbose(False)
+
+        self.utility.op('nmr-nef2str-deposit')
+
+    def test_nmr_nef2str_deposit_check_multi_cs_sf(self):
+        self.utility.setSource(self.data_dir_path + '2mtv.nef')
+        self.utility.addInput(name='coordinate_file_path', value=self.data_dir_path + '2mtv.cif', type='file')
+        self.utility.addInput(name='report_file_path', value=self.data_dir_path + '2mtv-nef-consistency-log.json', type='file')
+        self.utility.addInput(name='entry_id', value='NEED_ACC_NO', type='param')
+        self.utility.setLog(self.data_dir_path + '2mtv-nef2str-deposit-log.json')
+        self.utility.setDestination(self.data_dir_path + '2mtv-next.nef')
+        self.utility.addOutput(name='nmr-star_file_path', value=self.data_dir_path + '2mtv-nef2str.str', type='file')
+        self.utility.addOutput(name='report_file_path', value=self.data_dir_path + '2mtv-nef2str-str-deposit-log.json', type='file')
+        self.utility.setVerbose(False)
 
         self.utility.op('nmr-nef2str-deposit')
 
@@ -134,6 +156,7 @@ class TestNmrDpUtility(unittest.TestCase):
         self.utility.addInput(name='insert_entry_id_to_loops', value=True, type='param')
         self.utility.setLog(self.data_dir_path + '2l9r-str2str-deposit-log.json')
         self.utility.setDestination(self.data_dir_path + '2l9r-next.str')
+        self.utility.setVerbose(False)
 
         self.utility.op('nmr-str2str-deposit')
 
@@ -146,6 +169,7 @@ class TestNmrDpUtility(unittest.TestCase):
         self.utility.setDestination(self.data_dir_path + '2l9rnonstandard-next.nef')
         self.utility.addOutput(name='nmr-star_file_path', value=self.data_dir_path + '2l9rnonstandard-nef2str.str', type='file')
         self.utility.addOutput(name='report_file_path', value=self.data_dir_path + '2l9rnonstandard-nef2str-str-deposit-log.json', type='file')
+        self.utility.setVerbose(False)
 
         self.utility.op('nmr-nef2str-deposit')
 

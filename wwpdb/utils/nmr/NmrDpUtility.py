@@ -1,6 +1,6 @@
 ##
 # File: NmrDpUtility.py
-# Date: 19-Jul-2019
+# Date: 22-Jul-2019
 #
 # Updates:
 ##
@@ -264,7 +264,7 @@ class NmrDpUtility(object):
         self.dist_restraint_error = {'min_exclusive': 0.0, 'max_exclusive': 5.0}
 
         # allowed dihed range
-        self.dihed_restraint_range = {'min_exclusive': -200.0, 'max_exclusive': 200.0}
+        self.dihed_restraint_range = {'min_exclusive': -360.0, 'max_exclusive': 360.0}
         self.dihed_restraint_error = {'min_exclusive': 0.0, 'max_exclusive': 20.0}
 
         # allowed rdc range
@@ -481,7 +481,7 @@ class NmrDpUtility(object):
                                                                  'larger-than': ['upper_limit']}}
                                                       ],
                                    'dihed_restraint': [{'name': 'index', 'type': 'index-int', 'mandatory': True},
-                                                       {'name': 'restraint_id', 'type': 'index-int', 'mandatory': True},
+                                                       {'name': 'restraint_id', 'type': 'positive-int', 'mandatory': True},
                                                        {'name': 'restraint_combination_id', 'type': 'positive-int', 'mandatory': False,
                                                         'enforce-non-zero': True},
                                                        {'name': 'weight', 'type': 'range-float', 'mandatory': True,
@@ -522,7 +522,7 @@ class NmrDpUtility(object):
                                                        {'name': 'name', 'type': 'str', 'mandatory': False},
                                                     ],
                                    'rdc_restraint': [{'name': 'index', 'type': 'index-int', 'mandatory': True},
-                                                     {'name': 'restraint_id', 'type': 'index-int', 'mandatory': True},
+                                                     {'name': 'restraint_id', 'type': 'positive-int', 'mandatory': True},
                                                      {'name': 'restraint_combination_id', 'type': 'positive-int', 'mandatory': False,
                                                       'enforce-non-zero': True},
                                                      {'name': 'target_value', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
@@ -2576,11 +2576,11 @@ class NmrDpUtility(object):
 
         common_poly_seq = {}
 
-        for subtype in polymer_sequence_in_loop.keys():
-            list_len = len(polymer_sequence_in_loop[subtype])
+        for content_subtype in polymer_sequence_in_loop.keys():
+            list_len = len(polymer_sequence_in_loop[content_subtype])
 
             for list_id in range(list_len):
-                ps = polymer_sequence_in_loop[subtype][list_id]['polymer_sequence']
+                ps = polymer_sequence_in_loop[content_subtype][list_id]['polymer_sequence']
 
                 for s in ps:
                     chain_id = s['chain_id']
@@ -2588,11 +2588,11 @@ class NmrDpUtility(object):
                     if not chain_id in common_poly_seq:
                         common_poly_seq[chain_id] = set()
 
-        for subtype in polymer_sequence_in_loop.keys():
-            list_len = len(polymer_sequence_in_loop[subtype])
+        for content_subtype in polymer_sequence_in_loop.keys():
+            list_len = len(polymer_sequence_in_loop[content_subtype])
 
             for list_id in range(list_len):
-                ps = polymer_sequence_in_loop[subtype][list_id]['polymer_sequence']
+                ps = polymer_sequence_in_loop[content_subtype][list_id]['polymer_sequence']
 
                 chain_id = s['chain_id']
 
@@ -2727,23 +2727,21 @@ class NmrDpUtility(object):
         if polymer_sequence is None:
             return False
 
-        for s1 in polymer_sequence:
-            chain_id = s1['chain_id']
+        for content_subtype in polymer_sequence_in_loop.keys():
+            list_len = len(polymer_sequence_in_loop[content_subtype])
 
-            if type(chain_id) == int:
-                _chain_id = str(chain_id)
-            else:
-                _chain_id = chain_id
+            seq_align_set = []
 
-            for subtype in polymer_sequence_in_loop.keys():
-                list_len = len(polymer_sequence_in_loop[subtype])
+            for s1 in polymer_sequence:
+                chain_id = s1['chain_id']
 
-                has_seq_align = False
-
-                seq_align_set = []
+                if type(chain_id) == int:
+                    _chain_id = str(chain_id)
+                else:
+                    _chain_id = chain_id
 
                 for list_id in range(list_len):
-                    ps2 = polymer_sequence_in_loop[subtype][list_id]['polymer_sequence']
+                    ps2 = polymer_sequence_in_loop[content_subtype][list_id]['polymer_sequence']
 
                     for s2 in ps2:
 
@@ -2763,8 +2761,6 @@ class NmrDpUtility(object):
                         if length == 0:
                             continue
 
-                        has_seq_align = True
-
                         unmapped = 0
                         conflict = 0
                         for i in range(length):
@@ -2774,14 +2770,17 @@ class NmrDpUtility(object):
                             elif myPr[0] != myPr[1]:
                                 conflict += 1
 
+                        if length == unmapped + conflict:
+                            continue
+
                         ref_code = self.__get1LetterCodeSequence(s1['comp_id'])
                         test_code = self.__get1LetterCodeSequence(_s2['comp_id'])
                         mid_code = self.__getMiddleCode(ref_code, test_code)
                         ref_gauge_code = self.__getGaugeCode(s1['seq_id'])
                         test_gauge_code = self.__getGaugeCode(_s2['seq_id'])
 
-                        seq_align = {'list_id': polymer_sequence_in_loop[subtype][list_id]['list_id'],
-                                     'sf_framecode': polymer_sequence_in_loop[subtype][list_id]['sf_framecode'],
+                        seq_align = {'list_id': polymer_sequence_in_loop[content_subtype][list_id]['list_id'],
+                                     'sf_framecode': polymer_sequence_in_loop[content_subtype][list_id]['sf_framecode'],
                                      'chain_id': chain_id, 'length': length, 'conflict': conflict, 'unmapped': unmapped, 'sequence_coverage': float('{:.3f}'.format(float(length - (unmapped + conflict)) / float(length))),
                                      'ref_seq_id': s1['seq_id'],
                                      'ref_gauge_code': ref_gauge_code, 'ref_code': ref_code, 'mid_code': mid_code, 'test_code': test_code, 'test_gauge_code': test_gauge_code}
@@ -2790,10 +2789,10 @@ class NmrDpUtility(object):
 
                         for j in range(length):
                             if ref_code[j] == 'X' and test_code[j] == 'X':
-                                input_source.updateNonStandardResidueByExptlData(chain_id, s1['seq_id'][j], subtype)
+                                input_source.updateNonStandardResidueByExptlData(chain_id, s1['seq_id'][j], content_subtype)
 
-                if has_seq_align:
-                    self.report.sequence_alignment.setItemValue('nmr_poly_seq_vs_' + subtype, seq_align_set)
+            if len(seq_align_set) > 0:
+                self.report.sequence_alignment.setItemValue('nmr_poly_seq_vs_' + content_subtype, seq_align_set)
 
         return True
 
@@ -2844,7 +2843,10 @@ class NmrDpUtility(object):
         array = ''
 
         for i in range(len(ref_seq)):
-            array += '|' if ref_seq[i] == test_seq[i] else ' '
+            if i < len(test_seq):
+                array += '|' if ref_seq[i] == test_seq[i] else ' '
+            else:
+                array += ' '
 
         return array
 
@@ -2864,17 +2866,35 @@ class NmrDpUtility(object):
                 sid_txt = str(sid)
                 sid_txt_len = len(sid_txt)
 
-                if len(array) + sid_txt_len < sid_len:
-
-                    for j in range(sid_txt_len):
-                        array += sid_txt[j]
+                for j in range(sid_txt_len):
+                    array += sid_txt[j]
 
             if sid_txt_len > 0:
                 sid_txt_len -= 1
             else:
                 array += '-'
 
-        return array
+        chars = list(array)
+
+        for t in range(sid_len / 10):
+
+            offset = (t + 1) * 10 - 1
+
+            if chars[offset] != '-':
+                code = ''
+                sid_txt_len = 0
+                while chars[offset + sid_txt_len] != '-':
+                    code += chars[offset + sid_txt_len]
+                    chars[offset + sid_txt_len] = '-'
+                    sid_txt_len += 1
+
+                offset -= sid_txt_len - 1
+                for j in range(sid_txt_len):
+                    chars[offset + j] = code[j]
+
+        array = ''.join(chars)
+
+        return array[:sid_len]
 
     def __validateAtomNomenclature(self):
         """ Validate atom nomenclature using NEFTranslator and CCD.
@@ -4190,7 +4210,7 @@ class NmrDpUtility(object):
                                 if self.__csStat.hasEnoughStat(comp_id, polypeptide_like):
                                     tolerance = std_value
 
-                                    if value < min_value - tolerance or value > max_value + tolerance:
+                                    if (value < min_value - tolerance or value > max_value + tolerance) and abs(z_score) > 7.5:
 
                                         err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] %s %s is out of range (avg %s, std %s, min %s, max %s, Z_score %.2f).' %\
                                               (value_name, value, avg_value, std_value, min_value, max_value, z_score)
@@ -4237,7 +4257,7 @@ class NmrDpUtility(object):
                                 else:
                                     tolerance = std_value * 10.0
 
-                                    if value < min_value - tolerance or value > max_value + tolerance:
+                                    if (value < min_value - tolerance or value > max_value + tolerance) and abs(z_score) > 10.0:
 
                                         err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] %s %s is out of range (avg %s, std %s, min %s, max %s, Z_score %.2f).' %\
                                               (value_name, value, avg_value, std_value, min_value, max_value, z_score)
@@ -4309,7 +4329,7 @@ class NmrDpUtility(object):
                                 z_score = (value - avg_value) / std_value
                                 tolerance = std_value / 10.0
 
-                                if value < min_value - tolerance or value > max_value + tolerance:
+                                if (value < min_value - tolerance or value > max_value + tolerance) and abs(z_score) > 5.0:
 
                                     err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] %s %s is out of range (avg %s, std %s, min %s, max %s, Z_score %.2f).' %\
                                           (value_name, value, avg_value, std_value, min_value, max_value, z_score)
@@ -4986,7 +5006,7 @@ class NmrDpUtility(object):
 
                         idx_msg = "[Check row of %s %s] " % (index_tag, i[index_tag])
 
-                        err = "%sNon-magnetic susceptible spins appeared in RDC vector (chain_id_1 %s, seq_id_1 %s, comp_id_1 %s, atom_id_1 %s, chain_id_2 %s, seq_id_2 %s, comp_id_2 %s, atom_id_2)." %\
+                        err = "%sNon-magnetic susceptible spins appeared in RDC vector (chain_id_1 %s, seq_id_1 %s, comp_id_1 %s, atom_id_1 %s, chain_id_2 %s, seq_id_2 %s, comp_id_2 %s, atom_id_2 %s)." %\
                               (idx_msg, chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2)
 
                         self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
@@ -4999,7 +5019,7 @@ class NmrDpUtility(object):
 
                         idx_msg = "[Check row of %s %s] " % (index_tag, i[index_tag])
 
-                        err = "%sInvalid inter-chain RDC vector (chain_id_1 %s, seq_id_1 %s, comp_id_1 %s, atom_id_1 %s, chain_id_2 %s, seq_id_2 %s, comp_id_2 %s, atom_id_2) exists." %\
+                        err = "%sInvalid inter-chain RDC vector (chain_id_1 %s, seq_id_1 %s, comp_id_1 %s, atom_id_1 %s, chain_id_2 %s, seq_id_2 %s, comp_id_2 %s, atom_id_2 %s) exists." %\
                               (idx_msg, chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2)
 
                         self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
@@ -5012,7 +5032,7 @@ class NmrDpUtility(object):
 
                         idx_msg = "[Check row of %s %s] " % (index_tag, i[index_tag])
 
-                        err = "%sInvalid inter-residue RDC vector (chain_id_1 %s, seq_id_1 %s, comp_id_1 %s, atom_id_1 %s, chain_id_2 %s, seq_id_2 %s, comp_id_2 %s, atom_id_2) exists." %\
+                        err = "%sInvalid inter-residue RDC vector (chain_id_1 %s, seq_id_1 %s, comp_id_1 %s, atom_id_1 %s, chain_id_2 %s, seq_id_2 %s, comp_id_2 %s, atom_id_2 %s) exists." %\
                               (idx_msg, chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2)
 
                         self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
@@ -5028,7 +5048,7 @@ class NmrDpUtility(object):
                             pass
 
                         else:
-                            err = "%sInvalid inter-residue RDC vector (chain_id_1 %s, seq_id_1 %s, comp_id_1 %s, atom_id_1 %s, chain_id_2 %s, seq_id_2 %s, comp_id_2 %s, atom_id_2) exists." %\
+                            err = "%sInvalid inter-residue RDC vector (chain_id_1 %s, seq_id_1 %s, comp_id_1 %s, atom_id_1 %s, chain_id_2 %s, seq_id_2 %s, comp_id_2 %s, atom_id_2 %s) exists." %\
                                   (idx_msg, chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2)
 
                             self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
@@ -5041,7 +5061,7 @@ class NmrDpUtility(object):
 
                         idx_msg = "[Check row of %s %s] " % (index_tag, i[index_tag])
 
-                        err = "%sZero RDC vector (chain_id_1 %s, seq_id_1 %s, comp_id_1 %s, atom_id_1 %s, chain_id_2 %s, seq_id_2 %s, comp_id_2 %s, atom_id_2) exists." %\
+                        err = "%sZero RDC vector (chain_id_1 %s, seq_id_1 %s, comp_id_1 %s, atom_id_1 %s, chain_id_2 %s, seq_id_2 %s, comp_id_2 %s, atom_id_2 %s) exists." %\
                               (idx_msg, chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2)
 
                         self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
@@ -5064,7 +5084,7 @@ class NmrDpUtility(object):
 
                                 idx_msg = "[Check row of %s %s] " % (index_tag, i[index_tag])
 
-                                warn = "%sMultiple bonds' RDC vector (chain_id_1 %s, seq_id_1 %s, comp_id_1 %s, atom_id_1 %s, chain_id_2 %s, seq_id_2 %s, comp_id_2 %s, atom_id_2) exists." %\
+                                warn = "%sMultiple bonds' RDC vector (chain_id_1 %s, seq_id_1 %s, comp_id_1 %s, atom_id_1 %s, chain_id_2 %s, seq_id_2 %s, comp_id_2 %s, atom_id_2 %s) exists." %\
                                        (idx_msg, chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2)
 
                                 self.report.warning.appendDescription('remarkable_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
@@ -5190,133 +5210,133 @@ class NmrDpUtility(object):
                                     if self.__verbose:
                                         self.__lfh.write("+NmrDpUtility.__calculateStatsOfExptlData() ++ Warning  - %s\n" % warn)
 
-                        if content_subtype == 'chem_shift':
+                            if content_subtype == 'chem_shift':
 
-                            try:
+                                try:
 
-                                item_names = self.item_names_in_cs_loop[file_type]
+                                    item_names = self.item_names_in_cs_loop[file_type]
 
-                                anomalous_errs = self.report.error.getValueListWithSf('anomalous_data', file_name, sf_framecode, key='Z_score')
-                                suspicious_warns = self.report.warning.getValueListWithSf('suspicious_data', file_name, sf_framecode, key='Z_score')
-                                unusual_warns = self.report.warning.getValueListWithSf('unusual_data', file_name, sf_framecode, key='Z_score')
+                                    anomalous_errs = self.report.error.getValueListWithSf('anomalous_data', file_name, sf_framecode, key='Z_score')
+                                    suspicious_warns = self.report.warning.getValueListWithSf('suspicious_data', file_name, sf_framecode, key='Z_score')
+                                    unusual_warns = self.report.warning.getValueListWithSf('unusual_data', file_name, sf_framecode, key='Z_score')
 
-                                pattern = r'^' + item_names['value'] + r' ([+-]?([0-9]*[.])?[0-9]+) (.*) Z_score ([+-]?([0-9]*[.])?[0-9]+)\)\.$'
+                                    pattern = r'^' + item_names['value'] + r' ([+-]?([0-9]*[.])?[0-9]+) (.*) Z_score ([+-]?([0-9]*[.])?[0-9]+)\)\.$'
 
-                                p = re.compile(pattern)
+                                    p = re.compile(pattern)
 
-                                cs_ann = []
+                                    cs_ann = []
 
-                                if not anomalous_errs is None:
+                                    if not anomalous_errs is None:
 
-                                    for a_err in anomalous_errs:
-                                        ann = {}
-                                        ann['level'] = 'anomalous'
-                                        ann['chain_id'] = a_err['row_location'][item_names['chain_id']]
-                                        ann['seq_id'] = int(a_err['row_location'][item_names['seq_id']])
-                                        ann['comp_id'] = a_err['row_location'][item_names['comp_id']]
-                                        ann['atom_id'] = a_err['row_location'][item_names['atom_id']]
-                                        g = p.search(a_err['description']).groups()
-                                        ann['value'] = float(g[0])
-                                        ann['z_score'] = float(g[3])
+                                        for a_err in anomalous_errs:
+                                            ann = {}
+                                            ann['level'] = 'anomalous'
+                                            ann['chain_id'] = a_err['row_location'][item_names['chain_id']]
+                                            ann['seq_id'] = int(a_err['row_location'][item_names['seq_id']])
+                                            ann['comp_id'] = a_err['row_location'][item_names['comp_id']]
+                                            ann['atom_id'] = a_err['row_location'][item_names['atom_id']]
+                                            g = p.search(a_err['description']).groups()
+                                            ann['value'] = float(g[0])
+                                            ann['z_score'] = float(g[3])
 
-                                        comp_id = ann['comp_id']
-                                        atom_id = ann['atom_id'].split(' ')[0]
+                                            comp_id = ann['comp_id']
+                                            atom_id = ann['atom_id'].split(' ')[0]
 
-                                        polypeptide_like = self.__csStat.getTypeOfCompId(comp_id)[0]
+                                            polypeptide_like = self.__csStat.getTypeOfCompId(comp_id)[0]
 
-                                        if self.__csStat.hasEnoughStat(comp_id, polypeptide_like):
-                                            non_rep_methyl_pros = self.__csStat.getNonRepresentativeMethylProtons(comp_id, excl_minor_atom=True, primary=polypeptide_like)
+                                            if self.__csStat.hasEnoughStat(comp_id, polypeptide_like):
+                                                non_rep_methyl_pros = self.__csStat.getNonRepresentativeMethylProtons(comp_id, excl_minor_atom=True, primary=polypeptide_like)
 
-                                            if atom_id in non_rep_methyl_pros:
-                                                continue
+                                                if atom_id in non_rep_methyl_pros:
+                                                    continue
 
-                                        cs_ann.append(ann)
+                                            cs_ann.append(ann)
 
-                                if not suspicious_warns is None:
+                                    if not suspicious_warns is None:
 
-                                    for s_warn in suspicious_warns:
-                                        ann = {}
-                                        ann['level'] = 'suspicious'
-                                        ann['chain_id'] = s_warn['row_location'][item_names['chain_id']]
-                                        ann['seq_id'] = int(s_warn['row_location'][item_names['seq_id']])
-                                        ann['comp_id'] = s_warn['row_location'][item_names['comp_id']]
-                                        ann['atom_id'] = s_warn['row_location'][item_names['atom_id']]
-                                        g = p.search(s_warn['description']).groups()
-                                        ann['value'] = float(g[0])
-                                        ann['z_score'] = float(g[3])
+                                        for s_warn in suspicious_warns:
+                                            ann = {}
+                                            ann['level'] = 'suspicious'
+                                            ann['chain_id'] = s_warn['row_location'][item_names['chain_id']]
+                                            ann['seq_id'] = int(s_warn['row_location'][item_names['seq_id']])
+                                            ann['comp_id'] = s_warn['row_location'][item_names['comp_id']]
+                                            ann['atom_id'] = s_warn['row_location'][item_names['atom_id']]
+                                            g = p.search(s_warn['description']).groups()
+                                            ann['value'] = float(g[0])
+                                            ann['z_score'] = float(g[3])
 
-                                        comp_id = ann['comp_id']
-                                        atom_id = ann['atom_id'].split(' ')[0]
+                                            comp_id = ann['comp_id']
+                                            atom_id = ann['atom_id'].split(' ')[0]
 
-                                        polypeptide_like = self.__csStat.getTypeOfCompId(comp_id)[0]
+                                            polypeptide_like = self.__csStat.getTypeOfCompId(comp_id)[0]
 
-                                        if self.__csStat.hasEnoughStat(comp_id, polypeptide_like):
-                                            non_rep_methyl_pros = self.__csStat.getNonRepresentativeMethylProtons(comp_id, excl_minor_atom=True, primary=polypeptide_like)
+                                            if self.__csStat.hasEnoughStat(comp_id, polypeptide_like):
+                                                non_rep_methyl_pros = self.__csStat.getNonRepresentativeMethylProtons(comp_id, excl_minor_atom=True, primary=polypeptide_like)
 
-                                            if atom_id in non_rep_methyl_pros:
-                                                continue
+                                                if atom_id in non_rep_methyl_pros:
+                                                    continue
 
-                                        cs_ann.append(ann)
+                                            cs_ann.append(ann)
 
-                                if not unusual_warns is None:
+                                    if not unusual_warns is None:
 
-                                    for u_warn in unusual_warns:
-                                        ann = {}
-                                        ann['level'] = 'unusual'
-                                        ann['chain_id'] = u_warn['row_location'][item_names['chain_id']]
-                                        ann['seq_id'] = int(u_warn['row_location'][item_names['seq_id']])
-                                        ann['comp_id'] = u_warn['row_location'][item_names['comp_id']]
-                                        ann['atom_id'] = u_warn['row_location'][item_names['atom_id']]
-                                        g = p.search(u_warn['description']).groups()
-                                        ann['value'] = float(g[0])
-                                        ann['z_score'] = float(g[3])
+                                        for u_warn in unusual_warns:
+                                            ann = {}
+                                            ann['level'] = 'unusual'
+                                            ann['chain_id'] = u_warn['row_location'][item_names['chain_id']]
+                                            ann['seq_id'] = int(u_warn['row_location'][item_names['seq_id']])
+                                            ann['comp_id'] = u_warn['row_location'][item_names['comp_id']]
+                                            ann['atom_id'] = u_warn['row_location'][item_names['atom_id']]
+                                            g = p.search(u_warn['description']).groups()
+                                            ann['value'] = float(g[0])
+                                            ann['z_score'] = float(g[3])
 
-                                        comp_id = ann['comp_id']
-                                        atom_id = ann['atom_id'].split(' ')[0]
+                                            comp_id = ann['comp_id']
+                                            atom_id = ann['atom_id'].split(' ')[0]
 
-                                        polypeptide_like = self.__csStat.getTypeOfCompId(comp_id)[0]
+                                            polypeptide_like = self.__csStat.getTypeOfCompId(comp_id)[0]
 
-                                        if self.__csStat.hasEnoughStat(comp_id, polypeptide_like):
-                                            non_rep_methyl_pros = self.__csStat.getNonRepresentativeMethylProtons(comp_id, excl_minor_atom=True, primary=polypeptide_like)
+                                            if self.__csStat.hasEnoughStat(comp_id, polypeptide_like):
+                                                non_rep_methyl_pros = self.__csStat.getNonRepresentativeMethylProtons(comp_id, excl_minor_atom=True, primary=polypeptide_like)
 
-                                            if atom_id in non_rep_methyl_pros:
-                                                continue
+                                                if atom_id in non_rep_methyl_pros:
+                                                    continue
 
-                                        cs_ann.append(ann)
+                                            cs_ann.append(ann)
 
-                            except Exception as e:
+                                except Exception as e:
 
-                                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__calculateStatsOfExptlData() ++ Error  - %s" % str(e))
-                                self.report.setError()
+                                    self.report.error.appendDescription('internal_error', "+NmrDpUtility.__calculateStatsOfExptlData() ++ Error  - %s" % str(e))
+                                    self.report.setError()
 
-                                if self.__verbose:
-                                    self.__lfh.write("+NmrDpUtility.__calculateStatsOfExptlData() ++ Error  - %s" % str(e))
+                                    if self.__verbose:
+                                        self.__lfh.write("+NmrDpUtility.__calculateStatsOfExptlData() ++ Error  - %s" % str(e))
 
-                            self.__calculateStatsOfAssignedChemShift(sf_framecode, lp_data, cs_ann, ent)
+                                self.__calculateStatsOfAssignedChemShift(sf_framecode, lp_data, cs_ann, ent)
 
-                        elif content_subtype == 'dist_restraint':
-                            self.__calculateStatsOfDistanceRestraint(lp_data, ent)
+                            elif content_subtype == 'dist_restraint':
+                                self.__calculateStatsOfDistanceRestraint(lp_data, ent)
 
-                        elif content_subtype == 'dihed_restraint':
-                            self.__calculateStatsOfDihedralRestraint(lp_data, ent)
+                            elif content_subtype == 'dihed_restraint':
+                                self.__calculateStatsOfDihedralRestraint(lp_data, ent)
 
-                        elif content_subtype == 'rdc_restraint':
-                            self.__calculateStatsOfRdcRestraint(lp_data, ent)
+                            elif content_subtype == 'rdc_restraint':
+                                self.__calculateStatsOfRdcRestraint(lp_data, ent)
 
-                        elif content_subtype == 'spectral_peak':
+                            elif content_subtype == 'spectral_peak':
 
-                            try:
+                                try:
 
-                                _num_dim = sf_data.get_tag(self.num_dim_items[file_type])[0]
-                                num_dim = int(_num_dim)
+                                    _num_dim = sf_data.get_tag(self.num_dim_items[file_type])[0]
+                                    num_dim = int(_num_dim)
 
-                                if not num_dim in range(1, self.lim_num_dim):
-                                    raise ValueError()
+                                    if not num_dim in range(1, self.lim_num_dim):
+                                        raise ValueError()
 
-                            except ValueError: # raised error already at __testIndexConsistency()
-                                continue
+                                except ValueError: # raised error already at __testIndexConsistency()
+                                    continue
 
-                            self.__calculateStatsOfSpectralPeak(num_dim, lp_data, ent)
+                                self.__calculateStatsOfSpectralPeak(num_dim, lp_data, ent)
 
                     else:
 
@@ -5544,6 +5564,8 @@ class NmrDpUtility(object):
                             for c in all_c:
                                 if c['number_of_target_shifts'] > 0:
                                     c['completeness'] = float('{:.3f}'.format(float(c['number_of_assigned_shifts']) / float(c['number_of_target_shifts'])))
+                                else:
+                                    c['completeness'] = None
 
                             break
 
@@ -5669,6 +5691,8 @@ class NmrDpUtility(object):
                             for c in bb_c:
                                 if c['number_of_target_shifts'] > 0:
                                     c['completeness'] = float('{:.3f}'.format(float(c['number_of_assigned_shifts']) / float(c['number_of_target_shifts'])))
+                                else:
+                                    c['completeness'] = None
 
                             break
 
@@ -5792,6 +5816,8 @@ class NmrDpUtility(object):
                             for c in sc_c:
                                 if c['number_of_target_shifts'] > 0:
                                     c['completeness'] = float('{:.3f}'.format(float(c['number_of_assigned_shifts']) / float(c['number_of_target_shifts'])))
+                                else:
+                                    c['completeness'] = None
 
                             break
 
@@ -5892,6 +5918,8 @@ class NmrDpUtility(object):
                             for c in ch3_c:
                                 if c['number_of_target_shifts'] > 0:
                                     c['completeness'] = float('{:.3f}'.format(float(c['number_of_assigned_shifts']) / float(c['number_of_target_shifts'])))
+                                else:
+                                    c['completeness'] = None
 
                             break
 
@@ -6005,6 +6033,8 @@ class NmrDpUtility(object):
                             for c in aro_c:
                                 if c['number_of_target_shifts'] > 0:
                                     c['completeness'] = float('{:.3f}'.format(float(c['number_of_assigned_shifts']) / float(c['number_of_target_shifts'])))
+                                else:
+                                    c['completeness'] = None
 
                             break
 
@@ -6156,274 +6186,279 @@ class NmrDpUtility(object):
                 if has_value:
                     ent['histogram'] = {'range_of_values': range_of_vals, 'number_of_values': transposed, 'annotations': cs_ann}
 
-            # prediction of redox state of CYS
+            if 'sequence_coverage' in ent:
 
-            cys_redox_state = []
+                # prediction of redox state of CYS
 
-            for sc in ent['sequence_coverage']:
+                cys_redox_state = []
 
-                chain_id = sc['chain_id']
+                for sc in ent['sequence_coverage']:
 
-                for s in polymer_sequence:
+                    chain_id = sc['chain_id']
 
-                    if s['chain_id'] == chain_id:
+                    for s in polymer_sequence:
 
-                        for i in range(len(s['seq_id'])):
-                            seq_id = s['seq_id'][i]
-                            comp_id = s['comp_id'][i]
+                        if s['chain_id'] == chain_id:
 
-                            if comp_id != 'CYS':
-                                continue
+                            for i in range(len(s['seq_id'])):
+                                seq_id = s['seq_id'][i]
+                                comp_id = s['comp_id'][i]
 
-                            cys = {'chain_id': chain_id, 'seq_id': seq_id}
+                                if comp_id != 'CYS':
+                                    continue
 
-                            ca_chem_shift = None
-                            cb_chem_shift = None
+                                cys = {'chain_id': chain_id, 'seq_id': seq_id}
 
-                            for j in lp_data:
+                                ca_chem_shift = None
+                                cb_chem_shift = None
 
-                                _chain_id = j[chain_id_name]
-                                atom_id = j[atom_id_name]
+                                for j in lp_data:
 
-                                if type(_chain_id) is int:
-                                    __chain_id = str(_chain_id)
-                                else:
-                                    __chain_id = _chain_id
+                                    _chain_id = j[chain_id_name]
+                                    atom_id = j[atom_id_name]
 
-                                if __chain_id == chain_id and j[seq_id_name] == seq_id and j[comp_id_name] == comp_id:
-                                    if atom_id == 'CA':
-                                        ca_chem_shift = j[value_name]
-                                    elif atom_id == 'CB':
-                                        cb_chem_shift = j[value_name]
-
-                                if ca_chem_shift is None or cb_chem_shift is None:
-                                    if __chain_id == chain_id and j[seq_id_name] > seq_id:
-                                        break
-                                else:
-                                    break
-
-                            cys['ca_chem_shift'] = ca_chem_shift
-                            cys['cb_chem_shift'] = cb_chem_shift
-
-                            if not cb_chem_shift is None:
-                                if cb_chem_shift < 32.0:
-                                    cys['redox_state_pred'] = 'reduced'
-                                elif cb_chem_shift > 35.0:
-                                    cys['redox_state_pred'] = 'oxidized'
-                                else:
-                                    cys['redox_state_pred'] = 'ambiguous'
-                            else:
-                                cys['redox_state_pred'] = 'unknown'
-
-                            if cys['redox_state_pred'] == 'ambiguous':
-                                oxi, red = self.__predictRedoxStateOfCystein(ca_chem_shift, cb_chem_shift)
-                                cys['redox_state_pred'] = 'oxidized %s (%%), reduced %s (%%)' % ('{:.1f}'.format(oxi * 100.0), '{:.1f}'.format(red * 100.0))
-
-                            cys['in_disulfide_bond'] = False
-                            if not input_source_dic['disulfide_bond'] is None:
-                                try:
-                                    next(b for b in input_source_dic['disulfide_bond'] if (b['chain_id_1'] == chain_id and b['seq_id_1'] == seq_id) or (b['chain_id_2'] == chain_id and b['seq_id_2'] == seq_id))
-                                    cys['in_disulfide_bond'] = True
-                                except StopIteration:
-                                    pass
-
-                            cys['in_other_bond'] = False
-                            if not input_source_dic['other_bond'] is None:
-                                try:
-                                    next(b for b in input_source_dic['other_bond'] if (b['chain_id_1'] == chain_id and b['seq_id_1'] == seq_id) or (b['chain_id_2'] == chain_id and b['seq_id_2'] == seq_id))
-                                    cys['in_other_bond'] = True
-                                except StopIteration:
-                                    pass
-
-                            cys_redox_state.append(cys)
-
-                if len(cys_redox_state) > 0:
-                    ent['cys_redox_state'] = cys_redox_state
-
-            # prediction of cis-trans peptide of PRO
-
-            pro_cis_trans = []
-
-            for sc in ent['sequence_coverage']:
-
-                chain_id = sc['chain_id']
-
-                for s in polymer_sequence:
-
-                    if s['chain_id'] == chain_id:
-
-                        for i in range(len(s['seq_id'])):
-                            seq_id = s['seq_id'][i]
-                            comp_id = s['comp_id'][i]
-
-                            if comp_id != 'PRO':
-                                continue
-
-                            pro = {'chain_id': chain_id, 'seq_id': seq_id}
-
-                            cb_chem_shift = None
-                            cg_chem_shift = None
-
-                            for j in lp_data:
-
-                                _chain_id = j[chain_id_name]
-                                atom_id = j[atom_id_name]
-
-                                if type(_chain_id) is int:
-                                    __chain_id = str(_chain_id)
-                                else:
-                                    __chain_id = _chain_id
-
-                                if __chain_id == chain_id and j[seq_id_name] == seq_id and j[comp_id_name] == comp_id:
-                                    if atom_id == 'CB':
-                                        cb_chem_shift = j[value_name]
-                                    elif atom_id == 'CG':
-                                        cg_chem_shift = j[value_name]
-
-                                if cb_chem_shift is None or cg_chem_shift is None:
-                                    if __chain_id == chain_id and j[seq_id_name] > seq_id:
-                                        break
-                                else:
-                                    break
-
-                            pro['cb_chem_shift'] = cb_chem_shift
-                            pro['cg_chem_shift'] = cg_chem_shift
-
-                            if not cb_chem_shift is None and not cg_chem_shift is None:
-                                delta = cb_chem_shift - cg_chem_shift
-                                if delta < 4.8:
-                                    pro['cis_trans_pred'] = 'trans'
-                                elif delta > 9.15:
-                                    pro['cis_trans_pred'] = 'cis'
-                                else:
-                                    cis, trs = self.__predictCisTransPeptideOfProline(cb_chem_shift, cg_chem_shift)
-                                    pro['cis_trans_pred'] = 'cis %s (%%), trans %s (%%)' % ('{:.1f}'.format(cis * 100.0), '{:.1f}'.format(trs * 100.0))
-                            else:
-                                pro['cis_trans_pred'] = 'unknown'
-
-                            pro['in_cis_peptide_bond'] = self.__isProtCis(chain_id, seq_id)
-
-                            if (pro['in_cis_peptide_bond'] and pro['cis_trans_pred'] != 'cis') or (not pro['in_cis_peptide_bond'] and pro['cis_trans_pred'] != 'trans'):
-                                if ',' in pro['cic_trans_pred']:
-                                    if (pro['in_cis_peptide_bond'] and cis > trans) or\
-                                       (not pro['in_cis_peptide_bond'] and trans > cis):
-                                        pass
+                                    if type(_chain_id) is int:
+                                        __chain_id = str(_chain_id)
                                     else:
-                                        item = 'unusual_data'
-                                else:
-                                    item = 'suspicious_data'
+                                        __chain_id = _chain_id
 
-                                warn = "%s-peptide bond (chain_id %s seq_id %s comp_id %s) could not supported by assigned chemical shift values (CB %s, CG %s, cis_trans_pred %s)." %\
-                                       ('Cis' if pro['in_cis_pepdide_bond'] else 'Trans', chain_id, seq_id, comp_id, cb_chem_shift, cg_chem_shift, pro['cis_trans_pred'])
+                                    if __chain_id == chain_id and j[seq_id_name] == seq_id and j[comp_id_name] == comp_id:
+                                        if atom_id == 'CA':
+                                            ca_chem_shift = j[value_name]
+                                        elif atom_id == 'CB':
+                                            cb_chem_shift = j[value_name]
 
-                                self.report.warning.appendDescription(item, {'file_name': file_name, 'sf_framecode': sf_framecode, 'description': warn})
-                                self.report.setWarning()
-
-                                if self.__verbose:
-                                    self.__lfh.write("+NmrDpUtility.__calculateStatsOfAssignedChemShift() ++ Warning  - %s\n" % warn)
-
-                            pro_cis_trans.append(pro)
-
-                if len(pro_cis_trans) > 0:
-                    ent['pro_cis_trans'] = pro_cis_trans
-
-            # prediction of tautomeric state of HIS
-
-            his_tautomeric_state = []
-
-            for sc in ent['sequence_coverage']:
-
-                chain_id = sc['chain_id']
-
-                for s in polymer_sequence:
-
-                    if s['chain_id'] == chain_id:
-
-                        for i in range(len(s['seq_id'])):
-                            seq_id = s['seq_id'][i]
-                            comp_id = s['comp_id'][i]
-
-                            if comp_id != 'HIS':
-                                continue
-
-                            his = {'chain_id': chain_id, 'seq_id': seq_id}
-
-                            cg_chem_shift = None
-                            cd2_chem_shift = None
-                            nd1_chem_shift = None
-                            ne2_chem_shift = None
-
-                            for j in lp_data:
-
-                                _chain_id = j[chain_id_name]
-                                atom_id = j[atom_id_name]
-
-                                if type(_chain_id) is int:
-                                    __chain_id = str(_chain_id)
-                                else:
-                                    __chain_id = _chain_id
-
-                                if __chain_id == chain_id and j[seq_id_name] == seq_id and j[comp_id_name] == comp_id:
-                                    if atom_id == 'CG':
-                                        cg_chem_shift = j[value_name]
-                                    elif atom_id == 'CD2':
-                                        cd2_chem_shift = j[value_name]
-                                    elif atom_id == 'ND1':
-                                        nd1_chem_shift = j[value_name]
-                                    elif atom_id == 'NE2':
-                                        ne2_chem_shift = j[value_name]
-
-                                if cg_chem_shift is None or cd2_chem_shift is None or nd1_chem_shift is None or ne2_chem_shift is None:
-                                    if __chain_id == chain_id and j[seq_id_name] > seq_id:
+                                    if ca_chem_shift is None or cb_chem_shift is None:
+                                        if __chain_id == chain_id and j[seq_id_name] > seq_id:
+                                            break
+                                    else:
                                         break
+
+                                cys['ca_chem_shift'] = ca_chem_shift
+                                cys['cb_chem_shift'] = cb_chem_shift
+
+                                if not cb_chem_shift is None:
+                                    if cb_chem_shift < 32.0:
+                                        cys['redox_state_pred'] = 'reduced'
+                                    elif cb_chem_shift > 35.0:
+                                        cys['redox_state_pred'] = 'oxidized'
+                                    else:
+                                        cys['redox_state_pred'] = 'ambiguous'
                                 else:
-                                    break
+                                    cys['redox_state_pred'] = 'unknown'
 
-                            his['cg_chem_shift'] = cg_chem_shift
-                            his['cd2_chem_shift'] = cd2_chem_shift
-                            his['nd1_chem_shift'] = nd1_chem_shift
-                            his['ne2_chem_shift'] = ne2_chem_shift
+                                if cys['redox_state_pred'] == 'ambiguous':
+                                    oxi, red = self.__predictRedoxStateOfCystein(ca_chem_shift, cb_chem_shift)
+                                    cys['redox_state_pred'] = 'oxidized %s (%%), reduced %s (%%)' % ('{:.1f}'.format(oxi * 100.0), '{:.1f}'.format(red * 100.0))
 
-                            if not cg_chem_shift is None or not cd2_chem_shift is None or not nd1_chem_shift is None or not ne2_chem_shift is None:
-                                bip, tau, pi = self.__predictTautomerOfHistidine(cg_chem_shift, cd2_chem_shift, nd1_chem_shift, ne2_chem_shift)
-                                if tau < 0.001 and pi < 0.001:
-                                    his['tautomeric_state_pred'] = 'biprotonated'
-                                elif bip < 0.001 and pi < 0.001:
-                                    his['tautomeric_state_pred'] = 'tau-tautomer'
-                                elif bip < 0.001 and tau < 0.001:
-                                    his['tautomeric_statem_pred'] = 'pi-tautomer'
+                                cys['in_disulfide_bond'] = False
+                                if not input_source_dic['disulfide_bond'] is None:
+                                    try:
+                                        next(b for b in input_source_dic['disulfide_bond'] if (b['chain_id_1'] == chain_id and b['seq_id_1'] == seq_id) or (b['chain_id_2'] == chain_id and b['seq_id_2'] == seq_id))
+                                        cys['in_disulfide_bond'] = True
+                                    except StopIteration:
+                                        pass
+
+                                cys['in_other_bond'] = False
+                                if not input_source_dic['other_bond'] is None:
+                                    try:
+                                        next(b for b in input_source_dic['other_bond'] if (b['chain_id_1'] == chain_id and b['seq_id_1'] == seq_id) or (b['chain_id_2'] == chain_id and b['seq_id_2'] == seq_id))
+                                        cys['in_other_bond'] = True
+                                    except StopIteration:
+                                        pass
+
+                                cys_redox_state.append(cys)
+
+                    if len(cys_redox_state) > 0:
+                        ent['cys_redox_state'] = cys_redox_state
+
+                # prediction of cis-trans peptide of PRO
+
+                pro_cis_trans = []
+
+                for sc in ent['sequence_coverage']:
+
+                    chain_id = sc['chain_id']
+
+                    for s in polymer_sequence:
+
+                        if s['chain_id'] == chain_id:
+
+                            for i in range(len(s['seq_id'])):
+                                seq_id = s['seq_id'][i]
+                                comp_id = s['comp_id'][i]
+
+                                if comp_id != 'PRO':
+                                    continue
+
+                                pro = {'chain_id': chain_id, 'seq_id': seq_id}
+
+                                cb_chem_shift = None
+                                cg_chem_shift = None
+
+                                for j in lp_data:
+
+                                    _chain_id = j[chain_id_name]
+                                    atom_id = j[atom_id_name]
+
+                                    if type(_chain_id) is int:
+                                        __chain_id = str(_chain_id)
+                                    else:
+                                        __chain_id = _chain_id
+
+                                    if __chain_id == chain_id and j[seq_id_name] == seq_id and j[comp_id_name] == comp_id:
+                                        if atom_id == 'CB':
+                                            cb_chem_shift = j[value_name]
+                                        elif atom_id == 'CG':
+                                            cg_chem_shift = j[value_name]
+
+                                    if cb_chem_shift is None or cg_chem_shift is None:
+                                        if __chain_id == chain_id and j[seq_id_name] > seq_id:
+                                            break
+                                    else:
+                                        break
+
+                                pro['cb_chem_shift'] = cb_chem_shift
+                                pro['cg_chem_shift'] = cg_chem_shift
+
+                                if not cb_chem_shift is None and not cg_chem_shift is None:
+                                    delta = cb_chem_shift - cg_chem_shift
+                                    if delta < 4.8:
+                                        pro['cis_trans_pred'] = 'trans'
+                                    elif delta > 9.15:
+                                        pro['cis_trans_pred'] = 'cis'
+                                    else:
+                                        cis, trs = self.__predictCisTransPeptideOfProline(cb_chem_shift, cg_chem_shift)
+                                        pro['cis_trans_pred'] = 'cis %s (%%), trans %s (%%)' % ('{:.1f}'.format(cis * 100.0), '{:.1f}'.format(trs * 100.0))
                                 else:
-                                    his['tautomeric_state_pred'] = 'biprotonated %s (%%), tau-tautomer %s (%%), pi-tautomer %s (%%)' % ('{:.1f}'.format(bip * 100.0), '{:.1f}'.format(tau * 100.0), '{:.1f}'.format(pi * 100.0))
-                            else:
-                                his['tautomeric_state_pred'] = 'unknown'
+                                    pro['cis_trans_pred'] = 'unknown'
 
-                            his['tautomeric_state'] = self.__getTautomerOfHistidine(chain_id, seq_id)
+                                pro['in_cis_peptide_bond'] = self.__isProtCis(chain_id, seq_id)
 
-                            if his['tautomeric_state_pred'] != 'unknown':
-                                item = None
-                                if his['tautomeric_state_pred'] != his['tautomeric_state']:
-                                    if ',' in his['tautomeric_state_pred']:
-                                        if (his['tautomeric_state'] == 'biprotonated' and bip > tau and bip > pi) or\
-                                           (his['tautomeric_state'] == 'tau-tautomer' and tau > bip and tau > pi) or\
-                                           (his['tautomeric_state'] == 'pi-tautomer' and pi > bip and float(g[2]) > tau):
+                                if (pro['in_cis_peptide_bond'] and pro['cis_trans_pred'] != 'cis') or (not pro['in_cis_peptide_bond'] and pro['cis_trans_pred'] != 'trans'):
+                                    item = None
+                                    if ',' in pro['cis_trans_pred']:
+                                        if (pro['in_cis_peptide_bond'] and cis > trs) or\
+                                           (not pro['in_cis_peptide_bond'] and trs > cis):
                                             pass
                                         else:
                                             item = 'unusual_data'
                                     else:
                                         item = 'suspicious_data'
 
-                                if not item is None:
+                                    if not item is None:
 
-                                    warn = "Tautomeric state %s (chain_id %s seq_id %s comp_id %s) could not supported by assigned chemical shift values (CG %s, CD2 %s, ND1 %s, NE2 %s, tautomeric_state_pred %s)." %\
-                                           (his['tautomeric_state'], chain_id, seq_id, comp_id, cg_chem_shift, cd2_chem_shift, nd1_chem_shift, ne2_chem_shift, his['tautomeric_state_pred'])
+                                        warn = "%s-peptide bond (chain_id %s seq_id %s comp_id %s) could not supported by assigned chemical shift values (CB %s, CG %s, cis_trans_pred %s)." %\
+                                               ('Cis' if pro['in_cis_peptide_bond'] else 'Trans', chain_id, seq_id, comp_id, cb_chem_shift, cg_chem_shift, pro['cis_trans_pred'])
 
-                                    self.report.warning.appendDescription(item, {'file_name': file_name, 'sf_framecode': sf_framecode, 'description': warn})
-                                    self.report.setWarning()
+                                        self.report.warning.appendDescription(item, {'file_name': file_name, 'sf_framecode': sf_framecode, 'description': warn})
+                                        self.report.setWarning()
 
-                                    if self.__verbose:
-                                        self.__lfh.write("+NmrDpUtility.__calculateStatsOfAssignedChemShift() ++ Warning  - %s\n" % warn)
+                                        if self.__verbose:
+                                            self.__lfh.write("+NmrDpUtility.__calculateStatsOfAssignedChemShift() ++ Warning  - %s\n" % warn)
 
-                            his_tautomeric_state.append(his)
+                                pro_cis_trans.append(pro)
+
+                    if len(pro_cis_trans) > 0:
+                        ent['pro_cis_trans'] = pro_cis_trans
+
+                # prediction of tautomeric state of HIS
+
+                his_tautomeric_state = []
+
+                for sc in ent['sequence_coverage']:
+
+                    chain_id = sc['chain_id']
+
+                    for s in polymer_sequence:
+
+                        if s['chain_id'] == chain_id:
+
+                            for i in range(len(s['seq_id'])):
+                                seq_id = s['seq_id'][i]
+                                comp_id = s['comp_id'][i]
+
+                                if comp_id != 'HIS':
+                                    continue
+
+                                his = {'chain_id': chain_id, 'seq_id': seq_id}
+
+                                cg_chem_shift = None
+                                cd2_chem_shift = None
+                                nd1_chem_shift = None
+                                ne2_chem_shift = None
+
+                                for j in lp_data:
+
+                                    _chain_id = j[chain_id_name]
+                                    atom_id = j[atom_id_name]
+
+                                    if type(_chain_id) is int:
+                                        __chain_id = str(_chain_id)
+                                    else:
+                                        __chain_id = _chain_id
+
+                                    if __chain_id == chain_id and j[seq_id_name] == seq_id and j[comp_id_name] == comp_id:
+                                        if atom_id == 'CG':
+                                            cg_chem_shift = j[value_name]
+                                        elif atom_id == 'CD2':
+                                            cd2_chem_shift = j[value_name]
+                                        elif atom_id == 'ND1':
+                                            nd1_chem_shift = j[value_name]
+                                        elif atom_id == 'NE2':
+                                            ne2_chem_shift = j[value_name]
+
+                                    if cg_chem_shift is None or cd2_chem_shift is None or nd1_chem_shift is None or ne2_chem_shift is None:
+                                        if __chain_id == chain_id and j[seq_id_name] > seq_id:
+                                            break
+                                    else:
+                                        break
+
+                                his['cg_chem_shift'] = cg_chem_shift
+                                his['cd2_chem_shift'] = cd2_chem_shift
+                                his['nd1_chem_shift'] = nd1_chem_shift
+                                his['ne2_chem_shift'] = ne2_chem_shift
+
+                                if not cg_chem_shift is None or not cd2_chem_shift is None or not nd1_chem_shift is None or not ne2_chem_shift is None:
+                                    bip, tau, pi = self.__predictTautomerOfHistidine(cg_chem_shift, cd2_chem_shift, nd1_chem_shift, ne2_chem_shift)
+                                    if tau < 0.001 and pi < 0.001:
+                                        his['tautomeric_state_pred'] = 'biprotonated'
+                                    elif bip < 0.001 and pi < 0.001:
+                                        his['tautomeric_state_pred'] = 'tau-tautomer'
+                                    elif bip < 0.001 and tau < 0.001:
+                                        his['tautomeric_statem_pred'] = 'pi-tautomer'
+                                    else:
+                                        his['tautomeric_state_pred'] = 'biprotonated %s (%%), tau-tautomer %s (%%), pi-tautomer %s (%%)' % ('{:.1f}'.format(bip * 100.0), '{:.1f}'.format(tau * 100.0), '{:.1f}'.format(pi * 100.0))
+                                else:
+                                    his['tautomeric_state_pred'] = 'unknown'
+
+                                his['tautomeric_state'] = self.__getTautomerOfHistidine(chain_id, seq_id)
+
+                                if his['tautomeric_state_pred'] != 'unknown':
+                                    item = None
+                                    if his['tautomeric_state_pred'] != his['tautomeric_state']:
+                                        if ',' in his['tautomeric_state_pred']:
+                                            if (his['tautomeric_state'] == 'biprotonated' and bip > tau and bip > pi) or\
+                                               (his['tautomeric_state'] == 'tau-tautomer' and tau > bip and tau > pi) or\
+                                               (his['tautomeric_state'] == 'pi-tautomer' and pi > bip and float(g[2]) > tau):
+                                                pass
+                                            else:
+                                                item = 'unusual_data'
+                                        else:
+                                            item = 'suspicious_data'
+
+                                    if not item is None:
+
+                                        warn = "Tautomeric state %s (chain_id %s seq_id %s comp_id %s) could not supported by assigned chemical shift values (CG %s, CD2 %s, ND1 %s, NE2 %s, tautomeric_state_pred %s)." %\
+                                               (his['tautomeric_state'], chain_id, seq_id, comp_id, cg_chem_shift, cd2_chem_shift, nd1_chem_shift, ne2_chem_shift, his['tautomeric_state_pred'])
+
+                                        self.report.warning.appendDescription(item, {'file_name': file_name, 'sf_framecode': sf_framecode, 'description': warn})
+                                        self.report.setWarning()
+
+                                        if self.__verbose:
+                                            self.__lfh.write("+NmrDpUtility.__calculateStatsOfAssignedChemShift() ++ Warning  - %s\n" % warn)
+
+                                his_tautomeric_state.append(his)
 
                 if len(his_tautomeric_state) > 0:
                     ent['his_tautomeric_state'] = his_tautomeric_state
@@ -7001,13 +7036,38 @@ class NmrDpUtility(object):
 
                 target_value = float('{:.1f}'.format(target_value))
 
+                while target_value > 180.0:
+                    target_value -= 360.0
+                while target_value < -180.0:
+                    target_value += 360.0
+
                 if not i[lower_limit_name] is None and not i[upper_limit_name] is None:
                     lower_limit = i[lower_limit_name]
                     upper_limit = i[upper_limit_name]
 
+                    while lower_limit - target_value > 180.0:
+                        lower_limit -= 360.0
+                    while lower_limit - target_value < -180.0:
+                        lower_limit += 360.0
+
+                    while upper_limit - target_value > 180.0:
+                        upper_limit -= 360.0
+                    while upper_limit - target_value < -180.0:
+                        upper_limit += 360.0
+
                 elif not i[lower_linear_limit_name] is None and not i[upper_linear_limit_name] is None:
                     lower_limit = i[lower_linear_limit_name]
                     upper_limit = i[upper_linear_limit_name]
+
+                    while lower_limit - target_value > 180.0:
+                        lower_limit -= 360.0
+                    while lower_limit - target_value < -180.0:
+                        lower_limit += 360.0
+
+                    while upper_limit - target_value > 180.0:
+                        upper_limit -= 360.0
+                    while upper_limit - target_value < -180.0:
+                        upper_limit += 360.0
 
                 else:
                     lower_limit = None
@@ -7937,12 +7997,16 @@ class NmrDpUtility(object):
 
                     if self.__last_comp_id_test: # matches with comp_id in CCD
                         cc_name = self.__last_chem_comp_dict['_chem_comp.name']
-                        ent['chem_comp_name'].append(cc_name)
+                        cc_rel_status = self.__last_chem_comp_dict['_chem_comp.pdbx_release_status']
+                        if cc_rel_status == 'REL':
+                            ent['chem_comp_name'].append(cc_name)
+                        else:
+                            ent['chem_comp_name'].append('(Not available due to CCD status code %s)' % cc_rel_status)
 
                     else:
                         ent['chem_comp_name'].append(None)
 
-                        ent['exptl_data'].append({'coordinate': False})
+                    ent['exptl_data'].append({'coordinate': False})
 
             if has_non_std_comp_id:
                 asm.append(ent)
@@ -7978,33 +8042,31 @@ class NmrDpUtility(object):
 
             polymer_sequence_in_loop = input_source_dic['polymer_sequence_in_loop']
 
-            for s1 in polymer_sequence:
-                chain_id = s1['chain_id']
+            for content_subtype in polymer_sequence_in_loop.keys():
+                list_len = len(polymer_sequence_in_loop[content_subtype])
 
-                if type(chain_id) == int:
-                    _chain_id = str(chain_id)
-                else:
-                    _chain_id = chain_id
+                seq_align_set = []
 
-                for subtype in polymer_sequence_in_loop.keys():
-                    list_len = len(polymer_sequence_in_loop[subtype])
+                for s1 in polymer_sequence:
+                    chain_id = s1['chain_id']
 
-                    has_seq_align = False
-
-                    seq_align_set = []
+                    if type(chain_id) == int:
+                        _chain_id = str(chain_id)
+                    else:
+                        _chain_id = chain_id
 
                     for list_id in range(list_len):
-                        ps2 = polymer_sequence_in_loop[subtype][list_id]['polymer_sequence']
+                        ps2 = polymer_sequence_in_loop[content_subtype][list_id]['polymer_sequence']
 
                         for s2 in ps2:
 
                             if chain_id != s2['chain_id']:
                                 continue
 
-                            _s2 = self.__fillBlankedCompId(s1, s2)
+                            #_s2 = self.__fillBlankedCompId(s1, s2)
 
                             self.__pA.setReferenceSequence(s1['comp_id'], 'REF' + _chain_id)
-                            self.__pA.addTestSequence(_s2['comp_id'], _chain_id)
+                            self.__pA.addTestSequence(s2['comp_id'], _chain_id)
                             self.__pA.doAlign()
                             #self.__pA.prAlignmentConflicts(_chain_id)
                             myAlign = self.__pA.getAlignment(_chain_id)
@@ -8013,8 +8075,6 @@ class NmrDpUtility(object):
 
                             if length == 0:
                                 continue
-
-                            has_seq_align = True
 
                             unmapped = 0
                             conflict = 0
@@ -8025,21 +8085,24 @@ class NmrDpUtility(object):
                                 elif myPr[0] != myPr[1]:
                                     conflict += 1
 
+                            if length == unmapped + conflict:
+                                continue
+
                             ref_code = self.__get1LetterCodeSequence(s1['comp_id'])
-                            test_code = self.__get1LetterCodeSequence(_s2['comp_id'])
+                            test_code = self.__get1LetterCodeSequence(s2['comp_id'])
                             mid_code = self.__getMiddleCode(ref_code, test_code)
                             ref_gauge_code = self.__getGaugeCode(s1['seq_id'])
-                            test_gauge_code = self.__getGaugeCode(_s2['seq_id'])
+                            test_gauge_code = self.__getGaugeCode(s2['seq_id'])
 
-                            seq_align = {'list_id': polymer_sequence_in_loop[subtype][list_id]['list_id'],
+                            seq_align = {'list_id': polymer_sequence_in_loop[content_subtype][list_id]['list_id'],
                                          'chain_id': chain_id, 'length': length, 'conflict': conflict, 'unmapped': unmapped, 'sequence_coverage': float('{:.3f}'.format(float(length - (unmapped + conflict)) / float(length))),
                                          'ref_seq_id': s1['seq_id'],
                                          'ref_gauge_code': ref_gauge_code, 'ref_code': ref_code, 'mid_code': mid_code, 'test_code': test_code, 'test_gauge_code': test_gauge_code}
 
                             seq_align_set.append(seq_align)
 
-                    if has_seq_align:
-                        self.report.sequence_alignment.setItemValue('model_poly_seq_vs_' + subtype, seq_align_set)
+                if len(seq_align_set) > 0:
+                    self.report.sequence_alignment.setItemValue('model_poly_seq_vs_' + content_subtype, seq_align_set)
 
         # sequence alignment between model and NMR data
 
@@ -8062,6 +8125,8 @@ class NmrDpUtility(object):
 
         nmr_polymer_sequence = nmr_input_source_dic['polymer_sequence']
 
+        seq_align_set = []
+
         for s1 in polymer_sequence:
             chain_id = s1['chain_id']
 
@@ -8070,17 +8135,13 @@ class NmrDpUtility(object):
             else:
                 _chain_id = chain_id
 
-            has_seq_align = False
-
-            seq_align_set = []
-
             for s2 in nmr_polymer_sequence:
                 chain_id2 = s2['chain_id']
 
-                _s2 = self.__fillBlankedCompId(s1, s2)
+                #_s2 = self.__fillBlankedCompId(s1, s2)
 
                 self.__pA.setReferenceSequence(s1['comp_id'], 'REF' + _chain_id)
-                self.__pA.addTestSequence(_s2['comp_id'], _chain_id)
+                self.__pA.addTestSequence(s2['comp_id'], _chain_id)
                 self.__pA.doAlign()
                 #self.__pA.prAlignmentConflicts(_chain_id)
                 myAlign = self.__pA.getAlignment(_chain_id)
@@ -8089,8 +8150,6 @@ class NmrDpUtility(object):
 
                 if length == 0:
                     continue
-
-                has_seq_align = True
 
                 unmapped = 0
                 conflict = 0
@@ -8101,20 +8160,25 @@ class NmrDpUtility(object):
                     elif myPr[0] != myPr[1]:
                         conflict += 1
 
+                if length == unmapped + conflict:
+                    continue
+
                 ref_code = self.__get1LetterCodeSequence(s1['comp_id'])
-                test_code = self.__get1LetterCodeSequence(_s2['comp_id'])
+                test_code = self.__get1LetterCodeSequence(s2['comp_id'])
                 mid_code = self.__getMiddleCode(ref_code, test_code)
                 ref_gauge_code = self.__getGaugeCode(s1['seq_id'])
-                test_gauge_code = self.__getGaugeCode(_s2['seq_id'])
+                test_gauge_code = self.__getGaugeCode(s2['seq_id'])
 
                 seq_align = {'ref_chain_id': chain_id, 'test_chain_id': chain_id2, 'length': length, 'conflict': conflict, 'unmapped': unmapped, 'sequence_coverage': float('{:.3f}'.format(float(length - (unmapped + conflict)) / float(length))),
-                             'ref_seq_id': s1['seq_id'], 'test_seq_id': _s2['seq_id'],
+                             'ref_seq_id': s1['seq_id'], 'test_seq_id': s2['seq_id'],
                              'ref_gauge_code': ref_gauge_code, 'ref_code': ref_code, 'mid_code': mid_code, 'test_code': test_code, 'test_gauge_code': test_gauge_code}
 
                 seq_align_set.append(seq_align)
 
-            if has_seq_align:
-                self.report.sequence_alignment.setItemValue('model_poly_seq_vs_nmr_poly_seq', seq_align_set)
+        if len(seq_align_set) > 0:
+            self.report.sequence_alignment.setItemValue('model_poly_seq_vs_nmr_poly_seq', seq_align_set)
+
+        seq_align_set = []
 
         for s1 in nmr_polymer_sequence:
             chain_id = s1['chain_id']
@@ -8124,17 +8188,13 @@ class NmrDpUtility(object):
             else:
                 _chain_id = chain_id
 
-            has_seq_align = False
-
-            seq_align_set = []
-
             for s2 in polymer_sequence:
                 chain_id2 = s2['chain_id']
 
-                _s2 = self.__fillBlankedCompId(s1, s2)
+                #_s2 = self.__fillBlankedCompId(s1, s2)
 
                 self.__pA.setReferenceSequence(s1['comp_id'], 'REF' + _chain_id)
-                self.__pA.addTestSequence(_s2['comp_id'], _chain_id)
+                self.__pA.addTestSequence(s2['comp_id'], _chain_id)
                 self.__pA.doAlign()
                 #self.__pA.prAlignmentConflicts(_chain_id)
                 myAlign = self.__pA.getAlignment(_chain_id)
@@ -8143,8 +8203,6 @@ class NmrDpUtility(object):
 
                 if length == 0:
                     continue
-
-                has_seq_align = True
 
                 unmapped = 0
                 conflict = 0
@@ -8155,20 +8213,23 @@ class NmrDpUtility(object):
                     elif myPr[0] != myPr[1]:
                         conflict += 1
 
+                if length == unmapped + conflict:
+                    continue
+
                 ref_code = self.__get1LetterCodeSequence(s1['comp_id'])
-                test_code = self.__get1LetterCodeSequence(_s2['comp_id'])
+                test_code = self.__get1LetterCodeSequence(s2['comp_id'])
                 mid_code = self.__getMiddleCode(ref_code, test_code)
                 ref_gauge_code = self.__getGaugeCode(s1['seq_id'])
-                test_gauge_code = self.__getGaugeCode(_s2['seq_id'])
+                test_gauge_code = self.__getGaugeCode(s2['seq_id'])
 
                 seq_align = {'ref_chain_id': chain_id, 'test_chain_id': chain_id2, 'length': length, 'conflict': conflict, 'unmapped': unmapped, 'sequence_coverage': float('{:.3f}'.format(float(length - (unmapped + conflict)) / float(length))),
-                             'ref_seq_id': s1['seq_id'], 'test_seq_id': _s2['seq_id'],
+                             'ref_seq_id': s1['seq_id'], 'test_seq_id': s2['seq_id'],
                              'ref_gauge_code': ref_gauge_code, 'ref_code': ref_code, 'mid_code': mid_code, 'test_code': test_code, 'test_gauge_code': test_gauge_code}
 
                 seq_align_set.append(seq_align)
 
-            if has_seq_align:
-                self.report.sequence_alignment.setItemValue('nmr_poly_seq_vs_model_poly_seq', seq_align_set)
+        if len(seq_align_set) > 0:
+            self.report.sequence_alignment.setItemValue('nmr_poly_seq_vs_model_poly_seq', seq_align_set)
 
         return True
 
@@ -8235,7 +8296,7 @@ class NmrDpUtility(object):
             for s1 in cif_polymer_sequence:
                 chain_id = s1['chain_id']
 
-                cost = [0 * nmr_chains]
+                cost = [0 for i in range(nmr_chains)]
 
                 for s2 in nmr_polymer_sequence:
                     chain_id2 = s2['chain_id']
@@ -8271,10 +8332,10 @@ class NmrDpUtility(object):
                 s1 = next(s for s in cif_polymer_sequence if s['chain_id'] == chain_id)
                 s2 = next(s for s in nmr_polymer_sequence if s['chain_id'] == chain_id2)
 
-                _s2 = self.__fillBlankedCompId(s1, s2)
+                #_s2 = self.__fillBlankedCompId(s1, s2)
 
                 self.__pA.setReferenceSequence(s1['comp_id'], 'REF' + _chain_id)
-                self.__pA.addTestSequence(_s2['comp_id'], _chain_id)
+                self.__pA.addTestSequence(s2['comp_id'], _chain_id)
                 self.__pA.doAlign()
                 #self.__pA.prAlignmentConflicts(_chain_id)
                 myAlign = self.__pA.getAlignment(_chain_id)
@@ -8282,11 +8343,11 @@ class NmrDpUtility(object):
                 length = len(myAlign)
 
                 ref_code = self.__get1LetterCodeSequence(s1['comp_id'])
-                test_code = self.__get1LetterCodeSequence(_s2['comp_id'])
+                test_code = self.__get1LetterCodeSequence(s2['comp_id'])
 
                 for j in range(length):
                     if ref_code[j] == 'X' and test_code[j] == 'X':
-                        nmr_input_source.updateNonStandardResidueByExptlData(chain_id2, _s2['seq_id'][j], 'coordinate')
+                        nmr_input_source.updateNonStandardResidueByExptlData(chain_id2, s2['seq_id'][j], 'coordinate')
                         cif_input_source.updateNonStandardResidueByExptlData(chain_id, s1['seq_id'][j], 'coordinate')
 
                 if result['unmapped'] > 0 or result['conflict'] > 0:
@@ -8316,10 +8377,10 @@ class NmrDpUtility(object):
 
                         else:
                             conflict.append({'ref_seq_id': s1['seq_id'][i], 'ref_comp_id': cif_comp_id,
-                                             'test_seq_id': _s2['seq_id'][i], 'test_comp_id': nmr_comp_id})
+                                             'test_seq_id': s2['seq_id'][i], 'test_comp_id': nmr_comp_id})
 
                             err = "Sequence alignment error between %s (chain_id %s, seq_id %s, comp_id %s) and %s (chain_id %s, seq_id %s, comp_id %s)." %\
-                                  (cif_file_name, chain_id, s1['seq_id'][i], cif_comp_id, nmr_file_name, chain_id2, _s2['seq_id'][i], nmr_comp_id)
+                                  (cif_file_name, chain_id, s1['seq_id'][i], cif_comp_id, nmr_file_name, chain_id2, s2['seq_id'][i], nmr_comp_id)
 
                             self.report.error.appendDescription('sequence_mismatch', {'file_name': cif_file_name, 'description': err})
                             self.report.setError()
@@ -8345,7 +8406,7 @@ class NmrDpUtility(object):
             for s1 in nmr_polymer_sequence:
                 chain_id = s1['chain_id']
 
-                cost = [0 * cif_chains]
+                cost = [0 for i in range(cif_chains)]
 
                 for s2 in cif_polymer_sequence:
                     chain_id2 = s2['chain_id']
@@ -8386,10 +8447,10 @@ class NmrDpUtility(object):
                     s1 = next(s for s in nmr_polymer_sequence if s['chain_id'] == chain_id)
                     s2 = next(s for s in cif_polymer_sequence if s['chain_id'] == chain_id2)
 
-                    _s2 = self.__fillBlankedCompId(s1, s2)
+                    #_s2 = self.__fillBlankedCompId(s1, s2)
 
                     self.__pA.setReferenceSequence(s1['comp_id'], 'REF' + _chain_id)
-                    self.__pA.addTestSequence(_s2['comp_id'], _chain_id)
+                    self.__pA.addTestSequence(s2['comp_id'], _chain_id)
                     self.__pA.doAlign()
                     #self.__pA.prAlignmentConflicts(_chain_id)
                     myAlign = self.__pA.getAlignment(_chain_id)
@@ -8416,10 +8477,10 @@ class NmrDpUtility(object):
 
                         else:
                             conflict.append({'ref_seq_id': s1['seq_id'][i], 'ref_comp_id': nmr_comp_id,
-                                             'test_seq_id': _s2['seq_id'][i], 'test_comp_id': cif_comp_id})
+                                             'test_seq_id': s2['seq_id'][i], 'test_comp_id': cif_comp_id})
 
                             err = "Sequence alignment error between %s (chain_id %s, seq_id %s, comp_id %s) and %s (chain_id %s, seq_id %s, comp_id %s)." %\
-                                  (nmr_file_name, chain_id, s1['seq_id'][i], nmr_comp_id, cif_file_name, chain_id2, _s2['seq_id'][i], cif_comp_id)
+                                  (nmr_file_name, chain_id, s1['seq_id'][i], nmr_comp_id, cif_file_name, chain_id2, s2['seq_id'][i], cif_comp_id)
 
                             self.report.error.appendDescription('sequence_mismatch', {'file_name': nmr_file_name, 'description': err})
                             self.report.setError()
@@ -8625,6 +8686,9 @@ class NmrDpUtility(object):
                             atom_id = i[atom_id_names[j]]
 
                             if content_subtype == 'spectral_peak' and (chain_id in self.empty_value or seq_id in self.empty_value or comp_id in self.empty_value or atom_id in self.empty_value):
+                                continue
+
+                            if not str(chain_id) in nmr2ca:
                                 continue
 
                             ca = nmr2ca[str(chain_id)]
@@ -9025,7 +9089,8 @@ class NmrDpUtility(object):
                     auth_seq_id = s['seq_id'][j]
                     auth_comp_id = s['comp_id'][j]
 
-                    seq_id = auth_seq_id + seq_id_offset
+                    seq_id = auth_seq_id #+ seq_id_offset
+                    _seq_id_ = auth_seq_id + seq_id_offset
                     comp_id = auth_comp_id.upper()
 
                     if file_type == 'nef':
@@ -9036,13 +9101,13 @@ class NmrDpUtility(object):
 
                         # linking
 
-                        if cyclic and (seq_id == 1 or seq_id == length):
+                        if cyclic and (_seq_id_ == 1 or _seq_id_ == length):
                             row.append('cyclic')
-                        elif seq_id == 1 and length == 1:
+                        elif _seq_id_ == 1 and length == 1:
                             row.append('single')
-                        elif seq_id == 1:
+                        elif _seq_id_ == 1:
                             row.append('start')
-                        elif seq_id == length:
+                        elif _seq_id_ == length:
                             row.append('end')
                         elif auth_seq_id - 1 == s['seq_id'][j - 1] and auth_seq_id + 1 == s['seq_id'][j + 1]:
                             row.append('middle')

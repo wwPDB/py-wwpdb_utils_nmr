@@ -6331,6 +6331,7 @@ class NmrDpUtility(object):
 
                             his = {'chain_id': chain_id, 'seq_id': seq_id}
 
+                            cg_chem_shift = None
                             cd2_chem_shift = None
                             nd1_chem_shift = None
                             nd2_chem_shift = None
@@ -6346,25 +6347,28 @@ class NmrDpUtility(object):
                                     __chain_id = _chain_id
 
                                 if __chain_id == chain_id and j[seq_id_name] == seq_id and j[comp_id_name] == comp_id:
-                                    if atom_id == 'CD2':
+                                    if atom_id == 'CG':
+                                        cg_chem_shift = j[value_name]
+                                    elif atom_id == 'CD2':
                                         cd2_chem_shift = j[value_name]
                                     elif atom_id == 'ND1':
                                         nd1_chem_shift = j[value_name]
                                     elif atom_id == 'ND2':
                                         nd2_chem_shift = j[value_name]
 
-                                if cd2_chem_shift is None or nd1_chem_shift is None or nd2_chem_shift is None:
+                                if cg_chem_shift is None or cd2_chem_shift is None or nd1_chem_shift is None or nd2_chem_shift is None:
                                     if __chain_id == chain_id and j[seq_id_name] > seq_id:
                                         break
                                 else:
                                     break
 
+                            his['cg_chem_shift'] = cg_chem_shift
                             his['cd2_chem_shift'] = cd2_chem_shift
                             his['nd1_chem_shift'] = nd1_chem_shift
                             his['nd2_chem_shift'] = nd2_chem_shift
 
-                            if not cd2_chem_shift is None or not nd1_chem_shift is None or not nd2_chem_shift is None:
-                                bip, tau, pi = self.__predictTautomerOfHistidine(cd2_chem_shift, nd1_chem_shift, nd2_chem_shift)
+                            if not cg_chem_shift is None or not cd2_chem_shift is None or not nd1_chem_shift is None or not nd2_chem_shift is None:
+                                bip, tau, pi = self.__predictTautomerOfHistidine(cg_chem_shift, cd2_chem_shift, nd1_chem_shift, nd2_chem_shift)
                                 if tau < 0.001 and pi < 0.001:
                                     his['tautomeric_state_pred'] = 'biprotonated'
                                 elif bip < 0.001 and pi < 0.001:
@@ -6375,6 +6379,8 @@ class NmrDpUtility(object):
                                     his['tautomeric_state_pred'] = 'biprotonated %s (%%), tau-tautomer %s (%%), pi-tautomer %s (%%)' % ('{:.1f}'.format(bip * 100.0), '{:.1f}'.format(tau * 100.0), '{:.1f}'.format(pi * 100.0))
                             else:
                                 his['tautomeric_state_pred'] = 'unknown'
+
+                            his['tautomeric_state'] = self.__getTautomerOfHistidine(chain_id, seq_id)
 
                             his_tautomeric_state.append(his)
 
@@ -9319,6 +9325,100 @@ class NmrDpUtility(object):
 
         return False
 
+    def __getTautomerOfHistidine(self, nmr_chain_id, nmr_seq_id):
+        """ Return type of tautomerism of a given histidine based on coordinate annotation.
+            @return: One of 'biprotonated', 'tau-tautomer', 'pi-tautomer', 'unknown'
+        """
+
+        id = self.report.getInputSourceIdOfCoord()
+
+        if id < 0:
+            return 'unknown'
+
+        cif_input_source = self.report.input_sources[id]
+        cif_input_source_dic = cif_input_source.get()
+
+        cif_polymer_sequence = cif_input_source_dic['polymer_sequence']
+
+        seq_align_dic = self.report.sequence_alignment.get()
+        chain_assign_dic = self.report.chain_assignment.get()
+
+        if not 'nmr_poly_seq_vs_model_poly_seq' in chain_assign_dic:
+
+            err = "Chain assignment did not exist, __assignCoordPolymerSequence() should be invoked."
+
+            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__getTautomerOfHistidine() ++ Error  - %s" % err)
+            self.report.setError()
+
+            if self.__verbose:
+                self.__lfh.write("+NmrDpUtility.__getTautomerOfHistidine() ++ Error  - %s\n" % err)
+
+            return 'unknown'
+
+        if chain_assign_dic['nmr_poly_seq_vs_model_poly_seq'] is None:
+            return 'unknown'
+
+        for chain_assign in chain_assign_dic['nmr_poly_seq_vs_model_poly_seq']:
+
+            if chain_assign['ref_chain_id'] != nmr_chain_id:
+                continue
+
+            cif_chain_id = chain_assign['test_chain_id']
+
+            result = next((seq_align for seq_align in seq_align_dic['nmr_poly_seq_vs_model_poly_seq'] if seq_align['ref_chain_id'] == nmr_chain_id and seq_align['test_chain_id'] == cif_chain_id), None)
+
+            if not result is None:
+
+                cif_seq_id = None
+                for k in range(result['length']):
+                    if result['ref_seq_id'][k] == nmr_seq_id and result['ref_code'][k] == 'H':
+                        cif_seq_id = result['test_seq_id'][k]
+                        break
+
+                if cif_seq_id is None:
+                    continue
+
+                try:
+
+                    protons = self.__cR.getDictListWithFilter('atom_site',
+                                                    [{'name': 'label_atom_id', 'type': 'str', 'alt_name': 'atom_id'}
+                                                     ],
+                                                    [{'name': 'label_asym_id', 'type': 'str', 'value': cif_chain_id},
+                                                     {'name': 'label_seq_id', 'type': 'int', 'value': cif_seq_id},
+                                                     {'name': 'label_comp_id', 'type': 'str', 'value': 'HIS'},
+                                                     {'name': 'type_symbol', 'type': 'str', 'value': 'H'},
+                                                     {'name': 'pdbx_PDB_model_num', 'type': 'int', 'value': 1}])
+
+                except Exception as e:
+
+                    self.report.error.appendDescription('internal_error', "+NmrDpUtility.__getTautomerOfHistidine() ++ Error  - %s" % str(e))
+                    self.report.setError()
+
+                    if self.__verbose:
+                        self.__lfh.write("+NmrDpUtility.__getTautomerOfHistidine() ++ Error  - %s" % str(e))
+
+                    return 'unknown'
+
+                if len(protons) > 0:
+
+                    has_hd1 = False
+                    has_he2 = False
+
+                    for h in protons:
+                        if h['atom_id'] == 'HD1':
+                            has_hd1 = True
+                        elif h['atom_id'] == 'HE2':
+                            has_he2 = True
+
+                    if has_hd1 and has_he2:
+                        return 'biprotonated'
+                    elif has_hd1:
+                        return 'tau-tautomer'
+                    elif has_he2:
+                        return 'pi-tautomer'
+
+        return 'unknown'
+
     def __extractCoordDisulfideBond(self):
         """ Extract disulfide bond of coordinate file.
         """
@@ -10157,26 +10257,34 @@ class NmrDpUtility(object):
 
         return cis / sum, trs / sum
 
-    def __predictTautomerOfHistidine(self, cd2_chem_shift, nd1_chem_shift, nd2_chem_shift):
-        """ Return prediction of tautomeric state of Histidine using assigned CD2, ND1, and ND2 chemical shifts.
+    def __predictTautomerOfHistidine(self, cg_chem_shift, cd2_chem_shift, nd1_chem_shift, nd2_chem_shift):
+        """ Return prediction of tautomeric state of Histidine using assigned CG, CD2, ND1, and ND2 chemical shifts.
             @return: probability of biprotonated, probability of tau tautomer, probability of pi tautomer
         """
 
-        bip_cd2 = {'avr': 119.4, 'std': 1.3}
+        bip_cg = {'avr': 131.2, 'std': 0.7}
+        bip_cd2 = {'avr': 120.6, 'std': 1.3}
         bip_nd1 = {'avr': 190.0, 'std': 1.9}
         bip_nd2 = {'avr': 176.3, 'std': 1.9}
 
-        tau_cd2 = {'avr': 113.6, 'std': 1.3}
+        tau_cg = {'avr': 135.7, 'std': 2.2}
+        tau_cd2 = {'avr': 116.9, 'std': 2.1}
         tau_nd1 = {'avr': 249.4, 'std': 1.9}
         tau_nd2 = {'avr': 171.1, 'std': 1.9}
 
-        pi_cd2 = {'avr': 125.4, 'std': 1.3}
+        pi_cg = {'avr': 125.7, 'std': 2.2}
+        pi_cd2 = {'avr': 125.6, 'std': 2.1}
         pi_nd1 = {'avr': 171.8, 'std': 1.9}
         pi_nd2 = {'avr': 248.2, 'std': 1.9}
 
         bip = 1.0
         tau = 1.0
         pi = 1.0
+
+        if not cg_chem_shift is None:
+            bip *= self.__probabilityDensity(cg_chem_shift, bip_cg['avr'], bip_cg['std'])
+            tau *= self.__probabilityDensity(cg_chem_shift, tau_cg['avr'], tau_cg['std'])
+            pi *= self.__probabilityDensity(cg_chem_shift, pi_cg['avr'], pi_cg['std'])
 
         if not cd2_chem_shift is None:
             bip *= self.__probabilityDensity(cd2_chem_shift, bip_cd2['avr'], bip_cd2['std'])

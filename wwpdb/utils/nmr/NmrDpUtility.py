@@ -6296,17 +6296,22 @@ class NmrDpUtility(object):
                                 elif delta > 9.15:
                                     pro['cis_trans_pred'] = 'cis'
                                 else:
-                                    pro['cis_trans_pred'] = 'ambiguous'
+                                    cis, trs = self.__predictCisTransPeptideOfProline(cb_chem_shift, cg_chem_shift)
+                                    pro['cis_trans_pred'] = 'cis %s (%%), trans %s (%%)' % ('{:.1f}'.format(cis * 100.0), '{:.1f}'.format(trs * 100.0))
                             else:
                                 pro['cis_trans_pred'] = 'unknown'
-
-                            if pro['cis_trans_pred'] == 'ambiguous':
-                                cis, trs = self.__predictCisTransPeptideOfProline(cb_chem_shift, cg_chem_shift)
-                                pro['cis_trans_pred'] = 'cis %s (%%), trans %s (%%)' % ('{:.1f}'.format(cis * 100.0), '{:.1f}'.format(trs * 100.0))
 
                             pro['in_cis_peptide_bond'] = self.__isProtCis(chain_id, seq_id)
 
                             if (pro['in_cis_peptide_bond'] and pro['cis_trans_pred'] != 'cis') or (not pro['in_cis_peptide_bond'] and pro['cis_trans_pred'] != 'trans'):
+                                if ',' in pro['cic_trans_pred']:
+                                    if (pro['in_cis_peptide_bond'] and cis > trans) or\
+                                       (not pro['in_cis_peptide_bond'] and trans > cis):
+                                        pass
+                                    else:
+                                        item = 'unusual_data'
+                                else:
+                                    item = 'suspicious_data'
 
                                 warn = "%s-peptide bond (chain_id %s seq_id %s comp_id %s) could not supported by assigned chemical shift values (CB %s, CG %s, cis_trans_pred %s)." %\
                                        ('Cis' if pro['in_cis_pepdide_bond'] else 'Trans', chain_id, seq_id, comp_id, cb_chem_shift, cg_chem_shift, pro['cis_trans_pred'])
@@ -6395,7 +6400,7 @@ class NmrDpUtility(object):
                             his['tautomeric_state'] = self.__getTautomerOfHistidine(chain_id, seq_id)
 
                             if his['tautomeric_state_pred'] != 'unknown':
-                                consistent = True
+                                item = None
                                 if his['tautomeric_state_pred'] != his['tautomeric_state']:
                                     if ',' in his['tautomeric_state_pred']:
                                         if (his['tautomeric_state'] == 'biprotonated' and bip > tau and bip > pi) or\
@@ -6403,11 +6408,11 @@ class NmrDpUtility(object):
                                            (his['tautomeric_state'] == 'pi-tautomer' and pi > bip and float(g[2]) > tau):
                                             pass
                                         else:
-                                            consistent = False
+                                            item = 'unusual_data'
                                     else:
-                                        consistent = False
+                                        item = 'suspicious_data'
 
-                                if not consistent:
+                                if not item is None:
 
                                     warn = "Tautomeric state %s (chain_id %s seq_id %s comp_id %s) could not supported by assigned chemical shift values (CG %s, CD2 %s, ND1 %s, NE2 %s, tautomeric_state_pred %s)." %\
                                            (his['tautomeric_state'], chain_id, seq_id, comp_id, cg_chem_shift, cd2_chem_shift, nd1_chem_shift, ne2_chem_shift, his['tautomeric_state_pred'])

@@ -5292,7 +5292,7 @@ class NmrDpUtility(object):
                                 if self.__verbose:
                                     self.__lfh.write("+NmrDpUtility.__calculateStatsOfExptlData() ++ Error  - %s" % str(e))
 
-                            self.__calculateStatsOfAssignedChemShift(lp_data, cs_ann, ent)
+                            self.__calculateStatsOfAssignedChemShift(sf_framecode, lp_data, cs_ann, ent)
 
                         elif content_subtype == 'dist_restraint':
                             self.__calculateStatsOfDistanceRestraint(lp_data, ent)
@@ -5357,13 +5357,14 @@ class NmrDpUtility(object):
 
         return self.report.getTotalErrors() == __errors
 
-    def __calculateStatsOfAssignedChemShift(self, lp_data, cs_ann, ent):
+    def __calculateStatsOfAssignedChemShift(self, sf_framecode, lp_data, cs_ann, ent):
         """ Calculate statistics of assigned chemical shifts.
         """
 
         input_source = self.report.input_sources[0]
         input_source_dic = input_source.get()
 
+        file_name = input_source_dic['file_name']
         file_type = input_source_dic['file_type']
 
         item_names = self.item_names_in_cs_loop[file_type]
@@ -6305,12 +6306,23 @@ class NmrDpUtility(object):
 
                             pro['in_cis_peptide_bond'] = self.__isProtCis(chain_id, seq_id)
 
+                            if (pro['in_cis_peptide_bond'] and pro['cis_trans_pred'] != 'cis') or (not pro['in_cis_peptide_bond'] and pro['cis_trans_pred'] != 'trans'):
+
+                                warn = "%s-peptide bond (chain_id %s seq_id %s comp_id %s) could not supported by assigned chemical shift values (CB %s, CG %s, cis_trans_pred %s)." %\
+                                       ('Cis' if pro['in_cis_pepdide_bond'] else 'Trans', chain_id, seq_id, comp_id, cb_chem_shift, cg_chem_shift, pro['cis_trans_pred'])
+
+                                self.report.warning.appendDescription(item, {'file_name': file_name, 'sf_framecode': sf_framecode, 'description': warn})
+                                self.report.setWarning()
+
+                                if self.__verbose:
+                                    self.__lfh.write("+NmrDpUtility.__calculateStatsOfAssignedChemShift() ++ Warning  - %s\n" % warn)
+
                             pro_cis_trans.append(pro)
 
                 if len(pro_cis_trans) > 0:
                     ent['pro_cis_trans'] = pro_cis_trans
 
-            # prediction of tautomeric state of PRO
+            # prediction of tautomeric state of HIS
 
             his_tautomeric_state = []
 
@@ -6334,7 +6346,7 @@ class NmrDpUtility(object):
                             cg_chem_shift = None
                             cd2_chem_shift = None
                             nd1_chem_shift = None
-                            nd2_chem_shift = None
+                            ne2_chem_shift = None
 
                             for j in lp_data:
 
@@ -6353,10 +6365,10 @@ class NmrDpUtility(object):
                                         cd2_chem_shift = j[value_name]
                                     elif atom_id == 'ND1':
                                         nd1_chem_shift = j[value_name]
-                                    elif atom_id == 'ND2':
-                                        nd2_chem_shift = j[value_name]
+                                    elif atom_id == 'NE2':
+                                        ne2_chem_shift = j[value_name]
 
-                                if cg_chem_shift is None or cd2_chem_shift is None or nd1_chem_shift is None or nd2_chem_shift is None:
+                                if cg_chem_shift is None or cd2_chem_shift is None or nd1_chem_shift is None or ne2_chem_shift is None:
                                     if __chain_id == chain_id and j[seq_id_name] > seq_id:
                                         break
                                 else:
@@ -6365,10 +6377,10 @@ class NmrDpUtility(object):
                             his['cg_chem_shift'] = cg_chem_shift
                             his['cd2_chem_shift'] = cd2_chem_shift
                             his['nd1_chem_shift'] = nd1_chem_shift
-                            his['nd2_chem_shift'] = nd2_chem_shift
+                            his['ne2_chem_shift'] = ne2_chem_shift
 
-                            if not cg_chem_shift is None or not cd2_chem_shift is None or not nd1_chem_shift is None or not nd2_chem_shift is None:
-                                bip, tau, pi = self.__predictTautomerOfHistidine(cg_chem_shift, cd2_chem_shift, nd1_chem_shift, nd2_chem_shift)
+                            if not cg_chem_shift is None or not cd2_chem_shift is None or not nd1_chem_shift is None or not ne2_chem_shift is None:
+                                bip, tau, pi = self.__predictTautomerOfHistidine(cg_chem_shift, cd2_chem_shift, nd1_chem_shift, ne2_chem_shift)
                                 if tau < 0.001 and pi < 0.001:
                                     his['tautomeric_state_pred'] = 'biprotonated'
                                 elif bip < 0.001 and pi < 0.001:
@@ -6381,6 +6393,30 @@ class NmrDpUtility(object):
                                 his['tautomeric_state_pred'] = 'unknown'
 
                             his['tautomeric_state'] = self.__getTautomerOfHistidine(chain_id, seq_id)
+
+                            if his['tautomeric_state_pred'] != 'unknown':
+                                consistent = True
+                                if his['tautomeric_state_pred'] != his['tautomeric_state']:
+                                    if ',' in his['tautomeric_state_pred']:
+                                        if (his['tautomeric_state'] == 'biprotonated' and bip > tau and bip > pi) or\
+                                           (his['tautomeric_state'] == 'tau-tautomer' and tau > bip and tau > pi) or\
+                                           (his['tautomeric_state'] == 'pi-tautomer' and pi > bip and float(g[2]) > tau):
+                                            pass
+                                        else:
+                                            consistent = False
+                                    else:
+                                        consistent = False
+
+                                if not consistent:
+
+                                    warn = "Tautomeric state %s (chain_id %s seq_id %s comp_id %s) could not supported by assigned chemical shift values (CG %s, CD2 %s, ND1 %s, NE2 %s, tautomeric_state_pred %s)." %\
+                                           (his['tautomeric_state'], chain_id, seq_id, comp_id, cg_chem_shift, cd2_chem_shift, nd1_chem_shift, ne2_chem_shift, his['tautomeric_state_pred'])
+
+                                    self.report.warning.appendDescription(item, {'file_name': file_name, 'sf_framecode': sf_framecode, 'description': warn})
+                                    self.report.setWarning()
+
+                                    if self.__verbose:
+                                        self.__lfh.write("+NmrDpUtility.__calculateStatsOfAssignedChemShift() ++ Warning  - %s\n" % warn)
 
                             his_tautomeric_state.append(his)
 
@@ -9326,7 +9362,7 @@ class NmrDpUtility(object):
         return False
 
     def __getTautomerOfHistidine(self, nmr_chain_id, nmr_seq_id):
-        """ Return type of tautomerism of a given histidine based on coordinate annotation.
+        """ Return tautomeric state of a given histidine based on coordinate annotation.
             @return: One of 'biprotonated', 'tau-tautomer', 'pi-tautomer', 'unknown'
         """
 
@@ -9748,7 +9784,7 @@ class NmrDpUtility(object):
                 else:
                     disulf['redox_state_pred_2'] = 'ambiguous'
             else:
-                disulf['refox_state_pred_2'] = 'unknown'
+                disulf['redox_state_pred_2'] = 'unknown'
 
             if disulf['redox_state_pred_1'] == 'ambiguous' and (not ca_chem_shift_1 is None or not cb_chem_shift_1 is None):
                 oxi, red = self.__predictRedoxStateOfCystein(ca_chem_shift_1, cb_chem_shift_1)
@@ -9758,7 +9794,7 @@ class NmrDpUtility(object):
                 oxi, red = self.__predictRedoxStateOfCystein(ca_chem_shift_2, cb_chem_shift_2)
                 disulf['redox_state_pred_2'] = 'oxidized %s (%%), reduced %s (%%)' % ('{:.1f}'.format(oxi * 100.0), '{:.1f}'.format(red * 100.0))
 
-            if disulf['redox_state_pred_1'] != 'oxidized' and disulf['refox_state_pred_1'] != 'unknown':
+            if disulf['redox_state_pred_1'] != 'oxidized' and disulf['redox_state_pred_1'] != 'unknown':
 
                 warn = "Disulfide bond (chain_id_1 %s seq_id_1 %s comp_id_1 %s, chain_id_2 %s, seq_id_2 %s, comp_id_2 %s) could not supported by assigned chemical shift values (CA_1 %s, CB_1 %s, redox_state_pred_1 %s)." %\
                        (nmr_chain_id_1, nmr_seq_id_1, nmr_comp_id_1, nmr_chain_id_2, nmr_seq_id_2, nmr_comp_id_2, ca_chem_shift_1, cb_chem_shift_1, disulf['redox_state_pred_1'])
@@ -9773,12 +9809,12 @@ class NmrDpUtility(object):
 
                 disulf['warning_description_1'] = item + ': ' + warn
 
-            if disulf['redox_state_pred_2'] != 'oxidized' and disulf['refox_state_pred_2'] != 'unknown':
+            if disulf['redox_state_pred_2'] != 'oxidized' and disulf['redox_state_pred_2'] != 'unknown':
 
                 warn = "Disulfide bond (chain_id_1 %s seq_id_1 %s comp_id_1 %s, chain_id_2 %s, seq_id_2 %s, comp_id_2 %s) could not supported by assigned chemical shift values (CA_2 %s, CB_2 %s, redox_state_pred_2 %s)." %\
                        (nmr_chain_id_1, nmr_seq_id_1, nmr_comp_id_1, nmr_chain_id_2, nmr_seq_id_2, nmr_comp_id_2, ca_chem_shift_2, cb_chem_shift_2, disulf['redox_state_pred_2'])
 
-                item = 'suspicious_data' if disulf['refox_state_pred_2'] == 'reduced' else 'unusual_data'
+                item = 'suspicious_data' if disulf['redox_state_pred_2'] == 'reduced' else 'unusual_data'
 
                 self.report.warning.appendDescription(item, {'file_name': file_name, 'sf_framecode': sf_framecode, 'description': warn})
                 self.report.setWarning()
@@ -10135,7 +10171,7 @@ class NmrDpUtility(object):
                 oxi, red = self.__predictRedoxStateOfCystein(ca_chem_shift_2, cb_chem_shift_2)
                 other['redox_state_pred_2'] = 'oxidized %s (%%), reduced %s (%%)' % ('{:.1f}'.format(oxi * 100.0), '{:.1f}'.format(red * 100.0))
 
-            if other['redox_state_pred_1'] != 'oxidized' and other['refox_state_pred_1'] != 'unknown':
+            if other['redox_state_pred_1'] != 'oxidized' and other['redox_state_pred_1'] != 'unknown':
 
                 warn = "Other bond (chain_id_1 %s seq_id_1 %s comp_id_1 %s, chain_id_2 %s, seq_id_2 %s, comp_id_2 %s) could not supported by assigned chemical shift values (CA_1 %s, CB_1 %s, redox_state_pred_1 %s)." %\
                        (nmr_chain_id_1, nmr_seq_id_1, nmr_comp_id_1, nmr_chain_id_2, nmr_seq_id_2, nmr_comp_id_2, ca_chem_shift_1, cb_chem_shift_1, other['redox_state_pred_1'])
@@ -10150,12 +10186,12 @@ class NmrDpUtility(object):
 
                 other['warning_description_1'] = item + ': ' + warn
 
-            if other['redox_state_pred_2'] != 'oxidized' and other['refox_state_pred_2'] != 'unknown':
+            if other['redox_state_pred_2'] != 'oxidized' and other['redox_state_pred_2'] != 'unknown':
 
                 warn = "Other bond (chain_id_1 %s seq_id_1 %s comp_id_1 %s, chain_id_2 %s, seq_id_2 %s, comp_id_2 %s) could not supported by assigned chemical shift values (CA_2 %s, CB_2 %s, redox_state_pred_2 %s)." %\
                        (nmr_chain_id_1, nmr_seq_id_1, nmr_comp_id_1, nmr_chain_id_2, nmr_seq_id_2, nmr_comp_id_2, ca_chem_shift_2, cb_chem_shift_2, other['redox_state_pred_2'])
 
-                item = 'suspicious_data' if other['refox_state_pred_2'] == 'reduced' else 'unusual_data'
+                item = 'suspicious_data' if other['redox_state_pred_2'] == 'reduced' else 'unusual_data'
 
                 self.report.warning.appendDescription(item, {'file_name': file_name, 'sf_framecode': sf_framecode, 'description': warn})
                 self.report.setWarning()
@@ -10257,25 +10293,25 @@ class NmrDpUtility(object):
 
         return cis / sum, trs / sum
 
-    def __predictTautomerOfHistidine(self, cg_chem_shift, cd2_chem_shift, nd1_chem_shift, nd2_chem_shift):
-        """ Return prediction of tautomeric state of Histidine using assigned CG, CD2, ND1, and ND2 chemical shifts.
+    def __predictTautomerOfHistidine(self, cg_chem_shift, cd2_chem_shift, nd1_chem_shift, ne2_chem_shift):
+        """ Return prediction of tautomeric state of Histidine using assigned CG, CD2, ND1, and NE2 chemical shifts.
             @return: probability of biprotonated, probability of tau tautomer, probability of pi tautomer
         """
 
         bip_cg = {'avr': 131.2, 'std': 0.7}
         bip_cd2 = {'avr': 120.6, 'std': 1.3}
         bip_nd1 = {'avr': 190.0, 'std': 1.9}
-        bip_nd2 = {'avr': 176.3, 'std': 1.9}
+        bip_ne2 = {'avr': 176.3, 'std': 1.9}
 
         tau_cg = {'avr': 135.7, 'std': 2.2}
         tau_cd2 = {'avr': 116.9, 'std': 2.1}
         tau_nd1 = {'avr': 249.4, 'std': 1.9}
-        tau_nd2 = {'avr': 171.1, 'std': 1.9}
+        tau_ne2 = {'avr': 171.1, 'std': 1.9}
 
         pi_cg = {'avr': 125.7, 'std': 2.2}
         pi_cd2 = {'avr': 125.6, 'std': 2.1}
         pi_nd1 = {'avr': 171.8, 'std': 1.9}
-        pi_nd2 = {'avr': 248.2, 'std': 1.9}
+        pi_ne2 = {'avr': 248.2, 'std': 1.9}
 
         bip = 1.0
         tau = 1.0
@@ -10296,10 +10332,10 @@ class NmrDpUtility(object):
             tau *= self.__probabilityDensity(nd1_chem_shift, tau_nd1['avr'], tau_nd1['std'])
             pi *= self.__probabilityDensity(nd1_chem_shift, pi_nd1['avr'], pi_nd1['std'])
 
-        if not nd2_chem_shift is None:
-            bip *= self.__probabilityDensity(nd2_chem_shift, bip_nd2['avr'], bip_nd2['std'])
-            tau *= self.__probabilityDensity(nd2_chem_shift, tau_nd2['avr'], tau_nd2['std'])
-            pi *= self.__probabilityDensity(nd2_chem_shift, pi_nd2['avr'], pi_nd2['std'])
+        if not ne2_chem_shift is None:
+            bip *= self.__probabilityDensity(ne2_chem_shift, bip_ne2['avr'], bip_ne2['std'])
+            tau *= self.__probabilityDensity(ne2_chem_shift, tau_ne2['avr'], tau_ne2['std'])
+            pi *= self.__probabilityDensity(ne2_chem_shift, pi_ne2['avr'], pi_ne2['std'])
 
         sum = bip + tau + pi
 

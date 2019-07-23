@@ -2855,41 +2855,43 @@ class NmrDpUtility(object):
         """
 
         sid_len = len(seq_id)
-        txt_len = 0
+        code_len = 0
 
         chars = []
 
         for sid in seq_id:
 
-            if sid >= 0 and sid % 10 == 0 and txt_len == 0:
+            if sid >= 0 and sid % 10 == 0 and code_len == 0:
 
-                sid_txt = str(sid)
-                txt_len = len(sid_txt)
+                code = str(sid)
+                code_len = len(code)
 
-                for j in range(txt_len):
-                    chars.append(sid_txt[j])
+                for j in range(code_len):
+                    chars.append(code[j])
 
-            if txt_len > 0:
-                txt_len -= 1
+            if code_len > 0:
+                code_len -= 1
             else:
                 chars.append('-')
 
         for t in range(sid_len / 10):
-
             offset = (t + 1) * 10 - 1
 
-            if chars[offset] != '-':
-                code = ''
-                txt_len = 0
-                while chars[offset + txt_len] != '-':
-                    code += chars[offset + txt_len]
-                    chars[offset + txt_len] = '-'
-                    txt_len += 1
+            code = ''
 
-                offset -= txt_len - 1
-                if offset >= 0:
-                    for j in range(txt_len):
-                        chars[offset + j] = code[j]
+            p = offset
+            while p < len(chars) and chars[p] != '-':
+                code += chars[p]
+                chars[p] = '-'
+                p += 1
+
+            code_len = len(code)
+
+            offset -= code_len - 1
+
+            if offset >= 0:
+                for j in range(code_len):
+                    chars[offset + j] = code[j]
 
         array = ''.join(chars)
 
@@ -4989,67 +4991,53 @@ class NmrDpUtility(object):
 
             try:
 
-                lp_data = next(l['data'] for l in self.__lp_data[content_subtype] if l['sf_framecode'] == sf_framecode)
+                lp_data = next((l['data'] for l in self.__lp_data[content_subtype] if l['sf_framecode'] == sf_framecode), None)
 
-                for i in lp_data:
-                    chain_id_1 = i[chain_id_1_name]
-                    seq_id_1 = i[seq_id_1_name]
-                    comp_id_1 = i[comp_id_1_name]
-                    atom_id_1 = i[atom_id_1_name]
-                    chain_id_2 = i[chain_id_2_name]
-                    seq_id_2 = i[seq_id_2_name]
-                    comp_id_2 = i[comp_id_2_name]
-                    atom_id_2 = i[atom_id_2_name]
+                if not lp_data is None:
 
-                    try:
-                        self.atom_isotopes[atom_id_1[0]]
-                        self.atom_isotopes[atom_id_2[0]]
-                    except KeyError:
+                    for i in lp_data:
+                        chain_id_1 = i[chain_id_1_name]
+                        seq_id_1 = i[seq_id_1_name]
+                        comp_id_1 = i[comp_id_1_name]
+                        atom_id_1 = i[atom_id_1_name]
+                        chain_id_2 = i[chain_id_2_name]
+                        seq_id_2 = i[seq_id_2_name]
+                        comp_id_2 = i[comp_id_2_name]
+                        atom_id_2 = i[atom_id_2_name]
 
-                        idx_msg = "[Check row of %s %s] " % (index_tag, i[index_tag])
+                        try:
+                            self.atom_isotopes[atom_id_1[0]]
+                            self.atom_isotopes[atom_id_2[0]]
+                        except KeyError:
 
-                        err = "%sNon-magnetic susceptible spins appeared in RDC vector (chain_id_1 %s, seq_id_1 %s, comp_id_1 %s, atom_id_1 %s, chain_id_2 %s, seq_id_2 %s, comp_id_2 %s, atom_id_2 %s)." %\
-                              (idx_msg, chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2)
+                            idx_msg = "[Check row of %s %s] " % (index_tag, i[index_tag])
 
-                        self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
-                        self.report.setError()
+                            err = "%sNon-magnetic susceptible spins appeared in RDC vector (chain_id_1 %s, seq_id_1 %s, comp_id_1 %s, atom_id_1 %s, chain_id_2 %s, seq_id_2 %s, comp_id_2 %s, atom_id_2 %s)." %\
+                                  (idx_msg, chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2)
 
-                        if self.__verbose:
-                            self.__lfh.write("+NmrDpUtility.__testRDCVector() ++ Error  - %s\n" % err)
+                            self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
+                            self.report.setError()
 
-                    if chain_id_1 != chain_id_2:
+                            if self.__verbose:
+                                self.__lfh.write("+NmrDpUtility.__testRDCVector() ++ Error  - %s\n" % err)
 
-                        idx_msg = "[Check row of %s %s] " % (index_tag, i[index_tag])
+                        if chain_id_1 != chain_id_2:
 
-                        err = "%sInvalid inter-chain RDC vector (chain_id_1 %s, seq_id_1 %s, comp_id_1 %s, atom_id_1 %s, chain_id_2 %s, seq_id_2 %s, comp_id_2 %s, atom_id_2 %s) exists." %\
-                              (idx_msg, chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2)
+                            idx_msg = "[Check row of %s %s] " % (index_tag, i[index_tag])
 
-                        self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
-                        self.report.setError()
+                            err = "%sInvalid inter-chain RDC vector (chain_id_1 %s, seq_id_1 %s, comp_id_1 %s, atom_id_1 %s, chain_id_2 %s, seq_id_2 %s, comp_id_2 %s, atom_id_2 %s) exists." %\
+                                  (idx_msg, chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2)
 
-                        if self.__verbose:
-                            self.__lfh.write("+NmrDpUtility.__testRDCVector() ++ Error  - %s\n" % err)
+                            self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
+                            self.report.setError()
 
-                    elif abs(seq_id_1 - seq_id_2) > 1:
+                            if self.__verbose:
+                                self.__lfh.write("+NmrDpUtility.__testRDCVector() ++ Error  - %s\n" % err)
 
-                        idx_msg = "[Check row of %s %s] " % (index_tag, i[index_tag])
+                        elif abs(seq_id_1 - seq_id_2) > 1:
 
-                        err = "%sInvalid inter-residue RDC vector (chain_id_1 %s, seq_id_1 %s, comp_id_1 %s, atom_id_1 %s, chain_id_2 %s, seq_id_2 %s, comp_id_2 %s, atom_id_2 %s) exists." %\
-                              (idx_msg, chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2)
+                            idx_msg = "[Check row of %s %s] " % (index_tag, i[index_tag])
 
-                        self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
-                        self.report.setError()
-
-                        if self.__verbose:
-                            self.__lfh.write("+NmrDpUtility.__testRDCVector() ++ Error  - %s\n" % err)
-
-                    elif abs(seq_id_1 - seq_id_2) == 1:
-
-                        if self.__csStat.getTypeOfCompId(comp_id_1)[0] and self.__csStat.getTypeOfCompId(comp_id_2)[0] and\
-                           ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 == 'N') or (seq_id_1 > seq_id_2 and atom_id_1 == 'N' and atom_id_2 == 'C')):
-                            pass
-
-                        else:
                             err = "%sInvalid inter-residue RDC vector (chain_id_1 %s, seq_id_1 %s, comp_id_1 %s, atom_id_1 %s, chain_id_2 %s, seq_id_2 %s, comp_id_2 %s, atom_id_2 %s) exists." %\
                                   (idx_msg, chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2)
 
@@ -5059,46 +5047,62 @@ class NmrDpUtility(object):
                             if self.__verbose:
                                 self.__lfh.write("+NmrDpUtility.__testRDCVector() ++ Error  - %s\n" % err)
 
-                    elif atom_id_1 == atom_id_2:
+                        elif abs(seq_id_1 - seq_id_2) == 1:
 
-                        idx_msg = "[Check row of %s %s] " % (index_tag, i[index_tag])
-
-                        err = "%sZero RDC vector (chain_id_1 %s, seq_id_1 %s, comp_id_1 %s, atom_id_1 %s, chain_id_2 %s, seq_id_2 %s, comp_id_2 %s, atom_id_2 %s) exists." %\
-                              (idx_msg, chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2)
-
-                        self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
-                        self.report.setError()
-
-                        if self.__verbose:
-                            self.__lfh.write("+NmrDpUtility.__testRDCVector() ++ Error  - %s\n" % err)
-
-                    else:
-
-                        self.__updateChemCompDict(comp_id_1)
-
-                        if self.__last_comp_id_test: # matches with comp_id in CCD
-
-                            try:
-                                next(b for b in self.__last_chem_comp_bonds if\
-                                     ((b[self.__ccb_atom_id_1] == atom_id_1 and b[self.__ccb_atom_id_2] == atom_id_2) or\
-                                      (b[self.__ccb_atom_id_1] == atom_id_2 and b[self.__ccb_atom_id_2] == atom_id_1)))
-                            except StopIteration:
-
-                                idx_msg = "[Check row of %s %s] " % (index_tag, i[index_tag])
-
-                                warn = "%sMultiple bonds' RDC vector (chain_id_1 %s, seq_id_1 %s, comp_id_1 %s, atom_id_1 %s, chain_id_2 %s, seq_id_2 %s, comp_id_2 %s, atom_id_2 %s) exists." %\
-                                       (idx_msg, chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2)
-
-                                self.report.warning.appendDescription('remarkable_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
-                                self.report.setWarning()
-
-                                if self.__verbose:
-                                    self.__lfh.write("+NmrDpUtility.__testRDCVector() ++ Warning  - %s\n" % warn)
-
+                            if self.__csStat.getTypeOfCompId(comp_id_1)[0] and self.__csStat.getTypeOfCompId(comp_id_2)[0] and\
+                               ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 == 'N') or (seq_id_1 > seq_id_2 and atom_id_1 == 'N' and atom_id_2 == 'C')):
                                 pass
 
-                        else: # raised warning already somewhere
-                            pass
+                            else:
+                                err = "%sInvalid inter-residue RDC vector (chain_id_1 %s, seq_id_1 %s, comp_id_1 %s, atom_id_1 %s, chain_id_2 %s, seq_id_2 %s, comp_id_2 %s, atom_id_2 %s) exists." %\
+                                      (idx_msg, chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2)
+
+                                self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
+                                self.report.setError()
+
+                                if self.__verbose:
+                                    self.__lfh.write("+NmrDpUtility.__testRDCVector() ++ Error  - %s\n" % err)
+
+                        elif atom_id_1 == atom_id_2:
+
+                            idx_msg = "[Check row of %s %s] " % (index_tag, i[index_tag])
+
+                            err = "%sZero RDC vector (chain_id_1 %s, seq_id_1 %s, comp_id_1 %s, atom_id_1 %s, chain_id_2 %s, seq_id_2 %s, comp_id_2 %s, atom_id_2 %s) exists." %\
+                                  (idx_msg, chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2)
+
+                            self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
+                            self.report.setError()
+
+                            if self.__verbose:
+                                self.__lfh.write("+NmrDpUtility.__testRDCVector() ++ Error  - %s\n" % err)
+
+                        else:
+
+                            self.__updateChemCompDict(comp_id_1)
+
+                            if self.__last_comp_id_test: # matches with comp_id in CCD
+
+                                try:
+                                    next(b for b in self.__last_chem_comp_bonds if\
+                                         ((b[self.__ccb_atom_id_1] == atom_id_1 and b[self.__ccb_atom_id_2] == atom_id_2) or\
+                                          (b[self.__ccb_atom_id_1] == atom_id_2 and b[self.__ccb_atom_id_2] == atom_id_1)))
+                                except StopIteration:
+
+                                    idx_msg = "[Check row of %s %s] " % (index_tag, i[index_tag])
+
+                                    warn = "%sMultiple bonds' RDC vector (chain_id_1 %s, seq_id_1 %s, comp_id_1 %s, atom_id_1 %s, chain_id_2 %s, seq_id_2 %s, comp_id_2 %s, atom_id_2 %s) exists." %\
+                                           (idx_msg, chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2)
+
+                                    self.report.warning.appendDescription('remarkable_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
+                                    self.report.setWarning()
+
+                                    if self.__verbose:
+                                        self.__lfh.write("+NmrDpUtility.__testRDCVector() ++ Warning  - %s\n" % warn)
+
+                                    pass
+
+                            else: # raised warning already somewhere
+                                pass
 
             except Exception as e:
 
@@ -8365,7 +8369,10 @@ class NmrDpUtility(object):
                         cif_comp_id = myPr[0].encode()
                         nmr_comp_id = myPr[1].encode()
 
-                        if nmr_comp_id == '.':
+                        if i >= len(s1['seq_id']):
+                            continue
+
+                        if nmr_comp_id == '.' or i >= len(s2['seq_id']):
                             unmapped.append({'ref_seq_id': s1['seq_id'][i], 'ref_comp_id': cif_comp_id})
 
                             warn = "%s's sequence (chain_id %s, seq_id %s, comp_id %s) could not mapped to anything in %s." %\
@@ -8465,7 +8472,10 @@ class NmrDpUtility(object):
                         nmr_comp_id = myPr[0].encode()
                         cif_comp_id = myPr[1].encode()
 
-                        if cif_comp_id == '.':
+                        if i >= len(s1['seq_id']):
+                            continue
+
+                        if cif_comp_id == '.' or i >= len(s2['seq_id']):
                             unmapped.append({'ref_seq_id': s1['seq_id'][i], 'ref_comp_id': nmr_comp_id})
 
                             warn = "%s's sequence (chain_id %s, seq_id %s, comp_id %s) could not mapped to anything in %s." %\

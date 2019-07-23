@@ -3508,25 +3508,25 @@ class NmrDpUtility(object):
 
                 except UserWarning as e:
 
-                    warns = str(e).strip("'").split('[')
+                    warns = str(e).strip("'").split('\n')
 
                     for warn in warns:
 
                         if warn == '':
                             continue
 
-                        zero = warn.startswith('Zero value error] ')
-                        nega = warn.startswith('Negative value error] ')
-                        enum = warn.startswith('Enumeration error] ')
+                        zero = warn.startswith('[Zero value error] ')
+                        nega = warn.startswith('[Negative value error] ')
+                        enum = warn.startswith('[Enumeration error] ')
 
                         if zero or nega or enum:
 
                             if zero:
-                                warn = warn[18:]
-                            elif nega:
-                                warn = warn[22:]
-                            else:
                                 warn = warn[19:]
+                            elif nega:
+                                warn = warn[23:]
+                            else:
+                                warn = warn[20:]
 
                             self.report.warning.appendDescription('missing_data' if zero else ('unusual_data' if nega else 'enum_failure'), {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
                             self.report.setWarning()
@@ -3667,25 +3667,25 @@ class NmrDpUtility(object):
 
                         except UserWarning as e:
 
-                            warns = str(e).strip("'").split('[')
+                            warns = str(e).strip("'").split('\n')
 
                             for warn in warns:
 
                                 if warn == '':
                                     continue
 
-                                zero = warn.startswith('Zero value error] ')
-                                nega = warn.startswith('Negative value error] ')
-                                enum = warn.startswith('Enumeration error] ')
+                                zero = warn.startswith('[Zero value error] ')
+                                nega = warn.startswith('[Negative value error] ')
+                                enum = warn.startswith('[Enumeration error] ')
 
                                 if zero or nega or enum:
 
                                     if zero:
-                                        warn = warn[18:]
-                                    elif nega:
-                                        warn = warn[22:]
-                                    else:
                                         warn = warn[19:]
+                                    elif nega:
+                                        warn = warn[23:]
+                                    else:
+                                        warn = warn[20:]
 
                                     self.report.warning.appendDescription('missing_data' if zero else ('unusual_data' if nega else 'enum_failure'), {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
                                     self.report.setWarning()
@@ -3927,25 +3927,25 @@ class NmrDpUtility(object):
 
                 except UserWarning as e:
 
-                    warns = str(e).strip("'").split('[')
+                    warns = str(e).strip("'").split('\n')
 
                     for warn in warns:
 
                         if warn == '':
                             continue
 
-                        zero = warn.startswith('Zero value error] ')
-                        nega = warn.startswith('Negative value error] ')
-                        enum = warn.startswith('Enumeration error] ')
+                        zero = warn.startswith('[Zero value error] ')
+                        nega = warn.startswith('[Negative value error] ')
+                        enum = warn.startswith('[Enumeration error] ')
 
                         if zero or nega or enum:
 
                             if zero:
-                                warn = warn[18:]
-                            elif nega:
-                                warn = warn[22:]
-                            else:
                                 warn = warn[19:]
+                            elif nega:
+                                warn = warn[23:]
+                            else:
+                                warn = warn[20:]
 
                             self.report.warning.appendDescription('missing_data' if zero else ('unusual_data' if nega else 'enum_failure'), {'file_name': file_name, 'sf_framecode': sf_framecode, 'description': warn})
                             self.report.setWarning()

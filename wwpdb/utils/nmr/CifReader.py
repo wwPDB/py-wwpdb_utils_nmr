@@ -7,7 +7,7 @@
 #                     Add accessors for lists of dictionaries.
 # 12-May-2011 - rps - Added check for None when asking for category Object in __getDataList()
 # 2012-10-24    RPS   Updated to reflect reorganization of modules in pdbx packages
-# 19-Jul-2019   my  - Forked original code to wwpdb.util.nmr.CifReader
+# 23-Jul-2019   my  - Forked original code to wwpdb.util.nmr.CifReader
 ##
 """ A collection of classes for parsing CIF files.
 """
@@ -292,14 +292,16 @@ class CifReader(object):
                     tD = {}
                     for dataItem in dataItems:
                         val = row[colDict[dataItem['name']]]
+                        if val in self.emptyValue:
+                            val = None
                         dataItemType = dataItem['type']
                         if dataItemType == 'str':
                                 pass
                         elif dataItemType == 'bool':
                             val = val.lower() in self.trueValue
-                        elif dataItemType == 'int':
+                        elif dataItemType == 'int' and not val is None:
                             val = int(val)
-                        else:
+                        elif not val is None:
                             val = float(val)
                         if 'alt_name' in dataItem:
                             tD[dataItem['alt_name']] = val

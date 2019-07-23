@@ -1,6 +1,6 @@
 ##
 # File: NmrDpUtility.py
-# Date: 22-Jul-2019
+# Date: 23-Jul-2019
 #
 # Updates:
 ##
@@ -2787,7 +2787,7 @@ class NmrDpUtility(object):
 
                         seq_align_set.append(seq_align)
 
-                        for j in range(length):
+                        for j in range(len(ref_code)):
                             if ref_code[j] == 'X' and test_code[j] == 'X':
                                 input_source.updateNonStandardResidueByExptlData(chain_id, s1['seq_id'][j], content_subtype)
 
@@ -2855,26 +2855,24 @@ class NmrDpUtility(object):
         """
 
         sid_len = len(seq_id)
-        sid_txt_len = 0
+        txt_len = 0
 
-        array = ''
+        chars = []
 
         for sid in seq_id:
 
-            if sid >= 0 and sid % 10 == 0 and sid_txt_len == 0:
+            if sid >= 0 and sid % 10 == 0 and txt_len == 0:
 
                 sid_txt = str(sid)
-                sid_txt_len = len(sid_txt)
+                txt_len = len(sid_txt)
 
-                for j in range(sid_txt_len):
-                    array += sid_txt[j]
+                for j in range(txt_len):
+                    chars.append(sid_txt[j])
 
-            if sid_txt_len > 0:
-                sid_txt_len -= 1
+            if txt_len > 0:
+                txt_len -= 1
             else:
-                array += '-'
-
-        chars = list(array)
+                chars.append('-')
 
         for t in range(sid_len / 10):
 
@@ -2882,15 +2880,16 @@ class NmrDpUtility(object):
 
             if chars[offset] != '-':
                 code = ''
-                sid_txt_len = 0
-                while chars[offset + sid_txt_len] != '-':
-                    code += chars[offset + sid_txt_len]
-                    chars[offset + sid_txt_len] = '-'
-                    sid_txt_len += 1
+                txt_len = 0
+                while chars[offset + txt_len] != '-':
+                    code += chars[offset + txt_len]
+                    chars[offset + txt_len] = '-'
+                    txt_len += 1
 
-                offset -= sid_txt_len - 1
-                for j in range(sid_txt_len):
-                    chars[offset + j] = code[j]
+                offset -= txt_len - 1
+                if offset >= 0:
+                    for j in range(txt_len):
+                        chars[offset + j] = code[j]
 
         array = ''.join(chars)
 
@@ -3509,24 +3508,25 @@ class NmrDpUtility(object):
 
                 except UserWarning as e:
 
-                    warns = str(e).strip("'").rstrip('.').split('.')
+                    warns = str(e).strip("'").split('[')
 
                     for warn in warns:
 
-                        warn += '.'
+                        if warn == '':
+                            continue
 
-                        zero = warn.startswith('[Zero value error] ')
-                        nega = warn.startswith('[Negative value error] ')
-                        enum = warn.startswith('[Enumeration error] ')
+                        zero = warn.startswith('Zero value error] ')
+                        nega = warn.startswith('Negative value error] ')
+                        enum = warn.startswith('Enumeration error] ')
 
                         if zero or nega or enum:
 
                             if zero:
-                                warn = warn[19:]
+                                warn = warn[18:]
                             elif nega:
-                                warn = warn[23:]
+                                warn = warn[22:]
                             else:
-                                warn = warn[20:]
+                                warn = warn[19:]
 
                             self.report.warning.appendDescription('missing_data' if zero else ('unusual_data' if nega else 'enum_failure'), {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
                             self.report.setWarning()
@@ -3667,24 +3667,25 @@ class NmrDpUtility(object):
 
                         except UserWarning as e:
 
-                            warns = str(e).strip("'").rstrip('.').split('.')
+                            warns = str(e).strip("'").split('[')
 
                             for warn in warns:
 
-                                warn += '.'
+                                if warn == '':
+                                    continue
 
-                                zero = warn.startswith('[Zero value error] ')
-                                nega = warn.startswith('[Negative value error] ')
-                                enum = warn.startswith('[Enumeration error] ')
+                                zero = warn.startswith('Zero value error] ')
+                                nega = warn.startswith('Negative value error] ')
+                                enum = warn.startswith('Enumeration error] ')
 
                                 if zero or nega or enum:
 
                                     if zero:
-                                        warn = warn[19:]
+                                        warn = warn[18:]
                                     elif nega:
-                                        warn = warn[23:]
+                                        warn = warn[22:]
                                     else:
-                                        warn = warn[20:]
+                                        warn = warn[19:]
 
                                     self.report.warning.appendDescription('missing_data' if zero else ('unusual_data' if nega else 'enum_failure'), {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
                                     self.report.setWarning()
@@ -3926,24 +3927,25 @@ class NmrDpUtility(object):
 
                 except UserWarning as e:
 
-                    warns = str(e).strip("'").rstrip('.').split('.')
+                    warns = str(e).strip("'").split('[')
 
                     for warn in warns:
 
-                        warn += '.'
+                        if warn == '':
+                            continue
 
-                        zero = warn.startswith('[Zero value error] ')
-                        nega = warn.startswith('[Negative value error] ')
-                        enum = warn.startswith('[Enumeration error] ')
+                        zero = warn.startswith('Zero value error] ')
+                        nega = warn.startswith('Negative value error] ')
+                        enum = warn.startswith('Enumeration error] ')
 
                         if zero or nega or enum:
 
                             if zero:
-                                warn = warn[19:]
+                                warn = warn[18:]
                             elif nega:
-                                warn = warn[23:]
+                                warn = warn[22:]
                             else:
-                                warn = warn[20:]
+                                warn = warn[19:]
 
                             self.report.warning.appendDescription('missing_data' if zero else ('unusual_data' if nega else 'enum_failure'), {'file_name': file_name, 'sf_framecode': sf_framecode, 'description': warn})
                             self.report.setWarning()
@@ -6440,7 +6442,7 @@ class NmrDpUtility(object):
                                         if ',' in his['tautomeric_state_pred']:
                                             if (his['tautomeric_state'] == 'biprotonated' and bip > tau and bip > pi) or\
                                                (his['tautomeric_state'] == 'tau-tautomer' and tau > bip and tau > pi) or\
-                                               (his['tautomeric_state'] == 'pi-tautomer' and pi > bip and float(g[2]) > tau):
+                                               (his['tautomeric_state'] == 'pi-tautomer' and pi > bip and pi > tau):
                                                 pass
                                             else:
                                                 item = 'unusual_data'
@@ -8345,7 +8347,7 @@ class NmrDpUtility(object):
                 ref_code = self.__get1LetterCodeSequence(s1['comp_id'])
                 test_code = self.__get1LetterCodeSequence(s2['comp_id'])
 
-                for j in range(length):
+                for j in range(len(ref_code)):
                     if ref_code[j] == 'X' and test_code[j] == 'X':
                         nmr_input_source.updateNonStandardResidueByExptlData(chain_id2, s2['seq_id'][j], 'coordinate')
                         cif_input_source.updateNonStandardResidueByExptlData(chain_id, s1['seq_id'][j], 'coordinate')
@@ -9615,6 +9617,7 @@ class NmrDpUtility(object):
         input_source = self.report.input_sources[0]
         input_source_dic = input_source.get()
 
+        file_name = input_source_dic['file_name']
         file_type = input_source_dic['file_type']
 
         polymer_sequence = input_source_dic['polymer_sequence']
@@ -9992,6 +9995,7 @@ class NmrDpUtility(object):
         input_source = self.report.input_sources[0]
         input_source_dic = input_source.get()
 
+        file_name = input_source_dic['file_name']
         file_type = input_source_dic['file_type']
 
         polymer_sequence = input_source_dic['polymer_sequence']

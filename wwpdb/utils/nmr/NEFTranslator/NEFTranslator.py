@@ -1,6 +1,6 @@
 ##
 # File: NEFTranslator.py
-# Date: 11-Jul-2019
+# Date: 23-Jul-2019
 #
 # Updates:
 ##
@@ -2083,7 +2083,10 @@ class NEFTranslator(object):
             if self.__last_comp_id_test: # matches with comp_id in CCD
                 atoms = [a[self.__cca_atom_id] for a in self.__last_chem_comp_atoms]
             else:
-                self.logger.critical('Non-standard residue found {}'.format(comp_id))
+                if leave_unmatched:
+                    details = 'Unknown non-standard residue %s found.' % comp_id
+                else:
+                    self.logger.critical('Unknown non-standard residue %s found.' % comp_id)
 
         try:
 
@@ -2123,7 +2126,7 @@ class NEFTranslator(object):
                 elif wc_code == '*':
                     pattern = re.compile(r'%s\S+' % atom_type)
                 else:
-                    logging.critical('Wrong NEF atom {}'.format(nef_atom))
+                    logging.critical('Invalid NEF atom nomenclature %s found.' % nef_atom)
 
                 atom_list = [i for i in atoms if re.search(pattern, i)]
 
@@ -2145,12 +2148,12 @@ class NEFTranslator(object):
                 elif xy_code == 'x':
                     atom_list = atom_list[:1]
                 else:
-                    logging.critical('Wrong NEF atom {}'.format(nef_atom))
+                    logging.critical('Invalid NEF atom nomenclature %s found.' % nef_atom)
 
                 ambiguity_code = 2
 
             else:
-                logging.critical('Wrong NEF atom {}'.format(nef_atom))
+                logging.critical('Invalid NEF atom nomenclature %s found.' % nef_atom)
 
         except IndexError:
             pass
@@ -2166,7 +2169,8 @@ class NEFTranslator(object):
             elif leave_unmatched:
                 atom_list.append(nef_atom)
                 ambiguity_code = None
-                details = '%s is invalid atom name of residue %s.' % (nef_atom, comp_id)
+                if details is None:
+                    details = '%s is invalid atom name (comp_id %s).' % (nef_atom, comp_id)
 
         return atom_list, ambiguity_code, details
 

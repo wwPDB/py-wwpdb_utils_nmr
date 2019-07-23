@@ -4198,8 +4198,8 @@ class NmrDpUtility(object):
 
                                 if std_value is None:
 
-                                    warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] Insufficient chemical shift statistics is available to verify %s %s (avg %s).' %\
-                                           (value_name, value, avg_value)
+                                    warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] Insufficient chemical shift statistics on comp_id %s, atom_id %s is available to verify %s %s (avg %s).' %\
+                                           (comp_id, atom_name, value_name, value, avg_value)
 
                                     self.report.warning.appendDescription('unusual_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
                                     self.report.setWarning()
@@ -4216,8 +4216,8 @@ class NmrDpUtility(object):
 
                                     if (value < min_value - tolerance or value > max_value + tolerance) and abs(z_score) > 7.5:
 
-                                        err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] %s %s is out of range (avg %s, std %s, min %s, max %s, Z_score %.2f).' %\
-                                              (value_name, value, avg_value, std_value, min_value, max_value, z_score)
+                                        err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] %s %s (chain_id %s, seq_id %s, comp_id %s, atom_id %s) is out of range (avg %s, std %s, min %s, max %s, Z_score %.2f).' %\
+                                              (value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score)
 
                                         self.report.error.appendDescription('anomalous_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
                                         self.report.setError()
@@ -4227,8 +4227,8 @@ class NmrDpUtility(object):
 
                                     elif abs(z_score) > 7.5:
 
-                                        warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] %s %s must be verified (avg %s, std %s, min %s, max %s, Z_score %.2f).' %\
-                                               (value_name, value, avg_value, std_value, min_value, max_value, z_score)
+                                        warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] %s %s (chain_id %s, seq_id %s, comp_id %s, atom_id %s) must be verified (avg %s, std %s, min %s, max %s, Z_score %.2f).' %\
+                                               (value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score)
 
                                         self.report.warning.appendDescription('suspicious_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
                                         self.report.setWarning()
@@ -4238,8 +4238,8 @@ class NmrDpUtility(object):
 
                                     elif abs(z_score) > 5.3:
 
-                                        warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] %s %s should be verified (avg %s, std %s, min %s, max %s, Z_score %.2f).' %\
-                                               (value_name, value, avg_value, std_value, min_value, max_value, z_score)
+                                        warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] %s %s (chain_id %s, seq_id %s, comp_id %s, atom_id %s) should be verified (avg %s, std %s, min %s, max %s, Z_score %.2f).' %\
+                                               (value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score)
 
                                         self.report.warning.appendDescription('unusual_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
                                         self.report.setWarning()
@@ -4263,8 +4263,8 @@ class NmrDpUtility(object):
 
                                     if (value < min_value - tolerance or value > max_value + tolerance) and abs(z_score) > 10.0:
 
-                                        err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] %s %s is out of range (avg %s, std %s, min %s, max %s, Z_score %.2f).' %\
-                                              (value_name, value, avg_value, std_value, min_value, max_value, z_score)
+                                        err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] %s %s (chain_id %s, seq_id %s, comp_id %s, atom_id %s) is out of range (avg %s, std %s, min %s, max %s, Z_score %.2f).' %\
+                                              (value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score)
 
                                         self.report.error.appendDescription('anomalous_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
                                         self.report.setError()
@@ -4274,8 +4274,8 @@ class NmrDpUtility(object):
 
                                     elif abs(z_score) > 10.0:
 
-                                        warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] %s %s must be verified (avg %s, std %s, min %s, max %s, Z_score %.2f).' %\
-                                               (value_name, value, avg_value, std_value, min_value, max_value, z_score)
+                                        warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] %s %s (chain_id %s, seq_id %s, comp_id %s, atom_id %s) must be verified (avg %s, std %s, min %s, max %s, Z_score %.2f).' %\
+                                               (value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score)
 
                                         self.report.warning.appendDescription('suspicious_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
                                         self.report.setWarning()
@@ -4319,8 +4319,8 @@ class NmrDpUtility(object):
 
                                 if std_value is None:
 
-                                    warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] Insufficient chemical shift statistics is available to verify %s %s (avg %s).' %\
-                                           (value_name, value, avg_value)
+                                    warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] Insufficient chemical shift statistics on comp_id %s, atom_id %s is available to verify %s %s (avg %s).' %\
+                                           (comp_id, atom_name, value_name, value, avg_value)
 
                                     self.report.warning.appendDescription('unusual_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
                                     self.report.setWarning()
@@ -4335,8 +4335,8 @@ class NmrDpUtility(object):
 
                                 if (value < min_value - tolerance or value > max_value + tolerance) and abs(z_score) > 5.0:
 
-                                    err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] %s %s is out of range (avg %s, std %s, min %s, max %s, Z_score %.2f).' %\
-                                          (value_name, value, avg_value, std_value, min_value, max_value, z_score)
+                                    err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] %s %s (chain_id %s, seq_id %s, comp_id %s, atom_id %s) is out of range (avg %s, std %s, min %s, max %s, Z_score %.2f).' %\
+                                          (value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score)
 
                                     self.report.error.appendDescription('anomalous_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
                                     self.report.setError()
@@ -4346,8 +4346,8 @@ class NmrDpUtility(object):
 
                                 elif abs(z_score) > 5.0:
 
-                                    warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] %s %s must be verified (avg %s, std %s, min %s, max %s, Z_score %.2f).' %\
-                                           (value_name, value, avg_value, std_value, min_value, max_value, z_score)
+                                    warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] %s %s (chain_id %s, seq_id %s, comp_id %s, atom_id %s) must be verified (avg %s, std %s, min %s, max %s, Z_score %.2f).' %\
+                                           (value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score)
 
                                     self.report.warning.appendDescription('suspicious_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
                                     self.report.setWarning()
@@ -4357,8 +4357,8 @@ class NmrDpUtility(object):
 
                                 elif abs(z_score) > 3.6:
 
-                                    warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] %s %s should be verified (avg %s, std %s, min %s, max %s, Z_score %.2f).' %\
-                                           (value_name, value, avg_value, std_value, min_value, max_value, z_score)
+                                    warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] %s %s (chain_id %s, seq_id %s, comp_id %s, atom_id %s) should be verified (avg %s, std %s, min %s, max %s, Z_score %.2f).' %\
+                                           (value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score)
 
                                     self.report.warning.appendDescription('unusual_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
                                     self.report.setWarning()
@@ -5321,7 +5321,7 @@ class NmrDpUtility(object):
                                 self.__calculateStatsOfAssignedChemShift(sf_framecode, lp_data, cs_ann, ent)
 
                             elif content_subtype == 'dist_restraint':
-                                self.__calculateStatsOfDistanceRestraint(lp_data, ent)
+                                self.__calculateStatsOfDistanceRestraint(sf_framecode, lp_data, ent)
 
                             elif content_subtype == 'dihed_restraint':
                                 self.__calculateStatsOfDihedralRestraint(lp_data, ent)
@@ -6089,55 +6089,55 @@ class NmrDpUtility(object):
                 else:
                     atom_id_ = atom_id
 
-                    one_letter_code = self.__get1LetterCode(comp_id)
+                one_letter_code = self.__get1LetterCode(comp_id)
 
-                    has_cs_stat = False
+                has_cs_stat = False
 
-                    # non-standard residue
-                    if one_letter_code == 'X':
+                # non-standard residue
+                if one_letter_code == 'X':
 
-                        neighbor_comp_ids = set([j[comp_id_name] for j in lp_data if j[chain_id_name] == chain_id and abs(j[seq_id_name] - seq_id) < 3 and j[seq_id_name] != seq_id])
+                    neighbor_comp_ids = set([j[comp_id_name] for j in lp_data if j[chain_id_name] == chain_id and abs(j[seq_id_name] - seq_id) < 3 and j[seq_id_name] != seq_id])
 
-                        polypeptide_like = False
+                    polypeptide_like = False
 
-                        for comp_id2 in neighbor_comp_ids:
-                            polypeptide_like |= self.__csStat.getTypeOfCompId(comp_id2)[0]
+                    for comp_id2 in neighbor_comp_ids:
+                        polypeptide_like |= self.__csStat.getTypeOfCompId(comp_id2)[0]
 
-                        for cs_stat in self.__csStat.get(comp_id):
+                    for cs_stat in self.__csStat.get(comp_id):
 
-                            if cs_stat['atom_id'] == atom_id_:
-                                avg_value = cs_stat['avg']
-                                std_value = cs_stat['std']
+                        if cs_stat['atom_id'] == atom_id_:
+                            avg_value = cs_stat['avg']
+                            std_value = cs_stat['std']
 
-                                has_cs_stat = True
+                            has_cs_stat = True
 
-                                break
+                            break
 
-                    # standard residue
-                    else:
+                # standard residue
+                else:
 
-                        for cs_stat in self.__csStat.get(comp_id, self.report.isDiamagnetic()):
+                    for cs_stat in self.__csStat.get(comp_id, self.report.isDiamagnetic()):
 
-                            if cs_stat['atom_id'] == atom_id_:
-                                avg_value = cs_stat['avg']
-                                std_value = cs_stat['std']
+                        if cs_stat['atom_id'] == atom_id_:
+                            avg_value = cs_stat['avg']
+                            std_value = cs_stat['std']
 
-                                has_cs_stat = True
+                            has_cs_stat = True
 
-                                break
+                            break
 
-                    if not has_cs_stat or std_value is None:
-                        continue
+                if not has_cs_stat or std_value is None:
+                    continue
 
-                    z_score = (value - avg_value) / std_value
+                z_score = (value - avg_value) / std_value
 
-                    if z_score > max_val:
-                        max_val = z_score
+                if z_score > max_val:
+                    max_val = z_score
 
-                    elif z_score < min_val:
-                        min_val = z_score
+                elif z_score < min_val:
+                    min_val = z_score
 
-                    z_scores[data_type].append(z_score)
+                z_scores[data_type].append(z_score)
 
             target_scale = (max_val - min_val) / 20.0
 
@@ -6179,7 +6179,7 @@ class NmrDpUtility(object):
                 for j in range(len(range_of_vals)):
                     transposed[k].append(count_of_vals[j][k])
 
-            if len(range_of_vals) > 2:
+            if len(range_of_vals) > 1:
                 has_value = False
                 for j in range(1, len(range_of_vals) - 1):
                     for k in count.keys():
@@ -6354,7 +6354,7 @@ class NmrDpUtility(object):
 
                                     if not item is None:
 
-                                        warn = "%s-peptide bond (chain_id %s seq_id %s comp_id %s) could not supported by assigned chemical shift values (CB %s, CG %s, cis_trans_pred %s)." %\
+                                        warn = "%s-peptide bond (chain_id %s, seq_id %s, comp_id %s) could not supported by assigned chemical shift values (CB %s, CG %s, cis_trans_pred %s)." %\
                                                ('Cis' if pro['in_cis_peptide_bond'] else 'Trans', chain_id, seq_id, comp_id, cb_chem_shift, cg_chem_shift, pro['cis_trans_pred'])
 
                                         self.report.warning.appendDescription(item, {'file_name': file_name, 'sf_framecode': sf_framecode, 'description': warn})
@@ -6455,7 +6455,7 @@ class NmrDpUtility(object):
 
                                     if not item is None:
 
-                                        warn = "Tautomeric state %s (chain_id %s seq_id %s comp_id %s) could not supported by assigned chemical shift values (CG %s, CD2 %s, ND1 %s, NE2 %s, tautomeric_state_pred %s)." %\
+                                        warn = "Tautomeric state %s (chain_id %s, seq_id %s, comp_id %s) could not supported by assigned chemical shift values (CG %s, CD2 %s, ND1 %s, NE2 %s, tautomeric_state_pred %s)." %\
                                                (his['tautomeric_state'], chain_id, seq_id, comp_id, cg_chem_shift, cd2_chem_shift, nd1_chem_shift, ne2_chem_shift, his['tautomeric_state_pred'])
 
                                         self.report.warning.appendDescription(item, {'file_name': file_name, 'sf_framecode': sf_framecode, 'description': warn})
@@ -6477,13 +6477,14 @@ class NmrDpUtility(object):
             if self.__verbose:
                 self.__lfh.write("+NmrDpUtility.__calculateStatsOfAssignedChemShift() ++ Error  - %s" % str(e))
 
-    def __calculateStatsOfDistanceRestraint(self, lp_data, ent):
+    def __calculateStatsOfDistanceRestraint(self, sf_framecode, lp_data, ent):
         """ Calculate statistics of distance restraints.
         """
 
         input_source = self.report.input_sources[0]
         input_source_dic = input_source.get()
 
+        file_name = input_source_dic['file_name']
         file_type = input_source_dic['file_type']
 
         item_names = self.item_names_in_ds_loop[file_type]
@@ -6523,6 +6524,8 @@ class NmrDpUtility(object):
                 atom_id_2 = i[atom_id_2_name]
 
                 target_value = i[target_value_name]
+                upper_limit_value = None
+                lower_limit_value = None
 
                 if target_value is None:
 
@@ -6531,6 +6534,22 @@ class NmrDpUtility(object):
 
                     elif not i[lower_linear_limit_name] is None and not i[upper_linear_limit_name] is None:
                         target_value = (i[lower_linear_limit_name] + i[upper_linear_limit_name]) / 2.0
+
+                    elif not i[upper_linear_limit_name] is None:
+                        target_value = i[upper_linear_limit_name]
+                        upper_limit_value = target_value
+
+                    elif not i[upper_limit_name] is None:
+                        target_value = i[upper_limit_name]
+                        upper_limit_value = target_value
+
+                    elif not i[lower_linear_limit_name] is None:
+                        target_value = i[lower_linear_limit_name]
+                        lower_limit_value = target_value
+
+                    elif not i[lower_limit_name] is None:
+                        target_value = i[lower_limit_name]
+                        lower_limit_value = target_value
 
                     else:
                         continue
@@ -6546,6 +6565,7 @@ class NmrDpUtility(object):
 
                 hydrogen_bond_type = None
                 hydrogen_bond = False
+                disulfide_bond_type = None
                 disulfide_bond = False
                 symmetry = False
 
@@ -6554,10 +6574,18 @@ class NmrDpUtility(object):
                     atom_id_1_ = atom_id_1[0]
                     atom_id_2_ = atom_id_2[0]
 
+                    if not upper_limit_value is None:
+                        target_value -= 0.4
+                    elif not lower_limit_value is None:
+                        target_value += 0.4
+
                     if (atom_id_1_ == 'F' and atom_id_2_ == 'H') or (atom_id_2_ == 'F' and atom_id_1_ == 'H'):
 
                         if target_value >= 1.2 and target_value <= 1.5:
                             hydrogen_bond_type = 'F...H-F'
+                            hydrogen_bond = True
+                        elif target_value < 1.2:
+                            hydrogen_bond_type = 'F...H-F (too close!)'
                             hydrogen_bond = True
 
                     elif (atom_id_1_ == 'F' and atom_id_2_ == 'F') or (atom_id_2_ == 'F' and atom_id_1_ == 'F'):
@@ -6565,11 +6593,17 @@ class NmrDpUtility(object):
                         if target_value >= 2.2 and target_value <= 2.5:
                             hydrogen_bond_type = 'F...h-F'
                             hydrogen_bond = True
+                        elif target_value < 2.2:
+                            hydrogen_bond_type = 'F...h-F (too close!)'
+                            hydrogen_bond = True
 
                     elif (atom_id_1_ == 'O' and atom_id_2_ == 'H') or (atom_id_2_ == 'O' and atom_id_1_ == 'H'):
 
                         if target_value >= 1.5 and target_value <= 2.2:
                             hydrogen_bond_type = 'O...H-x'
+                            hydrogen_bond = True
+                        elif target_value < 1.5:
+                            hydrogen_bond_type = 'O...H-x (too close!)'
                             hydrogen_bond = True
 
                     elif (atom_id_1_ == 'O' and atom_id_2_ == 'N') or (atom_id_2_ == 'O' and atom_id_1_ == 'N'):
@@ -6577,11 +6611,17 @@ class NmrDpUtility(object):
                         if target_value >= 2.5 and target_value <= 3.2:
                             hydrogen_bond_type = 'O...h-N'
                             hydrogen_bond = True
+                        elif target_value < 2.5:
+                            hydrogen_bond_type = 'O...h-N (too close!)'
+                            hydrogen_bond = True
 
                     elif (atom_id_1_ == 'O' and atom_id_2_ == 'O') or (atom_id_2_ == 'O' and atom_id_1_ == 'O'):
 
                         if target_value >= 2.5 and target_value <= 3.2:
                             hydrogen_bond_type = 'O...h-O'
+                            hydrogen_bond = True
+                        elif target_value < 2.5:
+                            hydrogen_bond_type = 'O...h-O (too close!)'
                             hydrogen_bond = True
 
                     elif (atom_id_1_ == 'N' and atom_id_2_ == 'H') or (atom_id_2_ == 'N' and atom_id_1_ == 'H'):
@@ -6589,16 +6629,26 @@ class NmrDpUtility(object):
                         if target_value >= 1.5 and target_value <= 2.2:
                             hydrogen_bond_type = 'N...H-x'
                             hydrogen_bond = True
+                        elif target_value < 1.5:
+                            hydrogen_bond_type = 'N...H-x (too close!)'
+                            hydrogen_bond = True
 
                     elif (atom_id_1_ == 'N' and atom_id_2_ == 'N') or (atom_id_2_ == 'N' and atom_id_1_ == 'N'):
 
                         if target_value >= 2.5 and target_value <= 3.2:
                             hydrogen_bond_type = 'N...h_N'
                             hydrogen_bond = True
+                        elif target_value < 2.5:
+                            hydrogen_bond_type = 'N...h_N (too close!)'
+                            hydrogen_bond = True
 
                     elif atom_id_1_ == 'S' and atom_id_2_ == 'S':
 
                         if target_value >= 1.9 and target_value <= 2.3:
+                            disulfide_bond_type = 'S...S'
+                            disulfide_bond = True
+                        elif target_value < 1.9:
+                            disulfide_bond_type = 'S...S (too close!)'
                             disulfide_bond = True
 
                     else:
@@ -6637,6 +6687,19 @@ class NmrDpUtility(object):
                     else:
                         data_type = 'hydrogen_bonds'
                     data_type += '_' + hydrogen_bond_type
+
+                    if 'too close!' in hydrogen_bond_type:
+
+                        warn = "Hydrogen bond constraint (chain_id_1 %s, seq_id_1 %s, comp_id_1 %s, atom_id_1 %s, chain_id_2 %s, seq_id_2 %s, comp_id_2 %s, atom_id_2 %s) is too close (%s %s, %s %s, %s %s, %s %s, %s %s)." %\
+                               (chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2,
+                                target_value_name, i[target_value_name], lower_limit_name, i[lower_limit_name], upper_limit_name, i[upper_limit_name], lower_linear_limit_name, i[lower_linear_limit_name], upper_linear_limit_name, i[upper_linear_limit_name])
+
+                        self.report.warning.appendDescription('unusual_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'description': warn})
+                        self.report.setWarning()
+
+                        if self.__verbose:
+                            self.__lfh.write("+NmrDpUtility.__calculateStatsOfDistanceRestraint() ++ Warning  - %s\n" % warn)
+
                 elif disulfide_bond:
                     if chain_id_1 != chain_id_2:
                         data_type = 'inter-chain_disulfide_bonds'
@@ -6644,6 +6707,20 @@ class NmrDpUtility(object):
                         data_type = 'long_range_disulfide_bonds'
                     else:
                         data_type = 'disulfide_bonds'
+                    data_type += '_' + disulfide_bond_type
+
+                    if 'too close!' in disulfide_bond_type:
+
+                        warn = "Disulfide bond constraint (chain_id_1 %s, seq_id_1 %s, comp_id_1 %s, atom_id_1 %s, chain_id_2 %s, seq_id_2 %s, comp_id_2 %s, atom_id_2 %s) is too close (%s %s, %s %s, %s %s, %s %s, %s %s)." %\
+                               (chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2,
+                                target_value_name, i[target_value_name], lower_limit_name, i[lower_limit_name], upper_limit_name, i[upper_limit_name], lower_linear_limit_name, i[lower_linear_limit_name], upper_linear_limit_name, i[upper_linear_limit_name])
+
+                        self.report.warning.appendDescription('unusual_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'description': warn})
+                        self.report.setWarning()
+
+                        if self.__verbose:
+                            self.__lfh.write("+NmrDpUtility.__calculateStatsOfDistanceRestraint() ++ Warning  - %s\n" % warn)
+
                 elif symmetry:
                     data_type = 'symmetric_constraints'
                 elif chain_id_1 != chain_id_2:
@@ -6756,7 +6833,11 @@ class NmrDpUtility(object):
                     comp_id_2 = i[comp_id_2_name]
                     atom_id_1 = i[atom_id_1_name]
                     atom_id_2 = i[atom_id_2_name]
+
                     target_value = i[target_value_name]
+
+                    upper_limit_value = None
+                    lower_limit_value = None
 
                     if target_value is None:
 
@@ -6766,6 +6847,22 @@ class NmrDpUtility(object):
                         elif not i[lower_linear_limit_name] is None and not i[upper_linear_limit_name] is None:
                             target_value = (i[lower_linear_limit_name] + i[upper_linear_limit_name]) / 2.0
 
+                        elif not i[upper_linear_limit_name] is None:
+                            target_value = i[upper_linear_limit_name]
+                            upper_limit_value = target_value
+
+                        elif not i[upper_limit_name] is None:
+                            target_value = i[upper_limit_name]
+                            upper_limit_value = target_value
+
+                        elif not i[lower_linear_limit_name] is None:
+                            target_value = i[lower_linear_limit_name]
+                            lower_limit_value = target_value
+
+                        elif not i[lower_limit_name] is None:
+                            target_value = i[lower_limit_name]
+                            lower_limit_value = target_value
+
                         else:
                             continue
 
@@ -6774,6 +6871,7 @@ class NmrDpUtility(object):
 
                     hydrogen_bond_type = None
                     hydrogen_bond = False
+                    disulfide_bond_type = None
                     disulfide_bond = False
                     symmetry = False
 
@@ -6782,10 +6880,18 @@ class NmrDpUtility(object):
                         atom_id_1_ = atom_id_1[0]
                         atom_id_2_ = atom_id_2[0]
 
+                        if not upper_limit_value is None:
+                            target_value -= 0.4
+                        elif not lower_limit_value is None:
+                            target_value += 0.4
+
                         if (atom_id_1_ == 'F' and atom_id_2_ == 'H') or (atom_id_2_ == 'F' and atom_id_1_ == 'H'):
 
                             if target_value >= 1.2 and target_value <= 1.5:
                                 hydrogen_bond_type = 'F...H-F'
+                                hydrogen_bond = True
+                            elif target_value < 1.2:
+                                hydrogen_bond_type = 'F...H-F (too close!)'
                                 hydrogen_bond = True
 
                         elif (atom_id_1_ == 'F' and atom_id_2_ == 'F') or (atom_id_2_ == 'F' and atom_id_1_ == 'F'):
@@ -6793,11 +6899,17 @@ class NmrDpUtility(object):
                             if target_value >= 2.2 and target_value <= 2.5:
                                 hydrogen_bond_type = 'F...h-F'
                                 hydrogen_bond = True
+                            elif target_value < 2.2:
+                                hydrogen_bond_type = 'F...h-F (too close!)'
+                                hydrogen_bond = True
 
                         elif (atom_id_1_ == 'O' and atom_id_2_ == 'H') or (atom_id_2_ == 'O' and atom_id_1_ == 'H'):
 
                             if target_value >= 1.5 and target_value <= 2.2:
                                 hydrogen_bond_type = 'O...H-x'
+                                hydrogen_bond = True
+                            elif target_value < 1.5:
+                                hydrogen_bond_type = 'O...H-x (too close!)'
                                 hydrogen_bond = True
 
                         elif (atom_id_1_ == 'O' and atom_id_2_ == 'N') or (atom_id_2_ == 'O' and atom_id_1_ == 'N'):
@@ -6805,11 +6917,17 @@ class NmrDpUtility(object):
                             if target_value >= 2.5 and target_value <= 3.2:
                                 hydrogen_bond_type = 'O...h-N'
                                 hydrogen_bond = True
+                            elif target_value < 2.5:
+                                hydrogen_bond_type = 'O...h-N (too close!)'
+                                hydrogen_bond = True
 
                         elif (atom_id_1_ == 'O' and atom_id_2_ == 'O') or (atom_id_2_ == 'O' and atom_id_1_ == 'O'):
 
                             if target_value >= 2.5 and target_value <= 3.2:
                                 hydrogen_bond_type = 'O...h-O'
+                                hydrogen_bond = True
+                            elif target_value < 2.5:
+                                hydrogen_bond_type = 'O...h-O (too close!)'
                                 hydrogen_bond = True
 
                         elif (atom_id_1_ == 'N' and atom_id_2_ == 'H') or (atom_id_2_ == 'N' and atom_id_1_ == 'H'):
@@ -6817,16 +6935,26 @@ class NmrDpUtility(object):
                             if target_value >= 1.5 and target_value <= 2.2:
                                 hydrogen_bond_type = 'N...H-x'
                                 hydrogen_bond = True
+                            elif target_value < 1.5:
+                                hydrogen_bond_type = 'N...H-x (too close!)'
+                                hydrogen_bond = True
 
                         elif (atom_id_1_ == 'N' and atom_id_2_ == 'N') or (atom_id_2_ == 'N' and atom_id_1_ == 'N'):
 
                             if target_value >= 2.5 and target_value <= 3.2:
                                 hydrogen_bond_type = 'N...h_N'
                                 hydrogen_bond = True
+                            elif target_value < 2.5:
+                                hydrogen_bond_type = 'N...h_N (too close!)'
+                                hydrogen_bond = True
 
                         elif atom_id_1_ == 'S' and atom_id_2_ == 'S':
 
                             if target_value >= 1.9 and target_value <= 2.3:
+                                disulfide_bond_type = 'S...S'
+                                disulfide_bond = True
+                            elif target_value < 1.9:
+                                disulfide_bond_type = 'S...S (too close!)'
                                 disulfide_bond = True
 
                         else:
@@ -6872,6 +7000,7 @@ class NmrDpUtility(object):
                             data_type = 'long_range_disulfide_bonds'
                         else:
                             data_type = 'disulfide_bonds'
+                        data_type += '_' + disulfide_bond_type
                     elif symmetry:
                         data_type = 'symmetric_constraints'
                     elif chain_id_1 != chain_id_2:
@@ -6951,7 +7080,7 @@ class NmrDpUtility(object):
                 for j in range(len(range_of_vals)):
                     transposed[k].append(count_of_vals[j][k])
 
-            if len(range_of_vals) > 2:
+            if len(range_of_vals) > 1:
                 has_value = False
                 for j in range(1, len(range_of_vals) - 1):
                     for k in count.keys():
@@ -7368,6 +7497,18 @@ class NmrDpUtility(object):
                     elif not i[lower_linear_limit_name] is None and not i[upper_linear_limit_name] is None:
                         target_value = (i[lower_linear_limit_name] + i[upper_linear_limit_name]) / 2.0
 
+                    elif not i[upper_linear_limit_name] is None:
+                        target_value = i[upper_linear_limit_name]
+
+                    elif not i[upper_limit_name] is None:
+                        target_value = i[upper_limit_name]
+
+                    elif not i[lower_linear_limit_name] is None:
+                        target_value = i[lower_linear_limit_name]
+
+                    elif not i[lower_limit_name] is None:
+                        target_value = i[lower_limit_name]
+
                     else:
                         continue
 
@@ -7457,6 +7598,18 @@ class NmrDpUtility(object):
                         elif not i[lower_linear_limit_name] is None and not i[upper_linear_limit_name] is None:
                             target_value = (i[lower_linear_limit_name] + i[upper_linear_limit_name]) / 2.0
 
+                        elif not i[upper_linear_limit_name] is None:
+                            target_value = i[upper_linear_limit_name]
+
+                        elif not i[upper_limit_name] is None:
+                            target_value = i[upper_limit_name]
+
+                        elif not i[lower_linear_limit_name] is None:
+                            target_value = i[lower_linear_limit_name]
+
+                        elif not i[lower_limit_name] is None:
+                            target_value = i[lower_limit_name]
+
                         else:
                             continue
 
@@ -7495,7 +7648,7 @@ class NmrDpUtility(object):
                 for j in range(len(range_of_vals)):
                     transposed[k].append(count_of_vals[j][k])
 
-            if len(range_of_vals) > 2:
+            if len(range_of_vals) > 1:
                 has_value = False
                 for j in range(1, len(range_of_vals) - 1):
                     for k in count.keys():
@@ -9879,7 +10032,7 @@ class NmrDpUtility(object):
 
             if disulf['redox_state_pred_1'] != 'oxidized' and disulf['redox_state_pred_1'] != 'unknown':
 
-                warn = "Disulfide bond (chain_id_1 %s seq_id_1 %s comp_id_1 %s, chain_id_2 %s, seq_id_2 %s, comp_id_2 %s) could not supported by assigned chemical shift values (CA_1 %s, CB_1 %s, redox_state_pred_1 %s)." %\
+                warn = "Disulfide bond (chain_id_1 %s, seq_id_1 %s, comp_id_1 %s, chain_id_2 %s, seq_id_2 %s, comp_id_2 %s) could not supported by assigned chemical shift values (CA_1 %s, CB_1 %s, redox_state_pred_1 %s)." %\
                        (nmr_chain_id_1, nmr_seq_id_1, nmr_comp_id_1, nmr_chain_id_2, nmr_seq_id_2, nmr_comp_id_2, ca_chem_shift_1, cb_chem_shift_1, disulf['redox_state_pred_1'])
 
                 item = 'suspicious_data' if disulf['redox_state_pred_1'] == 'reduced' else 'unusual_data'
@@ -9894,7 +10047,7 @@ class NmrDpUtility(object):
 
             if disulf['redox_state_pred_2'] != 'oxidized' and disulf['redox_state_pred_2'] != 'unknown':
 
-                warn = "Disulfide bond (chain_id_1 %s seq_id_1 %s comp_id_1 %s, chain_id_2 %s, seq_id_2 %s, comp_id_2 %s) could not supported by assigned chemical shift values (CA_2 %s, CB_2 %s, redox_state_pred_2 %s)." %\
+                warn = "Disulfide bond (chain_id_1 %s, seq_id_1 %s, comp_id_1 %s, chain_id_2 %s, seq_id_2 %s, comp_id_2 %s) could not supported by assigned chemical shift values (CA_2 %s, CB_2 %s, redox_state_pred_2 %s)." %\
                        (nmr_chain_id_1, nmr_seq_id_1, nmr_comp_id_1, nmr_chain_id_2, nmr_seq_id_2, nmr_comp_id_2, ca_chem_shift_2, cb_chem_shift_2, disulf['redox_state_pred_2'])
 
                 item = 'suspicious_data' if disulf['redox_state_pred_2'] == 'reduced' else 'unusual_data'
@@ -10257,7 +10410,7 @@ class NmrDpUtility(object):
 
             if other['redox_state_pred_1'] != 'oxidized' and other['redox_state_pred_1'] != 'unknown':
 
-                warn = "Other bond (chain_id_1 %s seq_id_1 %s comp_id_1 %s, chain_id_2 %s, seq_id_2 %s, comp_id_2 %s) could not supported by assigned chemical shift values (CA_1 %s, CB_1 %s, redox_state_pred_1 %s)." %\
+                warn = "Other bond (chain_id_1 %s, seq_id_1 %s, comp_id_1 %s, chain_id_2 %s, seq_id_2 %s, comp_id_2 %s) could not supported by assigned chemical shift values (CA_1 %s, CB_1 %s, redox_state_pred_1 %s)." %\
                        (nmr_chain_id_1, nmr_seq_id_1, nmr_comp_id_1, nmr_chain_id_2, nmr_seq_id_2, nmr_comp_id_2, ca_chem_shift_1, cb_chem_shift_1, other['redox_state_pred_1'])
 
                 item = 'suspicious_data' if other['redox_state_pred_1'] == 'reduced' else 'unusual_data'
@@ -10272,7 +10425,7 @@ class NmrDpUtility(object):
 
             if other['redox_state_pred_2'] != 'oxidized' and other['redox_state_pred_2'] != 'unknown':
 
-                warn = "Other bond (chain_id_1 %s seq_id_1 %s comp_id_1 %s, chain_id_2 %s, seq_id_2 %s, comp_id_2 %s) could not supported by assigned chemical shift values (CA_2 %s, CB_2 %s, redox_state_pred_2 %s)." %\
+                warn = "Other bond (chain_id_1 %s, seq_id_1 %s, comp_id_1 %s, chain_id_2 %s, seq_id_2 %s, comp_id_2 %s) could not supported by assigned chemical shift values (CA_2 %s, CB_2 %s, redox_state_pred_2 %s)." %\
                        (nmr_chain_id_1, nmr_seq_id_1, nmr_comp_id_1, nmr_chain_id_2, nmr_seq_id_2, nmr_comp_id_2, ca_chem_shift_2, cb_chem_shift_2, other['redox_state_pred_2'])
 
                 item = 'suspicious_data' if other['redox_state_pred_2'] == 'reduced' else 'unusual_data'
@@ -11258,6 +11411,8 @@ class NmrDpUtility(object):
                     return False
 
                 target_value = i[target_value_name]
+                upper_limit_value = None
+                lower_limit_value = None
 
                 if target_value is None:
 
@@ -11267,11 +11422,32 @@ class NmrDpUtility(object):
                     elif not i[lower_linear_limit_name] is None and not i[upper_linear_limit_name] is None:
                         target_value = (i[lower_linear_limit_name] + i[upper_linear_limit_name]) / 2.0
 
+                    elif not i[upper_linear_limit_name] is None:
+                        target_value = i[upper_linear_limit_name]
+                        upper_limit_value = target_value
+
+                    elif not i[upper_limit_name] is None:
+                        target_value = i[upper_limit_name]
+                        upper_limit_value = target_value
+
+                    elif not i[lower_linear_limit_name] is None:
+                        target_value = i[lower_linear_limit_name]
+                        lower_limit_value = target_value
+
+                    elif not i[lower_limit_name] is None:
+                        target_value = i[lower_limit_name]
+                        lower_limit_value = target_value
+
                     else:
                         return False
 
                 atom_id_1_ = i[atom_id_1_name][0]
                 atom_id_2_ = i[atom_id_2_name][0]
+
+                if not upper_limit_value is None:
+                    target_value -= 0.4
+                elif not lower_limit_value is None:
+                    target_value += 0.4
 
                 if (atom_id_1_ == 'F' and atom_id_2_ == 'H') or (atom_id_2_ == 'F' and atom_id_1_ == 'H'):
 
@@ -11360,6 +11536,8 @@ class NmrDpUtility(object):
                     return False
 
                 target_value = i[target_value_name]
+                upper_limit_value = None
+                lower_limit_value = None
 
                 if target_value is None:
 
@@ -11369,11 +11547,32 @@ class NmrDpUtility(object):
                     elif not i[lower_linear_limit_name] is None and not i[upper_linear_limit_name] is None:
                         target_value = (i[lower_linear_limit_name] + i[upper_linear_limit_name]) / 2.0
 
+                    elif not i[upper_linear_limit_name] is None:
+                        target_value = i[upper_linear_limit_name]
+                        upper_limit_value = target_value
+
+                    elif not i[upper_limit_name] is None:
+                        target_value = i[upper_limit_name]
+                        upper_limit_value = target_value
+
+                    elif not i[lower_linear_limit_name] is None:
+                        target_value = i[lower_linear_limit_name]
+                        lower_limit_value = target_value
+
+                    elif not i[lower_limit_name] is None:
+                        target_value = i[lower_limit_name]
+                        lower_limit_value = target_value
+
                     else:
                         return False
 
                 atom_id_1_ = i[atom_id_1_name][0]
                 atom_id_2_ = i[atom_id_2_name][0]
+
+                if not upper_limit_value is None:
+                    target_value -= 0.4
+                elif not lower_limit_value is None:
+                    target_value += 0.4
 
                 if atom_id_1_ == 'S' and atom_id_2_ == 'S':
 

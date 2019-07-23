@@ -6180,6 +6180,7 @@ class NmrDpUtility(object):
                     transposed[k].append(count_of_vals[j][k])
 
             if len(range_of_vals) > 1:
+                """
                 has_value = False
                 for j in range(1, len(range_of_vals) - 1):
                     for k in count.keys():
@@ -6190,7 +6191,8 @@ class NmrDpUtility(object):
                         break
 
                 if has_value:
-                    ent['histogram'] = {'range_of_values': range_of_vals, 'number_of_values': transposed, 'annotations': cs_ann}
+                """
+                ent['histogram'] = {'range_of_values': range_of_vals, 'number_of_values': transposed, 'annotations': cs_ann}
 
             if 'sequence_coverage' in ent:
 
@@ -7081,6 +7083,7 @@ class NmrDpUtility(object):
                     transposed[k].append(count_of_vals[j][k])
 
             if len(range_of_vals) > 1:
+                """
                 has_value = False
                 for j in range(1, len(range_of_vals) - 1):
                     for k in count.keys():
@@ -7091,7 +7094,8 @@ class NmrDpUtility(object):
                         break
 
                 if has_value:
-                    ent['histogram'] = {'range_of_values': range_of_vals, 'number_of_values': transposed}
+                """
+                ent['histogram'] = {'range_of_values': range_of_vals, 'number_of_values': transposed}
 
         except Exception as e:
 
@@ -7649,6 +7653,7 @@ class NmrDpUtility(object):
                     transposed[k].append(count_of_vals[j][k])
 
             if len(range_of_vals) > 1:
+                """
                 has_value = False
                 for j in range(1, len(range_of_vals) - 1):
                     for k in count.keys():
@@ -7659,7 +7664,8 @@ class NmrDpUtility(object):
                         break
 
                 if has_value:
-                    ent['histogram'] = {'range_of_values': range_of_vals, 'number_of_values': transposed}
+                """
+                ent['histogram'] = {'range_of_values': range_of_vals, 'number_of_values': transposed}
 
         except Exception as e:
 

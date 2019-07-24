@@ -99,6 +99,10 @@ class TestBMRBChemShiftStat(unittest.TestCase):
         self.assertEqual(self.bmrb_cs_stat.getGeminalAtom('ARG', 'HB3'), 'HB2')
         self.assertEqual(self.bmrb_cs_stat.getGeminalAtom('U', "H5'"), "H5''")
         self.assertEqual(self.bmrb_cs_stat.getGeminalAtom('U', "H5''"), "H5'")
+        self.assertEqual(self.bmrb_cs_stat.getGeminalAtom('VAL', 'HG11'), 'HG21')
+        self.assertEqual(self.bmrb_cs_stat.getGeminalAtom('VAL', 'HG21'), 'HG11')
+        self.assertEqual(self.bmrb_cs_stat.getGeminalAtom('VAL', 'CG1'), 'CG2')
+        self.assertEqual(self.bmrb_cs_stat.getGeminalAtom('VAL', 'CG2'), 'CG1')
 
 if __name__ == '__main__':
     unittest.main()

@@ -111,6 +111,7 @@ class NmrDpUtility(object):
                           self.__removeNonSenseZeroValue,
                           self.__fixNonSenseNegativeValue,
                           self.__fixEnumerationValue,
+                          #self.__fixBadAmbiguityCode,
                           self.__resetCapitalStringInLoop,
                           self.__resetBoolValueInLoop,
                           self.__resetBoolValueInAuxLoop,
@@ -4435,15 +4436,17 @@ class NmrDpUtility(object):
                                         self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ ValueError - %s\n" % err)
 
                             except StopIteration:
+                                pass
+                                """
+                                warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_id) + '] %s %s indicates %s. However, row of %s %s of the same residue was not found.' %\
+                                       (ambig_code_name, ambig_code, ambig_code_desc, atom_id_name, atom_id2)
 
-                                err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_id) + '] %s %s indicates %s. However, row of %s %s of the same residue was not found.' %\
-                                      (ambig_code_name, ambig_code, ambig_code_desc, atom_id_name, atom_id2)
-
-                                self.report.error.appendDescription('invalid_ambiguity_code', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
-                                self.report.setError()
+                                self.report.warning.appendDescription('bad_ambiguity_code', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
+                                self.report.setWarning()
 
                                 if self.__verbose:
-                                    self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ ValueError - %s\n" % err)
+                                    self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ Warning - %s\n" % warn)
+                                """
 
                         elif ambig_code in [4, 5, 6, 9]:
 
@@ -12374,6 +12377,148 @@ class NmrDpUtility(object):
                 self.__lfh.write("+NmrDpUtility.__testRestraintPotentialLHorP() ++ Error  - %s" % str(e))
 
             return False
+
+        return True
+
+    def __fixBadAmbiguityCode(self):
+        """ Fix bad ambiguity code if possible.
+        """
+
+        input_source = self.report.input_sources[0]
+        input_source_dic = input_source.get()
+
+        file_type = input_source_dic['file_type']
+        file_name = input_source_dic['file_name']
+
+        # NEF file has no ambiguity code
+        if file_type == 'nef':
+            return True
+
+        warnings = self.report.warning.getValueList('bad_ambiguity_code', file_name)
+
+        if warnings is None:
+            return True
+
+        for w in warnings:
+
+            if not "the same residue was not found." in w['description']:
+                continue
+
+            if self.__star_data_type == "Entry" or self.__star_data_type == "Saveframe":
+
+                if not 'sf_framecode' in w:
+
+                    err = "Could not specify 'sf_framecode' in NMR data processing report."
+
+                    self.report.error.appendDescription('internal_error', "+NmrDpUtility.__fixBadAmbiguityCode() ++ Error  - %s" % err)
+                    self.report.setError()
+
+                    if self.__verbose:
+                        self.__lfh.write("+NmrDpUtility.__fixBadAmbiguityCode() ++ Error  - %s\n" % err)
+
+                elif not 'category' in w:
+
+                    err = "Could not specify 'category' in NMR data processing report."
+
+                    self.report.error.appendDescription('internal_error', "+NmrDpUtility.__fixBadAmbiguityCode() ++ Error  - %s" % err)
+                    self.report.setError()
+
+                    if self.__verbose:
+                        self.__lfh.write("+NmrDpUtility.__fixBadAmbiguityCode() ++ Error  - %s\n" % err)
+
+                elif not 'row_location' in w:
+
+                    err = "Could not specify 'row_location' in NMR data processing report."
+
+                    self.report.error.appendDescription('internal_error', "+NmrDpUtility.__fixBadAmbiguityCode() ++ Error  - %s" % err)
+                    self.report.setError()
+
+                    if self.__verbose:
+                        self.__lfh.write("+NmrDpUtility.__fixBadAmbiguityCode() ++ Error  - %s\n" % err)
+
+                else:
+
+                    sf_data = self.__star_data.get_saveframe_by_name(w['sf_framecode'])
+
+                    if sf_data is None:
+
+                        err = "Could not specify saveframe %s unexpectedly in %s file." % (w['sf_framecode'], file_name)
+
+                        self.report.error.appendDescription('internal_error', "+NmrDpUtility.__fixBadAmbiguityCode() ++ Error  - %s" % err)
+                        self.report.setError()
+
+                        if self.__verbose:
+                            self.__lfh.write("+NmrDpUtility.__fixBadAmbiguityCode() ++ Error  - %s\n" % err)
+
+                    else:
+
+                        description = w['description'].split(' ')
+
+                        itName = description[0]
+                        itVal = description[1]
+
+                        lp_data = sf_data.get_loop_by_category(w['category'])
+
+                        if not itName in lp_data.tags:
+
+                            err = "Could not find loop tag %s in %s category, %s saveframe, %s file." % (itName, w['category'], w['sf_framecode'], file_name)
+
+                            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__fixBadAmbiguityCode() ++ Error  - %s" % err)
+                            self.report.setError()
+
+                            if self.__verbose:
+                                self.__lfh.write("+NmrDpUtility.__fixBadAmbiguityCode() ++ Error  - %s\n" % err)
+
+                        else:
+                            itCol = lp_data.tags.index(itName)
+
+                            itColVal = {str(itCol): itVal}
+
+                            has_loop_tag = True
+
+                            for k, v in w['row_location'].items():
+
+                                if k in lp_data.tags:
+                                    itColVal[str(lp_data.tags.index(k))] = v
+
+                                else:
+
+                                    err = "Could not find loop tag %s in %s category, %s saveframe, %s file." % (k, w['category'], w['sf_framecode'], file_name)
+
+                                    self.report.error.appendDescription('internal_error', "+NmrDpUtility.__fixBadAmbiguityCode() ++ Error  - %s" % err)
+                                    self.report.setError()
+
+                                    if self.__verbose:
+                                        self.__lfh.write("+NmrDpUtility.__fixBadAmbiguityCode() ++ Error  - %s\n" % err)
+
+                                    has_loop_tag = False
+
+                            if not has_loop_tag:
+                                continue
+
+                            for row in lp_data.data:
+
+                                exist = True
+
+                                for k, v in itColVal.items():
+
+                                    if row[int(k)] != v:
+                                        exist = False
+                                        break
+
+                                if exist:
+                                    row[itCol] = 1
+                                    break
+
+            else:
+
+                err = "Unexpected PyNMRSTAR object type %s found about %s file." % (self.__star_data_type, file_name)
+
+                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__fixBadAmbiguityCode() ++ Error  - %s" % err)
+                self.report.setError()
+
+                if self.__verbose:
+                    self.__lfh.write("+NmrDpUtility.__fixBadAmbiguityCode() ++ Error  - %s\n" % err)
 
         return True
 

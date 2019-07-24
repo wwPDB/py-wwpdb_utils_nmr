@@ -6349,18 +6349,20 @@ class NmrDpUtility(object):
                                     elif delta > 9.15:
                                         pro['cis_trans_pred'] = 'cis'
                                     else:
-                                        cis, trs = self.__predictCisTransPeptideOfProline(cb_chem_shift, cg_chem_shift)
-                                        pro['cis_trans_pred'] = 'cis %s (%%), trans %s (%%)' % ('{:.1f}'.format(cis * 100.0), '{:.1f}'.format(trs * 100.0))
+                                        pro['cis_trans_pred'] = 'ambiguous'
                                 elif not cb_chem_shift is None or not cg_chem_shift is None:
-                                        cis, trs = self.__predictCisTransPeptideOfProline(cb_chem_shift, cg_chem_shift)
-                                        if cis < 0.001:
-                                            pro['cis_trans_pred'] = 'trans'
-                                        elif trs < 0.001:
-                                            pro['cis_trans_pred'] = 'cis'
-                                        else:
-                                            pro['cis_trans_pred'] = 'cis %s (%%), trans %s (%%)' % ('{:.1f}'.format(cis * 100.0), '{:.1f}'.format(trs * 100.0))
+                                    pro['cis_trans_pred'] = 'ambiguous'
                                 else:
                                     pro['cis_trans_pred'] = 'unknown'
+
+                                if pro['cis_trans_pred'] == 'ambiguous':
+                                    cis, trs = self.__predictCisTransPeptideOfProline(cb_chem_shift, cg_chem_shift)
+                                    if cis < 0.001:
+                                        pro['cis_trans_pred'] = 'trans'
+                                    elif trs < 0.001:
+                                        pro['cis_trans_pred'] = 'cis'
+                                    else:
+                                        pro['cis_trans_pred'] = 'cis %s (%%), trans %s (%%)' % ('{:.1f}'.format(cis * 100.0), '{:.1f}'.format(trs * 100.0))
 
                                 pro['in_cis_peptide_bond'] = self.__isProtCis(chain_id, seq_id)
 

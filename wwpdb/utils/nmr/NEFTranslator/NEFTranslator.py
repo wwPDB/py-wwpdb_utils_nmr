@@ -558,9 +558,14 @@ class NEFTranslator(object):
                 if len(seq_dat) == 0:
                     continue
             else:
+                l = 0
                 for i in seq_dat:
                     if self.__is_empty_data(i):
-                        raise ValueError("Sequence must not be empty. %s %s, %s %s, %s %s." % (chain_id, i[2], seq_id, i[0], comp_id, i[1]))
+                        r = {}
+                        for j in range(len(loop.tags)):
+                            r[loop.tags[j]] = loop.data[l][j]
+                        raise ValueError("Sequence must not be empty. raw_data %s." % r)
+                    l += 1
 
             try:
 
@@ -666,9 +671,14 @@ class NEFTranslator(object):
                 if len(seq_dat) == 0:
                     continue
             else:
+                l = 0
                 for i in seq_dat:
                     if self.__is_empty_data(i):
-                        raise ValueError("Sequence must not be empty. %s %s, %s %s, %s %s." % (chain_id, i[2], seq_id, i[0], comp_id, i[1]))
+                        r = {}
+                        for j in range(len(loop.tags)):
+                            r[loop.tags[j]] = loop.data[l][j]
+                        raise ValueError("Sequence must not be empty. raw_data %s." % r)
+                    l += 1
 
             try:
 
@@ -776,10 +786,14 @@ class NEFTranslator(object):
                 if len(seq_dat) == 0:
                     continue
             else:
+                l = 0
                 for i in seq_dat:
                     if self.__is_empty_data(i):
-                        raise ValueError("Author sequence must not be empty. %s %s, %s %s, %s %s, %s %s, %s %s." %\
-                                         (chain_id, i[4], seq_id, i[3], asym_id, i[2], aseq_id, i[0], acomp_id, i[1]))
+                        r = {}
+                        for j in range(len(loop.tags)):
+                            r[loop.tags[j]] = loop.data[l][j]
+                        raise ValueError("Author sequence must not be empty. raw_data %s." % r)
+                    l += 1
 
             try:
 
@@ -906,9 +920,14 @@ class NEFTranslator(object):
                 if len(cmp_atm_dat) == 0:
                     continue
             else:
+                l = 0
                 for i in cmp_atm_dat:
                     if self.__is_empty_data(i):
-                        raise ValueError("%s and %s must not be empty. %s %s, %s %s." % (comp_id, atom_id, comp_id, i[0], atom_id, i[1]))
+                        r = {}
+                        for j in range(len(loop.tags)):
+                            r[loop.tags[j]] = loop.data[l][j]
+                        raise ValueError("%s and %s must not be empty. raw_data %s." % r)
+                    l += 1
 
             comps = sorted(set([i[0] for i in cmp_atm_dat]))
             sorted_comp_atom = sorted(set(['{} {}'.format(i[0], i[1]) for i in cmp_atm_dat]))
@@ -982,10 +1001,15 @@ class NEFTranslator(object):
                 if len(a_type_dat) == 0:
                     continue
             else:
+                l = 0
                 for i in a_type_dat:
                     if self.__is_empty_data(i):
-                        raise ValueError("%s, %s, and %s must not be empty. %s %s, %s %s, %s %s." %\
-                                         (atom_type, isotope_number, atom_id, atom_type, i[0], isotope_number, i[1], atom_id, i[2]))
+                        r = {}
+                        for j in range(len(loop.tags)):
+                            r[loop.tags[j]] = loop.data[l][j]
+                        raise ValueError("%s, %s, and %s must not be empty. raw_data %s." %\
+                                         (atom_type, isotope_number, atom_id, r))
+                    l += 1
 
             try:
 
@@ -1144,9 +1168,14 @@ class NEFTranslator(object):
             else:
                 raise LookupError("Missing key item %s." % index_id)
 
+            l = 0
             for i in index_dat:
                 if self.__is_empty_data(i):
-                    raise ValueError("%s must not be empty." % index_id)
+                    r = {}
+                    for j in range(len(loop.tags)):
+                        r[loop.tags[j]] = loop.data[l][j]
+                    raise ValueError("%s must not be empty. raw_data %s." % (index_id, r))
+                l += 1
 
             try:
 

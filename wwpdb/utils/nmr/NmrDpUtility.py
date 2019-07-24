@@ -4253,8 +4253,8 @@ class NmrDpUtility(object):
 
                                     elif not cs_stat['primary']:
 
-                                        warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] %s %s is remarkable assignment (appearance rate %s).' %\
-                                               (value_name, value, cs_stat['norm_freq'], lp_category)
+                                        warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] %s %s is remarkable assignment (appearance_rate %s %%).' %\
+                                               (value_name, value, cs_stat['norm_freq'] * 100.0)
 
                                         self.report.warning.appendDescription('remarkable_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
                                         self.report.setWarning()
@@ -4372,8 +4372,8 @@ class NmrDpUtility(object):
 
                                 elif not cs_stat['primary']:
 
-                                    warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] %s %s is remarkable assignment (appearance rate %s).' %\
-                                           (value_name, value, cs_stat['norm_freq'])
+                                    warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] %s %s is remarkable assignment (appearance_rate %s %%).' %\
+                                           (value_name, value, cs_stat['norm_freq'] * 100.0)
 
                                     self.report.warning.appendDescription('remarkable_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
                                     self.report.setWarning()

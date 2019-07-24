@@ -292,7 +292,12 @@ class BMRBChemShiftStat:
             if d == 'methyl-geminal' and atom_id[0] == 'H':
                 return next(i['atom_id'] for i in cs_stat if i['desc'] == d and i['atom_id'] != atom_id and i['atom_id'][:-2] == atom_id[:-2] and i['atom_id'][-1] == atom_id[-1])
             elif 'geminal' in d or d == 'aroma-opposite':
-                return next(i['atom_id'] for i in cs_stat if i['desc'] == d and i['atom_id'] != atom_id and i['atom_id'][:-1] == atom_id[:-1])
+                if not atom_id.endswith("'"):
+                    return next(i['atom_id'] for i in cs_stat if i['desc'] == d and i['atom_id'] != atom_id and i['atom_id'][:-1] == atom_id[:-1])
+                elif atom_id.endswith("''"):
+                    return next(i['atom_id'] for i in cs_stat if i['desc'] == d and i['atom_id'] != atom_id and i['atom_id'] == atom_id[:-1])
+                else:
+                    return next(i['atom_id'] for i in cs_stat if i['desc'] == d and i['atom_id'] != atom_id and i['atom_id'] == atom_id + "'")
             else:
                 return None
 

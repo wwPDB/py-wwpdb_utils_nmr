@@ -4140,7 +4140,7 @@ class NmrDpUtility(object):
                             atom_name = atom_id
 
                             if not details is None:
-                                atom_name += ', which is' + details.rstrip('.').replace(atom_id, '')
+                                atom_name += ', besides that, ' + details.rstrip('.')
 
                         else:
                             atom_name = atom_id + ' (e.g. '
@@ -9172,7 +9172,7 @@ class NmrDpUtility(object):
                                     atom_name = atom_id
 
                                     if not details is None:
-                                        atom_name += ', which is' + details.rstrip('.').replace(atom_id, '')
+                                        atom_name += ', besides that, ' + details.rstrip('.')
 
                                 else:
                                     atom_name = atom_id + ' (e.g. '

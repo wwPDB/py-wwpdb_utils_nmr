@@ -1,6 +1,6 @@
 ##
 # File: NEFTranslator.py
-# Date: 23-Jul-2019
+# Date: 24-Jul-2019
 #
 # Updates:
 ##
@@ -2170,7 +2170,7 @@ class NEFTranslator(object):
                 atom_list.append(nef_atom)
                 ambiguity_code = None
                 if details is None:
-                    details = '%s is invalid atom name (comp_id %s).' % (nef_atom, comp_id)
+                    details = '%s is invalid atom_id in comp_id %s.' % (nef_atom, comp_id)
 
         return atom_list, ambiguity_code, details
 

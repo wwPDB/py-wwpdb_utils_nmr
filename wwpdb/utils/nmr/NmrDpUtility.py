@@ -4140,7 +4140,7 @@ class NmrDpUtility(object):
                             atom_name = atom_id
 
                             if not details is None:
-                                atom_name += ', ' + details.rstrip('.')
+                                atom_name += ', which is' + details.rstrip('.').replace(atom_id, '')
 
                         else:
                             atom_name = atom_id + ' (e.g. '
@@ -6258,12 +6258,19 @@ class NmrDpUtility(object):
                                         cys['redox_state_pred'] = 'oxidized'
                                     else:
                                         cys['redox_state_pred'] = 'ambiguous'
+                                elif not ca_chem_shift is None:
+                                    cys['redox_state_pred'] = 'ambiguous'
                                 else:
                                     cys['redox_state_pred'] = 'unknown'
 
                                 if cys['redox_state_pred'] == 'ambiguous':
                                     oxi, red = self.__predictRedoxStateOfCystein(ca_chem_shift, cb_chem_shift)
-                                    cys['redox_state_pred'] = 'oxidized %s (%%), reduced %s (%%)' % ('{:.1f}'.format(oxi * 100.0), '{:.1f}'.format(red * 100.0))
+                                    if oxi < 0.001:
+                                        cys['redox_state_pred'] = 'reduced'
+                                    elif red < 0.001:
+                                        cys['redox_state_pred'] = 'oxidized'
+                                    else:
+                                        cys['redox_state_pred'] = 'oxidized %s (%%), reduced %s (%%)' % ('{:.1f}'.format(oxi * 100.0), '{:.1f}'.format(red * 100.0))
 
                                 cys['in_disulfide_bond'] = False
                                 if not input_source_dic['disulfide_bond'] is None:
@@ -6344,6 +6351,14 @@ class NmrDpUtility(object):
                                     else:
                                         cis, trs = self.__predictCisTransPeptideOfProline(cb_chem_shift, cg_chem_shift)
                                         pro['cis_trans_pred'] = 'cis %s (%%), trans %s (%%)' % ('{:.1f}'.format(cis * 100.0), '{:.1f}'.format(trs * 100.0))
+                                elif not cb_chem_shift is None or not cg_chem_shift is None:
+                                        cis, trs = self.__predictCisTransPeptideOfProline(cb_chem_shift, cg_chem_shift)
+                                        if cis < 0.001:
+                                            pro['cis_trans_pred'] = 'trans'
+                                        elif trs < 0.001:
+                                            pro['cis_trans_pred'] = 'cis'
+                                        else:
+                                            pro['cis_trans_pred'] = 'cis %s (%%), trans %s (%%)' % ('{:.1f}'.format(cis * 100.0), '{:.1f}'.format(trs * 100.0))
                                 else:
                                     pro['cis_trans_pred'] = 'unknown'
 
@@ -6362,8 +6377,14 @@ class NmrDpUtility(object):
 
                                     if not item is None:
 
-                                        warn = "%s-peptide bond (chain_id %s, seq_id %s, comp_id %s) could not supported by assigned chemical shift values (CB %s, CG %s, cis_trans_pred %s)." %\
-                                               ('Cis' if pro['in_cis_peptide_bond'] else 'Trans', chain_id, seq_id, comp_id, cb_chem_shift, cg_chem_shift, pro['cis_trans_pred'])
+                                        shifts = ''
+                                        if not cb_chem_shift is None:
+                                            shifts += 'CB %s, ' % cb_chem_shift
+                                        if not cg_chem_shift is None:
+                                            shifts += 'CG %s, ' % cg_chem_shift
+
+                                        warn = "%s-peptide bond (chain_id %s, seq_id %s, comp_id %s) could not supported by assigned chemical shift values (%scis_trans_pred %s)." %\
+                                               ('cis' if pro['in_cis_peptide_bond'] else 'trans', chain_id, seq_id, comp_id, shifts, pro['cis_trans_pred'])
 
                                         self.report.warning.appendDescription(item, {'file_name': file_name, 'sf_framecode': sf_framecode, 'description': warn})
                                         self.report.setWarning()
@@ -6463,8 +6484,18 @@ class NmrDpUtility(object):
 
                                     if not item is None:
 
-                                        warn = "Tautomeric state %s (chain_id %s, seq_id %s, comp_id %s) could not supported by assigned chemical shift values (CG %s, CD2 %s, ND1 %s, NE2 %s, tautomeric_state_pred %s)." %\
-                                               (his['tautomeric_state'], chain_id, seq_id, comp_id, cg_chem_shift, cd2_chem_shift, nd1_chem_shift, ne2_chem_shift, his['tautomeric_state_pred'])
+                                        shifts = ''
+                                        if not cg_chem_shift is None:
+                                            shifts += 'CG %s, ' % cg_chem_shift
+                                        if not cd2_chem_shift is None:
+                                            shifts += 'CD2 %s, ' % cd2_chem_shift
+                                        if not nd1_chem_shift is None:
+                                            shifts += 'ND1 %s, ' % nd1_chem_shift
+                                        if not ne2_chem_shift is None:
+                                            shifts += 'NE2 %s, ' % ne2_chem_shift
+
+                                        warn = "Tautomeric state %s (chain_id %s, seq_id %s, comp_id %s) could not supported by assigned chemical shift values (%stautomeric_state_pred %s)." %\
+                                               (his['tautomeric_state'], chain_id, seq_id, comp_id, shifts, his['tautomeric_state_pred'])
 
                                         self.report.warning.appendDescription(item, {'file_name': file_name, 'sf_framecode': sf_framecode, 'description': warn})
                                         self.report.setWarning()
@@ -6766,9 +6797,20 @@ class NmrDpUtility(object):
 
                     if 'too close!' in hydrogen_bond_type:
 
-                        warn = "Hydrogen bond constraint (chain_id_1 %s, seq_id_1 %s, comp_id_1 %s, atom_id_1 %s, chain_id_2 %s, seq_id_2 %s, comp_id_2 %s, atom_id_2 %s) is too close (%s %s, %s %s, %s %s, %s %s, %s %s)." %\
-                               (chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2,
-                                target_value_name, i[target_value_name], lower_limit_name, i[lower_limit_name], upper_limit_name, i[upper_limit_name], lower_linear_limit_name, i[lower_linear_limit_name], upper_linear_limit_name, i[upper_linear_limit_name])
+                        values = ''
+                        if not i[target_value_name] is None:
+                            values += '%s %s, ' % (target_value_name, i[target_value_name])
+                        if not i[lower_limit_name] is None:
+                            values += '%s %s, ' % (lower_limit_name, i[lower_limit_name])
+                        if not i[upper_limit_name] is None:
+                            values += '%s %s, ' % (upper_limit_name, i[upper_limit_name])
+                        if not i[lower_linear_limit_name] is None:
+                            values += '%s %s, ' % (lower_linear_limit_name, i[lower_linear_limit_name])
+                        if not i[upper_linear_limit_name] is None:
+                            values += '%s %s, ' % (upper_linear_limit_name, i[upper_linear_limit_name])
+
+                        warn = "Hydrogen bond constraint (chain_id_1 %s, seq_id_1 %s, comp_id_1 %s, atom_id_1 %s, chain_id_2 %s, seq_id_2 %s, comp_id_2 %s, atom_id_2 %s) is too close (%s)." %\
+                               (chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2, values[:-2])
 
                         self.report.warning.appendDescription('unusual_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'description': warn})
                         self.report.setWarning()
@@ -6787,9 +6829,20 @@ class NmrDpUtility(object):
 
                     if 'too close!' in disulfide_bond_type:
 
-                        warn = "Disulfide bond constraint (chain_id_1 %s, seq_id_1 %s, comp_id_1 %s, atom_id_1 %s, chain_id_2 %s, seq_id_2 %s, comp_id_2 %s, atom_id_2 %s) is too close (%s %s, %s %s, %s %s, %s %s, %s %s)." %\
-                               (chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2,
-                                target_value_name, i[target_value_name], lower_limit_name, i[lower_limit_name], upper_limit_name, i[upper_limit_name], lower_linear_limit_name, i[lower_linear_limit_name], upper_linear_limit_name, i[upper_linear_limit_name])
+                        values = ''
+                        if not i[target_value_name] is None:
+                            values += '%s %s, ' % (target_value_name, i[target_value_name])
+                        if not i[lower_limit_name] is None:
+                            values += '%s %s, ' % (lower_limit_name, i[lower_limit_name])
+                        if not i[upper_limit_name] is None:
+                            values += '%s %s, ' % (upper_limit_name, i[upper_limit_name])
+                        if not i[lower_linear_limit_name] is None:
+                            values += '%s %s, ' % (lower_linear_limit_name, i[lower_linear_limit_name])
+                        if not i[upper_linear_limit_name] is None:
+                            values += '%s %s, ' % (upper_linear_limit_name, i[upper_linear_limit_name])
+
+                        warn = "Disulfide bond constraint (chain_id_1 %s, seq_id_1 %s, comp_id_1 %s, atom_id_1 %s, chain_id_2 %s, seq_id_2 %s, comp_id_2 %s, atom_id_2 %s) is too close (%s)." %\
+                               (chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2, values[:-2])
 
                         self.report.warning.appendDescription('unusual_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'description': warn})
                         self.report.setWarning()
@@ -6808,9 +6861,20 @@ class NmrDpUtility(object):
 
                     if 'too close!' in diselenide_bond_type:
 
-                        warn = "Diselenide bond constraint (chain_id_1 %s, seq_id_1 %s, comp_id_1 %s, atom_id_1 %s, chain_id_2 %s, seq_id_2 %s, comp_id_2 %s, atom_id_2 %s) is too close (%s %s, %s %s, %s %s, %s %s, %s %s)." %\
-                               (chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2,
-                                target_value_name, i[target_value_name], lower_limit_name, i[lower_limit_name], upper_limit_name, i[upper_limit_name], lower_linear_limit_name, i[lower_linear_limit_name], upper_linear_limit_name, i[upper_linear_limit_name])
+                        values = ''
+                        if not i[target_value_name] is None:
+                            values += '%s %s, ' % (target_value_name, i[target_value_name])
+                        if not i[lower_limit_name] is None:
+                            values += '%s %s, ' % (lower_limit_name, i[lower_limit_name])
+                        if not i[upper_limit_name] is None:
+                            values += '%s %s, ' % (upper_limit_name, i[upper_limit_name])
+                        if not i[lower_linear_limit_name] is None:
+                            values += '%s %s, ' % (lower_linear_limit_name, i[lower_linear_limit_name])
+                        if not i[upper_linear_limit_name] is None:
+                            values += '%s %s, ' % (upper_linear_limit_name, i[upper_linear_limit_name])
+
+                        warn = "Diselenide bond constraint (chain_id_1 %s, seq_id_1 %s, comp_id_1 %s, atom_id_1 %s, chain_id_2 %s, seq_id_2 %s, comp_id_2 %s, atom_id_2 %s) is too close (%s)." %\
+                               (chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2, values[:-2])
 
                         self.report.warning.appendDescription('unusual_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'description': warn})
                         self.report.setWarning()
@@ -6829,9 +6893,20 @@ class NmrDpUtility(object):
 
                     if 'too close!' in other_bond_type:
 
-                        warn = "Other bond constraint (chain_id_1 %s, seq_id_1 %s, comp_id_1 %s, atom_id_1 %s, chain_id_2 %s, seq_id_2 %s, comp_id_2 %s, atom_id_2 %s) is too close (%s %s, %s %s, %s %s, %s %s, %s %s)." %\
-                               (chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2,
-                                target_value_name, i[target_value_name], lower_limit_name, i[lower_limit_name], upper_limit_name, i[upper_limit_name], lower_linear_limit_name, i[lower_linear_limit_name], upper_linear_limit_name, i[upper_linear_limit_name])
+                        values = ''
+                        if not i[target_value_name] is None:
+                            values += '%s %s, ' % (target_value_name, i[target_value_name])
+                        if not i[lower_limit_name] is None:
+                            values += '%s %s, ' % (lower_limit_name, i[lower_limit_name])
+                        if not i[upper_limit_name] is None:
+                            values += '%s %s, ' % (upper_limit_name, i[upper_limit_name])
+                        if not i[lower_linear_limit_name] is None:
+                            values += '%s %s, ' % (lower_linear_limit_name, i[lower_linear_limit_name])
+                        if not i[upper_linear_limit_name] is None:
+                            values += '%s %s, ' % (upper_linear_limit_name, i[upper_linear_limit_name])
+
+                        warn = "Other bond constraint (chain_id_1 %s, seq_id_1 %s, comp_id_1 %s, atom_id_1 %s, chain_id_2 %s, seq_id_2 %s, comp_id_2 %s, atom_id_2 %s) is too close (%s)." %\
+                               (chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2, values[:-2])
 
                         self.report.warning.appendDescription('unusual_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'description': warn})
                         self.report.setWarning()
@@ -9097,7 +9172,7 @@ class NmrDpUtility(object):
                                     atom_name = atom_id
 
                                     if not details is None:
-                                        atom_name += ', ' + details.rstrip('.')
+                                        atom_name += ', which is' + details.rstrip('.').replace(atom_id, '')
 
                                 else:
                                     atom_name = atom_id + ' (e.g. '
@@ -9122,7 +9197,7 @@ class NmrDpUtility(object):
                                 if not index_tag is None:
                                     idx_msg = "[Check row of %s %s] " % (index_tag, i[index_tag])
 
-                                err = "%sThere is an invalid atom (%s %s, %s %s, %s %s, %s %s), which is not incorporated in the atomic coordinate." %\
+                                err = "%sAtom (%s %s, %s %s, %s %s, %s %s) is not incorporated in the atomic coordinate." %\
                                       (idx_msg, chain_id_names[j], chain_id, seq_id_names[j], seq_id, comp_id_names[j], comp_id, atom_id_names[j], atom_name)
 
                                 self.report.error.appendDescription('invalid_atom_nomenclature', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
@@ -10723,7 +10798,7 @@ class NmrDpUtility(object):
             else:
                 trs *= self.__probabilityDensity(cg_chem_shift, trs_cg['avr'], trs_cg['std'])
 
-        if not cb_chem_shift is None and not cg_chem_shift:
+        if not cb_chem_shift is None and not cg_chem_shift is None:
             delta_shift = cb_chem_shift - cg_chem_shift
 
             cis *= self.__probabilityDensity(delta_shift, cis_dl['avr'], cis_dl['std'])

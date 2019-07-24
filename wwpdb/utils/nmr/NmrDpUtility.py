@@ -11254,8 +11254,8 @@ class NmrDpUtility(object):
 
                                                         if self.__testDihedRestraintAsBackBoneChemShifts(lp_data):
                                                             sf_data.tags[itCol][1] = 'backbone chemical shifts'
-                                                        else:
-                                                            sf_data.tags[itCol][1] = 'J-couplings'
+                                                        #else:
+                                                        #    sf_data.tags[itCol][1] = 'J-couplings'
 
                                                     elif content_subtype == 'rdc_restraint':
                                                         sf_data.tags[itCol][1] = 'RDC'

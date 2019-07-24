@@ -32,19 +32,21 @@ class TestNmrDpUtility(unittest.TestCase):
         self.assertEqual(report['error']['internal_error'], None)
 
     def __test_nmr_str2str_deposit_check(self, entry_id):
+        if not os.access(self.data_dir_path + entry_id + '-str-consistency-log.json', os.F_OK):
+            self.__test_nmr_str_consistency(entry_id)
+
         self.utility.setSource(self.data_dir_path + entry_id + '.str')
         self.utility.addInput(name='coordinate_file_path', value=self.data_dir_path + entry_id + '.cif', type='file')
         self.utility.addInput(name='report_file_path', value=self.data_dir_path + entry_id + '-str-consistency-log.json', type='file')
         self.utility.addInput(name='entry_id', value='NEED_ACC_NO', type='param')
+        self.utility.addInput(name='insert_entry_id_to_loops', value=True, type='param')
         self.utility.setLog(self.data_dir_path + entry_id + '-str2str-deposit-log.json')
         self.utility.setDestination(self.data_dir_path + entry_id + '-next.str')
-        self.utility.addOutput(name='nmr-star_file_path', value=self.data_dir_path + entry_id + '-str2str.str', type='file')
-        self.utility.addOutput(name='report_file_path', value=self.data_dir_path + entry_id + '-str2str-str-deposit-log.json', type='file')
         self.utility.setVerbose(False)
 
         self.utility.op('nmr-str2str-deposit')
 
-        with open(self.data_dir_path + entry_id + '-str2str-str-deposit-log.json', 'r') as file:
+        with open(self.data_dir_path + entry_id + '-str2str-deposit-log.json', 'r') as file:
             report = json.loads(file.read())
 
         self.assertEqual(report['error']['internal_error'], None)

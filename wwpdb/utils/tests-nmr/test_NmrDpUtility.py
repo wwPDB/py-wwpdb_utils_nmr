@@ -55,7 +55,7 @@ class TestNmrDpUtility(unittest.TestCase):
 
         self.utility.op('nmr-nef-consistency-check')
 
-    def test_nmr_star_consistency_check(self):
+    def test_nmr_str_consistency_check(self):
         # no input
         with LogCapture() as logs:
             with self.assertRaises(ValueError):
@@ -103,6 +103,9 @@ class TestNmrDpUtility(unittest.TestCase):
         self.utility.op('nmr-nef-consistency-check')
 
     def test_nmr_nef2str_deposit_check(self):
+        if not os.access(self.data_dir_path + '2l9r-nef-consistency-log.json', os.F_OK):
+            self.test_nmr_nef_consistency_check()
+
         self.utility.setSource(self.data_dir_path + '2l9r.nef')
         self.utility.addInput(name='coordinate_file_path', value=self.data_dir_path + '2l9r.cif', type='file')
         self.utility.addInput(name='report_file_path', value=self.data_dir_path + '2l9r-nef-consistency-log.json', type='file')
@@ -116,6 +119,9 @@ class TestNmrDpUtility(unittest.TestCase):
         self.utility.op('nmr-nef2str-deposit')
 
     def test_nmr_nef2str_deposit_check_cys(self):
+        if not os.access(self.data_dir_path + '2l9r-cys-nef-consistency-log.json', os.F_OK):
+            self.test_nmr_nef_consistency_check_cys()
+
         self.utility.setSource(self.data_dir_path + '2l9r-cys.nef')
         self.utility.addInput(name='coordinate_file_path', value=self.data_dir_path + '2l9r-cys.cif', type='file')
         self.utility.addInput(name='report_file_path',value=self.data_dir_path + '2l9r-cys-nef-consistency-log.json', type='file')
@@ -129,6 +135,9 @@ class TestNmrDpUtility(unittest.TestCase):
         self.utility.op('nmr-nef2str-deposit')
 
     def test_nmr_str2str_deposit_check(self):
+        if not os.access(self.data_dir_path + '2l9r-str-consistency-log.json', os.F_OK):
+            self.test_nmr_str_consistency_check()
+
         self.utility.setSource(self.data_dir_path + '2l9r.str')
         self.utility.addInput(name='coordinate_file_path', value=self.data_dir_path + '2l9r.cif', type='file')
         self.utility.addInput(name='report_file_path', value=self.data_dir_path + '2l9r-str-consistency-log.json', type='file')
@@ -141,6 +150,9 @@ class TestNmrDpUtility(unittest.TestCase):
         self.utility.op('nmr-str2str-deposit')
 
     def test_nmr_nef2str_deposit_check_non_std_residue(self):
+        if not os.access(self.data_dir_path + '2l9rnonstandard-nef-consistency-log.json', os.F_OK):
+            self.test_nmr_nef_consistency_check_non_std_residue()
+
         self.utility.setSource(self.data_dir_path + '2l9rnonstandard.nef')
         self.utility.addInput(name='coordinate_file_path', value=self.data_dir_path + '2l9r.cif', type='file')
         self.utility.addInput(name='report_file_path', value=self.data_dir_path + '2l9rnonstandard-nef-consistency-log.json', type='file')

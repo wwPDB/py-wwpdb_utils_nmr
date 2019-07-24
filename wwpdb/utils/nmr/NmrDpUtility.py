@@ -194,6 +194,9 @@ class NmrDpUtility(object):
         # ferromagnetic elements
         self.ferromag_elems = ('CR', 'FE', 'CO', 'NI')
 
+        # non-metal elements
+        self.non_metal_elems = ('H', 'C', 'N', 'O', 'P', 'S', 'SE')
+
         # isotope numbers of NMR observable atoms
         self.atom_isotopes = {'H': [1, 2, 3],
                               'C': [13],
@@ -6569,6 +6572,10 @@ class NmrDpUtility(object):
                 hydrogen_bond = False
                 disulfide_bond_type = None
                 disulfide_bond = False
+                diselenide_bond_type = None
+                diselenide_bond = False
+                other_bond_type = None
+                other_bond = False
                 symmetry = False
 
                 if chain_id_1 != chain_id_2 or seq_id_1 != seq_id_2:
@@ -6653,6 +6660,70 @@ class NmrDpUtility(object):
                             disulfide_bond_type = 'S...S (too close!)'
                             disulfide_bond = True
 
+                    elif atom_id_1_ == 'SE' and atom_id_2_ == 'SE':
+
+                        if target_value >= 2.1 and target_value <= 2.6:
+                            diselenide_bond_type = 'SE...SE'
+                            diselenide_bond = True
+                        elif target_value < 2.1:
+                            diselenide_bond_type = 'SE...SE (too close!)'
+                            diselenide_bond = True
+
+                    elif (atom_id_1_ == 'N' and not atom_id_2_ in self.non_metal_elems) or (atom_id_2_ == 'N' and not atom_id_1_ in self.non_metal_elems):
+
+                        metal = atom_id_2_ if atom_id_1_ in self.non_metal_elems else atom_id_1_
+
+                        if target_value >= 1.9 and target_value <= 2.1:
+                            other_bond_type = 'N...' + metal
+                            other_bond = True
+                        elif target_value < 1.9:
+                            other_bond_type = 'N...' + metal + ' (too close!)'
+                            other_bond = True
+
+                    elif (atom_id_1_ == 'O' and not atom_id_2_ in self.non_metal_elems) or (atom_id_2_ == 'O' and not atom_id_1_ in self.non_metal_elems):
+
+                        metal = atom_id_2_ if atom_id_1_ in self.non_metal_elems else atom_id_1_
+
+                        if target_value >= 2.0 and target_value <= 2.2:
+                            other_bond_type = 'O...' + metal
+                            other_bond = True
+                        elif target_value < 2.0:
+                            other_bond_type = 'O...' + metal + ' (too close!)'
+                            other_bond = True
+
+                    elif (atom_id_1_ == 'P' and not atom_id_2_ in self.non_metal_elems) or (atom_id_2_ == 'P' and not atom_id_1_ in self.non_metal_elems):
+
+                        metal = atom_id_2_ if atom_id_1_ in self.non_metal_elems else atom_id_1_
+
+                        if target_value >= 2.1 and target_value <= 2.5:
+                            other_bond_type = 'P...' + metal
+                            other_bond = True
+                        elif target_value < 2.1:
+                            other_bond_type = 'P...' + metal + ' (too close!)'
+                            other_bond = True
+
+                    elif (atom_id_1_ == 'S' and not atom_id_2_ in self.non_metal_elems) or (atom_id_2_ == 'S' and not atom_id_1_ in self.non_metal_elems):
+
+                        metal = atom_id_2_ if atom_id_1_ in self.non_metal_elems else atom_id_1_
+
+                        if target_value >= 2.2 and target_value <= 2.6:
+                            other_bond_type = 'S...' + metal
+                            other_bond = True
+                        elif target_value < 2.2:
+                            other_bond_type = 'S...' + metal + ' (too close!)'
+                            other_bond = True
+
+                    elif (atom_id_1_ == 'SE' and not atom_id_2_ in self.non_metal_elems) or (atom_id_2_ == 'SE' and not atom_id_1_ in self.non_metal_elems):
+
+                        metal = atom_id_2_ if atom_id_1_ in self.non_metal_elems else atom_id_1_
+
+                        if target_value >= 2.3 and target_value <= 2.7:
+                            other_bond_type = 'SE...' + metal
+                            other_bond = True
+                        elif target_value < 2.3:
+                            other_bond_type = 'SE...' + metal + ' (too close!)'
+                            other_bond = True
+
                     else:
 
                         for j in lp_data:
@@ -6714,6 +6785,48 @@ class NmrDpUtility(object):
                     if 'too close!' in disulfide_bond_type:
 
                         warn = "Disulfide bond constraint (chain_id_1 %s, seq_id_1 %s, comp_id_1 %s, atom_id_1 %s, chain_id_2 %s, seq_id_2 %s, comp_id_2 %s, atom_id_2 %s) is too close (%s %s, %s %s, %s %s, %s %s, %s %s)." %\
+                               (chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2,
+                                target_value_name, i[target_value_name], lower_limit_name, i[lower_limit_name], upper_limit_name, i[upper_limit_name], lower_linear_limit_name, i[lower_linear_limit_name], upper_linear_limit_name, i[upper_linear_limit_name])
+
+                        self.report.warning.appendDescription('unusual_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'description': warn})
+                        self.report.setWarning()
+
+                        if self.__verbose:
+                            self.__lfh.write("+NmrDpUtility.__calculateStatsOfDistanceRestraint() ++ Warning  - %s\n" % warn)
+
+                elif diselenide_bond:
+                    if chain_id_1 != chain_id_2:
+                        data_type = 'inter-chain_diselenide_bonds'
+                    elif range_of_seq > 5:
+                        data_type = 'long_range_diselenide_bonds'
+                    else:
+                        data_type = 'diselenide_bonds'
+                    data_type += '_' + diselenide_bond_type
+
+                    if 'too close!' in diselenide_bond_type:
+
+                        warn = "Diselenide bond constraint (chain_id_1 %s, seq_id_1 %s, comp_id_1 %s, atom_id_1 %s, chain_id_2 %s, seq_id_2 %s, comp_id_2 %s, atom_id_2 %s) is too close (%s %s, %s %s, %s %s, %s %s, %s %s)." %\
+                               (chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2,
+                                target_value_name, i[target_value_name], lower_limit_name, i[lower_limit_name], upper_limit_name, i[upper_limit_name], lower_linear_limit_name, i[lower_linear_limit_name], upper_linear_limit_name, i[upper_linear_limit_name])
+
+                        self.report.warning.appendDescription('unusual_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'description': warn})
+                        self.report.setWarning()
+
+                        if self.__verbose:
+                            self.__lfh.write("+NmrDpUtility.__calculateStatsOfDistanceRestraint() ++ Warning  - %s\n" % warn)
+
+                elif other_bond:
+                    if chain_id_1 != chain_id_2:
+                        data_type = 'inter-chain_other_bonds'
+                    elif range_of_seq > 5:
+                        data_type = 'long_range_other_bonds'
+                    else:
+                        data_type = 'other_bonds'
+                    data_type += '_' + other_bond_type
+
+                    if 'too close!' in other_bond_type:
+
+                        warn = "Other bond constraint (chain_id_1 %s, seq_id_1 %s, comp_id_1 %s, atom_id_1 %s, chain_id_2 %s, seq_id_2 %s, comp_id_2 %s, atom_id_2 %s) is too close (%s %s, %s %s, %s %s, %s %s, %s %s)." %\
                                (chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2,
                                 target_value_name, i[target_value_name], lower_limit_name, i[lower_limit_name], upper_limit_name, i[upper_limit_name], lower_linear_limit_name, i[lower_linear_limit_name], upper_linear_limit_name, i[upper_linear_limit_name])
 
@@ -6875,6 +6988,10 @@ class NmrDpUtility(object):
                     hydrogen_bond = False
                     disulfide_bond_type = None
                     disulfide_bond = False
+                    diselenide_bond_type = None
+                    diselenide_bond = False
+                    other_bond_type = None
+                    other_bond = False
                     symmetry = False
 
                     if chain_id_1 != chain_id_2 or seq_id_1 != seq_id_2:
@@ -6959,6 +7076,70 @@ class NmrDpUtility(object):
                                 disulfide_bond_type = 'S...S (too close!)'
                                 disulfide_bond = True
 
+                        elif atom_id_1_ == 'SE' and atom_id_2_ == 'SE':
+
+                            if target_value >= 2.1 and target_value <= 2.6:
+                                diselenide_bond_type = 'SE...SE'
+                                diselenide_bond = True
+                            elif target_value < 2.1:
+                                diselenide_bond_type = 'SE...SE (too close!)'
+                                diselenide_bond = True
+
+                        elif (atom_id_1_ == 'N' and not atom_id_2_ in self.non_metal_elems) or (atom_id_2_ == 'N' and not atom_id_1_ in self.non_metal_elems):
+
+                            metal = atom_id_2_ if atom_id_1_ in self.non_metal_elems else atom_id_1_
+
+                            if target_value >= 1.9 and target_value <= 2.1:
+                                other_bond_type = 'N...' + metal
+                                other_bond = True
+                            elif target_value < 1.9:
+                                other_bond_type = 'N...' + metal + ' (too close!)'
+                                other_bond = True
+
+                        elif (atom_id_1_ == 'O' and not atom_id_2_ in self.non_metal_elems) or (atom_id_2_ == 'O' and not atom_id_1_ in self.non_metal_elems):
+
+                            metal = atom_id_2_ if atom_id_1_ in self.non_metal_elems else atom_id_1_
+
+                            if target_value >= 2.0 and target_value <= 2.2:
+                                other_bond_type = 'O...' + metal
+                                other_bond = True
+                            elif target_value < 2.0:
+                                other_bond_type = 'O...' + metal + ' (too close!)'
+                                other_bond = True
+
+                        elif (atom_id_1_ == 'P' and not atom_id_2_ in self.non_metal_elems) or (atom_id_2_ == 'P' and not atom_id_1_ in self.non_metal_elems):
+
+                            metal = atom_id_2_ if atom_id_1_ in self.non_metal_elems else atom_id_1_
+
+                            if target_value >= 2.1 and target_value <= 2.5:
+                                other_bond_type = 'P...' + metal
+                                other_bond = True
+                            elif target_value < 2.1:
+                                other_bond_type = 'P...' + metal + ' (too close!)'
+                                other_bond = True
+
+                        elif (atom_id_1_ == 'S' and not atom_id_2_ in self.non_metal_elems) or (atom_id_2_ == 'S' and not atom_id_1_ in self.non_metal_elems):
+
+                            metal = atom_id_2_ if atom_id_1_ in self.non_metal_elems else atom_id_1_
+
+                            if target_value >= 2.2 and target_value <= 2.6:
+                                other_bond_type = 'S...' + metal
+                                other_bond = True
+                            elif target_value < 2.2:
+                                other_bond_type = 'S...' + metal + ' (too close!)'
+                                other_bond = True
+
+                        elif (atom_id_1_ == 'SE' and not atom_id_2_ in self.non_metal_elems) or (atom_id_2_ == 'SE' and not atom_id_1_ in self.non_metal_elems):
+
+                            metal = atom_id_2_ if atom_id_1_ in self.non_metal_elems else atom_id_1_
+
+                            if target_value >= 2.3 and target_value <= 2.7:
+                                other_bond_type = 'SE...' + metal
+                                other_bond = True
+                            elif target_value < 2.3:
+                                other_bond_type = 'SE...' + metal + ' (too close!)'
+                                other_bond = True
+
                         else:
 
                             for j in lp_data:
@@ -7003,6 +7184,22 @@ class NmrDpUtility(object):
                         else:
                             data_type = 'disulfide_bonds'
                         data_type += '_' + disulfide_bond_type
+                    elif diselenide_bond:
+                        if chain_id_1 != chain_id_2:
+                            data_type = 'inter-chain_diselenide_bonds'
+                        elif range_of_seq > 5:
+                            data_type = 'long_range_diselenide_bonds'
+                        else:
+                            data_type = 'diselenide_bonds'
+                        data_type += '_' + diselenide_bond_type
+                    elif other_bond:
+                        if chain_id_1 != chain_id_2:
+                            data_type = 'inter-chain_other_bonds'
+                        elif range_of_seq > 5:
+                            data_type = 'long_range_other_bonds'
+                        else:
+                            data_type = 'other_bonds'
+                        data_type += '_' + other_bond_type
                     elif symmetry:
                         data_type = 'symmetric_constraints'
                     elif chain_id_1 != chain_id_2:

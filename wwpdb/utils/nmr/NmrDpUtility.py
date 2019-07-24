@@ -6699,15 +6699,16 @@ class NmrDpUtility(object):
                     elif atom_id_1_ == 'SE' and atom_id_2_ == 'SE':
 
                         if target_value >= 2.1 and target_value <= 2.6:
-                            diselenide_bond_type = 'SE...SE'
+                            diselenide_bond_type = 'Se...Se'
                             diselenide_bond = True
                         elif target_value < 2.1:
-                            diselenide_bond_type = 'SE...SE (too close!)'
+                            diselenide_bond_type = 'Se...Se (too close!)'
                             diselenide_bond = True
 
                     elif (atom_id_1_ == 'N' and not atom_id_2_ in self.non_metal_elems) or (atom_id_2_ == 'N' and not atom_id_1_ in self.non_metal_elems):
 
                         metal = atom_id_2_ if atom_id_1_ in self.non_metal_elems else atom_id_1_
+                        metal = metal.title()
 
                         if target_value >= 1.9 and target_value <= 2.1:
                             other_bond_type = 'N...' + metal
@@ -6719,6 +6720,7 @@ class NmrDpUtility(object):
                     elif (atom_id_1_ == 'O' and not atom_id_2_ in self.non_metal_elems) or (atom_id_2_ == 'O' and not atom_id_1_ in self.non_metal_elems):
 
                         metal = atom_id_2_ if atom_id_1_ in self.non_metal_elems else atom_id_1_
+                        metal = metal.title()
 
                         if target_value >= 2.0 and target_value <= 2.2:
                             other_bond_type = 'O...' + metal
@@ -6730,6 +6732,7 @@ class NmrDpUtility(object):
                     elif (atom_id_1_ == 'P' and not atom_id_2_ in self.non_metal_elems) or (atom_id_2_ == 'P' and not atom_id_1_ in self.non_metal_elems):
 
                         metal = atom_id_2_ if atom_id_1_ in self.non_metal_elems else atom_id_1_
+                        metal = metal.title()
 
                         if target_value >= 2.1 and target_value <= 2.5:
                             other_bond_type = 'P...' + metal
@@ -6741,6 +6744,7 @@ class NmrDpUtility(object):
                     elif (atom_id_1_ == 'S' and not atom_id_2_ in self.non_metal_elems) or (atom_id_2_ == 'S' and not atom_id_1_ in self.non_metal_elems):
 
                         metal = atom_id_2_ if atom_id_1_ in self.non_metal_elems else atom_id_1_
+                        metal = metal.title()
 
                         if target_value >= 2.2 and target_value <= 2.6:
                             other_bond_type = 'S...' + metal
@@ -6752,12 +6756,13 @@ class NmrDpUtility(object):
                     elif (atom_id_1_ == 'SE' and not atom_id_2_ in self.non_metal_elems) or (atom_id_2_ == 'SE' and not atom_id_1_ in self.non_metal_elems):
 
                         metal = atom_id_2_ if atom_id_1_ in self.non_metal_elems else atom_id_1_
+                        metal = metal.title()
 
                         if target_value >= 2.3 and target_value <= 2.7:
-                            other_bond_type = 'SE...' + metal
+                            other_bond_type = 'Se...' + metal
                             other_bond = True
                         elif target_value < 2.3:
-                            other_bond_type = 'SE...' + metal + ' (too close!)'
+                            other_bond_type = 'Se...' + metal + ' (too close!)'
                             other_bond = True
 
                     else:
@@ -7159,15 +7164,16 @@ class NmrDpUtility(object):
                         elif atom_id_1_ == 'SE' and atom_id_2_ == 'SE':
 
                             if target_value >= 2.1 and target_value <= 2.6:
-                                diselenide_bond_type = 'SE...SE'
+                                diselenide_bond_type = 'Se...Se'
                                 diselenide_bond = True
                             elif target_value < 2.1:
-                                diselenide_bond_type = 'SE...SE (too close!)'
+                                diselenide_bond_type = 'Se...Se (too close!)'
                                 diselenide_bond = True
 
                         elif (atom_id_1_ == 'N' and not atom_id_2_ in self.non_metal_elems) or (atom_id_2_ == 'N' and not atom_id_1_ in self.non_metal_elems):
 
                             metal = atom_id_2_ if atom_id_1_ in self.non_metal_elems else atom_id_1_
+                            metal = metal.title()
 
                             if target_value >= 1.9 and target_value <= 2.1:
                                 other_bond_type = 'N...' + metal
@@ -7179,6 +7185,7 @@ class NmrDpUtility(object):
                         elif (atom_id_1_ == 'O' and not atom_id_2_ in self.non_metal_elems) or (atom_id_2_ == 'O' and not atom_id_1_ in self.non_metal_elems):
 
                             metal = atom_id_2_ if atom_id_1_ in self.non_metal_elems else atom_id_1_
+                            metal = metal.title()
 
                             if target_value >= 2.0 and target_value <= 2.2:
                                 other_bond_type = 'O...' + metal
@@ -7190,6 +7197,7 @@ class NmrDpUtility(object):
                         elif (atom_id_1_ == 'P' and not atom_id_2_ in self.non_metal_elems) or (atom_id_2_ == 'P' and not atom_id_1_ in self.non_metal_elems):
 
                             metal = atom_id_2_ if atom_id_1_ in self.non_metal_elems else atom_id_1_
+                            metal = metal.title()
 
                             if target_value >= 2.1 and target_value <= 2.5:
                                 other_bond_type = 'P...' + metal
@@ -7201,6 +7209,7 @@ class NmrDpUtility(object):
                         elif (atom_id_1_ == 'S' and not atom_id_2_ in self.non_metal_elems) or (atom_id_2_ == 'S' and not atom_id_1_ in self.non_metal_elems):
 
                             metal = atom_id_2_ if atom_id_1_ in self.non_metal_elems else atom_id_1_
+                            metal = metal.title()
 
                             if target_value >= 2.2 and target_value <= 2.6:
                                 other_bond_type = 'S...' + metal
@@ -7212,12 +7221,13 @@ class NmrDpUtility(object):
                         elif (atom_id_1_ == 'SE' and not atom_id_2_ in self.non_metal_elems) or (atom_id_2_ == 'SE' and not atom_id_1_ in self.non_metal_elems):
 
                             metal = atom_id_2_ if atom_id_1_ in self.non_metal_elems else atom_id_1_
+                            metal = metal.title()
 
                             if target_value >= 2.3 and target_value <= 2.7:
-                                other_bond_type = 'SE...' + metal
+                                other_bond_type = 'Se...' + metal
                                 other_bond = True
                             elif target_value < 2.3:
-                                other_bond_type = 'SE...' + metal + ' (too close!)'
+                                other_bond_type = 'Se...' + metal + ' (too close!)'
                                 other_bond = True
 
                         else:

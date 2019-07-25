@@ -51,7 +51,7 @@ class TestNmrDpUtility(unittest.TestCase):
             report = json.loads(file.read())
 
         self.assertEqual(report['error']['internal_error'], None)
-    """
+
     def test_nmr_nef_consistency_check_1nk2(self):
         self.__test_nmr_nef_consistency('1nk2')
 
@@ -96,10 +96,10 @@ class TestNmrDpUtility(unittest.TestCase):
 
     def test_nmr_nef2str_deposit_check_2kko(self):
         self.__test_nmr_nef2str_deposit_check('2kko')
-    """
+
     def test_nmr_nef2str_deposit_check_2mqq(self):
         self.__test_nmr_nef2str_deposit_check('2mqq')
-    """
+
     def test_nmr_nef2str_deposit_check_2mtv(self):
         self.__test_nmr_nef2str_deposit_check('2mtv')
 
@@ -132,6 +132,6 @@ class TestNmrDpUtility(unittest.TestCase):
 
     def test_nmr_nef2str_deposit_check_2m5o(self):
         self.__test_nmr_nef2str_deposit_check('2m5o')
-    """
+
 if __name__ == '__main__':
     unittest.main()

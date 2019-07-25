@@ -8012,7 +8012,7 @@ class NmrDpUtility(object):
                 return
 
             ent['number_of_constraints'] = count
-            ent['number_of_potential_typs'] = potential
+            ent['number_of_potential_types'] = potential
             ent['range'] = {'max_value': max_val_, 'min_value': min_val_}
 
             target_scale = (max_val - min_val) / 12.0

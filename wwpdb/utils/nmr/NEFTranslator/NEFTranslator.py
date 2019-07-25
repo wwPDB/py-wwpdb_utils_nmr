@@ -1,6 +1,6 @@
 ##
 # File: NEFTranslator.py
-# Date: 24-Jul-2019
+# Date: 25-Jul-2019
 #
 # Updates:
 ##
@@ -564,7 +564,7 @@ class NEFTranslator(object):
                         r = {}
                         for j in range(len(loop.tags)):
                             r[loop.tags[j]] = loop.data[l][j]
-                        raise ValueError("Sequence must not be empty. raw_data %s." % r)
+                        raise ValueError("Sequence must not be empty. #_of_row %s, data_of_row %s." % (l + 1, r))
                     l += 1
 
             try:
@@ -677,7 +677,7 @@ class NEFTranslator(object):
                         r = {}
                         for j in range(len(loop.tags)):
                             r[loop.tags[j]] = loop.data[l][j]
-                        raise ValueError("Sequence must not be empty. raw_data %s." % r)
+                        raise ValueError("Sequence must not be empty. #_of_row %s, data_of_row %s." % (l + 1, r))
                     l += 1
 
             try:
@@ -792,7 +792,7 @@ class NEFTranslator(object):
                         r = {}
                         for j in range(len(loop.tags)):
                             r[loop.tags[j]] = loop.data[l][j]
-                        raise ValueError("Author sequence must not be empty. raw_data %s." % r)
+                        raise ValueError("Author sequence must not be empty. #_of_row %s, data_of_row %s." % (l + 1, r))
                     l += 1
 
             try:
@@ -926,7 +926,7 @@ class NEFTranslator(object):
                         r = {}
                         for j in range(len(loop.tags)):
                             r[loop.tags[j]] = loop.data[l][j]
-                        raise ValueError("%s and %s must not be empty. raw_data %s." % r)
+                        raise ValueError("%s and %s must not be empty. #_of_row %s, data_of_row %s." % (l + 1, r))
                     l += 1
 
             comps = sorted(set([i[0] for i in cmp_atm_dat]))
@@ -1007,8 +1007,8 @@ class NEFTranslator(object):
                         r = {}
                         for j in range(len(loop.tags)):
                             r[loop.tags[j]] = loop.data[l][j]
-                        raise ValueError("%s, %s, and %s must not be empty. raw_data %s." %\
-                                         (atom_type, isotope_number, atom_id, r))
+                        raise ValueError("%s, %s, and %s must not be empty. #_of_row %s, data_of_row %s." %\
+                                         (atom_type, isotope_number, atom_id, l + 1, r))
                     l += 1
 
             try:
@@ -1073,6 +1073,7 @@ class NEFTranslator(object):
                 dat.append(None)
                 continue
 
+            l = 0
             for i in ambig_dat:
                 # already checked elsewhere
                 #if i[0] in self.empty_value:
@@ -1084,24 +1085,37 @@ class NEFTranslator(object):
                     try:
                        code = int(i[2])
                     except ValueError:
-                        raise ValueError("%s must be one of %s." % (ambig_code, list(self.bmrb_ambiguity_codes)))
+                        r = {}
+                        for j in range(len(loop.tags)):
+                            r[loop.tags[j]] = loop.data[l][j]
+                        raise ValueError("%s must be one of %s. #_of_row %s, data_of_row %s." % (ambig_code, list(self.bmrb_ambiguity_codes), l + 1, r))
 
                     if not code in self.bmrb_ambiguity_codes:
-                        raise ValueError("%s must be one of %s." % (ambig_code, list(self.bmrb_ambiguity_codes)))
+                        r = {}
+                        for j in range(len(loop.tags)):
+                            r[loop.tags[j]] = loop.data[l][j]
+                        raise ValueError("%s must be one of %s. #_of_row %s, data_of_row %s." % (ambig_code, list(self.bmrb_ambiguity_codes), l + 1, r))
 
                     if code >= 4:
                         if i[3] in self.empty_value:
-                            raise ValueError("%s should not be empty for %s %s." % (ambig_set_id, ambig_code, code))
+                            r = {}
+                            for j in range(len(loop.tags)):
+                                r[loop.tags[j]] = loop.data[l][j]
+                            raise ValueError("%s should not be empty for %s %s. #_of_row %s, data_of_row %s." % (ambig_set_id, ambig_code, code, l + 1, r))
                         else:
                             try:
                                 int(i[3])
                             except ValueError:
-                                raise ValueError("%s must be integer." % ambig_set_id)
+                                raise ValueError("%s must be int." % ambig_set_id)
 
                 if not i[3] in self.empty_value:
 
                     if i[2] in self.empty_value or not i[2] in ['4', '5', '6', '9']:
-                        raise ValueError("%s must be empty for %s %s." % (ambig_set_id, ambig_code, i[2]))
+                        r = {}
+                        for j in range(len(loop.tags)):
+                            r[loop.tags[j]] = loop.data[l][j]
+                        raise ValueError("%s must be empty for %s %s. #_of_row %s, data_of_row %s." % (ambig_set_id, ambig_code, i[2], l + 1, r))
+                l += 1
 
             ambigs = sorted(set(['{}:{}'.format(i[0], i[2]) for i in ambig_dat]))
             sorted_atm = sorted(set(['{}:{} {}'.format(i[0], i[2], i[1]) for i in ambig_dat]))
@@ -1174,7 +1188,7 @@ class NEFTranslator(object):
                     r = {}
                     for j in range(len(loop.tags)):
                         r[loop.tags[j]] = loop.data[l][j]
-                    raise ValueError("%s must not be empty. raw_data %s." % (index_id, r))
+                    raise ValueError("%s must not be empty. #_of_row %s, data_of_row %s." % (index_id, l + 1, r))
                 l += 1
 
             try:
@@ -1364,16 +1378,24 @@ class NEFTranslator(object):
                     except ValueError:
                         raise ValueError("%s must be int." % tags[_j])
 
+            l = 0
             for i in tag_dat:
                 for j in range(tag_len):
                     if i[j] in self.empty_value:
                         name = tags[j]
                         if name in key_names:
-                            raise ValueError("%s must not be empty." % name)
+                            r = {}
+                            for _j in range(len(loop.tags)):
+                                r[loop.tags[_j]] = loop.data[l][_j]
+                            raise ValueError("%s must not be empty. #_of_row %s, data_of_row %s." % (name, l + 1, r))
                         else:
                             for d in data_items:
                                 if d['name'] == name and d['mandatory']:
-                                    raise ValueError("%s must not be empty." % name)
+                                    r = {}
+                                    for _j in range(len(loop.tags)):
+                                        r[loop.tags[_j]] = loop.data[l][_j]
+                                    raise ValueError("%s must not be empty. #_of_row %s, data_of_row %s." % (name, l + 1, r))
+                l += 1
 
             if inc_idx_test:
                 keys = set()

@@ -567,6 +567,17 @@ class NEFTranslator(object):
                         raise ValueError("Sequence must not be empty. #_of_row %s, data_of_row %s." % (l + 1, r))
                     l += 1
 
+            l = 0
+            for i in seq_dat:
+                try:
+                    int(i[0])
+                except ValueError:
+                    r = {}
+                    for j in range(len(loop.tags)):
+                        r[loop.tags[j]] = loop.data[l][j]
+                    raise ValueError("%s must be int. #_of_row %s, data_of_row %s." % (seq_id, l + 1, r))
+                l += 1
+
             try:
 
                 chains = sorted(set([i[2] for i in seq_dat]))
@@ -610,7 +621,8 @@ class NEFTranslator(object):
                 dat.append(asm)
 
             except ValueError:
-                raise ValueError("%s must be int." % seq_id)
+                #raise ValueError("%s must be int." % seq_id)
+                pass
 
         if len(dat) == 0:
             dat.append([])
@@ -680,6 +692,17 @@ class NEFTranslator(object):
                         raise ValueError("Sequence must not be empty. #_of_row %s, data_of_row %s." % (l + 1, r))
                     l += 1
 
+            l = 0
+            for i in seq_dat:
+                try:
+                    int(i[0])
+                except ValueError:
+                    r = {}
+                    for j in range(len(loop.tags)):
+                        r[loop.tags[j]] = loop.data[l][j]
+                    raise ValueError("%s must be int. #_of_row %s, data_of_row %s." % (seq_id, l + 1, r))
+                l += 1
+
             try:
 
                 chains = sorted(set([i[2] for i in seq_dat]))
@@ -723,7 +746,8 @@ class NEFTranslator(object):
                 dat.append(asm)
 
             except ValueError:
-                raise ValueError("%s must be int.")
+                #raise ValueError("%s must be int." % seq_id)
+                pass
 
         if len(dat) == 0:
             dat.append([])
@@ -795,6 +819,17 @@ class NEFTranslator(object):
                         raise ValueError("Author sequence must not be empty. #_of_row %s, data_of_row %s." % (l + 1, r))
                     l += 1
 
+            l = 0
+            for i in seq_dat:
+                try:
+                    int(i[3])
+                except ValueError:
+                    r = {}
+                    for j in range(len(loop.tags)):
+                        r[loop.tags[j]] = loop.data[l][j]
+                    raise ValueError("%s must be int. #_of_row %s, data_of_row %s." % (seq_id, l + 1, r))
+                l += 1
+
             try:
 
                 chains = sorted(set([i[4] for i in seq_dat]))
@@ -849,7 +884,8 @@ class NEFTranslator(object):
                 dat.append(asm)
 
             except ValueError:
-                raise ValueError("%s must be int." % seq_id)
+                #raise ValueError("%s must be int." % seq_id)
+                pass
 
         if len(dat) == 0:
             dat.append([])
@@ -1011,6 +1047,17 @@ class NEFTranslator(object):
                                          (atom_type, isotope_number, atom_id, l + 1, r))
                     l += 1
 
+            l = 0
+            for i in a_type_dat:
+                try:
+                    int(i[1])
+                except ValueError:
+                    r = {}
+                    for j in range(len(loop.tags)):
+                        r[loop.tags[j]] = loop.data[l][j]
+                    raise ValueError("%s must be int. #_of_row %s, data_of_row %s." % (isotope_number, l + 1, r))
+                l += 1
+
             try:
 
                 a_types = sorted(set([i[0] for i in a_type_dat]))
@@ -1035,7 +1082,8 @@ class NEFTranslator(object):
                 dat.append(asm)
 
             except ValueError:
-                raise ValueError("%s must be int." % isotope_number)
+                #raise ValueError("%s must be int." % isotope_number)
+                pass
 
         if len(dat) == 0:
             dat.append([])
@@ -1106,7 +1154,10 @@ class NEFTranslator(object):
                             try:
                                 int(i[3])
                             except ValueError:
-                                raise ValueError("%s must be int." % ambig_set_id)
+                                r = {}
+                                for j in range(len(loop.tags)):
+                                    r[loop.tags[j]] = loop.data[l][j]
+                                raise ValueError("%s must be int. #_of_row %s, data_of_row %s." % (ambig_set_id, l + 1, r))
 
                 if not i[3] in self.empty_value:
 
@@ -1189,6 +1240,14 @@ class NEFTranslator(object):
                     for j in range(len(loop.tags)):
                         r[loop.tags[j]] = loop.data[l][j]
                     raise ValueError("%s must not be empty. #_of_row %s, data_of_row %s." % (index_id, l + 1, r))
+                else:
+                    try:
+                        int(i[0])
+                    except ValueError:
+                        r = {}
+                        for j in range(len(loop.tags)):
+                            r[loop.tags[j]] = loop.data[l][j]
+                            raise ValueError("%s must be int. #_of_row %s, data_of_row %s." % (index_id, l + 1, r))
                 l += 1
 
             try:
@@ -1203,7 +1262,8 @@ class NEFTranslator(object):
                 dat.append(idxs)
 
             except ValueError:
-                raise ValueError("%s must be int." % index_id)
+                #raise ValueError("%s must be int." % index_id)
+                pass
 
         if len(dat) == 0:
             dat.append([])
@@ -1365,6 +1425,7 @@ class NEFTranslator(object):
 
             if inc_idx_test and len(idx_tag_ids) > 0:
 
+                l = 0
                 for _j in idx_tag_ids:
 
                     try:
@@ -1376,7 +1437,11 @@ class NEFTranslator(object):
                             raise KeyError("%s must be unique in loop. %s are duplicated." % (tags[_j], dup_idxs))
 
                     except ValueError:
-                        raise ValueError("%s must be int." % tags[_j])
+                        r = {}
+                        for j in range(len(loop.tags)):
+                            r[loop.tags[j]] = loop.data[l][j]
+                        raise ValueError("%s must be int. #_of_row %s, data_of_row %s." % (tags[_j], l + 1, r))
+                    l += 1
 
             l = 0
             for i in tag_dat:

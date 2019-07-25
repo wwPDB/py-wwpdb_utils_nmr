@@ -1,6 +1,6 @@
 ##
 # File: NmrDpUtility.py
-# Date: 23-Jul-2019
+# Date: 25-Jul-2019
 #
 # Updates:
 ##
@@ -4604,7 +4604,7 @@ class NmrDpUtility(object):
 
             except StopIteration:
 
-                err = "Assigned chemical shifts are mandatory. Saveframe %s did not exist." % sf_framecode
+                err = "Assigned chemical shifts of saveframe %s did not parsed properly. Please fix problems reported." % sf_framecode
 
                 self.report.error.appendDescription('missing_mandatory_content', {'file_name': file_name, 'description': err})
                 self.report.setError()

@@ -102,6 +102,52 @@ class TestNmrDpUtility(unittest.TestCase):
 
         self.utility.op('nmr-nef-consistency-check')
 
+    def test_nmr_nef_consistency_check_2m5o(self):
+        self.utility.setSource(self.data_dir_path + '2m5o.nef')
+        self.utility.setLog(self.data_dir_path + '2m5o-nef-consistency-log.json')
+
+        self.utility.op('nmr-nef-consistency-check')
+
+    def test_nmr_nef2str_deposit_check_2m5o_clean(self):
+        if not os.access(self.data_dir_path + '2m5o-nef-consistency-log.json', os.F_OK):
+            self.test_nmr_nef_consistency_check_2m5o()
+
+        self.utility.setSource(self.data_dir_path + '2m5o.nef')
+        self.utility.addInput(name='coordinate_file_path', value=self.data_dir_path + '2m5o.cif', type='file')
+        self.utility.addInput(name='report_file_path', value=self.data_dir_path + '2m5o-nef-consistency-log.json', type='file')
+        self.utility.addInput(name='entry_id', value='NEED_ACC_NO', type='param')
+        self.utility.addInput(name='resolve_dup_rows', value=True, type='param')
+        self.utility.setLog(self.data_dir_path + '2m5o-clean-nef2str-deposit-log.json')
+        self.utility.setDestination(self.data_dir_path + '2m5o-clean.nef')
+        self.utility.addOutput(name='nmr-star_file_path', value=self.data_dir_path + '2m5o-clean.str', type='file')
+        self.utility.addOutput(name='report_file_path', value=self.data_dir_path + '2m5o-clean-nef2str-str-deposit-log.json', type='file')
+        self.utility.setVerbose(False)
+
+        self.utility.op('nmr-nef2str-deposit')
+
+    def test_nmr_nef_consistency_check_2loj(self):
+        self.utility.setSource(self.data_dir_path + '2loj.nef')
+        self.utility.setLog(self.data_dir_path + '2loj-nef-consistency-log.json')
+
+        self.utility.op('nmr-nef-consistency-check')
+
+    def test_nmr_nef2str_deposit_check_2loj_clean(self):
+        if not os.access(self.data_dir_path + '2loj-nef-consistency-log.json', os.F_OK):
+            self.test_nmr_nef_consistency_check_2loj()
+
+        self.utility.setSource(self.data_dir_path + '2loj.nef')
+        self.utility.addInput(name='coordinate_file_path', value=self.data_dir_path + '2loj.cif', type='file')
+        self.utility.addInput(name='report_file_path', value=self.data_dir_path + '2loj-nef-consistency-log.json', type='file')
+        self.utility.addInput(name='entry_id', value='NEED_ACC_NO', type='param')
+        self.utility.addInput(name='resolve_dup_rows', value=True, type='param')
+        self.utility.setLog(self.data_dir_path + '2loj-clean-nef2str-deposit-log.json')
+        self.utility.setDestination(self.data_dir_path + '2loj-clean.nef')
+        self.utility.addOutput(name='nmr-star_file_path', value=self.data_dir_path + '2loj-clean.str', type='file')
+        self.utility.addOutput(name='report_file_path', value=self.data_dir_path + '2loj-clean-nef2str-str-deposit-log.json', type='file')
+        self.utility.setVerbose(False)
+
+        self.utility.op('nmr-nef2str-deposit')
+
     def test_nmr_nef2str_deposit_check(self):
         if not os.access(self.data_dir_path + '2l9r-nef-consistency-log.json', os.F_OK):
             self.test_nmr_nef_consistency_check()

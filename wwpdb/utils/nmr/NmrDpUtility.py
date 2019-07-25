@@ -3420,6 +3420,14 @@ class NmrDpUtility(object):
         if input_source_dic['content_subtype'] is None:
             return False
 
+        self.__resolve_dup_rows = False
+
+        if 'resolve_dup_rows' in self.__inputParamDict and not self.__inputParamDict['resolve_dup_rows'] is None:
+            if type(self.__inputParamDict['resolve_dup_rows']) is bool:
+                self.__resolve_dup_rows = self.__inputParamDict['resolve_dup_rows']
+            else:
+                self.__resolve_dup_rows = self.__inputParamDict['resolve_dup_rows'] in self.true_value
+
         __errors = self.report.getTotalErrors()
 
         for content_subtype in input_source_dic['content_subtype'].keys():
@@ -3486,7 +3494,8 @@ class NmrDpUtility(object):
                 try:
 
                     lp_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, allowed_tags, disallowed_tags,
-                                                     inc_idx_test=True, enforce_non_zero=True, enforce_sign=True, enforce_enum=True)[0]
+                                                     inc_idx_test=True, enforce_non_zero=True, enforce_sign=True, enforce_enum=True,
+                                                     resolve_dup_rows=self.__resolve_dup_rows)[0]
 
                     self.__lp_data[content_subtype].append({'sf_framecode': sf_framecode, 'data': lp_data})
 
@@ -3642,7 +3651,8 @@ class NmrDpUtility(object):
                         try:
 
                             aux_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, allowed_tags, None,
-                                                              inc_idx_test=True, enforce_non_zero=True, enforce_sign=True, enforce_enum=True)[0]
+                                                              inc_idx_test=True, enforce_non_zero=True, enforce_sign=True, enforce_enum=True,
+                                                              resolve_dup_rows=self.__resolve_dup_rows)[0]
 
                             self.__aux_data[content_subtype].append({'sf_framecode': sf_framecode, 'category': lp_category, 'data': aux_data})
 

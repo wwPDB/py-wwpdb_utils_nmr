@@ -1296,7 +1296,7 @@ class NEFTranslator(object):
 
         return self.check_data(star_data, lp_category, key_items, data_items)
 
-    def check_data(self, star_data, lp_category, key_items, data_items, allowed_tags=None, disallowed_tags=None, inc_idx_test=False, enforce_non_zero=False, enforce_sign=False, enforce_enum=False):
+    def check_data(self, star_data, lp_category, key_items, data_items, allowed_tags=None, disallowed_tags=None, inc_idx_test=False, enforce_non_zero=False, enforce_sign=False, enforce_enum=False, resolve_dup_rows=False):
         """ Extract unique data with sanity check from any given loops in an NEF/NMR-STAR file.
             @author: Masashi Yokochi
         """
@@ -1465,8 +1465,12 @@ class NEFTranslator(object):
             if inc_idx_test:
                 keys = set()
 
+                if resolve_dup_rows:
+                    dup_rows = set()
+
                 rechk = False
 
+                l = 0
                 for i in tag_dat:
 
                     key = ''
@@ -1486,6 +1490,12 @@ class NEFTranslator(object):
 
                         if relax_key:
                             rechk = True
+                            l += 1
+                            continue
+
+                        if resolve_dup_rows:
+                            dup_rows.add(l)
+                            l += 1
                             continue
 
                         msg = ''
@@ -1515,9 +1525,12 @@ class NEFTranslator(object):
 
                     keys.add(key)
 
+                    l += 1
+
                 if rechk:
                     keys = set()
 
+                    l = 0
                     for i in tag_dat:
 
                         key = ''
@@ -1528,6 +1541,12 @@ class NEFTranslator(object):
                         key.rstrip()
 
                         if key in keys:
+
+                            if resolve_dup_rows:
+                                dup_rows.add(l)
+                                l += 1
+                                continue
+
                             msg = ''
                             for j in range(key_len):
                                 msg += key_names[j] + ' %s, ' % i[j]
@@ -1559,6 +1578,15 @@ class NEFTranslator(object):
                             raise KeyError("%sValues of key items must be unique in loop. %s are duplicated." % (idx_msg, msg.rstrip().rstrip(',')))
 
                         keys.add(key)
+
+                        l += 1
+
+                if resolve_dup_rows and len(dup_rows) > 0:
+
+                    for i in sorted(list(dup_rows), reverse=True):
+                        loop.data.pop(i)
+
+                    tag_dat = loop.get_data_by_tag(tags)
 
             asm = [] # assembly of a loop
 

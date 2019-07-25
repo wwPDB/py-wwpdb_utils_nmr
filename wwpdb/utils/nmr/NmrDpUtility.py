@@ -6552,6 +6552,7 @@ class NmrDpUtility(object):
             min_val = 100.0
 
             count = {}
+            potential = {}
 
             comb_id_set = set()
 
@@ -6992,10 +6993,63 @@ class NmrDpUtility(object):
                 else:
                     count[data_type] = 1
 
+                # detect potential type
+
+                targe_value = i[target_value_name]
+                lower_limit_value = i[lower_limit_name]
+                upper_limit_value = i[upper_limit_name]
+                lower_linear_limit_value = i[lower_linear_limit_name]
+                upper_linear_limit_value = i[upper_linear_limit_name]
+
+                if (not lower_limit_value is None) and\
+                   (not upper_limit_value is None) and\
+                   lower_linear_limit_value is None and\
+                   upper_linear_limit_value is None:
+                    potential_type = 'square-well-parabolic'
+                elif (not lower_limit_value is None) and\
+                   (not upper_limit_value is None) and\
+                   (not lower_linear_limit_value is None) and\
+                   (not upper_linear_limit_value is None):
+                    potential_type = 'square-well-parabolic-linear'
+                elif lower_limit_value is None and\
+                   (not upper_limit_value is None) and\
+                   lower_linear_limit_value is None and\
+                   upper_linear_limit_value is None:
+                    potential_type = 'upper-bound-parabolic'
+                elif (not lower_limit_value is None) and\
+                   upper_limit_value is None and\
+                   lower_linear_limit_value is None and\
+                   upper_linear_limit_value is None:
+                    potential_type = 'lower-bound-parabolic'
+                elif lower_limit_value is None and\
+                   (not upper_limit_value is None) and\
+                   lower_linear_limit_value is None and\
+                   (not upper_linear_limit_value is None):
+                    potential_type = 'upper-bound-parabolic-linear'
+                elif (not lower_limit_value is None) and\
+                   upper_limit_value is None and\
+                   (not lower_linear_limit_value is None) and\
+                   upper_linear_limit_value is None:
+                    potential_type = 'lower-bound-parabolic-linear'
+                elif (not target_value is None) and\
+                   lower_limit_value is None and\
+                   upper_limit_value is None and\
+                   lower_linear_limit_value is None and\
+                   upper_linear_limit_value is None:
+                    potential_type = 'log-harmonic'
+                else:
+                    potential_type = 'unknown'
+
+                if potential_type in potential:
+                    potential[potential_type] += 1
+                else:
+                    potential[potential_type] = 1
+
             if len(count) == 0:
                 return
 
             ent['number_of_constraints'] = count
+            ent['number_of_potential_types'] = potential
             ent['range'] = {'max_value': max_val, 'min_value': min_val}
             ent['ambiguous_constraint_sets'] = len(comb_id_set)
 
@@ -7442,6 +7496,7 @@ class NmrDpUtility(object):
         try:
 
             count = {}
+            potential = {}
 
             phi_list = []
             psi_list = []
@@ -7662,8 +7717,61 @@ class NmrDpUtility(object):
                     chi2['error'] = None if lower_limit is None or upper_limit is None else [lower_limit, upper_limit]
                     chi2_list.append(chi2)
 
+                # detect potential type
+
+                targe_value = i[target_value_name]
+                lower_limit_value = i[lower_limit_name]
+                upper_limit_value = i[upper_limit_name]
+                lower_linear_limit_value = i[lower_linear_limit_name]
+                upper_linear_limit_value = i[upper_linear_limit_name]
+
+                if (not lower_limit_value is None) and\
+                   (not upper_limit_value is None) and\
+                   lower_linear_limit_value is None and\
+                   upper_linear_limit_value is None:
+                    potential_type = 'square-well-parabolic'
+                elif (not lower_limit_value is None) and\
+                   (not upper_limit_value is None) and\
+                   (not lower_linear_limit_value is None) and\
+                   (not upper_linear_limit_value is None):
+                    potential_type = 'square-well-parabolic-linear'
+                elif lower_limit_value is None and\
+                   (not upper_limit_value is None) and\
+                   lower_linear_limit_value is None and\
+                   upper_linear_limit_value is None:
+                    potential_type = 'upper-bound-parabolic'
+                elif (not lower_limit_value is None) and\
+                   upper_limit_value is None and\
+                   lower_linear_limit_value is None and\
+                   upper_linear_limit_value is None:
+                    potential_type = 'lower-bound-parabolic'
+                elif lower_limit_value is None and\
+                   (not upper_limit_value is None) and\
+                   lower_linear_limit_value is None and\
+                   (not upper_linear_limit_value is None):
+                    potential_type = 'upper-bound-parabolic-linear'
+                elif (not lower_limit_value is None) and\
+                   upper_limit_value is None and\
+                   (not lower_linear_limit_value is None) and\
+                   upper_linear_limit_value is None:
+                    potential_type = 'lower-bound-parabolic-linear'
+                elif (not target_value is None) and\
+                   lower_limit_value is None and\
+                   upper_limit_value is None and\
+                   lower_linear_limit_value is None and\
+                   upper_linear_limit_value is None:
+                    potential_type = 'parabolic'
+                else:
+                    potential_type = 'unknown'
+
+                if potential_type in potential:
+                    potential[potential_type] += 1
+                else:
+                    potential[potential_type] = 1
+
             if len(count) > 0:
                 ent['number_of_constraints'] = count
+                ent['number_of_potential_types'] = potential
 
             if 'phi_angle_constraints' in count and 'psi_angle_constraints' in count:
 
@@ -7822,6 +7930,7 @@ class NmrDpUtility(object):
             atom_id_2_name = item_names['atom_id_2']
 
             count = {}
+            potential = {}
 
             for i in lp_data:
                 atom_id_1 = i[atom_id_1_name]
@@ -7847,10 +7956,63 @@ class NmrDpUtility(object):
                 else:
                     count[data_type] = 1
 
+                # detect potential type
+
+                targe_value = i[target_value_name]
+                lower_limit_value = i[lower_limit_name]
+                upper_limit_value = i[upper_limit_name]
+                lower_linear_limit_value = i[lower_linear_limit_name]
+                upper_linear_limit_value = i[upper_linear_limit_name]
+
+                if (not lower_limit_value is None) and\
+                   (not upper_limit_value is None) and\
+                   lower_linear_limit_value is None and\
+                   upper_linear_limit_value is None:
+                    potential_type = 'square-well-parabolic'
+                elif (not lower_limit_value is None) and\
+                   (not upper_limit_value is None) and\
+                   (not lower_linear_limit_value is None) and\
+                   (not upper_linear_limit_value is None):
+                    potential_type = 'square-well-parabolic-linear'
+                elif lower_limit_value is None and\
+                   (not upper_limit_value is None) and\
+                   lower_linear_limit_value is None and\
+                   upper_linear_limit_value is None:
+                    potential_type = 'upper-bound-parabolic'
+                elif (not lower_limit_value is None) and\
+                   upper_limit_value is None and\
+                   lower_linear_limit_value is None and\
+                   upper_linear_limit_value is None:
+                    potential_type = 'lower-bound-parabolic'
+                elif lower_limit_value is None and\
+                   (not upper_limit_value is None) and\
+                   lower_linear_limit_value is None and\
+                   (not upper_linear_limit_value is None):
+                    potential_type = 'upper-bound-parabolic-linear'
+                elif (not lower_limit_value is None) and\
+                   upper_limit_value is None and\
+                   (not lower_linear_limit_value is None) and\
+                   upper_linear_limit_value is None:
+                    potential_type = 'lower-bound-parabolic-linear'
+                elif (not target_value is None) and\
+                   lower_limit_value is None and\
+                   upper_limit_value is None and\
+                   lower_linear_limit_value is None and\
+                   upper_linear_limit_value is None:
+                    potential_type = 'parabolic'
+                else:
+                    potential_type = 'unknown'
+
+                if potential_type in potential:
+                    potential[potential_type] += 1
+                else:
+                    potential[potential_type] = 1
+
             if len(count) == 0:
                 return
 
             ent['number_of_constraints'] = count
+            ent['number_of_potential_typs'] = potential
             ent['range'] = {'max_value': max_val_, 'min_value': min_val_}
 
             target_scale = (max_val - min_val) / 12.0

@@ -2777,6 +2777,8 @@ class NmrDpUtility(object):
                         if length == unmapped + conflict:
                             continue
 
+                        ref_length = len(s1['seq_id'])
+
                         ref_code = self.__get1LetterCodeSequence(s1['comp_id'])
                         test_code = self.__get1LetterCodeSequence(_s2['comp_id'])
                         mid_code = self.__getMiddleCode(ref_code, test_code)
@@ -2785,7 +2787,7 @@ class NmrDpUtility(object):
 
                         seq_align = {'list_id': polymer_sequence_in_loop[content_subtype][list_id]['list_id'],
                                      'sf_framecode': polymer_sequence_in_loop[content_subtype][list_id]['sf_framecode'],
-                                     'chain_id': chain_id, 'length': length, 'conflict': conflict, 'unmapped': unmapped, 'sequence_coverage': float('{:.3f}'.format(float(length - (unmapped + conflict)) / float(length))),
+                                     'chain_id': chain_id, 'length': ref_length, 'conflict': conflict, 'unmapped': unmapped, 'sequence_coverage': float('{:.3f}'.format(float(length - (unmapped + conflict)) / float(ref_length))),
                                      'ref_seq_id': s1['seq_id'],
                                      'ref_gauge_code': ref_gauge_code, 'ref_code': ref_code, 'mid_code': mid_code, 'test_code': test_code, 'test_gauge_code': test_gauge_code}
 
@@ -8540,6 +8542,8 @@ class NmrDpUtility(object):
                             if length == unmapped + conflict:
                                 continue
 
+                            ref_length = len(s1['seq_id'])
+
                             ref_code = self.__get1LetterCodeSequence(s1['comp_id'])
                             test_code = self.__get1LetterCodeSequence(s2['comp_id'])
                             mid_code = self.__getMiddleCode(ref_code, test_code)
@@ -8547,7 +8551,7 @@ class NmrDpUtility(object):
                             test_gauge_code = self.__getGaugeCode(s2['seq_id'])
 
                             seq_align = {'list_id': polymer_sequence_in_loop[content_subtype][list_id]['list_id'],
-                                         'chain_id': chain_id, 'length': length, 'conflict': conflict, 'unmapped': unmapped, 'sequence_coverage': float('{:.3f}'.format(float(length - (unmapped + conflict)) / float(length))),
+                                         'chain_id': chain_id, 'length': ref_length, 'conflict': conflict, 'unmapped': unmapped, 'sequence_coverage': float('{:.3f}'.format(float(length - (unmapped + conflict)) / float(ref_length))),
                                          'ref_seq_id': s1['seq_id'],
                                          'ref_gauge_code': ref_gauge_code, 'ref_code': ref_code, 'mid_code': mid_code, 'test_code': test_code, 'test_gauge_code': test_gauge_code}
 
@@ -8615,13 +8619,15 @@ class NmrDpUtility(object):
                 if length == unmapped + conflict:
                     continue
 
+                ref_length = len(s1['seq_id'])
+
                 ref_code = self.__get1LetterCodeSequence(s1['comp_id'])
                 test_code = self.__get1LetterCodeSequence(s2['comp_id'])
                 mid_code = self.__getMiddleCode(ref_code, test_code)
                 ref_gauge_code = self.__getGaugeCode(s1['seq_id'])
                 test_gauge_code = self.__getGaugeCode(s2['seq_id'])
 
-                seq_align = {'ref_chain_id': chain_id, 'test_chain_id': chain_id2, 'length': length, 'conflict': conflict, 'unmapped': unmapped, 'sequence_coverage': float('{:.3f}'.format(float(length - (unmapped + conflict)) / float(length))),
+                seq_align = {'ref_chain_id': chain_id, 'test_chain_id': chain_id2, 'length': ref_length, 'conflict': conflict, 'unmapped': unmapped, 'sequence_coverage': float('{:.3f}'.format(float(length - (unmapped + conflict)) / float(ref_length))),
                              'ref_seq_id': s1['seq_id'], 'test_seq_id': s2['seq_id'],
                              'ref_gauge_code': ref_gauge_code, 'ref_code': ref_code, 'mid_code': mid_code, 'test_code': test_code, 'test_gauge_code': test_gauge_code}
 
@@ -8668,13 +8674,15 @@ class NmrDpUtility(object):
                 if length == unmapped + conflict:
                     continue
 
+                ref_length = len(s1['seq_id'])
+
                 ref_code = self.__get1LetterCodeSequence(s1['comp_id'])
                 test_code = self.__get1LetterCodeSequence(s2['comp_id'])
                 mid_code = self.__getMiddleCode(ref_code, test_code)
                 ref_gauge_code = self.__getGaugeCode(s1['seq_id'])
                 test_gauge_code = self.__getGaugeCode(s2['seq_id'])
 
-                seq_align = {'ref_chain_id': chain_id, 'test_chain_id': chain_id2, 'length': length, 'conflict': conflict, 'unmapped': unmapped, 'sequence_coverage': float('{:.3f}'.format(float(length - (unmapped + conflict)) / float(length))),
+                seq_align = {'ref_chain_id': chain_id, 'test_chain_id': chain_id2, 'length': ref_length, 'conflict': conflict, 'unmapped': unmapped, 'sequence_coverage': float('{:.3f}'.format(float(length - (unmapped + conflict)) / float(ref_length))),
                              'ref_seq_id': s1['seq_id'], 'test_seq_id': s2['seq_id'],
                              'ref_gauge_code': ref_gauge_code, 'ref_code': ref_code, 'mid_code': mid_code, 'test_code': test_code, 'test_gauge_code': test_gauge_code}
 

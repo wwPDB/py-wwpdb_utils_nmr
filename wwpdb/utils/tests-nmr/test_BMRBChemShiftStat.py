@@ -104,5 +104,10 @@ class TestBMRBChemShiftStat(unittest.TestCase):
         self.assertEqual(self.bmrb_cs_stat.getGeminalAtom('VAL', 'CG1'), 'CG2')
         self.assertEqual(self.bmrb_cs_stat.getGeminalAtom('VAL', 'CG2'), 'CG1')
 
+    def test_maxambigcode(self):
+        self.assertEqual(self.bmrb_cs_stat.getMaxAmbigCodeWoSetId('ARG', 'HB2'), 2)
+        self.assertEqual(self.bmrb_cs_stat.getMaxAmbigCodeWoSetId('TRP', 'CE2'), 1)
+        self.assertEqual(self.bmrb_cs_stat.getMaxAmbigCodeWoSetId('TYR', 'HE2'), 3)
+
 if __name__ == '__main__':
     unittest.main()

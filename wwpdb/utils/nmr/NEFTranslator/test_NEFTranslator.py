@@ -500,8 +500,8 @@ class TestNEFTranslator(unittest.TestCase):
     def test_get_nmrstar_atom(self):
         self.assertEqual(self.neft.get_nmrstar_atom('CYS', 'HB%'), (['HB2', 'HB3'], 1, None))
         self.assertEqual(self.neft.get_nmrstar_atom('TRP', 'CE%'), (['CE2', 'CE3'], 1, None))
-        self.assertEqual(self.neft.get_nmrstar_atom('TRP', 'CEX'), (['CE2'], 2, None))
-        self.assertEqual(self.neft.get_nmrstar_atom('TRP', 'CEY'), (['CE3'], 2, None))
+        self.assertEqual(self.neft.get_nmrstar_atom('TRP', 'CEX'), (['CE2'], 1, None))
+        self.assertEqual(self.neft.get_nmrstar_atom('TRP', 'CEY'), (['CE3'], 1, None))
         self.assertEqual(self.neft.get_nmrstar_atom('LEU', 'HDY%'), (['HD21', 'HD22', 'HD23'], 2, None))
         self.assertEqual(self.neft.get_nmrstar_atom('LEU', 'HD1%'), (['HD11', 'HD12', 'HD13'], 1, None))
 

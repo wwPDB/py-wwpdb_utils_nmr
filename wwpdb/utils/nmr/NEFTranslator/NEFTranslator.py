@@ -28,6 +28,7 @@ from pytz import utc
 
 from wwpdb.utils.config.ConfigInfo import ConfigInfo, getSiteId
 from wwpdb.utils.nmr.io.ChemCompIo import ChemCompReader
+from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
 
 (scriptPath, scriptName) = ntpath.split(os.path.realpath(__file__))
 
@@ -74,6 +75,9 @@ class NEFTranslator(object):
             self.logger.error(msg)
 
         ch.flush()
+
+        # BMRB chemical shift statistics
+        self.__csStat = BMRBChemShiftStat()
 
         # empty value
         self.empty_value = (None, '', '.', '?')
@@ -2258,7 +2262,7 @@ class NEFTranslator(object):
                 else:
                     atom_list = [i for i in alist2 if int(i[len_atom_type]) == xid[1]]
 
-                ambiguity_code = 2
+                ambiguity_code = self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_list[0])
 
             elif atm_set == [3, 4]: # endswith [%*] but neither [xyXY][%*]
 
@@ -2294,7 +2298,7 @@ class NEFTranslator(object):
                 else:
                     logging.critical('Invalid NEF atom nomenclature %s found.' % nef_atom)
 
-                ambiguity_code = 2
+                ambiguity_code = self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_list[0])
 
             else:
                 logging.critical('Invalid NEF atom nomenclature %s found.' % nef_atom)

@@ -1,6 +1,6 @@
 ##
 # File: NmrDpReport.py
-# Date: 24-Jul-2019
+# Date: 25-Jul-2019
 #
 # Updates:
 ##
@@ -225,8 +225,14 @@ class NmrDpReport:
 
         self.sequence_alignment.put(self.__report['information']['sequence_alignments'])
         self.chain_assignment.put(self.__report['information']['chain_assignments'])
-        self.error.put(self.__report['error'])
-        self.warning.put(self.__report['warning'])
+        if self.__report['error'] is None:
+            self.error = NmrDpReportError()
+        else:
+            self.error.put(self.__report['error'])
+        if self.__report['warning'] is None:
+            self.warning = NewDpReportWarning()
+        else:
+            self.warning.put(self.__report['warning'])
 
         self.setMutable()
 

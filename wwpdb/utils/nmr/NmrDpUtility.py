@@ -10590,7 +10590,7 @@ class NmrDpUtility(object):
 
             for sc in struct_conn:
 
-                if sc['conn_type_id'] == 'disulf' or sc['conn_type_id'] == 'covale':
+                if sc['conn_type_id'] == 'disulf' or sc['conn_type_id'] == 'covale' or sc['conn_type_id'] == 'hydrog':
                     continue
 
                 other = {}

@@ -6167,7 +6167,7 @@ class NmrDpUtility(object):
             while v > min_val:
                 v -= scale
 
-            while v < max_val:
+            while v <= max_val:
 
                 _count = copy.copy(count)
 
@@ -7073,7 +7073,7 @@ class NmrDpUtility(object):
             while v > min_val:
                 v -= scale
 
-            while v < max_val:
+            while v <= max_val:
 
                 _count = copy.copy(count)
 
@@ -8035,7 +8035,7 @@ class NmrDpUtility(object):
             while v > min_val:
                 v -= scale
 
-            while v < max_val:
+            while v <= max_val:
 
                 _count = copy.copy(count)
 

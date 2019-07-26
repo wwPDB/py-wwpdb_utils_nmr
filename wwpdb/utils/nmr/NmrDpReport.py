@@ -1,6 +1,6 @@
 ##
 # File: NmrDpReport.py
-# Date: 25-Jul-2019
+# Date: 26-Jul-2019
 #
 # Updates:
 ##
@@ -230,7 +230,7 @@ class NmrDpReport:
         else:
             self.error.put(self.__report['error'])
         if self.__report['warning'] is None:
-            self.warning = NewDpReportWarning()
+            self.warning = NmrDpReportWarning()
         else:
             self.warning.put(self.__report['warning'])
 

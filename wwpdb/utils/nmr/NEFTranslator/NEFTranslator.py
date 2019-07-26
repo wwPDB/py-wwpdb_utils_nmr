@@ -1,6 +1,6 @@
 ##
 # File: NEFTranslator.py
-# Date: 25-Jul-2019
+# Date: 26-Jul-2019
 #
 # Updates:
 ##
@@ -1300,7 +1300,7 @@ class NEFTranslator(object):
 
         return self.check_data(star_data, lp_category, key_items, data_items)
 
-    def check_data(self, star_data, lp_category, key_items, data_items, allowed_tags=None, disallowed_tags=None, inc_idx_test=False, enforce_non_zero=False, enforce_sign=False, enforce_enum=False, resolve_dup_rows=False):
+    def check_data(self, star_data, lp_category, key_items, data_items, allowed_tags=None, disallowed_tags=None, inc_idx_test=False, enforce_non_zero=False, enforce_sign=False, enforce_enum=False):
         """ Extract unique data with sanity check from any given loops in an NEF/NMR-STAR file.
             @author: Masashi Yokochi
         """
@@ -1327,7 +1327,7 @@ class NEFTranslator(object):
 
         for k in key_items:
             if not k['type'] in item_types:
-                raise TypeError("Type %s of key item %s must be one of %s." % (k['type'], k['name'], item_types))
+                raise TypeError("Type %s of data item %s must be one of %s." % (k['type'], k['name'], item_types))
 
         for d in data_items:
             if not d['type'] in item_types:
@@ -1362,13 +1362,13 @@ class NEFTranslator(object):
                     if 'not-equal-to' in group and group['not-equal-to']:
                         for l in group['not-equal-to']:
                             if not l in allowed_tags:
-                                raise Error("None-equal data item %s of %s must exists in allowed tags." % (l, d['name']))
+                                raise Error("Nonequal data item %s of %s must exists in allowed tags." % (l, d['name']))
 
         for loop in loops:
             tag_dat = []
 
             if set(key_names) & set(loop.tags) != set(key_names):
-                raise LookupError("Missing one of key items %s." % key_names)
+                raise LookupError("Missing one of data items %s." % key_names)
 
             if len(mand_data_names) > 0 and set(mand_data_names) & set(loop.tags) != set(mand_data_names):
                 raise LookupError("Missing one of data items %s." % mand_data_names)
@@ -1469,9 +1469,6 @@ class NEFTranslator(object):
             if inc_idx_test:
                 keys = set()
 
-                if resolve_dup_rows:
-                    dup_rows = set()
-
                 rechk = False
 
                 l = 0
@@ -1494,38 +1491,32 @@ class NEFTranslator(object):
 
                         if relax_key:
                             rechk = True
-                            l += 1
-                            continue
 
-                        if resolve_dup_rows:
-                            dup_rows.add(l)
-                            l += 1
-                            continue
+                        else:
+                            msg = ''
+                            for j in range(key_len):
+                                msg += key_names[j] + ' %s, ' % i[j]
 
-                        msg = ''
-                        for j in range(key_len):
-                            msg += key_names[j] + ' %s, ' % i[j]
+                            idx_msg = ''
 
-                        idx_msg = ''
+                            if len(idx_tag_ids) > 0:
+                                for _j in idx_tag_ids:
+                                    idx_msg += tags[_j] + ' '
 
-                        if len(idx_tag_ids) > 0:
-                            for _j in idx_tag_ids:
-                                idx_msg += tags[_j] + ' '
+                                    for _i in tag_dat:
+                                        _key = ''
+                                        for j in range(key_len):
+                                            _key += " " + _i[j]
+                                            _key.rstrip()
 
-                                for _i in tag_dat:
-                                    _key = ''
-                                    for j in range(key_len):
-                                        _key += " " + _i[j]
-                                        _key.rstrip()
+                                        if key == _key:
+                                            idx_msg += _i[_j] + ' vs '
 
-                                    if key == _key:
-                                        idx_msg += _i[_j] + ' vs '
+                                    idx_msg = idx_msg[:-4] + ', '
 
-                                idx_msg = idx_msg[:-4] + ', '
+                                idx_msg = '[Check rows of ' + idx_msg[:-2] + '] '
 
-                            idx_msg = '[Check rows of ' + idx_msg[:-2] + '] '
-
-                        raise KeyError("%sValues of key items must be unique in loop. %s are duplicated." % (idx_msg, msg.rstrip().rstrip(',')))
+                            raise KeyError("%sMultiple rows having the following values %s exist in a loop." % (idx_msg, msg.rstrip().rstrip(',')))
 
                     keys.add(key)
 
@@ -1545,11 +1536,6 @@ class NEFTranslator(object):
                         key.rstrip()
 
                         if key in keys:
-
-                            if resolve_dup_rows:
-                                dup_rows.add(l)
-                                l += 1
-                                continue
 
                             msg = ''
                             for j in range(key_len):
@@ -1579,18 +1565,11 @@ class NEFTranslator(object):
 
                                 idx_msg = '[Check rows of ' + idx_msg[:-2] + '] '
 
-                            raise KeyError("%sValues of key items must be unique in loop. %s are duplicated." % (idx_msg, msg.rstrip().rstrip(',')))
+                            raise KeyError("%sMultiple rows having the following values %s exist in a loop." % (idx_msg, msg.rstrip().rstrip(',')))
 
                         keys.add(key)
 
                         l += 1
-
-                if resolve_dup_rows and len(dup_rows) > 0:
-
-                    for i in sorted(list(dup_rows), reverse=True):
-                        loop.data.pop(i)
-
-                    tag_dat = loop.get_data_by_tag(tags)
 
             asm = [] # assembly of a loop
 
@@ -1856,6 +1835,52 @@ class NEFTranslator(object):
 
         return idx_msg
 
+    def get_conflicted(self, star_data, lp_category, key_items):
+        """ Return list of row ID of conflicted rows except rows of the first occurrence.
+            @author: Masashi Yokochi
+        """
+
+        try:
+            loops = star_data.get_loops_by_category(lp_category)
+        except AttributeError:
+            try:
+                loops = [star_data.get_loop_by_category(lp_category)]
+            except AttributeError:
+                loops = [star_data]
+
+        dat = [] # data of all loops
+
+        key_names = [k['name'] for k in key_items]
+
+        key_len = len(key_items)
+
+        for loop in loops:
+
+            if set(key_names) & set(loop.tags) != set(key_names):
+                raise LookupError("Missing one of data items %s." % key_names)
+
+            keys = set()
+            dup_ids = set()
+
+            l = 0
+            for i in loop.get_data_by_tag(key_names):
+
+                key = ''
+                for j in range(key_len):
+                    key += ' ' + i[j]
+                key.rstrip()
+
+                if key in keys:
+                    dup_ids.add(l)
+
+                keys.add(key)
+
+                l += 1
+
+            dat.append(sorted(list(dup_ids), reverse=True))
+
+        return dat
+
     def check_sf_tag(self, star_data, tag_items, allowed_tags=None, enforce_non_zero=False, enforce_sign=False, enforce_enum=False):
         """ Extract saveframe tags with sanity check in an NEF/NMR-STAR file.
             @author: Masashi Yokochi
@@ -1898,7 +1923,7 @@ class NEFTranslator(object):
                     if 'not-equal-to' in group and group['not-equal-to']:
                         for l in group['not-equal-to']:
                             if not l in allowed_tags:
-                                raise Error("None-equal tag item %s of %s must exists in allowed tags." % (l, t['name']))
+                                raise Error("Nonequal tag item %s of %s must exists in allowed tags." % (l, t['name']))
 
         sf_tags = {i[0]:i[1] for i in star_data.tags}
 

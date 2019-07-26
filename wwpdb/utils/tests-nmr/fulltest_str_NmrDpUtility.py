@@ -29,7 +29,8 @@ class TestNmrDpUtility(unittest.TestCase):
         with open(self.data_dir_path + entry_id + '-str-consistency-log.json', 'r') as file:
             report = json.loads(file.read())
 
-        self.assertEqual(report['error']['internal_error'], None)
+        if not report['error'] is None:
+            self.assertEqual(report['error']['internal_error'], None)
 
     def __test_nmr_str2str_deposit_check(self, entry_id):
         if not os.access(self.data_dir_path + entry_id + '-str-consistency-log.json', os.F_OK):
@@ -49,7 +50,8 @@ class TestNmrDpUtility(unittest.TestCase):
         with open(self.data_dir_path + entry_id + '-str2str-deposit-log.json', 'r') as file:
             report = json.loads(file.read())
 
-        self.assertEqual(report['error']['internal_error'], None)
+        if not report['error'] is None:
+            self.assertEqual(report['error']['internal_error'], None)
 
     def test_nmr_str_consistency_check_1nk2(self):
         self.__test_nmr_str_consistency('1nk2')

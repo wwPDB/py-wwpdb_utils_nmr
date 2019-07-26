@@ -1,6 +1,6 @@
 ##
 # File: NmrDpUtility.py
-# Date: 25-Jul-2019
+# Date: 26-Jul-2019
 #
 # Updates:
 ##
@@ -38,6 +38,9 @@ class NmrDpUtility(object):
 
         # current workflow operation
         self.__op = None
+
+        # conflict resolver
+        self.__resolve_conflict = False
 
         # source, destination, and log file paths.
         self.__srcPath = None
@@ -102,6 +105,9 @@ class NmrDpUtility(object):
 
         # nmr-*-deposit tasks
         __depositTasks = [self.__retrieveDpReport, self.__validateInputSource, self.__parseCoordinate,
+                          # resolve conflict
+                          self.__resolveConflictsInLoop,
+                          self.__resolveConflictsInAuxLoop,
                           # resolve minor issues
                           self.__deleteSkippedSf,
                           self.__deleteSkippedLoop,
@@ -316,7 +322,8 @@ class NmrDpUtility(object):
                                                   {'name': 'residue_name', 'type': 'str'},
                                                   {'name': 'atom_name', 'type': 'str'}
                                                   ],
-                                   'dist_restraint': [{'name': 'chain_code_1', 'type': 'str'},
+                                   'dist_restraint': [{'name': 'restraint_id', 'type': 'positive-int'},
+                                                      {'name': 'chain_code_1', 'type': 'str'},
                                                       {'name': 'sequence_code_1', 'type': 'int'},
                                                       {'name': 'residue_name_1', 'type': 'str'},
                                                       {'name': 'atom_name_1', 'type': 'str'},
@@ -325,7 +332,8 @@ class NmrDpUtility(object):
                                                       {'name': 'residue_name_2', 'type': 'str'},
                                                       {'name': 'atom_name_2', 'type': 'str'}
                                                       ],
-                                   'dihed_restraint': [{'name': 'chain_code_1', 'type': 'str'},
+                                   'dihed_restraint': [{'name': 'restraint_id', 'type': 'positive-int'},
+                                                       {'name': 'chain_code_1', 'type': 'str'},
                                                        {'name': 'sequence_code_1', 'type': 'int'},
                                                        {'name': 'residue_name_1', 'type': 'str'},
                                                        {'name': 'atom_name_1', 'type': 'str'},
@@ -342,7 +350,8 @@ class NmrDpUtility(object):
                                                        {'name': 'residue_name_4', 'type': 'str'},
                                                        {'name': 'atom_name_4', 'type': 'str'}
                                                        ],
-                                   'rdc_restraint': [{'name': 'chain_code_1', 'type': 'str'},
+                                   'rdc_restraint': [{'name': 'restraint_id', 'type': 'positive-int'},
+                                                     {'name': 'chain_code_1', 'type': 'str'},
                                                      {'name': 'sequence_code_1', 'type': 'int'},
                                                      {'name': 'residue_name_1', 'type': 'str'},
                                                      {'name': 'atom_name_1', 'type': 'str'},
@@ -362,7 +371,8 @@ class NmrDpUtility(object):
                                                       {'name': 'Comp_ID', 'type': 'str'},
                                                       {'name': 'Atom_ID', 'type': 'str'}
                                                       ],
-                                       'dist_restraint': [{'name': 'Entity_assembly_ID_1', 'type': 'positive-int'},
+                                       'dist_restraint': [{'name': 'ID', 'type': 'positive-int'},
+                                                          {'name': 'Entity_assembly_ID_1', 'type': 'positive-int'},
                                                           {'name': 'Comp_index_ID_1', 'type': 'int'},
                                                           {'name': 'Comp_ID_1', 'type': 'str'},
                                                           {'name': 'Atom_ID_1', 'type': 'str'},
@@ -371,7 +381,8 @@ class NmrDpUtility(object):
                                                           {'name': 'Comp_ID_2', 'type': 'str'},
                                                           {'name': 'Atom_ID_2', 'type': 'str'}
                                                           ],
-                                       'dihed_restraint': [{'name': 'Entity_assembly_ID_1', 'type': 'positive-int'},
+                                       'dihed_restraint': [{'name': 'ID', 'type': 'positive-int'},
+                                                           {'name': 'Entity_assembly_ID_1', 'type': 'positive-int'},
                                                            {'name': 'Comp_index_ID_1', 'type': 'int'},
                                                            {'name': 'Comp_ID_1', 'type': 'str'},
                                                            {'name': 'Atom_ID_1', 'type': 'str'},
@@ -388,7 +399,8 @@ class NmrDpUtility(object):
                                                            {'name': 'Comp_ID_4', 'type': 'str'},
                                                            {'name': 'Atom_ID_4', 'type': 'str'}
                                                            ],
-                                       'rdc_restraint': [{'name': 'Entity_assembly_ID_1', 'type': 'positive-int'},
+                                       'rdc_restraint': [{'name': 'ID', 'type': 'positive-int'},
+                                                         {'name': 'Entity_assembly_ID_1', 'type': 'positive-int'},
                                                          {'name': 'Comp_index_ID_1', 'type': 'int'},
                                                          {'name': 'Comp_ID_1', 'type': 'str'},
                                                          {'name': 'Atom_ID_1', 'type': 'str'},
@@ -444,8 +456,8 @@ class NmrDpUtility(object):
                                                    'enforce-enum': True}
                                                   ],
                                    'dist_restraint': [{'name': 'index', 'type': 'index-int', 'mandatory': True},
-                                                      {'name': 'restraint_id', 'type': 'positive-int', 'mandatory': True,
-                                                       'enforce-non-zero': True},
+                                                      #{'name': 'restraint_id', 'type': 'positive-int', 'mandatory': True,
+                                                      # 'enforce-non-zero': True},
                                                       {'name': 'restraint_combination_id', 'type': 'positive-int', 'mandatory': False,
                                                        'enforce-non-zero': True},
                                                       {'name': 'weight', 'type': 'range-float', 'mandatory': True,
@@ -485,7 +497,8 @@ class NmrDpUtility(object):
                                                                  'larger-than': ['upper_limit']}}
                                                       ],
                                    'dihed_restraint': [{'name': 'index', 'type': 'index-int', 'mandatory': True},
-                                                       {'name': 'restraint_id', 'type': 'positive-int', 'mandatory': True},
+                                                       #{'name': 'restraint_id', 'type': 'positive-int', 'mandatory': True,
+                                                       # 'enforce-non-zero': True},
                                                        {'name': 'restraint_combination_id', 'type': 'positive-int', 'mandatory': False,
                                                         'enforce-non-zero': True},
                                                        {'name': 'weight', 'type': 'range-float', 'mandatory': True,
@@ -526,7 +539,8 @@ class NmrDpUtility(object):
                                                        {'name': 'name', 'type': 'str', 'mandatory': False},
                                                     ],
                                    'rdc_restraint': [{'name': 'index', 'type': 'index-int', 'mandatory': True},
-                                                     {'name': 'restraint_id', 'type': 'positive-int', 'mandatory': True},
+                                                     #{'name': 'restraint_id', 'type': 'positive-int', 'mandatory': True,
+                                                     # 'enforce-non-zero': True},
                                                      {'name': 'restraint_combination_id', 'type': 'positive-int', 'mandatory': False,
                                                       'enforce-non-zero': True},
                                                      {'name': 'target_value', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
@@ -612,8 +626,8 @@ class NmrDpUtility(object):
                                                        {'name': 'Assigned_chem_shift_list_ID', 'type': 'pointer-index', 'mandatory': True}
                                                        ],
                                         'dist_restraint': [{'name': 'Index_ID', 'type': 'index-int', 'mandatory': True},
-                                                           {'name': 'ID', 'type': 'positive-int', 'mandatory': True,
-                                                            'enforce-non-zero': True},
+                                                           #{'name': 'ID', 'type': 'positive-int', 'mandatory': True,
+                                                           # 'enforce-non-zero': True},
                                                            {'name': 'Combination_ID', 'type': 'positive-int', 'mandatory': False,
                                                             'enforce-non-zero': True},
                                                            {'name': 'Member_logic_code', 'type': 'enum', 'mandatory': False,
@@ -665,7 +679,8 @@ class NmrDpUtility(object):
                                                            {'name': 'Gen_dist_constraint_list_ID', 'type': 'pointer-index', 'mandatory': True},
                                                            ],
                                         'dihed_restraint': [{'name': 'Index_ID', 'type': 'index-int', 'mandatory': True},
-                                                            {'name': 'ID', 'type': 'index-int', 'mandatory': True},
+                                                            #{'name': 'ID', 'type': 'index-int', 'mandatory': True,
+                                                            # 'enforce-non-zero': True},
                                                             {'name': 'Combination_ID', 'type': 'positive-int', 'mandatory': False,
                                                              'enforce-non-zero': True},
                                                             {'name': 'Torsion_angle_name', 'type': 'str', 'mandatory': False},
@@ -723,7 +738,8 @@ class NmrDpUtility(object):
                                                             {'name': 'Torsion_angle_constraint_list_ID', 'type': 'pointer-index', 'mandatory': True},
                                             ],
                                         'rdc_restraint': [{'name': 'Index_ID', 'type': 'index-int', 'mandatory': True},
-                                                          {'name': 'ID', 'type': 'index-int', 'mandatory': True},
+                                                          #{'name': 'ID', 'type': 'index-int', 'mandatory': True,
+                                                          # 'enforce-non-zero': True},
                                                           {'name': 'Combination_ID', 'type': 'positive-int', 'mandatory': False,
                                                            'enforce-non-zero': True},
                                                           {'name': 'Weight', 'type': 'range-float', 'mandatory': True,
@@ -1536,6 +1552,12 @@ class NmrDpUtility(object):
         if not op in self.__workFlowOps:
             logging.error("+NmrDpUtility.op() ++ Error  - Unknown workflow operation %s." % op)
             raise KeyError("+NmrDpUtility.op() ++ Error  - Unknown workflow operation %s." % op)
+
+        if 'resolve_conflict' in self.__inputParamDict and not self.__inputParamDict['resolve_conflict'] is None:
+            if type(self.__inputParamDict['resolve_conflict']) is bool:
+                self.__resolve_conflict = self.__inputParamDict['resolve_conflict']
+            else:
+                self.__resolve_conflict = self.__inputParamDict['resolve_conflict'] in self.true_value
 
         self.__op = op
 
@@ -3420,14 +3442,6 @@ class NmrDpUtility(object):
         if input_source_dic['content_subtype'] is None:
             return False
 
-        self.__resolve_dup_rows = False
-
-        if 'resolve_dup_rows' in self.__inputParamDict and not self.__inputParamDict['resolve_dup_rows'] is None:
-            if type(self.__inputParamDict['resolve_dup_rows']) is bool:
-                self.__resolve_dup_rows = self.__inputParamDict['resolve_dup_rows']
-            else:
-                self.__resolve_dup_rows = self.__inputParamDict['resolve_dup_rows'] in self.true_value
-
         __errors = self.report.getTotalErrors()
 
         for content_subtype in input_source_dic['content_subtype'].keys():
@@ -3493,9 +3507,17 @@ class NmrDpUtility(object):
 
                 try:
 
+                    if self.__resolve_conflict:
+                        conflicted = self.__nefT.get_conflicted(sf_data, lp_category, key_items)[0]
+
+                        if len(conflicted) > 0:
+                            loop = sf_data.get_loop_by_category(lp_category)
+
+                            for l in conflicted:
+                                del loop.data[l]
+
                     lp_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, allowed_tags, disallowed_tags,
-                                                     inc_idx_test=True, enforce_non_zero=True, enforce_sign=True, enforce_enum=True,
-                                                     resolve_dup_rows=self.__resolve_dup_rows)[0]
+                                                     inc_idx_test=True, enforce_non_zero=True, enforce_sign=True, enforce_enum=True)[0]
 
                     self.__lp_data[content_subtype].append({'sf_framecode': sf_framecode, 'data': lp_data})
 
@@ -3650,9 +3672,17 @@ class NmrDpUtility(object):
 
                         try:
 
+                            if self.__resolve_conflict:
+                                conflicted = self.__nefT.get_conflicted(sf_data, lp_category, key_items)[0]
+
+                                if len(conflicted) > 0:
+                                    loop = sf_data.sf_data.get_loop_by_category(lp_category)
+
+                                    for l in conflicted:
+                                        del loop.data[l]
+
                             aux_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, allowed_tags, None,
-                                                              inc_idx_test=True, enforce_non_zero=True, enforce_sign=True, enforce_enum=True,
-                                                              resolve_dup_rows=self.__resolve_dup_rows)[0]
+                                                              inc_idx_test=True, enforce_non_zero=True, enforce_sign=True, enforce_enum=True)[0]
 
                             self.__aux_data[content_subtype].append({'sf_framecode': sf_framecode, 'category': lp_category, 'data': aux_data})
 
@@ -3923,7 +3953,7 @@ class NmrDpUtility(object):
                 try:
 
                     sf_tag_data = self.__nefT.check_sf_tag(sf_data, self.sf_tag_items[file_type][content_subtype], self.sf_allowed_tags[file_type][content_subtype],
-                                                            enforce_non_zero=True, enforce_sign=True, enforce_enum=True)
+                                                           enforce_non_zero=True, enforce_sign=True, enforce_enum=True)
 
                     self.__testParentChildRelation(file_name, file_type, content_subtype, parent_keys, list_id, sf_framecode, sf_tag_data)
 
@@ -3984,7 +4014,7 @@ class NmrDpUtility(object):
                     try:
 
                         sf_tag_data = self.__nefT.check_sf_tag(sf_data, self.sf_tag_items[file_type][content_subtype], self.sf_allowed_tags[file_type][content_subtype],
-                                                                enfoce_non_zero=False, enforce_sign=False, enforce_enum=False)
+                                                               enfoce_non_zero=False, enforce_sign=False, enforce_enum=False)
 
                         self.__testParentChildRelation(file_name, file_type, content_subtype, parent_keys, list_id, sf_framecode, sf_tag_data)
 
@@ -4230,7 +4260,7 @@ class NmrDpUtility(object):
                                 if self.__csStat.hasEnoughStat(comp_id, polypeptide_like):
                                     tolerance = std_value
 
-                                    if (value < min_value - tolerance or value > max_value + tolerance) and abs(z_score) > 7.5:
+                                    if (value < min_value - tolerance or value > max_value + tolerance) and abs(z_score) > 8.0:
 
                                         err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] %s %s (chain_id %s, seq_id %s, comp_id %s, atom_id %s) is out of range (avg %s, std %s, min %s, max %s, Z_score %.2f).' %\
                                               (value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score)
@@ -4241,7 +4271,7 @@ class NmrDpUtility(object):
                                         if self.__verbose:
                                             self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ ValueError  - %s\n" % err)
 
-                                    elif abs(z_score) > 7.5:
+                                    elif abs(z_score) > 8.0:
 
                                         warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] %s %s (chain_id %s, seq_id %s, comp_id %s, atom_id %s) must be verified (avg %s, std %s, min %s, max %s, Z_score %.2f).' %\
                                                (value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score)
@@ -4252,7 +4282,7 @@ class NmrDpUtility(object):
                                         if self.__verbose:
                                             self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ Warning  - %s\n" % warn)
 
-                                    elif abs(z_score) > 5.3:
+                                    elif abs(z_score) > 6.0:
 
                                         warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] %s %s (chain_id %s, seq_id %s, comp_id %s, atom_id %s) should be verified (avg %s, std %s, min %s, max %s, Z_score %.2f).' %\
                                                (value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score)
@@ -4347,9 +4377,9 @@ class NmrDpUtility(object):
                                     break
 
                                 z_score = (value - avg_value) / std_value
-                                tolerance = std_value / 10.0
+                                tolerance = std_value
 
-                                if (value < min_value - tolerance or value > max_value + tolerance) and abs(z_score) > 5.0:
+                                if (value < min_value - tolerance or value > max_value + tolerance) and abs(z_score) > 6.0:
 
                                     err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] %s %s (chain_id %s, seq_id %s, comp_id %s, atom_id %s) is out of range (avg %s, std %s, min %s, max %s, Z_score %.2f).' %\
                                           (value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score)
@@ -4360,7 +4390,7 @@ class NmrDpUtility(object):
                                     if self.__verbose:
                                         self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ ValueError  - %s\n" % err)
 
-                                elif abs(z_score) > 5.0:
+                                elif abs(z_score) > 6.0:
 
                                     warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] %s %s (chain_id %s, seq_id %s, comp_id %s, atom_id %s) must be verified (avg %s, std %s, min %s, max %s, Z_score %.2f).' %\
                                            (value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score)
@@ -4371,7 +4401,7 @@ class NmrDpUtility(object):
                                     if self.__verbose:
                                         self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ Warning  - %s\n" % warn)
 
-                                elif abs(z_score) > 3.6:
+                                elif abs(z_score) > 4.0:
 
                                     warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] %s %s (chain_id %s, seq_id %s, comp_id %s, atom_id %s) should be verified (avg %s, std %s, min %s, max %s, Z_score %.2f).' %\
                                            (value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score)
@@ -4623,6 +4653,7 @@ class NmrDpUtility(object):
                     self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ Error  - %s\n" % err)
 
             except Exception as e:
+
                 self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateCSValue() ++ Error  - %s" % str(e))
                 self.report.setError()
 
@@ -9431,6 +9462,139 @@ class NmrDpUtility(object):
         logging.error("+NmrDpUtility.__retrieveDpReport() ++ Error  - Could not find 'report_file_path' input parameter.")
         raise KeyError("+NmrDpUtility.__retrieveDpReport() ++ Error  - Could not find 'report_file_path' input parameter.")
 
+    def __resolveConflictsInLoop(self):
+        """ Resolve conflicted rows in loops.
+        """
+
+        input_source = self.report.input_sources[0]
+        input_source_dic = input_source.get()
+
+        file_type = input_source_dic['file_type']
+
+        if input_source_dic['content_subtype'] is None:
+            return False
+
+        if not self.__resolve_conflict:
+            return True
+
+        for content_subtype in input_source_dic['content_subtype'].keys():
+
+            if content_subtype == 'entry_info':
+                continue
+
+            sf_category = self.sf_categories[file_type][content_subtype]
+            lp_category = self.lp_categories[file_type][content_subtype]
+
+            for sf_data in self.__star_data.get_saveframes_by_category(sf_category):
+
+                sf_framecode = sf_data.get_tag('sf_framecode')[0]
+
+                if content_subtype == 'spectral_peak':
+
+                    try:
+
+                        _num_dim = sf_data.get_tag(self.num_dim_items[file_type])[0]
+                        num_dim = int(_num_dim)
+
+                        if not num_dim in range(1, self.lim_num_dim):
+                            raise ValueError()
+
+                    except ValueError: # raised error already at __testIndexConsistency()
+                        continue
+
+                    max_dim = num_dim + 1
+
+                    key_items = []
+                    for dim in range(1, max_dim):
+                        for k in self.pk_key_items[file_type]:
+                            _k = copy.copy(k)
+                            if '%s' in k['name']:
+                               _k['name'] = k['name'] % dim
+                            key_items.append(_k)
+
+                else:
+
+                    key_items = self.key_items[file_type][content_subtype]
+
+                try:
+
+                    conflicted = self.__nefT.get_conflicted(sf_data, lp_category, key_items)[0]
+
+                    if len(conflicted) > 0:
+                        loop = sf_data.get_loop_by_category(lp_category)
+
+                        for l in conflicted:
+                            del loop.data[l]
+
+                except:
+                    pass
+
+        return True
+
+    def __resolveConflictsInAuxLoop(self):
+        """ Resolve conflicted rows in auxiliary loops.
+        """
+
+        input_source = self.report.input_sources[0]
+        input_source_dic = input_source.get()
+
+        file_type = input_source_dic['file_type']
+
+        if input_source_dic['content_subtype'] is None:
+            return False
+
+        if not self.__resolve_conflict:
+            return True
+
+        for content_subtype in input_source_dic['content_subtype'].keys():
+
+            sf_category = self.sf_categories[file_type][content_subtype]
+            lp_category = self.lp_categories[file_type][content_subtype]
+
+            for sf_data in self.__star_data.get_saveframes_by_category(sf_category):
+
+                sf_framecode = sf_data.get_tag('sf_framecode')[0]
+
+                if content_subtype == 'spectral_peak':
+
+                    try:
+
+                        _num_dim = sf_data.get_tag(self.num_dim_items[file_type])[0]
+                        num_dim = int(_num_dim)
+
+                        if not num_dim in range(1, self.lim_num_dim):
+                            raise ValueError()
+
+                    except ValueError: # raised error already at __testIndexConsistency()
+                        pass
+
+                for loop in sf_data.loops:
+
+                    lp_category = loop.category
+
+                    # main content of loop has been processed in __testDataConsistencyInLoop()
+                    if lp_category in self.lp_categories[file_type][content_subtype]:
+                        continue
+
+                    elif lp_category in self.aux_lp_categories[file_type][content_subtype]:
+
+                        key_items = self.aux_key_items[file_type][content_subtype][lp_category]
+
+                        try:
+
+                            conflicted = self.__nefT.get_conflicted(sf_data, lp_category, key_items)[0]
+
+                            if len(conflicted) > 0:
+                                loop = sf_data.sf_data.get_loop_by_category(lp_category)
+
+                                for l in conflicted:
+                                    del loop.data[l]
+
+                        except:
+                            pass
+
+        return True
+
     def __deleteSkippedSf(self):
         """ Delete skipped saveframes.
         """
@@ -13223,7 +13387,7 @@ class NmrDpUtility(object):
         # update datablock name
 
         if self.__star_data_type == 'Entry':
-            self.__star_data.entry_id = entry_id + self.content_type[file_type]
+            self.__star_data.entry_id = entry_id + '_' + self.content_type[file_type]
 
         if file_type == 'nef':
             return True

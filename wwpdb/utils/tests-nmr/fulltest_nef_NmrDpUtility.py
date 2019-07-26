@@ -29,7 +29,7 @@ class TestNmrDpUtility(unittest.TestCase):
         with open(self.data_dir_path + entry_id + '-nef-consistency-log.json', 'r') as file:
             report = json.loads(file.read())
 
-        if report['error'] is None:
+        if not report['error'] is None:
             self.assertEqual(report['error']['internal_error'], None)
 
     def __test_nmr_nef2str_deposit_check(self, entry_id):
@@ -134,6 +134,6 @@ class TestNmrDpUtility(unittest.TestCase):
 
     def test_nmr_nef2str_deposit_check_2m5o(self):
         self.__test_nmr_nef2str_deposit_check('2m5o')
-
+ 
 if __name__ == '__main__':
     unittest.main()

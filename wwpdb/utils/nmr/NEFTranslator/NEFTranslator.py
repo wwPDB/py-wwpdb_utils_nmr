@@ -1516,7 +1516,7 @@ class NEFTranslator(object):
 
                                 idx_msg = '[Check rows of ' + idx_msg[:-2] + '] '
 
-                            raise KeyError("%sMultiple rows having the following values %s exist in a loop." % (idx_msg, msg.rstrip().rstrip(',')))
+                            user_warn_msg += '[Multiple data] %sMultiple rows having the following values %s exist in a loop.\n' % (idx_msg, msg.rstrip().rstrip(','))
 
                     keys.add(key)
 
@@ -1565,7 +1565,7 @@ class NEFTranslator(object):
 
                                 idx_msg = '[Check rows of ' + idx_msg[:-2] + '] '
 
-                            raise KeyError("%sMultiple rows having the following values %s exist in a loop." % (idx_msg, msg.rstrip().rstrip(',')))
+                            user_warn_msg += '[Multiple data] %sMultiple rows having the following values %s exist in a loop.\n' % (idx_msg, msg.rstrip().rstrip(','))
 
                         keys.add(key)
 
@@ -1671,7 +1671,7 @@ class NEFTranslator(object):
                             except:
                                 raise ValueError("%s%s '%s' must be %s." % (self.__idx_msg(idx_tag_ids, tags, ent), name, val, type))
                         else:
-                                ent[name] = val
+                            ent[name] = val
 
                     else:
                         for d in data_items:
@@ -1768,7 +1768,7 @@ class NEFTranslator(object):
                                     except:
                                         raise ValueError("%s%s '%s' must be %s." % (self.__idx_msg(idx_tag_ids, tags, ent), name, val, type))
                                 else:
-                                        ent[name] = val
+                                    ent[name] = val
 
                 for d in data_items:
                     if 'group-mandatory' in d and d['group-mandatory']:
@@ -2043,7 +2043,7 @@ class NEFTranslator(object):
                         except:
                             raise ValueError("%s '%s' must be %s." % (name, val, type))
                     else:
-                            ent[name] = val
+                        ent[name] = val
 
             for t in tag_items:
                 if 'group-mandatory' in t and t['group-mandatory']:
@@ -2169,7 +2169,6 @@ class NEFTranslator(object):
                         if self.__last_comp_id_test: # matches with comp_id in CCD
                             if not atm in [a[self.__cca_atom_id] for a in self.__last_chem_comp_atoms]:
                                 ns.append(i)
-
                         else:
                             ns.append(i)
 

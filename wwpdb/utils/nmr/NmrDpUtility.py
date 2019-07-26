@@ -3557,21 +3557,38 @@ class NmrDpUtility(object):
                         zero = warn.startswith('[Zero value error] ')
                         nega = warn.startswith('[Negative value error] ')
                         enum = warn.startswith('[Enumeration error] ')
+                        mult = warn.startswith('[Multiple data] ')
 
-                        if zero or nega or enum:
+                        if zero or nega or enum or mult:
 
                             if zero:
                                 warn = warn[19:]
+                                item = 'missing_data'
                             elif nega:
                                 warn = warn[23:]
-                            else:
+                                item = 'unusual_data'
+                            elif enum:
                                 warn = warn[20:]
+                                item = 'enum_failure'
+                            else:
+                                mult = warn[16:]
+                                item = 'multiple_data'
 
-                            self.report.warning.appendDescription('missing_data' if zero else ('unusual_data' if nega else 'enum_failure'), {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
-                            self.report.setWarning()
+                            if zero or nega or enum:
 
-                            if self.__verbose:
-                                self.__lfh.write("+NmrDpUtility.__testDataConsistencyInLoop() ++ Warning  - %s\n" % warn)
+                                self.report.warning.appendDescription(item, {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
+                                self.report.setWarning()
+
+                                if self.__verbose:
+                                    self.__lfh.write("+NmrDpUtility.__testDataConsistencyInLoop() ++ Warning  - %s\n" % warn)
+
+                            else:
+
+                                self.report.error.appendDescription(item, {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
+                                self.report.setError()
+
+                                if self.__verbose:
+                                    self.__lfh.write("+NmrDpUtility.__testDataConsistencyInLoop() ++ KeyError  - %s" % warn)
 
                         else:
 
@@ -3725,21 +3742,38 @@ class NmrDpUtility(object):
                                 zero = warn.startswith('[Zero value error] ')
                                 nega = warn.startswith('[Negative value error] ')
                                 enum = warn.startswith('[Enumeration error] ')
+                                mult = warn.startswith('[Multiple data] ')
 
-                                if zero or nega or enum:
+                                if zero or nega or enum or mult:
 
                                     if zero:
                                         warn = warn[19:]
+                                        item = 'missing_data'
                                     elif nega:
                                         warn = warn[23:]
-                                    else:
+                                        item = 'unusual_data'
+                                    elif enum:
                                         warn = warn[20:]
+                                        item = 'enum_failure'
+                                    else:
+                                        mult = warn[16:]
+                                        item = 'multiple_data'
 
-                                    self.report.warning.appendDescription('missing_data' if zero else ('unusual_data' if nega else 'enum_failure'), {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
-                                    self.report.setWarning()
+                                    if zero or nega or enum:
 
-                                    if self.__verbose:
-                                        self.__lfh.write("+NmrDpUtility.__testDataConsistencyInAuxLoop() ++ Warning  - %s\n" % warn)
+                                        self.report.warning.appendDescription(item, {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
+                                        self.report.setWarning()
+
+                                        if self.__verbose:
+                                            self.__lfh.write("+NmrDpUtility.__testDataConsistencyInAuxLoop() ++ Warning  - %s\n" % warn)
+
+                                    else:
+
+                                        self.report.error.appendDescription('multiple_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
+                                        self.report.setError()
+
+                                        if self.__verbose:
+                                            self.__lfh.write("+NmrDpUtility.__testDataConsistencyInAuxLoop() ++ KeyError  - %s" % warn)
 
                                 else:
 
@@ -8771,7 +8805,7 @@ class NmrDpUtility(object):
         has_nmr_poly_seq = self.__hasKeyValue(nmr_input_source_dic, 'polymer_sequence')
 
         if not has_nmr_poly_seq:
-
+            """ this will raise internal error if upload NEF file for nmr-str2str-deposit op for NMR-STAR file for nmr-nef2str-deposit
             err = "Common polymer sequence did not exist, __extractCommonPolymerSequence() should be invoked."
 
             self.report.error.appendDescription('internal_error', "+NmrDpUtility.__appendCoordPolymerSequenceAlignment() ++ Error  - %s" % err)
@@ -8779,7 +8813,7 @@ class NmrDpUtility(object):
 
             if self.__verbose:
                 self.__lfh.write("+NmrDpUtility.__appendCoordPolymerSequenceAlignment() ++ Error  - %s\n" % err)
-
+            """
             return False
 
         nmr_polymer_sequence = nmr_input_source_dic['polymer_sequence']
@@ -8923,7 +8957,7 @@ class NmrDpUtility(object):
         has_nmr_poly_seq = self.__hasKeyValue(nmr_input_source_dic, 'polymer_sequence')
 
         if not has_nmr_poly_seq:
-
+            """ this will raise internal error if upload NEF file for nmr-str2str-deposit op for NMR-STAR file for nmr-nef2str-deposit
             err = "Common polymer sequence did not exist, __extractCommonPolymerSequence() should be invoked."
 
             self.report.error.appendDescription('internal_error', "+NmrDpUtility.__assignCoordPolymerSequence() ++ Error  - %s" % err)
@@ -8931,7 +8965,7 @@ class NmrDpUtility(object):
 
             if self.__verbose:
                 self.__lfh.write("+NmrDpUtility.__assignCoordPolymerSequence() ++ Error  - %s\n" % err)
-
+            """
             return False
 
         __errors = self.report.getTotalErrors()
@@ -13821,12 +13855,16 @@ class NmrDpUtility(object):
         input_source = self.report.input_sources[0]
         input_source_dic = input_source.get()
 
+        if self.__dstPath is None:
+            logging.error("+NmrDpUtility.__translateNef2Str() ++ Error  - Could not find destination path as input NEF file for NEFTranslator.")
+            raise KeyError("+NmrDpUtility.__translateNef2Str() ++ Error  - Could not find destination path as input NEF file for NEFTranslator.")
+
         file_name = os.path.basename(self.__dstPath)
         file_type = input_source_dic['file_type']
 
-        out_file_path = self.__outputParamDict['nmr-star_file_path']
-
         if 'nmr-star_file_path' in self.__outputParamDict:
+
+            out_file_path = self.__outputParamDict['nmr-star_file_path']
 
             try:
 

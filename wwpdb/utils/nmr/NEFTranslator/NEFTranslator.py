@@ -1516,7 +1516,7 @@ class NEFTranslator(object):
 
                                 idx_msg = '[Check rows of ' + idx_msg[:-2] + '] '
 
-                            user_warn_msg += '[Multiple data] %sMultiple rows having the following values %s exist in a loop.\n' % (idx_msg, msg.rstrip().rstrip(','))
+                            user_warn_msg += '[Multiple data] %sDuplicated rows having the following values %s exist in a loop.\n' % (idx_msg, msg.rstrip().rstrip(','))
 
                     keys.add(key)
 
@@ -1565,7 +1565,7 @@ class NEFTranslator(object):
 
                                 idx_msg = '[Check rows of ' + idx_msg[:-2] + '] '
 
-                            user_warn_msg += '[Multiple data] %sMultiple rows having the following values %s exist in a loop.\n' % (idx_msg, msg.rstrip().rstrip(','))
+                            user_warn_msg += '[Multiple data] %sDuplicated rows having the following values %s exist in a loop.\n' % (idx_msg, msg.rstrip().rstrip(','))
 
                         keys.add(key)
 

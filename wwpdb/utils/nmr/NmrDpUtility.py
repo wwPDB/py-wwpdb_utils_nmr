@@ -3548,11 +3548,14 @@ class NmrDpUtility(object):
                 except UserWarning as e:
 
                     warns = str(e).strip("'").split('\n')
+                    proc_warns = set()
 
                     for warn in warns:
 
-                        if warn == '':
+                        if warn == '' or warn in proc_warns:
                             continue
+
+                        proc_warns.add(warn)
 
                         zero = warn.startswith('[Zero value error] ')
                         nega = warn.startswith('[Negative value error] ')
@@ -3571,7 +3574,7 @@ class NmrDpUtility(object):
                                 warn = warn[20:]
                                 item = 'enum_failure'
                             else:
-                                mult = warn[16:]
+                                err = warn[16:]
                                 item = 'multiple_data'
 
                             if zero or nega or enum:
@@ -3584,11 +3587,11 @@ class NmrDpUtility(object):
 
                             else:
 
-                                self.report.error.appendDescription(item, {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
+                                self.report.error.appendDescription(item, {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
                                 self.report.setError()
 
                                 if self.__verbose:
-                                    self.__lfh.write("+NmrDpUtility.__testDataConsistencyInLoop() ++ KeyError  - %s" % warn)
+                                    self.__lfh.write("+NmrDpUtility.__testDataConsistencyInLoop() ++ KeyError  - %s" % err)
 
                         else:
 
@@ -3733,11 +3736,17 @@ class NmrDpUtility(object):
                         except UserWarning as e:
 
                             warns = str(e).strip("'").split('\n')
+                            proc_warns = set()
 
                             for warn in warns:
 
                                 if warn == '':
                                     continue
+
+                                if warn == '' or warn in proc_warns:
+                                    continue
+
+                                proc_warns.add(warn)
 
                                 zero = warn.startswith('[Zero value error] ')
                                 nega = warn.startswith('[Negative value error] ')
@@ -3756,7 +3765,7 @@ class NmrDpUtility(object):
                                         warn = warn[20:]
                                         item = 'enum_failure'
                                     else:
-                                        mult = warn[16:]
+                                        err = warn[16:]
                                         item = 'multiple_data'
 
                                     if zero or nega or enum:
@@ -3769,11 +3778,11 @@ class NmrDpUtility(object):
 
                                     else:
 
-                                        self.report.error.appendDescription('multiple_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
+                                        self.report.error.appendDescription('multiple_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
                                         self.report.setError()
 
                                         if self.__verbose:
-                                            self.__lfh.write("+NmrDpUtility.__testDataConsistencyInAuxLoop() ++ KeyError  - %s" % warn)
+                                            self.__lfh.write("+NmrDpUtility.__testDataConsistencyInAuxLoop() ++ KeyError  - %s" % err)
 
                                 else:
 
@@ -4307,7 +4316,7 @@ class NmrDpUtility(object):
 
                                     elif abs(z_score) > 8.0:
 
-                                        warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] %s %s (chain_id %s, seq_id %s, comp_id %s, atom_id %s) must be verified (avg %s, std %s, min %s, max %s, Z_score %.2f). Please check for folded/aliased signals.' %\
+                                        warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] %s %s (chain_id %s, seq_id %s, comp_id %s, atom_id %s) must be verified (avg %s, std %s, min %s, max %s, Z_score %.2f).' %\
                                                (value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score)
 
                                         self.report.warning.appendDescription('suspicious_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
@@ -4343,7 +4352,7 @@ class NmrDpUtility(object):
 
                                     if (value < min_value - tolerance or value > max_value + tolerance) and abs(z_score) > 10.0:
 
-                                        err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] %s %s (chain_id %s, seq_id %s, comp_id %s, atom_id %s) is out of range (avg %s, std %s, min %s, max %s, Z_score %.2f).  Please check for folded/aliased signals. If it is due to the presence of paramagnetic substance or extreme sample conditions, please provide us details.' %\
+                                        err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] %s %s (chain_id %s, seq_id %s, comp_id %s, atom_id %s) is out of range (avg %s, std %s, min %s, max %s, Z_score %.2f). Please check for folded/aliased signals. If it is due to the presence of paramagnetic substance or extreme sample conditions, please provide us details.' %\
                                               (value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score)
 
                                         self.report.error.appendDescription('anomalous_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
@@ -4354,7 +4363,7 @@ class NmrDpUtility(object):
 
                                     elif abs(z_score) > 10.0:
 
-                                        warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] %s %s (chain_id %s, seq_id %s, comp_id %s, atom_id %s) must be verified (avg %s, std %s, min %s, max %s, Z_score %.2f). Please check for folded/aliased signals.' %\
+                                        warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] %s %s (chain_id %s, seq_id %s, comp_id %s, atom_id %s) must be verified (avg %s, std %s, min %s, max %s, Z_score %.2f).' %\
                                                (value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score)
 
                                         self.report.warning.appendDescription('suspicious_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
@@ -4415,7 +4424,7 @@ class NmrDpUtility(object):
 
                                 if (value < min_value - tolerance or value > max_value + tolerance) and abs(z_score) > 6.0:
 
-                                    err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] %s %s (chain_id %s, seq_id %s, comp_id %s, atom_id %s) is out of range (avg %s, std %s, min %s, max %s, Z_score %.2f).  Please check for folded/aliased signals. If it is due to the presence of paramagnetic substance or extreme sample conditions, please provide us details.' %\
+                                    err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] %s %s (chain_id %s, seq_id %s, comp_id %s, atom_id %s) is out of range (avg %s, std %s, min %s, max %s, Z_score %.2f). Please check for folded/aliased signals. If it is due to the presence of paramagnetic substance or extreme sample conditions, please provide us details.' %\
                                           (value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score)
 
                                     self.report.error.appendDescription('anomalous_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
@@ -4426,7 +4435,7 @@ class NmrDpUtility(object):
 
                                 elif abs(z_score) > 6.0:
 
-                                    warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] %s %s (chain_id %s, seq_id %s, comp_id %s, atom_id %s) must be verified (avg %s, std %s, min %s, max %s, Z_score %.2f). Please check for folded/aliased signals.' %\
+                                    warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] %s %s (chain_id %s, seq_id %s, comp_id %s, atom_id %s) must be verified (avg %s, std %s, min %s, max %s, Z_score %.2f).' %\
                                            (value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score)
 
                                     self.report.warning.appendDescription('suspicious_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
@@ -5309,7 +5318,7 @@ class NmrDpUtility(object):
                                     suspicious_warns = self.report.warning.getValueListWithSf('suspicious_data', file_name, sf_framecode, key='Z_score')
                                     unusual_warns = self.report.warning.getValueListWithSf('unusual_data', file_name, sf_framecode, key='Z_score')
 
-                                    pattern = r'^' + item_names['value'] + r' ([+-]?([0-9]*[.])?[0-9]+) (.*) Z_score ([+-]?([0-9]*[.])?[0-9]+)\)\.$'
+                                    pattern = r'^' + item_names['value'] + r' ([+-]?([0-9]*[.])?[0-9]+) (.*) Z_score ([+-]?([0-9]*[.])?[0-9]+)\)\.(.*)$'
 
                                     p = re.compile(pattern)
 
@@ -6627,9 +6636,8 @@ class NmrDpUtility(object):
             min_val = 100.0
 
             count = {}
+            comb_count = {}
             potential = {}
-
-            comb_id_set = set()
 
             for i in lp_data:
                 comb_id = i[comb_id_name]
@@ -6678,9 +6686,6 @@ class NmrDpUtility(object):
 
                 if target_value < min_val:
                     min_val = target_value
-
-                if not comb_id in self.empty_value:
-                    comb_id_set.add(comp_id)
 
                 hydrogen_bond_type = None
                 hydrogen_bond = False
@@ -7068,6 +7073,12 @@ class NmrDpUtility(object):
                 else:
                     count[data_type] = 1
 
+                if not comb_id in self.empty_value:
+                    if data_type in count:
+                        comb_count[data_type] += 1
+                    else:
+                        comb_count[data_type] = 1
+
                 # detect potential type
 
                 targe_value = i[target_value_name]
@@ -7124,9 +7135,9 @@ class NmrDpUtility(object):
                 return
 
             ent['number_of_constraints'] = count
+            ent['number_of_combined constraints'] = comb_count
             ent['number_of_potential_types'] = potential
             ent['range'] = {'max_value': max_val, 'min_value': min_val}
-            ent['ambiguous_constraint_sets'] = len(comb_id_set)
 
             target_scale = (max_val - min_val) / 10.0
 

@@ -3915,7 +3915,7 @@ class NmrDpUtility(object):
 
                             if position < min_points[j] or position > max_points[j]:
 
-                                err = '[Check row of %s %s] %s %s is out of range (min_position %s, max_position %s).' % (index_tag, i[index_tag], position_names[j], position, min_points[j], max_points[j])
+                                err = '[Check row of %s %s] %s %s is not within expected range (min_position %s, max_position %s). Please check for reference frequency and spectral width.' % (index_tag, i[index_tag], position_names[j], position, min_points[j], max_points[j])
 
                                 self.report.error.appendDescription('anomalous_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
                                 self.report.setError()
@@ -4296,7 +4296,7 @@ class NmrDpUtility(object):
 
                                     if (value < min_value - tolerance or value > max_value + tolerance) and abs(z_score) > 8.0:
 
-                                        err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] %s %s (chain_id %s, seq_id %s, comp_id %s, atom_id %s) is out of range (avg %s, std %s, min %s, max %s, Z_score %.2f).' %\
+                                        err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] %s %s (chain_id %s, seq_id %s, comp_id %s, atom_id %s) is not within expected range (avg %s, std %s, min %s, max %s, Z_score %.2f). Please check for folded/aliased signals. If it is due to the presence of paramagnetic substance or extreme sample conditions, please provide us details.' %\
                                               (value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score)
 
                                         self.report.error.appendDescription('anomalous_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
@@ -4307,7 +4307,7 @@ class NmrDpUtility(object):
 
                                     elif abs(z_score) > 8.0:
 
-                                        warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] %s %s (chain_id %s, seq_id %s, comp_id %s, atom_id %s) must be verified (avg %s, std %s, min %s, max %s, Z_score %.2f).' %\
+                                        warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] %s %s (chain_id %s, seq_id %s, comp_id %s, atom_id %s) must be verified (avg %s, std %s, min %s, max %s, Z_score %.2f). Please check for folded/aliased signals.' %\
                                                (value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score)
 
                                         self.report.warning.appendDescription('suspicious_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
@@ -4343,7 +4343,7 @@ class NmrDpUtility(object):
 
                                     if (value < min_value - tolerance or value > max_value + tolerance) and abs(z_score) > 10.0:
 
-                                        err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] %s %s (chain_id %s, seq_id %s, comp_id %s, atom_id %s) is out of range (avg %s, std %s, min %s, max %s, Z_score %.2f).' %\
+                                        err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] %s %s (chain_id %s, seq_id %s, comp_id %s, atom_id %s) is out of range (avg %s, std %s, min %s, max %s, Z_score %.2f).  Please check for folded/aliased signals. If it is due to the presence of paramagnetic substance or extreme sample conditions, please provide us details.' %\
                                               (value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score)
 
                                         self.report.error.appendDescription('anomalous_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
@@ -4354,7 +4354,7 @@ class NmrDpUtility(object):
 
                                     elif abs(z_score) > 10.0:
 
-                                        warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] %s %s (chain_id %s, seq_id %s, comp_id %s, atom_id %s) must be verified (avg %s, std %s, min %s, max %s, Z_score %.2f).' %\
+                                        warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] %s %s (chain_id %s, seq_id %s, comp_id %s, atom_id %s) must be verified (avg %s, std %s, min %s, max %s, Z_score %.2f). Please check for folded/aliased signals.' %\
                                                (value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score)
 
                                         self.report.warning.appendDescription('suspicious_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
@@ -4415,7 +4415,7 @@ class NmrDpUtility(object):
 
                                 if (value < min_value - tolerance or value > max_value + tolerance) and abs(z_score) > 6.0:
 
-                                    err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] %s %s (chain_id %s, seq_id %s, comp_id %s, atom_id %s) is out of range (avg %s, std %s, min %s, max %s, Z_score %.2f).' %\
+                                    err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] %s %s (chain_id %s, seq_id %s, comp_id %s, atom_id %s) is out of range (avg %s, std %s, min %s, max %s, Z_score %.2f).  Please check for folded/aliased signals. If it is due to the presence of paramagnetic substance or extreme sample conditions, please provide us details.' %\
                                           (value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score)
 
                                     self.report.error.appendDescription('anomalous_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
@@ -4426,7 +4426,7 @@ class NmrDpUtility(object):
 
                                 elif abs(z_score) > 6.0:
 
-                                    warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] %s %s (chain_id %s, seq_id %s, comp_id %s, atom_id %s) must be verified (avg %s, std %s, min %s, max %s, Z_score %.2f).' %\
+                                    warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] %s %s (chain_id %s, seq_id %s, comp_id %s, atom_id %s) must be verified (avg %s, std %s, min %s, max %s, Z_score %.2f). Please check for folded/aliased signals.' %\
                                            (value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score)
 
                                     self.report.warning.appendDescription('suspicious_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})

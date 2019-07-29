@@ -5,6 +5,7 @@
 # Updates:
 ##
 """ Wrapper class for retrieving BMRB chemical shift statistics.
+    @author: Masashi Yokochi
 """
 import sys
 import os

@@ -1,10 +1,11 @@
 ##
 # File: NmrDpUtility.py
-# Date: 26-Jul-2019
+# Date: 29-Jul-2019
 #
 # Updates:
 ##
 """ Wrapper class for data processing for NMR unified data.
+    @author: Masashi Yokochi
 """
 import sys
 import os
@@ -72,6 +73,7 @@ class NmrDpUtility(object):
                            self.__validateAmbigCodeOfCSLoop,
                            self.__testIndexConsistency,
                            self.__testDataConsistencyInLoop,
+                           self.__detectConflictDataInLoop,
                            self.__testDataConsistencyInAuxLoop,
                            self.__testSfTagConsistency,
                            self.__validateCSValue,
@@ -312,45 +314,30 @@ class NmrDpUtility(object):
                                     }
                            }
 
-        # loop key items
+        # loop id tag to check consistency
+        self.consist_id_tags = {'nef': {'dist_restraint': 'restraint_id',
+                                        'dihed_restraint': 'restraint_id',
+                                        'rdc_restraint': 'restraint_id',
+                                        'spectral_peak': 'peak_id'
+                                        },
+                                'nmr-star': {'dist_restraint': 'ID',
+                                             'dihed_restraint': 'ID',
+                                             'rdc_restraint': 'ID',
+                                             'spectral_peak': 'ID'
+                                             }
+                                }
+
+        # key items of loop
         self.key_items = {'nef': {'poly_seq': [{'name': 'chain_code', 'type': 'str'},
                                                {'name': 'sequence_code', 'type': 'int'},
                                                {'name': 'residue_name', 'type': 'str'}
                                                ],
-                                   'chem_shift': [{'name': 'chain_code', 'type': 'str'},
-                                                  {'name': 'sequence_code', 'type': 'int'},
-                                                  {'name': 'residue_name', 'type': 'str'},
-                                                  {'name': 'atom_name', 'type': 'str'}
-                                                  ],
-                                   'dist_restraint': [{'name': 'restraint_id', 'type': 'positive-int'},
-                                                      {'name': 'chain_code_1', 'type': 'str'},
-                                                      {'name': 'sequence_code_1', 'type': 'int'},
-                                                      {'name': 'residue_name_1', 'type': 'str'},
-                                                      {'name': 'atom_name_1', 'type': 'str'},
-                                                      {'name': 'chain_code_2', 'type': 'str'},
-                                                      {'name': 'sequence_code_2', 'type': 'int'},
-                                                      {'name': 'residue_name_2', 'type': 'str'},
-                                                      {'name': 'atom_name_2', 'type': 'str'}
-                                                      ],
-                                   'dihed_restraint': [{'name': 'restraint_id', 'type': 'positive-int'},
-                                                       {'name': 'chain_code_1', 'type': 'str'},
-                                                       {'name': 'sequence_code_1', 'type': 'int'},
-                                                       {'name': 'residue_name_1', 'type': 'str'},
-                                                       {'name': 'atom_name_1', 'type': 'str'},
-                                                       {'name': 'chain_code_2', 'type': 'str'},
-                                                       {'name': 'sequence_code_2', 'type': 'int'},
-                                                       {'name': 'residue_name_2', 'type': 'str'},
-                                                       {'name': 'atom_name_2', 'type': 'str'},
-                                                       {'name': 'chain_code_3', 'type': 'str'},
-                                                       {'name': 'sequence_code_3', 'type': 'int'},
-                                                       {'name': 'residue_name_3', 'type': 'str'},
-                                                       {'name': 'atom_name_3', 'type': 'str'},
-                                                       {'name': 'chain_code_4', 'type': 'str'},
-                                                       {'name': 'sequence_code_4', 'type': 'int'},
-                                                       {'name': 'residue_name_4', 'type': 'str'},
-                                                       {'name': 'atom_name_4', 'type': 'str'}
-                                                       ],
-                                   'rdc_restraint': [{'name': 'restraint_id', 'type': 'positive-int'},
+                                  'chem_shift': [{'name': 'chain_code', 'type': 'str'},
+                                                 {'name': 'sequence_code', 'type': 'int'},
+                                                 {'name': 'residue_name', 'type': 'str'},
+                                                 {'name': 'atom_name', 'type': 'str'}
+                                                 ],
+                                  'dist_restraint': [{'name': 'restraint_id', 'type': 'positive-int'},
                                                      {'name': 'chain_code_1', 'type': 'str'},
                                                      {'name': 'sequence_code_1', 'type': 'int'},
                                                      {'name': 'residue_name_1', 'type': 'str'},
@@ -360,8 +347,36 @@ class NmrDpUtility(object):
                                                      {'name': 'residue_name_2', 'type': 'str'},
                                                      {'name': 'atom_name_2', 'type': 'str'}
                                                      ],
-                                   'spectral_peak': None
-                                   },
+                                  'dihed_restraint': [{'name': 'restraint_id', 'type': 'positive-int'},
+                                                      {'name': 'chain_code_1', 'type': 'str'},
+                                                      {'name': 'sequence_code_1', 'type': 'int'},
+                                                      {'name': 'residue_name_1', 'type': 'str'},
+                                                      {'name': 'atom_name_1', 'type': 'str'},
+                                                      {'name': 'chain_code_2', 'type': 'str'},
+                                                      {'name': 'sequence_code_2', 'type': 'int'},
+                                                      {'name': 'residue_name_2', 'type': 'str'},
+                                                      {'name': 'atom_name_2', 'type': 'str'},
+                                                      {'name': 'chain_code_3', 'type': 'str'},
+                                                      {'name': 'sequence_code_3', 'type': 'int'},
+                                                      {'name': 'residue_name_3', 'type': 'str'},
+                                                      {'name': 'atom_name_3', 'type': 'str'},
+                                                      {'name': 'chain_code_4', 'type': 'str'},
+                                                      {'name': 'sequence_code_4', 'type': 'int'},
+                                                      {'name': 'residue_name_4', 'type': 'str'},
+                                                      {'name': 'atom_name_4', 'type': 'str'}
+                                                      ],
+                                  'rdc_restraint': [{'name': 'restraint_id', 'type': 'positive-int'},
+                                                    {'name': 'chain_code_1', 'type': 'str'},
+                                                    {'name': 'sequence_code_1', 'type': 'int'},
+                                                    {'name': 'residue_name_1', 'type': 'str'},
+                                                    {'name': 'atom_name_1', 'type': 'str'},
+                                                    {'name': 'chain_code_2', 'type': 'str'},
+                                                    {'name': 'sequence_code_2', 'type': 'int'},
+                                                    {'name': 'residue_name_2', 'type': 'str'},
+                                                    {'name': 'atom_name_2', 'type': 'str'}
+                                                    ],
+                                  'spectral_peak': None
+                                  },
                           'nmr-star': {'poly_seq': [{'name': 'Entity_assembly_ID', 'type': 'positive-int'},
                                                     {'name': 'Comp_index_ID', 'type': 'int'},
                                                     {'name': 'Comp_ID', 'type': 'str'}
@@ -427,6 +442,84 @@ class NmrDpUtility(object):
                                    }
                           }
 
+        # key items of loop to check consistency
+        self.consist_key_items = {'nef': {'dist_restraint': [{'name': 'chain_code_1', 'type': 'str'},
+                                                             {'name': 'sequence_code_1', 'type': 'int'},
+                                                             {'name': 'residue_name_1', 'type': 'str'},
+                                                             {'name': 'atom_name_1', 'type': 'str'},
+                                                             {'name': 'chain_code_2', 'type': 'str'},
+                                                             {'name': 'sequence_code_2', 'type': 'int'},
+                                                             {'name': 'residue_name_2', 'type': 'str'},
+                                                             {'name': 'atom_name_2', 'type': 'str'}
+                                                             ],
+                                          'dihed_restraint': [{'name': 'chain_code_1', 'type': 'str'},
+                                                              {'name': 'sequence_code_1', 'type': 'int'},
+                                                              {'name': 'residue_name_1', 'type': 'str'},
+                                                              {'name': 'atom_name_1', 'type': 'str'},
+                                                              {'name': 'chain_code_2', 'type': 'str'},
+                                                              {'name': 'sequence_code_2', 'type': 'int'},
+                                                              {'name': 'residue_name_2', 'type': 'str'},
+                                                              {'name': 'atom_name_2', 'type': 'str'},
+                                                              {'name': 'chain_code_3', 'type': 'str'},
+                                                              {'name': 'sequence_code_3', 'type': 'int'},
+                                                              {'name': 'residue_name_3', 'type': 'str'},
+                                                              {'name': 'atom_name_3', 'type': 'str'},
+                                                              {'name': 'chain_code_4', 'type': 'str'},
+                                                              {'name': 'sequence_code_4', 'type': 'int'},
+                                                              {'name': 'residue_name_4', 'type': 'str'},
+                                                              {'name': 'atom_name_4', 'type': 'str'}
+                                                              ],
+                                          'rdc_restraint': [{'name': 'chain_code_1', 'type': 'str'},
+                                                            {'name': 'sequence_code_1', 'type': 'int'},
+                                                            {'name': 'residue_name_1', 'type': 'str'},
+                                                            {'name': 'atom_name_1', 'type': 'str'},
+                                                            {'name': 'chain_code_2', 'type': 'str'},
+                                                            {'name': 'sequence_code_2', 'type': 'int'},
+                                                            {'name': 'residue_name_2', 'type': 'str'},
+                                                            {'name': 'atom_name_2', 'type': 'str'}
+                                                            ],
+                                          'spectral_peak': None
+                                          },
+                                  'nmr-star': {'dist_restraint': [{'name': 'Entity_assembly_ID_1', 'type': 'positive-int'},
+                                                                  {'name': 'Comp_index_ID_1', 'type': 'int'},
+                                                                  {'name': 'Comp_ID_1', 'type': 'str'},
+                                                                  {'name': 'Atom_ID_1', 'type': 'str'},
+                                                                  {'name': 'Entity_assembly_ID_2', 'type': 'positive-int'},
+                                                                  {'name': 'Comp_index_ID_2', 'type': 'int'},
+                                                                  {'name': 'Comp_ID_2', 'type': 'str'},
+                                                                  {'name': 'Atom_ID_2', 'type': 'str'}
+                                                                  ],
+                                               'dihed_restraint': [{'name': 'Entity_assembly_ID_1', 'type': 'positive-int'},
+                                                                   {'name': 'Comp_index_ID_1', 'type': 'int'},
+                                                                   {'name': 'Comp_ID_1', 'type': 'str'},
+                                                                   {'name': 'Atom_ID_1', 'type': 'str'},
+                                                                   {'name': 'Entity_assembly_ID_2', 'type': 'positive-int'},
+                                                                   {'name': 'Comp_index_ID_2', 'type': 'int'},
+                                                                   {'name': 'Comp_ID_2', 'type': 'str'},
+                                                                   {'name': 'Atom_ID_2', 'type': 'str'},
+                                                                   {'name': 'Entity_assembly_ID_3', 'type': 'positive-int'},
+                                                                   {'name': 'Comp_index_ID_3', 'type': 'int'},
+                                                                   {'name': 'Comp_ID_3', 'type': 'str'},
+                                                                   {'name': 'Atom_ID_3', 'type': 'str'},
+                                                                   {'name': 'Entity_assembly_ID_4', 'type': 'positive-int'},
+                                                                   {'name': 'Comp_index_ID_4', 'type': 'int'},
+                                                                   {'name': 'Comp_ID_4', 'type': 'str'},
+                                                                   {'name': 'Atom_ID_4', 'type': 'str'}
+                                                                   ],
+                                               'rdc_restraint': [
+                                                                 {'name': 'Entity_assembly_ID_1', 'type': 'positive-int'},
+                                                                 {'name': 'Comp_index_ID_1', 'type': 'int'},
+                                                                 {'name': 'Comp_ID_1', 'type': 'str'},
+                                                                 {'name': 'Atom_ID_1', 'type': 'str'},
+                                                                 {'name': 'Entity_assembly_ID_2', 'type': 'positive-int'},
+                                                                 {'name': 'Comp_index_ID_2', 'type': 'int'},
+                                                                 {'name': 'Comp_ID_2', 'type': 'str'},
+                                                                 {'name': 'Atom_ID_2', 'type': 'str'}
+                                                                 ],
+                                               'spectral_peak': None
+                                               }
+                                  }
+
         # limit number of dimensions
         self.lim_num_dim = 16
 
@@ -437,7 +530,7 @@ class NmrDpUtility(object):
                                           ]
                              }
 
-        # loop data items
+        # data items of loop
         self.data_items = {'nef': {'poly_seq': [{'name': 'linking', 'type': 'enum', 'mandatory': False,
                                                  'enum': ('start', 'end', 'middle', 'cyclic', 'break', 'single', 'dummy'),
                                                  'enforce-enum': True},
@@ -505,76 +598,76 @@ class NmrDpUtility(object):
                                                         'range': self.weight_range,
                                                         'enforce-non-zero': True},
                                                        {'name': 'target_value', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
-                                                       'range': self.dihed_restraint_range,
-                                                       'group': {'member-with': ['lower_linear_limit', 'lower_limit', 'upper_limit', 'upper_linear_limit'],
-                                                                 'coexist-with': None,
-                                                                 'smaller-than': ['lower_limit', 'lower_linear_limit'],
-                                                                 'larger-than': ['upper_limit', 'upper_linear_limit']}},
-                                                      {'name': 'target_value_uncertainty', 'type': 'range-float', 'mandatory': False,
-                                                       'range': self.dihed_restraint_error},
-                                                      {'name': 'lower_linear_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
-                                                       'range': self.dihed_restraint_range,
-                                                       'group': {'member-with': ['target_value', 'lower_limit', 'upper_limit', 'upper_linear_limit'],
-                                                                 'coexist-with': None, # ['lower_limit', 'upper_limit', 'upper_linear_limit'],
-                                                                 'smaller-than': ['lower_limit'],
-                                                                 'larger-than': ['upper_limit', 'upper_linear_limit']}},
-                                                      {'name': 'lower_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
-                                                       'range': self.dihed_restraint_range,
-                                                       'group': {'member-with': ['target_value', 'lower_linear_limit', 'upper_limit', 'upper_linear_limit'],
-                                                                 'coexist-with': None, # ['upper_limit'],
-                                                                 'smaller-than': None,
-                                                                 'larger-than': ['lower_linear_limit', 'upper_limit', 'upper_linear_limit']}},
-                                                      {'name': 'upper_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
-                                                       'range': self.dihed_restraint_range,
-                                                       'group': {'member-with': ['target_value', 'lower_linear_limit', 'lower_limit', 'upper_linear_limit'],
-                                                                 'coexist-with': None, # ['lower_limit'],
-                                                                 'smaller-than': ['lower_linear_limit', 'lower_limit', 'upper_linear_limit'],
-                                                                 'larger-than': None}},
-                                                      {'name': 'upper_linear_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
-                                                       'range': self.dihed_restraint_range,
-                                                       'group': {'member-with': ['target_value', 'lower_linear_limit', 'lower_limit', 'upper_limit'],
-                                                                 'coexist-with': None, # ['lower_linear_limit', 'lower_limit', 'upper_limit'],
-                                                                 'smaller-than': ['lower_linear_limit', 'lower_limit'],
-                                                                 'larger-than': ['upper_limit']}},
-                                                       {'name': 'name', 'type': 'str', 'mandatory': False},
-                                                    ],
+                                                        'range': self.dihed_restraint_range,
+                                                        'group': {'member-with': ['lower_linear_limit', 'lower_limit', 'upper_limit', 'upper_linear_limit'],
+                                                                  'coexist-with': None,
+                                                                  'smaller-than': ['lower_limit', 'lower_linear_limit'],
+                                                                  'larger-than': ['upper_limit', 'upper_linear_limit']}},
+                                                       {'name': 'target_value_uncertainty', 'type': 'range-float', 'mandatory': False,
+                                                        'range': self.dihed_restraint_error},
+                                                       {'name': 'lower_linear_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
+                                                        'range': self.dihed_restraint_range,
+                                                        'group': {'member-with': ['target_value', 'lower_limit', 'upper_limit', 'upper_linear_limit'],
+                                                                  'coexist-with': None, # ['lower_limit', 'upper_limit', 'upper_linear_limit'],
+                                                                  'smaller-than': ['lower_limit'],
+                                                                  'larger-than': ['upper_limit', 'upper_linear_limit']}},
+                                                       {'name': 'lower_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
+                                                        'range': self.dihed_restraint_range,
+                                                        'group': {'member-with': ['target_value', 'lower_linear_limit', 'upper_limit', 'upper_linear_limit'],
+                                                                  'coexist-with': None, # ['upper_limit'],
+                                                                  'smaller-than': None,
+                                                                  'larger-than': ['lower_linear_limit', 'upper_limit', 'upper_linear_limit']}},
+                                                       {'name': 'upper_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
+                                                        'range': self.dihed_restraint_range,
+                                                        'group': {'member-with': ['target_value', 'lower_linear_limit', 'lower_limit', 'upper_linear_limit'],
+                                                                  'coexist-with': None, # ['lower_limit'],
+                                                                  'smaller-than': ['lower_linear_limit', 'lower_limit', 'upper_linear_limit'],
+                                                                  'larger-than': None}},
+                                                       {'name': 'upper_linear_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
+                                                        'range': self.dihed_restraint_range,
+                                                        'group': {'member-with': ['target_value', 'lower_linear_limit', 'lower_limit', 'upper_limit'],
+                                                                  'coexist-with': None, # ['lower_linear_limit', 'lower_limit', 'upper_limit'],
+                                                                  'smaller-than': ['lower_linear_limit', 'lower_limit'],
+                                                                  'larger-than': ['upper_limit']}},
+                                                        {'name': 'name', 'type': 'str', 'mandatory': False}
+                                                        ],
                                    'rdc_restraint': [{'name': 'index', 'type': 'index-int', 'mandatory': True},
                                                      #{'name': 'restraint_id', 'type': 'positive-int', 'mandatory': True,
                                                      # 'enforce-non-zero': True},
                                                      {'name': 'restraint_combination_id', 'type': 'positive-int', 'mandatory': False,
                                                       'enforce-non-zero': True},
                                                      {'name': 'target_value', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
-                                                       'range': self.rdc_restraint_range,
-                                                       'group': {'member-with': ['lower_linear_limit', 'lower_limit', 'upper_limit', 'upper_linear_limit'],
-                                                                 'coexist-with': None,
-                                                                 'smaller-than': ['lower_limit', 'lower_linear_limit'],
-                                                                 'larger-than': ['upper_limit', 'upper_linear_limit']}},
-                                                      {'name': 'target_value_uncertainty', 'type': 'range-float', 'mandatory': False,
-                                                       'range': self.rdc_restraint_error},
-                                                      {'name': 'lower_linear_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
-                                                       'range': self.rdc_restraint_range,
-                                                       'group': {'member-with': ['target_value', 'lower_limit', 'upper_limit', 'upper_linear_limit'],
-                                                                 'coexist-with': None, # ['lower_limit', 'upper_limit', 'upper_linear_limit'],
-                                                                 'smaller-than': ['lower_limit'],
-                                                                 'larger-than': ['upper_limit', 'upper_linear_limit']}},
-                                                      {'name': 'lower_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
-                                                       'range': self.rdc_restraint_range,
-                                                       'group': {'member-with': ['target_value', 'lower_linear_limit', 'upper_limit', 'upper_linear_limit'],
-                                                                 'coexist-with': None, # ['upper_limit'],
-                                                                 'smaller-than': None,
-                                                                 'larger-than': ['lower_linear_limit', 'upper_limit', 'upper_linear_limit']}},
-                                                      {'name': 'upper_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
-                                                       'range': self.rdc_restraint_range,
-                                                       'group': {'member-with': ['target_value', 'lower_linear_limit', 'lower_limit', 'upper_linear_limit'],
-                                                                 'coexist-with': None, # ['lower_limit'],
-                                                                 'smaller-than': ['lower_linear_limit', 'lower_limit', 'upper_linear_limit'],
-                                                                 'larger-than': None}},
-                                                      {'name': 'upper_linear_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
-                                                       'range': self.rdc_restraint_range,
-                                                       'group': {'member-with': ['target_value', 'lower_linear_limit', 'lower_limit', 'upper_limit'],
-                                                                 'coexist-with': None, # ['lower_linear_limit', 'lower_limit', 'upper_limit'],
-                                                                 'smaller-than': ['lower_linear_limit', 'lower_limit'],
-                                                                 'larger-than': ['upper_limit']}},
+                                                      'range': self.rdc_restraint_range,
+                                                      'group': {'member-with': ['lower_linear_limit', 'lower_limit', 'upper_limit', 'upper_linear_limit'],
+                                                                'coexist-with': None,
+                                                                'smaller-than': ['lower_limit', 'lower_linear_limit'],
+                                                                'larger-than': ['upper_limit', 'upper_linear_limit']}},
+                                                     {'name': 'target_value_uncertainty', 'type': 'range-float', 'mandatory': False,
+                                                      'range': self.rdc_restraint_error},
+                                                     {'name': 'lower_linear_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
+                                                      'range': self.rdc_restraint_range,
+                                                      'group': {'member-with': ['target_value', 'lower_limit', 'upper_limit', 'upper_linear_limit'],
+                                                                'coexist-with': None, # ['lower_limit', 'upper_limit', 'upper_linear_limit'],
+                                                                'smaller-than': ['lower_limit'],
+                                                                'larger-than': ['upper_limit', 'upper_linear_limit']}},
+                                                     {'name': 'lower_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
+                                                      'range': self.rdc_restraint_range,
+                                                      'group': {'member-with': ['target_value', 'lower_linear_limit', 'upper_limit', 'upper_linear_limit'],
+                                                                'coexist-with': None, # ['upper_limit'],
+                                                                'smaller-than': None,
+                                                                'larger-than': ['lower_linear_limit', 'upper_limit', 'upper_linear_limit']}},
+                                                     {'name': 'upper_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
+                                                      'range': self.rdc_restraint_range,
+                                                      'group': {'member-with': ['target_value', 'lower_linear_limit', 'lower_limit', 'upper_linear_limit'],
+                                                                'coexist-with': None, # ['lower_limit'],
+                                                                'smaller-than': ['lower_linear_limit', 'lower_limit', 'upper_linear_limit'],
+                                                                'larger-than': None}},
+                                                     {'name': 'upper_linear_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
+                                                      'range': self.rdc_restraint_range,
+                                                      'group': {'member-with': ['target_value', 'lower_linear_limit', 'lower_limit', 'upper_limit'],
+                                                                'coexist-with': None, # ['lower_linear_limit', 'lower_limit', 'upper_limit'],
+                                                                'smaller-than': ['lower_linear_limit', 'lower_limit'],
+                                                                'larger-than': ['upper_limit']}},
                                                      {'name': 'scale', 'type': 'range-float', 'mandatory': False,
                                                       'range': self.scale_range,
                                                       'enforce-non-zero': True},
@@ -676,7 +769,7 @@ class NmrDpUtility(object):
                                                            {'name': 'Auth_seq_ID_2', 'type': 'int', 'mandatory': False},
                                                            {'name': 'Auth_comp_ID_2', 'type': 'str', 'mandatory': False},
                                                            {'name': 'Auth_atom_ID_2', 'type': 'str', 'mandatory': False},
-                                                           {'name': 'Gen_dist_constraint_list_ID', 'type': 'pointer-index', 'mandatory': True},
+                                                           {'name': 'Gen_dist_constraint_list_ID', 'type': 'pointer-index', 'mandatory': True}
                                                            ],
                                         'dihed_restraint': [{'name': 'Index_ID', 'type': 'index-int', 'mandatory': True},
                                                             #{'name': 'ID', 'type': 'index-int', 'mandatory': True,
@@ -735,7 +828,7 @@ class NmrDpUtility(object):
                                                             {'name': 'Auth_seq_ID_4', 'type': 'int', 'mandatory': False},
                                                             {'name': 'Auth_comp_ID_4', 'type': 'str', 'mandatory': False},
                                                             {'name': 'Auth_atom_ID_4', 'type': 'str', 'mandatory': False},
-                                                            {'name': 'Torsion_angle_constraint_list_ID', 'type': 'pointer-index', 'mandatory': True},
+                                                            {'name': 'Torsion_angle_constraint_list_ID', 'type': 'pointer-index', 'mandatory': True}
                                             ],
                                         'rdc_restraint': [{'name': 'Index_ID', 'type': 'index-int', 'mandatory': True},
                                                           #{'name': 'ID', 'type': 'index-int', 'mandatory': True,
@@ -806,6 +899,211 @@ class NmrDpUtility(object):
                                                           ]
                                         }
                            }
+
+        # data items of loop to check consistency
+        self.consist_data_items = {'nef': {'dist_restraint': [{'name': 'target_value', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
+                                                               'range': self.dist_restraint_range,
+                                                               'group': {'member-with': ['lower_linear_limit', 'lower_limit', 'upper_limit', 'upper_linear_limit'],
+                                                                         'coexist-with': None,
+                                                                         'smaller-than': ['lower_limit', 'lower_linear_limit'],
+                                                                         'larger-than': ['upper_limit', 'upper_linear_limit']}},
+                                                              {'name': 'target_value_uncertainty', 'type': 'range-float', 'mandatory': False,
+                                                               'range': self.dist_restraint_error},
+                                                              {'name': 'lower_linear_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
+                                                               'range': self.dist_restraint_range,
+                                                               'group': {'member-with': ['target_value', 'lower_limit', 'upper_limit', 'upper_linear_limit'],
+                                                                         'coexist-with': None, # ['lower_limit', 'upper_limit', 'upper_linear_limit'],
+                                                                         'smaller-than': ['lower_limit'],
+                                                                         'larger-than': ['upper_limit', 'upper_linear_limit']}},
+                                                              {'name': 'lower_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
+                                                               'range': self.dist_restraint_range,
+                                                               'group': {'member-with': ['target_value', 'lower_linear_limit', 'upper_limit', 'upper_linear_limit'],
+                                                                         'coexist-with': None, # ['upper_limit'],
+                                                                         'smaller-than': None,
+                                                                         'larger-than': ['lower_linear_limit', 'upper_limit', 'upper_linear_limit']}},
+                                                              {'name': 'upper_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
+                                                               'range': self.dist_restraint_range,
+                                                               'group': {'member-with': ['target_value', 'lower_linear_limit', 'lower_limit', 'upper_linear_limit'],
+                                                                         'coexist-with': None, # ['lower_limit'],
+                                                                         'smaller-than': ['lower_linear_limit', 'lower_limit', 'upper_linear_limit'],
+                                                                         'larger-than': None}},
+                                                              {'name': 'upper_linear_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
+                                                               'range': self.dist_restraint_range,
+                                                               'group': {'member-with': ['target_value', 'lower_linear_limit', 'lower_limit', 'upper_limit'],
+                                                                         'coexist-with': None, # ['lower_linear_limit', 'lower_limit', 'upper_limit'],
+                                                                         'smaller-than': ['lower_linear_limit', 'lower_limit'],
+                                                                         'larger-than': ['upper_limit']}}
+                                                              ],
+                                           'dihed_restraint': [{'name': 'target_value', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
+                                                               'range': self.dihed_restraint_range,
+                                                               'group': {'member-with': ['lower_linear_limit', 'lower_limit', 'upper_limit', 'upper_linear_limit'],
+                                                                         'coexist-with': None,
+                                                                         'smaller-than': ['lower_limit', 'lower_linear_limit'],
+                                                                         'larger-than': ['upper_limit', 'upper_linear_limit']}},
+                                                               {'name': 'target_value_uncertainty', 'type': 'range-float', 'mandatory': False,
+                                                                'range': self.dihed_restraint_error},
+                                                               {'name': 'lower_linear_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
+                                                                'range': self.dihed_restraint_range,
+                                                                'group': {'member-with': ['target_value', 'lower_limit', 'upper_limit', 'upper_linear_limit'],
+                                                                          'coexist-with': None, # ['lower_limit', 'upper_limit', 'upper_linear_limit'],
+                                                                          'smaller-than': ['lower_limit'],
+                                                                          'larger-than': ['upper_limit', 'upper_linear_limit']}},
+                                                               {'name': 'lower_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
+                                                                'range': self.dihed_restraint_range,
+                                                                'group': {'member-with': ['target_value', 'lower_linear_limit', 'upper_limit', 'upper_linear_limit'],
+                                                                          'coexist-with': None, # ['upper_limit'],
+                                                                          'smaller-than': None,
+                                                                          'larger-than': ['lower_linear_limit', 'upper_limit', 'upper_linear_limit']}},
+                                                               {'name': 'upper_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
+                                                                'range': self.dihed_restraint_range,
+                                                                'group': {'member-with': ['target_value', 'lower_linear_limit', 'lower_limit', 'upper_linear_limit'],
+                                                                          'coexist-with': None, # ['lower_limit'],
+                                                                          'smaller-than': ['lower_linear_limit', 'lower_limit', 'upper_linear_limit'],
+                                                                          'larger-than': None}},
+                                                               {'name': 'upper_linear_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
+                                                                'range': self.dihed_restraint_range,
+                                                                'group': {'member-with': ['target_value', 'lower_linear_limit', 'lower_limit', 'upper_limit'],
+                                                                          'coexist-with': None, # ['lower_linear_limit', 'lower_limit', 'upper_limit'],
+                                                                          'smaller-than': ['lower_linear_limit', 'lower_limit'],
+                                                                          'larger-than': ['upper_limit']}}
+                                                             ],
+                                           'rdc_restraint': [{'name': 'target_value', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
+                                                              'range': self.rdc_restraint_range,
+                                                              'group': {'member-with': ['lower_linear_limit', 'lower_limit', 'upper_limit', 'upper_linear_limit'],
+                                                                        'coexist-with': None,
+                                                                        'smaller-than': ['lower_limit', 'lower_linear_limit'],
+                                                                        'larger-than': ['upper_limit', 'upper_linear_limit']}},
+                                                             {'name': 'target_value_uncertainty', 'type': 'range-float', 'mandatory': False,
+                                                              'range': self.rdc_restraint_error},
+                                                             {'name': 'lower_linear_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
+                                                              'range': self.rdc_restraint_range,
+                                                              'group': {'member-with': ['target_value', 'lower_limit', 'upper_limit', 'upper_linear_limit'],
+                                                                        'coexist-with': None, # ['lower_limit', 'upper_limit', 'upper_linear_limit'],
+                                                                        'smaller-than': ['lower_limit'],
+                                                                        'larger-than': ['upper_limit', 'upper_linear_limit']}},
+                                                             {'name': 'lower_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
+                                                              'range': self.rdc_restraint_range,
+                                                              'group': {'member-with': ['target_value', 'lower_linear_limit', 'upper_limit', 'upper_linear_limit'],
+                                                                        'coexist-with': None, # ['upper_limit'],
+                                                                        'smaller-than': None,
+                                                                        'larger-than': ['lower_linear_limit', 'upper_limit', 'upper_linear_limit']}},
+                                                             {'name': 'upper_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
+                                                              'range': self.rdc_restraint_range,
+                                                              'group': {'member-with': ['target_value', 'lower_linear_limit', 'lower_limit', 'upper_linear_limit'],
+                                                                        'coexist-with': None, # ['lower_limit'],
+                                                                        'smaller-than': ['lower_linear_limit', 'lower_limit', 'upper_linear_limit'],
+                                                                        'larger-than': None}},
+                                                             {'name': 'upper_linear_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
+                                                              'range': self.rdc_restraint_range,
+                                                              'group': {'member-with': ['target_value', 'lower_linear_limit', 'lower_limit', 'upper_limit'],
+                                                                        'coexist-with': None, # ['lower_linear_limit', 'lower_limit', 'upper_limit'],
+                                                                        'smaller-than': ['lower_linear_limit', 'lower_limit'],
+                                                                        'larger-than': ['upper_limit']}}
+                                                             ],
+                                           'spectral_peak': None
+                                           },
+                                   'nmr-star': {'dist_restraint': [{'name': 'Target_val', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
+                                                                    'range': self.dist_restraint_range,
+                                                                    'group': {'member-with': ['Lower_linear_limit', 'Upper_linear_limit', 'Distance_lower_bound_val', 'Distance_upper_bound_val'],
+                                                                              'coexist-with': None,
+                                                                              'smaller-than': ['Lower_linear_limit', 'Distance_lower_bound_val'],
+                                                                              'larger-than': ['Upper_linear_limit', 'Distance_upper_bound_val']}},
+                                                                   {'name': 'Target_val_uncertainty', 'type': 'range-float', 'mandatory': False,
+                                                                    'range': self.dist_restraint_error},
+                                                                   {'name': 'Lower_linear_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
+                                                                    'range': self.dist_restraint_range,
+                                                                    'group': {'member-with': ['Target_val', 'Upper_linear_limit', 'Distance_lower_bound_val', 'Distance_upper_bound_val'],
+                                                                              'coexist-with': None, # ['Upper_linear_limit', 'Distance_lower_bound_val', 'Distance_upper_bound_val'],
+                                                                              'smaller-than': ['Distance_upper_bound_val'],
+                                                                              'larger-than': ['Upper_linear_limit', 'Distance_lower_bound_val']}},
+                                                                   {'name': 'Upper_linear_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
+                                                                    'range': self.dist_restraint_range,
+                                                                    'group': {'member-with': ['Target_val', 'Lower_linear_limit', 'Distance_lower_bound_val', 'Distance_upper_bound_val'],
+                                                                              'coexist-with': None, # ['Lower_linear_limit', 'Distance_lower_bound_val', 'Distance_upper_bound_val'],
+                                                                              'smaller-than': ['Lower_linear_limit', 'Distance_lower_bound_val'],
+                                                                              'larger-than': ['Distance_upper_bound_val']}},
+                                                                   {'name': 'Distance_lower_bound_val', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
+                                                                    'range': self.dist_restraint_range,
+                                                                    'group': {'member-with': ['Target_val', 'Lower_linear_limit', 'Upper_linear_limit', 'Distance_upper_bound_val'],
+                                                                              'coexist-with': None, # ['Distance_upper_bound_val'],
+                                                                              'smaller-than': None,
+                                                                              'larger-than': ['Lower_linear_limit', 'Upper_linear_limit', 'Distance_upper_bound_val']}},
+                                                                   {'name': 'Distance_upper_bound_val', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
+                                                                    'range': self.dist_restraint_range,
+                                                                    'group': {'member-with': ['Target_val', 'Lower_linear_limit', 'Upper_linear_limit', 'Distance_lower_bound_val'],
+                                                                              'coexist-with': None, # ['Distance_lower_bound_val'],
+                                                                              'smaller-than': ['Lower_linear_limit', 'Distance_lower_bound_val', 'Upper_linear_limit'],
+                                                                              'larger-than': None}}
+                                                                   ],
+                                                'dihed_restraint': [{'name': 'Angle_lower_bound_val', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
+                                                                     'range': self.dihed_restraint_range,
+                                                                     'group': {'member-with': ['Angle_target_val', 'Angle_lower_linear_limit', 'Angle_upper_linear_limit', 'Angle_upper_bound_val'],
+                                                                               'coexist-with': None, # ['Angle_upper_bound_val'],
+                                                                               'smaller-than': None,
+                                                                               'larger-than': ['Angle_lower_linear_limit', 'Angle_upper_linear_limit', 'Angle_upper_bound_val']}},
+                                                                    {'name': 'Angle_upper_bound_val', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
+                                                                     'range': self.dihed_restraint_range,
+                                                                     'group': {'member-with': ['Angle_target_val', 'Angle_lower_linear_limit', 'Angle_upper_linear_limit', 'Angle_lower_bound_val'],
+                                                                               'coexist-with': None, # ['Angle_lower_bound_val'],
+                                                                               'smaller-than': ['Angle_lower_linear_limit', 'Angle_lower_bound_val', 'Angle_upper_linear_limit'],
+                                                                               'larger-than': None}},
+                                                                    {'name': 'Angle_target_val', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
+                                                                     'range': self.dihed_restraint_range,
+                                                                     'group': {'member-with': ['Angle_lower_linear_limit', 'Angle_upper_linear_limit', 'Angle_lower_bound_val', 'Angle_upper_bound_val'],
+                                                                               'coexist-with': None,
+                                                                               'smaller-than': ['Angle_lower_linear_limit', 'Angle_lower_bound_val'],
+                                                                               'larger-than': ['Angle_upper_linear_limit', 'Angle_upper_bound_val']}},
+                                                                    {'name': 'Angle_target_val_err', 'type': 'range-float', 'mandatory': False,
+                                                                     'range': self.dihed_restraint_error},
+                                                                    {'name': 'Angle_lower_linear_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
+                                                                     'range': self.dihed_restraint_range,
+                                                                     'group': {'member-with': ['Angle_target_val', 'Angle_upper_linear_limit', 'Angle_lower_bound_val', 'Angle_upper_bound_val'],
+                                                                               'coexist-with': None, # ['Angle_upper_linear_limit', 'Angle_lower_bound_val', 'Angle_upper_bound_val'],
+                                                                               'smaller-than': ['Angle_lower_bound_val'],
+                                                                               'larger-than': ['Angle_upper_linear_limit', 'Angle_upper_bound_val']}},
+                                                                    {'name': 'Angle_upper_linear_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
+                                                                     'range': self.dihed_restraint_range,
+                                                                     'group': {'member-with': ['Angle_target_val', 'Angle_lower_linear_limit', 'Angle_lower_bound_val', 'Angle_upper_bound_val'],
+                                                                              'coexist-with': None, # ['Angle_lower_linear_limit', 'Angle_lower_bound_val', 'Angle_upper_bound_val'],
+                                                                              'smaller-than': ['Angle_lower_linear_limit', 'Angle_lower_bound_val'],
+                                                                              'larger-than': ['Angle_upper_bound_val']}}
+                                                    ],
+                                                'rdc_restraint': [{'name': 'Target_value', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
+                                                                   'range': self.rdc_restraint_range,
+                                                                   'group': {'member-with': ['RDC_lower_linear_limit', 'RDC_upper_linear_limit', 'RDC_lower_bound', 'RDC_upper_bound'],
+                                                                             'coexist-with': None,
+                                                                             'smaller-than': ['RDC_lower_linear_limit', 'RDC_lower_bound'],
+                                                                             'larger-than': ['RDC_upper_linear_limit', 'RDC_upper_bound']}},
+                                                                  {'name': 'Target_value_uncertainty', 'type': 'range-float', 'mandatory': False,
+                                                                   'range': self.rdc_restraint_error},
+                                                                  {'name': 'RDC_lower_bound', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
+                                                                   'range': self.rdc_restraint_range,
+                                                                   'group': {'member-with': ['Target_value', 'RDC_lower_linear_limit', 'RDC_upper_linear_limit', 'RDC_upper_bound'],
+                                                                             'coexist-with': None, # ['RDC_upper_bound'],
+                                                                             'smaller-than': None,
+                                                                             'larger-than': ['RDC_lower_linear_limit', 'RDC_upper_linear_limit', 'RDC_upper_bound']}},
+                                                                  {'name': 'RDC_upper_bound', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
+                                                                   'range': self.rdc_restraint_range,
+                                                                   'group': {'member-with': ['Target_value', 'RDC_lower_linear_limit', 'RDC_upper_linear_limit', 'RDC_lower_bound'],
+                                                                             'coexist-with': None, # ['RDC_lower_bound'],
+                                                                             'smaller-than': ['RDC_lower_linear_limit', 'RDC_lower_bound', 'RDC_upper_linear_limit'],
+                                                                             'larger-than': None}},
+                                                                  {'name': 'RDC_lower_linear_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
+                                                                   'range': self.rdc_restraint_range,
+                                                                   'group': {'member-with': ['Target_value', 'RDC_upper_linear_limit', 'RDC_lower_bound', 'RDC_upper_bound'],
+                                                                             'coexist-with': None, # ['RDC_upper_linear_limit', 'RDC_lower_bound', 'RDC_upper_bound'],
+                                                                             'smaller-than': ['RDC_lower_bound'],
+                                                                             'larger-than': ['RDC_upper_linear_limit', 'RDC_upper_bound']}},
+                                                                  {'name': 'RDC_upper_linear_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
+                                                                   'range': self.rdc_restraint_range,
+                                                                   'group': {'member-with': ['Target_value', 'RDC_upper_linear_limit', 'RDC_lower_bound', 'RDC_upper_bound'],
+                                                                             'coexist-with': None, # ['RDC_upper_linear_limit', 'RDC_lower_bound', 'RDC_upper_bound'],
+                                                                             'smaller-than': ['RDC_upper_bound'],
+                                                                             'larger-than': ['RDC_upper_linear_limit', 'RDC_lower_bound']}}
+                                                                  ],
+                                                'spectral_peak': None
+                                                }
+                                   }
 
         # common potential descriptor items
         self.potential_items = {'nef': {'dist_restraint':  {'target_value': 'target_value',
@@ -878,17 +1176,83 @@ class NmrDpUtility(object):
                                      'poly_seq': ['index', 'chain_code', 'sequence_code', 'residue_name', 'linking', 'residue_variant', 'cis_peptide'],
                                      'chem_shift': ['chain_code', 'sequence_code', 'residue_name', 'atom_name', 'value', 'value_uncertainty', 'element', 'isotope_number'],
                                      'dist_restraint': ['index', 'restraint_id', 'restraint_combination_id', 'chain_code_1', 'sequence_code_1', 'residue_name_1', 'atom_name_1', 'chain_code_2', 'sequence_code_2', 'residue_name_2', 'atom_name_2', 'weight', 'target_value', 'target_value_uncertainty', 'lower_linear_limit', 'lower_limit', 'upper_limit', 'upper_linear_limit'],
-                                     'dihed_restraint': ['index', 'restraint_id', 'restraint_combination_id', 'chain_code_1', 'sequence_code_1', 'residue_name_1', 'atom_name_1', 'chain_code_2', 'sequence_code_2', 'residue_name_2', 'atom_name_2', 'chain_code_3', 'sequence_code_3', 'residue_name_3', 'atom_name_3', 'chain_code_4', 'sequence_code_4', 'residue_name_4', 'atom_name_4', 'weight', 'target_value', 'target_value_uncertainty', 'lower_linear_limit', 'lower_limit', 'upper_limit', 'upper_linear_limit', 'name' ],
+                                     'dihed_restraint': ['index', 'restraint_id', 'restraint_combination_id',
+                                                         'chain_code_1', 'sequence_code_1', 'residue_name_1', 'atom_name_1', 'chain_code_2', 'sequence_code_2', 'residue_name_2', 'atom_name_2',
+                                                         'chain_code_3', 'sequence_code_3', 'residue_name_3', 'atom_name_3', 'chain_code_4', 'sequence_code_4', 'residue_name_4', 'atom_name_4',
+                                                         'weight', 'target_value', 'target_value_uncertainty', 'lower_linear_limit', 'lower_limit', 'upper_limit', 'upper_linear_limit', 'name' ],
                                      'rdc_restraint': ['index', 'restraint_id', 'restraint_combination_id', 'chain_code_1', 'sequence_code_1', 'residue_name_1', 'atom_name_1', 'chain_code_2', 'sequence_code_2', 'residue_name_2', 'atom_name_2', 'weight', 'target_value', 'target_value_uncertainty', 'lower_linear_limit', 'lower_limit', 'upper_limit', 'upper_linear_limit', 'scale', 'distance_dependent'],
-                                     'spectral_peak': ['index', 'peak_id', 'volume', 'volume_uncertainty', 'height', 'height_uncertainty', 'position_1', 'position_uncertainty_1', 'position_2', 'position_uncertainty_2', 'position_3', 'position_uncertainty_3', 'position_4', 'position_uncertainty_4', 'position_5', 'position_uncertainty_5', 'position_6', 'position_uncertainty_6', 'position_7', 'position_uncertainty_7', 'position_8', 'position_uncertainty_8', 'position_9', 'position_uncertainty_9', 'position_10', 'position_uncertainty_10', 'position_11', 'position_uncertainty_11', 'position_12', 'position_uncertainty_12', 'position_13', 'position_uncertainty_13', 'position_14', 'position_uncertainty_14', 'position_15', 'position_uncertainty_15', 'chain_code_1', 'sequence_code_1', 'residue_name_1', 'atom_name_1', 'chain_code_2', 'sequence_code_2', 'residue_name_2', 'atom_name_2', 'chain_code_3', 'sequence_code_3', 'residue_name_3', 'atom_name_3', 'chain_code_4', 'sequence_code_4', 'residue_name_4', 'atom_name_4', 'chain_code_5', 'sequence_code_5', 'residue_name_5', 'atom_name_5', 'chain_code_6', 'sequence_code_6', 'residue_name_6', 'atom_name_6', 'chain_code_7', 'sequence_code_7', 'residue_name_7', 'atom_name_7', 'chain_code_8', 'sequence_code_8', 'residue_name_8', 'atom_name_8', 'chain_code_9', 'sequence_code_9', 'residue_name_9', 'atom_name_9', 'chain_code_10', 'sequence_code_10', 'residue_name_10', 'atom_name_10', 'chain_code_11', 'sequence_code_11', 'residue_name_11', 'atom_name_11', 'chain_code_12', 'sequence_code_12', 'residue_name_12', 'atom_name_12', 'chain_code_13', 'sequence_code_13', 'residue_name_13', 'atom_name_13', 'chain_code_14', 'sequence_code_14', 'residue_name_14', 'atom_name_14', 'chain_code_15', 'sequence_code_15', 'residue_name_15', 'atom_name_15']
+                                     'spectral_peak': ['index', 'peak_id', 'volume', 'volume_uncertainty', 'height', 'height_uncertainty',
+                                                       'position_1', 'position_uncertainty_1', 'position_2', 'position_uncertainty_2',
+                                                       'position_3', 'position_uncertainty_3', 'position_4', 'position_uncertainty_4',
+                                                       'position_5', 'position_uncertainty_5', 'position_6', 'position_uncertainty_6',
+                                                       'position_7', 'position_uncertainty_7', 'position_8', 'position_uncertainty_8',
+                                                       'position_9', 'position_uncertainty_9', 'position_10', 'position_uncertainty_10',
+                                                       'position_11', 'position_uncertainty_11', 'position_12', 'position_uncertainty_12',
+                                                       'position_13', 'position_uncertainty_13', 'position_14', 'position_uncertainty_14',
+                                                       'position_15', 'position_uncertainty_15',
+                                                       'chain_code_1', 'sequence_code_1', 'residue_name_1', 'atom_name_1', 'chain_code_2', 'sequence_code_2', 'residue_name_2', 'atom_name_2',
+                                                       'chain_code_3', 'sequence_code_3', 'residue_name_3', 'atom_name_3', 'chain_code_4', 'sequence_code_4', 'residue_name_4', 'atom_name_4',
+                                                       'chain_code_5', 'sequence_code_5', 'residue_name_5', 'atom_name_5', 'chain_code_6', 'sequence_code_6', 'residue_name_6', 'atom_name_6',
+                                                       'chain_code_7', 'sequence_code_7', 'residue_name_7', 'atom_name_7', 'chain_code_8', 'sequence_code_8', 'residue_name_8', 'atom_name_8',
+                                                       'chain_code_9', 'sequence_code_9', 'residue_name_9', 'atom_name_9', 'chain_code_10', 'sequence_code_10', 'residue_name_10', 'atom_name_10',
+                                                       'chain_code_11', 'sequence_code_11', 'residue_name_11', 'atom_name_11', 'chain_code_12', 'sequence_code_12', 'residue_name_12', 'atom_name_12',
+                                                       'chain_code_13', 'sequence_code_13', 'residue_name_13', 'atom_name_13', 'chain_code_14', 'sequence_code_14', 'residue_name_14', 'atom_name_14',
+                                                       'chain_code_15', 'sequence_code_15', 'residue_name_15', 'atom_name_15']
                                      },
                              'nmr-star': {'entry_info': ['Software_ID', 'Software_label', 'Methods_ID', 'Methods_label', 'Software_name', 'Script_name', 'Script', 'Software_specific_info', 'Sf_ID', 'Entry_ID', 'Software_applied_list_ID'],
                                           'poly_seq': ['Assembly_chem_comp_ID', 'Entity_assembly_ID', 'Entity_ID', 'Comp_index_ID', 'Comp_ID', 'Seq_ID', 'Auth_entity_assembly_ID', 'Auth_asym_ID', 'Auth_seq_ID', 'Auth_comp_ID', 'Auth_variant_ID', 'Sequence_linking', 'Cis_residue', 'NEF_index', 'Sf_ID', 'Entry_ID', 'Assembly_ID'],
-                                          'chem_shift': ['ID', 'Assembly_atom_ID', 'Entity_assembly_ID', 'Entity_ID', 'Comp_index_ID', 'Seq_ID', 'Comp_ID', 'Atom_ID', 'Atom_type', 'Atom_isotope_number', 'Val', 'Val_err', 'Assign_fig_of_merit', 'Ambiguity_code', 'Ambiguity_set_ID', 'Occupancy', 'Resonance_ID', 'Auth_entity_assembly_ID', 'Auth_asym_ID', 'Auth_seq_ID', 'Auth_comp_ID', 'Auth_atom_ID', 'PDB_record_ID', 'PDB_model_num', 'PDB_strand_ID', 'PDB_ins_code', 'PDB_residue_no', 'PDB_residue_name', 'PDB_atom_name', 'Original_PDB_strand_ID', 'Original_PDB_residue_no', 'Original_PDB_residue_name', 'Original_PDB_atom_name', 'Details', 'Sf_ID', 'Entry_ID', 'Assigned_chem_shift_list_ID'],
-                                          'dist_restraint': ['Index_ID', 'ID', 'Combination_ID', 'Member_ID', 'Member_logic_code', 'Assembly_atom_ID_1', 'Entity_assembly_ID_1', 'Entity_ID_1', 'Comp_index_ID_1', 'Seq_ID_1', 'Comp_ID_1', 'Atom_ID_1', 'Atom_type_1', 'Atom_isotope_number_1', 'Resonance_ID_1', 'Assembly_atom_ID_2', 'Entity_assembly_ID_2', 'Entity_ID_2', 'Comp_index_ID_2', 'Seq_ID_2', 'Comp_ID_2', 'Atom_ID_2', 'Atom_type_2', 'Atom_isotope_number_2', 'Resonance_ID_2', 'Intensity_val', 'Intensity_lower_val_err', 'Intensity_upper_val_err', 'Distance_val', 'Target_val', 'Target_val_uncertainty', 'Lower_linear_limit', 'Upper_linear_limit', 'Distance_lower_bound_val', 'Distance_upper_bound_val', 'Contribution_fractional_val', 'Weight', 'Spectral_peak_ID', 'Spectral_peak_list_ID', 'PDB_record_ID_1', 'PDB_model_num_1', 'PDB_strand_ID_1', 'PDB_ins_code_1', 'PDB_residue_no_1', 'PDB_residue_name_1', 'PDB_atom_name_1', 'PDB_record_ID_2', 'PDB_model_num_2', 'PDB_strand_ID_2', 'PDB_ins_code_2', 'PDB_residue_no_2', 'PDB_residue_name_2', 'PDB_atom_name_2', 'Auth_entity_assembly_ID_1', 'Auth_asym_ID_1', 'Auth_chain_ID_1', 'Auth_seq_ID_1', 'Auth_comp_ID_1', 'Auth_atom_ID_1', 'Auth_alt_ID_1', 'Auth_atom_name_1', 'Auth_entity_assembly_ID_2', 'Auth_asym_ID_2', 'Auth_chain_ID_2', 'Auth_seq_ID_2', 'Auth_comp_ID_2', 'Auth_atom_ID_2', 'Auth_alt_ID_2', 'Auth_atom_name_2', 'Sf_ID', 'Entry_ID', 'Gen_dist_constraint_list_ID'],
-                                          'dihed_restraint': ['Index_ID', 'ID', 'Combination_ID', 'Set_ID', 'Torsion_angle_name', 'Assembly_atom_ID_1', 'Entity_assembly_ID_1', 'Entity_ID_1', 'Comp_index_ID_1', 'Seq_ID_1', 'Comp_ID_1', 'Atom_ID_1', 'Atom_type_1', 'Resonance_ID_1', 'Assembly_atom_ID_2', 'Entity_assembly_ID_2', 'Entity_ID_2', 'Comp_index_ID_2', 'Seq_ID_2', 'Comp_ID_2', 'Atom_ID_2', 'Atom_type_2', 'Resonance_ID_2', 'Assembly_atom_ID_3', 'Entity_assembly_ID_3', 'Entity_ID_3', 'Comp_index_ID_3', 'Seq_ID_3', 'Comp_ID_3', 'Atom_ID_3', 'Atom_type_3', 'Resonance_ID_3', 'Assembly_atom_ID_4', 'Entity_assembly_ID_4', 'Entity_ID_4', 'Comp_index_ID_4', 'Seq_ID_4', 'Comp_ID_4', 'Atom_ID_4', 'Atom_type_4', 'Resonance_ID_4', 'Angle_lower_bound_val', 'Angle_upper_bound_val', 'Angle_target_val', 'Angle_target_val_err', 'Angle_lower_linear_limit', 'Angle_upper_linear_limit', 'Weight', 'Source_experiment_ID', 'Figure_of_merit', 'PDB_record_ID_1', 'PDB_model_num_1', 'PDB_strand_ID_1', 'PDB_ins_code_1', 'PDB_residue_no_1', 'PDB_residue_name_1', 'PDB_atom_name_1', 'PDB_record_ID_2', 'PDB_model_num_2', 'PDB_strand_ID_2', 'PDB_ins_code_2', 'PDB_residue_no_2', 'PDB_residue_name_2', 'PDB_atom_name_2', 'PDB_record_ID_3', 'PDB_model_num_3', 'PDB_strand_ID_3', 'PDB_ins_code_3', 'PDB_residue_no_3', 'PDB_residue_name_3', 'PDB_atom_name_3', 'PDB_record_ID_4', 'PDB_model_num_4', 'PDB_strand_ID_4', 'PDB_ins_code_4', 'PDB_residue_no_4', 'PDB_residue_name_4', 'PDB_atom_name_4', 'Auth_entity_assembly_ID_1', 'Auth_asym_ID_1', 'Auth_chain_ID_1', 'Auth_seq_ID_1', 'Auth_comp_ID_1', 'Auth_atom_ID_1', 'Auth_alt_ID_1', 'Auth_atom_name_1', 'Auth_entity_assembly_ID_2', 'Auth_asym_ID_2', 'Auth_chain_ID_2', 'Auth_seq_ID_2', 'Auth_comp_ID_2', 'Auth_atom_ID_2', 'Auth_alt_ID_2', 'Auth_atom_name_2', 'Auth_entity_assembly_ID_3', 'Auth_asym_ID_3', 'Auth_chain_ID_3', 'Auth_seq_ID_3', 'Auth_comp_ID_3', 'Auth_atom_ID_3', 'Auth_alt_ID_3', 'Auth_atom_name_3', 'Auth_entity_assembly_ID_4', 'Auth_asym_ID_4', 'Auth_chain_ID_4', 'Auth_seq_ID_4', 'Auth_comp_ID_4', 'Auth_atom_ID_4', 'Auth_alt_ID_4', 'Auth_atom_name_4', 'Sf_ID', 'Entry_ID', 'Torsion_angle_constraint_list_ID'],
-                                          'rdc_restraint': ['Index_ID', 'ID', 'Combination_ID', 'Assembly_atom_ID_1', 'Entity_assembly_ID_1', 'Entity_ID_1', 'Comp_index_ID_1', 'Seq_ID_1', 'Comp_ID_1', 'Atom_ID_1', 'Atom_type_1', 'Atom_isotope_number_1', 'Resonance_ID_1', 'Assembly_atom_ID_2', 'Entity_assembly_ID_2', 'Entity_ID_2', 'Comp_index_ID_2', 'Seq_ID_2', 'Comp_ID_2', 'Atom_ID_2', 'Atom_type_2', 'Atom_isotope_number_2', 'Resonance_ID_2', 'Weight', 'RDC_val', 'RDC_val_err', 'Target_value', 'Target_value_uncertainty', 'RDC_lower_bound', 'RDC_upper_bound', 'RDC_lower_linear_limit', 'RDC_upper_linear_limit', 'RDC_val_scale_factor', 'RDC_bond_length', 'RDC_distant_dependent', 'Source_experiment_ID', 'PDB_record_ID_1', 'PDB_model_num_1', 'PDB_strand_ID_1', 'PDB_ins_code_1', 'PDB_residue_no_1', 'PDB_residue_name_1', 'PDB_atom_name_1', 'PDB_record_ID_2', 'PDB_model_num_2', 'PDB_strand_ID_2', 'PDB_ins_code_2', 'PDB_residue_no_2', 'PDB_residue_name_2', 'PDB_atom_name_2', 'Auth_entity_assembly_ID_1', 'Auth_asym_ID_1', 'Auth_chain_ID_1', 'Auth_seq_ID_1', 'Auth_comp_ID_1', 'Auth_atom_ID_1', 'Auth_alt_ID_1', 'Auth_atom_name_1', 'Auth_entity_assembly_ID_2', 'Auth_asym_ID_2', 'Auth_chain_ID_2', 'Auth_seq_ID_2', 'Auth_comp_ID_2', 'Auth_atom_ID_2', 'Auth_alt_ID_2', 'Auth_atom_name_2', 'Sf_ID', 'Entry_ID', 'RDC_constraint_list_ID'],
-                                          'spectral_peak': ['Index_ID', 'ID', 'Volume', 'Volume_uncertainty', 'Height', 'Height_uncertainty', 'Figure_of_merit', 'Restraint', 'Position_1', 'Position_uncertainty_1', 'Line_width_1', 'Line_width_uncertainty_1', 'Position_2', 'Position_uncertainty_2', 'Line_width_2', 'Line_width_uncertainty_2', 'Position_3', 'Position_uncertainty_3', 'Line_width_3', 'Line_width_uncertainty_3', 'Position_4', 'Position_uncertainty_4', 'Line_width_4', 'Line_width_uncertainty_4', 'Position_5', 'Position_uncertainty_5', 'Line_width_5', 'Line_width_uncertainty_5', 'Position_6', 'Position_uncertainty_6', 'Line_width_6', 'Line_width_uncertainty_6', 'Position_7', 'Position_uncertainty_7', 'Line_width_7', 'Line_width_uncertainty_7', 'Position_8', 'Position_uncertainty_8', 'Line_width_8', 'Line_width_uncertainty_8', 'Position_9', 'Position_uncertainty_9', 'Line_width_9', 'Line_width_uncertainty_9', 'Position_10', 'Position_uncertainty_10', 'Line_width_10', 'Line_width_uncertainty_10', 'Position_11', 'Position_uncertainty_11', 'Line_width_11', 'Line_width_uncertainty_11', 'Position_12', 'Position_uncertainty_12', 'Line_width_12', 'Line_width_uncertainty_12', 'Position_13', 'Position_uncertainty_13', 'Line_width_13', 'Line_width_uncertainty_13', 'Position_14', 'Position_uncertainty_14', 'Line_width_14', 'Line_width_uncertainty_14', 'Position_15', 'Position_uncertainty_15', 'Line_width_15', 'Line_width_uncertainty_15', 'Entity_assembly_ID_1', 'Entity_ID_1', 'Comp_index_ID_1', 'Seq_ID_1', 'Comp_ID_1', 'Atom_ID_1', 'Ambiguity_code_1', 'Ambiguity_set_ID_1', 'Entity_assembly_ID_2', 'Entity_ID_2', 'Comp_index_ID_2', 'Seq_ID_2', 'Comp_ID_2', 'Atom_ID_2', 'Ambiguity_code_2', 'Ambiguity_set_ID_2', 'Entity_assembly_ID_3', 'Entity_ID_3', 'Comp_index_ID_3', 'Seq_ID_3', 'Comp_ID_3', 'Atom_ID_3', 'Ambiguity_code_3', 'Ambiguity_set_ID_3', 'Entity_assembly_ID_4', 'Entity_ID_4', 'Comp_index_ID_4', 'Seq_ID_4', 'Comp_ID_4', 'Atom_ID_4', 'Ambiguity_code_4', 'Ambiguity_set_ID_4', 'Entity_assembly_ID_5', 'Entity_ID_5', 'Comp_index_ID_5', 'Seq_ID_5', 'Comp_ID_5', 'Atom_ID_5', 'Ambiguity_code_5', 'Ambiguity_set_ID_5', 'Entity_assembly_ID_6', 'Entity_ID_6', 'Comp_index_ID_6', 'Seq_ID_6', 'Comp_ID_6', 'Atom_ID_6', 'Ambiguity_code_6', 'Ambiguity_set_ID_6', 'Entity_assembly_ID_7', 'Entity_ID_7', 'Comp_index_ID_7', 'Seq_ID_7', 'Comp_ID_7', 'Atom_ID_7', 'Ambiguity_code_7', 'Ambiguity_set_ID_7', 'Entity_assembly_ID_8', 'Entity_ID_8', 'Comp_index_ID_8', 'Seq_ID_8', 'Comp_ID_8', 'Atom_ID_8', 'Ambiguity_code_8', 'Ambiguity_set_ID_8', 'Entity_assembly_ID_9', 'Entity_ID_9', 'Comp_index_ID_9', 'Seq_ID_9', 'Comp_ID_9', 'Atom_ID_9', 'Ambiguity_code_9', 'Ambiguity_set_ID_9', 'Entity_assembly_ID_10', 'Entity_ID_10', 'Comp_index_ID_10', 'Seq_ID_10', 'Comp_ID_10', 'Atom_ID_10', 'Ambiguity_code_10', 'Ambiguity_set_ID_10', 'Entity_assembly_ID_11', 'Entity_ID_11', 'Comp_index_ID_11', 'Seq_ID_11', 'Comp_ID_11', 'Atom_ID_11', 'Ambiguity_code_11', 'Ambiguity_set_ID_11', 'Entity_assembly_ID_12', 'Entity_ID_12', 'Comp_index_ID_12', 'Seq_ID_12', 'Comp_ID_12', 'Atom_ID_12', 'Ambiguity_code_12', 'Ambiguity_set_ID_12', 'Entity_assembly_ID_13', 'Entity_ID_13', 'Comp_index_ID_13', 'Seq_ID_13', 'Comp_ID_13', 'Atom_ID_13', 'Ambiguity_code_13', 'Ambiguity_set_ID_13', 'Entity_assembly_ID_14', 'Entity_ID_14', 'Comp_index_ID_14', 'Seq_ID_14', 'Comp_ID_14', 'Atom_ID_14', 'Ambiguity_code_14', 'Ambiguity_set_ID_14', 'Entity_assembly_ID_15', 'Entity_ID_15', 'Comp_index_ID_15', 'Seq_ID_15', 'Comp_ID_15', 'Atom_ID_15', 'Ambiguity_code_15', 'Ambiguity_set_ID_15', 'Auth_entity_assembly_ID_1', 'Auth_entity_ID_1', 'Auth_asym_ID_1', 'Auth_seq_ID_1', 'Auth_comp_ID_1', 'Auth_atom_ID_1', 'Auth_ambiguity_code_1', 'Auth_ambiguity_set_ID_1', 'Auth_entity_assembly_ID_2', 'Auth_entity_ID_2', 'Auth_asym_ID_2', 'Auth_seq_ID_2', 'Auth_comp_ID_2', 'Auth_atom_ID_2', 'Auth_ambiguity_code_2', 'Auth_ambiguity_set_ID_2', 'Auth_entity_assembly_ID_3', 'Auth_entity_ID_3', 'Auth_asym_ID_3', 'Auth_seq_ID_3', 'Auth_comp_ID_3', 'Auth_atom_ID_3', 'Auth_ambiguity_code_3', 'Auth_ambiguity_set_ID_3', 'Auth_entity_assembly_ID_4', 'Auth_entity_ID_4', 'Auth_asym_ID_4', 'Auth_seq_ID_4', 'Auth_comp_ID_4', 'Auth_atom_ID_4', 'Auth_ambiguity_code_4', 'Auth_ambiguity_set_ID_4', 'Auth_entity_assembly_ID_5', 'Auth_entity_ID_5', 'Auth_asym_ID_5', 'Auth_seq_ID_5', 'Auth_comp_ID_5', 'Auth_atom_ID_5', 'Auth_ambiguity_code_5', 'Auth_ambiguity_set_ID_5', 'Auth_entity_assembly_ID_6', 'Auth_entity_ID_6', 'Auth_asym_ID_6', 'Auth_seq_ID_6', 'Auth_comp_ID_6', 'Auth_atom_ID_6', 'Auth_ambiguity_code_6', 'Auth_ambiguity_set_ID_6', 'Auth_entity_assembly_ID_7', 'Auth_entity_ID_7', 'Auth_asym_ID_7', 'Auth_seq_ID_7', 'Auth_comp_ID_7', 'Auth_atom_ID_7', 'Auth_ambiguity_code_7', 'Auth_ambiguity_set_ID_7', 'Auth_entity_assembly_ID_8', 'Auth_entity_ID_8', 'Auth_asym_ID_8', 'Auth_seq_ID_8', 'Auth_comp_ID_8', 'Auth_atom_ID_8', 'Auth_ambiguity_code_8', 'Auth_ambiguity_set_ID_8', 'Auth_entity_assembly_ID_9', 'Auth_entity_ID_9', 'Auth_asym_ID_9', 'Auth_seq_ID_9', 'Auth_comp_ID_9', 'Auth_atom_ID_9', 'Auth_ambiguity_code_9', 'Auth_ambiguity_set_ID_9', 'Auth_entity_assembly_ID_10', 'Auth_entity_ID_10', 'Auth_asym_ID_10', 'Auth_seq_ID_10', 'Auth_comp_ID_10', 'Auth_atom_ID_10', 'Auth_ambiguity_code_10', 'Auth_ambiguity_set_ID_10', 'Auth_entity_assembly_ID_11', 'Auth_entity_ID_11', 'Auth_asym_ID_11', 'Auth_seq_ID_11', 'Auth_comp_ID_11', 'Auth_atom_ID_11', 'Auth_ambiguity_code_11', 'Auth_ambiguity_set_ID_11', 'Auth_entity_assembly_ID_12', 'Auth_entity_ID_12', 'Auth_asym_ID_12', 'Auth_seq_ID_12', 'Auth_comp_ID_12', 'Auth_atom_ID_12', 'Auth_ambiguity_code_12', 'Auth_ambiguity_set_ID_12', 'Auth_entity_assembly_ID_13', 'Auth_entity_ID_13', 'Auth_asym_ID_13', 'Auth_seq_ID_13', 'Auth_comp_ID_13', 'Auth_atom_ID_13', 'Auth_ambiguity_code_13', 'Auth_ambiguity_set_ID_13', 'Auth_entity_assembly_ID_14', 'Auth_entity_ID_14', 'Auth_asym_ID_14', 'Auth_seq_ID_14', 'Auth_comp_ID_14', 'Auth_atom_ID_14', 'Auth_ambiguity_code_14', 'Auth_ambiguity_set_ID_14', 'Auth_entity_assembly_ID_15', 'Auth_entity_ID_15', 'Auth_asym_ID_15', 'Auth_seq_ID_15', 'Auth_comp_ID_15', 'Auth_atom_ID_15', 'Auth_ambiguity_code_15', 'Auth_ambiguity_set_ID_15', 'Details', 'Sf_ID', 'Entry_ID', 'Spectral_peak_list_ID'],
+                                          'chem_shift': ['ID', 'Assembly_atom_ID', 'Entity_assembly_ID', 'Entity_ID', 'Comp_index_ID', 'Seq_ID', 'Comp_ID', 'Atom_ID', 'Atom_type', 'Atom_isotope_number', 'Val', 'Val_err', 'Assign_fig_of_merit', 'Ambiguity_code', 'Ambiguity_set_ID', 'Occupancy', 'Resonance_ID',
+                                                         'Auth_entity_assembly_ID', 'Auth_asym_ID', 'Auth_seq_ID', 'Auth_comp_ID', 'Auth_atom_ID',
+                                                         'PDB_record_ID', 'PDB_model_num', 'PDB_strand_ID', 'PDB_ins_code', 'PDB_residue_no', 'PDB_residue_name', 'PDB_atom_name',
+                                                         'Original_PDB_strand_ID', 'Original_PDB_residue_no', 'Original_PDB_residue_name', 'Original_PDB_atom_name', 'Details', 'Sf_ID', 'Entry_ID', 'Assigned_chem_shift_list_ID'],
+                                          'dist_restraint': ['Index_ID', 'ID', 'Combination_ID', 'Member_ID', 'Member_logic_code',
+                                                             'Assembly_atom_ID_1', 'Entity_assembly_ID_1', 'Entity_ID_1', 'Comp_index_ID_1', 'Seq_ID_1', 'Comp_ID_1', 'Atom_ID_1', 'Atom_type_1', 'Atom_isotope_number_1', 'Resonance_ID_1', 'Assembly_atom_ID_2', 'Entity_assembly_ID_2', 'Entity_ID_2', 'Comp_index_ID_2', 'Seq_ID_2', 'Comp_ID_2', 'Atom_ID_2', 'Atom_type_2', 'Atom_isotope_number_2', 'Resonance_ID_2',
+                                                             'Intensity_val', 'Intensity_lower_val_err', 'Intensity_upper_val_err', 'Distance_val', 'Target_val', 'Target_val_uncertainty', 'Lower_linear_limit', 'Upper_linear_limit', 'Distance_lower_bound_val', 'Distance_upper_bound_val', 'Contribution_fractional_val', 'Weight',
+                                                             'Spectral_peak_ID', 'Spectral_peak_list_ID',
+                                                             'PDB_record_ID_1', 'PDB_model_num_1', 'PDB_strand_ID_1', 'PDB_ins_code_1', 'PDB_residue_no_1', 'PDB_residue_name_1', 'PDB_atom_name_1', 'PDB_record_ID_2', 'PDB_model_num_2', 'PDB_strand_ID_2', 'PDB_ins_code_2', 'PDB_residue_no_2', 'PDB_residue_name_2', 'PDB_atom_name_2',
+                                                             'Auth_entity_assembly_ID_1', 'Auth_asym_ID_1', 'Auth_chain_ID_1', 'Auth_seq_ID_1', 'Auth_comp_ID_1', 'Auth_atom_ID_1', 'Auth_alt_ID_1', 'Auth_atom_name_1', 'Auth_entity_assembly_ID_2', 'Auth_asym_ID_2', 'Auth_chain_ID_2', 'Auth_seq_ID_2', 'Auth_comp_ID_2', 'Auth_atom_ID_2', 'Auth_alt_ID_2', 'Auth_atom_name_2',
+                                                             'Sf_ID', 'Entry_ID', 'Gen_dist_constraint_list_ID'],
+                                          'dihed_restraint': ['Index_ID', 'ID', 'Combination_ID', 'Set_ID', 'Torsion_angle_name',
+                                                              'Assembly_atom_ID_1', 'Entity_assembly_ID_1', 'Entity_ID_1', 'Comp_index_ID_1', 'Seq_ID_1', 'Comp_ID_1', 'Atom_ID_1', 'Atom_type_1', 'Resonance_ID_1', 'Assembly_atom_ID_2', 'Entity_assembly_ID_2', 'Entity_ID_2', 'Comp_index_ID_2', 'Seq_ID_2', 'Comp_ID_2', 'Atom_ID_2', 'Atom_type_2', 'Resonance_ID_2',
+                                                              'Assembly_atom_ID_3', 'Entity_assembly_ID_3', 'Entity_ID_3', 'Comp_index_ID_3', 'Seq_ID_3', 'Comp_ID_3', 'Atom_ID_3', 'Atom_type_3', 'Resonance_ID_3', 'Assembly_atom_ID_4', 'Entity_assembly_ID_4', 'Entity_ID_4', 'Comp_index_ID_4', 'Seq_ID_4', 'Comp_ID_4', 'Atom_ID_4', 'Atom_type_4', 'Resonance_ID_4',
+                                                              'Angle_lower_bound_val', 'Angle_upper_bound_val', 'Angle_target_val', 'Angle_target_val_err', 'Angle_lower_linear_limit', 'Angle_upper_linear_limit', 'Weight', 'Source_experiment_ID', 'Figure_of_merit',
+                                                              'PDB_record_ID_1', 'PDB_model_num_1', 'PDB_strand_ID_1', 'PDB_ins_code_1', 'PDB_residue_no_1', 'PDB_residue_name_1', 'PDB_atom_name_1', 'PDB_record_ID_2', 'PDB_model_num_2', 'PDB_strand_ID_2', 'PDB_ins_code_2', 'PDB_residue_no_2', 'PDB_residue_name_2', 'PDB_atom_name_2',
+                                                              'PDB_record_ID_3', 'PDB_model_num_3', 'PDB_strand_ID_3', 'PDB_ins_code_3', 'PDB_residue_no_3', 'PDB_residue_name_3', 'PDB_atom_name_3', 'PDB_record_ID_4', 'PDB_model_num_4', 'PDB_strand_ID_4', 'PDB_ins_code_4', 'PDB_residue_no_4', 'PDB_residue_name_4', 'PDB_atom_name_4',
+                                                              'Auth_entity_assembly_ID_1', 'Auth_asym_ID_1', 'Auth_chain_ID_1', 'Auth_seq_ID_1', 'Auth_comp_ID_1', 'Auth_atom_ID_1', 'Auth_alt_ID_1', 'Auth_atom_name_1', 'Auth_entity_assembly_ID_2', 'Auth_asym_ID_2', 'Auth_chain_ID_2', 'Auth_seq_ID_2', 'Auth_comp_ID_2', 'Auth_atom_ID_2', 'Auth_alt_ID_2', 'Auth_atom_name_2',
+                                                              'Auth_entity_assembly_ID_3', 'Auth_asym_ID_3', 'Auth_chain_ID_3', 'Auth_seq_ID_3', 'Auth_comp_ID_3', 'Auth_atom_ID_3', 'Auth_alt_ID_3', 'Auth_atom_name_3', 'Auth_entity_assembly_ID_4', 'Auth_asym_ID_4', 'Auth_chain_ID_4', 'Auth_seq_ID_4', 'Auth_comp_ID_4', 'Auth_atom_ID_4', 'Auth_alt_ID_4', 'Auth_atom_name_4',
+                                                              'Sf_ID', 'Entry_ID', 'Torsion_angle_constraint_list_ID'],
+                                          'rdc_restraint': ['Index_ID', 'ID', 'Combination_ID',
+                                                            'Assembly_atom_ID_1', 'Entity_assembly_ID_1', 'Entity_ID_1', 'Comp_index_ID_1', 'Seq_ID_1', 'Comp_ID_1', 'Atom_ID_1', 'Atom_type_1', 'Atom_isotope_number_1', 'Resonance_ID_1', 'Assembly_atom_ID_2', 'Entity_assembly_ID_2', 'Entity_ID_2', 'Comp_index_ID_2', 'Seq_ID_2', 'Comp_ID_2', 'Atom_ID_2', 'Atom_type_2', 'Atom_isotope_number_2', 'Resonance_ID_2',
+                                                            'Weight', 'RDC_val', 'RDC_val_err', 'Target_value', 'Target_value_uncertainty', 'RDC_lower_bound', 'RDC_upper_bound', 'RDC_lower_linear_limit', 'RDC_upper_linear_limit', 'RDC_val_scale_factor', 'RDC_bond_length', 'RDC_distant_dependent', 'Source_experiment_ID',
+                                                            'PDB_record_ID_1', 'PDB_model_num_1', 'PDB_strand_ID_1', 'PDB_ins_code_1', 'PDB_residue_no_1', 'PDB_residue_name_1', 'PDB_atom_name_1', 'PDB_record_ID_2', 'PDB_model_num_2', 'PDB_strand_ID_2', 'PDB_ins_code_2', 'PDB_residue_no_2', 'PDB_residue_name_2', 'PDB_atom_name_2',
+                                                            'Auth_entity_assembly_ID_1', 'Auth_asym_ID_1', 'Auth_chain_ID_1', 'Auth_seq_ID_1', 'Auth_comp_ID_1', 'Auth_atom_ID_1', 'Auth_alt_ID_1', 'Auth_atom_name_1', 'Auth_entity_assembly_ID_2', 'Auth_asym_ID_2', 'Auth_chain_ID_2', 'Auth_seq_ID_2', 'Auth_comp_ID_2', 'Auth_atom_ID_2', 'Auth_alt_ID_2', 'Auth_atom_name_2',
+                                                            'Sf_ID', 'Entry_ID', 'RDC_constraint_list_ID'],
+                                          'spectral_peak': ['Index_ID', 'ID', 'Volume', 'Volume_uncertainty', 'Height', 'Height_uncertainty', 'Figure_of_merit', 'Restraint',
+                                                            'Position_1', 'Position_uncertainty_1', 'Line_width_1', 'Line_width_uncertainty_1', 'Position_2', 'Position_uncertainty_2', 'Line_width_2', 'Line_width_uncertainty_2',
+                                                            'Position_3', 'Position_uncertainty_3', 'Line_width_3', 'Line_width_uncertainty_3', 'Position_4', 'Position_uncertainty_4', 'Line_width_4', 'Line_width_uncertainty_4',
+                                                            'Position_5', 'Position_uncertainty_5', 'Line_width_5', 'Line_width_uncertainty_5', 'Position_6', 'Position_uncertainty_6', 'Line_width_6', 'Line_width_uncertainty_6',
+                                                            'Position_7', 'Position_uncertainty_7', 'Line_width_7', 'Line_width_uncertainty_7', 'Position_8', 'Position_uncertainty_8', 'Line_width_8', 'Line_width_uncertainty_8',
+                                                            'Position_9', 'Position_uncertainty_9', 'Line_width_9', 'Line_width_uncertainty_9', 'Position_10', 'Position_uncertainty_10', 'Line_width_10', 'Line_width_uncertainty_10',
+                                                            'Position_11', 'Position_uncertainty_11', 'Line_width_11', 'Line_width_uncertainty_11', 'Position_12', 'Position_uncertainty_12', 'Line_width_12', 'Line_width_uncertainty_12',
+                                                            'Position_13', 'Position_uncertainty_13', 'Line_width_13', 'Line_width_uncertainty_13', 'Position_14', 'Position_uncertainty_14', 'Line_width_14', 'Line_width_uncertainty_14',
+                                                            'Position_15', 'Position_uncertainty_15', 'Line_width_15', 'Line_width_uncertainty_15',
+                                                            'Entity_assembly_ID_1', 'Entity_ID_1', 'Comp_index_ID_1', 'Seq_ID_1', 'Comp_ID_1', 'Atom_ID_1', 'Ambiguity_code_1', 'Ambiguity_set_ID_1', 'Entity_assembly_ID_2', 'Entity_ID_2', 'Comp_index_ID_2', 'Seq_ID_2', 'Comp_ID_2', 'Atom_ID_2', 'Ambiguity_code_2', 'Ambiguity_set_ID_2',
+                                                            'Entity_assembly_ID_3', 'Entity_ID_3', 'Comp_index_ID_3', 'Seq_ID_3', 'Comp_ID_3', 'Atom_ID_3', 'Ambiguity_code_3', 'Ambiguity_set_ID_3', 'Entity_assembly_ID_4', 'Entity_ID_4', 'Comp_index_ID_4', 'Seq_ID_4', 'Comp_ID_4', 'Atom_ID_4', 'Ambiguity_code_4', 'Ambiguity_set_ID_4',
+                                                            'Entity_assembly_ID_5', 'Entity_ID_5', 'Comp_index_ID_5', 'Seq_ID_5', 'Comp_ID_5', 'Atom_ID_5', 'Ambiguity_code_5', 'Ambiguity_set_ID_5', 'Entity_assembly_ID_6', 'Entity_ID_6', 'Comp_index_ID_6', 'Seq_ID_6', 'Comp_ID_6', 'Atom_ID_6', 'Ambiguity_code_6', 'Ambiguity_set_ID_6',
+                                                            'Entity_assembly_ID_7', 'Entity_ID_7', 'Comp_index_ID_7', 'Seq_ID_7', 'Comp_ID_7', 'Atom_ID_7', 'Ambiguity_code_7', 'Ambiguity_set_ID_7', 'Entity_assembly_ID_8', 'Entity_ID_8', 'Comp_index_ID_8', 'Seq_ID_8', 'Comp_ID_8', 'Atom_ID_8', 'Ambiguity_code_8', 'Ambiguity_set_ID_8',
+                                                            'Entity_assembly_ID_9', 'Entity_ID_9', 'Comp_index_ID_9', 'Seq_ID_9', 'Comp_ID_9', 'Atom_ID_9', 'Ambiguity_code_9', 'Ambiguity_set_ID_9', 'Entity_assembly_ID_10', 'Entity_ID_10', 'Comp_index_ID_10', 'Seq_ID_10', 'Comp_ID_10', 'Atom_ID_10', 'Ambiguity_code_10', 'Ambiguity_set_ID_10',
+                                                            'Entity_assembly_ID_11', 'Entity_ID_11', 'Comp_index_ID_11', 'Seq_ID_11', 'Comp_ID_11', 'Atom_ID_11', 'Ambiguity_code_11', 'Ambiguity_set_ID_11', 'Entity_assembly_ID_12', 'Entity_ID_12', 'Comp_index_ID_12', 'Seq_ID_12', 'Comp_ID_12', 'Atom_ID_12', 'Ambiguity_code_12', 'Ambiguity_set_ID_12',
+                                                            'Entity_assembly_ID_13', 'Entity_ID_13', 'Comp_index_ID_13', 'Seq_ID_13', 'Comp_ID_13', 'Atom_ID_13', 'Ambiguity_code_13', 'Ambiguity_set_ID_13', 'Entity_assembly_ID_14', 'Entity_ID_14', 'Comp_index_ID_14', 'Seq_ID_14', 'Comp_ID_14', 'Atom_ID_14', 'Ambiguity_code_14', 'Ambiguity_set_ID_14',
+                                                            'Entity_assembly_ID_15', 'Entity_ID_15', 'Comp_index_ID_15', 'Seq_ID_15', 'Comp_ID_15', 'Atom_ID_15', 'Ambiguity_code_15', 'Ambiguity_set_ID_15',
+                                                            'Auth_entity_assembly_ID_1', 'Auth_entity_ID_1', 'Auth_asym_ID_1', 'Auth_seq_ID_1', 'Auth_comp_ID_1', 'Auth_atom_ID_1', 'Auth_ambiguity_code_1', 'Auth_ambiguity_set_ID_1', 'Auth_entity_assembly_ID_2', 'Auth_entity_ID_2', 'Auth_asym_ID_2', 'Auth_seq_ID_2', 'Auth_comp_ID_2', 'Auth_atom_ID_2', 'Auth_ambiguity_code_2', 'Auth_ambiguity_set_ID_2',
+                                                            'Auth_entity_assembly_ID_3', 'Auth_entity_ID_3', 'Auth_asym_ID_3', 'Auth_seq_ID_3', 'Auth_comp_ID_3', 'Auth_atom_ID_3', 'Auth_ambiguity_code_3', 'Auth_ambiguity_set_ID_3', 'Auth_entity_assembly_ID_4', 'Auth_entity_ID_4', 'Auth_asym_ID_4', 'Auth_seq_ID_4', 'Auth_comp_ID_4', 'Auth_atom_ID_4', 'Auth_ambiguity_code_4', 'Auth_ambiguity_set_ID_4',
+                                                            'Auth_entity_assembly_ID_5', 'Auth_entity_ID_5', 'Auth_asym_ID_5', 'Auth_seq_ID_5', 'Auth_comp_ID_5', 'Auth_atom_ID_5', 'Auth_ambiguity_code_5', 'Auth_ambiguity_set_ID_5', 'Auth_entity_assembly_ID_6', 'Auth_entity_ID_6', 'Auth_asym_ID_6', 'Auth_seq_ID_6', 'Auth_comp_ID_6', 'Auth_atom_ID_6', 'Auth_ambiguity_code_6', 'Auth_ambiguity_set_ID_6',
+                                                            'Auth_entity_assembly_ID_7', 'Auth_entity_ID_7', 'Auth_asym_ID_7', 'Auth_seq_ID_7', 'Auth_comp_ID_7', 'Auth_atom_ID_7', 'Auth_ambiguity_code_7', 'Auth_ambiguity_set_ID_7', 'Auth_entity_assembly_ID_8', 'Auth_entity_ID_8', 'Auth_asym_ID_8', 'Auth_seq_ID_8', 'Auth_comp_ID_8', 'Auth_atom_ID_8', 'Auth_ambiguity_code_8', 'Auth_ambiguity_set_ID_8',
+                                                            'Auth_entity_assembly_ID_9', 'Auth_entity_ID_9', 'Auth_asym_ID_9', 'Auth_seq_ID_9', 'Auth_comp_ID_9', 'Auth_atom_ID_9', 'Auth_ambiguity_code_9', 'Auth_ambiguity_set_ID_9', 'Auth_entity_assembly_ID_10', 'Auth_entity_ID_10', 'Auth_asym_ID_10', 'Auth_seq_ID_10', 'Auth_comp_ID_10', 'Auth_atom_ID_10', 'Auth_ambiguity_code_10', 'Auth_ambiguity_set_ID_10',
+                                                            'Auth_entity_assembly_ID_11', 'Auth_entity_ID_11', 'Auth_asym_ID_11', 'Auth_seq_ID_11', 'Auth_comp_ID_11', 'Auth_atom_ID_11', 'Auth_ambiguity_code_11', 'Auth_ambiguity_set_ID_11', 'Auth_entity_assembly_ID_12', 'Auth_entity_ID_12', 'Auth_asym_ID_12', 'Auth_seq_ID_12', 'Auth_comp_ID_12', 'Auth_atom_ID_12', 'Auth_ambiguity_code_12', 'Auth_ambiguity_set_ID_12',
+                                                            'Auth_entity_assembly_ID_13', 'Auth_entity_ID_13', 'Auth_asym_ID_13', 'Auth_seq_ID_13', 'Auth_comp_ID_13', 'Auth_atom_ID_13', 'Auth_ambiguity_code_13', 'Auth_ambiguity_set_ID_13', 'Auth_entity_assembly_ID_14', 'Auth_entity_ID_14', 'Auth_asym_ID_14', 'Auth_seq_ID_14', 'Auth_comp_ID_14', 'Auth_atom_ID_14', 'Auth_ambiguity_code_14', 'Auth_ambiguity_set_ID_14',
+                                                            'Auth_entity_assembly_ID_15', 'Auth_entity_ID_15', 'Auth_asym_ID_15', 'Auth_seq_ID_15', 'Auth_comp_ID_15', 'Auth_atom_ID_15', 'Auth_ambiguity_code_15', 'Auth_ambiguity_set_ID_15',
+                                                            'Details', 'Sf_ID', 'Entry_ID', 'Spectral_peak_list_ID'],
                                           }
                               }
 
@@ -1033,13 +1397,30 @@ class NmrDpUtility(object):
                                         'rdc_restraint': ['sf_category', 'sf_framecode', 'potential_type', 'restraint_origin', 'tensor_magnitude', 'tensor_rhombicity', 'tensor_chain_code', 'tensor_sequence_code', 'tensor_residue_name'],
                                         'spectral_peak': ['sf_category', 'sf_framecode', 'num_dimensions', 'chemical_shift_list', 'experiment_classification', 'experiment_type']
                                         },
-                                'nmr-star': {'entry_info': ['Sf_category', 'Sf_framecode', 'Sf_ID', 'ID', 'Title', 'Type', 'Version_type', 'Submission_date', 'Accession_date', 'Last_release_date', 'Original_release_date', 'Origination', 'Format_name', 'NMR_STAR_version', 'Original_NMR_STAR_version', 'Experimental_method', 'Experimental_method_subtype', 'Source_data_format', 'Source_data_format_version', 'Generated_software_name', 'Generated_software_version', 'Generated_software_ID', 'Generated_software_label', 'Generated_date', 'DOI', 'UUID', 'Related_coordinate_file_name', 'Dep_release_code_coordinates', 'Dep_release_code_nmr_constraints', 'Dep_release_code_chemical_shifts', 'Dep_release_code_nmr_exptl', 'Dep_release_code_sequence', 'CASP_target', 'Details', 'Special_processing_instructions', 'Update_BMRB_accession_code', 'Replace_BMRB_accession_code', 'Update_PDB_accession_code', 'Replace_PDB_accession_code', 'PDB_coordinate_file_version', 'BMRB_update_details', 'PDB_update_details', 'Release_request', 'Release_date_request', 'Release_date_justification', 'Status_code', 'Recvd_deposit_form', 'Date_deposition_form', 'Recvd_coordinates', 'Date_coordinates', 'Recvd_nmr_constraints', 'Date_nmr_constraints', 'Recvd_chemical_shifts', 'Date_chemical_shifts', 'Recvd_manuscript', 'Date_manuscript', 'Recvd_author_approval', 'Date_author_approval', 'Recvd_initial_deposition_date', 'PDB_date_submitted', 'Author_release_status_code', 'Date_of_PDB_release', 'Date_hold_coordinates', 'Date_hold_nmr_constraints', 'Date_hold_chemical_shifts', 'PDB_deposit_site', 'PDB_process_site', 'BMRB_deposit_site', 'BMRB_process_site', 'BMRB_annotator', 'BMRB_internal_directory_name', 'RCSB_annotator', 'Author_approval_type', 'Assigned_BMRB_ID', 'Assigned_BMRB_deposition_code', 'Assigned_PDB_ID', 'Assigned_PDB_deposition_code', 'Assigned_restart_ID'],
-                                             'poly_seq': ['Sf_category', 'Sf_framecode', 'Entry_ID', 'Sf_ID', 'ID', 'Name', 'BMRB_code', 'Number_of_components', 'Organic_ligands', 'Metal_ions', 'Non_standard_bonds', 'Ambiguous_conformational_states', 'Ambiguous_chem_comp_sites', 'Molecules_in_chemical_exchange', 'Paramagnetic', 'Thiol_state', 'Molecular_mass', 'Enzyme_commission_number', 'Details', 'DB_query_date', 'DB_query_revised_last_date'],
-                                             'chem_shift': ['Sf_category', 'Sf_framecode', 'Entry_ID', 'Sf_ID', 'ID', 'Name', 'Data_file_name', 'Sample_condition_list_ID', 'Sample_condition_list_label', 'Chem_shift_reference_ID', 'Chem_shift_reference_label', 'Chem_shift_1H_err', 'Chem_shift_13C_err', 'Chem_shift_15N_err', 'Chem_shift_31P_err', 'Chem_shift_2H_err', 'Chem_shift_19F_err', 'Error_derivation_method', 'Details', 'Text_data_format', 'Text_data'],
+                                'nmr-star': {'entry_info': ['Sf_category', 'Sf_framecode', 'Sf_ID', 'ID', 'Title', 'Type', 'Version_type', 'Submission_date', 'Accession_date', 'Last_release_date', 'Original_release_date',
+                                                            'Origination', 'Format_name', 'NMR_STAR_version', 'Original_NMR_STAR_version', 'Experimental_method', 'Experimental_method_subtype',
+                                                            'Source_data_format', 'Source_data_format_version',
+                                                            'Generated_software_name', 'Generated_software_version', 'Generated_software_ID', 'Generated_software_label', 'Generated_date',
+                                                            'DOI', 'UUID', 'Related_coordinate_file_name', 'Dep_release_code_coordinates', 'Dep_release_code_nmr_constraints', 'Dep_release_code_chemical_shifts', 'Dep_release_code_nmr_exptl', 'Dep_release_code_sequence',
+                                                            'CASP_target', 'Details', 'Special_processing_instructions',
+                                                            'Update_BMRB_accession_code', 'Replace_BMRB_accession_code', 'Update_PDB_accession_code', 'Replace_PDB_accession_code', 'PDB_coordinate_file_version', 'BMRB_update_details', 'PDB_update_details', 'Release_request',
+                                                            'Release_date_request', 'Release_date_justification', 'Status_code', 'Recvd_deposit_form', 'Date_deposition_form', 'Recvd_coordinates', 'Date_coordinates', 'Recvd_nmr_constraints', 'Date_nmr_constraints', 'Recvd_chemical_shifts', 'Date_chemical_shifts', 'Recvd_manuscript', 'Date_manuscript', 'Recvd_author_approval', 'Date_author_approval',
+                                                            'Recvd_initial_deposition_date', 'PDB_date_submitted', 'Author_release_status_code',
+                                                            'Date_of_PDB_release', 'Date_hold_coordinates', 'Date_hold_nmr_constraints', 'Date_hold_chemical_shifts',
+                                                            'PDB_deposit_site', 'PDB_process_site', 'BMRB_deposit_site', 'BMRB_process_site', 'BMRB_annotator', 'BMRB_internal_directory_name', 'RCSB_annotator', 'Author_approval_type', 'Assigned_BMRB_ID', 'Assigned_BMRB_deposition_code', 'Assigned_PDB_ID', 'Assigned_PDB_deposition_code', 'Assigned_restart_ID'],
+                                             'poly_seq': ['Sf_category', 'Sf_framecode', 'Entry_ID', 'Sf_ID', 'ID', 'Name', 'BMRB_code', 'Number_of_components', 'Organic_ligands', 'Metal_ions', 'Non_standard_bonds', 'Ambiguous_conformational_states', 'Ambiguous_chem_comp_sites', 'Molecules_in_chemical_exchange',
+                                                          'Paramagnetic', 'Thiol_state', 'Molecular_mass', 'Enzyme_commission_number', 'Details', 'DB_query_date', 'DB_query_revised_last_date'],
+                                             'chem_shift': ['Sf_category', 'Sf_framecode', 'Entry_ID', 'Sf_ID', 'ID', 'Name', 'Data_file_name', 'Sample_condition_list_ID', 'Sample_condition_list_label', 'Chem_shift_reference_ID', 'Chem_shift_reference_label',
+                                                            'Chem_shift_1H_err', 'Chem_shift_13C_err', 'Chem_shift_15N_err', 'Chem_shift_31P_err', 'Chem_shift_2H_err', 'Chem_shift_19F_err',
+                                                            'Error_derivation_method', 'Details', 'Text_data_format', 'Text_data'],
                                              'dist_restraint': ['Sf_category', 'Sf_framecode', 'Entry_ID', 'Sf_ID', 'ID', 'Name', 'Data_file_name', 'Constraint_type', 'Constraint_file_ID', 'Potential_type', 'Block_ID', 'Details', 'Text_data_format', 'Text_data'],
                                              'dihed_restraint': ['Sf_category', 'Sf_framecode', 'Entry_ID', 'Sf_ID', 'ID', 'Name', 'Data_file_name', 'Constraint_file_ID', 'Potential_type', 'Constraint_type', 'Block_ID', 'Details', 'Text_data_format', 'Text_data'],
-                                             'rdc_restraint': ['Sf_category', 'Sf_framecode', 'Entry_ID', 'Sf_ID', 'ID', 'Name', 'Data_file_name', 'Constraint_file_ID', 'Block_ID', 'Potential_type', 'Constraint_type', 'Tensor_entity_assembly_ID', 'Tensor_comp_index_ID', 'Tensor_seq_ID', 'Tensor_comp_ID', 'Tensor_auth_entity_assembly_ID', 'Tensor_auth_asym_ID', 'Tensor_auth_seq_ID', 'Tensor_auth_comp_ID', 'Dipolar_constraint_calib_method', 'Tensor_magnitude', 'Tensor_rhombicity', 'Mol_align_tensor_axial_sym_mol', 'Mol_align_tensor_rhombic_mol', 'General_order_param_int_motions', 'Bond_length_usage_flag', 'Assumed_H_N_bond_length', 'Assumed_H_C_bond_length', 'Assumed_C_N_bond_length', 'Data_file_format', 'Details', 'Text_data_format', 'Text_data'],
-                                             'spectral_peak': ['Sf_category', 'Sf_framecode', 'Entry_ID', 'Sf_ID', 'ID', 'Name', 'Data_file_name', 'Sample_ID', 'Sample_label', 'Sample_condition_list_ID', 'Sample_condition_list_label', 'Experiment_ID', 'Experiment_name', 'Experiment_class', 'Experiment_type', 'Number_of_spectral_dimensions', 'Chemical_shift_list', 'Assigned_chem_shift_list_ID', 'Assigned_chem_shift_list_label', 'Details', 'Text_data_format', 'Text_data']
+                                             'rdc_restraint': ['Sf_category', 'Sf_framecode', 'Entry_ID', 'Sf_ID', 'ID', 'Name', 'Data_file_name', 'Constraint_file_ID', 'Block_ID', 'Potential_type', 'Constraint_type',
+                                                               'Tensor_entity_assembly_ID', 'Tensor_comp_index_ID', 'Tensor_seq_ID', 'Tensor_comp_ID', 'Tensor_auth_entity_assembly_ID', 'Tensor_auth_asym_ID', 'Tensor_auth_seq_ID', 'Tensor_auth_comp_ID', 'Dipolar_constraint_calib_method', 'Tensor_magnitude', 'Tensor_rhombicity',
+                                                               'Mol_align_tensor_axial_sym_mol', 'Mol_align_tensor_rhombic_mol', 'General_order_param_int_motions',
+                                                               'Bond_length_usage_flag', 'Assumed_H_N_bond_length', 'Assumed_H_C_bond_length', 'Assumed_C_N_bond_length', 'Data_file_format', 'Details', 'Text_data_format', 'Text_data'],
+                                             'spectral_peak': ['Sf_category', 'Sf_framecode', 'Entry_ID', 'Sf_ID', 'ID', 'Name', 'Data_file_name', 'Sample_ID', 'Sample_label', 'Sample_condition_list_ID', 'Sample_condition_list_label',
+                                                               'Experiment_ID', 'Experiment_name', 'Experiment_class', 'Experiment_type', 'Number_of_spectral_dimensions', 'Chemical_shift_list', 'Assigned_chem_shift_list_ID', 'Assigned_chem_shift_list_label', 'Details', 'Text_data_format', 'Text_data']
                                              }
                                 }
 
@@ -1071,8 +1452,46 @@ class NmrDpUtility(object):
                                              'rdc_restraint': ['_nef_rdc_restraint'],
                                              'spectral_peak': ['_nef_spectrum_dimension', '_nef_spectrum_dimension_transfer', '_nef_peak']
                                              },
-                                  'nmr-star': {'entry_info': ['_Study_list', '_Entry_experimental_methods', '_Entry_author', '_SG_project', '_Entry_src', '_Struct_keywords', '_Data_set', '_Datum', '_Release', '_Related_entries', '_Matched_entries', '_Auxiliary_files', '_Citation', '_Assembly', '_Assembly_annotation_list', '_Assembly_subsystem', '_Entity', '_Entity_natural_src_list', '_Entity_natural_src', '_Entity_experimental_src_list', '_Chem_comp', '_Chem_comp_atom', '_Sample', '_Sample_condition_list', '_Entity_purity_list', '_Software', '_Method', '_Mass_spec', '_Mass_spectrometer_list', '_Mass_spec_ref_compd_set', '_Chromatographic_system', '_Chromatographic_column', '_Fluorescence_instrument', '_EMR_instrument', '_Xray_instrument', '_NMR_spectrometer', '_NMR_spectrometer_list', '_NMR_spectrometer_probe', '_Experiment_list', '_NMR_spec_expt', '_NMR_spectral_processing', '_MS_expt', '_MS_expt_param', '_MS_expt_software', '_Computer', '_Chem_shift_reference', '_Assigned_chem_shift_list', '_Chem_shifts_calc_type', '_Theoretical_chem_shift_list', '_Theoretical_chem_shift', '_Coupling_constant_list', '_Theoretical_coupling_constant_list', '_Spectral_peak_list', '_Resonance_linker_list', '_Resonance_assignment', '_Chem_shift_isotope_effect_list', '_Chem_shift_perturbation_list', '_Chem_shift_anisotropy', '_RDC_list', '_RDC_experiment', '_RDC_software', '_RDC', '_Dipolar_coupling_list', '_Dipolar_coupling_experiment', '_Dipolar_coupling_software', '_Dipolar_coupling', '_Spectral_density_list', '_Spectral_density_experiment', '_Spectral_density_software', '_Spectral_density', '_Other_data_type_list', '_Other_data_experiment', '_Other_data_software', '_Other_data', '_Chemical_rate_list', '_Chemical_rate_experiment', '_Chemical_rate_software', '_Chemical_rate', '_H_exch_rate_list', '_H_exch_rate_experiment', '_H_exch_rate_software', '_H_exch_rate', '_H_exch_protection_factor_list', '_H_exch_protection_fact_experiment', '_H_exch_protection_fact_software', '_H_exch_protection_factor', '_Homonucl_NOE_list', '_Homonucl_NOE_experiment', '_Homonucl_NOE_software', '_Homonucl_NOE', '_Heteronucl_NOE_list', '_Heteronucl_NOE_experiment', '_Heteronucl_NOE_software', '_Heteronucl_NOE', '_Theoretical_heteronucl_NOE_list', '_Theoretical_heteronucl_NOE_experiment', '_Theoretical_heteronucl_NOE_software', '_Theoretical_heteronucl_NOE', '_Heteronucl_T1_list', '_Heteronucl_T1_experiment', '_Heteronucl_T1_software', '_T1', '_Theoretical_heteronucl_T1_list', '_Theoretical_heteronucl_T1_experiment', '_Theoretical_heteronucl_T1_software', '_Theoretical_T1', '_Heteronucl_T1rho_list', '_Heteronucl_T1rho_experiment', '_Heteronucl_T1rho_software', '_T1rho', '_Heteronucl_T2_list', '_Heteronucl_T2_experiment', '_Heteronucl_T2_software', '_T2', '_Theoretical_heteronucl_T2_list', '_Theoretical_heteronucl_T2_experiment', '_Theoretical_heteronucl_T2_software', '_Theoretical_T2', '_Auto_relaxation_list', '_Auto_relaxation_experiment', '_Auto_relaxation_software', '_Auto_relaxation', '_Theoretical_auto_relaxation_list', '_Theoretical_auto_relaxation_experiment', '_Theoretical_auto_relaxation_software', '_Theoretical_auto_relaxation', '_Dipole_dipole_relax_list', '_Dipole_dipole_relax_experiment', '_Dipole_dipole_relax_software', '_Dipole_dipole_relax', '_Cross_correlation_DD_list', '_Cross_correlation_DD_experiment', '_Cross_correlation_DD_software', '_Cross_correlation_DD', '_Theoretical_cross_correlation_DD_list', '_Theoretical_cross_correlation_DD_experiment', '_Theoretical_cross_correlation_DD_software', '_Theoretical_cross_correlation_DD', '_Cross_correlation_D_CSA_list', '_Cross_correlation_D_CSA_experiment', '_Cross_correlation_D_CSA_software', '_Cross_correlation_D_CSA', '_Order_parameter_list', '_Order_parameter_experiment', '_Order_parameter_software', '_Order_param', '_PH_titration_list', '_PH_titration_experiment', '_PH_titration_software', '_PH_titr_result', '_PH_param_list', '_PH_param', '_D_H_fractionation_factor_list', '_D_H_fract_factor_experiment', '_D_H_fract_factor_software', '_D_H_fractionation_factor', '_Binding_value_list', '_Binding_experiment', '_Binding_software', '_Binding_result', '_Binding_partners', '_Binding_param_list', '_Binding_param', '_Deduced_secd_struct_list', '_Deduced_secd_struct_experiment', '_Deduced_secd_struct_software', '_Deduced_secd_struct_exptl', '_Deduced_secd_struct_feature', '_Deduced_H_bond_list', '_Deduced_H_bond_experiment', '_Deduced_H_bond_software', '_Deduced_H_bond', '_Conformer_stat_list', '_Conformer_stat_list_ens', '_Conformer_stat_list_rep', '_Conf_stats_software', '_Conformer_family_coord_set', '_Conformer_family_refinement', '_Conformer_family_software', '_Energetic_penalty_function', '_Conformer_family_coord_set_expt', '_Conf_family_coord_set_constr_list', '_Struct_image', '_Local_structure_quality', '_Model_type', '_Atom_site', '_Atom_sites_footnote', '_Representative_conformer', '_Rep_conf_refinement', '_Rep_conf_software', '_Terminal_residue', '_Rep_conf', '_Rep_coordinate_details', '_Constraint_stat_list', '_Constraint_stat_list_ens', '_Constraint_stat_list_rep', '_Constraint_stats_constr_list', '_Constraint_file', '_Force_constant_list', '_Force_constant_software', '_Force_constant', '_Angular_order_parameter_list', '_Angular_order_param', '_Tertiary_struct_element_list', '_Tertiary_struct_element_sel', '_Tertiary_struct', '_Structure_annotation', '_Struct_anno_software', '_Struct_classification', '_Struct_anno_char', '_Secondary_struct_list', '_Secondary_struct_sel', '_Secondary_struct', '_Bond_annotation_list', '_Bond_annotation', '_Bond_observed_conformer', '_Structure_interaction_list', '_Structure_interaction', '_Observed_conformer', '_Other_struct_feature_list', '_Other_struct_feature', '_Tensor_list', '_Interatomic_distance_list', '_Interatomic_dist', '_Gen_dist_constraint_list', '_Gen_dist_constraint_expt', '_Gen_dist_constraint_software', '_Gen_dist_constraint_software_param', '_Gen_dist_constraint', '_Gen_dist_constraint_comment_org', '_Gen_dist_constraint_parse_err', '_Gen_dist_constraint_parse_file', '_Gen_dist_constraint_conv_err', '_Distance_constraint_list', '_Distance_constraint_expt', '_Distance_constraint_software', '_Dist_constr_software_setting', '_Dist_constraint_tree', '_Dist_constraint', '_Dist_constraint_value', '_Dist_constraint_comment_org', '_Dist_constraint_parse_err', '_Dist_constraint_parse_file', '_Dist_constraint_conv_err', '_Floating_chirality_assign', '_Floating_chirality_software', '_Floating_chirality', '_Torsion_angle_constraint_list', '_Torsion_angle_constraints_expt', '_Torsion_angle_constraint_software', '_Karplus_equation', '_Torsion_angle_constraint', '_TA_constraint_comment_org', '_TA_constraint_parse_err', '_TA_constraint_parse_file', '_TA_constraint_conv_err', '_RDC_constraint_list', '_RDC_constraint_expt', '_RDC_constraint_software', '_RDC_constraint', '_RDC_constraint_comment_org', '_RDC_constraint_parse_err', '_RDC_constraint_parse_file', '_RDC_constraint_conv_err', '_J_three_bond_constraint_list', '_J_three_bond_constraint_expt', '_J_three_bond_constraint_software', '_J_three_bond_constraint', '_CA_CB_constraint_list', '_CA_CB_constraint_expt', '_CA_CB_constraint_software', '_CA_CB_constraint', '_H_chem_shift_constraint_list', '_H_chem_shift_constraint_expt', '_H_chem_shift_constraint_software', '_H_chem_shift_constraint', '_Peak_constraint_link_list', '_Peak_constraint_link', '_SAXS_constraint_list', '_SAXS_constraint_expt', '_SAXS_constraint_software', '_SAXS_constraint', '_Other_constraint_list', '_Other_constraint_expt', '_Other_constraint_software', '_Org_constr_file_comment', '_MZ_ratio_data_list', '_MZ_ratio_experiment', '_MZ_ratio_software', '_MZ_ratio_spectrum_param', '_MZ_precursor_ion', '_MZ_precursor_ion_annotation', '_MZ_product_ion', '_MZ_product_ion_annotation', '_MS_chromatogram_list', '_MS_chromatogram_experiment', '_MS_chromatogram_software', '_MS_chromatogram_param', '_MS_chromatogram_ion', '_MS_chrom_ion_annotation', '_Software_specific_info_list', '_Software_specific_info', '_Software_applied_list', '_Software_applied_methods', '_Software_applied_history', '_History'],
-                                               'poly_seq':  ['_Assembly_type', '_Entity_assembly', '_Bond', '_Entity_deleted_atom', '_Struct_asym', '_Assembly_db_link', '_Assembly_common_name', '_Assembly_systematic_name', '_Assembly_interaction', '_Chem_comp_assembly', '_PDBX_poly_seq_scheme', '_PDBX_nonpoly_scheme', '_Atom_type', '_Atom', '_Assembly_bio_function', '_Angle', '_Torsion_angle', '_Assembly_segment', '_Assembly_segment_description', '_Assembly_keyword', '_Assembly_citation', '_Author_annotation', '_Sample_component', '_Chemical_rate', '_Auto_relaxation', '_Theoretical_auto_relaxation', '_Binding_result', '_Binding_partners', '_Struct_anno_char' ],
+                                  'nmr-star': {'entry_info': ['_Study_list', '_Entry_experimental_methods', '_Entry_author', '_SG_project', '_Entry_src', '_Struct_keywords', '_Data_set', '_Datum', '_Release', '_Related_entries', '_Matched_entries', '_Auxiliary_files', '_Citation',
+                                                              '_Assembly', '_Assembly_annotation_list', '_Assembly_subsystem', '_Entity', '_Entity_natural_src_list', '_Entity_natural_src', '_Entity_experimental_src_list', '_Chem_comp', '_Chem_comp_atom', '_Sample', '_Sample_condition_list', '_Entity_purity_list', '_Software', '_Method',
+                                                              '_Mass_spec', '_Mass_spectrometer_list', '_Mass_spec_ref_compd_set', '_Chromatographic_system', '_Chromatographic_column', '_Fluorescence_instrument', '_EMR_instrument', '_Xray_instrument', '_NMR_spectrometer', '_NMR_spectrometer_list', '_NMR_spectrometer_probe', '_Experiment_list', '_NMR_spec_expt', '_NMR_spectral_processing',
+                                                              '_MS_expt', '_MS_expt_param', '_MS_expt_software',
+                                                              '_Computer', '_Chem_shift_reference', '_Assigned_chem_shift_list', '_Chem_shifts_calc_type', '_Theoretical_chem_shift_list', '_Theoretical_chem_shift', '_Coupling_constant_list', '_Theoretical_coupling_constant_list', '_Spectral_peak_list', '_Resonance_linker_list', '_Resonance_assignment',
+                                                              '_Chem_shift_isotope_effect_list', '_Chem_shift_perturbation_list', '_Chem_shift_anisotropy', '_RDC_list', '_RDC_experiment', '_RDC_software', '_RDC',
+                                                              '_Dipolar_coupling_list', '_Dipolar_coupling_experiment', '_Dipolar_coupling_software', '_Dipolar_coupling', '_Spectral_density_list', '_Spectral_density_experiment', '_Spectral_density_software', '_Spectral_density', '_Other_data_type_list', '_Other_data_experiment', '_Other_data_software', '_Other_data',
+                                                              '_Chemical_rate_list', '_Chemical_rate_experiment', '_Chemical_rate_software', '_Chemical_rate',
+                                                              '_H_exch_rate_list', '_H_exch_rate_experiment', '_H_exch_rate_software', '_H_exch_rate',
+                                                              '_H_exch_protection_factor_list', '_H_exch_protection_fact_experiment', '_H_exch_protection_fact_software', '_H_exch_protection_factor',
+                                                              '_Homonucl_NOE_list', '_Homonucl_NOE_experiment', '_Homonucl_NOE_software', '_Homonucl_NOE', '_Heteronucl_NOE_list', '_Heteronucl_NOE_experiment', '_Heteronucl_NOE_software', '_Heteronucl_NOE', '_Theoretical_heteronucl_NOE_list', '_Theoretical_heteronucl_NOE_experiment', '_Theoretical_heteronucl_NOE_software', '_Theoretical_heteronucl_NOE',
+                                                              '_Heteronucl_T1_list', '_Heteronucl_T1_experiment', '_Heteronucl_T1_software', '_T1', '_Theoretical_heteronucl_T1_list', '_Theoretical_heteronucl_T1_experiment', '_Theoretical_heteronucl_T1_software', '_Theoretical_T1',
+                                                              '_Heteronucl_T1rho_list', '_Heteronucl_T1rho_experiment', '_Heteronucl_T1rho_software', '_T1rho',
+                                                              '_Heteronucl_T2_list', '_Heteronucl_T2_experiment', '_Heteronucl_T2_software', '_T2', '_Theoretical_heteronucl_T2_list', '_Theoretical_heteronucl_T2_experiment', '_Theoretical_heteronucl_T2_software', '_Theoretical_T2',
+                                                              '_Auto_relaxation_list', '_Auto_relaxation_experiment', '_Auto_relaxation_software', '_Auto_relaxation', '_Theoretical_auto_relaxation_list', '_Theoretical_auto_relaxation_experiment', '_Theoretical_auto_relaxation_software', '_Theoretical_auto_relaxation',
+                                                              '_Dipole_dipole_relax_list', '_Dipole_dipole_relax_experiment', '_Dipole_dipole_relax_software', '_Dipole_dipole_relax',
+                                                              '_Cross_correlation_DD_list', '_Cross_correlation_DD_experiment', '_Cross_correlation_DD_software', '_Cross_correlation_DD', '_Theoretical_cross_correlation_DD_list', '_Theoretical_cross_correlation_DD_experiment', '_Theoretical_cross_correlation_DD_software', '_Theoretical_cross_correlation_DD',
+                                                              '_Cross_correlation_D_CSA_list', '_Cross_correlation_D_CSA_experiment', '_Cross_correlation_D_CSA_software', '_Cross_correlation_D_CSA', '_Order_parameter_list', '_Order_parameter_experiment', '_Order_parameter_software', '_Order_param',
+                                                              '_PH_titration_list', '_PH_titration_experiment', '_PH_titration_software', '_PH_titr_result', '_PH_param_list', '_PH_param', '_D_H_fractionation_factor_list', '_D_H_fract_factor_experiment', '_D_H_fract_factor_software', '_D_H_fractionation_factor',
+                                                              '_Binding_value_list', '_Binding_experiment', '_Binding_software', '_Binding_result', '_Binding_partners', '_Binding_param_list', '_Binding_param',
+                                                              '_Deduced_secd_struct_list', '_Deduced_secd_struct_experiment', '_Deduced_secd_struct_software', '_Deduced_secd_struct_exptl', '_Deduced_secd_struct_feature', '_Deduced_H_bond_list', '_Deduced_H_bond_experiment', '_Deduced_H_bond_software', '_Deduced_H_bond',
+                                                              '_Conformer_stat_list', '_Conformer_stat_list_ens', '_Conformer_stat_list_rep', '_Conf_stats_software', '_Conformer_family_coord_set', '_Conformer_family_refinement', '_Conformer_family_software', '_Energetic_penalty_function', '_Conformer_family_coord_set_expt', '_Conf_family_coord_set_constr_list',
+                                                              '_Struct_image', '_Local_structure_quality', '_Model_type', '_Atom_site', '_Atom_sites_footnote',
+                                                              '_Representative_conformer', '_Rep_conf_refinement', '_Rep_conf_software', '_Terminal_residue', '_Rep_conf', '_Rep_coordinate_details',
+                                                              '_Constraint_stat_list', '_Constraint_stat_list_ens', '_Constraint_stat_list_rep', '_Constraint_stats_constr_list', '_Constraint_file', '_Force_constant_list', '_Force_constant_software', '_Force_constant', '_Angular_order_parameter_list', '_Angular_order_param',
+                                                              '_Tertiary_struct_element_list', '_Tertiary_struct_element_sel', '_Tertiary_struct', '_Structure_annotation', '_Struct_anno_software', '_Struct_classification', '_Struct_anno_char', '_Secondary_struct_list', '_Secondary_struct_sel', '_Secondary_struct', '_Bond_annotation_list', '_Bond_annotation', '_Bond_observed_conformer',
+                                                              '_Structure_interaction_list', '_Structure_interaction', '_Observed_conformer', '_Other_struct_feature_list', '_Other_struct_feature', '_Tensor_list', '_Interatomic_distance_list', '_Interatomic_dist',
+                                                              '_Gen_dist_constraint_list', '_Gen_dist_constraint_expt', '_Gen_dist_constraint_software', '_Gen_dist_constraint_software_param', '_Gen_dist_constraint', '_Gen_dist_constraint_comment_org', '_Gen_dist_constraint_parse_err', '_Gen_dist_constraint_parse_file', '_Gen_dist_constraint_conv_err',
+                                                              '_Distance_constraint_list', '_Distance_constraint_expt', '_Distance_constraint_software', '_Dist_constr_software_setting', '_Dist_constraint_tree', '_Dist_constraint', '_Dist_constraint_value', '_Dist_constraint_comment_org', '_Dist_constraint_parse_err', '_Dist_constraint_parse_file', '_Dist_constraint_conv_err',
+                                                              '_Floating_chirality_assign', '_Floating_chirality_software', '_Floating_chirality', '_Torsion_angle_constraint_list', '_Torsion_angle_constraints_expt', '_Torsion_angle_constraint_software', '_Karplus_equation', '_Torsion_angle_constraint', '_TA_constraint_comment_org', '_TA_constraint_parse_err', '_TA_constraint_parse_file', '_TA_constraint_conv_err',
+                                                              '_RDC_constraint_list', '_RDC_constraint_expt', '_RDC_constraint_software', '_RDC_constraint', '_RDC_constraint_comment_org', '_RDC_constraint_parse_err', '_RDC_constraint_parse_file', '_RDC_constraint_conv_err',
+                                                              '_J_three_bond_constraint_list', '_J_three_bond_constraint_expt', '_J_three_bond_constraint_software', '_J_three_bond_constraint', '_CA_CB_constraint_list', '_CA_CB_constraint_expt', '_CA_CB_constraint_software', '_CA_CB_constraint',
+                                                              '_H_chem_shift_constraint_list', '_H_chem_shift_constraint_expt', '_H_chem_shift_constraint_software', '_H_chem_shift_constraint', '_Peak_constraint_link_list', '_Peak_constraint_link',
+                                                              '_SAXS_constraint_list', '_SAXS_constraint_expt', '_SAXS_constraint_software', '_SAXS_constraint',
+                                                              '_Other_constraint_list', '_Other_constraint_expt', '_Other_constraint_software', '_Org_constr_file_comment',
+                                                              '_MZ_ratio_data_list', '_MZ_ratio_experiment', '_MZ_ratio_software', '_MZ_ratio_spectrum_param', '_MZ_precursor_ion', '_MZ_precursor_ion_annotation', '_MZ_product_ion', '_MZ_product_ion_annotation', '_MS_chromatogram_list', '_MS_chromatogram_experiment', '_MS_chromatogram_software', '_MS_chromatogram_param', '_MS_chromatogram_ion', '_MS_chrom_ion_annotation',
+                                                              '_Software_specific_info_list', '_Software_specific_info', '_Software_applied_list', '_Software_applied_methods', '_Software_applied_history', '_History'],
+                                               'poly_seq':  ['_Assembly_type', '_Entity_assembly', '_Bond', '_Entity_deleted_atom', '_Struct_asym', '_Assembly_db_link', '_Assembly_common_name', '_Assembly_systematic_name', '_Assembly_interaction', '_Chem_comp_assembly', '_PDBX_poly_seq_scheme', '_PDBX_nonpoly_scheme', '_Atom_type', '_Atom', '_Assembly_bio_function', '_Angle', '_Torsion_angle',
+                                                             '_Assembly_segment', '_Assembly_segment_description', '_Assembly_keyword', '_Assembly_citation', '_Author_annotation', '_Sample_component', '_Chemical_rate', '_Auto_relaxation', '_Theoretical_auto_relaxation',
+                                                             '_Binding_result', '_Binding_partners', '_Struct_anno_char' ],
                                                'chem_shift': ['_Chem_shift_experiment', '_Systematic_chem_shift_offset', '_Chem_shift_software', '_Atom_chem_shift', '_Ambiguous_atom_chem_shift', '_Spectral_peak_list', '_Assigned_peak_chem_shift', '_Assigned_spectral_transition'],
                                                'dist_restraint': ['_Gen_dist_constraint_expt', '_Gen_dist_constraint_software', '_Gen_dist_constraint_software_param', '_Gen_dist_constraint', '_Gen_dist_constraint_comment_org', '_Gen_dist_constraint_parse_err', '_Gen_dist_constraint_parse_file', '_Gen_dist_constraint_conv_err'],
                                                'dihed_restraint': ['_Torsion_angle_constraints_expt', '_Torsion_angle_constraint_software', '_Karplus_equation', '_Torsion_angle_constraint', '_TA_constraint_comment_org', '_TA_constraint_parse_err', '_TA_constraint_parse_file', '_TA_constraint_conv_err'],
@@ -1266,7 +1685,8 @@ class NmrDpUtility(object):
                                       }
 
         # item name in dihedral restraint loop
-        self.item_names_in_dh_loop = {'nef': {'chain_id_1': 'chain_code_1',
+        self.item_names_in_dh_loop = {'nef': {'combination_id': 'restraint_combination_id',
+                                              'chain_id_1': 'chain_code_1',
                                               'seq_id_1': 'sequence_code_1',
                                               'comp_id_1': 'residue_name_1',
                                               'atom_id_1': 'atom_name_1',
@@ -1284,7 +1704,8 @@ class NmrDpUtility(object):
                                               'atom_id_4': 'atom_name_4',
                                               'angle_type': 'name'
                                               },
-                                      'nmr-star': {'chain_id_1': 'Entity_assembly_ID_1',
+                                      'nmr-star': {'combination_id': 'Combination_ID',
+                                                   'chain_id_1': 'Entity_assembly_ID_1',
                                                    'seq_id_1': 'Comp_index_ID_1',
                                                    'comp_id_1': 'Comp_ID_1',
                                                    'atom_id_1': 'Atom_ID_1',
@@ -1305,7 +1726,8 @@ class NmrDpUtility(object):
                                       }
 
         # item name in rdc restraint loop
-        self.item_names_in_rdc_loop = {'nef': {'chain_id_1': 'chain_code_1',
+        self.item_names_in_rdc_loop = {'nef': {'combination_id': 'restraint_combination_id',
+                                               'chain_id_1': 'chain_code_1',
                                                'seq_id_1': 'sequence_code_1',
                                                'comp_id_1': 'residue_name_1',
                                                'atom_id_1': 'atom_name_1',
@@ -1314,7 +1736,8 @@ class NmrDpUtility(object):
                                                'comp_id_2': 'residue_name_2',
                                                'atom_id_2': 'atom_name_2'
                                                },
-                                       'nmr-star': {'chain_id_1': 'Entity_assembly_ID_1',
+                                       'nmr-star': {'combination_id': 'Combination_ID',
+                                                    'chain_id_1': 'Entity_assembly_ID_1',
                                                     'seq_id_1': 'Comp_index_ID_1',
                                                     'comp_id_1': 'Comp_ID_1',
                                                     'atom_id_1': 'Atom_ID_1',
@@ -2809,7 +3232,8 @@ class NmrDpUtility(object):
 
                         seq_align = {'list_id': polymer_sequence_in_loop[content_subtype][list_id]['list_id'],
                                      'sf_framecode': polymer_sequence_in_loop[content_subtype][list_id]['sf_framecode'],
-                                     'chain_id': chain_id, 'length': ref_length, 'conflict': conflict, 'unmapped': unmapped, 'sequence_coverage': float('{:.3f}'.format(float(length - (unmapped + conflict)) / float(ref_length))),
+                                     'chain_id': chain_id, 'length': ref_length, 'conflict': conflict, 'unmapped': unmapped,
+                                     'sequence_coverage': float('{:.3f}'.format(float(length - (unmapped + conflict)) / float(ref_length))),
                                      'ref_seq_id': s1['seq_id'],
                                      'ref_gauge_code': ref_gauge_code, 'ref_code': ref_code, 'mid_code': mid_code, 'test_code': test_code, 'test_gauge_code': test_gauge_code}
 
@@ -3508,12 +3932,12 @@ class NmrDpUtility(object):
                 try:
 
                     if self.__resolve_conflict:
-                        conflicted = self.__nefT.get_conflicted(sf_data, lp_category, key_items)[0]
+                        conflict_id = self.__nefT.get_conflict_id(sf_data, lp_category, key_items)[0]
 
-                        if len(conflicted) > 0:
+                        if len(conflict_id) > 0:
                             loop = sf_data.get_loop_by_category(lp_category)
 
-                            for l in conflicted:
+                            for l in conflict_id:
                                 del loop.data[l]
 
                     lp_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, allowed_tags, disallowed_tags,
@@ -3632,6 +4056,157 @@ class NmrDpUtility(object):
 
         return self.report.getTotalErrors() == __errors
 
+    def __detectConflictDataInLoop(self):
+        """ Detect redundant/inconsistent data of interesting loops.
+        """
+
+        input_source = self.report.input_sources[0]
+        input_source_dic = input_source.get()
+
+        file_name = input_source_dic['file_name']
+        file_type = input_source_dic['file_type']
+
+        if input_source_dic['content_subtype'] is None:
+            return False
+
+        __errors = self.report.getTotalErrors()
+
+        for content_subtype in input_source_dic['content_subtype'].keys():
+
+            if content_subtype == 'dist_restraint' or content_subtype == 'dihed_restraint' or content_subtype == 'rdc_restraint':
+
+                sf_category = self.sf_categories[file_type][content_subtype]
+                lp_category = self.lp_categories[file_type][content_subtype]
+
+                key_items = self.consist_key_items[file_type][content_subtype]
+                data_items = self.consist_data_items[file_type][content_subtype]
+                index_tag = self.index_tags[file_type][content_subtype]
+                id_tag = self.consist_id_tags[file_type][content_subtype]
+
+                if content_subtype == 'dist_restraint':
+                    max_exclusive = self.dist_restraint_error['max_exclusive']
+                elif content_subtype == 'dihed_restraint':
+                    max_exclusive = self.dihed_restraint_error['max_exclusive']
+                elif content_subtype == 'rdc_restraint':
+                    max_exclusive = self.rdc_restraint_error['max_exclusive']
+
+                for sf_data in self.__star_data.get_saveframes_by_category(sf_category):
+
+                    sf_framecode = sf_data.get_tag('sf_framecode')[0]
+
+                    lp_data = next((l['data'] for l in self.__lp_data[content_subtype] if l['sf_framecode'] == sf_framecode), None)
+
+                    if lp_data is None:
+                        continue
+
+                    conflict_id_set = self.__nefT.get_conflict_id_set(sf_data, lp_category, key_items)[0]
+
+                    if conflict_id_set is None:
+                        continue
+
+                    for id_set in conflict_id_set:
+                        len_id_set = len(id_set)
+
+                        if len_id_set < 2:
+                            continue
+
+                        redundant = True
+
+                        for i in range(len_id_set - 1):
+
+                            for j in range(i + 1, len_id_set):
+                                row_id_1 = id_set[i]
+                                row_id_2 = id_set[j]
+
+                                conflict = False
+                                inconsist = False
+
+                                discrepancy = ''
+
+                                for d in data_items:
+                                    dname = d['name']
+
+                                    val_1 = lp_data[row_id_1][dname]
+                                    val_2 = lp_data[row_id_2][dname]
+
+                                    if val_1 is None or val_2 is None:
+                                        continue
+
+                                    if val_1 is None or val_2 is None:
+                                        redundant = False
+                                        continue
+
+                                    if val_1 == val_2:
+                                        continue
+
+                                    redundant = False
+
+                                    if abs(val_1 - val_2) >= max_exclusive:
+                                        discrepancy += '%s %s vs %s, ' % (dname, val_1, val_2)
+                                        conflict = True
+
+                                    elif abs(val_1 - val_2) >= max_exclusive / 5.0:
+                                        discrepancy += '%s %s vs %s, ' % (dname, val_1, val_2)
+                                        inconsist = True
+
+                                if conflict:
+
+                                    msg = ''
+                                    for k in key_items:
+                                        msg += k['name'] + ' %s, ' % lp_data[row_id_1][k['name']]
+
+                                    err = '[Check rows of %s %s vs %s, %s %s vs %s] ' %\
+                                          (index_tag, lp_data[row_id_1][index_tag], lp_data[row_id_2][index_tag],
+                                           id_tag, lp_data[row_id_1[id_tag]], lp_data[row_id_2][id_tag])
+                                    err += 'Found discrepancy (%s) in restraints for the same atom pair (%s).' % (discrepancy[:-2], msg[:-2])
+
+                                    self.report.error.appendDescription('conflicted_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
+                                    self.report.setError()
+
+                                    if self.__verbose:
+                                        self.__lfh.write("+NmrDpUtility.__detetConflictDataInLoop() ++ Error  - %s" % err)
+
+                                elif inconsist:
+
+                                    msg = ''
+                                    for k in key_items:
+                                        msg += k['name'] + ' %s, ' % lp_data[row_id_1][k['name']]
+
+                                    warn = '[Check rows of %s %s vs %s, %s %s vs %s] ' %\
+                                           (index_tag, lp_data[row_id_1][index_tag], lp_data[row_id_2][index_tag],
+                                            id_tag, lp_data[row_id_1][id_tag], lp_data[row_id_2][id_tag])
+                                    warn += 'Found disagreement (%s) in restraints for the same atom pair (%s).' % (discrepancy[:-2], msg[:-2])
+
+                                    self.report.warning.appendDescription('inconsistent_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
+                                    self.report.setWarning()
+
+                                    if self.__verbose:
+                                        self.__lfh.write("+NmrDpUtility.__detetConflictDataInLoop() ++ Warning  - %s" % warn)
+
+                        if redundant:
+
+                            msg = ''
+                            for k in key_items:
+                                msg += k['name'] + ' %s, ' % lp_data[row_id_1][k['name']]
+
+                            idx_msg = index_tag + ' '
+                            for id in id_set:
+                                idx_msg += '%s vs ' % lp_data[id][index_tag]
+                            idx_msg = idx_msg[:-4] + ', '
+                            idx_msg += id_tag + ' '
+                            for id in id_set:
+                                idx_msg += '%s vs ' % lp_data[id][id_dag]
+
+                            warn = '[Check rows of %s] Found redundant restraints for the same atom pair (%s).' % (idx_msg[:-4], msg[:-2])
+
+                            self.report.warning.appendDescription('redundant_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
+                            self.report.setWarning()
+
+                            if self.__verbose:
+                                self.__lfh.write("+NmrDpUtility.__detetConflictDataInLoop() ++ Warning  - %s" % warn)
+
+        return self.report.getTotalErrors() == __errors
+
     def __testDataConsistencyInAuxLoop(self):
         """ Perform consistency test on data of auxiliary loops.
         """
@@ -3693,12 +4268,12 @@ class NmrDpUtility(object):
                         try:
 
                             if self.__resolve_conflict:
-                                conflicted = self.__nefT.get_conflicted(sf_data, lp_category, key_items)[0]
+                                conflict_id = self.__nefT.get_conflict_id(sf_data, lp_category, key_items)[0]
 
-                                if len(conflicted) > 0:
+                                if len(conflict_id) > 0:
                                     loop = sf_data.sf_data.get_loop_by_category(lp_category)
 
-                                    for l in conflicted:
+                                    for l in conflict_id:
                                         del loop.data[l]
 
                             aux_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, allowed_tags, None,
@@ -4352,7 +4927,8 @@ class NmrDpUtility(object):
 
                                     if (value < min_value - tolerance or value > max_value + tolerance) and abs(z_score) > 10.0:
 
-                                        err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] %s %s (chain_id %s, seq_id %s, comp_id %s, atom_id %s) is out of range (avg %s, std %s, min %s, max %s, Z_score %.2f). Please check for folded/aliased signals. If it is due to the presence of paramagnetic substance or extreme sample conditions, please provide us details.' %\
+                                        err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) +\
+                                              '] %s %s (chain_id %s, seq_id %s, comp_id %s, atom_id %s) is out of range (avg %s, std %s, min %s, max %s, Z_score %.2f). Please check for folded/aliased signals. If it is due to the presence of paramagnetic substance or extreme sample conditions, please provide us details.' %\
                                               (value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score)
 
                                         self.report.error.appendDescription('anomalous_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
@@ -4424,7 +5000,8 @@ class NmrDpUtility(object):
 
                                 if (value < min_value - tolerance or value > max_value + tolerance) and abs(z_score) > 6.0:
 
-                                    err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] %s %s (chain_id %s, seq_id %s, comp_id %s, atom_id %s) is out of range (avg %s, std %s, min %s, max %s, Z_score %.2f). Please check for folded/aliased signals. If it is due to the presence of paramagnetic substance or extreme sample conditions, please provide us details.' %\
+                                    err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) +\
+                                          '] %s %s (chain_id %s, seq_id %s, comp_id %s, atom_id %s) is out of range (avg %s, std %s, min %s, max %s, Z_score %.2f). Please check for folded/aliased signals. If it is due to the presence of paramagnetic substance or extreme sample conditions, please provide us details.' %\
                                           (value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score)
 
                                     self.report.error.appendDescription('anomalous_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
@@ -5233,6 +5810,8 @@ class NmrDpUtility(object):
             sf_category = self.sf_categories[file_type][content_subtype]
             lp_category = self.lp_categories[file_type][content_subtype]
 
+            index_tag = self.index_tags[file_type][content_subtype]
+
             asm = []
 
             list_id = 1
@@ -5413,13 +5992,91 @@ class NmrDpUtility(object):
                                 self.__calculateStatsOfAssignedChemShift(sf_framecode, lp_data, cs_ann, ent)
 
                             elif content_subtype == 'dist_restraint':
-                                self.__calculateStatsOfDistanceRestraint(sf_framecode, lp_data, ent)
+
+                                conflict_errs = self.report.error.getValueListWithSf('conflicted_data', file_name, sf_framecode)
+                                inconsist_warns = self.report.warning.getValueListWithSf('inconsistent_data', file_name, sf_framecode)
+                                redundant_warns = self.report.warning.getValueListWithSf('redundant_data', file_name, sf_framecode)
+
+                                inconsistent = set()
+                                redundant = set()
+
+                                if not conflict_errs is None:
+
+                                    for c_err in conflict_errs:
+                                        for index in c_err['row_locations'][index_tag]:
+                                            inconsistent.add(int(index))
+
+                                if not inconsist_warns is None:
+
+                                    for i_warn in inconsist_warns:
+                                        for index in i_warn['row_locations'][index_tag]:
+                                            inconsistent.add(int(index))
+
+                                if not redundant_warns is None:
+
+                                    for d_warn in redundant_warns:
+                                        for index in d_warn['row_locations'][index_tag]:
+                                            redundant.add(int(index))
+
+                                self.__calculateStatsOfDistanceRestraint(sf_framecode, lp_data, inconsistent, redundant, ent)
 
                             elif content_subtype == 'dihed_restraint':
-                                self.__calculateStatsOfDihedralRestraint(lp_data, ent)
+
+                                conflict_errs = self.report.error.getValueListWithSf('conflicted_data', file_name, sf_framecode)
+                                inconsist_warns = self.report.warning.getValueListWithSf('inconsistent_data', file_name, sf_framecode)
+                                redundant_warns = self.report.warning.getValueListWithSf('redundant_data', file_name, sf_framecode)
+
+                                inconsistent = set()
+                                redundant = set()
+
+                                if not conflict_errs is None:
+
+                                    for c_err in conflict_errs:
+                                        for index in c_err['row_locations'][index_tag]:
+                                            inconsistent.add(int(index))
+
+                                if not inconsist_warns is None:
+
+                                    for i_warn in inconsist_warns:
+                                        for index in i_warn['row_locations'][index_tag]:
+                                            inconsistent.add(int(index))
+
+                                if not redundant_warns is None:
+
+                                    for d_warn in redundant_warns:
+                                        for index in d_warn['row_locations'][index_tag]:
+                                            redundant.add(int(index))
+
+                                self.__calculateStatsOfDihedralRestraint(lp_data, inconsistent, redundant, ent)
 
                             elif content_subtype == 'rdc_restraint':
-                                self.__calculateStatsOfRdcRestraint(lp_data, ent)
+
+                                conflict_errs = self.report.error.getValueListWithSf('conflicted_data', file_name, sf_framecode)
+                                inconsist_warns = self.report.warning.getValueListWithSf('inconsistent_data', file_name, sf_framecode)
+                                redundant_warns = self.report.warning.getValueListWithSf('redundant_data', file_name, sf_framecode)
+
+                                inconsistent = set()
+                                redundant = set()
+
+                                if not conflict_errs is None:
+
+                                    for c_err in conflict_errs:
+                                        for index in c_err['row_locations'][index_tag]:
+                                            inconsistent.add(int(index))
+
+                                if not inconsist_warns is None:
+
+                                    for i_warn in inconsist_warns:
+                                        for index in i_warn['row_locations'][index_tag]:
+                                            inconsistent.add(int(index))
+
+                                if not redundant_warns is None:
+
+                                    for d_warn in redundant_warns:
+                                        for index in d_warn['row_locations'][index_tag]:
+                                            redundant.add(int(index))
+
+                                self.__calculateStatsOfRdcRestraint(lp_data, inconsistent, redundant, ent)
 
                             elif content_subtype == 'spectral_peak':
 
@@ -6604,7 +7261,7 @@ class NmrDpUtility(object):
             if self.__verbose:
                 self.__lfh.write("+NmrDpUtility.__calculateStatsOfAssignedChemShift() ++ Error  - %s" % str(e))
 
-    def __calculateStatsOfDistanceRestraint(self, sf_framecode, lp_data, ent):
+    def __calculateStatsOfDistanceRestraint(self, sf_framecode, lp_data, inconsistent, redundant, ent):
         """ Calculate statistics of distance restraints.
         """
 
@@ -6614,6 +7271,7 @@ class NmrDpUtility(object):
         file_name = input_source_dic['file_name']
         file_type = input_source_dic['file_type']
 
+        index_tag = self.index_tags[file_type]['dist_restraint']
         item_names = self.item_names_in_ds_loop[file_type]
         comb_id_name = item_names['combination_id']
         chain_id_1_name = item_names['chain_id_1']
@@ -6637,10 +7295,14 @@ class NmrDpUtility(object):
 
             count = {}
             comb_count = {}
+            inco_count = {}
+            redu_count = {}
             potential = {}
 
             for i in lp_data:
+                index = i[index_tag]
                 comb_id = i[comb_id_name]
+
                 chain_id_1 = i[chain_id_1_name]
                 chain_id_2 = i[chain_id_2_name]
                 seq_id_1 = i[seq_id_1_name]
@@ -7074,10 +7736,22 @@ class NmrDpUtility(object):
                     count[data_type] = 1
 
                 if not comb_id in self.empty_value:
-                    if data_type in count:
+                    if data_type in comb_count:
                         comb_count[data_type] += 1
                     else:
                         comb_count[data_type] = 1
+
+                if index in inconsistent:
+                    if data_type in inco_count:
+                        inco_count[data_type] += 1
+                    else:
+                        inco_count[data_type] = 1
+
+                if index in redundant:
+                    if data_type in redu_count:
+                        redu_count[data_type] += 1
+                    else:
+                        redu_count[data_type] = 1
 
                 # detect potential type
 
@@ -7135,7 +7809,12 @@ class NmrDpUtility(object):
                 return
 
             ent['number_of_constraints'] = count
-            ent['number_of_combined constraints'] = comb_count
+            if len(comb_count) > 0:
+                ent['number_of_combined constraints'] = comb_count
+            if len(inco_count) > 0:
+                ent['number_of_inconsistent_constraints'] = inco_count
+            if len(redu_count) > 0:
+                ent['number_of_redundant_constraints'] = redu_count
             ent['number_of_potential_types'] = potential
             ent['range'] = {'max_value': max_val, 'min_value': min_val}
 
@@ -7534,7 +8213,7 @@ class NmrDpUtility(object):
             if self.__verbose:
                 self.__lfh.write("+NmrDpUtility.__calculateStatsOfDistanceRestraint() ++ Error  - %s" % str(e))
 
-    def __calculateStatsOfDihedralRestraint(self, lp_data, ent):
+    def __calculateStatsOfDihedralRestraint(self, lp_data, inconsistent, redundant, ent):
         """ Calculate statistics of dihedral angle restraints.
         """
 
@@ -7543,6 +8222,7 @@ class NmrDpUtility(object):
 
         file_type = input_source_dic['file_type']
 
+        index_tag = self.index_tags[file_type]['dihed_restraint']
         item_names = self.potential_items[file_type]['dihed_restraint']
         target_value_name = item_names['target_value']
         lower_limit_name = item_names['lower_limit']
@@ -7551,6 +8231,7 @@ class NmrDpUtility(object):
         upper_linear_limit_name = item_names['upper_linear_limit']
 
         dh_item_names = self.item_names_in_dh_loop[file_type]
+        comb_id_name = dh_item_names['combination_id']
         chain_id_1_name = dh_item_names['chain_id_1']
         chain_id_2_name = dh_item_names['chain_id_2']
         chain_id_3_name = dh_item_names['chain_id_3']
@@ -7582,6 +8263,9 @@ class NmrDpUtility(object):
         try:
 
             count = {}
+            comb_count = {}
+            inco_count = {}
+            redu_count = {}
             potential = {}
 
             phi_list = []
@@ -7590,6 +8274,9 @@ class NmrDpUtility(object):
             chi2_list = []
 
             for i in lp_data:
+                index = i[index_tag]
+                comb_id = i[comb_id_name]
+
                 target_value = i[target_value_name]
 
                 if target_value is None:
@@ -7767,6 +8454,24 @@ class NmrDpUtility(object):
                 else:
                     count[data_type] = 1
 
+                if not comb_id in self.empty_value:
+                    if data_type in comb_count:
+                        comb_count[data_type] += 1
+                    else:
+                        comb_count[data_type] = 1
+
+                if index in inconsistent:
+                    if data_type in inco_count:
+                        inco_count[data_type] += 1
+                    else:
+                        inco_count[data_type] = 1
+
+                if index in redundant:
+                    if data_type in redu_count:
+                        redu_count[data_type] += 1
+                    else:
+                        redu_count[data_type] = 1
+
                 if data_type.startswith('phi_'):
                     phi = {}
                     phi['chain_id'] = chain_id_1
@@ -7857,6 +8562,12 @@ class NmrDpUtility(object):
 
             if len(count) > 0:
                 ent['number_of_constraints'] = count
+                if len(comb_count) > 0:
+                    ent['number_of_combined constraints'] = comb_count
+                if len(inco_count) > 0:
+                    ent['number_of_inconsistent_constraints'] = inco_count
+                if len(redu_count) > 0:
+                    ent['number_of_redundant_constraints'] = redu_count
                 ent['number_of_potential_types'] = potential
 
             if 'phi_angle_constraints' in count and 'psi_angle_constraints' in count:
@@ -7949,7 +8660,7 @@ class NmrDpUtility(object):
             if self.__verbose:
                 self.__lfh.write("+NmrDpUtility.__calculateStatsOfDihedralRestraint() ++ Error  - %s" % str(e))
 
-    def __calculateStatsOfRdcRestraint(self, lp_data, ent):
+    def __calculateStatsOfRdcRestraint(self, lp_data, inconsistent, redundant, ent):
         """ Calculate statistics of RDC restraints.
         """
 
@@ -7958,6 +8669,7 @@ class NmrDpUtility(object):
 
         file_type = input_source_dic['file_type']
 
+        index_tag = self.index_tags[file_type]['rdc_restraint']
         item_names = self.potential_items[file_type]['rdc_restraint']
         target_value_name = item_names['target_value']
         lower_limit_name = item_names['lower_limit']
@@ -8012,13 +8724,20 @@ class NmrDpUtility(object):
                     min_val_ = target_value
 
             item_names = self.item_names_in_rdc_loop[file_type]
+            comb_id_name = item_names['combination_id']
             atom_id_1_name = item_names['atom_id_1']
             atom_id_2_name = item_names['atom_id_2']
 
             count = {}
+            comb_count = {}
+            inco_count = {}
+            redu_count = {}
             potential = {}
 
             for i in lp_data:
+                index = i[index_tag]
+                comb_id = i[comb_id_name]
+
                 atom_id_1 = i[atom_id_1_name]
                 atom_id_2 = i[atom_id_2_name]
 
@@ -8041,6 +8760,24 @@ class NmrDpUtility(object):
                     count[data_type] += 1
                 else:
                     count[data_type] = 1
+
+                if not comb_id in self.empty_value:
+                    if data_type in comb_count:
+                        comb_count[data_type] += 1
+                    else:
+                        comb_count[data_type] = 1
+
+                if index in inconsistent:
+                    if data_type in inco_count:
+                        inco_count[data_type] += 1
+                    else:
+                        inco_count[data_type] = 1
+
+                if index in redundant:
+                    if data_type in redu_count:
+                        redu_count[data_type] += 1
+                    else:
+                        redu_count[data_type] = 1
 
                 # detect potential type
 
@@ -8098,6 +8835,12 @@ class NmrDpUtility(object):
                 return
 
             ent['number_of_constraints'] = count
+            if len(comb_count) > 0:
+                ent['number_of_combined constraints'] = comb_count
+            if len(inco_count) > 0:
+                ent['number_of_inconsistent_constraints'] = inco_count
+            if len(redu_count) > 0:
+                ent['number_of_redundant_constraints'] = redu_count
             ent['number_of_potential_types'] = potential
             ent['range'] = {'max_value': max_val_, 'min_value': min_val_}
 
@@ -8799,7 +9542,8 @@ class NmrDpUtility(object):
                             test_gauge_code = self.__getGaugeCode(s2['seq_id'])
 
                             seq_align = {'list_id': polymer_sequence_in_loop[content_subtype][list_id]['list_id'],
-                                         'chain_id': chain_id, 'length': ref_length, 'conflict': conflict, 'unmapped': unmapped, 'sequence_coverage': float('{:.3f}'.format(float(length - (unmapped + conflict)) / float(ref_length))),
+                                         'chain_id': chain_id, 'length': ref_length, 'conflict': conflict, 'unmapped': unmapped,
+                                         'sequence_coverage': float('{:.3f}'.format(float(length - (unmapped + conflict)) / float(ref_length))),
                                          'ref_seq_id': s1['seq_id'],
                                          'ref_gauge_code': ref_gauge_code, 'ref_code': ref_code, 'mid_code': mid_code, 'test_code': test_code, 'test_gauge_code': test_gauge_code}
 
@@ -8875,7 +9619,8 @@ class NmrDpUtility(object):
                 ref_gauge_code = self.__getGaugeCode(s1['seq_id'])
                 test_gauge_code = self.__getGaugeCode(s2['seq_id'])
 
-                seq_align = {'ref_chain_id': chain_id, 'test_chain_id': chain_id2, 'length': ref_length, 'conflict': conflict, 'unmapped': unmapped, 'sequence_coverage': float('{:.3f}'.format(float(length - (unmapped + conflict)) / float(ref_length))),
+                seq_align = {'ref_chain_id': chain_id, 'test_chain_id': chain_id2, 'length': ref_length, 'conflict': conflict,'unmapped': unmapped,
+                             'sequence_coverage': float('{:.3f}'.format(float(length - (unmapped + conflict)) / float(ref_length))),
                              'ref_seq_id': s1['seq_id'], 'test_seq_id': s2['seq_id'],
                              'ref_gauge_code': ref_gauge_code, 'ref_code': ref_code, 'mid_code': mid_code, 'test_code': test_code, 'test_gauge_code': test_gauge_code}
 
@@ -8930,7 +9675,8 @@ class NmrDpUtility(object):
                 ref_gauge_code = self.__getGaugeCode(s1['seq_id'])
                 test_gauge_code = self.__getGaugeCode(s2['seq_id'])
 
-                seq_align = {'ref_chain_id': chain_id, 'test_chain_id': chain_id2, 'length': ref_length, 'conflict': conflict, 'unmapped': unmapped, 'sequence_coverage': float('{:.3f}'.format(float(length - (unmapped + conflict)) / float(ref_length))),
+                seq_align = {'ref_chain_id': chain_id, 'test_chain_id': chain_id2, 'length': ref_length, 'conflict': conflict, 'unmapped': unmapped,
+                             'sequence_coverage': float('{:.3f}'.format(float(length - (unmapped + conflict)) / float(ref_length))),
                              'ref_seq_id': s1['seq_id'], 'test_seq_id': s2['seq_id'],
                              'ref_gauge_code': ref_gauge_code, 'ref_code': ref_code, 'mid_code': mid_code, 'test_code': test_code, 'test_gauge_code': test_gauge_code}
 
@@ -9563,12 +10309,12 @@ class NmrDpUtility(object):
 
                 try:
 
-                    conflicted = self.__nefT.get_conflicted(sf_data, lp_category, key_items)[0]
+                    conflict_id = self.__nefT.get_conflict_id(sf_data, lp_category, key_items)[0]
 
-                    if len(conflicted) > 0:
+                    if len(conflict_id) > 0:
                         loop = sf_data.get_loop_by_category(lp_category)
 
-                        for l in conflicted:
+                        for l in conflict_id:
                             del loop.data[l]
 
                 except:
@@ -9627,12 +10373,12 @@ class NmrDpUtility(object):
 
                         try:
 
-                            conflicted = self.__nefT.get_conflicted(sf_data, lp_category, key_items)[0]
+                            conflict_id = self.__nefT.get_conflict_id(sf_data, lp_category, key_items)[0]
 
-                            if len(conflicted) > 0:
+                            if len(conflict_id) > 0:
                                 loop = sf_data.sf_data.get_loop_by_category(lp_category)
 
-                                for l in conflicted:
+                                for l in conflict_id:
                                     del loop.data[l]
 
                         except:

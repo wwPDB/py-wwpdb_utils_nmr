@@ -1,3 +1,10 @@
+##
+# File: test_NEFTranslator.py
+# Date:  02-May-2019  K. Baskaran
+#
+# Updates:
+# 29-Jul-2019  M. Yokochi - support NEFTranslator v1.3.0 and integration into OneDep environment
+##
 import unittest
 import os
 import sys

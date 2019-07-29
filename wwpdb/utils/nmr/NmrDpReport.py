@@ -1,10 +1,11 @@
 ##
 # File: NmrDpReport.py
-# Date: 26-Jul-2019
+# Date: 29-Jul-2019
 #
 # Updates:
 ##
 """ Wrapper class for data processing report of NMR unified data.
+    @author: Masashi Yokochi
 """
 import logging
 import json
@@ -438,8 +439,8 @@ class NmrDpReportError:
 
     def __init__(self):
         self.items = ('internal_error', 'format_issue', 'missing_mandatory_content', 'missing_mandatory_item', 'sequence_mismatch',
-                      'invalid_data', 'invalid_atom_nomenclature', 'invalid_atom_type', 'invalid_isotope_number', 'invalid_ambiguity_code', 'multiple_data',
-                      'missing_data', 'duplicated_index', 'anomalous_data')
+                      'invalid_data', 'invalid_atom_nomenclature', 'invalid_atom_type', 'invalid_isotope_number', 'invalid_ambiguity_code',
+                      'multiple_data', 'missing_data', 'duplicated_index', 'anomalous_data', 'conflicted_data')
 
         self.__contents = {item:None for item in self.items}
 
@@ -616,13 +617,16 @@ class NmrDpReportWarning:
     def __init__(self):
         self.items = ('missing_content', 'missing_saveframe', 'missing_data', 'enum_failure',
                       'disordered_index', 'sequence_mismatch', 'atom_nomenclature_mismatch', 'ccd_mismatch',
-                      'skipped_sf_category', 'skipped_lp_category', 'suspicious_data', 'unusual_data', 'remarkable_data', 'unsufficient_data')
+                      'skipped_sf_category', 'skipped_lp_category',
+                      'suspicious_data', 'unusual_data', 'remarkable_data', 'unsufficient_data',
+                      'inconsistent_data', 'redundant_data')
 
         self.__contents = {item:None for item in self.items}
 
         self.__contents['total'] = 0
 
         self.chk_row_pat = re.compile(r'^\[Check row of (.*)\] (.*)$')
+        self.chk_rows_pat = re.compile(r'\[Check rows of (.*)\] (.*)$')
 
     def appendDescription(self, item, value):
 
@@ -647,6 +651,18 @@ class NmrDpReportWarning:
                         loc[p[0:s]] = p[s:].lstrip()
 
                     value['row_location'] = loc
+                    value['description'] = g[1]
+
+                elif d.startswith('[Check rows of'):
+                    g = self.chk_rows_pat.search(d).groups()
+
+                    locs = {}
+                    for i in g[0].split(','):
+                        p = i.lstrip()
+                        q = p.split(' ', 1)
+                        locs[q[0]] = re.sub(' vs ', ',', q[1]).split(',')
+
+                    value['row_locations'] = locs
                     value['description'] = g[1]
 
             self.__contents[item].append(value)

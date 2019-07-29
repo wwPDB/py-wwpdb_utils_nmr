@@ -1,3 +1,9 @@
+##
+# File: test_BMRBChemShiftStat.py
+# Date:  29-Jul-2019  M. Yokochi
+#
+# Updates:
+##
 import unittest
 import os
 import sys

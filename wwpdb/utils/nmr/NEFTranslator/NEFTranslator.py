@@ -1,8 +1,9 @@
 ##
 # File: NEFTranslator.py
-# Date: 26-Jul-2019
+# Date:  02-May-2019  K. Baskaran
 #
 # Updates:
+# 29-Jul-2019  M. Yokochi - support NEFTranslator v1.3.0 and integration into OneDep environment
 ##
 """
 This module does the following jobs
@@ -1637,15 +1638,15 @@ class NEFTranslator(object):
                             if ('min_exclusive' in _range and _range['min_exclusive'] == 0.0 and ent[name] <= 0.0) or ('min_inclusive' in _range and _range['min_inclusive'] == 0.0 and ent[name] < 0):
                                 if ent[name] < 0.0:
                                     if ('max_inclusive' in _range and abs(ent[name]) > _range['max_inclusive']) or ('max_exclusive' in _range and abs(ent[name]) >= _range['max_exclusive']) or ('enforce-sign' in k and k['enforce-sign']):
-                                        raise ValueError("%s%s '%s' must be %s." % (self.__idx_msg(idx_tag_ids, tags, ent), name, val, _range))
+                                        raise ValueError("%s%s '%s' must be within range %s." % (self.__idx_msg(idx_tag_ids, tags, ent), name, val, _range))
                                     elif enforce_sign:
                                         user_warn_msg += "[Negative value error] %s%s '%s' is non-sense negative value as %s, %s.\n" % (self.__idx_msg(idx_tag_ids, tags, ent), name, val, type, _range)
                                 elif ent[name] == 0.0 and 'enforce-non-zero' in k and k['enforce-non-zero']:
-                                    raise ValueError("%s%s '%s' must be %s." % (self.__idx_msg(idx_tag_ids, tags, ent), name, val, _range))
+                                    raise ValueError("%s%s '%s' must be within range %s." % (self.__idx_msg(idx_tag_ids, tags, ent), name, val, _range))
                                 elif ent[name] == 0.0 and enforce_non_zero:
                                     user_warn_msg += "[Zero value error] %s%s '%s' is non-sense zero value as %s, %s.\n" % (self.__idx_msg(idx_tag_ids, tags, ent), name, val, type, _range)
                             elif ('min_exclusive' in _range and ent[name] <= _range['min_exclusive']) or ('min_inclusive' in _range and ent[name] < _range['min_inclusive']) or ('max_inclusive' in _range and ent[name] > _range['max_inclusive']) or ('max_exclusive' in _range and ent[name] >= _range['max_exclusive']):
-                                raise ValueError("%s%s '%s' must be %s." % (self.__idx_msg(idx_tag_ids, tags, ent), name, val, _range))
+                                raise ValueError("%s%s '%s' must be within range %s." % (self.__idx_msg(idx_tag_ids, tags, ent), name, val, _range))
                         elif type == 'enum':
                             try:
                                 enum = k['enum']
@@ -1734,15 +1735,15 @@ class NEFTranslator(object):
                                     if ('min_exclusive' in _range and _range['min_exclusive'] == 0.0 and ent[name] <= 0.0) or ('min_inclusive' in _range and _range['min_inclusive'] == 0.0 and ent[name] < 0):
                                         if ent[name] < 0.0:
                                             if ('max_inclusive' in _range and abs(ent[name]) > _range['max_inclusive']) or ('max_exclusive' in _range and abs(ent[name]) >= _range['max_exclusive']) or ('enforce-sign' in d and d['enforce-sign']):
-                                                raise ValueError("%s%s '%s' must be %s." % (self.__idx_msg(idx_tag_ids, tags, ent), name, val, _range))
+                                                raise ValueError("%s%s '%s' must be within range %s." % (self.__idx_msg(idx_tag_ids, tags, ent), name, val, _range))
                                             elif enforce_sign:
                                                 user_warn_msg += "[Negative value error] %s%s '%s' is non-sense negative value as %s, %s.\n" % (self.__idx_msg(idx_tag_ids, tags, ent), name, val, type, _range)
                                         elif ent[name] == 0.0 and 'enforce-non-zero' in d and d['enforce-non-zero']:
-                                            raise ValueError("%s%s '%s' must be %s." % (self.__idx_msg(idx_tag_ids, tags, ent), name, val, _range))
+                                            raise ValueError("%s%s '%s' must be within range %s." % (self.__idx_msg(idx_tag_ids, tags, ent), name, val, _range))
                                         elif ent[name] == 0.0 and enforce_non_zero:
                                             user_warn_msg += "[Zero value error] %s%s '%s' is non-sense zero value as %s, %s.\n" % (self.__idx_msg(idx_tag_ids, tags, ent), name, val, type, _range)
                                     elif ('min_exclusive' in _range and ent[name] <= _range['min_exclusive']) or ('min_inclusive' in _range and ent[name] < _range['min_inclusive']) or ('max_inclusive' in _range and ent[name] > _range['max_inclusive']) or ('max_exclusive' in _range and ent[name] >= _range['max_exclusive']):
-                                        raise ValueError("%s%s '%s' must be %s." % (self.__idx_msg(idx_tag_ids, tags, ent), name, val, _range))
+                                        raise ValueError("%s%s '%s' must be within range %s." % (self.__idx_msg(idx_tag_ids, tags, ent), name, val, _range))
                                 elif type == 'enum':
                                     try:
                                         enum = d['enum']
@@ -1835,8 +1836,8 @@ class NEFTranslator(object):
 
         return idx_msg
 
-    def get_conflicted(self, star_data, lp_category, key_items):
-        """ Return list of row ID of conflicted rows except rows of the first occurrence.
+    def get_conflict_id(self, star_data, lp_category, key_items):
+        """ Return list of row ID of duplicated/conflicted rows except for rows of the first occurrence.
             @author: Masashi Yokochi
         """
 
@@ -1878,6 +1879,87 @@ class NEFTranslator(object):
                 l += 1
 
             dat.append(sorted(list(dup_ids), reverse=True))
+
+        return dat
+
+    def get_conflict_id_set(self, star_data, lp_category, key_items):
+        """ Return list of row ID set of redundant/inconsistent rows.
+            @author: Masashi Yokochi
+        """
+
+        try:
+            loops = star_data.get_loops_by_category(lp_category)
+        except AttributeError:
+            try:
+                loops = [star_data.get_loop_by_category(lp_category)]
+            except AttributeError:
+                loops = [star_data]
+
+        dat = [] # data of all loops
+
+        key_names = [k['name'] for k in key_items]
+
+        key_len = len(key_items)
+
+        for loop in loops:
+
+            if set(key_names) & set(loop.tags) != set(key_names):
+                raise LookupError("Missing one of data items %s." % key_names)
+
+            tag_dat = loop.get_data_by_tag(key_names)
+
+            keys = set()
+            dup_ids = set()
+
+            l = 0
+            for i in tag_dat:
+
+                key = ''
+                for j in range(key_len):
+                    key += ' ' + i[j]
+                key.rstrip()
+
+                if key in keys:
+                    dup_ids.add(l)
+
+                keys.add(key)
+
+                l += 1
+
+            conflict_id = sorted(list(dup_ids), reverse=True)
+
+            if len(conflict_id) == 0:
+                dat.append(None)
+
+            else:
+                conflict_id_set = []
+
+                for l in conflict_id:
+
+                    key = ''
+                    for j in range(key_len):
+                        key += ' ' + tag_dat[l][j]
+                        key.rstrip()
+
+                    id_set = [l]
+
+                    for m in range(l):
+
+                        _key = ''
+                        for j in range(key_len):
+                            _key += ' ' + tag_dat[m][j]
+                            _key.rstrip()
+
+                        if key == _key:
+                            id_set.append(m)
+
+                            if m in conflict_id:
+                                conflict_id.remove(m)
+
+                    if len(id_set) > 1:
+                        conflict_id_set.insert(0, sorted(id_set))
+
+                dat.append(conflict_id_set)
 
         return dat
 
@@ -2007,15 +2089,15 @@ class NEFTranslator(object):
                         if ('min_exclusive' in _range and _range['min_exclusive'] == 0.0 and ent[name] <= 0.0) or ('min_inclusive' in _range and _range['min_inclusive'] == 0.0 and ent[name] < 0):
                             if ent[name] < 0.0:
                                 if ('max_inclusive' in _range and abs(ent[name]) > _range['max_inclusive']) or ('max_exclusive' in _range and abs(ent[name]) >= _range['max_exclusive']) or ('enforce-sign' in t and t['enforce-sign']):
-                                    raise ValueError("%s%s '%s' must be %s." % (self.__idx_msg(idx_tag_ids, tags, ent), name, val, _range))
+                                    raise ValueError("%s%s '%s' must be within range %s." % (self.__idx_msg(idx_tag_ids, tags, ent), name, val, _range))
                                 elif enforce_sign:
                                     user_warn_msg += "[Negative value error] %s%s '%s' is non-sense negative value as %s, %s.\n" % (self.__idx_msg(idx_tag_ids, tags, ent), name, val, type, _range)
                             elif ent[name] == 0.0 and 'enforce-non-zero' in t and t['enforce-non-zero']:
-                                raise ValueError("%s '%s' must be %s." % (name, val, _range))
+                                raise ValueError("%s '%s' must be within range %s." % (name, val, _range))
                             elif ent[name] == 0.0 and enforce_non_zero:
                                 user_warn_msg += "[Zero value error] %s '%s' is non-sense zero value as %s, %s.\n" % (name, val, type, _range)
                         elif ('min_exclusive' in _range and ent[name] <= _range['min_exclusive']) or ('min_inclusive' in _range and ent[name] < _range['min_inclusive']) or ('max_inclusive' in _range and ent[name] > _range['max_inclusive']) or ('max_exclusive' in _range and ent[name] >= _range['max_exclusive']):
-                            raise ValueError("%s '%s' must be %s." % (name, val, _range))
+                            raise ValueError("%s '%s' must be within range %s." % (name, val, _range))
                     elif type == 'enum':
                         if val in self.empty_value:
                             val = '?' # '.' raises internal error in NmrDpUtility

@@ -8,6 +8,7 @@
 # 12-May-2011 - rps - Added check for None when asking for category Object in __getDataList()
 # 2012-10-24    RPS   Updated to reflect reorganization of modules in pdbx packages
 # 23-Jul-2019   my  - Forked original code to wwpdb.util.nmr.CifReader
+# 30-Jul-2019   my  - Add 'range-float' as filter item type
 ##
 """ A collection of classes for parsing CIF files.
 """
@@ -34,7 +35,7 @@ class CifReader(object):
         self.trueValue = ('true', 't', 'yes', 'y', '1')
 
         # allowed item types
-        self.itemTypes = ('str', 'bool', 'int', 'float')
+        self.itemTypes = ('str', 'bool', 'int', 'float', 'range-float')
 
     def setFilePath(self, filePath):
         """ Set file path and test readability.
@@ -285,9 +286,16 @@ class CifReader(object):
                                 val = int(val)
                             else:
                                 val = float(val)
-                            if val != filterItem['value']:
-                                filter = False
-                                break
+                            if filterItemType == 'range-float':
+                                _range = filterItem['range']
+                                if ('min_exclusive' in _range and val <= _range['min_exclusive']) or ('min_inclusive' in _range and val < _range['min_inclusive']) or ('max_inclusive' in _range and val > _range['max_inclusive']) or ('max_exclusive' in _range and val >= _range['max_exclusive']):
+                                    fileter = False
+                                    break
+                            else:
+                                if val != filterItem['value']:
+                                    filter = False
+                                    break
+
                 if filter:
                     tD = {}
                     for dataItem in dataItems:

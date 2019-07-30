@@ -1,6 +1,6 @@
 ##
 # File: NmrDpUtility.py
-# Date: 29-Jul-2019
+# Date: 30-Jul-2019
 #
 # Updates:
 ##
@@ -76,7 +76,7 @@ class NmrDpUtility(object):
                            self.__detectConflictDataInLoop,
                            self.__testDataConsistencyInAuxLoop,
                            self.__testSfTagConsistency,
-                           self.__validateCSValue,
+                           #self.__validateCSValue,
                            self.__testCSValueConsistencyInPkLoop,
                            self.__testRDCVector
                            ]
@@ -94,6 +94,7 @@ class NmrDpUtility(object):
         # cross validation tasks
         __crossCheckTasks = [self.__assignCoordPolymerSequence,
                              self.__testCoordAtomIdConsistency,
+                             self.__validateCSValue,
                              self.__extractCoordDisulfideBond,
                              self.__extractCoordOtherBond,
                              self.__calculateStatsOfExptlData
@@ -290,6 +291,12 @@ class NmrDpUtility(object):
 
         # criterion for detection of low sequence coverage
         self.low_sequence_coverage = 0.3
+
+        # cutoff value for close aromatic atoms
+        self.cutoff_aromatic = 5.0
+
+        # cutoff value for close paramagnetic atoms
+        self.cutoff_paramagnetic = 10.0
 
         # loop index tags
         self.index_tags = {'nef': {'entry_info': None,
@@ -1789,6 +1796,17 @@ class NmrDpUtility(object):
                          'T': 'T',
                          'U': 'U'
                          }
+
+        # patterns for detection of dihedral angle type
+        self.dihed_atom_ids = ['N', 'CA', 'C']
+
+        self.chi1_atom_id_4_pat = re.compile(r'^[COS]G1?$')
+        self.chi2_atom_id_3_pat = re.compile(r'^CG1?$')
+        self.chi2_atom_id_4_pat = re.compile(r'^[CNOS]D1?$')
+        self.chi3_atom_id_3_pat = re.compile(r'^[CS]D$')
+        self.chi3_atom_id_4_pat = re.compile(r'^[CNO]E1?$')
+        self.chi4_atom_id_3_pat = re.compile(r'^[CN]E$')
+        self.chi4_atom_id_4_pat = re.compile(r'^[CN]Z$')
 
         # main contents of loops
         self.__lp_data = {'poly_seq': [],
@@ -4129,7 +4147,7 @@ class NmrDpUtility(object):
                                     val_1 = lp_data[row_id_1][dname]
                                     val_2 = lp_data[row_id_2][dname]
 
-                                    if val_1 is None or val_2 is None:
+                                    if val_1 is None and val_2 is None:
                                         continue
 
                                     if val_1 is None or val_2 is None:
@@ -4880,30 +4898,99 @@ class NmrDpUtility(object):
 
                                     if (value < min_value - tolerance or value > max_value + tolerance) and abs(z_score) > 10.0:
 
-                                        err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] %s %s (chain_id %s, seq_id %s, comp_id %s, atom_id %s) is not within expected range (avg %s, std %s, min %s, max %s, Z_score %.2f). Please check for folded/aliased signals. If it is due to the presence of paramagnetic substance or extreme sample conditions, please provide us details.' %\
-                                              (value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score)
+                                        na = self.__getNearestAromaticAtom(chain_id, seq_id, atom_id_, self.cutoff_aromatic)
+                                        pa = self.__getNearestParamagneticAtom(chain_id, seq_id, atom_id_, self.cutoff_paramagnetic)
 
-                                        self.report.error.appendDescription('anomalous_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
-                                        self.report.setError()
+                                        if na is None and pa is None:
 
-                                        if self.__verbose:
-                                            self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ ValueError  - %s\n" % err)
+                                            err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) +\
+                                                  '] %s %s (chain_id %s, seq_id %s, comp_id %s, atom_id %s) is out of range (avg %s, std %s, min %s, max %s, Z_score %.2f). Please check for folded/aliased signals. If it is due to the presence of paramagnetic substance or extreme sample conditions, please provide us details.' %\
+                                                  (value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score)
+
+                                            self.report.error.appendDescription('anomalous_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
+                                            self.report.setError()
+
+                                            if self.__verbose:
+                                                self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ ValueError  - %s\n" % err)
+
+                                        elif pa is None:
+
+                                            warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] %s %s (chain_id %s, seq_id %s, comp_id %s, atom_id %s) should be verified (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest aromatic atom (chain_id %s, seq_id %s, comp_id %s, atom_id %s) is located at %s angstroms.' %\
+                                                   (value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score,
+                                                    na['chain_id'], na['seq_id'], na['comp_id'], na['atom_id'], na['distance'])
+
+                                            self.report.warning.appendDescription('unusual_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
+                                            self.report.setWarning()
+
+                                            if self.__verbose:
+                                                self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ Warning  - %s\n" % warn)
+
+                                        else:
+
+                                            warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] %s %s (chain_id %s, seq_id %s, comp_id %s, atom_id %s) should be verified (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest paramagnetic atom (chain_id %s, seq_id %s, comp_id %s, atom_id %s) is located at %s angstroms.' %\
+                                                   (value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score,
+                                                    pa['chain_id'], pa['seq_id'], pa['comp_id'], pa['atom_id'], pa['distance'])
+
+                                            self.report.warning.appendDescription('unusual_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
+                                            self.report.setWarning()
+
+                                            if self.__verbose:
+                                                self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ Warning  - %s\n" % warn)
 
                                     elif abs(z_score) > 10.0:
 
-                                        warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] %s %s (chain_id %s, seq_id %s, comp_id %s, atom_id %s) must be verified (avg %s, std %s, min %s, max %s, Z_score %.2f).' %\
-                                               (value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score)
+                                        na = self.__getNearestAromaticAtom(chain_id, seq_id, atom_id_, self.cutoff_aromatic)
+                                        pa = self.__getNearestParamagneticAtom(chain_id, seq_id, atom_id_, self.cutoff_paramagnetic)
 
-                                        self.report.warning.appendDescription('suspicious_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
-                                        self.report.setWarning()
+                                        if na is None and pa is None:
 
-                                        if self.__verbose:
-                                            self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ Warning  - %s\n" % warn)
+                                            warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] %s %s (chain_id %s, seq_id %s, comp_id %s, atom_id %s) must be verified (avg %s, std %s, min %s, max %s, Z_score %.2f).' %\
+                                                   (value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score)
+
+                                            self.report.warning.appendDescription('suspicious_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
+                                            self.report.setWarning()
+
+                                            if self.__verbose:
+                                                self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ Warning  - %s\n" % warn)
+
+                                        elif pa is None:
+
+                                            warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] %s %s (chain_id %s, seq_id %s, comp_id %s, atom_id %s) should be verified (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest aromatic atom (chain_id %s, seq_id %s, comp_id %s, atom_id %s) is located at %s angstroms.' %\
+                                                   (value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score,
+                                                    na['chain_id'], na['seq_id'], na['comp_id'], na['atom_id'], na['distance'])
+
+                                            self.report.warning.appendDescription('unusual_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
+                                            self.report.setWarning()
+
+                                            if self.__verbose:
+                                                self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ Warning  - %s\n" % warn)
+
+                                        else:
+
+                                            warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] %s %s (chain_id %s, seq_id %s, comp_id %s, atom_id %s) should be verified (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest paramagnetic atom (chain_id %s, seq_id %s, comp_id %s, atom_id %s) is located at %s angstroms.' %\
+                                                   (value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score,
+                                                    pa['chain_id'], pa['seq_id'], pa['comp_id'], pa['atom_id'], pa['distance'])
+
+                                            self.report.warning.appendDescription('unusual_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
+                                            self.report.setWarning()
+
+                                            if self.__verbose:
+                                                self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ Warning  - %s\n" % warn)
 
                                     elif abs(z_score) > 6.0:
 
+                                        na = self.__getNearestAromaticAtom(chain_id, seq_id, atom_id_, self.cutoff_aromatic)
+                                        pa = self.__getNearestParamagneticAtom(chain_id, seq_id, atom_id_, self.cutoff_paramagnetic)
+
                                         warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] %s %s (chain_id %s, seq_id %s, comp_id %s, atom_id %s) should be verified (avg %s, std %s, min %s, max %s, Z_score %.2f).' %\
                                                (value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score)
+
+                                        if not na is None:
+                                            warn += ' The nearest aromatic atom (chain_id %s, seq_id %s, comp_id %s, atom_id %s) is located at %s angstroms.' %\
+                                                    (na['chain_id'], na['seq_id'], na['comp_id'], na['atom_id'], na['distance'])
+                                        elif not pa is None:
+                                            warn += ' The nearest paramagnetic atom (chain_id %s, seq_id %s, comp_id %s, atom_id %s) is located at %s angstroms.' %\
+                                                    (pa['chain_id'], pa['seq_id'], pa['comp_id'], pa['atom_id'], pa['distance'])
 
                                         self.report.warning.appendDescription('unusual_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
                                         self.report.setWarning()
@@ -4927,26 +5014,84 @@ class NmrDpUtility(object):
 
                                     if min_value < max_value and (value < min_value - tolerance or value > max_value + tolerance) and abs(z_score) > 10.0:
 
-                                        err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) +\
-                                              '] %s %s (chain_id %s, seq_id %s, comp_id %s, atom_id %s) is out of range (avg %s, std %s, min %s, max %s, Z_score %.2f). Please check for folded/aliased signals. If it is due to the presence of paramagnetic substance or extreme sample conditions, please provide us details.' %\
-                                              (value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score)
+                                        na = self.__getNearestAromaticAtom(chain_id, seq_id, atom_id_, self.cutoff_aromatic)
+                                        pa = self.__getNearestParamagneticAtom(chain_id, seq_id, atom_id_, self.cutoff_paramagnetic)
 
-                                        self.report.error.appendDescription('anomalous_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
-                                        self.report.setError()
+                                        if na is None and pa is None:
 
-                                        if self.__verbose:
-                                            self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ ValueError  - %s\n" % err)
+                                            err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) +\
+                                                  '] %s %s (chain_id %s, seq_id %s, comp_id %s, atom_id %s) is out of range (avg %s, std %s, min %s, max %s, Z_score %.2f). Please check for folded/aliased signals. If it is due to the presence of paramagnetic substance or extreme sample conditions, please provide us details.' %\
+                                                  (value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score)
+
+                                            self.report.error.appendDescription('anomalous_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
+                                            self.report.setError()
+
+                                            if self.__verbose:
+                                                self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ ValueError  - %s\n" % err)
+
+                                        elif pa is None:
+
+                                            warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] %s %s (chain_id %s, seq_id %s, comp_id %s, atom_id %s) should be verified (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest aromatic atom (chain_id %s, seq_id %s, comp_id %s, atom_id %s) is located at %s angstroms.' %\
+                                                   (value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score,
+                                                    na['chain_id'], na['seq_id'], na['comp_id'], na['atom_id'], na['distance'])
+
+                                            self.report.warning.appendDescription('unusual_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
+                                            self.report.setWarning()
+
+                                            if self.__verbose:
+                                                self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ Warning  - %s\n" % warn)
+
+                                        else:
+
+                                            warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] %s %s (chain_id %s, seq_id %s, comp_id %s, atom_id %s) should be verified (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest paramagnetic atom (chain_id %s, seq_id %s, comp_id %s, atom_id %s) is located at %s angstroms.' %\
+                                                   (value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score,
+                                                    pa['chain_id'], pa['seq_id'], pa['comp_id'], pa['atom_id'], pa['distance'])
+
+                                            self.report.warning.appendDescription('unusual_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
+                                            self.report.setWarning()
+
+                                            if self.__verbose:
+                                                self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ Warning  - %s\n" % warn)
 
                                     elif abs(z_score) > 10.0:
 
-                                        warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] %s %s (chain_id %s, seq_id %s, comp_id %s, atom_id %s) must be verified (avg %s, std %s, min %s, max %s, Z_score %.2f).' %\
-                                               (value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score)
+                                        na = self.__getNearestAromaticAtom(chain_id, seq_id, atom_id_, self.cutoff_aromatic)
+                                        pa = self.__getNearestParamagneticAtom(chain_id, seq_id, atom_id_, self.cutoff_paramagnetic)
 
-                                        self.report.warning.appendDescription('suspicious_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
-                                        self.report.setWarning()
+                                        if na is None and pa is None:
 
-                                        if self.__verbose:
-                                            self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ Warning  - %s\n" % warn)
+                                            warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] %s %s (chain_id %s, seq_id %s, comp_id %s, atom_id %s) must be verified (avg %s, std %s, min %s, max %s, Z_score %.2f).' %\
+                                                   (value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score)
+
+                                            self.report.warning.appendDescription('suspicious_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
+                                            self.report.setWarning()
+
+                                            if self.__verbose:
+                                                self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ Warning  - %s\n" % warn)
+
+                                        elif pa is None:
+
+                                            warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] %s %s (chain_id %s, seq_id %s, comp_id %s, atom_id %s) should be verified (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest aromatic atom (chain_id %s, seq_id %s, comp_id %s, atom_id %s) is located at %s angstroms.' %\
+                                                   (value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score,
+                                                    na['chain_id'], na['seq_id'], na['comp_id'], na['atom_id'], na['distance'])
+
+                                            self.report.warning.appendDescription('unusual_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
+                                            self.report.setWarning()
+
+                                            if self.__verbose:
+                                                self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ Warning  - %s\n" % warn)
+
+                                        else:
+
+                                            warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] %s %s (chain_id %s, seq_id %s, comp_id %s, atom_id %s) should be verified (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest paramagnetic atom (chain_id %s, seq_id %s, comp_id %s, atom_id %s) is located at %s angstroms.' %\
+                                                   (value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score,
+                                                    pa['chain_id'], pa['seq_id'], pa['comp_id'], pa['atom_id'], pa['distance'])
+
+                                            self.report.warning.appendDescription('unusual_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
+                                            self.report.setWarning()
+
+                                            if self.__verbose:
+                                                self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ Warning  - %s\n" % warn)
 
                                 break
 
@@ -5000,31 +5145,99 @@ class NmrDpUtility(object):
 
                                 if (value < min_value - tolerance or value > max_value + tolerance) and abs(z_score) > 6.0:
 
-                                    err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) +\
-                                          '] %s %s (chain_id %s, seq_id %s, comp_id %s, atom_id %s) is out of range (avg %s, std %s, min %s, max %s, Z_score %.2f). Please check for folded/aliased signals. If it is due to the presence of paramagnetic substance or extreme sample conditions, please provide us details.' %\
-                                          (value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score)
+                                    na = self.__getNearestAromaticAtom(chain_id, seq_id, atom_id_, self.cutoff_aromatic)
+                                    pa = self.__getNearestParamagneticAtom(chain_id, seq_id, atom_id_, self.cutoff_paramagnetic)
 
-                                    self.report.error.appendDescription('anomalous_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
-                                    self.report.setError()
+                                    if na is None and pa is None:
 
-                                    if self.__verbose:
-                                        self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ ValueError  - %s\n" % err)
+                                        err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) +\
+                                              '] %s %s (chain_id %s, seq_id %s, comp_id %s, atom_id %s) is out of range (avg %s, std %s, min %s, max %s, Z_score %.2f). Please check for folded/aliased signals. If it is due to the presence of paramagnetic substance or extreme sample conditions, please provide us details.' %\
+                                              (value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score)
+
+                                        self.report.error.appendDescription('anomalous_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
+                                        self.report.setError()
+
+                                        if self.__verbose:
+                                            self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ ValueError  - %s\n" % err)
+
+                                    elif pa is None:
+
+                                        warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] %s %s (chain_id %s, seq_id %s, comp_id %s, atom_id %s) should be verified (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest aromatic atom (chain_id %s, seq_id %s, comp_id %s, atom_id %s) is located at %s angstroms.' %\
+                                               (value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score,
+                                                na['chain_id'], na['seq_id'], na['comp_id'], na['atom_id'], na['distance'])
+
+                                        self.report.warning.appendDescription('unusual_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
+                                        self.report.setWarning()
+
+                                        if self.__verbose:
+                                            self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ Warning  - %s\n" % warn)
+
+                                    else:
+
+                                        warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] %s %s (chain_id %s, seq_id %s, comp_id %s, atom_id %s) should be verified (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest paramagnetic atom (chain_id %s, seq_id %s, comp_id %s, atom_id %s) is located at %s angstroms.' %\
+                                               (value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score,
+                                                pa['chain_id'], pa['seq_id'], pa['comp_id'], pa['atom_id'], pa['distance'])
+
+                                        self.report.warning.appendDescription('unusual_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
+                                        self.report.setWarning()
+
+                                        if self.__verbose:
+                                            self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ Warning  - %s\n" % warn)
 
                                 elif abs(z_score) > 6.0:
 
-                                    warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] %s %s (chain_id %s, seq_id %s, comp_id %s, atom_id %s) must be verified (avg %s, std %s, min %s, max %s, Z_score %.2f).' %\
-                                           (value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score)
+                                    na = self.__getNearestAromaticAtom(chain_id, seq_id, atom_id_, self.cutoff_aromatic)
+                                    pa = self.__getNearestParamagneticAtom(chain_id, seq_id, atom_id_, self.cutoff_paramagnetic)
 
-                                    self.report.warning.appendDescription('suspicious_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
-                                    self.report.setWarning()
+                                    if na is None and pa is None:
 
-                                    if self.__verbose:
-                                        self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ Warning  - %s\n" % warn)
+                                        warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] %s %s (chain_id %s, seq_id %s, comp_id %s, atom_id %s) must be verified (avg %s, std %s, min %s, max %s, Z_score %.2f).' %\
+                                               (value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score)
+
+                                        self.report.warning.appendDescription('suspicious_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
+                                        self.report.setWarning()
+
+                                        if self.__verbose:
+                                            self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ Warning  - %s\n" % warn)
+
+                                    elif pa is None:
+
+                                        warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] %s %s (chain_id %s, seq_id %s, comp_id %s, atom_id %s) should be verified (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest aromatic atom (chain_id %s, seq_id %s, comp_id %s, atom_id %s) is located at %s angstroms.' %\
+                                               (value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score,
+                                                na['chain_id'], na['seq_id'], na['comp_id'], na['atom_id'], na['distance'])
+
+                                        self.report.warning.appendDescription('unusual_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
+                                        self.report.setWarning()
+
+                                        if self.__verbose:
+                                            self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ Warning  - %s\n" % warn)
+
+                                    else:
+
+                                        warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] %s %s (chain_id %s, seq_id %s, comp_id %s, atom_id %s) should be verified (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest paramagnetic atom (chain_id %s, seq_id %s, comp_id %s, atom_id %s) is located at %s angstroms.' %\
+                                               (value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score,
+                                                pa['chain_id'], pa['seq_id'], pa['comp_id'], pa['atom_id'], pa['distance'])
+
+                                        self.report.warning.appendDescription('unusual_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
+                                        self.report.setWarning()
+
+                                        if self.__verbose:
+                                            self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ Warning  - %s\n" % warn)
 
                                 elif abs(z_score) > 4.0:
 
+                                    na = self.__getNearestAromaticAtom(chain_id, seq_id, atom_id_, self.cutoff_aromatic)
+                                    pa = self.__getNearestParamagneticAtom(chain_id, seq_id, atom_id_, self.cutoff_paramagnetic)
+
                                     warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] %s %s (chain_id %s, seq_id %s, comp_id %s, atom_id %s) should be verified (avg %s, std %s, min %s, max %s, Z_score %.2f).' %\
                                            (value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score)
+
+                                    if not na is None:
+                                        warn += ' The nearest aromatic atom (chain_id %s, seq_id %s, comp_id %s, atom_id %s) is located at %s angstroms.' %\
+                                                (na['chain_id'], na['seq_id'], na['comp_id'], na['atom_id'], na['distance'])
+                                    elif not pa is None:
+                                        warn += ' The nearest paramagnetic atom (chain_id %s, seq_id %s, comp_id %s, atom_id %s) is located at %s angstroms.' %\
+                                                (pa['chain_id'], pa['seq_id'], pa['comp_id'], pa['atom_id'], pa['distance'])
 
                                     self.report.warning.appendDescription('unusual_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
                                     self.report.setWarning()
@@ -5991,7 +6204,9 @@ class NmrDpUtility(object):
 
                                 self.__calculateStatsOfAssignedChemShift(sf_framecode, lp_data, cs_ann, ent)
 
-                            elif content_subtype == 'dist_restraint':
+                            elif content_subtype == 'dist_restraint' or content_subtype == 'dihed_restraint' or content_subtype == 'rdc_restraint':
+
+                                conflict_id_set = self.__nefT.get_conflict_id_set(sf_data, lp_category, self.consist_key_items[file_type][content_subtype])[0]
 
                                 conflict_errs = self.report.error.getValueListWithSf('conflicted_data', file_name, sf_framecode)
                                 inconsist_warns = self.report.warning.getValueListWithSf('inconsistent_data', file_name, sf_framecode)
@@ -6018,65 +6233,14 @@ class NmrDpUtility(object):
                                         for index in d_warn['row_locations'][index_tag]:
                                             redundant.add(int(index))
 
-                                self.__calculateStatsOfDistanceRestraint(sf_framecode, lp_data, inconsistent, redundant, ent)
+                                if content_subtype == 'dist_restraint':
+                                    self.__calculateStatsOfDistanceRestraint(sf_framecode, lp_data, conflict_id_set, inconsistent, redundant, ent)
 
-                            elif content_subtype == 'dihed_restraint':
+                                elif content_subtype == 'dihed_restraint':
+                                    self.__calculateStatsOfDihedralRestraint(lp_data, conflict_id_set, inconsistent, redundant, ent)
 
-                                conflict_errs = self.report.error.getValueListWithSf('conflicted_data', file_name, sf_framecode)
-                                inconsist_warns = self.report.warning.getValueListWithSf('inconsistent_data', file_name, sf_framecode)
-                                redundant_warns = self.report.warning.getValueListWithSf('redundant_data', file_name, sf_framecode)
-
-                                inconsistent = set()
-                                redundant = set()
-
-                                if not conflict_errs is None:
-
-                                    for c_err in conflict_errs:
-                                        for index in c_err['row_locations'][index_tag]:
-                                            inconsistent.add(int(index))
-
-                                if not inconsist_warns is None:
-
-                                    for i_warn in inconsist_warns:
-                                        for index in i_warn['row_locations'][index_tag]:
-                                            inconsistent.add(int(index))
-
-                                if not redundant_warns is None:
-
-                                    for d_warn in redundant_warns:
-                                        for index in d_warn['row_locations'][index_tag]:
-                                            redundant.add(int(index))
-
-                                self.__calculateStatsOfDihedralRestraint(lp_data, inconsistent, redundant, ent)
-
-                            elif content_subtype == 'rdc_restraint':
-
-                                conflict_errs = self.report.error.getValueListWithSf('conflicted_data', file_name, sf_framecode)
-                                inconsist_warns = self.report.warning.getValueListWithSf('inconsistent_data', file_name, sf_framecode)
-                                redundant_warns = self.report.warning.getValueListWithSf('redundant_data', file_name, sf_framecode)
-
-                                inconsistent = set()
-                                redundant = set()
-
-                                if not conflict_errs is None:
-
-                                    for c_err in conflict_errs:
-                                        for index in c_err['row_locations'][index_tag]:
-                                            inconsistent.add(int(index))
-
-                                if not inconsist_warns is None:
-
-                                    for i_warn in inconsist_warns:
-                                        for index in i_warn['row_locations'][index_tag]:
-                                            inconsistent.add(int(index))
-
-                                if not redundant_warns is None:
-
-                                    for d_warn in redundant_warns:
-                                        for index in d_warn['row_locations'][index_tag]:
-                                            redundant.add(int(index))
-
-                                self.__calculateStatsOfRdcRestraint(lp_data, inconsistent, redundant, ent)
+                                elif content_subtype == 'rdc_restraint':
+                                    self.__calculateStatsOfRdcRestraint(lp_data, conflict_id_set, inconsistent, redundant, ent)
 
                             elif content_subtype == 'spectral_peak':
 
@@ -7261,7 +7425,7 @@ class NmrDpUtility(object):
             if self.__verbose:
                 self.__lfh.write("+NmrDpUtility.__calculateStatsOfAssignedChemShift() ++ Error  - %s" % str(e))
 
-    def __calculateStatsOfDistanceRestraint(self, sf_framecode, lp_data, inconsistent, redundant, ent):
+    def __calculateStatsOfDistanceRestraint(self, sf_framecode, lp_data, conflict_id_set, inconsistent, redundant, ent):
         """ Calculate statistics of distance restraints.
         """
 
@@ -7349,386 +7513,100 @@ class NmrDpUtility(object):
                 if target_value < min_val:
                     min_val = target_value
 
-                hydrogen_bond_type = None
-                hydrogen_bond = False
-                disulfide_bond_type = None
-                disulfide_bond = False
-                diselenide_bond_type = None
-                diselenide_bond = False
-                other_bond_type = None
-                other_bond = False
-                symmetry = False
-
-                if chain_id_1 != chain_id_2 or seq_id_1 != seq_id_2:
-
-                    atom_id_1_ = atom_id_1[0]
-                    atom_id_2_ = atom_id_2[0]
-
-                    if not upper_limit_value is None:
-                        target_value -= 0.4
-                    elif not lower_limit_value is None:
-                        target_value += 0.4
-
-                    if (atom_id_1_ == 'F' and atom_id_2_ == 'H') or (atom_id_2_ == 'F' and atom_id_1_ == 'H'):
-
-                        if target_value >= 1.2 and target_value <= 1.5:
-                            hydrogen_bond_type = 'F...H-F'
-                            hydrogen_bond = True
-                        elif target_value < 1.2:
-                            hydrogen_bond_type = 'F...H-F (too close!)'
-                            hydrogen_bond = True
-
-                    elif (atom_id_1_ == 'F' and atom_id_2_ == 'F') or (atom_id_2_ == 'F' and atom_id_1_ == 'F'):
-
-                        if target_value >= 2.2 and target_value <= 2.5:
-                            hydrogen_bond_type = 'F...h-F'
-                            hydrogen_bond = True
-                        elif target_value < 2.2:
-                            hydrogen_bond_type = 'F...h-F (too close!)'
-                            hydrogen_bond = True
-
-                    elif (atom_id_1_ == 'O' and atom_id_2_ == 'H') or (atom_id_2_ == 'O' and atom_id_1_ == 'H'):
-
-                        if target_value >= 1.5 and target_value <= 2.2:
-                            hydrogen_bond_type = 'O...H-x'
-                            hydrogen_bond = True
-                        elif target_value < 1.5:
-                            hydrogen_bond_type = 'O...H-x (too close!)'
-                            hydrogen_bond = True
-
-                    elif (atom_id_1_ == 'O' and atom_id_2_ == 'N') or (atom_id_2_ == 'O' and atom_id_1_ == 'N'):
-
-                        if target_value >= 2.5 and target_value <= 3.2:
-                            hydrogen_bond_type = 'O...h-N'
-                            hydrogen_bond = True
-                        elif target_value < 2.5:
-                            hydrogen_bond_type = 'O...h-N (too close!)'
-                            hydrogen_bond = True
-
-                    elif (atom_id_1_ == 'O' and atom_id_2_ == 'O') or (atom_id_2_ == 'O' and atom_id_1_ == 'O'):
-
-                        if target_value >= 2.5 and target_value <= 3.2:
-                            hydrogen_bond_type = 'O...h-O'
-                            hydrogen_bond = True
-                        elif target_value < 2.5:
-                            hydrogen_bond_type = 'O...h-O (too close!)'
-                            hydrogen_bond = True
-
-                    elif (atom_id_1_ == 'N' and atom_id_2_ == 'H') or (atom_id_2_ == 'N' and atom_id_1_ == 'H'):
-
-                        if target_value >= 1.5 and target_value <= 2.2:
-                            hydrogen_bond_type = 'N...H-x'
-                            hydrogen_bond = True
-                        elif target_value < 1.5:
-                            hydrogen_bond_type = 'N...H-x (too close!)'
-                            hydrogen_bond = True
-
-                    elif (atom_id_1_ == 'N' and atom_id_2_ == 'N') or (atom_id_2_ == 'N' and atom_id_1_ == 'N'):
-
-                        if target_value >= 2.5 and target_value <= 3.2:
-                            hydrogen_bond_type = 'N...h_N'
-                            hydrogen_bond = True
-                        elif target_value < 2.5:
-                            hydrogen_bond_type = 'N...h_N (too close!)'
-                            hydrogen_bond = True
-
-                    elif atom_id_1_ == 'S' and atom_id_2_ == 'S':
-
-                        if target_value >= 1.9 and target_value <= 2.3:
-                            disulfide_bond_type = 'S...S'
-                            disulfide_bond = True
-                        elif target_value < 1.9:
-                            disulfide_bond_type = 'S...S (too close!)'
-                            disulfide_bond = True
-
-                    elif atom_id_1_ == 'SE' and atom_id_2_ == 'SE':
-
-                        if target_value >= 2.1 and target_value <= 2.6:
-                            diselenide_bond_type = 'Se...Se'
-                            diselenide_bond = True
-                        elif target_value < 2.1:
-                            diselenide_bond_type = 'Se...Se (too close!)'
-                            diselenide_bond = True
-
-                    elif (atom_id_1_ == 'N' and not atom_id_2_ in self.non_metal_elems) or (atom_id_2_ == 'N' and not atom_id_1_ in self.non_metal_elems):
-
-                        metal = atom_id_2_ if atom_id_1_ in self.non_metal_elems else atom_id_1_
-                        metal = metal.title()
-
-                        if target_value >= 1.9 and target_value <= 2.1:
-                            other_bond_type = 'N...' + metal
-                            other_bond = True
-                        elif target_value < 1.9:
-                            other_bond_type = 'N...' + metal + ' (too close!)'
-                            other_bond = True
-
-                    elif (atom_id_1_ == 'O' and not atom_id_2_ in self.non_metal_elems) or (atom_id_2_ == 'O' and not atom_id_1_ in self.non_metal_elems):
-
-                        metal = atom_id_2_ if atom_id_1_ in self.non_metal_elems else atom_id_1_
-                        metal = metal.title()
-
-                        if target_value >= 2.0 and target_value <= 2.2:
-                            other_bond_type = 'O...' + metal
-                            other_bond = True
-                        elif target_value < 2.0:
-                            other_bond_type = 'O...' + metal + ' (too close!)'
-                            other_bond = True
-
-                    elif (atom_id_1_ == 'P' and not atom_id_2_ in self.non_metal_elems) or (atom_id_2_ == 'P' and not atom_id_1_ in self.non_metal_elems):
-
-                        metal = atom_id_2_ if atom_id_1_ in self.non_metal_elems else atom_id_1_
-                        metal = metal.title()
-
-                        if target_value >= 2.1 and target_value <= 2.5:
-                            other_bond_type = 'P...' + metal
-                            other_bond = True
-                        elif target_value < 2.1:
-                            other_bond_type = 'P...' + metal + ' (too close!)'
-                            other_bond = True
-
-                    elif (atom_id_1_ == 'S' and not atom_id_2_ in self.non_metal_elems) or (atom_id_2_ == 'S' and not atom_id_1_ in self.non_metal_elems):
-
-                        metal = atom_id_2_ if atom_id_1_ in self.non_metal_elems else atom_id_1_
-                        metal = metal.title()
-
-                        if target_value >= 2.2 and target_value <= 2.6:
-                            other_bond_type = 'S...' + metal
-                            other_bond = True
-                        elif target_value < 2.2:
-                            other_bond_type = 'S...' + metal + ' (too close!)'
-                            other_bond = True
-
-                    elif (atom_id_1_ == 'SE' and not atom_id_2_ in self.non_metal_elems) or (atom_id_2_ == 'SE' and not atom_id_1_ in self.non_metal_elems):
-
-                        metal = atom_id_2_ if atom_id_1_ in self.non_metal_elems else atom_id_1_
-                        metal = metal.title()
-
-                        if target_value >= 2.3 and target_value <= 2.7:
-                            other_bond_type = 'Se...' + metal
-                            other_bond = True
-                        elif target_value < 2.3:
-                            other_bond_type = 'Se...' + metal + ' (too close!)'
-                            other_bond = True
-
-                    else:
-
-                        for j in lp_data:
-
-                            if j is i:
-                                continue
-
-                            _chain_id_1 = j[chain_id_1_name]
-                            _chain_id_2 = j[chain_id_2_name]
-                            _seq_id_1 = j[seq_id_1_name]
-                            _seq_id_2 = j[seq_id_2_name]
-                            _comp_id_1 = j[comp_id_1_name]
-                            _comp_id_2 = j[comp_id_2_name]
-
-                            if _chain_id_1 != _chain_id_2 and _chain_id_1 != chain_id_1 and _chain_id_2 != chain_id_2:
-
-                                if seq_id_1 == _seq_id_1 and comp_id_1 == _comp_id_1 and\
-                                   seq_id_2 == _seq_id_2 and comp_id_2 == _comp_id_2:
-                                    symmetry = True
-                                    break
-
-                                elif seq_id_1 == _seq_id_2 and comp_id_1 == _comp_id_2 and\
-                                     seq_id_2 == _seq_id_1 and comp_id_2 == _comp_id_1:
-                                    symmetry = True
-                                    break
-
-                range_of_seq = abs(seq_id_1 - seq_id_2)
-
-                if hydrogen_bond:
-                    if chain_id_1 != chain_id_2:
-                        data_type = 'inter-chain_hydrogen_bonds'
-                    elif range_of_seq > 5:
-                        data_type = 'long_range_hydrogen_bonds'
-                    else:
-                        data_type = 'hydrogen_bonds'
-                    data_type += '_' + hydrogen_bond_type
-
-                    if 'too close!' in hydrogen_bond_type:
-
-                        values = ''
-                        if not i[target_value_name] is None:
-                            values += '%s %s, ' % (target_value_name, i[target_value_name])
-                        if not i[lower_limit_name] is None:
-                            values += '%s %s, ' % (lower_limit_name, i[lower_limit_name])
-                        if not i[upper_limit_name] is None:
-                            values += '%s %s, ' % (upper_limit_name, i[upper_limit_name])
-                        if not i[lower_linear_limit_name] is None:
-                            values += '%s %s, ' % (lower_linear_limit_name, i[lower_linear_limit_name])
-                        if not i[upper_linear_limit_name] is None:
-                            values += '%s %s, ' % (upper_linear_limit_name, i[upper_linear_limit_name])
-
-                        warn = "Hydrogen bond constraint (chain_id_1 %s, seq_id_1 %s, comp_id_1 %s, atom_id_1 %s, chain_id_2 %s, seq_id_2 %s, comp_id_2 %s, atom_id_2 %s) is too close (%s)." %\
-                               (chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2, values[:-2])
-
-                        self.report.warning.appendDescription('unusual_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'description': warn})
-                        self.report.setWarning()
-
-                        if self.__verbose:
-                            self.__lfh.write("+NmrDpUtility.__calculateStatsOfDistanceRestraint() ++ Warning  - %s\n" % warn)
-
-                elif disulfide_bond:
-                    if chain_id_1 != chain_id_2:
-                        data_type = 'inter-chain_disulfide_bonds'
-                    elif range_of_seq > 5:
-                        data_type = 'long_range_disulfide_bonds'
-                    else:
-                        data_type = 'disulfide_bonds'
-                    data_type += '_' + disulfide_bond_type
-
-                    if 'too close!' in disulfide_bond_type:
-
-                        values = ''
-                        if not i[target_value_name] is None:
-                            values += '%s %s, ' % (target_value_name, i[target_value_name])
-                        if not i[lower_limit_name] is None:
-                            values += '%s %s, ' % (lower_limit_name, i[lower_limit_name])
-                        if not i[upper_limit_name] is None:
-                            values += '%s %s, ' % (upper_limit_name, i[upper_limit_name])
-                        if not i[lower_linear_limit_name] is None:
-                            values += '%s %s, ' % (lower_linear_limit_name, i[lower_linear_limit_name])
-                        if not i[upper_linear_limit_name] is None:
-                            values += '%s %s, ' % (upper_linear_limit_name, i[upper_linear_limit_name])
-
-                        warn = "Disulfide bond constraint (chain_id_1 %s, seq_id_1 %s, comp_id_1 %s, atom_id_1 %s, chain_id_2 %s, seq_id_2 %s, comp_id_2 %s, atom_id_2 %s) is too close (%s)." %\
-                               (chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2, values[:-2])
-
-                        self.report.warning.appendDescription('unusual_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'description': warn})
-                        self.report.setWarning()
-
-                        if self.__verbose:
-                            self.__lfh.write("+NmrDpUtility.__calculateStatsOfDistanceRestraint() ++ Warning  - %s\n" % warn)
-
-                elif diselenide_bond:
-                    if chain_id_1 != chain_id_2:
-                        data_type = 'inter-chain_diselenide_bonds'
-                    elif range_of_seq > 5:
-                        data_type = 'long_range_diselenide_bonds'
-                    else:
-                        data_type = 'diselenide_bonds'
-                    data_type += '_' + diselenide_bond_type
-
-                    if 'too close!' in diselenide_bond_type:
-
-                        values = ''
-                        if not i[target_value_name] is None:
-                            values += '%s %s, ' % (target_value_name, i[target_value_name])
-                        if not i[lower_limit_name] is None:
-                            values += '%s %s, ' % (lower_limit_name, i[lower_limit_name])
-                        if not i[upper_limit_name] is None:
-                            values += '%s %s, ' % (upper_limit_name, i[upper_limit_name])
-                        if not i[lower_linear_limit_name] is None:
-                            values += '%s %s, ' % (lower_linear_limit_name, i[lower_linear_limit_name])
-                        if not i[upper_linear_limit_name] is None:
-                            values += '%s %s, ' % (upper_linear_limit_name, i[upper_linear_limit_name])
-
-                        warn = "Diselenide bond constraint (chain_id_1 %s, seq_id_1 %s, comp_id_1 %s, atom_id_1 %s, chain_id_2 %s, seq_id_2 %s, comp_id_2 %s, atom_id_2 %s) is too close (%s)." %\
-                               (chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2, values[:-2])
-
-                        self.report.warning.appendDescription('unusual_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'description': warn})
-                        self.report.setWarning()
-
-                        if self.__verbose:
-                            self.__lfh.write("+NmrDpUtility.__calculateStatsOfDistanceRestraint() ++ Warning  - %s\n" % warn)
-
-                elif other_bond:
-                    if chain_id_1 != chain_id_2:
-                        data_type = 'inter-chain_other_bonds'
-                    elif range_of_seq > 5:
-                        data_type = 'long_range_other_bonds'
-                    else:
-                        data_type = 'other_bonds'
-                    data_type += '_' + other_bond_type
-
-                    if 'too close!' in other_bond_type:
-
-                        values = ''
-                        if not i[target_value_name] is None:
-                            values += '%s %s, ' % (target_value_name, i[target_value_name])
-                        if not i[lower_limit_name] is None:
-                            values += '%s %s, ' % (lower_limit_name, i[lower_limit_name])
-                        if not i[upper_limit_name] is None:
-                            values += '%s %s, ' % (upper_limit_name, i[upper_limit_name])
-                        if not i[lower_linear_limit_name] is None:
-                            values += '%s %s, ' % (lower_linear_limit_name, i[lower_linear_limit_name])
-                        if not i[upper_linear_limit_name] is None:
-                            values += '%s %s, ' % (upper_linear_limit_name, i[upper_linear_limit_name])
-
-                        warn = "Other bond constraint (chain_id_1 %s, seq_id_1 %s, comp_id_1 %s, atom_id_1 %s, chain_id_2 %s, seq_id_2 %s, comp_id_2 %s, atom_id_2 %s) is too close (%s)." %\
-                               (chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2, values[:-2])
-
-                        self.report.warning.appendDescription('unusual_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'description': warn})
-                        self.report.setWarning()
-
-                        if self.__verbose:
-                            self.__lfh.write("+NmrDpUtility.__calculateStatsOfDistanceRestraint() ++ Warning  - %s\n" % warn)
-
-                elif symmetry:
-                    data_type = 'symmetric_constraints'
-                elif chain_id_1 != chain_id_2:
-                    data_type = 'inter-chain_constraints'
-                elif range_of_seq == 0:
-                    data_type = 'intra-residue_constraints'
-                elif range_of_seq < 5:
-
-                    if file_type == 'nef':
-                        _atom_id_1 = self.__nefT.get_nmrstar_atom(comp_id_1, atom_id_1, leave_unmatched=False)[0]
-                        _atom_id_2 = self.__nefT.get_nmrstar_atom(comp_id_2, atom_id_2, leave_unmatched=False)[0]
-
-                        if len(_atom_id_1) > 0 and len(_atom_id_2) > 0:
-                            is_sc_atom_1 = _atom_id_1[0] in self.__csStat.getSideChainAtoms(comp_id_1)
-                            is_sc_atom_2 = _atom_id_2[0] in self.__csStat.getSideChainAtoms(comp_id_2)
-
-                            if is_sc_atom_1:
-                                is_bb_atom_1 = False
-                            else:
-                                is_bb_atom_1 = _atom_id_1[0] in self.__csStat.getBackBoneAtoms(comp_id_1)
-
-                            if is_sc_atom_2:
-                                is_bb_atom_2 = False
-                            else:
-                                is_bb_atom_2 = _atom_id_2[0] in self.__csStat.getBackBoneAtoms(comp_id_2)
-
-                        else:
-                            is_bb_atom_1 = False
-                            is_bb_atom_2 = False
-                            is_sc_atom_1 = False
-                            is_sc_atom_2 = False
-
-                    else:
-                        is_sc_atom_1 = atom_id_1 in self.__csStat.getSideChainAtoms(comp_id_1)
-                        is_sc_atom_2 = atom_id_2 in self.__csStat.getSideChainAtoms(comp_id_2)
-
-                        if is_sc_atom_1:
-                            is_bb_atom_1 = False
-                        else:
-                            is_bb_atom_1 = atom_id_1 in self.__csStat.getBackBoneAtoms(comp_id_1)
-
-                        if is_sc_atom_2:
-                            is_bb_atom_2 = False
-                        else:
-                            is_bb_atom_2 = atom_id_2 in self.__csStat.getBackBoneAtoms(comp_id_2)
-
-                    is_bb_bb = is_bb_atom_1 and is_bb_atom_2
-                    is_bb_sc = (is_bb_atom_1 and is_sc_atom_2) or (is_sc_atom_1 and is_bb_atom_2)
-                    is_sc_sc = is_sc_atom_1 and is_sc_atom_2
-
-                    if range_of_seq == 1:
-                        data_type = 'sequential_constraints'
-                    else:
-                        data_type = 'medium_range_constraints'
-
-                    if is_bb_bb:
-                        data_type += '_backbone-backbone'
-                    elif is_bb_sc:
-                        data_type += '_backbone-sidechain'
-                    elif is_sc_sc:
-                        data_type += '_sidechain-sidechain'
-                else:
-                    data_type = 'long_range_constraints'
+                data_type = self.__getTypeOfDistanceRestraint(file_type, index_tag, lp_data, index, target_value, upper_limit_value, lower_limit_value,
+                                                              chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2)
+
+                if 'hydrogen_bonds' in data_type and 'too close!' in data_type:
+
+                    values = ''
+                    if not i[target_value_name] is None:
+                        values += '%s %s, ' % (target_value_name, i[target_value_name])
+                    if not i[lower_limit_name] is None:
+                        values += '%s %s, ' % (lower_limit_name, i[lower_limit_name])
+                    if not i[upper_limit_name] is None:
+                        values += '%s %s, ' % (upper_limit_name, i[upper_limit_name])
+                    if not i[lower_linear_limit_name] is None:
+                        values += '%s %s, ' % (lower_linear_limit_name, i[lower_linear_limit_name])
+                    if not i[upper_linear_limit_name] is None:
+                        values += '%s %s, ' % (upper_linear_limit_name, i[upper_linear_limit_name])
+
+                    warn = "Hydrogen bond constraint (chain_id_1 %s, seq_id_1 %s, comp_id_1 %s, atom_id_1 %s, chain_id_2 %s, seq_id_2 %s, comp_id_2 %s, atom_id_2 %s) is too close (%s)." %\
+                           (chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2, values[:-2])
+
+                    self.report.warning.appendDescription('unusual_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'description': warn})
+                    self.report.setWarning()
+
+                    if self.__verbose:
+                        self.__lfh.write("+NmrDpUtility.__calculateStatsOfDistanceRestraint() ++ Warning  - %s\n" % warn)
+
+                elif 'disulfide_bonds' in data_type and 'too close!' in data_type:
+
+                    values = ''
+                    if not i[target_value_name] is None:
+                        values += '%s %s, ' % (target_value_name, i[target_value_name])
+                    if not i[lower_limit_name] is None:
+                        values += '%s %s, ' % (lower_limit_name, i[lower_limit_name])
+                    if not i[upper_limit_name] is None:
+                        values += '%s %s, ' % (upper_limit_name, i[upper_limit_name])
+                    if not i[lower_linear_limit_name] is None:
+                        values += '%s %s, ' % (lower_linear_limit_name, i[lower_linear_limit_name])
+                    if not i[upper_linear_limit_name] is None:
+                        values += '%s %s, ' % (upper_linear_limit_name, i[upper_linear_limit_name])
+
+                    warn = "Disulfide bond constraint (chain_id_1 %s, seq_id_1 %s, comp_id_1 %s, atom_id_1 %s, chain_id_2 %s, seq_id_2 %s, comp_id_2 %s, atom_id_2 %s) is too close (%s)." %\
+                           (chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2, values[:-2])
+
+                    self.report.warning.appendDescription('unusual_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'description': warn})
+                    self.report.setWarning()
+
+                    if self.__verbose:
+                        self.__lfh.write("+NmrDpUtility.__calculateStatsOfDistanceRestraint() ++ Warning  - %s\n" % warn)
+
+                elif 'diselenide_bonds' in data_type and 'too close!' in data_type:
+
+                    values = ''
+                    if not i[target_value_name] is None:
+                        values += '%s %s, ' % (target_value_name, i[target_value_name])
+                    if not i[lower_limit_name] is None:
+                        values += '%s %s, ' % (lower_limit_name, i[lower_limit_name])
+                    if not i[upper_limit_name] is None:
+                        values += '%s %s, ' % (upper_limit_name, i[upper_limit_name])
+                    if not i[lower_linear_limit_name] is None:
+                        values += '%s %s, ' % (lower_linear_limit_name, i[lower_linear_limit_name])
+                    if not i[upper_linear_limit_name] is None:
+                        values += '%s %s, ' % (upper_linear_limit_name, i[upper_linear_limit_name])
+
+                    warn = "Diselenide bond constraint (chain_id_1 %s, seq_id_1 %s, comp_id_1 %s, atom_id_1 %s, chain_id_2 %s, seq_id_2 %s, comp_id_2 %s, atom_id_2 %s) is too close (%s)." %\
+                           (chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2, values[:-2])
+
+                    self.report.warning.appendDescription('unusual_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'description': warn})
+                    self.report.setWarning()
+
+                    if self.__verbose:
+                        self.__lfh.write("+NmrDpUtility.__calculateStatsOfDistanceRestraint() ++ Warning  - %s\n" % warn)
+
+                elif 'other_bonds' in data_type and 'too close!' in data_type:
+
+                    values = ''
+                    if not i[target_value_name] is None:
+                        values += '%s %s, ' % (target_value_name, i[target_value_name])
+                    if not i[lower_limit_name] is None:
+                        values += '%s %s, ' % (lower_limit_name, i[lower_limit_name])
+                    if not i[upper_limit_name] is None:
+                        values += '%s %s, ' % (upper_limit_name, i[upper_limit_name])
+                    if not i[lower_linear_limit_name] is None:
+                        values += '%s %s, ' % (lower_linear_limit_name, i[lower_linear_limit_name])
+                    if not i[upper_linear_limit_name] is None:
+                        values += '%s %s, ' % (upper_linear_limit_name, i[upper_linear_limit_name])
+
+                    warn = "Other bond constraint (chain_id_1 %s, seq_id_1 %s, comp_id_1 %s, atom_id_1 %s, chain_id_2 %s, seq_id_2 %s, comp_id_2 %s, atom_id_2 %s) is too close (%s)." %\
+                           (chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2, values[:-2])
+
+                    self.report.warning.appendDescription('unusual_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'description': warn})
+                    self.report.setWarning()
+
+                    if self.__verbose:
+                        self.__lfh.write("+NmrDpUtility.__calculateStatsOfDistanceRestraint() ++ Warning  - %s\n" % warn)
 
                 if data_type in count:
                     count[data_type] += 1
@@ -7846,6 +7724,7 @@ class NmrDpUtility(object):
                     _count[k] = 0
 
                 for i in lp_data:
+                    index = i[index_tag]
                     chain_id_1 = i[chain_id_1_name]
                     chain_id_2 = i[chain_id_2_name]
                     seq_id_1 = i[seq_id_1_name]
@@ -7890,290 +7769,8 @@ class NmrDpUtility(object):
                     if target_value < v or target_value >= v + scale:
                         continue
 
-                    hydrogen_bond_type = None
-                    hydrogen_bond = False
-                    disulfide_bond_type = None
-                    disulfide_bond = False
-                    diselenide_bond_type = None
-                    diselenide_bond = False
-                    other_bond_type = None
-                    other_bond = False
-                    symmetry = False
-
-                    if chain_id_1 != chain_id_2 or seq_id_1 != seq_id_2:
-
-                        atom_id_1_ = atom_id_1[0]
-                        atom_id_2_ = atom_id_2[0]
-
-                        if not upper_limit_value is None:
-                            target_value -= 0.4
-                        elif not lower_limit_value is None:
-                            target_value += 0.4
-
-                        if (atom_id_1_ == 'F' and atom_id_2_ == 'H') or (atom_id_2_ == 'F' and atom_id_1_ == 'H'):
-
-                            if target_value >= 1.2 and target_value <= 1.5:
-                                hydrogen_bond_type = 'F...H-F'
-                                hydrogen_bond = True
-                            elif target_value < 1.2:
-                                hydrogen_bond_type = 'F...H-F (too close!)'
-                                hydrogen_bond = True
-
-                        elif (atom_id_1_ == 'F' and atom_id_2_ == 'F') or (atom_id_2_ == 'F' and atom_id_1_ == 'F'):
-
-                            if target_value >= 2.2 and target_value <= 2.5:
-                                hydrogen_bond_type = 'F...h-F'
-                                hydrogen_bond = True
-                            elif target_value < 2.2:
-                                hydrogen_bond_type = 'F...h-F (too close!)'
-                                hydrogen_bond = True
-
-                        elif (atom_id_1_ == 'O' and atom_id_2_ == 'H') or (atom_id_2_ == 'O' and atom_id_1_ == 'H'):
-
-                            if target_value >= 1.5 and target_value <= 2.2:
-                                hydrogen_bond_type = 'O...H-x'
-                                hydrogen_bond = True
-                            elif target_value < 1.5:
-                                hydrogen_bond_type = 'O...H-x (too close!)'
-                                hydrogen_bond = True
-
-                        elif (atom_id_1_ == 'O' and atom_id_2_ == 'N') or (atom_id_2_ == 'O' and atom_id_1_ == 'N'):
-
-                            if target_value >= 2.5 and target_value <= 3.2:
-                                hydrogen_bond_type = 'O...h-N'
-                                hydrogen_bond = True
-                            elif target_value < 2.5:
-                                hydrogen_bond_type = 'O...h-N (too close!)'
-                                hydrogen_bond = True
-
-                        elif (atom_id_1_ == 'O' and atom_id_2_ == 'O') or (atom_id_2_ == 'O' and atom_id_1_ == 'O'):
-
-                            if target_value >= 2.5 and target_value <= 3.2:
-                                hydrogen_bond_type = 'O...h-O'
-                                hydrogen_bond = True
-                            elif target_value < 2.5:
-                                hydrogen_bond_type = 'O...h-O (too close!)'
-                                hydrogen_bond = True
-
-                        elif (atom_id_1_ == 'N' and atom_id_2_ == 'H') or (atom_id_2_ == 'N' and atom_id_1_ == 'H'):
-
-                            if target_value >= 1.5 and target_value <= 2.2:
-                                hydrogen_bond_type = 'N...H-x'
-                                hydrogen_bond = True
-                            elif target_value < 1.5:
-                                hydrogen_bond_type = 'N...H-x (too close!)'
-                                hydrogen_bond = True
-
-                        elif (atom_id_1_ == 'N' and atom_id_2_ == 'N') or (atom_id_2_ == 'N' and atom_id_1_ == 'N'):
-
-                            if target_value >= 2.5 and target_value <= 3.2:
-                                hydrogen_bond_type = 'N...h_N'
-                                hydrogen_bond = True
-                            elif target_value < 2.5:
-                                hydrogen_bond_type = 'N...h_N (too close!)'
-                                hydrogen_bond = True
-
-                        elif atom_id_1_ == 'S' and atom_id_2_ == 'S':
-
-                            if target_value >= 1.9 and target_value <= 2.3:
-                                disulfide_bond_type = 'S...S'
-                                disulfide_bond = True
-                            elif target_value < 1.9:
-                                disulfide_bond_type = 'S...S (too close!)'
-                                disulfide_bond = True
-
-                        elif atom_id_1_ == 'SE' and atom_id_2_ == 'SE':
-
-                            if target_value >= 2.1 and target_value <= 2.6:
-                                diselenide_bond_type = 'Se...Se'
-                                diselenide_bond = True
-                            elif target_value < 2.1:
-                                diselenide_bond_type = 'Se...Se (too close!)'
-                                diselenide_bond = True
-
-                        elif (atom_id_1_ == 'N' and not atom_id_2_ in self.non_metal_elems) or (atom_id_2_ == 'N' and not atom_id_1_ in self.non_metal_elems):
-
-                            metal = atom_id_2_ if atom_id_1_ in self.non_metal_elems else atom_id_1_
-                            metal = metal.title()
-
-                            if target_value >= 1.9 and target_value <= 2.1:
-                                other_bond_type = 'N...' + metal
-                                other_bond = True
-                            elif target_value < 1.9:
-                                other_bond_type = 'N...' + metal + ' (too close!)'
-                                other_bond = True
-
-                        elif (atom_id_1_ == 'O' and not atom_id_2_ in self.non_metal_elems) or (atom_id_2_ == 'O' and not atom_id_1_ in self.non_metal_elems):
-
-                            metal = atom_id_2_ if atom_id_1_ in self.non_metal_elems else atom_id_1_
-                            metal = metal.title()
-
-                            if target_value >= 2.0 and target_value <= 2.2:
-                                other_bond_type = 'O...' + metal
-                                other_bond = True
-                            elif target_value < 2.0:
-                                other_bond_type = 'O...' + metal + ' (too close!)'
-                                other_bond = True
-
-                        elif (atom_id_1_ == 'P' and not atom_id_2_ in self.non_metal_elems) or (atom_id_2_ == 'P' and not atom_id_1_ in self.non_metal_elems):
-
-                            metal = atom_id_2_ if atom_id_1_ in self.non_metal_elems else atom_id_1_
-                            metal = metal.title()
-
-                            if target_value >= 2.1 and target_value <= 2.5:
-                                other_bond_type = 'P...' + metal
-                                other_bond = True
-                            elif target_value < 2.1:
-                                other_bond_type = 'P...' + metal + ' (too close!)'
-                                other_bond = True
-
-                        elif (atom_id_1_ == 'S' and not atom_id_2_ in self.non_metal_elems) or (atom_id_2_ == 'S' and not atom_id_1_ in self.non_metal_elems):
-
-                            metal = atom_id_2_ if atom_id_1_ in self.non_metal_elems else atom_id_1_
-                            metal = metal.title()
-
-                            if target_value >= 2.2 and target_value <= 2.6:
-                                other_bond_type = 'S...' + metal
-                                other_bond = True
-                            elif target_value < 2.2:
-                                other_bond_type = 'S...' + metal + ' (too close!)'
-                                other_bond = True
-
-                        elif (atom_id_1_ == 'SE' and not atom_id_2_ in self.non_metal_elems) or (atom_id_2_ == 'SE' and not atom_id_1_ in self.non_metal_elems):
-
-                            metal = atom_id_2_ if atom_id_1_ in self.non_metal_elems else atom_id_1_
-                            metal = metal.title()
-
-                            if target_value >= 2.3 and target_value <= 2.7:
-                                other_bond_type = 'Se...' + metal
-                                other_bond = True
-                            elif target_value < 2.3:
-                                other_bond_type = 'Se...' + metal + ' (too close!)'
-                                other_bond = True
-
-                        else:
-
-                            for j in lp_data:
-
-                                if j is i:
-                                    continue
-
-                                _chain_id_1 = j[chain_id_1_name]
-                                _chain_id_2 = j[chain_id_2_name]
-                                _seq_id_1 = j[seq_id_1_name]
-                                _seq_id_2 = j[seq_id_2_name]
-                                _comp_id_1 = j[comp_id_1_name]
-                                _comp_id_2 = j[comp_id_2_name]
-
-                                if _chain_id_1 != _chain_id_2 and _chain_id_1 != chain_id_1 and _chain_id_2 != chain_id_2:
-
-                                    if seq_id_1 == _seq_id_1 and comp_id_1 == _comp_id_1 and\
-                                       seq_id_2 == _seq_id_2 and comp_id_2 == _comp_id_2:
-                                        symmetry = True
-                                        break
-
-                                    elif seq_id_1 == _seq_id_2 and comp_id_1 == _comp_id_2 and\
-                                         seq_id_2 == _seq_id_1 and comp_id_2 == _comp_id_1:
-                                        symmetry = True
-                                        break
-
-                    range_of_seq = abs(seq_id_1 - seq_id_2)
-
-                    if hydrogen_bond:
-                        if chain_id_1 != chain_id_2:
-                            data_type = 'inter-chain_hydrogen_bonds'
-                        elif range_of_seq > 5:
-                            data_type = 'long_range_hydrogen_bonds'
-                        else:
-                            data_type = 'hydrogen_bonds'
-                        data_type += '_' + hydrogen_bond_type
-                    elif disulfide_bond:
-                        if chain_id_1 != chain_id_2:
-                            data_type = 'inter-chain_disulfide_bonds'
-                        elif range_of_seq > 5:
-                            data_type = 'long_range_disulfide_bonds'
-                        else:
-                            data_type = 'disulfide_bonds'
-                        data_type += '_' + disulfide_bond_type
-                    elif diselenide_bond:
-                        if chain_id_1 != chain_id_2:
-                            data_type = 'inter-chain_diselenide_bonds'
-                        elif range_of_seq > 5:
-                            data_type = 'long_range_diselenide_bonds'
-                        else:
-                            data_type = 'diselenide_bonds'
-                        data_type += '_' + diselenide_bond_type
-                    elif other_bond:
-                        if chain_id_1 != chain_id_2:
-                            data_type = 'inter-chain_other_bonds'
-                        elif range_of_seq > 5:
-                            data_type = 'long_range_other_bonds'
-                        else:
-                            data_type = 'other_bonds'
-                        data_type += '_' + other_bond_type
-                    elif symmetry:
-                        data_type = 'symmetric_constraints'
-                    elif chain_id_1 != chain_id_2:
-                        data_type = 'inter-chain_constraints'
-                    elif range_of_seq == 0:
-                        data_type = 'intra-residue_constraints'
-                    elif range_of_seq < 5:
-
-                        if file_type == 'nef':
-                            _atom_id_1 = self.__nefT.get_nmrstar_atom(comp_id_1, atom_id_1, leave_unmatched=False)[0]
-                            _atom_id_2 = self.__nefT.get_nmrstar_atom(comp_id_2, atom_id_2, leave_unmatched=False)[0]
-
-                            if len(_atom_id_1) > 0 and len(_atom_id_2) > 0:
-                                is_sc_atom_1 = _atom_id_1[0] in self.__csStat.getSideChainAtoms(comp_id_1)
-                                is_sc_atom_2 = _atom_id_2[0] in self.__csStat.getSideChainAtoms(comp_id_2)
-
-                                if is_sc_atom_1:
-                                    is_bb_atom_1 = False
-                                else:
-                                    is_bb_atom_1 = _atom_id_1[0] in self.__csStat.getBackBoneAtoms(comp_id_1)
-
-                                if is_sc_atom_2:
-                                    is_bb_atom_2 = False
-                                else:
-                                    is_bb_atom_2 = _atom_id_2[0] in self.__csStat.getBackBoneAtoms(comp_id_2)
-
-                            else:
-                                is_bb_atom_1 = False
-                                is_bb_atom_2 = False
-                                is_sc_atom_1 = False
-                                is_sc_atom_2 = False
-
-                        else:
-                            is_sc_atom_1 = atom_id_1 in self.__csStat.getSideChainAtoms(comp_id_1)
-                            is_sc_atom_2 = atom_id_2 in self.__csStat.getSideChainAtoms(comp_id_2)
-
-                            if is_sc_atom_1:
-                                is_bb_atom_1 = False
-                            else:
-                                is_bb_atom_1 = atom_id_1 in self.__csStat.getBackBoneAtoms(comp_id_1)
-
-                            if is_sc_atom_2:
-                                is_bb_atom_2 = False
-                            else:
-                                is_bb_atom_2 = atom_id_2 in self.__csStat.getBackBoneAtoms(comp_id_2)
-
-                        is_bb_bb = is_bb_atom_1 and is_bb_atom_2
-                        is_bb_sc = (is_bb_atom_1 and is_sc_atom_2) or (is_sc_atom_1 and is_bb_atom_2)
-                        is_sc_sc = is_sc_atom_1 and is_sc_atom_2
-
-                        if range_of_seq == 1:
-                            data_type = 'sequential_constraints'
-                        else:
-                            data_type = 'medium_range_constraints'
-
-                        if is_bb_bb:
-                            data_type += '_backbone-backbone'
-                        elif is_bb_sc:
-                            data_type += '_backbone-sidechain'
-                        elif is_sc_sc:
-                            data_type += '_sidechain-sidechain'
-                    else:
-                        data_type = 'long_range_constraints'
+                    data_type = self.__getTypeOfDistanceRestraint(file_type, index_tag, lp_data, index, target_value, upper_limit_value, lower_limit_value,
+                                                                  chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2)
 
                     _count[data_type] += 1
 
@@ -8205,6 +7802,347 @@ class NmrDpUtility(object):
                 """
                 ent['histogram'] = {'range_of_values': range_of_vals, 'number_of_values': transposed}
 
+            if not conflict_id_set is None:
+
+                max_exclusive = self.dist_restraint_error['max_exclusive']
+
+                max_val = 0.0
+                min_val = 0.0
+
+                dist_ann = []
+
+                for id_set in conflict_id_set:
+                    len_id_set = len(id_set)
+
+                    if len_id_set < 2:
+                        continue
+
+                    for i in range(len_id_set - 1):
+
+                        for j in range(i + 1, len_id_set):
+                            row_id_1 = id_set[i]
+                            row_id_2 = id_set[j]
+
+                            target_value_1 = lp_data[row_id_1][target_value_name]
+
+                            if target_value_1 is None:
+
+                                if not lp_data[row_id_1][lower_limit_name] is None and not lp_data[row_id_1][upper_limit_name] is None:
+                                    target_value_1 = (lp_data[row_id_1][lower_limit_name] + lp_data[row_id_1][upper_limit_name]) / 2.0
+
+                                elif not lp_data[row_id_1][lower_linear_limit_name] is None and not lp_data[row_id_1][upper_linear_limit_name] is None:
+                                    target_value_1 = (lp_data[row_id_1][lower_linear_limit_name] + lp_data[row_id_1][upper_linear_limit_name]) / 2.0
+
+                                elif not lp_data[row_id_1][upper_linear_limit_name] is None:
+                                    target_value_1 = lp_data[row_id_1][upper_linear_limit_name]
+
+                                elif not lp_data[row_id_1][upper_limit_name] is None:
+                                    target_value_1 = lp_data[row_id_1][upper_limit_name]
+
+                                elif not lp_data[row_id_1][lower_linear_limit_name] is None:
+                                    target_value_1 = lp_data[row_id_1][lower_linear_limit_name]
+
+                                elif not lp_data[row_id_1][lower_limit_name] is None:
+                                    target_value_1 = lp_data[row_id_1][lower_limit_name]
+
+                            target_value_2 = lp_data[row_id_2][target_value_name]
+
+                            if target_value_2 is None:
+
+                                if not lp_data[row_id_2][lower_limit_name] is None and not lp_data[row_id_2][upper_limit_name] is None:
+                                    target_value_2 = (lp_data[row_id_2][lower_limit_name] + lp_data[row_id_2][upper_limit_name]) / 2.0
+
+                                elif not lp_data[row_id_2][lower_linear_limit_name] is None and not lp_data[row_id_2][upper_linear_limit_name] is None:
+                                    target_value_2 = (lp_data[row_id_2][lower_linear_limit_name] + lp_data[row_id_2][upper_linear_limit_name]) / 2.0
+
+                                elif not lp_data[row_id_2][upper_linear_limit_name] is None:
+                                    target_value_2 = lp_data[row_id_2][upper_linear_limit_name]
+
+                                elif not lp_data[row_id_2][upper_limit_name] is None:
+                                    target_value_2 = lp_data[row_id_2][upper_limit_name]
+
+                                elif not lp_data[row_id_2][lower_linear_limit_name] is None:
+                                    target_value_2 = lp_data[row_id_2][lower_linear_limit_name]
+
+                                elif not lp_data[row_id_2][lower_limit_name] is None:
+                                    target_value_2 = lp_data[row_id_2][lower_limit_name]
+
+                            if target_value_1 is None or target_value_2 is None:
+                                continue
+
+                            if target_value_1 == target_value_2:
+                                continue
+
+                            discrepancy = abs(target_value_1 - target_value_2)
+
+                            if discrepancy > max_val:
+                                max_val = discrepancy
+
+                            if discrepancy >= max_exclusive:
+                                ann = {}
+                                ann['level'] = 'conflicted'
+                                ann['chain_id_1'] = str(lp_data[row_id_1][chain_id_1_name])
+                                ann['seq_id_1'] = lp_data[row_id_1][seq_id_1_name]
+                                ann['comp_id_1'] = lp_data[row_id_1][comp_id_1_name]
+                                ann['atom_id_1'] = lp_data[row_id_1][atom_id_1_name]
+                                if lp_data[row_id_1][chain_id_1_name] != lp_data[row_id_2][chain_id_2_name]:
+                                    ann['chain_id_2'] = str(lp_data[row_id_2][chain_id_2_name])
+                                    ann['seq_id_2'] = lp_data[row_id_2][seq_id_2_name]
+                                    ann['comp_id_2'] = lp_data[row_id_2][comp_id_2_name]
+                                elif lp_data[row_id_1][seq_id_1_name] != lp_data[row_id_2][seq_id_2_name]:
+                                    ann['seq_id_2'] = lp_data[row_id_2][seq_id_2_name]
+                                    ann['comp_id_2'] = lp_data[row_id_2][comp_id_2_name]
+                                ann['atom_id_2'] = lp_data[row_id_2][atom_id_2_name]
+                                ann['discrepancy'] = discrepancy
+
+                                dist_ann.append(ann)
+
+                            elif discrepancy >= max_exclusive / 5.0:
+                                ann = {}
+                                ann['level'] = 'inconsistent'
+                                ann['chain_id_1'] = str(lp_data[row_id_1][chain_id_1_name])
+                                ann['seq_id_1'] = lp_data[row_id_1][seq_id_1_name]
+                                ann['comp_id_1'] = lp_data[row_id_1][comp_id_1_name]
+                                ann['atom_id_1'] = lp_data[row_id_1][atom_id_1_name]
+                                if lp_data[row_id_1][chain_id_1_name] != lp_data[row_id_2][chain_id_2_name]:
+                                    ann['chain_id_2'] = str(lp_data[row_id_2][chain_id_2_name])
+                                    ann['seq_id_2'] = lp_data[row_id_2][seq_id_2_name]
+                                    ann['comp_id_2'] = lp_data[row_id_2][comp_id_2_name]
+                                elif lp_data[row_id_1][seq_id_1_name] != lp_data[row_id_2][seq_id_2_name]:
+                                    ann['seq_id_2'] = lp_data[row_id_2][seq_id_2_name]
+                                    ann['comp_id_2'] = lp_data[row_id_2][comp_id_2_name]
+                                ann['atom_id_2'] = lp_data[row_id_2][atom_id_2_name]
+                                ann['discrepancy'] = discrepancy
+
+                                dist_ann.append(ann)
+
+                if max_val > 0.0:
+                    target_scale = (max_val - min_val) / 10.0
+
+                    scale = 1.0
+
+                    while scale < target_scale:
+                        scale *= 2.0
+
+                    while scale > target_scale:
+                        scale /= 2.0
+
+                    range_of_vals = []
+                    count_of_vals = []
+
+                    v = 0.0
+                    while v < min_val:
+                        v += scale
+
+                    while v > min_val:
+                        v -= scale
+
+                    while v <= max_val:
+
+                        _count = copy.copy(count)
+
+                        for k in count.keys():
+                            _count[k] = 0
+
+                        for id_set in conflict_id_set:
+                            len_id_set = len(id_set)
+
+                            if len_id_set < 2:
+                                continue
+
+                            redundant = True
+
+                            for i in range(len_id_set - 1):
+
+                                for j in range(i + 1, len_id_set):
+                                    row_id_1 = id_set[i]
+                                    row_id_2 = id_set[j]
+
+                                    target_value_1 = lp_data[row_id_1][target_value_name]
+
+                                    if target_value_1 is None:
+
+                                        if not lp_data[row_id_1][lower_limit_name] is None and not lp_data[row_id_1][upper_limit_name] is None:
+                                            target_value_1 = (lp_data[row_id_1][lower_limit_name] + lp_data[row_id_1][upper_limit_name]) / 2.0
+
+                                        elif not lp_data[row_id_1][lower_linear_limit_name] is None and not lp_data[row_id_1][upper_linear_limit_name] is None:
+                                            target_value_1 = (lp_data[row_id_1][lower_linear_limit_name] + lp_data[row_id_1][upper_linear_limit_name]) / 2.0
+
+                                        elif not lp_data[row_id_1][upper_linear_limit_name] is None:
+                                            target_value_1 = lp_data[row_id_1][upper_linear_limit_name]
+
+                                        elif not lp_data[row_id_1][upper_limit_name] is None:
+                                            target_value_1 = lp_data[row_id_1][upper_limit_name]
+
+                                        elif not lp_data[row_id_1][lower_linear_limit_name] is None:
+                                            target_value_1 = lp_data[row_id_1][lower_linear_limit_name]
+
+                                        elif not lp_data[row_id_1][lower_limit_name] is None:
+                                            target_value_1 = lp_data[row_id_1][lower_limit_name]
+
+                                    target_value_2 = lp_data[row_id_2][target_value_name]
+
+                                    if target_value_2 is None:
+
+                                        if not lp_data[row_id_2][lower_limit_name] is None and not lp_data[row_id_2][upper_limit_name] is None:
+                                            target_value_2 = (lp_data[row_id_2][lower_limit_name] + lp_data[row_id_2][upper_limit_name]) / 2.0
+
+                                        elif not lp_data[row_id_2][lower_linear_limit_name] is None and not lp_data[row_id_2][upper_linear_limit_name] is None:
+                                            target_value_2 = (lp_data[row_id_2][lower_linear_limit_name] + lp_data[row_id_2][upper_linear_limit_name]) / 2.0
+
+                                        elif not lp_data[row_id_2][upper_linear_limit_name] is None:
+                                            target_value_2 = lp_data[row_id_2][upper_linear_limit_name]
+
+                                        elif not lp_data[row_id_2][upper_limit_name] is None:
+                                            target_value_2 = lp_data[row_id_2][upper_limit_name]
+
+                                        elif not lp_data[row_id_2][lower_linear_limit_name] is None:
+                                            target_value_2 = lp_data[row_id_2][lower_linear_limit_name]
+
+                                        elif not lp_data[row_id_2][lower_limit_name] is None:
+                                            target_value_2 = lp_data[row_id_2][lower_limit_name]
+
+                                    if target_value_1 is None and target_value_2 is None:
+                                        continue
+
+                                    if target_value_1 is None or target_value_2 is None:
+                                        redundant = False
+                                        continue
+
+                                    if target_value_1 == target_value_2:
+                                        continue
+
+                                    redundant = False
+
+                                    discrepancy = abs(target_value_1 - target_value_2)
+
+                                    if discrepancy < v or discrepancy >= v + scale:
+                                        continue
+
+                                    target_value = lp_data[row_id_1][target_value_name]
+
+                                    upper_limit_value = None
+                                    lower_limit_value = None
+
+                                    if target_value is None:
+
+                                        if not lp_data[row_id_1][lower_limit_name] is None and not lp_data[row_id_1][upper_limit_name] is None:
+                                            target_value = (lp_data[row_id_1][lower_limit_name] + lp_data[row_id_1][upper_limit_name]) / 2.0
+
+                                        elif not lp_data[row_id_1][lower_linear_limit_name] is None and not lp_data[row_id_1][upper_linear_limit_name] is None:
+                                            target_value = (lp_data[row_id_1][lower_linear_limit_name] + lp_data[row_id_1][upper_linear_limit_name]) / 2.0
+
+                                        elif not lp_data[row_id_1][upper_linear_limit_name] is None:
+                                            target_value = lp_data[row_id_1][upper_linear_limit_name]
+                                            upper_limit_value = target_value
+
+                                        elif not lp_data[row_id_1][upper_limit_name] is None:
+                                            target_value = lp_data[row_id_1][upper_limit_name]
+                                            upper_limit_value = target_value
+
+                                        elif not lp_data[row_id_1][lower_linear_limit_name] is None:
+                                            target_value = lp_data[row_id_1][lower_linear_limit_name]
+                                            lower_limit_value = target_value
+
+                                        elif not lp_data[row_id_1][lower_limit_name] is None:
+                                            target_value = lp_data[row_id_1][lower_limit_name]
+                                            lower_limit_value = target_value
+
+                                        else:
+                                            continue
+
+                                    index = lp_data[row_id_1][index_tag]
+                                    chain_id_1 = lp_data[row_id_1][chain_id_1_name]
+                                    chain_id_2 = lp_data[row_id_1][chain_id_2_name]
+                                    seq_id_1 = lp_data[row_id_1][seq_id_1_name]
+                                    seq_id_2 = lp_data[row_id_1][seq_id_2_name]
+                                    comp_id_1 = lp_data[row_id_1][comp_id_1_name]
+                                    comp_id_2 = lp_data[row_id_1][comp_id_2_name]
+                                    atom_id_1 = lp_data[row_id_1][atom_id_1_name]
+                                    atom_id_2 = lp_data[row_id_1][atom_id_2_name]
+
+                                    data_type = self.__getTypeOfDistanceRestraint(file_type, index_tag, lp_data, index, target_value, upper_limit_value, lower_limit_value,
+                                                                                  chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2)
+
+                                    _count[data_type] += 1
+
+                            if v >= 0.0 and v < scale and redundant:
+
+                                target_value = lp_data[row_id_1][target_value_name]
+
+                                upper_limit_value = None
+                                lower_limit_value = None
+
+                                if target_value is None:
+
+                                    if not lp_data[row_id_1][lower_limit_name] is None and not lp_data[row_id_1][upper_limit_name] is None:
+                                        target_value = (lp_data[row_id_1][lower_limit_name] + lp_data[row_id_1][upper_limit_name]) / 2.0
+
+                                    elif not lp_data[row_id_1][lower_linear_limit_name] is None and not lp_data[row_id_1][upper_linear_limit_name] is None:
+                                        target_value = (lp_data[row_id_1][lower_linear_limit_name] + lp_data[row_id_1][upper_linear_limit_name]) / 2.0
+
+                                    elif not lp_data[row_id_1][upper_linear_limit_name] is None:
+                                        target_value = lp_data[row_id_1][upper_linear_limit_name]
+                                        upper_limit_value = target_value
+
+                                    elif not lp_data[row_id_1][upper_limit_name] is None:
+                                        target_value = lp_data[row_id_1][upper_limit_name]
+                                        upper_limit_value = target_value
+
+                                    elif not lp_data[row_id_1][lower_linear_limit_name] is None:
+                                        target_value = lp_data[row_id_1][lower_linear_limit_name]
+                                        lower_limit_value = target_value
+
+                                    elif not lp_data[row_id_1][lower_limit_name] is None:
+                                        target_value = lp_data[row_id_1][lower_limit_name]
+                                        lower_limit_value = target_value
+
+                                    else:
+                                        continue
+
+                                index = lp_data[row_id_1][index_tag]
+                                chain_id_1 = lp_data[row_id_1][chain_id_1_name]
+                                chain_id_2 = lp_data[row_id_1][chain_id_2_name]
+                                seq_id_1 = lp_data[row_id_1][seq_id_1_name]
+                                seq_id_2 = lp_data[row_id_1][seq_id_2_name]
+                                comp_id_1 = lp_data[row_id_1][comp_id_1_name]
+                                comp_id_2 = lp_data[row_id_1][comp_id_2_name]
+                                atom_id_1 = lp_data[row_id_1][atom_id_1_name]
+                                atom_id_2 = lp_data[row_id_1][atom_id_2_name]
+
+                                data_type = self.__getTypeOfDistanceRestraint(file_type, index_tag, lp_data, index, target_value, upper_limit_value, lower_limit_value,
+                                                                              chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2)
+
+                                _count[data_type] += 1
+
+                        range_of_vals.append(v)
+                        count_of_vals.append(_count)
+
+                        v += scale
+
+                    transposed = {}
+
+                    for k in count.keys():
+                        transposed[k] = []
+
+                        for j in range(len(range_of_vals)):
+                            transposed[k].append(count_of_vals[j][k])
+
+                    if len(range_of_vals) > 1:
+                        """
+                        has_value = False
+                        for j in range(1, len(range_of_vals) - 1):
+                            for k in count.keys():
+                                if transposed[k][j] > 0:
+                                    has_value = True
+                                    break
+                            if has_value:
+                                break
+
+                        if has_value:
+                        """
+                        ent['histogram_of_discrepancy'] = {'range_of_values': range_of_vals, 'number_of_values': transposed, 'annotations': dist_ann}
+
         except Exception as e:
 
             self.report.error.appendDescription('internal_error', "+NmrDpUtility.__calculateStatsOfDistanceRestraint() ++ Error  - %s" % str(e))
@@ -8213,7 +8151,307 @@ class NmrDpUtility(object):
             if self.__verbose:
                 self.__lfh.write("+NmrDpUtility.__calculateStatsOfDistanceRestraint() ++ Error  - %s" % str(e))
 
-    def __calculateStatsOfDihedralRestraint(self, lp_data, inconsistent, redundant, ent):
+    def __getTypeOfDistanceRestraint(self, file_type, index_tag, lp_data, index, target_value, upper_limit_value, lower_limit_value,
+                                     chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2):
+        """ Return type of distance restraint.
+        """
+
+        item_names = self.item_names_in_ds_loop[file_type]
+        chain_id_1_name = item_names['chain_id_1']
+        chain_id_2_name = item_names['chain_id_2']
+        seq_id_1_name = item_names['seq_id_1']
+        seq_id_2_name = item_names['seq_id_2']
+        comp_id_1_name = item_names['comp_id_1']
+        comp_id_2_name = item_names['comp_id_2']
+
+        hydrogen_bond_type = None
+        hydrogen_bond = False
+        disulfide_bond_type = None
+        disulfide_bond = False
+        diselenide_bond_type = None
+        diselenide_bond = False
+        other_bond_type = None
+        other_bond = False
+        symmetry = False
+
+        if chain_id_1 != chain_id_2 or seq_id_1 != seq_id_2:
+
+            atom_id_1_ = atom_id_1[0]
+            atom_id_2_ = atom_id_2[0]
+
+            if not upper_limit_value is None:
+                target_value -= 0.4
+            elif not lower_limit_value is None:
+                target_value += 0.4
+
+            if (atom_id_1_ == 'F' and atom_id_2_ == 'H') or (atom_id_2_ == 'F' and atom_id_1_ == 'H'):
+
+                if target_value >= 1.2 and target_value <= 1.5:
+                    hydrogen_bond_type = 'F...H-F'
+                    hydrogen_bond = True
+                elif target_value < 1.2:
+                    hydrogen_bond_type = 'F...H-F (too close!)'
+                    hydrogen_bond = True
+
+            elif (atom_id_1_ == 'F' and atom_id_2_ == 'F') or (atom_id_2_ == 'F' and atom_id_1_ == 'F'):
+
+                if target_value >= 2.2 and target_value <= 2.5:
+                    hydrogen_bond_type = 'F...h-F'
+                    hydrogen_bond = True
+                elif target_value < 2.2:
+                    hydrogen_bond_type = 'F...h-F (too close!)'
+                    hydrogen_bond = True
+
+            elif (atom_id_1_ == 'O' and atom_id_2_ == 'H') or (atom_id_2_ == 'O' and atom_id_1_ == 'H'):
+
+                if target_value >= 1.5 and target_value <= 2.2:
+                    hydrogen_bond_type = 'O...H-x'
+                    hydrogen_bond = True
+                elif target_value < 1.5:
+                    hydrogen_bond_type = 'O...H-x (too close!)'
+                    hydrogen_bond = True
+
+            elif (atom_id_1_ == 'O' and atom_id_2_ == 'N') or (atom_id_2_ == 'O' and atom_id_1_ == 'N'):
+
+                if target_value >= 2.5 and target_value <= 3.2:
+                    hydrogen_bond_type = 'O...h-N'
+                    hydrogen_bond = True
+                elif target_value < 2.5:
+                    hydrogen_bond_type = 'O...h-N (too close!)'
+                    hydrogen_bond = True
+
+            elif (atom_id_1_ == 'O' and atom_id_2_ == 'O') or (atom_id_2_ == 'O' and atom_id_1_ == 'O'):
+
+                if target_value >= 2.5 and target_value <= 3.2:
+                    hydrogen_bond_type = 'O...h-O'
+                    hydrogen_bond = True
+                elif target_value < 2.5:
+                    hydrogen_bond_type = 'O...h-O (too close!)'
+                    hydrogen_bond = True
+
+            elif (atom_id_1_ == 'N' and atom_id_2_ == 'H') or (atom_id_2_ == 'N' and atom_id_1_ == 'H'):
+
+                if target_value >= 1.5 and target_value <= 2.2:
+                    hydrogen_bond_type = 'N...H-x'
+                    hydrogen_bond = True
+                elif target_value < 1.5:
+                    hydrogen_bond_type = 'N...H-x (too close!)'
+                    hydrogen_bond = True
+
+            elif (atom_id_1_ == 'N' and atom_id_2_ == 'N') or (atom_id_2_ == 'N' and atom_id_1_ == 'N'):
+
+                if target_value >= 2.5 and target_value <= 3.2:
+                    hydrogen_bond_type = 'N...h_N'
+                    hydrogen_bond = True
+                elif target_value < 2.5:
+                    hydrogen_bond_type = 'N...h_N (too close!)'
+                    hydrogen_bond = True
+
+            elif atom_id_1_ == 'S' and atom_id_2_ == 'S':
+
+                if target_value >= 1.9 and target_value <= 2.3:
+                    disulfide_bond_type = 'S...S'
+                    disulfide_bond = True
+                elif target_value < 1.9:
+                    disulfide_bond_type = 'S...S (too close!)'
+                    disulfide_bond = True
+
+            elif atom_id_1_ == 'SE' and atom_id_2_ == 'SE':
+
+                if target_value >= 2.1 and target_value <= 2.6:
+                    diselenide_bond_type = 'Se...Se'
+                    diselenide_bond = True
+                elif target_value < 2.1:
+                    diselenide_bond_type = 'Se...Se (too close!)'
+                    diselenide_bond = True
+
+            elif (atom_id_1_ == 'N' and not atom_id_2_ in self.non_metal_elems) or (atom_id_2_ == 'N' and not atom_id_1_ in self.non_metal_elems):
+
+                metal = atom_id_2_ if atom_id_1_ in self.non_metal_elems else atom_id_1_
+                metal = metal.title()
+
+                if target_value >= 1.9 and target_value <= 2.1:
+                    other_bond_type = 'N...' + metal
+                    other_bond = True
+                elif target_value < 1.9:
+                    other_bond_type = 'N...' + metal + ' (too close!)'
+                    other_bond = True
+
+            elif (atom_id_1_ == 'O' and not atom_id_2_ in self.non_metal_elems) or (atom_id_2_ == 'O' and not atom_id_1_ in self.non_metal_elems):
+
+                metal = atom_id_2_ if atom_id_1_ in self.non_metal_elems else atom_id_1_
+                metal = metal.title()
+
+                if target_value >= 2.0 and target_value <= 2.2:
+                    other_bond_type = 'O...' + metal
+                    other_bond = True
+                elif target_value < 2.0:
+                    other_bond_type = 'O...' + metal + ' (too close!)'
+                    other_bond = True
+
+            elif (atom_id_1_ == 'P' and not atom_id_2_ in self.non_metal_elems) or (atom_id_2_ == 'P' and not atom_id_1_ in self.non_metal_elems):
+
+                metal = atom_id_2_ if atom_id_1_ in self.non_metal_elems else atom_id_1_
+                metal = metal.title()
+
+                if target_value >= 2.1 and target_value <= 2.5:
+                    other_bond_type = 'P...' + metal
+                    other_bond = True
+                elif target_value < 2.1:
+                    other_bond_type = 'P...' + metal + ' (too close!)'
+                    other_bond = True
+
+            elif (atom_id_1_ == 'S' and not atom_id_2_ in self.non_metal_elems) or (atom_id_2_ == 'S' and not atom_id_1_ in self.non_metal_elems):
+
+                metal = atom_id_2_ if atom_id_1_ in self.non_metal_elems else atom_id_1_
+                metal = metal.title()
+
+                if target_value >= 2.2 and target_value <= 2.6:
+                    other_bond_type = 'S...' + metal
+                    other_bond = True
+                elif target_value < 2.2:
+                    other_bond_type = 'S...' + metal + ' (too close!)'
+                    other_bond = True
+
+            elif (atom_id_1_ == 'SE' and not atom_id_2_ in self.non_metal_elems) or (atom_id_2_ == 'SE' and not atom_id_1_ in self.non_metal_elems):
+
+                metal = atom_id_2_ if atom_id_1_ in self.non_metal_elems else atom_id_1_
+                metal = metal.title()
+
+                if target_value >= 2.3 and target_value <= 2.7:
+                    other_bond_type = 'Se...' + metal
+                    other_bond = True
+                elif target_value < 2.3:
+                    other_bond_type = 'Se...' + metal + ' (too close!)'
+                    other_bond = True
+
+            else:
+
+                for j in lp_data:
+
+                    if j[index_tag] == index:
+                        continue
+
+                    _chain_id_1 = j[chain_id_1_name]
+                    _chain_id_2 = j[chain_id_2_name]
+                    _seq_id_1 = j[seq_id_1_name]
+                    _seq_id_2 = j[seq_id_2_name]
+                    _comp_id_1 = j[comp_id_1_name]
+                    _comp_id_2 = j[comp_id_2_name]
+
+                    if _chain_id_1 != _chain_id_2 and _chain_id_1 != chain_id_1 and _chain_id_2 != chain_id_2:
+
+                        if seq_id_1 == _seq_id_1 and comp_id_1 == _comp_id_1 and\
+                           seq_id_2 == _seq_id_2 and comp_id_2 == _comp_id_2:
+                            symmetry = True
+                            break
+
+                        elif seq_id_1 == _seq_id_2 and comp_id_1 == _comp_id_2 and\
+                             seq_id_2 == _seq_id_1 and comp_id_2 == _comp_id_1:
+                            symmetry = True
+                            break
+
+        range_of_seq = abs(seq_id_1 - seq_id_2)
+
+        if hydrogen_bond:
+            if chain_id_1 != chain_id_2:
+                data_type = 'inter-chain_hydrogen_bonds'
+            elif range_of_seq > 5:
+                data_type = 'long_range_hydrogen_bonds'
+            else:
+                data_type = 'hydrogen_bonds'
+            data_type += '_' + hydrogen_bond_type
+        elif disulfide_bond:
+            if chain_id_1 != chain_id_2:
+                data_type = 'inter-chain_disulfide_bonds'
+            elif range_of_seq > 5:
+                data_type = 'long_range_disulfide_bonds'
+            else:
+                data_type = 'disulfide_bonds'
+            data_type += '_' + disulfide_bond_type
+        elif diselenide_bond:
+            if chain_id_1 != chain_id_2:
+                data_type = 'inter-chain_diselenide_bonds'
+            elif range_of_seq > 5:
+                data_type = 'long_range_diselenide_bonds'
+            else:
+                data_type = 'diselenide_bonds'
+            data_type += '_' + diselenide_bond_type
+        elif other_bond:
+            if chain_id_1 != chain_id_2:
+                data_type = 'inter-chain_other_bonds'
+            elif range_of_seq > 5:
+                data_type = 'long_range_other_bonds'
+            else:
+                data_type = 'other_bonds'
+            data_type += '_' + other_bond_type
+        elif symmetry:
+            data_type = 'symmetric_constraints'
+        elif chain_id_1 != chain_id_2:
+            data_type = 'inter-chain_constraints'
+        elif range_of_seq == 0:
+            data_type = 'intra-residue_constraints'
+        elif range_of_seq < 5:
+
+            if file_type == 'nef':
+                _atom_id_1 = self.__nefT.get_nmrstar_atom(comp_id_1, atom_id_1, leave_unmatched=False)[0]
+                _atom_id_2 = self.__nefT.get_nmrstar_atom(comp_id_2, atom_id_2, leave_unmatched=False)[0]
+
+                if len(_atom_id_1) > 0 and len(_atom_id_2) > 0:
+                    is_sc_atom_1 = _atom_id_1[0] in self.__csStat.getSideChainAtoms(comp_id_1)
+                    is_sc_atom_2 = _atom_id_2[0] in self.__csStat.getSideChainAtoms(comp_id_2)
+
+                    if is_sc_atom_1:
+                        is_bb_atom_1 = False
+                    else:
+                        is_bb_atom_1 = _atom_id_1[0] in self.__csStat.getBackBoneAtoms(comp_id_1)
+
+                    if is_sc_atom_2:
+                        is_bb_atom_2 = False
+                    else:
+                        is_bb_atom_2 = _atom_id_2[0] in self.__csStat.getBackBoneAtoms(comp_id_2)
+
+                else:
+                    is_bb_atom_1 = False
+                    is_bb_atom_2 = False
+                    is_sc_atom_1 = False
+                    is_sc_atom_2 = False
+
+            else:
+                is_sc_atom_1 = atom_id_1 in self.__csStat.getSideChainAtoms(comp_id_1)
+                is_sc_atom_2 = atom_id_2 in self.__csStat.getSideChainAtoms(comp_id_2)
+
+                if is_sc_atom_1:
+                    is_bb_atom_1 = False
+                else:
+                    is_bb_atom_1 = atom_id_1 in self.__csStat.getBackBoneAtoms(comp_id_1)
+
+                if is_sc_atom_2:
+                    is_bb_atom_2 = False
+                else:
+                    is_bb_atom_2 = atom_id_2 in self.__csStat.getBackBoneAtoms(comp_id_2)
+
+            is_bb_bb = is_bb_atom_1 and is_bb_atom_2
+            is_bb_sc = (is_bb_atom_1 and is_sc_atom_2) or (is_sc_atom_1 and is_bb_atom_2)
+            is_sc_sc = is_sc_atom_1 and is_sc_atom_2
+
+            if range_of_seq == 1:
+                data_type = 'sequential_constraints'
+            else:
+                data_type = 'medium_range_constraints'
+
+            if is_bb_bb:
+                data_type += '_backbone-backbone'
+            elif is_bb_sc:
+                data_type += '_backbone-sidechain'
+            elif is_sc_sc:
+                data_type += '_sidechain-sidechain'
+        else:
+            data_type = 'long_range_constraints'
+
+        return data_type
+
+    def __calculateStatsOfDihedralRestraint(self, lp_data, conflict_id_set, inconsistent, redundant, ent):
         """ Calculate statistics of dihedral angle restraints.
         """
 
@@ -8249,16 +8487,6 @@ class NmrDpUtility(object):
         atom_id_3_name = dh_item_names['atom_id_3']
         atom_id_4_name = dh_item_names['atom_id_4']
         angle_type_name = dh_item_names['angle_type']
-
-        dihed_atom_ids = ['N', 'CA', 'C']
-
-        chi1_atom_id_4_pat = re.compile(r'^[COS]G1?$')
-        chi2_atom_id_3_pat = re.compile(r'^CG1?$')
-        chi2_atom_id_4_pat = re.compile(r'^[CNOS]D1?$')
-        chi3_atom_id_3_pat = re.compile(r'^[CS]D$')
-        chi3_atom_id_4_pat = re.compile(r'^[CNO]E1?$')
-        chi4_atom_id_3_pat = re.compile(r'^[CN]E$')
-        chi4_atom_id_4_pat = re.compile(r'^[CN]Z$')
 
         try:
 
@@ -8333,121 +8561,24 @@ class NmrDpUtility(object):
                 chain_id_2 = i[chain_id_2_name]
                 chain_id_3 = i[chain_id_3_name]
                 chain_id_4 = i[chain_id_4_name]
-                seq_ids = []
-                seq_ids.append(i[seq_id_1_name])
-                seq_ids.append(i[seq_id_2_name])
-                seq_ids.append(i[seq_id_3_name])
-                seq_ids.append(i[seq_id_4_name])
-                comp_id = i[comp_id_1_name]
-                comp_ids = []
-                comp_ids.append(i[comp_id_1_name])
-                comp_ids.append(i[comp_id_2_name])
-                comp_ids.append(i[comp_id_3_name])
-                comp_ids.append(i[comp_id_4_name])
-                atom_ids = []
-                atom_ids.append(i[atom_id_1_name])
-                atom_ids.append(i[atom_id_2_name])
-                atom_ids.append(i[atom_id_3_name])
-                atom_ids.append(i[atom_id_4_name])
+                seq_id_1 = i[seq_id_1_name]
+                seq_id_2 = i[seq_id_2_name]
+                seq_id_3 = i[seq_id_3_name]
+                seq_id_4 = i[seq_id_4_name]
+                comp_id_1 = i[comp_id_1_name]
+                comp_id_2 = i[comp_id_2_name]
+                comp_id_3 = i[comp_id_3_name]
+                comp_id_4 = i[comp_id_4_name]
+                atom_id_1 = i[atom_id_1_name]
+                atom_id_2 = i[atom_id_2_name]
+                atom_id_3 = i[atom_id_3_name]
+                atom_id_4 = i[atom_id_4_name]
                 data_type = i[angle_type_name]
 
-                seq_id_common = collections.Counter(seq_ids).most_common()
-                comp_id_common = collections.Counter(comp_ids).most_common()
-
-                if data_type in self.empty_value:
-
-                    data_type = 'unknown'
-
-                    if chain_id_1 == chain_id_2 and chain_id_2 == chain_id_3 and chain_id_3 == chain_id_4:
-
-                        polypeptide_like = self.__csStat.getTypeOfCompId(comp_id)[0]
-
-                        if polypeptide_like:
-
-                            if len(seq_id_common) == 2:
-
-                                # phi or psi
-
-                                if seq_id_common[0][1] == 3 and seq_id_common[1][1] == 1:
-
-                                    # phi
-
-                                    seq_id_prev = seq_id_common[1][0]
-
-                                    if seq_id_common[0][0] == seq_id_prev + 1:
-
-                                        j = 0
-                                        if seq_ids[j] == seq_id_prev and atom_ids[j] == 'C':
-                                            atom_ids.pop(j)
-                                            if atom_ids == dihed_atom_ids:
-                                                data_type = 'phi'
-
-                                    # psi
-
-                                    seq_id_next = seq_id_common[1][0]
-
-                                    if seq_id_common[0][0] == seq_id_next - 1:
-
-                                        j = 3
-                                        if seq_ids[j] == seq_id_next and atom_ids[j] == 'N':
-                                            atom_ids.pop(j)
-                                            if atom_ids == dihed_atom_ids:
-                                                data_type = 'psi'
-
-                                # omega
-
-                                if atom_ids[0] == 'O' and atom_ids[1] == 'C' and atom_ids[2] == 'N' and (atom_ids[3] == 'H' or atom_ids[3] == 'CA') and\
-                                   seq_ids[0] == seq_ids[1] and seq_ids[1] + 1 == seq_ids[2] and seq_ids[2] == seq_ids[3]:
-                                    data_type = 'omega'
-
-                            elif len(seq_id_common) == 1:
-
-                                # chi1
-
-                                if atom_ids[0] == 'N' and atom_ids[1] == 'CA' and atom_ids[2] == 'CB' and chi1_atom_id_4_pat.match(atom_ids[3]):
-                                    #if (atom_ids[3] == 'CG' and comp_id in ['ARG', 'ASN', 'ASP', 'GLN', 'GLU', 'HIS', 'LEU', 'LYS', 'MET', 'PHE', 'PRO', 'TRP', 'TYR']) or\
-                                    #   (atom_ids[3] == 'CG1' and comp_id in ['ILE', 'VAL']) or\
-                                    #   (atom_ids[3] == 'OG' and comp_id == 'SER') or\
-                                    #   (atom_ids[3] == 'OG1' and comp_id == 'THR') or\
-                                    #   (atom_ids[3] == 'SG' and comp_id == 'CYS'):
-                                    data_type = 'chi1'
-
-                                # chi2
-
-                                if atom_ids[0] == 'CA' and atom_ids[1] == 'CB' and chi2_atom_id_3_pat(atom_ids[2]) and chi2_atom_id_4_pat(atom_ids[3]):
-                                    #if (atom_ids[2] == 'CG' and atom_ids[3] == 'CD' and comp_id in ['ARG', 'GLN', 'GLU', 'LYS', 'PRO']) or\
-                                    #   (atom_ids[2] == 'CG' and atom_ids[3] == 'CD1' and comp_id in ['LEU', 'PHE', 'TRP', 'TYR']) or\
-                                    #   (atom_ids[2] == 'CG' and atom_ids[3] == 'ND1' and comp_id == 'HIS') or\
-                                    #   (atom_ids[2] == 'CG' and atom_ids[3] == 'OD1' and comp_id in ['ASN', 'ASP']) or\
-                                    #   (atom_ids[2] == 'CG' and atom_ids[3] == 'SD' and comp_id == 'MET') or\
-                                    #   (atom_ids[2] == 'CG1' and atom_ids[3] == 'CD' and comp_id == 'ILE'):
-                                    data_type = 'chi2'
-
-                                # chi3
-
-                                if atom_ids[0] == 'CB' and atom_ids[1] == 'CG' and chi3_atom_id_3_pat(atom_ids[2]) and chi3_atom_id_4_pat(atom_ids[3]):
-                                    #if (atom_ids[2] == 'CD' and atom_ids[3] == 'CE' and comp_id == 'LYS') or\
-                                    #   (atom_ids[2] == 'CD' and atom_ids[3] == 'NE' and comp_id == 'ARG') or\
-                                    #   (atom_ids[2] == 'CD' and atom_ids[3] == 'OE1' and comp_id in ['GLN', 'GLU']) or\
-                                    #   (atom_ids[2] == 'SD' and atom_ids[3] == 'CE' and comp_id == 'MET'):
-                                    data_type = 'chi3'
-
-                                # chi4
-
-                                if atom_ids[0] == 'CG' and atom_ids[1] == 'CD' and chi4_atom_id_3_pat(atom_ids[2]) and chi4_atom_id_4_par(atom_ids[3]):
-                                    #if (atom_ids[2] == 'NE' and atom_ids[3] == 'CZ' and comp_id == 'ARG') or\
-                                    #  (atom_ids[2] == 'CE' and atom_ids[3] == 'NZ' and comp_id == 'LYS'):
-                                    data_type = 'chi4'
-
-                                # chi5
-
-                                if atom_ids == ['CD', 'NE', 'CZ', 'NH1']: # and comp_id == 'ARG':
-                                    data_type = 'chi5'
-
-                else:
-                    data_type = data_type.lower()
-
-                data_type += '_angle_constraints'
+                data_type, seq_id_common, comp_id_common =\
+                self.__getTypeOfDihedralRestraint(data_type,
+                                                  chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2,
+                                                  chain_id_3, seq_id_3, comp_id_3, atom_id_3, chain_id_4, seq_id_4, comp_id_4, atom_id_4)
 
                 if data_type in count:
                     count[data_type] += 1
@@ -8652,6 +8783,309 @@ class NmrDpUtility(object):
 
                     ent['chi1_chi2_plot'] = chi1_chi2_plot
 
+            if not conflict_id_set is None:
+
+                max_exclusive = self.dihed_restraint_error['max_exclusive']
+
+                max_val = 0.0
+                min_val = 0.0
+
+                dihed_ann = []
+
+                for id_set in conflict_id_set:
+                    len_id_set = len(id_set)
+
+                    if len_id_set < 2:
+                        continue
+
+                    for i in range(len_id_set - 1):
+
+                        for j in range(i + 1, len_id_set):
+                            row_id_1 = id_set[i]
+                            row_id_2 = id_set[j]
+
+                            target_value_1 = lp_data[row_id_1][target_value_name]
+
+                            if target_value_1 is None:
+
+                                if not lp_data[row_id_1][lower_limit_name] is None and not lp_data[row_id_1][upper_limit_name] is None:
+                                    target_value_1 = (lp_data[row_id_1][lower_limit_name] + lp_data[row_id_1][upper_limit_name]) / 2.0
+
+                                elif not lp_data[row_id_1][lower_linear_limit_name] is None and not lp_data[row_id_1][upper_linear_limit_name] is None:
+                                    target_value_1 = (lp_data[row_id_1][lower_linear_limit_name] + lp_data[row_id_1][upper_linear_limit_name]) / 2.0
+
+                                elif not lp_data[row_id_1][upper_linear_limit_name] is None:
+                                    target_value_1 = lp_data[row_id_1][upper_linear_limit_name]
+
+                                elif not lp_data[row_id_1][upper_limit_name] is None:
+                                    target_value_1 = lp_data[row_id_1][upper_limit_name]
+
+                                elif not lp_data[row_id_1][lower_linear_limit_name] is None:
+                                    target_value_1 = lp_data[row_id_1][lower_linear_limit_name]
+
+                                elif not lp_data[row_id_1][lower_limit_name] is None:
+                                    target_value_1 = lp_data[row_id_1][lower_limit_name]
+
+                            target_value_2 = lp_data[row_id_2][target_value_name]
+
+                            if target_value_2 is None:
+
+                                if not lp_data[row_id_2][lower_limit_name] is None and not lp_data[row_id_2][upper_limit_name] is None:
+                                    target_value_2 = (lp_data[row_id_2][lower_limit_name] + lp_data[row_id_2][upper_limit_name]) / 2.0
+
+                                elif not lp_data[row_id_2][lower_linear_limit_name] is None and not lp_data[row_id_2][upper_linear_limit_name] is None:
+                                    target_value_2 = (lp_data[row_id_2][lower_linear_limit_name] + lp_data[row_id_2][upper_linear_limit_name]) / 2.0
+
+                                elif not lp_data[row_id_2][upper_linear_limit_name] is None:
+                                    target_value_2 = lp_data[row_id_2][upper_linear_limit_name]
+
+                                elif not lp_data[row_id_2][upper_limit_name] is None:
+                                    target_value_2 = lp_data[row_id_2][upper_limit_name]
+
+                                elif not lp_data[row_id_2][lower_linear_limit_name] is None:
+                                    target_value_2 = lp_data[row_id_2][lower_linear_limit_name]
+
+                                elif not lp_data[row_id_2][lower_limit_name] is None:
+                                    target_value_2 = lp_data[row_id_2][lower_limit_name]
+
+                            if target_value_1 is None or target_value_2 is None:
+                                continue
+
+                            while target_value_1 > 180.0:
+                                target_value_1 -= 360.0
+                            while target_value_1 < -180.0:
+                                target_value_1 += 360.0
+
+                            while target_value_2 > 180.0:
+                                target_value_2 -= 360.0
+                            while target_value_2 < -180.0:
+                                target_value_2 += 360.0
+
+                            if target_value_1 == target_value_2:
+                                continue
+
+                            discrepancy = abs(target_value_1 - target_value_2)
+
+                            if discrepancy > max_val:
+                                max_val = discrepancy
+
+                            if discrepancy >= max_exclusive:
+                                ann = {}
+                                ann['level'] = 'conflicted'
+                                ann['chain_id'] = str(lp_data[row_id_1][chain_id_2_name])
+                                ann['seq_id'] = lp_data[row_id_1][seq_id_2_name]
+                                ann['comp_id'] = lp_data[row_id_1][comp_id_2_name]
+                                ann['atom_id_1'] = lp_data[row_id_1][atom_id_1_name]
+                                ann['atom_id_2'] = lp_data[row_id_2][atom_id_2_name]
+                                ann['atom_id_3'] = lp_data[row_id_3][atom_id_3_name]
+                                ann['atom_id_4'] = lp_data[row_id_4][atom_id_4_name]
+                                ann['discrepancy'] = discrepancy
+
+                                dihed_ann.append(ann)
+
+                            elif discrepancy >= max_exclusive / 5.0:
+                                ann = {}
+                                ann['level'] = 'inconsistent'
+                                ann['chain_id'] = str(lp_data[row_id_1][chain_id_2_name])
+                                ann['seq_id'] = lp_data[row_id_1][seq_id_2_name]
+                                ann['comp_id'] = lp_data[row_id_1][comp_id_2_name]
+                                ann['atom_id_1'] = lp_data[row_id_1][atom_id_1_name]
+                                ann['atom_id_2'] = lp_data[row_id_2][atom_id_2_name]
+                                ann['atom_id_3'] = lp_data[row_id_3][atom_id_3_name]
+                                ann['atom_id_4'] = lp_data[row_id_4][atom_id_4_name]
+                                ann['discrepancy'] = discrepancy
+
+                                dihed_ann.append(ann)
+
+                if max_val > 0.0:
+                    target_scale = (max_val - min_val) / 10.0
+
+                    scale = 1.0
+
+                    while scale < target_scale:
+                        scale *= 2.0
+
+                    while scale > target_scale:
+                        scale /= 2.0
+
+                    range_of_vals = []
+                    count_of_vals = []
+
+                    v = 0.0
+                    while v < min_val:
+                        v += scale
+
+                    while v > min_val:
+                        v -= scale
+
+                    while v <= max_val:
+
+                        _count = copy.copy(count)
+
+                        for k in count.keys():
+                            _count[k] = 0
+
+                        for id_set in conflict_id_set:
+                            len_id_set = len(id_set)
+
+                            if len_id_set < 2:
+                                continue
+
+                            redundant = True
+
+                            for i in range(len_id_set - 1):
+
+                                for j in range(i + 1, len_id_set):
+                                    row_id_1 = id_set[i]
+                                    row_id_2 = id_set[j]
+
+                                    target_value_1 = lp_data[row_id_1][target_value_name]
+
+                                    if target_value_1 is None:
+
+                                        if not lp_data[row_id_1][lower_limit_name] is None and not lp_data[row_id_1][upper_limit_name] is None:
+                                            target_value_1 = (lp_data[row_id_1][lower_limit_name] + lp_data[row_id_1][upper_limit_name]) / 2.0
+
+                                        elif not lp_data[row_id_1][lower_linear_limit_name] is None and not lp_data[row_id_1][upper_linear_limit_name] is None:
+                                            target_value_1 = (lp_data[row_id_1][lower_linear_limit_name] + lp_data[row_id_1][upper_linear_limit_name]) / 2.0
+
+                                        elif not lp_data[row_id_1][upper_linear_limit_name] is None:
+                                            target_value_1 = lp_data[row_id_1][upper_linear_limit_name]
+
+                                        elif not lp_data[row_id_1][upper_limit_name] is None:
+                                            target_value_1 = lp_data[row_id_1][upper_limit_name]
+
+                                        elif not lp_data[row_id_1][lower_linear_limit_name] is None:
+                                            target_value_1 = lp_data[row_id_1][lower_linear_limit_name]
+
+                                        elif not lp_data[row_id_1][lower_limit_name] is None:
+                                            target_value_1 = lp_data[row_id_1][lower_limit_name]
+
+                                    target_value_2 = lp_data[row_id_2][target_value_name]
+
+                                    if target_value_2 is None:
+
+                                        if not lp_data[row_id_2][lower_limit_name] is None and not lp_data[row_id_2][upper_limit_name] is None:
+                                            target_value_2 = (lp_data[row_id_2][lower_limit_name] + lp_data[row_id_2][upper_limit_name]) / 2.0
+
+                                        elif not lp_data[row_id_2][lower_linear_limit_name] is None and not lp_data[row_id_2][upper_linear_limit_name] is None:
+                                            target_value_2 = (lp_data[row_id_2][lower_linear_limit_name] + lp_data[row_id_2][upper_linear_limit_name]) / 2.0
+
+                                        elif not lp_data[row_id_2][upper_linear_limit_name] is None:
+                                            target_value_2 = lp_data[row_id_2][upper_linear_limit_name]
+
+                                        elif not lp_data[row_id_2][upper_limit_name] is None:
+                                            target_value_2 = lp_data[row_id_2][upper_limit_name]
+
+                                        elif not lp_data[row_id_2][lower_linear_limit_name] is None:
+                                            target_value_2 = lp_data[row_id_2][lower_linear_limit_name]
+
+                                        elif not lp_data[row_id_2][lower_limit_name] is None:
+                                            target_value_2 = lp_data[row_id_2][lower_limit_name]
+
+                                    if target_value_1 is None and target_value_2 is None:
+                                        continue
+
+                                    if target_value_1 is None or target_value_2 is None:
+                                        redundant = False
+                                        continue
+
+                                    while target_value_1 > 180.0:
+                                        target_value_1 -= 360.0
+                                    while target_value_1 < -180.0:
+                                        target_value_1 += 360.0
+
+                                    while target_value_2 > 180.0:
+                                        target_value_2 -= 360.0
+                                    while target_value_2 < -180.0:
+                                        target_value_2 += 360.0
+
+                                    if target_value_1 == target_value_2:
+                                        continue
+
+                                    redundant = False
+
+                                    discrepancy = abs(target_value_1 - target_value_2)
+
+                                    if discrepancy < v or discrepancy >= v + scale:
+                                        continue
+
+                                    chain_id_1 = lp_data[row_id_1][chain_id_1_name]
+                                    chain_id_2 = lp_data[row_id_1][chain_id_2_name]
+                                    chain_id_3 = lp_data[row_id_3][chain_id_3_name]
+                                    chain_id_4 = lp_data[row_id_1][chain_id_4_name]
+                                    seq_id_1 = lp_data[row_id_1][seq_id_1_name]
+                                    seq_id_2 = lp_data[row_id_1][seq_id_2_name]
+                                    seq_id_3 = lp_data[row_id_3][seq_id_3_name]
+                                    seq_id_4 = lp_data[row_id_1][seq_id_4_name]
+                                    comp_id_1 = lp_data[row_id_1][comp_id_1_name]
+                                    comp_id_2 = lp_data[row_id_1][comp_id_2_name]
+                                    comp_id_3 = lp_data[row_id_3][comp_id_3_name]
+                                    comp_id_4 = lp_data[row_id_1][comp_id_4_name]
+                                    atom_id_1 = lp_data[row_id_1][atom_id_1_name]
+                                    atom_id_2 = lp_data[row_id_1][atom_id_2_name]
+                                    atom_id_3 = lp_data[row_id_3][atom_id_3_name]
+                                    atom_id_4 = lp_data[row_id_3][atom_id_4_name]
+
+                                    data_type = self.__getTypeOfDihedralRestraint(data_type,
+                                                                                  chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2,
+                                                                                  chain_id_3, seq_id_3, comp_id_3, atom_id_3, chain_id_4, seq_id_4, comp_id_4, atom_id_4)[0]
+
+                                    _count[data_type] += 1
+
+                            if v >= 0.0 and v < scale and redundant:
+
+                                chain_id_1 = lp_data[row_id_1][chain_id_1_name]
+                                chain_id_2 = lp_data[row_id_1][chain_id_2_name]
+                                chain_id_3 = lp_data[row_id_3][chain_id_3_name]
+                                chain_id_4 = lp_data[row_id_1][chain_id_4_name]
+                                seq_id_1 = lp_data[row_id_1][seq_id_1_name]
+                                seq_id_2 = lp_data[row_id_1][seq_id_2_name]
+                                seq_id_3 = lp_data[row_id_3][seq_id_3_name]
+                                seq_id_4 = lp_data[row_id_1][seq_id_4_name]
+                                comp_id_1 = lp_data[row_id_1][comp_id_1_name]
+                                comp_id_2 = lp_data[row_id_1][comp_id_2_name]
+                                comp_id_3 = lp_data[row_id_3][comp_id_3_name]
+                                comp_id_4 = lp_data[row_id_1][comp_id_4_name]
+                                atom_id_1 = lp_data[row_id_1][atom_id_1_name]
+                                atom_id_2 = lp_data[row_id_1][atom_id_2_name]
+                                atom_id_3 = lp_data[row_id_3][atom_id_3_name]
+                                atom_id_4 = lp_data[row_id_3][atom_id_4_name]
+
+                                data_type = self.__getTypeOfDihedralRestraint(data_type,
+                                                                              chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2,
+                                                                              chain_id_3, seq_id_3, comp_id_3, atom_id_3, chain_id_4, seq_id_4, comp_id_4, atom_id_4)[0]
+
+                                _count[data_type] += 1
+
+                        range_of_vals.append(v)
+                        count_of_vals.append(_count)
+
+                        v += scale
+
+                    transposed = {}
+
+                    for k in count.keys():
+                        transposed[k] = []
+
+                        for j in range(len(range_of_vals)):
+                            transposed[k].append(count_of_vals[j][k])
+
+                    if len(range_of_vals) > 1:
+                        """
+                        has_value = False
+                        for j in range(1, len(range_of_vals) - 1):
+                            for k in count.keys():
+                                if transposed[k][j] > 0:
+                                    has_value = True
+                                    break
+                            if has_value:
+                                break
+
+                        if has_value:
+                        """
+                        ent['histogram_of_discrepancy'] = {'range_of_values': range_of_vals, 'number_of_values': transposed, 'annotations': dihed_ann}
+
         except Exception as e:
 
             self.report.error.appendDescription('internal_error', "+NmrDpUtility.__calculateStatsOfDihedralRestraint() ++ Error  - %s" % str(e))
@@ -8660,7 +9094,129 @@ class NmrDpUtility(object):
             if self.__verbose:
                 self.__lfh.write("+NmrDpUtility.__calculateStatsOfDihedralRestraint() ++ Error  - %s" % str(e))
 
-    def __calculateStatsOfRdcRestraint(self, lp_data, inconsistent, redundant, ent):
+    def __getTypeOfDihedralRestraint(self, data_type,
+                                     chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2,
+                                     chain_id_3, seq_id_3, comp_id_3, atom_id_3, chain_id_4, seq_id_4, comp_id_4, atom_id_4):
+        """ Return type of dihedral restraint.
+        """
+
+        seq_ids = []
+        seq_ids.append(seq_id_1)
+        seq_ids.append(seq_id_2)
+        seq_ids.append(seq_id_3)
+        seq_ids.append(seq_id_4)
+        comp_ids = []
+        comp_ids.append(comp_id_1)
+        comp_ids.append(comp_id_2)
+        comp_ids.append(comp_id_3)
+        comp_ids.append(comp_id_4)
+        atom_ids = []
+        atom_ids.append(atom_id_1)
+        atom_ids.append(atom_id_2)
+        atom_ids.append(atom_id_3)
+        atom_ids.append(atom_id_4)
+
+        seq_id_common = collections.Counter(seq_ids).most_common()
+        comp_id_common = collections.Counter(comp_ids).most_common()
+
+        if data_type in self.empty_value:
+
+            data_type = 'unknown'
+
+            if chain_id_1 == chain_id_2 and chain_id_2 == chain_id_3 and chain_id_3 == chain_id_4:
+
+                polypeptide_like = self.__csStat.getTypeOfCompId(comp_id_1)[0]
+
+                if polypeptide_like:
+
+                    if len(seq_id_common) == 2:
+
+                        # phi or psi
+
+                        if seq_id_common[0][1] == 3 and seq_id_common[1][1] == 1:
+
+                            # phi
+
+                            seq_id_prev = seq_id_common[1][0]
+
+                            if seq_id_common[0][0] == seq_id_prev + 1:
+
+                                j = 0
+                                if seq_ids[j] == seq_id_prev and atom_ids[j] == 'C':
+                                    atom_ids.pop(j)
+                                    if atom_ids == self.dihed_atom_ids:
+                                        data_type = 'phi'
+
+                            # psi
+
+                            seq_id_next = seq_id_common[1][0]
+
+                            if seq_id_common[0][0] == seq_id_next - 1:
+
+                                j = 3
+                                if seq_ids[j] == seq_id_next and atom_ids[j] == 'N':
+                                    atom_ids.pop(j)
+                                    if atom_ids == self.dihed_atom_ids:
+                                        data_type = 'psi'
+
+                        # omega
+
+                        if atom_ids[0] == 'O' and atom_ids[1] == 'C' and atom_ids[2] == 'N' and (atom_ids[3] == 'H' or atom_ids[3] == 'CA') and\
+                           seq_ids[0] == seq_ids[1] and seq_ids[1] + 1 == seq_ids[2] and seq_ids[2] == seq_ids[3]:
+                            data_type = 'omega'
+
+                    elif len(seq_id_common) == 1:
+
+                        # chi1
+
+                        if atom_ids[0] == 'N' and atom_ids[1] == 'CA' and atom_ids[2] == 'CB' and self.chi1_atom_id_4_pat.match(atom_ids[3]):
+                            #if (atom_ids[3] == 'CG' and comp_id in ['ARG', 'ASN', 'ASP', 'GLN', 'GLU', 'HIS', 'LEU', 'LYS', 'MET', 'PHE', 'PRO', 'TRP', 'TYR']) or\
+                            #   (atom_ids[3] == 'CG1' and comp_id in ['ILE', 'VAL']) or\
+                            #   (atom_ids[3] == 'OG' and comp_id == 'SER') or\
+                            #   (atom_ids[3] == 'OG1' and comp_id == 'THR') or\
+                            #   (atom_ids[3] == 'SG' and comp_id == 'CYS'):
+                            data_type = 'chi1'
+
+                        # chi2
+
+                        if atom_ids[0] == 'CA' and atom_ids[1] == 'CB' and self.chi2_atom_id_3_pat(atom_ids[2]) and self.chi2_atom_id_4_pat(atom_ids[3]):
+                            #if (atom_ids[2] == 'CG' and atom_ids[3] == 'CD' and comp_id in ['ARG', 'GLN', 'GLU', 'LYS', 'PRO']) or\
+                            #   (atom_ids[2] == 'CG' and atom_ids[3] == 'CD1' and comp_id in ['LEU', 'PHE', 'TRP', 'TYR']) or\
+                            #   (atom_ids[2] == 'CG' and atom_ids[3] == 'ND1' and comp_id == 'HIS') or\
+                            #   (atom_ids[2] == 'CG' and atom_ids[3] == 'OD1' and comp_id in ['ASN', 'ASP']) or\
+                            #   (atom_ids[2] == 'CG' and atom_ids[3] == 'SD' and comp_id == 'MET') or\
+                            #   (atom_ids[2] == 'CG1' and atom_ids[3] == 'CD' and comp_id == 'ILE'):
+                            data_type = 'chi2'
+
+                        # chi3
+
+                        if atom_ids[0] == 'CB' and atom_ids[1] == 'CG' and self.chi3_atom_id_3_pat(atom_ids[2]) and self.chi3_atom_id_4_pat(atom_ids[3]):
+                            #if (atom_ids[2] == 'CD' and atom_ids[3] == 'CE' and comp_id == 'LYS') or\
+                            #   (atom_ids[2] == 'CD' and atom_ids[3] == 'NE' and comp_id == 'ARG') or\
+                            #   (atom_ids[2] == 'CD' and atom_ids[3] == 'OE1' and comp_id in ['GLN', 'GLU']) or\
+                            #   (atom_ids[2] == 'SD' and atom_ids[3] == 'CE' and comp_id == 'MET'):
+                            data_type = 'chi3'
+
+                        # chi4
+
+                        if atom_ids[0] == 'CG' and atom_ids[1] == 'CD' and self.chi4_atom_id_3_pat(atom_ids[2]) and self.chi4_atom_id_4_pat(atom_ids[3]):
+                            #if (atom_ids[2] == 'NE' and atom_ids[3] == 'CZ' and comp_id == 'ARG') or\
+                            #  (atom_ids[2] == 'CE' and atom_ids[3] == 'NZ' and comp_id == 'LYS'):
+                            data_type = 'chi4'
+
+                        # chi5
+
+                        if atom_ids == ['CD', 'NE', 'CZ', 'NH1']: # and comp_id == 'ARG':
+                            data_type = 'chi5'
+
+        else:
+            data_type = data_type.lower()
+
+        data_type += '_angle_constraints'
+
+        return data_type, seq_id_common, comp_id_common
+
+    def __calculateStatsOfRdcRestraint(self, lp_data, conflict_id_set, inconsistent, redundant, ent):
         """ Calculate statistics of RDC restraints.
         """
 
@@ -8725,6 +9281,12 @@ class NmrDpUtility(object):
 
             item_names = self.item_names_in_rdc_loop[file_type]
             comb_id_name = item_names['combination_id']
+            chain_id_1_name = item_names['chain_id_1']
+            chain_id_2_name = item_names['chain_id_2']
+            seq_id_1_name = item_names['seq_id_1']
+            seq_id_2_name = item_names['seq_id_2']
+            comp_id_1_name = item_names['comp_id_1']
+            comp_id_2_name = item_names['comp_id_2']
             atom_id_1_name = item_names['atom_id_1']
             atom_id_2_name = item_names['atom_id_2']
 
@@ -8741,20 +9303,7 @@ class NmrDpUtility(object):
                 atom_id_1 = i[atom_id_1_name]
                 atom_id_2 = i[atom_id_2_name]
 
-                try:
-                    iso_number_1 = self.atom_isotopes[atom_id_1[0]][0]
-                    iso_number_2 = self.atom_isotopes[atom_id_2[0]][0]
-                except KeyError:
-                    pass
-
-                if iso_number_1 < iso_number_2:
-                    vector_type = atom_id_1 + '-' + atom_id_2
-                elif iso_number_2 > iso_number_1:
-                    vector_type = atom_id_2 + '-' + atom_id_1
-                else:
-                    vector_type = sorted(atom_id_1, atom_id_2)
-
-                data_type = vector_type + '_bond_vectors'
+                data_type = self.__getTypeOfRdcRestraint(atom_id_1, atom_id_2)
 
                 if data_type in count:
                     count[data_type] += 1
@@ -8903,20 +9452,8 @@ class NmrDpUtility(object):
                     atom_id_1 = i[atom_id_1_name]
                     atom_id_2 = i[atom_id_2_name]
 
-                    try:
-                        iso_number_1 = self.atom_isotopes[atom_id_1[0]][0]
-                        iso_number_2 = self.atom_isotopes[atom_id_2[0]][0]
-                    except KeyError:
-                        pass
+                    data_type = self.__getTypeOfRdcRestraint(atom_id_1, atom_id_2)
 
-                    if iso_number_1 < iso_number_2:
-                        vector_type = atom_id_1 + '-' + atom_id_2
-                    elif iso_number_2 > iso_number_1:
-                        vector_type = atom_id_2 + '-' + atom_id_1
-                    else:
-                        vector_type = sorted(atom_id_1, atom_id_2)
-
-                    data_type = vector_type + '_bond_vectors'
                     _count[data_type] += 1
 
                 range_of_vals.append(v)
@@ -8947,6 +9484,253 @@ class NmrDpUtility(object):
                 """
                 ent['histogram'] = {'range_of_values': range_of_vals, 'number_of_values': transposed}
 
+            if not conflict_id_set is None:
+
+                max_exclusive = self.rdc_restraint_error['max_exclusive']
+
+                max_val = 0.0
+                min_val = 0.0
+
+                rdc_ann = []
+
+                for id_set in conflict_id_set:
+                    len_id_set = len(id_set)
+
+                    if len_id_set < 2:
+                        continue
+
+                    for i in range(len_id_set - 1):
+
+                        for j in range(i + 1, len_id_set):
+                            row_id_1 = id_set[i]
+                            row_id_2 = id_set[j]
+
+                            target_value_1 = lp_data[row_id_1][target_value_name]
+
+                            if target_value_1 is None:
+
+                                if not lp_data[row_id_1][lower_limit_name] is None and not lp_data[row_id_1][upper_limit_name] is None:
+                                    target_value_1 = (lp_data[row_id_1][lower_limit_name] + lp_data[row_id_1][upper_limit_name]) / 2.0
+
+                                elif not lp_data[row_id_1][lower_linear_limit_name] is None and not lp_data[row_id_1][upper_linear_limit_name] is None:
+                                    target_value_1 = (lp_data[row_id_1][lower_linear_limit_name] + lp_data[row_id_1][upper_linear_limit_name]) / 2.0
+
+                                elif not lp_data[row_id_1][upper_linear_limit_name] is None:
+                                    target_value_1 = lp_data[row_id_1][upper_linear_limit_name]
+
+                                elif not lp_data[row_id_1][upper_limit_name] is None:
+                                    target_value_1 = lp_data[row_id_1][upper_limit_name]
+
+                                elif not lp_data[row_id_1][lower_linear_limit_name] is None:
+                                    target_value_1 = lp_data[row_id_1][lower_linear_limit_name]
+
+                                elif not lp_data[row_id_1][lower_limit_name] is None:
+                                    target_value_1 = lp_data[row_id_1][lower_limit_name]
+
+                            target_value_2 = lp_data[row_id_2][target_value_name]
+
+                            if target_value_2 is None:
+
+                                if not lp_data[row_id_2][lower_limit_name] is None and not lp_data[row_id_2][upper_limit_name] is None:
+                                    target_value_2 = (lp_data[row_id_2][lower_limit_name] + lp_data[row_id_2][upper_limit_name]) / 2.0
+
+                                elif not lp_data[row_id_2][lower_linear_limit_name] is None and not lp_data[row_id_2][upper_linear_limit_name] is None:
+                                    target_value_2 = (lp_data[row_id_2][lower_linear_limit_name] + lp_data[row_id_2][upper_linear_limit_name]) / 2.0
+
+                                elif not lp_data[row_id_2][upper_linear_limit_name] is None:
+                                    target_value_2 = lp_data[row_id_2][upper_linear_limit_name]
+
+                                elif not lp_data[row_id_2][upper_limit_name] is None:
+                                    target_value_2 = lp_data[row_id_2][upper_limit_name]
+
+                                elif not lp_data[row_id_2][lower_linear_limit_name] is None:
+                                    target_value_2 = lp_data[row_id_2][lower_linear_limit_name]
+
+                                elif not lp_data[row_id_2][lower_limit_name] is None:
+                                    target_value_2 = lp_data[row_id_2][lower_limit_name]
+
+                            if target_value_1 is None or target_value_2 is None:
+                                continue
+
+                            if target_value_1 == target_value_2:
+                                continue
+
+                            discrepancy = abs(target_value_1 - target_value_2)
+
+                            if discrepancy > max_val:
+                                max_val = discrepancy
+
+                            if discrepancy >= max_exclusive:
+                                ann = {}
+                                ann['level'] = 'conflicted'
+                                ann['chain_id'] = str(lp_data[row_id_1][chain_id_1_name])
+                                ann['seq_id'] = lp_data[row_id_1][seq_id_1_name]
+                                ann['comp_id'] = lp_data[row_id_1][comp_id_1_name]
+                                ann['atom_id_1'] = lp_data[row_id_1][atom_id_1_name]
+                                ann['atom_id_2'] = lp_data[row_id_2][atom_id_2_name]
+                                ann['discrepancy'] = discrepancy
+
+                                rdc_ann.append(ann)
+
+                            elif discrepancy >= max_exclusive / 5.0:
+                                ann = {}
+                                ann['level'] = 'inconsistent'
+                                ann['chain_id'] = str(lp_data[row_id_1][chain_id_1_name])
+                                ann['seq_id'] = lp_data[row_id_1][seq_id_1_name]
+                                ann['comp_id'] = lp_data[row_id_1][comp_id_1_name]
+                                ann['atom_id_1'] = lp_data[row_id_1][atom_id_1_name]
+                                ann['atom_id_2'] = lp_data[row_id_2][atom_id_2_name]
+                                ann['discrepancy'] = discrepancy
+
+                                rdc_ann.append(ann)
+
+                if max_val > 0.0:
+                    target_scale = (max_val - min_val) / 10.0
+
+                    scale = 1.0
+
+                    while scale < target_scale:
+                        scale *= 2.0
+
+                    while scale > target_scale:
+                        scale /= 2.0
+
+                    range_of_vals = []
+                    count_of_vals = []
+
+                    v = 0.0
+                    while v < min_val:
+                        v += scale
+
+                    while v > min_val:
+                        v -= scale
+
+                    while v <= max_val:
+
+                        _count = copy.copy(count)
+
+                        for k in count.keys():
+                            _count[k] = 0
+
+                        for id_set in conflict_id_set:
+                            len_id_set = len(id_set)
+
+                            if len_id_set < 2:
+                                continue
+
+                            redundant = True
+
+                            for i in range(len_id_set - 1):
+
+                                for j in range(i + 1, len_id_set):
+                                    row_id_1 = id_set[i]
+                                    row_id_2 = id_set[j]
+
+                                    target_value_1 = lp_data[row_id_1][target_value_name]
+
+                                    if target_value_1 is None:
+
+                                        if not lp_data[row_id_1][lower_limit_name] is None and not lp_data[row_id_1][upper_limit_name] is None:
+                                            target_value_1 = (lp_data[row_id_1][lower_limit_name] + lp_data[row_id_1][upper_limit_name]) / 2.0
+
+                                        elif not lp_data[row_id_1][lower_linear_limit_name] is None and not lp_data[row_id_1][upper_linear_limit_name] is None:
+                                            target_value_1 = (lp_data[row_id_1][lower_linear_limit_name] + lp_data[row_id_1][upper_linear_limit_name]) / 2.0
+
+                                        elif not lp_data[row_id_1][upper_linear_limit_name] is None:
+                                            target_value_1 = lp_data[row_id_1][upper_linear_limit_name]
+
+                                        elif not lp_data[row_id_1][upper_limit_name] is None:
+                                            target_value_1 = lp_data[row_id_1][upper_limit_name]
+
+                                        elif not lp_data[row_id_1][lower_linear_limit_name] is None:
+                                            target_value_1 = lp_data[row_id_1][lower_linear_limit_name]
+
+                                        elif not lp_data[row_id_1][lower_limit_name] is None:
+                                            target_value_1 = lp_data[row_id_1][lower_limit_name]
+
+                                    target_value_2 = lp_data[row_id_2][target_value_name]
+
+                                    if target_value_2 is None:
+
+                                        if not lp_data[row_id_2][lower_limit_name] is None and not lp_data[row_id_2][upper_limit_name] is None:
+                                            target_value_2 = (lp_data[row_id_2][lower_limit_name] + lp_data[row_id_2][upper_limit_name]) / 2.0
+
+                                        elif not lp_data[row_id_2][lower_linear_limit_name] is None and not lp_data[row_id_2][upper_linear_limit_name] is None:
+                                            target_value_2 = (lp_data[row_id_2][lower_linear_limit_name] + lp_data[row_id_2][upper_linear_limit_name]) / 2.0
+
+                                        elif not lp_data[row_id_2][upper_linear_limit_name] is None:
+                                            target_value_2 = lp_data[row_id_2][upper_linear_limit_name]
+
+                                        elif not lp_data[row_id_2][upper_limit_name] is None:
+                                            target_value_2 = lp_data[row_id_2][upper_limit_name]
+
+                                        elif not lp_data[row_id_2][lower_linear_limit_name] is None:
+                                            target_value_2 = lp_data[row_id_2][lower_linear_limit_name]
+
+                                        elif not lp_data[row_id_2][lower_limit_name] is None:
+                                            target_value_2 = lp_data[row_id_2][lower_limit_name]
+
+                                    if target_value_1 is None and target_value_2 is None:
+                                        continue
+
+                                    if target_value_1 is None or target_value_2 is None:
+                                        redundant = False
+                                        continue
+
+                                    if target_value_1 == target_value_2:
+                                        continue
+
+                                    redundant = False
+
+                                    discrepancy = abs(target_value_1 - target_value_2)
+
+                                    if discrepancy < v or discrepancy >= v + scale:
+                                        continue
+
+                                    atom_id_1 = lp_data[row_id_1][atom_id_1_name]
+                                    atom_id_2 = lp_data[row_id_1][atom_id_2_name]
+
+                                    data_type = self.__getTypeOfRdcRestraint(data_type, atom_id_1, atom_id_2)
+
+                                    _count[data_type] += 1
+
+                            if v >= 0.0 and v < scale and redundant:
+
+                                atom_id_1 = lp_data[row_id_1][atom_id_1_name]
+                                atom_id_2 = lp_data[row_id_1][atom_id_2_name]
+
+                                data_type = self.__getTypeOfRdcRestraint(data_type, atom_id_1, atom_id_2)
+
+                                _count[data_type] += 1
+
+                        range_of_vals.append(v)
+                        count_of_vals.append(_count)
+
+                        v += scale
+
+                    transposed = {}
+
+                    for k in count.keys():
+                        transposed[k] = []
+
+                        for j in range(len(range_of_vals)):
+                            transposed[k].append(count_of_vals[j][k])
+
+                    if len(range_of_vals) > 1:
+                        """
+                        has_value = False
+                        for j in range(1, len(range_of_vals) - 1):
+                            for k in count.keys():
+                                if transposed[k][j] > 0:
+                                    has_value = True
+                                    break
+                            if has_value:
+                                break
+
+                        if has_value:
+                        """
+                        ent['histogram_of_discrepancy'] = {'range_of_values': range_of_vals, 'number_of_values': transposed, 'annotations': rdc_ann}
+
         except Exception as e:
 
             self.report.error.appendDescription('internal_error', "+NmrDpUtility.__calculateStatsOfRdcRestraint() ++ Error  - %s" % str(e))
@@ -8954,6 +9738,25 @@ class NmrDpUtility(object):
 
             if self.__verbose:
                 self.__lfh.write("+NmrDpUtility.__calculateStatsOfRdcRestraint() ++ Error  - %s" % str(e))
+
+    def __getTypeOfRdcRestraint(self, atom_id_1, atom_id_2):
+        """ Return type of RDC restraint.
+        """
+
+        try:
+            iso_number_1 = self.atom_isotopes[atom_id_1[0]][0]
+            iso_number_2 = self.atom_isotopes[atom_id_2[0]][0]
+        except KeyError:
+            pass
+
+        if iso_number_1 < iso_number_2:
+            vector_type = atom_id_1 + '-' + atom_id_2
+        elif iso_number_2 > iso_number_1:
+            vector_type = atom_id_2 + '-' + atom_id_1
+        else:
+            vector_type = sorted(atom_id_1, atom_id_2)
+
+        return vector_type + '_bond_vectors'
 
     def __calculateStatsOfSpectralPeak(self, num_dim, lp_data, ent):
         """ Calculate statistics of spectral peaks.
@@ -12015,6 +12818,301 @@ class NmrDpUtility(object):
 
         return math.exp(-((value - mean) ** 2.0) / (2.0 * (stddev ** 2))) / ((2.0 * math.pi * (stddev ** 2.0)) ** 0.5)
 
+    def __getNearestAromaticAtom(self, nmr_chain_id, nmr_seq_id, nmr_atom_id, cutoff):
+        """ Return the nearest aromatic atom around a given atom.
+            @return: the nearest aromatic atom
+        """
+
+        id = self.report.getInputSourceIdOfCoord()
+
+        if id < 0:
+            return None
+
+        cif_input_source = self.report.input_sources[id]
+        cif_input_source_dic = cif_input_source.get()
+
+        cif_polymer_sequence = cif_input_source_dic['polymer_sequence']
+
+        seq_align_dic = self.report.sequence_alignment.get()
+        chain_assign_dic = self.report.chain_assignment.get()
+
+        if not 'nmr_poly_seq_vs_model_poly_seq' in chain_assign_dic or not 'model_poly_seq_vs_nmr_poly_seq' in chain_assign_dic:
+
+            err = "Chain assignment did not exist, __assignCoordPolymerSequence() should be invoked."
+
+            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__getNearestAromaticAtom() ++ Error  - %s" % err)
+            self.report.setError()
+
+            if self.__verbose:
+                self.__lfh.write("+NmrDpUtility.__getNearestAromaticAtom() ++ Error  - %s\n" % err)
+
+            return None
+
+        if chain_assign_dic['nmr_poly_seq_vs_model_poly_seq'] is None or chain_assign_dic['model_poly_seq_vs_nmr_poly_seq'] is None:
+            return None
+
+        for chain_assign in chain_assign_dic['nmr_poly_seq_vs_model_poly_seq']:
+
+            if chain_assign['ref_chain_id'] != nmr_chain_id:
+                continue
+
+            cif_chain_id = chain_assign['test_chain_id']
+
+            result = next((seq_align for seq_align in seq_align_dic['nmr_poly_seq_vs_model_poly_seq'] if seq_align['ref_chain_id'] == nmr_chain_id and seq_align['test_chain_id'] == cif_chain_id), None)
+
+            if not result is None:
+
+                cif_seq_id = None
+                for k in range(result['length']):
+                    if result['ref_seq_id'][k] == nmr_seq_id:
+                        cif_seq_id = result['test_seq_id'][k]
+                        break
+
+                if cif_seq_id is None:
+                    continue
+
+                try:
+
+                    _origin = self.__cR.getDictListWithFilter('atom_site',
+                                                    [{'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
+                                                     {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
+                                                     {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'}
+                                                     ],
+                                                    [{'name': 'label_asym_id', 'type': 'str', 'value': cif_chain_id},
+                                                     {'name': 'label_seq_id', 'type': 'int', 'value': cif_seq_id},
+                                                     {'name': 'label_atom_id', 'type': 'str', 'value': nmr_atom_id},
+                                                     {'name': 'pdbx_PDB_model_num', 'type': 'int', 'value': 1}])
+
+                except Exception as e:
+
+                    self.report.error.appendDescription('internal_error', "+NmrDpUtility.__getNearestAromaticAtom() ++ Error  - %s" % str(e))
+                    self.report.setError()
+
+                    if self.__verbose:
+                        self.__lfh.write("+NmrDpUtility.__getNearestAromaticAtom() ++ Error  - %s" % str(e))
+
+                    return None
+
+                if len(_origin) != 1:
+
+                    err = 'Not found a given atom (chain_id %s, seq_id %s, atom_id %s) in coordinate model.' % (nmr_chain_id, nmr_seq_id, nmr_atom_id)
+
+                    self.report.error.appendDescription('internal_error', "+NmrDpUtility.__getNearestAromaticAtom() ++ Error  - %s" % err)
+                    self.report.setError()
+
+                    if self.__verbose:
+                        self.__lfh.write("+NmrDpUtility.__getNearestAromaticAtom() ++ Error  - %s" % err)
+
+                    return None
+
+                o = _origin[0]
+
+                try:
+
+                    _neighbor = self.__cR.getDictListWithFilter('atom_site',
+                                                      [{'name': 'label_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
+                                                       {'name': 'label_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
+                                                       {'name': 'label_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
+                                                       {'name': 'label_atom_id', 'type': 'str', 'alt_name': 'atom_id'},
+                                                       {'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
+                                                       {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
+                                                       {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'}
+                                                       ],
+                                                      [{'name': 'type_symbol', 'type': 'str', 'value': 'C'},
+                                                       {'name': 'Cartn_x', 'type': 'range-float', 'range': {'min_exclusive': (o['x'] - cutoff), 'max_exclusive': (o['x'] + cutoff)}},
+                                                       {'name': 'Cartn_y', 'type': 'range-float', 'range': {'min_exclusive': (o['y'] - cutoff), 'max_exclusive': (o['y'] + cutoff)}},
+                                                       {'name': 'Cartn_z', 'type': 'range-float', 'range': {'min_exclusive': (o['z'] - cutoff), 'max_exclusive': (o['z'] + cutoff)}},
+                                                       {'name': 'pdbx_PDB_model_num', 'type': 'int', 'value': 1}])
+
+                except Exception as e:
+
+                    self.report.error.appendDescription('internal_error', "+NmrDpUtility.__getNearestAromaticAtom() ++ Error  - %s" % str(e))
+                    self.report.setError()
+
+                    if self.__verbose:
+                        self.__lfh.write("+NmrDpUtility.__getNearestAromaticAtom() ++ Error  - %s" % str(e))
+
+                    return None
+
+                if len(_neighbor) == 0:
+                    return None
+
+                cutoff2 = cutoff ** 2.0
+
+                neighbor = [n for n in _neighbor if (n['x'] - o['x']) ** 2.0 + (n['y'] - o['y']) ** 2.0 + (n['z'] - o['z']) ** 2.0 < cutoff2 and
+                            n['atom_id'] in self.__csStat.getAromaticAtoms(n['comp_id'])]
+
+                if len(neighbor) == 0:
+                    return None
+
+                atom_list = []
+
+                for n in neighbor:
+
+                    for chain_assign in chain_assign_dic['model_poly_seq_vs_nmr_poly_seq']:
+
+                        if chain_assign['ref_chain_id'] != n['chain_id']:
+                            continue
+
+                        _nmr_chain_id = chain_assign['test_chain_id']
+
+                        result = next((seq_align for seq_align in seq_align_dic['model_poly_seq_vs_nmr_poly_seq'] if seq_align['ref_chain_id'] == n['chain_id'] and seq_align['test_chain_id'] == _nmr_chain_id), None)
+
+                        if not result is None:
+
+                            _nmr_seq_id = None
+                            for k in range(result['length']):
+                                if result['ref_seq_id'][k] == n['seq_id']:
+                                    _nmr_seq_id = result['test_seq_id'][k]
+                                    break
+
+                            atom_list.append({'chain_id': _nmr_chain_id, 'seq_id': _nmr_seq_id, 'comp_id': n['comp_id'], 'atom_id': n['atom_id'],
+                                              'distance': float('{:.3f}'.format(math.sqrt((n['x'] - o['x']) ** 2.0 + (n['y'] - o['y']) ** 2.0 + (n['z'] - o['z']) ** 2.0)))})
+
+                return sorted(atom_list, key = lambda a: a['distance'])[0]
+
+        return None
+
+    def __getNearestParamagneticAtom(self, nmr_chain_id, nmr_seq_id, nmr_atom_id, cutoff):
+        """ Return the nearest paramagnetic atom around a given atom.
+            @return: the nearest paramagnetic atom
+        """
+
+        if self.report.isDiamagnetic():
+            return None
+
+        id = self.report.getInputSourceIdOfCoord()
+
+        if id < 0:
+            return None
+
+        cif_input_source = self.report.input_sources[id]
+        cif_input_source_dic = cif_input_source.get()
+
+        cif_polymer_sequence = cif_input_source_dic['polymer_sequence']
+
+        seq_align_dic = self.report.sequence_alignment.get()
+        chain_assign_dic = self.report.chain_assignment.get()
+
+        if not 'nmr_poly_seq_vs_model_poly_seq' in chain_assign_dic:
+
+            err = "Chain assignment did not exist, __assignCoordPolymerSequence() should be invoked."
+
+            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__getNearestParamagneticAtom() ++ Error  - %s" % err)
+            self.report.setError()
+
+            if self.__verbose:
+                self.__lfh.write("+NmrDpUtility.__getNearestParamagneticAtom() ++ Error  - %s\n" % err)
+
+            return None
+
+        if chain_assign_dic['nmr_poly_seq_vs_model_poly_seq'] is None:
+            return None
+
+        for chain_assign in chain_assign_dic['nmr_poly_seq_vs_model_poly_seq']:
+
+            if chain_assign['ref_chain_id'] != nmr_chain_id:
+                continue
+
+            cif_chain_id = chain_assign['test_chain_id']
+
+            result = next((seq_align for seq_align in seq_align_dic['nmr_poly_seq_vs_model_poly_seq'] if seq_align['ref_chain_id'] == nmr_chain_id and seq_align['test_chain_id'] == cif_chain_id), None)
+
+            if not result is None:
+
+                cif_seq_id = None
+                for k in range(result['length']):
+                    if result['ref_seq_id'][k] == nmr_seq_id:
+                        cif_seq_id = result['test_seq_id'][k]
+                        break
+
+                if cif_seq_id is None:
+                    continue
+
+                try:
+
+                    _origin = self.__cR.getDictListWithFilter('atom_site',
+                                                    [{'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
+                                                     {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
+                                                     {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'}
+                                                     ],
+                                                    [{'name': 'label_asym_id', 'type': 'str', 'value': cif_chain_id},
+                                                     {'name': 'label_seq_id', 'type': 'int', 'value': cif_seq_id},
+                                                     {'name': 'label_atom_id', 'type': 'str', 'value': nmr_atom_id},
+                                                     {'name': 'pdbx_PDB_model_num', 'type': 'int', 'value': 1}])
+
+                except Exception as e:
+
+                    self.report.error.appendDescription('internal_error', "+NmrDpUtility.__getNearestParamagneticAtom() ++ Error  - %s" % str(e))
+                    self.report.setError()
+
+                    if self.__verbose:
+                        self.__lfh.write("+NmrDpUtility.__getNearestParamagneticAtom() ++ Error  - %s" % str(e))
+
+                    return None
+
+                if len(_origin) != 1:
+
+                    err = 'Not found a given atom (chain_id %s, seq_id %s, atom_id %s) in coordinate model.' % (nmr_chain_id, nmr_seq_id, nmr_atom_id)
+
+                    self.report.error.appendDescription('internal_error', "+NmrDpUtility.__getNearestParamagneticAtom() ++ Error  - %s" % err)
+                    self.report.setError()
+
+                    if self.__verbose:
+                        self.__lfh.write("+NmrDpUtility.__getNearestParamagneticAtom() ++ Error  - %s" % err)
+
+                    return None
+
+                o = _origin[0]
+
+                try:
+
+                    _neighbor = self.__cR.getDictListWithFilter('atom_site',
+                                                      [{'name': 'label_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
+                                                       {'name': 'label_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
+                                                       {'name': 'label_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
+                                                       {'name': 'label_atom_id', 'type': 'str', 'alt_name': 'atom_id'},
+                                                       {'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
+                                                       {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
+                                                       {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'},
+                                                       {'name': 'type_symbol', 'type': 'str'}
+                                                       ],
+                                                      [{'name': 'Cartn_x', 'type': 'range-float', 'range': {'min_exclusive': (o['x'] - cutoff), 'max_exclusive': (o['x'] + cutoff)}},
+                                                       {'name': 'Cartn_y', 'type': 'range-float', 'range': {'min_exclusive': (o['y'] - cutoff), 'max_exclusive': (o['y'] + cutoff)}},
+                                                       {'name': 'Cartn_z', 'type': 'range-float', 'range': {'min_exclusive': (o['z'] - cutoff), 'max_exclusive': (o['z'] + cutoff)}},
+                                                       {'name': 'pdbx_PDB_model_num', 'type': 'int', 'value': 1}])
+
+                except Exception as e:
+
+                    self.report.error.appendDescription('internal_error', "+NmrDpUtility.__getNearestParamagneticAtom() ++ Error  - %s" % str(e))
+                    self.report.setError()
+
+                    if self.__verbose:
+                        self.__lfh.write("+NmrDpUtility.__getNearestParamagneticAtom() ++ Error  - %s" % str(e))
+
+                    return None
+
+                if len(_neighbor) == 0:
+                    return None
+
+                cutoff2 = cutoff ** 2.0
+
+                neighbor = [n for n in _neighbor if (n['x'] - o['x']) ** 2.0 + (n['y'] - o['y']) ** 2.0 + (n['z'] - o['z']) ** 2.0 < cutoff2 and
+                            n['type_symbol'] in self.paramag_elems]
+
+                if len(neighbor) == 0:
+                    return None
+
+                atom_list = []
+
+                for n in neighbor:
+                    atom_list.append({'chain_id': n['chain_id'], 'seq_id': n['seq_id'], 'comp_id': n['comp_id'], 'atom_id': n['atom_id'],
+                                      'distance': float('{:.3f}'.format(math.sqrt((n['x'] - o['x']) ** 2.0 + (n['y'] - o['y']) ** 2.0 + (n['z'] - o['z']) ** 2.0)))})
+
+                return sorted(atom_list, key = lambda a: a['distance'])[0]
+
+        return None
+
     def __updateDihedralAngleType(self):
         """ Update dihedral angle types (phi, psi, omega, chi[1-5] for polypeptide-like residue) if possible.
         """
@@ -12049,16 +13147,6 @@ class NmrDpUtility(object):
         atom_id_3_name = item_names['atom_id_3']
         atom_id_4_name = item_names['atom_id_4']
         angle_type_name = item_names['angle_type']
-
-        dihed_atom_ids = ['N', 'CA', 'C']
-
-        chi1_atom_id_4_pat = re.compile(r'^[COS]G1?$')
-        chi2_atom_id_3_pat = re.compile(r'^CG1?$')
-        chi2_atom_id_4_pat = re.compile(r'^[CNOS]D1?$')
-        chi3_atom_id_3_pat = re.compile(r'^[CS]D$')
-        chi3_atom_id_4_pat = re.compile(r'^[CNO]E1?$')
-        chi4_atom_id_3_pat = re.compile(r'^[CN]E$')
-        chi4_atom_id_4_pat = re.compile(r'^[CN]Z$')
 
         sf_category = self.sf_categories[file_type][content_subtype]
         lp_category = self.lp_categories[file_type][content_subtype]
@@ -12143,7 +13231,7 @@ class NmrDpUtility(object):
                                     j = 0
                                     if seq_ids[j] == seq_id_prev and atom_ids[j] == 'C':
                                         atom_ids.pop(j)
-                                        if atom_ids == dihed_atom_ids:
+                                        if atom_ids == self.dihed_atom_ids:
                                             phi_index.append(index_id)
 
                                 # psi
@@ -12155,7 +13243,7 @@ class NmrDpUtility(object):
                                     j = 3
                                     if seq_ids[j] == seq_id_next and atom_ids[j] == 'N':
                                         atom_ids.pop(j)
-                                        if atom_ids == dihed_atom_ids:
+                                        if atom_ids == self.dihed_atom_ids:
                                             psi_index.append(index_id)
 
                             # omega
@@ -12168,7 +13256,7 @@ class NmrDpUtility(object):
 
                             # chi1
 
-                            if atom_ids[0] == 'N' and atom_ids[1] == 'CA' and atom_ids[2] == 'CB' and chi1_atom_id_4_pat.match(atom_ids[3]):
+                            if atom_ids[0] == 'N' and atom_ids[1] == 'CA' and atom_ids[2] == 'CB' and self.chi1_atom_id_4_pat.match(atom_ids[3]):
                                 #if (atom_ids[3] == 'CG' and comp_id in ['ARG', 'ASN', 'ASP', 'GLN', 'GLU', 'HIS', 'LEU', 'LYS', 'MET', 'PHE', 'PRO', 'TRP', 'TYR']) or\
                                 #   (atom_ids[3] == 'CG1' and comp_id in ['ILE', 'VAL']) or\
                                 #   (atom_ids[3] == 'OG' and comp_id == 'SER') or\
@@ -12178,7 +13266,7 @@ class NmrDpUtility(object):
 
                             # chi2
 
-                            if atom_ids[0] == 'CA' and atom_ids[1] == 'CB' and chi2_atom_id_3_pat(atom_ids[2]) and chi2_atom_id_4_pat(atom_ids[3]):
+                            if atom_ids[0] == 'CA' and atom_ids[1] == 'CB' and self.chi2_atom_id_3_pat(atom_ids[2]) and self.chi2_atom_id_4_pat(atom_ids[3]):
                                 #if (atom_ids[2] == 'CG' and atom_ids[3] == 'CD' and comp_id in ['ARG', 'GLN', 'GLU', 'LYS', 'PRO']) or\
                                 #   (atom_ids[2] == 'CG' and atom_ids[3] == 'CD1' and comp_id in ['LEU', 'PHE', 'TRP', 'TYR']) or\
                                 #   (atom_ids[2] == 'CG' and atom_ids[3] == 'ND1' and comp_id == 'HIS') or\
@@ -12189,7 +13277,7 @@ class NmrDpUtility(object):
 
                             # chi3
 
-                            if atom_ids[0] == 'CB' and atom_ids[1] == 'CG' and chi3_atom_id_3_pat(atom_ids[2]) and chi3_atom_id_4_pat(atom_ids[3]):
+                            if atom_ids[0] == 'CB' and atom_ids[1] == 'CG' and self.chi3_atom_id_3_pat(atom_ids[2]) and self.chi3_atom_id_4_pat(atom_ids[3]):
                                 #if (atom_ids[2] == 'CD' and atom_ids[3] == 'CE' and comp_id == 'LYS') or\
                                 #   (atom_ids[2] == 'CD' and atom_ids[3] == 'NE' and comp_id == 'ARG') or\
                                 #   (atom_ids[2] == 'CD' and atom_ids[3] == 'OE1' and comp_id in ['GLN', 'GLU']) or\
@@ -12198,7 +13286,7 @@ class NmrDpUtility(object):
 
                             # chi4
 
-                            if atom_ids[0] == 'CG' and atom_ids[1] == 'CD' and chi4_atom_id_3_pat(atom_ids[2]) and chi4_atom_id_4_par(atom_ids[3]):
+                            if atom_ids[0] == 'CG' and atom_ids[1] == 'CD' and self.chi4_atom_id_3_pat(atom_ids[2]) and self.chi4_atom_id_4_pat(atom_ids[3]):
                                 #if (atom_ids[2] == 'NE' and atom_ids[3] == 'CZ' and comp_id == 'ARG') or\
                                 #  (atom_ids[2] == 'CE' and atom_ids[3] == 'NZ' and comp_id == 'LYS'):
                                 chi4_index.append(index_id)
@@ -13125,8 +14213,6 @@ class NmrDpUtility(object):
         atom_id_4_name = item_names['atom_id_4']
         angle_type_name = item_names['angle_type']
 
-        dihed_atom_ids = ['N', 'CA', 'C']
-
         dh_chains = set()
         dh_seq_ids = {}
         cs_chains = set()
@@ -13189,7 +14275,7 @@ class NmrDpUtility(object):
                         if atom_ids[j] != 'C':
                             return False
                         atom_ids.pop(j)
-                        if atom_ids != dihed_atom_ids:
+                        if atom_ids != self.dihed_atom_ids:
                             return False
 
                 # psi
@@ -13206,7 +14292,7 @@ class NmrDpUtility(object):
                         if atom_ids[j] != 'N':
                             return False
                         atom_ids.pop(j)
-                        if atom_ids != dihed_atom_ids:
+                        if atom_ids != self.dihed_atom_ids:
                             return False
 
                 if type(chain_id_1) is int:

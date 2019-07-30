@@ -140,6 +140,6 @@ class TestNmrDpUtility(unittest.TestCase):
 
     def test_nmr_nef2str_deposit_check_2m5o(self):
         self.__test_nmr_nef2str_deposit_check('2m5o')
- 
+
 if __name__ == '__main__':
     unittest.main()

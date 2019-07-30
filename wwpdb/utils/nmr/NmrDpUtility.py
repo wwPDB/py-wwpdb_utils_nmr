@@ -4195,7 +4195,7 @@ class NmrDpUtility(object):
                             idx_msg = idx_msg[:-4] + ', '
                             idx_msg += id_tag + ' '
                             for id in id_set:
-                                idx_msg += '%s vs ' % lp_data[id][id_dag]
+                                idx_msg += '%s vs ' % lp_data[id][id_tag]
 
                             warn = '[Check rows of %s] Found redundant restraints for the same atom pair (%s).' % (idx_msg[:-4], msg[:-2])
 
@@ -4878,7 +4878,7 @@ class NmrDpUtility(object):
                                 if self.__csStat.hasEnoughStat(comp_id, polypeptide_like):
                                     tolerance = std_value
 
-                                    if (value < min_value - tolerance or value > max_value + tolerance) and abs(z_score) > 8.0:
+                                    if (value < min_value - tolerance or value > max_value + tolerance) and abs(z_score) > 10.0:
 
                                         err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] %s %s (chain_id %s, seq_id %s, comp_id %s, atom_id %s) is not within expected range (avg %s, std %s, min %s, max %s, Z_score %.2f). Please check for folded/aliased signals. If it is due to the presence of paramagnetic substance or extreme sample conditions, please provide us details.' %\
                                               (value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score)
@@ -4889,7 +4889,7 @@ class NmrDpUtility(object):
                                         if self.__verbose:
                                             self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ ValueError  - %s\n" % err)
 
-                                    elif abs(z_score) > 8.0:
+                                    elif abs(z_score) > 10.0:
 
                                         warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] %s %s (chain_id %s, seq_id %s, comp_id %s, atom_id %s) must be verified (avg %s, std %s, min %s, max %s, Z_score %.2f).' %\
                                                (value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score)
@@ -4925,7 +4925,7 @@ class NmrDpUtility(object):
                                 else:
                                     tolerance = std_value * 10.0
 
-                                    if (value < min_value - tolerance or value > max_value + tolerance) and abs(z_score) > 10.0:
+                                    if min_value < max_value and (value < min_value - tolerance or value > max_value + tolerance) and abs(z_score) > 10.0:
 
                                         err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) +\
                                               '] %s %s (chain_id %s, seq_id %s, comp_id %s, atom_id %s) is out of range (avg %s, std %s, min %s, max %s, Z_score %.2f). Please check for folded/aliased signals. If it is due to the presence of paramagnetic substance or extreme sample conditions, please provide us details.' %\

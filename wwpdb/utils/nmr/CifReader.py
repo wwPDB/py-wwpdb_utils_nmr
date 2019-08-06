@@ -11,7 +11,6 @@
 # 30-Jul-2019   my  - Add 'range-float' as filter item type
 # 05-Aug-2019   my  - Add 'enum' as filter item type
 ##
-from __builtin__ import False
 """ A collection of classes for parsing CIF files.
 """
 

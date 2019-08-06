@@ -9,7 +9,9 @@
 # 2012-10-24    RPS   Updated to reflect reorganization of modules in pdbx packages
 # 23-Jul-2019   my  - Forked original code to wwpdb.util.nmr.CifReader
 # 30-Jul-2019   my  - Add 'range-float' as filter item type
+# 05-Aug-2019   my  - Add 'enum' as filter item type
 ##
+from __builtin__ import False
 """ A collection of classes for parsing CIF files.
 """
 
@@ -35,7 +37,7 @@ class CifReader(object):
         self.trueValue = ('true', 't', 'yes', 'y', '1')
 
         # allowed item types
-        self.itemTypes = ('str', 'bool', 'int', 'float', 'range-float')
+        self.itemTypes = ('str', 'bool', 'int', 'float', 'range-float', 'enum')
 
     def setFilePath(self, filePath):
         """ Set file path and test readability.
@@ -278,7 +280,7 @@ class CifReader(object):
                                 break
                         else:
                             filterItemType = filterItem['type']
-                            if filterItemType == 'str':
+                            if filterItemType == 'str' or filterItemType == 'enum':
                                 pass
                             elif filterItemType == 'bool':
                                 val = val.lower() in self.trueValue
@@ -290,6 +292,10 @@ class CifReader(object):
                                 _range = filterItem['range']
                                 if ('min_exclusive' in _range and val <= _range['min_exclusive']) or ('min_inclusive' in _range and val < _range['min_inclusive']) or ('max_inclusive' in _range and val > _range['max_inclusive']) or ('max_exclusive' in _range and val >= _range['max_exclusive']):
                                     fileter = False
+                                    break
+                            elif filterItemType == 'enum':
+                                if not val in filterItem['enum']:
+                                    filter = False
                                     break
                             else:
                                 if val != filterItem['value']:
@@ -303,8 +309,8 @@ class CifReader(object):
                         if val in self.emptyValue:
                             val = None
                         dataItemType = dataItem['type']
-                        if dataItemType == 'str':
-                                pass
+                        if dataItemType == 'str' or dataItemType == 'enum':
+                            pass
                         elif dataItemType == 'bool':
                             val = val.lower() in self.trueValue
                         elif dataItemType == 'int' and not val is None:

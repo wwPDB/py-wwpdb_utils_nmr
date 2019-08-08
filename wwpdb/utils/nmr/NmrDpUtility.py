@@ -4963,19 +4963,17 @@ class NmrDpUtility(object):
 
                                             if na['ring_angle'] - self.magic_angle * z_score > 0.0 or self.__nonblk_anomalous_cs:
 
-                                                if na['ring_angle'] - self.magic_angle * z_score < 0.0 or na['ring_distance'] > self.vicinity_aromatic:
+                                                self.report.warning.appendDescription('suspicious_data' if na['ring_angle'] - self.magic_angle * z_score < 0.0 or na['ring_distance'] > self.vicinity_aromatic else 'unusual_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
+                                                self.report.setWarning()
 
-                                                    self.report.warning.appendDescription('suspicious_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
-                                                    self.report.setWarning()
+                                                if self.__verbose:
+                                                    self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ Warning  - %s\n" % warn)
 
-                                                    if self.__verbose:
-                                                        self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ Warning  - %s\n" % warn)
-
-                                                    if file_type == 'nmr-star' and details_col != -1:
-                                                        if loop.data[l][details_col] in self.empty_value:
-                                                            loop.data[l][details_col] = '%s %s is not within expected range. The nearest aromatic ring %s/%s/%s is located at %s angstroms, %s degrees.' % (value_name, value, na['chain_id'], na['seq_id'], na['comp_id'], na['ring_distance'], na['ring_angle'])
-                                                        else:
-                                                            loop.data[l][details_col] += ' %s %s is not within expected range. The nearest aromatic ring %s/%s/%s is located at %s angstroms, %s degrees.' % (value_name, value, na['chain_id'], na['seq_id'], na['comp_id'], na['ring_distance'], na['ring_angle'])
+                                                if file_type == 'nmr-star' and details_col != -1 and (na['ring_angle'] - self.magic_angle * z_score < 0.0 or na['ring_distance'] > self.vicinity_aromatic):
+                                                    if loop.data[l][details_col] in self.empty_value:
+                                                        loop.data[l][details_col] = '%s %s is not within expected range. The nearest aromatic ring %s/%s/%s is located at %s angstroms, %s degrees.' % (value_name, value, na['chain_id'], na['seq_id'], na['comp_id'], na['ring_distance'], na['ring_angle'])
+                                                    else:
+                                                        loop.data[l][details_col] += ' %s %s is not within expected range. The nearest aromatic ring %s/%s/%s is located at %s angstroms, %s degrees.' % (value_name, value, na['chain_id'], na['seq_id'], na['comp_id'], na['ring_distance'], na['ring_angle'])
 
                                             else:
 
@@ -4992,19 +4990,17 @@ class NmrDpUtility(object):
                                                    (value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score,
                                                     pa['chain_id'], pa['seq_id'], pa['comp_id'], pa['atom_id'], pa['distance'])
 
-                                            if pa['distance'] > self.vicinity_paramagnetic:
+                                            self.report.warning.appendDescription('suspicious_data' if pa['distance'] > self.vicinity_paramagnetic else 'unusual_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
+                                            self.report.setWarning()
 
-                                                self.report.warning.appendDescription('unusual_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
-                                                self.report.setWarning()
+                                            if self.__verbose:
+                                                self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ Warning  - %s\n" % warn)
 
-                                                if self.__verbose:
-                                                    self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ Warning  - %s\n" % warn)
-
-                                                if file_type == 'nmr-star' and details_col != -1:
-                                                    if loop.data[l][details_col] in self.empty_value:
-                                                        loop.data[l][details_col] = '%s %s is not within expected range. The nearest paramagnetic atom %s/%s/%s is located at %s angstroms.' % (value_name, value, na['chain_id'], na['seq_id'], na['comp_id'], na['distance'])
-                                                    else:
-                                                        loop.data[l][details_col] += ' %s %s is not within expected range. The nearest paramagnetic atom %s/%s/%s is located at %s angstroms.' % (value_name, value, na['chain_id'], na['seq_id'], na['comp_id'], na['distance'])
+                                            if file_type == 'nmr-star' and details_col != -1 and pa['distance'] > self.vicinity_paramagnetic:
+                                                if loop.data[l][details_col] in self.empty_value:
+                                                    loop.data[l][details_col] = '%s %s is not within expected range. The nearest paramagnetic atom %s/%s/%s is located at %s angstroms.' % (value_name, value, na['chain_id'], na['seq_id'], na['comp_id'], na['distance'])
+                                                else:
+                                                    loop.data[l][details_col] += ' %s %s is not within expected range. The nearest paramagnetic atom %s/%s/%s is located at %s angstroms.' % (value_name, value, na['chain_id'], na['seq_id'], na['comp_id'], na['distance'])
 
                                     elif abs(z_score) > 10.0:
 
@@ -5326,19 +5322,17 @@ class NmrDpUtility(object):
 
                                         if na['ring_angle'] - self.magic_angle * z_score > 0.0 or self.__nonblk_anomalous_cs:
 
-                                            if na['ring_angle'] - self.magic_angle * z_score < 0.0 or na['ring_distance'] > self.vicinity_aromatic:
+                                            self.report.warning.appendDescription('suspicious_data' if na['ring_angle'] - self.magic_angle * z_score < 0.0 or na['ring_distance'] > self.vicinity_aromatic else 'unusual_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
+                                            self.report.setWarning()
 
-                                                self.report.warning.appendDescription('suspicious_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
-                                                self.report.setWarning()
+                                            if self.__verbose:
+                                                self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ Warning  - %s\n" % warn)
 
-                                                if self.__verbose:
-                                                    self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ Warning  - %s\n" % warn)
-
-                                                if file_type == 'nmr-star' and details_col != -1:
-                                                    if loop.data[l][details_col] in self.empty_value:
-                                                        loop.data[l][details_col] = '%s %s is not within expected range. The nearest aromatic ring %s/%s/%s is located at %s angstroms, %s degrees.' % (value_name, value, na['chain_id'], na['seq_id'], na['comp_id'], na['ring_distance'], na['ring_angle'])
-                                                    else:
-                                                        loop.data[l][details_col] += ' %s %s is not within expected range. The nearest aromatic ring %s/%s/%s is located at %s angstroms, %s degrees.' % (value_name, value, na['chain_id'], na['seq_id'], na['comp_id'], na['ring_distance'], na['ring_angle'])
+                                            if file_type == 'nmr-star' and details_col != -1 and (na['ring_angle'] - self.magic_angle * z_score > 0.0 or self.__nonblk_anomalous_cs):
+                                                if loop.data[l][details_col] in self.empty_value:
+                                                    loop.data[l][details_col] = '%s %s is not within expected range. The nearest aromatic ring %s/%s/%s is located at %s angstroms, %s degrees.' % (value_name, value, na['chain_id'], na['seq_id'], na['comp_id'], na['ring_distance'], na['ring_angle'])
+                                                else:
+                                                    loop.data[l][details_col] += ' %s %s is not within expected range. The nearest aromatic ring %s/%s/%s is located at %s angstroms, %s degrees.' % (value_name, value, na['chain_id'], na['seq_id'], na['comp_id'], na['ring_distance'], na['ring_angle'])
 
                                         else:
 
@@ -5350,24 +5344,22 @@ class NmrDpUtility(object):
 
                                     else:
 
-                                        if pa['distance'] > self.vicinity_paramagnetic:
+                                        warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) +\
+                                               '] %s %s (chain_id %s, seq_id %s, comp_id %s, atom_id %s) should be verified (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest paramagnetic atom (chain_id %s, seq_id %s, comp_id %s, atom_id %s) is located at %s angstroms.' %\
+                                               (value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score,
+                                                pa['chain_id'], pa['seq_id'], pa['comp_id'], pa['atom_id'], pa['distance'])
 
-                                            warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) +\
-                                                   '] %s %s (chain_id %s, seq_id %s, comp_id %s, atom_id %s) should be verified (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest paramagnetic atom (chain_id %s, seq_id %s, comp_id %s, atom_id %s) is located at %s angstroms.' %\
-                                                   (value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score,
-                                                    pa['chain_id'], pa['seq_id'], pa['comp_id'], pa['atom_id'], pa['distance'])
+                                        self.report.warning.appendDescription('suspicious_data' if pa['distance'] > self.vicinity_paramagnetic else 'unusual_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
+                                        self.report.setWarning()
 
-                                            self.report.warning.appendDescription('unusual_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
-                                            self.report.setWarning()
+                                        if self.__verbose:
+                                            self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ Warning  - %s\n" % warn)
 
-                                            if self.__verbose:
-                                                self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ Warning  - %s\n" % warn)
-
-                                            if file_type == 'nmr-star' and details_col != -1:
-                                                if loop.data[l][details_col] in self.empty_value:
-                                                    loop.data[l][details_col] = '%s %s is not within expected range. The nearest paramagnetic atom %s/%s/%s is located at %s angstroms.' % (value_name, value, na['chain_id'], na['seq_id'], na['comp_id'], na['distance'])
-                                                else:
-                                                    loop.data[l][details_col] += ' %s %s is not within expected range. The nearest paramagnetic atom %s/%s/%s is located at %s angstroms.' % (value_name, value, na['chain_id'], na['seq_id'], na['comp_id'], na['distance'])
+                                        if file_type == 'nmr-star' and details_col != -1 and pa['distance'] > self.vicinity_paramagnetic:
+                                            if loop.data[l][details_col] in self.empty_value:
+                                                loop.data[l][details_col] = '%s %s is not within expected range. The nearest paramagnetic atom %s/%s/%s is located at %s angstroms.' % (value_name, value, na['chain_id'], na['seq_id'], na['comp_id'], na['distance'])
+                                            else:
+                                                loop.data[l][details_col] += ' %s %s is not within expected range. The nearest paramagnetic atom %s/%s/%s is located at %s angstroms.' % (value_name, value, na['chain_id'], na['seq_id'], na['comp_id'], na['distance'])
 
                                 elif abs(z_score) > 6.0:
 

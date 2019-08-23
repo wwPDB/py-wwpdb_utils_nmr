@@ -4192,7 +4192,7 @@ class NmrDpUtility(object):
                                     err = '[Check rows of %s %s vs %s, %s %s vs %s] ' %\
                                           (index_tag, lp_data[row_id_1][index_tag], lp_data[row_id_2][index_tag],
                                            id_tag, lp_data[row_id_1[id_tag]], lp_data[row_id_2][id_tag])
-                                    err += 'Found discrepancy (%s) in restraints for the same atom pair (%s).' % (discrepancy[:-2], msg[:-2])
+                                    err += 'Found discrepancy in restraints (%s) for the same atom pair (%s).' % (discrepancy[:-2], msg[:-2])
 
                                     self.report.error.appendDescription('conflicted_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
                                     self.report.setError()
@@ -4209,7 +4209,7 @@ class NmrDpUtility(object):
                                     warn = '[Check rows of %s %s vs %s, %s %s vs %s] ' %\
                                            (index_tag, lp_data[row_id_1][index_tag], lp_data[row_id_2][index_tag],
                                             id_tag, lp_data[row_id_1][id_tag], lp_data[row_id_2][id_tag])
-                                    warn += 'Found disagreement (%s) in restraints for the same atom pair (%s).' % (discrepancy[:-2], msg[:-2])
+                                    warn += 'Found difference in restraints (%s) for the same atom pair (%s).' % (discrepancy[:-2], msg[:-2])
 
                                     self.report.warning.appendDescription('inconsistent_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
                                     self.report.setWarning()

@@ -4950,12 +4950,13 @@ class NmrDpUtility(object):
                                                     self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ Warning  - %s\n" % err)
 
                                                 if file_type == 'nmr-star' and details_col != -1:
-                                                    details = '%s %s is not within expected range (avg %s, std %s, min %s, max %s, Z_score %.2f). Please check for folded/aliased signals.' % (value_name, value, avg_value, std_value, min_value, max_value, z_score)
-                                                    if loop.data[l][details_col] in self.empty_value:
-                                                        loop.data[l][details_col] = details
-                                                        add_details = True
-                                                    elif not details in loop.data[l][details_col]:
-                                                        loop.data[l][details_col] += ' %s' % details
+                                                    _details = loop.data[l][details_col]
+                                                    details = '%s %s is not within expected range (avg %s, std %s, min %s, max %s, Z_score %.2f). Neither aromatic ring nor paramagnetic atom were found in the vicinity. Please check for folded/aliased signals.\n' % (value_name, value, avg_value, std_value, min_value, max_value, z_score)
+                                                    if _details in self.empty_value or not details in _details:
+                                                        if _details in self.empty_value:
+                                                            loop.data[l][details_col] = details
+                                                        else:
+                                                            loop.data[l][details_col] += ('' if '\n' in _details else '\n') + details
                                                         add_details = True
 
                                             else:
@@ -4982,12 +4983,13 @@ class NmrDpUtility(object):
                                                     self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ Warning  - %s\n" % warn)
 
                                                 if file_type == 'nmr-star' and details_col != -1 and (na['ring_angle'] - self.magic_angle * z_score < 0.0 or na['ring_distance'] > self.vicinity_aromatic):
-                                                    details = '%s %s is not within expected range (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest aromatic ring %s/%s/%s is located at %s angstroms, %s degrees.' % (value_name, value, avg_value, std_value, min_value, max_value, z_score, na['chain_id'], na['seq_id'], na['comp_id'], na['ring_distance'], na['ring_angle'])
-                                                    if loop.data[l][details_col] in self.empty_value:
-                                                        loop.data[l][details_col] = details
-                                                        add_details = True
-                                                    elif not details in loop.data[l][details_col]:
-                                                        loop.data[l][details_col] += ' %s' % details
+                                                    _details = loop.data[l][details_col]
+                                                    details = '%s %s is not within expected range (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest aromatic ring %s/%s/%s is located at %s angstroms, %s degrees.\n' % (value_name, value, avg_value, std_value, min_value, max_value, z_score, na['chain_id'], na['seq_id'], na['comp_id'], na['ring_distance'], na['ring_angle'])
+                                                    if _details in self.empty_value or not details in _details:
+                                                        if _details in self.empty_value:
+                                                            loop.data[l][details_col] = details
+                                                        else:
+                                                            loop.data[l][details_col] += ('' if '\n' in _details else '\n') + details
                                                         add_details = True
 
                                             else:
@@ -5012,12 +5014,13 @@ class NmrDpUtility(object):
                                                 self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ Warning  - %s\n" % warn)
 
                                             if file_type == 'nmr-star' and details_col != -1 and pa['distance'] > self.vicinity_paramagnetic:
-                                                details = '%s %s is not within expected range (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest paramagnetic atom %s/%s/%s is located at %s angstroms.' % (value_name, value, avg_value, std_value, min_value, max_value, z_score, na['chain_id'], na['seq_id'], na['comp_id'], na['distance'])
-                                                if loop.data[l][details_col] in self.empty_value:
-                                                    loop.data[l][details_col] = details
-                                                    add_details = True
-                                                elif not details in loop.data[l][details_col]:
-                                                    loop.data[l][details_col] += ' %s' % details
+                                                _details = loop.data[l][details_col]
+                                                details = '%s %s is not within expected range (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest paramagnetic atom %s/%s/%s is located at %s angstroms.\n' % (value_name, value, avg_value, std_value, min_value, max_value, z_score, na['chain_id'], na['seq_id'], na['comp_id'], na['distance'])
+                                                if _details in self.empty_value or not details in _details:
+                                                    if _details in self.empty_value:
+                                                        loop.data[l][details_col] = details
+                                                    else:
+                                                        loop.data[l][details_col] += ('' if '\n' in _details else '\n') + details
                                                     add_details = True
 
                                     elif abs(z_score) > 10.0:
@@ -5136,12 +5139,13 @@ class NmrDpUtility(object):
                                                     self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ Warning  - %s\n" % err)
 
                                                 if file_type == 'nmr-star' and details_col != -1:
-                                                    details = '%s %s is not within expected range (avg %s, std %s, min %s, max %s, Z_score %.2f). Please check for folded/aliased signals.' % (value_name, value, avg_value, std_value, min_value, max_value, z_score)
-                                                    if loop.data[l][details_col] in self.empty_value:
-                                                        loop.data[l][details_col] = details
-                                                        add_details = True
-                                                    elif not details in loop.data[l][details_col]:
-                                                        loop.data[l][details_col] += ' %s' % details
+                                                    _details = loop.data[l][details_col]
+                                                    details = '%s %s is not within expected range (avg %s, std %s, min %s, max %s, Z_score %.2f). Neither aromatic ring nor paramagnetic atom were found in the vicinity. Please check for folded/aliased signals.\n' % (value_name, value, avg_value, std_value, min_value, max_value, z_score)
+                                                    if _details in self.empty_value or not details in _details:
+                                                        if _details in self.empty_value:
+                                                            loop.data[l][details_col] = details
+                                                        else:
+                                                            loop.data[l][details_col] += ('' if '\n' in _details else '\n') + details
                                                         add_details = True
 
                                             else:
@@ -5170,12 +5174,13 @@ class NmrDpUtility(object):
                                                         self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ Warning  - %s\n" % warn)
 
                                                     if file_type == 'nmr-star' and details_col != -1:
-                                                        details = '%s %s is not within expected range (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest aromatic ring %s/%s/%s is located at %s angstroms, %s degrees.' % (value_name, value, avg_value, std_value, min_value, max_value, z_score, na['chain_id'], na['seq_id'], na['comp_id'], na['ring_distance'], na['ring_angle'])
-                                                        if loop.data[l][details_col] in self.empty_value:
-                                                            loop.data[l][details_col] = details
-                                                            add_details = True
-                                                        elif not details in loop.data[l][details_col]:
-                                                            loop.data[l][details_col] += ' %s' % details
+                                                        _details = loop.data[l][details_col]
+                                                        details = '%s %s is not within expected range (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest aromatic ring %s/%s/%s is located at %s angstroms, %s degrees.\n' % (value_name, value, avg_value, std_value, min_value, max_value, z_score, na['chain_id'], na['seq_id'], na['comp_id'], na['ring_distance'], na['ring_angle'])
+                                                        if _details in self.empty_value or not details in _details:
+                                                            if _details in self.empty_value:
+                                                                loop.data[l][details_col] = details
+                                                            else:
+                                                                loop.data[l][details_col] += ('' if '\n' in _details else '\n') + details
                                                             add_details = True
 
                                             else:
@@ -5202,12 +5207,13 @@ class NmrDpUtility(object):
                                                     self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ Warning  - %s\n" % warn)
 
                                                 if file_type == 'nmr-star' and details_col != -1:
-                                                    details = '%s %s is not within expected range (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest paramagnetic atom %s/%s/%s is located at %s angstroms.' % (value_name, value, avg_value, std_value, min_value, max_value, z_score, na['chain_id'], na['seq_id'], na['comp_id'], na['distance'])
-                                                    if loop.data[l][details_col] in self.empty_value:
-                                                        loop.data[l][details_col] = details
-                                                        add_details = True
-                                                    elif not details in loop.data[l][details_col]:
-                                                        loop.data[l][details_col] += ' %s' % details
+                                                    _details = loop.data[l][details_col]
+                                                    details = '%s %s is not within expected range (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest paramagnetic atom %s/%s/%s is located at %s angstroms.\n' % (value_name, value, avg_value, std_value, min_value, max_value, z_score, na['chain_id'], na['seq_id'], na['comp_id'], na['distance'])
+                                                    if _details in self.empty_value or not details in _details:
+                                                        if _details in self.empty_value:
+                                                            loop.data[l][details_col] = details
+                                                        else:
+                                                            loop.data[l][details_col] += ('' if '\n' in _details else '\n') + details
                                                         add_details = True
 
                                     elif abs(z_score) > 10.0:
@@ -5327,12 +5333,13 @@ class NmrDpUtility(object):
                                                 self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ Warning  - %s\n" % err)
 
                                             if file_type == 'nmr-star' and details_col != -1:
-                                                details = '%s %s is not within expected range (avg %s, std %s, min %s, max %s, Z_score %.2f). Please check for folded/aliased signals.' % (value_name, value, avg_value, std_value, min_value, max_value, z_score)
-                                                if loop.data[l][details_col] in self.empty_value:
-                                                    loop.data[l][details_col] = details
-                                                    add_details = True
-                                                elif not details in loop.data[l][details_col]:
-                                                    loop.data[l][details_col] += ' %s' % details
+                                                _details = loop.data[l][details_col]
+                                                details = '%s %s is not within expected range (avg %s, std %s, min %s, max %s, Z_score %.2f). Neither aromatic ring nor paramagnetic atom were found in the vicinity. Please check for folded/aliased signals.\n' % (value_name, value, avg_value, std_value, min_value, max_value, z_score)
+                                                if _details in self.empty_value or not details in _details:
+                                                    if _details in self.empty_value:
+                                                        loop.data[l][details_col] = details
+                                                    else:
+                                                        loop.data[l][details_col] += ('' if '\n' in _details else '\n') + details
                                                     add_details = True
 
                                         else:
@@ -5359,12 +5366,13 @@ class NmrDpUtility(object):
                                                 self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ Warning  - %s\n" % warn)
 
                                             if file_type == 'nmr-star' and details_col != -1 and (na['ring_angle'] - self.magic_angle * z_score > 0.0 or self.__nonblk_anomalous_cs):
-                                                details = '%s %s is not within expected range (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest aromatic ring %s/%s/%s is located at %s angstroms, %s degrees.' % (value_name, value, avg_value, std_value, min_value, max_value, z_score, na['chain_id'], na['seq_id'], na['comp_id'], na['ring_distance'], na['ring_angle'])
-                                                if loop.data[l][details_col] in self.empty_value:
-                                                    loop.data[l][details_col] = details
-                                                    add_details = True
-                                                elif not details in loop.data[l][details_col]:
-                                                    loop.data[l][details_col] += ' %s' % details
+                                                _details = loop.data[l][details_col]
+                                                details = '%s %s is not within expected range (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest aromatic ring %s/%s/%s is located at %s angstroms, %s degrees.\n' % (value_name, value, avg_value, std_value, min_value, max_value, z_score, na['chain_id'], na['seq_id'], na['comp_id'], na['ring_distance'], na['ring_angle'])
+                                                if _details in self.empty_value or not details in _details:
+                                                    if _details in self.empty_value:
+                                                        loop.data[l][details_col] = details
+                                                    else:
+                                                        loop.data[l][details_col] += ('' if '\n' in _details else '\n') + details
                                                     add_details = True
 
                                         else:
@@ -5389,12 +5397,13 @@ class NmrDpUtility(object):
                                             self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ Warning  - %s\n" % warn)
 
                                         if file_type == 'nmr-star' and details_col != -1 and pa['distance'] > self.vicinity_paramagnetic:
-                                            details = '%s %s is not within expected range (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest paramagnetic atom %s/%s/%s is located at %s angstroms.' % (value_name, value, avg_value, std_value, min_value, max_value, z_score, na['chain_id'], na['seq_id'], na['comp_id'], na['distance'])
-                                            if loop.data[l][details_col] in self.empty_value:
-                                                loop.data[l][details_col] = details
-                                                add_details = True
-                                            elif not details in loop.data[l][details_col]:
-                                                loop.data[l][details_col] += ' %s' % details
+                                            _details = loop.data[l][details_col]
+                                            details = '%s %s is not within expected range (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest paramagnetic atom %s/%s/%s is located at %s angstroms.\n' % (value_name, value, avg_value, std_value, min_value, max_value, z_score, na['chain_id'], na['seq_id'], na['comp_id'], na['distance'])
+                                            if _details in self.empty_value or not details in _details:
+                                                if _details in self.empty_value:
+                                                    loop.data[l][details_col] = details
+                                                else:
+                                                    loop.data[l][details_col] += ('' if '\n' in _details else '\n') + details
                                                 add_details = True
 
                                 elif abs(z_score) > 6.0:
@@ -11280,12 +11289,13 @@ class NmrDpUtility(object):
                                     if self.__verbose:
                                         self.__lfh.write("+NmrDpUtility.__testCoordAtomIdConsistency() ++ Warning  - %s\n" % err)
 
-                                    details = "%s/%s/%s/%s is not incorporated in the atomic coordinate." % (chain_id, seq_id, comp_id, atom_name)
-                                    if loop.data[l][details_col] in self.empty_value:
-                                        loop.data[l][details_col] = details
-                                        add_details = True
-                                    elif not details in loop.data[l][details_col]:
-                                        loop.data[l][details_col] += ' %s' % details
+                                    _details = loop.data[l][details_col]
+                                    details = "%s/%s/%s/%s is not incorporated in the atomic coordinate.\n" % (chain_id, seq_id, comp_id, atom_name)
+                                    if _details in self.empty_value or not details in _details:
+                                        if _details in self.empty_value:
+                                            loop.data[l][details_col] = details
+                                        else:
+                                            loop.data[l][details_col] += ('' if '\n' in _details else '\n') + details
                                         add_details = True
 
                                 else:

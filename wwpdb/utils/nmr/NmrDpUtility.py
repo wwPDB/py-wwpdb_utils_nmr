@@ -1,6 +1,6 @@
 ##
 # File: NmrDpUtility.py
-# Date: 26-Aug-2019
+# Date: 28-Aug-2019
 #
 # Updates:
 ##
@@ -2272,11 +2272,8 @@ class NmrDpUtility(object):
 
                     if not 'index' in lp_data.tags:
 
-                        id = 1
-
-                        for i in lp_data:
-                            i.append(id)
-                            id += 1
+                        for id, i in enumerate(lp_data):
+                            i.append(id + 1)
 
                         lp_data.add_tag(lp_category + '.index')
 
@@ -4831,9 +4828,7 @@ class NmrDpUtility(object):
 
                 methyl_cs_vals = {}
 
-                l = 0
-
-                for i in lp_data:
+                for l, i in enumerate(lp_data):
                     chain_id = i[chain_id_name]
                     seq_id = i[seq_id_name]
                     comp_id = i[comp_id_name]
@@ -4844,7 +4839,6 @@ class NmrDpUtility(object):
                         _atom_id, ambig_code, details = self.__nefT.get_nmrstar_atom(comp_id, atom_id, leave_unmatched=True)
 
                         if len(_atom_id) == 0:
-                            l += 1
                             continue
 
                         if len(_atom_id) == 1 and atom_id == _atom_id[0]:
@@ -5517,7 +5511,6 @@ class NmrDpUtility(object):
                         ambig_code = i[ambig_code_name]
 
                         if ambig_code in self.empty_value or ambig_code == 1:
-                            l += 1
                             continue
 
                         allowed_ambig_code = self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id)
@@ -5718,8 +5711,6 @@ class NmrDpUtility(object):
 
                             if self.__verbose:
                                 self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ ValueError - %s\n" % err)
-
-                    l += 1
 
             except StopIteration:
 
@@ -6607,14 +6598,12 @@ class NmrDpUtility(object):
                     excluded_comp_id = []
                     excluded_atom_id = []
 
-                    id = 0
-
                     h1_col = -1
                     c13_col = -1
                     n15_col = -1
                     p31_col = -1
 
-                    for data_type in count:
+                    for id, data_type in enumerate(count):
 
                         atom_group = {}
                         atom_group['atom_group'] = 'all_' + data_type
@@ -6633,8 +6622,6 @@ class NmrDpUtility(object):
 
                         elif data_type.startswith('31p'):
                             p31_col = id
-
-                        id += 1
 
                         all_c.append(atom_group)
 
@@ -6746,14 +6733,12 @@ class NmrDpUtility(object):
 
                     bb_c = []
 
-                    id = 0
-
                     h1_col = -1
                     c13_col = -1
                     n15_col = -1
                     p31_col = -1
 
-                    for data_type in count:
+                    for id, data_type in enumerate(count):
 
                         atom_group = {}
                         atom_group['atom_group'] = 'backbone_' + data_type
@@ -6772,8 +6757,6 @@ class NmrDpUtility(object):
 
                         elif data_type.startswith('31p'):
                             p31_col = id
-
-                        id += 1
 
                         bb_c.append(atom_group)
 
@@ -6871,14 +6854,12 @@ class NmrDpUtility(object):
 
                     sc_c = []
 
-                    id = 0
-
                     h1_col = -1
                     c13_col = -1
                     n15_col = -1
                     p31_col = -1
 
-                    for data_type in count:
+                    for id, data_type in enumerate(count):
 
                         atom_group = {}
                         atom_group['atom_group'] = 'sidechain_' + data_type
@@ -6897,8 +6878,6 @@ class NmrDpUtility(object):
 
                         elif data_type.startswith('31p'):
                             p31_col = id
-
-                        id += 1
 
                         sc_c.append(atom_group)
 
@@ -6996,12 +6975,10 @@ class NmrDpUtility(object):
 
                     ch3_c = []
 
-                    id = 0
-
                     h1_col = -1
                     c13_col = -1
 
-                    for data_type in count:
+                    for id, data_type in enumerate(count):
 
                         atom_group = {}
                         atom_group['atom_group'] = 'methyl_' + data_type
@@ -7017,8 +6994,6 @@ class NmrDpUtility(object):
 
                         else:
                             continue
-
-                        id += 1
 
                         ch3_c.append(atom_group)
 
@@ -7098,13 +7073,11 @@ class NmrDpUtility(object):
 
                     aro_c = []
 
-                    id = 0
-
                     h1_col = -1
                     c13_col = -1
                     n15_col = -1
 
-                    for data_type in count:
+                    for id, data_type in enumerate(count):
 
                         atom_group = {}
                         atom_group['atom_group'] = 'aromatic_' + data_type
@@ -7120,11 +7093,6 @@ class NmrDpUtility(object):
 
                         elif data_type.startswith('15n'):
                             n15_col = id
-
-                        else:
-                            continue
-
-                        id += 1
 
                         aro_c.append(atom_group)
 
@@ -11197,9 +11165,7 @@ class NmrDpUtility(object):
 
                         details_col = loop.tags.index('Details') if 'Details' in loop.tags else -1
 
-                    l = 0
-
-                    for i in lp_data:
+                    for l, i in enumerate(lp_data):
 
                         for j in range(num_dim):
                             chain_id = i[chain_id_names[j]]
@@ -11208,11 +11174,9 @@ class NmrDpUtility(object):
                             atom_id = i[atom_id_names[j]]
 
                             if content_subtype == 'spectral_peak' and (chain_id in self.empty_value or seq_id in self.empty_value or comp_id in self.empty_value or atom_id in self.empty_value):
-                                l += 1
                                 continue
 
                             if not str(chain_id) in nmr2ca:
-                                l += 1
                                 continue
 
                             ca = nmr2ca[str(chain_id)]
@@ -11226,7 +11190,6 @@ class NmrDpUtility(object):
                                     break
 
                             if cif_seq_id is None:
-                                l += 1
                                 continue
 
                             cif_ps = next(ps for ps in cif_polymer_sequence if ps['chain_id'] == cif_chain_id)
@@ -11238,14 +11201,12 @@ class NmrDpUtility(object):
                                     break
 
                             if cif_comp_id is None:
-                                l += 1
                                 continue
 
                             if file_type == 'nef':
                                 _atom_id, ambig_code, details = self.__nefT.get_nmrstar_atom(comp_id, atom_id, leave_unmatched=True)
 
                                 if len(_atom_id) == 0:
-                                    l += 1
                                     continue
 
                                 if len(_atom_id) == 1 and atom_id == _atom_id[0]:
@@ -11305,8 +11266,6 @@ class NmrDpUtility(object):
 
                                     if self.__verbose:
                                         self.__lfh.write("+NmrDpUtility.__testCoordAtomIdConsistency() ++ Error  - %s\n" % err)
-
-                            l += 1
 
                 list_id += 1
 
@@ -15942,16 +15901,12 @@ class NmrDpUtility(object):
 
                 atoms = []
 
-                id = 0
-
-                for i in lp_data:
+                for id, i in enumerate(lp_data):
                     chain_id = i[chain_id_name]
                     seq_id = i[seq_id_name]
                     atom_id = i[atom_id_name]
 
                     atoms.append('{:<4}:{:04d}:{:<8}:{:06d}'.format(chain_id, seq_id, atom_id, id))
-
-                    id += 1
 
                 sorted_atoms = sorted(atoms)
 
@@ -16036,16 +15991,12 @@ class NmrDpUtility(object):
 
                 if len(ambig_set_ids) > 0:
 
-                    id = 1
-
-                    for ambig_set_id in ambig_set_ids:
+                    for id, ambig_set_id in enumerate(ambig_set_ids):
 
                         if ambig_set_id in ambig_set_id_dic:
                             continue
 
-                        ambig_set_id_dic[ambig_set_id] = str(id)
-
-                        id += 1
+                        ambig_set_id_dic[ambig_set_id] = str(id + 1)
 
             disordered_ambig_set_id = False
 
@@ -16073,11 +16024,8 @@ class NmrDpUtility(object):
                 for tag in lp_data.tags:
                     new_lp_data.add_tag(lp_category + '.' + tag)
 
-                id = 1
-
-                for i in lp_data:
-                    new_lp_data.add_data([str(id)] + i)
-                    id += 1
+                for id, i in enumerate(lp_data):
+                    new_lp_data.add_data([str(id + 1)] + i)
 
                 del sf_data[lp_data]
 
@@ -16168,9 +16116,7 @@ class NmrDpUtility(object):
                     if insert_entry_id_to_loops:
                         aux_lp_data.add_tag(aux_lp_cateogry + '.Entry_ID')
 
-                    id = 1
-
-                    for i in lp_data:
+                    for id, i in enumerate(lp_data):
 
                         if ambig_set_id_name in i and not i[ambig_set_id_name] in self.empty_value:
 
@@ -16178,14 +16124,12 @@ class NmrDpUtility(object):
 
                             row.append(i[ambig_set_id_name])
                             row.append(i['Assigned_chem_shift_list_ID'])
-                            row.append(id)
+                            row.append(id + 1)
 
                             if insert_entry_id_to_loops:
                                 row.append(entry_id)
 
                             aux_lp_data.add_data(row)
-
-                        id += 1
 
                     sf_data.add_loop(aux_lp_data)
 

@@ -563,17 +563,14 @@ class NEFTranslator(object):
                 if len(seq_dat) == 0:
                     continue
             else:
-                l = 0
-                for i in seq_dat:
+                for l, i in enumerate(seq_dat):
                     if self.__is_empty_data(i):
                         r = {}
                         for j in range(len(loop.tags)):
                             r[loop.tags[j]] = loop.data[l][j]
                         raise ValueError("Sequence must not be empty. #_of_row %s, data_of_row %s." % (l + 1, r))
-                    l += 1
 
-            l = 0
-            for i in seq_dat:
+            for l, i in enumerate(seq_dat):
                 try:
                     int(i[0])
                 except ValueError:
@@ -581,7 +578,6 @@ class NEFTranslator(object):
                     for j in range(len(loop.tags)):
                         r[loop.tags[j]] = loop.data[l][j]
                     raise ValueError("%s must be int. #_of_row %s, data_of_row %s." % (seq_id, l + 1, r))
-                l += 1
 
             try:
 
@@ -688,17 +684,14 @@ class NEFTranslator(object):
                 if len(seq_dat) == 0:
                     continue
             else:
-                l = 0
-                for i in seq_dat:
+                for l, i in enumerate(seq_dat):
                     if self.__is_empty_data(i):
                         r = {}
                         for j in range(len(loop.tags)):
                             r[loop.tags[j]] = loop.data[l][j]
                         raise ValueError("Sequence must not be empty. #_of_row %s, data_of_row %s." % (l + 1, r))
-                    l += 1
 
-            l = 0
-            for i in seq_dat:
+            for l, i in enumerate(seq_dat):
                 try:
                     int(i[0])
                 except ValueError:
@@ -706,7 +699,6 @@ class NEFTranslator(object):
                     for j in range(len(loop.tags)):
                         r[loop.tags[j]] = loop.data[l][j]
                     raise ValueError("%s must be int. #_of_row %s, data_of_row %s." % (seq_id, l + 1, r))
-                l += 1
 
             try:
 
@@ -815,17 +807,14 @@ class NEFTranslator(object):
                 if len(seq_dat) == 0:
                     continue
             else:
-                l = 0
-                for i in seq_dat:
+                for l, i in enumerate(seq_dat):
                     if self.__is_empty_data(i):
                         r = {}
                         for j in range(len(loop.tags)):
                             r[loop.tags[j]] = loop.data[l][j]
                         raise ValueError("Author sequence must not be empty. #_of_row %s, data_of_row %s." % (l + 1, r))
-                    l += 1
 
-            l = 0
-            for i in seq_dat:
+            for l, i in enumerate(seq_dat):
                 try:
                     int(i[3])
                 except ValueError:
@@ -833,7 +822,6 @@ class NEFTranslator(object):
                     for j in range(len(loop.tags)):
                         r[loop.tags[j]] = loop.data[l][j]
                     raise ValueError("%s must be int. #_of_row %s, data_of_row %s." % (seq_id, l + 1, r))
-                l += 1
 
             try:
 
@@ -961,14 +949,12 @@ class NEFTranslator(object):
                 if len(cmp_atm_dat) == 0:
                     continue
             else:
-                l = 0
-                for i in cmp_atm_dat:
+                for l, i in enumerate(cmp_atm_dat):
                     if self.__is_empty_data(i):
                         r = {}
                         for j in range(len(loop.tags)):
                             r[loop.tags[j]] = loop.data[l][j]
                         raise ValueError("%s and %s must not be empty. #_of_row %s, data_of_row %s." % (l + 1, r))
-                    l += 1
 
             comps = sorted(set([i[0] for i in cmp_atm_dat]))
             sorted_comp_atom = sorted(set(['{} {}'.format(i[0], i[1]) for i in cmp_atm_dat]))
@@ -1042,18 +1028,15 @@ class NEFTranslator(object):
                 if len(a_type_dat) == 0:
                     continue
             else:
-                l = 0
-                for i in a_type_dat:
+                for l, i in enumerate(a_type_dat):
                     if self.__is_empty_data(i):
                         r = {}
                         for j in range(len(loop.tags)):
                             r[loop.tags[j]] = loop.data[l][j]
                         raise ValueError("%s, %s, and %s must not be empty. #_of_row %s, data_of_row %s." %\
                                          (atom_type, isotope_number, atom_id, l + 1, r))
-                    l += 1
 
-            l = 0
-            for i in a_type_dat:
+            for l, i in enumerate(a_type_dat):
                 try:
                     int(i[1])
                 except ValueError:
@@ -1061,7 +1044,6 @@ class NEFTranslator(object):
                     for j in range(len(loop.tags)):
                         r[loop.tags[j]] = loop.data[l][j]
                     raise ValueError("%s must be int. #_of_row %s, data_of_row %s." % (isotope_number, l + 1, r))
-                l += 1
 
             try:
 
@@ -1126,8 +1108,7 @@ class NEFTranslator(object):
                 dat.append(None)
                 continue
 
-            l = 0
-            for i in ambig_dat:
+            for l, i in enumerate(ambig_dat):
                 # already checked elsewhere
                 #if i[0] in self.empty_value:
                 #   raise ValueError("%s should not be empty." % comp_id)
@@ -1171,7 +1152,6 @@ class NEFTranslator(object):
                         for j in range(len(loop.tags)):
                             r[loop.tags[j]] = loop.data[l][j]
                         raise ValueError("%s must be empty for %s %s. #_of_row %s, data_of_row %s." % (ambig_set_id, ambig_code, i[2], l + 1, r))
-                l += 1
 
             ambigs = sorted(set(['{}:{}'.format(i[0], i[2]) for i in ambig_dat]))
             sorted_atm = sorted(set(['{}:{} {}'.format(i[0], i[2], i[1]) for i in ambig_dat]))
@@ -1238,8 +1218,7 @@ class NEFTranslator(object):
             else:
                 raise LookupError("Missing key item %s." % index_id)
 
-            l = 0
-            for i in index_dat:
+            for l, i in enumerate(index_dat):
                 if self.__is_empty_data(i):
                     r = {}
                     for j in range(len(loop.tags)):
@@ -1253,7 +1232,6 @@ class NEFTranslator(object):
                         for j in range(len(loop.tags)):
                             r[loop.tags[j]] = loop.data[l][j]
                             raise ValueError("%s must be int. #_of_row %s, data_of_row %s." % (index_id, l + 1, r))
-                l += 1
 
             try:
 
@@ -1430,8 +1408,7 @@ class NEFTranslator(object):
 
             if inc_idx_test and len(idx_tag_ids) > 0:
 
-                l = 0
-                for _j in idx_tag_ids:
+                for l, _j in enumerate(idx_tag_ids):
 
                     try:
                         idxs = [int(i[_j]) for i in tag_dat]
@@ -1446,10 +1423,8 @@ class NEFTranslator(object):
                         for j in range(len(loop.tags)):
                             r[loop.tags[j]] = loop.data[l][j]
                         raise ValueError("%s must be int. #_of_row %s, data_of_row %s." % (tags[_j], l + 1, r))
-                    l += 1
 
-            l = 0
-            for i in tag_dat:
+            for l, i in enumerate(tag_dat):
                 for j in range(tag_len):
                     if i[j] in self.empty_value:
                         name = tags[j]
@@ -1465,15 +1440,13 @@ class NEFTranslator(object):
                                     for _j in range(len(loop.tags)):
                                         r[loop.tags[_j]] = loop.data[l][_j]
                                     raise ValueError("%s must not be empty. #_of_row %s, data_of_row %s." % (name, l + 1, r))
-                l += 1
 
             if inc_idx_test:
                 keys = set()
 
                 rechk = False
 
-                l = 0
-                for i in tag_dat:
+                for l, i in enumerate(tag_dat):
 
                     key = ''
                     for j in range(key_len):
@@ -1521,13 +1494,10 @@ class NEFTranslator(object):
 
                     keys.add(key)
 
-                    l += 1
-
                 if rechk:
                     keys = set()
 
-                    l = 0
-                    for i in tag_dat:
+                    for l, i in enumerate(tag_dat):
 
                         key = ''
                         for j in range(key_len):
@@ -1569,8 +1539,6 @@ class NEFTranslator(object):
                             user_warn_msg += '[Multiple data] %sDuplicated rows having the following values %s exist in a loop.\n' % (idx_msg, msg.rstrip().rstrip(','))
 
                         keys.add(key)
-
-                        l += 1
 
             asm = [] # assembly of a loop
 
@@ -1863,8 +1831,7 @@ class NEFTranslator(object):
             keys = set()
             dup_ids = set()
 
-            l = 0
-            for i in loop.get_data_by_tag(key_names):
+            for l, i in enumerate(loop.get_data_by_tag(key_names)):
 
                 key = ''
                 for j in range(key_len):
@@ -1875,8 +1842,6 @@ class NEFTranslator(object):
                     dup_ids.add(l)
 
                 keys.add(key)
-
-                l += 1
 
             dat.append(sorted(list(dup_ids), reverse=True))
 
@@ -1911,8 +1876,7 @@ class NEFTranslator(object):
             keys = set()
             dup_ids = set()
 
-            l = 0
-            for i in tag_dat:
+            for l, i in enumerate(tag_dat):
 
                 key = ''
                 for j in range(key_len):
@@ -1923,8 +1887,6 @@ class NEFTranslator(object):
                     dup_ids.add(l)
 
                 keys.add(key)
-
-                l += 1
 
             conflict_id = sorted(list(dup_ids), reverse=True)
 
@@ -2708,30 +2670,39 @@ class NEFTranslator(object):
                             # print (lp1.tags)
                         except KeyError:
                             pass  # May be better to add audit loop
+
                     for loop in saveframe:
+
                         if loop.category == '_nef_sequence':
                             self.cid = []  # Comp_index_ID list
                             for c in self.chains:  # Comp_index_ID initialized with 1
                                 self.cid.append(1)
                             self.seqDict = {}
 
-                        if loop.category == '_nef_distance_restraint':
+                        elif loop.category == '_nef_distance_restraint':
                             r_index_id = 1
-                            rest_list+=1
-                        if loop.category == '_nef_dihedral_restraint':
-                            ang_list+=1
-                        if loop.category == '_nef_rdc_restraint':
-                            rdc_list+=1
-                        if loop.category == '_nef_chemical_shift':
+                            rest_list += 1
+
+                        elif loop.category == '_nef_dihedral_restraint':
+                            ang_list += 1
+
+                        elif loop.category == '_nef_rdc_restraint':
+                            rdc_list += 1
+
+                        elif loop.category == '_nef_chemical_shift':
                             cs_list += 1
-                        if loop.category == '_nef_peak':
+
+                        elif loop.category == '_nef_peak':
                             peak_list += 1
+
                         lp = pynmrstar.Loop.from_scratch()
                         lp_cols = self.get_nmrstar_loop_tags(loop.get_tag_names())
                         for t in lp_cols:
                             lp.add_tag(t)
+
                         # print (loop.category,lp.category,lp.get_tag_names(),loop.get_tag_names())
                         for dat in loop.data:
+
                             if loop.category == '_nef_sequence':
                                 dd = self.translate_seq_row(loop.get_tag_names(), lp.get_tag_names(), dat)
                                 self.cid[
@@ -2749,6 +2720,7 @@ class NEFTranslator(object):
                                     d[lp.get_tag_names().index(
                                         '_Atom_chem_shift.Assigned_chem_shift_list_ID')] = cs_list
                                     lp.add_data(d)
+
                             elif loop.category == '_nef_distance_restraint':
                                 dd = self.translate_restraint_row(loop.get_tag_names(), lp.get_tag_names(), dat)
                                 for d in dd:
@@ -2758,28 +2730,33 @@ class NEFTranslator(object):
                                         d[lp.get_tag_names().index('_Gen_dist_constraint.Member_logic_code')] = 'OR'
                                     lp.add_data(d)
                                     r_index_id += 1
+
                             elif loop.category == '_nef_dihedral_restraint':
                                 dd = self.translate_row(loop.get_tag_names(), lp.get_tag_names(), dat)
                                 for d in dd:
                                     d[lp.get_tag_names().index(
                                         '_Torsion_angle_constraint.Torsion_angle_constraint_list_ID')] = ang_list
                                     lp.add_data(d)
+
                             elif loop.category == '_nef_rdc_restraint':
                                 dd = self.translate_row(loop.get_tag_names(), lp.get_tag_names(), dat)
                                 for d in dd:
                                     d[lp.get_tag_names().index(
                                         '_RDC_constraint.RDC_constraint_list_ID')] = rdc_list
                                     lp.add_data(d)
+
                             elif loop.category == '_nef_peak':
                                 dd = self.translate_row(loop.get_tag_names(), lp.get_tag_names(), dat)
                                 for d in dd:
                                     d[lp.get_tag_names().index(
                                         '_Peak_row_format.Spectral_peak_list_ID')] = peak_list
                                     lp.add_data(d)
+
                             else:
                                 dd = self.translate_row(loop.get_tag_names(), lp.get_tag_names(), dat)
                                 for d in dd:
                                     lp.add_data(d)
+
                         # print (loop.data[0])
                         sf.add_loop(lp)
                     star_data.add_saveframe(sf)
@@ -2807,7 +2784,9 @@ class NEFTranslator(object):
                     if nef_data.category == '_nef_chemical_shift':
                         sf.add_tag('_Assigned_chem_shift_list.Sf_category', 'nef_chemical_shift')
                     saveframe = [nef_data]
+
                 for loop in saveframe:
+
                     if loop.category == '_nef_sequence':
                         self.cid = []  # Comp_index_ID list
                         for c in self.chains:  # Comp_index_ID initialized with 1
@@ -2816,14 +2795,18 @@ class NEFTranslator(object):
 
                     if loop.category == '_nef_distance_restraint':
                         r_index_id = 1
-                    if loop.category == '_nef_chemical_shift':
+
+                    elif loop.category == '_nef_chemical_shift':
                         cs_list += 1
+
                     lp = pynmrstar.Loop.from_scratch()
                     lp_cols = self.get_nmrstar_loop_tags(loop.get_tag_names())
                     for t in lp_cols:
                         lp.add_tag(t)
+
                     # print (loop.category,lp.category,lp.get_tag_names(),loop.get_tag_names())
                     for dat in loop.data:
+
                         if loop.category == '_nef_sequence':
                             dd = self.translate_seq_row(loop.get_tag_names(), lp.get_tag_names(), dat)
                             self.cid[
@@ -2840,6 +2823,7 @@ class NEFTranslator(object):
                             for d in dd:
                                 d[lp.get_tag_names().index('_Atom_chem_shift.Assigned_chem_shift_list_ID')] = cs_list
                                 lp.add_data(d)
+
                         elif loop.category == '_nef_distance_restraint':
                             dd = self.translate_restraint_row(loop.get_tag_names(), lp.get_tag_names(), dat)
 
@@ -2851,24 +2835,28 @@ class NEFTranslator(object):
                                     d[lp.get_tag_names().index('_Gen_dist_constraint.Member_logic_code')] = 'OR'
                                 lp.add_data(d)
                                 r_index_id += 1
+
                         elif loop.category == '_nef_dihedral_restraint':
                             dd = self.translate_row(loop.get_tag_names(), lp.get_tag_names(), dat)
                             for d in dd:
                                 d[lp.get_tag_names().index(
                                     '_Torsion_angle_constraint.Torsion_angle_constraint_list_ID')] = ang_list
                                 lp.add_data(d)
+
                         elif loop.category == '_nef_rdc_restraint':
                             dd = self.translate_row(loop.get_tag_names(), lp.get_tag_names(), dat)
                             for d in dd:
                                 d[lp.get_tag_names().index(
                                     '_RDC_constraint.RDC_constraint_list_ID')] = rdc_list
                                 lp.add_data(d)
+
                         elif loop.category == '_nef_peak':
                             dd = self.translate_row(loop.get_tag_names(), lp.get_tag_names(), dat)
                             for d in dd:
                                 d[lp.get_tag_names().index(
                                     '_Peak_row_format.Spectral_peak_list_ID')] = peak_list_list
                                 lp.add_data(d)
+
                         else:
                             dd = self.translate_row(loop.get_tag_names(), lp.get_tag_names(), dat)
                             for d in dd:

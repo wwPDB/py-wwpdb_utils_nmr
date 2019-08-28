@@ -4,6 +4,7 @@
 #
 # Updates:
 # 29-Jul-2019  M. Yokochi - support NEFTranslator v1.3.0 and integration into OneDep environment
+# 28-Aug-2019  M. Yokochi - report all empty data error as UserWarning
 ##
 """
 This module does the following jobs
@@ -527,6 +528,8 @@ class NEFTranslator(object):
             extended by Masashi Yokochi
         """
 
+        user_warn_msg = ''
+
         try:
             loops = star_data.get_loops_by_category(lp_category)
         except AttributeError:
@@ -564,20 +567,26 @@ class NEFTranslator(object):
                     continue
             else:
                 for l, i in enumerate(seq_dat):
-                    if self.__is_empty_data(i):
+                    if self.__is_empty_data(i) and l < len(loop.data):
                         r = {}
                         for j in range(len(loop.tags)):
                             r[loop.tags[j]] = loop.data[l][j]
-                        raise ValueError("Sequence must not be empty. #_of_row %s, data_of_row %s." % (l + 1, r))
+                        user_warn_msg += '[Invalid data] Sequence must not be empty. #_of_row %s, data_of_row %s.\n' % (l + 1, r)
+                        #raise ValueError("Sequence must not be empty. #_of_row %s, data_of_row %s." % (l + 1, r))
 
             for l, i in enumerate(seq_dat):
                 try:
                     int(i[0])
                 except ValueError:
-                    r = {}
-                    for j in range(len(loop.tags)):
-                        r[loop.tags[j]] = loop.data[l][j]
-                    raise ValueError("%s must be int. #_of_row %s, data_of_row %s." % (seq_id, l + 1, r))
+                    if l < len(loop.data):
+                        r = {}
+                        for j in range(len(loop.tags)):
+                            r[loop.tags[j]] = loop.data[l][j]
+                        user_warn_msg += '[Invalid data] %s must be int. #_of_row %s, data_of_row %s.\n' % (seq_id, l + 1, r)
+                        #raise ValueError("%s must be int. #_of_row %s, data_of_row %s." % (seq_id, l + 1, r))
+
+            if len(user_warn_msg) > 0:
+                raise UserWarning(user_warn_msg)
 
             try:
 
@@ -636,6 +645,8 @@ class NEFTranslator(object):
             extended by Masashi Yokochi
         """
 
+        user_warn_msg = ''
+
         try:
             loops = star_data.get_loops_by_category(lp_category)
         except AttributeError:
@@ -685,20 +696,26 @@ class NEFTranslator(object):
                     continue
             else:
                 for l, i in enumerate(seq_dat):
-                    if self.__is_empty_data(i):
+                    if self.__is_empty_data(i) and l < len(loop.data):
                         r = {}
                         for j in range(len(loop.tags)):
                             r[loop.tags[j]] = loop.data[l][j]
-                        raise ValueError("Sequence must not be empty. #_of_row %s, data_of_row %s." % (l + 1, r))
+                        user_warn_msg += '[Invalid data] Sequence must not be empty. #_of_row %s, data_of_row %s.\n' % (l + 1, r)
+                        #raise ValueError("Sequence must not be empty. #_of_row %s, data_of_row %s." % (l + 1, r))
 
             for l, i in enumerate(seq_dat):
                 try:
                     int(i[0])
                 except ValueError:
-                    r = {}
-                    for j in range(len(loop.tags)):
-                        r[loop.tags[j]] = loop.data[l][j]
-                    raise ValueError("%s must be int. #_of_row %s, data_of_row %s." % (seq_id, l + 1, r))
+                    if l < len(loop.data):
+                        r = {}
+                        for j in range(len(loop.tags)):
+                            r[loop.tags[j]] = loop.data[l][j]
+                        user_warn_msg += '[Invalid data] %s must be int. #_of_row %s, data_of_row %s.\n' % (seq_id, l + 1, r)
+                        #raise ValueError("%s must be int. #_of_row %s, data_of_row %s." % (seq_id, l + 1, r))
+
+            if len(user_warn_msg) > 0:
+                raise UserWarning(user_warn_msg)
 
             try:
 
@@ -757,6 +774,8 @@ class NEFTranslator(object):
             @author: Masashi Yokochi
         """
 
+        user_warn_msg = ''
+
         try:
             loops = star_data.get_loops_by_category(lp_category)
         except AttributeError:
@@ -808,20 +827,26 @@ class NEFTranslator(object):
                     continue
             else:
                 for l, i in enumerate(seq_dat):
-                    if self.__is_empty_data(i):
+                    if self.__is_empty_data(i) and l < len(loop.data):
                         r = {}
                         for j in range(len(loop.tags)):
                             r[loop.tags[j]] = loop.data[l][j]
-                        raise ValueError("Author sequence must not be empty. #_of_row %s, data_of_row %s." % (l + 1, r))
+                        user_warn_msg += '[Invalid data] Author sequence must not be empty. #_of_row %s, data_of_row %s.\n' % (l + 1, r)
+                        #raise ValueError("Author sequence must not be empty. #_of_row %s, data_of_row %s." % (l + 1, r))
 
             for l, i in enumerate(seq_dat):
                 try:
                     int(i[3])
                 except ValueError:
-                    r = {}
-                    for j in range(len(loop.tags)):
-                        r[loop.tags[j]] = loop.data[l][j]
-                    raise ValueError("%s must be int. #_of_row %s, data_of_row %s." % (seq_id, l + 1, r))
+                    if l < len(loop.data):
+                        r = {}
+                        for j in range(len(loop.tags)):
+                            r[loop.tags[j]] = loop.data[l][j]
+                        user_warn_msg += '[Invalid data] %s must be int. #_of_row %s, data_of_row %s.\n' % (seq_id, l + 1, r)
+                        #raise ValueError("%s must be int. #_of_row %s, data_of_row %s." % (seq_id, l + 1, r))
+
+            if len(user_warn_msg) > 0:
+                raise UserWarning(user_warn_msg)
 
             try:
 
@@ -914,6 +939,8 @@ class NEFTranslator(object):
             @author: Masashi Yokochi
         """
 
+        user_warn_msg = ''
+
         try:
             loops = star_data.get_loops_by_category(lp_category)
         except AttributeError:
@@ -950,11 +977,17 @@ class NEFTranslator(object):
                     continue
             else:
                 for l, i in enumerate(cmp_atm_dat):
-                    if self.__is_empty_data(i):
+                    if self.__is_empty_data(i) and l < len(loop.data):
                         r = {}
                         for j in range(len(loop.tags)):
                             r[loop.tags[j]] = loop.data[l][j]
-                        raise ValueError("%s and %s must not be empty. #_of_row %s, data_of_row %s." % (l + 1, r))
+                        user_warn_msg += '[Invalid data] %s and %s must not be empty. #_of_row %s, data_of_row %s.\n' %\
+                                         (comp_id, atom_id, l + 1, r)
+                        #raise ValueError("%s and %s must not be empty. #_of_row %s, data_of_row %s." %\
+                        #                 (comp_id, atom_id, l + 1, r))
+
+            if len(user_warn_msg) > 0:
+                raise UserWarning(user_warn_msg)
 
             comps = sorted(set([i[0] for i in cmp_atm_dat]))
             sorted_comp_atom = sorted(set(['{} {}'.format(i[0], i[1]) for i in cmp_atm_dat]))
@@ -1000,6 +1033,8 @@ class NEFTranslator(object):
             @author: Masashi Yokochi
         """
 
+        user_warn_msg = ''
+
         try:
             loops = star_data.get_loops_by_category(lp_category)
         except AttributeError:
@@ -1029,21 +1064,28 @@ class NEFTranslator(object):
                     continue
             else:
                 for l, i in enumerate(a_type_dat):
-                    if self.__is_empty_data(i):
+                    if self.__is_empty_data(i) and l < len(loop.data):
                         r = {}
                         for j in range(len(loop.tags)):
                             r[loop.tags[j]] = loop.data[l][j]
-                        raise ValueError("%s, %s, and %s must not be empty. #_of_row %s, data_of_row %s." %\
-                                         (atom_type, isotope_number, atom_id, l + 1, r))
+                        user_warn_msg += '[Invalid data] %s, %s, and %s must not be empty. #_of_row %s, data_of_row %s.\n' %\
+                                         (atom_type, isotope_number, atom_id, l + 1, r)
+                        #raise ValueError("%s, %s, and %s must not be empty. #_of_row %s, data_of_row %s." %\
+                        #                 (atom_type, isotope_number, atom_id, l + 1, r))
 
             for l, i in enumerate(a_type_dat):
                 try:
                     int(i[1])
                 except ValueError:
-                    r = {}
-                    for j in range(len(loop.tags)):
-                        r[loop.tags[j]] = loop.data[l][j]
-                    raise ValueError("%s must be int. #_of_row %s, data_of_row %s." % (isotope_number, l + 1, r))
+                    if l < len(loop.data):
+                        r = {}
+                        for j in range(len(loop.tags)):
+                            r[loop.tags[j]] = loop.data[l][j]
+                        user_warn_msg += '[Invalid data] %s must be int. #_of_row %s, data_of_row %s.\n' % (isotope_number, l + 1, r)
+                        #raise ValueError("%s must be int. #_of_row %s, data_of_row %s." % (isotope_number, l + 1, r))
+
+            if len(user_warn_msg) > 0:
+                raise UserWarning(user_warn_msg)
 
             try:
 
@@ -1082,6 +1124,8 @@ class NEFTranslator(object):
             @author: Masashi Yokochi
         """
 
+        user_warn_msg = ''
+
         try:
             loops = star_data.get_loops_by_category(lp_category)
         except AttributeError:
@@ -1111,47 +1155,59 @@ class NEFTranslator(object):
             for l, i in enumerate(ambig_dat):
                 # already checked elsewhere
                 #if i[0] in self.empty_value:
-                #   raise ValueError("%s should not be empty." % comp_id)
+                #   raise ValueError("%s must not be empty." % comp_id)
                 #if i[1] in self.empty_value:
-                #    raise ValueError("%s should not be empty." % atom_id)
+                #    raise ValueError("%s must not be empty." % atom_id)
                 if not i[2] in self.empty_value:
 
                     try:
                        code = int(i[2])
                     except ValueError:
-                        r = {}
-                        for j in range(len(loop.tags)):
-                            r[loop.tags[j]] = loop.data[l][j]
-                        raise ValueError("%s must be one of %s. #_of_row %s, data_of_row %s." % (ambig_code, list(self.bmrb_ambiguity_codes), l + 1, r))
-
-                    if not code in self.bmrb_ambiguity_codes:
-                        r = {}
-                        for j in range(len(loop.tags)):
-                            r[loop.tags[j]] = loop.data[l][j]
-                        raise ValueError("%s must be one of %s. #_of_row %s, data_of_row %s." % (ambig_code, list(self.bmrb_ambiguity_codes), l + 1, r))
-
-                    if code >= 4:
-                        if i[3] in self.empty_value:
+                        if l < len(loop.data):
                             r = {}
                             for j in range(len(loop.tags)):
                                 r[loop.tags[j]] = loop.data[l][j]
-                            raise ValueError("%s should not be empty for %s %s. #_of_row %s, data_of_row %s." % (ambig_set_id, ambig_code, code, l + 1, r))
+                            user_warn_msg += '[Invalid data] %s must be one of %s. #_of_row %s, data_of_row %s.\n' % (ambig_code, list(self.bmrb_ambiguity_codes), l + 1, r)
+                            #raise ValueError("%s must be one of %s. #_of_row %s, data_of_row %s." % (ambig_code, list(self.bmrb_ambiguity_codes), l + 1, r))
+
+                    if not code in self.bmrb_ambiguity_codes:
+                        if l < len(loop.data):
+                            r = {}
+                            for j in range(len(loop.tags)):
+                                r[loop.tags[j]] = loop.data[l][j]
+                            user_warn_msg += '[Invalid data] %s must be one of %s. #_of_row %s, data_of_row %s.\n' % (ambig_code, list(self.bmrb_ambiguity_codes), l + 1, r)
+                            #raise ValueError("%s must be one of %s. #_of_row %s, data_of_row %s." % (ambig_code, list(self.bmrb_ambiguity_codes), l + 1, r))
+
+                    if code >= 4:
+                        if i[3] in self.empty_value and l < len(loop.data):
+                            r = {}
+                            for j in range(len(loop.tags)):
+                                r[loop.tags[j]] = loop.data[l][j]
+                            user_warn_msg += '[Invalid data] %s must not be empty for %s %s. #_of_row %s, data_of_row %s.\n' % (ambig_set_id, ambig_code, code, l + 1, r)
+                            #raise ValueError("%s must not be empty for %s %s. #_of_row %s, data_of_row %s." % (ambig_set_id, ambig_code, code, l + 1, r))
                         else:
                             try:
                                 int(i[3])
                             except ValueError:
-                                r = {}
-                                for j in range(len(loop.tags)):
-                                    r[loop.tags[j]] = loop.data[l][j]
-                                raise ValueError("%s must be int. #_of_row %s, data_of_row %s." % (ambig_set_id, l + 1, r))
+                                if l < len(loop.data):
+                                    r = {}
+                                    for j in range(len(loop.tags)):
+                                        r[loop.tags[j]] = loop.data[l][j]
+                                    user_warn_msg += '[Invalid data] %s must be int. #_of_row %s, data_of_row %s.\n' % (ambig_set_id, l + 1, r)
+                                    #raise ValueError("%s must be int. #_of_row %s, data_of_row %s." % (ambig_set_id, l + 1, r))
 
                 if not i[3] in self.empty_value:
 
                     if i[2] in self.empty_value or not i[2] in ['4', '5', '6', '9']:
-                        r = {}
-                        for j in range(len(loop.tags)):
-                            r[loop.tags[j]] = loop.data[l][j]
-                        raise ValueError("%s must be empty for %s %s. #_of_row %s, data_of_row %s." % (ambig_set_id, ambig_code, i[2], l + 1, r))
+                        if l < len(loop.data):
+                            r = {}
+                            for j in range(len(loop.tags)):
+                                r[loop.tags[j]] = loop.data[l][j]
+                            user_warn_msg += '[Invalid data] %s must be empty for %s %s. #_of_row %s, data_of_row %s.\n' % (ambig_set_id, ambig_code, i[2], l + 1, r)
+                            #raise ValueError("%s must be empty for %s %s. #_of_row %s, data_of_row %s." % (ambig_set_id, ambig_code, i[2], l + 1, r))
+
+            if len(user_warn_msg) > 0:
+                raise UserWarning(user_warn_msg)
 
             ambigs = sorted(set(['{}:{}'.format(i[0], i[2]) for i in ambig_dat]))
             sorted_atm = sorted(set(['{}:{} {}'.format(i[0], i[2], i[1]) for i in ambig_dat]))
@@ -1198,6 +1254,8 @@ class NEFTranslator(object):
             @author: Masashi Yokochi
         """
 
+        user_warn_msg = ''
+
         try:
             loops = star_data.get_loops_by_category(lp_category)
         except AttributeError:
@@ -1219,19 +1277,25 @@ class NEFTranslator(object):
                 raise LookupError("Missing key item %s." % index_id)
 
             for l, i in enumerate(index_dat):
-                if self.__is_empty_data(i):
+                if self.__is_empty_data(i) and l < len(loop.data):
                     r = {}
                     for j in range(len(loop.tags)):
                         r[loop.tags[j]] = loop.data[l][j]
-                    raise ValueError("%s must not be empty. #_of_row %s, data_of_row %s." % (index_id, l + 1, r))
+                    user_warn_msg += '[Invalid data] %s must not be empty. #_of_row %s, data_of_row %s.\n' % (index_id, l + 1, r)
+                    #raise ValueError("%s must not be empty. #_of_row %s, data_of_row %s." % (index_id, l + 1, r))
                 else:
                     try:
                         int(i[0])
                     except ValueError:
-                        r = {}
-                        for j in range(len(loop.tags)):
-                            r[loop.tags[j]] = loop.data[l][j]
-                            raise ValueError("%s must be int. #_of_row %s, data_of_row %s." % (index_id, l + 1, r))
+                        if l < len(loop.data):
+                            r = {}
+                            for j in range(len(loop.tags)):
+                                r[loop.tags[j]] = loop.data[l][j]
+                            user_warn_msg += '[Invalid data] %s must be int. #_of_row %s, data_of_row %s.\n' % (index_id, l + 1, r)
+                            #raise ValueError("%s must be int. #_of_row %s, data_of_row %s." % (index_id, l + 1, r))
+
+            if len(user_warn_msg) > 0:
+                raise UserWarning(user_warn_msg)
 
             try:
 

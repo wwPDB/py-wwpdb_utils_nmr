@@ -9754,7 +9754,7 @@ class NmrDpUtility(object):
             min_val_ = 100.0
 
             for i in lp_data:
-                target_value = i[target_value_name] if target_name_name in i else None
+                target_value = i[target_value_name] if target_value_name in i else None
 
                 if target_value is None:
 
@@ -9933,7 +9933,7 @@ class NmrDpUtility(object):
                     _count[k] = 0
 
                 for i in lp_data:
-                    target_value = i[target_value_name] if target_name_name in i else None
+                    target_value = i[target_value_name] if target_value_name in i else None
 
                     if target_value is None:
 

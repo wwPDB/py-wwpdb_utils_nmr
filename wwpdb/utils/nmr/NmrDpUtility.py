@@ -4,7 +4,6 @@
 #
 # Updates:
 ##
-from __builtin__ import False
 """ Wrapper class for data processing for NMR unified data.
     @author: Masashi Yokochi
 """
@@ -2364,25 +2363,6 @@ class NmrDpUtility(object):
                         pass
 
         return True
-
-    def __rescueMergedStr(self):
-        """ Rescue merged NMR-STAR including Entity category.
-        """
-
-        input_source = self.report.input_sources[0]
-        input_source_dic = input_source.get()
-
-        file_type = input_source_dic['file_type']
-
-        if file_type != 'nmr-star':
-            return True
-
-        content_subtype = 'poly_seq'
-
-        if not 'entity' in self.__sf_category_list or self.sf_categories[file_type][content_subtype] in self.__sf_category_list:
-            return True
-
-        return False
 
     def __detectContentSubType(self):
         """ Detect content subtypes.

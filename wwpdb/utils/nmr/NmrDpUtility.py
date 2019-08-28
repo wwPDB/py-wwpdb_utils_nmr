@@ -9822,7 +9822,7 @@ class NmrDpUtility(object):
                 else:
                     count[data_type] = 1
 
-                if (not comp_id is None) and (not comb_id in self.empty_value):
+                if (not comb_id is None) and (not comb_id in self.empty_value):
                     if data_type in comb_count:
                         comb_count[data_type] += 1
                     else:

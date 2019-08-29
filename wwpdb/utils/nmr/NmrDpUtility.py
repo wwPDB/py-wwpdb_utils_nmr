@@ -16127,10 +16127,15 @@ class NmrDpUtility(object):
         if self.__updateAtomChemShiftId():
             self.__updateAmbiguousAtomChemShift(entry_id, insert_entry_id_to_loops)
 
+        proc_sf_categories = set()
+
+        # supported sf_categories
         for content_subtype in input_source_dic['content_subtype'].keys():
 
             sf_category = self.sf_categories[file_type][content_subtype]
             lp_category = self.lp_categories[file_type][content_subtype]
+
+            proc_sf_categories.add(sf_category)
 
             for sf_data in self.__star_data.get_saveframes_by_category(sf_category):
 
@@ -16178,25 +16183,68 @@ class NmrDpUtility(object):
                         if lp_category in self.lp_categories[file_type][content_subtype]:
                             continue
 
-                        elif lp_category in self.aux_lp_categories[file_type][content_subtype]:
+                        #elif lp_category in self.aux_lp_categories[file_type][content_subtype]:
 
-                            lp_data = sf_data.get_loop_by_category(lp_category)
+                        lp_data = sf_data.get_loop_by_category(lp_category)
 
-                            if entryIdTag in self.aux_allowed_tags[file_type][content_subtype][lp_category]:
+                            #if entryIdTag in self.aux_allowed_tags[file_type][content_subtype][lp_category]:
 
-                                if entryIdTag in lp_data.tags:
+                        if entryIdTag in lp_data.tags:
 
-                                    itCol = lp_data.tags.index(entryIdTag)
+                            itCol = lp_data.tags.index(entryIdTag)
 
-                                    for row in lp_data.data:
-                                        row[itCol] = entry_id
+                            for row in lp_data.data:
+                                row[itCol] = entry_id
 
-                                else:
+                        else:
 
-                                    for row in lp_data.data:
-                                        row.append(entry_id)
+                            for row in lp_data.data:
+                                row.append(entry_id)
 
-                                    lp_data.add_tag(entryIdTag)
+                            lp_data.add_tag(entryIdTag)
+
+        # skipped sf_categories
+        for sf_category in self.__sf_category_list:
+
+            if sf_category in proc_sf_categories:
+                continue
+
+            for sf_data in self.__star_data.get_saveframes_by_category(sf_category):
+
+                entryIdTag = 'ID' if sf_category == 'entry_information' else 'Entry_ID'
+
+                if len(sf_data.get_tag(entryIdTag)) == 0:
+                        sf_data.add_tag(entryIdTag, entry_id)
+
+                else:
+                    tagNames = [t[0] for t in sf_data.tags]
+                    itCol = tagNames.index(entryIdTag)
+
+                    sf_data.tags[itCol][1] = entry_id
+
+                if insert_entry_id_to_loops:
+
+                    entryIdTag = 'Entry_ID'
+
+                    for loop in sf_data.loops:
+
+                        lp_category = loop.category
+
+                        lp_data = sf_data.get_loop_by_category(lp_category)
+
+                        if entryIdTag in lp_data.tags:
+
+                            itCol = lp_data.tags.index(entryIdTag)
+
+                            for row in lp_data.data:
+                                row[itCol] = entry_id
+
+                        else:
+
+                            for row in lp_data.data:
+                                row.append(entry_id)
+
+                            lp_data.add_tag(entryIdTag)
 
         return True
 

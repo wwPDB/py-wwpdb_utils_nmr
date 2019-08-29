@@ -11751,7 +11751,7 @@ class NmrDpUtility(object):
 
         file_type = input_source_dic['file_type']
 
-        if file_type == 'nef':
+        if input_source_dic['content_subtype'] is None:
             return True
 
         for content_subtype in input_source_dic['content_subtype'].keys():

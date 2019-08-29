@@ -40,12 +40,14 @@ class NmrDpUtility(object):
         # current workflow operation
         self.__op = None
 
-        # non-block anomalous cs
+        # whether not to block deposition because of anomalous cs
         self.__nonblk_anomalous_cs = False
-        # non-block bad n-term amino group
+        # whether not to block deposition because bad n-term amino group
         self.__nonblk_bad_nterm = False
-        # conflict resolver
+        # whether to resolve conflict
         self.__resolve_conflict = False
+        # whether to retain original content if possible
+        self.__retain_original = True
 
         self.__has_star_entity = False
 
@@ -121,6 +123,7 @@ class NmrDpUtility(object):
                           self.__appendIndexTag,
                           self.__deleteSkippedSf,
                           self.__deleteSkippedLoop,
+                          self.__deleteUnparsedEntryLoop,
                           self.__updatePolymerSequence,
                           self.__updateDihedralAngleType,
                           self.__fixDisorderedIndex,
@@ -1473,52 +1476,52 @@ class NmrDpUtility(object):
                                              'rdc_restraint': ['_nef_rdc_restraint'],
                                              'spectral_peak': ['_nef_spectrum_dimension', '_nef_spectrum_dimension_transfer', '_nef_peak']
                                              },
-                                  'nmr-star': {'entry_info': ['_Study_list', '_Entry_experimental_methods', '_Entry_author', '_SG_project', '_Entry_src', '_Struct_keywords', '_Data_set', '_Datum', '_Release', '_Related_entries', '_Matched_entries', '_Auxiliary_files', '_Citation',
-                                                              '_Assembly', '_Assembly_annotation_list', '_Assembly_subsystem', '_Entity', '_Entity_natural_src_list', '_Entity_natural_src', '_Entity_experimental_src_list', '_Chem_comp', '_Chem_comp_atom', '_Sample', '_Sample_condition_list', '_Entity_purity_list', '_Software', '_Method',
-                                                              '_Mass_spec', '_Mass_spectrometer_list', '_Mass_spec_ref_compd_set', '_Chromatographic_system', '_Chromatographic_column', '_Fluorescence_instrument', '_EMR_instrument', '_Xray_instrument', '_NMR_spectrometer', '_NMR_spectrometer_list', '_NMR_spectrometer_probe', '_Experiment_list', '_NMR_spec_expt', '_NMR_spectral_processing',
-                                                              '_MS_expt', '_MS_expt_param', '_MS_expt_software',
-                                                              '_Computer', '_Chem_shift_reference', '_Assigned_chem_shift_list', '_Chem_shifts_calc_type', '_Theoretical_chem_shift_list', '_Theoretical_chem_shift', '_Coupling_constant_list', '_Theoretical_coupling_constant_list', '_Spectral_peak_list', '_Resonance_linker_list', '_Resonance_assignment',
-                                                              '_Chem_shift_isotope_effect_list', '_Chem_shift_perturbation_list', '_Chem_shift_anisotropy', '_RDC_list', '_RDC_experiment', '_RDC_software', '_RDC',
-                                                              '_Dipolar_coupling_list', '_Dipolar_coupling_experiment', '_Dipolar_coupling_software', '_Dipolar_coupling', '_Spectral_density_list', '_Spectral_density_experiment', '_Spectral_density_software', '_Spectral_density', '_Other_data_type_list', '_Other_data_experiment', '_Other_data_software', '_Other_data',
-                                                              '_Chemical_rate_list', '_Chemical_rate_experiment', '_Chemical_rate_software', '_Chemical_rate',
-                                                              '_H_exch_rate_list', '_H_exch_rate_experiment', '_H_exch_rate_software', '_H_exch_rate',
-                                                              '_H_exch_protection_factor_list', '_H_exch_protection_fact_experiment', '_H_exch_protection_fact_software', '_H_exch_protection_factor',
-                                                              '_Homonucl_NOE_list', '_Homonucl_NOE_experiment', '_Homonucl_NOE_software', '_Homonucl_NOE', '_Heteronucl_NOE_list', '_Heteronucl_NOE_experiment', '_Heteronucl_NOE_software', '_Heteronucl_NOE', '_Theoretical_heteronucl_NOE_list', '_Theoretical_heteronucl_NOE_experiment', '_Theoretical_heteronucl_NOE_software', '_Theoretical_heteronucl_NOE',
-                                                              '_Heteronucl_T1_list', '_Heteronucl_T1_experiment', '_Heteronucl_T1_software', '_T1', '_Theoretical_heteronucl_T1_list', '_Theoretical_heteronucl_T1_experiment', '_Theoretical_heteronucl_T1_software', '_Theoretical_T1',
-                                                              '_Heteronucl_T1rho_list', '_Heteronucl_T1rho_experiment', '_Heteronucl_T1rho_software', '_T1rho',
-                                                              '_Heteronucl_T2_list', '_Heteronucl_T2_experiment', '_Heteronucl_T2_software', '_T2', '_Theoretical_heteronucl_T2_list', '_Theoretical_heteronucl_T2_experiment', '_Theoretical_heteronucl_T2_software', '_Theoretical_T2',
-                                                              '_Auto_relaxation_list', '_Auto_relaxation_experiment', '_Auto_relaxation_software', '_Auto_relaxation', '_Theoretical_auto_relaxation_list', '_Theoretical_auto_relaxation_experiment', '_Theoretical_auto_relaxation_software', '_Theoretical_auto_relaxation',
-                                                              '_Dipole_dipole_relax_list', '_Dipole_dipole_relax_experiment', '_Dipole_dipole_relax_software', '_Dipole_dipole_relax',
-                                                              '_Cross_correlation_DD_list', '_Cross_correlation_DD_experiment', '_Cross_correlation_DD_software', '_Cross_correlation_DD', '_Theoretical_cross_correlation_DD_list', '_Theoretical_cross_correlation_DD_experiment', '_Theoretical_cross_correlation_DD_software', '_Theoretical_cross_correlation_DD',
-                                                              '_Cross_correlation_D_CSA_list', '_Cross_correlation_D_CSA_experiment', '_Cross_correlation_D_CSA_software', '_Cross_correlation_D_CSA', '_Order_parameter_list', '_Order_parameter_experiment', '_Order_parameter_software', '_Order_param',
-                                                              '_PH_titration_list', '_PH_titration_experiment', '_PH_titration_software', '_PH_titr_result', '_PH_param_list', '_PH_param', '_D_H_fractionation_factor_list', '_D_H_fract_factor_experiment', '_D_H_fract_factor_software', '_D_H_fractionation_factor',
-                                                              '_Binding_value_list', '_Binding_experiment', '_Binding_software', '_Binding_result', '_Binding_partners', '_Binding_param_list', '_Binding_param',
-                                                              '_Deduced_secd_struct_list', '_Deduced_secd_struct_experiment', '_Deduced_secd_struct_software', '_Deduced_secd_struct_exptl', '_Deduced_secd_struct_feature', '_Deduced_H_bond_list', '_Deduced_H_bond_experiment', '_Deduced_H_bond_software', '_Deduced_H_bond',
-                                                              '_Conformer_stat_list', '_Conformer_stat_list_ens', '_Conformer_stat_list_rep', '_Conf_stats_software', '_Conformer_family_coord_set', '_Conformer_family_refinement', '_Conformer_family_software', '_Energetic_penalty_function', '_Conformer_family_coord_set_expt', '_Conf_family_coord_set_constr_list',
-                                                              '_Struct_image', '_Local_structure_quality', '_Model_type', '_Atom_site', '_Atom_sites_footnote',
-                                                              '_Representative_conformer', '_Rep_conf_refinement', '_Rep_conf_software', '_Terminal_residue', '_Rep_conf', '_Rep_coordinate_details',
-                                                              '_Constraint_stat_list', '_Constraint_stat_list_ens', '_Constraint_stat_list_rep', '_Constraint_stats_constr_list', '_Constraint_file', '_Force_constant_list', '_Force_constant_software', '_Force_constant', '_Angular_order_parameter_list', '_Angular_order_param',
-                                                              '_Tertiary_struct_element_list', '_Tertiary_struct_element_sel', '_Tertiary_struct', '_Structure_annotation', '_Struct_anno_software', '_Struct_classification', '_Struct_anno_char', '_Secondary_struct_list', '_Secondary_struct_sel', '_Secondary_struct', '_Bond_annotation_list', '_Bond_annotation', '_Bond_observed_conformer',
-                                                              '_Structure_interaction_list', '_Structure_interaction', '_Observed_conformer', '_Other_struct_feature_list', '_Other_struct_feature', '_Tensor_list', '_Interatomic_distance_list', '_Interatomic_dist',
-                                                              '_Gen_dist_constraint_list', '_Gen_dist_constraint_expt', '_Gen_dist_constraint_software', '_Gen_dist_constraint_software_param', '_Gen_dist_constraint', '_Gen_dist_constraint_comment_org', '_Gen_dist_constraint_parse_err', '_Gen_dist_constraint_parse_file', '_Gen_dist_constraint_conv_err',
-                                                              '_Distance_constraint_list', '_Distance_constraint_expt', '_Distance_constraint_software', '_Dist_constr_software_setting', '_Dist_constraint_tree', '_Dist_constraint', '_Dist_constraint_value', '_Dist_constraint_comment_org', '_Dist_constraint_parse_err', '_Dist_constraint_parse_file', '_Dist_constraint_conv_err',
-                                                              '_Floating_chirality_assign', '_Floating_chirality_software', '_Floating_chirality', '_Torsion_angle_constraint_list', '_Torsion_angle_constraints_expt', '_Torsion_angle_constraint_software', '_Karplus_equation', '_Torsion_angle_constraint', '_TA_constraint_comment_org', '_TA_constraint_parse_err', '_TA_constraint_parse_file', '_TA_constraint_conv_err',
-                                                              '_RDC_constraint_list', '_RDC_constraint_expt', '_RDC_constraint_software', '_RDC_constraint', '_RDC_constraint_comment_org', '_RDC_constraint_parse_err', '_RDC_constraint_parse_file', '_RDC_constraint_conv_err',
-                                                              '_J_three_bond_constraint_list', '_J_three_bond_constraint_expt', '_J_three_bond_constraint_software', '_J_three_bond_constraint', '_CA_CB_constraint_list', '_CA_CB_constraint_expt', '_CA_CB_constraint_software', '_CA_CB_constraint',
-                                                              '_H_chem_shift_constraint_list', '_H_chem_shift_constraint_expt', '_H_chem_shift_constraint_software', '_H_chem_shift_constraint', '_Peak_constraint_link_list', '_Peak_constraint_link',
-                                                              '_SAXS_constraint_list', '_SAXS_constraint_expt', '_SAXS_constraint_software', '_SAXS_constraint',
-                                                              '_Other_constraint_list', '_Other_constraint_expt', '_Other_constraint_software', '_Org_constr_file_comment',
-                                                              '_MZ_ratio_data_list', '_MZ_ratio_experiment', '_MZ_ratio_software', '_MZ_ratio_spectrum_param', '_MZ_precursor_ion', '_MZ_precursor_ion_annotation', '_MZ_product_ion', '_MZ_product_ion_annotation', '_MS_chromatogram_list', '_MS_chromatogram_experiment', '_MS_chromatogram_software', '_MS_chromatogram_param', '_MS_chromatogram_ion', '_MS_chrom_ion_annotation',
-                                                              '_Software_specific_info_list', '_Software_specific_info', '_Software_applied_list', '_Software_applied_methods', '_Software_applied_history', '_History'],
-                                               'poly_seq':  ['_Assembly_type', '_Entity_assembly', '_Bond', '_Entity_deleted_atom', '_Struct_asym', '_Assembly_db_link', '_Assembly_common_name', '_Assembly_systematic_name', '_Assembly_interaction', '_Chem_comp_assembly', '_PDBX_poly_seq_scheme', '_PDBX_nonpoly_scheme', '_Atom_type', '_Atom', '_Assembly_bio_function', '_Angle', '_Torsion_angle',
-                                                             '_Assembly_segment', '_Assembly_segment_description', '_Assembly_keyword', '_Assembly_citation', '_Author_annotation', '_Sample_component', '_Chemical_rate', '_Auto_relaxation', '_Theoretical_auto_relaxation',
-                                                             '_Binding_result', '_Binding_partners', '_Struct_anno_char' ],
-                                               'chem_shift': ['_Chem_shift_experiment', '_Systematic_chem_shift_offset', '_Chem_shift_software', '_Atom_chem_shift', '_Ambiguous_atom_chem_shift', '_Spectral_peak_list', '_Assigned_peak_chem_shift', '_Assigned_spectral_transition'],
-                                               'dist_restraint': ['_Gen_dist_constraint_expt', '_Gen_dist_constraint_software', '_Gen_dist_constraint_software_param', '_Gen_dist_constraint', '_Gen_dist_constraint_comment_org', '_Gen_dist_constraint_parse_err', '_Gen_dist_constraint_parse_file', '_Gen_dist_constraint_conv_err'],
-                                               'dihed_restraint': ['_Torsion_angle_constraints_expt', '_Torsion_angle_constraint_software', '_Karplus_equation', '_Torsion_angle_constraint', '_TA_constraint_comment_org', '_TA_constraint_parse_err', '_TA_constraint_parse_file', '_TA_constraint_conv_err'],
-                                               'rdc_restraint': ['_RDC_constraint_expt', '_RDC_constraint_software', '_RDC_constraint', '_RDC_constraint_comment_org', '_RDC_constraint_parse_err', '_RDC_constraint_parse_file', '_RDC_constraint_conv_err'],
-                                               'spectral_peak': ['_Spectral_dim', '_Spectral_dim_transfer', '_Spectral_peak_software', '_Peak', '_Peak_general_char', '_Peak_char', '_Assigned_peak_chem_shift', '_Peak_row_format', '_Spectral_transition', '_Spectral_transition_general_char', '_Spectral_transition_char', '_Assigned_spectral_transition', '_Gen_dist_constraint', '_Dist_constraint_value']
-                                               }
+                                     'nmr-star': {'entry_info': ['_Study_list', '_Entry_experimental_methods', '_Entry_author', '_SG_project', '_Entry_src', '_Struct_keywords', '_Data_set', '_Datum', '_Release', '_Related_entries', '_Matched_entries', '_Auxiliary_files', '_Citation',
+                                                                 '_Assembly', '_Assembly_annotation_list', '_Assembly_subsystem', '_Entity', '_Entity_natural_src_list', '_Entity_natural_src', '_Entity_experimental_src_list', '_Chem_comp', '_Chem_comp_atom', '_Sample', '_Sample_condition_list', '_Entity_purity_list', '_Software', '_Method',
+                                                                 '_Mass_spec', '_Mass_spectrometer_list', '_Mass_spec_ref_compd_set', '_Chromatographic_system', '_Chromatographic_column', '_Fluorescence_instrument', '_EMR_instrument', '_Xray_instrument', '_NMR_spectrometer', '_NMR_spectrometer_list', '_NMR_spectrometer_probe', '_Experiment_list', '_NMR_spec_expt', '_NMR_spectral_processing',
+                                                                 '_MS_expt', '_MS_expt_param', '_MS_expt_software',
+                                                                 '_Computer', '_Chem_shift_reference', '_Assigned_chem_shift_list', '_Chem_shifts_calc_type', '_Theoretical_chem_shift_list', '_Theoretical_chem_shift', '_Coupling_constant_list', '_Theoretical_coupling_constant_list', '_Spectral_peak_list', '_Resonance_linker_list', '_Resonance_assignment',
+                                                                 '_Chem_shift_isotope_effect_list', '_Chem_shift_perturbation_list', '_Chem_shift_anisotropy', '_RDC_list', '_RDC_experiment', '_RDC_software', '_RDC',
+                                                                 '_Dipolar_coupling_list', '_Dipolar_coupling_experiment', '_Dipolar_coupling_software', '_Dipolar_coupling', '_Spectral_density_list', '_Spectral_density_experiment', '_Spectral_density_software', '_Spectral_density', '_Other_data_type_list', '_Other_data_experiment', '_Other_data_software', '_Other_data',
+                                                                 '_Chemical_rate_list', '_Chemical_rate_experiment', '_Chemical_rate_software', '_Chemical_rate',
+                                                                 '_H_exch_rate_list', '_H_exch_rate_experiment', '_H_exch_rate_software', '_H_exch_rate',
+                                                                 '_H_exch_protection_factor_list', '_H_exch_protection_fact_experiment', '_H_exch_protection_fact_software', '_H_exch_protection_factor',
+                                                                 '_Homonucl_NOE_list', '_Homonucl_NOE_experiment', '_Homonucl_NOE_software', '_Homonucl_NOE', '_Heteronucl_NOE_list', '_Heteronucl_NOE_experiment', '_Heteronucl_NOE_software', '_Heteronucl_NOE', '_Theoretical_heteronucl_NOE_list', '_Theoretical_heteronucl_NOE_experiment', '_Theoretical_heteronucl_NOE_software', '_Theoretical_heteronucl_NOE',
+                                                                 '_Heteronucl_T1_list', '_Heteronucl_T1_experiment', '_Heteronucl_T1_software', '_T1', '_Theoretical_heteronucl_T1_list', '_Theoretical_heteronucl_T1_experiment', '_Theoretical_heteronucl_T1_software', '_Theoretical_T1',
+                                                                 '_Heteronucl_T1rho_list', '_Heteronucl_T1rho_experiment', '_Heteronucl_T1rho_software', '_T1rho',
+                                                                 '_Heteronucl_T2_list', '_Heteronucl_T2_experiment', '_Heteronucl_T2_software', '_T2', '_Theoretical_heteronucl_T2_list', '_Theoretical_heteronucl_T2_experiment', '_Theoretical_heteronucl_T2_software', '_Theoretical_T2',
+                                                                 '_Auto_relaxation_list', '_Auto_relaxation_experiment', '_Auto_relaxation_software', '_Auto_relaxation', '_Theoretical_auto_relaxation_list', '_Theoretical_auto_relaxation_experiment', '_Theoretical_auto_relaxation_software', '_Theoretical_auto_relaxation',
+                                                                 '_Dipole_dipole_relax_list', '_Dipole_dipole_relax_experiment', '_Dipole_dipole_relax_software', '_Dipole_dipole_relax',
+                                                                 '_Cross_correlation_DD_list', '_Cross_correlation_DD_experiment', '_Cross_correlation_DD_software', '_Cross_correlation_DD', '_Theoretical_cross_correlation_DD_list', '_Theoretical_cross_correlation_DD_experiment', '_Theoretical_cross_correlation_DD_software', '_Theoretical_cross_correlation_DD',
+                                                                 '_Cross_correlation_D_CSA_list', '_Cross_correlation_D_CSA_experiment', '_Cross_correlation_D_CSA_software', '_Cross_correlation_D_CSA', '_Order_parameter_list', '_Order_parameter_experiment', '_Order_parameter_software', '_Order_param',
+                                                                 '_PH_titration_list', '_PH_titration_experiment', '_PH_titration_software', '_PH_titr_result', '_PH_param_list', '_PH_param', '_D_H_fractionation_factor_list', '_D_H_fract_factor_experiment', '_D_H_fract_factor_software', '_D_H_fractionation_factor',
+                                                                 '_Binding_value_list', '_Binding_experiment', '_Binding_software', '_Binding_result', '_Binding_partners', '_Binding_param_list', '_Binding_param',
+                                                                 '_Deduced_secd_struct_list', '_Deduced_secd_struct_experiment', '_Deduced_secd_struct_software', '_Deduced_secd_struct_exptl', '_Deduced_secd_struct_feature', '_Deduced_H_bond_list', '_Deduced_H_bond_experiment', '_Deduced_H_bond_software', '_Deduced_H_bond',
+                                                                 '_Conformer_stat_list', '_Conformer_stat_list_ens', '_Conformer_stat_list_rep', '_Conf_stats_software', '_Conformer_family_coord_set', '_Conformer_family_refinement', '_Conformer_family_software', '_Energetic_penalty_function', '_Conformer_family_coord_set_expt', '_Conf_family_coord_set_constr_list',
+                                                                 '_Struct_image', '_Local_structure_quality', '_Model_type', '_Atom_site', '_Atom_sites_footnote',
+                                                                 '_Representative_conformer', '_Rep_conf_refinement', '_Rep_conf_software', '_Terminal_residue', '_Rep_conf', '_Rep_coordinate_details',
+                                                                 '_Constraint_stat_list', '_Constraint_stat_list_ens', '_Constraint_stat_list_rep', '_Constraint_stats_constr_list', '_Constraint_file', '_Force_constant_list', '_Force_constant_software', '_Force_constant', '_Angular_order_parameter_list', '_Angular_order_param',
+                                                                 '_Tertiary_struct_element_list', '_Tertiary_struct_element_sel', '_Tertiary_struct', '_Structure_annotation', '_Struct_anno_software', '_Struct_classification', '_Struct_anno_char', '_Secondary_struct_list', '_Secondary_struct_sel', '_Secondary_struct', '_Bond_annotation_list', '_Bond_annotation', '_Bond_observed_conformer',
+                                                                 '_Structure_interaction_list', '_Structure_interaction', '_Observed_conformer', '_Other_struct_feature_list', '_Other_struct_feature', '_Tensor_list', '_Interatomic_distance_list', '_Interatomic_dist',
+                                                                 '_Gen_dist_constraint_list', '_Gen_dist_constraint_expt', '_Gen_dist_constraint_software', '_Gen_dist_constraint_software_param', '_Gen_dist_constraint', '_Gen_dist_constraint_comment_org', '_Gen_dist_constraint_parse_err', '_Gen_dist_constraint_parse_file', '_Gen_dist_constraint_conv_err',
+                                                                 '_Distance_constraint_list', '_Distance_constraint_expt', '_Distance_constraint_software', '_Dist_constr_software_setting', '_Dist_constraint_tree', '_Dist_constraint', '_Dist_constraint_value', '_Dist_constraint_comment_org', '_Dist_constraint_parse_err', '_Dist_constraint_parse_file', '_Dist_constraint_conv_err',
+                                                                 '_Floating_chirality_assign', '_Floating_chirality_software', '_Floating_chirality', '_Torsion_angle_constraint_list', '_Torsion_angle_constraints_expt', '_Torsion_angle_constraint_software', '_Karplus_equation', '_Torsion_angle_constraint', '_TA_constraint_comment_org', '_TA_constraint_parse_err', '_TA_constraint_parse_file', '_TA_constraint_conv_err',
+                                                                 '_RDC_constraint_list', '_RDC_constraint_expt', '_RDC_constraint_software', '_RDC_constraint', '_RDC_constraint_comment_org', '_RDC_constraint_parse_err', '_RDC_constraint_parse_file', '_RDC_constraint_conv_err',
+                                                                 '_J_three_bond_constraint_list', '_J_three_bond_constraint_expt', '_J_three_bond_constraint_software', '_J_three_bond_constraint', '_CA_CB_constraint_list', '_CA_CB_constraint_expt', '_CA_CB_constraint_software', '_CA_CB_constraint',
+                                                                 '_H_chem_shift_constraint_list', '_H_chem_shift_constraint_expt', '_H_chem_shift_constraint_software', '_H_chem_shift_constraint', '_Peak_constraint_link_list', '_Peak_constraint_link',
+                                                                 '_SAXS_constraint_list', '_SAXS_constraint_expt', '_SAXS_constraint_software', '_SAXS_constraint',
+                                                                 '_Other_constraint_list', '_Other_constraint_expt', '_Other_constraint_software', '_Org_constr_file_comment',
+                                                                 '_MZ_ratio_data_list', '_MZ_ratio_experiment', '_MZ_ratio_software', '_MZ_ratio_spectrum_param', '_MZ_precursor_ion', '_MZ_precursor_ion_annotation', '_MZ_product_ion', '_MZ_product_ion_annotation', '_MS_chromatogram_list', '_MS_chromatogram_experiment', '_MS_chromatogram_software', '_MS_chromatogram_param', '_MS_chromatogram_ion', '_MS_chrom_ion_annotation',
+                                                                 '_Software_specific_info_list', '_Software_specific_info', '_Software_applied_list', '_Software_applied_methods', '_Software_applied_history', '_History'],
+                                                  'poly_seq':  ['_Assembly_type', '_Entity_assembly', '_Bond', '_Entity_deleted_atom', '_Struct_asym', '_Assembly_db_link', '_Assembly_common_name', '_Assembly_systematic_name', '_Assembly_interaction', '_Chem_comp_assembly', '_PDBX_poly_seq_scheme', '_PDBX_nonpoly_scheme', '_Atom_type', '_Atom', '_Assembly_bio_function', '_Angle', '_Torsion_angle',
+                                                                '_Assembly_segment', '_Assembly_segment_description', '_Assembly_keyword', '_Assembly_citation', '_Author_annotation', '_Sample_component', '_Chemical_rate', '_Auto_relaxation', '_Theoretical_auto_relaxation',
+                                                                '_Binding_result', '_Binding_partners', '_Struct_anno_char' ],
+                                                  'chem_shift': ['_Chem_shift_experiment', '_Systematic_chem_shift_offset', '_Chem_shift_software', '_Atom_chem_shift', '_Ambiguous_atom_chem_shift', '_Spectral_peak_list', '_Assigned_peak_chem_shift', '_Assigned_spectral_transition'],
+                                                  'dist_restraint': ['_Gen_dist_constraint_expt', '_Gen_dist_constraint_software', '_Gen_dist_constraint_software_param', '_Gen_dist_constraint', '_Gen_dist_constraint_comment_org', '_Gen_dist_constraint_parse_err', '_Gen_dist_constraint_parse_file', '_Gen_dist_constraint_conv_err'],
+                                                  'dihed_restraint': ['_Torsion_angle_constraints_expt', '_Torsion_angle_constraint_software', '_Karplus_equation', '_Torsion_angle_constraint', '_TA_constraint_comment_org', '_TA_constraint_parse_err', '_TA_constraint_parse_file', '_TA_constraint_conv_err'],
+                                                  'rdc_restraint': ['_RDC_constraint_expt', '_RDC_constraint_software', '_RDC_constraint', '_RDC_constraint_comment_org', '_RDC_constraint_parse_err', '_RDC_constraint_parse_file', '_RDC_constraint_conv_err'],
+                                                  'spectral_peak': ['_Spectral_dim', '_Spectral_dim_transfer', '_Spectral_peak_software', '_Peak', '_Peak_general_char', '_Peak_char', '_Assigned_peak_chem_shift', '_Peak_row_format', '_Spectral_transition', '_Spectral_transition_general_char', '_Spectral_transition_char', '_Assigned_spectral_transition', '_Gen_dist_constraint', '_Dist_constraint_value']
+                                                  }
                                   }
 
         # auxiliary loop key items
@@ -2025,6 +2028,12 @@ class NmrDpUtility(object):
                 self.__resolve_conflict = self.__inputParamDict['resolve_conflict']
             else:
                 self.__resolve_conflict = self.__inputParamDict['resolve_conflict'] in self.true_value
+
+        if 'retain_original' in self.__inputParamDict and not self.__inputParamDict['retain_original'] is None:
+            if type(self.__inputParamDict['retain_original']) is bool:
+                self.__retain_original = self.__inputParamDict['retain_original']
+            else:
+                self.__retain_original = self.__inputParamDict['retain_original'] in self.true_value
 
         self.__op = op
 
@@ -11800,6 +11809,9 @@ class NmrDpUtility(object):
         if warnings is None:
             return True
 
+        if self.__retain_original:
+            return True
+
         for w in warnings:
 
             if self.__star_data_type == "Entry" or self.__star_data_type == "Saveframe":
@@ -11860,6 +11872,9 @@ class NmrDpUtility(object):
         if warnings is None:
             return True
 
+        if self.__retain_original:
+            return True
+
         for w in warnings:
 
             if self.__star_data_type == "Entry" or self.__star_data_type == "Saveframe":
@@ -11901,10 +11916,7 @@ class NmrDpUtility(object):
                                 self.__lfh.write("+NmrDpUtility.__deleteSkippedLoop() ++ Error  - %s\n" % err)
 
                         else:
-                            try:
-                                del sf_data[w['category']]
-                            except KeyError:
-                                pass
+                            del sf_data[sf_data.get_loop_by_category(w['category'])]
 
             else:
 
@@ -11915,6 +11927,54 @@ class NmrDpUtility(object):
 
                 if self.__verbose:
                     self.__lfh.write("+NmrDpUtility.__deleteSkippedLoop() ++ Error  - %s\n" % err)
+
+        return True
+
+    def __deleteUnparsedEntryLoop(self):
+        """ Delete unparsed entry loops.
+        """
+
+        input_source = self.report.input_sources[0]
+        input_source_dic = input_source.get()
+
+        file_type = input_source_dic['file_type']
+        file_name = input_source_dic['file_name']
+
+        if self.__retain_original:
+            return True
+
+        content_subtype = 'entry_info'
+
+        sf_category = self.sf_categories[file_type][content_subtype]
+        lp_category = self.lp_categories[file_type][content_subtype]
+
+        if self.__star_data_type == "Entry" or self.__star_data_type == "Saveframe":
+
+            if sf_category in self.__sf_category_list:
+
+                sf_data = self.__star_data.get_saveframes_by_category(sf_category)[0]
+
+                loops = []
+
+                for loop in sf_data.loops:
+
+                    if loop.category == lp_category:
+                        continue
+
+                    loops.append(loop)
+
+                for loop in reversed(loops):
+                    del sf_data[loop]
+
+        else:
+
+            err = "Unexpected PyNMRSTAR object type %s found about %s file." % (self.__star_data_type, file_name)
+
+            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__deleteUnparsedEntryLoop() ++ Error  - %s" % err)
+            self.report.setError()
+
+            if self.__verbose:
+                self.__lfh.write("+NmrDpUtility.__deleteUnparsedEntryLoop() ++ Error  - %s\n" % err)
 
         return True
 
@@ -12019,17 +12079,36 @@ class NmrDpUtility(object):
             pass
 
         sf_cat_name = '_nef_molecular_system' if file_type == 'nef' else '_Assembly'
+        lp_cat_name = '_nef_sequence' if file_type == 'nef' else '_Chem_comp_assembly'
+
+        orig_poly_seq_sf_data = self.__star_data.get_saveframes_by_category(sf_category)[0] if self.__retain_original else None
 
         poly_seq_sf_data = pynmrstar.Saveframe.from_scratch(sf_cat_name)
 
-        if file_type == 'nef':
-            poly_seq_sf_data.add_tag(sf_cat_name + '.sf_category', 'nef_molecular_system')
-            poly_seq_sf_data.add_tag(sf_cat_name + '.sf_framecode', 'nef_molecular_system')
-        else:
-            poly_seq_sf_data.add_tag(sf_cat_name + '.Sf_category', 'assembly')
-            poly_seq_sf_data.add_tag(sf_cat_name + '.Sf_framecode', 'assembly')
+        tagNames = None
 
-        lp_cat_name = '_nef_sequence' if file_type == 'nef' else '_Chem_comp_assembly'
+        if not orig_poly_seq_sf_data is None:
+
+            tagNames = [t[0] for t in orig_poly_seq_sf_data.tags]
+
+            for tag in orig_poly_seq_sf_data.tags:
+                poly_seq_sf_data.add_tag(sf_cat_name + '.' + tag[0], tag[1])
+
+            for lp_data in orig_poly_seq_sf_data.loops:
+
+                if lp_data.category == lp_cat_name:
+                    continue
+
+                poly_seq_sf_data.add_loop(lp_data)
+
+        tag_names = ['sf_category', 'sf_framecode'] if file_type == 'nef' else ['Sf_category', 'Sf_framecode']
+        tag_value = 'nef_molecular_system' if file_type == 'nef' else 'assembly'
+
+        for tag_name in tag_names:
+            if tagNames is None or not (tag_name in tagNames):
+                poly_seq_sf_data.add_tag(sf_cat_name + '.' + tag_name, tag_value)
+            else:
+                poly_seq_sf_data.tags[tagNames.index(tag_name)][1] = tag_value
 
         lp_data = pynmrstar.Loop.from_scratch(lp_cat_name)
 

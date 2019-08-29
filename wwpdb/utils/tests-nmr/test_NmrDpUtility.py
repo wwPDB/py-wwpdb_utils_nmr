@@ -215,5 +215,41 @@ class TestNmrDpUtility(unittest.TestCase):
 
         self.utility.op('nmr-nef2str-deposit')
 
+    def test_nmr_str2str_deposit_bmrb_merged(self):
+        self.utility.setSource(self.data_dir_path + 'merged_30562_6nox.str')
+        self.utility.addInput(name='coordinate_file_path', value=self.data_dir_path + '6nox.cif', type='file')
+        self.utility.setLog(self.data_dir_path + 'merged_30562_6nox-str-consistency-log.json')
+
+        self.utility.op('nmr-str-consistency-check')
+
+        self.utility.setSource(self.data_dir_path + 'merged_30562_6nox.str')
+        self.utility.addInput(name='coordinate_file_path', value=self.data_dir_path + '6nox.cif', type='file')
+        self.utility.addInput(name='report_file_path', value=self.data_dir_path + 'merged_30562_6nox-str-consistency-log.json', type='file')
+        self.utility.addInput(name='entry_id', value='6nox', type='param')
+        self.utility.addInput(name='insert_entry_id_to_loops', value=True, type='param')
+        self.utility.setLog(self.data_dir_path + 'merged_30562_6nox-str2str-deposit-log.json')
+        self.utility.setDestination(self.data_dir_path + 'merged_30562_6nox-next.str')
+        self.utility.setVerbose(False)
+
+        self.utility.op('nmr-str2str-deposit')
+
+    def test_nmr_str2str_deposit_cleaned(self):
+        self.utility.setSource(self.data_dir_path + '24642_2mqq-clean.str')
+        self.utility.addInput(name='coordinate_file_path', value=self.data_dir_path + '2mqq.cif', type='file')
+        self.utility.setLog(self.data_dir_path + '24642_2mqq-str2str-consistency-log.json')
+
+        self.utility.op('nmr-str-consistency-check')
+
+        self.utility.setSource(self.data_dir_path + '24642_2mqq-clean.str')
+        self.utility.addInput(name='coordinate_file_path', value=self.data_dir_path + '2mqq.cif', type='file')
+        self.utility.addInput(name='report_file_path', value=self.data_dir_path + '24642_2mqq-str2str-consistency-log.json', type='file')
+        self.utility.addInput(name='entry_id', value='2mqq', type='param')
+        self.utility.addInput(name='insert_entry_id_to_loops', value=True, type='param')
+        self.utility.setLog(self.data_dir_path + '24642-str2str-deposit-log.json')
+        self.utility.setDestination(self.data_dir_path + '24642_2mqq-clean-next.str')
+        self.utility.setVerbose(False)
+
+        self.utility.op('nmr-str2str-deposit')
+
 if __name__ == '__main__':
     unittest.main()

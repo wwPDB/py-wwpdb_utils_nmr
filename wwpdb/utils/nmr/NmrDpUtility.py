@@ -118,6 +118,7 @@ class NmrDpUtility(object):
                           self.__resolveConflictsInLoop,
                           self.__resolveConflictsInAuxLoop,
                           # resolve minor issues
+                          self.__appendIndexTag,
                           self.__deleteSkippedSf,
                           self.__deleteSkippedLoop,
                           self.__updatePolymerSequence,
@@ -323,10 +324,10 @@ class NmrDpUtility(object):
                            'nmr-star': {'entry_info': None,
                                         'poly_seq': None,
                                         'chem_shift': None,
-                                        'dist_restraint': 'ID',
-                                        'dihed_restraint': 'ID',
-                                        'rdc_restraint': 'ID',
-                                        'spectral_peak': 'ID'
+                                        'dist_restraint': 'Index_ID',
+                                        'dihed_restraint': 'Index_ID',
+                                        'rdc_restraint': 'Index_ID',
+                                        'spectral_peak': 'Index_ID'
                                         },
                            'pdbx': {'poly_seq': None,
                                     'non_poly': None,
@@ -738,7 +739,7 @@ class NmrDpUtility(object):
                                                        {'name': 'Auth_atom_ID', 'type': 'str', 'mandatory': False},
                                                        {'name': 'Assigned_chem_shift_list_ID', 'type': 'pointer-index', 'mandatory': True}
                                                        ],
-                                        'dist_restraint': [{'name': 'ID', 'type': 'index-int', 'mandatory': True},
+                                        'dist_restraint': [{'name': 'Index_ID', 'type': 'index-int', 'mandatory': False},
                                                            #{'name': 'ID', 'type': 'positive-int', 'mandatory': True,
                                                            # 'enforce-non-zero': True},
                                                            {'name': 'Combination_ID', 'type': 'positive-int', 'mandatory': False,
@@ -791,7 +792,7 @@ class NmrDpUtility(object):
                                                            {'name': 'Auth_atom_ID_2', 'type': 'str', 'mandatory': False},
                                                            {'name': 'Gen_dist_constraint_list_ID', 'type': 'pointer-index', 'mandatory': True}
                                                            ],
-                                        'dihed_restraint': [{'name': 'ID', 'type': 'index-int', 'mandatory': True},
+                                        'dihed_restraint': [{'name': 'Index_ID', 'type': 'index-int', 'mandatory': False},
                                                             #{'name': 'ID', 'type': 'index-int', 'mandatory': True,
                                                             # 'enforce-non-zero': True},
                                                             {'name': 'Combination_ID', 'type': 'positive-int', 'mandatory': False,
@@ -850,7 +851,7 @@ class NmrDpUtility(object):
                                                             {'name': 'Auth_atom_ID_4', 'type': 'str', 'mandatory': False},
                                                             {'name': 'Torsion_angle_constraint_list_ID', 'type': 'pointer-index', 'mandatory': True}
                                             ],
-                                        'rdc_restraint': [{'name': 'ID', 'type': 'index-int', 'mandatory': True},
+                                        'rdc_restraint': [{'name': 'Index_ID', 'type': 'index-int', 'mandatory': False},
                                                           #{'name': 'ID', 'type': 'index-int', 'mandatory': True,
                                                           # 'enforce-non-zero': True},
                                                           {'name': 'Combination_ID', 'type': 'positive-int', 'mandatory': False,
@@ -904,7 +905,7 @@ class NmrDpUtility(object):
                                                           {'name': 'Auth_atom_ID_2', 'type': 'str', 'mandatory': False},
                                                           {'name': 'RDC_constraint_list_ID', 'type': 'pointer-index', 'mandatory': True}
                                                           ],
-                                        'spectral_peak': [{'name': 'ID', 'type': 'index-int', 'mandatory': True},
+                                        'spectral_peak': [{'name': 'Index_ID', 'type': 'index-int', 'mandatory': False},
                                                           #{'name': 'ID', 'type': 'positive-int', 'mandatory': True,
                                                           # 'enforce-non-zero': True},
                                                           {'name': 'Volume', 'type': 'float', 'mandatory': False, 'group-mandatory': True,
@@ -2384,11 +2385,10 @@ class NmrDpUtility(object):
 
                 if file_type == 'nmr-star' and sf_category == 'entity':
                     self.__has_star_entity = True
-                    continue
 
                 warn = "Skipped parsing %s saveframe category in %s file." % (sf_category, file_name)
 
-                self.report.warning.appendDescription('skipped_sf_category', {'file_name': file_name, 'description': warn})
+                self.report.warning.appendDescription('skipped_sf_category', {'file_name': file_name, 'sf_category': sf_category, 'description': warn})
                 self.report.setWarning()
 
                 if self.__verbose:
@@ -3208,6 +3208,9 @@ class NmrDpUtility(object):
 
             asm = [] # molecular assembly of a loop
 
+            chain_ids = set()
+            entity_sfs = {}
+
             for c in dat:
 
                 if c[0] in self.empty_value or c[1] in self.empty_value or c[2] in self.empty_value:
@@ -3217,6 +3220,18 @@ class NmrDpUtility(object):
                     chain_id = int(c[0])
                     entity_sf = c[1]
                     entity_id = int(c[2])
+
+                    if chain_id in chain_ids:
+                        return False
+
+                    chain_ids.add(chain_id)
+
+                    for k, v in entity_sfs.items():
+                        if (k != entity_sf and v == entity_id) or (k == entity_sf and v != entity_id):
+                            return False
+
+                    entity_sfs[entity_sf] = entity_id
+
                 except ValueError:
                     return False
 
@@ -4603,7 +4618,7 @@ class NmrDpUtility(object):
                                 conflict_id = self.__nefT.get_conflict_id(sf_data, lp_category, key_items)[0]
 
                                 if len(conflict_id) > 0:
-                                    loop = sf_data.sf_data.get_loop_by_category(lp_category)
+                                    loop = sf_data.get_loop_by_category(lp_category)
 
                                     for l in conflict_id:
                                         del loop.data[l]
@@ -11623,8 +11638,6 @@ class NmrDpUtility(object):
 
             for sf_data in self.__star_data.get_saveframes_by_category(sf_category):
 
-                sf_framecode = sf_data.get_tag('sf_framecode')[0]
-
                 if content_subtype == 'spectral_peak':
 
                     try:
@@ -11689,8 +11702,6 @@ class NmrDpUtility(object):
 
             for sf_data in self.__star_data.get_saveframes_by_category(sf_category):
 
-                sf_framecode = sf_data.get_tag('sf_framecode')[0]
-
                 if content_subtype == 'spectral_peak':
 
                     try:
@@ -11721,7 +11732,7 @@ class NmrDpUtility(object):
                             conflict_id = self.__nefT.get_conflict_id(sf_data, lp_category, key_items)[0]
 
                             if len(conflict_id) > 0:
-                                loop = sf_data.sf_data.get_loop_by_category(lp_category)
+                                loop = sf_data.get_loop_by_category(lp_category)
 
                                 for l in conflict_id:
                                     del loop.data[l]
@@ -11730,6 +11741,49 @@ class NmrDpUtility(object):
                             pass
 
         return True
+
+    def __appendIndexTag(self):
+        """ Append index tag if required.
+        """
+
+        input_source = self.report.input_sources[0]
+        input_source_dic = input_source.get()
+
+        file_type = input_source_dic['file_type']
+
+        if file_type == 'nef':
+            return True
+
+        for content_subtype in input_source_dic['content_subtype'].keys():
+
+            sf_category = self.sf_categories[file_type][content_subtype]
+            lp_category = self.lp_categories[file_type][content_subtype]
+
+            index_tag = self.index_tags[file_type][content_subtype]
+
+            if index_tag is None:
+                continue
+
+            for sf_data in self.__star_data.get_saveframes_by_category(sf_category):
+
+                lp_data = sf_data.get_loop_by_category(lp_category)
+
+                if index_tag in lp_data.tags:
+                    continue
+
+                new_lp_data = pynmrstar.Loop.from_scratch(lp_category)
+
+                new_lp_data.add_tag(lp_category + '.' + index_tag)
+
+                for tag in lp_data.tags:
+                    new_lp_data.add_tag(lp_category + '.' + tag)
+
+                for l, i in enumerate(lp_data.data):
+                    new_lp_data.add_data([str(l + 1)] + i)
+
+                del sf_data[lp_data]
+
+                sf_data.add_loop(new_lp_data)
 
     def __deleteSkippedSf(self):
         """ Delete skipped saveframes.
@@ -11847,7 +11901,10 @@ class NmrDpUtility(object):
                                 self.__lfh.write("+NmrDpUtility.__deleteSkippedLoop() ++ Error  - %s\n" % err)
 
                         else:
-                            del sf_data[w['category']]
+                            try:
+                                del sf_data[w['category']]
+                            except KeyError:
+                                pass
 
             else:
 
@@ -12055,7 +12112,7 @@ class NmrDpUtility(object):
                         # residue_variant
 
                         if has_res_var_dat:
-                            orig_row = next((i for i in orig_lp_data if i['chain_code'] == chain_id and i['sequence_code'] == auth_seq_id and i['residue_name'] == auth_comp_id), None)
+                            orig_row = None if orig_lp_data is None else next((i for i in orig_lp_data if i['chain_code'] == chain_id and i['sequence_code'] == auth_seq_id and i['residue_name'] == auth_comp_id), None)
                             if not orig_row is None:
                                 row.append(orig_row['residue_variant'])
                             else:
@@ -12080,7 +12137,7 @@ class NmrDpUtility(object):
                         row.append(seq_id) # Comp_index_ID
                         row.append(comp_id) # Comp_ID
 
-                        orig_row = next((i for i in orig_lp_data if i['Entity_assembly_ID'] == cid and i['Comp_index_ID'] == auth_seq_id and i['Comp_ID'] == auth_comp_id), None)
+                        orig_row = None if orig_lp_data is None else next((i for i in orig_lp_data if i['Entity_assembly_ID'] == cid and i['Comp_index_ID'] == auth_seq_id and i['Comp_ID'] == auth_comp_id), None)
 
                         # Auth_asym_ID
 
@@ -16029,7 +16086,9 @@ class NmrDpUtility(object):
                             sf_data.add_tag('ID', list_id)
 
                         else:
+                            tagNames = [t[0] for t in sf_data.tags]
                             itCol = tagNames.index('ID')
+
                             sf_data.tags[itCol][1] = list_id
 
         return True
@@ -16083,7 +16142,9 @@ class NmrDpUtility(object):
                             sf_data.add_tag(entryIdTag, entry_id)
 
                     else:
+                        tagNames = [t[0] for t in sf_data.tags]
                         itCol = tagNames.index(entryIdTag)
+
                         sf_data.tags[itCol][1] = entry_id
 
                 if insert_entry_id_to_loops:

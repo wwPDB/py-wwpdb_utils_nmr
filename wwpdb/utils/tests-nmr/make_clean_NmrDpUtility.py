@@ -1,6 +1,6 @@
 ##
 # File: make_clean_NmrDpUtility.py
-# Date:  29-Jul-2019  M. Yokochi
+# Date:  30-Jul-2019  M. Yokochi
 #
 # Updates:
 ##
@@ -47,7 +47,7 @@ class TestNmrDpUtility(unittest.TestCase):
         self.utility.addInput(name='report_file_path', value=self.data_dir_path + entry_id + '-nef-consistency-log.json', type='file')
         self.utility.addInput(name='entry_id', value='NEED_ACC_NO', type='param')
         self.utility.addInput(name='nonblk_anomalous_cs', value=True, type='param')
-        self.utility.addInput(name='nonblk_bad_nterm', value=False, type='param')
+        self.utility.addInput(name='nonblk_bad_nterm', value=True, type='param')
         self.utility.addInput(name='resolve_conflict', value=True, type='param')
         self.utility.setLog(self.data_dir_path + entry_id + '-clean-deposit-log.json')
         self.utility.setDestination(self.data_dir_path + entry_id + '-clean.nef')

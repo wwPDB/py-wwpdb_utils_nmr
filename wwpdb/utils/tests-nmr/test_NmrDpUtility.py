@@ -226,6 +226,8 @@ class TestNmrDpUtility(unittest.TestCase):
         self.utility.addInput(name='coordinate_file_path', value=self.data_dir_path + '6nox.cif', type='file')
         self.utility.addInput(name='report_file_path', value=self.data_dir_path + 'merged_30562_6nox-str-consistency-log.json', type='file')
         self.utility.addInput(name='entry_id', value='6nox', type='param')
+        self.utility.addInput(name='nonblk_anomalous_cs', value=True, type='param')
+        self.utility.addInput(name='nonblk_bad_nterm', value=True, type='param')
         self.utility.addInput(name='insert_entry_id_to_loops', value=True, type='param')
         self.utility.setLog(self.data_dir_path + 'merged_30562_6nox-str2str-deposit-log.json')
         self.utility.setDestination(self.data_dir_path + 'merged_30562_6nox-next.str')

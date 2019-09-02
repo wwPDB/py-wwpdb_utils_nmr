@@ -11636,9 +11636,16 @@ class NmrDpUtility(object):
                                 err = "%sAtom (%s %s, %s %s, %s %s, %s %s) is not incorporated in the atomic coordinate." %\
                                       (idx_msg, chain_id_names[j], chain_id, seq_id_names[j], seq_id, comp_id_names[j], comp_id, atom_id_names[j], atom_name)
 
-                                if self.__nonblk_bad_nterm and seq_id == 1 and atom_id_ == 'H' and self.__isCyclicPolymer(ref_chain_id):
+                                cyclic = self.__isCyclicPolymer(ref_chain_id)
 
-                                    err += ' However, it is acceptable if an appropriate atom name, H1, is given because of a cyclic-peptide.'
+                                if self.__nonblk_bad_nterm and seq_id == 1 and atom_id_ == 'H' and (cyclic or comp_id == 'PRO'):
+
+                                    err += ' However, it is acceptable if an appropriate atom name, H1, is given '
+
+                                    if cyclic:
+                                        err += 'because of a cyclic-peptide.'
+                                    else:
+                                        err += 'because sequence (chain_id %s) starts with Proline residue.' % ref_chain_id
 
                                     self.report.warning.appendDescription('atom_nomenclature_mismatch', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
                                     self.report.setWarning()

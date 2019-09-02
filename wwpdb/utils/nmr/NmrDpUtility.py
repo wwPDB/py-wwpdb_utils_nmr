@@ -11683,7 +11683,7 @@ class NmrDpUtility(object):
         """
 
         # retrieve sf_category_list which is required to resolve minor issues
-        if len(self.sf_categories) == 0:
+        if len(self.__sf_category_list) == 0:
 
             is_done, self.__star_data_type, self.__star_data = self.__nefT.read_input_file(self.__srcPath)
             self.__sf_category_list, self.__lp_category_list = self.__nefT.get_data_content(self.__star_data, self.__star_data_type)

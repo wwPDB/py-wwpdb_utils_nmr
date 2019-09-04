@@ -47,12 +47,12 @@ class TestNmrDpUtility(unittest.TestCase):
         self.utility.addInput(name='report_file_path', value=self.data_dir_path + entry_id + '-nef-consistency-log.json', type='file')
         self.utility.addInput(name='nonblk_anomalous_cs', value=True, type='param')
         self.utility.addInput(name='nonblk_bad_nterm', value=True, type='param')
+        self.utility.addInput(name='resolve_conflict', value=True, type='param')
         self.utility.setLog(self.data_dir_path + entry_id + '-clean-deposit-log.json')
         self.utility.setDestination(self.data_dir_path + entry_id + '-clean.nef')
         self.utility.addOutput(name='nmr-star_file_path', value=self.data_dir_path + entry_id + '-clean.str', type='file')
         self.utility.addOutput(name='report_file_path', value=self.data_dir_path + entry_id + '-clean-str-deposit-log.json', type='file')
         self.utility.addOutput(name='entry_id', value='NEED_ACC_NO', type='param')
-        self.utility.addOutput(name='resolve_conflict', value=True, type='param')
         self.utility.setVerbose(False)
 
         self.utility.op('nmr-nef2str-deposit')

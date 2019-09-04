@@ -44,16 +44,15 @@ class NmrDpUtility(object):
         self.__nonblk_anomalous_cs = False
         # whether not to block deposition because bad n-term amino group
         self.__nonblk_bad_nterm = False
-
         # whether to resolve conflict
         self.__resolve_conflict = False
-        # whether to retain original content if possible
-        self.__retain_original = True
 
         # default entry_id (nmr-star specific)
         self.__entry_id = 'UNNAMED'
         # whether to insert entry_id (nmr-star specific)
         self.__insert_entry_id_to_loops = True
+        # whether to retain original content if possible
+        self.__retain_original = True
 
         # whether entity category exists (nmr-star specific)
         self.__has_star_entity = False
@@ -2036,20 +2035,20 @@ class NmrDpUtility(object):
             else:
                 self.__resolve_conflict = self.__inputParamDict['resolve_conflict'] in self.true_value
 
-        if 'retain_original' in self.__inputParamDict and not self.__inputParamDict['retain_original'] is None:
-            if type(self.__inputParamDict['retain_original']) is bool:
-                self.__retain_original = self.__inputParamDict['retain_original']
-            else:
-                self.__retain_original = self.__inputParamDict['retain_original'] in self.true_value
+        if 'entry_id' in self.__outputParamDict and not self.__outputParamDict['entry_id'] is None:
+            self.__entry_id = self.__outputParamDict['entry_id']
 
-        if 'entry_id' in self.__inputParamDict and not self.__inputParamDict['entry_id'] is None:
-            self.__entry_id = self.__inputParamDict['entry_id']
-
-        if 'insert_entry_id_to_loops' in self.__inputParamDict and not self.__inputParamDict['insert_entry_id_to_loops'] is None:
-            if type(self.__inputParamDict['insert_entry_id_to_loops']) is bool:
-                self.__insert_entry_id_to_loops = self.__inputParamDict['insert_entry_id_to_loops']
+        if 'insert_entry_id_to_loops' in self.__outputParamDict and not self.__outputParamDict['insert_entry_id_to_loops'] is None:
+            if type(self.__outputParamDict['insert_entry_id_to_loops']) is bool:
+                self.__insert_entry_id_to_loops = self.__outputParamDict['insert_entry_id_to_loops']
             else:
-                self.__insert_entry_id_to_loops = self.__inputParamDict['insert_entry_id_to_loops'] in self.true_value
+                self.__insert_entry_id_to_loops = self.__outputParamDict['insert_entry_id_to_loops'] in self.true_value
+
+        if 'retain_original' in self.__outputParamDict and not self.__outputParamDict['retain_original'] is None:
+            if type(self.__outputParamDict['retain_original']) is bool:
+                self.__retain_original = self.__outputParamDict['retain_original']
+            else:
+                self.__retain_original = self.__outputParamDict['retain_original'] in self.true_value
 
         self.__op = op
 

@@ -1,6 +1,6 @@
 ##
 # File: test_NmrDpUtility.py
-# Date:  28-Aug-2019  M. Yokochi
+# Date:  20-Sep-2019  M. Yokochi
 #
 # Updates:
 ##
@@ -111,7 +111,6 @@ class TestNmrDpUtility(unittest.TestCase):
     def test_nmr_nef_consistency_check_xplor_nih(self):
         self.utility.setSource(self.data_dir_path + 'mth1743-test-20190919.nef')
         self.utility.setLog(self.data_dir_path + 'mth1743-test-20190919-nef-consistency-log.json')
-        self.utility.addInput(name='resolve_conflict', value=True, type='param')
 
         self.utility.op('nmr-nef-consistency-check')
 

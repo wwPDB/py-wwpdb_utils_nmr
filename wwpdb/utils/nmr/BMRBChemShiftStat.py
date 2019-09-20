@@ -1,6 +1,6 @@
 ##
 # File: BMRBChemShiftStat.py
-# Date: 24-Jul-2019
+# Date: 20-Sep-2019
 #
 # Updates:
 ##

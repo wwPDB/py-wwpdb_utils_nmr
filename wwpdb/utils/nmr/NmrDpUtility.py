@@ -1,6 +1,6 @@
 ##
 # File: NmrDpUtility.py
-# Date: 30-Aug-2019
+# Date: 20-Sep-2019
 #
 # Updates:
 ##
@@ -400,7 +400,8 @@ class NmrDpUtility(object):
                                                  {'name': 'residue_name', 'type': 'str'},
                                                  {'name': 'atom_name', 'type': 'str'}
                                                  ],
-                                  'dist_restraint': [{'name': 'restraint_id', 'type': 'positive-int'},
+                                  'dist_restraint': [{'name': 'index', 'type': 'index-int'},
+                                                     {'name': 'restraint_id', 'type': 'positive-int'},
                                                      {'name': 'chain_code_1', 'type': 'str'},
                                                      {'name': 'sequence_code_1', 'type': 'int'},
                                                      {'name': 'residue_name_1', 'type': 'str'},
@@ -410,7 +411,8 @@ class NmrDpUtility(object):
                                                      {'name': 'residue_name_2', 'type': 'str'},
                                                      {'name': 'atom_name_2', 'type': 'str'}
                                                      ],
-                                  'dihed_restraint': [{'name': 'restraint_id', 'type': 'positive-int'},
+                                  'dihed_restraint': [{'name': 'index', 'type': 'index-int'},
+                                                      {'name': 'restraint_id', 'type': 'positive-int'},
                                                       {'name': 'chain_code_1', 'type': 'str'},
                                                       {'name': 'sequence_code_1', 'type': 'int'},
                                                       {'name': 'residue_name_1', 'type': 'str'},
@@ -428,7 +430,8 @@ class NmrDpUtility(object):
                                                       {'name': 'residue_name_4', 'type': 'str'},
                                                       {'name': 'atom_name_4', 'type': 'str'}
                                                       ],
-                                  'rdc_restraint': [{'name': 'restraint_id', 'type': 'positive-int'},
+                                  'rdc_restraint': [{'name': 'index', 'type': 'index-int'},
+                                                    {'name': 'restraint_id', 'type': 'positive-int'},
                                                     {'name': 'chain_code_1', 'type': 'str'},
                                                     {'name': 'sequence_code_1', 'type': 'int'},
                                                     {'name': 'residue_name_1', 'type': 'str'},
@@ -449,7 +452,8 @@ class NmrDpUtility(object):
                                                       {'name': 'Comp_ID', 'type': 'str'},
                                                       {'name': 'Atom_ID', 'type': 'str'}
                                                       ],
-                                       'dist_restraint': [{'name': 'ID', 'type': 'positive-int'},
+                                       'dist_restraint': [{'name': 'Index_ID', 'type': 'index-int'},
+                                                          {'name': 'ID', 'type': 'positive-int'},
                                                           {'name': 'Entity_assembly_ID_1', 'type': 'positive-int'},
                                                           {'name': 'Comp_index_ID_1', 'type': 'int'},
                                                           {'name': 'Comp_ID_1', 'type': 'str'},
@@ -459,7 +463,8 @@ class NmrDpUtility(object):
                                                           {'name': 'Comp_ID_2', 'type': 'str'},
                                                           {'name': 'Atom_ID_2', 'type': 'str'}
                                                           ],
-                                       'dihed_restraint': [{'name': 'ID', 'type': 'positive-int'},
+                                       'dihed_restraint': [{'name': 'Index_ID', 'type': 'index-int'},
+                                                           {'name': 'ID', 'type': 'positive-int'},
                                                            {'name': 'Entity_assembly_ID_1', 'type': 'positive-int'},
                                                            {'name': 'Comp_index_ID_1', 'type': 'int'},
                                                            {'name': 'Comp_ID_1', 'type': 'str'},
@@ -477,7 +482,8 @@ class NmrDpUtility(object):
                                                            {'name': 'Comp_ID_4', 'type': 'str'},
                                                            {'name': 'Atom_ID_4', 'type': 'str'}
                                                            ],
-                                       'rdc_restraint': [{'name': 'ID', 'type': 'positive-int'},
+                                       'rdc_restraint': [{'name': 'Index_ID', 'type': 'index-int'},
+                                                         {'name': 'ID', 'type': 'positive-int'},
                                                          {'name': 'Entity_assembly_ID_1', 'type': 'positive-int'},
                                                          {'name': 'Comp_index_ID_1', 'type': 'int'},
                                                          {'name': 'Comp_ID_1', 'type': 'str'},

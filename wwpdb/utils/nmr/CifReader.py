@@ -256,13 +256,13 @@ class CifReader(object):
             for idxIt, itName in enumerate(itNameList):
                 if itName in dataNames:
                     colDict[itName] = idxIt
-                if not filterItems is None and itName in filterNames:
+                if (not filterItems is None) and itName in filterNames:
                     fcolDict[itName] = idxIt
 
             if set(dataNames) & set(itNameList) != set(dataNames):
                 raise LookupError("Missing one of data items %s." % dataNames)
 
-            if not filterItems is None and set(filterNames) & set(itNameList) != set(filterNames):
+            if (not filterItems is None) and set(filterNames) & set(itNameList) != set(filterNames):
                 raise LookupError("Missing one of filter items %s." % filterNames)
 
             # get row list

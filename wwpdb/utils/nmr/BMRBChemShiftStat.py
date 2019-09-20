@@ -1038,7 +1038,7 @@ class BMRBChemShiftStat:
                 if max_count >= self.max_count_th:
                     if i['count'] > max_count * primary_th:
                         i['primary'] = True
-                    if not secondary_th is None and i['count'] > max_count * secondary_th:
+                    if (not secondary_th is None) and i['count'] > max_count * secondary_th:
                         i['secondary'] = True
 
     def writeStatAsPickleFiles(self):

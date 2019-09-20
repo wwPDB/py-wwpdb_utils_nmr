@@ -108,6 +108,13 @@ class TestNmrDpUtility(unittest.TestCase):
 
         self.utility.op('nmr-nef-consistency-check')
 
+    def test_nmr_nef_consistency_check_xplor_nih(self):
+        self.utility.setSource(self.data_dir_path + 'mth1743-test-20190919.nef')
+        self.utility.setLog(self.data_dir_path + 'mth1743-test-20190919-nef-consistency-log.json')
+        self.utility.addInput(name='resolve_conflict', value=True, type='param')
+
+        self.utility.op('nmr-nef-consistency-check')
+
     def test_nmr_str_consistency_check_bmrb_merged(self):
         self.utility.setSource(self.data_dir_path + 'merged_30562_6nox.str')
         self.utility.addInput(name='coordinate_file_path', value=self.data_dir_path + '6nox.cif', type='file')

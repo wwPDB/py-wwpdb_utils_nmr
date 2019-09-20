@@ -83,12 +83,17 @@ class NmrDpUtility(object):
                            self.__extractNonStandardResidue,
                            self.__appendPolymerSequenceAlignment,
                            self.__validateAtomNomenclature,
+                           self.__appendElemAndIsoNumOfNefCSLoop,
                            self.__validateAtomTypeOfCSLoop,
                            self.__validateAmbigCodeOfCSLoop,
+                           self.__appendIndexInLoop,
                            self.__testIndexConsistency,
+                           self.__appendWeightInLoop,
+                           self.__appendDihedAngleType,
                            self.__testDataConsistencyInLoop,
                            self.__detectConflictDataInLoop,
                            self.__testDataConsistencyInAuxLoop,
+                           self.__appendSfTagItem,
                            self.__testSfTagConsistency,
                            #self.__validateCSValue,
                            self.__testCSValueConsistencyInPkLoop,
@@ -343,6 +348,34 @@ class NmrDpUtility(object):
                                     'coordinate': 'id'
                                     }
                            }
+
+        # weight tags
+        self.weight_tags = {'nef': {'entry_info': None,
+                                    'poly_seq': None,
+                                    'chem_shift': None,
+                                    'dist_restraint': 'weight',
+                                    'dihed_restraint': 'weight',
+                                    'rdc_restraint': 'weight',
+                                    'spectral_peak': None
+                                    },
+                            'nmr-star': {'entry_info': None,
+                                         'poly_seq': None,
+                                         'chem_shift': None,
+                                         'dist_restraint': 'Weight',
+                                         'dihed_restraint': 'Weight',
+                                         'rdc_restraint': 'Weight',
+                                         'spectral_peak': None
+                                         },
+                            'pdbx': {'poly_seq': None,
+                                     'non_poly': None,
+                                     'coordinate': None
+                                     }
+                            }
+
+        # dihedral angle type
+        self.angle_types = {'nef': 'name',
+                            'nmr-star': 'Torsion_angle_name'
+                            }
 
         # loop id tag to check consistency
         self.consist_id_tags = {'nef': {'dist_restraint': 'restraint_id',
@@ -1353,15 +1386,15 @@ class NmrDpUtility(object):
                                                        {'name': 'tensor_sequence_code', 'type': 'str', 'mandatory': False},
                                                        {'name': 'tensor_residue_name', 'type': 'str', 'mandatory': False}
                                                        ],
-                                       'spectral_peak': [{'name': 'sf_category', 'type': 'str', 'mandatory': True},
-                                                         {'name': 'sf_framecode', 'type': 'str', 'mandatory': True},
-                                                         {'name': 'num_dimensions', 'type': 'enum-int', 'mandatory': True,
-                                                          'enum': set(range(1, self.lim_num_dim)),
-                                                          'enforce-enum': True},
-                                                         {'name': 'chemical_shift_list', 'type': 'str', 'mandatory': False},
-                                                         {'name': 'experiment_classification', 'type': 'str', 'mandatory': False},
-                                                         {'name': 'experiment_type', 'type': 'str', 'mandatory': False}
-                                                         ]
+                                     'spectral_peak': [{'name': 'sf_category', 'type': 'str', 'mandatory': True},
+                                                       {'name': 'sf_framecode', 'type': 'str', 'mandatory': True},
+                                                       {'name': 'num_dimensions', 'type': 'enum-int', 'mandatory': True,
+                                                        'enum': set(range(1, self.lim_num_dim)),
+                                                        'enforce-enum': True},
+                                                       {'name': 'chemical_shift_list', 'type': 'str', 'mandatory': False},
+                                                       {'name': 'experiment_classification', 'type': 'str', 'mandatory': False},
+                                                       {'name': 'experiment_type', 'type': 'str', 'mandatory': False}
+                                                       ]
                                      },
                              'nmr-star': {'entry_info': [{'name': 'Sf_category', 'type': 'str', 'mandatory': True},
                                                          {'name': 'Sf_framecode', 'type': 'str', 'mandatory': True},
@@ -1418,13 +1451,32 @@ class NmrDpUtility(object):
                                           }
                              }
 
+        # required saveframe tag items by NmrDpUtility
+        self._sf_tag_items = {'nef': {'entry_info': None,
+                                      'poly_seq': None,
+                                      'chem_shift': None,
+                                      'dist_restraint': ['potential_type', 'restraint_origin'],
+                                      'dihed_restraint': ['potential_type', 'restraint_origin'],
+                                      'rdc_restraint': ['potential_type', 'restraint_origin'],
+                                      'spectral_peak': ['experiment_type']
+                                     },
+                              'nmr-star': {'entry_info': None,
+                                           'poly_seq': None,
+                                           'chem_shift': None,
+                                           'dist_restraint': ['Constraint_type', 'Potential_type'],
+                                           'dihed_restraint': ['Constraint_type', 'Potential_type'],
+                                           'rdc_restraint': ['Constraint_type', 'Potential_type'],
+                                           'spectral_peak': ['Experiment_type']
+                                           }
+                              }
+
         # allowed saveframe tags
         self.sf_allowed_tags = {'nef': {'entry_info': ['sf_category', 'sf_framecode', 'format_name', 'format_version', 'program_name', 'program_version', 'creation_date', 'uuid', 'coordinate_file_name'],
                                         'poly_seq': ['sf_category', 'sf_framecode'],
                                         'chem_shift': ['sf_category', 'sf_framecode'],
                                         'dist_restraint': ['sf_category', 'sf_framecode', 'potential_type', 'restraint_origin'],
                                         'dihed_restraint': ['sf_category', 'sf_framecode', 'potential_type', 'restraint_origin'],
-                                        'rdc_restraint': ['sf_category', 'sf_framecode', 'potential_type', 'restraint_origin', 'tensor_magnitude', 'tensor_rhombicity', 'tensor_chain_code', 'tensor_sequence_code', 'tensor_residue_name'],
+                                        'rdc_restraint': ['sf_category', 'sf_framecode', 'peotential_type', 'restraint_origin', 'tensor_magnitude', 'tensor_rhombicity', 'tensor_chain_code', 'tensor_sequence_code', 'tensor_residue_name'],
                                         'spectral_peak': ['sf_category', 'sf_framecode', 'num_dimensions', 'chemical_shift_list', 'experiment_classification', 'experiment_type']
                                         },
                                 'nmr-star': {'entry_info': ['Sf_category', 'Sf_framecode', 'Sf_ID', 'ID', 'Title', 'Type', 'Version_type', 'Submission_date', 'Accession_date', 'Last_release_date', 'Original_release_date',
@@ -2739,7 +2791,7 @@ class NmrDpUtility(object):
 
         for content_subtype in self.nmr_content_subtypes:
 
-            if content_subtype == 'entry_info' or content_subtype == 'poly_seq' or not content_subtype in input_source_dic['content_subtype']:
+            if content_subtype in ['entry_info', 'poly_seq'] or not content_subtype in input_source_dic['content_subtype']:
                 continue
 
             poly_seq_list_set[content_subtype] = []
@@ -2976,7 +3028,7 @@ class NmrDpUtility(object):
         has_poly_seq = self.__hasKeyValue(input_source_dic, 'polymer_sequence')
         has_poly_seq_in_loop = self.__hasKeyValue(input_source_dic, 'polymer_sequence_in_loop')
 
-        if not has_poly_seq and not has_poly_seq_in_loop:
+        if (not has_poly_seq) and (not has_poly_seq_in_loop):
             return True
 
         polymer_sequence = input_source_dic['polymer_sequence']
@@ -4300,6 +4352,8 @@ class NmrDpUtility(object):
                     key_items = self.key_items[file_type][content_subtype]
                     data_items = self.data_items[file_type][content_subtype]
 
+                lp_data = None
+
                 try:
 
                     if self.__resolve_conflict:
@@ -4415,7 +4469,7 @@ class NmrDpUtility(object):
                     if self.__verbose:
                         self.__lfh.write("+NmrDpUtility.__testDataConsistencyInLoop() ++ Error  - %s" % str(e))
 
-                if not lp_data is None and len(lp_data) == 0:
+                if (not lp_data is None) and len(lp_data) == 0:
 
                     warn = "Unexpectedly, no rows found in a loop."
 
@@ -4496,6 +4550,9 @@ class NmrDpUtility(object):
 
                                 for d in data_items:
                                     dname = d['name']
+
+                                    if not dname in lp_data[row_id_1]:
+                                        continue
 
                                     val_1 = lp_data[row_id_1][dname]
                                     val_2 = lp_data[row_id_2][dname]
@@ -6600,7 +6657,7 @@ class NmrDpUtility(object):
 
         for content_subtype in input_source_dic['content_subtype'].keys():
 
-            if content_subtype == 'entry_info' or content_subtype == 'poly_seq':
+            if content_subtype in ['entry_info', 'poly_seq']:
                 continue
 
             sf_category = self.sf_categories[file_type][content_subtype]
@@ -7809,7 +7866,7 @@ class NmrDpUtility(object):
                                 pro['cb_chem_shift'] = cb_chem_shift
                                 pro['cg_chem_shift'] = cg_chem_shift
 
-                                if not cb_chem_shift is None and not cg_chem_shift is None:
+                                if (not cb_chem_shift is None) and (not cg_chem_shift is None):
                                     delta = cb_chem_shift - cg_chem_shift
                                     if delta < 4.8:
                                         pro['cis_trans_pred'] = 'trans'
@@ -9741,7 +9798,7 @@ class NmrDpUtility(object):
 
                         # chi2
 
-                        if atom_ids[0] == 'CA' and atom_ids[1] == 'CB' and self.chi2_atom_id_3_pat(atom_ids[2]) and self.chi2_atom_id_4_pat(atom_ids[3]):
+                        if atom_ids[0] == 'CA' and atom_ids[1] == 'CB' and self.chi2_atom_id_3_pat.match(atom_ids[2]) and self.chi2_atom_id_4_pat.match(atom_ids[3]):
                             #if (atom_ids[2] == 'CG' and atom_ids[3] == 'CD' and comp_id in ['ARG', 'GLN', 'GLU', 'LYS', 'PRO']) or\
                             #   (atom_ids[2] == 'CG' and atom_ids[3] == 'CD1' and comp_id in ['LEU', 'PHE', 'TRP', 'TYR']) or\
                             #   (atom_ids[2] == 'CG' and atom_ids[3] == 'ND1' and comp_id == 'HIS') or\
@@ -9752,7 +9809,7 @@ class NmrDpUtility(object):
 
                         # chi3
 
-                        if atom_ids[0] == 'CB' and atom_ids[1] == 'CG' and self.chi3_atom_id_3_pat(atom_ids[2]) and self.chi3_atom_id_4_pat(atom_ids[3]):
+                        if atom_ids[0] == 'CB' and atom_ids[1] == 'CG' and self.chi3_atom_id_3_pat.match(atom_ids[2]) and self.chi3_atom_id_4_pat.match(atom_ids[3]):
                             #if (atom_ids[2] == 'CD' and atom_ids[3] == 'CE' and comp_id == 'LYS') or\
                             #   (atom_ids[2] == 'CD' and atom_ids[3] == 'NE' and comp_id == 'ARG') or\
                             #   (atom_ids[2] == 'CD' and atom_ids[3] == 'OE1' and comp_id in ['GLN', 'GLU']) or\
@@ -9761,7 +9818,7 @@ class NmrDpUtility(object):
 
                         # chi4
 
-                        if atom_ids[0] == 'CG' and atom_ids[1] == 'CD' and self.chi4_atom_id_3_pat(atom_ids[2]) and self.chi4_atom_id_4_pat(atom_ids[3]):
+                        if atom_ids[0] == 'CG' and atom_ids[1] == 'CD' and self.chi4_atom_id_3_pat.match(atom_ids[2]) and self.chi4_atom_id_4_pat.match(atom_ids[3]):
                             #if (atom_ids[2] == 'NE' and atom_ids[3] == 'CZ' and comp_id == 'ARG') or\
                             #  (atom_ids[2] == 'CE' and atom_ids[3] == 'NZ' and comp_id == 'LYS'):
                             data_type = 'chi4'
@@ -10699,7 +10756,7 @@ class NmrDpUtility(object):
 
         for content_subtype in self.cif_content_subtypes:
 
-            if content_subtype == 'entry_info' or content_subtype == 'poly_seq' or not content_subtype in input_source_dic['content_subtype']:
+            if content_subtype in ['entry_info', 'poly_seq'] or not content_subtype in input_source_dic['content_subtype']:
                 continue
 
             poly_seq_list_set[content_subtype] = []
@@ -11419,7 +11476,7 @@ class NmrDpUtility(object):
 
         for content_subtype in nmr_input_source_dic['content_subtype'].keys():
 
-            if content_subtype == 'entry_info' or content_subtype == 'poly_seq':
+            if content_subtype in ['entry_info', 'poly_seq']:
                 continue
 
             sf_category = self.sf_categories[file_type][content_subtype]
@@ -13545,7 +13602,7 @@ class NmrDpUtility(object):
             else:
                 trs *= self.__probabilityDensity(cg_chem_shift, trs_cg['avr'], trs_cg['std'])
 
-        if not cb_chem_shift is None and not cg_chem_shift is None:
+        if (not cb_chem_shift is None) and (not cg_chem_shift is None):
             delta_shift = cb_chem_shift - cg_chem_shift
 
             cis *= self.__probabilityDensity(delta_shift, cis_dl['avr'], cis_dl['std'])
@@ -14157,6 +14214,268 @@ class NmrDpUtility(object):
 
         return None
 
+    def __appendElemAndIsoNumOfNefCSLoop(self):
+        """ Append element and isotope_number columns in NEF CS loop if required.
+        """
+
+        input_source = self.report.input_sources[0]
+        input_source_dic = input_source.get()
+
+        file_type = input_source_dic['file_type']
+
+        if file_type != 'nef':
+            return True
+
+        content_subtype = 'chem_shift'
+
+        if input_source_dic['content_subtype'] is None:
+            return True
+
+        if not content_subtype in input_source_dic['content_subtype'].keys():
+            return True
+
+        sf_category = self.sf_categories[file_type][content_subtype]
+        lp_category = self.lp_categories[file_type][content_subtype]
+
+        cs_item_names = self.item_names_in_cs_loop[file_type]
+        cs_atom_id_name = cs_item_names['atom_id']
+        cs_atom_type = cs_item_names['atom_type']
+        cs_iso_number = cs_item_names['isotope_number']
+
+        for sf_data in self.__star_data.get_saveframes_by_category(sf_category):
+
+            lp_data = sf_data.get_loop_by_category(lp_category)
+
+            has_atom_type = cs_atom_type in lp_data.tags
+            has_iso_number = cs_iso_number in lp_data.tags
+
+            atomIdCol = lp_data.tags.index(cs_atom_id_name)
+
+            if has_atom_type and has_iso_number:
+
+                atomTypeCol = lp_data.tags.index(cs_atom_type)
+                isoNumCol = lp_data.tags.index(cs_iso_number)
+
+                for row in lp_data.data:
+
+                    atom_id = row[atomIdCol]
+
+                    if row[atomTypeCol] in self.empty_value:
+                        row[atomTypeCol] = atom_id[0]
+
+                    if row[isoNumCol] is self.empty_value:
+
+                        try:
+                            row[isoNumCol] = self.atom_isotopes[atom_id[0]][0]
+                        except KeyError:
+                            pass
+
+            elif has_atom_type:
+
+                atomTypeCol = lp_data.tags.index(cs_atom_type)
+
+                for row in lp_data.data:
+
+                    atom_id = row[atomIdCol]
+
+                    if row[atomTypeCol] in self.empty_value:
+                        row[atomTypeCol] = atom_id[0]
+
+                    try:
+                        iso_num = self.atom_isotopes[atom_id[0]][0]
+                        row.append(iso_num)
+                    except KeyError:
+                        row.append('.')
+
+                lp_data.add_tag(cs_iso_number)
+
+            elif has_iso_number:
+
+                isoNumCol = lp_data.tags.index(cs_iso_number)
+
+                for row in lp_data.data:
+
+                    atom_id = row[atomIdCol]
+
+                    if row[isoNumCol] is self.empty_value:
+
+                        try:
+                            row[isoNumCol] = self.atom_isotopes[atom_id[0]][0]
+                        except KeyError:
+                            pass
+
+                    row.append(atom_id[0] if atom_id[0] in self.atom_isotopes else '.')
+
+                lp_data.add_tag(cs_atom_type)
+
+            else:
+
+                for row in lp_data.data:
+
+                    atom_id = row[atomIdCol]
+
+                    row.append(atom_id[0] if atom_id[0] in self.atom_isotopes else '.')
+
+                    try:
+                        iso_num = self.atom_isotopes[atom_id[0]][0]
+                        row.append(iso_num)
+                    except KeyError:
+                        row.append('.')
+
+                lp_data.add_tag(cs_atom_type)
+                lp_data.add_tag(cs_iso_number)
+
+        return True
+
+    def __appendIndexInLoop(self):
+        """ Append index column in interesting loops, if required.
+        """
+
+        input_source = self.report.input_sources[0]
+        input_source_dic = input_source.get()
+
+        file_type = input_source_dic['file_type']
+
+        if input_source_dic['content_subtype'] is None:
+            return False
+
+        for content_subtype in input_source_dic['content_subtype'].keys():
+
+            sf_category = self.sf_categories[file_type][content_subtype]
+            lp_category = self.lp_categories[file_type][content_subtype]
+
+            index_tag = self.index_tags[file_type][content_subtype]
+
+            if index_tag is None:
+                continue
+
+            for sf_data in self.__star_data.get_saveframes_by_category(sf_category):
+
+                lp_data = sf_data.get_loop_by_category(lp_category)
+
+                if index_tag in lp_data.tags:
+                    continue
+
+                for id, row in enumerate(lp_data.data):
+                    row.append(str(id + 1))
+
+                lp_data.add_tag(index_tag)
+
+        return True
+
+    def __appendWeightInLoop(self):
+        """ Append weight column in interesting loops, if required.
+        """
+
+        input_source = self.report.input_sources[0]
+        input_source_dic = input_source.get()
+
+        file_type = input_source_dic['file_type']
+
+        if input_source_dic['content_subtype'] is None:
+            return False
+
+        for content_subtype in input_source_dic['content_subtype'].keys():
+
+            sf_category = self.sf_categories[file_type][content_subtype]
+            lp_category = self.lp_categories[file_type][content_subtype]
+
+            weight_tag = self.weight_tags[file_type][content_subtype]
+
+            if weight_tag is None:
+                continue
+
+            for sf_data in self.__star_data.get_saveframes_by_category(sf_category):
+
+                lp_data = sf_data.get_loop_by_category(lp_category)
+
+                if weight_tag in lp_data.tags:
+                    continue
+
+                for row in lp_data.data:
+                    row.append('1.0')
+
+                lp_data.add_tag(weight_tag)
+
+        return True
+
+    def __appendDihedAngleType(self):
+        """ Append dihedral angle type column, if required.
+        """
+
+        input_source = self.report.input_sources[0]
+        input_source_dic = input_source.get()
+
+        file_type = input_source_dic['file_type']
+
+        content_subtype = 'dihed_restraint'
+
+        if input_source_dic['content_subtype'] is None:
+            return True
+
+        if not content_subtype in input_source_dic['content_subtype'].keys():
+            return True
+
+        sf_category = self.sf_categories[file_type][content_subtype]
+        lp_category = self.lp_categories[file_type][content_subtype]
+
+        angle_type_tag = self.angle_types[file_type]
+
+        for sf_data in self.__star_data.get_saveframes_by_category(sf_category):
+
+            lp_data = sf_data.get_loop_by_category(lp_category)
+
+            if angle_type_tag in lp_data.tags:
+                continue
+
+            for row in lp_data.data:
+                row.append('.')
+
+            lp_data.add_tag(angle_type_tag)
+
+        return True
+
+    def __appendSfTagItem(self):
+        """ Append saveframe tag items, if required.
+        """
+
+        input_source = self.report.input_sources[0]
+        input_source_dic = input_source.get()
+
+        file_type = input_source_dic['file_type']
+
+        if input_source_dic['content_subtype'] is None:
+            return False
+
+        for content_subtype in input_source_dic['content_subtype'].keys():
+
+            if content_subtype in ['entry_info' 'poly_seq', 'chem_shift']:
+                continue
+
+            sf_category = self.sf_categories[file_type][content_subtype]
+            lp_category = self.lp_categories[file_type][content_subtype]
+
+            tag_items = self._sf_tag_items[file_type][content_subtype]
+
+            if tag_items is None:
+                continue
+
+            for sf_data in self.__star_data.get_saveframes_by_category(sf_category):
+
+                tagNames = [t[0] for t in sf_data.tags]
+
+                for tag_item in tag_items:
+
+                    if tag_item in tagNames:
+                        continue
+
+                    if (file_type == 'nef' and tag_item == 'potential_type') or (file_type == 'nmr-star' and tag_item == 'Potential_type'):
+                        sf_data.add_tag(tag_item, 'unknown')
+                    else:
+                        sf_data.add_tag(tag_item, '.')
+
+        return True
+
     def __updateDihedralAngleType(self):
         """ Update dihedral angle types (phi, psi, omega, chi[1-5] for polypeptide-like residue) if possible.
         """
@@ -14310,7 +14629,7 @@ class NmrDpUtility(object):
 
                             # chi2
 
-                            if atom_ids[0] == 'CA' and atom_ids[1] == 'CB' and self.chi2_atom_id_3_pat(atom_ids[2]) and self.chi2_atom_id_4_pat(atom_ids[3]):
+                            if atom_ids[0] == 'CA' and atom_ids[1] == 'CB' and self.chi2_atom_id_3_pat.match(atom_ids[2]) and self.chi2_atom_id_4_pat.match(atom_ids[3]):
                                 #if (atom_ids[2] == 'CG' and atom_ids[3] == 'CD' and comp_id in ['ARG', 'GLN', 'GLU', 'LYS', 'PRO']) or\
                                 #   (atom_ids[2] == 'CG' and atom_ids[3] == 'CD1' and comp_id in ['LEU', 'PHE', 'TRP', 'TYR']) or\
                                 #   (atom_ids[2] == 'CG' and atom_ids[3] == 'ND1' and comp_id == 'HIS') or\
@@ -14321,7 +14640,7 @@ class NmrDpUtility(object):
 
                             # chi3
 
-                            if atom_ids[0] == 'CB' and atom_ids[1] == 'CG' and self.chi3_atom_id_3_pat(atom_ids[2]) and self.chi3_atom_id_4_pat(atom_ids[3]):
+                            if atom_ids[0] == 'CB' and atom_ids[1] == 'CG' and self.chi3_atom_id_3_pat.match(atom_ids[2]) and self.chi3_atom_id_4_pat.match(atom_ids[3]):
                                 #if (atom_ids[2] == 'CD' and atom_ids[3] == 'CE' and comp_id == 'LYS') or\
                                 #   (atom_ids[2] == 'CD' and atom_ids[3] == 'NE' and comp_id == 'ARG') or\
                                 #   (atom_ids[2] == 'CD' and atom_ids[3] == 'OE1' and comp_id in ['GLN', 'GLU']) or\
@@ -14330,7 +14649,7 @@ class NmrDpUtility(object):
 
                             # chi4
 
-                            if atom_ids[0] == 'CG' and atom_ids[1] == 'CD' and self.chi4_atom_id_3_pat(atom_ids[2]) and self.chi4_atom_id_4_pat(atom_ids[3]):
+                            if atom_ids[0] == 'CG' and atom_ids[1] == 'CD' and self.chi4_atom_id_3_pat.match(atom_ids[2]) and self.chi4_atom_id_4_pat.match(atom_ids[3]):
                                 #if (atom_ids[2] == 'NE' and atom_ids[3] == 'CZ' and comp_id == 'ARG') or\
                                 #  (atom_ids[2] == 'CE' and atom_ids[3] == 'NZ' and comp_id == 'LYS'):
                                 chi4_index.append(index_id)
@@ -16256,7 +16575,7 @@ class NmrDpUtility(object):
 
                     warn_desc = self.report.warning.getDescription('duplicated_index', file_name, sf_framecode)
 
-                    if not warn_desc is None and warn_desc.split(' ')[0] == self.sf_tag_prefixes[file_type][content_subtype].lstrip('_') + '.ID':
+                    if (not warn_desc is None) and warn_desc.split(' ')[0] == self.sf_tag_prefixes[file_type][content_subtype].lstrip('_') + '.ID':
                         continue
 
                     lp_data = sf_data.get_loop_by_category(lp_category)

@@ -400,8 +400,7 @@ class NmrDpUtility(object):
                                                  {'name': 'residue_name', 'type': 'str'},
                                                  {'name': 'atom_name', 'type': 'str'}
                                                  ],
-                                  'dist_restraint': [{'name': 'index', 'type': 'index-int'},
-                                                     {'name': 'restraint_id', 'type': 'positive-int'},
+                                  'dist_restraint': [{'name': 'restraint_id', 'type': 'positive-int'},
                                                      {'name': 'chain_code_1', 'type': 'str'},
                                                      {'name': 'sequence_code_1', 'type': 'int'},
                                                      {'name': 'residue_name_1', 'type': 'str'},
@@ -411,8 +410,7 @@ class NmrDpUtility(object):
                                                      {'name': 'residue_name_2', 'type': 'str'},
                                                      {'name': 'atom_name_2', 'type': 'str'}
                                                      ],
-                                  'dihed_restraint': [{'name': 'index', 'type': 'index-int'},
-                                                      {'name': 'restraint_id', 'type': 'positive-int'},
+                                  'dihed_restraint': [{'name': 'restraint_id', 'type': 'positive-int'},
                                                       {'name': 'chain_code_1', 'type': 'str'},
                                                       {'name': 'sequence_code_1', 'type': 'int'},
                                                       {'name': 'residue_name_1', 'type': 'str'},
@@ -430,8 +428,7 @@ class NmrDpUtility(object):
                                                       {'name': 'residue_name_4', 'type': 'str'},
                                                       {'name': 'atom_name_4', 'type': 'str'}
                                                       ],
-                                  'rdc_restraint': [{'name': 'index', 'type': 'index-int'},
-                                                    {'name': 'restraint_id', 'type': 'positive-int'},
+                                  'rdc_restraint': [{'name': 'restraint_id', 'type': 'positive-int'},
                                                     {'name': 'chain_code_1', 'type': 'str'},
                                                     {'name': 'sequence_code_1', 'type': 'int'},
                                                     {'name': 'residue_name_1', 'type': 'str'},
@@ -452,8 +449,7 @@ class NmrDpUtility(object):
                                                       {'name': 'Comp_ID', 'type': 'str'},
                                                       {'name': 'Atom_ID', 'type': 'str'}
                                                       ],
-                                       'dist_restraint': [{'name': 'Index_ID', 'type': 'index-int'},
-                                                          {'name': 'ID', 'type': 'positive-int'},
+                                       'dist_restraint': [{'name': 'ID', 'type': 'positive-int'},
                                                           {'name': 'Entity_assembly_ID_1', 'type': 'positive-int'},
                                                           {'name': 'Comp_index_ID_1', 'type': 'int'},
                                                           {'name': 'Comp_ID_1', 'type': 'str'},
@@ -463,8 +459,7 @@ class NmrDpUtility(object):
                                                           {'name': 'Comp_ID_2', 'type': 'str'},
                                                           {'name': 'Atom_ID_2', 'type': 'str'}
                                                           ],
-                                       'dihed_restraint': [{'name': 'Index_ID', 'type': 'index-int'},
-                                                           {'name': 'ID', 'type': 'positive-int'},
+                                       'dihed_restraint': [{'name': 'ID', 'type': 'positive-int'},
                                                            {'name': 'Entity_assembly_ID_1', 'type': 'positive-int'},
                                                            {'name': 'Comp_index_ID_1', 'type': 'int'},
                                                            {'name': 'Comp_ID_1', 'type': 'str'},
@@ -482,8 +477,7 @@ class NmrDpUtility(object):
                                                            {'name': 'Comp_ID_4', 'type': 'str'},
                                                            {'name': 'Atom_ID_4', 'type': 'str'}
                                                            ],
-                                       'rdc_restraint': [{'name': 'Index_ID', 'type': 'index-int'},
-                                                         {'name': 'ID', 'type': 'positive-int'},
+                                       'rdc_restraint': [{'name': 'ID', 'type': 'positive-int'},
                                                          {'name': 'Entity_assembly_ID_1', 'type': 'positive-int'},
                                                          {'name': 'Comp_index_ID_1', 'type': 'int'},
                                                          {'name': 'Comp_ID_1', 'type': 'str'},
@@ -1482,7 +1476,7 @@ class NmrDpUtility(object):
                                         'chem_shift': ['sf_category', 'sf_framecode'],
                                         'dist_restraint': ['sf_category', 'sf_framecode', 'potential_type', 'restraint_origin'],
                                         'dihed_restraint': ['sf_category', 'sf_framecode', 'potential_type', 'restraint_origin'],
-                                        'rdc_restraint': ['sf_category', 'sf_framecode', 'peotential_type', 'restraint_origin', 'tensor_magnitude', 'tensor_rhombicity', 'tensor_chain_code', 'tensor_sequence_code', 'tensor_residue_name'],
+                                        'rdc_restraint': ['sf_category', 'sf_framecode', 'potential_type', 'restraint_origin', 'tensor_magnitude', 'tensor_rhombicity', 'tensor_chain_code', 'tensor_sequence_code', 'tensor_residue_name'],
                                         'spectral_peak': ['sf_category', 'sf_framecode', 'num_dimensions', 'chemical_shift_list', 'experiment_classification', 'experiment_type']
                                         },
                                 'nmr-star': {'entry_info': ['Sf_category', 'Sf_framecode', 'Sf_ID', 'ID', 'Title', 'Type', 'Version_type', 'Submission_date', 'Accession_date', 'Last_release_date', 'Original_release_date',
@@ -4362,15 +4356,6 @@ class NmrDpUtility(object):
 
                 try:
 
-                    if self.__resolve_conflict:
-                        conflict_id = self.__nefT.get_conflict_id(sf_data, lp_category, key_items)[0]
-
-                        if len(conflict_id) > 0:
-                            loop = sf_data.get_loop_by_category(lp_category)
-
-                            for l in conflict_id:
-                                del loop.data[l]
-
                     lp_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, allowed_tags, disallowed_tags,
                                                      inc_idx_test=True, enforce_non_zero=True, enforce_sign=True, enforce_enum=True)[0]
 
@@ -4405,6 +4390,8 @@ class NmrDpUtility(object):
                     warns = str(e).strip("'").split('\n')
                     proc_warns = set()
 
+                    has_multiple_data = False
+
                     for warn in warns:
 
                         if warn == '' or warn in proc_warns:
@@ -4428,11 +4415,15 @@ class NmrDpUtility(object):
                             elif enum:
                                 warn = warn[20:]
                                 item = 'enum_failure'
+                            elif self.__resolve_conflict:
+                                warn = warn[16:]
+                                item = 'redundant_data'
+                                has_multiple_data = True
                             else:
                                 err = warn[16:]
                                 item = 'multiple_data'
 
-                            if zero or nega or enum:
+                            if zero or nega or enum or (mult and self.__resolve_conflict):
 
                                 self.report.warning.appendDescription(item, {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
                                 self.report.setWarning()
@@ -4457,6 +4448,15 @@ class NmrDpUtility(object):
                                 self.__lfh.write("+NmrDpUtility.__testDataConsistencyInLoop() ++ Error  - %s" % warn)
 
                     # try to parse data without constraints
+
+                    if has_multiple_data:
+                        conflict_id = self.__nefT.get_conflict_id(sf_data, lp_category, key_items)[0]
+
+                        if len(conflict_id) > 0:
+                            loop = sf_data.get_loop_by_category(lp_category)
+
+                            for l in conflict_id:
+                                del loop.data[l]
 
                     try:
 
@@ -4592,7 +4592,7 @@ class NmrDpUtility(object):
                                     err = '[Check rows of %s %s vs %s, %s %s vs %s] ' %\
                                           (index_tag, lp_data[row_id_1][index_tag], lp_data[row_id_2][index_tag],
                                            id_tag, lp_data[row_id_1[id_tag]], lp_data[row_id_2][id_tag])
-                                    err += 'Found discrepancy in restraints (%s) for the same atom pair (%s).' % (discrepancy[:-2], msg[:-2])
+                                    err += 'Found conflict on restraints (%s) for the same atom pair (%s).' % (discrepancy[:-2], msg[:-2])
 
                                     self.report.error.appendDescription('conflicted_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
                                     self.report.setError()
@@ -4609,7 +4609,7 @@ class NmrDpUtility(object):
                                     warn = '[Check rows of %s %s vs %s, %s %s vs %s] ' %\
                                            (index_tag, lp_data[row_id_1][index_tag], lp_data[row_id_2][index_tag],
                                             id_tag, lp_data[row_id_1][id_tag], lp_data[row_id_2][id_tag])
-                                    warn += 'Found difference in restraints (%s) for the same atom pair (%s).' % (discrepancy[:-2], msg[:-2])
+                                    warn += 'Found discrepancy in restraints (%s) for the same atom pair (%s).' % (discrepancy[:-2], msg[:-2])
 
                                     self.report.warning.appendDescription('inconsistent_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
                                     self.report.setWarning()
@@ -4701,15 +4701,6 @@ class NmrDpUtility(object):
 
                         try:
 
-                            if self.__resolve_conflict:
-                                conflict_id = self.__nefT.get_conflict_id(sf_data, lp_category, key_items)[0]
-
-                                if len(conflict_id) > 0:
-                                    loop = sf_data.get_loop_by_category(lp_category)
-
-                                    for l in conflict_id:
-                                        del loop.data[l]
-
                             aux_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, allowed_tags, None,
                                                               inc_idx_test=True, enforce_non_zero=True, enforce_sign=True, enforce_enum=True)[0]
 
@@ -4747,6 +4738,8 @@ class NmrDpUtility(object):
                             warns = str(e).strip("'").split('\n')
                             proc_warns = set()
 
+                            has_multiple_data = False
+
                             for warn in warns:
 
                                 if warn == '':
@@ -4773,6 +4766,10 @@ class NmrDpUtility(object):
                                     elif enum:
                                         warn = warn[20:]
                                         item = 'enum_failure'
+                                    elif self.__resolve_conflict:
+                                        warn = warn[16:]
+                                        item = 'redundant_data'
+                                        has_multiple_data = True
                                     else:
                                         err = warn[16:]
                                         item = 'multiple_data'
@@ -4787,7 +4784,7 @@ class NmrDpUtility(object):
 
                                     else:
 
-                                        self.report.error.appendDescription('multiple_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
+                                        self.report.error.appendDescription(item, {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
                                         self.report.setError()
 
                                         if self.__verbose:
@@ -4804,6 +4801,15 @@ class NmrDpUtility(object):
                             # try to parse data without constraints
 
                             try:
+
+                                if has_multiple_data:
+                                    conflict_id = self.__nefT.get_conflict_id(sf_data, lp_category, key_items)[0]
+
+                                    if len(conflict_id) > 0:
+                                        loop = sf_data.get_loop_by_category(lp_category)
+
+                                        for l in conflict_id:
+                                            del loop.data[l]
 
                                 aux_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, allowed_tags, None)[0]
 
@@ -14475,10 +14481,7 @@ class NmrDpUtility(object):
                     if tag_item in tagNames:
                         continue
 
-                    if (file_type == 'nef' and tag_item == 'potential_type') or (file_type == 'nmr-star' and tag_item == 'Potential_type'):
-                        sf_data.add_tag(tag_item, 'unknown')
-                    else:
-                        sf_data.add_tag(tag_item, '.')
+                    sf_data.add_tag(tag_item, '.')
 
         return True
 

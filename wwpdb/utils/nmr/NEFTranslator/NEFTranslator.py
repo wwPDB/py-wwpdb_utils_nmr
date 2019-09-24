@@ -2008,7 +2008,7 @@ class NEFTranslator(object):
         if not allowed_tags is None:
 
             if (set(tag_names) | set(allowed_tags)) != set(allowed_tags):
-                raise LookupError("Tag items %s must not exists." % (set(tag_names) | set(allowed_tags)) - set(allowed_tags))
+                raise LookupError("Tag items %s must not exists." % ((set(tag_names) | set(allowed_tags)) - set(allowed_tags)))
 
             for t in tag_items:
                 if 'group-mandatory' in t and t['group-mandatory']:

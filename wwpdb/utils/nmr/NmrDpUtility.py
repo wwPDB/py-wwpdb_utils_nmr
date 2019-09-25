@@ -310,7 +310,7 @@ class NmrDpUtility(object):
         # allowed scale range
         self.scale_range = self.weight_range
 
-        # criterion for detection of low sequence coverage
+        # criterion for low sequence coverage
         self.low_seq_coverage = 0.3
 
         # cutoff value for detection of aromatic atoms
@@ -323,8 +323,11 @@ class NmrDpUtility(object):
         # criterion for paramagnetic atom in the vicinity
         self.vicinity_paramagnetic = 8.0
 
-        # magic angle
+        # magic angle in degrees
         self.magic_angle = 54.7356
+
+        # criterion for inconsistent restraint condition scaled by the conflicted restraint condition
+        self.inconsist_over_conficlted = 0.4
 
         # loop index tags
         self.index_tags = {'nef': {'entry_info': None,
@@ -1362,21 +1365,21 @@ class NmrDpUtility(object):
                                                     ],
                                      'dist_restraint': [{'name': 'sf_category', 'type': 'str', 'mandatory': True},
                                                         {'name': 'sf_framecode', 'type': 'str', 'mandatory': True},
-                                                        {'name': 'potential_type', 'type': 'enum', 'mandatory': True,
+                                                        {'name': 'potential_type', 'type': 'enum', 'mandatory': False,
                                                          'enum': ('log-harmonic', 'parabolic', 'square-well-parabolic', 'square-well-parabolic-linear', 'upper-bound-parabolic', 'lower-bound-parabolic', 'upper-bound-parabolic-linear', 'lower-bound-parabolic-linear')},
                                                         {'name': 'restraint_origin', 'type': 'enum', 'mandatory': False,
                                                          'enum': ('NOE', 'NOE build-up', 'NOE not seen', 'ROE', 'ROE build-up', 'hydrogen bond', 'disulfide bond', 'paramagnetic relaxation', 'symmetry', 'general distance')}
                                                         ],
                                      'dihed_restraint': [{'name': 'sf_category', 'type': 'str', 'mandatory': True},
                                                          {'name': 'sf_framecode', 'type': 'str', 'mandatory': True},
-                                                         {'name': 'potential_type', 'type': 'enum', 'mandatory': True,
+                                                         {'name': 'potential_type', 'type': 'enum', 'mandatory': False,
                                                           'enum': ('log-harmonic', 'parabolic', 'square-well-parabolic', 'square-well-parabolic-linear', 'upper-bound-parabolic', 'lower-bound-parabolic', 'upper-bound-parabolic-linear', 'lower-bound-parabolic-linear')},
                                                          {'name': 'restraint_origin', 'type': 'enum', 'mandatory': False,
                                                           'enum': ('J-couplings', 'backbone chemical shifts')}
                                                          ],
                                      'rdc_restraint': [{'name': 'sf_category', 'type': 'str', 'mandatory': True},
                                                        {'name': 'sf_framecode', 'type': 'str', 'mandatory': True},
-                                                       {'name': 'potential_type', 'type': 'enum', 'mandatory': True,
+                                                       {'name': 'potential_type', 'type': 'enum', 'mandatory': False,
                                                         'enum': ('log-harmonic', 'parabolic', 'square-well-parabolic', 'square-well-parabolic-linear', 'upper-bound-parabolic', 'lower-bound-parabolic', 'upper-bound-parabolic-linear', 'lower-bound-parabolic-linear')},
                                                        {'name': 'restraint_origin', 'type': 'enum', 'mandatory': False,
                                                         'enum': ('RDC')},
@@ -4579,7 +4582,7 @@ class NmrDpUtility(object):
                                         discrepancy += '%s %s vs %s, ' % (dname, val_1, val_2)
                                         conflict = True
 
-                                    elif abs(val_1 - val_2) >= max_exclusive / 5.0:
+                                    elif abs(val_1 - val_2) >= max_exclusive * self.inconsist_over_conficlted:
                                         discrepancy += '%s %s vs %s, ' % (dname, val_1, val_2)
                                         inconsist = True
 
@@ -8528,7 +8531,7 @@ class NmrDpUtility(object):
 
                                 dist_ann.append(ann)
 
-                            elif discrepancy >= max_exclusive / 5.0:
+                            elif discrepancy >= max_exclusive * self.inconsist_over_conficlted:
                                 ann = {}
                                 ann['level'] = 'inconsistent'
                                 ann['chain_id_1'] = str(lp_data[row_id_1][chain_id_1_name])
@@ -9514,7 +9517,7 @@ class NmrDpUtility(object):
 
                                 dihed_ann.append(ann)
 
-                            elif discrepancy >= max_exclusive / 5.0:
+                            elif discrepancy >= max_exclusive * self.inconsist_over_conficlted:
                                 ann = {}
                                 ann['level'] = 'inconsistent'
                                 ann['chain_id'] = str(lp_data[row_id_1][chain_id_2_name])
@@ -10205,7 +10208,7 @@ class NmrDpUtility(object):
 
                                 rdc_ann.append(ann)
 
-                            elif discrepancy >= max_exclusive / 5.0:
+                            elif discrepancy >= max_exclusive * self.inconsist_over_conficlted:
                                 ann = {}
                                 ann['level'] = 'inconsistent'
                                 ann['chain_id'] = str(lp_data[row_id_1][chain_id_1_name])

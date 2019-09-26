@@ -2358,8 +2358,8 @@ class NmrDpUtility(object):
 
                         if not 'index' in lp_data.tags:
 
-                            for id, i in enumerate(lp_data):
-                                i.append(id + 1)
+                            for l, i in enumerate(lp_data):
+                                i.append(l + 1)
 
                             lp_data.add_tag(lp_category + '.index')
 
@@ -3717,7 +3717,7 @@ class NmrDpUtility(object):
             else:
                 chars.append('-')
 
-        for t in range(sid_len / 10):
+        for t in range(int(sid_len / 10)):
             offset = (t + 1) * 10 - 1
 
             code = ''
@@ -7111,7 +7111,7 @@ class NmrDpUtility(object):
                     n15_col = -1
                     p31_col = -1
 
-                    for id, data_type in enumerate(count):
+                    for l, data_type in enumerate(count):
 
                         atom_group = {}
                         atom_group['atom_group'] = 'all_' + data_type
@@ -7120,16 +7120,16 @@ class NmrDpUtility(object):
                         atom_group['completeness'] = 0.0
 
                         if data_type.startswith('1h'):
-                            h1_col = id
+                            h1_col = l
 
                         elif data_type.startswith('13c'):
-                            c13_col = id
+                            c13_col = l
 
                         elif data_type.startswith('15n'):
-                            n15_col = id
+                            n15_col = l
 
                         elif data_type.startswith('31p'):
-                            p31_col = id
+                            p31_col = l
 
                         all_c.append(atom_group)
 
@@ -7246,7 +7246,7 @@ class NmrDpUtility(object):
                     n15_col = -1
                     p31_col = -1
 
-                    for id, data_type in enumerate(count):
+                    for l, data_type in enumerate(count):
 
                         atom_group = {}
                         atom_group['atom_group'] = 'backbone_' + data_type
@@ -7255,16 +7255,16 @@ class NmrDpUtility(object):
                         atom_group['completeness'] = 0.0
 
                         if data_type.startswith('1h'):
-                            h1_col = id
+                            h1_col = l
 
                         elif data_type.startswith('13c'):
-                            c13_col = id
+                            c13_col = l
 
                         elif data_type.startswith('15n'):
-                            n15_col = id
+                            n15_col = l
 
                         elif data_type.startswith('31p'):
-                            p31_col = id
+                            p31_col = l
 
                         bb_c.append(atom_group)
 
@@ -7367,7 +7367,7 @@ class NmrDpUtility(object):
                     n15_col = -1
                     p31_col = -1
 
-                    for id, data_type in enumerate(count):
+                    for l, data_type in enumerate(count):
 
                         atom_group = {}
                         atom_group['atom_group'] = 'sidechain_' + data_type
@@ -7376,16 +7376,16 @@ class NmrDpUtility(object):
                         atom_group['completeness'] = 0.0
 
                         if data_type.startswith('1h'):
-                            h1_col = id
+                            h1_col = l
 
                         elif data_type.startswith('13c'):
-                            c13_col = id
+                            c13_col = l
 
                         elif data_type.startswith('15n'):
-                            n15_col = id
+                            n15_col = l
 
                         elif data_type.startswith('31p'):
-                            p31_col = id
+                            p31_col = l
 
                         sc_c.append(atom_group)
 
@@ -7486,7 +7486,7 @@ class NmrDpUtility(object):
                     h1_col = -1
                     c13_col = -1
 
-                    for id, data_type in enumerate(count):
+                    for l, data_type in enumerate(count):
 
                         atom_group = {}
                         atom_group['atom_group'] = 'methyl_' + data_type
@@ -7495,10 +7495,10 @@ class NmrDpUtility(object):
                         atom_group['completeness'] = 0.0
 
                         if data_type.startswith('1h'):
-                            h1_col = id
+                            h1_col = l
 
                         elif data_type.startswith('13c'):
-                            c13_col = id
+                            c13_col = l
 
                         else:
                             continue
@@ -7585,7 +7585,7 @@ class NmrDpUtility(object):
                     c13_col = -1
                     n15_col = -1
 
-                    for id, data_type in enumerate(count):
+                    for l, data_type in enumerate(count):
 
                         atom_group = {}
                         atom_group['atom_group'] = 'aromatic_' + data_type
@@ -7594,13 +7594,13 @@ class NmrDpUtility(object):
                         atom_group['completeness'] = 0.0
 
                         if data_type.startswith('1h'):
-                            h1_col = id
+                            h1_col = l
 
                         elif data_type.startswith('13c'):
-                            c13_col = id
+                            c13_col = l
 
                         elif data_type.startswith('15n'):
-                            n15_col = id
+                            n15_col = l
 
                         aro_c.append(atom_group)
 
@@ -16886,12 +16886,12 @@ class NmrDpUtility(object):
 
                 atoms = []
 
-                for id, i in enumerate(lp_data):
+                for l, i in enumerate(lp_data):
                     chain_id = i[chain_id_name]
                     seq_id = i[seq_id_name]
                     atom_id = i[atom_id_name]
 
-                    atoms.append('{:<4}:{:04d}:{:<8}:{:06d}'.format(chain_id, seq_id, atom_id, id))
+                    atoms.append('{:<4}:{:04d}:{:<8}:{:06d}'.format(chain_id, seq_id, atom_id, l))
 
                 sorted_atoms = sorted(atoms)
 
@@ -16900,7 +16900,7 @@ class NmrDpUtility(object):
                 for j in sorted_atoms:
                     sorted_id.append(int(j.split(':')[3]))
 
-                if sorted_id != range(id):
+                if sorted_id != range(l):
 
                     lp_data = sf_data.get_loop_by_category(lp_category)
 
@@ -16979,12 +16979,12 @@ class NmrDpUtility(object):
 
                 if len(ambig_set_ids) > 0:
 
-                    for id, ambig_set_id in enumerate(ambig_set_ids):
+                    for l, ambig_set_id in enumerate(ambig_set_ids):
 
                         if ambig_set_id in ambig_set_id_dic:
                             continue
 
-                        ambig_set_id_dic[ambig_set_id] = str(id + 1)
+                        ambig_set_id_dic[ambig_set_id] = str(l + 1)
 
             disordered_ambig_set_id = False
 
@@ -17012,8 +17012,8 @@ class NmrDpUtility(object):
                 for tag in lp_data.tags:
                     new_lp_data.add_tag(lp_category + '.' + tag)
 
-                for id, i in enumerate(lp_data):
-                    new_lp_data.add_data([str(id + 1)] + i)
+                for l, i in enumerate(lp_data):
+                    new_lp_data.add_data([str(l + 1)] + i)
 
                 del sf_data[lp_data]
 
@@ -17107,7 +17107,7 @@ class NmrDpUtility(object):
                     if self.__insert_entry_id_to_loops:
                         aux_lp_data.add_tag(aux_lp_cateogry + '.Entry_ID')
 
-                    for id, i in enumerate(lp_data):
+                    for l, i in enumerate(lp_data):
 
                         if ambig_set_id_name in i and not i[ambig_set_id_name] in self.empty_value:
 
@@ -17115,7 +17115,7 @@ class NmrDpUtility(object):
 
                             row.append(i[ambig_set_id_name])
                             row.append(i['Assigned_chem_shift_list_ID'])
-                            row.append(id + 1)
+                            row.append(l + 1)
 
                             if self.__insert_entry_id_to_loops:
                                 row.append(self.__entry_id)

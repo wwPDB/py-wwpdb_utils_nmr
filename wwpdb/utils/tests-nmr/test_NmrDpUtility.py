@@ -1,6 +1,6 @@
 ##
 # File: test_NmrDpUtility.py
-# Date:  20-Sep-2019  M. Yokochi
+# Date:  26-Sep-2019  M. Yokochi
 #
 # Updates:
 ##
@@ -110,8 +110,9 @@ class TestNmrDpUtility(unittest.TestCase):
 
     def test_nmr_nef_consistency_check_xplor_nih(self):
         self.utility.setSource(self.data_dir_path + 'mth1743-test-20190919.nef')
-        self.utility.setLog(self.data_dir_path + 'mth1743-test-20190919-nef-consistency-log.json')
+        self.utility.addInput(name='coordinate_file_path', value=self.data_dir_path + '1ryg.cif', type='file')
         self.utility.addInput(name='resolve_conflict', value=True, type='param')
+        self.utility.setLog(self.data_dir_path + 'mth1743-test-20190919-nef-consistency-log.json')
 
         self.utility.op('nmr-nef-consistency-check')
 
@@ -186,6 +187,23 @@ class TestNmrDpUtility(unittest.TestCase):
         self.utility.setDestination(self.data_dir_path + '2l9r-cys-next.nef')
         self.utility.addOutput(name='nmr-star_file_path', value=self.data_dir_path + '2l9r-cys-nef2str.str', type='file')
         self.utility.addOutput(name='report_file_path', value=self.data_dir_path + '2l9r-cys-nef2str-str-deposit-log.json', type='file')
+        self.utility.addOutput(name='entry_id', value='NEED_ACC_NO', type='param')
+        self.utility.setVerbose(False)
+
+        self.utility.op('nmr-nef2str-deposit')
+
+    def test_nmr_nef2str_deposit_check_xplor_nih(self):
+        if not os.access(self.data_dir_path + 'mth1743-test-20190919-nef-consistency-log.json', os.F_OK):
+            self.test_nmr_nef_consistency_check_xplor_nih()
+
+        self.utility.setSource(self.data_dir_path + 'mth1743-test-20190919.nef')
+        self.utility.addInput(name='coordinate_file_path', value=self.data_dir_path + '1ryg.cif', type='file')
+        self.utility.addInput(name='report_file_path',value=self.data_dir_path + 'mth1743-test-20190919-nef-consistency-log.json', type='file')
+        self.utility.addInput(name='resolve_conflict', value=True, type='param')
+        self.utility.setLog(self.data_dir_path + 'mth1743-test-20190919-nef2str-deposit-log.json')
+        self.utility.setDestination(self.data_dir_path + 'mth1743-test-20190919-next.nef')
+        self.utility.addOutput(name='nmr-star_file_path', value=self.data_dir_path + 'mth1743-test-20190919-nef2str.str', type='file')
+        self.utility.addOutput(name='report_file_path', value=self.data_dir_path + 'mth1743-test-20190919-nef2str-str-deposit-log.json', type='file')
         self.utility.addOutput(name='entry_id', value='NEED_ACC_NO', type='param')
         self.utility.setVerbose(False)
 

@@ -2150,7 +2150,7 @@ class NmrDpUtility(object):
         """ Dump current NMR data processing report.
         """
 
-        if self.report_prev != None:
+        if not self.report_prev is None:
             self.report.inheritFormatIssueErrors(self.report_prev)
 
             if not self.report_prev.warning.get() is None:
@@ -2887,7 +2887,7 @@ class NmrDpUtility(object):
 
         for content_subtype in self.nmr_content_subtypes:
 
-            if content_subtype in ['entry_info', 'poly_seq'] or not content_subtype in input_source_dic['content_subtype']:
+            if content_subtype in ['entry_info', 'poly_seq'] or (not content_subtype in input_source_dic['content_subtype']):
                 continue
 
             poly_seq_list_set[content_subtype] = []
@@ -3140,7 +3140,7 @@ class NmrDpUtility(object):
         for subtype_pair in itertools.combinations_with_replacement(subtype_with_poly_seq, 2):
 
             # poly_seq is reference sequence and suppress tests on combinations of two sequences in loop
-            if has_poly_seq and (not poly_seq in subtype_pair or subtype_pair == (poly_seq, poly_seq)):
+            if has_poly_seq and ((not poly_seq in subtype_pair) or subtype_pair == (poly_seq, poly_seq)):
                 continue
 
             subtype1 = subtype_pair[0] # poly_seq will appear only on subtype1
@@ -3717,7 +3717,7 @@ class NmrDpUtility(object):
             else:
                 chars.append('-')
 
-        for t in range(int(sid_len / 10)):
+        for t in range(sid_len // 10):
             offset = (t + 1) * 10 - 1
 
             code = ''
@@ -5454,7 +5454,7 @@ class NmrDpUtility(object):
                                                 if file_type == 'nmr-star' and details_col != -1:
                                                     _details = loop.data[l][details_col]
                                                     details = '%s %s is not within expected range (avg %s, std %s, min %s, max %s, Z_score %.2f). Neither aromatic ring nor paramagnetic atom were found in the vicinity. Please check for folded/aliased signals.\n' % (value_name, value, avg_value, std_value, min_value, max_value, z_score)
-                                                    if _details in self.empty_value or not details in _details:
+                                                    if _details in self.empty_value or (not details in _details):
                                                         if _details in self.empty_value:
                                                             loop.data[l][details_col] = details
                                                         else:
@@ -5487,7 +5487,7 @@ class NmrDpUtility(object):
                                                 if file_type == 'nmr-star' and details_col != -1 and (na['ring_angle'] - self.magic_angle * z_score < 0.0 or na['ring_distance'] > self.vicinity_aromatic):
                                                     _details = loop.data[l][details_col]
                                                     details = '%s %s is not within expected range (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest aromatic ring %s/%s/%s is located at %s angstroms, %s degrees.\n' % (value_name, value, avg_value, std_value, min_value, max_value, z_score, na['chain_id'], na['seq_id'], na['comp_id'], na['ring_distance'], na['ring_angle'])
-                                                    if _details in self.empty_value or not details in _details:
+                                                    if _details in self.empty_value or (not details in _details):
                                                         if _details in self.empty_value:
                                                             loop.data[l][details_col] = details
                                                         else:
@@ -5518,7 +5518,7 @@ class NmrDpUtility(object):
                                             if file_type == 'nmr-star' and details_col != -1 and pa['distance'] > self.vicinity_paramagnetic:
                                                 _details = loop.data[l][details_col]
                                                 details = '%s %s is not within expected range (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest paramagnetic atom %s/%s/%s is located at %s angstroms.\n' % (value_name, value, avg_value, std_value, min_value, max_value, z_score, na['chain_id'], na['seq_id'], na['comp_id'], na['distance'])
-                                                if _details in self.empty_value or not details in _details:
+                                                if _details in self.empty_value or (not details in _details):
                                                     if _details in self.empty_value:
                                                         loop.data[l][details_col] = details
                                                     else:
@@ -5643,7 +5643,7 @@ class NmrDpUtility(object):
                                                 if file_type == 'nmr-star' and details_col != -1:
                                                     _details = loop.data[l][details_col]
                                                     details = '%s %s is not within expected range (avg %s, std %s, min %s, max %s, Z_score %.2f). Neither aromatic ring nor paramagnetic atom were found in the vicinity. Please check for folded/aliased signals.\n' % (value_name, value, avg_value, std_value, min_value, max_value, z_score)
-                                                    if _details in self.empty_value or not details in _details:
+                                                    if _details in self.empty_value or (not details in _details):
                                                         if _details in self.empty_value:
                                                             loop.data[l][details_col] = details
                                                         else:
@@ -5678,7 +5678,7 @@ class NmrDpUtility(object):
                                                     if file_type == 'nmr-star' and details_col != -1:
                                                         _details = loop.data[l][details_col]
                                                         details = '%s %s is not within expected range (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest aromatic ring %s/%s/%s is located at %s angstroms, %s degrees.\n' % (value_name, value, avg_value, std_value, min_value, max_value, z_score, na['chain_id'], na['seq_id'], na['comp_id'], na['ring_distance'], na['ring_angle'])
-                                                        if _details in self.empty_value or not details in _details:
+                                                        if _details in self.empty_value or (not details in _details):
                                                             if _details in self.empty_value:
                                                                 loop.data[l][details_col] = details
                                                             else:
@@ -5711,7 +5711,7 @@ class NmrDpUtility(object):
                                                 if file_type == 'nmr-star' and details_col != -1:
                                                     _details = loop.data[l][details_col]
                                                     details = '%s %s is not within expected range (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest paramagnetic atom %s/%s/%s is located at %s angstroms.\n' % (value_name, value, avg_value, std_value, min_value, max_value, z_score, na['chain_id'], na['seq_id'], na['comp_id'], na['distance'])
-                                                    if _details in self.empty_value or not details in _details:
+                                                    if _details in self.empty_value or (not details in _details):
                                                         if _details in self.empty_value:
                                                             loop.data[l][details_col] = details
                                                         else:
@@ -5837,7 +5837,7 @@ class NmrDpUtility(object):
                                             if file_type == 'nmr-star' and details_col != -1:
                                                 _details = loop.data[l][details_col]
                                                 details = '%s %s is not within expected range (avg %s, std %s, min %s, max %s, Z_score %.2f). Neither aromatic ring nor paramagnetic atom were found in the vicinity. Please check for folded/aliased signals.\n' % (value_name, value, avg_value, std_value, min_value, max_value, z_score)
-                                                if _details in self.empty_value or not details in _details:
+                                                if _details in self.empty_value or (not details in _details):
                                                     if _details in self.empty_value:
                                                         loop.data[l][details_col] = details
                                                     else:
@@ -5870,7 +5870,7 @@ class NmrDpUtility(object):
                                             if file_type == 'nmr-star' and details_col != -1 and (na['ring_angle'] - self.magic_angle * z_score > 0.0 or self.__nonblk_anomalous_cs):
                                                 _details = loop.data[l][details_col]
                                                 details = '%s %s is not within expected range (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest aromatic ring %s/%s/%s is located at %s angstroms, %s degrees.\n' % (value_name, value, avg_value, std_value, min_value, max_value, z_score, na['chain_id'], na['seq_id'], na['comp_id'], na['ring_distance'], na['ring_angle'])
-                                                if _details in self.empty_value or not details in _details:
+                                                if _details in self.empty_value or (not details in _details):
                                                     if _details in self.empty_value:
                                                         loop.data[l][details_col] = details
                                                     else:
@@ -5901,7 +5901,7 @@ class NmrDpUtility(object):
                                         if file_type == 'nmr-star' and details_col != -1 and pa['distance'] > self.vicinity_paramagnetic:
                                             _details = loop.data[l][details_col]
                                             details = '%s %s is not within expected range (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest paramagnetic atom %s/%s/%s is located at %s angstroms.\n' % (value_name, value, avg_value, std_value, min_value, max_value, z_score, na['chain_id'], na['seq_id'], na['comp_id'], na['distance'])
-                                            if _details in self.empty_value or not details in _details:
+                                            if _details in self.empty_value or (not details in _details):
                                                 if _details in self.empty_value:
                                                     loop.data[l][details_col] = details
                                                 else:
@@ -6829,7 +6829,7 @@ class NmrDpUtility(object):
                                     sc['sequence_coverage'] = seq_align['sequence_coverage']
 
                                     if seq_align['sequence_coverage'] < self.low_seq_coverage and seq_align['length'] > 1:
-                                        if (not 'exp_type' in ent['exp_type']) or not ent['exp_type'] in ['disulfide bound', 'paramagnetic relaxation', 'symmetry', 'J-couplings']:
+                                        if (not 'exp_type' in ent['exp_type']) or (not ent['exp_type'] in ['disulfide bound', 'paramagnetic relaxation', 'symmetry', 'J-couplings']):
                                             low_seq_coverage += 'coverage %s for chain_id %s, length %s, ' % (seq_align['sequence_coverage'], seq_align['chain_id'], seq_align['length'])
 
                                     seq_coverage.append(sc)
@@ -7764,7 +7764,7 @@ class NmrDpUtility(object):
 
                             break
 
-                if not has_cs_stat or std_value is None:
+                if (not has_cs_stat) or std_value is None:
                     continue
 
                 z_score = (value - avg_value) / std_value
@@ -7982,7 +7982,7 @@ class NmrDpUtility(object):
                                         pro['cis_trans_pred'] = 'cis'
                                     else:
                                         pro['cis_trans_pred'] = 'ambiguous'
-                                elif not cb_chem_shift is None or not cg_chem_shift is None:
+                                elif (not cb_chem_shift is None) or (not cg_chem_shift is None):
                                     pro['cis_trans_pred'] = 'ambiguous'
                                 else:
                                     pro['cis_trans_pred'] = 'unknown'
@@ -8088,7 +8088,7 @@ class NmrDpUtility(object):
                                 his['nd1_chem_shift'] = nd1_chem_shift
                                 his['ne2_chem_shift'] = ne2_chem_shift
 
-                                if not cg_chem_shift is None or not cd2_chem_shift is None or not nd1_chem_shift is None or not ne2_chem_shift is None:
+                                if (not cg_chem_shift is None) or (not cd2_chem_shift is None) or (not nd1_chem_shift is None) or (not ne2_chem_shift is None):
                                     bip, tau, pi = self.__predictTautomerOfHistidine(cg_chem_shift, cd2_chem_shift, nd1_chem_shift, ne2_chem_shift)
                                     if tau < 0.001 and pi < 0.001:
                                         his['tautomeric_state_pred'] = 'biprotonated'
@@ -10864,7 +10864,7 @@ class NmrDpUtility(object):
 
         for content_subtype in self.cif_content_subtypes:
 
-            if content_subtype in ['entry_info', 'poly_seq'] or not content_subtype in input_source_dic['content_subtype']:
+            if content_subtype in ['entry_info', 'poly_seq'] or (not content_subtype in input_source_dic['content_subtype']):
                 continue
 
             poly_seq_list_set[content_subtype] = []
@@ -11820,7 +11820,7 @@ class NmrDpUtility(object):
                                     if file_type == 'nmr-star' and details_col != -1:
                                         _details = loop.data[l][details_col]
                                         details = "%s/%s/%s/%s is not incorporated in the atomic coordinate. However, it is acceptable if an appropriate atom name, H1, is given because of a cyclic-peptide.\n" % (chain_id, seq_id, comp_id, atom_name)
-                                        if _details in self.empty_value or not details in _details:
+                                        if _details in self.empty_value or (not details in _details):
                                             if _details in self.empty_value:
                                                 loop.data[l][details_col] = details
                                             else:
@@ -12360,7 +12360,7 @@ class NmrDpUtility(object):
         tag_value = 'nef_molecular_system' if file_type == 'nef' else 'assembly'
 
         for tag_name in tag_names:
-            if tagNames is None or not (tag_name in tagNames):
+            if tagNames is None or (not tag_name in tagNames):
                 poly_seq_sf_data.add_tag(sf_cat_name + '.' + tag_name, tag_value)
             else:
                 poly_seq_sf_data.tags[tagNames.index(tag_name)][1] = tag_value
@@ -13215,11 +13215,11 @@ class NmrDpUtility(object):
             else:
                 disulf['redox_state_pred_2'] = 'unknown'
 
-            if disulf['redox_state_pred_1'] == 'ambiguous' and (not ca_chem_shift_1 is None or not cb_chem_shift_1 is None):
+            if disulf['redox_state_pred_1'] == 'ambiguous' and ((not ca_chem_shift_1 is None) or (not cb_chem_shift_1 is None)):
                 oxi, red = self.__predictRedoxStateOfCystein(ca_chem_shift_1, cb_chem_shift_1)
                 disulf['redox_state_pred_1'] = 'oxidized %s (%%), reduced %s (%%)' % ('{:.1f}'.format(oxi * 100.0), '{:.1f}'.format(red * 100.0))
 
-            if disulf['redox_state_pred_2'] == 'ambiguous' and (not ca_chem_shift_2 is None or not cb_chem_shift_2 is None):
+            if disulf['redox_state_pred_2'] == 'ambiguous' and ((not ca_chem_shift_2 is None) or (not cb_chem_shift_2 is None)):
                 oxi, red = self.__predictRedoxStateOfCystein(ca_chem_shift_2, cb_chem_shift_2)
                 disulf['redox_state_pred_2'] = 'oxidized %s (%%), reduced %s (%%)' % ('{:.1f}'.format(oxi * 100.0), '{:.1f}'.format(red * 100.0))
 
@@ -13593,11 +13593,11 @@ class NmrDpUtility(object):
             else:
                 other['redox_state_pred_2'] = 'unknown'
 
-            if other['redox_state_pred_1'] == 'ambiguous' and (not ca_chem_shift_1 is None or not cb_chem_shift_1 is None):
+            if other['redox_state_pred_1'] == 'ambiguous' and ((not ca_chem_shift_1 is None) or (not cb_chem_shift_1 is None)):
                 oxi, red = self.__predictRedoxStateOfCystein(ca_chem_shift_1, cb_chem_shift_1)
                 other['redox_state_pred_1'] = 'oxidized %s (%%), reduced %s (%%)' % ('{:.1f}'.format(oxi * 100.0), '{:.1f}'.format(red * 100.0))
 
-            if other['redox_state_pred_2'] == 'ambiguous' and (not ca_chem_shift_2 is None or not cb_chem_shift_2 is None):
+            if other['redox_state_pred_2'] == 'ambiguous' and ((not ca_chem_shift_2 is None) or (not cb_chem_shift_2 is None)):
                 oxi, red = self.__predictRedoxStateOfCystein(ca_chem_shift_2, cb_chem_shift_2)
                 other['redox_state_pred_2'] = 'oxidized %s (%%), reduced %s (%%)' % ('{:.1f}'.format(oxi * 100.0), '{:.1f}'.format(red * 100.0))
 
@@ -13826,7 +13826,7 @@ class NmrDpUtility(object):
         seq_align_dic = self.report.sequence_alignment.get()
         chain_assign_dic = self.report.chain_assignment.get()
 
-        if not 'nmr_poly_seq_vs_model_poly_seq' in chain_assign_dic or not 'model_poly_seq_vs_nmr_poly_seq' in chain_assign_dic:
+        if (not 'nmr_poly_seq_vs_model_poly_seq' in chain_assign_dic) or (not 'model_poly_seq_vs_nmr_poly_seq' in chain_assign_dic):
 
             err = "Chain assignment did not exist, __assignCoordPolymerSequence() should be invoked."
 

@@ -15678,7 +15678,7 @@ class NmrDpUtility(object):
                 angle_type = angle_type.lower()
 
                 if not angle_type in ['phi', 'psi']:
-                    continue
+                    return False
 
                 if chain_id_1 != chain_id_2 or chain_id_2 != chain_id_3 or chain_id_3 != chain_id_4:
                     return False

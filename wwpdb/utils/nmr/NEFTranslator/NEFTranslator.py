@@ -41,6 +41,7 @@ class NEFTranslator(object):
 
     mapFile = scriptPath + '/lib/NEF_NMRSTAR_equivalence.csv'
     NEFinfo = scriptPath + '/lib/NEF_mandatory.csv'
+    NMRSTARinfo = scriptPath + '/lib/NMR-STAR_mandatory.csv'
     atmFile = scriptPath + '/lib/atomDict.json'
     codeFile = scriptPath + '/lib/codeDict.json'
 
@@ -158,6 +159,32 @@ class NEFTranslator(object):
         :return: returns '%Y-%m-%d %H:%M:%S'
         """
         return datetime.datetime.fromtimestamp(ts, tz=utc).strftime('%Y-%m-%d %H:%M:%S')
+
+    def check_mandatory_tags(self,in_file= None ,file_type = None):
+        """
+        Returns list of missing mandatory tags for the input file. List of mandaotry tags for NEF file is defined
+        :param in_file: NEF / NMR-STAR file
+        :return: list of missing mandaotry tags
+        """
+        if file_type is None or in_file is None:
+            print ('Please specify the file and file type (NEF or NMR-STAR')
+            exit(1)
+        else:
+            ent = pynmrstar.Entry.from_file(in_file)
+            missing_tags = []
+            if file_type == "NEF":
+                mand_tag = self.NEFinfo
+            else:
+                mand_tag = self.NMRSTARinfo
+            for tag in mand_tag:
+                if tag[0][0]=="_" and tag[1] == 'yes':
+                    try:
+                        ent.get_tags([tag[0]])
+                    except ValueError:
+                        missing_tags.append(tag[0])
+        return missing_tags
+
+
 
     def validate_file(self, in_file, file_type='A'):
         """
@@ -1141,9 +1168,12 @@ class NEFTranslator(object):
 
 
 if __name__ == "__main__":
+    #fname = sys.argv[1]
+    fname = '/Users/kumaran/Downloads/mth1743-test-20190919.nef'
     bt = NEFTranslator()
-    bt.nef_to_nmrstar('data/2l9r.nef')
-    print (bt.validate_file('data/2l9r.str','A'))
+    print (bt.check_mandatory_tags(fname,file_type='NEF'))
+    #bt.nef_to_nmrstar(fname)
+    #print (bt.validate_file('data/2l9r.str','A'))
     #fname = sys.argv[1]
     # f = open('neflist.txt','r').read().split("\n")
     # for fname in f:

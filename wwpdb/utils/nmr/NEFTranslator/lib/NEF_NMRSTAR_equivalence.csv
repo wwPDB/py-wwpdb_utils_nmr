@@ -12,7 +12,7 @@
 #   Second Column : NMR-STAR saveframe/loop/tag (author tags i.e data copied from a NEF tag goes here ; example : HBx)
 #   Third Column : NMR-STAR saveframe/loop/tag (tanslated data goes here ; example HB2)
 ############################################################################################
-#Saveframes
+#Saveframes and loops
 nef_nmr_meta_data,entry_information,entry_information
 nef_molecular_system,assembly,assembly
 nef_chemical_shift_list,assigned_chemical_shifts,assigned_chemical_shifts
@@ -21,6 +21,19 @@ nef_dihedral_restraint_list,torsion_angle_constraints,torsion_angle_constraints
 nef_rdc_restraint_list,RDC_constraints,RDC_constraints
 nef_nmr_spectrum,spectral_peak_list,spectral_peak_list
 nef_peak_restraint_links,peak_constraint_links,peak_constraint_links
+nef_related_entries,Related_entries,Related_entries
+nef_program_script,Software_applied_methods,Software_applied_methods
+nef_run_history,History,History
+nef_sequence,Chem_comp_assembly,Chem_comp_assembly
+nef_covalent_links,Bond,Bond
+nef_chemical_shift,Atom_chem_shift,Atom_chem_shift
+nef_distance_restraint,Gen_dist_constraint,Gen_dist_constraint
+nef_dihedral_restraint,Torsion_angle_constraint,Torsion_angle_constraint
+nef_rdc_restraint,RDC_constraint,RDC_constraint
+nef_spectrum_dimension,Spectral_dim,Spectral_dim
+nef_spectrum_dimension_transfer,Spectral_dim_transfer,Spectral_dim_transfer
+nef_peak,Peak_row_format,Peak_row_format
+nef_peak_restraint_link,Peak_constraint_link,Peak_constraint_link
 #tags
 _nef_program_script.program_name,_Software_applied_methods.Software_name,_Software_applied_methods.Software_name
 _nef_program_script.script_name,_Software_applied_methods.Script_name,_Software_applied_methods.Script_name

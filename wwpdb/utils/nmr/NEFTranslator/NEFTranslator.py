@@ -5,6 +5,7 @@
 # Updates:
 # 29-Jul-2019  M. Yokochi - support NEFTranslator v1.3.0 and integration into OneDep environment
 # 28-Aug-2019  M. Yokochi - report all empty data error as UserWarning
+# 08-Oct-2019  K. Baslaran & M. Yokochi - add functions to detect missing mandatory tag (v1.4.0)
 ##
 """
 This module does the following jobs
@@ -34,7 +35,7 @@ from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
 
 (scriptPath, scriptName) = ntpath.split(os.path.realpath(__file__))
 
-__version__ = 'v1.3.0'
+__version__ = 'v1.4.0'
 
 class NEFTranslator(object):
     """ NEF to NMR-STAR translator
@@ -47,6 +48,7 @@ class NEFTranslator(object):
 
     mapFile = scriptPath + '/lib/NEF_NMRSTAR_equivalence.csv'
     NEFinfo = scriptPath + '/lib/NEF_mandatory.csv'
+    NMRSTARinfo = scriptPath + '/lib/NMR-STAR_mandatory.csv'
     atmFile = scriptPath + '/lib/atomDict.json'
     codeFile = scriptPath + '/lib/codeDict.json'
 
@@ -261,6 +263,40 @@ class NEFTranslator(object):
         """
 
         return datetime.datetime.fromtimestamp(time, tz=utc).strftime('%Y-%m-%d %H:%M:%S')
+
+    def check_mandatory_tags(self, in_file=None, file_type=None):
+        """ Returns list of missing mandatory tags for the input file.
+        :param in_file: NEF / NMR-STAR file
+        :return: list of missing mandatory tags
+        """
+
+        tag_info = self.NEFinfo if file_type == 'nef' else self.NMRSTARinfo
+
+        ent = pynmrstar.Entry.from_file(in_file)
+
+        missing_tags = []
+
+        for _tag in tag_info:
+            if _tag[0][0] == '_' and _tag[1] == 'yes':
+                try:
+                    ent.get_tags([_tag[0]])
+                except ValueError:
+                    missing_tags.append(_tag[0])
+
+        return missing_tags
+
+    def is_mandatory_tag(self, item, file_type):
+        """ Check if a given tag is mandatory.
+            @author: Masashi Yokochi
+        """
+
+        tag_info = self.NEFinfo if file_type == 'nef' else self.NMRSTARinfo
+
+        for _tag in tag_info:
+            if _tag[0] == item:
+                return _tag[1] == 'yes'
+
+        return False
 
     def validate_file(self, in_file, file_subtype='A'):
         """ Validate input NEF/NMR-STAR file
@@ -2938,9 +2974,10 @@ class NEFTranslator(object):
             error.append('Input file not readable')
         return is_done, json.dumps({'info': info, 'warning': warning, 'error': error})
 
-if __name__ == '__main__':
-    bt = NEFTranslator()
+if __name__ == "__main__":
 
-    bt.nef_to_nmrstar('data/2l9r.nef')
+    _nefT = NEFTranslator()
 
-    print (bt.validate_file('data/2l9r.str','A'))
+    _nefT.nef_to_nmrstar('data/2l9r.nef')
+
+    print(_nefT.validate_file('data/2l9r.str','A'))

@@ -839,7 +839,9 @@ class TestNEFTranslator(unittest.TestCase):
         self.assertTrue(self.neft.validate_file(self.data_dir_path + 'test_out.str')[0])
 
     def test_check_mandatory_tags(self):
-        self.assertEqual(self.neft.check_mandatory_tags(self.data_dir_path + 'mth1743-test-20190919.nef', 'nef'), ['_nef_sequence.index', '_nef_distance_restraint.index', '_nef_distance_restraint.weight', '_nef_dihedral_restraint.index'])
+        missing_sf_tags, missing_lp_tags = self.neft.check_mandatory_tags(self.data_dir_path + 'mth1743-test-20190919.nef', 'nef')
+        self.assertEqual(missing_sf_tags, ['_nef_distance_restraint_list.potential_type', '_nef_dihedral_restraint_list.potential_type'])
+        self.assertEqual(missing_lp_tags, ['_nef_sequence.index', '_nef_distance_restraint.index', '_nef_distance_restraint.weight', '_nef_dihedral_restraint.index'])
 
     def test_is_mandatory_tag(self):
         self.assertEqual(self.neft.is_mandatory_tag('_nef_rdc_restraint_list.potential_type', 'nef'), True)

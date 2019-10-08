@@ -5,7 +5,7 @@
 # Updates:
 # 29-Jul-2019  M. Yokochi - support NEFTranslator v1.3.0 and integration into OneDep environment
 # 28-Aug-2019  M. Yokochi - report all empty data error as UserWarning
-# 08-Oct-2019  K. Baslaran & M. Yokochi - add functions to detect missing mandatory tag (v1.4.0)
+# 08-Oct-2019  K. Baskaran & M. Yokochi - add functions to detect missing mandatory tag (v1.4.0)
 ##
 """
 This module does the following jobs
@@ -161,7 +161,7 @@ class NEFTranslator(object):
 
     def read_input_file(self, in_file):
         """ Read input NEF/NMR-STAR file
-        :param in_file: input file name with proper path
+        :param in_file: input file path
         :return status, data type Entry/Saveframe/Loop, data object
         """
 
@@ -265,25 +265,37 @@ class NEFTranslator(object):
         return datetime.datetime.fromtimestamp(time, tz=utc).strftime('%Y-%m-%d %H:%M:%S')
 
     def check_mandatory_tags(self, in_file=None, file_type=None):
-        """ Returns list of missing mandatory tags for the input file.
-        :param in_file: NEF / NMR-STAR file
-        :return: list of missing mandatory tags
+        """ Returns list of missing mandatory saveframe/loop tags of the input file.
+            extended by Masashi Yokochi to detect missing mandatory saveframe tags
+        :param in_file: input file path
+        :param file_type: input file type either 'nef' or 'nmr-star'
+        :return: list of missing mandatory saveframe tags, list of missing mandatory loop tags
         """
 
         tag_info = self.NEFinfo if file_type == 'nef' else self.NMRSTARinfo
 
-        ent = pynmrstar.Entry.from_file(in_file)
+        star_data = pynmrstar.Entry.from_file(in_file)
 
-        missing_tags = []
+        sf_list = []
+
+        for sf in star_data.frame_list:
+            sf_list.append(sf.category)
+
+        missing_sf_tags = []
+        missing_lp_tags = []
 
         for _tag in tag_info:
-            if _tag[0][0] == '_' and _tag[1] == 'yes':
-                try:
-                    ent.get_tags([_tag[0]])
-                except ValueError:
-                    missing_tags.append(_tag[0])
 
-        return missing_tags
+            if _tag[0][0] == '_' and _tag[1] == 'yes':
+
+                try:
+                    tags = star_data.get_tags([_tag[0]])
+                    if len(tags[_tag[0]]) == 0 and _tag[0][1:].split('.')[0] in sf_list:
+                        missing_sf_tags.append(_tag[0])
+                except ValueError:
+                    missing_lp_tags.append(_tag[0])
+
+        return missing_sf_tags, missing_lp_tags
 
     def is_mandatory_tag(self, item, file_type):
         """ Check if a given tag is mandatory.
@@ -2972,6 +2984,7 @@ class NEFTranslator(object):
         else:
             is_done = False
             error.append('Input file not readable')
+
         return is_done, json.dumps({'info': info, 'warning': warning, 'error': error})
 
 if __name__ == "__main__":

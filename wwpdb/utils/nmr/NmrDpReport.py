@@ -3,6 +3,7 @@
 # Date: 29-Jul-2019
 #
 # Updates:
+# 09-Oct-2019  M. Yokochi - add setCorrectedError() to catch missing mandatory saveframe tag
 ##
 """ Wrapper class for data processing report of NMR unified data.
     @author: Masashi Yokochi
@@ -240,7 +241,7 @@ class NmrDpReport:
         return True
 
     def inheritFormatIssueErrors(self, prev_report):
-        """ Inherit format issue errors from previous report (e.g. nmr-*-consistency-check workflow operation).
+        """ Inherit format issue errors from the previous report (e.g. nmr-*-consistency-check workflow operation).
         """
 
         item = 'format_issue'
@@ -266,8 +267,51 @@ class NmrDpReport:
             logging.warning('+NmrDpReport.inheritFormatIssueErrors() ++ Warning  - No effects on NMR data processing report because the report is immutable')
             raise UserWarning('+NmrDpReport.inheritFormatIssueErrors() ++ Warning  - No effects on NMR data processing report because the report is immutable')
 
+    def setCorrectedError(self, prev_report):
+        """ Initialize history of corrected errors in the previous report.
+        """
+
+        if not self.__immutable:
+
+            file_name = self.input_sources[self.getInputSourceIdOfNmrUnifiedData()].get()['file_name']
+            _file_name = prev_report.input_sources[prev_report.getInputSourceIdOfNmrUnifiedData()].get()['file_name']
+
+            for item in prev_report.error.get().keys():
+
+                if item == 'total':
+                    continue
+
+                value_list = self.error.getValueList(item, file_name)
+                _value_list = prev_report.error.getUniqueValueList(item, _file_name)
+
+                if _value_list is None:
+                    continue
+
+                list = []
+
+                for _c in _value_list:
+
+                    if value_list is None:
+                        list.append(_c)
+
+                    else:
+                        try:
+                            next(c for c in value_list if c['sf_framecode'] == _c['sf_framecode'] and c['description'] == _c['description'])
+                        except StopIteration:
+                            list.append(_c)
+
+                for c in list:
+                    self.error.appendDescription(item, c)
+
+                if len(list) > 0:
+                    self.setError()
+
+        else:
+            logging.warning('+NmrDpReport.setCorrectedError() ++ Warning  - No effects on NMR data processing report because the report is immutable')
+            raise UserWarning('+NmrDpReport.setCorrectedError() ++ Warning  - No effects on NMR data processing report because the report is immutable')
+
     def setCorrectedWarning(self, prev_report):
-        """ Initialize history of corrected warnings in previous report.
+        """ Initialize history of corrected warnings in the previous report.
         """
 
         if not self.__immutable:

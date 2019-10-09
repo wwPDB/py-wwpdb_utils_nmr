@@ -2513,10 +2513,12 @@ class NEFTranslator(object):
         out_row = []
 
         new_id = None
+
         if '_nef_chemical_shift.chain_code' in f_tags and '_nef_chemical_shift.sequence_code' in f_tags:
 
             cci = f_tags.index('_nef_chemical_shift.chain_code')
             sci = f_tags.index('_nef_chemical_shift.sequence_code')
+
             try:
                 old_id = [i for i in self.seqDict.keys() if i[0] == in_row[cci] and i[1] == in_row[sci]][0]
                 new_id = self.seqDict[old_id]
@@ -2524,6 +2526,7 @@ class NEFTranslator(object):
                 new_id = (cci, sci)
             except IndexError:
                 new_id = (cci, sci)
+
         if len(f_tags) != len(t_tags):
             atm_index = f_tags.index('_nef_chemical_shift.atom_name')
             res_index = f_tags.index('_nef_chemical_shift.residue_name')
@@ -2595,6 +2598,7 @@ class NEFTranslator(object):
 
         res_list = self.get_residue_identifier(f_tags)
         tmp_dict = {}
+
         for res1 in res_list:
             try:
                 tmp_dict[res1[0]] = self.seqDict[(in_row[f_tags.index(res1[0])], in_row[f_tags.index(res1[1])])][0]
@@ -2604,7 +2608,7 @@ class NEFTranslator(object):
                 tmp_dict[res1[1]] = self.seqDict[(in_row[f_tags.index(res1[0])], in_row[f_tags.index(res1[1])])][1]
             except KeyError:
                 tmp_dict[res1[1]] = in_row[f_tags.index(res1[1])]
-        # print (tmp_dict)
+
         if len(f_tags) != len(t_tags):
             out = [None] * len(t_tags)
             for j in f_tags:
@@ -2648,8 +2652,7 @@ class NEFTranslator(object):
                         out[t_tags.index(stgs[1])] = self.chains.index(in_row[f_tags.index(j)]) + 1
                     elif j == '_nef_sequence.sequence_code':
                         out[t_tags.index(stgs[0])] = in_row[f_tags.index(j)]
-                        out[t_tags.index(stgs[1])] = self.cid[
-                            self.chains.index(in_row[f_tags.index('_nef_sequence.chain_code')])]
+                        out[t_tags.index(stgs[1])] = self.cid[self.chains.index(in_row[f_tags.index('_nef_sequence.chain_code')])]
                     else:
                         out[t_tags.index(stgs[0])] = in_row[f_tags.index(j)]
                         out[t_tags.index(stgs[1])] = in_row[f_tags.index(j)]
@@ -2673,6 +2676,7 @@ class NEFTranslator(object):
 
         res_list = self.get_residue_identifier(f_tags)
         tmp_dict = {}
+
         for res1 in res_list:
             try:
                 tmp_dict[res1[0]] = self.seqDict[(in_row[f_tags.index(res1[0])], in_row[f_tags.index(res1[1])])][0]
@@ -2682,6 +2686,7 @@ class NEFTranslator(object):
                 tmp_dict[res1[1]] = self.seqDict[(in_row[f_tags.index(res1[0])], in_row[f_tags.index(res1[1])])][1]
             except KeyError:
                 tmp_dict[res1[1]] = in_row[f_tags.index(res1[1])]
+
         if len(f_tags) != len(t_tags):
             atm_index1 = f_tags.index('_nef_distance_restraint.atom_name_1')
             res_index1 = f_tags.index('_nef_distance_restraint.residue_name_1')
@@ -2713,6 +2718,7 @@ class NEFTranslator(object):
                             else:
                                 out[t_tags.index(stgs[0])] = in_row[f_tags.index(j)]
                                 out[t_tags.index(stgs[1])] = in_row[f_tags.index(j)]
+
                         if details1 is None and details2 is None:
                             out[t_tags.index('_Gen_dist_constraint.Details')] = None
                         else:
@@ -2739,14 +2745,17 @@ class NEFTranslator(object):
         info = []
         warning = []
         error = []
+
         if star_file is None:
             star_file = file_path + '/' + file_name.split('.')[0] + '.str'
         (is_readable, dat_content, nef_data) = self.read_input_file(nef_file)
+
         try:
             star_data = pynmrstar.Entry.from_scratch(nef_data.entry_id)
         except AttributeError:
             star_data = pynmrstar.Entry.from_scratch(file_name.split('.')[0])
             warning.append('Not a complete Entry')
+
         if is_readable:
             if dat_content == 'Entry':
                 self.chains = sorted(list(set(nef_data.get_loops_by_category('nef_sequence')[0].get_tag('chain_code'))))
@@ -2763,6 +2772,7 @@ class NEFTranslator(object):
             ang_list = 0
             rdc_list = 0
             peak_list = 0
+
             if dat_content == 'Entry':
                 for saveframe in nef_data:
                     sf = pynmrstar.Saveframe.from_scratch(saveframe.name)
@@ -2773,13 +2783,13 @@ class NEFTranslator(object):
                         else:
                             neftag = '{}.{}'.format(saveframe.tag_prefix, tag[0])
                             sf.add_tag(self.get_nmrstar_tag(neftag)[0], tag[1])
+
                     if saveframe.category == 'nef_nmr_meta_data':
                         sf.add_tag('NMR_STAR_version', '3.2.0.15')
                         # sf.add_tag('Generated_date', self.TimeStamp(time.time()), update=True)
                         try:
                             lp1 = saveframe.get_loop_by_category('_nef_program_script')
                             lp1.add_data(['NEFTranslator', 'NEFtoNMRSTAR', '.'])
-                            # print (lp1.tags)
                         except KeyError:
                             pass  # May be better to add audit loop
 
@@ -2812,13 +2822,11 @@ class NEFTranslator(object):
                         for t in lp_cols:
                             lp.add_tag(t)
 
-                        # print (loop.category,lp.category,lp.get_tag_names(),loop.get_tag_names())
                         for dat in loop.data:
 
                             if loop.category == '_nef_sequence':
                                 dd = self.translate_seq_row(loop.get_tag_names(), lp.get_tag_names(), dat)
-                                self.cid[
-                                    self.chains.index(dat[loop.get_tag_names().index('_nef_sequence.chain_code')])] += 1
+                                self.cid[self.chains.index(dat[loop.get_tag_names().index('_nef_sequence.chain_code')])] += 1
                                 for d in dd:
                                     lp.add_data(d)
                                     self.seqDict[(dat[loop.get_tag_names().index('_nef_sequence.chain_code')],
@@ -2869,13 +2877,15 @@ class NEFTranslator(object):
                                 for d in dd:
                                     lp.add_data(d)
 
-                        # print (loop.data[0])
                         sf.add_loop(lp)
                     star_data.add_saveframe(sf)
                 star_data.normalize()
+
                 with open(star_file, 'w') as wstarfile:
                     wstarfile.write(str(star_data))
+
             elif dat_content == 'Saveframe' or dat_content == 'Loop':
+
                 if dat_content == 'Saveframe':
                     saveframe = nef_data
                     sf = pynmrstar.Saveframe.from_scratch(saveframe.name)
@@ -2916,13 +2926,11 @@ class NEFTranslator(object):
                     for t in lp_cols:
                         lp.add_tag(t)
 
-                    # print (loop.category,lp.category,lp.get_tag_names(),loop.get_tag_names())
                     for dat in loop.data:
 
                         if loop.category == '_nef_sequence':
                             dd = self.translate_seq_row(loop.get_tag_names(), lp.get_tag_names(), dat)
-                            self.cid[
-                                self.chains.index(dat[loop.get_tag_names().index('_nef_sequence.chain_code')])] += 1
+                            self.cid[self.chains.index(dat[loop.get_tag_names().index('_nef_sequence.chain_code')])] += 1
                             for d in dd:
                                 lp.add_data(d)
                                 self.seqDict[(dat[loop.get_tag_names().index('_nef_sequence.chain_code')],
@@ -2938,7 +2946,6 @@ class NEFTranslator(object):
 
                         elif loop.category == '_nef_distance_restraint':
                             dd = self.translate_restraint_row(loop.get_tag_names(), lp.get_tag_names(), dat)
-
                             for d in dd:
                                 d[lp.get_tag_names().index('_Gen_dist_constraint.Index_ID')] = r_index_id
                                 d[lp.get_tag_names().index(
@@ -2973,12 +2980,14 @@ class NEFTranslator(object):
                             dd = self.translate_row(loop.get_tag_names(), lp.get_tag_names(), dat)
                             for d in dd:
                                 lp.add_data(d)
-                    # print (loop.data[0])
+
                     sf.add_loop(lp)
                 star_data.add_saveframe(sf)
             star_data.normalize()
+
             with open(star_file, 'w') as wstarfile:
                 wstarfile.write(str(star_data))
+
             info.append('File {} successfully written'.format(star_file))
 
         else:

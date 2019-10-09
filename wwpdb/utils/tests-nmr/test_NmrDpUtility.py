@@ -3,7 +3,8 @@
 # Date:  26-Sep-2019  M. Yokochi
 #
 # Updates:
-##
+# 09-Oct-2019  M. Yokochi - add unit test for Xplor-NIH enabling 'check_mandatory_tag' option
+#
 import unittest
 import os
 import sys
@@ -112,6 +113,7 @@ class TestNmrDpUtility(unittest.TestCase):
         self.utility.setSource(self.data_dir_path + 'mth1743-test-20190919.nef')
         self.utility.addInput(name='coordinate_file_path', value=self.data_dir_path + '1ryg.cif', type='file')
         self.utility.addInput(name='resolve_conflict', value=True, type='param')
+        self.utility.addInput(name='check_mandatory_tag', value=True, type='param')
         self.utility.setLog(self.data_dir_path + 'mth1743-test-20190919-nef-consistency-log.json')
 
         self.utility.op('nmr-nef-consistency-check')
@@ -200,6 +202,7 @@ class TestNmrDpUtility(unittest.TestCase):
         self.utility.addInput(name='coordinate_file_path', value=self.data_dir_path + '1ryg.cif', type='file')
         self.utility.addInput(name='report_file_path',value=self.data_dir_path + 'mth1743-test-20190919-nef-consistency-log.json', type='file')
         self.utility.addInput(name='resolve_conflict', value=True, type='param')
+        self.utility.addInput(name='check_mandatory_tag', value=True, type='param')
         self.utility.setLog(self.data_dir_path + 'mth1743-test-20190919-nef2str-deposit-log.json')
         self.utility.setDestination(self.data_dir_path + 'mth1743-test-20190919-next.nef')
         self.utility.addOutput(name='nmr-star_file_path', value=self.data_dir_path + 'mth1743-test-20190919-nef2str.str', type='file')

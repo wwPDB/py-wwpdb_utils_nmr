@@ -3,6 +3,7 @@
 # Date: 26-Sep-2019
 #
 # Updates:
+# 09-Oct-2019  M. Yokochi - add 'check_mandatory_tag' option to detect missing mandatory tags as errors
 ##
 """ Wrapper class for data processing for NMR unified data.
     @author: Masashi Yokochi
@@ -46,6 +47,8 @@ class NmrDpUtility(object):
         self.__nonblk_bad_nterm = False
         # whether to resolve conflict
         self.__resolve_conflict = False
+        # whether to detect missing mandatory tags as errors
+        self.__check_mandatory_tag = False
 
         # default entry_id (nmr-star specific)
         self.__entry_id = 'UNNAMED'
@@ -1330,6 +1333,9 @@ class NmrDpUtility(object):
                                               'nmr-star': ['Position_%s', 'Position_uncertainty_%s', 'Line_width_%s', 'Line_width_uncertainty_%s', 'Entity_assembly_ID_%s', 'Entity_ID_%s', 'Comp_index_ID_%s', 'Seq_ID_%s', 'Comp_ID_%s', 'Atom_ID_%s', 'Ambiguity_code_%s', 'Ambiguity_set_ID_%s', 'Auth_entity_assembly_ID_%s', 'Auth_entity_ID_%s', 'Auth_asym_ID_%s', 'Auth_seq_ID_%s', 'Auth_comp_ID_%s', 'Auth_atom_ID_%s', 'Auth_ambiguity_code_%s', 'Auth_ambiguity_set_ID_%s']
                                               }
 
+        # error template for missing mandatory loop tag
+        self.__err_template_for_missing_mandatory_lp_tag = "Missing mandatory loop tag '%s'. Please verify remediation on the loop tag in processed %s file and re-upload correct one."
+
         # saveframe tag prefixes (saveframe holder categories)
         self.sf_tag_prefixes = {'nef': {'entry_info': '_nef_nmr_meta_data',
                                         'poly_seq': '_nef_molecular_system',
@@ -1511,6 +1517,9 @@ class NmrDpUtility(object):
                                                                'Experiment_ID', 'Experiment_name', 'Experiment_class', 'Experiment_type', 'Number_of_spectral_dimensions', 'Chemical_shift_list', 'Assigned_chem_shift_list_ID', 'Assigned_chem_shift_list_label', 'Details', 'Text_data_format', 'Text_data']
                                              }
                                 }
+
+        # warning template for missing mandatory saveframe tag
+        self.__warn_template_for_missing_mandatory_sf_tag = "Missing mandatory saveframe tag '%s'. Please verify remediation on the saveframe tag in processed %s file and re-upload correct one."
 
         # auxiliary loop categories
         self.aux_lp_categories = {'nef': {'entry_info': [],
@@ -2093,6 +2102,12 @@ class NmrDpUtility(object):
             else:
                 self.__resolve_conflict = self.__inputParamDict['resolve_conflict'] in self.true_value
 
+        if 'check_mandatory_tag' in self.__inputParamDict and not self.__inputParamDict['check_mandatory_tag'] is None:
+            if type(self.__inputParamDict['check_mandatory_tag']) is bool:
+                self.__check_mandatory_tag = self.__inputParamDict['check_mandatory_tag']
+            else:
+                self.__check_mandatory_tag = self.__inputParamDict['check_mandatory_tag'] in self.true_value
+
         if 'entry_id' in self.__outputParamDict and not self.__outputParamDict['entry_id'] is None:
             self.__entry_id = self.__outputParamDict['entry_id']
 
@@ -2152,6 +2167,9 @@ class NmrDpUtility(object):
 
         if not self.report_prev is None:
             self.report.inheritFormatIssueErrors(self.report_prev)
+
+            if not self.report_prev.error.get() is None:
+                self.report.setCorrectedError(self.report_prev)
 
             if not self.report_prev.warning.get() is None:
                 self.report.setCorrectedWarning(self.report_prev)
@@ -2305,6 +2323,7 @@ class NmrDpUtility(object):
         input_source = self.report.input_sources[0]
         input_source_dic = input_source.get()
 
+        file_name = input_source_dic['file_name']
         file_type = input_source_dic['file_type']
 
         if file_type != 'nef':
@@ -2327,6 +2346,8 @@ class NmrDpUtility(object):
             lp_category = self.lp_categories[file_type][content_subtype]
 
             for sf_data in self.__star_data.get_saveframes_by_category(sf_category):
+
+                sf_framecode = sf_data.get_tag('sf_framecode')[0]
 
                 try:
 
@@ -2358,6 +2379,16 @@ class NmrDpUtility(object):
 
                         if not 'index' in lp_data.tags:
 
+                            lp_tag = lp_category + '.index'
+                            err = self.__err_template_for_missing_mandatory_lp_tag % (lp_tag, self.readable_file_type[file_type])
+
+                            if self.__check_mandatory_tag and self.__nefT.is_mandatory_tag(lp_tag, file_type):
+                                self.report.error.appendDescription('missing_mandatory_item', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
+                                self.report.setError()
+
+                                if self.__verbose:
+                                    self.__lfh.write("+NmrDpUtility.__rescueFormerNef() ++ LookupError  - %s" % err)
+
                             for l, i in enumerate(lp_data):
                                 i.append(l + 1)
 
@@ -2379,6 +2410,16 @@ class NmrDpUtility(object):
 
                         if not 'element' in lp_data.tags:
 
+                            lp_tag = lp_category + '.element'
+                            err = self.__err_template_for_missing_mandatory_lp_tag % (lp_tag, self.readable_file_type[file_type])
+
+                            if self.__check_mandatory_tag and self.__nefT.is_mandatory_tag(lp_tag, file_type):
+                                self.report.error.appendDescription('missing_mandatory_item', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
+                                self.report.setError()
+
+                                if self.__verbose:
+                                    self.__lfh.write("+NmrDpUtility.__rescueFormerNef() ++ LookupError  - %s" % err)
+
                             try:
                                 atom_name_col = lp_data.tags.index('atom_name')
 
@@ -2391,6 +2432,16 @@ class NmrDpUtility(object):
                                 pass
 
                         if not 'isotope_number' in lp_data.tags:
+
+                            lp_tag = lp_category + '.isotope_number'
+                            err = self.__err_template_for_missing_mandatory_lp_tag % (lp_tag, self.readable_file_type[file_type])
+
+                            if self.__check_mandatory_tag and self.__nefT.is_mandatory_tag(lp_tag, file_type):
+                                self.report.error.appendDescription('missing_mandatory_item', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
+                                self.report.setError()
+
+                                if self.__verbose:
+                                    self.__lfh.write("+NmrDpUtility.__rescueFormerNef() ++ LookupError  - %s" % err)
 
                             try:
                                 atom_name_col = lp_data.tags.index('atom_name')
@@ -2406,6 +2457,16 @@ class NmrDpUtility(object):
                     if content_subtype == 'dihed_restraint':
 
                         if not 'name' in lp_data.tags:
+
+                            lp_tag = lp_category + '.name'
+                            err = self.__err_template_for_missing_mandatory_lp_tag % (lp_tag, self.readable_file_type[file_type])
+
+                            if self.__check_mandatory_tag and self.__nefT.is_mandatory_tag(lp_tag, file_type):
+                                self.report.error.appendDescription('missing_mandatory_item', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
+                                self.report.setError()
+
+                                if self.__verbose:
+                                    self.__lfh.write("+NmrDpUtility.__rescueFormerNef() ++ LookupError  - %s" % err)
 
                             try:
 
@@ -2472,6 +2533,7 @@ class NmrDpUtility(object):
         input_source = self.report.input_sources[0]
         input_source_dic = input_source.get()
 
+        file_name = input_source_dic['file_name']
         file_type = input_source_dic['file_type']
 
         if file_type != 'nmr-star':
@@ -2484,6 +2546,8 @@ class NmrDpUtility(object):
 
             for sf_data in self.__star_data.get_saveframes_by_category(sf_category):
 
+                sf_framecode = sf_data.get_tag('sf_framecode')[0]
+
                 try:
 
                     lp_data = sf_data.get_loop_by_category(lp_category)
@@ -2493,6 +2557,16 @@ class NmrDpUtility(object):
                     if content_subtype == 'chem_shift':
 
                         if not 'Atom_type' in lp_data.tags:
+
+                            lp_tag = lp_category + '.Atom_type'
+                            err = self.__err_template_for_missing_mandatory_lp_tag % (lp_tag, self.readable_file_type[file_type])
+
+                            if self.__check_mandatory_tag and self.__nefT.is_mandatory_tag(lp_tag, file_type):
+                                self.report.error.appendDescription('missing_mandatory_item', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
+                                self.report.setError()
+
+                                if self.__verbose:
+                                    self.__lfh.write("+NmrDpUtility.__rescueImmatureStr() ++ LookupError  - %s" % err)
 
                             try:
                                 atom_name_col = lp_data.tags.index('Atom_ID')
@@ -2506,6 +2580,16 @@ class NmrDpUtility(object):
                                 pass
 
                         if not 'Atom_isotope_number' in lp_data.tags:
+
+                            lp_tag = lp_category + '.Atom_isotope_number'
+                            err = self.__err_template_for_missing_mandatory_lp_tag % (lp_tag, self.readable_file_type[file_type])
+
+                            if self.__check_mandatory_tag and self.__nefT.is_mandatory_tag(lp_tag, file_type):
+                                self.report.error.appendDescription('missing_mandatory_item', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
+                                self.report.setError()
+
+                                if self.__verbose:
+                                    self.__lfh.write("+NmrDpUtility.__rescueImmatureStr() ++ LookupError  - %s" % err)
 
                             try:
                                 atom_name_col = lp_data.tags.index('Atom_ID')
@@ -2521,6 +2605,16 @@ class NmrDpUtility(object):
                     if content_subtype == 'dihed_restraint':
 
                         if not 'Torsion_angle_name' in lp_data.tags:
+
+                            lp_tag = lp_category + '.Torsion_angle_name'
+                            err = self.__err_template_for_missing_mandatory_lp_tag % (lp_tag, self.readable_file_type[file_type])
+
+                            if self.__check_mandatory_tag and self.__nefT.is_mandatory_tag(lp_tag, file_type):
+                                self.report.error.appendDescription('missing_mandatory_item', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
+                                self.report.setError()
+
+                                if self.__verbose:
+                                    self.__lfh.write("+NmrDpUtility.__rescueImmatureStr() ++ LookupError  - %s" % err)
 
                             try:
 
@@ -2541,8 +2635,8 @@ class NmrDpUtility(object):
         """ Detect content subtypes.
         """
 
-        if self.report.isError():
-            return False
+        #if self.report.isError():
+        #    return False
 
         input_source = self.report.input_sources[0]
         input_source_dic = input_source.get()
@@ -2670,8 +2764,8 @@ class NmrDpUtility(object):
         """ Extract reference polymer sequence.
         """
 
-        if self.report.isError():
-            return False
+        #if self.report.isError():
+        #    return False
 
         input_source = self.report.input_sources[0]
         input_source_dic = input_source.get()
@@ -2873,8 +2967,8 @@ class NmrDpUtility(object):
         """ Extract polymer sequence in interesting loops.
         """
 
-        if self.report.isError():
-            return False
+        #if self.report.isError():
+        #    return False
 
         input_source = self.report.input_sources[0]
         input_source_dic = input_source.get()
@@ -3087,8 +3181,8 @@ class NmrDpUtility(object):
             if not has_poly_seq:
                 poly_seq_list_set.pop(content_subtype)
 
-        if self.report.isError():
-            return False
+        #if self.report.isError():
+        #    return False
 
         if len(poly_seq_list_set) > 0:
             input_source.setItemValue('polymer_sequence_in_loop', poly_seq_list_set)
@@ -3112,8 +3206,8 @@ class NmrDpUtility(object):
         """ Perform sequence consistency test among extracted polymer sequences.
         """
 
-        if self.report.isError():
-            return False
+        #if self.report.isError():
+        #    return False
 
         input_source = self.report.input_sources[0]
         input_source_dic = input_source.get()
@@ -3292,8 +3386,8 @@ class NmrDpUtility(object):
         """ Extract common polymer sequence if required.
         """
 
-        if self.report.isError():
-            return False
+        #if self.report.isError():
+        #    return False
 
         input_source = self.report.input_sources[0]
         input_source_dic = input_source.get()
@@ -3459,8 +3553,8 @@ class NmrDpUtility(object):
         """ Extract non-standard residue.
         """
 
-        if self.report.isError():
-            return False
+        #if self.report.isError():
+        #    return False
 
         input_source = self.report.input_sources[0]
         input_source_dic = input_source.get()
@@ -3537,8 +3631,8 @@ class NmrDpUtility(object):
         """ Append polymer sequence alignment of interesting loops.
         """
 
-        if self.report.isError():
-            return False
+        #if self.report.isError():
+        #    return False
 
         input_source = self.report.input_sources[0]
         input_source_dic = input_source.get()
@@ -3744,8 +3838,8 @@ class NmrDpUtility(object):
         """ Validate atom nomenclature using NEFTranslator and CCD.
         """
 
-        if self.report.isError():
-            return False
+        #if self.report.isError():
+        #    return False
 
         input_source = self.report.input_sources[0]
         input_source_dic = input_source.get()
@@ -3992,8 +4086,8 @@ class NmrDpUtility(object):
         """ Validate atom type, isotope number on assigned chemical shifts.
         """
 
-        if self.report.isError():
-            return False
+        #if self.report.isError():
+        #    return False
 
         input_source = self.report.input_sources[0]
         input_source_dic = input_source.get()
@@ -4129,8 +4223,8 @@ class NmrDpUtility(object):
         """ Validate ambiguity code on assigned chemical shifts.
         """
 
-        if self.report.isError():
-            return False
+        #if self.report.isError():
+        #    return False
 
         input_source = self.report.input_sources[0]
         input_source_dic = input_source.get()
@@ -4269,8 +4363,8 @@ class NmrDpUtility(object):
         """ Perform consistency test on index of interesting loops.
         """
 
-        if self.report.isError():
-            return False
+        #if self.report.isError():
+        #    return False
 
         input_source = self.report.input_sources[0]
         input_source_dic = input_source.get()
@@ -5146,8 +5240,25 @@ class NmrDpUtility(object):
                                 warn = warn[19:]
                             elif nega:
                                 warn = warn[23:]
-                            else:
+                            else: # enum
                                 warn = warn[20:]
+
+                                self.chk_desc_pat = re.compile(r'^(.*) \'(.*)\' should be one of \((.*)\)\.$')
+                                self.chk_desc_pat_one = re.compile(r'^(.*) \'(.*)\' should be one of (.*)\.$')
+
+                                try:
+                                    g = self.chk_desc_pat.search(warn).groups()
+                                except AttributeError:
+                                    g = self.chk_desc_pat_one.search(warn).groups()
+
+                                if not self._sf_tag_items[file_type][content_subtype] is None:
+
+                                    try:
+                                        next(i for i in self._sf_tag_items[file_type][content_subtype] if i == g[0])
+                                        if not self.__nefT.is_mandatory_tag('_' + sf_category + '.' + g[0], file_type):
+                                            continue # author provides the meta data through DepUI after upload
+                                    except StopIteration:
+                                        pass
 
                             self.report.warning.appendDescription('missing_data' if zero else ('unusual_data' if nega else 'enum_failure'), {'file_name': file_name, 'sf_framecode': sf_framecode, 'description': warn})
                             self.report.setWarning()
@@ -12013,6 +12124,7 @@ class NmrDpUtility(object):
         input_source = self.report.input_sources[0]
         input_source_dic = input_source.get()
 
+        file_name = input_source_dic['file_name']
         file_type = input_source_dic['file_type']
 
         if input_source_dic['content_subtype'] is None:
@@ -12030,14 +12142,26 @@ class NmrDpUtility(object):
 
             for sf_data in self.__star_data.get_saveframes_by_category(sf_category):
 
+                sf_framecode = sf_data.get_tag('sf_framecode')[0]
+
                 lp_data = sf_data.get_loop_by_category(lp_category)
 
                 if index_tag in lp_data.tags:
                     continue
 
+                lp_tag = lp_category + '.' + index_tag
+                err = self.__err_template_for_missing_mandatory_lp_tag % (lp_tag, self.readable_file_type[file_type])
+
+                if self.__check_mandatory_tag and self.__nefT.is_mandatory_tag(lp_tag, file_type):
+                    self.report.error.appendDescription('missing_mandatory_item', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
+                    self.report.setError()
+
+                    if self.__verbose:
+                        self.__lfh.write("+NmrDpUtility.__appendIndexTag() ++ LookupError  - %s" % err)
+
                 new_lp_data = pynmrstar.Loop.from_scratch(lp_category)
 
-                new_lp_data.add_tag(lp_category + '.' + index_tag)
+                new_lp_data.add_tag(lp_tag)
 
                 for tag in lp_data.tags:
                     new_lp_data.add_tag(lp_category + '.' + tag)
@@ -14442,6 +14566,7 @@ class NmrDpUtility(object):
         input_source = self.report.input_sources[0]
         input_source_dic = input_source.get()
 
+        file_name = input_source_dic['file_name']
         file_type = input_source_dic['file_type']
 
         if input_source_dic['content_subtype'] is None:
@@ -14459,10 +14584,22 @@ class NmrDpUtility(object):
 
             for sf_data in self.__star_data.get_saveframes_by_category(sf_category):
 
+                sf_framecode = sf_data.get_tag('sf_framecode')[0]
+
                 lp_data = sf_data.get_loop_by_category(lp_category)
 
                 if weight_tag in lp_data.tags:
                     continue
+
+                lp_tag = lp_category + '.' + weight_tag
+                err = self.__err_template_for_missing_mandatory_lp_tag % (lp_tag, self.readable_file_type[file_type])
+
+                if self.__check_mandatory_tag and self.__nefT.is_mandatory_tag(lp_tag, file_type):
+                    self.report.error.appendDescription('missing_mandatory_item', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
+                    self.report.setError()
+
+                    if self.__verbose:
+                        self.__lfh.write("+NmrDpUtility.__appendWeightInLoop() ++ LookupError  - %s" % err)
 
                 for row in lp_data.data:
                     row.append('1.0')
@@ -14514,6 +14651,7 @@ class NmrDpUtility(object):
         input_source = self.report.input_sources[0]
         input_source_dic = input_source.get()
 
+        file_name = input_source_dic['file_name']
         file_type = input_source_dic['file_type']
 
         if input_source_dic['content_subtype'] is None:
@@ -14534,12 +14672,24 @@ class NmrDpUtility(object):
 
             for sf_data in self.__star_data.get_saveframes_by_category(sf_category):
 
+                sf_framecode = sf_data.get_tag('sf_framecode')[0]
+
                 tagNames = [t[0] for t in sf_data.tags]
 
                 for tag_item in tag_items:
 
                     if tag_item in tagNames:
                         continue
+
+                    sf_tag = '_' + sf_category + '.' + tag_item
+                    warn = self.__warn_template_for_missing_mandatory_sf_tag % (sf_tag, self.readable_file_type[file_type])
+
+                    if self.__check_mandatory_tag and self.__nefT.is_mandatory_tag(sf_tag, file_type):
+                        self.report.warning.appendDescription('missing_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': sf_category, 'description': warn})
+                        self.report.setWarning()
+
+                        if self.__verbose:
+                            self.__lfh.write("+NmrDpUtility.__appendSfTagItem() ++ Warning  - %s" % warn)
 
                     sf_data.add_tag(tag_item, '.')
 
@@ -16668,14 +16818,25 @@ class NmrDpUtility(object):
 
                         list_id = collections.Counter(list_ids).most_common()[0][0]
 
-                        if len(sf_data.get_tag('ID')) == 0:
-                            sf_data.add_tag('ID', list_id)
-
-                        else:
+                        if len(sf_data.get_tag('ID')) > 0:
                             tagNames = [t[0] for t in sf_data.tags]
                             itCol = tagNames.index('ID')
 
                             sf_data.tags[itCol][1] = list_id
+
+                        else:
+
+                            sf_tag = '_' + sf_category + '.ID'
+                            warn = self.__warn_template_for_missing_mandatory_sf_tag % (sf_tag, self.readable_file_type[file_type])
+
+                            if self.__check_mandatory_tag and self.__nefT.is_mandatory_tag(sf_tag, file_type):
+                                self.report.warning.appendDescription('missing_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': sf_category, 'description': warn})
+                                self.report.setWarning()
+
+                                if self.__verbose:
+                                    self.__lfh.write("+NmrDpUtility.__appendParentSfTag() ++ Warning  - %s" % warn)
+
+                            sf_data.add_tag('ID', list_id)
 
         return True
 
@@ -17005,9 +17166,20 @@ class NmrDpUtility(object):
                 lp_data.renumber_rows('ID')
 
             else:
+
+                lp_tag = lp_category + '.ID'
+                err = self.__err_template_for_missing_mandatory_lp_tag % (lp_tag, self.readable_file_type[file_type])
+
+                if self.__check_mandatory_tag and self.__nefT.is_mandatory_tag(lp_tag, file_type):
+                    self.report.error.appendDescription('missing_mandatory_item', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
+                    self.report.setError()
+
+                    if self.__verbose:
+                        self.__lfh.write("+NmrDpUtility.__updateAtomChemShiftId() ++ LookupError  - %s" % err)
+
                 new_lp_data = pynmrstar.Loop.from_scratch(lp_category)
 
-                new_lp_data.add_tag(lp_category + '.ID')
+                new_lp_data.add_tag(lp_tag)
 
                 for tag in lp_data.tags:
                     new_lp_data.add_tag(lp_category + '.' + tag)

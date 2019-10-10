@@ -5,7 +5,6 @@
 # Updates:
 # 10-Oct-2019  M. Yokochi - add 'check_mandatory_tag' option to detect missing mandatory tags as errors
 ##
-from __builtin__ import True
 """ Wrapper class for data processing for NMR unified data.
     @author: Masashi Yokochi
 """

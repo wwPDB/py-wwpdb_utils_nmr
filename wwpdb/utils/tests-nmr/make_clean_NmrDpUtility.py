@@ -3,6 +3,7 @@
 # Date:  30-Jul-2019  M. Yokochi
 #
 # Updates:
+# 09-Oct-2019  M. Yokochi - add 'resolve_conflict' option in __test_nmr_nef_consistency and rename log file
 ##
 import unittest
 import os
@@ -28,23 +29,26 @@ class TestNmrDpUtility(unittest.TestCase):
     def __test_nmr_nef_consistency(self, entry_id):
         self.utility.setSource(self.data_dir_path + entry_id + '.nef')
         self.utility.addInput(name='coordinate_file_path', value=self.data_dir_path + entry_id + '.cif', type='file')
-        self.utility.setLog(self.data_dir_path + entry_id + '-nef-consistency-log.json')
+        self.utility.addInput(name='nonblk_anomalous_cs', value=True, type='param')
+        self.utility.addInput(name='nonblk_bad_nterm', value=True, type='param')
+        self.utility.addInput(name='resolve_conflict', value=True, type='param')
+        self.utility.setLog(self.data_dir_path + entry_id + '-clean-nef-consistency-log.json')
 
         self.utility.op('nmr-nef-consistency-check')
 
-        with open(self.data_dir_path + entry_id + '-nef-consistency-log.json', 'r') as file:
+        with open(self.data_dir_path + entry_id + '-clean-nef-consistency-log.json', 'r') as file:
             report = json.loads(file.read())
 
-        if report['error'] is None:
+        if not report['error'] is None:
             self.assertEqual(report['error']['internal_error'], None)
 
     def __test_nmr_nef2str_deposit_check(self, entry_id):
-        if not os.access(self.data_dir_path + entry_id + '-nef-consistency-log.json', os.F_OK):
-            self.__test_nmr_nef_consistency(entry_id)
+        #if not os.access(self.data_dir_path + entry_id + '-clean-nef-consistency-log.json', os.F_OK):
+        self.__test_nmr_nef_consistency(entry_id)
 
         self.utility.setSource(self.data_dir_path + entry_id + '.nef')
         self.utility.addInput(name='coordinate_file_path', value=self.data_dir_path + entry_id + '.cif', type='file')
-        self.utility.addInput(name='report_file_path', value=self.data_dir_path + entry_id + '-nef-consistency-log.json', type='file')
+        self.utility.addInput(name='report_file_path', value=self.data_dir_path + entry_id + '-clean-nef-consistency-log.json', type='file')
         self.utility.addInput(name='nonblk_anomalous_cs', value=True, type='param')
         self.utility.addInput(name='nonblk_bad_nterm', value=True, type='param')
         self.utility.addInput(name='resolve_conflict', value=True, type='param')

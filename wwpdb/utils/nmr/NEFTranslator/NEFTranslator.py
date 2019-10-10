@@ -5,7 +5,7 @@
 # Updates:
 # 29-Jul-2019  M. Yokochi - support NEFTranslator v1.3.0 and integration into OneDep environment
 # 28-Aug-2019  M. Yokochi - report all empty data error as UserWarning
-# 08-Oct-2019  K. Baskaran & M. Yokochi - add functions to detect missing mandatory tag (v1.4.0)
+# 09-Oct-2019  K. Baskaran & M. Yokochi - add functions to detect missing mandatory tag (v1.4.0)
 ##
 """
 This module does the following jobs
@@ -162,26 +162,26 @@ class NEFTranslator(object):
     def read_input_file(self, in_file):
         """ Read input NEF/NMR-STAR file
         :param in_file: input file path
-        :return status, data type Entry/Saveframe/Loop, data object
+        :return status, Entry/Saveframe/Loop data type, data object
         """
 
         is_ok = True
-        in_data = None
+        star_data = None
 
         try:
-            in_data = pynmrstar.Entry.from_file(in_file)
+            star_data = pynmrstar.Entry.from_file(in_file)
             msg = 'Entry'
 
         except ValueError:
 
             try:
-                in_data = pynmrstar.Saveframe.from_file(in_file)
+                star_data = pynmrstar.Saveframe.from_file(in_file)
                 msg = 'Saveframe'
 
             except ValueError:
 
                 try:
-                    in_data = pynmrstar.Loop.from_file(in_file)
+                    star_data = pynmrstar.Loop.from_file(in_file)
                     msg = 'Loop'
 
                 except ValueError as e:
@@ -192,7 +192,7 @@ class NEFTranslator(object):
             is_ok = False
             msg = str(e)
 
-        return is_ok, msg, in_data
+        return is_ok, msg, star_data
 
     def __load_json_data(self, json_file):
         """ Load JSON data to dictionary.
@@ -266,7 +266,7 @@ class NEFTranslator(object):
 
     def check_mandatory_tags(self, in_file=None, file_type=None):
         """ Returns list of missing mandatory saveframe/loop tags of the input file.
-            extended by Masashi Yokochi to detect missing mandatory saveframe tags
+            extended by Masashi Yokochi to detect missing mandatory saveframe tags in Entry/Saveframe/Loop data
         :param in_file: input file path
         :param file_type: input file type either 'nef' or 'nmr-star'
         :return: list of missing mandatory saveframe tags, list of missing mandatory loop tags
@@ -274,26 +274,57 @@ class NEFTranslator(object):
 
         tag_info = self.NEFinfo if file_type == 'nef' else self.NMRSTARinfo
 
-        star_data = pynmrstar.Entry.from_file(in_file)
-
-        sf_list = []
-
-        for sf in star_data.frame_list:
-            sf_list.append(sf.category)
-
         missing_sf_tags = []
         missing_lp_tags = []
 
-        for _tag in tag_info:
+        try:
+            star_data = pynmrstar.Entry.from_file(in_file)
 
-            if _tag[0][0] == '_' and _tag[1] == 'yes':
+            sf_list = [sf.category for sf in star_data.frame_list]
+
+            for _tag in tag_info:
+
+                if _tag[0][0] == '_' and _tag[1] == 'yes':
+
+                    try:
+                        tags = star_data.get_tags([_tag[0]])
+                        if len(tags[_tag[0]]) == 0 and _tag[0][1:].split('.')[0] in sf_list:
+                            missing_sf_tags.append(_tag[0])
+                    except ValueError:
+                        missing_lp_tags.append(_tag[0])
+
+        except ValueError:
+
+            try:
+                star_data = pynmrstar.Saveframe.from_file(in_file)
+
+                for _tag in tag_info:
+
+                    if _tag[0][0] == '_' and _tag[1] == 'yes':
+
+                        try:
+                            tags = star_data.get_tag([_tag[0]])
+                            if len(tags[_tag[0]]) == 0 and _tag[0][1:].split('.')[0] == star_data.category:
+                                missing_sf_tags.append(_tag[0])
+                        except ValueError:
+                            missing_lp_tags.append(_tag[0])
+
+            except ValueError:
 
                 try:
-                    tags = star_data.get_tags([_tag[0]])
-                    if len(tags[_tag[0]]) == 0 and _tag[0][1:].split('.')[0] in sf_list:
-                        missing_sf_tags.append(_tag[0])
+                    star_data = pynmrstar.Loop.from_file(in_file)
+
+                    for _tag in tag_info:
+
+                        if _tag[0][0] == '_' and _tag[1] == 'yes':
+
+                            try:
+                                tags = star_data.get_tag([_tag[0]])
+                            except ValueError:
+                                missing_lp_tags.append(_tag[0])
+
                 except ValueError:
-                    missing_lp_tags.append(_tag[0])
+                    pass
 
         return missing_sf_tags, missing_lp_tags
 
@@ -513,7 +544,7 @@ class NEFTranslator(object):
             for lp in star_data:
                 lp_list.append(lp.category)
 
-        else:
+        elif not star_data is None:
             lp_list.append(star_data.category)
 
         return sf_list, lp_list
@@ -2997,9 +3028,6 @@ class NEFTranslator(object):
         return is_done, json.dumps({'info': info, 'warning': warning, 'error': error})
 
 if __name__ == "__main__":
-
     _nefT = NEFTranslator()
-
     _nefT.nef_to_nmrstar('data/2l9r.nef')
-
     print(_nefT.validate_file('data/2l9r.str','A'))

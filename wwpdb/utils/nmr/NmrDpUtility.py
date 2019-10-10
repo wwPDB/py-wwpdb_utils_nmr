@@ -3,8 +3,9 @@
 # Date: 26-Sep-2019
 #
 # Updates:
-# 09-Oct-2019  M. Yokochi - add 'check_mandatory_tag' option to detect missing mandatory tags as errors
+# 10-Oct-2019  M. Yokochi - add 'check_mandatory_tag' option to detect missing mandatory tags as errors
 ##
+from __builtin__ import True
 """ Wrapper class for data processing for NMR unified data.
     @author: Masashi Yokochi
 """
@@ -146,7 +147,8 @@ class NmrDpUtility(object):
                           self.__fixDisorderedIndex,
                           self.__removeNonSenseZeroValue,
                           self.__fixNonSenseNegativeValue,
-                          self.__fixEnumerationValue,
+                          self.__fixEnumFailure,
+                          self.__fixEnumFailureIgnorable,
                           #self.__fixBadAmbiguityCode,
                           self.__resetCapitalStringInLoop,
                           self.__resetBoolValueInLoop,
@@ -1334,7 +1336,7 @@ class NmrDpUtility(object):
                                               }
 
         # error template for missing mandatory loop tag
-        self.__err_template_for_missing_mandatory_lp_tag = "Missing mandatory loop tag '%s'. Please verify remediation on the loop tag in processed %s file and re-upload correct one."
+        self.__err_template_for_missing_mandatory_lp_tag = "Missing mandatory loop tag '%s'. Please verify values of the loop tag in processed %s file and re-upload correct one."
 
         # saveframe tag prefixes (saveframe holder categories)
         self.sf_tag_prefixes = {'nef': {'entry_info': '_nef_nmr_meta_data',
@@ -1519,7 +1521,7 @@ class NmrDpUtility(object):
                                 }
 
         # warning template for missing mandatory saveframe tag
-        self.__warn_template_for_missing_mandatory_sf_tag = "Missing mandatory saveframe tag '%s'. Please verify remediation on the saveframe tag in processed %s file and re-upload correct one."
+        self.__warn_template_for_missing_mandatory_sf_tag = "Missing mandatory saveframe tag '%s'. Please verify value of the saveframe tag in processed %s file and re-upload correct one."
 
         # auxiliary loop categories
         self.aux_lp_categories = {'nef': {'entry_info': [],
@@ -2773,6 +2775,9 @@ class NmrDpUtility(object):
         file_name = input_source_dic['file_name']
         file_type = input_source_dic['file_type']
 
+        if input_source_dic['content_subtype'] is None:
+            return False
+
         content_subtype = 'poly_seq'
 
         if not content_subtype in input_source_dic['content_subtype']:
@@ -2975,6 +2980,9 @@ class NmrDpUtility(object):
 
         file_name = input_source_dic['file_name']
         file_type = input_source_dic['file_type']
+
+        if input_source_dic['content_subtype'] is None:
+            return False
 
         poly_seq_list_set = {}
         poly_sid_list_set = {}
@@ -3641,7 +3649,7 @@ class NmrDpUtility(object):
         has_poly_seq_in_loop = self.__hasKeyValue(input_source_dic, 'polymer_sequence_in_loop')
 
         if not has_poly_seq:
-
+            """
             err = "Common polymer sequence did not exist, __extractCommonPolymerSequence() should be invoked."
 
             self.report.error.appendDescription('internal_error', "+NmrDpUtility.__appendPolymerSequenceAlignment() ++ Error  - %s" % err)
@@ -3649,7 +3657,7 @@ class NmrDpUtility(object):
 
             if self.__verbose:
                 self.__lfh.write("+NmrDpUtility.__appendPolymerSequenceAlignment() ++ Error  - %s\n" % err)
-
+            """
             return False
 
         if not has_poly_seq_in_loop:
@@ -3657,9 +3665,6 @@ class NmrDpUtility(object):
 
         polymer_sequence = input_source_dic['polymer_sequence']
         polymer_sequence_in_loop = input_source_dic['polymer_sequence_in_loop']
-
-        if polymer_sequence is None:
-            return False
 
         for content_subtype in polymer_sequence_in_loop.keys():
             list_len = len(polymer_sequence_in_loop[content_subtype])
@@ -3846,6 +3851,11 @@ class NmrDpUtility(object):
 
         file_name = input_source_dic['file_name']
         file_type = input_source_dic['file_type']
+
+        has_poly_seq_in_loop = self.__hasKeyValue(input_source_dic, 'polymer_sequence_in_loop')
+
+        if not has_poly_seq_in_loop:
+            return False
 
         polymer_sequence_in_loop = input_source_dic['polymer_sequence_in_loop']
 
@@ -4095,6 +4105,9 @@ class NmrDpUtility(object):
         file_name = input_source_dic['file_name']
         file_type = input_source_dic['file_type']
 
+        if input_source_dic['content_subtype'] is None:
+            return False
+
         content_subtype = 'chem_shift'
 
         if not content_subtype in input_source_dic['content_subtype'].keys():
@@ -4231,6 +4244,9 @@ class NmrDpUtility(object):
 
         file_name = input_source_dic['file_name']
         file_type = input_source_dic['file_type']
+
+        if input_source_dic['content_subtype'] is None:
+            return False
 
         content_subtype = 'chem_shift'
 
@@ -4371,6 +4387,9 @@ class NmrDpUtility(object):
 
         file_name = input_source_dic['file_name']
         file_type = input_source_dic['file_type']
+
+        if input_source_dic['content_subtype'] is None:
+            return False
 
         for content_subtype in input_source_dic['content_subtype'].keys():
 
@@ -4613,7 +4632,7 @@ class NmrDpUtility(object):
                                 err = warn[16:]
                                 item = 'multiple_data'
 
-                            if zero or nega or enum or (mult and self.__resolve_conflict):
+                            if zero or nega or enum or self.__resolve_conflict:
 
                                 self.report.warning.appendDescription(item, {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
                                 self.report.setWarning()
@@ -4964,7 +4983,7 @@ class NmrDpUtility(object):
                                         err = warn[16:]
                                         item = 'multiple_data'
 
-                                    if zero or nega or enum:
+                                    if zero or nega or enum or self.__resolve_conflict:
 
                                         self.report.warning.appendDescription(item, {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
                                         self.report.setWarning()
@@ -5234,6 +5253,8 @@ class NmrDpUtility(object):
                         nega = warn.startswith('[Negative value error] ')
                         enum = warn.startswith('[Enumeration error] ')
 
+                        ignorable = False
+
                         if zero or nega or enum:
 
                             if zero:
@@ -5256,11 +5277,11 @@ class NmrDpUtility(object):
                                     try:
                                         next(i for i in self._sf_tag_items[file_type][content_subtype] if i == g[0])
                                         if not self.__nefT.is_mandatory_tag('_' + sf_category + '.' + g[0], file_type):
-                                            continue # author provides the meta data through DepUI after upload
+                                            ignorable = True # author provides the meta data through DepUI after upload
                                     except StopIteration:
                                         pass
 
-                            self.report.warning.appendDescription('missing_data' if zero else ('unusual_data' if nega else 'enum_failure'), {'file_name': file_name, 'sf_framecode': sf_framecode, 'description': warn})
+                            self.report.warning.appendDescription('missing_data' if zero else ('unusual_data' if nega else ('enum_failure_ignorable' if ignorable else 'enum_failure')), {'file_name': file_name, 'sf_framecode': sf_framecode, 'description': warn})
                             self.report.setWarning()
 
                             if self.__verbose:
@@ -7222,7 +7243,9 @@ class NmrDpUtility(object):
                     n15_col = -1
                     p31_col = -1
 
-                    for l, data_type in enumerate(count):
+                    l = 0
+
+                    for data_type in count:
 
                         atom_group = {}
                         atom_group['atom_group'] = 'all_' + data_type
@@ -7243,6 +7266,8 @@ class NmrDpUtility(object):
                             p31_col = l
 
                         all_c.append(atom_group)
+
+                        l += 1
 
                     for s in polymer_sequence:
 
@@ -7357,7 +7382,9 @@ class NmrDpUtility(object):
                     n15_col = -1
                     p31_col = -1
 
-                    for l, data_type in enumerate(count):
+                    l = 0
+
+                    for data_type in count:
 
                         atom_group = {}
                         atom_group['atom_group'] = 'backbone_' + data_type
@@ -7378,6 +7405,8 @@ class NmrDpUtility(object):
                             p31_col = l
 
                         bb_c.append(atom_group)
+
+                        l += 1
 
                     for s in polymer_sequence:
 
@@ -7478,7 +7507,9 @@ class NmrDpUtility(object):
                     n15_col = -1
                     p31_col = -1
 
-                    for l, data_type in enumerate(count):
+                    l = 0
+
+                    for data_type in count:
 
                         atom_group = {}
                         atom_group['atom_group'] = 'sidechain_' + data_type
@@ -7499,6 +7530,8 @@ class NmrDpUtility(object):
                             p31_col = l
 
                         sc_c.append(atom_group)
+
+                        l += 1
 
                     for s in polymer_sequence:
 
@@ -7597,7 +7630,9 @@ class NmrDpUtility(object):
                     h1_col = -1
                     c13_col = -1
 
-                    for l, data_type in enumerate(count):
+                    l = 0
+
+                    for data_type in count:
 
                         atom_group = {}
                         atom_group['atom_group'] = 'methyl_' + data_type
@@ -7615,6 +7650,8 @@ class NmrDpUtility(object):
                             continue
 
                         ch3_c.append(atom_group)
+
+                        l += 1
 
                     for s in polymer_sequence:
 
@@ -7696,7 +7733,9 @@ class NmrDpUtility(object):
                     c13_col = -1
                     n15_col = -1
 
-                    for l, data_type in enumerate(count):
+                    l = 0
+
+                    for data_type in count:
 
                         atom_group = {}
                         atom_group['atom_group'] = 'aromatic_' + data_type
@@ -7714,6 +7753,8 @@ class NmrDpUtility(object):
                             n15_col = l
 
                         aro_c.append(atom_group)
+
+                        l += 1
 
                     for s in polymer_sequence:
 
@@ -12370,7 +12411,7 @@ class NmrDpUtility(object):
         has_poly_seq = self.__hasKeyValue(input_source_dic, 'polymer_sequence')
 
         if not has_poly_seq:
-
+            """
             err = "Common polymer sequence did not exist, __extractCommonPolymerSequence() should be invoked."
 
             self.report.error.appendDescription('internal_error', "+NmrDpUtility.__generatePolySeqIfNot() ++ Error  - %s" % err)
@@ -12378,7 +12419,7 @@ class NmrDpUtility(object):
 
             if self.__verbose:
                 self.__lfh.write("+NmrDpUtility.__generatePolySeqIfNot() ++ Error  - %s\n" % err)
-
+            """
             return False
 
         if self.__srcPath is self.__dstPath:
@@ -15211,7 +15252,7 @@ class NmrDpUtility(object):
 
         return True
 
-    def __fixEnumerationValue(self):
+    def __fixEnumFailure(self):
         """ Fix enumeration failures if possible.
         """
 
@@ -15222,6 +15263,38 @@ class NmrDpUtility(object):
         file_name = input_source_dic['file_name']
 
         warnings = self.report.warning.getValueList('enum_failure', file_name)
+
+        if warnings is None:
+            return True
+
+        return self.__fixEnumerationFailure(warnings)
+
+    def __fixEnumFailureIgnorable(self):
+        """ Fix enumeration failures (ignorable) if possible.
+        """
+
+        input_source = self.report.input_sources[0]
+        input_source_dic = input_source.get()
+
+        file_type = input_source_dic['file_type']
+        file_name = input_source_dic['file_name']
+
+        warnings = self.report.warning.getValueList('enum_failure_ignorable', file_name)
+
+        if warnings is None:
+            return True
+
+        return self.__fixEnumerationFailure(warnings)
+
+    def __fixEnumerationFailure(self, warnings):
+        """ Fix enumeration failures if possible.
+        """
+
+        input_source = self.report.input_sources[0]
+        input_source_dic = input_source.get()
+
+        file_type = input_source_dic['file_type']
+        file_name = input_source_dic['file_name']
 
         if warnings is None:
             return True
@@ -15249,11 +15322,11 @@ class NmrDpUtility(object):
 
                     err = "Could not specify 'sf_framecode' in NMR data processing report."
 
-                    self.report.error.appendDescription('internal_error', "+NmrDpUtility.__fixEnumerationValue() ++ Error  - %s" % err)
+                    self.report.error.appendDescription('internal_error', "+NmrDpUtility.__fixEnumerationFailure() ++ Error  - %s" % err)
                     self.report.setError()
 
                     if self.__verbose:
-                        self.__lfh.write("+NmrDpUtility.__fixEnumerationValue() ++ Error  - %s\n" % err)
+                        self.__lfh.write("+NmrDpUtility.__fixEnumerationFailure() ++ Error  - %s\n" % err)
 
                 else:
 
@@ -15263,11 +15336,11 @@ class NmrDpUtility(object):
 
                         err = "Could not specify saveframe %s unexpectedly in %s file." % (w['sf_framecode'], file_name)
 
-                        self.report.error.appendDescription('internal_error', "+NmrDpUtility.__fixEnumerationValue() ++ Error  - %s" % err)
+                        self.report.error.appendDescription('internal_error', "+NmrDpUtility.__fixEnumerationFailure() ++ Error  - %s" % err)
                         self.report.setError()
 
                         if self.__verbose:
-                            self.__lfh.write("+NmrDpUtility.__fixEnumerationValue() ++ Error  - %s\n" % err)
+                            self.__lfh.write("+NmrDpUtility.__fixEnumerationFailure() ++ Error  - %s\n" % err)
 
                     else:
 
@@ -15279,11 +15352,11 @@ class NmrDpUtility(object):
 
                                 err = "Could not find saveframe tag %s in %s saveframe, %s file." % (itName, w['sf_framecode'], file_name)
 
-                                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__fixEnumerationValue() ++ Error  - %s" % err)
+                                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__fixEnumerationFailure() ++ Error  - %s" % err)
                                 self.report.setError()
 
                                 if self.__verbose:
-                                    self.__lfh.write("+NmrDpUtility.__fixEnumerationValue() ++ Error  - %s\n" % err)
+                                    self.__lfh.write("+NmrDpUtility.__fixEnumerationFailure() ++ Error  - %s\n" % err)
 
                             else:
 
@@ -15400,11 +15473,11 @@ class NmrDpUtility(object):
 
                                             err = "Could not specify content_subtype in NMR data processing report."
 
-                                            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__fixEnumeration() ++ Error  - %s" % err)
+                                            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__fixEnumerationFailure() ++ Error  - %s" % err)
                                             self.report.setError()
 
                                             if self.__verbose:
-                                                self.__lfh.write("+NmrDpUtility.__fixEnumeration() ++ Error  - %s\n" % err)
+                                                self.__lfh.write("+NmrDpUtility.__fixEnumerationFailure() ++ Error  - %s\n" % err)
 
                         else:
 
@@ -15414,11 +15487,11 @@ class NmrDpUtility(object):
 
                                 err = "Could not find loop tag %s in %s category, %s saveframe, %s file." % (itName, w['category'], w['sf_framecode'], file_name)
 
-                                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__fixEnumerationValue() ++ Error  - %s" % err)
+                                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__fixEnumerationFailure() ++ Error  - %s" % err)
                                 self.report.setError()
 
                                 if self.__verbose:
-                                    self.__lfh.write("+NmrDpUtility.__fixEnumerationValue() ++ Error  - %s\n" % err)
+                                    self.__lfh.write("+NmrDpUtility.__fixEnumerationFailure() ++ Error  - %s\n" % err)
 
                             else:
 
@@ -15464,11 +15537,11 @@ class NmrDpUtility(object):
 
                 err = "Unexpected PyNMRSTAR object type %s found about %s file." % (self.__star_data_type, file_name)
 
-                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__fixEnumerationValue() ++ Error  - %s" % err)
+                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__fixEnumerationFailure() ++ Error  - %s" % err)
                 self.report.setError()
 
                 if self.__verbose:
-                    self.__lfh.write("+NmrDpUtility.__fixEnumerationValue() ++ Error  - %s\n" % err)
+                    self.__lfh.write("+NmrDpUtility.__fixEnumerationFailure() ++ Error  - %s\n" % err)
 
         return True
 

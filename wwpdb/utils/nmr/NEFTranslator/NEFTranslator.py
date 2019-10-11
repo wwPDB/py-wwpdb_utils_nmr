@@ -5,7 +5,7 @@
 # Updates:
 # 29-Jul-2019  M. Yokochi - support NEFTranslator v1.3.0 and integration into OneDep environment
 # 28-Aug-2019  M. Yokochi - report all empty data error as UserWarning
-# 09-Oct-2019  K. Baskaran & M. Yokochi - add functions to detect missing mandatory tag (v1.4.0)
+# 11-Oct-2019  K. Baskaran & M. Yokochi - add functions to detect missing mandatory tag (v1.4.0)
 ##
 """
 This module does the following jobs
@@ -303,8 +303,8 @@ class NEFTranslator(object):
                     if _tag[0][0] == '_' and _tag[1] == 'yes':
 
                         try:
-                            tags = star_data.get_tag([_tag[0]])
-                            if len(tags[_tag[0]]) == 0 and _tag[0][1:].split('.')[0] == star_data.category:
+                            tag = star_data.get_tag(_tag[0])
+                            if len(tag) == 0 and _tag[0][1:].split('.')[0] == star_data.category:
                                 missing_sf_tags.append(_tag[0])
                         except ValueError:
                             missing_lp_tags.append(_tag[0])
@@ -316,10 +316,10 @@ class NEFTranslator(object):
 
                     for _tag in tag_info:
 
-                        if _tag[0][0] == '_' and _tag[1] == 'yes':
+                        if _tag[0][0] == '_' and _tag[0][1:].split('.')[0] == star_data.category and _tag[1] == 'yes':
 
                             try:
-                                tags = star_data.get_tag([_tag[0]])
+                                tags = star_data.get_tag(_tag[0])
                             except ValueError:
                                 missing_lp_tags.append(_tag[0])
 

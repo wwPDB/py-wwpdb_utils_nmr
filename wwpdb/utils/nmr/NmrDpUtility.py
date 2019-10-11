@@ -4784,11 +4784,11 @@ class NmrDpUtility(object):
                                     redundant = False
 
                                     if abs(val_1 - val_2) >= max_exclusive:
-                                        discrepancy += '%s %s vs %s, ' % (dname, val_1, val_2)
+                                        discrepancy += '%s |%s - %s| is outside acceptable range %s, ' % (dname, val_1, val_2, max_exclusive)
                                         conflict = True
 
                                     elif abs(val_1 - val_2) >= max_exclusive * self.inconsist_over_conficlted:
-                                        discrepancy += '%s %s vs %s, ' % (dname, val_1, val_2)
+                                        discrepancy += '%s |%s - %s| is outside typical range %s, ' % (dname, val_1, val_2, max_exclusive * self.inconsist_over_conficlted)
                                         inconsist = True
 
                                 if conflict:

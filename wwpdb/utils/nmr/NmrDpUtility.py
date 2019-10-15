@@ -334,14 +334,12 @@ class NmrDpUtility(object):
         # magic angle in degrees
         self.magic_angle = 54.7356
 
+        # criterion for inconsistent restraint condition scaled by the conflicted restraint condition
+        self.inconsist_over_conficlted = 0.6
         # criterion on R factor for conflicted distance restraint
         self.r_conflicted_dist_restraint = 0.4
-
         # criterion on R factor for inconsistent distance restraint
-        self.r_inconsistent_dist_restraint = 0.3
-
-        # criterion for inconsistent restraint condition scaled by the conflicted restraint condition
-        self.inconsist_over_conficlted = 0.4
+        self.r_inconsistent_dist_restraint = self.r_conflicted_dist_restraint * self.inconsist_over_conficlted
 
         # loop index tags
         self.index_tags = {'nef': {'entry_info': None,

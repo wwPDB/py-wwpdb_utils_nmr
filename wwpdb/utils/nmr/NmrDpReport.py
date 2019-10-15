@@ -5,6 +5,7 @@
 # Updates:
 # 09-Oct-2019  M. Yokochi - add setCorrectedError() to catch missing mandatory saveframe tag
 # 10-Oct-2019  M. Yokochi - add 'enum_failure_ignorable' warning type
+# 15-Oct-2019  M. Yokochi - add 'encouragement' waring type
 ##
 """ Wrapper class for data processing report of NMR unified data.
     @author: Masashi Yokochi
@@ -663,7 +664,7 @@ class NmrDpReportWarning:
     """
 
     def __init__(self):
-        self.items = ('missing_content', 'missing_saveframe', 'missing_data', 'enum_failure', 'enum_failure_ignorable',
+        self.items = ('encouragement', 'missing_content', 'missing_saveframe', 'missing_data', 'enum_failure', 'enum_failure_ignorable',
                       'disordered_index', 'sequence_mismatch', 'atom_nomenclature_mismatch', 'ccd_mismatch',
                       'skipped_sf_category', 'skipped_lp_category',
                       'suspicious_data', 'unusual_data', 'remarkable_data', 'unsufficient_data',

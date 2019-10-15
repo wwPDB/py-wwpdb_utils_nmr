@@ -4,6 +4,7 @@
 #
 # Updates:
 # 10-Oct-2019  M. Yokochi - add 'check_mandatory_tag' option to detect missing mandatory tags as errors
+# 15-Oct-2019  M. Yokochi - revise criteria on discrepancy in distance restraints using normalized value
 ##
 """ Wrapper class for data processing for NMR unified data.
     @author: Masashi Yokochi
@@ -332,6 +333,12 @@ class NmrDpUtility(object):
 
         # magic angle in degrees
         self.magic_angle = 54.7356
+
+        # criterion on R factor for conflicted distance restraint
+        self.r_conflicted_dist_restraint = 0.4
+
+        # criterion on R factor for inconsistent distance restraint
+        self.r_inconsistent_dist_restraint = 0.3
 
         # criterion for inconsistent restraint condition scaled by the conflicted restraint condition
         self.inconsist_over_conficlted = 0.4
@@ -2739,7 +2746,7 @@ class NmrDpUtility(object):
 
             warn = "The wwPDB NMR Validation Task Force strongly encourages the submission of spectral peak lists, in particular those generated from NOESY spectra. Saveframe category %s and loop category %s were not found in %s file." % (sf_category, lp_category, file_name)
 
-            self.report.warning.appendDescription('missing_content', {'file_name': file_name, 'description': warn})
+            self.report.warning.appendDescription('encouragement', {'file_name': file_name, 'description': warn})
             self.report.setWarning()
 
             if self.__verbose:
@@ -4783,13 +4790,29 @@ class NmrDpUtility(object):
 
                                     redundant = False
 
-                                    if abs(val_1 - val_2) >= max_exclusive:
-                                        discrepancy += '%s |%s - %s| is outside acceptable range %s, ' % (dname, val_1, val_2, max_exclusive)
-                                        conflict = True
+                                    if content_subtype == 'dist_restraint':
 
-                                    elif abs(val_1 - val_2) >= max_exclusive * self.inconsist_over_conficlted:
-                                        discrepancy += '%s |%s - %s| is outside typical range %s, ' % (dname, val_1, val_2, max_exclusive * self.inconsist_over_conficlted)
-                                        inconsist = True
+                                        r = abs(val_1 - val_2) / abs(val_1 + val_2)
+
+                                        if r >= self.r_conflicted_dist_restraint:
+                                            discrepancy += '%s |%s - %s| / |%s + %s| is outside acceptable range %s %%, ' % (dname, val_1, val_2, val_1, val_2, int(self.r_conflicted_dist_restraint * 100))
+                                            conflict = True
+
+                                        elif r >= self.r_inconsistent_dist_restraint:
+                                            discrepancy += '%s |%s - %s| / |%s + %s| is outside typical range %s %%, ' % (dname, val_1, val_2, val_1, val_2, int(self.r_inconsistent_dist_restraint * 100))
+                                            inconsist = True
+
+                                    else:
+
+                                        r = abs(val_1 - val_2)
+
+                                        if r >= max_exclusive:
+                                            discrepancy += '%s |%s - %s| is outside acceptable range %s %s, ' % (dname, val_1, val_2, max_exclusive, 'degrees' if content_subtype == 'dihed_restraint' else 'Hz')
+                                            conflict = True
+
+                                        elif r >= max_exclusive * self.inconsist_over_conficlted:
+                                            discrepancy += '%s |%s - %s| is outside typical range %s %s, ' % (dname, val_1, val_2, max_exclusive * self.inconsist_over_conficlted, 'degrees' if content_subtype == 'dihed_restraint' else 'Hz')
+                                            inconsist = True
 
                                 if conflict:
 
@@ -8751,33 +8774,14 @@ class NmrDpUtility(object):
                             if target_value_1 == target_value_2:
                                 continue
 
-                            discrepancy = abs(target_value_1 - target_value_2)
+                            discrepancy = abs(target_value_1 - target_value_2) / abs(target_value_1 + target_value_2) * 100.0
 
                             if discrepancy > max_val:
                                 max_val = discrepancy
 
-                            if discrepancy >= max_exclusive:
+                            if discrepancy >= self.r_inconsistent_dist_restraint * 100.0:
                                 ann = {}
-                                ann['level'] = 'conflicted'
-                                ann['chain_id_1'] = str(lp_data[row_id_1][chain_id_1_name])
-                                ann['seq_id_1'] = lp_data[row_id_1][seq_id_1_name]
-                                ann['comp_id_1'] = lp_data[row_id_1][comp_id_1_name]
-                                ann['atom_id_1'] = lp_data[row_id_1][atom_id_1_name]
-                                if lp_data[row_id_1][chain_id_1_name] != lp_data[row_id_2][chain_id_2_name]:
-                                    ann['chain_id_2'] = str(lp_data[row_id_2][chain_id_2_name])
-                                    ann['seq_id_2'] = lp_data[row_id_2][seq_id_2_name]
-                                    ann['comp_id_2'] = lp_data[row_id_2][comp_id_2_name]
-                                elif lp_data[row_id_1][seq_id_1_name] != lp_data[row_id_2][seq_id_2_name]:
-                                    ann['seq_id_2'] = lp_data[row_id_2][seq_id_2_name]
-                                    ann['comp_id_2'] = lp_data[row_id_2][comp_id_2_name]
-                                ann['atom_id_2'] = lp_data[row_id_2][atom_id_2_name]
-                                ann['discrepancy'] = discrepancy
-
-                                dist_ann.append(ann)
-
-                            elif discrepancy >= max_exclusive * self.inconsist_over_conficlted:
-                                ann = {}
-                                ann['level'] = 'inconsistent'
+                                ann['level'] = 'conflicted' if discrepancy >= self.r_conflicted_dist_restraint * 100.0 else 'inconsistent'
                                 ann['chain_id_1'] = str(lp_data[row_id_1][chain_id_1_name])
                                 ann['seq_id_1'] = lp_data[row_id_1][seq_id_1_name]
                                 ann['comp_id_1'] = lp_data[row_id_1][comp_id_1_name]
@@ -8892,7 +8896,7 @@ class NmrDpUtility(object):
 
                                     redundant = False
 
-                                    discrepancy = abs(target_value_1 - target_value_2)
+                                    discrepancy = abs(target_value_1 - target_value_2) / abs(target_value_1 + target_value_2) * 100.0
 
                                     if discrepancy < v or discrepancy >= v + scale:
                                         continue
@@ -9747,23 +9751,9 @@ class NmrDpUtility(object):
                             if discrepancy > max_val:
                                 max_val = discrepancy
 
-                            if discrepancy >= max_exclusive:
+                            if discrepancy >= max_exclusive * self.inconsist_over_conficlted:
                                 ann = {}
-                                ann['level'] = 'conflicted'
-                                ann['chain_id'] = str(lp_data[row_id_1][chain_id_2_name])
-                                ann['seq_id'] = lp_data[row_id_1][seq_id_2_name]
-                                ann['comp_id'] = lp_data[row_id_1][comp_id_2_name]
-                                ann['atom_id_1'] = lp_data[row_id_1][atom_id_1_name]
-                                ann['atom_id_2'] = lp_data[row_id_2][atom_id_2_name]
-                                ann['atom_id_3'] = lp_data[row_id_3][atom_id_3_name]
-                                ann['atom_id_4'] = lp_data[row_id_4][atom_id_4_name]
-                                ann['discrepancy'] = discrepancy
-
-                                dihed_ann.append(ann)
-
-                            elif discrepancy >= max_exclusive * self.inconsist_over_conficlted:
-                                ann = {}
-                                ann['level'] = 'inconsistent'
+                                ann['level'] = 'conflicted' if discrepancy >= max_exclusive else 'inconsistent'
                                 ann['chain_id'] = str(lp_data[row_id_1][chain_id_2_name])
                                 ann['seq_id'] = lp_data[row_id_1][seq_id_2_name]
                                 ann['comp_id'] = lp_data[row_id_1][comp_id_2_name]
@@ -10440,21 +10430,9 @@ class NmrDpUtility(object):
                             if discrepancy > max_val:
                                 max_val = discrepancy
 
-                            if discrepancy >= max_exclusive:
+                            if discrepancy >= max_exclusive * self.inconsist_over_conficlted:
                                 ann = {}
-                                ann['level'] = 'conflicted'
-                                ann['chain_id'] = str(lp_data[row_id_1][chain_id_1_name])
-                                ann['seq_id'] = lp_data[row_id_1][seq_id_1_name]
-                                ann['comp_id'] = lp_data[row_id_1][comp_id_1_name]
-                                ann['atom_id_1'] = lp_data[row_id_1][atom_id_1_name]
-                                ann['atom_id_2'] = lp_data[row_id_2][atom_id_2_name]
-                                ann['discrepancy'] = discrepancy
-
-                                rdc_ann.append(ann)
-
-                            elif discrepancy >= max_exclusive * self.inconsist_over_conficlted:
-                                ann = {}
-                                ann['level'] = 'inconsistent'
+                                ann['level'] = 'conflicted' if discrepancy >= max_exclusive else 'inconsistent'
                                 ann['chain_id'] = str(lp_data[row_id_1][chain_id_1_name])
                                 ann['seq_id'] = lp_data[row_id_1][seq_id_1_name]
                                 ann['comp_id'] = lp_data[row_id_1][comp_id_1_name]

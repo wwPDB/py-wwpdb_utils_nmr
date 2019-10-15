@@ -319,7 +319,7 @@ class NEFTranslator(object):
                         if _tag[0][0] == '_' and _tag[0][1:].split('.')[0] == star_data.category and _tag[1] == 'yes':
 
                             try:
-                                tags = star_data.get_tag(_tag[0])
+                                star_data.get_tag(_tag[0])
                             except ValueError:
                                 missing_lp_tags.append(_tag[0])
 

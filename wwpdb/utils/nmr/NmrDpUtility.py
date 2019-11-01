@@ -5,6 +5,7 @@
 # Updates:
 # 10-Oct-2019  M. Yokochi - add 'check_mandatory_tag' option to detect missing mandatory tags as errors
 # 15-Oct-2019  M. Yokochi - revise criteria on discrepancy in distance restraints using normalized value
+# 01-Nov-2019  M. Yokochi - revise error message, instead of Python ValueError message.
 ##
 """ Wrapper class for data processing for NMR unified data.
     @author: Masashi Yokochi
@@ -1340,7 +1341,7 @@ class NmrDpUtility(object):
                                               }
 
         # error template for missing mandatory loop tag
-        self.__err_template_for_missing_mandatory_lp_tag = "Missing mandatory loop tag '%s'. Please verify values of the loop tag in processed %s file and re-upload correct one."
+        self.__err_template_for_missing_mandatory_lp_tag = "Mandatory item '%s' is missing. Please verify values of the loop tag in processed %s file and re-upload correct one."
 
         # saveframe tag prefixes (saveframe holder categories)
         self.sf_tag_prefixes = {'nef': {'entry_info': '_nef_nmr_meta_data',
@@ -1525,7 +1526,7 @@ class NmrDpUtility(object):
                                 }
 
         # warning template for missing mandatory saveframe tag
-        self.__warn_template_for_missing_mandatory_sf_tag = "Missing mandatory saveframe tag '%s'. Please verify value of the saveframe tag in processed %s file and re-upload correct one."
+        self.__warn_template_for_missing_mandatory_sf_tag = "Mandatory item '%s' is missing. Please verify value of the saveframe tag in processed %s file and re-upload correct one."
 
         # auxiliary loop categories
         self.aux_lp_categories = {'nef': {'entry_info': [],
@@ -2288,7 +2289,7 @@ class NmrDpUtility(object):
                 if len(message['error']) > 0:
                     for err_message in message['error']:
                         if not 'No such file or directory' in err_message:
-                            err += ' ' + err_message
+                            err += ' ' + re.sub('not in list', 'unknown item.', err_message)
 
                 self.report.error.appendDescription('format_issue', {'file_name': file_name, 'description': err})
                 self.report.setError()
@@ -2307,12 +2308,12 @@ class NmrDpUtility(object):
 
         else:
 
-            err = "%s is invalid %s file." % (file_name, self.readable_file_type[file_type])
+            err = "%s is not compliant with the %s dictionary." % (file_name, self.readable_file_type[file_type])
 
             if len(message['error']) > 0:
                 for err_message in message['error']:
                     if not 'No such file or directory' in err_message:
-                        err += ' ' + err_message
+                        err += ' ' + re.sub('not in list', 'unknown item.', err_message)
 
             self.report.error.appendDescription('format_issue', {'file_name': file_name, 'description': err})
             self.report.setError()
@@ -17405,9 +17406,10 @@ class NmrDpUtility(object):
 
             except Exception as e:
 
-                err = "%s is invalid %s file." % (file_name, self.readable_file_type[file_type])
+                err = "%s is not compliant with the %s dictionary." % (file_name, self.readable_file_type[file_type])
+
                 if not 'No such file or directory' in str(e):
-                    err += ' ' + str(e)
+                    err += ' ' + re.sub('not in list', 'unknown item.', str(e))
 
                 self.report.error.appendDescription('format_issue', {'file_name': file_name, 'description': err})
                 self.report.setError()
@@ -17427,12 +17429,12 @@ class NmrDpUtility(object):
 
                 message = json.loads(json_dumps)
 
-                err = "%s is invalid %s file." % (file_name, self.readable_file_type[file_type])
+                err = "%s is not compliant with the %s dictionary." % (file_name, self.readable_file_type[file_type])
 
                 if len(message['error']) > 0:
                     for err_message in message['error']:
                         if not 'No such file or directory' in err_message:
-                            err += ' ' + err_message
+                            err += ' ' + re.sub('not in list', 'unknown item.', err_message)
 
                 self.report.error.appendDescription('format_issue', {'file_name': file_name, 'description': err})
                 self.report.setError()

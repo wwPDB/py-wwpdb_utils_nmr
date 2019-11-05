@@ -6,6 +6,7 @@
 # 10-Oct-2019  M. Yokochi - add 'check_mandatory_tag' option to detect missing mandatory tags as errors
 # 15-Oct-2019  M. Yokochi - revise criteria on discrepancy in distance restraints using normalized value
 # 01-Nov-2019  M. Yokochi - revise error message, instead of Python ValueError message.
+# 05-Nov-2019  M. Yokochi - revise error messages and detect empty sequence information.
 ##
 """ Wrapper class for data processing for NMR unified data.
     @author: Masashi Yokochi
@@ -2659,7 +2660,7 @@ class NmrDpUtility(object):
                 if file_type == 'nmr-star' and sf_category == 'entity':
                     self.__has_star_entity = True
 
-                warn = "Skipped parsing %s saveframe category in %s file." % (sf_category, file_name)
+                warn = "Skipped parsing %s saveframe category." % sf_category
 
                 self.report.warning.appendDescription('skipped_sf_category', {'file_name': file_name, 'sf_category': sf_category, 'description': warn})
                 self.report.setWarning()
@@ -2686,7 +2687,7 @@ class NmrDpUtility(object):
             if not self.__has_star_entity:
                 sf_category = self.sf_categories[file_type][content_subtype]
 
-                warn = "Saveframe category %s did not exist in %s file." % (sf_category, file_name)
+                warn = "Saveframe category %s did not exist." % sf_category
 
                 self.report.warning.appendDescription('missing_saveframe', {'file_name': file_name, 'description': warn})
                 self.report.setWarning()
@@ -2694,11 +2695,23 @@ class NmrDpUtility(object):
                 if self.__verbose:
                     self.__lfh.write("+NmrDpUtility.__detectContentSubType() ++ Warning  - %s\n" % warn)
 
+            elif lp_counts['chem_shift'] == 0 and lp_counts['dist_restraint']:
+
+                sf_category = self.sf_categories[file_type][content_subtype]
+
+                err = "Mandatory content in %s saveframe is missing." % sf_category;
+
+                self.report.error.appendDescription('missing_mandatory_content', {'file_name': file_name, 'description': err})
+                self.report.setError()
+
+                if self.__verbose:
+                    self.__lfh.write("+NmrDpUtility.__detectContentSubType() ++ Error  - %s\n" % err)
+
         elif lp_counts[content_subtype] > 1:
 
             sf_category = self.sf_categories[file_type][content_subtype]
 
-            err = "Unexpectedly, multiple saveframes belonging to category %s were found in %s file." % (sf_category, file_name)
+            err = "Unexpectedly, multiple saveframes in %s category were found." % sf_category
 
             self.report.error.appendDescription('format_issue', {'file_name': file_name, 'description': err})
             self.report.setError()
@@ -2713,7 +2726,8 @@ class NmrDpUtility(object):
             sf_category = self.sf_categories[file_type][content_subtype]
             lp_category = self.lp_categories[file_type][content_subtype]
 
-            err = "Assigned chemical shifts are mandatory for PDB/BMRB deposition. Saveframe category %s and loop category %s were not found in %s file." % (sf_category, lp_category, file_name)
+            #err = "Assigned chemical shifts are mandatory for PDB/BMRB deposition. Saveframe category %s and loop category %s were not found." % (sf_category, lp_category)
+            err = "Mandatory content in %s saveframe is missing." % sf_category;
 
             self.report.error.appendDescription('missing_mandatory_content', {'file_name': file_name, 'description': err})
             self.report.setError()
@@ -2728,7 +2742,8 @@ class NmrDpUtility(object):
             sf_category = self.sf_categories[file_type][content_subtype]
             lp_category = self.lp_categories[file_type][content_subtype]
 
-            err = "Distance restraints are mandatory for PDB/BMRB deposition. Saveframe category %s and loop category %s were not found in %s file." % (sf_category, lp_category, file_name)
+            #err = "Distance restraints are mandatory for PDB/BMRB deposition. Saveframe category %s and loop category %s were not found." % (sf_category, lp_categor)
+            err = "Mandatory content in %s saveframe is missing." % sf_category;
 
             self.report.error.appendDescription('missing_mandatory_content', {'file_name': file_name, 'description': err})
             self.report.setError()
@@ -2743,7 +2758,7 @@ class NmrDpUtility(object):
             sf_category = self.sf_categories[file_type][content_subtype]
             lp_category = self.lp_categories[file_type][content_subtype]
 
-            warn = "The wwPDB NMR Validation Task Force strongly encourages the submission of spectral peak lists, in particular those generated from NOESY spectra. Saveframe category %s and loop category %s were not found in %s file." % (sf_category, lp_category, file_name)
+            warn = "The wwPDB NMR Validation Task Force strongly encourages the submission of spectral peak lists, in particular those generated from NOESY spectra. Saveframe category %s was not found." % (sf_category)
 
             self.report.warning.appendDescription('encouragement', {'file_name': file_name, 'description': warn})
             self.report.setWarning()
@@ -12228,7 +12243,7 @@ class NmrDpUtility(object):
 
                     if sf_list is None:
 
-                        err = "Could not specify sf_category %s unexpectedly in %s file." % (w['sf_category'], file_name)
+                        err = "Could not specify sf_category %s unexpectedly." % w['sf_category']
 
                         self.report.error.appendDescription('internal_error', "+NmrDpUtility.__deleteSkippedSf() ++ Error  - %s" % err)
                         self.report.setError()

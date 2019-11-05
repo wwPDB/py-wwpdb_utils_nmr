@@ -6,6 +6,7 @@
 # 29-Jul-2019  M. Yokochi - support NEFTranslator v1.3.0 and integration into OneDep environment
 # 28-Aug-2019  M. Yokochi - report all empty data error as UserWarning
 # 11-Oct-2019  K. Baskaran & M. Yokochi - add functions to detect missing mandatory tag (v1.4.0)
+# 05-Nov-2019  M. Yokochi - revised error messages for missing mandatory saveframe/loop tags
 ##
 """
 This module does the following jobs
@@ -638,7 +639,8 @@ class NEFTranslator(object):
                         seq_dat += loop.get_data_by_tag(_tags)
 
                 if not _tags_exist:
-                    raise LookupError("Missing one of data items %s." % tags)
+                    missing_tags = list(set(tags) - set(loop.tags))
+                    raise LookupError("Missing mandatory %s loop tag%s." % (missing_tags, 's' if len(missing_tags) > 1 else ''))
 
             if allow_empty:
                 seq_dat = list(filter(self.__is_data, seq_dat))
@@ -767,7 +769,8 @@ class NEFTranslator(object):
                         seq_dat += seq_dat_
 
                 if not _tags_exist:
-                    raise LookupError("Missing one of data items %s." % tags)
+                    missing_tags = list(set(tags) - set(loop.tags))
+                    raise LookupError("Missing mandatory %s loop tag%s." % (missing_tags, 's' if len(missing_tags) > 1 else ''))
 
             if allow_empty:
                 seq_dat = list(filter(self.__is_data, seq_dat))
@@ -898,7 +901,8 @@ class NEFTranslator(object):
                         seq_dat += seq_dat_
 
                 if not _tags_exist:
-                    raise LookupError("Missing one of data items %s." % tags)
+                    missing_tags = list(set(tags) - set(loop.tags))
+                    raise LookupError("Missing mandatory %s loop tag%s." % (missing_tags, 's' if len(missing_tags) > 1 else ''))
 
             if allow_empty:
                 seq_dat = list(filter(self.__is_data, seq_dat))
@@ -1048,7 +1052,8 @@ class NEFTranslator(object):
                         cmp_atm_dat += loop.get_data_by_tag(_tags)
 
                 if not _tags_exist:
-                    raise LookupError("Missing one of data items %s." % tags)
+                    missing_tags = list(set(tags) - set(loop.tags))
+                    raise LookupError("Missing mandatory %s loop tag%s." % (missing_tags, 's' if len(missing_tags) > 1 else ''))
 
             if allow_empty:
                 cmp_atm_dat = list(filter(self.__is_data, cmp_atm_dat))
@@ -1133,7 +1138,8 @@ class NEFTranslator(object):
             a_type_dat = []
 
             if set(tags) & set(loop.tags) != set(tags):
-                raise LookupError("Missing one of data items %s." % tags)
+                missing_tags = list(set(tags) - set(loop.tags))
+                raise LookupError("Missing mandatory %s loop tag%s." % (missing_tags, 's' if len(missing_tags) > 1 else ''))
 
             a_type_dat = loop.get_data_by_tag(tags)
 
@@ -1223,7 +1229,8 @@ class NEFTranslator(object):
             ambig_dat = []
 
             if set(tags) & set(loop.tags) != set(tags):
-                raise LookupError("Missing one of data items %s." % tags)
+                missing_tags = list(set(tags) - set(loop.tags))
+                raise LookupError("Missing mandatory %s loop tag%s." % (missing_tags, 's' if len(missing_tags) > 1 else ''))
 
             ambig_dat = loop.get_data_by_tag(tags)
 
@@ -1353,7 +1360,7 @@ class NEFTranslator(object):
             if set(tags) & set(loop.tags) == set(tags):
                 index_dat = loop.get_data_by_tag(tags)
             else:
-                raise LookupError("Missing key item %s." % index_id)
+                raise LookupError("Missing mandatory %s loop tag." % index_id)
 
             for l, i in enumerate(index_dat):
                 if self.__is_empty_data(i) and l < len(loop.data):
@@ -1490,14 +1497,17 @@ class NEFTranslator(object):
             tag_dat = []
 
             if set(key_names) & set(loop.tags) != set(key_names):
-                raise LookupError("Missing one of data items %s." % key_names)
+                missing_tags = list(set(key_names) - set(loop.tags))
+                raise LookupError("Missing mandatory %s loop tag%s." % (missing_tags, 's' if len(missing_tags) > 1 else ''))
 
             if len(mand_data_names) > 0 and set(mand_data_names) & set(loop.tags) != set(mand_data_names):
-                raise LookupError("Missing one of data items %s." % mand_data_names)
+                missing_tags = list(set(mand_data_names) - set(loop.tags))
+                raise LookupError("Missing mandatory %s loop tag%s." % (missing_tags, 's' if len(missing_tags) > 1 else ''))
 
             if not disallowed_tags is None:
                 if len(set(loop.tags) & set(disallowed_tags)) > 0:
-                    raise LookupError("Disallowed items %s exists." % (set(loop.tags) & set(disallowed_tags)))
+                    disallow_tags = list(set(loop.tags) & set(disallowed_tags))
+                    raise LookupError("Disallowed %s loop tag%s exist%s." % (disallow_tags, 's' if len(disallow_tags) > 1 else '', '' if len(disallow_tags) > 1 else 's'))
 
             for d in data_items:
                 if 'group-mandatory' in d and d['group-mandatory']:
@@ -1507,7 +1517,8 @@ class NEFTranslator(object):
                         if not group['coexist-with'] is None:
                             for c in group['coexist-with']:
                                 if not c in loop.tags:
-                                    raise LookupError("Missing one of data items %s." % set(group['coexist-with']).add(name))
+                                    missing_tags = list(set(group['coexist-with']).add(name) - set(loop.tags))
+                                    raise LookupError("Missing mandatory %s loop tag%s." % (missing_tags, 's' if len(missing_tags) > 1 else ''))
 
                     else:
                         has_member = False
@@ -1516,7 +1527,8 @@ class NEFTranslator(object):
                                 has_member = True
                                 break
                         if not has_member:
-                            raise LookupError("Missing one of data items %s." % set(group['member-with']).add(name))
+                            missing_tags = list(set(group['member-with']).add(name) - set(loop.tags))
+                            raise LookupError("Missing mandatory %s loop tag%s." % (missing_tags, 's' if len(missing_tags) > 1 else ''))
 
             tags = [k['name'] for k in key_items]
             for data_name in set(data_names) & set(loop.tags):
@@ -1969,7 +1981,8 @@ class NEFTranslator(object):
         for loop in loops:
 
             if set(key_names) & set(loop.tags) != set(key_names):
-                raise LookupError("Missing one of data items %s." % key_names)
+                missing_tags = list(set(key_names) - set(loop.tags))
+                raise LookupError("Missing mandatory %s loop tag%s." % (missing_tags, 's' if len(missing_tags) > 1 else ''))
 
             keys = set()
             dup_ids = set()
@@ -2012,7 +2025,8 @@ class NEFTranslator(object):
         for loop in loops:
 
             if set(key_names) & set(loop.tags) != set(key_names):
-                raise LookupError("Missing one of data items %s." % key_names)
+                missing_tags = list(set(key_names) - set(loop.tags))
+                raise LookupError("Missing mandatory %s loop tag%s." % (missing_tags, 's' if len(missing_tags) > 1 else ''))
 
             tag_dat = loop.get_data_by_tag(key_names)
 
@@ -2115,7 +2129,8 @@ class NEFTranslator(object):
         sf_tags = {i[0]:i[1] for i in star_data.tags}
 
         if len(mand_tag_names) > 0 and set(mand_tag_names) & set(sf_tags.keys()) != set(mand_tag_names):
-            raise LookupError("Missing one of tag items %s." % mand_tag_names)
+            missing_tags = list(set(mand_tag_names) - set(sf_tags.keys()))
+            raise LookupError("Missing mandatory %s saveframe tag%s." % (missing_tags, 's' if len(missing_tags) > 1 else ''))
 
         for t in tag_items:
             if 'group-mandatory' in t and t['group-mandatory']:
@@ -2125,7 +2140,8 @@ class NEFTranslator(object):
                     if not group['coexist-with'] is None:
                         for c in group['coexist-with']:
                             if not c in sf_tags.keys():
-                                raise LookupError("Missing one of tags %s." % set(group['coexist-with']).add(name))
+                                missing_tags = list(set(group['coexist-with']).add(name) - set(sf_tags.keys()))
+                                raise LookupError("Missing mandatory %s saveframe tag%s." % (missing_tags, 's' if len(missing_tags) > 1 else ''))
 
                 else:
                     has_member = False
@@ -2134,7 +2150,8 @@ class NEFTranslator(object):
                             has_member = True
                             break
                     if not has_member:
-                        raise LookupError("Missing one of tags %s." % set(group['member-with']).add(name))
+                        missing_tags = list(set(group['member-with']).add(name) - set(sf_tags.keys()))
+                        raise LookupError("Missing mandatory %s saveframe tag%s." % (missing_tags, 's' if len(missing_tags) > 1 else ''))
 
         for name, val in sf_tags.items():
             if val in self.empty_value:

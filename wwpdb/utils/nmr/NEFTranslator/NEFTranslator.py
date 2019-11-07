@@ -623,6 +623,7 @@ class NEFTranslator(object):
         else:
             out_tag = nt
         if nef_loop_tags[0].split(".")[0] == "_nef_chemical_shift":
+            out_tag.append('_Atom_chem_shift.ID')
             out_tag.append('_Atom_chem_shift.Ambiguity_code')
             out_tag.append('_Atom_chem_shift.Ambiguity_set_ID')
             out_tag.append('_Atom_chem_shift.Assigned_chem_shift_list_ID')
@@ -714,7 +715,7 @@ class NEFTranslator(object):
                 atom_type = "H"
         return atom_type, atom_list, ambiguity_code
 
-    def translate_cs_row(self, f_tags, t_tags, row_data):
+    def translate_cs_row(self, f_tags, t_tags, row_data, iupac = True):
         """
         Translates row of data in chemical shift loop from NEF into NMR-STAR
         :param f_tags: nef tags
@@ -723,6 +724,8 @@ class NEFTranslator(object):
         :type t_tags: list
         :param row_data: List nef data
         :type row_data: list
+        :param iupac : convert atom nomenclature into IUPAC
+        :type iupac: bool
         :return: List NMR-STAR data
         """
         out_row = []
@@ -743,7 +746,8 @@ class NEFTranslator(object):
             res_index = f_tags.index('_nef_chemical_shift.residue_name')
             n_atm = self.get_nmrstar_atom(row_data[res_index], row_data[atm_index])[1]
             ambi = self.get_nmrstar_atom(row_data[res_index], row_data[atm_index])[2]
-
+            if iupac == False:
+                n_atm = [row_data[atm_index]]
             for i in n_atm:
                 out = [None] * len(t_tags)
                 for j in f_tags:
@@ -874,7 +878,7 @@ class NEFTranslator(object):
             out_row.append(row_data)
         return out_row
 
-    def translate_restraint_row(self, f_tags, t_tags, row_data):
+    def translate_restraint_row(self, f_tags, t_tags, row_data, iupac = True):
         """
         Translates row of data in restraint loop from NEF into NMR-STAR
         :param f_tags: NEF tags
@@ -883,6 +887,8 @@ class NEFTranslator(object):
         :type t_tags: list
         :param row_data: NEF data
         :type row_data: list
+        :param iupac: Convert atom nomenclature into IUPAC
+        :type iupac: bool
         :return:
         """
         out_row = []
@@ -905,6 +911,10 @@ class NEFTranslator(object):
             res_index2 = f_tags.index('_nef_distance_restraint.residue_name_2')
             n_atm1 = self.get_nmrstar_atom(row_data[res_index1], row_data[atm_index1])[1]
             n_atm2 = self.get_nmrstar_atom(row_data[res_index2], row_data[atm_index2])[1]
+
+            if iupac == False:
+                n_atm1 = [row_data[atm_index1]]
+                n_atm2 = [row_data[atm_index2]]
 
             for i in n_atm1:
                 for k in n_atm2:
@@ -936,7 +946,14 @@ class NEFTranslator(object):
 
         return out_row
 
-    def nef_to_nmrstar(self, nef_file, star_file=None):
+    def nef_to_nmrstar(self, nef_file, star_file=None, iupac = True):
+        """
+        Translates NEF into NMR-STAR
+        :param nef_file: input file in NEF format
+        :param star_file: output file name
+        :param iupac: convert the atom nomenclature to IUPAC True/False default: True
+        :return:
+        """
         (file_path, file_name) = ntpath.split(os.path.realpath(nef_file))
         is_done = True
         info = []
@@ -1008,6 +1025,7 @@ class NEFTranslator(object):
                         for t in lp_cols:
                             lp.add_tag(t)
                         # print (loop.category,lp.category,lp.get_tag_names(),loop.get_tag_names())
+                        cs_id = 1
                         for dat in loop.data:
                             if loop.category == "_nef_sequence":
                                 dd = self.translate_seq_row(loop.get_tag_names(), lp.get_tag_names(), dat)
@@ -1021,13 +1039,16 @@ class NEFTranslator(object):
                                         d[lp.get_tag_names().index('_Chem_comp_assembly.Comp_index_ID')])
 
                             elif loop.category == "_nef_chemical_shift":
-                                dd = self.translate_cs_row(loop.get_tag_names(), lp.get_tag_names(), dat)
+                                dd = self.translate_cs_row(loop.get_tag_names(), lp.get_tag_names(), dat, iupac)
                                 for d in dd:
                                     d[lp.get_tag_names().index(
                                         '_Atom_chem_shift.Assigned_chem_shift_list_ID')] = cs_list
+                                    d[lp.get_tag_names().index(
+                                        '_Atom_chem_shift.ID')] = cs_id
                                     lp.add_data(d)
+                                    cs_id+=1
                             elif loop.category == '_nef_distance_restraint':
-                                dd = self.translate_restraint_row(loop.get_tag_names(), lp.get_tag_names(), dat)
+                                dd = self.translate_restraint_row(loop.get_tag_names(), lp.get_tag_names(), dat, iupac)
                                 for d in dd:
                                     d[lp.get_tag_names().index('_Gen_dist_constraint.Index_ID')] = r_index_id
                                     d[lp.get_tag_names().index('_Gen_dist_constraint.Gen_dist_constraint_list_ID')] = rest_list
@@ -1115,12 +1136,12 @@ class NEFTranslator(object):
                                     d[lp.get_tag_names().index('_Chem_comp_assembly.Comp_index_ID')])
 
                         elif loop.category == "_nef_chemical_shift":
-                            dd = self.translate_cs_row(loop.get_tag_names(), lp.get_tag_names(), dat)
+                            dd = self.translate_cs_row(loop.get_tag_names(), lp.get_tag_names(), dat, iupac)
                             for d in dd:
                                 d[lp.get_tag_names().index('_Atom_chem_shift.Assigned_chem_shift_list_ID')] = cs_list
                                 lp.add_data(d)
                         elif loop.category == '_nef_distance_restraint':
-                            dd = self.translate_restraint_row(loop.get_tag_names(), lp.get_tag_names(), dat)
+                            dd = self.translate_restraint_row(loop.get_tag_names(), lp.get_tag_names(), dat, iupac)
 
                             for d in dd:
                                 d[lp.get_tag_names().index('_Gen_dist_constraint.Index_ID')] = r_index_id
@@ -1168,11 +1189,11 @@ class NEFTranslator(object):
 
 
 if __name__ == "__main__":
-    #fname = sys.argv[1]
-    fname = '/Users/kumaran/Downloads/mth1743-test-20190919.nef'
+    fname = sys.argv[1]
+    #fname = '/Users/kumaran/Downloads/mth1743-test-20190919.nef'
     bt = NEFTranslator()
     print (bt.check_mandatory_tags(fname,file_type='NEF'))
-    #bt.nef_to_nmrstar(fname)
+    bt.nef_to_nmrstar(nef_file=fname)
     #print (bt.validate_file('data/2l9r.str','A'))
     #fname = sys.argv[1]
     # f = open('neflist.txt','r').read().split("\n")

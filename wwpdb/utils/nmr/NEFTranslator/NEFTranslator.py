@@ -1081,6 +1081,14 @@ class NEFTranslator(object):
 
                         # print (loop.data[0])
                         sf.add_loop(lp)
+                    if saveframe.category == "nef_chemical_shift_list":
+                        sf.add_tag("ID", cs_list)
+                    if saveframe.category == "nef_distance_restraint_list":
+                        sf.add_tag("ID", rest_list)
+                    if saveframe.category == "nef_dihedral_restraint_list":
+                        sf.add_tag("ID", ang_list)
+                    if saveframe.category == "nef_rdc_restraint_list":
+                        sf.add_tag("ID", rest_list)
                     star_data.add_saveframe(sf)
                 star_data.normalize()
                 with open(star_file, 'w') as wstarfile:

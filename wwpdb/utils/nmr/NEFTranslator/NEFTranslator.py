@@ -636,6 +636,8 @@ class NEFTranslator(object):
             out_tag.append('_RDC_constraint.RDC_constraint_list_ID')
         if nef_loop_tags[0].split(".")[0] == "_nef_peak":
             out_tag.append('_Peak_row_format.Spectral_peak_list_ID')
+        if nef_loop_tags[0].split(".")[0] == "_nef_sequence":
+            out_tag.append('_Chem_comp_assembly.Assembly_ID')
         return out_tag
 
     def get_nmrstar_atom(self, res, nef_atom):
@@ -977,7 +979,7 @@ class NEFTranslator(object):
             else:
                 is_done = False
                 error.append('File content unknown')
-
+            assembly_id = 0
             cs_list = 0
             rest_list = 0
             ang_list = 0
@@ -1020,6 +1022,8 @@ class NEFTranslator(object):
                             cs_list += 1
                         if loop.category == "_nef_peak":
                             peak_list += 1
+                        if loop.category == "_nef_sequence":
+                            assembly_id += 1
                         lp = pynmrstar.Loop.from_scratch()
                         lp_cols = self.get_nmrstar_loop_tags(loop.get_tag_names())
                         for t in lp_cols:
@@ -1032,6 +1036,7 @@ class NEFTranslator(object):
                                 self.cid[
                                     self.chains.index(dat[loop.get_tag_names().index('_nef_sequence.chain_code')])] += 1
                                 for d in dd:
+                                    d[lp.get_tag_names().index('_Chem_comp_assembly.Assembly_ID')] = assembly_id
                                     lp.add_data(d)
                                     self.seqDict[(dat[loop.get_tag_names().index('_nef_sequence.chain_code')],
                                                   dat[loop.get_tag_names().index('_nef_sequence.sequence_code')])] = (
@@ -1089,6 +1094,8 @@ class NEFTranslator(object):
                         sf.add_tag("ID", ang_list)
                     if saveframe.category == "nef_rdc_restraint_list":
                         sf.add_tag("ID", rest_list)
+                    if saveframe.category == "nef_molecular_system":
+                        sf.add_tag("ID", assembly_id)
                     star_data.add_saveframe(sf)
                 star_data.normalize()
                 with open(star_file, 'w') as wstarfile:

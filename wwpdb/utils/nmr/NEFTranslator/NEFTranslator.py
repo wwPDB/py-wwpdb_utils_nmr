@@ -962,7 +962,10 @@ class NEFTranslator(object):
         warning = []
         error = []
         if star_file is None:
-            star_file = file_path + "/" + file_name.split(".")[0] + ".str"
+            if iupac== False:
+                star_file = file_path + "/" + file_name.split(".")[0] + "noiupac.str"
+            else:
+                star_file = file_path + "/" + file_name.split(".")[0] + ".str"
         (is_readable, dat_content, nef_data) = self.read_input_file(nef_file)
         try:
             star_data = pynmrstar.Entry.from_scratch(nef_data.entry_id)
@@ -1207,7 +1210,7 @@ if __name__ == "__main__":
     fname = sys.argv[1]
     #fname = '/Users/kumaran/Downloads/mth1743-test-20190919.nef'
     bt = NEFTranslator()
-    print (bt.check_mandatory_tags(fname,file_type='NEF'))
+    #print (bt.check_mandatory_tags(fname,file_type='NEF'))
     bt.nef_to_nmrstar(nef_file=fname)
     #print (bt.validate_file('data/2l9r.str','A'))
     #fname = sys.argv[1]

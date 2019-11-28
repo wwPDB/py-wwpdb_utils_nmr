@@ -1,16 +1,16 @@
 ###########################################################################################
 #File       : NEF_NMRSTAR_equivalence.csv
-#Version    : 1.0 
-#Date       : Jan 09, 2017
-#Author     : Kumaran Baskaran   
+#Version    : 1.0
+#Date       : Jan 09,2017
+#Author     : Kumaran Baskaran
 #Email      : kbaskaran@bmrb.wisc.edu
 ############################################################################################
-#   This CSV file maps NEF v1.0  tags to NMR-STAR v3.2.0.1  
-#   The software specific data i.e tags and data which are not part of the standard NEF v1.0 dictionary will be stored in Details tag in relevant saveframes in NMR-STAR as a text block. 
+#   This CSV file maps NEF v1.0  tags to NMR-STAR v3.2.0.1
+#   The software specific data i.e tags and data which are not part of the standard NEF v1.0 dictionary will be stored in Details tag in relevant saveframes in NMR-STAR as a text block.
 #   CSV explanation
 #   First Column : NEF saveframe/loop/tag
 #   Second Column : NMR-STAR saveframe/loop/tag (author tags i.e data copied from a NEF tag goes here ; example : HBx)
-#   Third Column : NMR-STAR saveframe/loop/tag (tanslated data goes here ; example HB2)
+#   Third Column : NMR-STAR saveframe/loop/tag (translated data goes here ; example HB2)
 ############################################################################################
 #Saveframes and loops
 nef_nmr_meta_data,entry_information,entry_information

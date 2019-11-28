@@ -23,8 +23,8 @@ save_nef_nmr_meta_data
       _Software_applied_methods.Script
       _Software_applied_methods.Entry_ID
 
-     CcpNmr          exportProject   .   NEED_ACC_NO    
-     NEFTranslator   NEFtoNMRSTAR    .   NEED_ACC_NO    
+     CcpNmr          exportProject    .   NEED_ACC_NO    
+     NEFTranslator   nef_to_nmrstar   .   NEED_ACC_NO    
 
    stop_
 
@@ -34,7 +34,7 @@ save_
 #  Molecular system (assembly) description  #
 #############################################
 
-save__nef_molecular_system
+save_nef_molecular_system
    _Assembly.Sf_category   assembly
    _Assembly.Sf_framecode  nef_molecular_system
    _Assembly.Entry_ID      NEED_ACC_NO

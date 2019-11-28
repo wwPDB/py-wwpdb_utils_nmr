@@ -22,7 +22,7 @@ save_nef_nmr_meta_data
 
 save_
 
-save__nef_molecular_system
+save_nef_molecular_system
    _nef_molecular_system.sf_category   nef_molecular_system
    _nef_molecular_system.sf_framecode  nef_molecular_system
 

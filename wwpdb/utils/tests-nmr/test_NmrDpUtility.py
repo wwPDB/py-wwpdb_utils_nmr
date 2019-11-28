@@ -4,6 +4,7 @@
 #
 # Updates:
 # 09-Oct-2019  M. Yokochi - add unit test for Xplor-NIH enabling 'check_mandatory_tag' option
+# 28-Nov-2019  M. Yokochi - add unit test for NEF-Xplor-NIH-20191016-remediated.nef
 #
 import unittest
 import os
@@ -115,6 +116,15 @@ class TestNmrDpUtility(unittest.TestCase):
         self.utility.addInput(name='resolve_conflict', value=True, type='param')
         self.utility.addInput(name='check_mandatory_tag', value=True, type='param')
         self.utility.setLog(self.data_dir_path + 'mth1743-test-20190919-nef-consistency-log.json')
+
+        self.utility.op('nmr-nef-consistency-check')
+
+    def test_nmr_nef_consistency_check_xplor_nih_remediated(self):
+        self.utility.setSource(self.data_dir_path + 'NEF-Xplor-NIH-20191016-remediated.nef')
+        self.utility.addInput(name='coordinate_file_path', value=self.data_dir_path + '1ryg.cif', type='file')
+        self.utility.addInput(name='resolve_conflict', value=True, type='param')
+        self.utility.addInput(name='check_mandatory_tag', value=True, type='param')
+        self.utility.setLog(self.data_dir_path + 'NEF-Xplor-NIH-20191016-remediated-nef-consistency-log.json')
 
         self.utility.op('nmr-nef-consistency-check')
 

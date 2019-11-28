@@ -7,6 +7,7 @@
 # 15-Oct-2019  M. Yokochi - revise criteria on discrepancy in distance restraints using normalized value
 # 01-Nov-2019  M. Yokochi - revise error message, instead of Python ValueError message.
 # 05-Nov-2019  M. Yokochi - revise error messages and detect empty sequence information.
+# 28-Nov-2019  M. Yokochi - fix saveframe name of nef_molecular_system and add 'nmr-str2nef-deposit' workflow operation
 ##
 """ Wrapper class for data processing for NMR unified data.
     @author: Masashi Yokochi
@@ -53,8 +54,9 @@ class NmrDpUtility(object):
         # whether to detect missing mandatory tags as errors
         self.__check_mandatory_tag = False
 
-        # default entry_id (nmr-star specific)
-        self.__entry_id = 'UNNAMED'
+        # default entry_id
+        self.__entry_id__ = 'UNNAMED'
+        self.__entry_id = 'EXTRACT_FROM_COORD'
         # whether to insert entry_id (nmr-star specific)
         self.__insert_entry_id_to_loops = True
         # whether to retain original content if possible
@@ -78,7 +80,7 @@ class NmrDpUtility(object):
 
         # list of known workflow operations
         self.__workFlowOps = ('nmr-nef-consistency-check', 'nmr-str-consistency-check',
-                              'nmr-nef2str-deposit', 'nmr-str2str-deposit')
+                              'nmr-nef2str-deposit', 'nmr-str2str-deposit', 'nmr-str2nef-deposit')
 
         # validation tasks for NMR data only
         __nmrCheckTasks = [self.__detectContentSubType,
@@ -172,10 +174,18 @@ class NmrDpUtility(object):
         __nef2strTasks.append(self.__dumpDpReport)
         __nef2strTasks.extend(__depositTasks)
 
+        # additional nmr-str2nef tasks
+        __str2nefTasks = [self.__translateStr2Nef, self.__dumpDpReport, self.__initResourceForStr2Nef]
+
+        __str2nefTasks.extend(__checkTasks)
+        __str2nefTasks.append(self.__dumpDpReport)
+        __str2nefTasks.extend(__depositTasks)
+
         # dictionary of processing tasks of each workflow operation
         self.__procTasksDict = {'consistency-check': __checkTasks,
                                 'deposit': __depositTasks,
-                                'nmr-nef2str-deposit': __nef2strTasks
+                                'nmr-nef2str-deposit': __nef2strTasks,
+                                'nmr-str2nef-deposit': __str2nefTasks
                                 }
 
         # data processing report
@@ -2162,7 +2172,7 @@ class NmrDpUtility(object):
                     self.__lfh.write("+NmrDpUtility.op() starting op %s - task %s\n" % (op, task.__name__))
 
                 if not task():
-                    if task == self.__translateNef2Str:
+                    if task == self.__translateNef2Str or task == self.__translateStr2Nef:
                         break
 
         self.__dumpDpReport()
@@ -2222,9 +2232,9 @@ class NmrDpUtility(object):
                 if not self.__cR.parse():
                     return
 
-                comp_comp_list = cR.getDictList('chem_comp')
+                chem_comp = self.__cR.getDictList('chem_comp')
 
-                non_std_comp_ids = [i['id'] for i in comp_comp_list if i['mon_nstd_flag'] != 'y']
+                non_std_comp_ids = [i['id'] for i in chem_comp if i['mon_nstd_flag'] != 'y']
 
                 if len(non_std_comp_ids) == 0:
                     return
@@ -3909,7 +3919,7 @@ class NmrDpUtility(object):
                                 _atom_ids = []
                                 for atom_id in atom_ids:
 
-                                    _atom_id = self.__nefT.get_nmrstar_atom(comp_id, atom_id, leave_unmatched=False)[0]
+                                    _atom_id = self.__nefT.get_star_atom(comp_id, atom_id, leave_unmatched=False)[0]
 
                                     if len(_atom_id) == 0:
 
@@ -3990,7 +4000,7 @@ class NmrDpUtility(object):
                                 _auth_atom_ids = []
                                 for auth_atom_id in auth_atom_ids:
 
-                                    _auth_atom_id = self.__nefT.get_nmrstar_atom(comp_id, auth_atom_id, leave_unmatched=False)[0]
+                                    _auth_atom_id = self.__nefT.get_star_atom(comp_id, auth_atom_id, leave_unmatched=False)[0]
 
                                     if len(_auth_atom_id) == 0:
 
@@ -5512,7 +5522,7 @@ class NmrDpUtility(object):
                     value = i[value_name]
 
                     if file_type == 'nef':
-                        _atom_id, ambig_code, details = self.__nefT.get_nmrstar_atom(comp_id, atom_id, leave_unmatched=True)
+                        _atom_id, ambig_code, details = self.__nefT.get_star_atom(comp_id, atom_id, leave_unmatched=True)
 
                         if len(_atom_id) == 0:
                             continue
@@ -7350,7 +7360,7 @@ class NmrDpUtility(object):
 
                                         if file_type == 'nef':
 
-                                            atom_ids = self.__nefT.get_nmrstar_atom(comp_id, atom_id, leave_unmatched=False)[0]
+                                            atom_ids = self.__nefT.get_star_atom(comp_id, atom_id, leave_unmatched=False)[0]
 
                                             if len(atom_ids) == 0:
                                                 continue
@@ -7488,7 +7498,7 @@ class NmrDpUtility(object):
 
                                         if file_type == 'nef':
 
-                                            atom_ids = self.__nefT.get_nmrstar_atom(comp_id, atom_id, leave_unmatched=False)[0]
+                                            atom_ids = self.__nefT.get_star_atom(comp_id, atom_id, leave_unmatched=False)[0]
 
                                             if len(atom_ids) == 0:
                                                 continue
@@ -7613,7 +7623,7 @@ class NmrDpUtility(object):
 
                                         if file_type == 'nef':
 
-                                            atom_ids = self.__nefT.get_nmrstar_atom(comp_id, atom_id, leave_unmatched=False)[0]
+                                            atom_ids = self.__nefT.get_star_atom(comp_id, atom_id, leave_unmatched=False)[0]
 
                                             if len(atom_ids) == 0:
                                                 continue
@@ -7727,7 +7737,7 @@ class NmrDpUtility(object):
 
                                         if file_type == 'nef':
 
-                                            atom_ids = self.__nefT.get_nmrstar_atom(comp_id, atom_id, leave_unmatched=False)[0]
+                                            atom_ids = self.__nefT.get_star_atom(comp_id, atom_id, leave_unmatched=False)[0]
 
                                             if len(atom_ids) == 0:
                                                 continue
@@ -7833,7 +7843,7 @@ class NmrDpUtility(object):
 
                                         if file_type == 'nef':
 
-                                            atom_ids = self.__nefT.get_nmrstar_atom(comp_id, atom_id, leave_unmatched=False)[0]
+                                            atom_ids = self.__nefT.get_star_atom(comp_id, atom_id, leave_unmatched=False)[0]
 
                                             if len(atom_ids) == 0:
                                                 continue
@@ -7900,7 +7910,7 @@ class NmrDpUtility(object):
                 value = i[value_name]
 
                 if file_type == 'nef':
-                    _atom_id, ambig_code, details = self.__nefT.get_nmrstar_atom(comp_id, atom_id, leave_unmatched=True)
+                    _atom_id, ambig_code, details = self.__nefT.get_star_atom(comp_id, atom_id, leave_unmatched=True)
 
                     if len(_atom_id) == 0:
                         continue
@@ -9288,8 +9298,8 @@ class NmrDpUtility(object):
         elif range_of_seq < 5:
 
             if file_type == 'nef':
-                _atom_id_1 = self.__nefT.get_nmrstar_atom(comp_id_1, atom_id_1, leave_unmatched=False)[0]
-                _atom_id_2 = self.__nefT.get_nmrstar_atom(comp_id_2, atom_id_2, leave_unmatched=False)[0]
+                _atom_id_1 = self.__nefT.get_star_atom(comp_id_1, atom_id_1, leave_unmatched=False)[0]
+                _atom_id_2 = self.__nefT.get_star_atom(comp_id_2, atom_id_2, leave_unmatched=False)[0]
 
                 if len(_atom_id_1) > 0 and len(_atom_id_2) > 0:
                     is_sc_atom_1 = _atom_id_1[0] in self.__csStat.getSideChainAtoms(comp_id_1)
@@ -10715,6 +10725,9 @@ class NmrDpUtility(object):
 
             return True
 
+        elif self.__entry_id == 'EXTRACT_FROM_COORD':
+            self.__entry_id = self.__entry_id__
+
         return False
 
     def __parseCoordinate(self):
@@ -10835,6 +10848,14 @@ class NmrDpUtility(object):
         content_subtypes = {k:lp_counts[k] for k in lp_counts if lp_counts[k] > 0}
 
         input_source.setItemValue('content_subtype', content_subtypes)
+
+        if self.__entry_id == 'EXTRACT_FROM_COORD':
+            entry = self.__cR.getDictList('entry')
+
+            if len(entry) == 0 or not 'id' in entry[0]:
+                self.__entry_id = self.__entry_id__
+            else:
+                self.__entry_id = entry[0]['id']
 
         return True
 
@@ -11905,7 +11926,7 @@ class NmrDpUtility(object):
                                 continue
 
                             if file_type == 'nef':
-                                _atom_id, ambig_code, details = self.__nefT.get_nmrstar_atom(comp_id, atom_id, leave_unmatched=True)
+                                _atom_id, ambig_code, details = self.__nefT.get_star_atom(comp_id, atom_id, leave_unmatched=True)
 
                                 if len(_atom_id) == 0:
                                     continue
@@ -12489,7 +12510,7 @@ class NmrDpUtility(object):
         except:
             pass
 
-        sf_cat_name = '_nef_molecular_system' if file_type == 'nef' else '_Assembly'
+        sf_cat_name = 'nef_molecular_system' if file_type == 'nef' else 'Assembly'
         lp_cat_name = '_nef_sequence' if file_type == 'nef' else '_Chem_comp_assembly'
 
         orig_poly_seq_sf_data = self.__star_data.get_saveframes_by_category(sf_category)[0] if self.__retain_original else None
@@ -12757,9 +12778,6 @@ class NmrDpUtility(object):
                         norm_star_data.add_saveframe(sf_data)
 
         self.__star_data = norm_star_data
-
-        #if file_type == 'nmr-star':
-        #   self.__star_data.normalize()
 
         return True
 
@@ -17493,6 +17511,105 @@ class NmrDpUtility(object):
         except:
             logging.error("+NmrDpUtility.__initReousrceForNef2Str() ++ Error  - Could not find 'nmr-star_file_path' or 'report_file_path' output parameter.")
             raise KeyError("+NmrDpUtility.__initReousrceForNef2Str() ++ Error  - Could not find 'nmr-star_file_path' or 'report_file_path' output parameter.")
+
+        return False
+
+    def __translateStr2Nef(self):
+        """ Translate NMR-STAR V3.2 to NEF file.
+        """
+
+        input_source = self.report.input_sources[0]
+        input_source_dic = input_source.get()
+
+        if self.__dstPath is None:
+            logging.error("+NmrDpUtility.__translateStr2Nef() ++ Error  - Could not find destination path as input NMR-STAR file for NEFTranslator.")
+            raise KeyError("+NmrDpUtility.__translateStr2Nef() ++ Error  - Could not find destination path as input NMR-STAR file for NEFTranslator.")
+
+        file_name = os.path.basename(self.__dstPath)
+        file_type = input_source_dic['file_type']
+
+        if 'nef_file_path' in self.__outputParamDict:
+
+            out_file_path = self.__outputParamDict['nef_file_path']
+
+            try:
+
+                is_valid, json_dumps = self.__nefT.nmrstar_to_nef(self.__dstPath, out_file_path)
+
+            except Exception as e:
+
+                err = "%s is not compliant with the %s dictionary." % (file_name, self.readable_file_type[file_type])
+
+                if not 'No such file or directory' in str(e):
+                    err += ' ' + re.sub('not in list', 'unknown item.', str(e))
+
+                self.report.error.appendDescription('format_issue', {'file_name': file_name, 'description': err})
+                self.report.setError()
+
+                if self.__verbose:
+                    self.__lfh.write("+NmrDpUtility.__translateStr2Nef() ++ Error  - %s\n" % err)
+
+                if os.path.exists(out_file_path):
+                    os.remove(out_file_path)
+
+                return False
+
+            if is_valid:
+                return True
+
+            else:
+
+                message = json.loads(json_dumps)
+
+                err = "%s is not compliant with the %s dictionary." % (file_name, self.readable_file_type[file_type])
+
+                if len(message['error']) > 0:
+                    for err_message in message['error']:
+                        if not 'No such file or directory' in err_message:
+                            err += ' ' + re.sub('not in list', 'unknown item.', err_message)
+
+                self.report.error.appendDescription('format_issue', {'file_name': file_name, 'description': err})
+                self.report.setError()
+
+                if self.__verbose:
+                    self.__lfh.write("+NmrDpUtility.__translateStr2Nef() ++ Error  - %s\n" % err)
+
+                if os.path.exists(out_file_path):
+                    os.remove(out_file_path)
+
+                return False
+
+        else:
+            logging.error("+NmrDpUtility.__translateStr2Nef() ++ Error  - Could not find 'nef_file_path' output parameter.")
+            raise KeyError("+NmrDpUtility.__translateStr2Nef() ++ Error  - Could not find 'nef_file_path' output parameter.")
+
+        return False
+
+    def __initResourceForStr2Nef(self):
+        """ Initialize resources for the translated NEF file.
+        """
+
+        try:
+
+            self.__srcPath = self.__outputParamDict['nef_file_path']
+            self.__dstPath = self.__srcPath
+            self.__logPath = self.__outputParamDict['report_file_path']
+            self.addInput('report_file_path', self.__logPath, type='file')
+            self.__op = 'nef-consistency-check'
+
+            # reset cache dictionaries
+
+            for content_subtype in self.__lp_data.keys():
+                self.__lp_data[content_subtype] = []
+
+            for content_subtype in self.__aux_data.keys():
+                self.__aux_data[content_subtype] = []
+
+            return True
+
+        except:
+            logging.error("+NmrDpUtility.__initReousrceForStr2Nef() ++ Error  - Could not find 'nef_file_path' or 'report_file_path' output parameter.")
+            raise KeyError("+NmrDpUtility.__initReousrceForStr2Nef() ++ Error  - Could not find 'nef_file_path' or 'report_file_path' output parameter.")
 
         return False
 

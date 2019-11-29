@@ -37,6 +37,7 @@ save_
 save_nef_molecular_system
    _Assembly.Sf_category   assembly
    _Assembly.Sf_framecode  nef_molecular_system
+   _Assembly.ID            1
    _Assembly.Entry_ID      NEED_ACC_NO
 
    loop_
@@ -50,71 +51,72 @@ save_nef_molecular_system
       _Chem_comp_assembly.Sequence_linking
       _Chem_comp_assembly.Cis_residue
       _Chem_comp_assembly.NEF_index
+      _Chem_comp_assembly.Assembly_ID
       _Chem_comp_assembly.Entry_ID
 
-     1   1    MET   A   1    MET   .   start    no   1    NEED_ACC_NO    
-     1   2    SER   A   2    SER   .   middle   no   2    NEED_ACC_NO    
-     1   3    ARG   A   3    ARG   .   middle   no   3    NEED_ACC_NO    
-     1   4    MET   A   4    MET   .   middle   no   4    NEED_ACC_NO    
-     1   5    ASP   A   5    ASP   .   middle   no   5    NEED_ACC_NO    
-     1   6    ASN   A   6    ASN   .   middle   no   6    NEED_ACC_NO    
-     1   7    THR   A   7    THR   .   middle   no   7    NEED_ACC_NO    
-     1   8    GLU   A   8    GLU   .   middle   no   8    NEED_ACC_NO    
-     1   9    LEU   A   9    LEU   .   middle   no   9    NEED_ACC_NO    
-     1   10   PRO   A   10   PRO   .   middle   no   10   NEED_ACC_NO    
-     1   11   HIS   A   11   HIS   .   middle   no   11   NEED_ACC_NO    
-     1   12   PRO   A   12   PRO   .   middle   no   12   NEED_ACC_NO    
-     1   13   LYS   A   13   LYS   .   middle   no   13   NEED_ACC_NO    
-     1   14   GLU   A   14   GLU   .   middle   no   14   NEED_ACC_NO    
-     1   15   ILE   A   15   ILE   .   middle   no   15   NEED_ACC_NO    
-     1   16   ASP   A   16   ASP   .   middle   no   16   NEED_ACC_NO    
-     1   17   ASN   A   17   ASN   .   middle   no   17   NEED_ACC_NO    
-     1   18   GLU   A   18   GLU   .   middle   no   18   NEED_ACC_NO    
-     1   19   THR   A   19   THR   .   middle   no   19   NEED_ACC_NO    
-     1   20   LEU   A   20   LEU   .   middle   no   20   NEED_ACC_NO    
-     1   21   LEU   A   21   LEU   .   middle   no   21   NEED_ACC_NO    
-     1   22   PRO   A   22   PRO   .   middle   no   22   NEED_ACC_NO    
-     1   23   ALA   A   23   ALA   .   middle   no   23   NEED_ACC_NO    
-     1   24   ALA   A   24   ALA   .   middle   no   24   NEED_ACC_NO    
-     1   25   GLU   A   25   GLU   .   middle   no   25   NEED_ACC_NO    
-     1   26   ARG   A   26   ARG   .   middle   no   26   NEED_ACC_NO    
-     1   27   ARG   A   27   ARG   .   middle   no   27   NEED_ACC_NO    
-     1   28   VAL   A   28   VAL   .   middle   no   28   NEED_ACC_NO    
-     1   29   ASN   A   29   ASN   .   middle   no   29   NEED_ACC_NO    
-     1   30   SER   A   30   SER   .   middle   no   30   NEED_ACC_NO    
-     1   31   GLN   A   31   GLN   .   middle   no   31   NEED_ACC_NO    
-     1   32   ALA   A   32   ALA   .   middle   no   32   NEED_ACC_NO    
-     1   33   LEU   A   33   LEU   .   middle   no   33   NEED_ACC_NO    
-     1   34   LEU   A   34   LEU   .   middle   no   34   NEED_ACC_NO    
-     1   35   GLY   A   35   GLY   .   middle   no   35   NEED_ACC_NO    
-     1   36   PRO   A   36   PRO   .   middle   no   36   NEED_ACC_NO    
-     1   37   ASP   A   37   ASP   .   middle   no   37   NEED_ACC_NO    
-     1   38   GLY   A   38   GLY   .   middle   no   38   NEED_ACC_NO    
-     1   39   LYS   A   39   LYS   .   middle   no   39   NEED_ACC_NO    
-     1   40   VAL   A   40   VAL   .   middle   no   40   NEED_ACC_NO    
-     1   41   ILE   A   41   ILE   .   middle   no   41   NEED_ACC_NO    
-     1   42   ILE   A   42   ILE   .   middle   no   42   NEED_ACC_NO    
-     1   43   ASP   A   43   ASP   .   middle   no   43   NEED_ACC_NO    
-     1   44   HIS   A   44   HIS   .   middle   no   44   NEED_ACC_NO    
-     1   45   ASN   A   45   ASN   .   middle   no   45   NEED_ACC_NO    
-     1   46   GLY   A   46   GLY   .   middle   no   46   NEED_ACC_NO    
-     1   47   GLN   A   47   GLN   .   middle   no   47   NEED_ACC_NO    
-     1   48   GLU   A   48   GLU   .   middle   no   48   NEED_ACC_NO    
-     1   49   TYR   A   49   TYR   .   middle   no   49   NEED_ACC_NO    
-     1   50   LEU   A   50   LEU   .   middle   no   50   NEED_ACC_NO    
-     1   51   LEU   A   51   LEU   .   middle   no   51   NEED_ACC_NO    
-     1   52   ARG   A   52   ARG   .   middle   no   52   NEED_ACC_NO    
-     1   53   LYS   A   53   LYS   .   middle   no   53   NEED_ACC_NO    
-     1   54   THR   A   54   THR   .   middle   no   54   NEED_ACC_NO    
-     1   55   GLN   A   55   GLN   .   middle   no   55   NEED_ACC_NO    
-     1   56   ALA   A   56   ALA   .   middle   no   56   NEED_ACC_NO    
-     1   57   GLY   A   57   GLY   .   middle   no   57   NEED_ACC_NO    
-     1   58   LYS   A   58   LYS   .   middle   no   58   NEED_ACC_NO    
-     1   59   LEU   A   59   LEU   .   middle   no   59   NEED_ACC_NO    
-     1   60   LEU   A   60   LEU   .   middle   no   60   NEED_ACC_NO    
-     1   61   LEU   A   61   LEU   .   middle   no   61   NEED_ACC_NO    
-     1   62   THR   A   62   THR   .   middle   no   62   NEED_ACC_NO    
-     1   63   LYS   A   63   LYS   .   end      no   63   NEED_ACC_NO    
+     1   1    MET   A   1    MET   .   start    no   1    1   NEED_ACC_NO    
+     1   2    SER   A   2    SER   .   middle   no   2    1   NEED_ACC_NO    
+     1   3    ARG   A   3    ARG   .   middle   no   3    1   NEED_ACC_NO    
+     1   4    MET   A   4    MET   .   middle   no   4    1   NEED_ACC_NO    
+     1   5    ASP   A   5    ASP   .   middle   no   5    1   NEED_ACC_NO    
+     1   6    ASN   A   6    ASN   .   middle   no   6    1   NEED_ACC_NO    
+     1   7    THR   A   7    THR   .   middle   no   7    1   NEED_ACC_NO    
+     1   8    GLU   A   8    GLU   .   middle   no   8    1   NEED_ACC_NO    
+     1   9    LEU   A   9    LEU   .   middle   no   9    1   NEED_ACC_NO    
+     1   10   PRO   A   10   PRO   .   middle   no   10   1   NEED_ACC_NO    
+     1   11   HIS   A   11   HIS   .   middle   no   11   1   NEED_ACC_NO    
+     1   12   PRO   A   12   PRO   .   middle   no   12   1   NEED_ACC_NO    
+     1   13   LYS   A   13   LYS   .   middle   no   13   1   NEED_ACC_NO    
+     1   14   GLU   A   14   GLU   .   middle   no   14   1   NEED_ACC_NO    
+     1   15   ILE   A   15   ILE   .   middle   no   15   1   NEED_ACC_NO    
+     1   16   ASP   A   16   ASP   .   middle   no   16   1   NEED_ACC_NO    
+     1   17   ASN   A   17   ASN   .   middle   no   17   1   NEED_ACC_NO    
+     1   18   GLU   A   18   GLU   .   middle   no   18   1   NEED_ACC_NO    
+     1   19   THR   A   19   THR   .   middle   no   19   1   NEED_ACC_NO    
+     1   20   LEU   A   20   LEU   .   middle   no   20   1   NEED_ACC_NO    
+     1   21   LEU   A   21   LEU   .   middle   no   21   1   NEED_ACC_NO    
+     1   22   PRO   A   22   PRO   .   middle   no   22   1   NEED_ACC_NO    
+     1   23   ALA   A   23   ALA   .   middle   no   23   1   NEED_ACC_NO    
+     1   24   ALA   A   24   ALA   .   middle   no   24   1   NEED_ACC_NO    
+     1   25   GLU   A   25   GLU   .   middle   no   25   1   NEED_ACC_NO    
+     1   26   ARG   A   26   ARG   .   middle   no   26   1   NEED_ACC_NO    
+     1   27   ARG   A   27   ARG   .   middle   no   27   1   NEED_ACC_NO    
+     1   28   VAL   A   28   VAL   .   middle   no   28   1   NEED_ACC_NO    
+     1   29   ASN   A   29   ASN   .   middle   no   29   1   NEED_ACC_NO    
+     1   30   SER   A   30   SER   .   middle   no   30   1   NEED_ACC_NO    
+     1   31   GLN   A   31   GLN   .   middle   no   31   1   NEED_ACC_NO    
+     1   32   ALA   A   32   ALA   .   middle   no   32   1   NEED_ACC_NO    
+     1   33   LEU   A   33   LEU   .   middle   no   33   1   NEED_ACC_NO    
+     1   34   LEU   A   34   LEU   .   middle   no   34   1   NEED_ACC_NO    
+     1   35   GLY   A   35   GLY   .   middle   no   35   1   NEED_ACC_NO    
+     1   36   PRO   A   36   PRO   .   middle   no   36   1   NEED_ACC_NO    
+     1   37   ASP   A   37   ASP   .   middle   no   37   1   NEED_ACC_NO    
+     1   38   GLY   A   38   GLY   .   middle   no   38   1   NEED_ACC_NO    
+     1   39   LYS   A   39   LYS   .   middle   no   39   1   NEED_ACC_NO    
+     1   40   VAL   A   40   VAL   .   middle   no   40   1   NEED_ACC_NO    
+     1   41   ILE   A   41   ILE   .   middle   no   41   1   NEED_ACC_NO    
+     1   42   ILE   A   42   ILE   .   middle   no   42   1   NEED_ACC_NO    
+     1   43   ASP   A   43   ASP   .   middle   no   43   1   NEED_ACC_NO    
+     1   44   HIS   A   44   HIS   .   middle   no   44   1   NEED_ACC_NO    
+     1   45   ASN   A   45   ASN   .   middle   no   45   1   NEED_ACC_NO    
+     1   46   GLY   A   46   GLY   .   middle   no   46   1   NEED_ACC_NO    
+     1   47   GLN   A   47   GLN   .   middle   no   47   1   NEED_ACC_NO    
+     1   48   GLU   A   48   GLU   .   middle   no   48   1   NEED_ACC_NO    
+     1   49   TYR   A   49   TYR   .   middle   no   49   1   NEED_ACC_NO    
+     1   50   LEU   A   50   LEU   .   middle   no   50   1   NEED_ACC_NO    
+     1   51   LEU   A   51   LEU   .   middle   no   51   1   NEED_ACC_NO    
+     1   52   ARG   A   52   ARG   .   middle   no   52   1   NEED_ACC_NO    
+     1   53   LYS   A   53   LYS   .   middle   no   53   1   NEED_ACC_NO    
+     1   54   THR   A   54   THR   .   middle   no   54   1   NEED_ACC_NO    
+     1   55   GLN   A   55   GLN   .   middle   no   55   1   NEED_ACC_NO    
+     1   56   ALA   A   56   ALA   .   middle   no   56   1   NEED_ACC_NO    
+     1   57   GLY   A   57   GLY   .   middle   no   57   1   NEED_ACC_NO    
+     1   58   LYS   A   58   LYS   .   middle   no   58   1   NEED_ACC_NO    
+     1   59   LEU   A   59   LEU   .   middle   no   59   1   NEED_ACC_NO    
+     1   60   LEU   A   60   LEU   .   middle   no   60   1   NEED_ACC_NO    
+     1   61   LEU   A   61   LEU   .   middle   no   61   1   NEED_ACC_NO    
+     1   62   THR   A   62   THR   .   middle   no   62   1   NEED_ACC_NO    
+     1   63   LYS   A   63   LYS   .   end      no   63   1   NEED_ACC_NO    
 
    stop_
 
@@ -957,11 +959,11 @@ save_
 save_nef_nmr_spectrum_StT322_Cnoesy
    _Spectral_peak_list.Sf_category                    spectral_peak_list
    _Spectral_peak_list.Sf_framecode                   nef_nmr_spectrum_StT322_Cnoesy
+   _Spectral_peak_list.ID                             1
    _Spectral_peak_list.Experiment_class               H_H[C].through-space
    _Spectral_peak_list.Experiment_type                '13C NOESY-HSQC'
    _Spectral_peak_list.Number_of_spectral_dimensions  3
    _Spectral_peak_list.Chemical_shift_list            nef_chemical_shift_list_18214
-   _Spectral_peak_list.ID                             1
    _Spectral_peak_list.Entry_ID                       NEED_ACC_NO
 
    loop_
@@ -974,11 +976,12 @@ save_nef_nmr_spectrum_StT322_Cnoesy
       _Spectral_dim.Value_first_point
       _Spectral_dim.Absolute_peak_positions
       _Spectral_dim.Acquisition
+      _Spectral_dim.Spectral_peak_list_ID
       _Spectral_dim.Entry_ID
 
-     1   1H    800.223999   folded   6.306108443   ppm   5.800608334   yes   yes   NEED_ACC_NO    
-     2   1H    800.223999   folded   10.51366873   ppm   10.00201389   yes   no    NEED_ACC_NO    
-     3   13C   201.223999   folded   69.99983863   ppm   77.66391856   yes   no    NEED_ACC_NO    
+     1   1H    800.223999   folded   6.306108443   ppm   5.800608334   yes   yes   1   NEED_ACC_NO    
+     2   1H    800.223999   folded   10.51366873   ppm   10.00201389   yes   no    1   NEED_ACC_NO    
+     3   13C   201.223999   folded   69.99983863   ppm   77.66391856   yes   no    1   NEED_ACC_NO    
 
    stop_
 
@@ -987,10 +990,11 @@ save_nef_nmr_spectrum_StT322_Cnoesy
       _Spectral_dim_transfer.Spectral_dim_ID_2
       _Spectral_dim_transfer.Indirect
       _Spectral_dim_transfer.Type
+      _Spectral_dim_transfer.Spectral_peak_list_ID
       _Spectral_dim_transfer.Entry_ID
 
-     1   2   no   through-space   NEED_ACC_NO    
-     1   3   no   onebond         NEED_ACC_NO    
+     1   2   no   through-space   1   NEED_ACC_NO    
+     1   3   no   onebond         1   NEED_ACC_NO    
 
    stop_
 
@@ -2638,11 +2642,11 @@ save_
 save_nef_nmr_spectrum_StT322_Cnoesy_aro
    _Spectral_peak_list.Sf_category                    spectral_peak_list
    _Spectral_peak_list.Sf_framecode                   nef_nmr_spectrum_StT322_Cnoesy_aro
+   _Spectral_peak_list.ID                             2
    _Spectral_peak_list.Experiment_class               H_H[C].through-space
    _Spectral_peak_list.Experiment_type                '13C NOESY-HSQC'
    _Spectral_peak_list.Number_of_spectral_dimensions  3
    _Spectral_peak_list.Chemical_shift_list            nef_chemical_shift_list_18214
-   _Spectral_peak_list.ID                             2
    _Spectral_peak_list.Entry_ID                       NEED_ACC_NO
 
    loop_
@@ -2655,11 +2659,12 @@ save_nef_nmr_spectrum_StT322_Cnoesy_aro
       _Spectral_dim.Value_first_point
       _Spectral_dim.Absolute_peak_positions
       _Spectral_dim.Acquisition
+      _Spectral_dim.Spectral_peak_list_ID
       _Spectral_dim.Entry_ID
 
-     1   1H    800.223999    folded   2.008511563   ppm   8.499287901   yes   yes   NEED_ACC_NO    
-     2   1H    800.223999    folded   10.51249719   ppm   10.00123306   yes   no    NEED_ACC_NO    
-     3   13C   201.2409973   folded   24.99994162   ppm   139.6649788   yes   no    NEED_ACC_NO    
+     1   1H    800.223999    folded   2.008511563   ppm   8.499287901   yes   yes   2   NEED_ACC_NO    
+     2   1H    800.223999    folded   10.51249719   ppm   10.00123306   yes   no    2   NEED_ACC_NO    
+     3   13C   201.2409973   folded   24.99994162   ppm   139.6649788   yes   no    2   NEED_ACC_NO    
 
    stop_
 
@@ -2668,10 +2673,11 @@ save_nef_nmr_spectrum_StT322_Cnoesy_aro
       _Spectral_dim_transfer.Spectral_dim_ID_2
       _Spectral_dim_transfer.Indirect
       _Spectral_dim_transfer.Type
+      _Spectral_dim_transfer.Spectral_peak_list_ID
       _Spectral_dim_transfer.Entry_ID
 
-     1   2   no   through-space   NEED_ACC_NO    
-     1   3   no   onebond         NEED_ACC_NO    
+     1   2   no   through-space   2   NEED_ACC_NO    
+     1   3   no   onebond         2   NEED_ACC_NO    
 
    stop_
 
@@ -2749,11 +2755,11 @@ save_
 save_nef_nmr_spectrum_StT322_Cnoesy_d2o
    _Spectral_peak_list.Sf_category                    spectral_peak_list
    _Spectral_peak_list.Sf_framecode                   nef_nmr_spectrum_StT322_Cnoesy_d2o
+   _Spectral_peak_list.ID                             3
    _Spectral_peak_list.Experiment_class               H_H[C].through-space
    _Spectral_peak_list.Experiment_type                '13C NOESY-HSQC'
    _Spectral_peak_list.Number_of_spectral_dimensions  3
    _Spectral_peak_list.Chemical_shift_list            nef_chemical_shift_list_18214
-   _Spectral_peak_list.ID                             3
    _Spectral_peak_list.Entry_ID                       NEED_ACC_NO
 
    loop_
@@ -2766,11 +2772,12 @@ save_nef_nmr_spectrum_StT322_Cnoesy_d2o
       _Spectral_dim.Value_first_point
       _Spectral_dim.Absolute_peak_positions
       _Spectral_dim.Acquisition
+      _Spectral_dim.Spectral_peak_list_ID
       _Spectral_dim.Entry_ID
 
-     1   1H    800.223999   folded   6.306108443   ppm   5.799418596   yes   yes   NEED_ACC_NO    
-     2   1H    800.223999   folded   10.51366873   ppm   9.994014118   yes   no    NEED_ACC_NO    
-     3   13C   201.223999   folded   69.99983863   ppm   77.66391856   yes   no    NEED_ACC_NO    
+     1   1H    800.223999   folded   6.306108443   ppm   5.799418596   yes   yes   3   NEED_ACC_NO    
+     2   1H    800.223999   folded   10.51366873   ppm   9.994014118   yes   no    3   NEED_ACC_NO    
+     3   13C   201.223999   folded   69.99983863   ppm   77.66391856   yes   no    3   NEED_ACC_NO    
 
    stop_
 
@@ -2779,10 +2786,11 @@ save_nef_nmr_spectrum_StT322_Cnoesy_d2o
       _Spectral_dim_transfer.Spectral_dim_ID_2
       _Spectral_dim_transfer.Indirect
       _Spectral_dim_transfer.Type
+      _Spectral_dim_transfer.Spectral_peak_list_ID
       _Spectral_dim_transfer.Entry_ID
 
-     1   2   no   through-space   NEED_ACC_NO    
-     1   3   no   onebond         NEED_ACC_NO    
+     1   2   no   through-space   3   NEED_ACC_NO    
+     1   3   no   onebond         3   NEED_ACC_NO    
 
    stop_
 
@@ -3104,11 +3112,11 @@ save_
 save_nef_nmr_spectrum_StT322_Nnoesy
    _Spectral_peak_list.Sf_category                    spectral_peak_list
    _Spectral_peak_list.Sf_framecode                   nef_nmr_spectrum_StT322_Nnoesy
+   _Spectral_peak_list.ID                             4
    _Spectral_peak_list.Experiment_class               H_H[N].through-space
    _Spectral_peak_list.Experiment_type                '15N NOESY-HSQC'
    _Spectral_peak_list.Number_of_spectral_dimensions  3
    _Spectral_peak_list.Chemical_shift_list            nef_chemical_shift_list_18214
-   _Spectral_peak_list.ID                             4
    _Spectral_peak_list.Entry_ID                       NEED_ACC_NO
 
    loop_
@@ -3121,11 +3129,12 @@ save_nef_nmr_spectrum_StT322_Nnoesy
       _Spectral_dim.Value_first_point
       _Spectral_dim.Absolute_peak_positions
       _Spectral_dim.Acquisition
+      _Spectral_dim.Spectral_peak_list_ID
       _Spectral_dim.Entry_ID
 
-     1   1H    800.223999    folded   3.003233195   ppm   9.498466714   yes   yes   NEED_ACC_NO    
-     2   1H    800.223999    folded   10.51884185   ppm   9.999721427   yes   no    NEED_ACC_NO    
-     3   15N   81.09500122   folded   32            ppm   132.0149951   yes   no    NEED_ACC_NO    
+     1   1H    800.223999    folded   3.003233195   ppm   9.498466714   yes   yes   4   NEED_ACC_NO    
+     2   1H    800.223999    folded   10.51884185   ppm   9.999721427   yes   no    4   NEED_ACC_NO    
+     3   15N   81.09500122   folded   32            ppm   132.0149951   yes   no    4   NEED_ACC_NO    
 
    stop_
 
@@ -3134,10 +3143,11 @@ save_nef_nmr_spectrum_StT322_Nnoesy
       _Spectral_dim_transfer.Spectral_dim_ID_2
       _Spectral_dim_transfer.Indirect
       _Spectral_dim_transfer.Type
+      _Spectral_dim_transfer.Spectral_peak_list_ID
       _Spectral_dim_transfer.Entry_ID
 
-     1   2   no   through-space   NEED_ACC_NO    
-     1   3   no   onebond         NEED_ACC_NO    
+     1   2   no   through-space   4   NEED_ACC_NO    
+     1   3   no   onebond         4   NEED_ACC_NO    
 
    stop_
 
@@ -4024,9 +4034,9 @@ save_
 save_nef_distance_restraint_list_distance_constraint_list
    _Gen_dist_constraint_list.Sf_category      general_distance_constraints
    _Gen_dist_constraint_list.Sf_framecode     nef_distance_restraint_list_distance_constraint_list
+   _Gen_dist_constraint_list.ID               1
    _Gen_dist_constraint_list.Constraint_type  .
    _Gen_dist_constraint_list.Potential_type   square-well-parabolic
-   _Gen_dist_constraint_list.ID               1
    _Gen_dist_constraint_list.Entry_ID         NEED_ACC_NO
 
    loop_
@@ -6666,9 +6676,9 @@ save_
 save_nef_distance_restraint_list_hBond_constraint_list
    _Gen_dist_constraint_list.Sf_category      general_distance_constraints
    _Gen_dist_constraint_list.Sf_framecode     nef_distance_restraint_list_hBond_constraint_list
+   _Gen_dist_constraint_list.ID               2
    _Gen_dist_constraint_list.Constraint_type  'hydrogen bond'
    _Gen_dist_constraint_list.Potential_type   square-well-parabolic
-   _Gen_dist_constraint_list.ID               2
    _Gen_dist_constraint_list.Entry_ID         NEED_ACC_NO
 
    loop_
@@ -6747,9 +6757,9 @@ save_
 save_nef_dihedral_restraint_list_dihedral_constraint_list
    _Torsion_angle_constraint_list.Sf_category      torsion_angle_constraints
    _Torsion_angle_constraint_list.Sf_framecode     nef_dihedral_restraint_list_dihedral_constraint_list
+   _Torsion_angle_constraint_list.ID               1
    _Torsion_angle_constraint_list.Potential_type   square-well-parabolic
    _Torsion_angle_constraint_list.Constraint_type  'backbone chemical shifts'
-   _Torsion_angle_constraint_list.ID               1
    _Torsion_angle_constraint_list.Entry_ID         NEED_ACC_NO
 
    loop_

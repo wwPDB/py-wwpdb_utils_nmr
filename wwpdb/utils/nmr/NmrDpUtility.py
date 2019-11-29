@@ -8,6 +8,7 @@
 # 01-Nov-2019  M. Yokochi - revise error message, instead of Python ValueError message.
 # 05-Nov-2019  M. Yokochi - revise error messages and detect empty sequence information.
 # 28-Nov-2019  M. Yokochi - fix saveframe name of nef_molecular_system and add 'nmr-str2nef-deposit' workflow operation
+# 29-Nov-2019  M. Yokochi - relax allowable range of weight values in restraint data and support index pointer in auxiliary loops
 ##
 """ Wrapper class for data processing for NMR unified data.
     @author: Masashi Yokochi
@@ -326,7 +327,7 @@ class NmrDpUtility(object):
         self.rdc_restraint_error = {'min_exclusive': 0.0, 'max_exclusive': 5.0}
 
         # allowed weight range
-        self.weight_range = {'min_exclusive': 0.0, 'max_inclusive': 10.0}
+        self.weight_range = {'min_inlusive': 0.0, 'max_inclusive': 10.0}
         # allowed scale range
         self.scale_range = self.weight_range
 
@@ -644,8 +645,8 @@ class NmrDpUtility(object):
                                                       {'name': 'restraint_combination_id', 'type': 'positive-int', 'mandatory': False,
                                                        'enforce-non-zero': True},
                                                       {'name': 'weight', 'type': 'range-float', 'mandatory': True,
-                                                       'range': self.weight_range,
-                                                       'enforce-non-zero': True},
+                                                       'range': self.weight_range},
+                                                      #'enforce-non-zero': True},
                                                       {'name': 'target_value', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
                                                        'range': self.dist_restraint_range,
                                                        'group': {'member-with': ['lower_linear_limit', 'lower_limit', 'upper_limit', 'upper_linear_limit'],
@@ -685,8 +686,8 @@ class NmrDpUtility(object):
                                                        {'name': 'restraint_combination_id', 'type': 'positive-int', 'mandatory': False,
                                                         'enforce-non-zero': True},
                                                        {'name': 'weight', 'type': 'range-float', 'mandatory': True,
-                                                        'range': self.weight_range,
-                                                        'enforce-non-zero': True},
+                                                        'range': self.weight_range},
+                                                       #'enforce-non-zero': True},
                                                        {'name': 'target_value', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
                                                         'range': self.dihed_restraint_range,
                                                         'group': {'member-with': ['lower_linear_limit', 'lower_limit', 'upper_limit', 'upper_linear_limit'],
@@ -849,8 +850,8 @@ class NmrDpUtility(object):
                                                                       'smaller-than': ['Lower_linear_limit', 'Distance_lower_bound_val', 'Upper_linear_limit'],
                                                                       'larger-than': None}},
                                                            {'name': 'Weight', 'type': 'range-float', 'mandatory': False,
-                                                            'range': self.weight_range,
-                                                            'enforce-non-zero': True},
+                                                            'range': self.weight_range},
+                                                           #'enforce-non-zero': True},
                                                            {'name': 'Auth_asym_ID_1', 'type': 'str', 'mandatory': False},
                                                            {'name': 'Auth_seq_ID_1', 'type': 'int', 'mandatory': False},
                                                            {'name': 'Auth_comp_ID_1', 'type': 'str', 'mandatory': False},
@@ -900,8 +901,8 @@ class NmrDpUtility(object):
                                                                       'smaller-than': ['Angle_lower_linear_limit', 'Angle_lower_bound_val'],
                                                                       'larger-than': ['Angle_upper_bound_val']}},
                                                             {'name': 'Weight', 'type': 'range-float', 'mandatory': False,
-                                                             'range': self.weight_range,
-                                                             'enforce-non-zero': True},
+                                                             'range': self.weight_range},
+                                                            #'enforce-non-zero': True},
                                                             {'name': 'Auth_asym_ID_1', 'type': 'str', 'mandatory': False},
                                                             {'name': 'Auth_seq_ID_1', 'type': 'int', 'mandatory': False},
                                                             {'name': 'Auth_comp_ID_1', 'type': 'str', 'mandatory': False},
@@ -926,8 +927,8 @@ class NmrDpUtility(object):
                                                           {'name': 'Combination_ID', 'type': 'positive-int', 'mandatory': False,
                                                            'enforce-non-zero': True},
                                                           {'name': 'Weight', 'type': 'range-float', 'mandatory': False,
-                                                           'range': self.weight_range,
-                                                           'enforce-non-zero': True},
+                                                           'range': self.weight_range},
+                                                           #'enforce-non-zero': True},
                                                           {'name': 'Target_value', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
                                                            'range': self.rdc_restraint_range,
                                                            'group': {'member-with': ['RDC_lower_linear_limit', 'RDC_upper_linear_limit', 'RDC_lower_bound', 'RDC_upper_bound'],
@@ -1695,11 +1696,13 @@ class NmrDpUtility(object):
                                                                      {'name': 'Value_first_point', 'type': 'float', 'mandatory': False},
                                                                      {'name': 'Absolute_peak_positions', 'type': 'bool', 'mandatory': False},
                                                                      {'name': 'Acquisition', 'type': 'bool', 'mandatory': False},
+                                                                     {'name': 'Spectral_peak_list_ID', 'type': 'pointer-index', 'mandatory': True}
                                                                      ],
                                                    '_Spectral_dim_transfer': [{'name': 'Indirect', 'type': 'bool', 'mandatory': False},
                                                                               {'name': 'Type', 'type': 'enum', 'mandatory': True,
                                                                                'enum': ('onebond', 'jcoupling', 'jmultibond', 'relayed', 'relayed-alternate', 'through-space'),
-                                                                               'enforce-enum': True}
+                                                                               'enforce-enum': True},
+                                                                              {'name': 'Spectral_peak_list_ID', 'type': 'pointer-index', 'mandatory': True}
                                                                               ]
                                                    }
                                                }
@@ -16838,7 +16841,7 @@ class NmrDpUtility(object):
         return True
 
     def __appendParentSfTag(self):
-        """ Append parent tag in saveframe if not exists.
+        """ Append parent tag of saveframe if not exists.
         """
 
         input_source = self.report.input_sources[0]

@@ -712,9 +712,9 @@ class TestNEFTranslator(unittest.TestCase):
         indat = [['549', '389', '.', 'A', '384', 'TYR', 'HD%', 'A', '449', 'CYS', 'HBy', '1', '.', '.', '.', '.',
                  '5.7', '.']]
         outdat = [[1, '389', '.', 'A', '384', 'TYR', 'HD%', 'A', '449', 'CYS', 'HBy', '1', '.', '.', '.', '.',
-                   '5.7', '.', 1, 13, 'TYR', 'HD1', 1, 78, 'CYS', 'HB3', None, None],
+                   '5.7', '.', 1, 13, 'TYR', u'HD1', 1, 78, 'CYS', u'HB3', 'OR', None],
                   [2, '389', '.', 'A', '384', 'TYR', 'HD%', 'A', '449', 'CYS', 'HBy', '1', '.', '.', '.', '.',
-                   '5.7', '.', 1, 13, 'TYR', 'HD2', 1, 78, 'CYS', 'HB3', None, None]]
+                   '5.7', '.', 1, 13, 'TYR', u'HD2', 1, 78, 'CYS', u'HB3', 'OR', None]]
         self.assertEqual(self.neft.nef2star_dist_row(intag, outtag, indat), outdat)
 
     def test_nef_nmrstar(self):

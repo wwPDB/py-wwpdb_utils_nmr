@@ -43,8 +43,8 @@ class TestNmrDpUtility(unittest.TestCase):
             self.assertEqual(report['error']['internal_error'], None)
 
     def __test_nmr_nef2str_deposit_check(self, entry_id):
-        #if not os.access(self.data_dir_path + entry_id + '-clean-nef-consistency-log.json', os.F_OK):
-        self.__test_nmr_nef_consistency(entry_id)
+        if not os.access(self.data_dir_path + entry_id + '-clean-nef-consistency-log.json', os.F_OK):
+            self.__test_nmr_nef_consistency(entry_id)
 
         self.utility.setSource(self.data_dir_path + entry_id + '.nef')
         self.utility.addInput(name='coordinate_file_path', value=self.data_dir_path + entry_id + '.cif', type='file')

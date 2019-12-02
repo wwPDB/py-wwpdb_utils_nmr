@@ -26,7 +26,6 @@ from pytz import utc
 from wwpdb.utils.config.ConfigInfo import ConfigInfo, getSiteId
 from wwpdb.utils.nmr.io.ChemCompIo import ChemCompReader
 from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
-from __builtin__ import False
 
 (scriptPath, scriptName) = ntpath.split(os.path.realpath(__file__))
 

@@ -26,6 +26,7 @@ from pytz import utc
 from wwpdb.utils.config.ConfigInfo import ConfigInfo, getSiteId
 from wwpdb.utils.nmr.io.ChemCompIo import ChemCompReader
 from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
+from __builtin__ import False
 
 (scriptPath, scriptName) = ntpath.split(os.path.realpath(__file__))
 
@@ -76,6 +77,13 @@ class NEFTranslator(object):
 
         # BMRB chemical shift statistics
         self.__csStat = BMRBChemShiftStat()
+
+        # supported version
+        self.nef_version = '1.1'
+        self.nmrstar_version = '3.2.0.15'
+
+        # format name
+        self.nef_format_name = 'nmr_exchange_format'
 
         # empty value
         self.empty_value = (None, '', '.', '?')
@@ -2521,7 +2529,7 @@ class NEFTranslator(object):
 
             pattern = None
 
-            if atm_set == [0, 1, 2]: # endswith [xyXY]%
+            if atm_set == [0, 1, 2]: # endswith [xyXY][%*]
 
                 atom_type = ref_atom[0]
                 xy_code = ref_atom[1].lower()
@@ -3794,15 +3802,6 @@ class NEFTranslator(object):
                             auth_tag, data_tag = self.get_star_tag(nef_tag)
                             sf.add_tag(auth_tag, tag[1])
 
-                    if saveframe.category == 'nef_nmr_meta_data':
-                        sf.add_tag('NMR_STAR_version', '3.2.0.15')
-
-                        try:
-                            loop = saveframe.get_loop_by_category('_nef_program_script')
-                            loop.add_data(['NEFTranslator', 'nef_to_nmrstar', '.'])
-                        except KeyError:
-                            pass
-
                     for loop in saveframe:
 
                         lp = pynmrstar.Loop.from_scratch()
@@ -3871,7 +3870,24 @@ class NEFTranslator(object):
 
                         sf.add_loop(lp)
 
-                    if saveframe.category == 'nef_molecular_system':
+                    if saveframe.category == 'nef_nmr_meta_data':
+                        sf.add_tag('NMR_STAR_version', self.nmrstar_version)
+
+                        try:
+                            loop = sf.get_loop_by_category('_Software_applied_methods')
+                            row = []
+                            for t in loop.tags:
+                                if t == 'Software_name':
+                                    row.append('NEFTranslator')
+                                elif t == 'Script_name':
+                                    row.append('nef_to_nmrstar')
+                                else:
+                                    row.append('.')
+                            loop.add_data(row)
+                        except KeyError:
+                            pass
+
+                    elif saveframe.category == 'nef_molecular_system':
                         sf.add_tag('ID', asm_id)
 
                     elif saveframe.category == 'nef_chemical_shift_list':
@@ -3933,9 +3949,6 @@ class NEFTranslator(object):
                             nef_tag = '{}.{}'.format(saveframe.tag_prefix, tag[0])
                             auth_tag, data_tag = self.get_star_tag(nef_tag)
                             sf.add_tag(auth_tag, tag[1])
-
-                    if saveframe.category == 'nef_nmr_meta_data':
-                        sf.add_tag('NMR_STAR_version', '3.2.0.15')
 
                 else:
                     sf = pynmrstar.Saveframe.from_scratch(nef_data.category)
@@ -4046,7 +4059,24 @@ class NEFTranslator(object):
 
                     sf.add_loop(lp)
 
-                if saveframe.category == 'nef_molecular_system':
+                if saveframe.category == 'nef_nmr_meta_data':
+                    sf.add_tag('NMR_STAR_version', self.nmrstar_version)
+
+                    try:
+                        loop = sf.get_loop_by_category('_Software_applied_methods')
+                        row = []
+                        for t in loop.tags:
+                            if t == 'Software_name':
+                                row.append('NEFTranslator')
+                            elif t == 'Script_name':
+                                row.append('nef_to_nmrstar')
+                            else:
+                                row.append('.')
+                        loop.add_data(row)
+                    except KeyError:
+                        pass
+
+                elif saveframe.category == 'nef_molecular_system':
                     sf.add_tag('ID', asm_id)
 
                 elif saveframe.category == 'nef_chemical_shift_list':
@@ -4134,9 +4164,9 @@ class NEFTranslator(object):
                             continue
                         elif saveframe.category == 'Entry':
                             if tag_name == 'source_data_format':
-                                sf.add_tag('format_name', 'nmr_exchange_format')
+                                sf.add_tag('format_name', self.nef_format_name)
                             elif tag_name == 'source_data_format_version':
-                                sf.add_tag('format_version', '1.1')
+                                sf.add_tag('format_version', self.nef_version)
                             else:
                                 nef_tag = self.get_nef_tag(saveframe.tag_prefix + '.' + tag[0])
                                 if not nef_tag is None:
@@ -4145,21 +4175,6 @@ class NEFTranslator(object):
                             nef_tag = self.get_nef_tag(saveframe.tag_prefix + '.' + tag[0])
                             if not nef_tag is None:
                                 sf.add_tag(nef_tag, tag[1])
-
-                    if saveframe.category == 'entry_information':
-                        try:
-                            loop = saveframe.get_loop_by_category('_Software_applied_methods')
-                            row = []
-                            for t in loop.tags:
-                                if t == 'Software_name':
-                                    row.append('NEFTranslator')
-                                elif t == 'Script_name':
-                                    row.append('nmrstar_to_nef')
-                                else:
-                                    row.append('.')
-                            loop.add_data(row)
-                        except KeyError:
-                            pass
 
                     for loop in saveframe:
 
@@ -4198,6 +4213,34 @@ class NEFTranslator(object):
 
                         sf.add_loop(lp)
 
+                    if saveframe.category == 'entry_information':
+                        has_format_name = False
+                        has_format_ver = False
+                        for tags in sf.tags:
+                            if tags[0] == 'format_name':
+                                has_format_name = True
+                            elif tags[0] == 'format_version':
+                                has_format_ver = True
+
+                        if not has_format_name:
+                            sf.add_tag('format_name', self.nef_format_name)
+                        if not has_format_ver:
+                            sf.add_tag('format_version', self.nef_version)
+
+                        try:
+                            loop = sf.get_loop_by_category('_nef_program_script')
+                            row = []
+                            for t in loop.tags:
+                                if t == 'program_name':
+                                    row.append('NEFTranslator')
+                                elif t == 'script_name':
+                                    row.append('nmrstar_to_nef')
+                                else:
+                                    row.append('.')
+                            loop.add_data(row)
+                        except KeyError:
+                            pass
+
                     nef_data.add_saveframe(sf)
 
             elif dat_content == 'Saveframe' or dat_content == 'Loop':
@@ -4215,6 +4258,15 @@ class NEFTranslator(object):
                         tag_name = tag[0].lower()
                         if tag_name == 'sf_category' or tag_name == 'sf_framecode':
                             continue
+                        elif saveframe.category == 'Entry':
+                            if tag_name == 'source_data_format':
+                                sf.add_tag('format_name', self.nef_format_name)
+                            elif tag_name == 'source_data_format_version':
+                                sf.add_tag('format_version', self.nef_version)
+                            else:
+                                nef_tag = self.get_nef_tag(saveframe.tag_prefix + '.' + tag[0])
+                                if not nef_tag is None:
+                                    sf.add_tag(nef_tag, tag[1])
                         else:
                             nef_tag = self.get_nef_tag(saveframe.tag_prefix + '.' + tag[0])
                             if not nef_tag is None:
@@ -4287,6 +4339,34 @@ class NEFTranslator(object):
                                 lp.add_data(d)
 
                     sf.add_loop(lp)
+
+                if saveframe.category == 'entry_information':
+                    has_format_name = False
+                    has_format_ver = False
+                    for tags in sf.tags:
+                        if tags[0] == 'format_name':
+                            has_format_name = True
+                        elif tags[0] == 'format_version':
+                            has_format_ver = True
+
+                    if not has_format_name:
+                        sf.add_tag('format_name', self.nef_format_name)
+                    if not has_format_ver:
+                        sf.add_tag('format_version', self.nef_version)
+
+                    try:
+                        loop = sf.get_loop_by_category('_nef_program_script')
+                        row = []
+                        for t in loop.tags:
+                            if t == 'program_name':
+                                row.append('NEFTranslator')
+                            elif t == 'script_name':
+                                row.append('nmrstar_to_nef')
+                            else:
+                                row.append('.')
+                        loop.add_data(row)
+                    except KeyError:
+                        pass
 
                 nef_data.add_saveframe(sf)
 

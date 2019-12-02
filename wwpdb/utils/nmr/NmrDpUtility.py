@@ -1919,6 +1919,10 @@ class NmrDpUtility(object):
         self.chi4_atom_id_3_pat = re.compile(r'^[CN]E$')
         self.chi4_atom_id_4_pat = re.compile(r'^[CN]Z$')
 
+        # patterns for enum failure message
+        self.chk_desc_pat = re.compile(r'^(.*) \'(.*)\' should be one of \((.*)\)\.$')
+        self.chk_desc_pat_one = re.compile(r'^(.*) \'(.*)\' should be one of (.*)\.$')
+
         # main contents of loops
         self.__lp_data = {'poly_seq': [],
                           'chem_shift': [],
@@ -5312,9 +5316,6 @@ class NmrDpUtility(object):
                                 warn = warn[23:]
                             else: # enum
                                 warn = warn[20:]
-
-                                self.chk_desc_pat = re.compile(r'^(.*) \'(.*)\' should be one of \((.*)\)\.$')
-                                self.chk_desc_pat_one = re.compile(r'^(.*) \'(.*)\' should be one of (.*)\.$')
 
                                 try:
                                     g = self.chk_desc_pat.search(warn).groups()
@@ -15311,9 +15312,6 @@ class NmrDpUtility(object):
         if warnings is None:
             return True
 
-        self.chk_desc_pat = re.compile(r'^(.*) \'(.*)\' should be one of \((.*)\)\.$')
-        self.chk_desc_pat_one = re.compile(r'^(.*) \'(.*)\' should be one of (.*)\.$')
-
         for w in warnings:
 
             if not "should be one of" in w['description']:
@@ -16587,10 +16585,13 @@ class NmrDpUtility(object):
                             if val is self.empty_value:
                                 continue
 
-                            if file_type == 'nef' and itName.startswith('atom_name') and ('x' in val or 'y' in val):
-                                continue
-
                             row[itCol] = val.upper()
+
+                            if file_type == 'nef' and itName.startswith('atom_name'):
+                                if 'X' in val:
+                                    row[itCol] = re.sub('X', 'x', row[itCol])
+                                elif 'Y' in val:
+                                    row[itCol] = re.sub('Y', 'y', row[itCol])
 
                 if file_type == 'nef':
                     data_names = [d['name'] for d in data_items if d['name'].startswith('chain_code') or d['name'].startswith('residue_name') or d['name'].startswith('atom_name') or d['name'] == 'element']
@@ -16610,10 +16611,13 @@ class NmrDpUtility(object):
                             if val is self.empty_value:
                                 continue
 
-                            if file_type == 'nef' and itName.startswith('atom_name') and ('x' in val or 'y' in val):
-                                continue
-
                             row[itCol] = val.upper()
+
+                            if file_type == 'nef' and itName.startswith('atom_name'):
+                                if 'X' in val:
+                                    row[itCol] = re.sub('X', 'x', row[itCol])
+                                elif 'Y' in val:
+                                    row[itCol] = re.sub('Y', 'y', row[itCol])
 
         return True
 

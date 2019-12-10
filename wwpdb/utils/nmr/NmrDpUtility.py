@@ -2817,7 +2817,7 @@ class NmrDpUtility(object):
 
         content_subtype = 'poly_seq'
 
-        if not content_subtype in input_source_dic['content_subtype']:
+        if not content_subtype in input_source_dic['content_subtype'].keys():
             return True
 
         sf_category = self.sf_categories[file_type][content_subtype]
@@ -10576,7 +10576,7 @@ class NmrDpUtility(object):
                                     atom_id_1 = lp_data[row_id_1][atom_id_1_name]
                                     atom_id_2 = lp_data[row_id_1][atom_id_2_name]
 
-                                    data_type = self.__getTypeOfRdcRestraint(data_type, atom_id_1, atom_id_2)
+                                    data_type = self.__getTypeOfRdcRestraint(atom_id_1, atom_id_2)
 
                                     _count[data_type] += 1
 
@@ -10585,7 +10585,7 @@ class NmrDpUtility(object):
                                 atom_id_1 = lp_data[row_id_1][atom_id_1_name]
                                 atom_id_2 = lp_data[row_id_1][atom_id_2_name]
 
-                                data_type = self.__getTypeOfRdcRestraint(data_type, atom_id_1, atom_id_2)
+                                data_type = self.__getTypeOfRdcRestraint(atom_id_1, atom_id_2)
 
                                 _count[data_type] += 1
 
@@ -10637,10 +10637,11 @@ class NmrDpUtility(object):
 
         if iso_number_1 < iso_number_2:
             vector_type = atom_id_1 + '-' + atom_id_2
-        elif iso_number_2 > iso_number_1:
+        elif iso_number_2 < iso_number_1:
             vector_type = atom_id_2 + '-' + atom_id_1
         else:
-            vector_type = sorted(atom_id_1, atom_id_2)
+            sorted_atom_ids = sorted(atom_id_1, atom_id_2)
+            vector_type = sorted_atom_ids[0] + '-' + sorted_atom_ids[1]
 
         return vector_type + '_bond_vectors'
 
@@ -10878,9 +10879,12 @@ class NmrDpUtility(object):
         file_name = input_source_dic['file_name']
         file_type = input_source_dic['file_type']
 
+        if input_source_dic['content_subtype'] is None:
+            return False
+
         content_subtype = 'poly_seq'
 
-        if not content_subtype in input_source_dic['content_subtype']:
+        if not content_subtype in input_source_dic['content_subtype'].keys():
             return True
 
         lp_category = self.lp_categories[file_type][content_subtype]
@@ -10942,9 +10946,12 @@ class NmrDpUtility(object):
         file_name = input_source_dic['file_name']
         file_type = input_source_dic['file_type']
 
+        if input_source_dic['content_subtype'] is None:
+            return False
+
         content_subtype = 'non_poly'
 
-        if not content_subtype in input_source_dic['content_subtype']:
+        if not content_subtype in input_source_dic['content_subtype'].keys():
             return True
 
         lp_category = self.lp_categories[file_type][content_subtype]
@@ -11032,7 +11039,7 @@ class NmrDpUtility(object):
 
         for content_subtype in self.cif_content_subtypes:
 
-            if content_subtype in ['entry_info', 'poly_seq'] or (not content_subtype in input_source_dic['content_subtype']):
+            if content_subtype in ['entry_info', 'poly_seq'] or input_source_dic['content_subtype'] is None or (not content_subtype in input_source_dic['content_subtype'].keys()):
                 continue
 
             poly_seq_list_set[content_subtype] = []
@@ -12769,7 +12776,7 @@ class NmrDpUtility(object):
                 if not polymer_sequence is None:
                     norm_star_data.add_saveframe(poly_seq_sf_data)
 
-            elif (not input_source_dic['content_subtype'] is None) and content_subtype in input_source_dic['content_subtype']:
+            elif (not input_source_dic['content_subtype'] is None) and content_subtype in input_source_dic['content_subtype'].keys():
 
                 sf_list = self.__star_data.get_saveframes_by_category(sf_category)
 
@@ -14062,7 +14069,7 @@ class NmrDpUtility(object):
                     return None
 
                 if len(_origin) != 1:
-
+                    """
                     err = 'Not found a given atom (chain_id %s, seq_id %s, atom_id %s) in coordinate model.' % (nmr_chain_id, nmr_seq_id, nmr_atom_id)
 
                     self.report.error.appendDescription('internal_error', "+NmrDpUtility.__getNearestAromaticRing() ++ Error  - %s" % err)
@@ -14070,7 +14077,7 @@ class NmrDpUtility(object):
 
                     if self.__verbose:
                         self.__lfh.write("+NmrDpUtility.__getNearestAromaticRing() ++ Error  - %s" % err)
-
+                    """
                     return None
 
                 o = _origin[0]
@@ -14404,7 +14411,7 @@ class NmrDpUtility(object):
                     return None
 
                 if len(_origin) != 1:
-
+                    """
                     err = 'Not found a given atom (chain_id %s, seq_id %s, atom_id %s) in coordinate model.' % (nmr_chain_id, nmr_seq_id, nmr_atom_id)
 
                     self.report.error.appendDescription('internal_error', "+NmrDpUtility.__getNearestParamagneticAtom() ++ Error  - %s" % err)
@@ -14412,7 +14419,7 @@ class NmrDpUtility(object):
 
                     if self.__verbose:
                         self.__lfh.write("+NmrDpUtility.__getNearestParamagneticAtom() ++ Error  - %s" % err)
-
+                    """
                     return None
 
                 o = _origin[0]

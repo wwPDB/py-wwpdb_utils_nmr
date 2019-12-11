@@ -7,9 +7,9 @@
 # 28-Aug-2019  M. Yokochi - report all empty data error as UserWarning
 # 11-Oct-2019  K. Baskaran & M. Yokochi - add functions to detect missing mandatory tag (v1.4.0)
 # 05-Nov-2019  M. Yokochi - revise error messages for missing mandatory saveframe/loop tags
-# 28-Nov-2019  M. Yokochi - implement bi-directional translation, which enables to convert NMR-STAR to NEF
-# 29-Nov-2019  M. Yokochi - support index pointer from loop to their parent saveframe in NMR-STAR
-# 11-Dec-2019  M. Yokochi - relax 'smaller-than' and 'larger-than' constraints, which include 'equal-to' constraint
+# 28-Nov-2019  M. Yokochi - implement bi-directional translation, which enables to convert NMR-STAR to NEF (v2.0.0)
+# 29-Nov-2019  M. Yokochi - support index pointer from loop to their parent saveframe in NMR-STAR (v2.0.1)
+# 11-Dec-2019  M. Yokochi - relax 'smaller-than' and 'larger-than' constraints, which include 'equal-to' constraint (v2.0.2)
 ##
 import sys
 import os
@@ -29,7 +29,7 @@ from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
 
 (scriptPath, scriptName) = ntpath.split(os.path.realpath(__file__))
 
-__version__ = 'v2.0.1'
+__version__ = 'v2.0.2'
 
 class NEFTranslator(object):
     """ Bi-directional translator between NEF and NMR-STAR

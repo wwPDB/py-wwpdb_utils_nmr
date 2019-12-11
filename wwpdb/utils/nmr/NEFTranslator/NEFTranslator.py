@@ -9,7 +9,7 @@
 # 05-Nov-2019  M. Yokochi - revise error messages for missing mandatory saveframe/loop tags
 # 28-Nov-2019  M. Yokochi - implement bi-directional translation, which enables to convert NMR-STAR to NEF
 # 29-Nov-2019  M. Yokochi - support index pointer from loop to their parent saveframe in NMR-STAR
-#
+# 11-Dec-2019  M. Yokochi - relax 'smaller-than' and 'larger-than' constraints, which include 'equal-to' constraint
 ##
 import sys
 import os
@@ -1911,13 +1911,13 @@ class NEFTranslator(object):
                             if 'smaller-than' in group and not group['smaller-than'] is None:
                                 for s in group['smaller-than']:
                                     if s in ent and not ent[s] is None:
-                                        if ent[name] <= ent[s]:
+                                        if ent[name] < ent[s]:
                                             raise ValueError("%sData item %s '%s' must be larger than %s '%s'." % (self.__idx_msg(idx_tag_ids, tags, ent), name, ent[name], s, ent[s]))
 
                             if 'larger-than' in group and not group['larger-than'] is None:
                                 for l in group['larger-than']:
                                     if l in ent and not ent[l] is None:
-                                        if ent[name] >= ent[l]:
+                                        if ent[name] > ent[l]:
                                             raise ValueError("%sData item %s '%s' must be smaller than %s '%s'." % (self.__idx_msg(idx_tag_ids, tags, ent), name, ent[name], l, ent[l]))
 
                             if 'not-equal-to' in group and not group['not-equal-to'] is None:
@@ -2270,13 +2270,13 @@ class NEFTranslator(object):
                         if 'smaller-than' in group and not group['smaller-than'] is None:
                             for s in group['smaller-than']:
                                 if s in ent and not ent[s] is None:
-                                    if ent[name] <= ent[s]:
+                                    if ent[name] < ent[s]:
                                         raise ValueError("Tag item %s '%s' must be larger than %s '%s'." % (name, ent[name], s, ent[s]))
 
                         if 'larger-than' in group and not group['larger-than'] is None:
                             for l in group['larger-than']:
                                 if l in ent and not ent[l] is None:
-                                    if ent[name] >= ent[l]:
+                                    if ent[name] > ent[l]:
                                         raise ValueError("Tag item %s '%s' must be smaller than %s '%s'." % (name, ent[name], l, ent[l]))
 
                         if 'not-equal-to' in group and not group['not-equal-to'] is None:

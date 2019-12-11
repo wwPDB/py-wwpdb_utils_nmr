@@ -9,6 +9,7 @@
 # 05-Nov-2019  M. Yokochi - revise error messages and detect empty sequence information.
 # 28-Nov-2019  M. Yokochi - fix saveframe name of nef_molecular_system and add 'nmr-str2nef-deposit' workflow operation
 # 29-Nov-2019  M. Yokochi - relax allowable range of weight values in restraint data and support index pointer in auxiliary loops
+# 11-Dec-2019  M. Yokochi - fix internal errors while processing NMR-VTF/PDBStat_examples and NMR-VTF/BMRB
 ##
 """ Wrapper class for data processing for NMR unified data.
     @author: Masashi Yokochi
@@ -6900,20 +6901,25 @@ class NmrDpUtility(object):
                                           (b[self.__ccb_atom_id_1] == atom_id_2 and b[self.__ccb_atom_id_2] == atom_id_1)))
                                 except StopIteration:
 
-                                    idx_msg = "[Check row of %s %s] " % (index_tag, i[index_tag])
+                                    if self.__nefT.validate_comp_atom(comp_id_1, atom_id_1) and self.__nefT.validate_comp_atom(comp_id_2, atom_id_2):
 
-                                    warn = "%sMultiple bonds' RDC vector (chain_id_1 %s, seq_id_1 %s, comp_id_1 %s, atom_id_1 %s, chain_id_2 %s, seq_id_2 %s, comp_id_2 %s, atom_id_2 %s) exists." %\
-                                           (idx_msg, chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2)
+                                        idx_msg = "[Check row of %s %s] " % (index_tag, i[index_tag])
 
-                                    self.report.warning.appendDescription('remarkable_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
-                                    self.report.setWarning()
+                                        warn = "%sMultiple bonds' RDC vector (chain_id_1 %s, seq_id_1 %s, comp_id_1 %s, atom_id_1 %s, chain_id_2 %s, seq_id_2 %s, comp_id_2 %s, atom_id_2 %s) exists." %\
+                                               (idx_msg, chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2)
 
-                                    if self.__verbose:
-                                        self.__lfh.write("+NmrDpUtility.__testRDCVector() ++ Warning  - %s\n" % warn)
+                                        self.report.warning.appendDescription('remarkable_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
+                                        self.report.setWarning()
 
-                                    pass
+                                        if self.__verbose:
+                                            self.__lfh.write("+NmrDpUtility.__testRDCVector() ++ Warning  - %s\n" % warn)
 
-                            else: # raised warning already somewhere
+                                        pass
+
+                                    else: # raised error already somewhere because of invalid atom nomenclature
+                                        pass
+
+                            else: # raised warning already somewhere because of unknown comp_id
                                 pass
 
             except Exception as e:
@@ -14069,6 +14075,7 @@ class NmrDpUtility(object):
                     return None
 
                 if len(_origin) != 1:
+                    # raised error already somewhere because of inconsistency between NMR data and coordinate
                     """
                     err = 'Not found a given atom (chain_id %s, seq_id %s, atom_id %s) in coordinate model.' % (nmr_chain_id, nmr_seq_id, nmr_atom_id)
 
@@ -14411,6 +14418,7 @@ class NmrDpUtility(object):
                     return None
 
                 if len(_origin) != 1:
+                    # raised error already somewhere because of inconsistency between NMR data and coordinate
                     """
                     err = 'Not found a given atom (chain_id %s, seq_id %s, atom_id %s) in coordinate model.' % (nmr_chain_id, nmr_seq_id, nmr_atom_id)
 

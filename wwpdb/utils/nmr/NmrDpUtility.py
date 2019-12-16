@@ -3027,7 +3027,7 @@ class NmrDpUtility(object):
 
         for content_subtype in self.nmr_content_subtypes:
 
-            if content_subtype in ['entry_info', 'poly_seq'] or (not content_subtype in input_source_dic['content_subtype']):
+            if content_subtype in ['entry_info', 'poly_seq'] or (not self.__hasKeyValue(input_source_dic['content_subtype'], content_subtype)):
                 continue
 
             poly_seq_list_set[content_subtype] = []
@@ -3442,7 +3442,7 @@ class NmrDpUtility(object):
         has_poly_seq_in_loop = self.__hasKeyValue(input_source_dic, 'polymer_sequence_in_loop')
 
         # pass if poly_seq exists
-        if has_poly_seq or not has_poly_seq_in_loop:
+        if has_poly_seq or (not has_poly_seq_in_loop):
             return True
 
         if self.__extractPolymerSequenceInEntity():
@@ -3501,7 +3501,7 @@ class NmrDpUtility(object):
 
         file_type = input_source_dic['file_type']
 
-        if file_type != 'nmr-star' or not self.__has_star_entity:
+        if file_type != 'nmr-star' or (not self.__has_star_entity):
             return False
 
         for sf_data in self.__star_data.get_saveframes_by_category('assembly'):
@@ -5502,7 +5502,7 @@ class NmrDpUtility(object):
 
                     details_col = loop.tags.index('Details') if 'Details' in loop.tags else -1
 
-                if file_type == 'nef' or not self.__nonblk_anomalous_cs:
+                if file_type == 'nef' or (not self.__nonblk_anomalous_cs):
                     lp_data = next(l['data'] for l in self.__lp_data[content_subtype] if l['sf_framecode'] == sf_framecode)
 
                 else:
@@ -7987,6 +7987,9 @@ class NmrDpUtility(object):
 
             target_scale = (max_val - min_val) / 20.0
 
+            if target_scale <= 0.0:
+                return
+
             scale = 1.0
 
             while scale < target_scale:
@@ -8633,6 +8636,9 @@ class NmrDpUtility(object):
             ent['range'] = {'max_value': max_val, 'min_value': min_val}
 
             target_scale = (max_val - min_val) / 10.0
+
+            if target_scale <= 0.0:
+                return
 
             scale = 1.0
 
@@ -10299,6 +10305,9 @@ class NmrDpUtility(object):
 
             target_scale = (max_val - min_val) / 12.0
 
+            if target_scale <= 0.0:
+                return
+
             scale = 1.0
 
             while scale < target_scale:
@@ -10863,7 +10872,7 @@ class NmrDpUtility(object):
         if self.__entry_id == 'EXTRACT_FROM_COORD':
             entry = self.__cR.getDictList('entry')
 
-            if len(entry) == 0 or not 'id' in entry[0]:
+            if len(entry) == 0 or (not 'id' in entry[0]):
                 self.__entry_id = self.__entry_id__
             else:
                 self.__entry_id = entry[0]['id']
@@ -11045,7 +11054,7 @@ class NmrDpUtility(object):
 
         for content_subtype in self.cif_content_subtypes:
 
-            if content_subtype in ['entry_info', 'poly_seq'] or input_source_dic['content_subtype'] is None or (not content_subtype in input_source_dic['content_subtype'].keys()):
+            if content_subtype in ['entry_info', 'poly_seq'] or (not self.__hasKeyValue(input_source_dic['content_subtype'], content_subtype)):
                 continue
 
             poly_seq_list_set[content_subtype] = []
@@ -11779,7 +11788,7 @@ class NmrDpUtility(object):
 
                 sf_framecode = sf_data.get_tag('sf_framecode')[0]
 
-                if file_type == 'nef' or not self.__nonblk_bad_nterm:
+                if file_type == 'nef' or (not self.__nonblk_bad_nterm):
                     lp_data = next((l['data'] for l in self.__lp_data[content_subtype] if l['sf_framecode'] == sf_framecode), None)
 
                 else:
@@ -12782,7 +12791,7 @@ class NmrDpUtility(object):
                 if not polymer_sequence is None:
                     norm_star_data.add_saveframe(poly_seq_sf_data)
 
-            elif (not input_source_dic['content_subtype'] is None) and content_subtype in input_source_dic['content_subtype'].keys():
+            elif self.__hasKeyValue(input_source_dic['content_subtype'], content_subtype):
 
                 sf_list = self.__star_data.get_saveframes_by_category(sf_category)
 
@@ -13192,7 +13201,7 @@ class NmrDpUtility(object):
 
         content_subtype = 'chem_shift'
 
-        if not content_subtype in input_source_dic['content_subtype'].keys():
+        if not self.__hasKeyValue(input_source_dic['content_subtype'], content_subtype):
 
             err = "Assigned chemical shift loop did not exist in %s file." % file_name
 
@@ -13570,7 +13579,7 @@ class NmrDpUtility(object):
 
         content_subtype = 'chem_shift'
 
-        if not content_subtype in input_source_dic['content_subtype'].keys():
+        if not self.__hasKeyValue(input_source_dic['content_subtype'], content_subtype):
 
             err = "Assigned chemical shift loop did not exist in %s file." % file_name
 
@@ -14529,10 +14538,7 @@ class NmrDpUtility(object):
 
         content_subtype = 'chem_shift'
 
-        if input_source_dic['content_subtype'] is None:
-            return True
-
-        if not content_subtype in input_source_dic['content_subtype'].keys():
+        if not self.__hasKeyValue(input_source_dic['content_subtype'], content_subtype):
             return True
 
         sf_category = self.sf_categories[file_type][content_subtype]
@@ -14688,10 +14694,7 @@ class NmrDpUtility(object):
 
         content_subtype = 'dihed_restraint'
 
-        if input_source_dic['content_subtype'] is None:
-            return True
-
-        if not content_subtype in input_source_dic['content_subtype'].keys():
+        if not self.__hasKeyValue(input_source_dic['content_subtype'], content_subtype):
             return True
 
         sf_category = self.sf_categories[file_type][content_subtype]
@@ -14776,10 +14779,7 @@ class NmrDpUtility(object):
 
         content_subtype = 'dihed_restraint'
 
-        if input_source_dic['content_subtype'] is None:
-            return True
-
-        if not content_subtype in input_source_dic['content_subtype'].keys():
+        if not self.__hasKeyValue(input_source_dic['content_subtype'], content_subtype):
             return True
 
         item_names = self.item_names_in_dh_loop[file_type]
@@ -15991,7 +15991,7 @@ class NmrDpUtility(object):
 
             content_subtype = 'chem_shift'
 
-            if not content_subtype in input_source_dic['content_subtype'].keys():
+            if not self.__hasKeyValue(input_source_dic['content_subtype'], content_subtype):
 
                 err = "Assigned chemical shift loop did not exist in %s file." % file_name
 

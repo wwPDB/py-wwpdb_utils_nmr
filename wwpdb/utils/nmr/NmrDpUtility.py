@@ -10,7 +10,7 @@
 # 28-Nov-2019  M. Yokochi - fix saveframe name of nef_molecular_system and add 'nmr-str2nef-deposit' workflow operation
 # 29-Nov-2019  M. Yokochi - relax allowable range of weight values in restraint data and support index pointer in auxiliary loops
 # 11-Dec-2019  M. Yokochi - fix internal errors while processing NMR-VTF/PDBStat_examples and NMR-VTF/BMRB
-# 24-Jan-2020  M. Yokochi - add histogram of distance restraints per residue
+# 24-Jan-2020  M. Yokochi - add histogram of distance restraints per residue and distance restraints on contact map
 ##
 """ Wrapper class for data processing for NMR unified data.
     @author: Masashi Yokochi
@@ -8400,6 +8400,7 @@ class NmrDpUtility(object):
             redu_count = {}
             potential = {}
             count_per_residue = []
+            count_on_map = []
 
             polymer_sequence = input_source_dic['polymer_sequence']
 
@@ -8408,6 +8409,7 @@ class NmrDpUtility(object):
 
             for s in polymer_sequence:
                 count_per_residue.append({'chain_id': s['chain_id'], 'seq_id': s['seq_id'], 'comp_id': s['comp_id']})
+                count_on_map.append({'chain_id': s['chain_id'], 'seq_id': s['seq_id'], 'comp_id': s['comp_id']})
 
             for l, i in enumerate(lp_data):
                 index = i[index_tag] if index_tag in i else None
@@ -8642,6 +8644,19 @@ class NmrDpUtility(object):
                     if c['chain_id'] == chain_id_2:
                         c[data_type][seq_id_2 - 1] += 1
 
+                # count on map
+
+                if chain_id_1 == chain_id_2:
+                    for c in count_on_map:
+                        if not data_type in c:
+                            c[data_type] = []
+                        if c['chain_id'] == chain_id_1:
+                            try:
+                                b = next(b for b in c[data_type] if b['seq_id_1'] == seq_id_1 and b['seq_id_2'] == seq_id_2)
+                                b['total'] += 1
+                            except StopIteration:
+                                c[data_type].append({'seq_id_1': seq_id_1, 'seq_id_2': seq_id_2, 'total': 1})
+
             if len(count) == 0:
                 return
 
@@ -8654,6 +8669,7 @@ class NmrDpUtility(object):
                 ent['number_of_redundant_constraints'] = redu_count
             ent['number_of_potential_types'] = potential
             ent['number_of_constraints_per_residue'] = count_per_residue
+            ent['constraints_on_contact_map'] = count_on_map
             ent['range'] = {'max_value': max_val, 'min_value': min_val}
 
             target_scale = (max_val - min_val) / 10.0

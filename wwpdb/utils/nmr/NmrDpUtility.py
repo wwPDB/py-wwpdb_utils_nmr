@@ -10,6 +10,7 @@
 # 28-Nov-2019  M. Yokochi - fix saveframe name of nef_molecular_system and add 'nmr-str2nef-deposit' workflow operation
 # 29-Nov-2019  M. Yokochi - relax allowable range of weight values in restraint data and support index pointer in auxiliary loops
 # 11-Dec-2019  M. Yokochi - fix internal errors while processing NMR-VTF/PDBStat_examples and NMR-VTF/BMRB
+# 24-Jan-2020  M. Yokochi - add histogram of distance restraints per residue
 ##
 """ Wrapper class for data processing for NMR unified data.
     @author: Masashi Yokochi
@@ -8398,6 +8399,15 @@ class NmrDpUtility(object):
             inco_count = {}
             redu_count = {}
             potential = {}
+            count_per_residue = []
+
+            polymer_sequence = input_source_dic['polymer_sequence']
+
+            if polymer_sequence is None:
+                return
+
+            for s in polymer_sequence:
+                count_per_residue.append({'chain_id': s['chain_id'], 'seq_id': s['seq_id'], 'comp_id': s['comp_id']})
 
             for l, i in enumerate(lp_data):
                 index = i[index_tag] if index_tag in i else None
@@ -8622,6 +8632,16 @@ class NmrDpUtility(object):
                 else:
                     potential[potential_type] = 1
 
+                # count per residue
+
+                for c in count_per_residue:
+                    if not data_type in c:
+                        c[data_type] = [0] * len(c['seq_id'])
+                    if c['chain_id'] == chain_id_1:
+                        c[data_type][seq_id_1 - 1] += 1
+                    if c['chain_id'] == chain_id_2:
+                        c[data_type][seq_id_2 - 1] += 1
+
             if len(count) == 0:
                 return
 
@@ -8633,6 +8653,7 @@ class NmrDpUtility(object):
             if len(redu_count) > 0:
                 ent['number_of_redundant_constraints'] = redu_count
             ent['number_of_potential_types'] = potential
+            ent['number_of_constraints_per_residue'] = count_per_residue
             ent['range'] = {'max_value': max_val, 'min_value': min_val}
 
             target_scale = (max_val - min_val) / 10.0

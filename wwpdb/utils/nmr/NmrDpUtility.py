@@ -8627,7 +8627,7 @@ class NmrDpUtility(object):
 
             ent['number_of_constraints'] = count
             if len(comb_count) > 0:
-                ent['number_of_combined constraints'] = comb_count
+                ent['number_of_combined_constraints'] = comb_count
             if len(inco_count) > 0:
                 ent['number_of_inconsistent_constraints'] = inco_count
             if len(redu_count) > 0:
@@ -9616,7 +9616,7 @@ class NmrDpUtility(object):
             if len(count) > 0:
                 ent['number_of_constraints'] = count
                 if len(comb_count) > 0:
-                    ent['number_of_combined constraints'] = comb_count
+                    ent['number_of_combined_constraints'] = comb_count
                 if len(inco_count) > 0:
                     ent['number_of_inconsistent_constraints'] = inco_count
                 if len(redu_count) > 0:
@@ -10295,7 +10295,7 @@ class NmrDpUtility(object):
 
             ent['number_of_constraints'] = count
             if len(comb_count) > 0:
-                ent['number_of_combined constraints'] = comb_count
+                ent['number_of_combined_constraints'] = comb_count
             if len(inco_count) > 0:
                 ent['number_of_inconsistent_constraints'] = inco_count
             if len(redu_count) > 0:

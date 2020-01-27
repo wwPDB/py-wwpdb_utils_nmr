@@ -6,6 +6,7 @@
 # 09-Oct-2019  M. Yokochi - add setCorrectedError() to catch missing mandatory saveframe tag
 # 10-Oct-2019  M. Yokochi - add 'enum_failure_ignorable' warning type
 # 15-Oct-2019  M. Yokochi - add 'encouragement' waring type
+# 27-Jan-2019  M. Yokochi - change warning type 'enum_failure' to 'enum_mismatch'
 ##
 """ Wrapper class for data processing report of NMR unified data.
     @author: Masashi Yokochi
@@ -664,7 +665,7 @@ class NmrDpReportWarning:
     """
 
     def __init__(self):
-        self.items = ('encouragement', 'missing_content', 'missing_saveframe', 'missing_data', 'enum_failure', 'enum_failure_ignorable',
+        self.items = ('encouragement', 'missing_content', 'missing_saveframe', 'missing_data', 'enum_mismatch', 'enum_mismatch_ignorable',
                       'disordered_index', 'sequence_mismatch', 'atom_nomenclature_mismatch', 'ccd_mismatch',
                       'skipped_sf_category', 'skipped_lp_category',
                       'suspicious_data', 'unusual_data', 'remarkable_data', 'unsufficient_data',
@@ -742,7 +743,7 @@ class NmrDpReportWarning:
 
         for item in self.__contents.keys():
 
-            if item in ['total', 'enum_failure_ignorable'] or self.__contents[item] is None:
+            if item in ['total', 'enum_mismatch_ignorable'] or self.__contents[item] is None:
                 continue
 
             try:
@@ -828,7 +829,7 @@ class NmrDpReportWarning:
 
         for item in self.items:
 
-            if item == 'enum_failure_ignorable' or self.__contents[item] is None:
+            if item == 'enum_mismatch_ignorable' or self.__contents[item] is None:
                 continue
 
             for c in self.__contents[item]:

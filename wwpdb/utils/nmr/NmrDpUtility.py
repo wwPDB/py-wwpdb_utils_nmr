@@ -12,7 +12,7 @@
 # 11-Dec-2019  M. Yokochi - fix internal errors while processing NMR-VTF/PDBStat_examples and NMR-VTF/BMRB
 # 24-Jan-2020  M. Yokochi - add histogram of distance restraints per residue and distance restraints on contact map
 # 27-Jan-2020  M. Yokochi - add contact map for inter-chain distance restraints
-# 28-Jan-2019  M. Yokochi - add struct_conf and struct_sheet_range data in dp report 
+# 28-Jan-2019  M. Yokochi - add struct_conf and struct_sheet_range data in dp report
 ##
 """ Wrapper class for data processing for NMR unified data.
     @author: Masashi Yokochi
@@ -8404,6 +8404,7 @@ class NmrDpUtility(object):
             inco_count = {}
             redu_count = {}
             potential = {}
+
             count_per_residue = []
             count_on_map = []
             count_on_asym_map = []
@@ -9493,6 +9494,16 @@ class NmrDpUtility(object):
             psi_list = []
             chi1_list = []
             chi2_list = []
+            count_per_residue = []
+
+            polymer_sequence = input_source_dic['polymer_sequence']
+
+            if polymer_sequence is None:
+                return
+
+            for s in polymer_sequence:
+                struct_conf = self.__extractCoordStructConf(s['chain_id'], s['seq_id'])
+                count_per_residue.append({'chain_id': s['chain_id'], 'seq_id': s['seq_id'], 'comp_id': s['comp_id'], 'struct_conf': struct_conf})
 
             for i in lp_data:
                 index = i[index_tag] if index_tag in i else None
@@ -9686,6 +9697,14 @@ class NmrDpUtility(object):
                 else:
                     potential[potential_type] = 1
 
+                # count per residue
+
+                for c in count_per_residue:
+                    if not data_type in c:
+                        c[data_type] = [0] * len(c['seq_id'])
+                    if c['chain_id'] == chain_id_1:
+                        c[data_type][c['seq_id'].index(seq_id_common[0][0])] += 1
+
             if len(count) > 0:
                 ent['number_of_constraints'] = count
                 if len(comb_count) > 0:
@@ -9694,6 +9713,7 @@ class NmrDpUtility(object):
                     ent['number_of_inconsistent_constraints'] = inco_count
                 if len(redu_count) > 0:
                     ent['number_of_redundant_constraints'] = redu_count
+                ent['number_of_constraints_per_residue'] = count_per_residue
                 ent['number_of_potential_types'] = potential
 
             if 'phi_angle_constraints' in count and 'psi_angle_constraints' in count:
@@ -10277,10 +10297,23 @@ class NmrDpUtility(object):
             redu_count = {}
             potential = {}
 
+            count_per_residue = []
+
+            polymer_sequence = input_source_dic['polymer_sequence']
+
+            if polymer_sequence is None:
+                return
+
+            for s in polymer_sequence:
+                struct_conf = self.__extractCoordStructConf(s['chain_id'], s['seq_id'])
+                count_per_residue.append({'chain_id': s['chain_id'], 'seq_id': s['seq_id'], 'comp_id': s['comp_id'], 'struct_conf': struct_conf})
+
             for i in lp_data:
                 index = i[index_tag] if index_tag in i else None
                 comb_id = i[comb_id_name] if comb_id_name in i else None
 
+                chain_id_1 = i[chain_id_1_name]
+                seq_id_1 = i[seq_id_1_name]
                 atom_id_1 = i[atom_id_1_name]
                 atom_id_2 = i[atom_id_2_name]
 
@@ -10363,6 +10396,14 @@ class NmrDpUtility(object):
                 else:
                     potential[potential_type] = 1
 
+                # count per residue
+
+                for c in count_per_residue:
+                    if not data_type in c:
+                        c[data_type] = [0] * len(c['seq_id'])
+                    if c['chain_id'] == chain_id_1:
+                        c[data_type][c['seq_id'].index(seq_id_1)] += 1
+
             if len(count) == 0:
                 return
 
@@ -10373,6 +10414,7 @@ class NmrDpUtility(object):
                 ent['number_of_inconsistent_constraints'] = inco_count
             if len(redu_count) > 0:
                 ent['number_of_redundant_constraints'] = redu_count
+            ent['number_of_constraints_per_residue'] = count_per_residue
             ent['number_of_potential_types'] = potential
             ent['range'] = {'max_value': max_val_, 'min_value': min_val_}
 

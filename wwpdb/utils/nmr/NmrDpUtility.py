@@ -11,7 +11,8 @@
 # 29-Nov-2019  M. Yokochi - relax allowable range of weight values in restraint data and support index pointer in auxiliary loops
 # 11-Dec-2019  M. Yokochi - fix internal errors while processing NMR-VTF/PDBStat_examples and NMR-VTF/BMRB
 # 24-Jan-2020  M. Yokochi - add histogram of distance restraints per residue and distance restraints on contact map
-# 27-Jan-2020  M. Yokochi - add contact map for inter chain distance restraints
+# 27-Jan-2020  M. Yokochi - add contact map for inter-chain distance restraints
+# 28-Jan-2019  M. Yokochi - add struct_conf and struct_sheet_range data in dp report 
 ##
 """ Wrapper class for data processing for NMR unified data.
     @author: Masashi Yokochi
@@ -2017,6 +2018,9 @@ class NmrDpUtility(object):
 
         # CIF reader
         self.__cR = CifReader(self.__verbose, self.__lfh)
+
+        # extracted conformational annotation of coordinate file
+        self.__nmr_struct_conf = {}
 
     def setVerbose(self, flag):
         """ Set verbose mode.
@@ -8412,12 +8416,13 @@ class NmrDpUtility(object):
                 return
 
             for s in polymer_sequence:
-                count_per_residue.append({'chain_id': s['chain_id'], 'seq_id': s['seq_id'], 'comp_id': s['comp_id']})
-                count_on_map.append({'chain_id': s['chain_id'], 'seq_id': s['seq_id'], 'comp_id': s['comp_id']})
+                struct_conf = self.__extractCoordStructConf(s['chain_id'], s['seq_id'])
+                count_per_residue.append({'chain_id': s['chain_id'], 'seq_id': s['seq_id'], 'comp_id': s['comp_id'], 'struct_conf': struct_conf})
+                count_on_map.append({'chain_id': s['chain_id'], 'seq_id': s['seq_id'], 'comp_id': s['comp_id'], 'struct_conf': struct_conf})
 
             if len(polymer_sequence) > 1:
                 for s, t in itertools.combinations(polymer_sequence, 2):
-                    count_on_asym_map.append({'chain_id_1': s['chain_id'], 'chain_id_2': t['chain_id'], 'seq_id_1': s['seq_id'], 'seq_id_2': t['seq_id'], 'comp_id_1': s['comp_id'], 'comp_id_2': t['comp_id']})
+                    count_on_asym_map.append({'chain_id_1': s['chain_id'], 'chain_id_2': t['chain_id'], 'seq_id_1': s['seq_id'], 'seq_id_2': t['seq_id'], 'comp_id_1': s['comp_id'], 'comp_id_2': t['comp_id'], 'struct_conf_1': self.__extractCoordStructConf(s['chain_id'], s['seq_id']), 'struct_conf_2': self.__extractCoordStructConf(t['chain_id'], t['seq_id'])})
 
             for l, i in enumerate(lp_data):
                 index = i[index_tag] if index_tag in i else None
@@ -10792,6 +10797,76 @@ class NmrDpUtility(object):
             if self.__verbose:
                 self.__lfh.write("+NmrDpUtility.__calculateStatsOfSpectralPeak() ++ Error  - %s" % str(e))
 
+    def __extractCoordStructConf(self, nmr_chain_id, nmr_seq_ids):
+        """ Extract conformational annotations of coordinate file.
+        """
+
+        if nmr_chain_id in self.__nmr_struct_conf:
+            return self.__nmr_struct_conf[nmr_chain_id]
+
+        nmr_struct_conf = [None] * len(nmr_seq_ids)
+
+        id = self.report.getInputSourceIdOfCoord()
+
+        if id < 0:
+            return nmr_struct_conf
+
+        cif_input_source = self.report.input_sources[id]
+        cif_input_source_dic = cif_input_source.get()
+
+        cif_polymer_sequence = cif_input_source_dic['polymer_sequence']
+
+        seq_align_dic = self.report.sequence_alignment.get()
+        chain_assign_dic = self.report.chain_assignment.get()
+
+        if not 'nmr_poly_seq_vs_model_poly_seq' in chain_assign_dic:
+
+            err = "Chain assignment did not exist, __assignCoordPolymerSequence() should be invoked."
+
+            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__extractCoordStructConf() ++ Error  - %s" % err)
+            self.report.setError()
+
+            if self.__verbose:
+                self.__lfh.write("+NmrDpUtility.__isProtCis() ++ Error  - %s\n" % err)
+
+            return nmr_struct_conf
+
+        if chain_assign_dic['nmr_poly_seq_vs_model_poly_seq'] is None:
+            return nmr_struct_conf
+
+        for chain_assign in chain_assign_dic['nmr_poly_seq_vs_model_poly_seq']:
+
+            if chain_assign['ref_chain_id'] != nmr_chain_id:
+                continue
+
+            cif_chain_id = chain_assign['test_chain_id']
+
+            for ps in cif_polymer_sequence:
+
+                if ps['chain_id'] != cif_chain_id:
+                    continue
+
+                result = next((seq_align for seq_align in seq_align_dic['nmr_poly_seq_vs_model_poly_seq'] if seq_align['ref_chain_id'] == nmr_chain_id and seq_align['test_chain_id'] == cif_chain_id), None)
+
+                if not result is None:
+
+                    for nmr_seq_id in nmr_seq_ids:
+
+                        cif_seq_id = None
+                        for k in range(result['length']):
+                            if result['ref_seq_id'][k] == nmr_seq_id:
+                                cif_seq_id = result['test_seq_id'][k]
+                                break
+
+                        if cif_seq_id is None:
+                            continue
+
+                        nmr_struct_conf[nmr_seq_ids.index(nmr_seq_id)] = ps['struct_conf'][ps['seq_id'].index(cif_seq_id)]
+
+        self.__nmr_struct_conf[nmr_chain_id] = nmr_struct_conf
+
+        return nmr_struct_conf
+
     def __validateCoordInputSource(self):
         """ Validate coordinate file as secondary input resource.
         """
@@ -10974,7 +11049,7 @@ class NmrDpUtility(object):
 
         try:
 
-            poly_seq = self.__cR.getPolymerSequence(lp_category, self.key_items[file_type][content_subtype])
+            poly_seq = self.__cR.getPolymerSequence(lp_category, self.key_items[file_type][content_subtype], withStructConf=True)
 
             input_source.setItemValue('polymer_sequence', poly_seq)
 
@@ -11041,7 +11116,7 @@ class NmrDpUtility(object):
 
         try:
 
-            non_poly = self.__cR.getPolymerSequence(lp_category, self.key_items[file_type][content_subtype])
+            non_poly = self.__cR.getPolymerSequence(lp_category, self.key_items[file_type][content_subtype], withStructConf=False)
 
             if len(non_poly) > 0:
 
@@ -11135,7 +11210,7 @@ class NmrDpUtility(object):
 
             try:
 
-                poly_seq = self.__cR.getPolymerSequence(lp_category, self.key_items[file_type][content_subtype])
+                poly_seq = self.__cR.getPolymerSequence(lp_category, self.key_items[file_type][content_subtype], withStructConf=False)
 
                 if len(poly_seq) > 0:
 

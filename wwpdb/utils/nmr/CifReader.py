@@ -10,6 +10,7 @@
 # 23-Jul-2019   my  - Forked original code to wwpdb.util.nmr.CifReader
 # 30-Jul-2019   my  - Add 'range-float' as filter item type
 # 05-Aug-2019   my  - Add 'enum' as filter item type
+# 28-Jan-2019   my  - Add 'withStructConf' option of getPolymerSequence
 ##
 """ A collection of classes for parsing CIF files.
 """
@@ -139,7 +140,7 @@ class CifReader(object):
 
         return dList
 
-    def getPolymerSequence(self, catName, keyItems):
+    def getPolymerSequence(self, catName, keyItems, withStructConf=False):
         """ Extracts sequence from a given loop in a CIF file
         """
 
@@ -215,12 +216,53 @@ class CifReader(object):
                     ent['seq_id'] = seqDict[c]
                     ent['comp_id'] = compDict[c]
 
+                    if withStructConf:
+                        ent['struct_conf'] = self.__extractStructConf(c, seqDict[c])
+
                     asm.append(ent)
 
             except ValueError:
                 raise ValueError("%s must be int." % itNameList[seq_id_col])
 
         return asm
+
+    def __extractStructConf(self, chain_id, seq_ids):
+        """ Extract structure conformational annotations.
+        """
+
+        ret = [None] * len(seq_ids)
+
+        struct_conf = self.getDictListWithFilter('struct_conf',
+                                                 [{'name': 'conf_type_id', 'type': 'str'},
+                                                  {'name': 'pdbx_PDB_helix_id', 'type': 'str'},
+                                                  {'name': 'beg_label_seq_id', 'type': 'int'},
+                                                  {'name': 'end_label_seq_id', 'type': 'int'}
+                                                  ],
+                                                 [{'name': 'beg_label_asym_id', 'type': 'str', 'value': chain_id},
+                                                  {'name': 'end_label_asym_id', 'type': 'str', 'value': chain_id}
+                                                  ])
+
+        for sc in struct_conf:
+            for seq_id in range(sc['beg_label_seq_id'], sc['end_label_seq_id'] + 1):
+                if seq_id in seq_ids:
+                    ret[seq_ids.index(seq_id)] = sc['conf_type_id'] + ':' + sc['pdbx_PDB_helix_id']
+
+        struct_sheet_range = self.getDictListWithFilter('struct_sheet_range',
+                                                 [{'name': 'sheet_id', 'type': 'str'},
+                                                  {'name': 'id', 'type': 'str'},
+                                                  {'name': 'beg_label_seq_id', 'type': 'int'},
+                                                  {'name': 'end_label_seq_id', 'type': 'int'}
+                                                  ],
+                                                 [{'name': 'beg_label_asym_id', 'type': 'str', 'value': chain_id},
+                                                  {'name': 'end_label_asym_id', 'type': 'str', 'value': chain_id}
+                                                  ])
+
+        for ssr in struct_sheet_range:
+            for seq_id in range(ssr['beg_label_seq_id'], ssr['end_label_seq_id'] + 1):
+                if seq_id in seq_ids:
+                    ret[seq_ids.index(seq_id)] = 'STRN:' + ssr['sheet_id'] + ':' + ssr['id']
+
+        return ret
 
     def getDictListWithFilter(self, catName, dataItems, filterItems=None):
         """ Return a list of dictionaries of a given category with filter.

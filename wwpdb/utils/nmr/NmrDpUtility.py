@@ -6832,7 +6832,7 @@ class NmrDpUtility(object):
 
                             idx_msg = "[Check row of %s %s] " % (index_tag, i[index_tag])
 
-                            err = "%sNon-magnetic susceptible spins appears in RDC vector (chain_id_1 %s, seq_id_1 %s, comp_id_1 %s, atom_id_1 %s, chain_id_2 %s, seq_id_2 %s, comp_id_2 %s, atom_id_2 %s)." %\
+                            err = "%sNon-magnetic susceptible spin appears in RDC vector (chain_id_1 %s, seq_id_1 %s, comp_id_1 %s, atom_id_1 %s, chain_id_2 %s, seq_id_2 %s, comp_id_2 %s, atom_id_2 %s)." %\
                                   (idx_msg, chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2)
 
                             self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})

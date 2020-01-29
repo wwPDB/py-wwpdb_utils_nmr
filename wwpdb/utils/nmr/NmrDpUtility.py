@@ -2736,7 +2736,7 @@ class NmrDpUtility(object):
 
             sf_category = self.sf_categories[file_type][content_subtype]
 
-            err = "Unexpectedly, multiple saveframes in %s category were found." % sf_category
+            err = "Unexpectedly, multiple saveframes in %s category exist." % sf_category
 
             self.report.error.appendDescription('format_issue', {'file_name': file_name, 'description': err})
             self.report.setError()
@@ -4731,7 +4731,7 @@ class NmrDpUtility(object):
 
                 if (not lp_data is None) and len(lp_data) == 0:
 
-                    warn = "Unexpectedly, no rows found in a loop."
+                    warn = "Unexpectedly, there are no rows in a loop."
 
                     self.report.warning.appendDescription('missing_content', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
                     self.report.setWarning()
@@ -6832,7 +6832,7 @@ class NmrDpUtility(object):
 
                             idx_msg = "[Check row of %s %s] " % (index_tag, i[index_tag])
 
-                            err = "%sNon-magnetic susceptible spins appeared in RDC vector (chain_id_1 %s, seq_id_1 %s, comp_id_1 %s, atom_id_1 %s, chain_id_2 %s, seq_id_2 %s, comp_id_2 %s, atom_id_2 %s)." %\
+                            err = "%sNon-magnetic susceptible spins appears in RDC vector (chain_id_1 %s, seq_id_1 %s, comp_id_1 %s, atom_id_1 %s, chain_id_2 %s, seq_id_2 %s, comp_id_2 %s, atom_id_2 %s)." %\
                                   (idx_msg, chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2)
 
                             self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
@@ -7035,7 +7035,7 @@ class NmrDpUtility(object):
 
                                 if len(low_seq_coverage) > 0:
 
-                                    warn = 'Sequence coverage of NMR experimental data is low (' + low_seq_coverage[:-2] + ') in %s saveframe.' % sf_framecode
+                                    warn = 'Sequence coverage of NMR experimental data is relatively low (' + low_seq_coverage[:-2] + ') in %s saveframe.' % sf_framecode
 
                                     self.report.warning.appendDescription('unsufficient_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
                                     self.report.setWarning()
@@ -8235,7 +8235,7 @@ class NmrDpUtility(object):
                                         if not cg_chem_shift is None:
                                             shifts += 'CG %s, ' % cg_chem_shift
 
-                                        warn = "%s-peptide bond (chain_id %s, seq_id %s, comp_id %s) could not supported by assigned chemical shift values (%scis_trans_pred %s)." %\
+                                        warn = "%s-peptide bond (chain_id %s, seq_id %s, comp_id %s) can not be verified with the assigned chemical shift values (%scis_trans_pred %s)." %\
                                                ('cis' if pro['in_cis_peptide_bond'] else 'trans', chain_id, seq_id, comp_id, shifts, pro['cis_trans_pred'])
 
                                         self.report.warning.appendDescription(item, {'file_name': file_name, 'sf_framecode': sf_framecode, 'description': warn})
@@ -8346,7 +8346,7 @@ class NmrDpUtility(object):
                                         if not ne2_chem_shift is None:
                                             shifts += 'NE2 %s, ' % ne2_chem_shift
 
-                                        warn = "Tautomeric state %s (chain_id %s, seq_id %s, comp_id %s) could not supported by assigned chemical shift values (%stautomeric_state_pred %s)." %\
+                                        warn = "Tautomeric state %s (chain_id %s, seq_id %s, comp_id %s) can not be verified with the assigned chemical shift values (%stautomeric_state_pred %s)." %\
                                                (his['tautomeric_state'], chain_id, seq_id, comp_id, shifts, his['tautomeric_state_pred'])
 
                                         self.report.warning.appendDescription(item, {'file_name': file_name, 'sf_framecode': sf_framecode, 'description': warn})
@@ -11737,7 +11737,7 @@ class NmrDpUtility(object):
                         if nmr_comp_id == '.' or i >= len(s2['seq_id']):
                             unmapped.append({'ref_seq_id': s1['seq_id'][i], 'ref_comp_id': cif_comp_id})
 
-                            warn = "%s's sequence (chain_id %s, seq_id %s, comp_id %s) could not mapped to any sequence in %s." %\
+                            warn = "%s's sequence (chain_id %s, seq_id %s, comp_id %s) could not be mapped to any sequence in %s." %\
                                    (cif_file_name, chain_id, s1['seq_id'][i], cif_comp_id, nmr_file_name)
 
                             self.report.warning.appendDescription('sequence_mismatch', {'file_name': cif_file_name, 'description': warn})
@@ -11840,7 +11840,7 @@ class NmrDpUtility(object):
                         if cif_comp_id == '.' or i >= len(s2['seq_id']):
                             unmapped.append({'ref_seq_id': s1['seq_id'][i], 'ref_comp_id': nmr_comp_id})
 
-                            warn = "%s's sequence (chain_id %s, seq_id %s, comp_id %s) could not mapped to any sequence in %s." %\
+                            warn = "%s's sequence (chain_id %s, seq_id %s, comp_id %s) could not be mapped to any sequence in %s." %\
                                    (nmr_file_name, chain_id, s1['seq_id'][i], nmr_comp_id, cif_file_name)
 
                             self.report.warning.appendDescription('sequence_mismatch', {'file_name': nmr_file_name, 'description': warn})
@@ -13617,7 +13617,7 @@ class NmrDpUtility(object):
 
             if disulf['redox_state_pred_1'] != 'oxidized' and disulf['redox_state_pred_1'] != 'unknown':
 
-                warn = "Disulfide bond (chain_id_1 %s, seq_id_1 %s, comp_id_1 %s, chain_id_2 %s, seq_id_2 %s, comp_id_2 %s) could not supported by assigned chemical shift values (CA_1 %s, CB_1 %s, redox_state_pred_1 %s)." %\
+                warn = "Disulfide bond (chain_id_1 %s, seq_id_1 %s, comp_id_1 %s, chain_id_2 %s, seq_id_2 %s, comp_id_2 %s) can not be verified with the assigned chemical shift values (CA_1 %s, CB_1 %s, redox_state_pred_1 %s)." %\
                        (nmr_chain_id_1, nmr_seq_id_1, nmr_comp_id_1, nmr_chain_id_2, nmr_seq_id_2, nmr_comp_id_2, ca_chem_shift_1, cb_chem_shift_1, disulf['redox_state_pred_1'])
 
                 item = 'suspicious_data' if disulf['redox_state_pred_1'] == 'reduced' else 'unusual_data'
@@ -13632,7 +13632,7 @@ class NmrDpUtility(object):
 
             if disulf['redox_state_pred_2'] != 'oxidized' and disulf['redox_state_pred_2'] != 'unknown':
 
-                warn = "Disulfide bond (chain_id_1 %s, seq_id_1 %s, comp_id_1 %s, chain_id_2 %s, seq_id_2 %s, comp_id_2 %s) could not supported by assigned chemical shift values (CA_2 %s, CB_2 %s, redox_state_pred_2 %s)." %\
+                warn = "Disulfide bond (chain_id_1 %s, seq_id_1 %s, comp_id_1 %s, chain_id_2 %s, seq_id_2 %s, comp_id_2 %s) can not be verified with the assigned chemical shift values (CA_2 %s, CB_2 %s, redox_state_pred_2 %s)." %\
                        (nmr_chain_id_1, nmr_seq_id_1, nmr_comp_id_1, nmr_chain_id_2, nmr_seq_id_2, nmr_comp_id_2, ca_chem_shift_2, cb_chem_shift_2, disulf['redox_state_pred_2'])
 
                 item = 'suspicious_data' if disulf['redox_state_pred_2'] == 'reduced' else 'unusual_data'
@@ -13995,7 +13995,7 @@ class NmrDpUtility(object):
 
             if other['redox_state_pred_1'] != 'oxidized' and other['redox_state_pred_1'] != 'unknown':
 
-                warn = "Other bond (chain_id_1 %s, seq_id_1 %s, comp_id_1 %s, chain_id_2 %s, seq_id_2 %s, comp_id_2 %s) could not supported by assigned chemical shift values (CA_1 %s, CB_1 %s, redox_state_pred_1 %s)." %\
+                warn = "Other bond (chain_id_1 %s, seq_id_1 %s, comp_id_1 %s, chain_id_2 %s, seq_id_2 %s, comp_id_2 %s) can not be verified with the assigned chemical shift values (CA_1 %s, CB_1 %s, redox_state_pred_1 %s)." %\
                        (nmr_chain_id_1, nmr_seq_id_1, nmr_comp_id_1, nmr_chain_id_2, nmr_seq_id_2, nmr_comp_id_2, ca_chem_shift_1, cb_chem_shift_1, other['redox_state_pred_1'])
 
                 item = 'suspicious_data' if other['redox_state_pred_1'] == 'reduced' else 'unusual_data'
@@ -14010,7 +14010,7 @@ class NmrDpUtility(object):
 
             if other['redox_state_pred_2'] != 'oxidized' and other['redox_state_pred_2'] != 'unknown':
 
-                warn = "Other bond (chain_id_1 %s, seq_id_1 %s, comp_id_1 %s, chain_id_2 %s, seq_id_2 %s, comp_id_2 %s) could not supported by assigned chemical shift values (CA_2 %s, CB_2 %s, redox_state_pred_2 %s)." %\
+                warn = "Other bond (chain_id_1 %s, seq_id_1 %s, comp_id_1 %s, chain_id_2 %s, seq_id_2 %s, comp_id_2 %s) can not be verified with the assigned chemical shift values (CA_2 %s, CB_2 %s, redox_state_pred_2 %s)." %\
                        (nmr_chain_id_1, nmr_seq_id_1, nmr_comp_id_1, nmr_chain_id_2, nmr_seq_id_2, nmr_comp_id_2, ca_chem_shift_2, cb_chem_shift_2, other['redox_state_pred_2'])
 
                 item = 'suspicious_data' if other['redox_state_pred_2'] == 'reduced' else 'unusual_data'

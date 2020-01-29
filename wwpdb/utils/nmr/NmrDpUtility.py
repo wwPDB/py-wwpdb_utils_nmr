@@ -3984,7 +3984,7 @@ class NmrDpUtility(object):
                                     else:
                                         cc_name = '(Not available due to CCD status code %s)' % cc_rel_status
 
-                                    warn = "Unknown atom_id %s (comp_id %s, chem_comp_name %s) exist." % (unk_atom_ids, comp_id, cc_name)
+                                    warn = "Unknown atom_id %s (comp_id %s, chem_comp_name %s) exists." % (unk_atom_ids, comp_id, cc_name)
 
                                     self.report.warning.appendDescription('atom_nomenclature_mismatch', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
                                     self.report.setWarning()
@@ -7035,7 +7035,7 @@ class NmrDpUtility(object):
 
                                 if len(low_seq_coverage) > 0:
 
-                                    warn = 'Low sequence coverage of NMR experimental data was found (' + low_seq_coverage[:-2] + ') in %s saveframe.' % sf_framecode
+                                    warn = 'Sequence coverage of NMR experimental data is low (' + low_seq_coverage[:-2] + ') in %s saveframe.' % sf_framecode
 
                                     self.report.warning.appendDescription('unsufficient_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
                                     self.report.setWarning()
@@ -7202,7 +7202,7 @@ class NmrDpUtility(object):
 
                     else:
 
-                        err = "Module for calculation of statistics on content subtype %s were not found." % content_subtype
+                        err = "Not found a module for calculation of statistics on content subtype %s." % content_subtype
 
                         self.report.error.appendDescription('internal_error', "+NmrDpUtility.__calculateStatsOfExptlData() ++ Error  - %s" % err)
                         self.report.setError()

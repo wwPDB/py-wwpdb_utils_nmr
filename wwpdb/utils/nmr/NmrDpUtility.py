@@ -13,6 +13,7 @@
 # 24-Jan-2020  M. Yokochi - add histogram of distance restraints per residue and distance restraints on contact map
 # 27-Jan-2020  M. Yokochi - add contact map for inter-chain distance restraints
 # 28-Jan-2019  M. Yokochi - add struct_conf and struct_sheet_range data in dp report
+# 29-Jan-2019  M. Yokochi - change plot type of dihedral angle and RDC restraints per residue
 ##
 """ Wrapper class for data processing for NMR unified data.
     @author: Masashi Yokochi
@@ -8413,17 +8414,16 @@ class NmrDpUtility(object):
 
             polymer_sequence = input_source_dic['polymer_sequence']
 
-            if polymer_sequence is None:
-                return
+            if not polymer_sequence is None:
 
-            for s in polymer_sequence:
-                struct_conf = self.__extractCoordStructConf(s['chain_id'], s['seq_id'])
-                count_per_residue.append({'chain_id': s['chain_id'], 'seq_id': s['seq_id'], 'comp_id': s['comp_id'], 'struct_conf': struct_conf})
-                count_on_map.append({'chain_id': s['chain_id'], 'seq_id': s['seq_id'], 'comp_id': s['comp_id'], 'struct_conf': struct_conf})
+                for s in polymer_sequence:
+                    struct_conf = self.__extractCoordStructConf(s['chain_id'], s['seq_id'])
+                    count_per_residue.append({'chain_id': s['chain_id'], 'seq_id': s['seq_id'], 'comp_id': s['comp_id'], 'struct_conf': struct_conf})
+                    count_on_map.append({'chain_id': s['chain_id'], 'seq_id': s['seq_id'], 'comp_id': s['comp_id'], 'struct_conf': struct_conf})
 
-            if len(polymer_sequence) > 1:
-                for s, t in itertools.combinations(polymer_sequence, 2):
-                    count_on_asym_map.append({'chain_id_1': s['chain_id'], 'chain_id_2': t['chain_id'], 'seq_id_1': s['seq_id'], 'seq_id_2': t['seq_id'], 'comp_id_1': s['comp_id'], 'comp_id_2': t['comp_id'], 'struct_conf_1': self.__extractCoordStructConf(s['chain_id'], s['seq_id']), 'struct_conf_2': self.__extractCoordStructConf(t['chain_id'], t['seq_id'])})
+                if len(polymer_sequence) > 1:
+                    for s, t in itertools.combinations(polymer_sequence, 2):
+                        count_on_asym_map.append({'chain_id_1': s['chain_id'], 'chain_id_2': t['chain_id'], 'seq_id_1': s['seq_id'], 'seq_id_2': t['seq_id'], 'comp_id_1': s['comp_id'], 'comp_id_2': t['comp_id'], 'struct_conf_1': self.__extractCoordStructConf(s['chain_id'], s['seq_id']), 'struct_conf_2': self.__extractCoordStructConf(t['chain_id'], t['seq_id'])})
 
             for l, i in enumerate(lp_data):
                 index = i[index_tag] if index_tag in i else None
@@ -8648,49 +8648,51 @@ class NmrDpUtility(object):
                 else:
                     potential[potential_type] = 1
 
-                # count per residue
+                if not polymer_sequence is None:
 
-                for c in count_per_residue:
-                    if not data_type in c:
-                        c[data_type] = [0] * len(c['seq_id'])
-                    if c['chain_id'] == chain_id_1:
-                        c[data_type][c['seq_id'].index(seq_id_1)] += 1
-                    if c['chain_id'] == chain_id_2:
-                        c[data_type][c['seq_id'].index(seq_id_2)] += 1
+                    # count per residue
 
-                # count on map
-
-                if chain_id_1 == chain_id_2:
-
-                    for c in count_on_map:
+                    for c in count_per_residue:
                         if not data_type in c:
-                            c[data_type] = []
+                            c[data_type] = [0] * len(c['seq_id'])
                         if c['chain_id'] == chain_id_1:
-                            try:
-                                b = next(b for b in c[data_type] if b['seq_id_1'] == seq_id_1 and b['seq_id_2'] == seq_id_2)
-                                b['total'] += 1
-                            except StopIteration:
-                                c[data_type].append({'seq_id_1': seq_id_1, 'seq_id_2': seq_id_2, 'total': 1})
+                            c[data_type][c['seq_id'].index(seq_id_1)] += 1
+                        if c['chain_id'] == chain_id_2:
+                            c[data_type][c['seq_id'].index(seq_id_2)] += 1
 
-                else:
+                    # count on map
 
-                    for c in count_on_asym_map:
-                        if not data_type in c:
-                            c[data_type] = []
-                        if c['chain_id_1'] == chain_id_1 and c['chain_id_2'] == chain_id_2:
-                            try:
-                                b = next(b for b in c[data_type] if b['seq_id_1'] == seq_id_1 and b['seq_id_2'] == seq_id_2)
-                                b['total'] += 1
-                            except StopIteration:
-                                c[data_type].append({'seq_id_1': seq_id_1, 'seq_id_2': seq_id_2, 'total': 1})
-                        elif c['chain_id_1'] == chain_id_2 and c['chain_id_2'] == chain_id_1:
-                            try:
-                                b = next(b for b in c[data_type] if b['seq_id_1'] == seq_id_2 and b['seq_id_2'] == seq_id_1)
-                                b['total'] += 1
-                            except StopIteration:
-                                c[data_type].append({'seq_id_1': seq_id_2, 'seq_id_2': seq_id_1, 'total': 1})
-                        if not has_inter_chain_constraint and len(c[data_type]) > 0:
-                            has_inter_chain_constraint = True
+                    if chain_id_1 == chain_id_2:
+
+                        for c in count_on_map:
+                            if not data_type in c:
+                                c[data_type] = []
+                            if c['chain_id'] == chain_id_1:
+                                try:
+                                    b = next(b for b in c[data_type] if b['seq_id_1'] == seq_id_1 and b['seq_id_2'] == seq_id_2)
+                                    b['total'] += 1
+                                except StopIteration:
+                                    c[data_type].append({'seq_id_1': seq_id_1, 'seq_id_2': seq_id_2, 'total': 1})
+
+                    else:
+
+                        for c in count_on_asym_map:
+                            if not data_type in c:
+                                c[data_type] = []
+                            if c['chain_id_1'] == chain_id_1 and c['chain_id_2'] == chain_id_2:
+                                try:
+                                    b = next(b for b in c[data_type] if b['seq_id_1'] == seq_id_1 and b['seq_id_2'] == seq_id_2)
+                                    b['total'] += 1
+                                except StopIteration:
+                                    c[data_type].append({'seq_id_1': seq_id_1, 'seq_id_2': seq_id_2, 'total': 1})
+                            elif c['chain_id_1'] == chain_id_2 and c['chain_id_2'] == chain_id_1:
+                                try:
+                                    b = next(b for b in c[data_type] if b['seq_id_1'] == seq_id_2 and b['seq_id_2'] == seq_id_1)
+                                    b['total'] += 1
+                                except StopIteration:
+                                    c[data_type].append({'seq_id_1': seq_id_2, 'seq_id_2': seq_id_1, 'total': 1})
+                            if not has_inter_chain_constraint and len(c[data_type]) > 0:
+                                has_inter_chain_constraint = True
 
             if len(count) == 0:
                 return
@@ -8703,8 +8705,9 @@ class NmrDpUtility(object):
             if len(redu_count) > 0:
                 ent['number_of_redundant_constraints'] = redu_count
             ent['number_of_potential_types'] = potential
-            ent['number_of_constraints_per_residue'] = count_per_residue
-            ent['constraints_on_contact_map'] = count_on_map
+            if not polymer_sequence is None:
+                ent['number_of_constraints_per_residue'] = count_per_residue
+                ent['constraints_on_contact_map'] = count_on_map
             if has_inter_chain_constraint:
                 ent['constraints_on_asym_contact_map'] = count_on_asym_map
             ent['range'] = {'max_value': max_val, 'min_value': min_val}
@@ -9494,16 +9497,15 @@ class NmrDpUtility(object):
             psi_list = []
             chi1_list = []
             chi2_list = []
-            count_per_residue = []
+            value_per_residue = []
 
             polymer_sequence = input_source_dic['polymer_sequence']
 
-            if polymer_sequence is None:
-                return
+            if not polymer_sequence is None:
 
-            for s in polymer_sequence:
-                struct_conf = self.__extractCoordStructConf(s['chain_id'], s['seq_id'])
-                count_per_residue.append({'chain_id': s['chain_id'], 'seq_id': s['seq_id'], 'comp_id': s['comp_id'], 'struct_conf': struct_conf})
+                for s in polymer_sequence:
+                    struct_conf = self.__extractCoordStructConf(s['chain_id'], s['seq_id'])
+                    value_per_residue.append({'chain_id': s['chain_id'], 'seq_id': s['seq_id'], 'comp_id': s['comp_id'], 'struct_conf': struct_conf})
 
             for i in lp_data:
                 index = i[index_tag] if index_tag in i else None
@@ -9697,13 +9699,15 @@ class NmrDpUtility(object):
                 else:
                     potential[potential_type] = 1
 
-                # count per residue
+                if not polymer_sequence is None:
 
-                for c in count_per_residue:
-                    if not data_type in c:
-                        c[data_type] = [0] * len(c['seq_id'])
-                    if c['chain_id'] == chain_id_1:
-                        c[data_type][c['seq_id'].index(seq_id_common[0][0])] += 1
+                    # value per residue
+
+                    for c in value_per_residue:
+                        if not data_type in c:
+                            c[data_type] = [None] * len(c['seq_id'])
+                        if c['chain_id'] == chain_id_1 and not target_value is None:
+                            c[data_type][c['seq_id'].index(seq_id_common[0][0])] = float(target_value)
 
             if len(count) > 0:
                 ent['number_of_constraints'] = count
@@ -9713,7 +9717,8 @@ class NmrDpUtility(object):
                     ent['number_of_inconsistent_constraints'] = inco_count
                 if len(redu_count) > 0:
                     ent['number_of_redundant_constraints'] = redu_count
-                ent['number_of_constraints_per_residue'] = count_per_residue
+                if not polymer_sequence is None:
+                    ent['constraints_per_residue'] = value_per_residue
                 ent['number_of_potential_types'] = potential
 
             if 'phi_angle_constraints' in count and 'psi_angle_constraints' in count:
@@ -10297,16 +10302,15 @@ class NmrDpUtility(object):
             redu_count = {}
             potential = {}
 
-            count_per_residue = []
+            value_per_residue = []
 
             polymer_sequence = input_source_dic['polymer_sequence']
 
-            if polymer_sequence is None:
-                return
+            if not polymer_sequence is None:
 
-            for s in polymer_sequence:
-                struct_conf = self.__extractCoordStructConf(s['chain_id'], s['seq_id'])
-                count_per_residue.append({'chain_id': s['chain_id'], 'seq_id': s['seq_id'], 'comp_id': s['comp_id'], 'struct_conf': struct_conf})
+                for s in polymer_sequence:
+                    struct_conf = self.__extractCoordStructConf(s['chain_id'], s['seq_id'])
+                    value_per_residue.append({'chain_id': s['chain_id'], 'seq_id': s['seq_id'], 'comp_id': s['comp_id'], 'struct_conf': struct_conf})
 
             for i in lp_data:
                 index = i[index_tag] if index_tag in i else None
@@ -10396,13 +10400,15 @@ class NmrDpUtility(object):
                 else:
                     potential[potential_type] = 1
 
-                # count per residue
+                if not polymer_sequence is None:
 
-                for c in count_per_residue:
-                    if not data_type in c:
-                        c[data_type] = [0] * len(c['seq_id'])
-                    if c['chain_id'] == chain_id_1:
-                        c[data_type][c['seq_id'].index(seq_id_1)] += 1
+                    # value per residue
+
+                    for c in value_per_residue:
+                        if not data_type in c:
+                            c[data_type] = [None] * len(c['seq_id'])
+                        if c['chain_id'] == chain_id_1 and not targe_value is None:
+                            c[data_type][c['seq_id'].index(seq_id_1)] = float(targe_value)
 
             if len(count) == 0:
                 return
@@ -10414,7 +10420,8 @@ class NmrDpUtility(object):
                 ent['number_of_inconsistent_constraints'] = inco_count
             if len(redu_count) > 0:
                 ent['number_of_redundant_constraints'] = redu_count
-            ent['number_of_constraints_per_residue'] = count_per_residue
+            if not polymer_sequence is None:
+                ent['constraints_per_residue'] = value_per_residue
             ent['number_of_potential_types'] = potential
             ent['range'] = {'max_value': max_val_, 'min_value': min_val_}
 

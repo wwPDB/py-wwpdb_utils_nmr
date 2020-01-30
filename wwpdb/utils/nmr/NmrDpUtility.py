@@ -10316,7 +10316,7 @@ class NmrDpUtility(object):
                 index = i[index_tag] if index_tag in i else None
                 comb_id = i[comb_id_name] if comb_id_name in i else None
 
-                chain_id_1 = i[chain_id_1_name]
+                chain_id_1 = str(i[chain_id_1_name])
                 seq_id_1 = i[seq_id_1_name]
                 atom_id_1 = i[atom_id_1_name]
                 atom_id_2 = i[atom_id_2_name]

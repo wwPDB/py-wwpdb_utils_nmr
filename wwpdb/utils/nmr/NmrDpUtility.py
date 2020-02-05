@@ -4784,6 +4784,26 @@ class NmrDpUtility(object):
                     max_exclusive = self.dist_restraint_error['max_exclusive']
                 elif content_subtype == 'dihed_restraint':
                     max_exclusive = self.dihed_restraint_error['max_exclusive']
+
+                    dh_item_names = self.item_names_in_dh_loop[file_type]
+                    chain_id_1_name = dh_item_names['chain_id_1']
+                    chain_id_2_name = dh_item_names['chain_id_2']
+                    chain_id_3_name = dh_item_names['chain_id_3']
+                    chain_id_4_name = dh_item_names['chain_id_4']
+                    seq_id_1_name = dh_item_names['seq_id_1']
+                    seq_id_2_name = dh_item_names['seq_id_2']
+                    seq_id_3_name = dh_item_names['seq_id_3']
+                    seq_id_4_name = dh_item_names['seq_id_4']
+                    comp_id_1_name = dh_item_names['comp_id_1']
+                    comp_id_2_name = dh_item_names['comp_id_2']
+                    comp_id_3_name = dh_item_names['comp_id_3']
+                    comp_id_4_name = dh_item_names['comp_id_4']
+                    atom_id_1_name = dh_item_names['atom_id_1']
+                    atom_id_2_name = dh_item_names['atom_id_2']
+                    atom_id_3_name = dh_item_names['atom_id_3']
+                    atom_id_4_name = dh_item_names['atom_id_4']
+                    angle_type_name = dh_item_names['angle_type']
+
                 elif content_subtype == 'rdc_restraint':
                     max_exclusive = self.rdc_restraint_error['max_exclusive']
 
@@ -4861,18 +4881,44 @@ class NmrDpUtility(object):
                                         r = abs(val_1 - val_2)
 
                                         if content_subtype == 'dihed_restraint':
+
                                             if r > 180.0:
                                                 if val_1 < val_2:
                                                     r = abs(val_1 - (val_2 - 360.0))
                                                 if val_1 > val_2:
                                                     r = abs(val_1 - (val_2 + 360.0))
 
+                                            chain_id_1 = str(lp_data[row_id_1][chain_id_1_name])
+                                            chain_id_2 = str(lp_data[row_id_1][chain_id_2_name])
+                                            chain_id_3 = str(lp_data[row_id_1][chain_id_3_name])
+                                            chain_id_4 = str(lp_data[row_id_1][chain_id_4_name])
+                                            seq_id_1 = lp_data[row_id_1][seq_id_1_name]
+                                            seq_id_2 = lp_data[row_id_1][seq_id_2_name]
+                                            seq_id_3 = lp_data[row_id_1][seq_id_3_name]
+                                            seq_id_4 = lp_data[row_id_1][seq_id_4_name]
+                                            comp_id_1 = lp_data[row_id_1][comp_id_1_name]
+                                            comp_id_2 = lp_data[row_id_1][comp_id_2_name]
+                                            comp_id_3 = lp_data[row_id_1][comp_id_3_name]
+                                            comp_id_4 = lp_data[row_id_1][comp_id_4_name]
+                                            atom_id_1 = lp_data[row_id_1][atom_id_1_name]
+                                            atom_id_2 = lp_data[row_id_1][atom_id_2_name]
+                                            atom_id_3 = lp_data[row_id_1][atom_id_3_name]
+                                            atom_id_4 = lp_data[row_id_1][atom_id_4_name]
+                                            data_type = lp_data[row_id_1][angle_type_name]
+
+                                            data_type = self.__getTypeOfDihedralRestraint(data_type,
+                                                                                          chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2,
+                                                                                          chain_id_3, seq_id_3, comp_id_3, atom_id_3, chain_id_4, seq_id_4, comp_id_4, atom_id_4)[0]
+
+                                            if not data_type.startswith('phi') and not data_type.startswith('psi') and not data_type.startswith('omega'):
+                                                continue
+
                                         if r >= max_exclusive:
-                                            discrepancy += '%s |%s-%s| is out of acceptable range, %s %s, ' % (dname, _val_1, _val_2, max_exclusive, 'degrees' if content_subtype == 'dihed_restraint' else 'Hz')
+                                            discrepancy += '%s |%s-%s| = %s is out of acceptable range, %s %s, ' % (dname, _val_1, _val_2, '{:.1f}'.format(r), max_exclusive, 'degrees' if content_subtype == 'dihed_restraint' else 'Hz')
                                             conflict = True
 
                                         elif r >= max_exclusive * self.inconsist_over_conflicted:
-                                            discrepancy += '%s |%s-%s| is out of typical range, %s %s, ' % (dname, _val_1, _val_2, max_exclusive * self.inconsist_over_conflicted, 'degrees' if content_subtype == 'dihed_restraint' else 'Hz')
+                                            discrepancy += '%s |%s-%s| = %s is out of typical range, %s %s, ' % (dname, _val_1, _val_2, '{:.1f}'.format(r), max_exclusive * self.inconsist_over_conflicted, 'degrees' if content_subtype == 'dihed_restraint' else 'Hz')
                                             inconsist = True
 
                                 if conflict:
@@ -9908,22 +9954,52 @@ class NmrDpUtility(object):
 
                             discrepancy = abs(target_value_1 - target_value_2)
 
-                            if discrepancy > max_val:
-                                max_val = discrepancy
+                            if discrepancy > 180.0:
+                                if target_value_1 < target_value_2:
+                                    discrepancy = abs(target_value_1 - (target_value_2 - 360.0))
+                                if target_value_1 > target_value_2:
+                                    discrepancy = abs(target_value_1 - (target_value_2 + 360.0))
 
-                            if discrepancy >= max_exclusive * self.inconsist_over_conflicted:
-                                ann = {}
-                                ann['level'] = 'conflicted' if discrepancy >= max_exclusive else 'inconsistent'
-                                ann['chain_id'] = str(lp_data[row_id_1][chain_id_2_name])
-                                ann['seq_id'] = lp_data[row_id_1][seq_id_2_name]
-                                ann['comp_id'] = lp_data[row_id_1][comp_id_2_name]
-                                ann['atom_id_1'] = lp_data[row_id_1][atom_id_1_name]
-                                ann['atom_id_2'] = lp_data[row_id_1][atom_id_2_name]
-                                ann['atom_id_3'] = lp_data[row_id_1][atom_id_3_name]
-                                ann['atom_id_4'] = lp_data[row_id_1][atom_id_4_name]
-                                ann['discrepancy'] = float('{:.1f}'.format(discrepancy))
+                            chain_id_1 = str(lp_data[row_id_1][chain_id_1_name])
+                            chain_id_2 = str(lp_data[row_id_1][chain_id_2_name])
+                            chain_id_3 = str(lp_data[row_id_1][chain_id_3_name])
+                            chain_id_4 = str(lp_data[row_id_1][chain_id_4_name])
+                            seq_id_1 = lp_data[row_id_1][seq_id_1_name]
+                            seq_id_2 = lp_data[row_id_1][seq_id_2_name]
+                            seq_id_3 = lp_data[row_id_1][seq_id_3_name]
+                            seq_id_4 = lp_data[row_id_1][seq_id_4_name]
+                            comp_id_1 = lp_data[row_id_1][comp_id_1_name]
+                            comp_id_2 = lp_data[row_id_1][comp_id_2_name]
+                            comp_id_3 = lp_data[row_id_1][comp_id_3_name]
+                            comp_id_4 = lp_data[row_id_1][comp_id_4_name]
+                            atom_id_1 = lp_data[row_id_1][atom_id_1_name]
+                            atom_id_2 = lp_data[row_id_1][atom_id_2_name]
+                            atom_id_3 = lp_data[row_id_1][atom_id_3_name]
+                            atom_id_4 = lp_data[row_id_1][atom_id_4_name]
+                            data_type = lp_data[row_id_1][angle_type_name]
 
-                                dihed_ann.append(ann)
+                            data_type = self.__getTypeOfDihedralRestraint(data_type,
+                                                                          chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2,
+                                                                          chain_id_3, seq_id_3, comp_id_3, atom_id_3, chain_id_4, seq_id_4, comp_id_4, atom_id_4)[0]
+
+                            if data_type.startswith('phi') or data_type.startswith('psi') or data_type.startswith('omega'):
+
+                                if discrepancy > max_val:
+                                    max_val = discrepancy
+
+                                if discrepancy >= max_exclusive * self.inconsist_over_conflicted:
+                                    ann = {}
+                                    ann['level'] = 'conflicted' if discrepancy >= max_exclusive else 'inconsistent'
+                                    ann['chain_id'] = str(lp_data[row_id_1][chain_id_2_name])
+                                    ann['seq_id'] = lp_data[row_id_1][seq_id_2_name]
+                                    ann['comp_id'] = lp_data[row_id_1][comp_id_2_name]
+                                    ann['atom_id_1'] = lp_data[row_id_1][atom_id_1_name]
+                                    ann['atom_id_2'] = lp_data[row_id_1][atom_id_2_name]
+                                    ann['atom_id_3'] = lp_data[row_id_1][atom_id_3_name]
+                                    ann['atom_id_4'] = lp_data[row_id_1][atom_id_4_name]
+                                    ann['discrepancy'] = float('{:.1f}'.format(discrepancy))
+
+                                    dihed_ann.append(ann)
 
                 if max_val > 0.0:
                     target_scale = (max_val - min_val) / 10.0

@@ -14,6 +14,7 @@
 # 27-Jan-2020  M. Yokochi - add contact map for inter-chain distance restraints
 # 28-Jan-2019  M. Yokochi - add struct_conf and struct_sheet_range data in dp report
 # 29-Jan-2019  M. Yokochi - change plot type of dihedral angle and RDC restraints per residue
+# 05-Feb-2019  M. Yokochi - add 'circular-shift' constraint for dihedral angle restraint
 ##
 """ Wrapper class for data processing for NMR unified data.
     @author: Masashi Yokochi
@@ -353,11 +354,11 @@ class NmrDpUtility(object):
         self.magic_angle = 54.7356
 
         # criterion for inconsistent restraint condition scaled by the conflicted restraint condition
-        self.inconsist_over_conficlted = 0.75
+        self.inconsist_over_conflicted = 0.75
         # criterion on R factor for conflicted distance restraint
         self.r_conflicted_dist_restraint = 0.4
         # criterion on R factor for inconsistent distance restraint
-        self.r_inconsistent_dist_restraint = self.r_conflicted_dist_restraint * self.inconsist_over_conficlted
+        self.r_inconsistent_dist_restraint = self.r_conflicted_dist_restraint * self.inconsist_over_conflicted
 
         # loop index tags
         self.index_tags = {'nef': {'entry_info': None,
@@ -698,7 +699,8 @@ class NmrDpUtility(object):
                                                         'group': {'member-with': ['lower_linear_limit', 'lower_limit', 'upper_limit', 'upper_linear_limit'],
                                                                   'coexist-with': None,
                                                                   'smaller-than': ['lower_limit', 'lower_linear_limit'],
-                                                                  'larger-than': ['upper_limit', 'upper_linear_limit']}},
+                                                                  'larger-than': ['upper_limit', 'upper_linear_limit'],
+                                                                  'circular-shift': 360.0}},
                                                        {'name': 'target_value_uncertainty', 'type': 'range-float', 'mandatory': False,
                                                         'range': self.dihed_restraint_error},
                                                        {'name': 'lower_linear_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
@@ -706,25 +708,29 @@ class NmrDpUtility(object):
                                                         'group': {'member-with': ['target_value', 'lower_limit', 'upper_limit', 'upper_linear_limit'],
                                                                   'coexist-with': None, # ['lower_limit', 'upper_limit', 'upper_linear_limit'],
                                                                   'smaller-than': ['lower_limit'],
-                                                                  'larger-than': ['upper_limit', 'upper_linear_limit']}},
+                                                                  'larger-than': ['upper_limit', 'upper_linear_limit'],
+                                                                  'circular-shift': 360.0}},
                                                        {'name': 'lower_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
                                                         'range': self.dihed_restraint_range,
                                                         'group': {'member-with': ['target_value', 'lower_linear_limit', 'upper_limit', 'upper_linear_limit'],
                                                                   'coexist-with': None, # ['upper_limit'],
                                                                   'smaller-than': None,
-                                                                  'larger-than': ['lower_linear_limit', 'upper_limit', 'upper_linear_limit']}},
+                                                                  'larger-than': ['lower_linear_limit', 'upper_limit', 'upper_linear_limit'],
+                                                                  'circular-shift': 360.0}},
                                                        {'name': 'upper_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
                                                         'range': self.dihed_restraint_range,
                                                         'group': {'member-with': ['target_value', 'lower_linear_limit', 'lower_limit', 'upper_linear_limit'],
                                                                   'coexist-with': None, # ['lower_limit'],
                                                                   'smaller-than': ['lower_linear_limit', 'lower_limit', 'upper_linear_limit'],
-                                                                  'larger-than': None}},
+                                                                  'larger-than': None,
+                                                                  'circular-shift': 360.0}},
                                                        {'name': 'upper_linear_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
                                                         'range': self.dihed_restraint_range,
                                                         'group': {'member-with': ['target_value', 'lower_linear_limit', 'lower_limit', 'upper_limit'],
                                                                   'coexist-with': None, # ['lower_linear_limit', 'lower_limit', 'upper_limit'],
                                                                   'smaller-than': ['lower_linear_limit', 'lower_limit'],
-                                                                  'larger-than': ['upper_limit']}},
+                                                                  'larger-than': ['upper_limit'],
+                                                                  'circular-shift': 360.0}},
                                                         {'name': 'name', 'type': 'str', 'mandatory': False}
                                                         ],
                                    'rdc_restraint': [{'name': 'index', 'type': 'index-int', 'mandatory': True},
@@ -878,19 +884,22 @@ class NmrDpUtility(object):
                                                              'group': {'member-with': ['Angle_target_val', 'Angle_lower_linear_limit', 'Angle_upper_linear_limit', 'Angle_upper_bound_val'],
                                                                        'coexist-with': None, # ['Angle_upper_bound_val'],
                                                                        'smaller-than': None,
-                                                                       'larger-than': ['Angle_lower_linear_limit', 'Angle_upper_linear_limit', 'Angle_upper_bound_val']}},
+                                                                       'larger-than': ['Angle_lower_linear_limit', 'Angle_upper_linear_limit', 'Angle_upper_bound_val'],
+                                                                       'circular-shift': 360.0}},
                                                             {'name': 'Angle_upper_bound_val', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
                                                              'range': self.dihed_restraint_range,
                                                              'group': {'member-with': ['Angle_target_val', 'Angle_lower_linear_limit', 'Angle_upper_linear_limit', 'Angle_lower_bound_val'],
                                                                        'coexist-with': None, # ['Angle_lower_bound_val'],
                                                                        'smaller-than': ['Angle_lower_linear_limit', 'Angle_lower_bound_val', 'Angle_upper_linear_limit'],
-                                                                       'larger-than': None}},
+                                                                       'larger-than': None,
+                                                                       'circular-shift': 360.0}},
                                                             {'name': 'Angle_target_val', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
                                                              'range': self.dihed_restraint_range,
                                                              'group': {'member-with': ['Angle_lower_linear_limit', 'Angle_upper_linear_limit', 'Angle_lower_bound_val', 'Angle_upper_bound_val'],
                                                                        'coexist-with': None,
                                                                        'smaller-than': ['Angle_lower_linear_limit', 'Angle_lower_bound_val'],
-                                                                       'larger-than': ['Angle_upper_linear_limit', 'Angle_upper_bound_val']}},
+                                                                       'larger-than': ['Angle_upper_linear_limit', 'Angle_upper_bound_val'],
+                                                                       'circular-shift': 360.0}},
                                                             {'name': 'Angle_target_val_err', 'type': 'range-float', 'mandatory': False,
                                                              'range': self.dihed_restraint_error},
                                                             {'name': 'Angle_lower_linear_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
@@ -898,13 +907,15 @@ class NmrDpUtility(object):
                                                              'group': {'member-with': ['Angle_target_val', 'Angle_upper_linear_limit', 'Angle_lower_bound_val', 'Angle_upper_bound_val'],
                                                                        'coexist-with': None, # ['Angle_upper_linear_limit', 'Angle_lower_bound_val', 'Angle_upper_bound_val'],
                                                                        'smaller-than': ['Angle_lower_bound_val'],
-                                                                       'larger-than': ['Angle_upper_linear_limit', 'Angle_upper_bound_val']}},
+                                                                       'larger-than': ['Angle_upper_linear_limit', 'Angle_upper_bound_val'],
+                                                                       'circular-shift': 360.0}},
                                                             {'name': 'Angle_upper_linear_limit', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
                                                              'range': self.dihed_restraint_range,
                                                              'group': {'member-with': ['Angle_target_val', 'Angle_lower_linear_limit', 'Angle_lower_bound_val', 'Angle_upper_bound_val'],
                                                                       'coexist-with': None, # ['Angle_lower_linear_limit', 'Angle_lower_bound_val', 'Angle_upper_bound_val'],
                                                                       'smaller-than': ['Angle_lower_linear_limit', 'Angle_lower_bound_val'],
-                                                                      'larger-than': ['Angle_upper_bound_val']}},
+                                                                      'larger-than': ['Angle_upper_bound_val'],
+                                                                      'circular-shift': 360.0}},
                                                             {'name': 'Weight', 'type': 'range-float', 'mandatory': False,
                                                              'range': self.weight_range},
                                                             #'enforce-non-zero': True},
@@ -4834,11 +4845,11 @@ class NmrDpUtility(object):
                                         r = abs(val_1 - val_2) / abs(val_1 + val_2)
 
                                         if r >= self.r_conflicted_dist_restraint:
-                                            discrepancy += '%s |%s-%s|/|%s+%s| = %s %% is outside acceptable range %s %%, ' % (dname, val_1, val_2, val_1, val_2, '{:.1f}'.format(r * 100.0), int(self.r_conflicted_dist_restraint * 100))
+                                            discrepancy += '%s |%s - %s|/|%s + %s| = %s %% is outside acceptable range %s %%, ' % (dname, val_1, val_2, val_1, val_2, '{:.1f}'.format(r * 100.0), int(self.r_conflicted_dist_restraint * 100))
                                             conflict = True
 
                                         elif r >= self.r_inconsistent_dist_restraint:
-                                            discrepancy += '%s |%s-%s|/|%s+%s| = %s %% is outside typical range %s %%, ' % (dname, val_1, val_2, val_1, val_2, '{:.1f}'.format(r * 100.0), int(self.r_inconsistent_dist_restraint * 100))
+                                            discrepancy += '%s |%s - %s|/|%s + %s| = %s %% is outside typical range %s %%, ' % (dname, val_1, val_2, val_1, val_2, '{:.1f}'.format(r * 100.0), int(self.r_inconsistent_dist_restraint * 100))
                                             inconsist = True
 
                                     else:
@@ -4846,11 +4857,11 @@ class NmrDpUtility(object):
                                         r = abs(val_1 - val_2)
 
                                         if r >= max_exclusive:
-                                            discrepancy += '%s |%s-%s| is outside acceptable range %s %s, ' % (dname, val_1, val_2, max_exclusive, 'degrees' if content_subtype == 'dihed_restraint' else 'Hz')
+                                            discrepancy += '%s |%s - %s| is outside acceptable range %s %s, ' % (dname, val_1, val_2, max_exclusive, 'degrees' if content_subtype == 'dihed_restraint' else 'Hz')
                                             conflict = True
 
-                                        elif r >= max_exclusive * self.inconsist_over_conficlted:
-                                            discrepancy += '%s |%s-%s| is outside typical range %s %s, ' % (dname, val_1, val_2, max_exclusive * self.inconsist_over_conficlted, 'degrees' if content_subtype == 'dihed_restraint' else 'Hz')
+                                        elif r >= max_exclusive * self.inconsist_over_conflicted:
+                                            discrepancy += '%s |%s - %s| is outside typical range %s %s, ' % (dname, val_1, val_2, max_exclusive * self.inconsist_over_conflicted, 'degrees' if content_subtype == 'dihed_restraint' else 'Hz')
                                             inconsist = True
 
                                 if conflict:
@@ -4861,7 +4872,7 @@ class NmrDpUtility(object):
 
                                     err = '[Check rows of %s %s vs %s, %s %s vs %s] ' %\
                                           (index_tag, lp_data[row_id_1][index_tag], lp_data[row_id_2][index_tag],
-                                           id_tag, lp_data[row_id_1[id_tag]], lp_data[row_id_2][id_tag])
+                                           id_tag, lp_data[row_id_1][id_tag], lp_data[row_id_2][id_tag])
                                     err += 'Found conflict on restraints (%s) for the same atom pair (%s).' % (discrepancy[:-2], msg[:-2])
 
                                     self.report.error.appendDescription('conflicted_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
@@ -9889,7 +9900,7 @@ class NmrDpUtility(object):
                             if discrepancy > max_val:
                                 max_val = discrepancy
 
-                            if discrepancy >= max_exclusive * self.inconsist_over_conficlted:
+                            if discrepancy >= max_exclusive * self.inconsist_over_conflicted:
                                 ann = {}
                                 ann['level'] = 'conflicted' if discrepancy >= max_exclusive else 'inconsistent'
                                 ann['chain_id'] = str(lp_data[row_id_1][chain_id_2_name])
@@ -10218,7 +10229,8 @@ class NmrDpUtility(object):
         else:
             data_type = data_type.lower()
 
-        data_type += '_angle_constraints'
+        if not data_type.endswith('_angle_constraints'):
+            data_type += '_angle_constraints'
 
         return data_type, seq_id_common, comp_id_common
 
@@ -10595,7 +10607,7 @@ class NmrDpUtility(object):
                             if discrepancy > max_val:
                                 max_val = discrepancy
 
-                            if discrepancy >= max_exclusive * self.inconsist_over_conficlted:
+                            if discrepancy >= max_exclusive * self.inconsist_over_conflicted:
                                 ann = {}
                                 ann['level'] = 'conflicted' if discrepancy >= max_exclusive else 'inconsistent'
                                 ann['chain_id'] = str(lp_data[row_id_1][chain_id_1_name])

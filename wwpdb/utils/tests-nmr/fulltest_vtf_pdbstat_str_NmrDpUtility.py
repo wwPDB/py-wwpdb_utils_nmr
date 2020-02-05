@@ -17,7 +17,7 @@ class TestNmrDpUtility(unittest.TestCase):
 
     def setUp(self):
         here = os.path.abspath(os.path.dirname(__file__))
-        self.data_dir_path = os.path.join(here, './NMR-VTF/PDBStat_examples/')
+        self.data_dir_path = os.path.join(here, 'NMR-VTF/PDBStat_examples/')
         self.data_file_path = {'2k2e': {'str': 'BeR31/BeR31_2k2e.str',
                                         'cif': 'BeR31/BeR31_2k2e.cif'},
                                '2jr2': {'str': 'CsR4/CsR4_2jr2.str',
@@ -69,6 +69,8 @@ class TestNmrDpUtility(unittest.TestCase):
 
         if not report['error'] is None:
             self.assertEqual(report['error']['internal_error'], None)
+
+        print('%s: %s' % (entry_id, report['information']['status']))
 
     def __test_nmr_str2str_deposit_check(self, entry_id):
         if not os.access(self.data_dir_path + entry_id + '-str-consistency-log.json', os.F_OK):

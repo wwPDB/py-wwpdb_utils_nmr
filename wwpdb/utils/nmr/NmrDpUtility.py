@@ -10892,7 +10892,7 @@ class NmrDpUtility(object):
 
             for ps in cif_polymer_sequence:
 
-                if ps['chain_id'] != cif_chain_id:
+                if ps['chain_id'] != cif_chain_id or not 'struct_conf' in ps:
                     continue
 
                 result = next((seq_align for seq_align in seq_align_dic['nmr_poly_seq_vs_model_poly_seq'] if seq_align['ref_chain_id'] == nmr_chain_id and seq_align['test_chain_id'] == cif_chain_id), None)

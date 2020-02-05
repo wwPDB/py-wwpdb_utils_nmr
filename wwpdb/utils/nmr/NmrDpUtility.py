@@ -4849,11 +4849,11 @@ class NmrDpUtility(object):
                                         r = abs(val_1 - val_2) / abs(val_1 + val_2)
 
                                         if r >= self.r_conflicted_dist_restraint:
-                                            discrepancy += '%s |%s-%s|/|%s+%s| = %s %% is far out of range %s %%, ' % (dname, _val_1, _val_2, _val_1, _val_2, '{:.1f}'.format(r * 100.0), int(self.r_conflicted_dist_restraint * 100))
+                                            discrepancy += '%s |%s-%s|/|%s+%s| = %s %% is out of acceptable range, %s %%, ' % (dname, _val_1, _val_2, _val_1, _val_2, '{:.1f}'.format(r * 100.0), int(self.r_conflicted_dist_restraint * 100))
                                             conflict = True
 
                                         elif r >= self.r_inconsistent_dist_restraint:
-                                            discrepancy += '%s |%s-%s|/|%s+%s| = %s %% is out of range %s %%, ' % (dname, _val_1, _val_2, _val_1, _val_2, '{:.1f}'.format(r * 100.0), int(self.r_inconsistent_dist_restraint * 100))
+                                            discrepancy += '%s |%s-%s|/|%s+%s| = %s %% is out of typical range, %s %%, ' % (dname, _val_1, _val_2, _val_1, _val_2, '{:.1f}'.format(r * 100.0), int(self.r_inconsistent_dist_restraint * 100))
                                             inconsist = True
 
                                     else:
@@ -4868,11 +4868,11 @@ class NmrDpUtility(object):
                                                     r = abs(val_1 - (val_2 + 360.0))
 
                                         if r >= max_exclusive:
-                                            discrepancy += '%s |%s-%s| is far out of range %s %s, ' % (dname, _val_1, _val_2, max_exclusive, 'degrees' if content_subtype == 'dihed_restraint' else 'Hz')
+                                            discrepancy += '%s |%s-%s| is out of acceptable range, %s %s, ' % (dname, _val_1, _val_2, max_exclusive, 'degrees' if content_subtype == 'dihed_restraint' else 'Hz')
                                             conflict = True
 
                                         elif r >= max_exclusive * self.inconsist_over_conflicted:
-                                            discrepancy += '%s |%s-%s| is out of range %s %s, ' % (dname, _val_1, _val_2, max_exclusive * self.inconsist_over_conflicted, 'degrees' if content_subtype == 'dihed_restraint' else 'Hz')
+                                            discrepancy += '%s |%s-%s| is out of typical range, %s %s, ' % (dname, _val_1, _val_2, max_exclusive * self.inconsist_over_conflicted, 'degrees' if content_subtype == 'dihed_restraint' else 'Hz')
                                             inconsist = True
 
                                 if conflict:

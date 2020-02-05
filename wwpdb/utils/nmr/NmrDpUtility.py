@@ -4841,28 +4841,38 @@ class NmrDpUtility(object):
 
                                     redundant = False
 
+                                    _val_1 = str(val_1) if val_1 >= 0.0 else '(' + str(val_1) + ')'
+                                    _val_2 = str(val_2) if val_2 >= 0.0 else '(' + str(val_2) + ')'
+
                                     if content_subtype == 'dist_restraint':
 
                                         r = abs(val_1 - val_2) / abs(val_1 + val_2)
 
                                         if r >= self.r_conflicted_dist_restraint:
-                                            discrepancy += '%s |%s - %s|/|%s + %s| = %s %% is outside acceptable range %s %%, ' % (dname, val_1, val_2, val_1, val_2, '{:.1f}'.format(r * 100.0), int(self.r_conflicted_dist_restraint * 100))
+                                            discrepancy += '%s |%s-%s|/|%s+%s| = %s %% is far out of range %s %%, ' % (dname, _val_1, _val_2, _val_1, _val_2, '{:.1f}'.format(r * 100.0), int(self.r_conflicted_dist_restraint * 100))
                                             conflict = True
 
                                         elif r >= self.r_inconsistent_dist_restraint:
-                                            discrepancy += '%s |%s - %s|/|%s + %s| = %s %% is outside typical range %s %%, ' % (dname, val_1, val_2, val_1, val_2, '{:.1f}'.format(r * 100.0), int(self.r_inconsistent_dist_restraint * 100))
+                                            discrepancy += '%s |%s-%s|/|%s+%s| = %s %% is out of range %s %%, ' % (dname, _val_1, _val_2, _val_1, _val_2, '{:.1f}'.format(r * 100.0), int(self.r_inconsistent_dist_restraint * 100))
                                             inconsist = True
 
                                     else:
 
                                         r = abs(val_1 - val_2)
 
+                                        if content_subtype == 'dihed_restraint':
+                                            if r > 180.0:
+                                                if val_1 < val_2:
+                                                    r = abs(val_1 - (val_2 - 360.0))
+                                                if val_1 > val_2:
+                                                    r = abs(val_1 - (val_2 + 360.0))
+
                                         if r >= max_exclusive:
-                                            discrepancy += '%s |%s - %s| is outside acceptable range %s %s, ' % (dname, val_1, val_2, max_exclusive, 'degrees' if content_subtype == 'dihed_restraint' else 'Hz')
+                                            discrepancy += '%s |%s-%s| is far out of range %s %s, ' % (dname, _val_1, _val_2, max_exclusive, 'degrees' if content_subtype == 'dihed_restraint' else 'Hz')
                                             conflict = True
 
                                         elif r >= max_exclusive * self.inconsist_over_conflicted:
-                                            discrepancy += '%s |%s - %s| is outside typical range %s %s, ' % (dname, val_1, val_2, max_exclusive * self.inconsist_over_conflicted, 'degrees' if content_subtype == 'dihed_restraint' else 'Hz')
+                                            discrepancy += '%s |%s-%s| is out of range %s %s, ' % (dname, _val_1, _val_2, max_exclusive * self.inconsist_over_conflicted, 'degrees' if content_subtype == 'dihed_restraint' else 'Hz')
                                             inconsist = True
 
                                 if conflict:
@@ -8923,7 +8933,7 @@ class NmrDpUtility(object):
                                     ann['seq_id_2'] = lp_data[row_id_2][seq_id_2_name]
                                     ann['comp_id_2'] = lp_data[row_id_2][comp_id_2_name]
                                 ann['atom_id_2'] = lp_data[row_id_2][atom_id_2_name]
-                                ann['discrepancy'] = discrepancy
+                                ann['discrepancy'] = float('{:.1f}'.format(discrepancy))
 
                                 dist_ann.append(ann)
 
@@ -9911,7 +9921,7 @@ class NmrDpUtility(object):
                                 ann['atom_id_2'] = lp_data[row_id_1][atom_id_2_name]
                                 ann['atom_id_3'] = lp_data[row_id_1][atom_id_3_name]
                                 ann['atom_id_4'] = lp_data[row_id_1][atom_id_4_name]
-                                ann['discrepancy'] = discrepancy
+                                ann['discrepancy'] = float('{:.1f}'.format(discrepancy))
 
                                 dihed_ann.append(ann)
 
@@ -10616,7 +10626,7 @@ class NmrDpUtility(object):
                                 ann['comp_id'] = lp_data[row_id_1][comp_id_1_name]
                                 ann['atom_id_1'] = lp_data[row_id_1][atom_id_1_name]
                                 ann['atom_id_2'] = lp_data[row_id_1][atom_id_2_name]
-                                ann['discrepancy'] = discrepancy
+                                ann['discrepancy'] = float('{:.1f}'.format(discrepancy))
 
                                 rdc_ann.append(ann)
 

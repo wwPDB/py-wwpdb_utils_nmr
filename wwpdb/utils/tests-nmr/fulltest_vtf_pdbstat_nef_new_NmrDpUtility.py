@@ -69,6 +69,9 @@ class TestNmrDpUtility(unittest.TestCase):
     def test_nmr_nef_consistency_check_2juw(self):
         self.__test_nmr_nef_consistency('2juw')
 
+    def test_nmr_nef_consistency_check_2k2e(self):
+        self.__test_nmr_nef_consistency('2k2e')
+
     def test_nmr_nef_consistency_check_2kcu(self):
         self.__test_nmr_nef_consistency('2kcu')
 

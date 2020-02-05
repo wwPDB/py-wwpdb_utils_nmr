@@ -17,7 +17,7 @@ class TestNmrDpUtility(unittest.TestCase):
 
     def setUp(self):
         here = os.path.abspath(os.path.dirname(__file__))
-        self.data_dir_path = os.path.join(here, '../nmr/NEFTranslator/data/NMR-VTF/PDBStat_examples/')
+        self.data_dir_path = os.path.join(here, './NMR-VTF/PDBStat_examples/')
         self.data_file_path = {'2k2e': {'nef': 'BeR31/BeR31_2k2e.nef',
                                         'cif': 'BeR31/BeR31_2k2e.cif'},
                                '2jr2': {'nef': 'CsR4/CsR4_2jr2.nef',

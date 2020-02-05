@@ -7,6 +7,7 @@
 # 10-Oct-2019  M. Yokochi - add 'enum_failure_ignorable' warning type
 # 15-Oct-2019  M. Yokochi - add 'encouragement' waring type
 # 27-Jan-2019  M. Yokochi - change warning type 'enum_failure' to 'enum_mismatch'
+# 05-Feb-2020  M. Yokochi - move conflicted_data error to warning
 ##
 """ Wrapper class for data processing report of NMR unified data.
     @author: Masashi Yokochi
@@ -487,7 +488,7 @@ class NmrDpReportError:
     def __init__(self):
         self.items = ('internal_error', 'format_issue', 'missing_mandatory_content', 'missing_mandatory_item', 'sequence_mismatch',
                       'invalid_data', 'invalid_atom_nomenclature', 'invalid_atom_type', 'invalid_isotope_number', 'invalid_ambiguity_code',
-                      'multiple_data', 'missing_data', 'duplicated_index', 'anomalous_data', 'conflicted_data')
+                      'multiple_data', 'missing_data', 'duplicated_index', 'anomalous_data')
 
         self.__contents = {item:None for item in self.items}
 
@@ -669,7 +670,7 @@ class NmrDpReportWarning:
                       'disordered_index', 'sequence_mismatch', 'atom_nomenclature_mismatch', 'ccd_mismatch',
                       'skipped_sf_category', 'skipped_lp_category',
                       'suspicious_data', 'unusual_data', 'remarkable_data', 'unsufficient_data',
-                      'inconsistent_data', 'redundant_data')
+                      'conflicted_data', 'inconsistent_data', 'redundant_data')
 
         self.__contents = {item:None for item in self.items}
 

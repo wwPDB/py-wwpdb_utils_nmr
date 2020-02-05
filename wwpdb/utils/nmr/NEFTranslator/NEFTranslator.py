@@ -12,6 +12,8 @@
 # 11-Dec-2019  M. Yokochi - relax 'smaller-than' and 'larger-than' constraints, which include 'equal-to' constraint (v2.0.2)
 # 05-Feb-2020  M. Yokochi - add 'circular-shift' to relax dihedral angle constraint range error (v2.0.3)
 # 05-Feb-2020  M. Yokochi - convert 'HN' in amino acids to 'H' while NEF->NMR-STAR translation (v2.0.3)
+# 05-Feb-2020  M. Yokochi - rescue NEF atom_id w/o wild card notation in methyl group (v2.0.3)
+# 05-Feb-2020  M. Yokochi - relax NEF atom_id that ends with [xy] in methyne/methyl group (v2.0.3)
 ##
 import sys
 import os
@@ -31,7 +33,7 @@ from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
 
 (scriptPath, scriptName) = ntpath.split(os.path.realpath(__file__))
 
-__version__ = 'v2.0.2'
+__version__ = 'v2.0.3'
 
 class NEFTranslator(object):
     """ Bi-directional translator between NEF and NMR-STAR
@@ -1729,7 +1731,10 @@ class NEFTranslator(object):
                             if (type == 'index-int' and ent[name] <= 0) or (type == 'positive-int' and (ent[name] < 0 or (ent[name] == 0 and 'enforce-non-zero' in k and k['enforce-non-zero']))):
                                 raise ValueError("%s%s '%s' must be %s." % (self.__idx_msg(idx_tag_ids, tags, ent), name, val, type))
                             elif ent[name] == 0 and enforce_non_zero:
-                                user_warn_msg += "[Zero value error] %s%s '%s' is non-sense zero value as %s.\n" % (self.__idx_msg(idx_tag_ids, tags, ent), name, val, type)
+                                if 'void-zero' in k:
+                                    ent[name] = None
+                                else:
+                                    user_warn_msg += "[Zero value error] %s%s '%s' is non-sense zero value as %s.\n" % (self.__idx_msg(idx_tag_ids, tags, ent), name, val, type)
                         elif type == 'pointer-index':
                             try:
                                 ent[name] = int(val)
@@ -1754,7 +1759,10 @@ class NEFTranslator(object):
                             if ent[name] < 0.0 or (ent[name] == 0.0 and 'enforce-non-zero' in k and k['enforce-non-zero']):
                                 raise ValueError("%s%s '%s' must be %s." % (self.__idx_msg(idx_tag_ids, tags, ent), name, val, type))
                             elif ent[name] == 0.0 and enforce_non_zero:
-                                user_warn_msg += "[Zero value error] %s%s '%s' is non-sense zero value as %s.\n" % (self.__idx_msg(idx_tag_ids, tags, ent), name, val, type)
+                                if 'void-zero' in k:
+                                    ent[name] = None
+                                else:
+                                    user_warn_msg += "[Zero value error] %s%s '%s' is non-sense zero value as %s.\n" % (self.__idx_msg(idx_tag_ids, tags, ent), name, val, type)
                         elif type == 'range-float':
                             try:
                                 _range = k['range']
@@ -1772,9 +1780,15 @@ class NEFTranslator(object):
                                 elif ent[name] == 0.0 and 'enforce-non-zero' in k and k['enforce-non-zero']:
                                     raise ValueError("%s%s '%s' must be within range %s." % (self.__idx_msg(idx_tag_ids, tags, ent), name, val, _range))
                                 elif ent[name] == 0.0 and enforce_non_zero:
-                                    user_warn_msg += "[Zero value error] %s%s '%s' is non-sense zero value as %s, %s.\n" % (self.__idx_msg(idx_tag_ids, tags, ent), name, val, type, _range)
+                                    if 'void-zero' in k:
+                                        ent[name] = None
+                                    else:
+                                        user_warn_msg += "[Zero value error] %s%s '%s' is non-sense zero value as %s, %s.\n" % (self.__idx_msg(idx_tag_ids, tags, ent), name, val, type, _range)
                             elif ('min_exclusive' in _range and ent[name] <= _range['min_exclusive']) or ('min_inclusive' in _range and ent[name] < _range['min_inclusive']) or ('max_inclusive' in _range and ent[name] > _range['max_inclusive']) or ('max_exclusive' in _range and ent[name] >= _range['max_exclusive']):
-                                raise ValueError("%s%s '%s' must be within range %s." % (self.__idx_msg(idx_tag_ids, tags, ent), name, val, _range))
+                                if 'void-zero' in k and ent[name] == 0.0:
+                                    ent[name] = None
+                                else:
+                                    raise ValueError("%s%s '%s' must be within range %s." % (self.__idx_msg(idx_tag_ids, tags, ent), name, val, _range))
                         elif type == 'enum':
                             try:
                                 enum = k['enum']
@@ -1826,7 +1840,10 @@ class NEFTranslator(object):
                                     if (type == 'index-int' and ent[name] <= 0) or (type == 'positive-int' and (ent[name] < 0 or (ent[name] == 0 and 'enforce-non-zero' in d and d['enforce-non-zero']))):
                                         raise ValueError("%s%s '%s' must be %s." % (self.__idx_msg(idx_tag_ids, tags, ent), name, val, type))
                                     elif ent[name] == 0 and enforce_non_zero:
-                                        user_warn_msg += "[Zero value error] %s%s '%s' is non-sense zero value as %s.\n" % (self.__idx_msg(idx_tag_ids, tags, ent), name, val, type)
+                                        if 'void-zero' in d:
+                                            ent[name] = None
+                                        else:
+                                            user_warn_msg += "[Zero value error] %s%s '%s' is non-sense zero value as %s.\n" % (self.__idx_msg(idx_tag_ids, tags, ent), name, val, type)
                                 elif type == 'pointer-index':
                                     try:
                                         ent[name] = int(val)
@@ -1851,7 +1868,10 @@ class NEFTranslator(object):
                                     if ent[name] < 0.0 or (ent[name] == 0.0 and 'enforce-non-zero' in d and d['enforce-non-zero']):
                                         raise ValueError("%s%s '%s' must be %s." % (self.__idx_msg(idx_tag_ids, tags, ent), name, val, type))
                                     elif ent[name] == 0.0 and enforce_non_zero:
-                                        user_warn_msg += "[Zero value error] %s%s '%s' is non-sense zero value as %s.\n" % (self.__idx_msg(idx_tag_ids, tags, ent), name, val, type)
+                                        if 'void-zero' in d:
+                                            ent[name] = None
+                                        else:
+                                            user_warn_msg += "[Zero value error] %s%s '%s' is non-sense zero value as %s.\n" % (self.__idx_msg(idx_tag_ids, tags, ent), name, val, type)
                                 elif type == 'range-float':
                                     try:
                                         _range = d['range']
@@ -1869,9 +1889,15 @@ class NEFTranslator(object):
                                         elif ent[name] == 0.0 and 'enforce-non-zero' in d and d['enforce-non-zero']:
                                             raise ValueError("%s%s '%s' must be within range %s." % (self.__idx_msg(idx_tag_ids, tags, ent), name, val, _range))
                                         elif ent[name] == 0.0 and enforce_non_zero:
-                                            user_warn_msg += "[Zero value error] %s%s '%s' is non-sense zero value as %s, %s.\n" % (self.__idx_msg(idx_tag_ids, tags, ent), name, val, type, _range)
+                                            if 'void-zero' in d:
+                                                ent[name] = None
+                                            else:
+                                                user_warn_msg += "[Zero value error] %s%s '%s' is non-sense zero value as %s, %s.\n" % (self.__idx_msg(idx_tag_ids, tags, ent), name, val, type, _range)
                                     elif ('min_exclusive' in _range and ent[name] <= _range['min_exclusive']) or ('min_inclusive' in _range and ent[name] < _range['min_inclusive']) or ('max_inclusive' in _range and ent[name] > _range['max_inclusive']) or ('max_exclusive' in _range and ent[name] >= _range['max_exclusive']):
-                                        raise ValueError("%s%s '%s' must be within range %s." % (self.__idx_msg(idx_tag_ids, tags, ent), name, val, _range))
+                                        if 'void-zero' in d and ent[name] == 0.0:
+                                            ent[name] = None
+                                        else:
+                                            raise ValueError("%s%s '%s' must be within range %s." % (self.__idx_msg(idx_tag_ids, tags, ent), name, val, _range))
                                 elif type == 'enum':
                                     try:
                                         enum = d['enum']
@@ -2200,7 +2226,10 @@ class NEFTranslator(object):
                         if ent[name] < 0 or (ent[name] == 0 and 'enforce-non-zero' in t and t['enforce-non-zero']):
                             raise ValueError("%s '%s' must be %s." % (name, val, type))
                         elif ent[name] == 0 and enforce_non_zero:
-                            user_warn_msg += "[Zero value error] %s '%s' is non-sense zero value as %s.\n" % (name, val, type)
+                            if 'void-zero' in t:
+                                ent[name] = None
+                            else:
+                                user_warn_msg += "[Zero value error] %s '%s' is non-sense zero value as %s.\n" % (name, val, type)
                     elif type == 'float':
                         try:
                             ent[name] = float(val)
@@ -2214,7 +2243,10 @@ class NEFTranslator(object):
                         if ent[name] < 0.0 or (ent[name] == 0.0 and 'enforce-non-zero' in t and t['enforce-non-zero']):
                             raise ValueError("%s '%s' must be %s." % (name, val, type))
                         elif ent[name] == 0.0 and enforce_non_zero:
-                            user_warn_msg += "[Zero value error] %s '%s' is non-sense zero value as %s.\n" % (name, val, type)
+                            if 'void-zero' in t:
+                                ent[name] = None
+                            else:
+                                user_warn_msg += "[Zero value error] %s '%s' is non-sense zero value as %s.\n" % (name, val, type)
                     elif type == 'range-float':
                         try:
                             _range = t['range']
@@ -2232,9 +2264,15 @@ class NEFTranslator(object):
                             elif ent[name] == 0.0 and 'enforce-non-zero' in t and t['enforce-non-zero']:
                                 raise ValueError("%s '%s' must be within range %s." % (name, val, _range))
                             elif ent[name] == 0.0 and enforce_non_zero:
-                                user_warn_msg += "[Zero value error] %s '%s' is non-sense zero value as %s, %s.\n" % (name, val, type, _range)
+                                if 'void-zero' in t:
+                                    ent[name] = None
+                                else:
+                                    user_warn_msg += "[Zero value error] %s '%s' is non-sense zero value as %s, %s.\n" % (name, val, type, _range)
                         elif ('min_exclusive' in _range and ent[name] <= _range['min_exclusive']) or ('min_inclusive' in _range and ent[name] < _range['min_inclusive']) or ('max_inclusive' in _range and ent[name] > _range['max_inclusive']) or ('max_exclusive' in _range and ent[name] >= _range['max_exclusive']):
-                            raise ValueError("%s '%s' must be within range %s." % (name, val, _range))
+                            if 'void-zero' in t and ent[name] == 0.0:
+                                ent[name] = None
+                            else:
+                                raise ValueError("%s '%s' must be within range %s." % (name, val, _range))
                     elif type == 'enum':
                         if val in self.empty_value:
                             val = '?' # '.' raises internal error in NmrDpUtility
@@ -2587,8 +2625,11 @@ class NEFTranslator(object):
 
                 atom_list = [i for i in atoms if re.search(pattern, i)]
 
-                if len(atom_list) != 2:
-                    atom_list = []
+                atom_list_len = len(atom_list)
+
+                if atom_list_len != 2:
+                    if atom_list_len > 2:
+                        atom_list = []
                 elif xy_code == 'y':
                     atom_list = atom_list[-1:]
                 elif xy_code == 'x':
@@ -2607,7 +2648,13 @@ class NEFTranslator(object):
         if len(atom_list) == 0:
 
             if nef_atom == 'HN' and self.__csStat.getTypeOfCompId(comp_id)[0]:
-                nef_atom = 'H'
+                return self.get_star_atom(comp_id, 'H', leave_unmatched)
+
+            if not nef_atom.endswith('%') and not nef_atom.endswith('*') and nef_atom + '1' in self.__csStat.getMethylAtoms(comp_id):
+                return self.get_star_atom(comp_id, nef_atom + '%', leave_unmatched)
+
+            if nef_atom[-1].lower() == 'x' or nef_atom[-1].lower() == 'y' and nef_atom[:-1] + '1' in self.__csStat.getMethylAtoms(comp_id):
+                return self.get_star_atom(comp_id, nef_atom[:-1] + '%', leave_unmatched)
 
             if nef_atom in atoms:
                 atom_list.append(nef_atom)

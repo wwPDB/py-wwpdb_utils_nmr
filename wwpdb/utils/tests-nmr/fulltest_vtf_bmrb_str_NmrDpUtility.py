@@ -60,6 +60,10 @@ class TestNmrDpUtility(unittest.TestCase):
     def __test_nmr_str_consistency(self, entry_id):
         self.utility.setSource(self.data_dir_path + self.data_file_path[entry_id]['str'])
         self.utility.addInput(name='coordinate_file_path', value=self.data_dir_path + self.data_file_path[entry_id]['cif'], type='file')
+        self.utility.addInput(name='nonblk_anomalous_cs', value=True, type='param')
+        self.utility.addInput(name='nonblk_bad_nterm', value=True, type='param')
+        self.utility.addInput(name='resolve_conflict', value=True, type='param')
+        self.utility.addInput(name='check_mandatory_tag', value=True, type='param')
         self.utility.setLog(self.data_dir_path + entry_id + '-str-consistency-log.json')
 
         self.utility.op('nmr-str-consistency-check')
@@ -78,6 +82,10 @@ class TestNmrDpUtility(unittest.TestCase):
 
         self.utility.setSource(self.data_dir_path + self.data_file_path[entry_id]['str'])
         self.utility.addInput(name='coordinate_file_path', value=self.data_dir_path + self.data_file_path[entry_id]['cif'], type='file')
+        self.utility.addInput(name='nonblk_anomalous_cs', value=True, type='param')
+        self.utility.addInput(name='nonblk_bad_nterm', value=True, type='param')
+        self.utility.addInput(name='resolve_conflict', value=True, type='param')
+        self.utility.addInput(name='check_mandatory_tag', value=True, type='param')
         self.utility.addInput(name='report_file_path', value=self.data_dir_path + entry_id + '-str-consistency-log.json', type='file')
         self.utility.addOutput(name='entry_id', value='NEED_ACC_NO', type='param')
         self.utility.addOutput(name='insert_entry_id_to_loops', value=True, type='param')

@@ -11958,7 +11958,7 @@ class NmrDpUtility(object):
                         if nmr_comp_id == '.' or i >= len(s2['seq_id']):
                             unmapped.append({'ref_seq_id': s1['seq_id'][i], 'ref_comp_id': cif_comp_id})
 
-                            warn = "%s's sequence (chain_id %s, seq_id %s, comp_id %s) could not be mapped to any sequence in %s." %\
+                            warn = "Could not align %s (chain_id %s, seq_id %s, comp_id %s) with any sequence of %s." %\
                                    (cif_file_name, chain_id, s1['seq_id'][i], cif_comp_id, nmr_file_name)
 
                             self.report.warning.appendDescription('sequence_mismatch', {'file_name': cif_file_name, 'description': warn})
@@ -12061,7 +12061,7 @@ class NmrDpUtility(object):
                         if cif_comp_id == '.' or i >= len(s2['seq_id']):
                             unmapped.append({'ref_seq_id': s1['seq_id'][i], 'ref_comp_id': nmr_comp_id})
 
-                            warn = "%s's sequence (chain_id %s, seq_id %s, comp_id %s) could not be mapped to any sequence in %s." %\
+                            warn = "Could not align %s (chain_id %s, seq_id %s, comp_id %s) with any sequence of %s." %\
                                    (nmr_file_name, chain_id, s1['seq_id'][i], nmr_comp_id, cif_file_name)
 
                             self.report.warning.appendDescription('sequence_mismatch', {'file_name': nmr_file_name, 'description': warn})

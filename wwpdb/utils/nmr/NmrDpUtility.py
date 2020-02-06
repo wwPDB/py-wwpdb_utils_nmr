@@ -3757,7 +3757,7 @@ class NmrDpUtility(object):
                         self.__pA.setReferenceSequence(s1['comp_id'], 'REF' + _chain_id)
                         self.__pA.addTestSequence(_s2['comp_id'], _chain_id)
                         self.__pA.doAlign()
-                        #self.__pA.prAlignmentConflicts(_chain_id)
+
                         myAlign = self.__pA.getAlignment(_chain_id)
 
                         length = len(myAlign)
@@ -3808,6 +3808,22 @@ class NmrDpUtility(object):
         """
 
         seq_ids = sorted(set(s1['seq_id']) | set(s2['seq_id']))
+        comp_ids = []
+
+        for i in seq_ids:
+            if i in s2['seq_id']:
+                j = s2['seq_id'].index(i)
+                comp_ids.append(s2['comp_id'][j])
+            else:
+                comp_ids.append('.') # blank comp id
+
+        return {'chain_id': s2['chain_id'], 'seq_id': seq_ids, 'comp_id': comp_ids}
+
+    def __fillBlankedCompIdWithOffset(self, s1, s2, offset):
+        """ Fill blanked comp ID in s2 against s1 with offset.
+        """
+
+        seq_ids = range(1 - offset, s2['seq_id'][-1] + 1)
         comp_ids = []
 
         for i in seq_ids:
@@ -11605,12 +11621,12 @@ class NmrDpUtility(object):
                             if chain_id != s2['chain_id']:
                                 continue
 
-                            #_s2 = self.__fillBlankedCompId(s1, s2)
+                            _s2 = self.__fillBlankedCompId(s1, s2)
 
                             self.__pA.setReferenceSequence(s1['comp_id'], 'REF' + _chain_id)
-                            self.__pA.addTestSequence(s2['comp_id'], _chain_id)
+                            self.__pA.addTestSequence(_s2['comp_id'], _chain_id)
                             self.__pA.doAlign()
-                            #self.__pA.prAlignmentConflicts(_chain_id)
+
                             myAlign = self.__pA.getAlignment(_chain_id)
 
                             length = len(myAlign)
@@ -11633,10 +11649,10 @@ class NmrDpUtility(object):
                             ref_length = len(s1['seq_id'])
 
                             ref_code = self.__get1LetterCodeSequence(s1['comp_id'])
-                            test_code = self.__get1LetterCodeSequence(s2['comp_id'])
+                            test_code = self.__get1LetterCodeSequence(_s2['comp_id'])
                             mid_code = self.__getMiddleCode(ref_code, test_code)
                             ref_gauge_code = self.__getGaugeCode(s1['seq_id'])
-                            test_gauge_code = self.__getGaugeCode(s2['seq_id'])
+                            test_gauge_code = self.__getGaugeCode(_s2['seq_id'])
 
                             seq_align = {'list_id': polymer_sequence_in_loop[content_subtype][list_id]['list_id'],
                                          'chain_id': chain_id, 'length': ref_length, 'conflict': conflict, 'unmapped': unmapped,
@@ -11683,12 +11699,10 @@ class NmrDpUtility(object):
             for s2 in nmr_polymer_sequence:
                 chain_id2 = s2['chain_id']
 
-                #_s2 = self.__fillBlankedCompId(s1, s2)
-
                 self.__pA.setReferenceSequence(s1['comp_id'], 'REF' + _chain_id)
                 self.__pA.addTestSequence(s2['comp_id'], _chain_id)
                 self.__pA.doAlign()
-                #self.__pA.prAlignmentConflicts(_chain_id)
+
                 myAlign = self.__pA.getAlignment(_chain_id)
 
                 length = len(myAlign)
@@ -11696,29 +11710,42 @@ class NmrDpUtility(object):
                 if length == 0:
                     continue
 
+                not_aligned = True
+                offset_1 = 0
+                offset_2 = 0
+
                 unmapped = 0
                 conflict = 0
                 for i in range(length):
                     myPr = myAlign[i]
                     if myPr[0].encode() == '.' or myPr[1].encode() == '.':
+                        if myPr[0].encode() == '.' and myPr[1].encode() != '.'  and not_aligned:
+                            offset_1 += 1
+                        if myPr[0].encode() != '.' and myPr[1].encode() == '.'  and not_aligned:
+                            offset_2 += 1
                         unmapped += 1
                     elif myPr[0] != myPr[1]:
                         conflict += 1
+                    else:
+                        not_aligned = False
 
                 if length == unmapped + conflict:
                     continue
 
+                _s1 = s1 if offset_1 == 0 else self.__fillBlankedCompIdWithOffset(s2, s1, offset_1)
+                _s2 = s2 if offset_2 == 0 else self.__fillBlankedCompIdWithOffset(s1, s2, offset_2)
+
                 ref_length = len(s1['seq_id'])
 
-                ref_code = self.__get1LetterCodeSequence(s1['comp_id'])
-                test_code = self.__get1LetterCodeSequence(s2['comp_id'])
+                ref_code = self.__get1LetterCodeSequence(_s1['comp_id'])
+                test_code = self.__get1LetterCodeSequence(_s2['comp_id'])
                 mid_code = self.__getMiddleCode(ref_code, test_code)
-                ref_gauge_code = self.__getGaugeCode(s1['seq_id'])
-                test_gauge_code = self.__getGaugeCode(s2['seq_id'])
+                ref_gauge_code = self.__getGaugeCode(_s1['seq_id'])
+                test_gauge_code = self.__getGaugeCode(_s2['seq_id'])
 
                 seq_align = {'ref_chain_id': chain_id, 'test_chain_id': chain_id2, 'length': ref_length, 'conflict': conflict,'unmapped': unmapped,
                              'sequence_coverage': float('{:.3f}'.format(float(length - (unmapped + conflict)) / float(ref_length))),
-                             'ref_seq_id': s1['seq_id'], 'test_seq_id': s2['seq_id'],
+                             'ref_seq_id': _s1['seq_id'], 'test_seq_id': _s2['seq_id'],
                              'ref_gauge_code': ref_gauge_code, 'ref_code': ref_code, 'mid_code': mid_code, 'test_code': test_code, 'test_gauge_code': test_gauge_code}
 
                 seq_align_set.append(seq_align)
@@ -11739,12 +11766,10 @@ class NmrDpUtility(object):
             for s2 in polymer_sequence:
                 chain_id2 = s2['chain_id']
 
-                #_s2 = self.__fillBlankedCompId(s1, s2)
-
                 self.__pA.setReferenceSequence(s1['comp_id'], 'REF' + _chain_id)
                 self.__pA.addTestSequence(s2['comp_id'], _chain_id)
                 self.__pA.doAlign()
-                #self.__pA.prAlignmentConflicts(_chain_id)
+
                 myAlign = self.__pA.getAlignment(_chain_id)
 
                 length = len(myAlign)
@@ -11752,29 +11777,42 @@ class NmrDpUtility(object):
                 if length == 0:
                     continue
 
+                not_aligned = True
+                offset_1 = 0
+                offset_2 = 0
+
                 unmapped = 0
                 conflict = 0
                 for i in range(length):
                     myPr = myAlign[i]
                     if myPr[0].encode() == '.' or myPr[1].encode() == '.':
+                        if myPr[0].encode() == '.' and myPr[1].encode() != '.'  and not_aligned:
+                            offset_1 += 1
+                        if myPr[0].encode() != '.' and myPr[1].encode() == '.'  and not_aligned:
+                            offset_2 += 1
                         unmapped += 1
                     elif myPr[0] != myPr[1]:
                         conflict += 1
+                    else:
+                        not_aligned = False
 
                 if length == unmapped + conflict:
                     continue
 
+                _s1 = s1 if offset_1 == 0 else self.__fillBlankedCompIdWithOffset(s2, s1, offset_1)
+                _s2 = s2 if offset_2 == 0 else self.__fillBlankedCompIdWithOffset(s1, s2, offset_2)
+
                 ref_length = len(s1['seq_id'])
 
-                ref_code = self.__get1LetterCodeSequence(s1['comp_id'])
-                test_code = self.__get1LetterCodeSequence(s2['comp_id'])
+                ref_code = self.__get1LetterCodeSequence(_s1['comp_id'])
+                test_code = self.__get1LetterCodeSequence(_s2['comp_id'])
                 mid_code = self.__getMiddleCode(ref_code, test_code)
-                ref_gauge_code = self.__getGaugeCode(s1['seq_id'])
-                test_gauge_code = self.__getGaugeCode(s2['seq_id'])
+                ref_gauge_code = self.__getGaugeCode(_s1['seq_id'])
+                test_gauge_code = self.__getGaugeCode(_s2['seq_id'])
 
                 seq_align = {'ref_chain_id': chain_id, 'test_chain_id': chain_id2, 'length': ref_length, 'conflict': conflict, 'unmapped': unmapped,
                              'sequence_coverage': float('{:.3f}'.format(float(length - (unmapped + conflict)) / float(ref_length))),
-                             'ref_seq_id': s1['seq_id'], 'test_seq_id': s2['seq_id'],
+                             'ref_seq_id': _s1['seq_id'], 'test_seq_id': _s2['seq_id'],
                              'ref_gauge_code': ref_gauge_code, 'ref_code': ref_code, 'mid_code': mid_code, 'test_code': test_code, 'test_gauge_code': test_gauge_code}
 
                 seq_align_set.append(seq_align)
@@ -11888,7 +11926,7 @@ class NmrDpUtility(object):
                 self.__pA.setReferenceSequence(s1['comp_id'], 'REF' + _chain_id)
                 self.__pA.addTestSequence(s2['comp_id'], _chain_id)
                 self.__pA.doAlign()
-                #self.__pA.prAlignmentConflicts(_chain_id)
+
                 myAlign = self.__pA.getAlignment(_chain_id)
 
                 length = len(myAlign)
@@ -11929,7 +11967,7 @@ class NmrDpUtility(object):
                             if self.__verbose:
                                 self.__lfh.write("+NmrDpUtility.__assignCoordPolymerSequence() ++ Warning  - %s" % warn)
 
-                        else:
+                        elif cif_comp_id != '.' and nmr_comp_id != '.':
                             conflict.append({'ref_seq_id': s1['seq_id'][i], 'ref_comp_id': cif_comp_id,
                                              'test_seq_id': s2['seq_id'][i], 'test_comp_id': nmr_comp_id})
 
@@ -12006,7 +12044,7 @@ class NmrDpUtility(object):
                     self.__pA.setReferenceSequence(s1['comp_id'], 'REF' + _chain_id)
                     self.__pA.addTestSequence(s2['comp_id'], _chain_id)
                     self.__pA.doAlign()
-                    #self.__pA.prAlignmentConflicts(_chain_id)
+
                     myAlign = self.__pA.getAlignment(_chain_id)
 
                     for i in range(len(myAlign)):
@@ -12032,7 +12070,7 @@ class NmrDpUtility(object):
                             if self.__verbose:
                                 self.__lfh.write("+NmrDpUtility.__assignCoordPolymerSequence() ++ Warning  - %s" % warn)
 
-                        else:
+                        elif nmr_comp_id != '.' and cif_comp_id != '.':
                             conflict.append({'ref_seq_id': s1['seq_id'][i], 'ref_comp_id': nmr_comp_id,
                                              'test_seq_id': s2['seq_id'][i], 'test_comp_id': cif_comp_id})
 

@@ -69,6 +69,8 @@ class NmrDpUtility(object):
         self.__insert_entry_id_to_loops = True
         # whether to retain original content if possible
         self.__retain_original = True
+        # whether to use reduced atom notation
+        self.__reduced_atom_notation = True
 
         # whether entity category exists (nmr-star specific)
         self.__has_star_entity = False
@@ -2167,6 +2169,12 @@ class NmrDpUtility(object):
                 self.__retain_original = self.__outputParamDict['retain_original']
             else:
                 self.__retain_original = self.__outputParamDict['retain_original'] in self.true_value
+
+        if 'reduced_atom_notation' in self.__outputParamDict and not self.__outputParamDict['reduced_atom_notation'] is None:
+            if type(self.__outputParamDict['reduced_atom_notation']) is bool:
+                self.__reduced_atom_notation = self.__outputParamDict['reduced_atom_notation']
+            else:
+                self.__reduced_atom_notation = self.__outputParamDict['reduced_atom_notation'] in self.true_value
 
         self.__op = op
 
@@ -4782,8 +4790,13 @@ class NmrDpUtility(object):
 
                 if content_subtype == 'dist_restraint':
                     max_exclusive = self.dist_restraint_error['max_exclusive']
+
+                    data_unit_name = 'atom pair'
+
                 elif content_subtype == 'dihed_restraint':
                     max_exclusive = self.dihed_restraint_error['max_exclusive']
+
+                    data_unit_name = 'dihedral angle'
 
                     dh_item_names = self.item_names_in_dh_loop[file_type]
                     chain_id_1_name = dh_item_names['chain_id_1']
@@ -4806,6 +4819,8 @@ class NmrDpUtility(object):
 
                 elif content_subtype == 'rdc_restraint':
                     max_exclusive = self.rdc_restraint_error['max_exclusive']
+
+                    data_unit_name = 'bond vector'
 
                 for sf_data in self.__star_data.get_saveframes_by_category(sf_category):
 
@@ -4923,14 +4938,13 @@ class NmrDpUtility(object):
 
                                 if conflict:
 
-                                    msg = ''
-                                    for k in key_items:
-                                        msg += k['name'] + ' %s, ' % lp_data[row_id_1][k['name']]
+                                    msg = '' if content_subtype != 'dihed_restraint' else angle_type_name + ' %s, ' % lp_data[row_id_1][angle_type_name]
+                                    msg += self.__getResucedAtomNotations(key_items, lp_data[row_id_1])
 
                                     warn = '[Check rows of %s %s vs %s, %s %s vs %s] ' %\
                                            (index_tag, lp_data[row_id_1][index_tag], lp_data[row_id_2][index_tag],
                                             id_tag, lp_data[row_id_1][id_tag], lp_data[row_id_2][id_tag])
-                                    warn += 'Found conflict on restraints (%s) for the same atom pair (%s).' % (discrepancy[:-2], msg[:-2])
+                                    warn += 'Found conflict on restraints (%s) for the same %s (%s).' % (discrepancy[:-2], data_unit_name, msg)
 
                                     self.report.warning.appendDescription('conflicted_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
                                     self.report.setWarning()
@@ -4940,14 +4954,13 @@ class NmrDpUtility(object):
 
                                 elif inconsist:
 
-                                    msg = ''
-                                    for k in key_items:
-                                        msg += k['name'] + ' %s, ' % lp_data[row_id_1][k['name']]
+                                    msg = '' if content_subtype != 'dihed_restraint' else angle_type_name + ' %s, ' % lp_data[row_id_1][angle_type_name]
+                                    msg += self.__getResucedAtomNotations(key_items, lp_data[row_id_1])
 
                                     warn = '[Check rows of %s %s vs %s, %s %s vs %s] ' %\
                                            (index_tag, lp_data[row_id_1][index_tag], lp_data[row_id_2][index_tag],
                                             id_tag, lp_data[row_id_1][id_tag], lp_data[row_id_2][id_tag])
-                                    warn += 'Found discrepancy in restraints (%s) for the same atom pair (%s).' % (discrepancy[:-2], msg[:-2])
+                                    warn += 'Found discrepancy in restraints (%s) for the same %s (%s).' % (discrepancy[:-2], data_unit_name, msg)
 
                                     self.report.warning.appendDescription('inconsistent_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
                                     self.report.setWarning()
@@ -4957,9 +4970,8 @@ class NmrDpUtility(object):
 
                         if redundant:
 
-                            msg = ''
-                            for k in key_items:
-                                msg += k['name'] + ' %s, ' % lp_data[row_id_1][k['name']]
+                            msg = '' if content_subtype != 'dihed_restraint' else angle_type_name + ' %s, ' % lp_data[row_id_1][angle_type_name]
+                            msg += self.__getResucedAtomNotations(key_items, lp_data[row_id_1])
 
                             idx_msg = index_tag + ' '
                             for id in id_set:
@@ -4969,7 +4981,7 @@ class NmrDpUtility(object):
                             for id in id_set:
                                 idx_msg += '%s vs ' % lp_data[id][id_tag]
 
-                            warn = '[Check rows of %s] Found redundant restraints for the same atom pair (%s).' % (idx_msg[:-4], msg[:-2])
+                            warn = '[Check rows of %s] Found redundant restraints for the same %s (%s).' % (idx_msg[:-4], data_unit_name, msg)
 
                             self.report.warning.appendDescription('redundant_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
                             self.report.setWarning()
@@ -5867,7 +5879,7 @@ class NmrDpUtility(object):
 
                                     elif not cs_stat['primary']:
 
-                                        warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] %s %s is remarkable assignment (appearance_rate %s %%).' %\
+                                        warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] %s %s is remarkable assignment (appearance rate in BMRB is %s %%).' %\
                                                (value_name, value, cs_stat['norm_freq'] * 100.0)
 
                                         self.report.warning.appendDescription('remarkable_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
@@ -6250,7 +6262,7 @@ class NmrDpUtility(object):
 
                                 elif not cs_stat['primary']:
 
-                                    warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] %s %s is remarkable assignment (appearance_rate %s %%).' %\
+                                    warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] %s %s is remarkable assignment (appearance rate in BMRB is %s %%).' %\
                                            (value_name, value, cs_stat['norm_freq'] * 100.0)
 
                                     self.report.warning.appendDescription('remarkable_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
@@ -6728,8 +6740,8 @@ class NmrDpUtility(object):
 
                                     if abs(position - value) > error:
 
-                                        err = '[Check row of %s %s] Peak position of spectral peak %s %s (%s %s, %s %s, %s %s, %s %s) in %s saveframe is inconsistent with the assigned chemical shift value %s (difference %s, tolerance %s) in %s saveframe.' %\
-                                              (index_tag, i[index_tag], position_names[d], position, chain_id_names[d], chain_id, seq_id_names[d], seq_id, comp_id_names[d], comp_id, atom_id_names[d], atom_id, sf_framecode, value, position - value, error, cs_list)
+                                        err = '[Check row of %s %s] Peak position of spectral peak %s %s (%s) in %s saveframe is inconsistent with the assigned chemical shift value %s (difference %s, tolerance %s) in %s saveframe.' %\
+                                              (index_tag, i[index_tag], position_names[d], position, self.__getReducedAtomNotation(chain_id_names[d], chain_id, seq_id_names[d], seq_id, comp_id_names[d], comp_id, atom_id_names[d], atom_id), sf_framecode, value, position - value, error, cs_list)
 
                                         self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
                                         self.report.setError()
@@ -6741,8 +6753,8 @@ class NmrDpUtility(object):
 
                                 if axis_code != axis_codes[d]:
 
-                                    err = '[Check row of %s %s] Assignment of spectral peak %s %s, %s %s, %s %s, %s %s is inconsistent with axis code %s vs %s.' %\
-                                          (index_tag, i[index_tag], chain_id_names[d], chain_id, seq_id_names[d], seq_id, comp_id_names[d], comp_id, atom_id_names[d], atom_id, axis_code, axis_codes[d])
+                                    err = '[Check row of %s %s] Assignment of spectral peak %s is inconsistent with axis code %s vs %s.' %\
+                                          (index_tag, i[index_tag], self.__getReducedAtomNotation(chain_id_names[d], chain_id, seq_id_names[d], seq_id, comp_id_names[d], comp_id, atom_id_names[d], atom_id), axis_code, axis_codes[d])
 
                                     self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
                                     self.report.setError()
@@ -6752,8 +6764,8 @@ class NmrDpUtility(object):
 
                             except StopIteration:
 
-                                err = '[Check row of %s %s] Assignment of spectral peak %s %s, %s %s, %s %s, %s %s was not found in assigned chemical shifts in %s saveframe.' %\
-                                      (index_tag, i[index_tag], chain_id_names[d], chain_id, seq_id_names[d], seq_id, comp_id_names[d], comp_id, atom_id_names[d], atom_id, cs_list)
+                                err = '[Check row of %s %s] Assignment of spectral peak %s was not found in assigned chemical shifts in %s saveframe.' %\
+                                      (index_tag, i[index_tag], self.__getReducedAtomNotation(chain_id_names[d], chain_id, seq_id_names[d], seq_id, comp_id_names[d], comp_id, atom_id_names[d], atom_id), cs_list)
 
                                 self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
                                 self.report.setError()
@@ -6777,9 +6789,9 @@ class NmrDpUtility(object):
                                         if chain_id2 in self.empty_value or seq_id2 in self.empty_value or comp_id2 in self.empty_value or atom_id2 in self.empty_value or\
                                            (d < d2 and (chain_id2 != chain_id or seq_id2 != seq_id or comp_id2 != comp_id or _atom_id2 != _atom_id)):
 
-                                            err = '[Check row of %s %s] Coherence transfer type is onebond. However, assignment of spectral peak is inconsistent with the type, (%s %s, %s %s, %s %s, %s %s) vs (%s %s, %s %s, %s %s, %s %s).' %\
-                                                  (index_tag, i[index_tag], chain_id_names[d], chain_id, seq_id_names[d], seq_id, comp_id_names[d], comp_id, atom_id_names[d], atom_id,
-                                                   chain_id_names[d2], chain_id2, seq_id_names[d2], seq_id2, comp_id_names[d2], comp_id2, atom_id_names[d2], atom_id2)
+                                            err = '[Check row of %s %s] Coherence transfer type is onebond. However, assignment of spectral peak is inconsistent with the type, (%s) vs (%s).' %\
+                                                  (index_tag, i[index_tag], self.__getReducedAtomNotation(chain_id_names[d], chain_id, seq_id_names[d], seq_id, comp_id_names[d], comp_id, atom_id_names[d], atom_id),
+                                                   self.__getReducedAtomNotation(chain_id_names[d2], chain_id2, seq_id_names[d2], seq_id2, comp_id_names[d2], comp_id2, atom_id_names[d2], atom_id2))
 
                                             self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
                                             self.report.setError()
@@ -6798,9 +6810,9 @@ class NmrDpUtility(object):
                                         if chain_id2 in self.empty_value or seq_id2 in self.empty_value or comp_id2 in self.empty_value or atom_id2 in self.empty_value or\
                                            (d < d2 and (chain_id2 != chain_id or abs(seq_id2 - seq_id) > 1)):
 
-                                            err = '[Check row of %s %s] Coherence transfer type is jcoupling. However, assignment of spectral peak is inconsistent with the type, (%s %s, %s %s, %s %s, %s %s) vs (%s %s, %s %s, %s %s, %s %s).' %\
-                                                  (index_tag, i[index_tag], chain_id_names[d], chain_id, seq_id_names[d], seq_id, comp_id_names[d], comp_id, atom_id_names[d], atom_id,
-                                                   chain_id_names[d2], chain_id2, seq_id_names[d2], seq_id2, comp_id_names[d2], comp_id2, atom_id_names[d2], atom_id2)
+                                            err = '[Check row of %s %s] Coherence transfer type is jcoupling. However, assignment of spectral peak is inconsistent with the type, (s) vs (%s).' %\
+                                                  (index_tag, i[index_tag], self.__getReducedAtomNotation(chain_id_names[d], chain_id, seq_id_names[d], seq_id, comp_id_names[d], comp_id, atom_id_names[d], atom_id),
+                                                   self.__getReducedAtomNotation(chain_id_names[d2], chain_id2, seq_id_names[d2], seq_id2, comp_id_names[d2], comp_id2, atom_id_names[d2], atom_id2))
 
                                             self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
                                             self.report.setError()
@@ -6819,9 +6831,9 @@ class NmrDpUtility(object):
                                         if chain_id2 in self.empty_value or seq_id2 in self.empty_value or comp_id2 in self.empty_value or atom_id2 in self.empty_value or\
                                            (d < d2 and (chain_id2 != chain_id or seq_id2 != seq_id or comp_id2 != comp_id or atom_id[0] != atom_id2[0])):
 
-                                            err = '[Check row of %s %s] Coherence transfer type is relayed. However, assignment of spectral peak is inconsistent with the type, (%s %s, %s %s, %s %s, %s %s) vs (%s %s, %s %s, %s %s, %s %s).' %\
-                                                  (index_tag, i[index_tag], chain_id_names[d], chain_id, seq_id_names[d], seq_id, comp_id_names[d], comp_id, atom_id_names[d], atom_id,
-                                                   chain_id_names[d2], chain_id2, seq_id_names[d2], seq_id2, comp_id_names[d2], comp_id2, atom_id_names[d2], atom_id2)
+                                            err = '[Check row of %s %s] Coherence transfer type is relayed. However, assignment of spectral peak is inconsistent with the type, (%s) vs (%s).' %\
+                                                  (index_tag, i[index_tag], self.__getReducedAtomNotation(chain_id_names[d], chain_id, seq_id_names[d], seq_id, comp_id_names[d], comp_id, atom_id_names[d], atom_id),
+                                                   self.__getReducedAtomNotation(chain_id_names[d2], chain_id2, seq_id_names[d2], seq_id2, comp_id_names[d2], comp_id2, atom_id_names[d2], atom_id2))
 
                                             self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
                                             self.report.setError()
@@ -7006,6 +7018,35 @@ class NmrDpUtility(object):
                     self.__lfh.write("+NmrDpUtility.__testRDCVector() ++ Error  - %s" % str(e))
 
         return self.report.getTotalErrors() == __errors
+
+    def __getReducedAtomNotation(self, chain_id_name, chain_id, seq_id_name, seq_id, comp_id_name, comp_id, atom_id_name, atom_id):
+        """ Return reduced form of atom notation.
+        """
+
+        if self.__reduced_atom_notation:
+            return '%s:%s:%s:%s' % (chain_id, seq_id, comp_id, atom_id)
+
+        return '%s %s, %s %s, %s %s, %s %s' % (chain_id_name, chain_id, seq_id_name, seq_id, comp_id_name, comp_id, atom_id_name, atom_id)
+
+    def __getResucedAtomNotations(self, key_items, row_data):
+        """ Return reduced from of series of atom notations.
+        """
+
+        msg = ''
+
+        if self.__reduced_atom_notation:
+            j = 0
+            for k in key_items:
+                msg += '%s:' % row_data[k['name']]
+                j += 1
+                if j % 4 == 0:
+                    msg = msg[:-1] + '-'
+            return msg[:-1]
+
+        for k in key_items:
+            msg += k['name'] + ' %s, ' % row_data[k['name']]
+
+        return msg[:-2]
 
     def __calculateStatsOfExptlData(self):
         """ Calculate statistics of experimental data.
@@ -12278,8 +12319,8 @@ class NmrDpUtility(object):
                                 if not index_tag is None:
                                     idx_msg = "[Check row of %s %s] " % (index_tag, i[index_tag])
 
-                                err = "%sAtom (%s %s, %s %s, %s %s, %s %s) is not incorporated in the atomic coordinate." %\
-                                      (idx_msg, chain_id_names[j], chain_id, seq_id_names[j], seq_id, comp_id_names[j], comp_id, atom_id_names[j], atom_name)
+                                err = "%sAtom (%s) is not incorporated in the atomic coordinate." %\
+                                      (idx_msg, self.__getReducedAtomNotation(chain_id_names[j], chain_id, seq_id_names[j], seq_id, comp_id_names[j], comp_id, atom_id_names[j], atom_name))
 
                                 cyclic = self.__isCyclicPolymer(ref_chain_id)
 

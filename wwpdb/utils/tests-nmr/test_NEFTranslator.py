@@ -19,7 +19,7 @@ class TestNEFTranslator(unittest.TestCase):
 
     def setUp(self):
         here = os.path.abspath(os.path.dirname(__file__))
-        self.data_dir_path = os.path.join(here, 'data/')
+        self.data_dir_path = os.path.join(here, 'mock-data/')
         self.neft = NEFTranslator()
         self.neft.authChainId = ['A', 'B', 'C']
         self.neft.authSeqMap = {('A', '372'): (1, 1), ('A', '373'): (1, 2), ('A', '374'): (1, 3), ('A', '375'): (1, 4),

@@ -16,7 +16,7 @@ class ImportTests(unittest.TestCase):
     def setUp(self):
         self.neft = NEFTranslator()
         here = os.path.abspath(os.path.dirname(__file__))
-        self.testdata = os.path.join(here, "../nmr/NEFTranslator", "data")
+        self.testdata = os.path.join(here, "mock-data")
         self.outputdir = os.path.join(here, 'test-output', platform.python_version())
         if not os.path.exists(self.outputdir):
             os.makedirs(self.outputdir)

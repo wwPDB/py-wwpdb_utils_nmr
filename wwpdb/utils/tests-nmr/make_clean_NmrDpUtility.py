@@ -19,7 +19,7 @@ class TestNmrDpUtility(unittest.TestCase):
 
     def setUp(self):
         here = os.path.abspath(os.path.dirname(__file__))
-        self.data_dir_path = os.path.join(here, '../nmr/NEFTranslator/data/')
+        self.data_dir_path = os.path.join(here, 'mock-data/')
         self.utility = NmrDpUtility()
         self.report = NmrDpReport()
         pass

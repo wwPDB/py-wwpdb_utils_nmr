@@ -7040,8 +7040,8 @@ class NmrDpUtility(object):
                 msg += '%s:' % row_data[k['name']]
                 j += 1
                 if j % 4 == 0:
-                    msg = msg[:-1] + '-'
-            return msg[:-1]
+                    msg = msg[:-1] + ' - '
+            return msg[:-3]
 
         for k in key_items:
             msg += k['name'] + ' %s, ' % row_data[k['name']]
@@ -8503,6 +8503,7 @@ class NmrDpUtility(object):
         upper_limit_name = item_names['upper_limit']
         lower_linear_limit_name = item_names['lower_linear_limit']
         upper_linear_limit_name = item_names['upper_linear_limit']
+        weight_name = self.weight_tags[file_type]['dist_restraint']
 
         try:
 
@@ -8514,6 +8515,7 @@ class NmrDpUtility(object):
             inco_count = {}
             redu_count = {}
             potential = {}
+            weights = {}
 
             count_per_residue = []
             count_on_map = []
@@ -8546,6 +8548,7 @@ class NmrDpUtility(object):
                 comp_id_2 = i[comp_id_2_name]
                 atom_id_1 = i[atom_id_1_name]
                 atom_id_2 = i[atom_id_2_name]
+                weight = None if not weight_name in i else i[weight_name]
 
                 target_value = i[target_value_name] if target_value_name in i else None
 
@@ -8587,6 +8590,11 @@ class NmrDpUtility(object):
 
                 data_type = self.__getTypeOfDistanceRestraint(file_type, lp_data, l, target_value, upper_limit_value, lower_limit_value,
                                                               chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2)
+
+                if not weight is None:
+                    if not data_type in weights:
+                        weights[data_type] = []
+                    weights[data_type].append(weight)
 
                 if 'hydrogen_bonds' in data_type and 'too close!' in data_type:
 
@@ -8820,6 +8828,11 @@ class NmrDpUtility(object):
             if has_inter_chain_constraint:
                 ent['constraints_on_asym_contact_map'] = count_on_asym_map
             ent['range'] = {'max_value': max_val, 'min_value': min_val}
+            if len(weights) > 0:
+                _weights = {}
+                for k, v in weights.items():
+                    _weights[k] = collections.Counter(v).most_common()
+                ent['weight_of_constraints'] = _weights
 
             target_scale = (max_val - min_val) / 10.0
 
@@ -9593,6 +9606,7 @@ class NmrDpUtility(object):
         atom_id_3_name = dh_item_names['atom_id_3']
         atom_id_4_name = dh_item_names['atom_id_4']
         angle_type_name = dh_item_names['angle_type']
+        weight_name = self.weight_tags[file_type]['dihed_restraint']
 
         try:
 
@@ -9601,6 +9615,7 @@ class NmrDpUtility(object):
             inco_count = {}
             redu_count = {}
             potential = {}
+            weights = {}
 
             phi_list = []
             psi_list = []
@@ -9689,11 +9704,17 @@ class NmrDpUtility(object):
                 atom_id_3 = i[atom_id_3_name]
                 atom_id_4 = i[atom_id_4_name]
                 data_type = i[angle_type_name]
+                weight = None if not weight_name in i else i[weight_name]
 
                 data_type, seq_id_common, comp_id_common =\
                 self.__getTypeOfDihedralRestraint(data_type,
                                                   chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2,
                                                   chain_id_3, seq_id_3, comp_id_3, atom_id_3, chain_id_4, seq_id_4, comp_id_4, atom_id_4)
+
+                if not weight is None:
+                    if not data_type in weights:
+                        weights[data_type] = []
+                    weights[data_type].append(weight)
 
                 if data_type in count:
                     count[data_type] += 1
@@ -9816,7 +9837,9 @@ class NmrDpUtility(object):
                         if not data_type in c:
                             c[data_type] = [None] * len(c['seq_id'])
                         if c['chain_id'] == chain_id_1 and not target_value is None:
-                            c[data_type][c['seq_id'].index(seq_id_common[0][0])] = float(target_value)
+                            b = c['seq_id'].index(seq_id_common[0][0])
+                            if c[data_type][b] is None:
+                                c[data_type][b] = float(target_value)
 
             if len(count) > 0:
                 ent['number_of_constraints'] = count
@@ -9829,6 +9852,11 @@ class NmrDpUtility(object):
                 if not polymer_sequence is None:
                     ent['constraints_per_residue'] = value_per_residue
                 ent['number_of_potential_types'] = potential
+                if len(weights) > 0:
+                    _weights = {}
+                    for k, v in weights.items():
+                        _weights[k] = collections.Counter(v).most_common()
+                    ent['weight_of_constraints'] = _weights
 
             if 'phi_angle_constraints' in count and 'psi_angle_constraints' in count:
 
@@ -10435,12 +10463,14 @@ class NmrDpUtility(object):
             comp_id_2_name = item_names['comp_id_2']
             atom_id_1_name = item_names['atom_id_1']
             atom_id_2_name = item_names['atom_id_2']
+            weight_name = self.weight_tags[file_type]['rdc_restraint']
 
             count = {}
             comb_count = {}
             inco_count = {}
             redu_count = {}
             potential = {}
+            weights = {}
 
             value_per_residue = []
 
@@ -10460,8 +10490,14 @@ class NmrDpUtility(object):
                 seq_id_1 = i[seq_id_1_name]
                 atom_id_1 = i[atom_id_1_name]
                 atom_id_2 = i[atom_id_2_name]
+                weight = None if not weight_name in i else i[weight_name]
 
                 data_type = self.__getTypeOfRdcRestraint(atom_id_1, atom_id_2)
+
+                if not weight is None:
+                    if not data_type in weights:
+                        weights[data_type] = []
+                    weights[data_type].append(weight)
 
                 if data_type in count:
                     count[data_type] += 1
@@ -10548,7 +10584,9 @@ class NmrDpUtility(object):
                         if not data_type in c:
                             c[data_type] = [None] * len(c['seq_id'])
                         if c['chain_id'] == chain_id_1 and not targe_value is None:
-                            c[data_type][c['seq_id'].index(seq_id_1)] = float(targe_value)
+                            b = c['seq_id'].index(seq_id_1)
+                            if c[data_type][b] is None:
+                                c[data_type][b] = float(targe_value)
 
             if len(count) == 0:
                 return
@@ -10564,6 +10602,11 @@ class NmrDpUtility(object):
                 ent['constraints_per_residue'] = value_per_residue
             ent['number_of_potential_types'] = potential
             ent['range'] = {'max_value': max_val_, 'min_value': min_val_}
+            if len(weights) > 0:
+                _weights = {}
+                for k, v in weights.items():
+                    _weights[k] = collections.Counter(v).most_common()
+                ent['weight_of_constraints'] = _weights
 
             target_scale = (max_val - min_val) / 12.0
 

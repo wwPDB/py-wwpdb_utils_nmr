@@ -10,7 +10,7 @@
 # 23-Jul-2019   my  - Forked original code to wwpdb.util.nmr.CifReader
 # 30-Jul-2019   my  - Add 'range-float' as filter item type
 # 05-Aug-2019   my  - Add 'enum' as filter item type
-# 28-Jan-2019   my  - Add 'withStructConf' option of getPolymerSequence
+# 28-Jan-2020   my  - Add 'withStructConf' option of getPolymerSequence
 ##
 """ A collection of classes for parsing CIF files.
 """

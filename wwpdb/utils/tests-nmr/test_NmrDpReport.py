@@ -5,7 +5,7 @@
 # Updates:
 # 09-Oct-2019  M. Yokochi - add 'enum_failure_ignorable' warning type
 # 15-Oct-2019  M. Yokochi - add 'encouragement' waring type
-# 27-Jan-2019  M. Yokochi - change warning type 'enum_failure' to 'enum_mismatch'
+# 27-Jan-2020  M. Yokochi - change warning type 'enum_failure' to 'enum_mismatch'
 # 05-Feb-2020  M. Yokochi - move conflicted_data error to warning
 ##
 import unittest

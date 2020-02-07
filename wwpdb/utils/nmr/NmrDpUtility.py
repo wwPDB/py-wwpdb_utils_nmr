@@ -12,9 +12,9 @@
 # 11-Dec-2019  M. Yokochi - fix internal errors while processing NMR-VTF/PDBStat_examples and NMR-VTF/BMRB
 # 24-Jan-2020  M. Yokochi - add histogram of distance restraints per residue and distance restraints on contact map
 # 27-Jan-2020  M. Yokochi - add contact map for inter-chain distance restraints
-# 28-Jan-2019  M. Yokochi - add struct_conf and struct_sheet_range data in dp report
-# 29-Jan-2019  M. Yokochi - change plot type of dihedral angle and RDC restraints per residue
-# 05-Feb-2019  M. Yokochi - add 'circular-shift' and 'void-zero' constraint for dihedral angle restraint
+# 28-Jan-2020  M. Yokochi - add struct_conf and struct_sheet_range data in dp report
+# 29-Jan-2020  M. Yokochi - change plot type of dihedral angle and RDC restraints per residue
+# 05-Feb-2020  M. Yokochi - add 'circular-shift' and 'void-zero' constraint for dihedral angle restraint
 # 05-Feb-2020  M. Yokochi - move conflicted_data error to warning
 # 07-Feb-2020  M. Yokochi - replace 'number_of_potential_types' by 'potential_type_of_constraints' in dp report
 ##

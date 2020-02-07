@@ -4,7 +4,7 @@
 #
 # Updates:
 # 09-Oct-2019  M. Yokochi - add 'resolve_conflict' option in __test_nmr_nef_consistency and rename log file
-# 05-Feb-2019  M. Yokochi - add 'check_mandatory_tag' option
+# 05-Feb-2020  M. Yokochi - add 'check_mandatory_tag' option
 ##
 import unittest
 import os

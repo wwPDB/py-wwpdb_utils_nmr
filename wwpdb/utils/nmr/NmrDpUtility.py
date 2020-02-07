@@ -17,6 +17,7 @@
 # 05-Feb-2020  M. Yokochi - add 'circular-shift' and 'void-zero' constraint for dihedral angle restraint
 # 05-Feb-2020  M. Yokochi - move conflicted_data error to warning
 # 07-Feb-2020  M. Yokochi - replace 'number_of_potential_types' by 'potential_type_of_constraints' in dp report
+# 07-Feb-2020  M. Yokochi - allow multiple values in a data type on per residue plots
 ##
 """ Wrapper class for data processing for NMR unified data.
     @author: Masashi Yokochi
@@ -9865,6 +9866,16 @@ class NmrDpUtility(object):
                             b = c['seq_id'].index(seq_id_common[0][0])
                             if c[data_type][b] is None:
                                 c[data_type][b] = float(target_value)
+                            else:
+                                j = 2
+                                while (True):
+                                    _data_type = data_type + '_' + str(j)
+                                    if not _data_type in c:
+                                        c[_data_type] = [None] * len(c['seq_id'])
+                                    if c[_data_type][b] is None:
+                                        c[_data_type][b] = float(target_value)
+                                        break
+                                    j += 1
 
             if len(count) > 0:
                 ent['number_of_constraints'] = count
@@ -9893,10 +9904,10 @@ class NmrDpUtility(object):
                 phi_psi_error = {}
 
                 for phi in phi_list:
-                    try:
-                        psi = next(psi for psi in psi_list if psi['chain_id'] == phi['chain_id'] and psi['seq_id'] == phi['seq_id'])
 
-                        comp_id = phi['comp_id']
+                    comp_id = phi['comp_id']
+
+                    for psi in [psi for psi in psi_list if psi['chain_id'] == phi['chain_id'] and psi['seq_id'] == phi['seq_id']]:
 
                         if not comp_id in phi_psi_value:
                             phi_psi_value[comp_id] = []
@@ -9913,9 +9924,6 @@ class NmrDpUtility(object):
                                                            None if phi['error'] is None else phi['error'][1],
                                                            None if psi['error'] is None else psi['error'][0],
                                                            None if psi['error'] is None else psi['error'][1]])
-
-                    except StopIteration:
-                        pass
 
                 if len(phi_psi_value) > 0:
 
@@ -9934,10 +9942,10 @@ class NmrDpUtility(object):
                 chi1_chi2_error = {}
 
                 for chi1 in chi1_list:
-                    try:
-                        chi2 = next(chi2 for chi2 in chi2_list if chi2['chain_id'] == chi1['chain_id'] and chi2['seq_id'] == chi1['seq_id'])
 
-                        comp_id = chi1['comp_id']
+                    comp_id = chi1['comp_id']
+
+                    for chi2 in [chi2 for chi2 in chi2_list if chi2['chain_id'] == chi1['chain_id'] and chi2['seq_id'] == chi1['seq_id']]:
 
                         if not comp_id in chi1_chi2_value:
                             chi1_chi2_value[comp_id] = []
@@ -9954,9 +9962,6 @@ class NmrDpUtility(object):
                                                             None if chi1['error'] is None else chi1['error'][1],
                                                             None if chi2['error'] is None else chi2['error'][0],
                                                             None if chi2['error'] is None else chi2['error'][1]])
-
-                    except StopIteration:
-                        pass
 
                 if len(chi1_chi2_value) > 0:
 
@@ -10618,6 +10623,16 @@ class NmrDpUtility(object):
                             b = c['seq_id'].index(seq_id_1)
                             if c[data_type][b] is None:
                                 c[data_type][b] = float(targe_value)
+                            else:
+                                j = 2
+                                while (True):
+                                    _data_type = data_type + '_' + str(j)
+                                    if not _data_type in c:
+                                        c[_data_type] = [None] * len(c['seq_id'])
+                                    if c[_data_type][b] is None:
+                                        c[_data_type][b] = float(target_value)
+                                        break
+                                    j += 1
 
             if len(count) == 0:
                 return
@@ -11940,8 +11955,6 @@ class NmrDpUtility(object):
                 s1 = next(s for s in cif_polymer_sequence if s['chain_id'] == chain_id)
                 s2 = next(s for s in nmr_polymer_sequence if s['chain_id'] == chain_id2)
 
-                #_s2 = self.__fillBlankedCompId(s1, s2)
-
                 self.__pA.setReferenceSequence(s1['comp_id'], 'REF' + _chain_id)
                 self.__pA.addTestSequence(s2['comp_id'], _chain_id)
                 self.__pA.doAlign()
@@ -12057,8 +12070,6 @@ class NmrDpUtility(object):
 
                     s1 = next(s for s in nmr_polymer_sequence if s['chain_id'] == chain_id)
                     s2 = next(s for s in cif_polymer_sequence if s['chain_id'] == chain_id2)
-
-                    #_s2 = self.__fillBlankedCompId(s1, s2)
 
                     self.__pA.setReferenceSequence(s1['comp_id'], 'REF' + _chain_id)
                     self.__pA.addTestSequence(s2['comp_id'], _chain_id)

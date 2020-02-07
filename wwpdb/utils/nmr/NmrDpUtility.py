@@ -16,6 +16,7 @@
 # 29-Jan-2019  M. Yokochi - change plot type of dihedral angle and RDC restraints per residue
 # 05-Feb-2019  M. Yokochi - add 'circular-shift' and 'void-zero' constraint for dihedral angle restraint
 # 05-Feb-2020  M. Yokochi - move conflicted_data error to warning
+# 07-Feb-2020  M. Yokochi - replace 'number_of_potential_types' by 'potential_type_of_constraints' in dp report
 ##
 """ Wrapper class for data processing for NMR unified data.
     @author: Masashi Yokochi
@@ -8530,8 +8531,8 @@ class NmrDpUtility(object):
             comb_count = {}
             inco_count = {}
             redu_count = {}
-            potential = {}
             weights = {}
+            potential_types = {}
 
             count_per_residue = []
             count_on_map = []
@@ -8606,11 +8607,6 @@ class NmrDpUtility(object):
 
                 data_type = self.__getTypeOfDistanceRestraint(file_type, lp_data, l, target_value, upper_limit_value, lower_limit_value,
                                                               chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2)
-
-                if not weight is None:
-                    if not data_type in weights:
-                        weights[data_type] = []
-                    weights[data_type].append(weight)
 
                 if 'hydrogen_bonds' in data_type and 'too close!' in data_type:
 
@@ -8729,6 +8725,13 @@ class NmrDpUtility(object):
                         else:
                             redu_count[data_type] = 1
 
+                # detect weight
+
+                if not weight is None:
+                    if not data_type in weights:
+                        weights[data_type] = []
+                    weights[data_type].append(weight)
+
                 # detect potential type
 
                 targe_value = i[target_value_name] if target_value_name in i else None
@@ -8776,10 +8779,10 @@ class NmrDpUtility(object):
                 else:
                     potential_type = 'unknown'
 
-                if potential_type in potential:
-                    potential[potential_type] += 1
-                else:
-                    potential[potential_type] = 1
+                if not potential_type is None:
+                    if not data_type in potential_types:
+                        potential_types[data_type] = []
+                    potential_types[data_type].append(potential_type)
 
                 if not polymer_sequence is None:
 
@@ -8837,7 +8840,6 @@ class NmrDpUtility(object):
                 ent['number_of_inconsistent_constraints'] = inco_count
             if len(redu_count) > 0:
                 ent['number_of_redundant_constraints'] = redu_count
-            ent['number_of_potential_types'] = potential
             if not polymer_sequence is None:
                 ent['number_of_constraints_per_residue'] = count_per_residue
                 ent['constraints_on_contact_map'] = count_on_map
@@ -8849,6 +8851,11 @@ class NmrDpUtility(object):
                 for k, v in weights.items():
                     _weights[k] = collections.Counter(v).most_common()
                 ent['weight_of_constraints'] = _weights
+            if len(potential_types) > 0:
+                _potential_types = {}
+                for k, v in potential_types.items():
+                    _potential_types[k] = collections.Counter(v).most_common()
+                ent['potential_type_of_constraints'] = _potential_types
 
             target_scale = (max_val - min_val) / 10.0
 
@@ -9630,8 +9637,8 @@ class NmrDpUtility(object):
             comb_count = {}
             inco_count = {}
             redu_count = {}
-            potential = {}
             weights = {}
+            potential_types = {}
 
             phi_list = []
             psi_list = []
@@ -9727,11 +9734,6 @@ class NmrDpUtility(object):
                                                   chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2,
                                                   chain_id_3, seq_id_3, comp_id_3, atom_id_3, chain_id_4, seq_id_4, comp_id_4, atom_id_4)
 
-                if not weight is None:
-                    if not data_type in weights:
-                        weights[data_type] = []
-                    weights[data_type].append(weight)
-
                 if data_type in count:
                     count[data_type] += 1
                 else:
@@ -9793,6 +9795,13 @@ class NmrDpUtility(object):
                     chi2['error'] = None if lower_limit is None or upper_limit is None else [lower_limit, upper_limit]
                     chi2_list.append(chi2)
 
+                # detect weight
+
+                if not weight is None:
+                    if not data_type in weights:
+                        weights[data_type] = []
+                    weights[data_type].append(weight)
+
                 # detect potential type
 
                 targe_value = i[target_value_name] if target_value_name in i else None
@@ -9840,10 +9849,10 @@ class NmrDpUtility(object):
                 else:
                     potential_type = 'unknown'
 
-                if potential_type in potential:
-                    potential[potential_type] += 1
-                else:
-                    potential[potential_type] = 1
+                if not potential_type is None:
+                    if not data_type in potential_types:
+                        potential_types[data_type] = []
+                    potential_types[data_type].append(potential_type)
 
                 if not polymer_sequence is None:
 
@@ -9867,12 +9876,16 @@ class NmrDpUtility(object):
                     ent['number_of_redundant_constraints'] = redu_count
                 if not polymer_sequence is None:
                     ent['constraints_per_residue'] = value_per_residue
-                ent['number_of_potential_types'] = potential
                 if len(weights) > 0:
                     _weights = {}
                     for k, v in weights.items():
                         _weights[k] = collections.Counter(v).most_common()
                     ent['weight_of_constraints'] = _weights
+                if len(potential_types) > 0:
+                    _potential_types = {}
+                    for k, v in potential_types.items():
+                        _potential_types[k] = collections.Counter(v).most_common()
+                    ent['potential_type_of_constraints'] = _potential_types
 
             if 'phi_angle_constraints' in count and 'psi_angle_constraints' in count:
 
@@ -10485,8 +10498,8 @@ class NmrDpUtility(object):
             comb_count = {}
             inco_count = {}
             redu_count = {}
-            potential = {}
             weights = {}
+            potential_types = {}
 
             value_per_residue = []
 
@@ -10509,11 +10522,6 @@ class NmrDpUtility(object):
                 weight = None if not weight_name in i else i[weight_name]
 
                 data_type = self.__getTypeOfRdcRestraint(atom_id_1, atom_id_2)
-
-                if not weight is None:
-                    if not data_type in weights:
-                        weights[data_type] = []
-                    weights[data_type].append(weight)
 
                 if data_type in count:
                     count[data_type] += 1
@@ -10539,6 +10547,13 @@ class NmrDpUtility(object):
                             redu_count[data_type] += 1
                         else:
                             redu_count[data_type] = 1
+
+                # detect weight
+
+                if not weight is None:
+                    if not data_type in weights:
+                        weights[data_type] = []
+                    weights[data_type].append(weight)
 
                 # detect potential type
 
@@ -10587,10 +10602,10 @@ class NmrDpUtility(object):
                 else:
                     potential_type = 'unknown'
 
-                if potential_type in potential:
-                    potential[potential_type] += 1
-                else:
-                    potential[potential_type] = 1
+                if not potential_type is None:
+                    if not data_type in potential_types:
+                        potential_types[data_type] = []
+                    potential_types[data_type].append(potential_type)
 
                 if not polymer_sequence is None:
 
@@ -10616,13 +10631,17 @@ class NmrDpUtility(object):
                 ent['number_of_redundant_constraints'] = redu_count
             if not polymer_sequence is None:
                 ent['constraints_per_residue'] = value_per_residue
-            ent['number_of_potential_types'] = potential
             ent['range'] = {'max_value': max_val_, 'min_value': min_val_}
             if len(weights) > 0:
                 _weights = {}
                 for k, v in weights.items():
                     _weights[k] = collections.Counter(v).most_common()
                 ent['weight_of_constraints'] = _weights
+            if len(potential_types) > 0:
+                _potential_types = {}
+                for k, v in potential_types.items():
+                    _potential_types[k] = collections.Counter(v).most_common()
+                ent['potential_type_of_constraints'] = _potential_types
 
             target_scale = (max_val - min_val) / 12.0
 

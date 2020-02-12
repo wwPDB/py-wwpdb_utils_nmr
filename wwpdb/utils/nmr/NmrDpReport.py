@@ -10,7 +10,6 @@
 # 05-Feb-2020  M. Yokochi - move conflicted_data error to warning
 # 10-Feb-2020  M. Yokochi - add methods to retrieve polymer sequence for sample sequence alignment
 ##
-from __builtin__ import True
 """ Wrapper class for data processing report of NMR unified data.
     @author: Masashi Yokochi
 """

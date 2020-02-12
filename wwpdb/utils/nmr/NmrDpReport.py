@@ -48,6 +48,43 @@ class NmrDpReport:
         self.warning = NmrDpReportWarning()
         self.corrected_warning = None
 
+        # taken from wwpdb.utils.align.SequenceReferenceData.py
+        self.monDict3 = {'ALA': 'A',
+                         'ARG': 'R',
+                         'ASN': 'N',
+                         'ASP': 'D',
+                         'ASX': 'B',
+                         'CYS': 'C',
+                         'GLN': 'Q',
+                         'GLU': 'E',
+                         'GLX': 'Z',
+                         'GLY': 'G',
+                         'HIS': 'H',
+                         'ILE': 'I',
+                         'LEU': 'L',
+                         'LYS': 'K',
+                         'MET': 'M',
+                         'PHE': 'F',
+                         'PRO': 'P',
+                         'SER': 'S',
+                         'THR': 'T',
+                         'TRP': 'W',
+                         'TYR': 'Y',
+                         'VAL': 'V',
+                         'DA': 'A',
+                         'DC': 'C',
+                         'DG': 'G',
+                         'DT': 'T',
+                         'DU': 'U',
+                         'DI': 'I',
+                         'A': 'A',
+                         'C': 'C',
+                         'G': 'G',
+                         'I': 'I',
+                         'T': 'T',
+                         'U': 'U'
+                         }
+
     def appendInputSource(self):
         self.input_sources.append(NmrDpReportInputSource())
 
@@ -131,6 +168,60 @@ class NmrDpReport:
 
         return next((ps for ps in cif_polymer_sequence if ps['chain_id'] == chain_id), None)
 
+    def getNmrSeq1LetterCodeOf(self, chain_id):
+        """ Retrieve NMR polymer sequence (1-letter code) having a given chain_id.
+        """
+
+        id = self.getInputSourceIdOfNmrUnifiedData()
+
+        if id < 0:
+            return None
+
+        nmr_input_source_dic = self.input_sources[id].get()
+
+        nmr_polymer_sequence = nmr_input_source_dic['polymer_sequence']
+
+        ps = next((ps for ps in nmr_polymer_sequence if ps['chain_id'] == chain_id), None)
+
+        if ps is None:
+            return None
+
+        code = ''
+        for comp_id in ps['comp_id']:
+            if comp_id in self.monDict3:
+                code += self.monDict3[comp_id]
+            else:
+                code += '(' + comp_id + ')'
+
+        return code
+
+    def getModelSeq1LetterCodeOf(self, chain_id):
+        """ Retrieve model polymer sequence (1-letter code) having a given chain_id.
+        """
+
+        id = self.getInputSourceIdOfCoord()
+
+        if id < 0:
+            return None
+
+        cif_input_source_dic = self.input_sources[id].get()
+
+        cif_polymer_sequence = cif_input_source_dic['polymer_sequence']
+
+        ps = next((ps for ps in cif_polymer_sequence if ps['chain_id'] == chain_id), None)
+
+        if ps is None:
+            return None
+
+        code = ''
+        for comp_id in ps['comp_id']:
+            if comp_id in self.monDict3:
+                code += self.monDict3[comp_id]
+            else:
+                code += '(' + comp_id + ')'
+
+        return code
+
     def getNmrPolymerSequenceWithModelChainId(self, cif_chain_id):
         """ Retrieve NMR polymer sequence corresponding to a given coordinate chain_id.
         """
@@ -182,15 +273,15 @@ class NmrDpReport:
         if id < 0:
             return None
 
-        chain_assign_dic = self.__report['information']['chain_assignments']
+        chain_assign_dic = self.chain_assignment.get()
 
-        if not 'nmr_poly_seq_vs_model_poly_seq' in chain_assign_dic:
+        if not 'model_poly_seq_vs_nmr_poly_seq' in chain_assign_dic:
             return None
 
-        for chain_assign in chain_assign_dic['nmr_poly_seq_vs_model_poly_seq']:
+        for chain_assign in chain_assign_dic['model_poly_seq_vs_nmr_poly_seq']:
 
-            if chain_assign['test_chain_id'] == cif_chain_id:
-                return chain_assign['ref_code']
+            if chain_assign['ref_chain_id'] == cif_chain_id:
+                return self.getNmrSeq1LetterCodeOf(chain_assign['test_chain_id'])
 
         return None
 
@@ -203,15 +294,15 @@ class NmrDpReport:
         if id < 0:
             return None
 
-        chain_assign_dic = self.__report['information']['chain_assignments']
+        chain_assign_dic = self.chain_assignment.get()
 
-        if not 'model_poly_seq_vs_nmr_poly_seq' in chain_assign_dic:
+        if not 'nmr_poly_seq_vs_model_poly_seq' in chain_assign_dic:
             return None
 
-        for chain_assign in chain_assign_dic['model_poly_seq_vs_nmr_poly_seq']:
+        for chain_assign in chain_assign_dic['nmr_poly_seq_vs_model_poly_seq']:
 
-            if chain_assign['test_chain_id'] == nmr_chain_id:
-                return chain_assign['ref_code']
+            if chain_assign['ref_chain_id'] == nmr_chain_id:
+                return self.getModelSeq1LetterCodeOf(chain_assign['test_chain_id'])
 
         return None
 

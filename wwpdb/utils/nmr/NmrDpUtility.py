@@ -2229,7 +2229,7 @@ class NmrDpUtility(object):
             if not self.report_prev.warning.get() is None:
                 self.report.setCorrectedWarning(self.report_prev)
 
-        return self.report.writeJson(self.__logPath)
+        return self.report.writeFile(self.__logPath)
 
     def __initializeDpReport(self, srcPath=None):
         """ Initialize NMR data processing report.
@@ -5897,8 +5897,8 @@ class NmrDpUtility(object):
 
                                     elif not cs_stat['primary']:
 
-                                        warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] %s %s is remarkable assignment (appearance rate in BMRB is %s %%).' %\
-                                               (value_name, value, cs_stat['norm_freq'] * 100.0)
+                                        warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] %s %s is remarkable assignment. Appearance rate of %s in %s is %s %% according to BMRB.' %\
+                                               (value_name, value, atom_id, comp_id, cs_stat['norm_freq'] * 100.0)
 
                                         self.report.warning.appendDescription('remarkable_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
                                         self.report.setWarning()
@@ -6280,8 +6280,8 @@ class NmrDpUtility(object):
 
                                 elif not cs_stat['primary']:
 
-                                    warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] %s %s is remarkable assignment (appearance rate in BMRB is %s %%).' %\
-                                           (value_name, value, cs_stat['norm_freq'] * 100.0)
+                                    warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] %s %s is remarkable assignment. Appearance rate of %s in %s is %s %% according to BMRB.' %\
+                                           (value_name, value, atom_id, comp_id, cs_stat['norm_freq'] * 100.0)
 
                                     self.report.warning.appendDescription('remarkable_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
                                     self.report.setWarning()
@@ -7459,80 +7459,61 @@ class NmrDpUtility(object):
 
                         l += 1
 
-                    for s in polymer_sequence:
+                    s = next((s for s in polymer_sequence if s['chain_id'] == chain_id), None)
 
-                        if s['chain_id'] == chain_id:
+                    if not s is None:
 
-                            for i in range(len(s['seq_id'])):
-                                seq_id = s['seq_id'][i]
-                                comp_id = s['comp_id'][i]
+                        for i in range(len(s['seq_id'])):
+                            seq_id = s['seq_id'][i]
+                            comp_id = s['comp_id'][i]
 
-                                polypeptide_like = self.__csStat.getTypeOfCompId(comp_id)[0]
+                            polypeptide_like = self.__csStat.getTypeOfCompId(comp_id)[0]
 
-                                if self.__csStat.hasEnoughStat(comp_id, polypeptide_like):
+                            if self.__csStat.hasEnoughStat(comp_id, polypeptide_like):
 
-                                    all_atoms = self.__csStat.getAllAtoms(comp_id, excl_minor_atom=True, primary=polypeptide_like)
-                                    non_excl_atoms = self.__csStat.getAllAtoms(comp_id, excl_minor_atom=False)
-                                    non_rep_methyl_pros = self.__csStat.getNonRepresentativeMethylProtons(comp_id, excl_minor_atom=True, primary=polypeptide_like)
+                                all_atoms = self.__csStat.getAllAtoms(comp_id, excl_minor_atom=True, primary=polypeptide_like)
+                                non_excl_atoms = self.__csStat.getAllAtoms(comp_id, excl_minor_atom=False)
+                                non_rep_methyl_pros = self.__csStat.getNonRepresentativeMethylProtons(comp_id, excl_minor_atom=True, primary=polypeptide_like)
 
-                                    for a in all_atoms:
+                                for a in all_atoms:
 
-                                        if a.startswith('H') and not a in non_rep_methyl_pros:
-                                            all_c[h1_col]['number_of_target_shifts'] += 1
+                                    if a.startswith('H') and not a in non_rep_methyl_pros:
+                                        all_c[h1_col]['number_of_target_shifts'] += 1
 
-                                        elif a.startswith('C') and c13_col != -1:
-                                            all_c[c13_col]['number_of_target_shifts'] += 1
+                                    elif a.startswith('C') and c13_col != -1:
+                                        all_c[c13_col]['number_of_target_shifts'] += 1
 
-                                        elif a.startswith('N') and n15_col != -1:
-                                            all_c[n15_col]['number_of_target_shifts'] += 1
+                                    elif a.startswith('N') and n15_col != -1:
+                                        all_c[n15_col]['number_of_target_shifts'] += 1
 
-                                        elif a.startswith('P') and p31_col != -1:
-                                            all_c[p31_col]['number_of_target_shifts'] += 1
+                                    elif a.startswith('P') and p31_col != -1:
+                                        all_c[p31_col]['number_of_target_shifts'] += 1
 
-                                    for j in lp_data:
+                                for j in lp_data:
 
-                                        if file_type == 'nef':
-                                            _chain_id = j[chain_id_name]
-                                        else:
-                                            _chain_id = str(j[chain_id_name])
+                                    if file_type == 'nef':
+                                        _chain_id = j[chain_id_name]
+                                    else:
+                                        _chain_id = str(j[chain_id_name])
 
-                                        if _chain_id != chain_id or j[seq_id_name] != seq_id or j[comp_id_name] != comp_id or j[value_name] in self.empty_value:
+                                    if _chain_id != chain_id or j[seq_id_name] != seq_id or j[comp_id_name] != comp_id or j[value_name] in self.empty_value:
+                                        continue
+
+                                    atom_id = j[atom_id_name]
+                                    data_type = str(j[iso_number]) + j[atom_type]
+
+                                    if file_type == 'nef':
+
+                                        atom_ids = self.__nefT.get_star_atom(comp_id, atom_id, leave_unmatched=False)[0]
+
+                                        if len(atom_ids) == 0:
                                             continue
 
-                                        atom_id = j[atom_id_name]
-                                        data_type = str(j[iso_number]) + j[atom_type]
+                                        for a in atom_ids:
 
-                                        if file_type == 'nef':
+                                            if a in all_atoms:
 
-                                            atom_ids = self.__nefT.get_star_atom(comp_id, atom_id, leave_unmatched=False)[0]
-
-                                            if len(atom_ids) == 0:
-                                                continue
-
-                                            for a in atom_ids:
-
-                                                if a in all_atoms:
-
-                                                    if data_type == '1H' and not a in non_rep_methyl_pros:
-                                                        all_c[h1_col]['number_of_assigned_shifts'] += 1
-
-                                                    elif data_type == '13C':
-                                                        all_c[c13_col]['number_of_assigned_shifts'] += 1
-
-                                                    elif data_type == '15N':
-                                                        all_c[n15_col]['number_of_assigned_shifts'] += 1
-
-                                                    elif data_type == '31P':
-                                                        all_c[p31_col]['number_of_assigned_shifts'] += 1
-
-                                                elif a in non_excl_atoms:
-                                                    excluded_atom_id.append({'seq_id': seq_id, 'comp_id': comp_id, 'atom_id': a, 'value': j[value_name]})
-
-                                        else:
-
-                                            if atom_id in all_atoms:
-
-                                                if data_type == '1H' and not atom_id in non_rep_methyl_pros:
+                                                if data_type == '1H' and not a in non_rep_methyl_pros:
                                                     all_c[h1_col]['number_of_assigned_shifts'] += 1
 
                                                 elif data_type == '13C':
@@ -7544,19 +7525,36 @@ class NmrDpUtility(object):
                                                 elif data_type == '31P':
                                                     all_c[p31_col]['number_of_assigned_shifts'] += 1
 
-                                            elif atom_id in non_excl_atoms:
-                                                excluded_atom_id.append({'seq_id': seq_id, 'comp_id': comp_id, 'atom_id': atom_id, 'value': j[value_name]})
+                                            elif a in non_excl_atoms:
+                                                excluded_atom_id.append({'seq_id': seq_id, 'comp_id': comp_id, 'atom_id': a, 'value': j[value_name]})
 
-                                else:
-                                    excluded_comp_id.append({'seq_id': seq_id, 'comp_id': comp_id})
+                                    else:
 
-                            for c in all_c:
-                                if c['number_of_target_shifts'] > 0:
-                                    c['completeness'] = float('{:.3f}'.format(float(c['number_of_assigned_shifts']) / float(c['number_of_target_shifts'])))
-                                else:
-                                    c['completeness'] = None
+                                        if atom_id in all_atoms:
 
-                            break
+                                            if data_type == '1H' and not atom_id in non_rep_methyl_pros:
+                                                all_c[h1_col]['number_of_assigned_shifts'] += 1
+
+                                            elif data_type == '13C':
+                                                all_c[c13_col]['number_of_assigned_shifts'] += 1
+
+                                            elif data_type == '15N':
+                                                all_c[n15_col]['number_of_assigned_shifts'] += 1
+
+                                            elif data_type == '31P':
+                                                all_c[p31_col]['number_of_assigned_shifts'] += 1
+
+                                        elif atom_id in non_excl_atoms:
+                                            excluded_atom_id.append({'seq_id': seq_id, 'comp_id': comp_id, 'atom_id': atom_id, 'value': j[value_name]})
+
+                            else:
+                                excluded_comp_id.append({'seq_id': seq_id, 'comp_id': comp_id})
+
+                        for c in all_c:
+                            if c['number_of_target_shifts'] > 0:
+                                c['completeness'] = float('{:.3f}'.format(float(c['number_of_assigned_shifts']) / float(c['number_of_target_shifts'])))
+                            else:
+                                c['completeness'] = None
 
                     cc['completeness_of_all_assignments'] = all_c
 
@@ -7598,92 +7596,88 @@ class NmrDpUtility(object):
 
                         l += 1
 
-                    for s in polymer_sequence:
+                    if not s is None:
 
-                        if s['chain_id'] == chain_id:
+                        for i in range(len(s['seq_id'])):
+                            seq_id = s['seq_id'][i]
+                            comp_id = s['comp_id'][i]
 
-                            for i in range(len(s['seq_id'])):
-                                seq_id = s['seq_id'][i]
-                                comp_id = s['comp_id'][i]
+                            polypeptide_like = self.__csStat.getTypeOfCompId(comp_id)[0]
 
-                                polypeptide_like = self.__csStat.getTypeOfCompId(comp_id)[0]
+                            if self.__csStat.hasEnoughStat(comp_id, polypeptide_like):
 
-                                if self.__csStat.hasEnoughStat(comp_id, polypeptide_like):
+                                bb_atoms = self.__csStat.getBackBoneAtoms(comp_id, excl_minor_atom=True)
+                                non_rep_methyl_pros = self.__csStat.getNonRepresentativeMethylProtons(comp_id, excl_minor_atom=True, primary=polypeptide_like)
 
-                                    bb_atoms = self.__csStat.getBackBoneAtoms(comp_id, excl_minor_atom=True)
-                                    non_rep_methyl_pros = self.__csStat.getNonRepresentativeMethylProtons(comp_id, excl_minor_atom=True, primary=polypeptide_like)
+                                for a in bb_atoms:
 
-                                    for a in bb_atoms:
+                                    if a.startswith('H') and h1_col != -1 and not a in non_rep_methyl_pros:
+                                        bb_c[h1_col]['number_of_target_shifts'] += 1
 
-                                        if a.startswith('H') and h1_col != -1 and not a in non_rep_methyl_pros:
-                                            bb_c[h1_col]['number_of_target_shifts'] += 1
+                                    elif a.startswith('C') and c13_col != -1:
+                                        bb_c[c13_col]['number_of_target_shifts'] += 1
 
-                                        elif a.startswith('C') and c13_col != -1:
-                                            bb_c[c13_col]['number_of_target_shifts'] += 1
+                                    elif a.startswith('N') and n15_col != -1:
+                                        bb_c[n15_col]['number_of_target_shifts'] += 1
 
-                                        elif a.startswith('N') and n15_col != -1:
-                                            bb_c[n15_col]['number_of_target_shifts'] += 1
+                                    elif a.startswith('P') and p31_col != -1:
+                                        bb_c[p31_col]['number_of_target_shifts'] += 1
 
-                                        elif a.startswith('P') and p31_col != -1:
-                                            bb_c[p31_col]['number_of_target_shifts'] += 1
+                                for j in lp_data:
 
-                                    for j in lp_data:
+                                    if file_type == 'nef':
+                                        _chain_id = j[chain_id_name]
+                                    else:
+                                        _chain_id = str(j[chain_id_name])
 
-                                        if file_type == 'nef':
-                                            _chain_id = j[chain_id_name]
-                                        else:
-                                            _chain_id = str(j[chain_id_name])
+                                    if _chain_id != chain_id or j[seq_id_name] != seq_id or j[comp_id_name] != comp_id or j[value_name] in self.empty_value:
+                                        continue
 
-                                        if _chain_id != chain_id or j[seq_id_name] != seq_id or j[comp_id_name] != comp_id or j[value_name] in self.empty_value:
+                                    atom_id = j[atom_id_name]
+                                    data_type = str(j[iso_number]) + j[atom_type]
+
+                                    if file_type == 'nef':
+
+                                        atom_ids = self.__nefT.get_star_atom(comp_id, atom_id, leave_unmatched=False)[0]
+
+                                        if len(atom_ids) == 0:
                                             continue
 
-                                        atom_id = j[atom_id_name]
-                                        data_type = str(j[iso_number]) + j[atom_type]
+                                        for a in atom_ids:
 
-                                        if file_type == 'nef':
+                                            if a in bb_atoms:
 
-                                            atom_ids = self.__nefT.get_star_atom(comp_id, atom_id, leave_unmatched=False)[0]
+                                                if data_type == '1H' and not a in non_rep_methyl_pros:
+                                                    bb_c[h1_col]['number_of_assigned_shifts'] += 1
 
-                                            if len(atom_ids) == 0:
-                                                continue
+                                                elif data_type == '13C':
+                                                    bb_c[c13_col]['number_of_assigned_shifts'] += 1
 
-                                            for a in atom_ids:
+                                                elif data_type == '15N':
+                                                    bb_c[n15_col]['number_of_assigned_shifts'] += 1
 
-                                                if a in bb_atoms:
+                                                elif data_type == '31P':
+                                                    bb_c[p31_col]['number_of_assigned_shifts'] += 1
 
-                                                    if data_type == '1H' and not a in non_rep_methyl_pros:
-                                                        bb_c[h1_col]['number_of_assigned_shifts'] += 1
+                                    elif atom_id in bb_atoms:
 
-                                                    elif data_type == '13C':
-                                                        bb_c[c13_col]['number_of_assigned_shifts'] += 1
+                                        if data_type == '1H' and not atom_id in non_rep_methyl_pros:
+                                            bb_c[h1_col]['number_of_assigned_shifts'] += 1
 
-                                                    elif data_type == '15N':
-                                                        bb_c[n15_col]['number_of_assigned_shifts'] += 1
+                                        elif data_type == '13C':
+                                            bb_c[c13_col]['number_of_assigned_shifts'] += 1
 
-                                                    elif data_type == '31P':
-                                                        bb_c[p31_col]['number_of_assigned_shifts'] += 1
+                                        elif data_type == '15N':
+                                            bb_c[n15_col]['number_of_assigned_shifts'] += 1
 
-                                        elif atom_id in bb_atoms:
+                                        elif data_type == '31P':
+                                            bb_c[p31_col]['number_of_assigned_shifts'] += 1
 
-                                            if data_type == '1H' and not atom_id in non_rep_methyl_pros:
-                                                bb_c[h1_col]['number_of_assigned_shifts'] += 1
-
-                                            elif data_type == '13C':
-                                                bb_c[c13_col]['number_of_assigned_shifts'] += 1
-
-                                            elif data_type == '15N':
-                                                bb_c[n15_col]['number_of_assigned_shifts'] += 1
-
-                                            elif data_type == '31P':
-                                                bb_c[p31_col]['number_of_assigned_shifts'] += 1
-
-                            for c in bb_c:
-                                if c['number_of_target_shifts'] > 0:
-                                    c['completeness'] = float('{:.3f}'.format(float(c['number_of_assigned_shifts']) / float(c['number_of_target_shifts'])))
-                                else:
-                                    c['completeness'] = None
-
-                            break
+                        for c in bb_c:
+                            if c['number_of_target_shifts'] > 0:
+                                c['completeness'] = float('{:.3f}'.format(float(c['number_of_assigned_shifts']) / float(c['number_of_target_shifts'])))
+                            else:
+                                c['completeness'] = None
 
                     if len(bb_c) > 0:
                         cc['completeness_of_backbone_assignments'] = bb_c
@@ -7723,92 +7717,88 @@ class NmrDpUtility(object):
 
                         l += 1
 
-                    for s in polymer_sequence:
+                    if not s is None:
 
-                        if s['chain_id'] == chain_id:
+                        for i in range(len(s['seq_id'])):
+                            seq_id = s['seq_id'][i]
+                            comp_id = s['comp_id'][i]
 
-                            for i in range(len(s['seq_id'])):
-                                seq_id = s['seq_id'][i]
-                                comp_id = s['comp_id'][i]
+                            polypeptide_like = self.__csStat.getTypeOfCompId(comp_id)[0]
 
-                                polypeptide_like = self.__csStat.getTypeOfCompId(comp_id)[0]
+                            if self.__csStat.hasEnoughStat(comp_id, polypeptide_like):
 
-                                if self.__csStat.hasEnoughStat(comp_id, polypeptide_like):
+                                sc_atoms = self.__csStat.getSideChainAtoms(comp_id, excl_minor_atom=True)
+                                non_rep_methyl_pros = self.__csStat.getNonRepresentativeMethylProtons(comp_id, excl_minor_atom=True, primary=polypeptide_like)
 
-                                    sc_atoms = self.__csStat.getSideChainAtoms(comp_id, excl_minor_atom=True)
-                                    non_rep_methyl_pros = self.__csStat.getNonRepresentativeMethylProtons(comp_id, excl_minor_atom=True, primary=polypeptide_like)
+                                for a in sc_atoms:
 
-                                    for a in sc_atoms:
+                                    if a.startswith('H') and h1_col != -1 and not a in non_rep_methyl_pros:
+                                        sc_c[h1_col]['number_of_target_shifts'] += 1
 
-                                        if a.startswith('H') and h1_col != -1 and not a in non_rep_methyl_pros:
-                                            sc_c[h1_col]['number_of_target_shifts'] += 1
+                                    elif a.startswith('C') and c13_col != -1:
+                                        sc_c[c13_col]['number_of_target_shifts'] += 1
 
-                                        elif a.startswith('C') and c13_col != -1:
-                                            sc_c[c13_col]['number_of_target_shifts'] += 1
+                                    elif a.startswith('N') and n15_col != -1:
+                                        sc_c[n15_col]['number_of_target_shifts'] += 1
 
-                                        elif a.startswith('N') and n15_col != -1:
-                                            sc_c[n15_col]['number_of_target_shifts'] += 1
+                                    elif a.startswith('P') and p31_col != -1:
+                                        sc_c[p31_col]['number_of_target_shifts'] += 1
 
-                                        elif a.startswith('P') and p31_col != -1:
-                                            sc_c[p31_col]['number_of_target_shifts'] += 1
+                                for j in lp_data:
 
-                                    for j in lp_data:
+                                    if file_type == 'nef':
+                                        _chain_id = j[chain_id_name]
+                                    else:
+                                        _chain_id = str(j[chain_id_name])
 
-                                        if file_type == 'nef':
-                                            _chain_id = j[chain_id_name]
-                                        else:
-                                            _chain_id = str(j[chain_id_name])
+                                    if _chain_id != chain_id or j[seq_id_name] != seq_id or j[comp_id_name] != comp_id or j[value_name] in self.empty_value:
+                                        continue
 
-                                        if _chain_id != chain_id or j[seq_id_name] != seq_id or j[comp_id_name] != comp_id or j[value_name] in self.empty_value:
+                                    atom_id = j[atom_id_name]
+                                    data_type = str(j[iso_number]) + j[atom_type]
+
+                                    if file_type == 'nef':
+
+                                        atom_ids = self.__nefT.get_star_atom(comp_id, atom_id, leave_unmatched=False)[0]
+
+                                        if len(atom_ids) == 0:
                                             continue
 
-                                        atom_id = j[atom_id_name]
-                                        data_type = str(j[iso_number]) + j[atom_type]
+                                        for a in atom_ids:
 
-                                        if file_type == 'nef':
+                                            if a in sc_atoms:
 
-                                            atom_ids = self.__nefT.get_star_atom(comp_id, atom_id, leave_unmatched=False)[0]
+                                                if data_type == '1H' and not a in non_rep_methyl_pros:
+                                                    sc_c[h1_col]['number_of_assigned_shifts'] += 1
 
-                                            if len(atom_ids) == 0:
-                                                continue
+                                                elif data_type == '13C':
+                                                    sc_c[c13_col]['number_of_assigned_shifts'] += 1
 
-                                            for a in atom_ids:
+                                                elif data_type == '15N':
+                                                    sc_c[n15_col]['number_of_assigned_shifts'] += 1
 
-                                                if a in sc_atoms:
+                                                elif data_type == '31P':
+                                                    sc_c[p31_col]['number_of_assigned_shifts'] += 1
 
-                                                    if data_type == '1H' and not a in non_rep_methyl_pros:
-                                                        sc_c[h1_col]['number_of_assigned_shifts'] += 1
+                                    elif atom_id in sc_atoms:
 
-                                                    elif data_type == '13C':
-                                                        sc_c[c13_col]['number_of_assigned_shifts'] += 1
+                                        if data_type == '1H' and not atom_id in non_rep_methyl_pros:
+                                            sc_c[h1_col]['number_of_assigned_shifts'] += 1
 
-                                                    elif data_type == '15N':
-                                                        sc_c[n15_col]['number_of_assigned_shifts'] += 1
+                                        elif data_type == '13C':
+                                            sc_c[c13_col]['number_of_assigned_shifts'] += 1
 
-                                                    elif data_type == '31P':
-                                                        sc_c[p31_col]['number_of_assigned_shifts'] += 1
+                                        elif data_type == '15N':
+                                            sc_c[n15_col]['number_of_assigned_shifts'] += 1
 
-                                        elif atom_id in sc_atoms:
+                                        elif data_type == '31P':
+                                            sc_c[p31_col]['number_of_assigned_shifts'] += 1
 
-                                            if data_type == '1H' and not atom_id in non_rep_methyl_pros:
-                                                sc_c[h1_col]['number_of_assigned_shifts'] += 1
-
-                                            elif data_type == '13C':
-                                                sc_c[c13_col]['number_of_assigned_shifts'] += 1
-
-                                            elif data_type == '15N':
-                                                sc_c[n15_col]['number_of_assigned_shifts'] += 1
-
-                                            elif data_type == '31P':
-                                                sc_c[p31_col]['number_of_assigned_shifts'] += 1
-
-                            for c in sc_c:
-                                if c['number_of_target_shifts'] > 0:
-                                    c['completeness'] = float('{:.3f}'.format(float(c['number_of_assigned_shifts']) / float(c['number_of_target_shifts'])))
-                                else:
-                                    c['completeness'] = None
-
-                            break
+                        for c in sc_c:
+                            if c['number_of_target_shifts'] > 0:
+                                c['completeness'] = float('{:.3f}'.format(float(c['number_of_assigned_shifts']) / float(c['number_of_target_shifts'])))
+                            else:
+                                c['completeness'] = None
 
                     if len(sc_c) > 0:
                         cc['completeness_of_sidechain_assignments'] = sc_c
@@ -7843,74 +7833,70 @@ class NmrDpUtility(object):
 
                         l += 1
 
-                    for s in polymer_sequence:
+                    if not s is None:
 
-                        if s['chain_id'] == chain_id:
+                        for i in range(len(s['seq_id'])):
+                            seq_id = s['seq_id'][i]
+                            comp_id = s['comp_id'][i]
 
-                            for i in range(len(s['seq_id'])):
-                                seq_id = s['seq_id'][i]
-                                comp_id = s['comp_id'][i]
+                            polypeptide_like = self.__csStat.getTypeOfCompId(comp_id)[0]
 
-                                polypeptide_like = self.__csStat.getTypeOfCompId(comp_id)[0]
+                            if self.__csStat.hasEnoughStat(comp_id, polypeptide_like):
 
-                                if self.__csStat.hasEnoughStat(comp_id, polypeptide_like):
+                                ch3_atoms = self.__csStat.getMethylAtoms(comp_id, excl_minor_atom=True, primary=polypeptide_like)
+                                non_rep_methyl_pros = self.__csStat.getNonRepresentativeMethylProtons(comp_id, excl_minor_atom=True, primary=polypeptide_like)
 
-                                    ch3_atoms = self.__csStat.getMethylAtoms(comp_id, excl_minor_atom=True, primary=polypeptide_like)
-                                    non_rep_methyl_pros = self.__csStat.getNonRepresentativeMethylProtons(comp_id, excl_minor_atom=True, primary=polypeptide_like)
+                                for a in ch3_atoms:
 
-                                    for a in ch3_atoms:
+                                    if a.startswith('H') and h1_col != -1 and not a in non_rep_methyl_pros:
+                                        ch3_c[h1_col]['number_of_target_shifts'] += 1
 
-                                        if a.startswith('H') and h1_col != -1 and not a in non_rep_methyl_pros:
-                                            ch3_c[h1_col]['number_of_target_shifts'] += 1
+                                    elif a.startswith('C') and c13_col != -1:
+                                        ch3_c[c13_col]['number_of_target_shifts'] += 1
 
-                                        elif a.startswith('C') and c13_col != -1:
-                                            ch3_c[c13_col]['number_of_target_shifts'] += 1
+                                for j in lp_data:
 
-                                    for j in lp_data:
+                                    if file_type == 'nef':
+                                        _chain_id = j[chain_id_name]
+                                    else:
+                                        _chain_id = str(j[chain_id_name])
 
-                                        if file_type == 'nef':
-                                            _chain_id = j[chain_id_name]
-                                        else:
-                                            _chain_id = str(j[chain_id_name])
+                                    if _chain_id != chain_id or j[seq_id_name] != seq_id or j[comp_id_name] != comp_id or j[value_name] in self.empty_value:
+                                        continue
 
-                                        if _chain_id != chain_id or j[seq_id_name] != seq_id or j[comp_id_name] != comp_id or j[value_name] in self.empty_value:
+                                    atom_id = j[atom_id_name]
+                                    data_type = str(j[iso_number]) + j[atom_type]
+
+                                    if file_type == 'nef':
+
+                                        atom_ids = self.__nefT.get_star_atom(comp_id, atom_id, leave_unmatched=False)[0]
+
+                                        if len(atom_ids) == 0:
                                             continue
 
-                                        atom_id = j[atom_id_name]
-                                        data_type = str(j[iso_number]) + j[atom_type]
+                                        for a in atom_ids:
 
-                                        if file_type == 'nef':
+                                            if a in ch3_atoms:
 
-                                            atom_ids = self.__nefT.get_star_atom(comp_id, atom_id, leave_unmatched=False)[0]
+                                                if data_type == '1H' and not a in non_rep_methyl_pros:
+                                                    ch3_c[h1_col]['number_of_assigned_shifts'] += 1
 
-                                            if len(atom_ids) == 0:
-                                                continue
+                                                elif data_type == '13C':
+                                                    ch3_c[c13_col]['number_of_assigned_shifts'] += 1
 
-                                            for a in atom_ids:
+                                    elif atom_id in ch3_atoms:
 
-                                                if a in ch3_atoms:
+                                        if data_type == '1H' and not atom_id in non_rep_methyl_pros:
+                                            ch3_c[h1_col]['number_of_assigned_shifts'] += 1
 
-                                                    if data_type == '1H' and not a in non_rep_methyl_pros:
-                                                        ch3_c[h1_col]['number_of_assigned_shifts'] += 1
+                                        elif data_type == '13C':
+                                            ch3_c[c13_col]['number_of_assigned_shifts'] += 1
 
-                                                    elif data_type == '13C':
-                                                        ch3_c[c13_col]['number_of_assigned_shifts'] += 1
-
-                                        elif atom_id in ch3_atoms:
-
-                                            if data_type == '1H' and not atom_id in non_rep_methyl_pros:
-                                                ch3_c[h1_col]['number_of_assigned_shifts'] += 1
-
-                                            elif data_type == '13C':
-                                                ch3_c[c13_col]['number_of_assigned_shifts'] += 1
-
-                            for c in ch3_c:
-                                if c['number_of_target_shifts'] > 0:
-                                    c['completeness'] = float('{:.3f}'.format(float(c['number_of_assigned_shifts']) / float(c['number_of_target_shifts'])))
-                                else:
-                                    c['completeness'] = None
-
-                            break
+                        for c in ch3_c:
+                            if c['number_of_target_shifts'] > 0:
+                                c['completeness'] = float('{:.3f}'.format(float(c['number_of_assigned_shifts']) / float(c['number_of_target_shifts'])))
+                            else:
+                                c['completeness'] = None
 
                     if len(ch3_c) > 0:
                         cc['completeness_of_methyl_assignments'] = ch3_c
@@ -7946,83 +7932,79 @@ class NmrDpUtility(object):
 
                         l += 1
 
-                    for s in polymer_sequence:
+                    if not s is None:
 
-                        if s['chain_id'] == chain_id:
+                        for i in range(len(s['seq_id'])):
+                            seq_id = s['seq_id'][i]
+                            comp_id = s['comp_id'][i]
 
-                            for i in range(len(s['seq_id'])):
-                                seq_id = s['seq_id'][i]
-                                comp_id = s['comp_id'][i]
+                            polypeptide_like = self.__csStat.getTypeOfCompId(comp_id)[0]
 
-                                polypeptide_like = self.__csStat.getTypeOfCompId(comp_id)[0]
+                            if self.__csStat.hasEnoughStat(comp_id, polypeptide_like):
 
-                                if self.__csStat.hasEnoughStat(comp_id, polypeptide_like):
+                                aro_atoms = self.__csStat.getAromaticAtoms(comp_id, excl_minor_atom=True, primary=polypeptide_like)
+                                non_rep_methyl_pros = self.__csStat.getNonRepresentativeMethylProtons(comp_id, excl_minor_atom=True, primary=polypeptide_like)
 
-                                    aro_atoms = self.__csStat.getAromaticAtoms(comp_id, excl_minor_atom=True, primary=polypeptide_like)
-                                    non_rep_methyl_pros = self.__csStat.getNonRepresentativeMethylProtons(comp_id, excl_minor_atom=True, primary=polypeptide_like)
+                                for a in aro_atoms:
 
-                                    for a in aro_atoms:
+                                    if a.startswith('H') and h1_col != -1 and not a in non_rep_methyl_pros:
+                                        aro_c[h1_col]['number_of_target_shifts'] += 1
 
-                                        if a.startswith('H') and h1_col != -1 and not a in non_rep_methyl_pros:
-                                            aro_c[h1_col]['number_of_target_shifts'] += 1
+                                    elif a.startswith('C') and c13_col != -1:
+                                        aro_c[c13_col]['number_of_target_shifts'] += 1
 
-                                        elif a.startswith('C') and c13_col != -1:
-                                            aro_c[c13_col]['number_of_target_shifts'] += 1
+                                    elif a.startswith('N') and n15_col != -1:
+                                        aro_c[n15_col]['number_of_target_shifts'] += 1
 
-                                        elif a.startswith('N') and n15_col != -1:
-                                            aro_c[n15_col]['number_of_target_shifts'] += 1
+                                for j in lp_data:
 
-                                    for j in lp_data:
+                                    if file_type == 'nef':
+                                        _chain_id = j[chain_id_name]
+                                    else:
+                                        _chain_id = str(j[chain_id_name])
 
-                                        if file_type == 'nef':
-                                            _chain_id = j[chain_id_name]
-                                        else:
-                                            _chain_id = str(j[chain_id_name])
+                                    if _chain_id != chain_id or j[seq_id_name] != seq_id or j[comp_id_name] != comp_id or j[value_name] in self.empty_value:
+                                        continue
 
-                                        if _chain_id != chain_id or j[seq_id_name] != seq_id or j[comp_id_name] != comp_id or j[value_name] in self.empty_value:
+                                    atom_id = j[atom_id_name]
+                                    data_type = str(j[iso_number]) + j[atom_type]
+
+                                    if file_type == 'nef':
+
+                                        atom_ids = self.__nefT.get_star_atom(comp_id, atom_id, leave_unmatched=False)[0]
+
+                                        if len(atom_ids) == 0:
                                             continue
 
-                                        atom_id = j[atom_id_name]
-                                        data_type = str(j[iso_number]) + j[atom_type]
+                                        for a in atom_ids:
 
-                                        if file_type == 'nef':
+                                            if a in aro_atoms:
 
-                                            atom_ids = self.__nefT.get_star_atom(comp_id, atom_id, leave_unmatched=False)[0]
+                                                if data_type == '1H' and not a in non_rep_methyl_pros:
+                                                    aro_c[h1_col]['number_of_assigned_shifts'] += 1
 
-                                            if len(atom_ids) == 0:
-                                                continue
+                                                elif data_type == '13C':
+                                                    aro_c[c13_col]['number_of_assigned_shifts'] += 1
 
-                                            for a in atom_ids:
+                                                elif data_type == '15N':
+                                                    aro_c[n15_col]['number_of_assigned_shifts'] += 1
 
-                                                if a in aro_atoms:
+                                    elif atom_id in aro_atoms:
 
-                                                    if data_type == '1H' and not a in non_rep_methyl_pros:
-                                                        aro_c[h1_col]['number_of_assigned_shifts'] += 1
+                                        if data_type == '1H' and not atom_id in non_rep_methyl_pros:
+                                            aro_c[h1_col]['number_of_assigned_shifts'] += 1
 
-                                                    elif data_type == '13C':
-                                                        aro_c[c13_col]['number_of_assigned_shifts'] += 1
+                                        elif data_type == '13C':
+                                            aro_c[c13_col]['number_of_assigned_shifts'] += 1
 
-                                                    elif data_type == '15N':
-                                                        aro_c[n15_col]['number_of_assigned_shifts'] += 1
+                                        elif data_type == '15N':
+                                            aro_c[n15_col]['number_of_assigned_shifts'] += 1
 
-                                        elif atom_id in aro_atoms:
-
-                                            if data_type == '1H' and not atom_id in non_rep_methyl_pros:
-                                                aro_c[h1_col]['number_of_assigned_shifts'] += 1
-
-                                            elif data_type == '13C':
-                                                aro_c[c13_col]['number_of_assigned_shifts'] += 1
-
-                                            elif data_type == '15N':
-                                                aro_c[n15_col]['number_of_assigned_shifts'] += 1
-
-                            for c in aro_c:
-                                if c['number_of_target_shifts'] > 0:
-                                    c['completeness'] = float('{:.3f}'.format(float(c['number_of_assigned_shifts']) / float(c['number_of_target_shifts'])))
-                                else:
-                                    c['completeness'] = None
-
-                            break
+                        for c in aro_c:
+                            if c['number_of_target_shifts'] > 0:
+                                c['completeness'] = float('{:.3f}'.format(float(c['number_of_assigned_shifts']) / float(c['number_of_target_shifts'])))
+                            else:
+                                c['completeness'] = None
 
                     if len(aro_c) > 0:
                         cc['completeness_of_aromatic_assignments'] = aro_c
@@ -8187,85 +8169,85 @@ class NmrDpUtility(object):
 
                     chain_id = sc['chain_id']
 
-                    for s in polymer_sequence:
+                    s = next((s for s in polymer_sequence if s['chain_id'] == chain_id), None)
 
-                        if s['chain_id'] == chain_id:
+                    if not s is None:
 
-                            for i in range(len(s['seq_id'])):
-                                seq_id = s['seq_id'][i]
-                                comp_id = s['comp_id'][i]
+                        for i in range(len(s['seq_id'])):
+                            seq_id = s['seq_id'][i]
+                            comp_id = s['comp_id'][i]
 
-                                if comp_id != 'CYS':
-                                    continue
+                            if comp_id != 'CYS':
+                                continue
 
-                                cys = {'chain_id': chain_id, 'seq_id': seq_id}
+                            cys = {'chain_id': chain_id, 'seq_id': seq_id}
 
-                                ca_chem_shift = None
-                                cb_chem_shift = None
+                            ca_chem_shift = None
+                            cb_chem_shift = None
 
-                                for j in lp_data:
+                            for j in lp_data:
 
-                                    _chain_id = str(j[chain_id_name])
-                                    atom_id = j[atom_id_name]
+                                _chain_id = str(j[chain_id_name])
+                                atom_id = j[atom_id_name]
 
-                                    if type(_chain_id) is int:
-                                        __chain_id = str(_chain_id)
-                                    else:
-                                        __chain_id = _chain_id
-
-                                    if __chain_id == chain_id and j[seq_id_name] == seq_id and j[comp_id_name] == comp_id:
-                                        if atom_id == 'CA':
-                                            ca_chem_shift = j[value_name]
-                                        elif atom_id == 'CB':
-                                            cb_chem_shift = j[value_name]
-
-                                    if ca_chem_shift is None or cb_chem_shift is None:
-                                        if __chain_id == chain_id and j[seq_id_name] > seq_id:
-                                            break
-                                    else:
-                                        break
-
-                                cys['ca_chem_shift'] = ca_chem_shift
-                                cys['cb_chem_shift'] = cb_chem_shift
-
-                                if not cb_chem_shift is None:
-                                    if cb_chem_shift < 32.0:
-                                        cys['redox_state_pred'] = 'reduced'
-                                    elif cb_chem_shift > 35.0:
-                                        cys['redox_state_pred'] = 'oxidized'
-                                    else:
-                                        cys['redox_state_pred'] = 'ambiguous'
-                                elif not ca_chem_shift is None:
-                                    cys['redox_state_pred'] = 'ambiguous'
+                                if type(_chain_id) is int:
+                                    __chain_id = str(_chain_id)
                                 else:
-                                    cys['redox_state_pred'] = 'unknown'
+                                    __chain_id = _chain_id
 
-                                if cys['redox_state_pred'] == 'ambiguous':
-                                    oxi, red = self.__predictRedoxStateOfCystein(ca_chem_shift, cb_chem_shift)
-                                    if oxi < 0.001:
-                                        cys['redox_state_pred'] = 'reduced'
-                                    elif red < 0.001:
-                                        cys['redox_state_pred'] = 'oxidized'
-                                    else:
-                                        cys['redox_state_pred'] = 'oxidized %s (%%), reduced %s (%%)' % ('{:.1f}'.format(oxi * 100.0), '{:.1f}'.format(red * 100.0))
+                                if __chain_id == chain_id and j[seq_id_name] == seq_id and j[comp_id_name] == comp_id:
+                                    if atom_id == 'CA':
+                                        ca_chem_shift = j[value_name]
+                                    elif atom_id == 'CB':
+                                        cb_chem_shift = j[value_name]
 
-                                cys['in_disulfide_bond'] = False
-                                if not input_source_dic['disulfide_bond'] is None:
-                                    try:
-                                        next(b for b in input_source_dic['disulfide_bond'] if (b['chain_id_1'] == chain_id and b['seq_id_1'] == seq_id) or (b['chain_id_2'] == chain_id and b['seq_id_2'] == seq_id))
-                                        cys['in_disulfide_bond'] = True
-                                    except StopIteration:
-                                        pass
+                                if ca_chem_shift is None or cb_chem_shift is None:
+                                    if __chain_id == chain_id and j[seq_id_name] > seq_id:
+                                        break
+                                else:
+                                    break
 
-                                cys['in_other_bond'] = False
-                                if not input_source_dic['other_bond'] is None:
-                                    try:
-                                        next(b for b in input_source_dic['other_bond'] if (b['chain_id_1'] == chain_id and b['seq_id_1'] == seq_id) or (b['chain_id_2'] == chain_id and b['seq_id_2'] == seq_id))
-                                        cys['in_other_bond'] = True
-                                    except StopIteration:
-                                        pass
+                            cys['ca_chem_shift'] = ca_chem_shift
+                            cys['cb_chem_shift'] = cb_chem_shift
 
-                                cys_redox_state.append(cys)
+                            if not cb_chem_shift is None:
+                                if cb_chem_shift < 32.0:
+                                    cys['redox_state_pred'] = 'reduced'
+                                elif cb_chem_shift > 35.0:
+                                    cys['redox_state_pred'] = 'oxidized'
+                                else:
+                                    cys['redox_state_pred'] = 'ambiguous'
+                            elif not ca_chem_shift is None:
+                                cys['redox_state_pred'] = 'ambiguous'
+                            else:
+                                cys['redox_state_pred'] = 'unknown'
+
+                            if cys['redox_state_pred'] == 'ambiguous':
+                                oxi, red = self.__predictRedoxStateOfCystein(ca_chem_shift, cb_chem_shift)
+                                if oxi < 0.001:
+                                    cys['redox_state_pred'] = 'reduced'
+                                elif red < 0.001:
+                                    cys['redox_state_pred'] = 'oxidized'
+                                else:
+                                    cys['redox_state_pred'] = 'oxidized %s (%%), reduced %s (%%)' % ('{:.1f}'.format(oxi * 100.0), '{:.1f}'.format(red * 100.0))
+
+                            cys['in_disulfide_bond'] = False
+                            if not input_source_dic['disulfide_bond'] is None:
+                                try:
+                                    next(b for b in input_source_dic['disulfide_bond'] if (b['chain_id_1'] == chain_id and b['seq_id_1'] == seq_id) or (b['chain_id_2'] == chain_id and b['seq_id_2'] == seq_id))
+                                    cys['in_disulfide_bond'] = True
+                                except StopIteration:
+                                    pass
+
+                            cys['in_other_bond'] = False
+                            if not input_source_dic['other_bond'] is None:
+                                try:
+                                    next(b for b in input_source_dic['other_bond'] if (b['chain_id_1'] == chain_id and b['seq_id_1'] == seq_id) or (b['chain_id_2'] == chain_id and b['seq_id_2'] == seq_id))
+                                    cys['in_other_bond'] = True
+                                except StopIteration:
+                                    pass
+
+                            cys_redox_state.append(cys)
 
                     if len(cys_redox_state) > 0:
                         ent['cys_redox_state'] = cys_redox_state
@@ -8278,100 +8260,100 @@ class NmrDpUtility(object):
 
                     chain_id = sc['chain_id']
 
-                    for s in polymer_sequence:
+                    s = next((s for s in polymer_sequence if s['chain_id'] == chain_id), None)
 
-                        if s['chain_id'] == chain_id:
+                    if not s is None:
 
-                            for i in range(len(s['seq_id'])):
-                                seq_id = s['seq_id'][i]
-                                comp_id = s['comp_id'][i]
+                        for i in range(len(s['seq_id'])):
+                            seq_id = s['seq_id'][i]
+                            comp_id = s['comp_id'][i]
 
-                                if comp_id != 'PRO':
-                                    continue
+                            if comp_id != 'PRO':
+                                continue
 
-                                pro = {'chain_id': chain_id, 'seq_id': seq_id}
+                            pro = {'chain_id': chain_id, 'seq_id': seq_id}
 
-                                cb_chem_shift = None
-                                cg_chem_shift = None
+                            cb_chem_shift = None
+                            cg_chem_shift = None
 
-                                for j in lp_data:
+                            for j in lp_data:
 
-                                    _chain_id = str(j[chain_id_name])
-                                    atom_id = j[atom_id_name]
+                                _chain_id = str(j[chain_id_name])
+                                atom_id = j[atom_id_name]
 
-                                    if type(_chain_id) is int:
-                                        __chain_id = str(_chain_id)
-                                    else:
-                                        __chain_id = _chain_id
-
-                                    if __chain_id == chain_id and j[seq_id_name] == seq_id and j[comp_id_name] == comp_id:
-                                        if atom_id == 'CB':
-                                            cb_chem_shift = j[value_name]
-                                        elif atom_id == 'CG':
-                                            cg_chem_shift = j[value_name]
-
-                                    if cb_chem_shift is None or cg_chem_shift is None:
-                                        if __chain_id == chain_id and j[seq_id_name] > seq_id:
-                                            break
-                                    else:
-                                        break
-
-                                pro['cb_chem_shift'] = cb_chem_shift
-                                pro['cg_chem_shift'] = cg_chem_shift
-
-                                if (not cb_chem_shift is None) and (not cg_chem_shift is None):
-                                    delta = cb_chem_shift - cg_chem_shift
-                                    if delta < 4.8:
-                                        pro['cis_trans_pred'] = 'trans'
-                                    elif delta > 9.15:
-                                        pro['cis_trans_pred'] = 'cis'
-                                    else:
-                                        pro['cis_trans_pred'] = 'ambiguous'
-                                elif (not cb_chem_shift is None) or (not cg_chem_shift is None):
-                                    pro['cis_trans_pred'] = 'ambiguous'
+                                if type(_chain_id) is int:
+                                    __chain_id = str(_chain_id)
                                 else:
-                                    pro['cis_trans_pred'] = 'unknown'
+                                    __chain_id = _chain_id
 
-                                if pro['cis_trans_pred'] == 'ambiguous':
-                                    cis, trs = self.__predictCisTransPeptideOfProline(cb_chem_shift, cg_chem_shift)
-                                    if cis < 0.001:
-                                        pro['cis_trans_pred'] = 'trans'
-                                    elif trs < 0.001:
-                                        pro['cis_trans_pred'] = 'cis'
+                                if __chain_id == chain_id and j[seq_id_name] == seq_id and j[comp_id_name] == comp_id:
+                                    if atom_id == 'CB':
+                                        cb_chem_shift = j[value_name]
+                                    elif atom_id == 'CG':
+                                        cg_chem_shift = j[value_name]
+
+                                if cb_chem_shift is None or cg_chem_shift is None:
+                                    if __chain_id == chain_id and j[seq_id_name] > seq_id:
+                                        break
+                                else:
+                                    break
+
+                            pro['cb_chem_shift'] = cb_chem_shift
+                            pro['cg_chem_shift'] = cg_chem_shift
+
+                            if (not cb_chem_shift is None) and (not cg_chem_shift is None):
+                                delta = cb_chem_shift - cg_chem_shift
+                                if delta < 4.8:
+                                    pro['cis_trans_pred'] = 'trans'
+                                elif delta > 9.15:
+                                    pro['cis_trans_pred'] = 'cis'
+                                else:
+                                    pro['cis_trans_pred'] = 'ambiguous'
+                            elif (not cb_chem_shift is None) or (not cg_chem_shift is None):
+                                pro['cis_trans_pred'] = 'ambiguous'
+                            else:
+                                pro['cis_trans_pred'] = 'unknown'
+
+                            if pro['cis_trans_pred'] == 'ambiguous':
+                                cis, trs = self.__predictCisTransPeptideOfProline(cb_chem_shift, cg_chem_shift)
+                                if cis < 0.001:
+                                    pro['cis_trans_pred'] = 'trans'
+                                elif trs < 0.001:
+                                    pro['cis_trans_pred'] = 'cis'
+                                else:
+                                    pro['cis_trans_pred'] = 'cis %s (%%), trans %s (%%)' % ('{:.1f}'.format(cis * 100.0), '{:.1f}'.format(trs * 100.0))
+
+                            pro['in_cis_peptide_bond'] = self.__isProtCis(chain_id, seq_id)
+
+                            if (pro['in_cis_peptide_bond'] and pro['cis_trans_pred'] != 'cis') or (not pro['in_cis_peptide_bond'] and pro['cis_trans_pred'] != 'trans'):
+                                item = None
+                                if ',' in pro['cis_trans_pred']:
+                                    if (pro['in_cis_peptide_bond'] and cis > trs) or\
+                                       (not pro['in_cis_peptide_bond'] and trs > cis):
+                                        pass
                                     else:
-                                        pro['cis_trans_pred'] = 'cis %s (%%), trans %s (%%)' % ('{:.1f}'.format(cis * 100.0), '{:.1f}'.format(trs * 100.0))
+                                        item = 'unusual_data'
+                                else:
+                                    item = 'suspicious_data'
 
-                                pro['in_cis_peptide_bond'] = self.__isProtCis(chain_id, seq_id)
+                                if not item is None:
 
-                                if (pro['in_cis_peptide_bond'] and pro['cis_trans_pred'] != 'cis') or (not pro['in_cis_peptide_bond'] and pro['cis_trans_pred'] != 'trans'):
-                                    item = None
-                                    if ',' in pro['cis_trans_pred']:
-                                        if (pro['in_cis_peptide_bond'] and cis > trs) or\
-                                           (not pro['in_cis_peptide_bond'] and trs > cis):
-                                            pass
-                                        else:
-                                            item = 'unusual_data'
-                                    else:
-                                        item = 'suspicious_data'
+                                    shifts = ''
+                                    if not cb_chem_shift is None:
+                                        shifts += 'CB %s, ' % cb_chem_shift
+                                    if not cg_chem_shift is None:
+                                        shifts += 'CG %s, ' % cg_chem_shift
 
-                                    if not item is None:
+                                    warn = "%s-peptide bond (chain_id %s, seq_id %s, comp_id %s) can not be verified with the assigned chemical shift values (%scis_trans_pred %s)." %\
+                                           ('cis' if pro['in_cis_peptide_bond'] else 'trans', chain_id, seq_id, comp_id, shifts, pro['cis_trans_pred'])
 
-                                        shifts = ''
-                                        if not cb_chem_shift is None:
-                                            shifts += 'CB %s, ' % cb_chem_shift
-                                        if not cg_chem_shift is None:
-                                            shifts += 'CG %s, ' % cg_chem_shift
+                                    self.report.warning.appendDescription(item, {'file_name': file_name, 'sf_framecode': sf_framecode, 'description': warn})
+                                    self.report.setWarning()
 
-                                        warn = "%s-peptide bond (chain_id %s, seq_id %s, comp_id %s) can not be verified with the assigned chemical shift values (%scis_trans_pred %s)." %\
-                                               ('cis' if pro['in_cis_peptide_bond'] else 'trans', chain_id, seq_id, comp_id, shifts, pro['cis_trans_pred'])
+                                    if self.__verbose:
+                                        self.__lfh.write("+NmrDpUtility.__calculateStatsOfAssignedChemShift() ++ Warning  - %s\n" % warn)
 
-                                        self.report.warning.appendDescription(item, {'file_name': file_name, 'sf_framecode': sf_framecode, 'description': warn})
-                                        self.report.setWarning()
-
-                                        if self.__verbose:
-                                            self.__lfh.write("+NmrDpUtility.__calculateStatsOfAssignedChemShift() ++ Warning  - %s\n" % warn)
-
-                                pro_cis_trans.append(pro)
+                            pro_cis_trans.append(pro)
 
                     if len(pro_cis_trans) > 0:
                         ent['pro_cis_trans'] = pro_cis_trans
@@ -8384,105 +8366,105 @@ class NmrDpUtility(object):
 
                     chain_id = sc['chain_id']
 
-                    for s in polymer_sequence:
+                    s = next((s for s in polymer_sequence if s['chain_id'] == chain_id), None)
 
-                        if s['chain_id'] == chain_id:
+                    if not s is None:
 
-                            for i in range(len(s['seq_id'])):
-                                seq_id = s['seq_id'][i]
-                                comp_id = s['comp_id'][i]
+                        for i in range(len(s['seq_id'])):
+                            seq_id = s['seq_id'][i]
+                            comp_id = s['comp_id'][i]
 
-                                if comp_id != 'HIS':
-                                    continue
+                            if comp_id != 'HIS':
+                                continue
 
-                                his = {'chain_id': chain_id, 'seq_id': seq_id}
+                            his = {'chain_id': chain_id, 'seq_id': seq_id}
 
-                                cg_chem_shift = None
-                                cd2_chem_shift = None
-                                nd1_chem_shift = None
-                                ne2_chem_shift = None
+                            cg_chem_shift = None
+                            cd2_chem_shift = None
+                            nd1_chem_shift = None
+                            ne2_chem_shift = None
 
-                                for j in lp_data:
+                            for j in lp_data:
 
-                                    _chain_id = str(j[chain_id_name])
-                                    atom_id = j[atom_id_name]
+                                _chain_id = str(j[chain_id_name])
+                                atom_id = j[atom_id_name]
 
-                                    if type(_chain_id) is int:
-                                        __chain_id = str(_chain_id)
-                                    else:
-                                        __chain_id = _chain_id
-
-                                    if __chain_id == chain_id and j[seq_id_name] == seq_id and j[comp_id_name] == comp_id:
-                                        if atom_id == 'CG':
-                                            cg_chem_shift = j[value_name]
-                                        elif atom_id == 'CD2':
-                                            cd2_chem_shift = j[value_name]
-                                        elif atom_id == 'ND1':
-                                            nd1_chem_shift = j[value_name]
-                                        elif atom_id == 'NE2':
-                                            ne2_chem_shift = j[value_name]
-
-                                    if cg_chem_shift is None or cd2_chem_shift is None or nd1_chem_shift is None or ne2_chem_shift is None:
-                                        if __chain_id == chain_id and j[seq_id_name] > seq_id:
-                                            break
-                                    else:
-                                        break
-
-                                his['cg_chem_shift'] = cg_chem_shift
-                                his['cd2_chem_shift'] = cd2_chem_shift
-                                his['nd1_chem_shift'] = nd1_chem_shift
-                                his['ne2_chem_shift'] = ne2_chem_shift
-
-                                if (not cg_chem_shift is None) or (not cd2_chem_shift is None) or (not nd1_chem_shift is None) or (not ne2_chem_shift is None):
-                                    bip, tau, pi = self.__predictTautomerOfHistidine(cg_chem_shift, cd2_chem_shift, nd1_chem_shift, ne2_chem_shift)
-                                    if tau < 0.001 and pi < 0.001:
-                                        his['tautomeric_state_pred'] = 'biprotonated'
-                                    elif bip < 0.001 and pi < 0.001:
-                                        his['tautomeric_state_pred'] = 'tau-tautomer'
-                                    elif bip < 0.001 and tau < 0.001:
-                                        his['tautomeric_statem_pred'] = 'pi-tautomer'
-                                    else:
-                                        his['tautomeric_state_pred'] = 'biprotonated %s (%%), tau-tautomer %s (%%), pi-tautomer %s (%%)' % ('{:.1f}'.format(bip * 100.0), '{:.1f}'.format(tau * 100.0), '{:.1f}'.format(pi * 100.0))
+                                if type(_chain_id) is int:
+                                    __chain_id = str(_chain_id)
                                 else:
-                                    his['tautomeric_state_pred'] = 'unknown'
+                                    __chain_id = _chain_id
 
-                                his['tautomeric_state'] = self.__getTautomerOfHistidine(chain_id, seq_id)
+                                if __chain_id == chain_id and j[seq_id_name] == seq_id and j[comp_id_name] == comp_id:
+                                    if atom_id == 'CG':
+                                        cg_chem_shift = j[value_name]
+                                    elif atom_id == 'CD2':
+                                        cd2_chem_shift = j[value_name]
+                                    elif atom_id == 'ND1':
+                                        nd1_chem_shift = j[value_name]
+                                    elif atom_id == 'NE2':
+                                        ne2_chem_shift = j[value_name]
 
-                                if his['tautomeric_state_pred'] != 'unknown':
-                                    item = None
-                                    if his['tautomeric_state_pred'] != his['tautomeric_state']:
-                                        if ',' in his['tautomeric_state_pred']:
-                                            if (his['tautomeric_state'] == 'biprotonated' and bip > tau and bip > pi) or\
-                                               (his['tautomeric_state'] == 'tau-tautomer' and tau > bip and tau > pi) or\
-                                               (his['tautomeric_state'] == 'pi-tautomer' and pi > bip and pi > tau):
-                                                pass
-                                            else:
-                                                item = 'unusual_data'
+                                if cg_chem_shift is None or cd2_chem_shift is None or nd1_chem_shift is None or ne2_chem_shift is None:
+                                    if __chain_id == chain_id and j[seq_id_name] > seq_id:
+                                        break
+                                else:
+                                    break
+
+                            his['cg_chem_shift'] = cg_chem_shift
+                            his['cd2_chem_shift'] = cd2_chem_shift
+                            his['nd1_chem_shift'] = nd1_chem_shift
+                            his['ne2_chem_shift'] = ne2_chem_shift
+
+                            if (not cg_chem_shift is None) or (not cd2_chem_shift is None) or (not nd1_chem_shift is None) or (not ne2_chem_shift is None):
+                                bip, tau, pi = self.__predictTautomerOfHistidine(cg_chem_shift, cd2_chem_shift, nd1_chem_shift, ne2_chem_shift)
+                                if tau < 0.001 and pi < 0.001:
+                                    his['tautomeric_state_pred'] = 'biprotonated'
+                                elif bip < 0.001 and pi < 0.001:
+                                    his['tautomeric_state_pred'] = 'tau-tautomer'
+                                elif bip < 0.001 and tau < 0.001:
+                                    his['tautomeric_statem_pred'] = 'pi-tautomer'
+                                else:
+                                    his['tautomeric_state_pred'] = 'biprotonated %s (%%), tau-tautomer %s (%%), pi-tautomer %s (%%)' % ('{:.1f}'.format(bip * 100.0), '{:.1f}'.format(tau * 100.0), '{:.1f}'.format(pi * 100.0))
+                            else:
+                                his['tautomeric_state_pred'] = 'unknown'
+
+                            his['tautomeric_state'] = self.__getTautomerOfHistidine(chain_id, seq_id)
+
+                            if his['tautomeric_state_pred'] != 'unknown':
+                                item = None
+                                if his['tautomeric_state_pred'] != his['tautomeric_state']:
+                                    if ',' in his['tautomeric_state_pred']:
+                                        if (his['tautomeric_state'] == 'biprotonated' and bip > tau and bip > pi) or\
+                                           (his['tautomeric_state'] == 'tau-tautomer' and tau > bip and tau > pi) or\
+                                           (his['tautomeric_state'] == 'pi-tautomer' and pi > bip and pi > tau):
+                                            pass
                                         else:
-                                            item = 'suspicious_data'
+                                            item = 'unusual_data'
+                                    else:
+                                        item = 'suspicious_data'
 
-                                    if not item is None:
+                                if not item is None:
 
-                                        shifts = ''
-                                        if not cg_chem_shift is None:
-                                            shifts += 'CG %s, ' % cg_chem_shift
-                                        if not cd2_chem_shift is None:
-                                            shifts += 'CD2 %s, ' % cd2_chem_shift
-                                        if not nd1_chem_shift is None:
-                                            shifts += 'ND1 %s, ' % nd1_chem_shift
-                                        if not ne2_chem_shift is None:
-                                            shifts += 'NE2 %s, ' % ne2_chem_shift
+                                    shifts = ''
+                                    if not cg_chem_shift is None:
+                                        shifts += 'CG %s, ' % cg_chem_shift
+                                    if not cd2_chem_shift is None:
+                                        shifts += 'CD2 %s, ' % cd2_chem_shift
+                                    if not nd1_chem_shift is None:
+                                        shifts += 'ND1 %s, ' % nd1_chem_shift
+                                    if not ne2_chem_shift is None:
+                                        shifts += 'NE2 %s, ' % ne2_chem_shift
 
-                                        warn = "Tautomeric state %s (chain_id %s, seq_id %s, comp_id %s) can not be verified with the assigned chemical shift values (%stautomeric_state_pred %s)." %\
-                                               (his['tautomeric_state'], chain_id, seq_id, comp_id, shifts, his['tautomeric_state_pred'])
+                                    warn = "Tautomeric state %s (chain_id %s, seq_id %s, comp_id %s) can not be verified with the assigned chemical shift values (%stautomeric_state_pred %s)." %\
+                                           (his['tautomeric_state'], chain_id, seq_id, comp_id, shifts, his['tautomeric_state_pred'])
 
-                                        self.report.warning.appendDescription(item, {'file_name': file_name, 'sf_framecode': sf_framecode, 'description': warn})
-                                        self.report.setWarning()
+                                    self.report.warning.appendDescription(item, {'file_name': file_name, 'sf_framecode': sf_framecode, 'description': warn})
+                                    self.report.setWarning()
 
-                                        if self.__verbose:
-                                            self.__lfh.write("+NmrDpUtility.__calculateStatsOfAssignedChemShift() ++ Warning  - %s\n" % warn)
+                                    if self.__verbose:
+                                        self.__lfh.write("+NmrDpUtility.__calculateStatsOfAssignedChemShift() ++ Warning  - %s\n" % warn)
 
-                                his_tautomeric_state.append(his)
+                            his_tautomeric_state.append(his)
 
                 if len(his_tautomeric_state) > 0:
                     ent['his_tautomeric_state'] = his_tautomeric_state
@@ -11088,62 +11070,34 @@ class NmrDpUtility(object):
 
         nmr_struct_conf = [None] * len(nmr_seq_ids)
 
-        id = self.report.getInputSourceIdOfCoord()
+        s = self.report.getModelPolymerSequenceWithNmrChainId(nmr_chain_id)
 
-        if id < 0:
+        if s is None:
             return nmr_struct_conf
 
-        cif_input_source = self.report.input_sources[id]
-        cif_input_source_dic = cif_input_source.get()
-
-        cif_polymer_sequence = cif_input_source_dic['polymer_sequence']
+        cif_chain_id = s['chain_id']
 
         seq_align_dic = self.report.sequence_alignment.get()
-        chain_assign_dic = self.report.chain_assignment.get()
 
-        if not 'nmr_poly_seq_vs_model_poly_seq' in chain_assign_dic:
-
-            err = "Chain assignment did not exist, __assignCoordPolymerSequence() should be invoked."
-
-            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__extractCoordStructConf() ++ Error  - %s" % err)
-            self.report.setError()
-
-            if self.__verbose:
-                self.__lfh.write("+NmrDpUtility.__isProtCis() ++ Error  - %s\n" % err)
-
+        if not 'struct_conf' in s:
             return nmr_struct_conf
 
-        if chain_assign_dic['nmr_poly_seq_vs_model_poly_seq'] is None:
-            return nmr_struct_conf
+        result = next((seq_align for seq_align in seq_align_dic['nmr_poly_seq_vs_model_poly_seq'] if seq_align['ref_chain_id'] == nmr_chain_id and seq_align['test_chain_id'] == cif_chain_id), None)
 
-        for chain_assign in chain_assign_dic['nmr_poly_seq_vs_model_poly_seq']:
+        if not result is None:
 
-            if chain_assign['ref_chain_id'] != nmr_chain_id:
-                continue
+            for nmr_seq_id in nmr_seq_ids:
 
-            cif_chain_id = chain_assign['test_chain_id']
+                cif_seq_id = None
+                for k in range(result['length']):
+                    if result['ref_seq_id'][k] == nmr_seq_id:
+                        cif_seq_id = result['test_seq_id'][k]
+                        break
 
-            for ps in cif_polymer_sequence:
-
-                if ps['chain_id'] != cif_chain_id or not 'struct_conf' in ps:
+                if cif_seq_id is None:
                     continue
 
-                result = next((seq_align for seq_align in seq_align_dic['nmr_poly_seq_vs_model_poly_seq'] if seq_align['ref_chain_id'] == nmr_chain_id and seq_align['test_chain_id'] == cif_chain_id), None)
-
-                if not result is None:
-
-                    for nmr_seq_id in nmr_seq_ids:
-
-                        cif_seq_id = None
-                        for k in range(result['length']):
-                            if result['ref_seq_id'][k] == nmr_seq_id:
-                                cif_seq_id = result['test_seq_id'][k]
-                                break
-
-                        if cif_seq_id is None:
-                            continue
-
-                        nmr_struct_conf[nmr_seq_ids.index(nmr_seq_id)] = ps['struct_conf'][ps['seq_id'].index(cif_seq_id)]
+                nmr_struct_conf[nmr_seq_ids.index(nmr_seq_id)] = s['struct_conf'][s['seq_id'].index(cif_seq_id)]
 
         self.__nmr_struct_conf[nmr_chain_id] = nmr_struct_conf
 
@@ -11226,6 +11180,14 @@ class NmrDpUtility(object):
 
                 return False
 
+            if self.__entry_id == 'EXTRACT_FROM_COORD':
+                entry = self.__cR.getDictList('entry')
+
+                if len(entry) == 0 or (not 'id' in entry[0]):
+                    self.__entry_id = self.__entry_id__
+                else:
+                    self.__entry_id = entry[0]['id']
+
             return True
 
         except:
@@ -11293,14 +11255,6 @@ class NmrDpUtility(object):
         content_subtypes = {k:lp_counts[k] for k in lp_counts if lp_counts[k] > 0}
 
         input_source.setItemValue('content_subtype', content_subtypes)
-
-        if self.__entry_id == 'EXTRACT_FROM_COORD':
-            entry = self.__cR.getDictList('entry')
-
-            if len(entry) == 0 or (not 'id' in entry[0]):
-                self.__entry_id = self.__entry_id__
-            else:
-                self.__entry_id = entry[0]['id']
 
         return True
 
@@ -12308,7 +12262,7 @@ class NmrDpUtility(object):
                         if content_subtype == 'dist_restraint' or content_subtype == 'rdc_restraint':
                             max_dim = 3
 
-                        elif content_subtype == 'dihed_restring':
+                        elif content_subtype == 'dihed_restraint':
                             max_dim = 5
 
                         elif content_subtype == 'spectral_peak':
@@ -12494,10 +12448,10 @@ class NmrDpUtility(object):
                 if os.path.getsize(fPath) > 0:
 
                     self.report = NmrDpReport()
-                    self.report.loadJson(fPath)
+                    self.report.loadFile(fPath)
 
                     self.report_prev = NmrDpReport()
-                    self.report_prev.loadJson(fPath)
+                    self.report_prev.loadFile(fPath)
 
                     return True
 
@@ -13255,104 +13209,71 @@ class NmrDpUtility(object):
             @return: True for cyclic polymer or False otherwise
         """
 
-        id = self.report.getInputSourceIdOfCoord()
+        s = self.report.getModelPolymerSequenceWithNmrChainId(nmr_chain_id)
 
-        if id < 0:
+        if s is None:
             return False
 
-        cif_input_source = self.report.input_sources[id]
-        cif_input_source_dic = cif_input_source.get()
+        cif_chain_id = s['chain_id']
+        beg_cif_seq_id = s['seq_id'][0]
+        end_cif_seq_id = s['seq_id'][-1]
 
-        cif_polymer_sequence = cif_input_source_dic['polymer_sequence']
+        try:
 
-        chain_assign_dic = self.report.chain_assignment.get()
+            struct_conn = self.__cR.getDictListWithFilter('struct_conn',
+                                                          [{'name': 'conn_type_id', 'type': 'str'}
+                                                           ],
+                                                          [{'name': 'pdbx_leaving_atom_flag', 'type': 'str', 'value': 'both'},
+                                                           {'name': 'ptnr1_label_asym_id', 'type': 'str', 'value': cif_chain_id},
+                                                           {'name': 'ptnr2_label_asym_id', 'type': 'str', 'value': cif_chain_id},
+                                                           {'name': 'ptnr1_label_seq_id', 'type': 'int', 'value': beg_cif_seq_id},
+                                                           {'name': 'ptnr2_label_seq_id', 'type': 'int', 'value': end_cif_seq_id},
+                                                           ])
 
-        if not 'nmr_poly_seq_vs_model_poly_seq' in chain_assign_dic:
+        except Exception as e:
 
-            err = "Chain assignment did not exist, __assignCoordPolymerSequence() should be invoked."
-
-            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__isCyclicPolymer() ++ Error  - %s" % err)
+            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__isCyclicPolymer() ++ Error  - %s" % str(e))
             self.report.setError()
 
             if self.__verbose:
-                self.__lfh.write("+NmrDpUtility.__isCyclicPolymer() ++ Error  - %s\n" % err)
+                self.__lfh.write("+NmrDpUtility.__isCyclicPolymer() ++ Error  - %s" % str(e))
 
             return False
 
-        if chain_assign_dic['nmr_poly_seq_vs_model_poly_seq'] is None:
-            return False
+        if len(struct_conn) == 0:
 
-        for chain_assign in chain_assign_dic['nmr_poly_seq_vs_model_poly_seq']:
+            try:
 
-            if chain_assign['ref_chain_id'] != nmr_chain_id:
-                continue
+                close_contact = self.__cR.getDictListWithFilter('pdbx_validate_close_contact',
+                                                                [{'name': 'dist', 'type': 'float'}
+                                                                 ],
+                                                                [{'name': 'PDB_model_num', 'type': 'int', 'value': 1},
+                                                                 {'name': 'auth_asym_id_1', 'type': 'str', 'value': cif_chain_id},
+                                                                 {'name': 'auth_seq_id_1', 'type': 'int', 'value': beg_cif_seq_id},
+                                                                 {'name': 'auth_atom_id_1', 'type': 'str', 'value': 'N'},
+                                                                 {'name': 'auth_asym_id_2', 'type': 'str', 'value': cif_chain_id},
+                                                                 {'name': 'auth_seq_id_2', 'type': 'int', 'value': end_cif_seq_id},
+                                                                 {'name': 'auth_atom_id_2', 'type': 'str', 'value': 'C'}
+                                                                 ])
 
-            cif_chain_id = chain_assign['test_chain_id']
+            except Exception as e:
 
-            for s in cif_polymer_sequence:
+                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__isCyclicPolymer() ++ Error  - %s" % str(e))
+                self.report.setError()
 
-                if s['chain_id'] != cif_chain_id:
-                    continue
+                if self.__verbose:
+                    self.__lfh.write("+NmrDpUtility.__isCyclicPolymer() ++ Error  - %s" % str(e))
 
-                beg_cif_seq_id = s['seq_id'][0]
-                end_cif_seq_id = s['seq_id'][-1]
+                return False
 
-                try:
+            if len(close_contact) == 0:
+                return False
 
-                    struct_conn = self.__cR.getDictListWithFilter('struct_conn',
-                                                                  [{'name': 'conn_type_id', 'type': 'str'}
-                                                                   ],
-                                                                  [{'name': 'pdbx_leaving_atom_flag', 'type': 'str', 'value': 'both'},
-                                                                   {'name': 'ptnr1_label_asym_id', 'type': 'str', 'value': cif_chain_id},
-                                                                   {'name': 'ptnr2_label_asym_id', 'type': 'str', 'value': cif_chain_id},
-                                                                   {'name': 'ptnr1_label_seq_id', 'type': 'int', 'value': beg_cif_seq_id},
-                                                                   {'name': 'ptnr2_label_seq_id', 'type': 'int', 'value': end_cif_seq_id},
-                                                                   ])
+            elif close_contact[0]['dist'] > 1.2 and close_contact[0]['dist'] < 1.4:
+                return True
 
-                except Exception as e:
-
-                    self.report.error.appendDescription('internal_error', "+NmrDpUtility.__isCyclicPolymer() ++ Error  - %s" % str(e))
-                    self.report.setError()
-
-                    if self.__verbose:
-                        self.__lfh.write("+NmrDpUtility.__isCyclicPolymer() ++ Error  - %s" % str(e))
-
-                    return False
-
-                if len(struct_conn) == 0:
-
-                    try:
-
-                        close_contact = self.__cR.getDictListWithFilter('pdbx_validate_close_contact',
-                                                                        [{'name': 'dist', 'type': 'float'}
-                                                                         ],
-                                                                        [{'name': 'PDB_model_num', 'type': 'int', 'value': 1},
-                                                                         {'name': 'auth_asym_id_1', 'type': 'str', 'value': cif_chain_id},
-                                                                         {'name': 'auth_seq_id_1', 'type': 'int', 'value': beg_cif_seq_id},
-                                                                         {'name': 'auth_atom_id_1', 'type': 'str', 'value': 'N'},
-                                                                         {'name': 'auth_asym_id_2', 'type': 'str', 'value': cif_chain_id},
-                                                                         {'name': 'auth_seq_id_2', 'type': 'int', 'value': end_cif_seq_id},
-                                                                         {'name': 'auth_atom_id_2', 'type': 'str', 'value': 'C'}
-                                                                         ])
-
-                    except Exception as e:
-
-                        self.report.error.appendDescription('internal_error', "+NmrDpUtility.__isCyclicPolymer() ++ Error  - %s" % str(e))
-                        self.report.setError()
-
-                        if self.__verbose:
-                            self.__lfh.write("+NmrDpUtility.__isCyclicPolymer() ++ Error  - %s" % str(e))
-
-                        return False
-
-                    if len(close_contact) == 0:
-                        return False
-
-                    elif close_contact[0]['dist'] > 1.2 and close_contact[0]['dist'] < 1.4:
-                        return True
-
-                elif struct_conn[0]['conn_type_id'] == 'covale':
-                    return True
+        elif struct_conn[0]['conn_type_id'] == 'covale':
+            return True
 
         return False
 
@@ -13361,74 +13282,48 @@ class NmrDpUtility(object):
             @return: True for cis peptide conformer or False otherwise
         """
 
-        id = self.report.getInputSourceIdOfCoord()
+        s = self.report.getModelPolymerSequenceWithNmrChainId(nmr_chain_id)
 
-        if id < 0:
+        if s is None:
             return False
 
-        cif_input_source = self.report.input_sources[id]
-        cif_input_source_dic = cif_input_source.get()
-
-        cif_polymer_sequence = cif_input_source_dic['polymer_sequence']
+        cif_chain_id = s['chain_id']
 
         seq_align_dic = self.report.sequence_alignment.get()
-        chain_assign_dic = self.report.chain_assignment.get()
 
-        if not 'nmr_poly_seq_vs_model_poly_seq' in chain_assign_dic:
+        result = next((seq_align for seq_align in seq_align_dic['nmr_poly_seq_vs_model_poly_seq'] if seq_align['ref_chain_id'] == nmr_chain_id and seq_align['test_chain_id'] == cif_chain_id), None)
 
-            err = "Chain assignment did not exist, __assignCoordPolymerSequence() should be invoked."
+        if not result is None:
 
-            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__isProtCis() ++ Error  - %s" % err)
-            self.report.setError()
+            cif_seq_id = None
+            for k in range(result['length']):
+                if result['ref_seq_id'][k] == nmr_seq_id:
+                    cif_seq_id = result['test_seq_id'][k]
+                    break
 
-            if self.__verbose:
-                self.__lfh.write("+NmrDpUtility.__isProtCis() ++ Error  - %s\n" % err)
+            if cif_seq_id is None:
+                return False
 
-            return False
+            try:
 
-        if chain_assign_dic['nmr_poly_seq_vs_model_poly_seq'] is None:
-            return False
+                prot_cis = self.__cR.getDictListWithFilter('struct_mon_prot_cis',
+                                                           [{'name': 'pdbx_PDB_model_num', 'type': 'int'}
+                                                            ],
+                                                           [{'name': 'pdbx_label_asym_id_2', 'type': 'str', 'value': cif_chain_id},
+                                                            {'name': 'pdbx_label_seq_id_2', 'type': 'int', 'value': cif_seq_id}
+                                                            ])
 
-        for chain_assign in chain_assign_dic['nmr_poly_seq_vs_model_poly_seq']:
+            except Exception as e:
 
-            if chain_assign['ref_chain_id'] != nmr_chain_id:
-                continue
+                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__isProtCis() ++ Error  - %s" % str(e))
+                self.report.setError()
 
-            cif_chain_id = chain_assign['test_chain_id']
+                if self.__verbose:
+                    self.__lfh.write("+NmrDpUtility.__isProtCis() ++ Error  - %s" % str(e))
 
-            result = next((seq_align for seq_align in seq_align_dic['nmr_poly_seq_vs_model_poly_seq'] if seq_align['ref_chain_id'] == nmr_chain_id and seq_align['test_chain_id'] == cif_chain_id), None)
+                return False
 
-            if not result is None:
-
-                cif_seq_id = None
-                for k in range(result['length']):
-                    if result['ref_seq_id'][k] == nmr_seq_id:
-                        cif_seq_id = result['test_seq_id'][k]
-                        break
-
-                if cif_seq_id is None:
-                    continue
-
-                try:
-
-                    prot_cis = self.__cR.getDictListWithFilter('struct_mon_prot_cis',
-                                                               [{'name': 'pdbx_PDB_model_num', 'type': 'int'}
-                                                                ],
-                                                               [{'name': 'pdbx_label_asym_id_2', 'type': 'str', 'value': cif_chain_id},
-                                                                {'name': 'pdbx_label_seq_id_2', 'type': 'int', 'value': cif_seq_id}
-                                                                ])
-
-                except Exception as e:
-
-                    self.report.error.appendDescription('internal_error', "+NmrDpUtility.__isProtCis() ++ Error  - %s" % str(e))
-                    self.report.setError()
-
-                    if self.__verbose:
-                        self.__lfh.write("+NmrDpUtility.__isProtCis() ++ Error  - %s" % str(e))
-
-                    return False
-
-                return len(prot_cis) > 0
+            return len(prot_cis) > 0
 
         return False
 
@@ -13437,92 +13332,66 @@ class NmrDpUtility(object):
             @return: One of 'biprotonated', 'tau-tautomer', 'pi-tautomer', 'unknown'
         """
 
-        id = self.report.getInputSourceIdOfCoord()
+        s = self.report.getModelPolymerSequenceWithNmrChainId(nmr_chain_id)
 
-        if id < 0:
+        if s is None:
             return 'unknown'
 
-        cif_input_source = self.report.input_sources[id]
-        cif_input_source_dic = cif_input_source.get()
-
-        cif_polymer_sequence = cif_input_source_dic['polymer_sequence']
+        cif_chain_id = s['chain_id']
 
         seq_align_dic = self.report.sequence_alignment.get()
-        chain_assign_dic = self.report.chain_assignment.get()
 
-        if not 'nmr_poly_seq_vs_model_poly_seq' in chain_assign_dic:
+        result = next((seq_align for seq_align in seq_align_dic['nmr_poly_seq_vs_model_poly_seq'] if seq_align['ref_chain_id'] == nmr_chain_id and seq_align['test_chain_id'] == cif_chain_id), None)
 
-            err = "Chain assignment did not exist, __assignCoordPolymerSequence() should be invoked."
+        if not result is None:
 
-            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__getTautomerOfHistidine() ++ Error  - %s" % err)
-            self.report.setError()
+            cif_seq_id = None
+            for k in range(result['length']):
+                if result['ref_seq_id'][k] == nmr_seq_id and result['ref_code'][k] == 'H':
+                    cif_seq_id = result['test_seq_id'][k]
+                    break
 
-            if self.__verbose:
-                self.__lfh.write("+NmrDpUtility.__getTautomerOfHistidine() ++ Error  - %s\n" % err)
+            if cif_seq_id is None:
+                return 'unknown'
 
-            return 'unknown'
+            try:
 
-        if chain_assign_dic['nmr_poly_seq_vs_model_poly_seq'] is None:
-            return 'unknown'
+                protons = self.__cR.getDictListWithFilter('atom_site',
+                                                [{'name': 'label_atom_id', 'type': 'str', 'alt_name': 'atom_id'}
+                                                 ],
+                                                [{'name': 'label_asym_id', 'type': 'str', 'value': cif_chain_id},
+                                                 {'name': 'label_seq_id', 'type': 'int', 'value': cif_seq_id},
+                                                 {'name': 'label_comp_id', 'type': 'str', 'value': 'HIS'},
+                                                 {'name': 'type_symbol', 'type': 'str', 'value': 'H'},
+                                                 {'name': 'pdbx_PDB_model_num', 'type': 'int', 'value': 1}])
 
-        for chain_assign in chain_assign_dic['nmr_poly_seq_vs_model_poly_seq']:
+            except Exception as e:
 
-            if chain_assign['ref_chain_id'] != nmr_chain_id:
-                continue
+                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__getTautomerOfHistidine() ++ Error  - %s" % str(e))
+                self.report.setError()
 
-            cif_chain_id = chain_assign['test_chain_id']
+                if self.__verbose:
+                    self.__lfh.write("+NmrDpUtility.__getTautomerOfHistidine() ++ Error  - %s" % str(e))
 
-            result = next((seq_align for seq_align in seq_align_dic['nmr_poly_seq_vs_model_poly_seq'] if seq_align['ref_chain_id'] == nmr_chain_id and seq_align['test_chain_id'] == cif_chain_id), None)
+                return 'unknown'
 
-            if not result is None:
+            if len(protons) > 0:
 
-                cif_seq_id = None
-                for k in range(result['length']):
-                    if result['ref_seq_id'][k] == nmr_seq_id and result['ref_code'][k] == 'H':
-                        cif_seq_id = result['test_seq_id'][k]
-                        break
+                has_hd1 = False
+                has_he2 = False
 
-                if cif_seq_id is None:
-                    continue
+                for h in protons:
+                    if h['atom_id'] == 'HD1':
+                        has_hd1 = True
+                    elif h['atom_id'] == 'HE2':
+                        has_he2 = True
 
-                try:
-
-                    protons = self.__cR.getDictListWithFilter('atom_site',
-                                                    [{'name': 'label_atom_id', 'type': 'str', 'alt_name': 'atom_id'}
-                                                     ],
-                                                    [{'name': 'label_asym_id', 'type': 'str', 'value': cif_chain_id},
-                                                     {'name': 'label_seq_id', 'type': 'int', 'value': cif_seq_id},
-                                                     {'name': 'label_comp_id', 'type': 'str', 'value': 'HIS'},
-                                                     {'name': 'type_symbol', 'type': 'str', 'value': 'H'},
-                                                     {'name': 'pdbx_PDB_model_num', 'type': 'int', 'value': 1}])
-
-                except Exception as e:
-
-                    self.report.error.appendDescription('internal_error', "+NmrDpUtility.__getTautomerOfHistidine() ++ Error  - %s" % str(e))
-                    self.report.setError()
-
-                    if self.__verbose:
-                        self.__lfh.write("+NmrDpUtility.__getTautomerOfHistidine() ++ Error  - %s" % str(e))
-
-                    return 'unknown'
-
-                if len(protons) > 0:
-
-                    has_hd1 = False
-                    has_he2 = False
-
-                    for h in protons:
-                        if h['atom_id'] == 'HD1':
-                            has_hd1 = True
-                        elif h['atom_id'] == 'HE2':
-                            has_he2 = True
-
-                    if has_hd1 and has_he2:
-                        return 'biprotonated'
-                    elif has_hd1:
-                        return 'tau-tautomer'
-                    elif has_he2:
-                        return 'pi-tautomer'
+                if has_hd1 and has_he2:
+                    return 'biprotonated'
+                elif has_hd1:
+                    return 'tau-tautomer'
+                elif has_he2:
+                    return 'pi-tautomer'
 
         return 'unknown'
 
@@ -13625,22 +13494,6 @@ class NmrDpUtility(object):
             return False
 
         seq_align_dic = self.report.sequence_alignment.get()
-        chain_assign_dic = self.report.chain_assignment.get()
-
-        if not 'nmr_poly_seq_vs_model_poly_seq' in chain_assign_dic:
-
-            err = "Chain assignment did not exist, __assignCoordPolymerSequence() should be invoked."
-
-            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__mapCoordDisulfideBond2Nmr() ++ Error  - %s" % err)
-            self.report.setError()
-
-            if self.__verbose:
-                self.__lfh.write("+NmrDpUtility.__mapCoordDisulfideBond2Nmr() ++ Error  - %s\n" % err)
-
-            return False
-
-        if chain_assign_dic['model_poly_seq_vs_nmr_poly_seq'] is None:
-            return False
 
         content_subtype = 'chem_shift'
 
@@ -13678,11 +13531,12 @@ class NmrDpUtility(object):
             cif_chain_id_2 = bond['chain_id_2']
             cif_seq_id_2 = bond['seq_id_2']
 
-            try:
-                ca = next(ca for ca in chain_assign_dic['model_poly_seq_vs_nmr_poly_seq'] if ca['ref_chain_id'] == cif_chain_id_1)
-                nmr_chain_id_1 = ca['test_chain_id']
-            except StopIteration:
+            s1 = self.report.getNmrPolymerSequenceWithModelChainId(cif_chain_id_1)
+
+            if s1 is None:
                 continue
+
+            nmr_chain_id_1 = s1['chain_id']
 
             result = next((seq_align for seq_align in seq_align_dic['model_poly_seq_vs_nmr_poly_seq'] if seq_align['ref_chain_id'] == cif_chain_id_1 and seq_align['test_chain_id'] == nmr_chain_id_1), None)
 
@@ -13698,25 +13552,21 @@ class NmrDpUtility(object):
             if nmr_seq_id_1 is None:
                 continue
 
-            ps1 = next((ps1 for ps1 in polymer_sequence if ps1['chain_id'] == nmr_chain_id_1), None)
-
-            if ps1 is None:
-                continue
-
             nmr_comp_id_1 = None
-            for k in range(len(ps1['seq_id'])):
-                if ps1['seq_id'][k] == nmr_seq_id_1:
-                    nmr_comp_id_1 = ps1['comp_id'][k]
+            for k in range(len(s1['seq_id'])):
+                if s1['seq_id'][k] == nmr_seq_id_1:
+                    nmr_comp_id_1 = s1['comp_id'][k]
                     break
 
             if nmr_comp_id_1 is None:
                 continue
 
-            try:
-                ca = next(ca for ca in chain_assign_dic['model_poly_seq_vs_nmr_poly_seq'] if ca['ref_chain_id'] == cif_chain_id_2)
-                nmr_chain_id_2 = ca['test_chain_id']
-            except StopIteration:
+            s2 = self.report.getNmrPolymerSequenceWithModelChainId(cif_chain_id_2)
+
+            if s2 is None:
                 continue
+
+            nmr_chain_id_2 = s2['chain_id']
 
             result = next((seq_align for seq_align in seq_align_dic['model_poly_seq_vs_nmr_poly_seq'] if seq_align['ref_chain_id'] == cif_chain_id_2 and seq_align['test_chain_id'] == nmr_chain_id_2), None)
 
@@ -13732,15 +13582,10 @@ class NmrDpUtility(object):
             if nmr_seq_id_2 is None:
                 continue
 
-            ps2 = next((ps2 for ps2 in polymer_sequence if ps2['chain_id'] == nmr_chain_id_2), None)
-
-            if ps2 is None:
-                continue
-
             nmr_comp_id_2 = None
-            for k in range(len(ps2['seq_id'])):
-                if ps2['seq_id'][k] == nmr_seq_id_2:
-                    nmr_comp_id_2 = ps2['comp_id'][k]
+            for k in range(len(s2['seq_id'])):
+                if s2['seq_id'][k] == nmr_seq_id_2:
+                    nmr_comp_id_2 = s2['comp_id'][k]
                     break
 
             if nmr_comp_id_2 is None:
@@ -14003,22 +13848,6 @@ class NmrDpUtility(object):
             return False
 
         seq_align_dic = self.report.sequence_alignment.get()
-        chain_assign_dic = self.report.chain_assignment.get()
-
-        if not 'nmr_poly_seq_vs_model_poly_seq' in chain_assign_dic:
-
-            err = "Chain assignment did not exist, __assignCoordPolymerSequence() should be invoked."
-
-            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__mapCoordOtherBond2Nmr() ++ Error  - %s" % err)
-            self.report.setError()
-
-            if self.__verbose:
-                self.__lfh.write("+NmrDpUtility.__mapCoordOtherBond2Nmr() ++ Error  - %s\n" % err)
-
-            return False
-
-        if chain_assign_dic['model_poly_seq_vs_nmr_poly_seq'] is None:
-            return False
 
         content_subtype = 'chem_shift'
 
@@ -14056,11 +13885,12 @@ class NmrDpUtility(object):
             cif_chain_id_2 = bond['chain_id_2']
             cif_seq_id_2 = bond['seq_id_2']
 
-            try:
-                ca = next(ca for ca in chain_assign_dic['model_poly_seq_vs_nmr_poly_seq'] if ca['ref_chain_id'] == cif_chain_id_1)
-                nmr_chain_id_1 = ca['test_chain_id']
-            except StopIteration:
+            s1 = self.report.getNmrPolymerSequenceWithModelChainId(cif_chain_id_1)
+
+            if s1 is None:
                 continue
+
+            nmr_chain_id_1 = s1['chain_id']
 
             result = next((seq_align for seq_align in seq_align_dic['model_poly_seq_vs_nmr_poly_seq'] if seq_align['ref_chain_id'] == cif_chain_id_1 and seq_align['test_chain_id'] == nmr_chain_id_1), None)
 
@@ -14076,25 +13906,21 @@ class NmrDpUtility(object):
             if nmr_seq_id_1 is None:
                 continue
 
-            ps1 = next((ps1 for ps1 in polymer_sequence if ps1['chain_id'] == nmr_chain_id_1), None)
-
-            if ps1 is None:
-                continue
-
             nmr_comp_id_1 = None
-            for k in range(len(ps1['seq_id'])):
-                if ps1['seq_id'][k] == nmr_seq_id_1:
-                    nmr_comp_id_1 = ps1['comp_id'][k]
+            for k in range(len(s1['seq_id'])):
+                if s1['seq_id'][k] == nmr_seq_id_1:
+                    nmr_comp_id_1 = s1['comp_id'][k]
                     break
 
             if nmr_comp_id_1 is None:
                 continue
 
-            try:
-                ca = next(ca for ca in chain_assign_dic['model_poly_seq_vs_nmr_poly_seq'] if ca['ref_chain_id'] == cif_chain_id_2)
-                nmr_chain_id_2 = ca['test_chain_id']
-            except StopIteration:
+            s2 = self.report.getNmrPolymerSequenceWithModelChainId(cif_chain_id_2)
+
+            if s2 is None:
                 continue
+
+            nmr_chain_id_2 = s2['chain_id']
 
             result = next((seq_align for seq_align in seq_align_dic['model_poly_seq_vs_nmr_poly_seq'] if seq_align['ref_chain_id'] == cif_chain_id_2 and seq_align['test_chain_id'] == nmr_chain_id_2), None)
 
@@ -14110,15 +13936,10 @@ class NmrDpUtility(object):
             if nmr_seq_id_2 is None:
                 continue
 
-            ps2 = next((ps2 for ps2 in polymer_sequence if ps2['chain_id'] == nmr_chain_id_2), None)
-
-            if ps2 is None:
-                continue
-
             nmr_comp_id_2 = None
-            for k in range(len(ps2['seq_id'])):
-                if ps2['seq_id'][k] == nmr_seq_id_2:
-                    nmr_comp_id_2 = ps2['comp_id'][k]
+            for k in range(len(s2['seq_id'])):
+                if s2['seq_id'][k] == nmr_seq_id_2:
+                    nmr_comp_id_2 = s2['comp_id'][k]
                     break
 
             if nmr_comp_id_2 is None:
@@ -14456,338 +14277,314 @@ class NmrDpUtility(object):
             @return: the nearest aromatic ring
         """
 
-        id = self.report.getInputSourceIdOfCoord()
+        s = self.report.getModelPolymerSequenceWithNmrChainId(nmr_chain_id)
 
-        if id < 0:
+        if s is None:
             return None
 
-        cif_input_source = self.report.input_sources[id]
-        cif_input_source_dic = cif_input_source.get()
-
-        cif_polymer_sequence = cif_input_source_dic['polymer_sequence']
+        cif_chain_id = s['chain_id']
 
         seq_align_dic = self.report.sequence_alignment.get()
-        chain_assign_dic = self.report.chain_assignment.get()
 
-        if (not 'nmr_poly_seq_vs_model_poly_seq' in chain_assign_dic) or (not 'model_poly_seq_vs_nmr_poly_seq' in chain_assign_dic):
+        result = next((seq_align for seq_align in seq_align_dic['nmr_poly_seq_vs_model_poly_seq'] if seq_align['ref_chain_id'] == nmr_chain_id and seq_align['test_chain_id'] == cif_chain_id), None)
 
-            err = "Chain assignment did not exist, __assignCoordPolymerSequence() should be invoked."
+        if not result is None:
 
-            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__getNearestAromaticRing() ++ Error  - %s" % err)
-            self.report.setError()
+            cif_seq_id = None
+            for k in range(result['length']):
+                if result['ref_seq_id'][k] == nmr_seq_id:
+                    cif_seq_id = result['test_seq_id'][k]
+                    break
 
-            if self.__verbose:
-                self.__lfh.write("+NmrDpUtility.__getNearestAromaticRing() ++ Error  - %s\n" % err)
+            if cif_seq_id is None:
+                return None
 
-            return None
+            try:
 
-        if chain_assign_dic['nmr_poly_seq_vs_model_poly_seq'] is None or chain_assign_dic['model_poly_seq_vs_nmr_poly_seq'] is None:
-            return None
+                _origin = self.__cR.getDictListWithFilter('atom_site',
+                                                [{'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
+                                                 {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
+                                                 {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'}
+                                                 ],
+                                                [{'name': 'label_asym_id', 'type': 'str', 'value': cif_chain_id},
+                                                 {'name': 'label_seq_id', 'type': 'int', 'value': cif_seq_id},
+                                                 {'name': 'label_atom_id', 'type': 'str', 'value': nmr_atom_id},
+                                                 {'name': 'pdbx_PDB_model_num', 'type': 'int', 'value': 1}])
 
-        for chain_assign in chain_assign_dic['nmr_poly_seq_vs_model_poly_seq']:
+            except Exception as e:
 
-            if chain_assign['ref_chain_id'] != nmr_chain_id:
-                continue
+                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__getNearestAromaticRing() ++ Error  - %s" % str(e))
+                self.report.setError()
 
-            cif_chain_id = chain_assign['test_chain_id']
+                if self.__verbose:
+                    self.__lfh.write("+NmrDpUtility.__getNearestAromaticRing() ++ Error  - %s" % str(e))
 
-            result = next((seq_align for seq_align in seq_align_dic['nmr_poly_seq_vs_model_poly_seq'] if seq_align['ref_chain_id'] == nmr_chain_id and seq_align['test_chain_id'] == cif_chain_id), None)
+                return None
 
-            if not result is None:
+            if len(_origin) != 1:
+                # raised error already somewhere because of inconsistency between NMR data and coordinate
+                """
+                err = 'Not found a given atom (chain_id %s, seq_id %s, atom_id %s) in coordinate model.' % (nmr_chain_id, nmr_seq_id, nmr_atom_id)
 
-                cif_seq_id = None
-                for k in range(result['length']):
-                    if result['ref_seq_id'][k] == nmr_seq_id:
-                        cif_seq_id = result['test_seq_id'][k]
-                        break
+                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__getNearestAromaticRing() ++ Error  - %s" % err)
+                self.report.setError()
 
-                if cif_seq_id is None:
+                if self.__verbose:
+                    self.__lfh.write("+NmrDpUtility.__getNearestAromaticRing() ++ Error  - %s" % err)
+                """
+                return None
+
+            o = _origin[0]
+
+            try:
+
+                _neighbor = self.__cR.getDictListWithFilter('atom_site',
+                                                  [{'name': 'label_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
+                                                   {'name': 'label_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
+                                                   {'name': 'label_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
+                                                   {'name': 'label_atom_id', 'type': 'str', 'alt_name': 'atom_id'},
+                                                   {'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
+                                                   {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
+                                                   {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'},
+                                                   {'name': 'type_symbol', 'type': 'str'}
+                                                   ],
+                                                  [{'name': 'Cartn_x', 'type': 'range-float', 'range': {'min_exclusive': (o['x'] - cutoff), 'max_exclusive': (o['x'] + cutoff)}},
+                                                   {'name': 'Cartn_y', 'type': 'range-float', 'range': {'min_exclusive': (o['y'] - cutoff), 'max_exclusive': (o['y'] + cutoff)}},
+                                                   {'name': 'Cartn_z', 'type': 'range-float', 'range': {'min_exclusive': (o['z'] - cutoff), 'max_exclusive': (o['z'] + cutoff)}},
+                                                   {'name': 'pdbx_PDB_model_num', 'type': 'int', 'value': 1}])
+
+            except Exception as e:
+
+                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__getNearestAromaticRing() ++ Error  - %s" % str(e))
+                self.report.setError()
+
+                if self.__verbose:
+                    self.__lfh.write("+NmrDpUtility.__getNearestAromaticRing() ++ Error  - %s" % str(e))
+
+                return None
+
+            if len(_neighbor) == 0:
+                return None
+
+            cutoff2 = cutoff ** 2.0
+
+            neighbor = [n for n in _neighbor if n['seq_id'] != cif_seq_id  and n['type_symbol'] != 'H' and (n['x'] - o['x']) ** 2.0 + (n['y'] - o['y']) ** 2.0 + (n['z'] - o['z']) ** 2.0 < cutoff2 and
+                        n['atom_id'] in self.__csStat.getAromaticAtoms(n['comp_id'])]
+
+            if len(neighbor) == 0:
+                return None
+
+            atom_list = []
+
+            for n in neighbor:
+
+                _cif_chain_id = n['chain_id']
+
+                _s = self.report.getNmrPolymerSequenceWithModelChainId(_cif_chain_id)
+
+                if _s is None:
                     continue
 
-                try:
+                _nmr_chain_id = _s['chain_id']
 
-                    _origin = self.__cR.getDictListWithFilter('atom_site',
-                                                    [{'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
-                                                     {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
-                                                     {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'}
-                                                     ],
-                                                    [{'name': 'label_asym_id', 'type': 'str', 'value': cif_chain_id},
-                                                     {'name': 'label_seq_id', 'type': 'int', 'value': cif_seq_id},
-                                                     {'name': 'label_atom_id', 'type': 'str', 'value': nmr_atom_id},
-                                                     {'name': 'pdbx_PDB_model_num', 'type': 'int', 'value': 1}])
+                result = next((seq_align for seq_align in seq_align_dic['model_poly_seq_vs_nmr_poly_seq'] if seq_align['ref_chain_id'] == _cif_chain_id and seq_align['test_chain_id'] == _nmr_chain_id), None)
 
-                except Exception as e:
+                if not result is None:
 
-                    self.report.error.appendDescription('internal_error', "+NmrDpUtility.__getNearestAromaticRing() ++ Error  - %s" % str(e))
-                    self.report.setError()
+                    _nmr_seq_id = None
+                    for k in range(result['length']):
+                        if result['ref_seq_id'][k] == n['seq_id']:
+                            _nmr_seq_id = result['test_seq_id'][k]
+                            break
 
-                    if self.__verbose:
-                        self.__lfh.write("+NmrDpUtility.__getNearestAromaticRing() ++ Error  - %s" % str(e))
+                    atom_list.append({'chain_id': _nmr_chain_id, 'seq_id': _nmr_seq_id, 'cif_chain_id': _cif_chain_id, 'cif_seq_id': n['seq_id'], 'comp_id': n['comp_id'], 'atom_id': n['atom_id'],
+                                      'distance': (n['x'] - o['x']) ** 2.0 + (n['y'] - o['y']) ** 2.0 + (n['z'] - o['z']) ** 2.0})
 
-                    return None
+            na = sorted(atom_list, key = lambda a: a['distance'])[0]
 
-                if len(_origin) != 1:
-                    # raised error already somewhere because of inconsistency between NMR data and coordinate
-                    """
-                    err = 'Not found a given atom (chain_id %s, seq_id %s, atom_id %s) in coordinate model.' % (nmr_chain_id, nmr_seq_id, nmr_atom_id)
+            na_atom_id = na['atom_id']
 
-                    self.report.error.appendDescription('internal_error', "+NmrDpUtility.__getNearestAromaticRing() ++ Error  - %s" % err)
-                    self.report.setError()
+            self.__updateChemCompDict(na['comp_id'])
 
-                    if self.__verbose:
-                        self.__lfh.write("+NmrDpUtility.__getNearestAromaticRing() ++ Error  - %s" % err)
-                    """
-                    return None
+            if not self.__last_comp_id_test:
+                return None
 
-                o = _origin[0]
+            # matches with comp_id in CCD
 
-                try:
+            half_ring_traces = []
 
-                    _neighbor = self.__cR.getDictListWithFilter('atom_site',
-                                                      [{'name': 'label_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
-                                                       {'name': 'label_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
-                                                       {'name': 'label_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
-                                                       {'name': 'label_atom_id', 'type': 'str', 'alt_name': 'atom_id'},
-                                                       {'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
-                                                       {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
-                                                       {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'},
-                                                       {'name': 'type_symbol', 'type': 'str'}
-                                                       ],
-                                                      [{'name': 'Cartn_x', 'type': 'range-float', 'range': {'min_exclusive': (o['x'] - cutoff), 'max_exclusive': (o['x'] + cutoff)}},
-                                                       {'name': 'Cartn_y', 'type': 'range-float', 'range': {'min_exclusive': (o['y'] - cutoff), 'max_exclusive': (o['y'] + cutoff)}},
-                                                       {'name': 'Cartn_z', 'type': 'range-float', 'range': {'min_exclusive': (o['z'] - cutoff), 'max_exclusive': (o['z'] + cutoff)}},
-                                                       {'name': 'pdbx_PDB_model_num', 'type': 'int', 'value': 1}])
+            for b1 in self.__last_chem_comp_bonds:
 
-                except Exception as e:
+                if b1[self.__ccb_aromatic_flag] != 'Y':
+                    continue
 
-                    self.report.error.appendDescription('internal_error', "+NmrDpUtility.__getNearestAromaticRing() ++ Error  - %s" % str(e))
-                    self.report.setError()
+                if b1[self.__ccb_atom_id_1] == na_atom_id and b1[self.__ccb_atom_id_2][0] != 'H':
+                    na_ = b1[self.__ccb_atom_id_2]
 
-                    if self.__verbose:
-                        self.__lfh.write("+NmrDpUtility.__getNearestAromaticRing() ++ Error  - %s" % str(e))
+                elif b1[self.__ccb_atom_id_2] == na_atom_id and b1[self.__ccb_atom_id_1][0] != 'H':
+                    na_ = b1[self.__ccb_atom_id_1]
 
-                    return None
+                else:
+                    continue
 
-                if len(_neighbor) == 0:
-                    return None
+                for b2 in self.__last_chem_comp_bonds:
 
-                cutoff2 = cutoff ** 2.0
-
-                neighbor = [n for n in _neighbor if n['seq_id'] != cif_seq_id  and n['type_symbol'] != 'H' and (n['x'] - o['x']) ** 2.0 + (n['y'] - o['y']) ** 2.0 + (n['z'] - o['z']) ** 2.0 < cutoff2 and
-                            n['atom_id'] in self.__csStat.getAromaticAtoms(n['comp_id'])]
-
-                if len(neighbor) == 0:
-                    return None
-
-                atom_list = []
-
-                for n in neighbor:
-
-                    for chain_assign in chain_assign_dic['model_poly_seq_vs_nmr_poly_seq']:
-
-                        if chain_assign['ref_chain_id'] != n['chain_id']:
-                            continue
-
-                        _nmr_chain_id = chain_assign['test_chain_id']
-
-                        result = next((seq_align for seq_align in seq_align_dic['model_poly_seq_vs_nmr_poly_seq'] if seq_align['ref_chain_id'] == n['chain_id'] and seq_align['test_chain_id'] == _nmr_chain_id), None)
-
-                        if not result is None:
-
-                            _nmr_seq_id = None
-                            for k in range(result['length']):
-                                if result['ref_seq_id'][k] == n['seq_id']:
-                                    _nmr_seq_id = result['test_seq_id'][k]
-                                    break
-
-                            atom_list.append({'chain_id': _nmr_chain_id, 'seq_id': _nmr_seq_id, 'cif_chain_id': n['chain_id'], 'cif_seq_id': n['seq_id'], 'comp_id': n['comp_id'], 'atom_id': n['atom_id'],
-                                              'distance': (n['x'] - o['x']) ** 2.0 + (n['y'] - o['y']) ** 2.0 + (n['z'] - o['z']) ** 2.0})
-
-                na = sorted(atom_list, key = lambda a: a['distance'])[0]
-
-                na_atom_id = na['atom_id']
-
-                self.__updateChemCompDict(na['comp_id'])
-
-                if not self.__last_comp_id_test:
-                    return None
-
-                # matches with comp_id in CCD
-
-                half_ring_traces = []
-
-                for b1 in self.__last_chem_comp_bonds:
-
-                    if b1[self.__ccb_aromatic_flag] != 'Y':
+                    if b2[self.__ccb_aromatic_flag] != 'Y':
                         continue
 
-                    if b1[self.__ccb_atom_id_1] == na_atom_id and b1[self.__ccb_atom_id_2][0] != 'H':
-                        na_ = b1[self.__ccb_atom_id_2]
+                    if b2[self.__ccb_atom_id_1] == na_ and b2[self.__ccb_atom_id_2][0] != 'H' and b2[self.__ccb_atom_id_2] != na_atom_id:
+                        na__ = b2[self.__ccb_atom_id_2]
 
-                    elif b1[self.__ccb_atom_id_2] == na_atom_id and b1[self.__ccb_atom_id_1][0] != 'H':
-                        na_ = b1[self.__ccb_atom_id_1]
+                    elif b2[self.__ccb_atom_id_2] == na_ and b2[self.__ccb_atom_id_1][0] != 'H' and b2[self.__ccb_atom_id_1] != na_atom_id:
+                        na__ = b2[self.__ccb_atom_id_1]
 
                     else:
                         continue
 
-                    for b2 in self.__last_chem_comp_bonds:
+                    for b3 in self.__last_chem_comp_bonds:
 
-                        if b2[self.__ccb_aromatic_flag] != 'Y':
+                        if b3[self.__ccb_aromatic_flag] != 'Y':
                             continue
 
-                        if b2[self.__ccb_atom_id_1] == na_ and b2[self.__ccb_atom_id_2][0] != 'H' and b2[self.__ccb_atom_id_2] != na_atom_id:
-                            na__ = b2[self.__ccb_atom_id_2]
+                        if b3[self.__ccb_atom_id_1] == na__ and b3[self.__ccb_atom_id_2][0] != 'H' and b3[self.__ccb_atom_id_2] != na_:
+                            na___ = b3[self.__ccb_atom_id_2]
 
-                        elif b2[self.__ccb_atom_id_2] == na_ and b2[self.__ccb_atom_id_1][0] != 'H' and b2[self.__ccb_atom_id_1] != na_atom_id:
-                            na__ = b2[self.__ccb_atom_id_1]
+                        elif b3[self.__ccb_atom_id_2] == na__ and b3[self.__ccb_atom_id_1][0] != 'H' and b3[self.__ccb_atom_id_1] != na_:
+                            na___ = b3[self.__ccb_atom_id_1]
 
                         else:
                             continue
 
-                        for b3 in self.__last_chem_comp_bonds:
+                        half_ring_traces.append(na_atom_id + ':' + na_ + ':' + na__ + ':' + na___)
 
-                            if b3[self.__ccb_aromatic_flag] != 'Y':
-                                continue
+            if len(half_ring_traces) < 2:
+                return None
 
-                            if b3[self.__ccb_atom_id_1] == na__ and b3[self.__ccb_atom_id_2][0] != 'H' and b3[self.__ccb_atom_id_2] != na_:
-                                na___ = b3[self.__ccb_atom_id_2]
+            len_half_ring_traces = len(half_ring_traces)
 
-                            elif b3[self.__ccb_atom_id_2] == na__ and b3[self.__ccb_atom_id_1][0] != 'H' and b3[self.__ccb_atom_id_1] != na_:
-                                na___ = b3[self.__ccb_atom_id_1]
+            ring_traces = []
 
-                            else:
-                                continue
+            for i in range(len_half_ring_traces - 1):
 
-                            half_ring_traces.append(na_atom_id + ':' + na_ + ':' + na__ + ':' + na___)
+                half_ring_trace_1 = half_ring_traces[i].split(':')
 
-                if len(half_ring_traces) < 2:
-                    return None
+                for j in range(i + 1, len_half_ring_traces):
 
-                len_half_ring_traces = len(half_ring_traces)
+                    half_ring_trace_2 = half_ring_traces[j].split(':')
 
-                ring_traces = []
+                    # hexagonal ring
+                    if half_ring_trace_1[3] == half_ring_trace_2[3]:
+                        ring_traces.append(half_ring_traces[i] + ':' + half_ring_trace_2[2] + ':' + half_ring_trace_2[1])
 
-                for i in range(len_half_ring_traces - 1):
+                    # pentagonal ring
+                    elif half_ring_trace_1[3] == half_ring_trace_2[2] and half_ring_trace_1[2] == half_ring_trace_2[3]:
+                        ring_traces.append(half_ring_traces[i] + ':' + half_ring_trace_2[1])
 
-                    half_ring_trace_1 = half_ring_traces[i].split(':')
+            len_ring_traces = len(ring_traces)
 
-                    for j in range(i + 1, len_half_ring_traces):
+            if len_ring_traces == 0:
+                return None
 
-                        half_ring_trace_2 = half_ring_traces[j].split(':')
+            ring_atoms = None
+            ring_trace_score = 0
 
-                        # hexagonal ring
-                        if half_ring_trace_1[3] == half_ring_trace_2[3]:
-                            ring_traces.append(half_ring_traces[i] + ':' + half_ring_trace_2[2] + ':' + half_ring_trace_2[1])
+            for i in range(len_ring_traces):
 
-                        # pentagonal ring
-                        elif half_ring_trace_1[3] == half_ring_trace_2[2] and half_ring_trace_1[2] == half_ring_trace_2[3]:
-                            ring_traces.append(half_ring_traces[i] + ':' + half_ring_trace_2[1])
+                _ring_atoms = ring_traces[i].split(':')
 
-                len_ring_traces = len(ring_traces)
+                score = 0
 
-                if len_ring_traces == 0:
-                    return None
+                for a in atom_list:
 
-                ring_atoms = None
-                ring_trace_score = 0
+                    if a['chain_id'] != na['chain_id'] or a['seq_id'] != na['seq_id'] or a['comp_id'] != na['comp_id']:
+                        continue
 
-                for i in range(len_ring_traces):
+                    if a['atom_id'] in _ring_atoms:
+                        score += 1
 
-                    _ring_atoms = ring_traces[i].split(':')
+                if score > ring_trace_score:
+                    ring_atoms = _ring_atoms
+                    ring_trace_score = score
 
-                    score = 0
+            try:
 
-                    for a in atom_list:
+                _na = self.__cR.getDictListWithFilter('atom_site',
+                                                  [{'name': 'label_atom_id', 'type': 'str', 'alt_name': 'atom_id'},
+                                                   {'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
+                                                   {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
+                                                   {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'},
+                                                   {'name': 'pdbx_PDB_model_num', 'type': 'int', 'alt_name': 'model_id'},
+                                                   ],
+                                                  [{'name': 'label_asym_id', 'type': 'str', 'value': na['cif_chain_id']},
+                                                   {'name': 'label_seq_id', 'type': 'int', 'value': na['cif_seq_id']},
+                                                   {'name': 'label_comp_id', 'type': 'str', 'value': na['comp_id']},
+                                                   {'name': 'label_atom_id', 'type': 'enum', 'enum': ring_atoms},
+                                                   ])
 
-                        if a['chain_id'] != na['chain_id'] or a['seq_id'] != na['seq_id'] or a['comp_id'] != na['comp_id']:
-                            continue
+            except Exception as e:
 
-                        if a['atom_id'] in _ring_atoms:
-                            score += 1
+                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__getNearestAromaticRing() ++ Error  - %s" % str(e))
+                self.report.setError()
 
-                    if score > ring_trace_score:
-                        ring_atoms = _ring_atoms
-                        ring_trace_score = score
+                if self.__verbose:
+                    self.__lfh.write("+NmrDpUtility.__getNearestAromaticRing() ++ Error  - %s" % str(e))
 
-                try:
+                return None
 
-                    _na = self.__cR.getDictListWithFilter('atom_site',
-                                                      [{'name': 'label_atom_id', 'type': 'str', 'alt_name': 'atom_id'},
-                                                       {'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
-                                                       {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
-                                                       {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'},
-                                                       {'name': 'pdbx_PDB_model_num', 'type': 'int', 'alt_name': 'model_id'},
-                                                       ],
-                                                      [{'name': 'label_asym_id', 'type': 'str', 'value': na['cif_chain_id']},
-                                                       {'name': 'label_seq_id', 'type': 'int', 'value': na['cif_seq_id']},
-                                                       {'name': 'label_comp_id', 'type': 'str', 'value': na['comp_id']},
-                                                       {'name': 'label_atom_id', 'type': 'enum', 'enum': ring_atoms},
-                                                       ])
+            if len(_na) == 0:
+                return None
 
-                except Exception as e:
+            model_ids = set([a['model_id'] for a in _na])
 
-                    self.report.error.appendDescription('internal_error', "+NmrDpUtility.__getNearestAromaticRing() ++ Error  - %s" % str(e))
-                    self.report.setError()
+            len_model_ids = 0
 
-                    if self.__verbose:
-                        self.__lfh.write("+NmrDpUtility.__getNearestAromaticRing() ++ Error  - %s" % str(e))
+            distance = 0.0
+            ring_distance = 0.0
+            ring_angle = 0.0
 
-                    return None
+            for model_id in model_ids:
 
-                if len(_na) == 0:
-                    return None
+                center = {'x': 0.0, 'y': 0.0, 'z': 0.0}
 
-                model_ids = set([a['model_id'] for a in _na])
+                total = 0
 
-                len_model_ids = 0
+                for a in _na:
 
-                distance = 0.0
-                ring_distance = 0.0
-                ring_angle = 0.0
+                    if a['model_id'] == model_id:
 
-                for model_id in model_ids:
+                        if a['atom_id'] == na_atom_id:
+                            distance += math.sqrt((a['x'] - o['x']) ** 2.0 + (a['y'] - o['y']) ** 2.0 + (a['z'] - o['z']) ** 2.0)
 
-                    center = {'x': 0.0, 'y': 0.0, 'z': 0.0}
+                        center['x'] += a['x']
+                        center['y'] += a['y']
+                        center['z'] += a['z']
 
-                    total = 0
+                        total += 1
 
-                    for a in _na:
+                if total == len(ring_atoms):
 
-                        if a['model_id'] == model_id:
+                    center['x'] /= total
+                    center['y'] /= total
+                    center['z'] /= total
 
-                            if a['atom_id'] == na_atom_id:
-                                distance += math.sqrt((a['x'] - o['x']) ** 2.0 + (a['y'] - o['y']) ** 2.0 + (a['z'] - o['z']) ** 2.0)
+                    ring_distance += math.sqrt((center['x'] - o['x']) ** 2.0 + (center['y'] - o['y']) ** 2.0 + (center['z'] - o['z']) ** 2.0)
 
-                            center['x'] += a['x']
-                            center['y'] += a['y']
-                            center['z'] += a['z']
+                    na_ = next(na_ for na_ in _na if na_['atom_id'] == ring_atoms[0])
+                    na__ = next(na__ for na__ in _na if na__['atom_id'] == ring_atoms[1])
+                    na___ = next(na___ for na___ in _na if na___['atom_id'] == ring_atoms[-1])
 
-                            total += 1
+                    ring_vector = self.__crossProduct(self.__vector(na__, na_), self.__vector(na___, na_))
 
-                    if total == len(ring_atoms):
+                    ring_angle += math.acos(abs(self.__product(self.__norm(self.__vector(o, center)), self.__norm(ring_vector))))
 
-                        center['x'] /= total
-                        center['y'] /= total
-                        center['z'] /= total
+                    len_model_ids += 1
 
-                        ring_distance += math.sqrt((center['x'] - o['x']) ** 2.0 + (center['y'] - o['y']) ** 2.0 + (center['z'] - o['z']) ** 2.0)
+            na['ring_atoms'] = ring_atoms
+            na['distance'] = float('{:.1f}'.format(distance / len_model_ids))
+            na['ring_distance'] = float('{:.1f}'.format(ring_distance / len_model_ids))
+            na['ring_angle'] = float('{:.1f}'.format(ring_angle / len_model_ids * 180.0 / math.pi))
 
-                        na_ = next(na_ for na_ in _na if na_['atom_id'] == ring_atoms[0])
-                        na__ = next(na__ for na__ in _na if na__['atom_id'] == ring_atoms[1])
-                        na___ = next(na___ for na___ in _na if na___['atom_id'] == ring_atoms[-1])
-
-                        ring_vector = self.__crossProduct(self.__vector(na__, na_), self.__vector(na___, na_))
-
-                        ring_angle += math.acos(abs(self.__product(self.__norm(self.__vector(o, center)), self.__norm(ring_vector))))
-
-                        len_model_ids += 1
-
-                na['ring_atoms'] = ring_atoms
-                na['distance'] = float('{:.1f}'.format(distance / len_model_ids))
-                na['ring_distance'] = float('{:.1f}'.format(ring_distance / len_model_ids))
-                na['ring_angle'] = float('{:.1f}'.format(ring_angle / len_model_ids * 180.0 / math.pi))
-
-                return na
+            return na
 
         return None
 
@@ -14799,171 +14596,145 @@ class NmrDpUtility(object):
         if self.report.isDiamagnetic():
             return None
 
-        id = self.report.getInputSourceIdOfCoord()
+        s = self.report.getModelPolymerSequenceWithNmrChainId(nmr_chain_id)
 
-        if id < 0:
+        if s is None:
             return None
 
-        cif_input_source = self.report.input_sources[id]
-        cif_input_source_dic = cif_input_source.get()
-
-        cif_polymer_sequence = cif_input_source_dic['polymer_sequence']
+        cif_chain_id = s['chain_id']
 
         seq_align_dic = self.report.sequence_alignment.get()
-        chain_assign_dic = self.report.chain_assignment.get()
 
-        if not 'nmr_poly_seq_vs_model_poly_seq' in chain_assign_dic:
+        result = next((seq_align for seq_align in seq_align_dic['nmr_poly_seq_vs_model_poly_seq'] if seq_align['ref_chain_id'] == nmr_chain_id and seq_align['test_chain_id'] == cif_chain_id), None)
 
-            err = "Chain assignment did not exist, __assignCoordPolymerSequence() should be invoked."
+        if not result is None:
 
-            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__getNearestParamagneticAtom() ++ Error  - %s" % err)
-            self.report.setError()
+            cif_seq_id = None
+            for k in range(result['length']):
+                if result['ref_seq_id'][k] == nmr_seq_id:
+                    cif_seq_id = result['test_seq_id'][k]
+                    break
 
-            if self.__verbose:
-                self.__lfh.write("+NmrDpUtility.__getNearestParamagneticAtom() ++ Error  - %s\n" % err)
+            if cif_seq_id is None:
+                return None
 
-            return None
+            try:
 
-        if chain_assign_dic['nmr_poly_seq_vs_model_poly_seq'] is None:
-            return None
+                _origin = self.__cR.getDictListWithFilter('atom_site',
+                                                [{'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
+                                                 {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
+                                                 {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'}
+                                                 ],
+                                                [{'name': 'label_asym_id', 'type': 'str', 'value': cif_chain_id},
+                                                 {'name': 'label_seq_id', 'type': 'int', 'value': cif_seq_id},
+                                                 {'name': 'label_atom_id', 'type': 'str', 'value': nmr_atom_id},
+                                                 {'name': 'pdbx_PDB_model_num', 'type': 'int', 'value': 1}])
 
-        for chain_assign in chain_assign_dic['nmr_poly_seq_vs_model_poly_seq']:
+            except Exception as e:
 
-            if chain_assign['ref_chain_id'] != nmr_chain_id:
-                continue
+                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__getNearestParamagneticAtom() ++ Error  - %s" % str(e))
+                self.report.setError()
 
-            cif_chain_id = chain_assign['test_chain_id']
+                if self.__verbose:
+                    self.__lfh.write("+NmrDpUtility.__getNearestParamagneticAtom() ++ Error  - %s" % str(e))
 
-            result = next((seq_align for seq_align in seq_align_dic['nmr_poly_seq_vs_model_poly_seq'] if seq_align['ref_chain_id'] == nmr_chain_id and seq_align['test_chain_id'] == cif_chain_id), None)
+                return None
 
-            if not result is None:
+            if len(_origin) != 1:
+                # raised error already somewhere because of inconsistency between NMR data and coordinate
+                """
+                err = 'Not found a given atom (chain_id %s, seq_id %s, atom_id %s) in coordinate model.' % (nmr_chain_id, nmr_seq_id, nmr_atom_id)
 
-                cif_seq_id = None
-                for k in range(result['length']):
-                    if result['ref_seq_id'][k] == nmr_seq_id:
-                        cif_seq_id = result['test_seq_id'][k]
-                        break
+                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__getNearestParamagneticAtom() ++ Error  - %s" % err)
+                self.report.setError()
 
-                if cif_seq_id is None:
-                    continue
+                if self.__verbose:
+                    self.__lfh.write("+NmrDpUtility.__getNearestParamagneticAtom() ++ Error  - %s" % err)
+                """
+                return None
 
-                try:
+            o = _origin[0]
 
-                    _origin = self.__cR.getDictListWithFilter('atom_site',
-                                                    [{'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
-                                                     {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
-                                                     {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'}
-                                                     ],
-                                                    [{'name': 'label_asym_id', 'type': 'str', 'value': cif_chain_id},
-                                                     {'name': 'label_seq_id', 'type': 'int', 'value': cif_seq_id},
-                                                     {'name': 'label_atom_id', 'type': 'str', 'value': nmr_atom_id},
-                                                     {'name': 'pdbx_PDB_model_num', 'type': 'int', 'value': 1}])
+            try:
 
-                except Exception as e:
+                _neighbor = self.__cR.getDictListWithFilter('atom_site',
+                                                  [{'name': 'label_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
+                                                   {'name': 'label_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
+                                                   {'name': 'label_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
+                                                   {'name': 'label_atom_id', 'type': 'str', 'alt_name': 'atom_id'},
+                                                   {'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
+                                                   {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
+                                                   {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'},
+                                                   {'name': 'type_symbol', 'type': 'str'}
+                                                   ],
+                                                  [{'name': 'Cartn_x', 'type': 'range-float', 'range': {'min_exclusive': (o['x'] - cutoff), 'max_exclusive': (o['x'] + cutoff)}},
+                                                   {'name': 'Cartn_y', 'type': 'range-float', 'range': {'min_exclusive': (o['y'] - cutoff), 'max_exclusive': (o['y'] + cutoff)}},
+                                                   {'name': 'Cartn_z', 'type': 'range-float', 'range': {'min_exclusive': (o['z'] - cutoff), 'max_exclusive': (o['z'] + cutoff)}},
+                                                   {'name': 'pdbx_PDB_model_num', 'type': 'int', 'value': 1}])
 
-                    self.report.error.appendDescription('internal_error', "+NmrDpUtility.__getNearestParamagneticAtom() ++ Error  - %s" % str(e))
-                    self.report.setError()
+            except Exception as e:
 
-                    if self.__verbose:
-                        self.__lfh.write("+NmrDpUtility.__getNearestParamagneticAtom() ++ Error  - %s" % str(e))
+                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__getNearestParamagneticAtom() ++ Error  - %s" % str(e))
+                self.report.setError()
 
-                    return None
+                if self.__verbose:
+                    self.__lfh.write("+NmrDpUtility.__getNearestParamagneticAtom() ++ Error  - %s" % str(e))
 
-                if len(_origin) != 1:
-                    # raised error already somewhere because of inconsistency between NMR data and coordinate
-                    """
-                    err = 'Not found a given atom (chain_id %s, seq_id %s, atom_id %s) in coordinate model.' % (nmr_chain_id, nmr_seq_id, nmr_atom_id)
+                return None
 
-                    self.report.error.appendDescription('internal_error', "+NmrDpUtility.__getNearestParamagneticAtom() ++ Error  - %s" % err)
-                    self.report.setError()
+            if len(_neighbor) == 0:
+                return None
 
-                    if self.__verbose:
-                        self.__lfh.write("+NmrDpUtility.__getNearestParamagneticAtom() ++ Error  - %s" % err)
-                    """
-                    return None
+            cutoff2 = cutoff ** 2.0
 
-                o = _origin[0]
+            neighbor = [n for n in _neighbor if n['seq_id'] != cif_seq_id and (n['x'] - o['x']) ** 2.0 + (n['y'] - o['y']) ** 2.0 + (n['z'] - o['z']) ** 2.0 < cutoff2 and
+                        n['type_symbol'] in self.paramag_elems]
 
-                try:
+            if len(neighbor) == 0:
+                return None
 
-                    _neighbor = self.__cR.getDictListWithFilter('atom_site',
-                                                      [{'name': 'label_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
-                                                       {'name': 'label_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
-                                                       {'name': 'label_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
-                                                       {'name': 'label_atom_id', 'type': 'str', 'alt_name': 'atom_id'},
-                                                       {'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
-                                                       {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
-                                                       {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'},
-                                                       {'name': 'type_symbol', 'type': 'str'}
-                                                       ],
-                                                      [{'name': 'Cartn_x', 'type': 'range-float', 'range': {'min_exclusive': (o['x'] - cutoff), 'max_exclusive': (o['x'] + cutoff)}},
-                                                       {'name': 'Cartn_y', 'type': 'range-float', 'range': {'min_exclusive': (o['y'] - cutoff), 'max_exclusive': (o['y'] + cutoff)}},
-                                                       {'name': 'Cartn_z', 'type': 'range-float', 'range': {'min_exclusive': (o['z'] - cutoff), 'max_exclusive': (o['z'] + cutoff)}},
-                                                       {'name': 'pdbx_PDB_model_num', 'type': 'int', 'value': 1}])
+            atom_list = []
 
-                except Exception as e:
+            for n in neighbor:
+                atom_list.append({'chain_id': n['chain_id'], 'seq_id': n['seq_id'], 'comp_id': n['comp_id'], 'atom_id': n['atom_id'],
+                                  'distance': (n['x'] - o['x']) ** 2.0 + (n['y'] - o['y']) ** 2.0 + (n['z'] - o['z']) ** 2.0})
 
-                    self.report.error.appendDescription('internal_error', "+NmrDpUtility.__getNearestParamagneticAtom() ++ Error  - %s" % str(e))
-                    self.report.setError()
+            np = sorted(atom_list, key = lambda a: a['distance'])[0]
 
-                    if self.__verbose:
-                        self.__lfh.write("+NmrDpUtility.__getNearestParamagneticAtom() ++ Error  - %s" % str(e))
+            try:
 
-                    return None
+                _np = self.__cR.getDictListWithFilter('atom_site',
+                                                  [{'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
+                                                   {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
+                                                   {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'}
+                                                   ],
+                                                  [{'name': 'label_asym_id', 'type': 'str', 'value': np['chain_id']},
+                                                   {'name': 'label_seq_id', 'type': 'int', 'value': np['seq_id']},
+                                                   {'name': 'label_comp_id', 'type': 'str', 'value': np['comp_id']},
+                                                   {'name': 'label_atom_id', 'type': 'str', 'value': np['atom_id']},
+                                                   ])
 
-                if len(_neighbor) == 0:
-                    return None
+            except Exception as e:
 
-                cutoff2 = cutoff ** 2.0
+                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__getNearestParamagneticAtom() ++ Error  - %s" % str(e))
+                self.report.setError()
 
-                neighbor = [n for n in _neighbor if n['seq_id'] != cif_seq_id and (n['x'] - o['x']) ** 2.0 + (n['y'] - o['y']) ** 2.0 + (n['z'] - o['z']) ** 2.0 < cutoff2 and
-                            n['type_symbol'] in self.paramag_elems]
+                if self.__verbose:
+                    self.__lfh.write("+NmrDpUtility.__getNearestParamagneticAtom() ++ Error  - %s" % str(e))
 
-                if len(neighbor) == 0:
-                    return None
+                return None
 
-                atom_list = []
+            if len(_np) == 0:
+                return None
 
-                for n in neighbor:
-                    atom_list.append({'chain_id': n['chain_id'], 'seq_id': n['seq_id'], 'comp_id': n['comp_id'], 'atom_id': n['atom_id'],
-                                      'distance': (n['x'] - o['x']) ** 2.0 + (n['y'] - o['y']) ** 2.0 + (n['z'] - o['z']) ** 2.0})
+            distance = 0.0
 
-                np = sorted(atom_list, key = lambda a: a['distance'])[0]
+            for n in _np:
+                distance += math.sqrt((n['x'] - o['x']) ** 2.0 + (n['y'] - o['y']) ** 2.0 + (n['z'] - o['z']) ** 2.0)
 
-                try:
+            np['distance'] = float('{:.1f}'.format(distance / len(_np)))
 
-                    _np = self.__cR.getDictListWithFilter('atom_site',
-                                                      [{'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
-                                                       {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
-                                                       {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'}
-                                                       ],
-                                                      [{'name': 'label_asym_id', 'type': 'str', 'value': np['chain_id']},
-                                                       {'name': 'label_seq_id', 'type': 'int', 'value': np['seq_id']},
-                                                       {'name': 'label_comp_id', 'type': 'str', 'value': np['comp_id']},
-                                                       {'name': 'label_atom_id', 'type': 'str', 'value': np['atom_id']},
-                                                       ])
-
-                except Exception as e:
-
-                    self.report.error.appendDescription('internal_error', "+NmrDpUtility.__getNearestParamagneticAtom() ++ Error  - %s" % str(e))
-                    self.report.setError()
-
-                    if self.__verbose:
-                        self.__lfh.write("+NmrDpUtility.__getNearestParamagneticAtom() ++ Error  - %s" % str(e))
-
-                    return None
-
-                if len(_np) == 0:
-                    return None
-
-                distance = 0.0
-
-                for n in _np:
-                    distance += math.sqrt((n['x'] - o['x']) ** 2.0 + (n['y'] - o['y']) ** 2.0 + (n['z'] - o['z']) ** 2.0)
-
-                np['distance'] = float('{:.1f}'.format(distance / len(_np)))
-
-                return np
+            return np
 
         return None
 

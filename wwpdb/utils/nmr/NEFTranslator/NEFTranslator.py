@@ -1654,7 +1654,8 @@ class NEFTranslator(object):
 
                             user_warn_msg += '[Multiple data] %sDuplicated rows having the following values %s exist in a loop.\n' % (idx_msg, msg.rstrip().rstrip(','))
 
-                    keys.add(key)
+                    else:
+                        keys.add(key)
 
                 if rechk:
                     keys = set()
@@ -1700,7 +1701,8 @@ class NEFTranslator(object):
 
                             user_warn_msg += '[Multiple data] %sDuplicated rows having the following values %s exist in a loop.\n' % (idx_msg, msg.rstrip().rstrip(','))
 
-                        keys.add(key)
+                        else:
+                            keys.add(key)
 
             asm = [] # assembly of a loop
 
@@ -2036,7 +2038,8 @@ class NEFTranslator(object):
                 if key in keys:
                     dup_ids.add(l)
 
-                keys.add(key)
+                else:
+                    keys.add(key)
 
             data.append(sorted(list(dup_ids), reverse=True))
 
@@ -2083,7 +2086,8 @@ class NEFTranslator(object):
                 if key in keys:
                     dup_ids.add(l)
 
-                keys.add(key)
+                else:
+                    keys.add(key)
 
             conflict_id = sorted(list(dup_ids), reverse=True)
 

@@ -8,7 +8,9 @@
 # 15-Oct-2019  M. Yokochi - add 'encouragement' waring type
 # 27-Jan-2020  M. Yokochi - change warning type 'enum_failure' to 'enum_mismatch'
 # 05-Feb-2020  M. Yokochi - move conflicted_data error to warning
+# 10-Feb-2020  M. Yokochi - add methods to retrieve polymer sequence for sample sequence alignment
 ##
+from __builtin__ import True
 """ Wrapper class for data processing report of NMR unified data.
     @author: Masashi Yokochi
 """
@@ -99,6 +101,120 @@ class NmrDpReport:
 
         return -1
 
+    def getNmrPolymerSequenceOf(self, chain_id):
+        """ Retrieve NMR polymer sequence having a given chain_id.
+        """
+
+        id = self.getInputSourceIdOfNmrUnifiedData()
+
+        if id < 0:
+            return None
+
+        nmr_input_source_dic = self.input_sources[id].get()
+
+        nmr_polymer_sequence = nmr_input_source_dic['polymer_sequence']
+
+        return next((ps for ps in nmr_polymer_sequence if ps['chain_id'] == chain_id), None)
+
+    def getModelPolymerSequenceOf(self, chain_id):
+        """ Retrieve model polymer sequence having a given chain_id.
+        """
+
+        id = self.getInputSourceIdOfCoord()
+
+        if id < 0:
+            return None
+
+        cif_input_source_dic = self.input_sources[id].get()
+
+        cif_polymer_sequence = cif_input_source_dic['polymer_sequence']
+
+        return next((ps for ps in cif_polymer_sequence if ps['chain_id'] == chain_id), None)
+
+    def getNmrPolymerSequenceWithModelChainId(self, cif_chain_id):
+        """ Retrieve NMR polymer sequence corresponding to a given coordinate chain_id.
+        """
+
+        id = self.getInputSourceIdOfNmrUnifiedData()
+
+        if id < 0:
+            return None
+
+        chain_assign_dic = self.chain_assignment.get()
+
+        if not 'model_poly_seq_vs_nmr_poly_seq' in chain_assign_dic:
+            return None
+
+        for chain_assign in chain_assign_dic['model_poly_seq_vs_nmr_poly_seq']:
+
+            if chain_assign['ref_chain_id'] == cif_chain_id:
+                return self.getNmrPolymerSequenceOf(chain_assign['test_chain_id'])
+
+        return None
+
+    def getModelPolymerSequenceWithNmrChainId(self, nmr_chain_id):
+        """ Retrieve coordinate polymer sequence corresponding to a given NMR chain_id.
+        """
+
+        id = self.getInputSourceIdOfCoord()
+
+        if id < 0:
+            return None
+
+        chain_assign_dic = self.chain_assignment.get()
+
+        if not 'nmr_poly_seq_vs_model_poly_seq' in chain_assign_dic:
+            return None
+
+        for chain_assign in chain_assign_dic['nmr_poly_seq_vs_model_poly_seq']:
+
+            if chain_assign['ref_chain_id'] == nmr_chain_id:
+                return self.getModelPolymerSequenceOf(chain_assign['test_chain_id'])
+
+        return None
+
+    def getNmrSeq1LetterCodeWithModelChainId(self, cif_chain_id):
+        """ Retrieve NMR polymer sequence (1-letter code) corresponding to a given coordinate chain_id.
+        """
+
+        id = self.getInputSourceIdOfNmrUnifiedData()
+
+        if id < 0:
+            return None
+
+        chain_assign_dic = self.__report['information']['chain_assignments']
+
+        if not 'nmr_poly_seq_vs_model_poly_seq' in chain_assign_dic:
+            return None
+
+        for chain_assign in chain_assign_dic['nmr_poly_seq_vs_model_poly_seq']:
+
+            if chain_assign['test_chain_id'] == cif_chain_id:
+                return chain_assign['ref_code']
+
+        return None
+
+    def getModelSeq1LetterCodeWithNmrChainId(self, nmr_chain_id):
+        """ Retrieve coordinate polymer sequence (1-letter code) corresponding to a given NMR chain_id.
+        """
+
+        id = self.getInputSourceIdOfCoord()
+
+        if id < 0:
+            return None
+
+        chain_assign_dic = self.__report['information']['chain_assignments']
+
+        if not 'model_poly_seq_vs_nmr_poly_seq' in chain_assign_dic:
+            return None
+
+        for chain_assign in chain_assign_dic['model_poly_seq_vs_nmr_poly_seq']:
+
+            if chain_assign['test_chain_id'] == nmr_chain_id:
+                return chain_assign['ref_code']
+
+        return None
+
     def getTotalErrors(self):
         return self.error.getTotal()
 
@@ -186,39 +302,15 @@ class NmrDpReport:
 
         return self.__report
 
-    def getJson(self, indent_spaces=None):
-        """ Return JSON content of NMR data processing report.
-            @return: JSON content of NMR data processing report
-        """
-
-        if self.get() is None:
-            return None
-
-        return json.dumps(self.get(), indent=indent_spaces)
-
-    def writeJson(self, out_path):
-        """ Write NMR data processing report as JSON file.
+    def load(self, report):
+        """ Retrieve NMR data processing report from JSON content.
             @return: True for success or False otherwise
         """
 
-        if self.get() is None:
+        if report is None:
             return False
 
-        with open(out_path, 'w') as file:
-            file.write(json.dumps(self.get(), indent=2))
-
-        return True
-
-    def loadJson(self, in_path):
-        """ Retrieve NMR data processing report from JSON file.
-            @return: True for success or False otherwise
-        """
-
-        with open(in_path, 'r') as file:
-            self.__report = json.loads(file.read())
-
-        if self.__report is None:
-            return False
+        self.__report = report
 
         self.input_sources = []
 
@@ -231,16 +323,47 @@ class NmrDpReport:
 
         self.sequence_alignment.put(self.__report['information']['sequence_alignments'])
         self.chain_assignment.put(self.__report['information']['chain_assignments'])
+
         if self.__report['error'] is None:
             self.error = NmrDpReportError()
         else:
             self.error.put(self.__report['error'])
+
         if self.__report['warning'] is None:
             self.warning = NmrDpReportWarning()
         else:
             self.warning.put(self.__report['warning'])
 
         self.setMutable()
+
+        return True
+
+    def writeFile(self, out_path):
+        """ Write NMR data processing report as JSON file.
+            @return: True for success or False otherwise
+        """
+
+        if self.get() is None:
+            return False
+
+        with open(out_path, 'w') as file:
+            file.write(json.dumps(self.get(), indent=2))
+
+        return True
+
+    def loadFile(self, in_path):
+        """ Retrieve NMR data processing report from JSON file.
+            @return: True for success or False otherwise
+        """
+
+        with open(in_path, 'r') as file:
+
+            report = json.loads(file.read())
+
+            if report is None:
+                return False
+
+            self.load(report)
 
         return True
 

@@ -9,12 +9,14 @@
 # 27-Jan-2020  M. Yokochi - change warning type 'enum_failure' to 'enum_mismatch'
 # 05-Feb-2020  M. Yokochi - move conflicted_data error to warning
 # 10-Feb-2020  M. Yokochi - add methods to retrieve polymer sequence for sample sequence alignment
+# 13-Feb-2020  M. Yokochi - add methods to retrieve content_subtype for apilayer.postModifyNMR
 ##
 """ Wrapper class for data processing report of NMR unified data.
     @author: Masashi Yokochi
 """
 import logging
 import json
+import copy
 import re
 
 class NmrDpReport:
@@ -136,6 +138,149 @@ class NmrDpReport:
                 return self.input_sources.index(i)
 
         return -1
+
+    def getNmrContentSubTypes(self):
+        """ Return effective NMR content subtypes.
+        """
+
+        id = self.getInputSourceIdOfNmrUnifiedData()
+
+        if id < 0:
+            return None
+
+        nmr_input_source_dic = self.input_sources[id].get()
+
+        return {k: v for k, v in nmr_input_source_dic['content_subtype'].items() if v > 0}
+
+    def getNmrStatsOfExptlData(self, content_subtype):
+        """ Return stats of experimental data of a given content subtype.
+        """
+
+        id = self.getInputSourceIdOfNmrUnifiedData()
+
+        if id < 0:
+            return None
+
+        nmr_input_source_dic = self.input_sources[id].get()
+
+        if not 'stats_of_exptl_data' in nmr_input_source_dic:
+            return None
+
+        if not content_subtype in nmr_input_source_dic['stats_of_exptl_data']:
+            return None
+
+        return nmr_input_source_dic['stats_of_exptl_data'][content_subtype]
+
+    def getNmrRestraints(self):
+        """ Return stats of NMR restraints.
+        """
+
+        content_subtypes = self.getNmrContentSubTypes()
+
+        if content_subtypes is None:
+            return None
+
+        restraints = []
+
+        content_subtype = 'dist_restraint'
+
+        if content_subtype in content_subtypes:
+            hydrogen_bonds = 0
+            disulfide_bonds = 0
+            diselenide_bonds = 0
+            other_bonds = 0
+            symmetric = 0
+            noe_like = 0
+            for stat in self.getNmrStatsOfExptlData(content_subtype):
+                for k, v in stat['number_of_constraints'].items():
+                    if 'hydrogen_bonds' in k:
+                        hydrogen_bonds += v
+                    elif 'disulfide_bonds' in k:
+                        disulfide_bonds += v
+                    elif 'diselenide_bonds' in k:
+                        diselenide_bonds += v
+                    elif 'other_bonds' in k:
+                        other_bonds += v
+                    elif k == 'symmetric_constraints':
+                        symmetric += v
+                    else:
+                        noe_like += v
+            if hydrogen_bonds > 0:
+                restraint = {'constraint_type': 'distance',
+                             'constraint_subtype': 'hydrogen bond',
+                             'constraint_number': hydrogen_bonds}
+                restraints.append(restraint)
+            if disulfide_bonds > 0:
+                restraint = {'constraint_type': 'distance',
+                             'constraint_subtype': 'disulfide bond',
+                             'constraint_number': disulfide_bonds}
+                restraints.append(restraint)
+            if diselenide_bonds > 0:
+                restraint = {'constraint_type': 'distance',
+                             'constraint_subtype': 'diselenide bond',
+                             'constraint_number': diselenide_bonds}
+                restraints.append(restraint)
+            if other_bonds > 0:
+                restraint = {'constraint_type': 'distance',
+                             'constraint_subtype': 'other bond',
+                             'constraint_number': other_bonds}
+                restraints.append(restraint)
+            if symmetric > 0:
+                restraint = {'constraint_type': 'distance',
+                             'constraint_subtype': 'symmetry',
+                             'constraint_number': symmetric}
+                restraints.append(restraint)
+            if noe_like > 0:
+                restraint = {'constraint_type': 'distance',
+                             'constraint_subtype': 'NOE',
+                             'constraint_number': noe_like}
+                restraints.append(restraint)
+
+        content_subtype = 'dihed_restraint'
+
+        if content_subtype in content_subtypes:
+            amino_acids = 0;
+            nucleic_acids = 0
+            carbohydrates = 0
+            for stat in self.getNmrStatsOfExptlData(content_subtype):
+                for k, v in stat['number_of_constraints_per_polymer_type'].items():
+                    if k == 'amino_acid':
+                        amino_acids += v
+                    elif k == 'nucleic_acid':
+                        nucleic_acids += v
+                    elif k == 'carbohydrate':
+                        carbohydrates += v
+            if amino_acids > 0:
+                restraint = {'constraint_type': 'protein dihedral angle',
+                             'constraint_subtype': 'Not applicable',
+                             'constraint_number': amino_acids}
+                restraints.append(restraint)
+            if nucleic_acids > 0:
+                restraint = {'constraint_type': 'nucleic acid dihedral angle',
+                             'constraint_subtype': 'Not applicable',
+                             'constraint_number': nucleic_acids}
+                restraints.append(restraint)
+            if carbohydrates > 0:
+                restraint = {'constraint_type': 'carbohydrate dihedral angle',
+                             'constraint_subtype': 'Not applicable',
+                             'constraint_number': carbohydrates}
+                restraints.append(restraint)
+
+        content_subtype = 'rdc_restraint'
+
+        if content_subtype in content_subtypes:
+            rdc_total = 0
+            for stat in self.getNmrStatsOfExptlData(content_subtype):
+                for k, v in stat['number_of_constraints'].items():
+                    rdc_total += v
+
+            restraint = {'constraint_type': 'intervector projection angle',
+                         'constraint_subtype': 'RDC',
+                         'constraint_number': rdc_total}
+
+            restraints.append(restraint)
+
+        return restraints
 
     def getNmrPolymerSequenceOf(self, chain_id):
         """ Retrieve NMR polymer sequence having a given chain_id.
@@ -400,7 +545,7 @@ class NmrDpReport:
         if report is None:
             return False
 
-        self.__report = report
+        self.__report = copy.copy(report)
 
         self.input_sources = []
 
@@ -730,7 +875,7 @@ class NmrDpReportError:
                     for i in g[0].split(','):
                         p = i.lstrip()
                         s = p.index(' ')
-                        loc[p[0:s]] = p[s:].lstrip()
+                        loc[p[0: s]] = p[s:].lstrip()
 
                     value['row_location'] = loc
                     value['description'] = g[1]
@@ -912,7 +1057,7 @@ class NmrDpReportWarning:
                     for i in g[0].split(','):
                         p = i.lstrip()
                         s = p.index(' ')
-                        loc[p[0:s]] = p[s:].lstrip()
+                        loc[p[0: s]] = p[s:].lstrip()
 
                     value['row_location'] = loc
                     value['description'] = g[1]

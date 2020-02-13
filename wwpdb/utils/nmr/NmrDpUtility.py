@@ -18,6 +18,7 @@
 # 05-Feb-2020  M. Yokochi - move conflicted_data error to warning
 # 07-Feb-2020  M. Yokochi - replace 'number_of_potential_types' by 'potential_type_of_constraints' in dp report
 # 07-Feb-2020  M. Yokochi - allow multiple values in a data type on per residue plots
+# 13-Feb-2020  M. Yokochi - add 'number_of_constraints_per_polymer_type' for apilayer.postModifyNMRRestraint
 ##
 """ Wrapper class for data processing for NMR unified data.
     @author: Masashi Yokochi
@@ -2716,14 +2717,14 @@ class NmrDpUtility(object):
                     self.__lfh.write("+NmrDpUtility.__detectContentSubType() ++ Warning  - %s\n" % warn)
 
         # initialize loop counter
-        lp_counts = {t:0 for t in self.nmr_content_subtypes}
+        lp_counts = {t: 0 for t in self.nmr_content_subtypes}
 
         # increment loop counter of each content subtype
         for lp_category in self.__lp_category_list:
             if lp_category in self.lp_categories[file_type].values():
                 lp_counts[[k for k, v in self.lp_categories[file_type].items() if v == lp_category][0]] += 1
 
-        content_subtypes = {k:lp_counts[k] for k in lp_counts if lp_counts[k] > 0}
+        content_subtypes = {k: lp_counts[k] for k in lp_counts if lp_counts[k] > 0}
 
         input_source.setItemValue('content_subtype', content_subtypes)
 
@@ -9620,6 +9621,7 @@ class NmrDpUtility(object):
             comb_count = {}
             inco_count = {}
             redu_count = {}
+            polymer_types = {}
             weights = {}
             potential_types = {}
 
@@ -9741,6 +9743,26 @@ class NmrDpUtility(object):
                             redu_count[data_type] += 1
                         else:
                             redu_count[data_type] = 1
+
+                peptide, nucleotide, carbohydrate = self.__csStat.getTypeOfCompId(comp_id_common[0][0])
+
+                if peptide:
+                    if 'amino_acid' in polymer_types:
+                        polymer_types['amino_acid'] += 1
+                    else:
+                        polymer_types['amino_acid'] = 1
+
+                if nucleotide:
+                    if 'nucleic_acid' in polymer_types:
+                        polymer_types['nucleic_acid'] += 1
+                    else:
+                        polymer_types['nucleic_acid'] = 1
+
+                if carbohydrate:
+                    if 'carbohydrate' in polymer_types:
+                        polymer_types['carbohydrate'] += 1
+                    else:
+                        polymer_types['carbohydrate'] = 1
 
                 if data_type.startswith('phi_'):
                     phi = {}
@@ -9867,6 +9889,7 @@ class NmrDpUtility(object):
                     ent['number_of_inconsistent_constraints'] = inco_count
                 if len(redu_count) > 0:
                     ent['number_of_redundant_constraints'] = redu_count
+                ent['number_of_constraints_per_polymer_type'] = polymer_types
                 if not polymer_sequence is None:
                     ent['constraints_per_residue'] = value_per_residue
                 if len(weights) > 0:
@@ -11233,7 +11256,7 @@ class NmrDpUtility(object):
         file_type = input_source_dic['file_type']
 
         # initialize loop counter
-        lp_counts = {t:0 for t in self.cif_content_subtypes}
+        lp_counts = {t: 0 for t in self.cif_content_subtypes}
 
         for content_subtype in self.cif_content_subtypes:
 
@@ -11252,7 +11275,7 @@ class NmrDpUtility(object):
                 if self.__verbose:
                     self.__lfh.write("+NmrDpUtility.__detectCoordContentSubType() ++ Error  - %s\n" % err)
 
-        content_subtypes = {k:lp_counts[k] for k in lp_counts if lp_counts[k] > 0}
+        content_subtypes = {k: lp_counts[k] for k in lp_counts if lp_counts[k] > 0}
 
         input_source.setItemValue('content_subtype', content_subtypes)
 

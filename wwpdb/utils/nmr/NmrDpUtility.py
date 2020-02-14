@@ -19,6 +19,7 @@
 # 07-Feb-2020  M. Yokochi - replace 'number_of_potential_types' by 'potential_type_of_constraints' in dp report
 # 07-Feb-2020  M. Yokochi - allow multiple values in a data type on per residue plots
 # 13-Feb-2020  M. Yokochi - add 'number_of_constraints_per_polymer_type' for apilayer.postModifyNMRRestraint
+# 14-Feb-2020  M. Yokochi - add 'spectram_dim' for apilayer.postModifyNMRPeaks
 ##
 """ Wrapper class for data processing for NMR unified data.
     @author: Masashi Yokochi
@@ -5253,12 +5254,12 @@ class NmrDpUtility(object):
                             if sp_dim['dimension_id'] != i:
                                 continue
 
-                            first_point = sp_dim['value_first_point']
-                            sp_width = sp_dim['spectral_width']
-                            acq = sp_dim['is_acquisition']
-                            abs = sp_dim['absolute_peak_positions']
+                            first_point = None if not 'value_first_point' in sp_dim else sp_dim['value_first_point']
+                            sp_width = None if not 'spectral_width' in sp_dim else sp_dim['spectral_width']
+                            # acq = sp_dim['is_acquisition']
+                            abs = False if 'absolute_peak_position' in sp_dim else sp_dim['absolute_peak_positions']
 
-                            if sp_dim['axis_unit'] == 'Hz':
+                            if sp_dim['axis_unit'] == 'Hz' and 'spectrometer_frequency' in sp_dim and not first_point is None and not sp_width is None:
                                 sp_freq = sp_dim['spectrometer_frequency']
                                 first_point /= sp_freq
                                 sp_width /= sp_freq
@@ -5268,24 +5269,30 @@ class NmrDpUtility(object):
                             if sp_dim['ID'] != i:
                                 continue
 
-                            axis_unit = sp_dim['Sweep_width_units']
-                            first_point = sp_dim['Value_first_point']
-                            sp_width = sp_dim['Sweep_width']
-                            acq = sp_dim['Acquisition']
-                            abs = sp_dim['Absolute_peak_positions']
+                            first_point = None if not 'Value_first_point' in sp_dim else sp_dim['Value_first_point']
+                            sp_width = None if not 'Sweep_width' in sp_dim else sp_dim['Sweep_width']
+                            # acq = sp_dim['Acquisition']
+                            abs = False if 'Absolute_peak_position' in sp_dim else sp_dim['Absolute_peak_positions']
 
-                            if sp_dim['Sweep_width_units'] == 'Hz':
+                            if sp_dim['Sweep_width_units'] == 'Hz' and 'Spectrometer_frequency' in sp_dim and not first_point is None and not sp_width is None:
                                 sp_freq = sp_dim['Spectrometer_frequency']
                                 first_point /= sp_freq
                                 sp_width /= sp_freq
 
-                        last_point = first_point - sp_width
+                        min_point = None
+                        max_point = None
 
-                        min_point = last_point - (sp_width if abs else 0.0)
-                        max_point = first_point + (sp_width if abs else 0.0)
+                        if not first_point is None and not sp_width is None:
+
+                            last_point = first_point - sp_width
+
+                            min_point = last_point - (sp_width if abs else 0.0)
+                            max_point = first_point + (sp_width if abs else 0.0)
 
                         min_points.append(min_point)
                         max_points.append(max_point)
+
+                        break
 
                 key_items = []
                 for dim in range(1, max_dim):
@@ -5304,6 +5311,10 @@ class NmrDpUtility(object):
 
                     for i in lp_data:
                         for j in range(num_dim):
+
+                            if min_points[j] is None or max_points[j] is None:
+                                continue
+
                             position = i[position_names[j]]
 
                             if position < min_points[j] or position > max_points[j]:
@@ -6604,6 +6615,7 @@ class NmrDpUtility(object):
             axis_codes = []
             abs_pk_pos = []
             sp_widths = []
+
             if not aux_data is None:
                 for i in range(1, max_dim):
                     for sp_dim in aux_data:
@@ -6611,9 +6623,9 @@ class NmrDpUtility(object):
                             if sp_dim['dimension_id'] != i:
                                 continue
                             axis_codes.append(sp_dim['axis_code'])
-                            abs_pk_pos.append(sp_dim['absolute_peak_positions'])
-                            sp_width = sp_dim['spectral_width']
-                            if sp_dim['axis_unit'] == 'Hz':
+                            abs_pk_pos.append(False if 'absolute_peak_poistions' in sp_dim else sp_dim['absolute_peak_positions'])
+                            sp_width = None if not 'spectral_width' in sp_dim else sp_dim['spectral_width']
+                            if sp_dim['axis_unit'] == 'Hz' and 'spectrometer_frequency' in sp_dim and not sp_width is None:
                                 sp_freq = sp_dim['spectrometer_frequency']
                                 sp_width /= sp_freq
                             sp_widths.append(sp_width)
@@ -6621,12 +6633,13 @@ class NmrDpUtility(object):
                             if sp_dim['ID'] != i:
                                 continue
                             axis_codes.append(sp_dim['Axis_code'])
-                            abs_pk_pos.append(sp_dim['Absolute_peak_positions'])
-                            sp_width = sp_dim['Sweep_width']
-                            if sp_dim['Sweep_width_units'] == 'Hz':
+                            abs_pk_pos.append(False if 'Absolute_peak_position' in sp_dim else sp_dim['Absolute_peak_positions'])
+                            sp_width = None if not 'Sweep_width' in sp_dim else sp_dim['Sweep_width']
+                            if sp_dim['Sweep_width_units'] == 'Hz' and 'Spectrometer_frequency' in sp_dim and not sp_width is None:
                                 sp_freq = sp_dim['Spectrometer_frequency']
                                 sp_width /= sp_freq
                             sp_widths.append(sp_width)
+                        break
             else:
                 for i in range(num_dim):
                     abs_pk_pos.append(False)
@@ -6749,7 +6762,7 @@ class NmrDpUtility(object):
 
                                 if abs(position - value) > error:
 
-                                    if not abs_pk_pos[d]:
+                                    if not abs_pk_pos[d] and not sp_width[d] is None:
                                         if position < value:
                                             while position < value:
                                                 position += sp_widths[d]
@@ -7326,7 +7339,7 @@ class NmrDpUtility(object):
                                 except ValueError: # raised error already at __testIndexConsistency()
                                     continue
 
-                                self.__calculateStatsOfSpectralPeak(num_dim, lp_data, ent)
+                                self.__calculateStatsOfSpectralPeak(sf_framecode, num_dim, lp_data, ent)
 
                     else:
 
@@ -11020,7 +11033,7 @@ class NmrDpUtility(object):
 
         return vector_type + '_bond_vectors'
 
-    def __calculateStatsOfSpectralPeak(self, num_dim, lp_data, ent):
+    def __calculateStatsOfSpectralPeak(self, sf_framecode, num_dim, lp_data, ent):
         """ Calculate statistics of spectral peaks.
         """
 
@@ -11028,6 +11041,8 @@ class NmrDpUtility(object):
         input_source_dic = input_source.get()
 
         file_type = input_source_dic['file_type']
+
+        content_subtype == 'spectral_peak'
 
         max_dim = num_dim + 1
 
@@ -11046,6 +11061,203 @@ class NmrDpUtility(object):
         atom_id_names = []
 
         try:
+
+            ent['number_of_spectral_dimensions'] = num_dim
+            ent['spectral_dim'] = []
+
+            aux_data = next((l['data'] for l in self.__aux_data[content_subtype] if l['sf_framecode'] == sf_framecode and l['category'] == self.aux_lp_categories[file_type][content_subtype][1]), None)
+
+            mag_link = []
+
+            if not aux_data is None:
+                for sp_dim_trans in aux_data:
+                    if file_type == 'nef':
+                        if sp_dim_trans['transfer_type'] == 'onebond': # or sp_dim_trans['transfer_type'].startswith('j') or sp_dim_trans['transfer_type'].startswith('relayed'):
+                            dim_1 = sp_dim_trans['dimension_1']
+                            dim_2 = sp_dim_trans['dimension_2']
+                            mag_link.append((dim_1, dim_2))
+                    else:
+                        if sp_dim_trans['Type'] == 'onebond': # or sp_dim_trans['Type'].startswith('j') or sp_dim_trans['Type'].startswith('relayed'):
+                            dim_1 = sp_dim_trans['Spectral_dim_ID_1']
+                            dim_2 = sp_dim_trans['Spectral_dim_ID_2']
+                            mag_link.append((dim_1, dim_2))
+
+            aux_data = next((l['data'] for l in self.__aux_data[content_subtype] if l['sf_framecode'] == sf_framecode and l['category'] == self.aux_lp_categories[file_type][content_subtype][0]), None)
+
+            if not aux_data is None:
+                for i in range(1, max_dim):
+                    for sp_dim in aux_data:
+                        sp_freq = None
+                        center_point = None
+                        under_sampling_type = None
+                        encoding_code = None
+                        encoded_src_dim_id = None
+                        mag_link_id = None
+                        if file_type == 'nef':
+                            if sp_dim['dimension_id'] != i:
+                                continue
+                            axis_code = sp_dim['axis_code']
+                            atom_type = ''.join(j for j in axis_code if not j.isdigit())
+                            atom_isotope_number = int(''.join(j for j in axis_code if j.isdigit()))
+                            axis_unit = sp_dim['axis_unit']
+                            first_point = None if not 'value_first_point' in sp_dim else sp_dim['value_first_point']
+                            sp_width = None if not 'spectral_width' in sp_dim else sp_dim['spectral_width']
+                            if 'spectrometer_frequency' in sp_dim:
+                                sp_freq = sp_dim['spectrometer_frequency']
+                            if 'folding' in sp_dim:
+                                under_sampling_type = sp_dim['folding']
+                        else:
+                            if sp_dim['ID'] != i:
+                                continue
+                            axis_code = sp_dim['Axis_code']
+                            atom_type = ''.join(j for j in axis_code if not j.isdigit())
+                            atom_isotope_number = int(''.join(j for j in axis_code if j.isdigit()))
+                            axis_unit = sp_dim['Sweep_width_unit']
+                            first_point = None if not 'Value_first_point' in sp_dim else sp_dim['Value_first_point']
+                            sp_width = None if not 'Sweep_width' in sp_dim else sp_dim['Sweep_width']
+                            if 'Spectrometer_frequency' in sp_dim:
+                                sp_freq = sp_dim['Spectrometer_frequency']
+                            if 'Under_sampling_type' in sp_dim:
+                                under_sampling_type = sp_dim['Under_sampling_type']
+                            if 'Center_frequency_offset' in sp_dim:
+                                center_point = sp_dim['Center_frequency_offset']
+                                if center_point in self.empty_value:
+                                    center_point = None
+                            if 'Encoding_code' in sp_dim:
+                                encoding_code = sp_dim['Encoding_code']
+                                if encoding_code in self.empty_value:
+                                    encoding_code = None
+                            if 'Encoded_reduced_dimension_ID':
+                                encoded_src_dim_id = sp_dim['Encoded_reduced_dimension_ID']
+                                if encoded_src_dim_id in self.empty_value:
+                                    encoded_src_dim_id = None
+                            if 'Magnetization_linkage_ID' in sp_dim:
+                                mag_link_id = sp_dim['Magnetization_linkage_ID']
+                                if mag_link_id in self.empty_value:
+                                    mag_link_id = None
+
+                        if not sp_freq is None and sp_freq in self.empty_value:
+                            sp_freq = None
+
+                        if center_point is None:
+                            center_point = None if first_point is None or sp_width is None else (first_point - sp_width / 2.0)
+
+                        if not under_sampling_type is None and under_sampling_type in self.empty_value:
+                            under_sampling_type = None
+
+                        if not under_sampling_type is None and under_sampling_type in ['circular', 'mirror', 'none']:
+                            if val == 'circular':
+                                under_sampling_type = 'folded'
+                            elif val == 'mirror':
+                                under_sampling_type = 'aliased'
+                            else:
+                                under_sampling_type = 'not observed'
+
+                        if mag_link_id is None:
+                            for pair in mag_link:
+                                if pair[0] == i or pair[1] == i:
+                                    mag_link_id = mag_link.index(pair) + 1
+                                    break
+
+                        spectral_dim = {'id': i, 'atom_type': atom_type, 'atom_isotope_number': atom_isotope_number,
+                                        'sweep_width': copy.copy(sp_width), 'sweep_width_units': axis_unit, 'center_frequency_offset': copy.copy(center_point),
+                                        'under_sampling_type': under_sampling_type, 'encoding_code': encoding_code, 'encoded_source_dimension_id': encoded_src_dim_id, 'magnetization_linkage_id': mag_link_id}
+
+                        if axis_unit == 'Hz' and not sp_freq is None and not first_point is None and not center_point is None and not sp_width is None:
+                            first_point /= sp_freq
+                            center_point /= sp_freq
+                            sp_width /= sp_freq
+
+                        last_point = None if first_point is None or sp_width is None else (first_point - sp_width)
+
+                        if center_point is None or last_point is None:
+                            spectral_region = atom_type + '?'
+                        elif atom_type == 'H':
+                            if mag_link_id is None:
+                                spectral_region = 'H'
+                            else:
+                                (dim_1, dim_2) = mag_link[mag_link_id]
+                                hvy_dim = dim_1 if i == dim_2 else dim_2
+
+                                for _sp_dim in aux_data:
+                                    if file_type == 'nef':
+                                        if _sp_dim['dimension_id'] != hvy_dim:
+                                            continue
+                                        _axis_code = _sp_dim['axis_code']
+                                        _atom_type = ''.join(j for j in _axis_code if not j.isdigit())
+                                    else:
+                                        if _sp_dim['ID'] != hvy_dim:
+                                            continue
+                                        _axis_code = _sp_dim['Axis_code']
+                                        _atom_type = ''.join(j for j in _axis_code if not j.isdigit())
+
+                                    if _atom_type == 'C':
+                                        _center_point = None
+                                        if file_type == 'nef':
+                                            _axis_unit = _sp_dim['axis_unit']
+                                            _first_point = None if not 'value_first_point' in _sp_dim else _sp_dim['value_first_point']
+                                            _sp_width = None if not 'spectral_width' in _sp_dim else _sp_dim['spectral_width']
+                                            if 'spectrometer_frequency' in _sp_dim:
+                                                _sp_freq = _sp_dim['spectrometer_frequency']
+                                        else:
+                                            _axis_unit = _sp_dim['Sweep_width_unit']
+                                            _first_point = None if not 'Value_first_point' in _sp_dim else _sp_dim['Value_first_point']
+                                            _sp_width = None if not 'Sweep_width' in _sp_dim else _sp_dim['Sweep_width']
+                                            if 'Spectrometer_frequency' in _sp_dim:
+                                                _sp_freq = _sp_dim['Spectrometer_frequency']
+                                            if 'Center_frequency_offset' in _sp_dim:
+                                                _center_point = _sp_dim['Center_frequency_offset']
+                                                if _center_point in self.empty_value:
+                                                    _center_point = None
+
+                                        if not _sp_freq is None and _sp_freq in self.empty_value:
+                                            _sp_freq = None
+
+                                        if _center_point is None:
+                                            _center_point = None if _first_point is None or _sp_width is None else (_first_point - _sp_width / 2.0)
+
+                                        if _axis_unit == 'Hz' and not _sp_freq is None and not _first_point is None and not _center_point is None and not _sp_width is None:
+                                            _first_point /= _sp_freq
+                                            _center_point /= _sp_freq
+                                            _sp_width /= _sp_freq
+
+                                        _last_point = None if _first_point is None or _sp_width is None else (_first_point - _sp_width)
+
+                                        if _center_point is None or _last_point is None:
+                                            spectral_region = 'H?'
+                                        elif _center_point > 100.0 and _sp_width < 60.0:
+                                            spectral_region = 'H-aromatic'
+                                        elif _center_point < 20.0 and _sp_width < 30.0:
+                                            spectral_region = 'H-methyl'
+                                        elif _center_point < 60.0:
+                                            spectral_region = 'H-aliphatic'
+                                        else:
+                                            spectral_region = 'H'
+
+                                    elif _atom_type == 'N':
+                                        spectral_region = 'HN'
+                                    else:
+                                        spectral_region = 'H'
+                                    break
+                        elif atom_type == 'C':
+                            if mag_link_id is None and center_point > 160.0:
+                                spectral_region = 'CO'
+                            elif center_point > 100.0 and sp_width < 60.0:
+                                spectral_region = 'C-aromatic'
+                            elif center_point < 20.0 and sp_width < 30.0:
+                                spectral_region = 'C-methyl'
+                            elif center_point < 60.0:
+                                spectral_region = 'C-aliphatic'
+                            else:
+                                spectral_region = 'C'
+                        else:
+                            spectral_region = atom_type
+
+                        spectral_dim['spectral_region'] = spectral_region
+
+                        ent['spectral_dim'].append(spectral_dim)
+
+                        break
 
             count = {'assigned_spectral_peaks': 0, 'unassigned_spectral_peaks': 0}
 

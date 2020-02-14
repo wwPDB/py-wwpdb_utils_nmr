@@ -10,6 +10,7 @@
 # 05-Feb-2020  M. Yokochi - move conflicted_data error to warning
 # 10-Feb-2020  M. Yokochi - add methods to retrieve polymer sequence for sample sequence alignment
 # 13-Feb-2020  M. Yokochi - add methods to retrieve content_subtype for apilayer.postModifyNMR
+# 14-Feb-2020  M. Yokochi - add methods to pre-populate pdbx_nmr_spectral_peak_list, apilayer.postModifyNMRPeaks
 ##
 """ Wrapper class for data processing report of NMR unified data.
     @author: Masashi Yokochi
@@ -231,8 +232,11 @@ class NmrDpReport:
                              'constraint_number': symmetric}
                 restraints.append(restraint)
             if noe_like > 0:
+                exp_type = stat['exp_type']
+                if exp_type == 'Unknown':
+                    exp_type = 'NOE? (To Be Decided)'
                 restraint = {'constraint_type': 'distance',
-                             'constraint_subtype': 'NOE',
+                             'constraint_subtype': exp_type,
                              'constraint_number': noe_like}
                 restraints.append(restraint)
 
@@ -281,6 +285,38 @@ class NmrDpReport:
             restraints.append(restraint)
 
         return restraints
+
+    def getNmrPeaks(self):
+        """ Return stats of NMR spectral peaks.
+        """
+
+        content_subtypes = self.getNmrContentSubTypes()
+
+        if content_subtypes is None:
+            return None
+
+        spectral_peaks = []
+
+        content_subtype = 'spectral_peak'
+
+        if content_subtype in content_subtypes:
+            for stat in self.getNmrStatsOfExptlData(content_subtype):
+                spectral_peak = {'list_id': str(stat['list_id']), 'sf_framecode': stat['sf_framecode'], 'number_of_spectral_dimensions': str(stat['number_of_spectral_dimensions'])}
+                spectral_dim = stat['spectral_dim']
+                _spectral_dim = []
+                for d in spectral_dim:
+                    _d = {}
+                    for k, v in d.items():
+                        if v is None:
+                            _d[k] = None
+                        elif str(v).endswith('?'):
+                            _d[k] = v + ' (To Be Decided)'
+                        else:
+                            _d[k] = str(v)
+                    _spectral_dim.append(_d)
+                spectral_peak['spectral_dim'] = _spectral_dim
+
+        return spectral_peaks
 
     def getNmrPolymerSequenceOf(self, chain_id):
         """ Retrieve NMR polymer sequence having a given chain_id.

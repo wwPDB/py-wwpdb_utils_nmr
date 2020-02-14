@@ -301,7 +301,7 @@ class NmrDpReport:
 
         if content_subtype in content_subtypes:
             for stat in self.getNmrStatsOfExptlData(content_subtype):
-                spectral_peak = {'list_id': str(stat['list_id']), 'sf_framecode': stat['sf_framecode'], 'number_of_spectral_dimensions': str(stat['number_of_spectral_dimensions'])}
+                spectral_peak = {'list_id': stat['list_id'], 'sf_framecode': stat['sf_framecode'], 'number_of_spectral_dimensions': stat['number_of_spectral_dimensions']}
                 spectral_dim = stat['spectral_dim']
                 _spectral_dim = []
                 for d in spectral_dim:
@@ -315,6 +315,8 @@ class NmrDpReport:
                             _d[k] = v
                     _spectral_dim.append(_d)
                 spectral_peak['spectral_dim'] = _spectral_dim
+
+                spectral_peaks.append(spectral_peak)
 
         return spectral_peaks
 

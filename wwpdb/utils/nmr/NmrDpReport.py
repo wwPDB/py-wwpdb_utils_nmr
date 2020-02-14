@@ -312,7 +312,7 @@ class NmrDpReport:
                         elif str(v).endswith('?'):
                             _d[k] = v + ' (To Be Decided)'
                         else:
-                            _d[k] = str(v)
+                            _d[k] = v
                     _spectral_dim.append(_d)
                 spectral_peak['spectral_dim'] = _spectral_dim
 

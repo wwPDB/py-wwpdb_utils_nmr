@@ -7326,20 +7326,20 @@ class NmrDpUtility(object):
                                 elif content_subtype == 'rdc_restraint':
                                     self.__calculateStatsOfRdcRestraint(lp_data, conflict_id_set, inconsistent, redundant, ent)
 
-                            elif content_subtype == 'spectral_peak':
+                        if content_subtype == 'spectral_peak':
 
-                                try:
+                            try:
 
-                                    _num_dim = sf_data.get_tag(self.num_dim_items[file_type])[0]
-                                    num_dim = int(_num_dim)
+                                _num_dim = sf_data.get_tag(self.num_dim_items[file_type])[0]
+                                num_dim = int(_num_dim)
 
-                                    if not num_dim in range(1, self.lim_num_dim):
-                                        raise ValueError()
+                                if not num_dim in range(1, self.lim_num_dim):
+                                    raise ValueError()
 
-                                except ValueError: # raised error already at __testIndexConsistency()
-                                    continue
+                            except ValueError: # raised error already at __testIndexConsistency()
+                                continue
 
-                                self.__calculateStatsOfSpectralPeak(sf_framecode, num_dim, lp_data, ent)
+                            self.__calculateStatsOfSpectralPeak(sf_framecode, num_dim, lp_data, ent)
 
                     else:
 
@@ -11042,7 +11042,7 @@ class NmrDpUtility(object):
 
         file_type = input_source_dic['file_type']
 
-        content_subtype == 'spectral_peak'
+        content_subtype = 'spectral_peak'
 
         max_dim = num_dim + 1
 
@@ -11112,7 +11112,7 @@ class NmrDpUtility(object):
                             axis_code = sp_dim['Axis_code']
                             atom_type = ''.join(j for j in axis_code if not j.isdigit())
                             atom_isotope_number = int(''.join(j for j in axis_code if j.isdigit()))
-                            axis_unit = sp_dim['Sweep_width_unit']
+                            axis_unit = sp_dim['Sweep_width_units']
                             first_point = None if not 'Value_first_point' in sp_dim else sp_dim['Value_first_point']
                             sp_width = None if not 'Sweep_width' in sp_dim else sp_dim['Sweep_width']
                             if 'Spectrometer_frequency' in sp_dim:
@@ -11127,7 +11127,7 @@ class NmrDpUtility(object):
                                 encoding_code = sp_dim['Encoding_code']
                                 if encoding_code in self.empty_value:
                                     encoding_code = None
-                            if 'Encoded_reduced_dimension_ID':
+                            if 'Encoded_reduced_dimension_ID' in sp_dim:
                                 encoded_src_dim_id = sp_dim['Encoded_reduced_dimension_ID']
                                 if encoded_src_dim_id in self.empty_value:
                                     encoded_src_dim_id = None
@@ -11146,9 +11146,9 @@ class NmrDpUtility(object):
                             under_sampling_type = None
 
                         if not under_sampling_type is None and under_sampling_type in ['circular', 'mirror', 'none']:
-                            if val == 'circular':
+                            if under_sampling_type == 'circular':
                                 under_sampling_type = 'folded'
-                            elif val == 'mirror':
+                            elif under_sampling_type == 'mirror':
                                 under_sampling_type = 'aliased'
                             else:
                                 under_sampling_type = 'not observed'
@@ -11160,7 +11160,7 @@ class NmrDpUtility(object):
                                     break
 
                         spectral_dim = {'id': i, 'atom_type': atom_type, 'atom_isotope_number': atom_isotope_number,
-                                        'sweep_width': copy.copy(sp_width), 'sweep_width_units': axis_unit, 'center_frequency_offset': copy.copy(center_point),
+                                        'sweep_width': copy.copy(sp_width), 'sweep_width_units': axis_unit, 'center_frequency_offset': float('{:.8f}'.format(center_point)),
                                         'under_sampling_type': under_sampling_type, 'encoding_code': encoding_code, 'encoded_source_dimension_id': encoded_src_dim_id, 'magnetization_linkage_id': mag_link_id}
 
                         if axis_unit == 'Hz' and not sp_freq is None and not first_point is None and not center_point is None and not sp_width is None:
@@ -11176,7 +11176,7 @@ class NmrDpUtility(object):
                             if mag_link_id is None:
                                 spectral_region = 'H'
                             else:
-                                (dim_1, dim_2) = mag_link[mag_link_id]
+                                dim_1, dim_2 = mag_link[mag_link_id - 1]
                                 hvy_dim = dim_1 if i == dim_2 else dim_2
 
                                 for _sp_dim in aux_data:
@@ -11200,7 +11200,7 @@ class NmrDpUtility(object):
                                             if 'spectrometer_frequency' in _sp_dim:
                                                 _sp_freq = _sp_dim['spectrometer_frequency']
                                         else:
-                                            _axis_unit = _sp_dim['Sweep_width_unit']
+                                            _axis_unit = _sp_dim['Sweep_width_units']
                                             _first_point = None if not 'Value_first_point' in _sp_dim else _sp_dim['Value_first_point']
                                             _sp_width = None if not 'Sweep_width' in _sp_dim else _sp_dim['Sweep_width']
                                             if 'Spectrometer_frequency' in _sp_dim:

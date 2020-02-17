@@ -238,7 +238,7 @@ class NmrDpReport:
                 if noe_exp_type == 'Unknown':
                     noe_exp_type = 'NOE? (To be decided)'
                 else:
-                    _noe_exp_type = exp_type.lower()
+                    _noe_exp_type = noe_exp_type.lower()
                     if _noe_exp_type == 'csp':
                         noe_exp_type = 'CSP'
                     elif _noe_exp_type == 'noe':

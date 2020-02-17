@@ -9777,6 +9777,12 @@ class NmrDpUtility(object):
                     else:
                         polymer_types['carbohydrate'] = 1
 
+                if not peptide and not nucleotide and not carbohydrate:
+                    if 'other' in polymer_types:
+                        polymer_types['other'] += 1
+                    else:
+                        polymer_types['other'] = 1
+
                 if data_type.startswith('phi_'):
                     phi = {}
                     phi['chain_id'] = chain_id_1

@@ -234,7 +234,7 @@ class NmrDpReport:
             if noe_like > 0:
                 exp_type = stat['exp_type']
                 if exp_type == 'Unknown':
-                    exp_type = 'NOE? (To Be Decided)'
+                    exp_type = 'NOE?'
                 restraint = {'constraint_type': 'distance',
                              'constraint_subtype': exp_type,
                              'constraint_number': noe_like}
@@ -243,21 +243,24 @@ class NmrDpReport:
         content_subtype = 'dihed_restraint'
 
         if content_subtype in content_subtypes:
-            amino_acids = 0;
+            proteins = 0;
             nucleic_acids = 0
             carbohydrates = 0
+            others = 0
             for stat in self.getNmrStatsOfExptlData(content_subtype):
                 for k, v in stat['number_of_constraints_per_polymer_type'].items():
-                    if k == 'amino_acid':
-                        amino_acids += v
+                    if k == 'protein':
+                        proteins += v
                     elif k == 'nucleic_acid':
                         nucleic_acids += v
                     elif k == 'carbohydrate':
                         carbohydrates += v
-            if amino_acids > 0:
+                    elif k == 'other':
+                        others += v
+            if proteins > 0:
                 restraint = {'constraint_type': 'protein dihedral angle',
                              'constraint_subtype': 'Not applicable',
-                             'constraint_number': amino_acids}
+                             'constraint_number': proteins}
                 restraints.append(restraint)
             if nucleic_acids > 0:
                 restraint = {'constraint_type': 'nucleic acid dihedral angle',
@@ -268,6 +271,11 @@ class NmrDpReport:
                 restraint = {'constraint_type': 'carbohydrate dihedral angle',
                              'constraint_subtype': 'Not applicable',
                              'constraint_number': carbohydrates}
+                restraints.append(restraint)
+            if others > 0:
+                restraint = {'constraint_type': 'other angle',
+                             'constraint_subtype': 'Not applicable',
+                             'constraint_number': others}
                 restraints.append(restraint)
 
         content_subtype = 'rdc_restraint'
@@ -301,22 +309,7 @@ class NmrDpReport:
 
         if content_subtype in content_subtypes:
             for stat in self.getNmrStatsOfExptlData(content_subtype):
-                spectral_peak = {'list_id': stat['list_id'], 'sf_framecode': stat['sf_framecode'], 'number_of_spectral_dimensions': stat['number_of_spectral_dimensions']}
-                spectral_dim = stat['spectral_dim']
-                _spectral_dim = []
-                for d in spectral_dim:
-                    _d = {}
-                    for k, v in d.items():
-                        if v is None:
-                            _d[k] = None
-                        elif str(v).endswith('?'):
-                            _d[k] = v + ' (To Be Decided)'
-                        else:
-                            _d[k] = v
-                    _spectral_dim.append(_d)
-                spectral_peak['spectral_dim'] = _spectral_dim
-
-                spectral_peaks.append(spectral_peak)
+                spectral_peaks.append({'list_id': stat['list_id'], 'sf_framecode': stat['sf_framecode'], 'number_of_spectral_dimensions': stat['number_of_spectral_dimensions'], 'spectral_dim': stat['spectral_dim']})
 
         return spectral_peaks
 

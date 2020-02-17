@@ -9760,10 +9760,10 @@ class NmrDpUtility(object):
                 peptide, nucleotide, carbohydrate = self.__csStat.getTypeOfCompId(comp_id_common[0][0])
 
                 if peptide:
-                    if 'amino_acid' in polymer_types:
-                        polymer_types['amino_acid'] += 1
+                    if 'protein' in polymer_types:
+                        polymer_types['protein'] += 1
                     else:
-                        polymer_types['amino_acid'] = 1
+                        polymer_types['protein'] = 1
 
                 if nucleotide:
                     if 'nucleic_acid' in polymer_types:

@@ -11177,7 +11177,7 @@ class NmrDpUtility(object):
                         last_point = None if first_point is None or sp_width is None else (first_point - sp_width)
 
                         if center_point is None or last_point is None:
-                            spectral_region = atom_type + '?'
+                            spectral_region = atom_type
                         elif atom_type == 'H':
                             if mag_link_id is None:
                                 spectral_region = 'H'
@@ -11230,12 +11230,12 @@ class NmrDpUtility(object):
                                         _last_point = None if _first_point is None or _sp_width is None else (_first_point - _sp_width)
 
                                         if _center_point is None or _last_point is None:
-                                            spectral_region = 'H?'
+                                            spectral_region = 'H'
                                         elif _center_point > 100.0 and _sp_width < 60.0:
                                             spectral_region = 'H-aromatic'
                                         elif _center_point < 20.0 and _sp_width < 30.0:
                                             spectral_region = 'H-methyl'
-                                        elif _center_point < 60.0:
+                                        elif _center_point < 60.0 and _sp_width < 90.0:
                                             spectral_region = 'H-aliphatic'
                                         else:
                                             spectral_region = 'H'
@@ -11252,7 +11252,7 @@ class NmrDpUtility(object):
                                 spectral_region = 'C-aromatic'
                             elif center_point < 20.0 and sp_width < 30.0:
                                 spectral_region = 'C-methyl'
-                            elif center_point < 60.0:
+                            elif center_point < 60.0 and sp_width < 90.0:
                                 spectral_region = 'C-aliphatic'
                             else:
                                 spectral_region = 'C'

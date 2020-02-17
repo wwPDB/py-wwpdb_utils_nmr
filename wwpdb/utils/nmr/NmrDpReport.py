@@ -234,7 +234,24 @@ class NmrDpReport:
             if noe_like > 0:
                 exp_type = stat['exp_type']
                 if exp_type == 'Unknown':
-                    exp_type = 'NOE?'
+                    exp_type = 'NOE? (To be decided)'
+                else:
+                    _exp_type = exp_type.lower()
+                    if _exp_type == 'csp':
+                        exp_type = 'CSP'
+                    elif _exp_type == 'noe':
+                        exp_type = 'NOE'
+                    elif _exp_type == 'noe buildup':
+                        exp_type = 'NOE buildup'
+                    elif _exp_type == 'noe not seen':
+                        exp_type = 'NOE not seen'
+                    elif _exp_type == 'pre':
+                        exp_type == 'PRE'
+                    elif _exp_type == 'pre solvent':
+                        exp_type = 'PRE solvent'
+                    elif _exp_type == 'roe':
+                        exp_type = 'ROE'
+
                 restraint = {'constraint_type': 'distance',
                              'constraint_subtype': exp_type,
                              'constraint_number': noe_like}

@@ -209,6 +209,30 @@ class NmrDpReport:
                         if noe_exp_type is None:
                             noe_exp_type = stat['exp_type']
                         noe_like += v
+            if noe_like > 0:
+                if noe_exp_type == 'Unknown':
+                    noe_exp_type = 'NOE? (To be decided)'
+                else:
+                    _noe_exp_type = noe_exp_type.lower()
+                    if _noe_exp_type == 'csp':
+                        noe_exp_type = 'CSP'
+                    elif _noe_exp_type == 'noe':
+                        noe_exp_type = 'NOE'
+                    elif _noe_exp_type == 'noe buildup':
+                        noe_exp_type = 'NOE buildup'
+                    elif _noe_exp_type == 'noe not seen':
+                        noe_exp_type = 'NOE not seen'
+                    elif _noe_exp_type == 'pre':
+                        noe_exp_type == 'PRE'
+                    elif _noe_exp_type == 'pre solvent':
+                        noe_exp_type = 'PRE solvent'
+                    elif _noe_exp_type == 'roe':
+                        noe_exp_type = 'ROE'
+
+                restraint = {'constraint_type': 'distance',
+                             'constraint_subtype': noe_exp_type,
+                             'constraint_number': noe_like}
+                restraints.append(restraint)
             if hydrogen_bonds > 0:
                 restraint = {'constraint_type': 'distance',
                              'constraint_subtype': 'hydrogen bond',
@@ -233,30 +257,6 @@ class NmrDpReport:
                 restraint = {'constraint_type': 'distance',
                              'constraint_subtype': 'symmetry',
                              'constraint_number': symmetric}
-                restraints.append(restraint)
-            if noe_like > 0:
-                if noe_exp_type == 'Unknown':
-                    noe_exp_type = 'NOE? (To be decided)'
-                else:
-                    _noe_exp_type = noe_exp_type.lower()
-                    if _noe_exp_type == 'csp':
-                        noe_exp_type = 'CSP'
-                    elif _noe_exp_type == 'noe':
-                        noe_exp_type = 'NOE'
-                    elif _noe_exp_type == 'noe buildup':
-                        noe_exp_type = 'NOE buildup'
-                    elif _noe_exp_type == 'noe not seen':
-                        noe_exp_type = 'NOE not seen'
-                    elif _noe_exp_type == 'pre':
-                        noe_exp_type == 'PRE'
-                    elif _noe_exp_type == 'pre solvent':
-                        noe_exp_type = 'PRE solvent'
-                    elif _noe_exp_type == 'roe':
-                        noe_exp_type = 'ROE'
-
-                restraint = {'constraint_type': 'distance',
-                             'constraint_subtype': noe_exp_type,
-                             'constraint_number': noe_like}
                 restraints.append(restraint)
 
         content_subtype = 'dihed_restraint'

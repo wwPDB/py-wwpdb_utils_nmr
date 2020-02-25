@@ -709,7 +709,7 @@ class NEFTranslator(object):
             # print "Residue not found",res,nef_atom
             if res != ".":
                 self.logger.critical("Non-standard residue found {}".format(res))
-            atom_list = []
+            atom_list = [nef_atom]
             atom_type = nef_atom
 
             if nef_atom == "H%":

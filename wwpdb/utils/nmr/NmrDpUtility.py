@@ -20,6 +20,7 @@
 # 07-Feb-2020  M. Yokochi - allow multiple values in a data type on per residue plots
 # 13-Feb-2020  M. Yokochi - add 'number_of_constraints_per_polymer_type' for apilayer.postModifyNMRRestraint
 # 14-Feb-2020  M. Yokochi - add 'spectram_dim' for apilayer.postModifyNMRPeaks
+# 21-Feb-2020  M. Yokochi - update content-type definitions and add release mode (nmr-str2nef-release workflow operation)
 ##
 """ Wrapper class for data processing for NMR unified data.
     @author: Masashi Yokochi
@@ -66,6 +67,8 @@ class NmrDpUtility(object):
         # whether to detect missing mandatory tags as errors
         self.__check_mandatory_tag = False
 
+        # whether to use datablock name of public release
+        self.__release_mode = False
         # default entry_id
         self.__entry_id__ = 'UNNAMED'
         self.__entry_id = 'EXTRACT_FROM_COORD'
@@ -94,7 +97,7 @@ class NmrDpUtility(object):
 
         # list of known workflow operations
         self.__workFlowOps = ('nmr-nef-consistency-check', 'nmr-str-consistency-check',
-                              'nmr-nef2str-deposit', 'nmr-str2str-deposit', 'nmr-str2nef-deposit')
+                              'nmr-nef2str-deposit', 'nmr-str2str-deposit', 'nmr-str2nef-release')
 
         # validation tasks for NMR data only
         __nmrCheckTasks = [self.__detectContentSubType,
@@ -199,7 +202,7 @@ class NmrDpUtility(object):
         self.__procTasksDict = {'consistency-check': __checkTasks,
                                 'deposit': __depositTasks,
                                 'nmr-nef2str-deposit': __nef2strTasks,
-                                'nmr-str2nef-deposit': __str2nefTasks
+                                'nmr-str2nef-release': __str2nefTasks
                                 }
 
         # data processing report
@@ -248,9 +251,15 @@ class NmrDpUtility(object):
                                    }
 
         # content type
-        self.content_type = {'nef': 'nmr-unified-data-nef',
-                             'nmr-star': 'nmr-unified-data-str',
+        self.content_type = {'nef': 'nmr-data-nef',
+                             'nmr-star': 'nmr-data-str',
                              'pdbx': 'model'
+                             }
+
+        # content type for public release
+        self.release_type = {'nef': 'nmr-data',
+                             'nmr-star': 'nmr-data',
+                             'pdbx': None
                              }
 
         # paramagnetic elements, except for Oxygen
@@ -2182,6 +2191,8 @@ class NmrDpUtility(object):
 
         self.__op = op
 
+        self.__release_mode = 'release' in op
+
         if op.endswith('consistency-check'):
 
             for task in self.__procTasksDict['consistency-check']:
@@ -2192,7 +2203,7 @@ class NmrDpUtility(object):
                 if not task():
                     pass
 
-        elif op.endswith('deposit'):
+        elif op.endswith('deposit') or op.endswith('release'):
 
             for task in self.__procTasksDict['deposit']:
 
@@ -17411,7 +17422,10 @@ class NmrDpUtility(object):
         # update datablock name
 
         if self.__star_data_type == 'Entry':
-            self.__star_data.entry_id = self.__entry_id + '_' + self.content_type[file_type]
+            if (self.__release_mode):
+                self.__star_data.entry_id = self.__entry_id + ('' if self.release_type[file_type] in self.empty_value else ('_' + self.release_type[file_type]))
+            else:
+                self.__star_data.entry_id = self.__entry_id + '_' + self.content_type[file_type]
 
         if file_type == 'nef':
             return True

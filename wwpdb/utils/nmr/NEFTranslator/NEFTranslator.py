@@ -14,6 +14,7 @@
 # 05-Feb-2020  M. Yokochi - convert 'HN' in amino acids to 'H' while NEF->NMR-STAR translation (v2.0.3)
 # 05-Feb-2020  M. Yokochi - rescue NEF atom_id w/o wild card notation in methyl group (v2.0.3)
 # 05-Feb-2020  M. Yokochi - relax NEF atom_id that ends with [xy] in methyne/methyl group (v2.0.3)
+# 26-Feb-2020  M. Yokochi - additional support for abnormal NEF atom nomenclature, e.g. HDy% in ASN, HEy% in GLN, seen in CCPN_2mtv_docr.nef (v2.0.4)
 ##
 import sys
 import os
@@ -83,7 +84,7 @@ class NEFTranslator(object):
 
         # supported version
         self.nef_version = '1.1'
-        self.nmrstar_version = '3.2.0.15'
+        self.nmrstar_version = '3.2.1.18'
 
         # format name
         self.nef_format_name = 'nmr_exchange_format'
@@ -2542,7 +2543,7 @@ class NEFTranslator(object):
 
         return out_tag
 
-    def get_star_atom(self, comp_id, nef_atom, leave_unmatched=True, details=None):
+    def get_star_atom(self, comp_id, nef_atom, details=None, leave_unmatched=True):
         """ Return list of instanced atom_id of a given NEF atom (including wildcard codes) and its ambiguity code.
             @change: support non-standard residue by Masashi Yokochi
             @change: rename the original get_nmrstar_atom() to get_star_atom() by Masashi Yokochi
@@ -2651,19 +2652,21 @@ class NEFTranslator(object):
         if len(atom_list) == 0:
 
             if nef_atom == 'HN' and self.__csStat.getTypeOfCompId(comp_id)[0]:
-                return self.get_star_atom(comp_id, 'H', leave_unmatched, 'HN converted to H.')
+                return self.get_star_atom(comp_id, 'H', 'HN converted to H.' if leave_unmatched else None, leave_unmatched)
 
-            methyl_atoms = self.__csStat.getMethylAtoms(comp_id)
+            if comp_id in self.atomDict:
 
-            if not nef_atom.endswith('%') and not nef_atom.endswith('*') and nef_atom + '1' in methyl_atoms:
-                return self.get_star_atom(comp_id, nef_atom + '%', leave_unmatched, '%s converted to %s%%.' % (nef_atom, nef_atom))
+                methyl_atoms = self.__csStat.getMethylAtoms(comp_id)
 
-            if nef_atom[-1].lower() == 'x' or nef_atom[-1].lower() == 'y' and nef_atom[:-1] + '1' in methyl_atoms:
-                return self.get_star_atom(comp_id, nef_atom[:-1] + '%', leave_unmatched, '%s converted to %s%%.' % (nef_atom, nef_atom[:-1]))
+                if not nef_atom.endswith('%') and not nef_atom.endswith('*') and nef_atom + '1' in methyl_atoms:
+                    return self.get_star_atom(comp_id, nef_atom + '%', ('%s converted to %s%%.' % (nef_atom, nef_atom)) if leave_unmatched else None, leave_unmatched)
 
-            if (nef_atom[-1] == '%' or nef_atom[-1] == '*') and not (nef_atom[:-1] + '1' in methyl_atoms) and\
-                len(nef_atom) > 2 and (nef_atom[-2].lower() == 'x' or nef_atom[-2].lower() == 'y'):
-                return self.get_star_atom(comp_id, nef_atom[:-1], leave_unmatched, '%s converted to %s.' % (nef_atom, nef_atom[:-1]))
+                if nef_atom[-1].lower() == 'x' or nef_atom[-1].lower() == 'y' and nef_atom[:-1] + '1' in methyl_atoms:
+                    return self.get_star_atom(comp_id, nef_atom[:-1] + '%', ('%s converted to %s%%.' % (nef_atom, nef_atom[:-1])) if leave_unmatched else None, leave_unmatched)
+
+                if (nef_atom[-1] == '%' or nef_atom[-1] == '*') and not (nef_atom[:-1] + '1' in methyl_atoms) and\
+                    len(nef_atom) > 2 and (nef_atom[-2].lower() == 'x' or nef_atom[-2].lower() == 'y'):
+                    return self.get_star_atom(comp_id, nef_atom[:-2] + ('1' if nef_atom[-2].lower() == 'x' else '2') + '%', ('%s converted to %s%%.' % (nef_atom, nef_atom[:-2] + ('1' if nef_atom[-2].lower() == 'x' else '2'))) if leave_unmatched else None, leave_unmatched)
 
             if nef_atom in atoms:
                 atom_list.append(nef_atom)
@@ -2676,7 +2679,7 @@ class NEFTranslator(object):
 
         return atom_list, ambiguity_code, details
 
-    def get_nef_atom(self, comp_id, star_atom_list, leave_unmatched=True):
+    def get_nef_atom(self, comp_id, star_atom_list, details={}, leave_unmatched=True):
         """ Return list of all instanced atom_id of given NMR-STAR atoms with ambiguity code and CS value in a given comp_id.
             @author: Masashi Yokochi
             @return: list of instanced atom_id of given NMR-STAR atoms, descriptions, and atom conversion dictionary for conversion of other loops
@@ -2688,7 +2691,6 @@ class NEFTranslator(object):
             return [], None, None
 
         atom_list = []
-        details = {}
         atom_id_map = {}
 
         self.__updateChemCompDict(comp_id)

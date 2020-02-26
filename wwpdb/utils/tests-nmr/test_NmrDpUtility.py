@@ -5,6 +5,7 @@
 # Updates:
 # 09-Oct-2019  M. Yokochi - add unit test for Xplor-NIH enabling 'check_mandatory_tag' option
 # 28-Nov-2019  M. Yokochi - add unit test for NEF-Xplor-NIH-20191016-remediated.nef
+# 26-Feb-2020  M. Yokochi - add unit test for CCPN_2mtv_docr.nef (DAOTHER-4785)
 #
 import unittest
 import os
@@ -121,6 +122,15 @@ class TestNmrDpUtility(unittest.TestCase):
 
         self.utility.op('nmr-nef-consistency-check')
 
+    def test_nmr_nef_consistency_check_daother_4785(self):
+        self.utility.setSource(self.data_dir_path + 'CCPN_2mtv_docr.nef')
+        self.utility.addInput(name='coordinate_file_path', value=self.data_dir_path + '2mtv.cif', type='file')
+        self.utility.addInput(name='resolve_conflict', value=True, type='param')
+        self.utility.addInput(name='check_mandatory_tag', value=True, type='param')
+        self.utility.setLog(self.data_dir_path + 'ccpn_2mtv_docr-nef-consistency-log.json')
+
+        self.utility.op('nmr-nef-consistency-check')
+
     def test_nmr_str_consistency_check_bmrb_merged(self):
         self.utility.setSource(self.data_dir_path + 'merged_30562_6nox.str')
         self.utility.addInput(name='coordinate_file_path', value=self.data_dir_path + '6nox.cif', type='file')
@@ -210,6 +220,24 @@ class TestNmrDpUtility(unittest.TestCase):
         self.utility.setDestination(self.data_dir_path + 'mth1743-test-20190919-next.nef')
         self.utility.addOutput(name='nmr-star_file_path', value=self.data_dir_path + 'mth1743-test-20190919-nef2str.str', type='file')
         self.utility.addOutput(name='report_file_path', value=self.data_dir_path + 'mth1743-test-20190919-nef2str-str-deposit-log.json', type='file')
+        self.utility.addOutput(name='entry_id', value='NEED_ACC_NO', type='param')
+        self.utility.setVerbose(False)
+
+        self.utility.op('nmr-nef2str-deposit')
+
+    def test_nmr_nef2str_deposit_check_daother_4785(self):
+        if not os.access(self.data_dir_path + 'ccpn_2mtv_docr-nef-consistency-log.json', os.F_OK):
+            self.test_nmr_nef_consistency_check_daother_4785()
+
+        self.utility.setSource(self.data_dir_path + 'CCPN_2mtv_docr.nef')
+        self.utility.addInput(name='coordinate_file_path', value=self.data_dir_path + '2mtv.cif', type='file')
+        self.utility.addInput(name='report_file_path',value=self.data_dir_path + 'ccpn_2mtv_docr-nef-consistency-log.json', type='file')
+        self.utility.addInput(name='resolve_conflict', value=True, type='param')
+        self.utility.addInput(name='check_mandatory_tag', value=True, type='param')
+        self.utility.setLog(self.data_dir_path + 'ccpn_2mtv_docr-nef2str-deposit-log.json')
+        self.utility.setDestination(self.data_dir_path + 'ccpn_2mtv_docr-next.nef')
+        self.utility.addOutput(name='nmr-star_file_path', value=self.data_dir_path + 'ccpn_2mtv_docr-nef2str.str', type='file')
+        self.utility.addOutput(name='report_file_path', value=self.data_dir_path + 'ccpn_2mtv_docr-nef2str-str-deposit-log.json', type='file')
         self.utility.addOutput(name='entry_id', value='NEED_ACC_NO', type='param')
         self.utility.setVerbose(False)
 

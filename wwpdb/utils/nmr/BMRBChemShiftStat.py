@@ -3,6 +3,7 @@
 # Date: 20-Sep-2019
 #
 # Updates:
+# 26-Feb-2020  M. Yokochi - load csv resource files if pickle is not available
 ##
 """ Wrapper class for retrieving BMRB chemical shift statistics.
     @author: Masashi Yokochi
@@ -53,8 +54,6 @@ class BMRBChemShiftStat:
         self.na_threshold = 0.3
 
         self.max_count_th = 10
-
-        self.loadStatFromPickleFiles()
 
         # CCD accessing utility
         self.__verbose = False
@@ -125,6 +124,9 @@ class BMRBChemShiftStat:
 
         aromatic_flag = next(d for d in self.__chem_comp_bond_dict if d[0] == '_chem_comp_bond.pdbx_aromatic_flag')
         self.__ccb_aromatic_flag = self.__chem_comp_bond_dict.index(aromatic_flag)
+
+        if not self.loadStatFromPickleFiles():
+            self.loadStatFromCsvFiles()
 
     def isOk(self):
         """ Return whether all BMRB chemical shift statistics are available.
@@ -441,6 +443,15 @@ class BMRBChemShiftStat:
         """ Load all BMRB chemical shift statistics from CSV files.
         """
 
+        file_name_list = [self.stat_dir + 'aa_filt.csv', self.stat_dir + 'aa_full.csv',
+                          self.stat_dir + 'dna_filt.csv', self.stat_dir + 'dna_full.csv',
+                          self.stat_dir + 'rna_filt.csv', self.stat_dir + 'rna_full.csv',
+                          self.stat_dir + 'others.csv']
+
+        for file_name in file_name_list:
+            if not os.path.exists(file_name):
+                return False
+
         self.aa_filt = self.loadStatFromCsvFile(self.stat_dir + 'aa_filt.csv', self.aa_threshold)
         self.aa_full = self.loadStatFromCsvFile(self.stat_dir + 'aa_full.csv', self.aa_threshold)
 
@@ -453,6 +464,8 @@ class BMRBChemShiftStat:
         self.others = self.loadStatFromCsvFile(self.stat_dir + 'others.csv', self.aa_threshold, self.na_threshold)
 
         self.__updateCompIdSet()
+
+        return True
 
     def loadStatFromCsvFile(self, file_name, primary_th, secondary_th=None):
         """ Load BMRB chemical shift statistics from a given CSV file.
@@ -1067,6 +1080,15 @@ class BMRBChemShiftStat:
         """ Load all BMRB chemical shift statistics from pickle files if possible.
         """
 
+        file_name_list = [self.stat_dir + 'aa_filt.pkl', self.stat_dir + 'aa_full.pkl',
+                          self.stat_dir + 'dna_filt.pkl', self.stat_dir + 'dna_full.pkl',
+                          self.stat_dir + 'rna_filt.pkl', self.stat_dir + 'rna_full.pkl',
+                          self.stat_dir + 'others.pkl']
+
+        for file_name in file_name_list:
+            if not os.path.exists(file_name):
+                return False
+
         self.aa_filt = self.loadStatFromPickleFile(self.stat_dir + 'aa_filt.pkl')
         self.aa_full = self.loadStatFromPickleFile(self.stat_dir + 'aa_full.pkl')
 
@@ -1079,6 +1101,8 @@ class BMRBChemShiftStat:
         self.others = self.loadStatFromPickleFile(self.stat_dir + 'others.pkl')
 
         self.__updateCompIdSet()
+
+        return True
 
     def loadStatFromPickleFile(self, file_name):
         """ Load BMRB chemical shift statistics from pickle file if possible.

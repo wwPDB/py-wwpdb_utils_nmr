@@ -2654,11 +2654,17 @@ class NEFTranslator(object):
             if nef_atom == 'HN' and self.__csStat.getTypeOfCompId(comp_id)[0]:
                 return self.get_star_atom(comp_id, 'H', leave_unmatched)
 
-            if not nef_atom.endswith('%') and not nef_atom.endswith('*') and nef_atom + '1' in self.__csStat.getMethylAtoms(comp_id):
+            methyl_atoms = self.__csStat.getMethylAtoms(comp_id)
+
+            if not nef_atom.endswith('%') and not nef_atom.endswith('*') and nef_atom + '1' in methyl_atoms:
                 return self.get_star_atom(comp_id, nef_atom + '%', leave_unmatched)
 
-            if nef_atom[-1].lower() == 'x' or nef_atom[-1].lower() == 'y' and nef_atom[:-1] + '1' in self.__csStat.getMethylAtoms(comp_id):
+            if nef_atom[-1].lower() == 'x' or nef_atom[-1].lower() == 'y' and nef_atom[:-1] + '1' in methyl_atoms:
                 return self.get_star_atom(comp_id, nef_atom[:-1] + '%', leave_unmatched)
+
+            if (nef_atom[-1] == '%' or nef_atom[-1] == '*') and not (nef_atom[:-1] + '1' in methyl_atoms) and\
+                len(nef_atom) > 2 and (nef_atom[-2].lower() == 'x' or nef_atom[-2].lower() == 'y'):
+                return self.get_star_atom(comp_id, nef_atom[:-1], leave_unmatched)
 
             if nef_atom in atoms:
                 atom_list.append(nef_atom)

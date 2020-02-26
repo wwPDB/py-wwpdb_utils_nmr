@@ -2542,7 +2542,7 @@ class NEFTranslator(object):
 
         return out_tag
 
-    def get_star_atom(self, comp_id, nef_atom, leave_unmatched=True):
+    def get_star_atom(self, comp_id, nef_atom, leave_unmatched=True, details=None):
         """ Return list of instanced atom_id of a given NEF atom (including wildcard codes) and its ambiguity code.
             @change: support non-standard residue by Masashi Yokochi
             @change: rename the original get_nmrstar_atom() to get_star_atom() by Masashi Yokochi
@@ -2556,7 +2556,6 @@ class NEFTranslator(object):
 
         atom_list = []
         ambiguity_code = 1
-        details = None
 
         atoms = []
 
@@ -2652,19 +2651,19 @@ class NEFTranslator(object):
         if len(atom_list) == 0:
 
             if nef_atom == 'HN' and self.__csStat.getTypeOfCompId(comp_id)[0]:
-                return self.get_star_atom(comp_id, 'H', leave_unmatched)
+                return self.get_star_atom(comp_id, 'H', leave_unmatched, 'HN converted to H.')
 
             methyl_atoms = self.__csStat.getMethylAtoms(comp_id)
 
             if not nef_atom.endswith('%') and not nef_atom.endswith('*') and nef_atom + '1' in methyl_atoms:
-                return self.get_star_atom(comp_id, nef_atom + '%', leave_unmatched)
+                return self.get_star_atom(comp_id, nef_atom + '%', leave_unmatched, '%s converted to %s%%.' % (nef_atom, nef_atom))
 
             if nef_atom[-1].lower() == 'x' or nef_atom[-1].lower() == 'y' and nef_atom[:-1] + '1' in methyl_atoms:
-                return self.get_star_atom(comp_id, nef_atom[:-1] + '%', leave_unmatched)
+                return self.get_star_atom(comp_id, nef_atom[:-1] + '%', leave_unmatched, '%s converted to %s%%.' % (nef_atom, nef_atom[:-1]))
 
             if (nef_atom[-1] == '%' or nef_atom[-1] == '*') and not (nef_atom[:-1] + '1' in methyl_atoms) and\
                 len(nef_atom) > 2 and (nef_atom[-2].lower() == 'x' or nef_atom[-2].lower() == 'y'):
-                return self.get_star_atom(comp_id, nef_atom[:-1], leave_unmatched)
+                return self.get_star_atom(comp_id, nef_atom[:-1], leave_unmatched, '%s converted to %s.' % (nef_atom, nef_atom[:-1]))
 
             if nef_atom in atoms:
                 atom_list.append(nef_atom)

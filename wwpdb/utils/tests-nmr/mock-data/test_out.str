@@ -7,7 +7,7 @@ data_2mqq_docr
 save_nef_nmr_meta_data
    _Entry.Sf_category                   entry_information
    _Entry.Sf_framecode                  nef_nmr_meta_data
-   _Entry.NMR_STAR_version              3.2.0.15
+   _Entry.NMR_STAR_version              3.2.1.18
    _Entry.Source_data_format            nmr_exchange_format
    _Entry.Source_data_format_version    1.1
    _Entry.Generated_software_name       CcpNmr

@@ -11,7 +11,8 @@
 # 10-Feb-2020  M. Yokochi - add methods to retrieve polymer sequence for sample sequence alignment
 # 13-Feb-2020  M. Yokochi - add methods to retrieve content_subtype for apilayer.postModifyNMR
 # 14-Feb-2020  M. Yokochi - add methods to pre-populate pdbx_nmr_spectral_peak_list, apilayer.postModifyNMRPeaks
-# 21-Feb-2020  M. yokochi - update content-type definitions
+# 21-Feb-2020  M. Yokochi - update content-type definitions
+# 28-Feb-2020  M. Yokochi - add support for 'nmr-chemical-shifts' content type (DAOTHER-4515)
 ##
 """ Wrapper class for data processing report of NMR unified data.
     @author: Masashi Yokochi
@@ -777,7 +778,7 @@ class NmrDpReportInputSource:
                       'non_standard_residue', 'disulfide_bond', 'other_bond',
                       'stats_of_exptl_data')
         self.file_types = ('pdbx', 'nef', 'nmr-star')
-        self.content_types = ('model', 'nmr-data-nef', 'nmr-data-str')
+        self.content_types = ('model', 'nmr-data-nef', 'nmr-data-str', 'nmr-chemical-shifts')
         self.content_subtypes = ('coordinate', 'non_poly', 'entry_info', 'poly_seq', 'chem_shift', 'dist_restraint', 'dihed_restraint', 'rdc_restraint', 'spectral_peak')
 
         self.__contents = {item:None for item in self.items}

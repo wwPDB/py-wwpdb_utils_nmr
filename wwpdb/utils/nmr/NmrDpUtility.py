@@ -1,4 +1,4 @@
-##
+#
 # File: NmrDpUtility.py
 # Date: 26-Sep-2019
 #
@@ -21,8 +21,9 @@
 # 13-Feb-2020  M. Yokochi - add 'number_of_constraints_per_polymer_type' for apilayer.postModifyNMRRestraint
 # 14-Feb-2020  M. Yokochi - add 'spectram_dim' for apilayer.postModifyNMRPeaks
 # 21-Feb-2020  M. Yokochi - update content-type definitions and add release mode (nmr-str2nef-release workflow operation)
+# 28-Feb-2020  M. Yokochi - add 'nmr-cs-nef-consistency-check' and 'nmr-cs-str-consistency-check' workflow operation (DAOTHER-4515)
 ##
-""" Wrapper class for data processing for NMR unified data.
+""" Wrapper class for data processing for NMR data.
     @author: Masashi Yokochi
 """
 import sys
@@ -48,7 +49,7 @@ from wwpdb.utils.nmr.io.ChemCompIo import ChemCompReader
 from wwpdb.utils.nmr.CifReader import CifReader
 
 class NmrDpUtility(object):
-    """ Wrapper class for data processing for NMR unified data.
+    """ Wrapper class for data processing for NMR data.
     """
 
     def __init__(self, verbose=False, log=sys.stderr):
@@ -57,6 +58,11 @@ class NmrDpUtility(object):
 
         # current workflow operation
         self.__op = None
+
+        # whether NMR unified deposition or not (NMR legacy deposition)
+        self.__combined_mode = True
+        # whether to use datablock name of public release
+        self.__release_mode = False
 
         # whether not to block deposition because of anomalous cs
         self.__nonblk_anomalous_cs = False
@@ -67,8 +73,6 @@ class NmrDpUtility(object):
         # whether to detect missing mandatory tags as errors
         self.__check_mandatory_tag = False
 
-        # whether to use datablock name of public release
-        self.__release_mode = False
         # default entry_id
         self.__entry_id__ = 'UNNAMED'
         self.__entry_id = 'EXTRACT_FROM_COORD'
@@ -97,7 +101,8 @@ class NmrDpUtility(object):
 
         # list of known workflow operations
         self.__workFlowOps = ('nmr-nef-consistency-check', 'nmr-str-consistency-check',
-                              'nmr-nef2str-deposit', 'nmr-str2str-deposit', 'nmr-str2nef-release')
+                              'nmr-nef2str-deposit', 'nmr-str2str-deposit', 'nmr-str2nef-release',
+                              'nmr-cs-nef-consistency-check', 'nmr-cs-str-consistency-check')
 
         # validation tasks for NMR data only
         __nmrCheckTasks = [self.__detectContentSubType,
@@ -226,8 +231,11 @@ class NmrDpUtility(object):
             raise IOError("+NmrDpUtility.__init__() ++ Error  - BMRBChemShiftStat is not available.")
 
         # PyNMRSTAR data
-        self.__star_data = None
-        self.__star_data_type = None
+        self.__file_path_list_len = 1
+
+        self.__star_data = []
+        self.__star_data_type = []
+
         self.__sf_category_list = []
         self.__lp_category_list = []
 
@@ -2089,6 +2097,8 @@ class NmrDpUtility(object):
                 self.__inputParamDict[name] = value
             elif type == 'file':
                 self.__inputParamDict[name] = os.path.abspath(value)
+            elif type == 'file_list':
+                self.__inputParamDict[name] = [os.path.abspath(f) for f in value]
             else:
                 logging.error("+NmrDpUtility.addInput() ++ Error  - Unknown input type %s." % type)
                 raise ValueError("+NmrDpUtility.addInput() ++ Error  - Unknown input type %s." % type)
@@ -2133,9 +2143,19 @@ class NmrDpUtility(object):
         """ Perform a series of tasks for a given workflow operation.
         """
 
-        if self.__srcPath is None:
-            logging.error("+NmrDpUtility.op() ++ Error  - No input provided for workflow operation %s." % op)
-            raise ValueError("+NmrDpUtility.op() ++ Error  - No input provided for workflow operation %s." % op)
+        self.__combined_mode = not 'cs' in op
+
+        if self.__combined_mode:
+            if self.__srcPath is None:
+                logging.error("+NmrDpUtility.op() ++ Error  - No input provided for workflow operation %s." % op)
+                raise ValueError("+NmrDpUtility.op() ++ Error  - No input provided for workflow operation %s." % op)
+        else:
+            if not 'chem_shift_file_path_list' in self.__inputParamDict:
+                logging.error("+NmrDpUtility.op() ++ Error  - No input provided for workflow operation %s." % op)
+                raise ValueError("+NmrDpUtility.op() ++ Error  - No input provided for workflow operation %s." % op)
+            self.__file_path_list_len = len(self.__inputParamDict['chem_shift_file_path_list'])
+
+        self.__release_mode = 'release' in op
 
         if self.__verbose:
             self.__lfh.write("+NmrDpUtility.op() starting op %s\n" % op)
@@ -2190,8 +2210,6 @@ class NmrDpUtility(object):
                 self.__reduced_atom_notation = self.__outputParamDict['reduced_atom_notation'] in self.true_value
 
         self.__op = op
-
-        self.__release_mode = 'release' in op
 
         if op.endswith('consistency-check'):
 
@@ -2253,15 +2271,37 @@ class NmrDpUtility(object):
 
         self.report = NmrDpReport()
 
-        # set primary input source as NMR unified data
-        input_source = self.report.input_sources[0]
+        input_source = None
 
-        file_type = 'nef' if 'nef' in self.__op else 'nmr-star'
-        content_type = self.content_type[file_type]
+        if self.__combined_mode:
 
-        input_source.setItemValue('file_name', os.path.basename(srcPath))
-        input_source.setItemValue('file_type', file_type)
-        input_source.setItemValue('content_type', content_type)
+            # set primary input source as NMR unified data
+            input_source = self.report.input_sources[0]
+
+            file_type = 'nef' if 'nef' in self.__op else 'nmr-star'
+            content_type = self.content_type[file_type]
+
+            input_source.setItemValue('file_name', os.path.basename(srcPath))
+            input_source.setItemValue('file_type', file_type)
+            input_source.setItemValue('content_type', content_type)
+
+        else:
+
+            for csListId, csPath in enumerate(self.__inputParamDict['chem_shift_file_path_list']):
+
+                if csListId > 0:
+                    self.report.appendInputSource()
+
+                input_source = self.report.input_sources[csListId]
+
+                file_type = 'nef' if 'nef' in self.__op else 'nmr-star'
+
+                input_source.setItemValue('file_name', os.path.basename(csPath))
+                input_source.setItemValue('file_type', file_type)
+                input_source.setItemValue('content_type', 'nmr-chemical-shifts')
+
+        self.__star_data_type = []
+        self.__star_data = []
 
         self.__testDiamagnetism()
 
@@ -2323,29 +2363,60 @@ class NmrDpUtility(object):
         return self.__last_comp_id_test
 
     def __validateInputSource(self, srcPath=None):
-        """ Validate NMR unified data as primary input source.
+        """ Validate NMR data as primary input source.
         """
 
         if srcPath is None:
             srcPath = self.__srcPath
 
-        is_valid, json_dumps = self.__nefT.validate_file(srcPath, 'A') # 'A' for NMR unified data, 'S' for assigned chemical shifts, 'R' for restraints.
+        is_done = True
 
-        message = json.loads(json_dumps)
+        if self.__combined_mode:
 
-        _file_type = message['file_type'] # nef/nmr-star/unknown
+            is_valid, json_dumps = self.__nefT.validate_file(srcPath, 'A') # 'A' for NMR unified data, 'S' for assigned chemical shifts, 'R' for restraints.
 
-        input_source = self.report.input_sources[0]
-        input_source_dic = input_source.get()
+            message = json.loads(json_dumps)
 
-        file_name = input_source_dic['file_name']
-        file_type = input_source_dic['file_type']
+            _file_type = message['file_type'] # nef/nmr-star/unknown
 
-        if is_valid:
+            input_source = self.report.input_sources[0]
+            input_source_dic = input_source.get()
 
-            if _file_type != file_type:
+            file_name = input_source_dic['file_name']
+            file_type = input_source_dic['file_type']
 
-                err = "%s was selected as %s file, but recognized as %s file." % (file_name, self.readable_file_type[file_type], self.readable_file_type[_file_type])
+            if is_valid:
+
+                if _file_type != file_type:
+
+                    err = "%s was selected as %s file, but recognized as %s file." % (file_name, self.readable_file_type[file_type], self.readable_file_type[_file_type])
+
+                    if len(message['error']) > 0:
+                        for err_message in message['error']:
+                            if not 'No such file or directory' in err_message:
+                                err += ' ' + re.sub('not in list', 'unknown item.', err_message)
+
+                    self.report.error.appendDescription('format_issue', {'file_name': file_name, 'description': err})
+                    self.report.setError()
+
+                    if self.__verbose:
+                        self.__lfh.write("+NmrDpUtility.__validateInputSource() ++ Error  - %s\n" % err)
+
+                    is_done = False
+
+                else:
+
+                    is_done, star_data_type, star_data = self.__nefT.read_input_file(srcPath) # NEFTranslator.validate_file() generates this object internally, but not re-used.
+
+                    self.__star_data_type.append(star_data_type)
+                    self.__star_data.append(star_data)
+
+                    self.__rescueFormerNef(0)
+                    self.__rescueImmatureStr(0)
+
+            else:
+
+                err = "%s is not compliant with the %s dictionary." % (file_name, self.readable_file_type[file_type])
 
                 if len(message['error']) > 0:
                     for err_message in message['error']:
@@ -2358,50 +2429,96 @@ class NmrDpUtility(object):
                 if self.__verbose:
                     self.__lfh.write("+NmrDpUtility.__validateInputSource() ++ Error  - %s\n" % err)
 
-                return False
-
-            is_done, self.__star_data_type, self.__star_data = self.__nefT.read_input_file(srcPath) # NEFTranslator.validate_file() generates this object internally, but not re-used.
-
-            self.__rescueFormerNef()
-            self.__rescueImmatureStr()
-
-            return True
+                is_done = False
 
         else:
 
-            err = "%s is not compliant with the %s dictionary." % (file_name, self.readable_file_type[file_type])
+            for csListId, csPath in enumerate(self.__inputParamDict['chem_shift_file_path_list']):
 
-            if len(message['error']) > 0:
-                for err_message in message['error']:
-                    if not 'No such file or directory' in err_message:
-                        err += ' ' + re.sub('not in list', 'unknown item.', err_message)
+                is_valid, json_dumps = self.__nefT.validate_file(csPath, 'S') # 'A' for NMR unified data, 'S' for assigned chemical shifts, 'R' for restraints.
 
-            self.report.error.appendDescription('format_issue', {'file_name': file_name, 'description': err})
-            self.report.setError()
+                message = json.loads(json_dumps)
 
-            if self.__verbose:
-                self.__lfh.write("+NmrDpUtility.__validateInputSource() ++ Error  - %s\n" % err)
+                _file_type = message['file_type'] # nef/nmr-star/unknown
 
-            return False
+                input_source = self.report.input_sources[csListId]
+                input_source_dic = input_source.get()
 
-    def __rescueFormerNef(self):
+                file_name = input_source_dic['file_name']
+                file_type = input_source_dic['file_type']
+
+                if is_valid:
+
+                    if _file_type != file_type:
+
+                        err = "%s was selected as %s file, but recognized as %s file." % (file_name, self.readable_file_type[file_type], self.readable_file_type[_file_type])
+
+                        if len(message['error']) > 0:
+                            for err_message in message['error']:
+                                if not 'No such file or directory' in err_message:
+                                    err += ' ' + re.sub('not in list', 'unknown item.', err_message)
+
+                        self.report.error.appendDescription('format_issue', {'file_name': file_name, 'description': err})
+                        self.report.setError()
+
+                        if self.__verbose:
+                            self.__lfh.write("+NmrDpUtility.__validateInputSource() ++ Error  - %s\n" % err)
+
+                        is_done = False
+
+                    else:
+
+                        _is_done, star_data_type, star_data = self.__nefT.read_input_file(csPath) # NEFTranslator.validate_file() generates this object internally, but not re-used.
+
+                        self.__star_data_type.append(star_data_type)
+                        self.__star_data.append(star_data)
+
+                        self.__rescueFormerNef(csListId)
+                        self.__rescueImmatureStr(csListId)
+
+                        if not _is_done:
+                            is_done = False
+
+                else:
+
+                    err = "%s is not compliant with the %s dictionary." % (file_name, self.readable_file_type[file_type])
+
+                    if len(message['error']) > 0:
+                        for err_message in message['error']:
+                            if not 'No such file or directory' in err_message:
+                                err += ' ' + re.sub('not in list', 'unknown item.', err_message)
+
+                    self.report.error.appendDescription('format_issue', {'file_name': file_name, 'description': err})
+                    self.report.setError()
+
+                    if self.__verbose:
+                        self.__lfh.write("+NmrDpUtility.__validateInputSource() ++ Error  - %s\n" % err)
+
+                    is_done = False
+
+        return is_done
+
+    def __rescueFormerNef(self, file_list_id):
         """ Rescue former NEF version prior to 1.0.
         """
 
-        input_source = self.report.input_sources[0]
+        input_source = self.report.input_sources[file_list_id]
         input_source_dic = input_source.get()
 
         file_name = input_source_dic['file_name']
         file_type = input_source_dic['file_type']
 
         if file_type != 'nef':
-            return True
+            return False
+
+        if self.__star_data_type[file_list_id] == 'Loop':
+            return False
 
         content_subtype = 'entry_info'
 
         sf_category = self.sf_categories[file_type][content_subtype]
 
-        for sf_data in self.__star_data.get_saveframes_by_category(sf_category):
+        for sf_data in self.__star_data[file_list_id].get_saveframes_by_category(sf_category):
 
             version = sf_data.get_tag('format_version')[0]
 
@@ -2413,7 +2530,7 @@ class NmrDpUtility(object):
             sf_category = self.sf_categories[file_type][content_subtype]
             lp_category = self.lp_categories[file_type][content_subtype]
 
-            for sf_data in self.__star_data.get_saveframes_by_category(sf_category):
+            for sf_data in self.__star_data[file_list_id].get_saveframes_by_category(sf_category):
 
                 sf_framecode = sf_data.get_tag('sf_framecode')[0]
 
@@ -2594,25 +2711,28 @@ class NmrDpUtility(object):
 
         return True
 
-    def __rescueImmatureStr(self):
+    def __rescueImmatureStr(self, file_list_id):
         """ Rescue immature NMR-STAR.
         """
 
-        input_source = self.report.input_sources[0]
+        input_source = self.report.input_sources[file_list_id]
         input_source_dic = input_source.get()
 
         file_name = input_source_dic['file_name']
         file_type = input_source_dic['file_type']
 
         if file_type != 'nmr-star':
-            return True
+            return False
+
+        if self.__star_data_type[file_list_id] == 'Loop':
+            return False
 
         for content_subtype in self.nmr_content_subtypes:
 
             sf_category = self.sf_categories[file_type][content_subtype]
             lp_category = self.lp_categories[file_type][content_subtype]
 
-            for sf_data in self.__star_data.get_saveframes_by_category(sf_category):
+            for sf_data in self.__star_data[file_list_id].get_saveframes_by_category(sf_category):
 
                 sf_framecode = sf_data.get_tag('sf_framecode')[0]
 
@@ -2706,59 +2826,92 @@ class NmrDpUtility(object):
         #if self.report.isError():
         #    return False
 
-        input_source = self.report.input_sources[0]
-        input_source_dic = input_source.get()
+        if len(self.__star_data) != self.__file_path_list_len:
+            return False
 
-        file_name = input_source_dic['file_name']
-        file_type = input_source_dic['file_type']
+        for fileListId in range(self.__file_path_list_len):
 
-        self.__sf_category_list, self.__lp_category_list = self.__nefT.get_data_content(self.__star_data, self.__star_data_type)
+            input_source = self.report.input_sources[fileListId]
+            input_source_dic = input_source.get()
 
-        for sf_category in self.__sf_category_list:
-            if not sf_category in self.sf_categories[file_type].values():
+            file_name = input_source_dic['file_name']
+            file_type = input_source_dic['file_type']
 
-                if file_type == 'nmr-star' and sf_category == 'entity':
-                    self.__has_star_entity = True
+            self.__sf_category_list, self.__lp_category_list = self.__nefT.get_data_content(self.__star_data[fileListId], self.__star_data_type[fileListId])
 
-                warn = "Skipped parsing %s saveframe category." % sf_category
+            for sf_category in self.__sf_category_list:
+                if not sf_category in self.sf_categories[file_type].values():
 
-                self.report.warning.appendDescription('skipped_sf_category', {'file_name': file_name, 'sf_category': sf_category, 'description': warn})
-                self.report.setWarning()
+                    if file_type == 'nmr-star' and sf_category == 'entity':
+                        self.__has_star_entity = True
 
-                if self.__verbose:
-                    self.__lfh.write("+NmrDpUtility.__detectContentSubType() ++ Warning  - %s\n" % warn)
+                    warn = "Skipped parsing %s saveframe category." % sf_category
 
-        # initialize loop counter
-        lp_counts = {t: 0 for t in self.nmr_content_subtypes}
+                    self.report.warning.appendDescription('skipped_sf_category', {'file_name': file_name, 'sf_category': sf_category, 'description': warn})
+                    self.report.setWarning()
 
-        # increment loop counter of each content subtype
-        for lp_category in self.__lp_category_list:
-            if lp_category in self.lp_categories[file_type].values():
-                lp_counts[[k for k, v in self.lp_categories[file_type].items() if v == lp_category][0]] += 1
+                    if self.__verbose:
+                        self.__lfh.write("+NmrDpUtility.__detectContentSubType() ++ Warning  - %s\n" % warn)
 
-        content_subtypes = {k: lp_counts[k] for k in lp_counts if lp_counts[k] > 0}
+            # initialize loop counter
+            lp_counts = {t: 0 for t in self.nmr_content_subtypes}
 
-        input_source.setItemValue('content_subtype', content_subtypes)
+            # increment loop counter of each content subtype
+            for lp_category in self.__lp_category_list:
+                if lp_category in self.lp_categories[file_type].values():
+                    lp_counts[[k for k, v in self.lp_categories[file_type].items() if v == lp_category][0]] += 1
 
-        content_subtype = 'poly_seq'
+            content_subtypes = {k: lp_counts[k] for k in lp_counts if lp_counts[k] > 0}
 
-        if lp_counts[content_subtype] == 0:
+            input_source.setItemValue('content_subtype', content_subtypes)
 
-            if not self.__has_star_entity:
+            content_subtype = 'poly_seq'
+
+            if lp_counts[content_subtype] == 0:
+
+                if not self.__has_star_entity and self.__combined_mode:
+                    sf_category = self.sf_categories[file_type][content_subtype]
+
+                    warn = "Saveframe category %s did not exist." % sf_category
+
+                    self.report.warning.appendDescription('missing_saveframe', {'file_name': file_name, 'description': warn})
+                    self.report.setWarning()
+
+                    if self.__verbose:
+                        self.__lfh.write("+NmrDpUtility.__detectContentSubType() ++ Warning  - %s\n" % warn)
+
+                elif lp_counts['chem_shift'] == 0 and lp_counts['dist_restraint']:
+
+                    sf_category = self.sf_categories[file_type][content_subtype]
+
+                    err = "Mandatory content in %s saveframe is missing." % sf_category;
+
+                    self.report.error.appendDescription('missing_mandatory_content', {'file_name': file_name, 'description': err})
+                    self.report.setError()
+
+                    if self.__verbose:
+                        self.__lfh.write("+NmrDpUtility.__detectContentSubType() ++ Error  - %s\n" % err)
+
+            elif lp_counts[content_subtype] > 1:
+
                 sf_category = self.sf_categories[file_type][content_subtype]
 
-                warn = "Saveframe category %s did not exist." % sf_category
+                err = "Unexpectedly, multiple saveframes in %s category exist." % sf_category
 
-                self.report.warning.appendDescription('missing_saveframe', {'file_name': file_name, 'description': warn})
-                self.report.setWarning()
+                self.report.error.appendDescription('format_issue', {'file_name': file_name, 'description': err})
+                self.report.setError()
 
                 if self.__verbose:
-                    self.__lfh.write("+NmrDpUtility.__detectContentSubType() ++ Warning  - %s\n" % warn)
+                    self.__lfh.write("+NmrDpUtility.__detectContentSubType() ++ Error  - %s\n" % err)
 
-            elif lp_counts['chem_shift'] == 0 and lp_counts['dist_restraint']:
+            content_subtype = 'chem_shift'
+
+            if lp_counts[content_subtype] == 0:
 
                 sf_category = self.sf_categories[file_type][content_subtype]
+                lp_category = self.lp_categories[file_type][content_subtype]
 
+                #err = "Assigned chemical shifts are mandatory for PDB/BMRB deposition. Saveframe category %s and loop category %s were not found." % (sf_category, lp_category)
                 err = "Mandatory content in %s saveframe is missing." % sf_category;
 
                 self.report.error.appendDescription('missing_mandatory_content', {'file_name': file_name, 'description': err})
@@ -2767,72 +2920,44 @@ class NmrDpUtility(object):
                 if self.__verbose:
                     self.__lfh.write("+NmrDpUtility.__detectContentSubType() ++ Error  - %s\n" % err)
 
-        elif lp_counts[content_subtype] > 1:
+            content_subtype = 'dist_restraint'
 
-            sf_category = self.sf_categories[file_type][content_subtype]
+            if lp_counts[content_subtype] == 0 and self.__combined_mode:
 
-            err = "Unexpectedly, multiple saveframes in %s category exist." % sf_category
+                sf_category = self.sf_categories[file_type][content_subtype]
+                lp_category = self.lp_categories[file_type][content_subtype]
 
-            self.report.error.appendDescription('format_issue', {'file_name': file_name, 'description': err})
-            self.report.setError()
+                #err = "Distance restraints are mandatory for PDB/BMRB deposition. Saveframe category %s and loop category %s were not found." % (sf_category, lp_categor)
+                err = "Mandatory content in %s saveframe is missing." % sf_category;
 
-            if self.__verbose:
-                self.__lfh.write("+NmrDpUtility.__detectContentSubType() ++ Error  - %s\n" % err)
+                self.report.error.appendDescription('missing_mandatory_content', {'file_name': file_name, 'description': err})
+                self.report.setError()
 
-        content_subtype = 'chem_shift'
+                if self.__verbose:
+                    self.__lfh.write("+NmrDpUtility.__detectContentSubType() ++ Error  - %s\n" % err)
 
-        if lp_counts[content_subtype] == 0:
+            content_subtype = 'spectral_peak'
 
-            sf_category = self.sf_categories[file_type][content_subtype]
-            lp_category = self.lp_categories[file_type][content_subtype]
+            if lp_counts[content_subtype] == 0 and self.__combined_mode:
 
-            #err = "Assigned chemical shifts are mandatory for PDB/BMRB deposition. Saveframe category %s and loop category %s were not found." % (sf_category, lp_category)
-            err = "Mandatory content in %s saveframe is missing." % sf_category;
+                sf_category = self.sf_categories[file_type][content_subtype]
+                lp_category = self.lp_categories[file_type][content_subtype]
 
-            self.report.error.appendDescription('missing_mandatory_content', {'file_name': file_name, 'description': err})
-            self.report.setError()
+                warn = "The wwPDB NMR Validation Task Force strongly encourages the submission of spectral peak lists, in particular those generated from NOESY spectra. Saveframe category %s was not found." % (sf_category)
 
-            if self.__verbose:
-                self.__lfh.write("+NmrDpUtility.__detectContentSubType() ++ Error  - %s\n" % err)
+                self.report.warning.appendDescription('encouragement', {'file_name': file_name, 'description': warn})
+                self.report.setWarning()
 
-        content_subtype = 'dist_restraint'
-
-        if lp_counts[content_subtype] == 0:
-
-            sf_category = self.sf_categories[file_type][content_subtype]
-            lp_category = self.lp_categories[file_type][content_subtype]
-
-            #err = "Distance restraints are mandatory for PDB/BMRB deposition. Saveframe category %s and loop category %s were not found." % (sf_category, lp_categor)
-            err = "Mandatory content in %s saveframe is missing." % sf_category;
-
-            self.report.error.appendDescription('missing_mandatory_content', {'file_name': file_name, 'description': err})
-            self.report.setError()
-
-            if self.__verbose:
-                self.__lfh.write("+NmrDpUtility.__detectContentSubType() ++ Error  - %s\n" % err)
-
-        content_subtype = 'spectral_peak'
-
-        if lp_counts[content_subtype] == 0:
-
-            sf_category = self.sf_categories[file_type][content_subtype]
-            lp_category = self.lp_categories[file_type][content_subtype]
-
-            warn = "The wwPDB NMR Validation Task Force strongly encourages the submission of spectral peak lists, in particular those generated from NOESY spectra. Saveframe category %s was not found." % (sf_category)
-
-            self.report.warning.appendDescription('encouragement', {'file_name': file_name, 'description': warn})
-            self.report.setWarning()
-
-            if self.__verbose:
-                self.__lfh.write("+NmrDpUtility.__detectContentSubType() ++ Warning  - %s\n" % warn)
+                if self.__verbose:
+                    self.__lfh.write("+NmrDpUtility.__detectContentSubType() ++ Warning  - %s\n" % warn)
 
         return not self.report.isError()
 
-    def __getPolymerSequence(self, sf_data, content_subtype):
+    def __getPolymerSequence(self, file_list_id, sf_data, content_subtype):
         """ Wrapper function to retrieve polymer sequence from loop of a specified saveframe and content subtype via NEFTranslator.
         """
 
-        input_source = self.report.input_sources[0]
+        input_source = self.report.input_sources[file_list_id]
         input_source_dic = input_source.get()
 
         file_type = input_source_dic['file_type']
@@ -2849,276 +2974,94 @@ class NmrDpUtility(object):
         #if self.report.isError():
         #    return False
 
-        input_source = self.report.input_sources[0]
-        input_source_dic = input_source.get()
+        is_done = True
 
-        file_name = input_source_dic['file_name']
-        file_type = input_source_dic['file_type']
+        for fileListId in range(self.__file_path_list_len):
 
-        if input_source_dic['content_subtype'] is None:
-            return False
+            input_source = self.report.input_sources[fileListId]
+            input_source_dic = input_source.get()
 
-        content_subtype = 'poly_seq'
+            file_name = input_source_dic['file_name']
+            file_type = input_source_dic['file_type']
 
-        if not content_subtype in input_source_dic['content_subtype'].keys():
-            return True
-
-        sf_category = self.sf_categories[file_type][content_subtype]
-        lp_category = self.lp_categories[file_type][content_subtype]
-
-        sf_data = self.__star_data.get_saveframes_by_category(sf_category)[0]
-
-        sf_framecode = sf_data.get_tag('sf_framecode')[0]
-
-        try:
-
-            poly_seq = self.__getPolymerSequence(sf_data, content_subtype)[0]
-
-            input_source.setItemValue('polymer_sequence', poly_seq)
-
-            if file_type == 'nmr-star':
-                auth_poly_seq = self.__nefT.get_star_auth_seq(sf_data, lp_category)[0]
-
-                for cid in range(len(poly_seq)):
-                    chain_id = poly_seq[cid]['chain_id']
-                    seq_ids = poly_seq[cid]['seq_id']
-                    comp_ids = poly_seq[cid]['comp_id']
-
-                    for auth_cid in range(len(auth_poly_seq)):
-
-                        if auth_poly_seq[auth_cid]['chain_id'] != chain_id:
-                            continue
-
-                        _seq_ids = auth_poly_seq[auth_cid]['seq_id']
-                        auth_asym_ids = auth_poly_seq[auth_cid]['auth_asym_id']
-                        auth_seq_ids = auth_poly_seq[auth_cid]['auth_seq_id']
-                        auth_comp_ids = auth_poly_seq[auth_cid]['auth_comp_id']
-
-                        auth_asym_id_set = sorted(set(auth_asym_ids))
-
-                        for auth_asym_id in auth_asym_id_set:
-
-                            offsets = []
-                            total = 0
-
-                            for j in range(len(auth_seq_ids)):
-                                auth_seq_id = auth_seq_ids[j]
-
-                                if auth_seq_id in self.empty_value:
-                                    continue
-
-                                try:
-
-                                    _auth_seq_id = int(auth_seq_id)
-
-                                    offsets.append(_auth_seq_id - _seq_ids[j])
-                                    total += 1
-
-                                except ValueError:
-
-                                    warn = "auth_seq_id '%s' (auth_asym_id %s, auth_comp_id %s) has to be int." % (auth_seq_id, auth_asym_id, auth_comp_ids[j])
-
-                                    self.report.warning.appendDescription('sequence_mismatch', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
-                                    self.report.setWarning()
-
-                                    if self.__verbose:
-                                        self.__lfh.write("+NmrDpUtility.__extractPolymerSequence() ++ Warning  - %s\n" % warn)
-
-                                    pass
-
-                            if total > 1:
-
-                                offset = collections.Counter(offsets).most_common()[0][0]
-
-                                for j in range(len(auth_seq_ids)):
-                                    auth_seq_id = auth_seq_ids[j]
-
-                                    if auth_seq_id in self.empty_value:
-                                        continue
-
-                                    try:
-
-                                        _auth_seq_id = int(auth_seq_id)
-                                    except ValueError:
-                                        continue
-
-                                    if _auth_seq_id - _seq_ids[j] != offset:
-
-                                        warn = "auth_seq_id '%s' vs '%d' (auth_asym_id %s, auth_comp_id %s) mismatches." % (auth_seq_id, seq_ids[j] + offset, auth_asym_id, auth_comp_ids[j])
-
-                                        self.report.warning.appendDescription('sequence_mismatch', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
-                                        self.report.setWarning()
-
-                                        if self.__verbose:
-                                            self.__lfh.write("+NmrDpUtility.__extractPolymerSequence() ++ Warning  - %s\n" % warn)
-
-                        for i in range(len(comp_ids)):
-
-                            seq_id = seq_ids[i]
-                            comp_id = comp_ids[i]
-
-                            for j in range(len(auth_comp_ids)):
-
-                                if _seq_ids[j] != seq_id:
-                                    continue
-
-                                auth_comp_id = auth_comp_ids[j]
-
-                                if comp_id == auth_comp_id:
-                                    continue
-
-                                auth_asym_id = auth_asym_ids[j]
-                                auth_seq_id = auth_seq_ids[j]
-
-                                warn = "auth_comp_id %s (auth_asym_id %s, auth_seq_id %s) vs %s (chain_id %s, seq_id %s) mismatches." % (auth_comp_id, auth_asym_id, auth_seq_id, comp_id, chain_id, seq_id)
-
-                                self.report.warning.appendDescription('sequence_mismatch', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
-                                self.report.setWarning()
-
-                                if self.__verbose:
-                                    self.__lfh.write("+NmrDpUtility.__extractPolymerSequence() ++ Warning  - %s\n" % warn)
-
-                                break
-
-            return True
-
-        except KeyError as e:
-
-            self.report.error.appendDescription('sequence_mismatch', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': str(e).strip("'")})
-            self.report.setError()
-
-            if self.__verbose:
-                self.__lfh.write("+NmrDpUtility.__extractPolymerSequence() ++ KeyError  - %s" % str(e))
-
-        except LookupError as e:
-
-            self.report.error.appendDescription('missing_mandatory_item', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': str(e).strip("'")})
-            self.report.setError()
-
-            if self.__verbose:
-                self.__lfh.write("+NmrDpUtility.__extractPolymerSequence() ++ LookupError  - %s" % str(e))
-
-        except ValueError as e:
-
-            self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': str(e).strip("'")})
-            self.report.setError()
-
-            if self.__verbose:
-                self.__lfh.write("+NmrDpUtility.__extractPolymerSequence() ++ ValueError  - %s" % str(e))
-
-        except UserWarning as e:
-
-            warns = str(e).strip("'").split('\n')
-            proc_warns = set()
-
-            for warn in warns:
-
-                if warn == '' or warn in proc_warns:
-                    continue
-
-                proc_warns.add(warn)
-
-                invl = warn.startswith('[Invalid data] ')
-
-                if invl:
-
-                    err = warn[15:]
-
-                    self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
-                    self.report.setError()
-
-                    if self.__verbose:
-                        self.__lfh.write("+NmrDpUtility.__extractPolymerSequence() ++ ValueError  - %s" % err)
-
-                else:
-
-                    self.report.error.appendDescription('internal_error', "+NmrDpUtility.__extractPolymerSequence() ++ Error  - %s" % warn)
-                    self.report.setError()
-
-                    if self.__verbose:
-                        self.__lfh.write("+NmrDpUtility.__extractPolymerSequence() ++ Error  - %s" % warn)
-
-        except Exception as e:
-
-            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__extractPolymerSequence() ++ Error  - %s" % str(e))
-            self.report.setError()
-
-            if self.__verbose:
-                self.__lfh.write("+NmrDpUtility.__extractPolymerSequence() ++ Error  - %s" % str(e))
-
-        return False
-
-    def __extractPolymerSequenceInLoop(self):
-        """ Extract polymer sequence in interesting loops.
-        """
-
-        #if self.report.isError():
-        #    return False
-
-        input_source = self.report.input_sources[0]
-        input_source_dic = input_source.get()
-
-        file_name = input_source_dic['file_name']
-        file_type = input_source_dic['file_type']
-
-        if input_source_dic['content_subtype'] is None:
-            return False
-
-        poly_seq_list_set = {}
-        poly_sid_list_set = {}
-
-        for content_subtype in self.nmr_content_subtypes:
-
-            if content_subtype in ['entry_info', 'poly_seq'] or (not self.__hasKeyValue(input_source_dic['content_subtype'], content_subtype)):
+            if input_source_dic['content_subtype'] is None:
+                is_done = False
                 continue
 
-            poly_seq_list_set[content_subtype] = []
+            content_subtype = 'poly_seq'
+
+            if not content_subtype in input_source_dic['content_subtype'].keys():
+                continue
+
+            if self.__star_data_type[fileListId] == 'Loop':
+                continue
 
             sf_category = self.sf_categories[file_type][content_subtype]
             lp_category = self.lp_categories[file_type][content_subtype]
 
-            list_id = 1
-
-            has_poly_seq = False
-
-            for sf_data in self.__star_data.get_saveframes_by_category(sf_category):
+            for sf_data in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
 
                 sf_framecode = sf_data.get_tag('sf_framecode')[0]
 
                 try:
 
-                    poly_seq = self.__getPolymerSequence(sf_data, content_subtype)[0]
+                    poly_seq = self.__getPolymerSequence(fileListId, sf_data, content_subtype)[0]
 
-                    if len(poly_seq) > 0:
+                    input_source.setItemValue('polymer_sequence', poly_seq)
 
-                        poly_seq_list_set[content_subtype].append({'list_id': list_id, 'sf_framecode': sf_framecode, 'polymer_sequence': poly_seq})
+                    if file_type == 'nmr-star':
+                        auth_poly_seq = self.__nefT.get_star_auth_seq(sf_data, lp_category)[0]
 
-                        has_poly_seq = True
+                        for cid in range(len(poly_seq)):
+                            chain_id = poly_seq[cid]['chain_id']
+                            seq_ids = poly_seq[cid]['seq_id']
+                            comp_ids = poly_seq[cid]['comp_id']
 
-                        if file_type == 'nmr-star':
-                            auth_poly_seq = self.__nefT.get_star_auth_seq(sf_data, lp_category)[0]
+                            for auth_cid in range(len(auth_poly_seq)):
 
-                            for cid in range(len(poly_seq)):
-                                chain_id = poly_seq[cid]['chain_id']
-                                seq_ids = poly_seq[cid]['seq_id']
-                                comp_ids = poly_seq[cid]['comp_id']
+                                if auth_poly_seq[auth_cid]['chain_id'] != chain_id:
+                                    continue
 
-                                for auth_cid in range(len(auth_poly_seq)):
+                                _seq_ids = auth_poly_seq[auth_cid]['seq_id']
+                                auth_asym_ids = auth_poly_seq[auth_cid]['auth_asym_id']
+                                auth_seq_ids = auth_poly_seq[auth_cid]['auth_seq_id']
+                                auth_comp_ids = auth_poly_seq[auth_cid]['auth_comp_id']
 
-                                    if auth_poly_seq[auth_cid]['chain_id'] != chain_id:
-                                        continue
+                                auth_asym_id_set = sorted(set(auth_asym_ids))
 
-                                    _seq_ids = auth_poly_seq[auth_cid]['seq_id']
-                                    auth_asym_ids = auth_poly_seq[auth_cid]['auth_asym_id']
-                                    auth_seq_ids = auth_poly_seq[auth_cid]['auth_seq_id']
-                                    auth_comp_ids = auth_poly_seq[auth_cid]['auth_comp_id']
+                                for auth_asym_id in auth_asym_id_set:
 
-                                    auth_asym_id_set = sorted(set(auth_asym_ids))
+                                    offsets = []
+                                    total = 0
 
-                                    for auth_asym_id in auth_asym_id_set:
+                                    for j in range(len(auth_seq_ids)):
+                                        auth_seq_id = auth_seq_ids[j]
 
-                                        offsets = []
-                                        total = 0
+                                        if auth_seq_id in self.empty_value:
+                                            continue
+
+                                        try:
+
+                                            _auth_seq_id = int(auth_seq_id)
+
+                                            offsets.append(_auth_seq_id - _seq_ids[j])
+                                            total += 1
+
+                                        except ValueError:
+
+                                            warn = "auth_seq_id '%s' (auth_asym_id %s, auth_comp_id %s) has to be int." % (auth_seq_id, auth_asym_id, auth_comp_ids[j])
+
+                                            self.report.warning.appendDescription('sequence_mismatch', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
+                                            self.report.setWarning()
+
+                                            if self.__verbose:
+                                                self.__lfh.write("+NmrDpUtility.__extractPolymerSequence() ++ Warning  - %s\n" % warn)
+
+                                            pass
+
+                                    if total > 1:
+
+                                        offset = collections.Counter(offsets).most_common()[0][0]
 
                                         for j in range(len(auth_seq_ids)):
                                             auth_seq_id = auth_seq_ids[j]
@@ -3129,76 +3072,48 @@ class NmrDpUtility(object):
                                             try:
 
                                                 _auth_seq_id = int(auth_seq_id)
-
-                                                offsets.append(_auth_seq_id - _seq_ids[j])
-                                                total += 1
-
                                             except ValueError:
+                                                continue
 
-                                                warn = "auth_seq_id '%s' (auth_asym_id %s, auth_comp_id %s) has to be int." % (auth_seq_id, auth_asym_id, auth_comp_ids[j])
+                                            if _auth_seq_id - _seq_ids[j] != offset:
+
+                                                warn = "auth_seq_id '%s' vs '%d' (auth_asym_id %s, auth_comp_id %s) mismatches." % (auth_seq_id, seq_ids[j] + offset, auth_asym_id, auth_comp_ids[j])
 
                                                 self.report.warning.appendDescription('sequence_mismatch', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
                                                 self.report.setWarning()
 
                                                 if self.__verbose:
-                                                    self.__lfh.write("+NmrDpUtility.__extractPolymerSequenceInLoop() ++ Warning  - %s\n" % warn)
+                                                    self.__lfh.write("+NmrDpUtility.__extractPolymerSequence() ++ Warning  - %s\n" % warn)
 
-                                                pass
+                                for i in range(len(comp_ids)):
 
-                                        if total > 1:
+                                    seq_id = seq_ids[i]
+                                    comp_id = comp_ids[i]
 
-                                            offset = collections.Counter(offsets).most_common()[0][0]
+                                    for j in range(len(auth_comp_ids)):
 
-                                            for j in range(len(auth_seq_ids)):
-                                                auth_seq_id = auth_seq_ids[j]
+                                        if _seq_ids[j] != seq_id:
+                                            continue
 
-                                                if auth_seq_id in self.empty_value:
-                                                    continue
+                                        auth_comp_id = auth_comp_ids[j]
 
-                                                try:
+                                        if comp_id == auth_comp_id:
+                                            continue
 
-                                                    _auth_seq_id = int(auth_seq_id)
+                                        auth_asym_id = auth_asym_ids[j]
+                                        auth_seq_id = auth_seq_ids[j]
 
-                                                except ValueError:
-                                                    continue
+                                        warn = "auth_comp_id %s (auth_asym_id %s, auth_seq_id %s) vs %s (chain_id %s, seq_id %s) mismatches." % (auth_comp_id, auth_asym_id, auth_seq_id, comp_id, chain_id, seq_id)
 
-                                                if _auth_seq_id - _seq_ids[j] != offset:
+                                        self.report.warning.appendDescription('sequence_mismatch', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
+                                        self.report.setWarning()
 
-                                                    warn = "auth_seq_id '%s' vs '%d' (auth_asym_id %s, auth_comp_id %s) mismatches." % (auth_seq_id, seq_ids[j] + offset, auth_asym_id, auth_comp_ids[j])
+                                        if self.__verbose:
+                                            self.__lfh.write("+NmrDpUtility.__extractPolymerSequence() ++ Warning  - %s\n" % warn)
 
-                                                    self.report.warning.appendDescription('sequence_mismatch', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
-                                                    self.report.setWarning()
+                                        break
 
-                                                    if self.__verbose:
-                                                        self.__lfh.write("+NmrDpUtility.__extractPolymerSequenceInLoop() ++ Warning  - %s\n" % warn)
-
-                                    for i in range(len(comp_ids)):
-
-                                        seq_id = seq_ids[i]
-                                        comp_id = comp_ids[i]
-
-                                        for j in range(len(auth_comp_ids)):
-
-                                            if _seq_ids[j] != seq_id:
-                                                continue
-
-                                            auth_comp_id = auth_comp_ids[j]
-
-                                            if comp_id == auth_comp_id:
-                                                continue
-
-                                            auth_asym_id = auth_asym_ids[j]
-                                            auth_seq_id = auth_seq_ids[j]
-
-                                            warn = "auth_comp_id %s (auth_asym_id %s, auth_seq_id %s) vs %s (chain_id %s, seq_id %s) mismatches." % (auth_comp_id, auth_asym_id, auth_seq_id, comp_id, chain_id, seq_id)
-
-                                            self.report.warning.appendDescription('sequence_mismatch', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
-                                            self.report.setWarning()
-
-                                            if self.__verbose:
-                                                self.__lfh.write("+NmrDpUtility.__extractPolymerSequenceInLoop() ++ Warning  - %s\n" % warn)
-
-                                            break
+                    continue
 
                 except KeyError as e:
 
@@ -3206,7 +3121,7 @@ class NmrDpUtility(object):
                     self.report.setError()
 
                     if self.__verbose:
-                        self.__lfh.write("+NmrDpUtility.__extractPolymerSequenceInLoop() ++ KeyError  - %s" % str(e))
+                        self.__lfh.write("+NmrDpUtility.__extractPolymerSequence() ++ KeyError  - %s" % str(e))
 
                 except LookupError as e:
 
@@ -3214,7 +3129,7 @@ class NmrDpUtility(object):
                     self.report.setError()
 
                     if self.__verbose:
-                        self.__lfh.write("+NmrDpUtility.__extractPolymerSequenceInLoop() ++ LookupError  - %s" % str(e))
+                        self.__lfh.write("+NmrDpUtility.__extractPolymerSequence() ++ LookupError  - %s" % str(e))
 
                 except ValueError as e:
 
@@ -3222,7 +3137,7 @@ class NmrDpUtility(object):
                     self.report.setError()
 
                     if self.__verbose:
-                        self.__lfh.write("+NmrDpUtility.__extractPolymerSequenceInLoop() ++ ValueError  - %s" % str(e))
+                        self.__lfh.write("+NmrDpUtility.__extractPolymerSequence() ++ ValueError  - %s" % str(e))
 
                 except UserWarning as e:
 
@@ -3246,36 +3161,454 @@ class NmrDpUtility(object):
                             self.report.setError()
 
                             if self.__verbose:
-                                self.__lfh.write("+NmrDpUtility.__extractPolymerSequenceInLoop() ++ ValueError  - %s" % err)
+                                self.__lfh.write("+NmrDpUtility.__extractPolymerSequence() ++ ValueError  - %s" % err)
 
                         else:
 
-                            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__extractPolymerSequenceInLoop() ++ Error  - %s" % warn)
+                            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__extractPolymerSequence() ++ Error  - %s" % warn)
                             self.report.setError()
 
                             if self.__verbose:
-                                self.__lfh.write("+NmrDpUtility.__extractPolymerSequenceInLoop() ++ Error  - %s" % warn)
+                                self.__lfh.write("+NmrDpUtility.__extractPolymerSequence() ++ Error  - %s" % warn)
 
                 except Exception as e:
 
-                    self.report.error.appendDescription('internal_error', "+NmrDpUtility.__extractPolymerSequenceInLoop() ++ Error  - %s" % str(e))
+                    self.report.error.appendDescription('internal_error', "+NmrDpUtility.__extractPolymerSequence() ++ Error  - %s" % str(e))
                     self.report.setError()
 
                     if self.__verbose:
-                        self.__lfh.write("+NmrDpUtility.__extractPolymerSequenceInLoop() ++ Error  - %s" % str(e))
+                        self.__lfh.write("+NmrDpUtility.__extractPolymerSequence() ++ Error  - %s" % str(e))
 
-                list_id += 1
+                is_done = False
 
-            if not has_poly_seq:
-                poly_seq_list_set.pop(content_subtype)
+        return is_done
+
+    def __extractPolymerSequenceInLoop(self):
+        """ Extract polymer sequence in interesting loops.
+        """
 
         #if self.report.isError():
         #    return False
 
-        if len(poly_seq_list_set) > 0:
-            input_source.setItemValue('polymer_sequence_in_loop', poly_seq_list_set)
+        is_done = True
 
-        return True
+        for fileListId in range(self.__file_path_list_len):
+
+            input_source = self.report.input_sources[fileListId]
+            input_source_dic = input_source.get()
+
+            file_name = input_source_dic['file_name']
+            file_type = input_source_dic['file_type']
+
+            if input_source_dic['content_subtype'] is None:
+                is_done = False
+                continue
+
+            poly_seq_list_set = {}
+            poly_sid_list_set = {}
+
+            for content_subtype in self.nmr_content_subtypes:
+
+                if content_subtype in ['entry_info', 'poly_seq'] or (not self.__hasKeyValue(input_source_dic['content_subtype'], content_subtype)):
+                    continue
+
+                poly_seq_list_set[content_subtype] = []
+
+                sf_category = self.sf_categories[file_type][content_subtype]
+                lp_category = self.lp_categories[file_type][content_subtype]
+
+                list_id = 1
+
+                has_poly_seq = False
+
+                if self.__star_data_type[fileListId] == 'Loop':
+
+                    sf_data = self.__star_data[fileListId]
+                    sf_framecode = ''
+
+                    try:
+
+                        poly_seq = self.__getPolymerSequence(fileListId, sf_data, content_subtype)[0]
+
+                        if len(poly_seq) > 0:
+
+                            poly_seq_list_set[content_subtype].append({'list_id': list_id, 'sf_framecode': sf_framecode, 'polymer_sequence': poly_seq})
+
+                            has_poly_seq = True
+
+                            if file_type == 'nmr-star':
+                                auth_poly_seq = self.__nefT.get_star_auth_seq(sf_data, lp_category)[0]
+
+                                for cid in range(len(poly_seq)):
+                                    chain_id = poly_seq[cid]['chain_id']
+                                    seq_ids = poly_seq[cid]['seq_id']
+                                    comp_ids = poly_seq[cid]['comp_id']
+
+                                    for auth_cid in range(len(auth_poly_seq)):
+
+                                        if auth_poly_seq[auth_cid]['chain_id'] != chain_id:
+                                            continue
+
+                                        _seq_ids = auth_poly_seq[auth_cid]['seq_id']
+                                        auth_asym_ids = auth_poly_seq[auth_cid]['auth_asym_id']
+                                        auth_seq_ids = auth_poly_seq[auth_cid]['auth_seq_id']
+                                        auth_comp_ids = auth_poly_seq[auth_cid]['auth_comp_id']
+
+                                        auth_asym_id_set = sorted(set(auth_asym_ids))
+
+                                        for auth_asym_id in auth_asym_id_set:
+
+                                            offsets = []
+                                            total = 0
+
+                                            for j in range(len(auth_seq_ids)):
+                                                auth_seq_id = auth_seq_ids[j]
+
+                                                if auth_seq_id in self.empty_value:
+                                                    continue
+
+                                                try:
+
+                                                    _auth_seq_id = int(auth_seq_id)
+
+                                                    offsets.append(_auth_seq_id - _seq_ids[j])
+                                                    total += 1
+
+                                                except ValueError:
+
+                                                    warn = "auth_seq_id '%s' (auth_asym_id %s, auth_comp_id %s) has to be int." % (auth_seq_id, auth_asym_id, auth_comp_ids[j])
+
+                                                    self.report.warning.appendDescription('sequence_mismatch', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
+                                                    self.report.setWarning()
+
+                                                    if self.__verbose:
+                                                        self.__lfh.write("+NmrDpUtility.__extractPolymerSequenceInLoop() ++ Warning  - %s\n" % warn)
+
+                                                    pass
+
+                                            if total > 1:
+
+                                                offset = collections.Counter(offsets).most_common()[0][0]
+
+                                                for j in range(len(auth_seq_ids)):
+                                                    auth_seq_id = auth_seq_ids[j]
+
+                                                    if auth_seq_id in self.empty_value:
+                                                        continue
+
+                                                    try:
+
+                                                        _auth_seq_id = int(auth_seq_id)
+
+                                                    except ValueError:
+                                                        continue
+
+                                                    if _auth_seq_id - _seq_ids[j] != offset:
+
+                                                        warn = "auth_seq_id '%s' vs '%d' (auth_asym_id %s, auth_comp_id %s) mismatches." % (auth_seq_id, seq_ids[j] + offset, auth_asym_id, auth_comp_ids[j])
+
+                                                        self.report.warning.appendDescription('sequence_mismatch', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
+                                                        self.report.setWarning()
+
+                                                        if self.__verbose:
+                                                            self.__lfh.write("+NmrDpUtility.__extractPolymerSequenceInLoop() ++ Warning  - %s\n" % warn)
+
+                                        for i in range(len(comp_ids)):
+
+                                            seq_id = seq_ids[i]
+                                            comp_id = comp_ids[i]
+
+                                            for j in range(len(auth_comp_ids)):
+
+                                                if _seq_ids[j] != seq_id:
+                                                    continue
+
+                                                auth_comp_id = auth_comp_ids[j]
+
+                                                if comp_id == auth_comp_id:
+                                                    continue
+
+                                                auth_asym_id = auth_asym_ids[j]
+                                                auth_seq_id = auth_seq_ids[j]
+
+                                                warn = "auth_comp_id %s (auth_asym_id %s, auth_seq_id %s) vs %s (chain_id %s, seq_id %s) mismatches." % (auth_comp_id, auth_asym_id, auth_seq_id, comp_id, chain_id, seq_id)
+
+                                                self.report.warning.appendDescription('sequence_mismatch', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
+                                                self.report.setWarning()
+
+                                                if self.__verbose:
+                                                    self.__lfh.write("+NmrDpUtility.__extractPolymerSequenceInLoop() ++ Warning  - %s\n" % warn)
+
+                                                break
+
+                    except KeyError as e:
+
+                        self.report.error.appendDescription('sequence_mismatch', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': str(e).strip("'")})
+                        self.report.setError()
+
+                        if self.__verbose:
+                            self.__lfh.write("+NmrDpUtility.__extractPolymerSequenceInLoop() ++ KeyError  - %s" % str(e))
+
+                    except LookupError as e:
+
+                        self.report.error.appendDescription('missing_mandatory_item', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': str(e).strip("'")})
+                        self.report.setError()
+
+                        if self.__verbose:
+                            self.__lfh.write("+NmrDpUtility.__extractPolymerSequenceInLoop() ++ LookupError  - %s" % str(e))
+
+                    except ValueError as e:
+
+                        self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': str(e).strip("'")})
+                        self.report.setError()
+
+                        if self.__verbose:
+                            self.__lfh.write("+NmrDpUtility.__extractPolymerSequenceInLoop() ++ ValueError  - %s" % str(e))
+
+                    except UserWarning as e:
+
+                        warns = str(e).strip("'").split('\n')
+                        proc_warns = set()
+
+                        for warn in warns:
+
+                            if warn == '' or warn in proc_warns:
+                                continue
+
+                            proc_warns.add(warn)
+
+                            invl = warn.startswith('[Invalid data] ')
+
+                            if invl:
+
+                                err = warn[15:]
+
+                                self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
+                                self.report.setError()
+
+                                if self.__verbose:
+                                    self.__lfh.write("+NmrDpUtility.__extractPolymerSequenceInLoop() ++ ValueError  - %s" % err)
+
+                            else:
+
+                                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__extractPolymerSequenceInLoop() ++ Error  - %s" % warn)
+                                self.report.setError()
+
+                                if self.__verbose:
+                                    self.__lfh.write("+NmrDpUtility.__extractPolymerSequenceInLoop() ++ Error  - %s" % warn)
+
+                    except Exception as e:
+
+                        self.report.error.appendDescription('internal_error', "+NmrDpUtility.__extractPolymerSequenceInLoop() ++ Error  - %s" % str(e))
+                        self.report.setError()
+
+                        if self.__verbose:
+                            self.__lfh.write("+NmrDpUtility.__extractPolymerSequenceInLoop() ++ Error  - %s" % str(e))
+
+                    list_id += 1
+
+                    if not has_poly_seq:
+                        poly_seq_list_set.pop(content_subtype)
+
+                    continue
+
+                #Entry/Saveframe
+
+                for sf_data in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
+
+                    sf_framecode = sf_data.get_tag('sf_framecode')[0]
+
+                    try:
+
+                        poly_seq = self.__getPolymerSequence(fileListId, sf_data, content_subtype)[0]
+
+                        if len(poly_seq) > 0:
+
+                            poly_seq_list_set[content_subtype].append({'list_id': list_id, 'sf_framecode': sf_framecode, 'polymer_sequence': poly_seq})
+
+                            has_poly_seq = True
+
+                            if file_type == 'nmr-star':
+                                auth_poly_seq = self.__nefT.get_star_auth_seq(sf_data, lp_category)[0]
+
+                                for cid in range(len(poly_seq)):
+                                    chain_id = poly_seq[cid]['chain_id']
+                                    seq_ids = poly_seq[cid]['seq_id']
+                                    comp_ids = poly_seq[cid]['comp_id']
+
+                                    for auth_cid in range(len(auth_poly_seq)):
+
+                                        if auth_poly_seq[auth_cid]['chain_id'] != chain_id:
+                                            continue
+
+                                        _seq_ids = auth_poly_seq[auth_cid]['seq_id']
+                                        auth_asym_ids = auth_poly_seq[auth_cid]['auth_asym_id']
+                                        auth_seq_ids = auth_poly_seq[auth_cid]['auth_seq_id']
+                                        auth_comp_ids = auth_poly_seq[auth_cid]['auth_comp_id']
+
+                                        auth_asym_id_set = sorted(set(auth_asym_ids))
+
+                                        for auth_asym_id in auth_asym_id_set:
+
+                                            offsets = []
+                                            total = 0
+
+                                            for j in range(len(auth_seq_ids)):
+                                                auth_seq_id = auth_seq_ids[j]
+
+                                                if auth_seq_id in self.empty_value:
+                                                    continue
+
+                                                try:
+
+                                                    _auth_seq_id = int(auth_seq_id)
+
+                                                    offsets.append(_auth_seq_id - _seq_ids[j])
+                                                    total += 1
+
+                                                except ValueError:
+
+                                                    warn = "auth_seq_id '%s' (auth_asym_id %s, auth_comp_id %s) has to be int." % (auth_seq_id, auth_asym_id, auth_comp_ids[j])
+
+                                                    self.report.warning.appendDescription('sequence_mismatch', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
+                                                    self.report.setWarning()
+
+                                                    if self.__verbose:
+                                                        self.__lfh.write("+NmrDpUtility.__extractPolymerSequenceInLoop() ++ Warning  - %s\n" % warn)
+
+                                                    pass
+
+                                            if total > 1:
+
+                                                offset = collections.Counter(offsets).most_common()[0][0]
+
+                                                for j in range(len(auth_seq_ids)):
+                                                    auth_seq_id = auth_seq_ids[j]
+
+                                                    if auth_seq_id in self.empty_value:
+                                                        continue
+
+                                                    try:
+
+                                                        _auth_seq_id = int(auth_seq_id)
+
+                                                    except ValueError:
+                                                        continue
+
+                                                    if _auth_seq_id - _seq_ids[j] != offset:
+
+                                                        warn = "auth_seq_id '%s' vs '%d' (auth_asym_id %s, auth_comp_id %s) mismatches." % (auth_seq_id, seq_ids[j] + offset, auth_asym_id, auth_comp_ids[j])
+
+                                                        self.report.warning.appendDescription('sequence_mismatch', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
+                                                        self.report.setWarning()
+
+                                                        if self.__verbose:
+                                                            self.__lfh.write("+NmrDpUtility.__extractPolymerSequenceInLoop() ++ Warning  - %s\n" % warn)
+
+                                        for i in range(len(comp_ids)):
+
+                                            seq_id = seq_ids[i]
+                                            comp_id = comp_ids[i]
+
+                                            for j in range(len(auth_comp_ids)):
+
+                                                if _seq_ids[j] != seq_id:
+                                                    continue
+
+                                                auth_comp_id = auth_comp_ids[j]
+
+                                                if comp_id == auth_comp_id:
+                                                    continue
+
+                                                auth_asym_id = auth_asym_ids[j]
+                                                auth_seq_id = auth_seq_ids[j]
+
+                                                warn = "auth_comp_id %s (auth_asym_id %s, auth_seq_id %s) vs %s (chain_id %s, seq_id %s) mismatches." % (auth_comp_id, auth_asym_id, auth_seq_id, comp_id, chain_id, seq_id)
+
+                                                self.report.warning.appendDescription('sequence_mismatch', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
+                                                self.report.setWarning()
+
+                                                if self.__verbose:
+                                                    self.__lfh.write("+NmrDpUtility.__extractPolymerSequenceInLoop() ++ Warning  - %s\n" % warn)
+
+                                                break
+
+                    except KeyError as e:
+
+                        self.report.error.appendDescription('sequence_mismatch', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': str(e).strip("'")})
+                        self.report.setError()
+
+                        if self.__verbose:
+                            self.__lfh.write("+NmrDpUtility.__extractPolymerSequenceInLoop() ++ KeyError  - %s" % str(e))
+
+                    except LookupError as e:
+
+                        self.report.error.appendDescription('missing_mandatory_item', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': str(e).strip("'")})
+                        self.report.setError()
+
+                        if self.__verbose:
+                            self.__lfh.write("+NmrDpUtility.__extractPolymerSequenceInLoop() ++ LookupError  - %s" % str(e))
+
+                    except ValueError as e:
+
+                        self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': str(e).strip("'")})
+                        self.report.setError()
+
+                        if self.__verbose:
+                            self.__lfh.write("+NmrDpUtility.__extractPolymerSequenceInLoop() ++ ValueError  - %s" % str(e))
+
+                    except UserWarning as e:
+
+                        warns = str(e).strip("'").split('\n')
+                        proc_warns = set()
+
+                        for warn in warns:
+
+                            if warn == '' or warn in proc_warns:
+                                continue
+
+                            proc_warns.add(warn)
+
+                            invl = warn.startswith('[Invalid data] ')
+
+                            if invl:
+
+                                err = warn[15:]
+
+                                self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
+                                self.report.setError()
+
+                                if self.__verbose:
+                                    self.__lfh.write("+NmrDpUtility.__extractPolymerSequenceInLoop() ++ ValueError  - %s" % err)
+
+                            else:
+
+                                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__extractPolymerSequenceInLoop() ++ Error  - %s" % warn)
+                                self.report.setError()
+
+                                if self.__verbose:
+                                    self.__lfh.write("+NmrDpUtility.__extractPolymerSequenceInLoop() ++ Error  - %s" % warn)
+
+                    except Exception as e:
+
+                        self.report.error.appendDescription('internal_error', "+NmrDpUtility.__extractPolymerSequenceInLoop() ++ Error  - %s" % str(e))
+                        self.report.setError()
+
+                        if self.__verbose:
+                            self.__lfh.write("+NmrDpUtility.__extractPolymerSequenceInLoop() ++ Error  - %s" % str(e))
+
+                    list_id += 1
+
+                if not has_poly_seq:
+                    poly_seq_list_set.pop(content_subtype)
+
+            #if self.report.isError():
+            #    is_done = False
+
+            if len(poly_seq_list_set) > 0:
+                input_source.setItemValue('polymer_sequence_in_loop', poly_seq_list_set)
+
+        return is_done
 
     def __hasKeyValue(self, dict=None, key=None):
         """ Return whether a given dictionary has effective value for a key.
@@ -3286,7 +3619,7 @@ class NmrDpUtility(object):
             return False
 
         if key in dict:
-            return False if dict[key] is None else True
+            return not dict[key] is None
 
         return False
 
@@ -3297,143 +3630,86 @@ class NmrDpUtility(object):
         #if self.report.isError():
         #    return False
 
-        input_source = self.report.input_sources[0]
-        input_source_dic = input_source.get()
+        for fileListId in range(self.__file_path_list_len):
 
-        file_name = input_source_dic['file_name']
-        file_type = input_source_dic['file_type']
+            input_source = self.report.input_sources[fileListId]
+            input_source_dic = input_source.get()
 
-        has_poly_seq = self.__hasKeyValue(input_source_dic, 'polymer_sequence')
-        has_poly_seq_in_loop = self.__hasKeyValue(input_source_dic, 'polymer_sequence_in_loop')
+            file_name = input_source_dic['file_name']
+            file_type = input_source_dic['file_type']
 
-        if (not has_poly_seq) and (not has_poly_seq_in_loop):
-            return True
+            has_poly_seq = self.__hasKeyValue(input_source_dic, 'polymer_sequence')
+            has_poly_seq_in_loop = self.__hasKeyValue(input_source_dic, 'polymer_sequence_in_loop')
 
-        polymer_sequence = input_source_dic['polymer_sequence']
-        polymer_sequence_in_loop = input_source_dic['polymer_sequence_in_loop']
-
-        poly_seq = 'poly_seq'
-
-        subtype_with_poly_seq = [poly_seq if has_poly_seq else None]
-
-        for subtype in polymer_sequence_in_loop.keys():
-            subtype_with_poly_seq.append(subtype)
-
-        for subtype_pair in itertools.combinations_with_replacement(subtype_with_poly_seq, 2):
-
-            # poly_seq is reference sequence and suppress tests on combinations of two sequences in loop
-            if has_poly_seq and ((not poly_seq in subtype_pair) or subtype_pair == (poly_seq, poly_seq)):
+            if (not has_poly_seq) and (not has_poly_seq_in_loop):
                 continue
 
-            subtype1 = subtype_pair[0] # poly_seq will appear only on subtype1
-            subtype2 = subtype_pair[1]
+            polymer_sequence = input_source_dic['polymer_sequence']
+            polymer_sequence_in_loop = input_source_dic['polymer_sequence_in_loop']
 
-            if subtype1 is None or subtype2 is None:
-                continue
+            poly_seq = 'poly_seq'
 
-            lp_category1 = self.lp_categories[file_type][subtype1]
-            lp_category2 = self.lp_categories[file_type][subtype2]
+            subtype_with_poly_seq = [poly_seq if has_poly_seq else None]
 
-            # reference polymer sequence exists
-            if has_poly_seq and subtype1 == poly_seq:
-                ps1 = polymer_sequence
+            for subtype in polymer_sequence_in_loop.keys():
+                subtype_with_poly_seq.append(subtype)
 
-                ref_chain_ids = {s1['chain_id'] for s1 in ps1}
+            for subtype_pair in itertools.combinations_with_replacement(subtype_with_poly_seq, 2):
 
-                list_len2 = len(polymer_sequence_in_loop[subtype2])
+                # poly_seq is reference sequence and suppress tests on combinations of two sequences in loop
+                if has_poly_seq and ((not poly_seq in subtype_pair) or subtype_pair == (poly_seq, poly_seq)):
+                    continue
 
-                for list_id2 in range(list_len2):
-                    ps2 = polymer_sequence_in_loop[subtype2][list_id2]['polymer_sequence']
+                subtype1 = subtype_pair[0] # poly_seq will appear only on subtype1
+                subtype2 = subtype_pair[1]
 
-                    sf_framecode2 = polymer_sequence_in_loop[subtype2][list_id2]['sf_framecode']
+                if subtype1 is None or subtype2 is None:
+                    continue
 
-                    for s2 in ps2:
+                lp_category1 = self.lp_categories[file_type][subtype1]
+                lp_category2 = self.lp_categories[file_type][subtype2]
 
-                        chain_id = s2['chain_id']
+                # reference polymer sequence exists
+                if has_poly_seq and subtype1 == poly_seq:
+                    ps1 = polymer_sequence
 
-                        if not chain_id in ref_chain_ids:
+                    ref_chain_ids = {s1['chain_id'] for s1 in ps1}
 
-                            err = "Invalid chain_id %s exists." % chain_id
-
-                            self.report.error.appendDescription('sequence_mismatch', {'file_name': file_name, 'sf_framecode': sf_framecode2, 'category': lp_category2, 'description': err})
-                            self.report.setError()
-
-                            if self.__verbose:
-                                self.__lfh.write("+NmrDpUtility.__testSequenceConsistency() ++ Error  - %s\n" % err)
-
-                        else:
-
-                            for s1 in ps1:
-
-                                if s1['chain_id'] != s2['chain_id']:
-                                    continue
-
-                                for j in range(len(s2['seq_id'])):
-                                    seq_id = s2['seq_id'][j]
-                                    comp_id = s2['comp_id'][j]
-
-                                    if not seq_id in s1['seq_id']:
-
-                                        err = "Invalid seq_id %s (chain_id %s) exists." % (seq_id, chain_id)
-
-                                        self.report.error.appendDescription('sequence_mismatch', {'file_name': file_name, 'sf_framecode': sf_framecode2, 'category': lp_category2, 'description': err})
-                                        self.report.setError()
-
-                                        if self.__verbose:
-                                            self.__lfh.write("+NmrDpUtility.__testSequenceConsistency() ++ Error  - %s\n" % err)
-
-                                    else:
-                                        i = s1['seq_id'].index(seq_id)
-
-                                        if comp_id != s1['comp_id'][i]:
-
-                                            err = "Invalid comp_id %s vs %s (seq_id %s, chain_id %s) exists." % (comp_id, s1['comp_id'][i], seq_id, chain_id)
-
-                                            self.report.error.appendDescription('sequence_mismatch', {'file_name': file_name, 'sf_framecode': sf_framecode2, 'category': lp_category2, 'description': err})
-                                            self.report.setError()
-
-                                            if self.__verbose:
-                                                self.__lfh.write("+NmrDpUtility.__testSequenceConsistency() ++ Error  - %s\n" % err)
-
-            # brute force check
-            else:
-
-                list_len1 = len(polymer_sequence_in_loop[subtype1])
-                list_len2 = len(polymer_sequence_in_loop[subtype2])
-
-                for list_id1 in range(list_len1):
-                    ps1 = polymer_sequence_in_loop[subtype1][list_id1]['polymer_sequence']
-
-                    sf_framecode1 = polymer_sequence_in_loop[subtype1][list_id1]['sf_framecode']
+                    list_len2 = len(polymer_sequence_in_loop[subtype2])
 
                     for list_id2 in range(list_len2):
                         ps2 = polymer_sequence_in_loop[subtype2][list_id2]['polymer_sequence']
 
                         sf_framecode2 = polymer_sequence_in_loop[subtype2][list_id2]['sf_framecode']
 
-                        # suppress redundant tests inside the same subtype
-                        if subtype1 == subtype2 and list_id1 >= list_id2:
-                            continue
-
                         for s2 in ps2:
 
                             chain_id = s2['chain_id']
 
-                            for s1 in ps1:
+                            if not chain_id in ref_chain_ids:
 
-                                if chain_id != s1['chain_id']:
-                                    continue
+                                err = "Invalid chain_id %s exists." % chain_id
 
-                                for j in range(len(s2['seq_id'])):
-                                    seq_id = s2['seq_id'][j]
-                                    comp_id = s2['comp_id'][j]
+                                self.report.error.appendDescription('sequence_mismatch', {'file_name': file_name, 'sf_framecode': sf_framecode2, 'category': lp_category2, 'description': err})
+                                self.report.setError()
 
-                                    if seq_id in s1['seq_id']:
-                                        i = s1['seq_id'].index(seq_id)
+                                if self.__verbose:
+                                    self.__lfh.write("+NmrDpUtility.__testSequenceConsistency() ++ Error  - %s\n" % err)
 
-                                        if comp_id != s1['comp_id'][i]:
+                            else:
 
-                                            err = "Unmatched comp_id %s vs %s (seq_id %s, chain_id %s) exists against %s saveframe." % (comp_id, s1['comp_id'][i], seq_id, chain_id, sf_framecode1)
+                                for s1 in ps1:
+
+                                    if s1['chain_id'] != s2['chain_id']:
+                                        continue
+
+                                    for j in range(len(s2['seq_id'])):
+                                        seq_id = s2['seq_id'][j]
+                                        comp_id = s2['comp_id'][j]
+
+                                        if not seq_id in s1['seq_id']:
+
+                                            err = "Invalid seq_id %s (chain_id %s) exists." % (seq_id, chain_id)
 
                                             self.report.error.appendDescription('sequence_mismatch', {'file_name': file_name, 'sf_framecode': sf_framecode2, 'category': lp_category2, 'description': err})
                                             self.report.setError()
@@ -3441,32 +3717,91 @@ class NmrDpUtility(object):
                                             if self.__verbose:
                                                 self.__lfh.write("+NmrDpUtility.__testSequenceConsistency() ++ Error  - %s\n" % err)
 
-                        # inverse check required for unverified sequences
-                        for s1 in ps1:
+                                        else:
+                                            i = s1['seq_id'].index(seq_id)
 
-                            chain_id = s1['chain_id']
+                                            if comp_id != s1['comp_id'][i]:
+
+                                                err = "Invalid comp_id %s vs %s (seq_id %s, chain_id %s) exists." % (comp_id, s1['comp_id'][i], seq_id, chain_id)
+
+                                                self.report.error.appendDescription('sequence_mismatch', {'file_name': file_name, 'sf_framecode': sf_framecode2, 'category': lp_category2, 'description': err})
+                                                self.report.setError()
+
+                                                if self.__verbose:
+                                                    self.__lfh.write("+NmrDpUtility.__testSequenceConsistency() ++ Error  - %s\n" % err)
+
+                # brute force check
+                else:
+
+                    list_len1 = len(polymer_sequence_in_loop[subtype1])
+                    list_len2 = len(polymer_sequence_in_loop[subtype2])
+
+                    for list_id1 in range(list_len1):
+                        ps1 = polymer_sequence_in_loop[subtype1][list_id1]['polymer_sequence']
+
+                        sf_framecode1 = polymer_sequence_in_loop[subtype1][list_id1]['sf_framecode']
+
+                        for list_id2 in range(list_len2):
+                            ps2 = polymer_sequence_in_loop[subtype2][list_id2]['polymer_sequence']
+
+                            sf_framecode2 = polymer_sequence_in_loop[subtype2][list_id2]['sf_framecode']
+
+                            # suppress redundant tests inside the same subtype
+                            if subtype1 == subtype2 and list_id1 >= list_id2:
+                                continue
 
                             for s2 in ps2:
 
-                                if chain_id != s2['chain_id']:
-                                    continue
+                                chain_id = s2['chain_id']
 
-                                for i in range(len(s1['seq_id'])):
-                                    seq_id = s1['seq_id'][i]
-                                    comp_id = s1['comp_id'][i]
+                                for s1 in ps1:
 
-                                    if seq_id in s2['seq_id']:
-                                        j = s2['seq_id'].index(seq_id)
+                                    if chain_id != s1['chain_id']:
+                                        continue
 
-                                        if comp_id != s2['comp_id'][j]:
+                                    for j in range(len(s2['seq_id'])):
+                                        seq_id = s2['seq_id'][j]
+                                        comp_id = s2['comp_id'][j]
 
-                                            err = "Unmatched comp_id %s vs %s (seq_id %s, chain_id %s) exists against %s saveframe." % (comp_id, s2['comp_id'][j], seq_id, chain_id, sf_framecode2)
+                                        if seq_id in s1['seq_id']:
+                                            i = s1['seq_id'].index(seq_id)
 
-                                            self.report.error.appendDescription('sequence_mismatch', {'file_name': file_name, 'sf_framecode': sf_framecode1, 'category': lp_category1, 'description': err})
-                                            self.report.setError()
+                                            if comp_id != s1['comp_id'][i]:
 
-                                            if self.__verbose:
-                                                self.__lfh.write("+NmrDpUtility.__testSequenceConsistency() ++ Error  - %s\n" % err)
+                                                err = "Unmatched comp_id %s vs %s (seq_id %s, chain_id %s) exists against %s saveframe." % (comp_id, s1['comp_id'][i], seq_id, chain_id, sf_framecode1)
+
+                                                self.report.error.appendDescription('sequence_mismatch', {'file_name': file_name, 'sf_framecode': sf_framecode2, 'category': lp_category2, 'description': err})
+                                                self.report.setError()
+
+                                                if self.__verbose:
+                                                    self.__lfh.write("+NmrDpUtility.__testSequenceConsistency() ++ Error  - %s\n" % err)
+
+                            # inverse check required for unverified sequences
+                            for s1 in ps1:
+
+                                chain_id = s1['chain_id']
+
+                                for s2 in ps2:
+
+                                    if chain_id != s2['chain_id']:
+                                        continue
+
+                                    for i in range(len(s1['seq_id'])):
+                                        seq_id = s1['seq_id'][i]
+                                        comp_id = s1['comp_id'][i]
+
+                                        if seq_id in s2['seq_id']:
+                                            j = s2['seq_id'].index(seq_id)
+
+                                            if comp_id != s2['comp_id'][j]:
+
+                                                err = "Unmatched comp_id %s vs %s (seq_id %s, chain_id %s) exists against %s saveframe." % (comp_id, s2['comp_id'][j], seq_id, chain_id, sf_framecode2)
+
+                                                self.report.error.appendDescription('sequence_mismatch', {'file_name': file_name, 'sf_framecode': sf_framecode1, 'category': lp_category1, 'description': err})
+                                                self.report.setError()
+
+                                                if self.__verbose:
+                                                    self.__lfh.write("+NmrDpUtility.__testSequenceConsistency() ++ Error  - %s\n" % err)
 
         return not self.report.isError()
 
@@ -3477,49 +3812,51 @@ class NmrDpUtility(object):
         #if self.report.isError():
         #    return False
 
-        input_source = self.report.input_sources[0]
-        input_source_dic = input_source.get()
-
-        has_poly_seq = self.__hasKeyValue(input_source_dic, 'polymer_sequence')
-        has_poly_seq_in_loop = self.__hasKeyValue(input_source_dic, 'polymer_sequence_in_loop')
-
-        # pass if poly_seq exists
-        if has_poly_seq or (not has_poly_seq_in_loop):
-            return True
-
-        if self.__extractPolymerSequenceInEntity():
-            return True
-
-        polymer_sequence_in_loop = input_source_dic['polymer_sequence_in_loop']
-
         common_poly_seq = {}
 
-        for content_subtype in polymer_sequence_in_loop.keys():
-            list_len = len(polymer_sequence_in_loop[content_subtype])
+        for fileListId in range(self.__file_path_list_len):
 
-            for list_id in range(list_len):
-                ps = polymer_sequence_in_loop[content_subtype][list_id]['polymer_sequence']
+            input_source = self.report.input_sources[fileListId]
+            input_source_dic = input_source.get()
 
-                for s in ps:
-                    chain_id = s['chain_id']
+            has_poly_seq = self.__hasKeyValue(input_source_dic, 'polymer_sequence')
+            has_poly_seq_in_loop = self.__hasKeyValue(input_source_dic, 'polymer_sequence_in_loop')
 
-                    if not chain_id in common_poly_seq:
-                        common_poly_seq[chain_id] = set()
+            # pass if poly_seq exists
+            if has_poly_seq or (not has_poly_seq_in_loop):
+                continue
 
-        for content_subtype in polymer_sequence_in_loop.keys():
-            list_len = len(polymer_sequence_in_loop[content_subtype])
+            if self.__extractPolymerSequenceInEntity(fileListId):
+                continue
 
-            for list_id in range(list_len):
-                ps = polymer_sequence_in_loop[content_subtype][list_id]['polymer_sequence']
+            polymer_sequence_in_loop = input_source_dic['polymer_sequence_in_loop']
 
-                for s in ps:
-                    chain_id = s['chain_id']
+            for content_subtype in polymer_sequence_in_loop.keys():
+                list_len = len(polymer_sequence_in_loop[content_subtype])
 
-                    for i in range(len(s['seq_id'])):
-                        seq_id = s['seq_id'][i]
-                        comp_id = s['comp_id'][i]
+                for list_id in range(list_len):
+                    ps = polymer_sequence_in_loop[content_subtype][list_id]['polymer_sequence']
 
-                        common_poly_seq[chain_id].add('{:04d} {}'.format(seq_id, comp_id))
+                    for s in ps:
+                        chain_id = s['chain_id']
+
+                        if not chain_id in common_poly_seq:
+                            common_poly_seq[chain_id] = set()
+
+            for content_subtype in polymer_sequence_in_loop.keys():
+                list_len = len(polymer_sequence_in_loop[content_subtype])
+
+                for list_id in range(list_len):
+                    ps = polymer_sequence_in_loop[content_subtype][list_id]['polymer_sequence']
+
+                    for s in ps:
+                        chain_id = s['chain_id']
+
+                        for i in range(len(s['seq_id'])):
+                            seq_id = s['seq_id'][i]
+                            comp_id = s['comp_id'][i]
+
+                            common_poly_seq[chain_id].add('{:04d} {}'.format(seq_id, comp_id))
 
         asm = [] # molecular assembly of a loop
 
@@ -3530,15 +3867,34 @@ class NmrDpUtility(object):
                 asm.append({'chain_id': chain_id, 'seq_id': [int(i.split(' ')[0]) for i in sorted_poly_seq], 'comp_id': [i.split(' ')[1] for i in sorted_poly_seq]})
 
         if len(asm) > 0:
-            input_source.setItemValue('polymer_sequence', asm)
+
+            for fileListId in range(self.__file_path_list_len):
+
+                input_source = self.report.input_sources[fileListId]
+                input_source_dic = input_source.get()
+
+                has_poly_seq = self.__hasKeyValue(input_source_dic, 'polymer_sequence')
+                has_poly_seq_in_loop = self.__hasKeyValue(input_source_dic, 'polymer_sequence_in_loop')
+
+                # pass if poly_seq exists
+                if has_poly_seq or (not has_poly_seq_in_loop):
+                    continue
+
+                if self.__extractPolymerSequenceInEntity(fileListId):
+                    continue
+
+                input_source.setItemValue('polymer_sequence', asm)
 
         return True
 
-    def __extractPolymerSequenceInEntity(self):
+    def __extractPolymerSequenceInEntity(self, file_list_id):
         """ Extract polymer sequence in entity loops.
         """
 
-        input_source = self.report.input_sources[0]
+        if not self.__combined_mode:
+            return False
+
+        input_source = self.report.input_sources[file_list_id]
         input_source_dic = input_source.get()
 
         file_type = input_source_dic['file_type']
@@ -3546,7 +3902,7 @@ class NmrDpUtility(object):
         if file_type != 'nmr-star' or (not self.__has_star_entity):
             return False
 
-        for sf_data in self.__star_data.get_saveframes_by_category('assembly'):
+        for sf_data in self.__star_data[file_list_id].get_saveframes_by_category('assembly'):
 
             loop = sf_data.get_loop_by_category('_Entity_assembly')
 
@@ -3589,7 +3945,7 @@ class NmrDpUtility(object):
                 except ValueError:
                     return False
 
-                _sf_data = self.__star_data.get_saveframe_by_name(entity_sf)
+                _sf_data = self.__star_data[file_list_id].get_saveframe_by_name(entity_sf)
 
                 if _sf_data is None:
                     return False
@@ -3644,74 +4000,79 @@ class NmrDpUtility(object):
         #if self.report.isError():
         #    return False
 
-        input_source = self.report.input_sources[0]
-        input_source_dic = input_source.get()
+        for fileListId in range(self.__file_path_list_len):
 
-        file_type = input_source_dic['file_type']
-        file_name = input_source_dic['file_name']
+            input_source = self.report.input_sources[fileListId]
+            input_source_dic = input_source.get()
 
-        content_subtype = 'poly_seq'
+            file_name = input_source_dic['file_name']
+            file_type = input_source_dic['file_type']
 
-        has_poly_seq = self.__hasKeyValue(input_source_dic, 'polymer_sequence')
+            content_subtype = 'poly_seq'
 
-        if not has_poly_seq:
-            return True
+            has_poly_seq = self.__hasKeyValue(input_source_dic, 'polymer_sequence')
 
-        polymer_sequence = input_source_dic['polymer_sequence']
+            if not has_poly_seq:
+                continue
 
-        sf_category = self.sf_categories[file_type][content_subtype]
-        lp_category = self.lp_categories[file_type][content_subtype]
+            if self.__star_data_type[fileListId] == 'Loop':
+                continue
 
-        sf_data = self.__star_data.get_saveframes_by_category(sf_category)[0]
+            polymer_sequence = input_source_dic['polymer_sequence']
 
-        sf_framecode = sf_data.get_tag('sf_framecode')[0]
+            sf_category = self.sf_categories[file_type][content_subtype]
+            lp_category = self.lp_categories[file_type][content_subtype]
 
-        asm = []
+            for sf_data in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
 
-        for s in polymer_sequence:
+                sf_framecode = sf_data.get_tag('sf_framecode')[0]
 
-            has_non_std_comp_id = False
+                asm = []
 
-            ent = {'chain_id': s['chain_id'], 'seq_id': [], 'comp_id': [], 'chem_comp_name': [], 'exptl_data': []}
+                for s in polymer_sequence:
 
-            for i in range(len(s['seq_id'])):
-                seq_id = s['seq_id'][i]
-                comp_id = s['comp_id'][i]
+                    has_non_std_comp_id = False
 
-                if self.__get1LetterCode(comp_id) == 'X':
-                    has_non_std_comp_id = True
+                    ent = {'chain_id': s['chain_id'], 'seq_id': [], 'comp_id': [], 'chem_comp_name': [], 'exptl_data': []}
 
-                    ent['seq_id'].append(seq_id)
-                    ent['comp_id'].append(comp_id)
+                    for i in range(len(s['seq_id'])):
+                        seq_id = s['seq_id'][i]
+                        comp_id = s['comp_id'][i]
 
-                    self.__updateChemCompDict(comp_id)
+                        if self.__get1LetterCode(comp_id) == 'X':
+                            has_non_std_comp_id = True
 
-                    if self.__last_comp_id_test: # matches with comp_id in CCD
-                        cc_name = self.__last_chem_comp_dict['_chem_comp.name']
-                        cc_rel_status = self.__last_chem_comp_dict['_chem_comp.pdbx_release_status']
-                        if cc_rel_status == 'REL':
-                            ent['chem_comp_name'].append(cc_name)
-                        else:
-                            ent['chem_comp_name'].append('(Not available due to CCD status code %s)' % cc_rel_status)
+                            ent['seq_id'].append(seq_id)
+                            ent['comp_id'].append(comp_id)
 
-                    else:
-                        ent['chem_comp_name'].append(None)
+                            self.__updateChemCompDict(comp_id)
 
-                        warn = 'Non standard residue (chain_id %s, seq_id %s, comp_id %s) did not match with chemical component dictionary (CCD).'
+                            if self.__last_comp_id_test: # matches with comp_id in CCD
+                                cc_name = self.__last_chem_comp_dict['_chem_comp.name']
+                                cc_rel_status = self.__last_chem_comp_dict['_chem_comp.pdbx_release_status']
+                                if cc_rel_status == 'REL':
+                                    ent['chem_comp_name'].append(cc_name)
+                                else:
+                                    ent['chem_comp_name'].append('(Not available due to CCD status code %s)' % cc_rel_status)
 
-                        self.report.warning.appendDescription('ccd_mismatch', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
-                        self.report.setWarning()
+                            else:
+                                ent['chem_comp_name'].append(None)
 
-                        if self.__verbose:
-                           self.__lfh.write("+NmrDpUtility.__extractNonStandardResidue() ++ Warning  - %s\n" % warn)
+                                warn = 'Non standard residue (chain_id %s, seq_id %s, comp_id %s) did not match with chemical component dictionary (CCD).'
 
-                    ent['exptl_data'].append({'chem_shift': False, 'dist_restraint': False, 'dihed_restraint': False, 'rdc_restraint': False, 'spectral_peak': False, 'coordinate': False})
+                                self.report.warning.appendDescription('ccd_mismatch', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
+                                self.report.setWarning()
 
-            if has_non_std_comp_id:
-                asm.append(ent)
+                                if self.__verbose:
+                                   self.__lfh.write("+NmrDpUtility.__extractNonStandardResidue() ++ Warning  - %s\n" % warn)
 
-        if len(asm) > 0:
-            input_source.setItemValue('non_standard_residue', asm)
+                            ent['exptl_data'].append({'chem_shift': False, 'dist_restraint': False, 'dihed_restraint': False, 'rdc_restraint': False, 'spectral_peak': False, 'coordinate': False})
+
+                    if has_non_std_comp_id:
+                        asm.append(ent)
+
+                if len(asm) > 0:
+                    input_source.setItemValue('non_standard_residue', asm)
 
         return True
 
@@ -3722,101 +4083,106 @@ class NmrDpUtility(object):
         #if self.report.isError():
         #    return False
 
-        input_source = self.report.input_sources[0]
-        input_source_dic = input_source.get()
+        is_done = True
 
-        has_poly_seq = self.__hasKeyValue(input_source_dic, 'polymer_sequence')
-        has_poly_seq_in_loop = self.__hasKeyValue(input_source_dic, 'polymer_sequence_in_loop')
+        for fileListId in range(self.__file_path_list_len):
 
-        if not has_poly_seq:
-            """
-            err = "Common polymer sequence did not exist, __extractCommonPolymerSequence() should be invoked."
+            input_source = self.report.input_sources[fileListId]
+            input_source_dic = input_source.get()
 
-            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__appendPolymerSequenceAlignment() ++ Error  - %s" % err)
-            self.report.setError()
+            has_poly_seq = self.__hasKeyValue(input_source_dic, 'polymer_sequence')
+            has_poly_seq_in_loop = self.__hasKeyValue(input_source_dic, 'polymer_sequence_in_loop')
 
-            if self.__verbose:
-                self.__lfh.write("+NmrDpUtility.__appendPolymerSequenceAlignment() ++ Error  - %s\n" % err)
-            """
-            return False
+            if not has_poly_seq:
+                """
+                err = "Common polymer sequence did not exist, __extractCommonPolymerSequence() should be invoked."
 
-        if not has_poly_seq_in_loop:
-            return True
+                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__appendPolymerSequenceAlignment() ++ Error  - %s" % err)
+                self.report.setError()
 
-        polymer_sequence = input_source_dic['polymer_sequence']
-        polymer_sequence_in_loop = input_source_dic['polymer_sequence_in_loop']
+                if self.__verbose:
+                    self.__lfh.write("+NmrDpUtility.__appendPolymerSequenceAlignment() ++ Error  - %s\n" % err)
+                """
+                is_done = False
+                continue
 
-        for content_subtype in polymer_sequence_in_loop.keys():
-            list_len = len(polymer_sequence_in_loop[content_subtype])
+            if not has_poly_seq_in_loop:
+                continue
 
-            seq_align_set = []
+            polymer_sequence = input_source_dic['polymer_sequence']
+            polymer_sequence_in_loop = input_source_dic['polymer_sequence_in_loop']
 
-            for s1 in polymer_sequence:
-                chain_id = s1['chain_id']
+            for content_subtype in polymer_sequence_in_loop.keys():
+                list_len = len(polymer_sequence_in_loop[content_subtype])
 
-                if type(chain_id) == int:
-                    _chain_id = str(chain_id)
-                else:
-                    _chain_id = chain_id
+                seq_align_set = []
 
-                for list_id in range(list_len):
-                    ps2 = polymer_sequence_in_loop[content_subtype][list_id]['polymer_sequence']
+                for s1 in polymer_sequence:
+                    chain_id = s1['chain_id']
 
-                    for s2 in ps2:
+                    if type(chain_id) == int:
+                        _chain_id = str(chain_id)
+                    else:
+                        _chain_id = chain_id
 
-                        if chain_id != s2['chain_id']:
-                            continue
+                    for list_id in range(list_len):
+                        ps2 = polymer_sequence_in_loop[content_subtype][list_id]['polymer_sequence']
 
-                        _s2 = self.__fillBlankedCompId(s1, s2)
+                        for s2 in ps2:
 
-                        self.__pA.setReferenceSequence(s1['comp_id'], 'REF' + _chain_id)
-                        self.__pA.addTestSequence(_s2['comp_id'], _chain_id)
-                        self.__pA.doAlign()
+                            if chain_id != s2['chain_id']:
+                                continue
 
-                        myAlign = self.__pA.getAlignment(_chain_id)
+                            _s2 = self.__fillBlankedCompId(s1, s2)
 
-                        length = len(myAlign)
+                            self.__pA.setReferenceSequence(s1['comp_id'], 'REF' + _chain_id)
+                            self.__pA.addTestSequence(_s2['comp_id'], _chain_id)
+                            self.__pA.doAlign()
 
-                        if length == 0:
-                            continue
+                            myAlign = self.__pA.getAlignment(_chain_id)
 
-                        unmapped = 0
-                        conflict = 0
-                        for i in range(length):
-                            myPr = myAlign[i]
-                            if myPr[0].encode() == '.' or myPr[1].encode() == '.':
-                                unmapped += 1
-                            elif myPr[0] != myPr[1]:
-                                conflict += 1
+                            length = len(myAlign)
 
-                        if length == unmapped + conflict:
-                            continue
+                            if length == 0:
+                                continue
 
-                        ref_length = len(s1['seq_id'])
+                            unmapped = 0
+                            conflict = 0
+                            for i in range(length):
+                                myPr = myAlign[i]
+                                if myPr[0].encode() == '.' or myPr[1].encode() == '.':
+                                    unmapped += 1
+                                elif myPr[0] != myPr[1]:
+                                    conflict += 1
 
-                        ref_code = self.__get1LetterCodeSequence(s1['comp_id'])
-                        test_code = self.__get1LetterCodeSequence(_s2['comp_id'])
-                        mid_code = self.__getMiddleCode(ref_code, test_code)
-                        ref_gauge_code = self.__getGaugeCode(s1['seq_id'])
-                        test_gauge_code = self.__getGaugeCode(_s2['seq_id'])
+                            if length == unmapped + conflict:
+                                continue
 
-                        seq_align = {'list_id': polymer_sequence_in_loop[content_subtype][list_id]['list_id'],
-                                     'sf_framecode': polymer_sequence_in_loop[content_subtype][list_id]['sf_framecode'],
-                                     'chain_id': chain_id, 'length': ref_length, 'conflict': conflict, 'unmapped': unmapped,
-                                     'sequence_coverage': float('{:.3f}'.format(float(length - (unmapped + conflict)) / float(ref_length))),
-                                     'ref_seq_id': s1['seq_id'],
-                                     'ref_gauge_code': ref_gauge_code, 'ref_code': ref_code, 'mid_code': mid_code, 'test_code': test_code, 'test_gauge_code': test_gauge_code}
+                            ref_length = len(s1['seq_id'])
 
-                        seq_align_set.append(seq_align)
+                            ref_code = self.__get1LetterCodeSequence(s1['comp_id'])
+                            test_code = self.__get1LetterCodeSequence(_s2['comp_id'])
+                            mid_code = self.__getMiddleCode(ref_code, test_code)
+                            ref_gauge_code = self.__getGaugeCode(s1['seq_id'])
+                            test_gauge_code = self.__getGaugeCode(_s2['seq_id'])
 
-                        for j in range(len(ref_code)):
-                            if ref_code[j] == 'X' and test_code[j] == 'X':
-                                input_source.updateNonStandardResidueByExptlData(chain_id, s1['seq_id'][j], content_subtype)
+                            seq_align = {'list_id': polymer_sequence_in_loop[content_subtype][list_id]['list_id'],
+                                         'sf_framecode': polymer_sequence_in_loop[content_subtype][list_id]['sf_framecode'],
+                                         'chain_id': chain_id, 'length': ref_length, 'conflict': conflict, 'unmapped': unmapped,
+                                         'sequence_coverage': float('{:.3f}'.format(float(length - (unmapped + conflict)) / float(ref_length))),
+                                         'ref_seq_id': s1['seq_id'],
+                                         'ref_gauge_code': ref_gauge_code, 'ref_code': ref_code, 'mid_code': mid_code, 'test_code': test_code, 'test_gauge_code': test_gauge_code}
 
-            if len(seq_align_set) > 0:
-                self.report.sequence_alignment.setItemValue('nmr_poly_seq_vs_' + content_subtype, seq_align_set)
+                            seq_align_set.append(seq_align)
 
-        return True
+                            for j in range(len(ref_code)):
+                                if ref_code[j] == 'X' and test_code[j] == 'X':
+                                    input_source.updateNonStandardResidueByExptlData(chain_id, s1['seq_id'][j], content_subtype)
+
+                if len(seq_align_set) > 0:
+                    self.report.sequence_alignment.setItemValue('nmr_poly_seq_vs_' + content_subtype, seq_align_set)
+
+        return is_done
 
     def __fillBlankedCompId(self, s1, s2):
         """ Fill blanked comp ID in s2 against s1.
@@ -3838,7 +4204,7 @@ class NmrDpUtility(object):
         """ Fill blanked comp ID in s2 against s1 with offset.
         """
 
-        seq_ids = range(1 - offset, s2['seq_id'][-1] + 1)
+        seq_ids = range(s2['seq_id'][0] - offset, s2['seq_id'][-1] + 1)
         comp_ids = []
 
         for i in seq_ids:
@@ -3942,52 +4308,72 @@ class NmrDpUtility(object):
         #if self.report.isError():
         #    return False
 
-        input_source = self.report.input_sources[0]
-        input_source_dic = input_source.get()
+        for fileListId in range(self.__file_path_list_len):
 
-        file_name = input_source_dic['file_name']
-        file_type = input_source_dic['file_type']
+            input_source = self.report.input_sources[fileListId]
+            input_source_dic = input_source.get()
 
-        has_poly_seq_in_loop = self.__hasKeyValue(input_source_dic, 'polymer_sequence_in_loop')
+            file_name = input_source_dic['file_name']
+            file_type = input_source_dic['file_type']
 
-        if not has_poly_seq_in_loop:
-            return False
+            has_poly_seq_in_loop = self.__hasKeyValue(input_source_dic, 'polymer_sequence_in_loop')
 
-        polymer_sequence_in_loop = input_source_dic['polymer_sequence_in_loop']
+            if not has_poly_seq_in_loop:
+                continue
 
-        for content_subtype in polymer_sequence_in_loop.keys():
+            polymer_sequence_in_loop = input_source_dic['polymer_sequence_in_loop']
 
-            sf_category = self.sf_categories[file_type][content_subtype]
-            lp_category = self.lp_categories[file_type][content_subtype]
+            for content_subtype in polymer_sequence_in_loop.keys():
 
-            for sf_data in self.__star_data.get_saveframes_by_category(sf_category):
+                sf_category = self.sf_categories[file_type][content_subtype]
+                lp_category = self.lp_categories[file_type][content_subtype]
 
-                sf_framecode = sf_data.get_tag('sf_framecode')[0]
+                if self.__star_data_type[fileListId] == 'Loop':
 
-                try:
+                    sf_data = self.__star_data[fileListId]
+                    sf_framecode = ''
 
-                    if file_type == 'nef':
-                        pairs = self.__nefT.get_nef_comp_atom_pair(sf_data, lp_category,
-                                                                   allow_empty=(content_subtype == 'spectral_peak'))[0]
-                    else:
-                        pairs = self.__nefT.get_star_comp_atom_pair(sf_data, lp_category,
-                                                                    allow_empty=(content_subtype == 'spectral_peak'))[0]
+                    try:
 
-                    for pair in pairs:
-                        comp_id = pair['comp_id']
-                        atom_ids = pair['atom_id']
+                        if file_type == 'nef':
+                            pairs = self.__nefT.get_nef_comp_atom_pair(sf_data, lp_category,
+                                                                       allow_empty=(content_subtype == 'spectral_peak'))[0]
+                        else:
+                            pairs = self.__nefT.get_star_comp_atom_pair(sf_data, lp_category,
+                                                                        allow_empty=(content_subtype == 'spectral_peak'))[0]
 
-                        # standard residue
-                        if self.__nefT.get_one_letter_code(comp_id) != 'X':
+                        for pair in pairs:
+                            comp_id = pair['comp_id']
+                            atom_ids = pair['atom_id']
 
-                            if file_type == 'nef':
+                            # standard residue
+                            if self.__nefT.get_one_letter_code(comp_id) != 'X':
 
-                                _atom_ids = []
+                                if file_type == 'nef':
+
+                                    _atom_ids = []
+                                    for atom_id in atom_ids:
+
+                                        _atom_id = self.__nefT.get_star_atom(comp_id, atom_id, leave_unmatched=False)[0]
+
+                                        if len(_atom_id) == 0:
+
+                                            err = "Invalid atom_id %s (comp_id %s) exists." % (atom_id, comp_id)
+
+                                            self.report.error.appendDescription('invalid_atom_nomenclature', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
+                                            self.report.setError()
+
+                                            if self.__verbose:
+                                                self.__lfh.write("+NmrDpUtility.__validateAtomNomenclature() ++ Error  - %s\n" % err)
+
+                                        else:
+                                            _atom_ids.extend(_atom_id)
+
+                                    atom_ids = sorted(set(_atom_ids))
+
                                 for atom_id in atom_ids:
 
-                                    _atom_id = self.__nefT.get_star_atom(comp_id, atom_id, leave_unmatched=False)[0]
-
-                                    if len(_atom_id) == 0:
+                                    if not self.__nefT.validate_comp_atom(comp_id, atom_id):
 
                                         err = "Invalid atom_id %s (comp_id %s) exists." % (atom_id, comp_id)
 
@@ -3997,132 +4383,258 @@ class NmrDpUtility(object):
                                         if self.__verbose:
                                             self.__lfh.write("+NmrDpUtility.__validateAtomNomenclature() ++ Error  - %s\n" % err)
 
-                                    else:
-                                        _atom_ids.extend(_atom_id)
+                            # non-standard residue
+                            else:
+                                self.__updateChemCompDict(comp_id)
 
-                                atom_ids = sorted(set(_atom_ids))
+                                if self.__last_comp_id_test: # matches with comp_id in CCD
 
-                            for atom_id in atom_ids:
+                                    ref_atom_ids = [a[self.__cca_atom_id] for a in self.__last_chem_comp_atoms] # if a[self.__cca_leaving_atom_flag] != 'Y']
+                                    unk_atom_ids = []
 
-                                if not self.__nefT.validate_comp_atom(comp_id, atom_id):
+                                    for atom_id in atom_ids:
 
-                                    err = "Invalid atom_id %s (comp_id %s) exists." % (atom_id, comp_id)
+                                        if not atom_id in ref_atom_ids:
+                                            unk_atom_ids.append(atom_id)
 
-                                    self.report.error.appendDescription('invalid_atom_nomenclature', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
-                                    self.report.setError()
+                                    if len(unk_atom_ids) > 0:
+                                        cc_rel_status = self.__last_chem_comp_dict['_chem_comp.pdbx_release_status']
+                                        if cc_rel_status == 'REL':
+                                            cc_name = self.__last_chem_comp_dict['_chem_comp.name']
+                                        else:
+                                            cc_name = '(Not available due to CCD status code %s)' % cc_rel_status
 
-                                    if self.__verbose:
-                                        self.__lfh.write("+NmrDpUtility.__validateAtomNomenclature() ++ Error  - %s\n" % err)
+                                        warn = "Unknown atom_id %s (comp_id %s, chem_comp_name %s) exists." % (unk_atom_ids, comp_id, cc_name)
 
-                        # non-standard residue
-                        else:
-                            self.__updateChemCompDict(comp_id)
+                                        self.report.warning.appendDescription('atom_nomenclature_mismatch', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
+                                        self.report.setWarning()
 
-                            if self.__last_comp_id_test: # matches with comp_id in CCD
+                                        if self.__verbose:
+                                            self.__lfh.write("+NmrDpUtility.__validateAtomNomenclature() ++ Warning  - %s\n" % warn)
 
-                                ref_atom_ids = [a[self.__cca_atom_id] for a in self.__last_chem_comp_atoms] # if a[self.__cca_leaving_atom_flag] != 'Y']
-                                unk_atom_ids = []
+                                    ref_elems = set([a[self.__cca_type_symbol] for a in self.__last_chem_comp_atoms if a[self.__cca_leaving_atom_flag] != 'Y'])
 
-                                for atom_id in atom_ids:
+                                    for elem in ref_elems:
+                                        if elem in self.paramag_elems or elem in self.ferromag_elems:
+                                            self.report.setDiagmagnetic(False)
+                                            break
 
-                                    if not atom_id in ref_atom_ids:
-                                        unk_atom_ids.append(atom_id)
+                                else:
+                                    pass
 
-                                if len(unk_atom_ids) > 0:
-                                    cc_rel_status = self.__last_chem_comp_dict['_chem_comp.pdbx_release_status']
-                                    if cc_rel_status == 'REL':
-                                        cc_name = self.__last_chem_comp_dict['_chem_comp.name']
-                                    else:
-                                        cc_name = '(Not available due to CCD status code %s)' % cc_rel_status
+                        if file_type == 'nmr-star':
+                            auth_pairs = self.__nefT.get_star_auth_comp_atom_pair(sf_data, lp_category)[0]
 
-                                    warn = "Unknown atom_id %s (comp_id %s, chem_comp_name %s) exists." % (unk_atom_ids, comp_id, cc_name)
+                            for auth_pair in auth_pairs:
+                                comp_id = auth_pair['comp_id']
+                                auth_atom_ids = auth_pair['atom_id']
 
-                                    self.report.warning.appendDescription('atom_nomenclature_mismatch', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
-                                    self.report.setWarning()
+                                # standard residue
+                                if self.__nefT.get_one_letter_code(comp_id) != 'X':
 
-                                    if self.__verbose:
-                                        self.__lfh.write("+NmrDpUtility.__validateAtomNomenclature() ++ Warning  - %s\n" % warn)
+                                    _auth_atom_ids = []
+                                    for auth_atom_id in auth_atom_ids:
 
-                                ref_elems = set([a[self.__cca_type_symbol] for a in self.__last_chem_comp_atoms if a[self.__cca_leaving_atom_flag] != 'Y'])
+                                        _auth_atom_id = self.__nefT.get_star_atom(comp_id, auth_atom_id, leave_unmatched=False)[0]
 
-                                for elem in ref_elems:
-                                    if elem in self.paramag_elems or elem in self.ferromag_elems:
-                                        self.report.setDiagmagnetic(False)
+                                        if len(_auth_atom_id) == 0:
+
+                                            warn = "Unmatched author atom ID %s (auth_comp_id %s) exists." % (auth_atom_id, comp_id)
+
+                                            self.report.warning.appendDescription('atom_nomenclature_mismatch', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
+                                            self.report.setWarning()
+
+                                            if self.__verbose:
+                                                self.__lfh.write("+NmrDpUtility.__validateAtomNomenclature() ++ Warning  - %s\n" % warn)
+
+                                        else:
+                                            _auth_atom_ids.extend(_auth_atom_id)
+
+                                    auth_atom_ids = sorted(set(_auth_atom_ids))
+
+                                    for auth_atom_id in auth_atom_ids:
+
+                                        if not self.__nefT.validate_comp_atom(comp_id, auth_atom_id):
+
+                                            warn = "Unmatched author atom ID %s (auth_comp_id %s) exists." % (auth_atom_id, comp_id)
+
+                                            self.report.warning.appendDescription('atom_nomenclature_mismatch', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
+                                            self.report.setWarning()
+
+                                            if self.__verbose:
+                                                self.__lfh.write("+NmrDpUtility.__validateAtomNomenclature() ++ Warning  - %s\n" % warn)
+
+                                # non-standard residue
+                                else:
+                                    has_comp_id = False
+
+                                    for pair in pairs:
+
+                                        if pair['comp_id'] != comp_id:
+                                            continue
+
+                                        has_comp_id = True
+
+                                        atom_ids = pair['atom_id']
+
+                                        if (set(auth_atom_ids) | set(atom_ids)) != set(atom_ids):
+
+                                            warn = "Unmatched author atom ID %s (auth_comp_id %s, non-standard residue) exists." % ((set(auth_atom_ids) | set(atom_ids)) - set(atom_ids), comp_id)
+
+                                            self.report.warning.appendDescription('atom_nomenclature_mismatch', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
+                                            self.report.setWarning()
+
+                                            if self.__verbose:
+                                                self.__lfh.write("+NmrDpUtility.__validateAtomNomenclature() ++ Warning  - %s\n" % warn)
+
                                         break
 
+                                    if not has_comp_id:
+
+                                            warn = "Unmatched author atom ID %s (auth_comp_id %s, non-standard residue) exists." % (auth_atom_ids, comp_id)
+
+                                            self.report.warning.appendDescription('atom_nomenclature_mismatch', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
+                                            self.report.setWarning()
+
+                                            if self.__verbose:
+                                                self.__lfh.write("+NmrDpUtility.__validateAtomNomenclature() ++ Warning  - %s\n" % warn)
+
+                    except LookupError as e:
+
+                        self.report.error.appendDescription('missing_mandatory_item', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': str(e).strip("'")})
+                        self.report.setError()
+
+                        if self.__verbose:
+                            self.__lfh.write("+NmrDpUtility.__validateAtomNomenclature() ++ LookupError  - %s" % str(e))
+
+                    except ValueError as e:
+
+                        self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': str(e).strip("'")})
+                        self.report.setError()
+
+                        if self.__verbose:
+                            self.__lfh.write("+NmrDpUtility.__validateAtomNomenclature() ++ ValueError  - %s" % str(e))
+
+                    except UserWarning as e:
+
+                        warns = str(e).strip("'").split('\n')
+                        proc_warns = set()
+
+                        for warn in warns:
+
+                            if warn == '' or warn in proc_warns:
+                                continue
+
+                            proc_warns.add(warn)
+
+                            invl = warn.startswith('[Invalid data] ')
+
+                            if invl:
+
+                                err = warn[15:]
+
+                                self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
+                                self.report.setError()
+
+                                if self.__verbose:
+                                    self.__lfh.write("+NmrDpUtility.__validateAtomNomenclature() ++ ValueError  - %s" % err)
+
                             else:
-                                pass
 
-                    if file_type == 'nmr-star':
-                        auth_pairs = self.__nefT.get_star_auth_comp_atom_pair(sf_data, lp_category)[0]
+                                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateAtomNomenclature() ++ Error  - %s" % warn)
+                                self.report.setError()
 
-                        for auth_pair in auth_pairs:
-                            comp_id = auth_pair['comp_id']
-                            auth_atom_ids = auth_pair['atom_id']
+                                if self.__verbose:
+                                    self.__lfh.write("+NmrDpUtility.__validateAtomNomenclature() ++ Error  - %s" % warn)
+
+                    except Exception as e:
+
+                        self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateAtomNomenclature() ++ Error  - %s" % str(e))
+                        self.report.setError()
+
+                        if self.__verbose:
+                            self.__lfh.write("+NmrDpUtility.__validateAtomNomenclature() ++ Error  - %s" % str(e))
+
+                    continue
+
+                # Entry/Saveframe
+
+                for sf_data in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
+
+                    sf_framecode = sf_data.get_tag('sf_framecode')[0]
+
+                    try:
+
+                        if file_type == 'nef':
+                            pairs = self.__nefT.get_nef_comp_atom_pair(sf_data, lp_category,
+                                                                       allow_empty=(content_subtype == 'spectral_peak'))[0]
+                        else:
+                            pairs = self.__nefT.get_star_comp_atom_pair(sf_data, lp_category,
+                                                                        allow_empty=(content_subtype == 'spectral_peak'))[0]
+
+                        for pair in pairs:
+                            comp_id = pair['comp_id']
+                            atom_ids = pair['atom_id']
 
                             # standard residue
                             if self.__nefT.get_one_letter_code(comp_id) != 'X':
 
-                                _auth_atom_ids = []
-                                for auth_atom_id in auth_atom_ids:
+                                if file_type == 'nef':
 
-                                    _auth_atom_id = self.__nefT.get_star_atom(comp_id, auth_atom_id, leave_unmatched=False)[0]
+                                    _atom_ids = []
+                                    for atom_id in atom_ids:
 
-                                    if len(_auth_atom_id) == 0:
+                                        _atom_id = self.__nefT.get_star_atom(comp_id, atom_id, leave_unmatched=False)[0]
 
-                                        warn = "Unmatched author atom ID %s (auth_comp_id %s) exists." % (auth_atom_id, comp_id)
+                                        if len(_atom_id) == 0:
 
-                                        self.report.warning.appendDescription('atom_nomenclature_mismatch', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
-                                        self.report.setWarning()
+                                            err = "Invalid atom_id %s (comp_id %s) exists." % (atom_id, comp_id)
+
+                                            self.report.error.appendDescription('invalid_atom_nomenclature', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
+                                            self.report.setError()
+
+                                            if self.__verbose:
+                                                self.__lfh.write("+NmrDpUtility.__validateAtomNomenclature() ++ Error  - %s\n" % err)
+
+                                        else:
+                                            _atom_ids.extend(_atom_id)
+
+                                    atom_ids = sorted(set(_atom_ids))
+
+                                for atom_id in atom_ids:
+
+                                    if not self.__nefT.validate_comp_atom(comp_id, atom_id):
+
+                                        err = "Invalid atom_id %s (comp_id %s) exists." % (atom_id, comp_id)
+
+                                        self.report.error.appendDescription('invalid_atom_nomenclature', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
+                                        self.report.setError()
 
                                         if self.__verbose:
-                                            self.__lfh.write("+NmrDpUtility.__validateAtomNomenclature() ++ Warning  - %s\n" % warn)
-
-                                    else:
-                                        _auth_atom_ids.extend(_auth_atom_id)
-
-                                auth_atom_ids = sorted(set(_auth_atom_ids))
-
-                                for auth_atom_id in auth_atom_ids:
-
-                                    if not self.__nefT.validate_comp_atom(comp_id, auth_atom_id):
-
-                                        warn = "Unmatched author atom ID %s (auth_comp_id %s) exists." % (auth_atom_id, comp_id)
-
-                                        self.report.warning.appendDescription('atom_nomenclature_mismatch', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
-                                        self.report.setWarning()
-
-                                        if self.__verbose:
-                                            self.__lfh.write("+NmrDpUtility.__validateAtomNomenclature() ++ Warning  - %s\n" % warn)
+                                            self.__lfh.write("+NmrDpUtility.__validateAtomNomenclature() ++ Error  - %s\n" % err)
 
                             # non-standard residue
                             else:
-                                has_comp_id = False
+                                self.__updateChemCompDict(comp_id)
 
-                                for pair in pairs:
+                                if self.__last_comp_id_test: # matches with comp_id in CCD
 
-                                    if pair['comp_id'] != comp_id:
-                                        continue
+                                    ref_atom_ids = [a[self.__cca_atom_id] for a in self.__last_chem_comp_atoms] # if a[self.__cca_leaving_atom_flag] != 'Y']
+                                    unk_atom_ids = []
 
-                                    has_comp_id = True
+                                    for atom_id in atom_ids:
 
-                                    atom_ids = pair['atom_id']
+                                        if not atom_id in ref_atom_ids:
+                                            unk_atom_ids.append(atom_id)
 
-                                    if (set(auth_atom_ids) | set(atom_ids)) != set(atom_ids):
+                                    if len(unk_atom_ids) > 0:
+                                        cc_rel_status = self.__last_chem_comp_dict['_chem_comp.pdbx_release_status']
+                                        if cc_rel_status == 'REL':
+                                            cc_name = self.__last_chem_comp_dict['_chem_comp.name']
+                                        else:
+                                            cc_name = '(Not available due to CCD status code %s)' % cc_rel_status
 
-                                        warn = "Unmatched author atom ID %s (auth_comp_id %s, non-standard residue) exists." % ((set(auth_atom_ids) | set(atom_ids)) - set(atom_ids), comp_id)
-
-                                        self.report.warning.appendDescription('atom_nomenclature_mismatch', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
-                                        self.report.setWarning()
-
-                                        if self.__verbose:
-                                            self.__lfh.write("+NmrDpUtility.__validateAtomNomenclature() ++ Warning  - %s\n" % warn)
-
-                                    break
-
-                                if not has_comp_id:
-
-                                        warn = "Unmatched author atom ID %s (auth_comp_id %s, non-standard residue) exists." % (auth_atom_ids, comp_id)
+                                        warn = "Unknown atom_id %s (comp_id %s, chem_comp_name %s) exists." % (unk_atom_ids, comp_id, cc_name)
 
                                         self.report.warning.appendDescription('atom_nomenclature_mismatch', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
                                         self.report.setWarning()
@@ -4130,61 +4642,148 @@ class NmrDpUtility(object):
                                         if self.__verbose:
                                             self.__lfh.write("+NmrDpUtility.__validateAtomNomenclature() ++ Warning  - %s\n" % warn)
 
-                except LookupError as e:
+                                    ref_elems = set([a[self.__cca_type_symbol] for a in self.__last_chem_comp_atoms if a[self.__cca_leaving_atom_flag] != 'Y'])
 
-                    self.report.error.appendDescription('missing_mandatory_item', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': str(e).strip("'")})
-                    self.report.setError()
+                                    for elem in ref_elems:
+                                        if elem in self.paramag_elems or elem in self.ferromag_elems:
+                                            self.report.setDiagmagnetic(False)
+                                            break
 
-                    if self.__verbose:
-                        self.__lfh.write("+NmrDpUtility.__validateAtomNomenclature() ++ LookupError  - %s" % str(e))
+                                else:
+                                    pass
 
-                except ValueError as e:
+                        if file_type == 'nmr-star':
+                            auth_pairs = self.__nefT.get_star_auth_comp_atom_pair(sf_data, lp_category)[0]
 
-                    self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': str(e).strip("'")})
-                    self.report.setError()
+                            for auth_pair in auth_pairs:
+                                comp_id = auth_pair['comp_id']
+                                auth_atom_ids = auth_pair['atom_id']
 
-                    if self.__verbose:
-                        self.__lfh.write("+NmrDpUtility.__validateAtomNomenclature() ++ ValueError  - %s" % str(e))
+                                # standard residue
+                                if self.__nefT.get_one_letter_code(comp_id) != 'X':
 
-                except UserWarning as e:
+                                    _auth_atom_ids = []
+                                    for auth_atom_id in auth_atom_ids:
 
-                    warns = str(e).strip("'").split('\n')
-                    proc_warns = set()
+                                        _auth_atom_id = self.__nefT.get_star_atom(comp_id, auth_atom_id, leave_unmatched=False)[0]
 
-                    for warn in warns:
+                                        if len(_auth_atom_id) == 0:
 
-                        if warn == '' or warn in proc_warns:
-                            continue
+                                            warn = "Unmatched author atom ID %s (auth_comp_id %s) exists." % (auth_atom_id, comp_id)
 
-                        proc_warns.add(warn)
+                                            self.report.warning.appendDescription('atom_nomenclature_mismatch', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
+                                            self.report.setWarning()
 
-                        invl = warn.startswith('[Invalid data] ')
+                                            if self.__verbose:
+                                                self.__lfh.write("+NmrDpUtility.__validateAtomNomenclature() ++ Warning  - %s\n" % warn)
 
-                        if invl:
+                                        else:
+                                            _auth_atom_ids.extend(_auth_atom_id)
 
-                            err = warn[15:]
+                                    auth_atom_ids = sorted(set(_auth_atom_ids))
 
-                            self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
-                            self.report.setError()
+                                    for auth_atom_id in auth_atom_ids:
 
-                            if self.__verbose:
-                                self.__lfh.write("+NmrDpUtility.__validateAtomNomenclature() ++ ValueError  - %s" % err)
+                                        if not self.__nefT.validate_comp_atom(comp_id, auth_atom_id):
 
-                        else:
+                                            warn = "Unmatched author atom ID %s (auth_comp_id %s) exists." % (auth_atom_id, comp_id)
 
-                            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateAtomNomenclature() ++ Error  - %s" % warn)
-                            self.report.setError()
+                                            self.report.warning.appendDescription('atom_nomenclature_mismatch', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
+                                            self.report.setWarning()
 
-                            if self.__verbose:
-                                self.__lfh.write("+NmrDpUtility.__validateAtomNomenclature() ++ Error  - %s" % warn)
+                                            if self.__verbose:
+                                                self.__lfh.write("+NmrDpUtility.__validateAtomNomenclature() ++ Warning  - %s\n" % warn)
 
-                except Exception as e:
+                                # non-standard residue
+                                else:
+                                    has_comp_id = False
 
-                    self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateAtomNomenclature() ++ Error  - %s" % str(e))
-                    self.report.setError()
+                                    for pair in pairs:
 
-                    if self.__verbose:
-                        self.__lfh.write("+NmrDpUtility.__validateAtomNomenclature() ++ Error  - %s" % str(e))
+                                        if pair['comp_id'] != comp_id:
+                                            continue
+
+                                        has_comp_id = True
+
+                                        atom_ids = pair['atom_id']
+
+                                        if (set(auth_atom_ids) | set(atom_ids)) != set(atom_ids):
+
+                                            warn = "Unmatched author atom ID %s (auth_comp_id %s, non-standard residue) exists." % ((set(auth_atom_ids) | set(atom_ids)) - set(atom_ids), comp_id)
+
+                                            self.report.warning.appendDescription('atom_nomenclature_mismatch', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
+                                            self.report.setWarning()
+
+                                            if self.__verbose:
+                                                self.__lfh.write("+NmrDpUtility.__validateAtomNomenclature() ++ Warning  - %s\n" % warn)
+
+                                        break
+
+                                    if not has_comp_id:
+
+                                            warn = "Unmatched author atom ID %s (auth_comp_id %s, non-standard residue) exists." % (auth_atom_ids, comp_id)
+
+                                            self.report.warning.appendDescription('atom_nomenclature_mismatch', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
+                                            self.report.setWarning()
+
+                                            if self.__verbose:
+                                                self.__lfh.write("+NmrDpUtility.__validateAtomNomenclature() ++ Warning  - %s\n" % warn)
+
+                    except LookupError as e:
+
+                        self.report.error.appendDescription('missing_mandatory_item', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': str(e).strip("'")})
+                        self.report.setError()
+
+                        if self.__verbose:
+                            self.__lfh.write("+NmrDpUtility.__validateAtomNomenclature() ++ LookupError  - %s" % str(e))
+
+                    except ValueError as e:
+
+                        self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': str(e).strip("'")})
+                        self.report.setError()
+
+                        if self.__verbose:
+                            self.__lfh.write("+NmrDpUtility.__validateAtomNomenclature() ++ ValueError  - %s" % str(e))
+
+                    except UserWarning as e:
+
+                        warns = str(e).strip("'").split('\n')
+                        proc_warns = set()
+
+                        for warn in warns:
+
+                            if warn == '' or warn in proc_warns:
+                                continue
+
+                            proc_warns.add(warn)
+
+                            invl = warn.startswith('[Invalid data] ')
+
+                            if invl:
+
+                                err = warn[15:]
+
+                                self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
+                                self.report.setError()
+
+                                if self.__verbose:
+                                    self.__lfh.write("+NmrDpUtility.__validateAtomNomenclature() ++ ValueError  - %s" % err)
+
+                            else:
+
+                                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateAtomNomenclature() ++ Error  - %s" % warn)
+                                self.report.setError()
+
+                                if self.__verbose:
+                                    self.__lfh.write("+NmrDpUtility.__validateAtomNomenclature() ++ Error  - %s" % warn)
+
+                    except Exception as e:
+
+                        self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateAtomNomenclature() ++ Error  - %s" % str(e))
+                        self.report.setError()
+
+                        if self.__verbose:
+                            self.__lfh.write("+NmrDpUtility.__validateAtomNomenclature() ++ Error  - %s" % str(e))
 
         return not self.report.isError()
 
@@ -4195,333 +4794,83 @@ class NmrDpUtility(object):
         #if self.report.isError():
         #    return False
 
-        input_source = self.report.input_sources[0]
-        input_source_dic = input_source.get()
+        for fileListId in range(self.__file_path_list_len):
 
-        file_name = input_source_dic['file_name']
-        file_type = input_source_dic['file_type']
+            input_source = self.report.input_sources[fileListId]
+            input_source_dic = input_source.get()
 
-        if input_source_dic['content_subtype'] is None:
-            return False
+            file_name = input_source_dic['file_name']
+            file_type = input_source_dic['file_type']
 
-        content_subtype = 'chem_shift'
+            if input_source_dic['content_subtype'] is None:
+                continue
 
-        if not content_subtype in input_source_dic['content_subtype'].keys():
+            content_subtype = 'chem_shift'
 
-            err = "Assigned chemical shift loop did not exist in %s file." % file_name
+            if not content_subtype in input_source_dic['content_subtype'].keys():
 
-            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateAtomTypeOfCSLoop() ++ Error  - %s" % err)
-            self.report.setError()
+                err = "Assigned chemical shift loop did not exist in %s file." % file_name
 
-            if self.__verbose:
-                self.__lfh.write("+NmrDpUtility.__validateAtomTypeOfCSLoop() ++ Error  - %s\n" % err)
-
-            return False
-
-        sf_category = self.sf_categories[file_type][content_subtype]
-        lp_category = self.lp_categories[file_type][content_subtype]
-
-        for sf_data in self.__star_data.get_saveframes_by_category(sf_category):
-
-            sf_framecode = sf_data.get_tag('sf_framecode')[0]
-
-            try:
-
-                if file_type == 'nef':
-                    a_types = self.__nefT.get_nef_atom_type_from_cs_loop(sf_data)[0]
-                else:
-                    a_types = self.__nefT.get_star_atom_type_from_cs_loop(sf_data)[0]
-
-                for a_type in a_types:
-                    atom_type = a_type['atom_type']
-                    isotope_nums = a_type['isotope_number']
-                    atom_ids = a_type['atom_id']
-
-                    if not atom_type in self.atom_isotopes.keys():
-
-                        err = "Invalid atom_type %s exists." % atom_type
-
-                        self.report.error.appendDescription('invalid_atom_type', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
-                        self.report.setError()
-
-                        if self.__verbose:
-                            self.__lfh.write("+NmrDpUtility.__validateAtomTypeOfCSLoop() ++ Error  - %s\n" % err)
-
-                    else:
-                        for isotope_num in isotope_nums:
-                            if not isotope_num in self.atom_isotopes[atom_type]:
-
-                                err = "Invalid isotope number %s (atom_type %s, allowed isotope number %s) exists." % (isotope_num, atom_type, self.atom_isotopes[atom_type])
-
-                                self.report.error.appendDescription('invalid_isotope_number', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
-                                self.report.setError()
-
-                                if self.__verbose:
-                                    self.__lfh.write("+NmrDpUtility.__validateAtomTypeOfCSLoop() ++ Error  - %s\n" % err)
-
-                        for atom_id in atom_ids:
-                            if not atom_id.startswith(atom_type):
-
-                                err = "Invalid atom_id %s (atom_type %s) exists." % (atom_id, atom_type)
-
-                                self.report.error.appendDescription('invalid_atom_nomenclature', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
-                                self.report.setError()
-
-                                if self.__verbose:
-                                    self.__lfh.write("+NmrDpUtility.__validateAtomTypeOfCSLoop() ++ Error  - %s\n" % err)
-
-            except LookupError as e:
-
-                self.report.error.appendDescription('missing_mandatory_item', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': str(e).strip("'")})
+                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateAtomTypeOfCSLoop() ++ Error  - %s" % err)
                 self.report.setError()
 
                 if self.__verbose:
-                    self.__lfh.write("+NmrDpUtility.__validateAtomTypeOfCSLoop() ++ LookupError  - %s" % str(e))
+                    self.__lfh.write("+NmrDpUtility.__validateAtomTypeOfCSLoop() ++ Error  - %s\n" % err)
 
-            except ValueError as e:
-
-                self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': str(e).strip("'")})
-                self.report.setError()
-
-                if self.__verbose:
-                    self.__lfh.write("+NmrDpUtility.__validateAtomTypeOfCSLoop() ++ ValueError  - %s" % str(e))
-
-            except UserWarning as e:
-
-                warns = str(e).strip("'").split('\n')
-                proc_warns = set()
-
-                for warn in warns:
-
-                    if warn == '' or warn in proc_warns:
-                        continue
-
-                    proc_warns.add(warn)
-
-                    invl = warn.startswith('[Invalid data] ')
-
-                    if invl:
-
-                        err = warn[15:]
-
-                        self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
-                        self.report.setError()
-
-                        if self.__verbose:
-                            self.__lfh.write("+NmrDpUtility.__validateAtomTypeOfCSLoop() ++ ValueError  - %s" % err)
-
-                    else:
-
-                        self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateAtomTypeOfCSLoop() ++ Error  - %s" % warn)
-                        self.report.setError()
-
-                        if self.__verbose:
-                            self.__lfh.write("+NmrDpUtility.__validateAtomTypeOfCSLoop() ++ Error  - %s" % warn)
-
-            except Exception as e:
-
-                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateAtomTypeOfCSLoop() ++ Error  - %s" % str(e))
-                self.report.setError()
-
-                if self.__verbose:
-                    self.__lfh.write("+NmrDpUtility.__validateAtomTypeOfCSLoop() ++ Error  - %s" % str(e))
-
-        return not self.report.isError()
-
-    def __validateAmbigCodeOfCSLoop(self):
-        """ Validate ambiguity code on assigned chemical shifts.
-        """
-
-        #if self.report.isError():
-        #    return False
-
-        input_source = self.report.input_sources[0]
-        input_source_dic = input_source.get()
-
-        file_name = input_source_dic['file_name']
-        file_type = input_source_dic['file_type']
-
-        if input_source_dic['content_subtype'] is None:
-            return False
-
-        content_subtype = 'chem_shift'
-
-        if not content_subtype in input_source_dic['content_subtype'].keys():
-
-            err = "Assigned chemical shift loop did not exist in %s file." % file_name
-
-            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateAmbigCodeOfCSLoop() ++ Error  - %s" % err)
-            self.report.setError()
-
-            if self.__verbose:
-                self.__lfh.write("+NmrDpUtility.__validateAmbigCodeOfCSLoop() ++ Error  - %s\n" % err)
-
-            return False
-
-        # NEF file has no ambiguity code
-        if file_type == 'nef':
-            return True
-
-        sf_category = self.sf_categories[file_type][content_subtype]
-        lp_category = self.lp_categories[file_type][content_subtype]
-
-        for sf_data in self.__star_data.get_saveframes_by_category(sf_category):
-
-            sf_framecode = sf_data.get_tag('sf_framecode')[0]
-
-            try:
-
-                a_codes = self.__nefT.get_star_ambig_code_from_cs_loop(sf_data)[0]
-
-                comp_ids_wo_ambig_code = []
-
-                for a_code in a_codes:
-                    comp_id = a_code['comp_id']
-                    ambig_code = a_code['ambig_code']
-                    atom_ids = a_code['atom_id']
-
-                    if ambig_code is None:
-                        comp_ids_wo_ambig_code.append(comp_id)
-
-                    elif ambig_code == 1 or ambig_code >= 4:
-                        pass
-
-                    # ambig_code is 2 (geminal atoms) or 3 (aromatic ring atoms in opposite side)
-                    else:
-
-                        for atom_id in atom_ids:
-
-                            allowed_ambig_code = self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id)
-
-                            if ambig_code > allowed_ambig_code:
-
-                                err = "Invalid ambiguity code %s (comp_id %s, atom_id %s, allowed ambig_code %s) exists." % (ambig_code, comp_id, atom_id, [1, allowed_ambig_code, 4, 5, 6, 9])
-
-                                self.report.error.appendDescription('invalid_ambiguity_code', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
-                                self.report.setError()
-
-                                if self.__verbose:
-                                    self.__lfh.write("+NmrDpUtility.__testAmbigCodeOfCSLoop() ++ Error  - %s\n" % err)
-
-                if len(comp_ids_wo_ambig_code) > 0:
-
-                    warn = "Missing ambiguity code for the following residues %s." % comp_ids_wo_ambig_code
-
-                    self.report.warning.appendDescription('missing_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
-                    self.report.setWarning()
-
-                    if self.__verbose:
-                        self.__lfh.write("+NmrDpUtility.__testAmbigCodeOfCSLoop() ++ Warning  - %s\n" % warn)
-
-            except LookupError as e:
-
-                self.report.error.appendDescription('missing_mandatory_item', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': str(e).strip("'")})
-                self.report.setError()
-
-                if self.__verbose:
-                    self.__lfh.write("+NmrDpUtility.__testAmbigCodeOfCSLoop() ++ LookupError  - %s" % str(e))
-
-            except ValueError as e:
-
-                self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': str(e).strip("'")})
-                self.report.setError()
-
-                if self.__verbose:
-                    self.__lfh.write("+NmrDpUtility.__testAmbigCodeOfCSLoop() ++ ValueError  - %s" % str(e))
-
-            except UserWarning as e:
-
-                warns = str(e).strip("'").split('\n')
-                proc_warns = set()
-
-                for warn in warns:
-
-                    if warn == '' or warn in proc_warns:
-                        continue
-
-                    proc_warns.add(warn)
-
-                    invl = warn.startswith('[Invalid data] ')
-
-                    if invl:
-
-                        err = warn[15:]
-
-                        self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
-                        self.report.setError()
-
-                        if self.__verbose:
-                            self.__lfh.write("+NmrDpUtility.__testAmbigCodeOfCSLoop() ++ ValueError  - %s" % err)
-
-                    else:
-
-                        self.report.error.appendDescription('internal_error', "+NmrDpUtility.__testAmbigCodeOfCSLoop() ++ Error  - %s" % warn)
-                        self.report.setError()
-
-                        if self.__verbose:
-                            self.__lfh.write("+NmrDpUtility.__testAmbigCodeOfCSLoop() ++ Error  - %s" % warn)
-
-            except Exception as e:
-
-                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__testAmbigCodeOfCSLoop() ++ Error  - %s" % str(e))
-                self.report.setError()
-
-                if self.__verbose:
-                    self.__lfh.write("+NmrDpUtility.__testAmbigCodeOfCSLoop() ++ Error  - %s" % str(e))
-
-        return not self.report.isError()
-
-    def __testIndexConsistency(self):
-        """ Perform consistency test on index of interesting loops.
-        """
-
-        #if self.report.isError():
-        #    return False
-
-        input_source = self.report.input_sources[0]
-        input_source_dic = input_source.get()
-
-        file_name = input_source_dic['file_name']
-        file_type = input_source_dic['file_type']
-
-        if input_source_dic['content_subtype'] is None:
-            return False
-
-        for content_subtype in input_source_dic['content_subtype'].keys():
+                continue
 
             sf_category = self.sf_categories[file_type][content_subtype]
             lp_category = self.lp_categories[file_type][content_subtype]
 
-            index_tag = self.index_tags[file_type][content_subtype]
+            if self.__star_data_type[fileListId] == 'Loop':
 
-            if index_tag is None:
-                continue
-
-            for sf_data in self.__star_data.get_saveframes_by_category(sf_category):
-
-                sf_framecode = sf_data.get_tag('sf_framecode')[0]
+                sf_data = self.__star_data[fileListId]
+                sf_framecode = ''
 
                 try:
 
-                    indices = self.__nefT.get_index(sf_data, lp_category, index_id=index_tag)[0]
+                    if file_type == 'nef':
+                        a_types = self.__nefT.get_nef_atom_type_from_cs_loop(sf_data)[0]
+                    else:
+                        a_types = self.__nefT.get_star_atom_type_from_cs_loop(sf_data)[0]
 
-                    if indices != range(1, len(indices) + 1):
+                    for a_type in a_types:
+                        atom_type = a_type['atom_type']
+                        isotope_nums = a_type['isotope_number']
+                        atom_ids = a_type['atom_id']
 
-                        warn = "Index (loop tag %s.%s) is disordered." % (lp_category, index_tag)
+                        if not atom_type in self.atom_isotopes.keys():
 
-                        self.report.warning.appendDescription('disordered_index', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
-                        self.report.setWarning()
+                            err = "Invalid atom_type %s exists." % atom_type
 
-                        if self.__verbose:
-                            self.__lfh.write("+NmrDpUtility.__testIndexConsistency() ++ Warning  - %s\n" % warn)
+                            self.report.error.appendDescription('invalid_atom_type', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
+                            self.report.setError()
 
-                except KeyError as e:
+                            if self.__verbose:
+                                self.__lfh.write("+NmrDpUtility.__validateAtomTypeOfCSLoop() ++ Error  - %s\n" % err)
 
-                    self.report.error.appendDescription('duplicated_index', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': str(e).strip("'")})
-                    self.report.setError()
+                        else:
+                            for isotope_num in isotope_nums:
+                                if not isotope_num in self.atom_isotopes[atom_type]:
 
-                    if self.__verbose:
-                        self.__lfh.write("+NmrDpUtility.__testIndexConsistency() ++ KeyError  - %s" % str(e))
+                                    err = "Invalid isotope number %s (atom_type %s, allowed isotope number %s) exists." % (isotope_num, atom_type, self.atom_isotopes[atom_type])
+
+                                    self.report.error.appendDescription('invalid_isotope_number', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
+                                    self.report.setError()
+
+                                    if self.__verbose:
+                                        self.__lfh.write("+NmrDpUtility.__validateAtomTypeOfCSLoop() ++ Error  - %s\n" % err)
+
+                            for atom_id in atom_ids:
+                                if not atom_id.startswith(atom_type):
+
+                                    err = "Invalid atom_id %s (atom_type %s) exists." % (atom_id, atom_type)
+
+                                    self.report.error.appendDescription('invalid_atom_nomenclature', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
+                                    self.report.setError()
+
+                                    if self.__verbose:
+                                        self.__lfh.write("+NmrDpUtility.__validateAtomTypeOfCSLoop() ++ Error  - %s\n" % err)
 
                 except LookupError as e:
 
@@ -4529,7 +4878,7 @@ class NmrDpUtility(object):
                     self.report.setError()
 
                     if self.__verbose:
-                        self.__lfh.write("+NmrDpUtility.__testIndexConsistency() ++ LookupError  - %s" % str(e))
+                        self.__lfh.write("+NmrDpUtility.__validateAtomTypeOfCSLoop() ++ LookupError  - %s" % str(e))
 
                 except ValueError as e:
 
@@ -4537,7 +4886,7 @@ class NmrDpUtility(object):
                     self.report.setError()
 
                     if self.__verbose:
-                        self.__lfh.write("+NmrDpUtility.__testIndexConsistency() ++ ValueError  - %s" % str(e))
+                        self.__lfh.write("+NmrDpUtility.__validateAtomTypeOfCSLoop() ++ ValueError  - %s" % str(e))
 
                 except UserWarning as e:
 
@@ -4561,118 +4910,76 @@ class NmrDpUtility(object):
                             self.report.setError()
 
                             if self.__verbose:
-                                self.__lfh.write("+NmrDpUtility.__testIndexConsistency() ++ ValueError  - %s" % err)
+                                self.__lfh.write("+NmrDpUtility.__validateAtomTypeOfCSLoop() ++ ValueError  - %s" % err)
 
                         else:
 
-                            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__testIndexConsistency() ++ Error  - %s" % warn)
+                            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateAtomTypeOfCSLoop() ++ Error  - %s" % warn)
                             self.report.setError()
 
                             if self.__verbose:
-                                self.__lfh.write("+NmrDpUtility.__testIndexConsistency() ++ Error  - %s" % warn)
+                                self.__lfh.write("+NmrDpUtility.__validateAtomTypeOfCSLoop() ++ Error  - %s" % warn)
 
                 except Exception as e:
 
-                    self.report.error.appendDescription('internal_error', "+NmrDpUtility.__testIndexConsistency() ++ Error  - %s" % str(e))
+                    self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateAtomTypeOfCSLoop() ++ Error  - %s" % str(e))
                     self.report.setError()
 
                     if self.__verbose:
-                        self.__lfh.write("+NmrDpUtility.__testIndexConsistency() ++ Error  - %s" % str(e))
+                        self.__lfh.write("+NmrDpUtility.__validateAtomTypeOfCSLoop() ++ Error  - %s" % str(e))
 
-        return not self.report.isError()
-
-    def __testDataConsistencyInLoop(self):
-        """ Perform consistency test on data of interesting loops.
-        """
-
-        input_source = self.report.input_sources[0]
-        input_source_dic = input_source.get()
-
-        file_name = input_source_dic['file_name']
-        file_type = input_source_dic['file_type']
-
-        if input_source_dic['content_subtype'] is None:
-            return False
-
-        __errors = self.report.getTotalErrors()
-
-        for content_subtype in input_source_dic['content_subtype'].keys():
-
-            if content_subtype == 'entry_info':
                 continue
 
-            sf_category = self.sf_categories[file_type][content_subtype]
-            lp_category = self.lp_categories[file_type][content_subtype]
+            # Entry/Saveframe
 
-            for sf_data in self.__star_data.get_saveframes_by_category(sf_category):
+            for sf_data in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
 
                 sf_framecode = sf_data.get_tag('sf_framecode')[0]
 
-                allowed_tags = self.allowed_tags[file_type][content_subtype]
-                disallowed_tags = None
-
-                if content_subtype == 'spectral_peak':
-
-                    try:
-
-                        _num_dim = sf_data.get_tag(self.num_dim_items[file_type])[0]
-                        num_dim = int(_num_dim)
-
-                        if not num_dim in range(1, self.lim_num_dim):
-                            raise ValueError()
-
-                    except ValueError: # raised error already at __testIndexConsistency()
-                        continue
-
-                    max_dim = num_dim + 1
-
-                    key_items = []
-                    for dim in range(1, max_dim):
-                        for k in self.pk_key_items[file_type]:
-                            _k = copy.copy(k)
-                            if '%s' in k['name']:
-                               _k['name'] = k['name'] % dim
-                            key_items.append(_k)
-
-                    data_items = []
-                    for d in self.data_items[file_type][content_subtype]:
-                        data_items.append(d)
-                    for dim in range(1, max_dim):
-                        for d in self.pk_data_items[file_type]:
-                            _d = copy.copy(d)
-                            if '%s' in d['name']:
-                                _d['name'] = d['name'] % dim
-                            data_items.append(_d)
-
-                    if max_dim < self.lim_num_dim:
-                        disallowed_tags = []
-                        for dim in range(max_dim, self.lim_num_dim):
-                            for t in self.spectral_peak_disallowed_tags[file_type]:
-                                if '%s' in t:
-                                    t = t % dim
-                                disallowed_tags.append(t)
-
-                else:
-
-                    key_items = self.key_items[file_type][content_subtype]
-                    data_items = self.data_items[file_type][content_subtype]
-
-                lp_data = None
-
                 try:
 
-                    lp_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, allowed_tags, disallowed_tags,
-                                                     inc_idx_test=True, enforce_non_zero=True, enforce_sign=True, enforce_enum=True)[0]
+                    if file_type == 'nef':
+                        a_types = self.__nefT.get_nef_atom_type_from_cs_loop(sf_data)[0]
+                    else:
+                        a_types = self.__nefT.get_star_atom_type_from_cs_loop(sf_data)[0]
 
-                    self.__lp_data[content_subtype].append({'sf_framecode': sf_framecode, 'data': lp_data})
+                    for a_type in a_types:
+                        atom_type = a_type['atom_type']
+                        isotope_nums = a_type['isotope_number']
+                        atom_ids = a_type['atom_id']
 
-                except KeyError as e:
+                        if not atom_type in self.atom_isotopes.keys():
 
-                    self.report.error.appendDescription('multiple_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': str(e).strip("'")})
-                    self.report.setError()
+                            err = "Invalid atom_type %s exists." % atom_type
 
-                    if self.__verbose:
-                        self.__lfh.write("+NmrDpUtility.__testDataConsistencyInLoop() ++ KeyError  - %s" % str(e))
+                            self.report.error.appendDescription('invalid_atom_type', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
+                            self.report.setError()
+
+                            if self.__verbose:
+                                self.__lfh.write("+NmrDpUtility.__validateAtomTypeOfCSLoop() ++ Error  - %s\n" % err)
+
+                        else:
+                            for isotope_num in isotope_nums:
+                                if not isotope_num in self.atom_isotopes[atom_type]:
+
+                                    err = "Invalid isotope number %s (atom_type %s, allowed isotope number %s) exists." % (isotope_num, atom_type, self.atom_isotopes[atom_type])
+
+                                    self.report.error.appendDescription('invalid_isotope_number', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
+                                    self.report.setError()
+
+                                    if self.__verbose:
+                                        self.__lfh.write("+NmrDpUtility.__validateAtomTypeOfCSLoop() ++ Error  - %s\n" % err)
+
+                            for atom_id in atom_ids:
+                                if not atom_id.startswith(atom_type):
+
+                                    err = "Invalid atom_id %s (atom_type %s) exists." % (atom_id, atom_type)
+
+                                    self.report.error.appendDescription('invalid_atom_nomenclature', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
+                                    self.report.setError()
+
+                                    if self.__verbose:
+                                        self.__lfh.write("+NmrDpUtility.__validateAtomTypeOfCSLoop() ++ Error  - %s\n" % err)
 
                 except LookupError as e:
 
@@ -4680,7 +4987,7 @@ class NmrDpUtility(object):
                     self.report.setError()
 
                     if self.__verbose:
-                        self.__lfh.write("+NmrDpUtility.__testDataConsistencyInLoop() ++ LookupError  - %s" % str(e))
+                        self.__lfh.write("+NmrDpUtility.__validateAtomTypeOfCSLoop() ++ LookupError  - %s" % str(e))
 
                 except ValueError as e:
 
@@ -4688,14 +4995,12 @@ class NmrDpUtility(object):
                     self.report.setError()
 
                     if self.__verbose:
-                        self.__lfh.write("+NmrDpUtility.__testDataConsistencyInLoop() ++ ValueError  - %s" % str(e))
+                        self.__lfh.write("+NmrDpUtility.__validateAtomTypeOfCSLoop() ++ ValueError  - %s" % str(e))
 
                 except UserWarning as e:
 
                     warns = str(e).strip("'").split('\n')
                     proc_warns = set()
-
-                    has_multiple_data = False
 
                     for warn in warns:
 
@@ -4704,91 +5009,890 @@ class NmrDpUtility(object):
 
                         proc_warns.add(warn)
 
-                        zero = warn.startswith('[Zero value error] ')
-                        nega = warn.startswith('[Negative value error] ')
-                        enum = warn.startswith('[Enumeration error] ')
-                        mult = warn.startswith('[Multiple data] ')
+                        invl = warn.startswith('[Invalid data] ')
 
-                        if zero or nega or enum or mult:
+                        if invl:
 
-                            if zero:
-                                warn = warn[19:]
-                                item = 'missing_data'
-                            elif nega:
-                                warn = warn[23:]
-                                item = 'unusual_data'
-                            elif enum:
-                                warn = warn[20:]
-                                item = 'enum_mismatch'
-                            elif self.__resolve_conflict:
-                                warn = warn[16:]
-                                item = 'redundant_data'
-                                has_multiple_data = True
-                            else:
-                                err = warn[16:]
-                                item = 'multiple_data'
+                            err = warn[15:]
 
-                            if zero or nega or enum or self.__resolve_conflict:
-
-                                self.report.warning.appendDescription(item, {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
-                                self.report.setWarning()
-
-                                if self.__verbose:
-                                    self.__lfh.write("+NmrDpUtility.__testDataConsistencyInLoop() ++ Warning  - %s\n" % warn)
-
-                            else:
-
-                                self.report.error.appendDescription(item, {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
-                                self.report.setError()
-
-                                if self.__verbose:
-                                    self.__lfh.write("+NmrDpUtility.__testDataConsistencyInLoop() ++ KeyError  - %s" % err)
-
-                        else:
-
-                            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__testDataConsistencyInLoop() ++ Error  - %s" % warn)
+                            self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
                             self.report.setError()
 
                             if self.__verbose:
-                                self.__lfh.write("+NmrDpUtility.__testDataConsistencyInLoop() ++ Error  - %s" % warn)
+                                self.__lfh.write("+NmrDpUtility.__validateAtomTypeOfCSLoop() ++ ValueError  - %s" % err)
 
-                    # try to parse data without constraints
+                        else:
 
-                    if has_multiple_data:
-                        conflict_id = self.__nefT.get_conflict_id(sf_data, lp_category, key_items)[0]
+                            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateAtomTypeOfCSLoop() ++ Error  - %s" % warn)
+                            self.report.setError()
 
-                        if len(conflict_id) > 0:
-                            loop = sf_data.get_loop_by_category(lp_category)
-
-                            for l in conflict_id:
-                                del loop.data[l]
-
-                    try:
-
-                        lp_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, allowed_tags, disallowed_tags)[0]
-
-                        self.__lp_data[content_subtype].append({'sf_framecode': sf_framecode, 'data': lp_data})
-
-                    except:
-                        pass
+                            if self.__verbose:
+                                self.__lfh.write("+NmrDpUtility.__validateAtomTypeOfCSLoop() ++ Error  - %s" % warn)
 
                 except Exception as e:
 
-                    self.report.error.appendDescription('internal_error', "+NmrDpUtility.__testDataConsistencyInLoop() ++ Error  - %s" % str(e))
+                    self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateAtomTypeOfCSLoop() ++ Error  - %s" % str(e))
                     self.report.setError()
 
                     if self.__verbose:
-                        self.__lfh.write("+NmrDpUtility.__testDataConsistencyInLoop() ++ Error  - %s" % str(e))
+                        self.__lfh.write("+NmrDpUtility.__validateAtomTypeOfCSLoop() ++ Error  - %s" % str(e))
 
-                if (not lp_data is None) and len(lp_data) == 0:
+        return not self.report.isError()
 
-                    warn = "Unexpectedly, there are no rows in a loop."
+    def __validateAmbigCodeOfCSLoop(self):
+        """ Validate ambiguity code on assigned chemical shifts.
+        """
 
-                    self.report.warning.appendDescription('missing_content', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
-                    self.report.setWarning()
+        #if self.report.isError():
+        #    return False
+
+        for fileListId in range(self.__file_path_list_len):
+
+            input_source = self.report.input_sources[fileListId]
+            input_source_dic = input_source.get()
+
+            file_name = input_source_dic['file_name']
+            file_type = input_source_dic['file_type']
+
+            if input_source_dic['content_subtype'] is None:
+                continue
+
+            content_subtype = 'chem_shift'
+
+            if not content_subtype in input_source_dic['content_subtype'].keys():
+
+                err = "Assigned chemical shift loop did not exist in %s file." % file_name
+
+                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateAmbigCodeOfCSLoop() ++ Error  - %s" % err)
+                self.report.setError()
+
+                if self.__verbose:
+                    self.__lfh.write("+NmrDpUtility.__validateAmbigCodeOfCSLoop() ++ Error  - %s\n" % err)
+
+                continue
+
+            # NEF file has no ambiguity code
+            if file_type == 'nef':
+                continue
+
+            sf_category = self.sf_categories[file_type][content_subtype]
+            lp_category = self.lp_categories[file_type][content_subtype]
+
+            if self.__star_data_type[fileListId] == 'Loop':
+
+                sf_data = self.__star_data[fileListId]
+                sf_framecode = ''
+
+                try:
+
+                    a_codes = self.__nefT.get_star_ambig_code_from_cs_loop(sf_data)[0]
+
+                    comp_ids_wo_ambig_code = []
+
+                    for a_code in a_codes:
+                        comp_id = a_code['comp_id']
+                        ambig_code = a_code['ambig_code']
+                        atom_ids = a_code['atom_id']
+
+                        if ambig_code is None:
+                            comp_ids_wo_ambig_code.append(comp_id)
+
+                        elif ambig_code == 1 or ambig_code >= 4:
+                            pass
+
+                        # ambig_code is 2 (geminal atoms) or 3 (aromatic ring atoms in opposite side)
+                        else:
+
+                            for atom_id in atom_ids:
+
+                                allowed_ambig_code = self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id)
+
+                                if ambig_code > allowed_ambig_code:
+
+                                    err = "Invalid ambiguity code %s (comp_id %s, atom_id %s, allowed ambig_code %s) exists." % (ambig_code, comp_id, atom_id, [1, allowed_ambig_code, 4, 5, 6, 9])
+
+                                    self.report.error.appendDescription('invalid_ambiguity_code', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
+                                    self.report.setError()
+
+                                    if self.__verbose:
+                                        self.__lfh.write("+NmrDpUtility.__testAmbigCodeOfCSLoop() ++ Error  - %s\n" % err)
+
+                    if len(comp_ids_wo_ambig_code) > 0:
+
+                        warn = "Missing ambiguity code for the following residues %s." % comp_ids_wo_ambig_code
+
+                        self.report.warning.appendDescription('missing_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
+                        self.report.setWarning()
+
+                        if self.__verbose:
+                            self.__lfh.write("+NmrDpUtility.__testAmbigCodeOfCSLoop() ++ Warning  - %s\n" % warn)
+
+                except LookupError as e:
+
+                    self.report.error.appendDescription('missing_mandatory_item', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': str(e).strip("'")})
+                    self.report.setError()
 
                     if self.__verbose:
-                        self.__lfh.write("+NmrDpUtility.__testDataConsistencyInLoop() ++ Warning  - %s\n" % warn)
+                        self.__lfh.write("+NmrDpUtility.__testAmbigCodeOfCSLoop() ++ LookupError  - %s" % str(e))
+
+                except ValueError as e:
+
+                    self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': str(e).strip("'")})
+                    self.report.setError()
+
+                    if self.__verbose:
+                        self.__lfh.write("+NmrDpUtility.__testAmbigCodeOfCSLoop() ++ ValueError  - %s" % str(e))
+
+                except UserWarning as e:
+
+                    warns = str(e).strip("'").split('\n')
+                    proc_warns = set()
+
+                    for warn in warns:
+
+                        if warn == '' or warn in proc_warns:
+                            continue
+
+                        proc_warns.add(warn)
+
+                        invl = warn.startswith('[Invalid data] ')
+
+                        if invl:
+
+                            err = warn[15:]
+
+                            self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
+                            self.report.setError()
+
+                            if self.__verbose:
+                                self.__lfh.write("+NmrDpUtility.__testAmbigCodeOfCSLoop() ++ ValueError  - %s" % err)
+
+                        else:
+
+                            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__testAmbigCodeOfCSLoop() ++ Error  - %s" % warn)
+                            self.report.setError()
+
+                            if self.__verbose:
+                                self.__lfh.write("+NmrDpUtility.__testAmbigCodeOfCSLoop() ++ Error  - %s" % warn)
+
+                except Exception as e:
+
+                    self.report.error.appendDescription('internal_error', "+NmrDpUtility.__testAmbigCodeOfCSLoop() ++ Error  - %s" % str(e))
+                    self.report.setError()
+
+                    if self.__verbose:
+                        self.__lfh.write("+NmrDpUtility.__testAmbigCodeOfCSLoop() ++ Error  - %s" % str(e))
+
+                continue
+
+            # Entry/Saveframe
+
+            for sf_data in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
+
+                sf_framecode = sf_data.get_tag('sf_framecode')[0]
+
+                try:
+
+                    a_codes = self.__nefT.get_star_ambig_code_from_cs_loop(sf_data)[0]
+
+                    comp_ids_wo_ambig_code = []
+
+                    for a_code in a_codes:
+                        comp_id = a_code['comp_id']
+                        ambig_code = a_code['ambig_code']
+                        atom_ids = a_code['atom_id']
+
+                        if ambig_code is None:
+                            comp_ids_wo_ambig_code.append(comp_id)
+
+                        elif ambig_code == 1 or ambig_code >= 4:
+                            pass
+
+                        # ambig_code is 2 (geminal atoms) or 3 (aromatic ring atoms in opposite side)
+                        else:
+
+                            for atom_id in atom_ids:
+
+                                allowed_ambig_code = self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id)
+
+                                if ambig_code > allowed_ambig_code:
+
+                                    err = "Invalid ambiguity code %s (comp_id %s, atom_id %s, allowed ambig_code %s) exists." % (ambig_code, comp_id, atom_id, [1, allowed_ambig_code, 4, 5, 6, 9])
+
+                                    self.report.error.appendDescription('invalid_ambiguity_code', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
+                                    self.report.setError()
+
+                                    if self.__verbose:
+                                        self.__lfh.write("+NmrDpUtility.__testAmbigCodeOfCSLoop() ++ Error  - %s\n" % err)
+
+                    if len(comp_ids_wo_ambig_code) > 0:
+
+                        warn = "Missing ambiguity code for the following residues %s." % comp_ids_wo_ambig_code
+
+                        self.report.warning.appendDescription('missing_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
+                        self.report.setWarning()
+
+                        if self.__verbose:
+                            self.__lfh.write("+NmrDpUtility.__testAmbigCodeOfCSLoop() ++ Warning  - %s\n" % warn)
+
+                except LookupError as e:
+
+                    self.report.error.appendDescription('missing_mandatory_item', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': str(e).strip("'")})
+                    self.report.setError()
+
+                    if self.__verbose:
+                        self.__lfh.write("+NmrDpUtility.__testAmbigCodeOfCSLoop() ++ LookupError  - %s" % str(e))
+
+                except ValueError as e:
+
+                    self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': str(e).strip("'")})
+                    self.report.setError()
+
+                    if self.__verbose:
+                        self.__lfh.write("+NmrDpUtility.__testAmbigCodeOfCSLoop() ++ ValueError  - %s" % str(e))
+
+                except UserWarning as e:
+
+                    warns = str(e).strip("'").split('\n')
+                    proc_warns = set()
+
+                    for warn in warns:
+
+                        if warn == '' or warn in proc_warns:
+                            continue
+
+                        proc_warns.add(warn)
+
+                        invl = warn.startswith('[Invalid data] ')
+
+                        if invl:
+
+                            err = warn[15:]
+
+                            self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
+                            self.report.setError()
+
+                            if self.__verbose:
+                                self.__lfh.write("+NmrDpUtility.__testAmbigCodeOfCSLoop() ++ ValueError  - %s" % err)
+
+                        else:
+
+                            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__testAmbigCodeOfCSLoop() ++ Error  - %s" % warn)
+                            self.report.setError()
+
+                            if self.__verbose:
+                                self.__lfh.write("+NmrDpUtility.__testAmbigCodeOfCSLoop() ++ Error  - %s" % warn)
+
+                except Exception as e:
+
+                    self.report.error.appendDescription('internal_error', "+NmrDpUtility.__testAmbigCodeOfCSLoop() ++ Error  - %s" % str(e))
+                    self.report.setError()
+
+                    if self.__verbose:
+                        self.__lfh.write("+NmrDpUtility.__testAmbigCodeOfCSLoop() ++ Error  - %s" % str(e))
+
+        return not self.report.isError()
+
+    def __testIndexConsistency(self):
+        """ Perform consistency test on index of interesting loops.
+        """
+
+        #if self.report.isError():
+        #    return False
+
+        for fileListId in range(self.__file_path_list_len):
+
+            input_source = self.report.input_sources[fileListId]
+            input_source_dic = input_source.get()
+
+            file_name = input_source_dic['file_name']
+            file_type = input_source_dic['file_type']
+
+            if input_source_dic['content_subtype'] is None:
+                continue
+
+            for content_subtype in input_source_dic['content_subtype'].keys():
+
+                sf_category = self.sf_categories[file_type][content_subtype]
+                lp_category = self.lp_categories[file_type][content_subtype]
+
+                index_tag = self.index_tags[file_type][content_subtype]
+
+                if index_tag is None:
+                    continue
+
+                if self.__star_data_type[fileListId] == 'Loop':
+
+                    sf_data = self.__star_data[fileListId]
+                    sf_framecode = ''
+
+                    try:
+
+                        indices = self.__nefT.get_index(sf_data, lp_category, index_id=index_tag)[0]
+
+                        if indices != range(1, len(indices) + 1):
+
+                            warn = "Index (loop tag %s.%s) is disordered." % (lp_category, index_tag)
+
+                            self.report.warning.appendDescription('disordered_index', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
+                            self.report.setWarning()
+
+                            if self.__verbose:
+                                self.__lfh.write("+NmrDpUtility.__testIndexConsistency() ++ Warning  - %s\n" % warn)
+
+                    except KeyError as e:
+
+                        self.report.error.appendDescription('duplicated_index', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': str(e).strip("'")})
+                        self.report.setError()
+
+                        if self.__verbose:
+                            self.__lfh.write("+NmrDpUtility.__testIndexConsistency() ++ KeyError  - %s" % str(e))
+
+                    except LookupError as e:
+
+                        self.report.error.appendDescription('missing_mandatory_item', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': str(e).strip("'")})
+                        self.report.setError()
+
+                        if self.__verbose:
+                            self.__lfh.write("+NmrDpUtility.__testIndexConsistency() ++ LookupError  - %s" % str(e))
+
+                    except ValueError as e:
+
+                        self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': str(e).strip("'")})
+                        self.report.setError()
+
+                        if self.__verbose:
+                            self.__lfh.write("+NmrDpUtility.__testIndexConsistency() ++ ValueError  - %s" % str(e))
+
+                    except UserWarning as e:
+
+                        warns = str(e).strip("'").split('\n')
+                        proc_warns = set()
+
+                        for warn in warns:
+
+                            if warn == '' or warn in proc_warns:
+                                continue
+
+                            proc_warns.add(warn)
+
+                            invl = warn.startswith('[Invalid data] ')
+
+                            if invl:
+
+                                err = warn[15:]
+
+                                self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
+                                self.report.setError()
+
+                                if self.__verbose:
+                                    self.__lfh.write("+NmrDpUtility.__testIndexConsistency() ++ ValueError  - %s" % err)
+
+                            else:
+
+                                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__testIndexConsistency() ++ Error  - %s" % warn)
+                                self.report.setError()
+
+                                if self.__verbose:
+                                    self.__lfh.write("+NmrDpUtility.__testIndexConsistency() ++ Error  - %s" % warn)
+
+                    except Exception as e:
+
+                        self.report.error.appendDescription('internal_error', "+NmrDpUtility.__testIndexConsistency() ++ Error  - %s" % str(e))
+                        self.report.setError()
+
+                        if self.__verbose:
+                            self.__lfh.write("+NmrDpUtility.__testIndexConsistency() ++ Error  - %s" % str(e))
+
+                    continue
+
+                # Entry/Saveframe
+
+                for sf_data in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
+
+                    sf_framecode = sf_data.get_tag('sf_framecode')[0]
+
+                    try:
+
+                        indices = self.__nefT.get_index(sf_data, lp_category, index_id=index_tag)[0]
+
+                        if indices != range(1, len(indices) + 1):
+
+                            warn = "Index (loop tag %s.%s) is disordered." % (lp_category, index_tag)
+
+                            self.report.warning.appendDescription('disordered_index', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
+                            self.report.setWarning()
+
+                            if self.__verbose:
+                                self.__lfh.write("+NmrDpUtility.__testIndexConsistency() ++ Warning  - %s\n" % warn)
+
+                    except KeyError as e:
+
+                        self.report.error.appendDescription('duplicated_index', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': str(e).strip("'")})
+                        self.report.setError()
+
+                        if self.__verbose:
+                            self.__lfh.write("+NmrDpUtility.__testIndexConsistency() ++ KeyError  - %s" % str(e))
+
+                    except LookupError as e:
+
+                        self.report.error.appendDescription('missing_mandatory_item', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': str(e).strip("'")})
+                        self.report.setError()
+
+                        if self.__verbose:
+                            self.__lfh.write("+NmrDpUtility.__testIndexConsistency() ++ LookupError  - %s" % str(e))
+
+                    except ValueError as e:
+
+                        self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': str(e).strip("'")})
+                        self.report.setError()
+
+                        if self.__verbose:
+                            self.__lfh.write("+NmrDpUtility.__testIndexConsistency() ++ ValueError  - %s" % str(e))
+
+                    except UserWarning as e:
+
+                        warns = str(e).strip("'").split('\n')
+                        proc_warns = set()
+
+                        for warn in warns:
+
+                            if warn == '' or warn in proc_warns:
+                                continue
+
+                            proc_warns.add(warn)
+
+                            invl = warn.startswith('[Invalid data] ')
+
+                            if invl:
+
+                                err = warn[15:]
+
+                                self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
+                                self.report.setError()
+
+                                if self.__verbose:
+                                    self.__lfh.write("+NmrDpUtility.__testIndexConsistency() ++ ValueError  - %s" % err)
+
+                            else:
+
+                                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__testIndexConsistency() ++ Error  - %s" % warn)
+                                self.report.setError()
+
+                                if self.__verbose:
+                                    self.__lfh.write("+NmrDpUtility.__testIndexConsistency() ++ Error  - %s" % warn)
+
+                    except Exception as e:
+
+                        self.report.error.appendDescription('internal_error', "+NmrDpUtility.__testIndexConsistency() ++ Error  - %s" % str(e))
+                        self.report.setError()
+
+                        if self.__verbose:
+                            self.__lfh.write("+NmrDpUtility.__testIndexConsistency() ++ Error  - %s" % str(e))
+
+        return not self.report.isError()
+
+    def __testDataConsistencyInLoop(self):
+        """ Perform consistency test on data of interesting loops.
+        """
+
+        __errors = self.report.getTotalErrors()
+
+        for fileListId in range(self.__file_path_list_len):
+
+            input_source = self.report.input_sources[fileListId]
+            input_source_dic = input_source.get()
+
+            file_name = input_source_dic['file_name']
+            file_type = input_source_dic['file_type']
+
+            if input_source_dic['content_subtype'] is None:
+                continue
+
+            for content_subtype in input_source_dic['content_subtype'].keys():
+
+                if content_subtype == 'entry_info':
+                    continue
+
+                sf_category = self.sf_categories[file_type][content_subtype]
+                lp_category = self.lp_categories[file_type][content_subtype]
+
+                if self.__star_data_type[fileListId] == 'Loop':
+
+                    sf_data = self.__star_data[fileListId]
+                    sf_framecode = ''
+
+                    allowed_tags = self.allowed_tags[file_type][content_subtype]
+                    disallowed_tags = None
+
+                    if content_subtype == 'spectral_peak':
+
+                        try:
+
+                            _num_dim = sf_data.get_tag(self.num_dim_items[file_type])[0]
+                            num_dim = int(_num_dim)
+
+                            if not num_dim in range(1, self.lim_num_dim):
+                                raise ValueError()
+
+                        except ValueError: # raised error already at __testIndexConsistency()
+                            continue
+
+                        max_dim = num_dim + 1
+
+                        key_items = []
+                        for dim in range(1, max_dim):
+                            for k in self.pk_key_items[file_type]:
+                                _k = copy.copy(k)
+                                if '%s' in k['name']:
+                                   _k['name'] = k['name'] % dim
+                                key_items.append(_k)
+
+                        data_items = []
+                        for d in self.data_items[file_type][content_subtype]:
+                            data_items.append(d)
+                        for dim in range(1, max_dim):
+                            for d in self.pk_data_items[file_type]:
+                                _d = copy.copy(d)
+                                if '%s' in d['name']:
+                                    _d['name'] = d['name'] % dim
+                                data_items.append(_d)
+
+                        if max_dim < self.lim_num_dim:
+                            disallowed_tags = []
+                            for dim in range(max_dim, self.lim_num_dim):
+                                for t in self.spectral_peak_disallowed_tags[file_type]:
+                                    if '%s' in t:
+                                        t = t % dim
+                                    disallowed_tags.append(t)
+
+                    else:
+
+                        key_items = self.key_items[file_type][content_subtype]
+                        data_items = self.data_items[file_type][content_subtype]
+
+                    lp_data = None
+
+                    try:
+
+                        lp_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, allowed_tags, disallowed_tags,
+                                                         inc_idx_test=True, enforce_non_zero=True, enforce_sign=True, enforce_enum=True)[0]
+
+                        self.__lp_data[content_subtype].append({'file_name': file_name, 'sf_framecode': sf_framecode, 'data': lp_data})
+
+                    except KeyError as e:
+
+                        self.report.error.appendDescription('multiple_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': str(e).strip("'")})
+                        self.report.setError()
+
+                        if self.__verbose:
+                            self.__lfh.write("+NmrDpUtility.__testDataConsistencyInLoop() ++ KeyError  - %s" % str(e))
+
+                    except LookupError as e:
+
+                        self.report.error.appendDescription('missing_mandatory_item', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': str(e).strip("'")})
+                        self.report.setError()
+
+                        if self.__verbose:
+                            self.__lfh.write("+NmrDpUtility.__testDataConsistencyInLoop() ++ LookupError  - %s" % str(e))
+
+                    except ValueError as e:
+
+                        self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': str(e).strip("'")})
+                        self.report.setError()
+
+                        if self.__verbose:
+                            self.__lfh.write("+NmrDpUtility.__testDataConsistencyInLoop() ++ ValueError  - %s" % str(e))
+
+                    except UserWarning as e:
+
+                        warns = str(e).strip("'").split('\n')
+                        proc_warns = set()
+
+                        has_multiple_data = False
+
+                        for warn in warns:
+
+                            if warn == '' or warn in proc_warns:
+                                continue
+
+                            proc_warns.add(warn)
+
+                            zero = warn.startswith('[Zero value error] ')
+                            nega = warn.startswith('[Negative value error] ')
+                            enum = warn.startswith('[Enumeration error] ')
+                            mult = warn.startswith('[Multiple data] ')
+
+                            if zero or nega or enum or mult:
+
+                                if zero:
+                                    warn = warn[19:]
+                                    item = 'missing_data'
+                                elif nega:
+                                    warn = warn[23:]
+                                    item = 'unusual_data'
+                                elif enum:
+                                    warn = warn[20:]
+                                    item = 'enum_mismatch'
+                                elif self.__resolve_conflict:
+                                    warn = warn[16:]
+                                    item = 'redundant_data'
+                                    has_multiple_data = True
+                                else:
+                                    err = warn[16:]
+                                    item = 'multiple_data'
+
+                                if zero or nega or enum or self.__resolve_conflict:
+
+                                    self.report.warning.appendDescription(item, {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
+                                    self.report.setWarning()
+
+                                    if self.__verbose:
+                                        self.__lfh.write("+NmrDpUtility.__testDataConsistencyInLoop() ++ Warning  - %s\n" % warn)
+
+                                else:
+
+                                    self.report.error.appendDescription(item, {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
+                                    self.report.setError()
+
+                                    if self.__verbose:
+                                        self.__lfh.write("+NmrDpUtility.__testDataConsistencyInLoop() ++ KeyError  - %s" % err)
+
+                            else:
+
+                                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__testDataConsistencyInLoop() ++ Error  - %s" % warn)
+                                self.report.setError()
+
+                                if self.__verbose:
+                                    self.__lfh.write("+NmrDpUtility.__testDataConsistencyInLoop() ++ Error  - %s" % warn)
+
+                        # try to parse data without constraints
+
+                        if has_multiple_data:
+                            conflict_id = self.__nefT.get_conflict_id(sf_data, lp_category, key_items)[0]
+
+                            if len(conflict_id) > 0:
+                                loop = sf_data.get_loop_by_category(lp_category)
+
+                                for l in conflict_id:
+                                    del loop.data[l]
+
+                        try:
+
+                            lp_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, allowed_tags, disallowed_tags)[0]
+
+                            self.__lp_data[content_subtype].append({'file_name': file_name, 'sf_framecode': sf_framecode, 'data': lp_data})
+
+                        except:
+                            pass
+
+                    except Exception as e:
+
+                        self.report.error.appendDescription('internal_error', "+NmrDpUtility.__testDataConsistencyInLoop() ++ Error  - %s" % str(e))
+                        self.report.setError()
+
+                        if self.__verbose:
+                            self.__lfh.write("+NmrDpUtility.__testDataConsistencyInLoop() ++ Error  - %s" % str(e))
+
+                    if (not lp_data is None) and len(lp_data) == 0:
+
+                        warn = "Unexpectedly, there are no rows in a loop."
+
+                        self.report.warning.appendDescription('missing_content', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
+                        self.report.setWarning()
+
+                        if self.__verbose:
+                            self.__lfh.write("+NmrDpUtility.__testDataConsistencyInLoop() ++ Warning  - %s\n" % warn)
+
+                    continue
+
+                # Entry/Saveframe
+
+                for sf_data in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
+
+                    sf_framecode = sf_data.get_tag('sf_framecode')[0]
+
+                    allowed_tags = self.allowed_tags[file_type][content_subtype]
+                    disallowed_tags = None
+
+                    if content_subtype == 'spectral_peak':
+
+                        try:
+
+                            _num_dim = sf_data.get_tag(self.num_dim_items[file_type])[0]
+                            num_dim = int(_num_dim)
+
+                            if not num_dim in range(1, self.lim_num_dim):
+                                raise ValueError()
+
+                        except ValueError: # raised error already at __testIndexConsistency()
+                            continue
+
+                        max_dim = num_dim + 1
+
+                        key_items = []
+                        for dim in range(1, max_dim):
+                            for k in self.pk_key_items[file_type]:
+                                _k = copy.copy(k)
+                                if '%s' in k['name']:
+                                   _k['name'] = k['name'] % dim
+                                key_items.append(_k)
+
+                        data_items = []
+                        for d in self.data_items[file_type][content_subtype]:
+                            data_items.append(d)
+                        for dim in range(1, max_dim):
+                            for d in self.pk_data_items[file_type]:
+                                _d = copy.copy(d)
+                                if '%s' in d['name']:
+                                    _d['name'] = d['name'] % dim
+                                data_items.append(_d)
+
+                        if max_dim < self.lim_num_dim:
+                            disallowed_tags = []
+                            for dim in range(max_dim, self.lim_num_dim):
+                                for t in self.spectral_peak_disallowed_tags[file_type]:
+                                    if '%s' in t:
+                                        t = t % dim
+                                    disallowed_tags.append(t)
+
+                    else:
+
+                        key_items = self.key_items[file_type][content_subtype]
+                        data_items = self.data_items[file_type][content_subtype]
+
+                    lp_data = None
+
+                    try:
+
+                        lp_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, allowed_tags, disallowed_tags,
+                                                         inc_idx_test=True, enforce_non_zero=True, enforce_sign=True, enforce_enum=True)[0]
+
+                        self.__lp_data[content_subtype].append({'file_name': file_name, 'sf_framecode': sf_framecode, 'data': lp_data})
+
+                    except KeyError as e:
+
+                        self.report.error.appendDescription('multiple_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': str(e).strip("'")})
+                        self.report.setError()
+
+                        if self.__verbose:
+                            self.__lfh.write("+NmrDpUtility.__testDataConsistencyInLoop() ++ KeyError  - %s" % str(e))
+
+                    except LookupError as e:
+
+                        self.report.error.appendDescription('missing_mandatory_item', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': str(e).strip("'")})
+                        self.report.setError()
+
+                        if self.__verbose:
+                            self.__lfh.write("+NmrDpUtility.__testDataConsistencyInLoop() ++ LookupError  - %s" % str(e))
+
+                    except ValueError as e:
+
+                        self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': str(e).strip("'")})
+                        self.report.setError()
+
+                        if self.__verbose:
+                            self.__lfh.write("+NmrDpUtility.__testDataConsistencyInLoop() ++ ValueError  - %s" % str(e))
+
+                    except UserWarning as e:
+
+                        warns = str(e).strip("'").split('\n')
+                        proc_warns = set()
+
+                        has_multiple_data = False
+
+                        for warn in warns:
+
+                            if warn == '' or warn in proc_warns:
+                                continue
+
+                            proc_warns.add(warn)
+
+                            zero = warn.startswith('[Zero value error] ')
+                            nega = warn.startswith('[Negative value error] ')
+                            enum = warn.startswith('[Enumeration error] ')
+                            mult = warn.startswith('[Multiple data] ')
+
+                            if zero or nega or enum or mult:
+
+                                if zero:
+                                    warn = warn[19:]
+                                    item = 'missing_data'
+                                elif nega:
+                                    warn = warn[23:]
+                                    item = 'unusual_data'
+                                elif enum:
+                                    warn = warn[20:]
+                                    item = 'enum_mismatch'
+                                elif self.__resolve_conflict:
+                                    warn = warn[16:]
+                                    item = 'redundant_data'
+                                    has_multiple_data = True
+                                else:
+                                    err = warn[16:]
+                                    item = 'multiple_data'
+
+                                if zero or nega or enum or self.__resolve_conflict:
+
+                                    self.report.warning.appendDescription(item, {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
+                                    self.report.setWarning()
+
+                                    if self.__verbose:
+                                        self.__lfh.write("+NmrDpUtility.__testDataConsistencyInLoop() ++ Warning  - %s\n" % warn)
+
+                                else:
+
+                                    self.report.error.appendDescription(item, {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
+                                    self.report.setError()
+
+                                    if self.__verbose:
+                                        self.__lfh.write("+NmrDpUtility.__testDataConsistencyInLoop() ++ KeyError  - %s" % err)
+
+                            else:
+
+                                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__testDataConsistencyInLoop() ++ Error  - %s" % warn)
+                                self.report.setError()
+
+                                if self.__verbose:
+                                    self.__lfh.write("+NmrDpUtility.__testDataConsistencyInLoop() ++ Error  - %s" % warn)
+
+                        # try to parse data without constraints
+
+                        if has_multiple_data:
+                            conflict_id = self.__nefT.get_conflict_id(sf_data, lp_category, key_items)[0]
+
+                            if len(conflict_id) > 0:
+                                loop = sf_data.get_loop_by_category(lp_category)
+
+                                for l in conflict_id:
+                                    del loop.data[l]
+
+                        try:
+
+                            lp_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, allowed_tags, disallowed_tags)[0]
+
+                            self.__lp_data[content_subtype].append({'file_name': file_name, 'sf_framecode': sf_framecode, 'data': lp_data})
+
+                        except:
+                            pass
+
+                    except Exception as e:
+
+                        self.report.error.appendDescription('internal_error', "+NmrDpUtility.__testDataConsistencyInLoop() ++ Error  - %s" % str(e))
+                        self.report.setError()
+
+                        if self.__verbose:
+                            self.__lfh.write("+NmrDpUtility.__testDataConsistencyInLoop() ++ Error  - %s" % str(e))
+
+                    if (not lp_data is None) and len(lp_data) == 0:
+
+                        warn = "Unexpectedly, there are no rows in a loop."
+
+                        self.report.warning.appendDescription('missing_content', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
+                        self.report.setWarning()
+
+                        if self.__verbose:
+                            self.__lfh.write("+NmrDpUtility.__testDataConsistencyInLoop() ++ Warning  - %s\n" % warn)
 
         return self.report.getTotalErrors() == __errors
 
@@ -4796,229 +5900,403 @@ class NmrDpUtility(object):
         """ Detect redundant/inconsistent data of interesting loops.
         """
 
-        input_source = self.report.input_sources[0]
-        input_source_dic = input_source.get()
-
-        file_name = input_source_dic['file_name']
-        file_type = input_source_dic['file_type']
-
-        if input_source_dic['content_subtype'] is None:
-            return False
-
         __errors = self.report.getTotalErrors()
 
-        for content_subtype in input_source_dic['content_subtype'].keys():
+        for fileListId in range(self.__file_path_list_len):
 
-            if content_subtype == 'dist_restraint' or content_subtype == 'dihed_restraint' or content_subtype == 'rdc_restraint':
+            input_source = self.report.input_sources[fileListId]
+            input_source_dic = input_source.get()
 
-                sf_category = self.sf_categories[file_type][content_subtype]
-                lp_category = self.lp_categories[file_type][content_subtype]
+            file_name = input_source_dic['file_name']
+            file_type = input_source_dic['file_type']
 
-                key_items = self.consist_key_items[file_type][content_subtype]
-                data_items = self.consist_data_items[file_type][content_subtype]
-                index_tag = self.index_tags[file_type][content_subtype]
-                id_tag = self.consist_id_tags[file_type][content_subtype]
+            if input_source_dic['content_subtype'] is None:
+                continue
 
-                if content_subtype == 'dist_restraint':
-                    max_exclusive = self.dist_restraint_error['max_exclusive']
+            for content_subtype in input_source_dic['content_subtype'].keys():
 
-                    data_unit_name = 'atom pair'
+                if content_subtype == 'dist_restraint' or content_subtype == 'dihed_restraint' or content_subtype == 'rdc_restraint':
 
-                elif content_subtype == 'dihed_restraint':
-                    max_exclusive = self.dihed_restraint_error['max_exclusive']
+                    sf_category = self.sf_categories[file_type][content_subtype]
+                    lp_category = self.lp_categories[file_type][content_subtype]
 
-                    data_unit_name = 'dihedral angle'
+                    key_items = self.consist_key_items[file_type][content_subtype]
+                    data_items = self.consist_data_items[file_type][content_subtype]
+                    index_tag = self.index_tags[file_type][content_subtype]
+                    id_tag = self.consist_id_tags[file_type][content_subtype]
 
-                    dh_item_names = self.item_names_in_dh_loop[file_type]
-                    chain_id_1_name = dh_item_names['chain_id_1']
-                    chain_id_2_name = dh_item_names['chain_id_2']
-                    chain_id_3_name = dh_item_names['chain_id_3']
-                    chain_id_4_name = dh_item_names['chain_id_4']
-                    seq_id_1_name = dh_item_names['seq_id_1']
-                    seq_id_2_name = dh_item_names['seq_id_2']
-                    seq_id_3_name = dh_item_names['seq_id_3']
-                    seq_id_4_name = dh_item_names['seq_id_4']
-                    comp_id_1_name = dh_item_names['comp_id_1']
-                    comp_id_2_name = dh_item_names['comp_id_2']
-                    comp_id_3_name = dh_item_names['comp_id_3']
-                    comp_id_4_name = dh_item_names['comp_id_4']
-                    atom_id_1_name = dh_item_names['atom_id_1']
-                    atom_id_2_name = dh_item_names['atom_id_2']
-                    atom_id_3_name = dh_item_names['atom_id_3']
-                    atom_id_4_name = dh_item_names['atom_id_4']
-                    angle_type_name = dh_item_names['angle_type']
+                    if content_subtype == 'dist_restraint':
+                        max_exclusive = self.dist_restraint_error['max_exclusive']
 
-                elif content_subtype == 'rdc_restraint':
-                    max_exclusive = self.rdc_restraint_error['max_exclusive']
+                        data_unit_name = 'atom pair'
 
-                    data_unit_name = 'bond vector'
+                    elif content_subtype == 'dihed_restraint':
+                        max_exclusive = self.dihed_restraint_error['max_exclusive']
 
-                for sf_data in self.__star_data.get_saveframes_by_category(sf_category):
+                        data_unit_name = 'dihedral angle'
 
-                    sf_framecode = sf_data.get_tag('sf_framecode')[0]
+                        dh_item_names = self.item_names_in_dh_loop[file_type]
+                        chain_id_1_name = dh_item_names['chain_id_1']
+                        chain_id_2_name = dh_item_names['chain_id_2']
+                        chain_id_3_name = dh_item_names['chain_id_3']
+                        chain_id_4_name = dh_item_names['chain_id_4']
+                        seq_id_1_name = dh_item_names['seq_id_1']
+                        seq_id_2_name = dh_item_names['seq_id_2']
+                        seq_id_3_name = dh_item_names['seq_id_3']
+                        seq_id_4_name = dh_item_names['seq_id_4']
+                        comp_id_1_name = dh_item_names['comp_id_1']
+                        comp_id_2_name = dh_item_names['comp_id_2']
+                        comp_id_3_name = dh_item_names['comp_id_3']
+                        comp_id_4_name = dh_item_names['comp_id_4']
+                        atom_id_1_name = dh_item_names['atom_id_1']
+                        atom_id_2_name = dh_item_names['atom_id_2']
+                        atom_id_3_name = dh_item_names['atom_id_3']
+                        atom_id_4_name = dh_item_names['atom_id_4']
+                        angle_type_name = dh_item_names['angle_type']
 
-                    lp_data = next((l['data'] for l in self.__lp_data[content_subtype] if l['sf_framecode'] == sf_framecode), None)
+                    elif content_subtype == 'rdc_restraint':
+                        max_exclusive = self.rdc_restraint_error['max_exclusive']
 
-                    if lp_data is None:
-                        continue
+                        data_unit_name = 'bond vector'
 
-                    conflict_id_set = self.__nefT.get_conflict_id_set(sf_data, lp_category, key_items)[0]
+                    if self.__star_data_type[fileListId] == 'Loop':
 
-                    if conflict_id_set is None:
-                        continue
+                        sf_data = self.__star_data_type[fileListId]
+                        sf_framecode = ''
 
-                    for id_set in conflict_id_set:
-                        len_id_set = len(id_set)
+                        lp_data = next((l['data'] for l in self.__lp_data[content_subtype] if l['file_name'] == file_name and l['sf_framecode'] == sf_framecode), None)
 
-                        if len_id_set < 2:
+                        if lp_data is None:
                             continue
 
-                        redundant = True
+                        conflict_id_set = self.__nefT.get_conflict_id_set(sf_data, lp_category, key_items)[0]
 
-                        for i in range(len_id_set - 1):
+                        if conflict_id_set is None:
+                            continue
 
-                            for j in range(i + 1, len_id_set):
-                                row_id_1 = id_set[i]
-                                row_id_2 = id_set[j]
+                        for id_set in conflict_id_set:
+                            len_id_set = len(id_set)
 
-                                conflict = False
-                                inconsist = False
+                            if len_id_set < 2:
+                                continue
 
-                                discrepancy = ''
+                            redundant = True
 
-                                for d in data_items:
-                                    dname = d['name']
+                            for i in range(len_id_set - 1):
 
-                                    if not dname in lp_data[row_id_1]:
-                                        continue
+                                for j in range(i + 1, len_id_set):
+                                    row_id_1 = id_set[i]
+                                    row_id_2 = id_set[j]
 
-                                    val_1 = lp_data[row_id_1][dname]
-                                    val_2 = lp_data[row_id_2][dname]
+                                    conflict = False
+                                    inconsist = False
 
-                                    if val_1 is None and val_2 is None:
-                                        continue
+                                    discrepancy = ''
 
-                                    if val_1 is None or val_2 is None:
+                                    for d in data_items:
+                                        dname = d['name']
+
+                                        if not dname in lp_data[row_id_1]:
+                                            continue
+
+                                        val_1 = lp_data[row_id_1][dname]
+                                        val_2 = lp_data[row_id_2][dname]
+
+                                        if val_1 is None and val_2 is None:
+                                            continue
+
+                                        if val_1 is None or val_2 is None:
+                                            redundant = False
+                                            continue
+
+                                        if val_1 == val_2:
+                                            continue
+
                                         redundant = False
-                                        continue
 
-                                    if val_1 == val_2:
-                                        continue
+                                        _val_1 = str(val_1) if val_1 >= 0.0 else '(' + str(val_1) + ')'
+                                        _val_2 = str(val_2) if val_2 >= 0.0 else '(' + str(val_2) + ')'
 
-                                    redundant = False
+                                        if content_subtype == 'dist_restraint':
 
-                                    _val_1 = str(val_1) if val_1 >= 0.0 else '(' + str(val_1) + ')'
-                                    _val_2 = str(val_2) if val_2 >= 0.0 else '(' + str(val_2) + ')'
+                                            r = abs(val_1 - val_2) / abs(val_1 + val_2)
 
-                                    if content_subtype == 'dist_restraint':
+                                            if r >= self.r_conflicted_dist_restraint:
+                                                discrepancy += '%s |%s-%s|/|%s+%s| = %s %% is out of acceptable range, %s %%, ' % (dname, _val_1, _val_2, _val_1, _val_2, '{:.1f}'.format(r * 100.0), int(self.r_conflicted_dist_restraint * 100))
+                                                conflict = True
 
-                                        r = abs(val_1 - val_2) / abs(val_1 + val_2)
+                                            elif r >= self.r_inconsistent_dist_restraint:
+                                                discrepancy += '%s |%s-%s|/|%s+%s| = %s %% is out of typical range, %s %%, ' % (dname, _val_1, _val_2, _val_1, _val_2, '{:.1f}'.format(r * 100.0), int(self.r_inconsistent_dist_restraint * 100))
+                                                inconsist = True
 
-                                        if r >= self.r_conflicted_dist_restraint:
-                                            discrepancy += '%s |%s-%s|/|%s+%s| = %s %% is out of acceptable range, %s %%, ' % (dname, _val_1, _val_2, _val_1, _val_2, '{:.1f}'.format(r * 100.0), int(self.r_conflicted_dist_restraint * 100))
-                                            conflict = True
+                                        else:
 
-                                        elif r >= self.r_inconsistent_dist_restraint:
-                                            discrepancy += '%s |%s-%s|/|%s+%s| = %s %% is out of typical range, %s %%, ' % (dname, _val_1, _val_2, _val_1, _val_2, '{:.1f}'.format(r * 100.0), int(self.r_inconsistent_dist_restraint * 100))
-                                            inconsist = True
+                                            r = abs(val_1 - val_2)
 
-                                    else:
+                                            if content_subtype == 'dihed_restraint':
 
-                                        r = abs(val_1 - val_2)
+                                                if r > 180.0:
+                                                    if val_1 < val_2:
+                                                        r = abs(val_1 - (val_2 - 360.0))
+                                                    if val_1 > val_2:
+                                                        r = abs(val_1 - (val_2 + 360.0))
 
-                                        if content_subtype == 'dihed_restraint':
+                                                chain_id_1 = str(lp_data[row_id_1][chain_id_1_name])
+                                                chain_id_2 = str(lp_data[row_id_1][chain_id_2_name])
+                                                chain_id_3 = str(lp_data[row_id_1][chain_id_3_name])
+                                                chain_id_4 = str(lp_data[row_id_1][chain_id_4_name])
+                                                seq_id_1 = lp_data[row_id_1][seq_id_1_name]
+                                                seq_id_2 = lp_data[row_id_1][seq_id_2_name]
+                                                seq_id_3 = lp_data[row_id_1][seq_id_3_name]
+                                                seq_id_4 = lp_data[row_id_1][seq_id_4_name]
+                                                comp_id_1 = lp_data[row_id_1][comp_id_1_name]
+                                                comp_id_2 = lp_data[row_id_1][comp_id_2_name]
+                                                comp_id_3 = lp_data[row_id_1][comp_id_3_name]
+                                                comp_id_4 = lp_data[row_id_1][comp_id_4_name]
+                                                atom_id_1 = lp_data[row_id_1][atom_id_1_name]
+                                                atom_id_2 = lp_data[row_id_1][atom_id_2_name]
+                                                atom_id_3 = lp_data[row_id_1][atom_id_3_name]
+                                                atom_id_4 = lp_data[row_id_1][atom_id_4_name]
+                                                data_type = lp_data[row_id_1][angle_type_name]
 
-                                            if r > 180.0:
-                                                if val_1 < val_2:
-                                                    r = abs(val_1 - (val_2 - 360.0))
-                                                if val_1 > val_2:
-                                                    r = abs(val_1 - (val_2 + 360.0))
+                                                data_type = self.__getTypeOfDihedralRestraint(data_type,
+                                                                                              chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2,
+                                                                                              chain_id_3, seq_id_3, comp_id_3, atom_id_3, chain_id_4, seq_id_4, comp_id_4, atom_id_4)[0]
 
-                                            chain_id_1 = str(lp_data[row_id_1][chain_id_1_name])
-                                            chain_id_2 = str(lp_data[row_id_1][chain_id_2_name])
-                                            chain_id_3 = str(lp_data[row_id_1][chain_id_3_name])
-                                            chain_id_4 = str(lp_data[row_id_1][chain_id_4_name])
-                                            seq_id_1 = lp_data[row_id_1][seq_id_1_name]
-                                            seq_id_2 = lp_data[row_id_1][seq_id_2_name]
-                                            seq_id_3 = lp_data[row_id_1][seq_id_3_name]
-                                            seq_id_4 = lp_data[row_id_1][seq_id_4_name]
-                                            comp_id_1 = lp_data[row_id_1][comp_id_1_name]
-                                            comp_id_2 = lp_data[row_id_1][comp_id_2_name]
-                                            comp_id_3 = lp_data[row_id_1][comp_id_3_name]
-                                            comp_id_4 = lp_data[row_id_1][comp_id_4_name]
-                                            atom_id_1 = lp_data[row_id_1][atom_id_1_name]
-                                            atom_id_2 = lp_data[row_id_1][atom_id_2_name]
-                                            atom_id_3 = lp_data[row_id_1][atom_id_3_name]
-                                            atom_id_4 = lp_data[row_id_1][atom_id_4_name]
-                                            data_type = lp_data[row_id_1][angle_type_name]
+                                                if not data_type.startswith('phi') and not data_type.startswith('psi') and not data_type.startswith('omega'):
+                                                    continue
 
-                                            data_type = self.__getTypeOfDihedralRestraint(data_type,
-                                                                                          chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2,
-                                                                                          chain_id_3, seq_id_3, comp_id_3, atom_id_3, chain_id_4, seq_id_4, comp_id_4, atom_id_4)[0]
+                                            if r >= max_exclusive:
+                                                discrepancy += '%s |%s-%s| = %s is out of acceptable range, %s %s, ' % (dname, _val_1, _val_2, '{:.1f}'.format(r), max_exclusive, 'degrees' if content_subtype == 'dihed_restraint' else 'Hz')
+                                                conflict = True
 
-                                            if not data_type.startswith('phi') and not data_type.startswith('psi') and not data_type.startswith('omega'):
-                                                continue
+                                            elif r >= max_exclusive * self.inconsist_over_conflicted:
+                                                discrepancy += '%s |%s-%s| = %s is out of typical range, %s %s, ' % (dname, _val_1, _val_2, '{:.1f}'.format(r), max_exclusive * self.inconsist_over_conflicted, 'degrees' if content_subtype == 'dihed_restraint' else 'Hz')
+                                                inconsist = True
 
-                                        if r >= max_exclusive:
-                                            discrepancy += '%s |%s-%s| = %s is out of acceptable range, %s %s, ' % (dname, _val_1, _val_2, '{:.1f}'.format(r), max_exclusive, 'degrees' if content_subtype == 'dihed_restraint' else 'Hz')
-                                            conflict = True
+                                    if conflict:
 
-                                        elif r >= max_exclusive * self.inconsist_over_conflicted:
-                                            discrepancy += '%s |%s-%s| = %s is out of typical range, %s %s, ' % (dname, _val_1, _val_2, '{:.1f}'.format(r), max_exclusive * self.inconsist_over_conflicted, 'degrees' if content_subtype == 'dihed_restraint' else 'Hz')
-                                            inconsist = True
+                                        msg = '' if content_subtype != 'dihed_restraint' else angle_type_name + ' %s, ' % lp_data[row_id_1][angle_type_name]
+                                        msg += self.__getResucedAtomNotations(key_items, lp_data[row_id_1])
 
-                                if conflict:
+                                        warn = '[Check rows of %s %s vs %s, %s %s vs %s] ' %\
+                                               (index_tag, lp_data[row_id_1][index_tag], lp_data[row_id_2][index_tag],
+                                                id_tag, lp_data[row_id_1][id_tag], lp_data[row_id_2][id_tag])
+                                        warn += 'Found conflict on restraints (%s) for the same %s (%s).' % (discrepancy[:-2], data_unit_name, msg)
 
-                                    msg = '' if content_subtype != 'dihed_restraint' else angle_type_name + ' %s, ' % lp_data[row_id_1][angle_type_name]
-                                    msg += self.__getResucedAtomNotations(key_items, lp_data[row_id_1])
+                                        self.report.warning.appendDescription('conflicted_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
+                                        self.report.setWarning()
 
-                                    warn = '[Check rows of %s %s vs %s, %s %s vs %s] ' %\
-                                           (index_tag, lp_data[row_id_1][index_tag], lp_data[row_id_2][index_tag],
-                                            id_tag, lp_data[row_id_1][id_tag], lp_data[row_id_2][id_tag])
-                                    warn += 'Found conflict on restraints (%s) for the same %s (%s).' % (discrepancy[:-2], data_unit_name, msg)
+                                        if self.__verbose:
+                                            self.__lfh.write("+NmrDpUtility.__detetConflictDataInLoop() ++ Warning  - %s" % warn)
 
-                                    self.report.warning.appendDescription('conflicted_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
-                                    self.report.setWarning()
+                                    elif inconsist:
 
-                                    if self.__verbose:
-                                        self.__lfh.write("+NmrDpUtility.__detetConflictDataInLoop() ++ Warning  - %s" % warn)
+                                        msg = '' if content_subtype != 'dihed_restraint' else angle_type_name + ' %s, ' % lp_data[row_id_1][angle_type_name]
+                                        msg += self.__getResucedAtomNotations(key_items, lp_data[row_id_1])
 
-                                elif inconsist:
+                                        warn = '[Check rows of %s %s vs %s, %s %s vs %s] ' %\
+                                               (index_tag, lp_data[row_id_1][index_tag], lp_data[row_id_2][index_tag],
+                                                id_tag, lp_data[row_id_1][id_tag], lp_data[row_id_2][id_tag])
+                                        warn += 'Found discrepancy in restraints (%s) for the same %s (%s).' % (discrepancy[:-2], data_unit_name, msg)
 
-                                    msg = '' if content_subtype != 'dihed_restraint' else angle_type_name + ' %s, ' % lp_data[row_id_1][angle_type_name]
-                                    msg += self.__getResucedAtomNotations(key_items, lp_data[row_id_1])
+                                        self.report.warning.appendDescription('inconsistent_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
+                                        self.report.setWarning()
 
-                                    warn = '[Check rows of %s %s vs %s, %s %s vs %s] ' %\
-                                           (index_tag, lp_data[row_id_1][index_tag], lp_data[row_id_2][index_tag],
-                                            id_tag, lp_data[row_id_1][id_tag], lp_data[row_id_2][id_tag])
-                                    warn += 'Found discrepancy in restraints (%s) for the same %s (%s).' % (discrepancy[:-2], data_unit_name, msg)
+                                        if self.__verbose:
+                                            self.__lfh.write("+NmrDpUtility.__detetConflictDataInLoop() ++ Warning  - %s" % warn)
 
-                                    self.report.warning.appendDescription('inconsistent_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
-                                    self.report.setWarning()
+                            if redundant:
 
-                                    if self.__verbose:
-                                        self.__lfh.write("+NmrDpUtility.__detetConflictDataInLoop() ++ Warning  - %s" % warn)
+                                msg = '' if content_subtype != 'dihed_restraint' else angle_type_name + ' %s, ' % lp_data[row_id_1][angle_type_name]
+                                msg += self.__getResucedAtomNotations(key_items, lp_data[row_id_1])
 
-                        if redundant:
+                                idx_msg = index_tag + ' '
+                                for id in id_set:
+                                    idx_msg += '%s vs ' % lp_data[id][index_tag]
+                                idx_msg = idx_msg[:-4] + ', '
+                                idx_msg += id_tag + ' '
+                                for id in id_set:
+                                    idx_msg += '%s vs ' % lp_data[id][id_tag]
 
-                            msg = '' if content_subtype != 'dihed_restraint' else angle_type_name + ' %s, ' % lp_data[row_id_1][angle_type_name]
-                            msg += self.__getResucedAtomNotations(key_items, lp_data[row_id_1])
+                                warn = '[Check rows of %s] Found redundant restraints for the same %s (%s).' % (idx_msg[:-4], data_unit_name, msg)
 
-                            idx_msg = index_tag + ' '
-                            for id in id_set:
-                                idx_msg += '%s vs ' % lp_data[id][index_tag]
-                            idx_msg = idx_msg[:-4] + ', '
-                            idx_msg += id_tag + ' '
-                            for id in id_set:
-                                idx_msg += '%s vs ' % lp_data[id][id_tag]
+                                self.report.warning.appendDescription('redundant_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
+                                self.report.setWarning()
 
-                            warn = '[Check rows of %s] Found redundant restraints for the same %s (%s).' % (idx_msg[:-4], data_unit_name, msg)
+                                if self.__verbose:
+                                    self.__lfh.write("+NmrDpUtility.__detetConflictDataInLoop() ++ Warning  - %s" % warn)
 
-                            self.report.warning.appendDescription('redundant_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
-                            self.report.setWarning()
+                        continue
 
-                            if self.__verbose:
-                                self.__lfh.write("+NmrDpUtility.__detetConflictDataInLoop() ++ Warning  - %s" % warn)
+                    # Entry/Saveframe
+
+                    for sf_data in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
+
+                        sf_framecode = sf_data.get_tag('sf_framecode')[0]
+
+                        lp_data = next((l['data'] for l in self.__lp_data[content_subtype] if l['file_name'] == file_name and l['sf_framecode'] == sf_framecode), None)
+
+                        if lp_data is None:
+                            continue
+
+                        conflict_id_set = self.__nefT.get_conflict_id_set(sf_data, lp_category, key_items)[0]
+
+                        if conflict_id_set is None:
+                            continue
+
+                        for id_set in conflict_id_set:
+                            len_id_set = len(id_set)
+
+                            if len_id_set < 2:
+                                continue
+
+                            redundant = True
+
+                            for i in range(len_id_set - 1):
+
+                                for j in range(i + 1, len_id_set):
+                                    row_id_1 = id_set[i]
+                                    row_id_2 = id_set[j]
+
+                                    conflict = False
+                                    inconsist = False
+
+                                    discrepancy = ''
+
+                                    for d in data_items:
+                                        dname = d['name']
+
+                                        if not dname in lp_data[row_id_1]:
+                                            continue
+
+                                        val_1 = lp_data[row_id_1][dname]
+                                        val_2 = lp_data[row_id_2][dname]
+
+                                        if val_1 is None and val_2 is None:
+                                            continue
+
+                                        if val_1 is None or val_2 is None:
+                                            redundant = False
+                                            continue
+
+                                        if val_1 == val_2:
+                                            continue
+
+                                        redundant = False
+
+                                        _val_1 = str(val_1) if val_1 >= 0.0 else '(' + str(val_1) + ')'
+                                        _val_2 = str(val_2) if val_2 >= 0.0 else '(' + str(val_2) + ')'
+
+                                        if content_subtype == 'dist_restraint':
+
+                                            r = abs(val_1 - val_2) / abs(val_1 + val_2)
+
+                                            if r >= self.r_conflicted_dist_restraint:
+                                                discrepancy += '%s |%s-%s|/|%s+%s| = %s %% is out of acceptable range, %s %%, ' % (dname, _val_1, _val_2, _val_1, _val_2, '{:.1f}'.format(r * 100.0), int(self.r_conflicted_dist_restraint * 100))
+                                                conflict = True
+
+                                            elif r >= self.r_inconsistent_dist_restraint:
+                                                discrepancy += '%s |%s-%s|/|%s+%s| = %s %% is out of typical range, %s %%, ' % (dname, _val_1, _val_2, _val_1, _val_2, '{:.1f}'.format(r * 100.0), int(self.r_inconsistent_dist_restraint * 100))
+                                                inconsist = True
+
+                                        else:
+
+                                            r = abs(val_1 - val_2)
+
+                                            if content_subtype == 'dihed_restraint':
+
+                                                if r > 180.0:
+                                                    if val_1 < val_2:
+                                                        r = abs(val_1 - (val_2 - 360.0))
+                                                    if val_1 > val_2:
+                                                        r = abs(val_1 - (val_2 + 360.0))
+
+                                                chain_id_1 = str(lp_data[row_id_1][chain_id_1_name])
+                                                chain_id_2 = str(lp_data[row_id_1][chain_id_2_name])
+                                                chain_id_3 = str(lp_data[row_id_1][chain_id_3_name])
+                                                chain_id_4 = str(lp_data[row_id_1][chain_id_4_name])
+                                                seq_id_1 = lp_data[row_id_1][seq_id_1_name]
+                                                seq_id_2 = lp_data[row_id_1][seq_id_2_name]
+                                                seq_id_3 = lp_data[row_id_1][seq_id_3_name]
+                                                seq_id_4 = lp_data[row_id_1][seq_id_4_name]
+                                                comp_id_1 = lp_data[row_id_1][comp_id_1_name]
+                                                comp_id_2 = lp_data[row_id_1][comp_id_2_name]
+                                                comp_id_3 = lp_data[row_id_1][comp_id_3_name]
+                                                comp_id_4 = lp_data[row_id_1][comp_id_4_name]
+                                                atom_id_1 = lp_data[row_id_1][atom_id_1_name]
+                                                atom_id_2 = lp_data[row_id_1][atom_id_2_name]
+                                                atom_id_3 = lp_data[row_id_1][atom_id_3_name]
+                                                atom_id_4 = lp_data[row_id_1][atom_id_4_name]
+                                                data_type = lp_data[row_id_1][angle_type_name]
+
+                                                data_type = self.__getTypeOfDihedralRestraint(data_type,
+                                                                                              chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2,
+                                                                                              chain_id_3, seq_id_3, comp_id_3, atom_id_3, chain_id_4, seq_id_4, comp_id_4, atom_id_4)[0]
+
+                                                if not data_type.startswith('phi') and not data_type.startswith('psi') and not data_type.startswith('omega'):
+                                                    continue
+
+                                            if r >= max_exclusive:
+                                                discrepancy += '%s |%s-%s| = %s is out of acceptable range, %s %s, ' % (dname, _val_1, _val_2, '{:.1f}'.format(r), max_exclusive, 'degrees' if content_subtype == 'dihed_restraint' else 'Hz')
+                                                conflict = True
+
+                                            elif r >= max_exclusive * self.inconsist_over_conflicted:
+                                                discrepancy += '%s |%s-%s| = %s is out of typical range, %s %s, ' % (dname, _val_1, _val_2, '{:.1f}'.format(r), max_exclusive * self.inconsist_over_conflicted, 'degrees' if content_subtype == 'dihed_restraint' else 'Hz')
+                                                inconsist = True
+
+                                    if conflict:
+
+                                        msg = '' if content_subtype != 'dihed_restraint' else angle_type_name + ' %s, ' % lp_data[row_id_1][angle_type_name]
+                                        msg += self.__getResucedAtomNotations(key_items, lp_data[row_id_1])
+
+                                        warn = '[Check rows of %s %s vs %s, %s %s vs %s] ' %\
+                                               (index_tag, lp_data[row_id_1][index_tag], lp_data[row_id_2][index_tag],
+                                                id_tag, lp_data[row_id_1][id_tag], lp_data[row_id_2][id_tag])
+                                        warn += 'Found conflict on restraints (%s) for the same %s (%s).' % (discrepancy[:-2], data_unit_name, msg)
+
+                                        self.report.warning.appendDescription('conflicted_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
+                                        self.report.setWarning()
+
+                                        if self.__verbose:
+                                            self.__lfh.write("+NmrDpUtility.__detetConflictDataInLoop() ++ Warning  - %s" % warn)
+
+                                    elif inconsist:
+
+                                        msg = '' if content_subtype != 'dihed_restraint' else angle_type_name + ' %s, ' % lp_data[row_id_1][angle_type_name]
+                                        msg += self.__getResucedAtomNotations(key_items, lp_data[row_id_1])
+
+                                        warn = '[Check rows of %s %s vs %s, %s %s vs %s] ' %\
+                                               (index_tag, lp_data[row_id_1][index_tag], lp_data[row_id_2][index_tag],
+                                                id_tag, lp_data[row_id_1][id_tag], lp_data[row_id_2][id_tag])
+                                        warn += 'Found discrepancy in restraints (%s) for the same %s (%s).' % (discrepancy[:-2], data_unit_name, msg)
+
+                                        self.report.warning.appendDescription('inconsistent_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
+                                        self.report.setWarning()
+
+                                        if self.__verbose:
+                                            self.__lfh.write("+NmrDpUtility.__detetConflictDataInLoop() ++ Warning  - %s" % warn)
+
+                            if redundant:
+
+                                msg = '' if content_subtype != 'dihed_restraint' else angle_type_name + ' %s, ' % lp_data[row_id_1][angle_type_name]
+                                msg += self.__getResucedAtomNotations(key_items, lp_data[row_id_1])
+
+                                idx_msg = index_tag + ' '
+                                for id in id_set:
+                                    idx_msg += '%s vs ' % lp_data[id][index_tag]
+                                idx_msg = idx_msg[:-4] + ', '
+                                idx_msg += id_tag + ' '
+                                for id in id_set:
+                                    idx_msg += '%s vs ' % lp_data[id][id_tag]
+
+                                warn = '[Check rows of %s] Found redundant restraints for the same %s (%s).' % (idx_msg[:-4], data_unit_name, msg)
+
+                                self.report.warning.appendDescription('redundant_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
+                                self.report.setWarning()
+
+                                if self.__verbose:
+                                    self.__lfh.write("+NmrDpUtility.__detetConflictDataInLoop() ++ Warning  - %s" % warn)
 
         return self.report.getTotalErrors() == __errors
 
@@ -5026,209 +6304,214 @@ class NmrDpUtility(object):
         """ Perform consistency test on data of auxiliary loops.
         """
 
-        input_source = self.report.input_sources[0]
-        input_source_dic = input_source.get()
-
-        file_name = input_source_dic['file_name']
-        file_type = input_source_dic['file_type']
-
-        if input_source_dic['content_subtype'] is None:
-            return False
-
         __errors = self.report.getTotalErrors()
 
-        for content_subtype in input_source_dic['content_subtype'].keys():
+        for fileListId in range(self.__file_path_list_len):
 
-            sf_category = self.sf_categories[file_type][content_subtype]
-            lp_category = self.lp_categories[file_type][content_subtype]
+            input_source = self.report.input_sources[fileListId]
+            input_source_dic = input_source.get()
 
-            for sf_data in self.__star_data.get_saveframes_by_category(sf_category):
+            file_name = input_source_dic['file_name']
+            file_type = input_source_dic['file_type']
 
-                sf_framecode = sf_data.get_tag('sf_framecode')[0]
+            if input_source_dic['content_subtype'] is None:
+                continue
 
-                if content_subtype == 'spectral_peak':
+            for content_subtype in input_source_dic['content_subtype'].keys():
 
-                    try:
+                sf_category = self.sf_categories[file_type][content_subtype]
+                lp_category = self.lp_categories[file_type][content_subtype]
 
-                        _num_dim = sf_data.get_tag(self.num_dim_items[file_type])[0]
-                        num_dim = int(_num_dim)
+                if self.__star_data_type[fileListId] == 'Loop':
+                    continue
 
-                        if not num_dim in range(1, self.lim_num_dim):
-                            raise ValueError()
+                for sf_data in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
 
-                    except ValueError:
+                    sf_framecode = sf_data.get_tag('sf_framecode')[0]
 
-                        err = "%s %s must be in %s." % (self.num_dim_items[file_type], _num_dim, set(range(1, self.lim_num_dim)))
-
-                        self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
-                        self.report.setError()
-
-                        if self.__verbose:
-                            self.__lfh.write("+NmrDpUtility.__testDataConsistencyInAuxLoop() ++ ValueError  - %s\n" % err)
-
-                for loop in sf_data.loops:
-
-                    lp_category = loop.category
-
-                    # main content of loop has been processed in __testDataConsistencyInLoop()
-                    if lp_category in self.lp_categories[file_type][content_subtype]:
-                        continue
-
-                    elif lp_category in self.aux_lp_categories[file_type][content_subtype]:
-
-                        key_items = self.aux_key_items[file_type][content_subtype][lp_category]
-                        data_items = self.aux_data_items[file_type][content_subtype][lp_category]
-                        allowed_tags = self.aux_allowed_tags[file_type][content_subtype][lp_category]
+                    if content_subtype == 'spectral_peak':
 
                         try:
 
-                            aux_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, allowed_tags, None,
-                                                              inc_idx_test=True, enforce_non_zero=True, enforce_sign=True, enforce_enum=True)[0]
+                            _num_dim = sf_data.get_tag(self.num_dim_items[file_type])[0]
+                            num_dim = int(_num_dim)
 
-                            self.__aux_data[content_subtype].append({'sf_framecode': sf_framecode, 'category': lp_category, 'data': aux_data})
+                            if not num_dim in range(1, self.lim_num_dim):
+                                raise ValueError()
 
-                            if content_subtype == 'spectral_peak':
-                                self.__testDataConsistencyInAuxLoopOfSpectralPeak(file_name, file_type, sf_framecode, num_dim, lp_category, aux_data)
+                        except ValueError:
 
-                        except KeyError as e:
+                            err = "%s %s must be in %s." % (self.num_dim_items[file_type], _num_dim, set(range(1, self.lim_num_dim)))
 
-                            self.report.error.appendDescription('multiple_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': str(e).strip("'")})
+                            self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
                             self.report.setError()
 
                             if self.__verbose:
-                                self.__lfh.write("+NmrDpUtility.__testDataConsistencyInAuxLoop() ++ KeyError  - %s" % str(e))
+                                self.__lfh.write("+NmrDpUtility.__testDataConsistencyInAuxLoop() ++ ValueError  - %s\n" % err)
 
-                        except LookupError as e:
+                    for loop in sf_data.loops:
 
-                            self.report.error.appendDescription('missing_mandatory_item', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': str(e).strip("'")})
-                            self.report.setError()
+                        lp_category = loop.category
 
-                            if self.__verbose:
-                                self.__lfh.write("+NmrDpUtility.__testDataConsistencyInAuxLoop() ++ LookupError  - %s" % str(e))
+                        # main content of loop has been processed in __testDataConsistencyInLoop()
+                        if lp_category in self.lp_categories[file_type][content_subtype]:
+                            continue
 
-                        except ValueError as e:
+                        elif lp_category in self.aux_lp_categories[file_type][content_subtype]:
 
-                            self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': str(e).strip("'")})
-                            self.report.setError()
-
-                            if self.__verbose:
-                                self.__lfh.write("+NmrDpUtility.__testDataConsistencyInAuxLoop() ++ ValueError  - %s" % str(e))
-
-                        except UserWarning as e:
-
-                            warns = str(e).strip("'").split('\n')
-                            proc_warns = set()
-
-                            has_multiple_data = False
-
-                            for warn in warns:
-
-                                if warn == '':
-                                    continue
-
-                                if warn == '' or warn in proc_warns:
-                                    continue
-
-                                proc_warns.add(warn)
-
-                                zero = warn.startswith('[Zero value error] ')
-                                nega = warn.startswith('[Negative value error] ')
-                                enum = warn.startswith('[Enumeration error] ')
-                                mult = warn.startswith('[Multiple data] ')
-
-                                if zero or nega or enum or mult:
-
-                                    if zero:
-                                        warn = warn[19:]
-                                        item = 'missing_data'
-                                    elif nega:
-                                        warn = warn[23:]
-                                        item = 'unusual_data'
-                                    elif enum:
-                                        warn = warn[20:]
-                                        item = 'enum_mismatch'
-                                    elif self.__resolve_conflict:
-                                        warn = warn[16:]
-                                        item = 'redundant_data'
-                                        has_multiple_data = True
-                                    else:
-                                        err = warn[16:]
-                                        item = 'multiple_data'
-
-                                    if zero or nega or enum or self.__resolve_conflict:
-
-                                        self.report.warning.appendDescription(item, {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
-                                        self.report.setWarning()
-
-                                        if self.__verbose:
-                                            self.__lfh.write("+NmrDpUtility.__testDataConsistencyInAuxLoop() ++ Warning  - %s\n" % warn)
-
-                                    else:
-
-                                        self.report.error.appendDescription(item, {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
-                                        self.report.setError()
-
-                                        if self.__verbose:
-                                            self.__lfh.write("+NmrDpUtility.__testDataConsistencyInAuxLoop() ++ KeyError  - %s" % err)
-
-                                else:
-
-                                    self.report.error.appendDescription('internal_error', "+NmrDpUtility.__testDataConsistencyInAuxLoop() ++ Error  - %s" % warn)
-                                    self.report.setError()
-
-                                    if self.__verbose:
-                                        self.__lfh.write("+NmrDpUtility.__testDataConsistencyInAuxLoop() ++ Error  - %s" % warn)
-
-                            # try to parse data without constraints
+                            key_items = self.aux_key_items[file_type][content_subtype][lp_category]
+                            data_items = self.aux_data_items[file_type][content_subtype][lp_category]
+                            allowed_tags = self.aux_allowed_tags[file_type][content_subtype][lp_category]
 
                             try:
 
-                                if has_multiple_data:
-                                    conflict_id = self.__nefT.get_conflict_id(sf_data, lp_category, key_items)[0]
+                                aux_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, allowed_tags, None,
+                                                                  inc_idx_test=True, enforce_non_zero=True, enforce_sign=True, enforce_enum=True)[0]
 
-                                    if len(conflict_id) > 0:
-                                        loop = sf_data.get_loop_by_category(lp_category)
-
-                                        for l in conflict_id:
-                                            del loop.data[l]
-
-                                aux_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, allowed_tags, None)[0]
-
-                                self.__aux_data[content_subtype].append({'sf_framecode': sf_framecode, 'category': lp_category, 'data': aux_data})
+                                self.__aux_data[content_subtype].append({'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'data': aux_data})
 
                                 if content_subtype == 'spectral_peak':
                                     self.__testDataConsistencyInAuxLoopOfSpectralPeak(file_name, file_type, sf_framecode, num_dim, lp_category, aux_data)
 
-                            except:
-                                pass
+                            except KeyError as e:
 
-                        except Exception as e:
+                                self.report.error.appendDescription('multiple_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': str(e).strip("'")})
+                                self.report.setError()
 
-                            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__testDataConsistencyInAuxLoop() ++ Error  - %s" % str(e))
+                                if self.__verbose:
+                                    self.__lfh.write("+NmrDpUtility.__testDataConsistencyInAuxLoop() ++ KeyError  - %s" % str(e))
+
+                            except LookupError as e:
+
+                                self.report.error.appendDescription('missing_mandatory_item', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': str(e).strip("'")})
+                                self.report.setError()
+
+                                if self.__verbose:
+                                    self.__lfh.write("+NmrDpUtility.__testDataConsistencyInAuxLoop() ++ LookupError  - %s" % str(e))
+
+                            except ValueError as e:
+
+                                self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': str(e).strip("'")})
+                                self.report.setError()
+
+                                if self.__verbose:
+                                    self.__lfh.write("+NmrDpUtility.__testDataConsistencyInAuxLoop() ++ ValueError  - %s" % str(e))
+
+                            except UserWarning as e:
+
+                                warns = str(e).strip("'").split('\n')
+                                proc_warns = set()
+
+                                has_multiple_data = False
+
+                                for warn in warns:
+
+                                    if warn == '':
+                                        continue
+
+                                    if warn == '' or warn in proc_warns:
+                                        continue
+
+                                    proc_warns.add(warn)
+
+                                    zero = warn.startswith('[Zero value error] ')
+                                    nega = warn.startswith('[Negative value error] ')
+                                    enum = warn.startswith('[Enumeration error] ')
+                                    mult = warn.startswith('[Multiple data] ')
+
+                                    if zero or nega or enum or mult:
+
+                                        if zero:
+                                            warn = warn[19:]
+                                            item = 'missing_data'
+                                        elif nega:
+                                            warn = warn[23:]
+                                            item = 'unusual_data'
+                                        elif enum:
+                                            warn = warn[20:]
+                                            item = 'enum_mismatch'
+                                        elif self.__resolve_conflict:
+                                            warn = warn[16:]
+                                            item = 'redundant_data'
+                                            has_multiple_data = True
+                                        else:
+                                            err = warn[16:]
+                                            item = 'multiple_data'
+
+                                        if zero or nega or enum or self.__resolve_conflict:
+
+                                            self.report.warning.appendDescription(item, {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
+                                            self.report.setWarning()
+
+                                            if self.__verbose:
+                                                self.__lfh.write("+NmrDpUtility.__testDataConsistencyInAuxLoop() ++ Warning  - %s\n" % warn)
+
+                                        else:
+
+                                            self.report.error.appendDescription(item, {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
+                                            self.report.setError()
+
+                                            if self.__verbose:
+                                                self.__lfh.write("+NmrDpUtility.__testDataConsistencyInAuxLoop() ++ KeyError  - %s" % err)
+
+                                    else:
+
+                                        self.report.error.appendDescription('internal_error', "+NmrDpUtility.__testDataConsistencyInAuxLoop() ++ Error  - %s" % warn)
+                                        self.report.setError()
+
+                                        if self.__verbose:
+                                            self.__lfh.write("+NmrDpUtility.__testDataConsistencyInAuxLoop() ++ Error  - %s" % warn)
+
+                                # try to parse data without constraints
+
+                                try:
+
+                                    if has_multiple_data:
+                                        conflict_id = self.__nefT.get_conflict_id(sf_data, lp_category, key_items)[0]
+
+                                        if len(conflict_id) > 0:
+                                            loop = sf_data.get_loop_by_category(lp_category)
+
+                                            for l in conflict_id:
+                                                del loop.data[l]
+
+                                    aux_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, allowed_tags, None)[0]
+
+                                    self.__aux_data[content_subtype].append({'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'data': aux_data})
+
+                                    if content_subtype == 'spectral_peak':
+                                        self.__testDataConsistencyInAuxLoopOfSpectralPeak(file_name, file_type, sf_framecode, num_dim, lp_category, aux_data)
+
+                                except:
+                                    pass
+
+                            except Exception as e:
+
+                                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__testDataConsistencyInAuxLoop() ++ Error  - %s" % str(e))
+                                self.report.setError()
+
+                                if self.__verbose:
+                                    self.__lfh.write("+NmrDpUtility.__testDataConsistencyInAuxLoop() ++ Error  - %s" % str(e))
+
+                        elif lp_category in self.linked_lp_categories[file_type][content_subtype]:
+
+                            warn = "Skipped parsing %s loop category in saveframe %s." % (lp_category, sf_framecode)
+
+                            self.report.warning.appendDescription('skipped_lp_category', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
+                            self.report.setWarning()
+
+                            if self.__verbose:
+                                self.__lfh.write("+NmrDpUtility.__testDataConsistencyInAuxLoop() ++ Warning  - %s\n" % warn)
+
+                        else:
+
+                            err = "%s loop category exists unexpectedly." % loop.category
+
+                            self.report.error.appendDescription('format_issue', {'file_name': file_name, 'sf_framecode': sf_framecode, 'description': err})
                             self.report.setError()
 
                             if self.__verbose:
-                                self.__lfh.write("+NmrDpUtility.__testDataConsistencyInAuxLoop() ++ Error  - %s" % str(e))
-
-                    elif lp_category in self.linked_lp_categories[file_type][content_subtype]:
-
-                        warn = "Skipped parsing %s loop category in saveframe %s." % (lp_category, sf_framecode)
-
-                        self.report.warning.appendDescription('skipped_lp_category', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
-                        self.report.setWarning()
-
-                        if self.__verbose:
-                            self.__lfh.write("+NmrDpUtility.__testDataConsistencyInAuxLoop() ++ Warning  - %s\n" % warn)
-
-                    else:
-
-                        err = "%s loop category exists unexpectedly." % loop.category
-
-                        self.report.error.appendDescription('format_issue', {'file_name': file_name, 'sf_framecode': sf_framecode, 'description': err})
-                        self.report.setError()
-
-                        if self.__verbose:
-                            self.__lfh.write("+NmrDpUtility.__testDataConsistencyInAuxLoop() ++ Error  - %s\n" % err)
+                                self.__lfh.write("+NmrDpUtility.__testDataConsistencyInAuxLoop() ++ Error  - %s\n" % err)
 
         return self.report.getTotalErrors() == __errors
 
@@ -5316,7 +6599,7 @@ class NmrDpUtility(object):
                 position_names = [k['name'] for k in key_items]
                 index_tag = self.index_tags[file_type][content_subtype]
 
-                lp_data = next((l['data'] for l in self.__lp_data[content_subtype] if l['sf_framecode'] == sf_framecode), None)
+                lp_data = next((l['data'] for l in self.__lp_data[content_subtype] if l['file_name'] == file_name and l['sf_framecode'] == sf_framecode), None)
 
                 if not lp_data is None:
 
@@ -5364,137 +6647,142 @@ class NmrDpUtility(object):
         """ Perform consistency test on saveframe tags.
         """
 
-        input_source = self.report.input_sources[0]
-        input_source_dic = input_source.get()
-
-        file_name = input_source_dic['file_name']
-        file_type = input_source_dic['file_type']
-
-        if input_source_dic['content_subtype'] is None:
-            return False
-
         __errors = self.report.getTotalErrors()
 
-        for content_subtype in input_source_dic['content_subtype'].keys():
+        for fileListId in range(self.__file_path_list_len):
 
-            sf_category = self.sf_categories[file_type][content_subtype]
+            input_source = self.report.input_sources[fileListId]
+            input_source_dic = input_source.get()
 
-            parent_keys = set()
+            file_name = input_source_dic['file_name']
+            file_type = input_source_dic['file_type']
 
-            list_id = 1  # tentative parent key if not exists
+            if input_source_dic['content_subtype'] is None:
+                continue
 
-            for sf_data in self.__star_data.get_saveframes_by_category(sf_category):
+            for content_subtype in input_source_dic['content_subtype'].keys():
 
-                sf_framecode = sf_data.get_tag('sf_framecode')[0]
+                sf_category = self.sf_categories[file_type][content_subtype]
 
-                if sf_data.tag_prefix != self.sf_tag_prefixes[file_type][content_subtype]:
+                parent_keys = set()
 
-                    err = "Saveframe tag prefix %s did not match with %s in saveframe %s." % (sf_data.tag_prefix, self.sf_tag_prefixes[file_type][content_subtype], sf_framecode)
+                list_id = 1  # tentative parent key if not exists
 
-                    self.report.error.appendDescription('internal_error', "+NmrDpUtility.__testSfTagConsistency() ++ Error  - %s" % err)
-                    self.report.setError()
+                if self.__star_data_type[fileListId] == 'Loop':
+                    continue
 
-                    if self.__verbose:
-                        self.__lfh.write("+NmrDpUtility.__testSfTagConsistency() ++ Error  - %s\n" % err)
+                for sf_data in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
 
-                    pass
+                    sf_framecode = sf_data.get_tag('sf_framecode')[0]
 
-                try:
+                    if sf_data.tag_prefix != self.sf_tag_prefixes[file_type][content_subtype]:
 
-                    sf_tag_data = self.__nefT.check_sf_tag(sf_data, self.sf_tag_items[file_type][content_subtype], self.sf_allowed_tags[file_type][content_subtype],
-                                                           enforce_non_zero=True, enforce_sign=True, enforce_enum=True)
+                        err = "Saveframe tag prefix %s did not match with %s in saveframe %s." % (sf_data.tag_prefix, self.sf_tag_prefixes[file_type][content_subtype], sf_framecode)
 
-                    self.__testParentChildRelation(file_name, file_type, content_subtype, parent_keys, list_id, sf_framecode, sf_tag_data)
+                        self.report.error.appendDescription('internal_error', "+NmrDpUtility.__testSfTagConsistency() ++ Error  - %s" % err)
+                        self.report.setError()
 
-                except LookupError as e:
+                        if self.__verbose:
+                            self.__lfh.write("+NmrDpUtility.__testSfTagConsistency() ++ Error  - %s\n" % err)
 
-                    self.report.error.appendDescription('missing_mandatory_item', {'file_name': file_name, 'sf_framecode': sf_framecode, 'description': str(e).strip("'")})
-                    self.report.setError()
-
-                    if self.__verbose:
-                        self.__lfh.write("+NmrDpUtility.__testSfTagConsistency() ++ LookupError  - %s" % str(e))
-
-                except ValueError as e:
-
-                    self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'description': str(e).strip("'")})
-                    self.report.setError()
-
-                    if self.__verbose:
-                        self.__lfh.write("+NmrDpUtility.__testSfTagConsistency() ++ ValueError  - %s" % str(e))
-
-                except UserWarning as e:
-
-                    warns = str(e).strip("'").split('\n')
-
-                    for warn in warns:
-
-                        if warn == '':
-                            continue
-
-                        zero = warn.startswith('[Zero value error] ')
-                        nega = warn.startswith('[Negative value error] ')
-                        enum = warn.startswith('[Enumeration error] ')
-
-                        ignorable = False
-
-                        if zero or nega or enum:
-
-                            if zero:
-                                warn = warn[19:]
-                            elif nega:
-                                warn = warn[23:]
-                            else: # enum
-                                warn = warn[20:]
-
-                                try:
-                                    g = self.chk_desc_pat.search(warn).groups()
-                                except AttributeError:
-                                    g = self.chk_desc_pat_one.search(warn).groups()
-
-                                if not self._sf_tag_items[file_type][content_subtype] is None:
-
-                                    try:
-                                        next(i for i in self._sf_tag_items[file_type][content_subtype] if i == g[0])
-                                        if not self.__nefT.is_mandatory_tag('_' + sf_category + '.' + g[0], file_type):
-                                            ignorable = True # author provides the meta data through DepUI after upload
-                                    except StopIteration:
-                                        pass
-
-                            self.report.warning.appendDescription('missing_data' if zero else ('unusual_data' if nega else ('enum_mismatch_ignorable' if ignorable else 'enum_mismatch')), {'file_name': file_name, 'sf_framecode': sf_framecode, 'description': warn})
-                            self.report.setWarning()
-
-                            if self.__verbose:
-                                self.__lfh.write("+NmrDpUtility.__testSfTagConsistency() ++ Warning  - %s\n" % warn)
-
-                        else:
-
-                            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__testSfTagConsistency() ++ Error  - %s" % warn)
-                            self.report.setError()
-
-                            if self.__verbose:
-                                self.__lfh.write("+NmrDpUtility.__testSfTagConsistency() ++ Error  - %s" % warn)
-
-                    # try to parse data without constraints
+                        pass
 
                     try:
 
                         sf_tag_data = self.__nefT.check_sf_tag(sf_data, self.sf_tag_items[file_type][content_subtype], self.sf_allowed_tags[file_type][content_subtype],
-                                                               enfoce_non_zero=False, enforce_sign=False, enforce_enum=False)
+                                                               enforce_non_zero=True, enforce_sign=True, enforce_enum=True)
 
                         self.__testParentChildRelation(file_name, file_type, content_subtype, parent_keys, list_id, sf_framecode, sf_tag_data)
 
-                    except:
-                        pass
+                    except LookupError as e:
 
-                except Exception as e:
+                        self.report.error.appendDescription('missing_mandatory_item', {'file_name': file_name, 'sf_framecode': sf_framecode, 'description': str(e).strip("'")})
+                        self.report.setError()
 
-                    self.report.error.appendDescription('internal_error', "+NmrDpUtility.__testSfTagConsistency() ++ Error  - %s" % str(e))
-                    self.report.setError()
+                        if self.__verbose:
+                            self.__lfh.write("+NmrDpUtility.__testSfTagConsistency() ++ LookupError  - %s" % str(e))
 
-                    if self.__verbose:
-                        self.__lfh.write("+NmrDpUtility.__testSfTagConsistency() ++ Error  - %s" % str(e))
+                    except ValueError as e:
 
-                list_id += 1
+                        self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'description': str(e).strip("'")})
+                        self.report.setError()
+
+                        if self.__verbose:
+                            self.__lfh.write("+NmrDpUtility.__testSfTagConsistency() ++ ValueError  - %s" % str(e))
+
+                    except UserWarning as e:
+
+                        warns = str(e).strip("'").split('\n')
+
+                        for warn in warns:
+
+                            if warn == '':
+                                continue
+
+                            zero = warn.startswith('[Zero value error] ')
+                            nega = warn.startswith('[Negative value error] ')
+                            enum = warn.startswith('[Enumeration error] ')
+
+                            ignorable = False
+
+                            if zero or nega or enum:
+
+                                if zero:
+                                    warn = warn[19:]
+                                elif nega:
+                                    warn = warn[23:]
+                                else: # enum
+                                    warn = warn[20:]
+
+                                    try:
+                                        g = self.chk_desc_pat.search(warn).groups()
+                                    except AttributeError:
+                                        g = self.chk_desc_pat_one.search(warn).groups()
+
+                                    if not self._sf_tag_items[file_type][content_subtype] is None:
+
+                                        try:
+                                            next(i for i in self._sf_tag_items[file_type][content_subtype] if i == g[0])
+                                            if not self.__nefT.is_mandatory_tag('_' + sf_category + '.' + g[0], file_type):
+                                                ignorable = True # author provides the meta data through DepUI after upload
+                                        except StopIteration:
+                                            pass
+
+                                self.report.warning.appendDescription('missing_data' if zero else ('unusual_data' if nega else ('enum_mismatch_ignorable' if ignorable else 'enum_mismatch')), {'file_name': file_name, 'sf_framecode': sf_framecode, 'description': warn})
+                                self.report.setWarning()
+
+                                if self.__verbose:
+                                    self.__lfh.write("+NmrDpUtility.__testSfTagConsistency() ++ Warning  - %s\n" % warn)
+
+                            else:
+
+                                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__testSfTagConsistency() ++ Error  - %s" % warn)
+                                self.report.setError()
+
+                                if self.__verbose:
+                                    self.__lfh.write("+NmrDpUtility.__testSfTagConsistency() ++ Error  - %s" % warn)
+
+                        # try to parse data without constraints
+
+                        try:
+
+                            sf_tag_data = self.__nefT.check_sf_tag(sf_data, self.sf_tag_items[file_type][content_subtype], self.sf_allowed_tags[file_type][content_subtype],
+                                                                   enfoce_non_zero=False, enforce_sign=False, enforce_enum=False)
+
+                            self.__testParentChildRelation(file_name, file_type, content_subtype, parent_keys, list_id, sf_framecode, sf_tag_data)
+
+                        except:
+                            pass
+
+                    except Exception as e:
+
+                        self.report.error.appendDescription('internal_error', "+NmrDpUtility.__testSfTagConsistency() ++ Error  - %s" % str(e))
+                        self.report.setError()
+
+                        if self.__verbose:
+                            self.__lfh.write("+NmrDpUtility.__testSfTagConsistency() ++ Error  - %s" % str(e))
+
+                    list_id += 1
 
         return self.report.getTotalErrors() == __errors
 
@@ -5532,7 +6820,7 @@ class NmrDpUtility(object):
 
         try:
 
-            lp_data = next((l['data'] for l in self.__lp_data[content_subtype] if l['sf_framecode'] == sf_framecode), None)
+            lp_data = next((l['data'] for l in self.__lp_data[content_subtype] if l['file_name'] == file_name and l['sf_framecode'] == sf_framecode), None)
 
             if not lp_data is None:
 
@@ -5549,7 +6837,7 @@ class NmrDpUtility(object):
 
             for lp_category in self.aux_lp_categories[file_type][content_subtype]:
 
-                aux_data = next((l['data'] for l in self.__aux_data[content_subtype] if l['sf_framecode'] == sf_framecode and l['category'] == lp_category), None)
+                aux_data = next((l['data'] for l in self.__aux_data[content_subtype] if l['file_name'] == file_name and l['sf_framecode'] == sf_framecode and l['category'] == lp_category), None)
 
                 if not aux_data is None:
                     for i in aux_data:
@@ -5577,173 +6865,559 @@ class NmrDpUtility(object):
         """ Validate assigned chemical shift value based on BMRB chemical shift statistics.
         """
 
-        input_source = self.report.input_sources[0]
-        input_source_dic = input_source.get()
-
-        file_name = input_source_dic['file_name']
-        file_type = input_source_dic['file_type']
-
-        if input_source_dic['content_subtype'] is None:
-            return False
-
         __errors = self.report.getTotalErrors()
 
-        content_subtype = 'chem_shift'
+        for fileListId in range(self.__file_path_list_len):
 
-        if not content_subtype in input_source_dic['content_subtype'].keys():
+            input_source = self.report.input_sources[fileListId]
+            input_source_dic = input_source.get()
 
-            err = "Assigned chemical shift loop did not exist in %s file." % file_name
+            file_name = input_source_dic['file_name']
+            file_type = input_source_dic['file_type']
 
-            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateCSValue() ++ Error  - %s" % err)
-            self.report.setError()
+            if input_source_dic['content_subtype'] is None:
+                continue
 
-            if self.__verbose:
-                self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ Error  - %s\n" % err)
+            content_subtype = 'chem_shift'
 
-            return False
+            if not content_subtype in input_source_dic['content_subtype'].keys():
 
-        sf_category = self.sf_categories[file_type][content_subtype]
-        lp_category = self.lp_categories[file_type][content_subtype]
+                err = "Assigned chemical shift loop did not exist in %s file." % file_name
 
-        item_names = self.item_names_in_cs_loop[file_type]
-        chain_id_name = item_names['chain_id']
-        seq_id_name = item_names['seq_id']
-        comp_id_name = item_names['comp_id']
-        atom_id_name = item_names['atom_id']
-        value_name = item_names['value']
-        ambig_code_name = 'Ambiguity_code' # NMR-STAR specific
+                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateCSValue() ++ Error  - %s" % err)
+                self.report.setError()
 
-        index_tag = self.index_tags[file_type][content_subtype]
-        max_cs_err = self.chem_shift_error['max_exclusive']
+                if self.__verbose:
+                    self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ Error  - %s\n" % err)
 
-        add_details = False
+                continue
 
-        for sf_data in self.__star_data.get_saveframes_by_category(sf_category):
+            sf_category = self.sf_categories[file_type][content_subtype]
+            lp_category = self.lp_categories[file_type][content_subtype]
 
-            sf_framecode = sf_data.get_tag('sf_framecode')[0]
+            item_names = self.item_names_in_cs_loop[file_type]
+            chain_id_name = item_names['chain_id']
+            seq_id_name = item_names['seq_id']
+            comp_id_name = item_names['comp_id']
+            atom_id_name = item_names['atom_id']
+            value_name = item_names['value']
+            ambig_code_name = 'Ambiguity_code' # NMR-STAR specific
 
-            try:
+            index_tag = self.index_tags[file_type][content_subtype]
+            max_cs_err = self.chem_shift_error['max_exclusive']
 
-                if file_type == 'nmr-star':
+            add_details = False
 
-                    loop = sf_data.get_loop_by_category(lp_category)
+            if self.__star_data_type[fileListId] == 'Loop':
 
-                    details_col = loop.tags.index('Details') if 'Details' in loop.tags else -1
+                sf_data = self.__star_data[fileListId]
+                sf_framecode = ''
 
-                if file_type == 'nef' or (not self.__nonblk_anomalous_cs):
-                    lp_data = next(l['data'] for l in self.__lp_data[content_subtype] if l['sf_framecode'] == sf_framecode)
+                try:
 
-                else:
-                    key_items = self.key_items[file_type][content_subtype]
-                    data_items = self.data_items[file_type][content_subtype]
+                    if file_type == 'nmr-star':
 
-                    try:
-                        lp_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, None, None)[0]
-                    except Exception:
-                        continue
+                        loop = sf_data
 
-                chk_row_tmp = "[Check row of {0} %s, {1} %s, {2} %s, {3} %s".format(chain_id_name, seq_id_name, comp_id_name, atom_id_name)
-                row_tmp = "{0} %s, {1} %s, {2} %s, {3} %s".format(chain_id_name, seq_id_name, comp_id_name, atom_id_name)
+                        details_col = loop.tags.index('Details') if 'Details' in loop.tags else -1
 
-                methyl_cs_vals = {}
+                    if file_type == 'nef' or (not self.__nonblk_anomalous_cs):
+                        lp_data = next(l['data'] for l in self.__lp_data[content_subtype] if l['file_name'] == file_name and l['sf_framecode'] == sf_framecode)
 
-                for l, i in enumerate(lp_data):
-                    chain_id = i[chain_id_name]
-                    seq_id = i[seq_id_name]
-                    comp_id = i[comp_id_name]
-                    atom_id = i[atom_id_name]
-                    value = i[value_name]
+                    else:
+                        key_items = self.key_items[file_type][content_subtype]
+                        data_items = self.data_items[file_type][content_subtype]
 
-                    if file_type == 'nef':
-                        _atom_id, ambig_code, details = self.__nefT.get_star_atom(comp_id, atom_id, leave_unmatched=True)
-
-                        if len(_atom_id) == 0:
+                        try:
+                            lp_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, None, None)[0]
+                        except Exception:
                             continue
 
-                        if len(_atom_id) == 1 and atom_id == _atom_id[0]:
+                    chk_row_tmp = "[Check row of {0} %s, {1} %s, {2} %s, {3} %s".format(chain_id_name, seq_id_name, comp_id_name, atom_id_name)
+                    row_tmp = "{0} %s, {1} %s, {2} %s, {3} %s".format(chain_id_name, seq_id_name, comp_id_name, atom_id_name)
+
+                    methyl_cs_vals = {}
+
+                    for l, i in enumerate(lp_data):
+                        chain_id = i[chain_id_name]
+                        seq_id = i[seq_id_name]
+                        comp_id = i[comp_id_name]
+                        atom_id = i[atom_id_name]
+                        value = i[value_name]
+
+                        if file_type == 'nef':
+                            _atom_id, ambig_code, details = self.__nefT.get_star_atom(comp_id, atom_id, leave_unmatched=True)
+
+                            if len(_atom_id) == 0:
+                                continue
+
+                            if len(_atom_id) == 1 and atom_id == _atom_id[0]:
+                                atom_id_ = atom_id
+                                atom_name = atom_id
+
+                                if not details is None:
+                                    atom_name += ', besides that, ' + details.rstrip('.')
+
+                            else:
+                                atom_name = atom_id + ' (e.g. '
+
+                                for atom_id_ in _atom_id:
+                                    atom_name += atom_id_ + ' '
+
+                                atom_name = atom_name.rstrip() + ')'
+
+                                # representative atom id
+                                atom_id_ = _atom_id[0]
+
+                        else:
                             atom_id_ = atom_id
                             atom_name = atom_id
 
-                            if not details is None:
-                                atom_name += ', besides that, ' + details.rstrip('.')
+                        one_letter_code = self.__get1LetterCode(comp_id)
 
-                        else:
-                            atom_name = atom_id + ' (e.g. '
+                        has_cs_stat = False
 
-                            for atom_id_ in _atom_id:
-                                atom_name += atom_id_ + ' '
+                        # non-standard residue
+                        if one_letter_code == 'X':
 
-                            atom_name = atom_name.rstrip() + ')'
+                            neighbor_comp_ids = set([j[comp_id_name] for j in lp_data if j[chain_id_name] == chain_id and abs(j[seq_id_name] - seq_id) < 3 and j[seq_id_name] != seq_id])
 
-                            # representative atom id
-                            atom_id_ = _atom_id[0]
+                            polypeptide_like = False
 
-                    else:
-                        atom_id_ = atom_id
-                        atom_name = atom_id
+                            for comp_id2 in neighbor_comp_ids:
+                                polypeptide_like |= self.__csStat.getTypeOfCompId(comp_id2)[0]
 
-                    one_letter_code = self.__get1LetterCode(comp_id)
+                            for cs_stat in self.__csStat.get(comp_id):
 
-                    has_cs_stat = False
+                                if cs_stat['atom_id'] == atom_id_:
+                                    min_value = cs_stat['min']
+                                    max_value = cs_stat['max']
+                                    avg_value = cs_stat['avg']
+                                    std_value = cs_stat['std']
 
-                    # non-standard residue
-                    if one_letter_code == 'X':
+                                    has_cs_stat = True
 
-                        neighbor_comp_ids = set([j[comp_id_name] for j in lp_data if j[chain_id_name] == chain_id and abs(j[seq_id_name] - seq_id) < 3 and j[seq_id_name] != seq_id])
+                                    if atom_id.startswith('H') and 'methyl' in cs_stat['desc']:
+                                        methyl_cs_key = "%s %04d %s" % (chain_id, seq_id, atom_id[:-1])
 
-                        polypeptide_like = False
+                                        if not methyl_cs_key in methyl_cs_vals:
+                                            methyl_cs_vals[methyl_cs_key] = value
 
-                        for comp_id2 in neighbor_comp_ids:
-                            polypeptide_like |= self.__csStat.getTypeOfCompId(comp_id2)[0]
+                                        elif value != methyl_cs_vals[methyl_cs_key]:
 
-                        for cs_stat in self.__csStat.get(comp_id):
+                                            err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] Chemical shift values in the same methyl group %s %s vs %s are inconsistent.' %\
+                                                  (value_name, value, methyl_cs_vals[methyl_cs_key])
 
-                            if cs_stat['atom_id'] == atom_id_:
-                                min_value = cs_stat['min']
-                                max_value = cs_stat['max']
-                                avg_value = cs_stat['avg']
-                                std_value = cs_stat['std']
+                                            self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
+                                            self.report.setError()
 
-                                has_cs_stat = True
+                                            if self.__verbose:
+                                                self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ ValueError  - %s\n" % err)
 
-                                if atom_id.startswith('H') and 'methyl' in cs_stat['desc']:
-                                    methyl_cs_key = "%s %04d %s" % (chain_id, seq_id, atom_id[:-1])
+                                            break
 
-                                    if not methyl_cs_key in methyl_cs_vals:
-                                        methyl_cs_vals[methyl_cs_key] = value
+                                    if std_value is None:
 
-                                    elif value != methyl_cs_vals[methyl_cs_key]:
+                                        warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] Insufficient chemical shift statistics on comp_id %s, atom_id %s is available to verify %s %s (avg %s).' %\
+                                               (comp_id, atom_name, value_name, value, avg_value)
 
-                                        err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] Chemical shift values in the same methyl group %s %s vs %s are inconsistent.' %\
-                                              (value_name, value, methyl_cs_vals[methyl_cs_key])
-
-                                        self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
-                                        self.report.setError()
+                                        self.report.warning.appendDescription('unusual_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
+                                        self.report.setWarning()
 
                                         if self.__verbose:
-                                            self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ ValueError  - %s\n" % err)
+                                            self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ Warning  - %s\n" % warn)
 
                                         break
 
-                                if std_value is None:
+                                    z_score = (value - avg_value) / std_value
 
-                                    warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] Insufficient chemical shift statistics on comp_id %s, atom_id %s is available to verify %s %s (avg %s).' %\
-                                           (comp_id, atom_name, value_name, value, avg_value)
+                                    if self.__csStat.hasEnoughStat(comp_id, polypeptide_like):
+                                        tolerance = std_value
 
-                                    self.report.warning.appendDescription('unusual_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
-                                    self.report.setWarning()
+                                        if (value < min_value - tolerance or value > max_value + tolerance) and abs(z_score) > 10.0:
 
-                                    if self.__verbose:
-                                        self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ Warning  - %s\n" % warn)
+                                            na = self.__getNearestAromaticRing(chain_id, seq_id, atom_id_, self.cutoff_aromatic)
+                                            pa = self.__getNearestParamagneticAtom(chain_id, seq_id, atom_id_, self.cutoff_paramagnetic)
+
+                                            if na is None and pa is None:
+
+                                                err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) +\
+                                                      '] %s %s (chain_id %s, seq_id %s, comp_id %s, atom_id %s) is not within expected range (avg %s, std %s, min %s, max %s, Z_score %.2f). Neither aromatic ring nor paramagnetic atom were found in the vicinity. Please check for folded/aliased signals.' %\
+                                                      (value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score)
+
+                                                if self.__nonblk_anomalous_cs:
+
+                                                    self.report.warning.appendDescription('suspicious_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
+                                                    self.report.setWarning()
+
+                                                    if self.__verbose:
+                                                        self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ Warning  - %s\n" % err)
+
+                                                    if file_type == 'nmr-star' and details_col != -1:
+                                                        _details = loop.data[l][details_col]
+                                                        details = '%s %s is not within expected range (avg %s, std %s, min %s, max %s, Z_score %.2f). Neither aromatic ring nor paramagnetic atom were found in the vicinity. Please check for folded/aliased signals.\n' % (value_name, value, avg_value, std_value, min_value, max_value, z_score)
+                                                        if _details in self.empty_value or (not details in _details):
+                                                            if _details in self.empty_value:
+                                                                loop.data[l][details_col] = details
+                                                            else:
+                                                                loop.data[l][details_col] += ('' if '\n' in _details else '\n') + details
+                                                            add_details = True
+
+                                                else:
+
+                                                    self.report.error.appendDescription('anomalous_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
+                                                    self.report.setError()
+
+                                                    if self.__verbose:
+                                                        self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ ValueError  - %s\n" % err)
+
+                                            elif pa is None:
+
+                                                warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) +\
+                                                       '] %s %s (chain_id %s, seq_id %s, comp_id %s, atom_id %s) should be verified (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest aromatic ring (chain_id %s, seq_id %s, comp_id %s, ring_atoms %s) is located at %s angstroms, %s degrees.' %\
+                                                       (value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score,
+                                                        na['chain_id'], na['seq_id'], na['comp_id'], na['ring_atoms'], na['ring_distance'], na['ring_angle'])
+
+                                                if na['ring_angle'] - self.magic_angle * z_score > 0.0 or self.__nonblk_anomalous_cs:
+
+                                                    self.report.warning.appendDescription('suspicious_data' if na['ring_angle'] - self.magic_angle * z_score < 0.0 or na['ring_distance'] > self.vicinity_aromatic else 'unusual_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
+                                                    self.report.setWarning()
+
+                                                    if self.__verbose:
+                                                        self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ Warning  - %s\n" % warn)
+
+                                                    if file_type == 'nmr-star' and details_col != -1 and (na['ring_angle'] - self.magic_angle * z_score < 0.0 or na['ring_distance'] > self.vicinity_aromatic):
+                                                        _details = loop.data[l][details_col]
+                                                        details = '%s %s is not within expected range (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest aromatic ring %s/%s/%s is located at %s angstroms, %s degrees.\n' % (value_name, value, avg_value, std_value, min_value, max_value, z_score, na['chain_id'], na['seq_id'], na['comp_id'], na['ring_distance'], na['ring_angle'])
+                                                        if _details in self.empty_value or (not details in _details):
+                                                            if _details in self.empty_value:
+                                                                loop.data[l][details_col] = details
+                                                            else:
+                                                                loop.data[l][details_col] += ('' if '\n' in _details else '\n') + details
+                                                            add_details = True
+
+                                                else:
+
+                                                    self.report.error.appendDescription('anomalous_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
+                                                    self.report.setError()
+
+                                                    if self.__verbose:
+                                                        self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ ValueError  - %s\n" % warn)
+
+                                            else:
+
+                                                warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) +\
+                                                       '] %s %s (chain_id %s, seq_id %s, comp_id %s, atom_id %s) should be verified (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest paramagnetic atom (chain_id %s, seq_id %s, comp_id %s, atom_id %s) is located at %s angstroms.' %\
+                                                       (value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score,
+                                                        pa['chain_id'], pa['seq_id'], pa['comp_id'], pa['atom_id'], pa['distance'])
+
+                                                self.report.warning.appendDescription('suspicious_data' if pa['distance'] > self.vicinity_paramagnetic else 'unusual_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
+                                                self.report.setWarning()
+
+                                                if self.__verbose:
+                                                    self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ Warning  - %s\n" % warn)
+
+                                                if file_type == 'nmr-star' and details_col != -1 and pa['distance'] > self.vicinity_paramagnetic:
+                                                    _details = loop.data[l][details_col]
+                                                    details = '%s %s is not within expected range (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest paramagnetic atom %s/%s/%s is located at %s angstroms.\n' % (value_name, value, avg_value, std_value, min_value, max_value, z_score, na['chain_id'], na['seq_id'], na['comp_id'], na['distance'])
+                                                    if _details in self.empty_value or (not details in _details):
+                                                        if _details in self.empty_value:
+                                                            loop.data[l][details_col] = details
+                                                        else:
+                                                            loop.data[l][details_col] += ('' if '\n' in _details else '\n') + details
+                                                        add_details = True
+
+                                        elif abs(z_score) > 10.0:
+
+                                            na = self.__getNearestAromaticRing(chain_id, seq_id, atom_id_, self.cutoff_aromatic)
+                                            pa = self.__getNearestParamagneticAtom(chain_id, seq_id, atom_id_, self.cutoff_paramagnetic)
+
+                                            if na is None and pa is None:
+
+                                                warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) +\
+                                                       '] %s %s (chain_id %s, seq_id %s, comp_id %s, atom_id %s) must be verified (avg %s, std %s, min %s, max %s, Z_score %.2f). Neither aromatic ring nor paramagnetic atom were found in the vicinity.' %\
+                                                       (value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score)
+
+                                                self.report.warning.appendDescription('suspicious_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
+                                                self.report.setWarning()
+
+                                                if self.__verbose:
+                                                    self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ Warning  - %s\n" % warn)
+
+                                            elif pa is None:
+
+                                                if na['ring_angle'] - self.magic_angle * z_score < 0.0 or na['ring_distance'] > self.vicinity_aromatic:
+
+                                                    warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) +\
+                                                           '] %s %s (chain_id %s, seq_id %s, comp_id %s, atom_id %s) should be verified (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest aromatic ring (chain_id %s, seq_id %s, comp_id %s, ring_atoms %s) is located at %s angstroms, %s degrees.' %\
+                                                           (value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score,
+                                                            na['chain_id'], na['seq_id'], na['comp_id'], na['ring_atoms'], na['ring_distance'], na['ring_angle'])
+
+                                                    self.report.warning.appendDescription('unusual_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
+                                                    self.report.setWarning()
+
+                                                    if self.__verbose:
+                                                        self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ Warning  - %s\n" % warn)
+
+                                            else:
+
+                                                if pa['distance'] > self.vicinity_paramagnetic:
+
+                                                    warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) +\
+                                                           '] %s %s (chain_id %s, seq_id %s, comp_id %s, atom_id %s) should be verified (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest paramagnetic atom (chain_id %s, seq_id %s, comp_id %s, atom_id %s) is located at %s angstroms.' %\
+                                                           (value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score,
+                                                            pa['chain_id'], pa['seq_id'], pa['comp_id'], pa['atom_id'], pa['distance'])
+
+                                                    self.report.warning.appendDescription('unusual_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
+                                                    self.report.setWarning()
+
+                                                    if self.__verbose:
+                                                        self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ Warning  - %s\n" % warn)
+
+                                        elif abs(z_score) > 6.0:
+
+                                            na = self.__getNearestAromaticRing(chain_id, seq_id, atom_id_, self.cutoff_aromatic)
+                                            pa = self.__getNearestParamagneticAtom(chain_id, seq_id, atom_id_, self.cutoff_paramagnetic)
+
+                                            warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) +\
+                                                   '] %s %s (chain_id %s, seq_id %s, comp_id %s, atom_id %s) should be verified (avg %s, std %s, min %s, max %s, Z_score %.2f).' %\
+                                                   (value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score)
+
+                                            if not na is None:
+
+                                                if na['ring_angle'] - self.magic_angle * z_score < 0.0 or na['ring_distance'] > self.vicinity_aromatic:
+                                                    warn += ' The nearest aromatic ring (chain_id %s, seq_id %s, comp_id %s, ring_atoms %s) is located at %s angstroms, %s degrees.' %\
+                                                            (na['chain_id'], na['seq_id'], na['comp_id'], na['ring_atoms'], na['ring_distance'], na['ring_angle'])
+                                                else:
+                                                    warn = None
+
+                                            elif not pa is None:
+
+                                                if pa['distance'] > self.vicinity_paramagnetic:
+                                                    warn += ' The nearest paramagnetic atom (chain_id %s, seq_id %s, comp_id %s, atom_id %s) is located at %s angstroms.' %\
+                                                            (pa['chain_id'], pa['seq_id'], pa['comp_id'], pa['atom_id'], pa['distance'])
+                                                else:
+                                                    warn = None
+
+                                            else:
+                                                warn += ' Neither aromatic ring nor paramagnetic atom were found in the vicinity.'
+
+                                            if not warn is None:
+                                                self.report.warning.appendDescription('unusual_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
+                                                self.report.setWarning()
+
+                                                if self.__verbose:
+                                                    self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ Warning  - %s\n" % warn)
+
+                                        elif not cs_stat['primary']:
+
+                                            warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] %s %s is remarkable assignment. Appearance rate of %s in %s is %s %% according to BMRB.' %\
+                                                   (value_name, value, atom_id, comp_id, cs_stat['norm_freq'] * 100.0)
+
+                                            self.report.warning.appendDescription('remarkable_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
+                                            self.report.setWarning()
+
+                                            if self.__verbose:
+                                                self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ Warning  - %s\n" % warn)
+
+                                    else:
+                                        tolerance = std_value * 10.0
+
+                                        if min_value < max_value and (value < min_value - tolerance or value > max_value + tolerance) and abs(z_score) > 10.0:
+
+                                            na = self.__getNearestAromaticRing(chain_id, seq_id, atom_id_, self.cutoff_aromatic)
+                                            pa = self.__getNearestParamagneticAtom(chain_id, seq_id, atom_id_, self.cutoff_paramagnetic)
+
+                                            if na is None and pa is None:
+
+                                                err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) +\
+                                                      '] %s %s (chain_id %s, seq_id %s, comp_id %s, atom_id %s) is not within expected range (avg %s, std %s, min %s, max %s, Z_score %.2f). Neither aromatic ring nor paramagnetic atom were found in the vicinity. Please check for folded/aliased signals.' %\
+                                                      (value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score)
+
+                                                if self.__nonblk_anomalous_cs:
+
+                                                    self.report.warning.appendDescription('suspicious_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
+                                                    self.report.setWarning()
+
+                                                    if self.__verbose:
+                                                        self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ Warning  - %s\n" % err)
+
+                                                    if file_type == 'nmr-star' and details_col != -1:
+                                                        _details = loop.data[l][details_col]
+                                                        details = '%s %s is not within expected range (avg %s, std %s, min %s, max %s, Z_score %.2f). Neither aromatic ring nor paramagnetic atom were found in the vicinity. Please check for folded/aliased signals.\n' % (value_name, value, avg_value, std_value, min_value, max_value, z_score)
+                                                        if _details in self.empty_value or (not details in _details):
+                                                            if _details in self.empty_value:
+                                                                loop.data[l][details_col] = details
+                                                            else:
+                                                                loop.data[l][details_col] += ('' if '\n' in _details else '\n') + details
+                                                            add_details = True
+
+                                                else:
+
+                                                    self.report.error.appendDescription('anomalous_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
+                                                    self.report.setError()
+
+                                                    if self.__verbose:
+                                                        self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ ValueError  - %s\n" % err)
+
+                                            elif pa is None:
+
+                                                warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) +\
+                                                       '] %s %s (chain_id %s, seq_id %s, comp_id %s, atom_id %s) should be verified (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest aromatic ring (chain_id %s, seq_id %s, comp_id %s, ring_atoms %s) is located at %s angstroms, %s degrees.' %\
+                                                       (value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score,
+                                                        na['chain_id'], na['seq_id'], na['comp_id'], na['ring_atoms'], na['ring_distance'], na['ring_angle'])
+
+                                                if na['ring_angle'] - self.magic_angle * z_score > 0.0 or self.__nonblk_anomalous_cs:
+
+                                                    if na['ring_angle'] - self.magic_angle * z_score < 0.0 or na['ring_distance'] > self.vicinity_aromatic:
+
+                                                        self.report.warning.appendDescription('suspicious_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
+                                                        self.report.setWarning()
+
+                                                        if self.__verbose:
+                                                            self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ Warning  - %s\n" % warn)
+
+                                                        if file_type == 'nmr-star' and details_col != -1:
+                                                            _details = loop.data[l][details_col]
+                                                            details = '%s %s is not within expected range (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest aromatic ring %s/%s/%s is located at %s angstroms, %s degrees.\n' % (value_name, value, avg_value, std_value, min_value, max_value, z_score, na['chain_id'], na['seq_id'], na['comp_id'], na['ring_distance'], na['ring_angle'])
+                                                            if _details in self.empty_value or (not details in _details):
+                                                                if _details in self.empty_value:
+                                                                    loop.data[l][details_col] = details
+                                                                else:
+                                                                    loop.data[l][details_col] += ('' if '\n' in _details else '\n') + details
+                                                                add_details = True
+
+                                                else:
+
+                                                    self.report.error.appendDescription('anomalous_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
+                                                    self.report.setError()
+
+                                                    if self.__verbose:
+                                                        self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ ValueError  - %s\n" % warn)
+
+                                            else:
+
+                                                if pa['distance'] > self.vicinity_paramagnetic:
+
+                                                    warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) +\
+                                                           '] %s %s (chain_id %s, seq_id %s, comp_id %s, atom_id %s) should be verified (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest paramagnetic atom (chain_id %s, seq_id %s, comp_id %s, atom_id %s) is located at %s angstroms.' %\
+                                                           (value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score,
+                                                            pa['chain_id'], pa['seq_id'], pa['comp_id'], pa['atom_id'], pa['distance'])
+
+                                                    self.report.warning.appendDescription('unusual_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
+                                                    self.report.setWarning()
+
+                                                    if self.__verbose:
+                                                        self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ Warning  - %s\n" % warn)
+
+                                                    if file_type == 'nmr-star' and details_col != -1:
+                                                        _details = loop.data[l][details_col]
+                                                        details = '%s %s is not within expected range (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest paramagnetic atom %s/%s/%s is located at %s angstroms.\n' % (value_name, value, avg_value, std_value, min_value, max_value, z_score, na['chain_id'], na['seq_id'], na['comp_id'], na['distance'])
+                                                        if _details in self.empty_value or (not details in _details):
+                                                            if _details in self.empty_value:
+                                                                loop.data[l][details_col] = details
+                                                            else:
+                                                                loop.data[l][details_col] += ('' if '\n' in _details else '\n') + details
+                                                            add_details = True
+
+                                        elif abs(z_score) > 10.0:
+
+                                            na = self.__getNearestAromaticRing(chain_id, seq_id, atom_id_, self.cutoff_aromatic)
+                                            pa = self.__getNearestParamagneticAtom(chain_id, seq_id, atom_id_, self.cutoff_paramagnetic)
+
+                                            if na is None and pa is None:
+
+                                                warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) +\
+                                                       '] %s %s (chain_id %s, seq_id %s, comp_id %s, atom_id %s) must be verified (avg %s, std %s, min %s, max %s, Z_score %.2f). Neither aromatic ring nor paramagnetic atom were found in the vicinity.' %\
+                                                       (value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score)
+
+                                                self.report.warning.appendDescription('suspicious_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
+                                                self.report.setWarning()
+
+                                                if self.__verbose:
+                                                    self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ Warning  - %s\n" % warn)
+
+                                            elif pa is None:
+
+                                                if na['ring_angle'] - self.magic_angle * z_score < 0.0 or na['ring_distance'] > self.vicinity_aromatic:
+
+                                                    warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) +\
+                                                           '] %s %s (chain_id %s, seq_id %s, comp_id %s, atom_id %s) should be verified (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest aromatic ring (chain_id %s, seq_id %s, comp_id %s, ring_atoms %s) is located at %s angstroms, %s degrees.' %\
+                                                           (value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score,
+                                                            na['chain_id'], na['seq_id'], na['comp_id'], na['ring_atoms'], na['ring_distance'], na['ring_angle'])
+
+                                                    self.report.warning.appendDescription('unusual_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
+                                                    self.report.setWarning()
+
+                                                    if self.__verbose:
+                                                        self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ Warning  - %s\n" % warn)
+
+                                            else:
+
+                                                if pa['distance'] > self.vicinity_paramagnetic:
+
+                                                    warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) +\
+                                                           '] %s %s (chain_id %s, seq_id %s, comp_id %s, atom_id %s) should be verified (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest paramagnetic atom (chain_id %s, seq_id %s, comp_id %s, atom_id %s) is located at %s angstroms.' %\
+                                                           (value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score,
+                                                            pa['chain_id'], pa['seq_id'], pa['comp_id'], pa['atom_id'], pa['distance'])
+
+                                                    self.report.warning.appendDescription('unusual_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
+                                                    self.report.setWarning()
+
+                                                    if self.__verbose:
+                                                        self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ Warning  - %s\n" % warn)
 
                                     break
 
-                                z_score = (value - avg_value) / std_value
+                        # standard residue
+                        else:
 
-                                if self.__csStat.hasEnoughStat(comp_id, polypeptide_like):
+                            for cs_stat in self.__csStat.get(comp_id, self.report.isDiamagnetic()):
+
+                                if cs_stat['atom_id'] == atom_id_:
+                                    min_value = cs_stat['min']
+                                    max_value = cs_stat['max']
+                                    avg_value = cs_stat['avg']
+                                    std_value = cs_stat['std']
+
+                                    has_cs_stat = True
+
+                                    if atom_id.startswith('H') and 'methyl' in cs_stat['desc']:
+                                        methyl_cs_key = "%s %04d %s" % (chain_id, seq_id, atom_id[:-1])
+
+                                        if not methyl_cs_key in methyl_cs_vals:
+                                            methyl_cs_vals[methyl_cs_key] = value
+
+                                        elif value != methyl_cs_vals[methyl_cs_key]:
+
+                                            err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] Chemical shift values in the same methyl group %s %s vs %s are inconsistent.' %\
+                                                  (value_name, value, methyl_cs_vals[methyl_cs_key])
+
+                                            self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
+                                            self.report.setError()
+
+                                            if self.__verbose:
+                                                self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ ValueError  - %s\n" % err)
+
+                                            break
+
+                                    if std_value is None:
+
+                                        warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] Insufficient chemical shift statistics on comp_id %s, atom_id %s is available to verify %s %s (avg %s).' %\
+                                               (comp_id, atom_name, value_name, value, avg_value)
+
+                                        self.report.warning.appendDescription('unusual_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
+                                        self.report.setWarning()
+
+                                        if self.__verbose:
+                                            self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ Warning  - %s\n" % warn)
+
+                                        break
+
+                                    z_score = (value - avg_value) / std_value
                                     tolerance = std_value
 
-                                    if (value < min_value - tolerance or value > max_value + tolerance) and abs(z_score) > 10.0:
+                                    if (value < min_value - tolerance or value > max_value + tolerance) and abs(z_score) > 6.0:
 
                                         na = self.__getNearestAromaticRing(chain_id, seq_id, atom_id_, self.cutoff_aromatic)
                                         pa = self.__getNearestParamagneticAtom(chain_id, seq_id, atom_id_, self.cutoff_paramagnetic)
@@ -5795,7 +7469,7 @@ class NmrDpUtility(object):
                                                 if self.__verbose:
                                                     self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ Warning  - %s\n" % warn)
 
-                                                if file_type == 'nmr-star' and details_col != -1 and (na['ring_angle'] - self.magic_angle * z_score < 0.0 or na['ring_distance'] > self.vicinity_aromatic):
+                                                if file_type == 'nmr-star' and details_col != -1 and (na['ring_angle'] - self.magic_angle * z_score > 0.0 or self.__nonblk_anomalous_cs):
                                                     _details = loop.data[l][details_col]
                                                     details = '%s %s is not within expected range (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest aromatic ring %s/%s/%s is located at %s angstroms, %s degrees.\n' % (value_name, value, avg_value, std_value, min_value, max_value, z_score, na['chain_id'], na['seq_id'], na['comp_id'], na['ring_distance'], na['ring_angle'])
                                                     if _details in self.empty_value or (not details in _details):
@@ -5836,7 +7510,7 @@ class NmrDpUtility(object):
                                                         loop.data[l][details_col] += ('' if '\n' in _details else '\n') + details
                                                     add_details = True
 
-                                    elif abs(z_score) > 10.0:
+                                    elif abs(z_score) > 6.0:
 
                                         na = self.__getNearestAromaticRing(chain_id, seq_id, atom_id_, self.cutoff_aromatic)
                                         pa = self.__getNearestParamagneticAtom(chain_id, seq_id, atom_id_, self.cutoff_paramagnetic)
@@ -5883,7 +7557,7 @@ class NmrDpUtility(object):
                                                 if self.__verbose:
                                                     self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ Warning  - %s\n" % warn)
 
-                                    elif abs(z_score) > 6.0:
+                                    elif abs(z_score) > 4.0:
 
                                         na = self.__getNearestAromaticRing(chain_id, seq_id, atom_id_, self.cutoff_aromatic)
                                         pa = self.__getNearestParamagneticAtom(chain_id, seq_id, atom_id_, self.cutoff_paramagnetic)
@@ -5929,10 +7603,756 @@ class NmrDpUtility(object):
                                         if self.__verbose:
                                             self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ Warning  - %s\n" % warn)
 
-                                else:
-                                    tolerance = std_value * 10.0
+                                    break
 
-                                    if min_value < max_value and (value < min_value - tolerance or value > max_value + tolerance) and abs(z_score) > 10.0:
+                        if not has_cs_stat:
+
+                            warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] No chemical shift statistics is available to verify %s %s.' %\
+                                   (value_name, value)
+
+                            self.report.warning.appendDescription('unusual_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
+                            self.report.setWarning()
+
+                            if self.__verbose:
+                                self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ Warning  - %s\n" % warn)
+
+                        # check ambiguity code
+                        if file_type == 'nmr-star' and ambig_code_name in i:
+                            ambig_code = i[ambig_code_name]
+
+                            if ambig_code in self.empty_value or ambig_code == 1:
+                                continue
+
+                            allowed_ambig_code = self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id)
+
+                            if ambig_code == 2 or ambig_code == 3:
+
+                                ambig_code_desc = 'ambiguity of geminal atoms or geminal methyl proton groups' if ambig_code == 2 else 'aromatic atoms on opposite sides of symmetrical rings'
+
+                                if ambig_code != allowed_ambig_code:
+
+                                    err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_id) + '] Invalid %s %s (allowed ambig_code %s) exists.' %\
+                                          (ambig_code_name, ambig_code, [1, allowed_ambig_code, 4, 5, 6, 9])
+
+                                    self.report.error.appendDescription('invalid_ambiguity_code', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
+                                    self.report.setError()
+
+                                    if self.__verbose:
+                                        self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ ValueError - %s\n" % err)
+
+                                atom_id2 = self.__csStat.getGeminalAtom(comp_id, atom_id)
+
+                                try:
+
+                                    ambig_code2 = next(j[ambig_code_name] for j in lp_data if j[chain_id_name] == chain_id and j[seq_id_name] == seq_id and j[comp_id_name] == comp_id and j[atom_id_name] == atom_id2)
+
+                                    if ambig_code2 != ambig_code:
+
+                                        err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_id) + '] %s %s indicates %s. However, %s %s of %s %s is inconsistent.' %\
+                                              (ambig_code_name, ambig_code, ambig_code_desc, ambig_code_name, ambig_code2, atom_id_name, atom_id2)
+
+                                        self.report.error.appendDescription('invalid_ambiguity_code', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
+                                        self.report.setError()
+
+                                        if self.__verbose:
+                                            self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ ValueError - %s\n" % err)
+
+                                except StopIteration:
+                                    pass
+                                    """
+                                    warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_id) + '] %s %s indicates %s. However, row of %s %s of the same residue was not found.' %\
+                                           (ambig_code_name, ambig_code, ambig_code_desc, atom_id_name, atom_id2)
+
+                                    self.report.warning.appendDescription('bad_ambiguity_code', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
+                                    self.report.setWarning()
+
+                                    if self.__verbose:
+                                        self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ Warning - %s\n" % warn)
+                                    """
+
+                            elif ambig_code in [4, 5, 6, 9]:
+
+                                ambig_set_id_name = 'Ambiguity_set_ID'
+
+                                if not ambig_set_id_name in i:
+
+                                    err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_id) + '] %s %s requires %s loop tag.' %\
+                                          (ambig_code_name, ambig_code, ambig_set_id_name)
+
+                                    self.report.error.appendDescription('missing_mandatory_item', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
+                                    self.report.setError()
+
+                                    if self.__verbose:
+                                        self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ LookupError  - %s\n" % err)
+
+                                else:
+
+                                    ambig_set_id = i[ambig_set_id_name]
+
+                                    if ambig_set_id in self.empty_value:
+
+                                        err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_id) + '] %s %s requires %s value.' %\
+                                              (ambig_code_name, ambig_code, ambig_set_id_name)
+
+                                        self.report.error.appendDescription('missing_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
+                                        self.report.setError()
+
+                                        if self.__verbose:
+                                            self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ ValueError  - %s\n" % err)
+
+                                    else:
+
+                                        ambig_set = [j for j in lp_data if j[ambig_set_id_name] == ambig_set_id and j != i]
+
+                                        if len(ambig_set) == 0:
+
+                                            err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_id) + '] %s %s requires other rows sharing %s %s.' %\
+                                                  (ambig_code_name, ambig_code, ambig_set_id_name, ambig_set_id)
+
+                                            self.report.error.appendDescription('missing_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
+                                            self.report.setError()
+
+                                            if self.__verbose:
+                                                self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ LookupError  - %s\n" % err)
+
+                                        # Intra-residue ambiguities
+                                        elif ambig_code == 4:
+
+                                            for j in ambig_set:
+                                                chain_id2 = j[chain_id_name]
+                                                seq_id2 = j[seq_id_name]
+                                                comp_id2 = j[comp_id_name]
+                                                atom_id2 = j[atom_id_name]
+
+                                                if (chain_id2 != chain_id or seq_id2 != seq_id or comp_id2 != comp_id) and atom_id < atom_id2:
+
+                                                    err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_id) +\
+                                                          ', %s %s, %s %s] It indicates intra-residue ambiguities. However, row of ' % (ambig_code_name, ambig_code, ambig_set_id_name, ambig_set_id) +\
+                                                          row_tmp % (chain_id2, seq_id2, comp_id2, atom_id2) + ' exists.'
+
+                                                    self.report.error.appendDescription('invalid_ambiguity_code', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
+                                                    self.report.setError()
+
+                                                    if self.__verbose:
+                                                        self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ ValueError - %s\n" % err)
+
+                                        # Inter-residue ambiguities
+                                        elif ambig_code == 5:
+
+                                            for j in ambig_set:
+                                                chain_id2 = j[chain_id_name]
+                                                seq_id2 = j[seq_id_name]
+                                                comp_id2 = j[comp_id_name]
+                                                atom_id2 = j[atom_id_name]
+
+                                                if ((chain_id2 != chain_id and chain_id < chain_id2) or (seq_id2 == seq_id and atom_id < atom_id2)):
+
+                                                    err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_id) +\
+                                                          ', %s %s, %s %s] It indicates inter-residue ambiguities. However, row of ' % (ambig_code_name, ambig_code, ambig_set_id_name, ambig_set_id) +\
+                                                          row_tmp % (chain_id2, seq_id2, comp_id2, atom_id2) + ' exists.'
+
+                                                    self.report.error.appendDescription('invalid_ambiguity_code', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
+                                                    self.report.setError()
+
+                                                    if self.__verbose:
+                                                        self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ ValueError - %s\n" % err)
+
+                                        # Inter-molecular ambiguities
+                                        elif ambig_code == 6:
+
+                                            for j in ambig_set:
+                                                chain_id2 = j[chain_id_name]
+                                                seq_id2 = j[seq_id_name]
+                                                comp_id2 = j[comp_id_name]
+                                                atom_id2 = j[atom_id_name]
+                                                value2 = j[value_name]
+
+                                                if chain_id2 == chain_id and (seq_id < seq_id2 or (seq_id == seq_id2 and atom_id < atom_id2)):
+
+                                                    err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_id) +\
+                                                          ', %s %s, %s %s] It indicates inter-molecular ambiguities. However, row of ' % (ambig_code_name, ambig_code, ambig_set_id_name, ambig_set_id) +\
+                                                          row_tmp % (chain_id2, seq_id2, comp_id2, atom_id2) + ' exists.'
+
+                                                    self.report.error.appendDescription('invalid_ambiguity_code', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
+                                                    self.report.setError()
+
+                                                    if self.__verbose:
+                                                        self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ ValueError - %s\n" % err)
+
+                                        for j in ambig_set:
+                                            chain_id2 = j[chain_id_name]
+                                            seq_id2 = j[seq_id_name]
+                                            comp_id2 = j[comp_id_name]
+                                            atom_id2 = j[atom_id_name]
+                                            value2 = j[value_name]
+
+                                            if atom_id[0] != atom_id2[0] and atom_id < atom_id2:
+
+                                                err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_id) +\
+                                                      ', %s %s, %s %s] However, observation nucleus of ' % (ambig_code_name, ambig_code, ambig_set_id_name, ambig_set_id) +\
+                                                      row_tmp % (chain_id2, seq_id2, comp_id2, atom_id2) + ' sharing the same %s differs.' % ambig_set_id_name
+
+                                                self.report.error.appendDescription('invalid_ambiguity_code', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
+                                                self.report.setError()
+
+                                                if self.__verbose:
+                                                    self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ ValueError - %s\n" % err)
+
+                                            elif abs(value2 - value) > max_cs_err and value < value2:
+
+                                                err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_id) +\
+                                                      ', %s %s, %s %s, %s %s] However, %s %s of ' % (value_name, value, ambig_code_name, ambig_code, ambig_set_id_name, ambig_set_id, value_name, value2) +\
+                                                      row_tmp % (chain_id2, seq_id2, comp_id2, atom_id2) +\
+                                                      'differs by %s (tolerance %s).' % (value2 - value, max_cs_err)
+
+                                                self.report.error.appendDescription('invalid_ambiguity_code', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
+                                                self.report.setError()
+
+                                                if self.__verbose:
+                                                    self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ ValueError - %s\n" % err)
+
+                            else:
+
+                                err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_id) + '] Invalid ambiguity code %s (allowed ambig_code %s) exists.' %\
+                                      (ambig_code, self.bmrb_ambiguity_codes)
+
+                                self.report.error.appendDescription('invalid_ambiguity_code', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
+                                self.report.setError()
+
+                                if self.__verbose:
+                                    self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ ValueError - %s\n" % err)
+
+                except StopIteration:
+
+                    err = "Assigned chemical shifts of saveframe %s did not parsed properly. Please fix problems reported." % sf_framecode
+
+                    self.report.error.appendDescription('missing_mandatory_content', {'file_name': file_name, 'description': err})
+                    self.report.setError()
+
+                    if self.__verbose:
+                        self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ Error  - %s\n" % err)
+
+                except Exception as e:
+
+                    self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateCSValue() ++ Error  - %s" % str(e))
+                    self.report.setError()
+
+                    if self.__verbose:
+                        self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ Error  - %s" % str(e))
+
+                continue
+
+            # Entry/Saveframe
+
+            for sf_data in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
+
+                sf_framecode = sf_data.get_tag('sf_framecode')[0]
+
+                try:
+
+                    if file_type == 'nmr-star':
+
+                        loop = sf_data.get_loop_by_category(lp_category)
+
+                        details_col = loop.tags.index('Details') if 'Details' in loop.tags else -1
+
+                    if file_type == 'nef' or (not self.__nonblk_anomalous_cs):
+                        lp_data = next(l['data'] for l in self.__lp_data[content_subtype] if l['file_name'] == file_name and l['sf_framecode'] == sf_framecode)
+
+                    else:
+                        key_items = self.key_items[file_type][content_subtype]
+                        data_items = self.data_items[file_type][content_subtype]
+
+                        try:
+                            lp_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, None, None)[0]
+                        except Exception:
+                            continue
+
+                    chk_row_tmp = "[Check row of {0} %s, {1} %s, {2} %s, {3} %s".format(chain_id_name, seq_id_name, comp_id_name, atom_id_name)
+                    row_tmp = "{0} %s, {1} %s, {2} %s, {3} %s".format(chain_id_name, seq_id_name, comp_id_name, atom_id_name)
+
+                    methyl_cs_vals = {}
+
+                    for l, i in enumerate(lp_data):
+                        chain_id = i[chain_id_name]
+                        seq_id = i[seq_id_name]
+                        comp_id = i[comp_id_name]
+                        atom_id = i[atom_id_name]
+                        value = i[value_name]
+
+                        if file_type == 'nef':
+                            _atom_id, ambig_code, details = self.__nefT.get_star_atom(comp_id, atom_id, leave_unmatched=True)
+
+                            if len(_atom_id) == 0:
+                                continue
+
+                            if len(_atom_id) == 1 and atom_id == _atom_id[0]:
+                                atom_id_ = atom_id
+                                atom_name = atom_id
+
+                                if not details is None:
+                                    atom_name += ', besides that, ' + details.rstrip('.')
+
+                            else:
+                                atom_name = atom_id + ' (e.g. '
+
+                                for atom_id_ in _atom_id:
+                                    atom_name += atom_id_ + ' '
+
+                                atom_name = atom_name.rstrip() + ')'
+
+                                # representative atom id
+                                atom_id_ = _atom_id[0]
+
+                        else:
+                            atom_id_ = atom_id
+                            atom_name = atom_id
+
+                        one_letter_code = self.__get1LetterCode(comp_id)
+
+                        has_cs_stat = False
+
+                        # non-standard residue
+                        if one_letter_code == 'X':
+
+                            neighbor_comp_ids = set([j[comp_id_name] for j in lp_data if j[chain_id_name] == chain_id and abs(j[seq_id_name] - seq_id) < 3 and j[seq_id_name] != seq_id])
+
+                            polypeptide_like = False
+
+                            for comp_id2 in neighbor_comp_ids:
+                                polypeptide_like |= self.__csStat.getTypeOfCompId(comp_id2)[0]
+
+                            for cs_stat in self.__csStat.get(comp_id):
+
+                                if cs_stat['atom_id'] == atom_id_:
+                                    min_value = cs_stat['min']
+                                    max_value = cs_stat['max']
+                                    avg_value = cs_stat['avg']
+                                    std_value = cs_stat['std']
+
+                                    has_cs_stat = True
+
+                                    if atom_id.startswith('H') and 'methyl' in cs_stat['desc']:
+                                        methyl_cs_key = "%s %04d %s" % (chain_id, seq_id, atom_id[:-1])
+
+                                        if not methyl_cs_key in methyl_cs_vals:
+                                            methyl_cs_vals[methyl_cs_key] = value
+
+                                        elif value != methyl_cs_vals[methyl_cs_key]:
+
+                                            err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] Chemical shift values in the same methyl group %s %s vs %s are inconsistent.' %\
+                                                  (value_name, value, methyl_cs_vals[methyl_cs_key])
+
+                                            self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
+                                            self.report.setError()
+
+                                            if self.__verbose:
+                                                self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ ValueError  - %s\n" % err)
+
+                                            break
+
+                                    if std_value is None:
+
+                                        warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] Insufficient chemical shift statistics on comp_id %s, atom_id %s is available to verify %s %s (avg %s).' %\
+                                               (comp_id, atom_name, value_name, value, avg_value)
+
+                                        self.report.warning.appendDescription('unusual_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
+                                        self.report.setWarning()
+
+                                        if self.__verbose:
+                                            self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ Warning  - %s\n" % warn)
+
+                                        break
+
+                                    z_score = (value - avg_value) / std_value
+
+                                    if self.__csStat.hasEnoughStat(comp_id, polypeptide_like):
+                                        tolerance = std_value
+
+                                        if (value < min_value - tolerance or value > max_value + tolerance) and abs(z_score) > 10.0:
+
+                                            na = self.__getNearestAromaticRing(chain_id, seq_id, atom_id_, self.cutoff_aromatic)
+                                            pa = self.__getNearestParamagneticAtom(chain_id, seq_id, atom_id_, self.cutoff_paramagnetic)
+
+                                            if na is None and pa is None:
+
+                                                err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) +\
+                                                      '] %s %s (chain_id %s, seq_id %s, comp_id %s, atom_id %s) is not within expected range (avg %s, std %s, min %s, max %s, Z_score %.2f). Neither aromatic ring nor paramagnetic atom were found in the vicinity. Please check for folded/aliased signals.' %\
+                                                      (value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score)
+
+                                                if self.__nonblk_anomalous_cs:
+
+                                                    self.report.warning.appendDescription('suspicious_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
+                                                    self.report.setWarning()
+
+                                                    if self.__verbose:
+                                                        self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ Warning  - %s\n" % err)
+
+                                                    if file_type == 'nmr-star' and details_col != -1:
+                                                        _details = loop.data[l][details_col]
+                                                        details = '%s %s is not within expected range (avg %s, std %s, min %s, max %s, Z_score %.2f). Neither aromatic ring nor paramagnetic atom were found in the vicinity. Please check for folded/aliased signals.\n' % (value_name, value, avg_value, std_value, min_value, max_value, z_score)
+                                                        if _details in self.empty_value or (not details in _details):
+                                                            if _details in self.empty_value:
+                                                                loop.data[l][details_col] = details
+                                                            else:
+                                                                loop.data[l][details_col] += ('' if '\n' in _details else '\n') + details
+                                                            add_details = True
+
+                                                else:
+
+                                                    self.report.error.appendDescription('anomalous_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
+                                                    self.report.setError()
+
+                                                    if self.__verbose:
+                                                        self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ ValueError  - %s\n" % err)
+
+                                            elif pa is None:
+
+                                                warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) +\
+                                                       '] %s %s (chain_id %s, seq_id %s, comp_id %s, atom_id %s) should be verified (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest aromatic ring (chain_id %s, seq_id %s, comp_id %s, ring_atoms %s) is located at %s angstroms, %s degrees.' %\
+                                                       (value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score,
+                                                        na['chain_id'], na['seq_id'], na['comp_id'], na['ring_atoms'], na['ring_distance'], na['ring_angle'])
+
+                                                if na['ring_angle'] - self.magic_angle * z_score > 0.0 or self.__nonblk_anomalous_cs:
+
+                                                    self.report.warning.appendDescription('suspicious_data' if na['ring_angle'] - self.magic_angle * z_score < 0.0 or na['ring_distance'] > self.vicinity_aromatic else 'unusual_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
+                                                    self.report.setWarning()
+
+                                                    if self.__verbose:
+                                                        self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ Warning  - %s\n" % warn)
+
+                                                    if file_type == 'nmr-star' and details_col != -1 and (na['ring_angle'] - self.magic_angle * z_score < 0.0 or na['ring_distance'] > self.vicinity_aromatic):
+                                                        _details = loop.data[l][details_col]
+                                                        details = '%s %s is not within expected range (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest aromatic ring %s/%s/%s is located at %s angstroms, %s degrees.\n' % (value_name, value, avg_value, std_value, min_value, max_value, z_score, na['chain_id'], na['seq_id'], na['comp_id'], na['ring_distance'], na['ring_angle'])
+                                                        if _details in self.empty_value or (not details in _details):
+                                                            if _details in self.empty_value:
+                                                                loop.data[l][details_col] = details
+                                                            else:
+                                                                loop.data[l][details_col] += ('' if '\n' in _details else '\n') + details
+                                                            add_details = True
+
+                                                else:
+
+                                                    self.report.error.appendDescription('anomalous_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
+                                                    self.report.setError()
+
+                                                    if self.__verbose:
+                                                        self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ ValueError  - %s\n" % warn)
+
+                                            else:
+
+                                                warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) +\
+                                                       '] %s %s (chain_id %s, seq_id %s, comp_id %s, atom_id %s) should be verified (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest paramagnetic atom (chain_id %s, seq_id %s, comp_id %s, atom_id %s) is located at %s angstroms.' %\
+                                                       (value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score,
+                                                        pa['chain_id'], pa['seq_id'], pa['comp_id'], pa['atom_id'], pa['distance'])
+
+                                                self.report.warning.appendDescription('suspicious_data' if pa['distance'] > self.vicinity_paramagnetic else 'unusual_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
+                                                self.report.setWarning()
+
+                                                if self.__verbose:
+                                                    self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ Warning  - %s\n" % warn)
+
+                                                if file_type == 'nmr-star' and details_col != -1 and pa['distance'] > self.vicinity_paramagnetic:
+                                                    _details = loop.data[l][details_col]
+                                                    details = '%s %s is not within expected range (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest paramagnetic atom %s/%s/%s is located at %s angstroms.\n' % (value_name, value, avg_value, std_value, min_value, max_value, z_score, na['chain_id'], na['seq_id'], na['comp_id'], na['distance'])
+                                                    if _details in self.empty_value or (not details in _details):
+                                                        if _details in self.empty_value:
+                                                            loop.data[l][details_col] = details
+                                                        else:
+                                                            loop.data[l][details_col] += ('' if '\n' in _details else '\n') + details
+                                                        add_details = True
+
+                                        elif abs(z_score) > 10.0:
+
+                                            na = self.__getNearestAromaticRing(chain_id, seq_id, atom_id_, self.cutoff_aromatic)
+                                            pa = self.__getNearestParamagneticAtom(chain_id, seq_id, atom_id_, self.cutoff_paramagnetic)
+
+                                            if na is None and pa is None:
+
+                                                warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) +\
+                                                       '] %s %s (chain_id %s, seq_id %s, comp_id %s, atom_id %s) must be verified (avg %s, std %s, min %s, max %s, Z_score %.2f). Neither aromatic ring nor paramagnetic atom were found in the vicinity.' %\
+                                                       (value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score)
+
+                                                self.report.warning.appendDescription('suspicious_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
+                                                self.report.setWarning()
+
+                                                if self.__verbose:
+                                                    self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ Warning  - %s\n" % warn)
+
+                                            elif pa is None:
+
+                                                if na['ring_angle'] - self.magic_angle * z_score < 0.0 or na['ring_distance'] > self.vicinity_aromatic:
+
+                                                    warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) +\
+                                                           '] %s %s (chain_id %s, seq_id %s, comp_id %s, atom_id %s) should be verified (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest aromatic ring (chain_id %s, seq_id %s, comp_id %s, ring_atoms %s) is located at %s angstroms, %s degrees.' %\
+                                                           (value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score,
+                                                            na['chain_id'], na['seq_id'], na['comp_id'], na['ring_atoms'], na['ring_distance'], na['ring_angle'])
+
+                                                    self.report.warning.appendDescription('unusual_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
+                                                    self.report.setWarning()
+
+                                                    if self.__verbose:
+                                                        self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ Warning  - %s\n" % warn)
+
+                                            else:
+
+                                                if pa['distance'] > self.vicinity_paramagnetic:
+
+                                                    warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) +\
+                                                           '] %s %s (chain_id %s, seq_id %s, comp_id %s, atom_id %s) should be verified (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest paramagnetic atom (chain_id %s, seq_id %s, comp_id %s, atom_id %s) is located at %s angstroms.' %\
+                                                           (value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score,
+                                                            pa['chain_id'], pa['seq_id'], pa['comp_id'], pa['atom_id'], pa['distance'])
+
+                                                    self.report.warning.appendDescription('unusual_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
+                                                    self.report.setWarning()
+
+                                                    if self.__verbose:
+                                                        self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ Warning  - %s\n" % warn)
+
+                                        elif abs(z_score) > 6.0:
+
+                                            na = self.__getNearestAromaticRing(chain_id, seq_id, atom_id_, self.cutoff_aromatic)
+                                            pa = self.__getNearestParamagneticAtom(chain_id, seq_id, atom_id_, self.cutoff_paramagnetic)
+
+                                            warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) +\
+                                                   '] %s %s (chain_id %s, seq_id %s, comp_id %s, atom_id %s) should be verified (avg %s, std %s, min %s, max %s, Z_score %.2f).' %\
+                                                   (value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score)
+
+                                            if not na is None:
+
+                                                if na['ring_angle'] - self.magic_angle * z_score < 0.0 or na['ring_distance'] > self.vicinity_aromatic:
+                                                    warn += ' The nearest aromatic ring (chain_id %s, seq_id %s, comp_id %s, ring_atoms %s) is located at %s angstroms, %s degrees.' %\
+                                                            (na['chain_id'], na['seq_id'], na['comp_id'], na['ring_atoms'], na['ring_distance'], na['ring_angle'])
+                                                else:
+                                                    warn = None
+
+                                            elif not pa is None:
+
+                                                if pa['distance'] > self.vicinity_paramagnetic:
+                                                    warn += ' The nearest paramagnetic atom (chain_id %s, seq_id %s, comp_id %s, atom_id %s) is located at %s angstroms.' %\
+                                                            (pa['chain_id'], pa['seq_id'], pa['comp_id'], pa['atom_id'], pa['distance'])
+                                                else:
+                                                    warn = None
+
+                                            else:
+                                                warn += ' Neither aromatic ring nor paramagnetic atom were found in the vicinity.'
+
+                                            if not warn is None:
+                                                self.report.warning.appendDescription('unusual_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
+                                                self.report.setWarning()
+
+                                                if self.__verbose:
+                                                    self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ Warning  - %s\n" % warn)
+
+                                        elif not cs_stat['primary']:
+
+                                            warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] %s %s is remarkable assignment. Appearance rate of %s in %s is %s %% according to BMRB.' %\
+                                                   (value_name, value, atom_id, comp_id, cs_stat['norm_freq'] * 100.0)
+
+                                            self.report.warning.appendDescription('remarkable_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
+                                            self.report.setWarning()
+
+                                            if self.__verbose:
+                                                self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ Warning  - %s\n" % warn)
+
+                                    else:
+                                        tolerance = std_value * 10.0
+
+                                        if min_value < max_value and (value < min_value - tolerance or value > max_value + tolerance) and abs(z_score) > 10.0:
+
+                                            na = self.__getNearestAromaticRing(chain_id, seq_id, atom_id_, self.cutoff_aromatic)
+                                            pa = self.__getNearestParamagneticAtom(chain_id, seq_id, atom_id_, self.cutoff_paramagnetic)
+
+                                            if na is None and pa is None:
+
+                                                err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) +\
+                                                      '] %s %s (chain_id %s, seq_id %s, comp_id %s, atom_id %s) is not within expected range (avg %s, std %s, min %s, max %s, Z_score %.2f). Neither aromatic ring nor paramagnetic atom were found in the vicinity. Please check for folded/aliased signals.' %\
+                                                      (value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score)
+
+                                                if self.__nonblk_anomalous_cs:
+
+                                                    self.report.warning.appendDescription('suspicious_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
+                                                    self.report.setWarning()
+
+                                                    if self.__verbose:
+                                                        self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ Warning  - %s\n" % err)
+
+                                                    if file_type == 'nmr-star' and details_col != -1:
+                                                        _details = loop.data[l][details_col]
+                                                        details = '%s %s is not within expected range (avg %s, std %s, min %s, max %s, Z_score %.2f). Neither aromatic ring nor paramagnetic atom were found in the vicinity. Please check for folded/aliased signals.\n' % (value_name, value, avg_value, std_value, min_value, max_value, z_score)
+                                                        if _details in self.empty_value or (not details in _details):
+                                                            if _details in self.empty_value:
+                                                                loop.data[l][details_col] = details
+                                                            else:
+                                                                loop.data[l][details_col] += ('' if '\n' in _details else '\n') + details
+                                                            add_details = True
+
+                                                else:
+
+                                                    self.report.error.appendDescription('anomalous_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
+                                                    self.report.setError()
+
+                                                    if self.__verbose:
+                                                        self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ ValueError  - %s\n" % err)
+
+                                            elif pa is None:
+
+                                                warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) +\
+                                                       '] %s %s (chain_id %s, seq_id %s, comp_id %s, atom_id %s) should be verified (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest aromatic ring (chain_id %s, seq_id %s, comp_id %s, ring_atoms %s) is located at %s angstroms, %s degrees.' %\
+                                                       (value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score,
+                                                        na['chain_id'], na['seq_id'], na['comp_id'], na['ring_atoms'], na['ring_distance'], na['ring_angle'])
+
+                                                if na['ring_angle'] - self.magic_angle * z_score > 0.0 or self.__nonblk_anomalous_cs:
+
+                                                    if na['ring_angle'] - self.magic_angle * z_score < 0.0 or na['ring_distance'] > self.vicinity_aromatic:
+
+                                                        self.report.warning.appendDescription('suspicious_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
+                                                        self.report.setWarning()
+
+                                                        if self.__verbose:
+                                                            self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ Warning  - %s\n" % warn)
+
+                                                        if file_type == 'nmr-star' and details_col != -1:
+                                                            _details = loop.data[l][details_col]
+                                                            details = '%s %s is not within expected range (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest aromatic ring %s/%s/%s is located at %s angstroms, %s degrees.\n' % (value_name, value, avg_value, std_value, min_value, max_value, z_score, na['chain_id'], na['seq_id'], na['comp_id'], na['ring_distance'], na['ring_angle'])
+                                                            if _details in self.empty_value or (not details in _details):
+                                                                if _details in self.empty_value:
+                                                                    loop.data[l][details_col] = details
+                                                                else:
+                                                                    loop.data[l][details_col] += ('' if '\n' in _details else '\n') + details
+                                                                add_details = True
+
+                                                else:
+
+                                                    self.report.error.appendDescription('anomalous_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
+                                                    self.report.setError()
+
+                                                    if self.__verbose:
+                                                        self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ ValueError  - %s\n" % warn)
+
+                                            else:
+
+                                                if pa['distance'] > self.vicinity_paramagnetic:
+
+                                                    warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) +\
+                                                           '] %s %s (chain_id %s, seq_id %s, comp_id %s, atom_id %s) should be verified (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest paramagnetic atom (chain_id %s, seq_id %s, comp_id %s, atom_id %s) is located at %s angstroms.' %\
+                                                           (value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score,
+                                                            pa['chain_id'], pa['seq_id'], pa['comp_id'], pa['atom_id'], pa['distance'])
+
+                                                    self.report.warning.appendDescription('unusual_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
+                                                    self.report.setWarning()
+
+                                                    if self.__verbose:
+                                                        self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ Warning  - %s\n" % warn)
+
+                                                    if file_type == 'nmr-star' and details_col != -1:
+                                                        _details = loop.data[l][details_col]
+                                                        details = '%s %s is not within expected range (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest paramagnetic atom %s/%s/%s is located at %s angstroms.\n' % (value_name, value, avg_value, std_value, min_value, max_value, z_score, na['chain_id'], na['seq_id'], na['comp_id'], na['distance'])
+                                                        if _details in self.empty_value or (not details in _details):
+                                                            if _details in self.empty_value:
+                                                                loop.data[l][details_col] = details
+                                                            else:
+                                                                loop.data[l][details_col] += ('' if '\n' in _details else '\n') + details
+                                                            add_details = True
+
+                                        elif abs(z_score) > 10.0:
+
+                                            na = self.__getNearestAromaticRing(chain_id, seq_id, atom_id_, self.cutoff_aromatic)
+                                            pa = self.__getNearestParamagneticAtom(chain_id, seq_id, atom_id_, self.cutoff_paramagnetic)
+
+                                            if na is None and pa is None:
+
+                                                warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) +\
+                                                       '] %s %s (chain_id %s, seq_id %s, comp_id %s, atom_id %s) must be verified (avg %s, std %s, min %s, max %s, Z_score %.2f). Neither aromatic ring nor paramagnetic atom were found in the vicinity.' %\
+                                                       (value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score)
+
+                                                self.report.warning.appendDescription('suspicious_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
+                                                self.report.setWarning()
+
+                                                if self.__verbose:
+                                                    self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ Warning  - %s\n" % warn)
+
+                                            elif pa is None:
+
+                                                if na['ring_angle'] - self.magic_angle * z_score < 0.0 or na['ring_distance'] > self.vicinity_aromatic:
+
+                                                    warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) +\
+                                                           '] %s %s (chain_id %s, seq_id %s, comp_id %s, atom_id %s) should be verified (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest aromatic ring (chain_id %s, seq_id %s, comp_id %s, ring_atoms %s) is located at %s angstroms, %s degrees.' %\
+                                                           (value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score,
+                                                            na['chain_id'], na['seq_id'], na['comp_id'], na['ring_atoms'], na['ring_distance'], na['ring_angle'])
+
+                                                    self.report.warning.appendDescription('unusual_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
+                                                    self.report.setWarning()
+
+                                                    if self.__verbose:
+                                                        self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ Warning  - %s\n" % warn)
+
+                                            else:
+
+                                                if pa['distance'] > self.vicinity_paramagnetic:
+
+                                                    warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) +\
+                                                           '] %s %s (chain_id %s, seq_id %s, comp_id %s, atom_id %s) should be verified (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest paramagnetic atom (chain_id %s, seq_id %s, comp_id %s, atom_id %s) is located at %s angstroms.' %\
+                                                           (value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score,
+                                                            pa['chain_id'], pa['seq_id'], pa['comp_id'], pa['atom_id'], pa['distance'])
+
+                                                    self.report.warning.appendDescription('unusual_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
+                                                    self.report.setWarning()
+
+                                                    if self.__verbose:
+                                                        self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ Warning  - %s\n" % warn)
+
+                                    break
+
+                        # standard residue
+                        else:
+
+                            for cs_stat in self.__csStat.get(comp_id, self.report.isDiamagnetic()):
+
+                                if cs_stat['atom_id'] == atom_id_:
+                                    min_value = cs_stat['min']
+                                    max_value = cs_stat['max']
+                                    avg_value = cs_stat['avg']
+                                    std_value = cs_stat['std']
+
+                                    has_cs_stat = True
+
+                                    if atom_id.startswith('H') and 'methyl' in cs_stat['desc']:
+                                        methyl_cs_key = "%s %04d %s" % (chain_id, seq_id, atom_id[:-1])
+
+                                        if not methyl_cs_key in methyl_cs_vals:
+                                            methyl_cs_vals[methyl_cs_key] = value
+
+                                        elif value != methyl_cs_vals[methyl_cs_key]:
+
+                                            err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] Chemical shift values in the same methyl group %s %s vs %s are inconsistent.' %\
+                                                  (value_name, value, methyl_cs_vals[methyl_cs_key])
+
+                                            self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
+                                            self.report.setError()
+
+                                            if self.__verbose:
+                                                self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ ValueError  - %s\n" % err)
+
+                                            break
+
+                                    if std_value is None:
+
+                                        warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] Insufficient chemical shift statistics on comp_id %s, atom_id %s is available to verify %s %s (avg %s).' %\
+                                               (comp_id, atom_name, value_name, value, avg_value)
+
+                                        self.report.warning.appendDescription('unusual_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
+                                        self.report.setWarning()
+
+                                        if self.__verbose:
+                                            self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ Warning  - %s\n" % warn)
+
+                                        break
+
+                                    z_score = (value - avg_value) / std_value
+                                    tolerance = std_value
+
+                                    if (value < min_value - tolerance or value > max_value + tolerance) and abs(z_score) > 6.0:
 
                                         na = self.__getNearestAromaticRing(chain_id, seq_id, atom_id_, self.cutoff_aromatic)
                                         pa = self.__getNearestParamagneticAtom(chain_id, seq_id, atom_id_, self.cutoff_paramagnetic)
@@ -5978,23 +8398,21 @@ class NmrDpUtility(object):
 
                                             if na['ring_angle'] - self.magic_angle * z_score > 0.0 or self.__nonblk_anomalous_cs:
 
-                                                if na['ring_angle'] - self.magic_angle * z_score < 0.0 or na['ring_distance'] > self.vicinity_aromatic:
+                                                self.report.warning.appendDescription('suspicious_data' if na['ring_angle'] - self.magic_angle * z_score < 0.0 or na['ring_distance'] > self.vicinity_aromatic else 'unusual_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
+                                                self.report.setWarning()
 
-                                                    self.report.warning.appendDescription('suspicious_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
-                                                    self.report.setWarning()
+                                                if self.__verbose:
+                                                    self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ Warning  - %s\n" % warn)
 
-                                                    if self.__verbose:
-                                                        self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ Warning  - %s\n" % warn)
-
-                                                    if file_type == 'nmr-star' and details_col != -1:
-                                                        _details = loop.data[l][details_col]
-                                                        details = '%s %s is not within expected range (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest aromatic ring %s/%s/%s is located at %s angstroms, %s degrees.\n' % (value_name, value, avg_value, std_value, min_value, max_value, z_score, na['chain_id'], na['seq_id'], na['comp_id'], na['ring_distance'], na['ring_angle'])
-                                                        if _details in self.empty_value or (not details in _details):
-                                                            if _details in self.empty_value:
-                                                                loop.data[l][details_col] = details
-                                                            else:
-                                                                loop.data[l][details_col] += ('' if '\n' in _details else '\n') + details
-                                                            add_details = True
+                                                if file_type == 'nmr-star' and details_col != -1 and (na['ring_angle'] - self.magic_angle * z_score > 0.0 or self.__nonblk_anomalous_cs):
+                                                    _details = loop.data[l][details_col]
+                                                    details = '%s %s is not within expected range (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest aromatic ring %s/%s/%s is located at %s angstroms, %s degrees.\n' % (value_name, value, avg_value, std_value, min_value, max_value, z_score, na['chain_id'], na['seq_id'], na['comp_id'], na['ring_distance'], na['ring_angle'])
+                                                    if _details in self.empty_value or (not details in _details):
+                                                        if _details in self.empty_value:
+                                                            loop.data[l][details_col] = details
+                                                        else:
+                                                            loop.data[l][details_col] += ('' if '\n' in _details else '\n') + details
+                                                        add_details = True
 
                                             else:
 
@@ -6006,30 +8424,28 @@ class NmrDpUtility(object):
 
                                         else:
 
-                                            if pa['distance'] > self.vicinity_paramagnetic:
+                                            warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) +\
+                                                   '] %s %s (chain_id %s, seq_id %s, comp_id %s, atom_id %s) should be verified (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest paramagnetic atom (chain_id %s, seq_id %s, comp_id %s, atom_id %s) is located at %s angstroms.' %\
+                                                   (value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score,
+                                                    pa['chain_id'], pa['seq_id'], pa['comp_id'], pa['atom_id'], pa['distance'])
 
-                                                warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) +\
-                                                       '] %s %s (chain_id %s, seq_id %s, comp_id %s, atom_id %s) should be verified (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest paramagnetic atom (chain_id %s, seq_id %s, comp_id %s, atom_id %s) is located at %s angstroms.' %\
-                                                       (value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score,
-                                                        pa['chain_id'], pa['seq_id'], pa['comp_id'], pa['atom_id'], pa['distance'])
+                                            self.report.warning.appendDescription('suspicious_data' if pa['distance'] > self.vicinity_paramagnetic else 'unusual_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
+                                            self.report.setWarning()
 
-                                                self.report.warning.appendDescription('unusual_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
-                                                self.report.setWarning()
+                                            if self.__verbose:
+                                                self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ Warning  - %s\n" % warn)
 
-                                                if self.__verbose:
-                                                    self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ Warning  - %s\n" % warn)
+                                            if file_type == 'nmr-star' and details_col != -1 and pa['distance'] > self.vicinity_paramagnetic:
+                                                _details = loop.data[l][details_col]
+                                                details = '%s %s is not within expected range (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest paramagnetic atom %s/%s/%s is located at %s angstroms.\n' % (value_name, value, avg_value, std_value, min_value, max_value, z_score, na['chain_id'], na['seq_id'], na['comp_id'], na['distance'])
+                                                if _details in self.empty_value or (not details in _details):
+                                                    if _details in self.empty_value:
+                                                        loop.data[l][details_col] = details
+                                                    else:
+                                                        loop.data[l][details_col] += ('' if '\n' in _details else '\n') + details
+                                                    add_details = True
 
-                                                if file_type == 'nmr-star' and details_col != -1:
-                                                    _details = loop.data[l][details_col]
-                                                    details = '%s %s is not within expected range (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest paramagnetic atom %s/%s/%s is located at %s angstroms.\n' % (value_name, value, avg_value, std_value, min_value, max_value, z_score, na['chain_id'], na['seq_id'], na['comp_id'], na['distance'])
-                                                    if _details in self.empty_value or (not details in _details):
-                                                        if _details in self.empty_value:
-                                                            loop.data[l][details_col] = details
-                                                        else:
-                                                            loop.data[l][details_col] += ('' if '\n' in _details else '\n') + details
-                                                        add_details = True
-
-                                    elif abs(z_score) > 10.0:
+                                    elif abs(z_score) > 6.0:
 
                                         na = self.__getNearestAromaticRing(chain_id, seq_id, atom_id_, self.cutoff_aromatic)
                                         pa = self.__getNearestParamagneticAtom(chain_id, seq_id, atom_id_, self.cutoff_paramagnetic)
@@ -6076,289 +8492,82 @@ class NmrDpUtility(object):
                                                 if self.__verbose:
                                                     self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ Warning  - %s\n" % warn)
 
-                                break
+                                    elif abs(z_score) > 4.0:
 
-                    # standard residue
-                    else:
+                                        na = self.__getNearestAromaticRing(chain_id, seq_id, atom_id_, self.cutoff_aromatic)
+                                        pa = self.__getNearestParamagneticAtom(chain_id, seq_id, atom_id_, self.cutoff_paramagnetic)
 
-                        for cs_stat in self.__csStat.get(comp_id, self.report.isDiamagnetic()):
+                                        warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) +\
+                                               '] %s %s (chain_id %s, seq_id %s, comp_id %s, atom_id %s) should be verified (avg %s, std %s, min %s, max %s, Z_score %.2f).' %\
+                                               (value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score)
 
-                            if cs_stat['atom_id'] == atom_id_:
-                                min_value = cs_stat['min']
-                                max_value = cs_stat['max']
-                                avg_value = cs_stat['avg']
-                                std_value = cs_stat['std']
+                                        if not na is None:
 
-                                has_cs_stat = True
+                                            if na['ring_angle'] - self.magic_angle * z_score < 0.0 or na['ring_distance'] > self.vicinity_aromatic:
+                                                warn += ' The nearest aromatic ring (chain_id %s, seq_id %s, comp_id %s, ring_atoms %s) is located at %s angstroms, %s degrees.' %\
+                                                        (na['chain_id'], na['seq_id'], na['comp_id'], na['ring_atoms'], na['ring_distance'], na['ring_angle'])
+                                            else:
+                                                warn = None
 
-                                if atom_id.startswith('H') and 'methyl' in cs_stat['desc']:
-                                    methyl_cs_key = "%s %04d %s" % (chain_id, seq_id, atom_id[:-1])
+                                        elif not pa is None:
 
-                                    if not methyl_cs_key in methyl_cs_vals:
-                                        methyl_cs_vals[methyl_cs_key] = value
+                                            if pa['distance'] > self.vicinity_paramagnetic:
+                                                warn += ' The nearest paramagnetic atom (chain_id %s, seq_id %s, comp_id %s, atom_id %s) is located at %s angstroms.' %\
+                                                        (pa['chain_id'], pa['seq_id'], pa['comp_id'], pa['atom_id'], pa['distance'])
+                                            else:
+                                                warn = None
 
-                                    elif value != methyl_cs_vals[methyl_cs_key]:
+                                        else:
+                                            warn += ' Neither aromatic ring nor paramagnetic atom were found in the vicinity.'
 
-                                        err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] Chemical shift values in the same methyl group %s %s vs %s are inconsistent.' %\
-                                              (value_name, value, methyl_cs_vals[methyl_cs_key])
+                                        if not warn is None:
+                                            self.report.warning.appendDescription('unusual_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
+                                            self.report.setWarning()
 
-                                        self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
-                                        self.report.setError()
+                                            if self.__verbose:
+                                                self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ Warning  - %s\n" % warn)
+
+                                    elif not cs_stat['primary']:
+
+                                        warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] %s %s is remarkable assignment. Appearance rate of %s in %s is %s %% according to BMRB.' %\
+                                               (value_name, value, atom_id, comp_id, cs_stat['norm_freq'] * 100.0)
+
+                                        self.report.warning.appendDescription('remarkable_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
+                                        self.report.setWarning()
 
                                         if self.__verbose:
-                                            self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ ValueError  - %s\n" % err)
-
-                                        break
-
-                                if std_value is None:
-
-                                    warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] Insufficient chemical shift statistics on comp_id %s, atom_id %s is available to verify %s %s (avg %s).' %\
-                                           (comp_id, atom_name, value_name, value, avg_value)
-
-                                    self.report.warning.appendDescription('unusual_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
-                                    self.report.setWarning()
-
-                                    if self.__verbose:
-                                        self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ Warning  - %s\n" % warn)
+                                            self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ Warning  - %s\n" % warn)
 
                                     break
 
-                                z_score = (value - avg_value) / std_value
-                                tolerance = std_value
+                        if not has_cs_stat:
 
-                                if (value < min_value - tolerance or value > max_value + tolerance) and abs(z_score) > 6.0:
+                            warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] No chemical shift statistics is available to verify %s %s.' %\
+                                   (value_name, value)
 
-                                    na = self.__getNearestAromaticRing(chain_id, seq_id, atom_id_, self.cutoff_aromatic)
-                                    pa = self.__getNearestParamagneticAtom(chain_id, seq_id, atom_id_, self.cutoff_paramagnetic)
+                            self.report.warning.appendDescription('unusual_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
+                            self.report.setWarning()
 
-                                    if na is None and pa is None:
+                            if self.__verbose:
+                                self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ Warning  - %s\n" % warn)
 
-                                        err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) +\
-                                              '] %s %s (chain_id %s, seq_id %s, comp_id %s, atom_id %s) is not within expected range (avg %s, std %s, min %s, max %s, Z_score %.2f). Neither aromatic ring nor paramagnetic atom were found in the vicinity. Please check for folded/aliased signals.' %\
-                                              (value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score)
+                        # check ambiguity code
+                        if file_type == 'nmr-star' and ambig_code_name in i:
+                            ambig_code = i[ambig_code_name]
 
-                                        if self.__nonblk_anomalous_cs:
+                            if ambig_code in self.empty_value or ambig_code == 1:
+                                continue
 
-                                            self.report.warning.appendDescription('suspicious_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
-                                            self.report.setWarning()
+                            allowed_ambig_code = self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id)
 
-                                            if self.__verbose:
-                                                self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ Warning  - %s\n" % err)
+                            if ambig_code == 2 or ambig_code == 3:
 
-                                            if file_type == 'nmr-star' and details_col != -1:
-                                                _details = loop.data[l][details_col]
-                                                details = '%s %s is not within expected range (avg %s, std %s, min %s, max %s, Z_score %.2f). Neither aromatic ring nor paramagnetic atom were found in the vicinity. Please check for folded/aliased signals.\n' % (value_name, value, avg_value, std_value, min_value, max_value, z_score)
-                                                if _details in self.empty_value or (not details in _details):
-                                                    if _details in self.empty_value:
-                                                        loop.data[l][details_col] = details
-                                                    else:
-                                                        loop.data[l][details_col] += ('' if '\n' in _details else '\n') + details
-                                                    add_details = True
+                                ambig_code_desc = 'ambiguity of geminal atoms or geminal methyl proton groups' if ambig_code == 2 else 'aromatic atoms on opposite sides of symmetrical rings'
 
-                                        else:
+                                if ambig_code != allowed_ambig_code:
 
-                                            self.report.error.appendDescription('anomalous_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
-                                            self.report.setError()
-
-                                            if self.__verbose:
-                                                self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ ValueError  - %s\n" % err)
-
-                                    elif pa is None:
-
-                                        warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) +\
-                                               '] %s %s (chain_id %s, seq_id %s, comp_id %s, atom_id %s) should be verified (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest aromatic ring (chain_id %s, seq_id %s, comp_id %s, ring_atoms %s) is located at %s angstroms, %s degrees.' %\
-                                               (value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score,
-                                                na['chain_id'], na['seq_id'], na['comp_id'], na['ring_atoms'], na['ring_distance'], na['ring_angle'])
-
-                                        if na['ring_angle'] - self.magic_angle * z_score > 0.0 or self.__nonblk_anomalous_cs:
-
-                                            self.report.warning.appendDescription('suspicious_data' if na['ring_angle'] - self.magic_angle * z_score < 0.0 or na['ring_distance'] > self.vicinity_aromatic else 'unusual_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
-                                            self.report.setWarning()
-
-                                            if self.__verbose:
-                                                self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ Warning  - %s\n" % warn)
-
-                                            if file_type == 'nmr-star' and details_col != -1 and (na['ring_angle'] - self.magic_angle * z_score > 0.0 or self.__nonblk_anomalous_cs):
-                                                _details = loop.data[l][details_col]
-                                                details = '%s %s is not within expected range (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest aromatic ring %s/%s/%s is located at %s angstroms, %s degrees.\n' % (value_name, value, avg_value, std_value, min_value, max_value, z_score, na['chain_id'], na['seq_id'], na['comp_id'], na['ring_distance'], na['ring_angle'])
-                                                if _details in self.empty_value or (not details in _details):
-                                                    if _details in self.empty_value:
-                                                        loop.data[l][details_col] = details
-                                                    else:
-                                                        loop.data[l][details_col] += ('' if '\n' in _details else '\n') + details
-                                                    add_details = True
-
-                                        else:
-
-                                            self.report.error.appendDescription('anomalous_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
-                                            self.report.setError()
-
-                                            if self.__verbose:
-                                                self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ ValueError  - %s\n" % warn)
-
-                                    else:
-
-                                        warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) +\
-                                               '] %s %s (chain_id %s, seq_id %s, comp_id %s, atom_id %s) should be verified (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest paramagnetic atom (chain_id %s, seq_id %s, comp_id %s, atom_id %s) is located at %s angstroms.' %\
-                                               (value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score,
-                                                pa['chain_id'], pa['seq_id'], pa['comp_id'], pa['atom_id'], pa['distance'])
-
-                                        self.report.warning.appendDescription('suspicious_data' if pa['distance'] > self.vicinity_paramagnetic else 'unusual_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
-                                        self.report.setWarning()
-
-                                        if self.__verbose:
-                                            self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ Warning  - %s\n" % warn)
-
-                                        if file_type == 'nmr-star' and details_col != -1 and pa['distance'] > self.vicinity_paramagnetic:
-                                            _details = loop.data[l][details_col]
-                                            details = '%s %s is not within expected range (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest paramagnetic atom %s/%s/%s is located at %s angstroms.\n' % (value_name, value, avg_value, std_value, min_value, max_value, z_score, na['chain_id'], na['seq_id'], na['comp_id'], na['distance'])
-                                            if _details in self.empty_value or (not details in _details):
-                                                if _details in self.empty_value:
-                                                    loop.data[l][details_col] = details
-                                                else:
-                                                    loop.data[l][details_col] += ('' if '\n' in _details else '\n') + details
-                                                add_details = True
-
-                                elif abs(z_score) > 6.0:
-
-                                    na = self.__getNearestAromaticRing(chain_id, seq_id, atom_id_, self.cutoff_aromatic)
-                                    pa = self.__getNearestParamagneticAtom(chain_id, seq_id, atom_id_, self.cutoff_paramagnetic)
-
-                                    if na is None and pa is None:
-
-                                        warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) +\
-                                               '] %s %s (chain_id %s, seq_id %s, comp_id %s, atom_id %s) must be verified (avg %s, std %s, min %s, max %s, Z_score %.2f). Neither aromatic ring nor paramagnetic atom were found in the vicinity.' %\
-                                               (value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score)
-
-                                        self.report.warning.appendDescription('suspicious_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
-                                        self.report.setWarning()
-
-                                        if self.__verbose:
-                                            self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ Warning  - %s\n" % warn)
-
-                                    elif pa is None:
-
-                                        if na['ring_angle'] - self.magic_angle * z_score < 0.0 or na['ring_distance'] > self.vicinity_aromatic:
-
-                                            warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) +\
-                                                   '] %s %s (chain_id %s, seq_id %s, comp_id %s, atom_id %s) should be verified (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest aromatic ring (chain_id %s, seq_id %s, comp_id %s, ring_atoms %s) is located at %s angstroms, %s degrees.' %\
-                                                   (value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score,
-                                                    na['chain_id'], na['seq_id'], na['comp_id'], na['ring_atoms'], na['ring_distance'], na['ring_angle'])
-
-                                            self.report.warning.appendDescription('unusual_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
-                                            self.report.setWarning()
-
-                                            if self.__verbose:
-                                                self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ Warning  - %s\n" % warn)
-
-                                    else:
-
-                                        if pa['distance'] > self.vicinity_paramagnetic:
-
-                                            warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) +\
-                                                   '] %s %s (chain_id %s, seq_id %s, comp_id %s, atom_id %s) should be verified (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest paramagnetic atom (chain_id %s, seq_id %s, comp_id %s, atom_id %s) is located at %s angstroms.' %\
-                                                   (value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score,
-                                                    pa['chain_id'], pa['seq_id'], pa['comp_id'], pa['atom_id'], pa['distance'])
-
-                                            self.report.warning.appendDescription('unusual_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
-                                            self.report.setWarning()
-
-                                            if self.__verbose:
-                                                self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ Warning  - %s\n" % warn)
-
-                                elif abs(z_score) > 4.0:
-
-                                    na = self.__getNearestAromaticRing(chain_id, seq_id, atom_id_, self.cutoff_aromatic)
-                                    pa = self.__getNearestParamagneticAtom(chain_id, seq_id, atom_id_, self.cutoff_paramagnetic)
-
-                                    warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) +\
-                                           '] %s %s (chain_id %s, seq_id %s, comp_id %s, atom_id %s) should be verified (avg %s, std %s, min %s, max %s, Z_score %.2f).' %\
-                                           (value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score)
-
-                                    if not na is None:
-
-                                        if na['ring_angle'] - self.magic_angle * z_score < 0.0 or na['ring_distance'] > self.vicinity_aromatic:
-                                            warn += ' The nearest aromatic ring (chain_id %s, seq_id %s, comp_id %s, ring_atoms %s) is located at %s angstroms, %s degrees.' %\
-                                                    (na['chain_id'], na['seq_id'], na['comp_id'], na['ring_atoms'], na['ring_distance'], na['ring_angle'])
-                                        else:
-                                            warn = None
-
-                                    elif not pa is None:
-
-                                        if pa['distance'] > self.vicinity_paramagnetic:
-                                            warn += ' The nearest paramagnetic atom (chain_id %s, seq_id %s, comp_id %s, atom_id %s) is located at %s angstroms.' %\
-                                                    (pa['chain_id'], pa['seq_id'], pa['comp_id'], pa['atom_id'], pa['distance'])
-                                        else:
-                                            warn = None
-
-                                    else:
-                                        warn += ' Neither aromatic ring nor paramagnetic atom were found in the vicinity.'
-
-                                    if not warn is None:
-                                        self.report.warning.appendDescription('unusual_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
-                                        self.report.setWarning()
-
-                                        if self.__verbose:
-                                            self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ Warning  - %s\n" % warn)
-
-                                elif not cs_stat['primary']:
-
-                                    warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] %s %s is remarkable assignment. Appearance rate of %s in %s is %s %% according to BMRB.' %\
-                                           (value_name, value, atom_id, comp_id, cs_stat['norm_freq'] * 100.0)
-
-                                    self.report.warning.appendDescription('remarkable_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
-                                    self.report.setWarning()
-
-                                    if self.__verbose:
-                                        self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ Warning  - %s\n" % warn)
-
-                                break
-
-                    if not has_cs_stat:
-
-                        warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] No chemical shift statistics is available to verify %s %s.' %\
-                               (value_name, value)
-
-                        self.report.warning.appendDescription('unusual_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
-                        self.report.setWarning()
-
-                        if self.__verbose:
-                            self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ Warning  - %s\n" % warn)
-
-                    # check ambiguity code
-                    if file_type == 'nmr-star' and ambig_code_name in i:
-                        ambig_code = i[ambig_code_name]
-
-                        if ambig_code in self.empty_value or ambig_code == 1:
-                            continue
-
-                        allowed_ambig_code = self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id)
-
-                        if ambig_code == 2 or ambig_code == 3:
-
-                            ambig_code_desc = 'ambiguity of geminal atoms or geminal methyl proton groups' if ambig_code == 2 else 'aromatic atoms on opposite sides of symmetrical rings'
-
-                            if ambig_code != allowed_ambig_code:
-
-                                err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_id) + '] Invalid %s %s (allowed ambig_code %s) exists.' %\
-                                      (ambig_code_name, ambig_code, [1, allowed_ambig_code, 4, 5, 6, 9])
-
-                                self.report.error.appendDescription('invalid_ambiguity_code', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
-                                self.report.setError()
-
-                                if self.__verbose:
-                                    self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ ValueError - %s\n" % err)
-
-                            atom_id2 = self.__csStat.getGeminalAtom(comp_id, atom_id)
-
-                            try:
-
-                                ambig_code2 = next(j[ambig_code_name] for j in lp_data if j[chain_id_name] == chain_id and j[seq_id_name] == seq_id and j[comp_id_name] == comp_id and j[atom_id_name] == atom_id2)
-
-                                if ambig_code2 != ambig_code:
-
-                                    err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_id) + '] %s %s indicates %s. However, %s %s of %s %s is inconsistent.' %\
-                                          (ambig_code_name, ambig_code, ambig_code_desc, ambig_code_name, ambig_code2, atom_id_name, atom_id2)
+                                    err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_id) + '] Invalid %s %s (allowed ambig_code %s) exists.' %\
+                                          (ambig_code_name, ambig_code, [1, allowed_ambig_code, 4, 5, 6, 9])
 
                                     self.report.error.appendDescription('invalid_ambiguity_code', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
                                     self.report.setError()
@@ -6366,108 +8575,144 @@ class NmrDpUtility(object):
                                     if self.__verbose:
                                         self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ ValueError - %s\n" % err)
 
-                            except StopIteration:
-                                pass
-                                """
-                                warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_id) + '] %s %s indicates %s. However, row of %s %s of the same residue was not found.' %\
-                                       (ambig_code_name, ambig_code, ambig_code_desc, atom_id_name, atom_id2)
+                                atom_id2 = self.__csStat.getGeminalAtom(comp_id, atom_id)
 
-                                self.report.warning.appendDescription('bad_ambiguity_code', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
-                                self.report.setWarning()
+                                try:
 
-                                if self.__verbose:
-                                    self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ Warning - %s\n" % warn)
-                                """
+                                    ambig_code2 = next(j[ambig_code_name] for j in lp_data if j[chain_id_name] == chain_id and j[seq_id_name] == seq_id and j[comp_id_name] == comp_id and j[atom_id_name] == atom_id2)
 
-                        elif ambig_code in [4, 5, 6, 9]:
+                                    if ambig_code2 != ambig_code:
 
-                            ambig_set_id_name = 'Ambiguity_set_ID'
+                                        err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_id) + '] %s %s indicates %s. However, %s %s of %s %s is inconsistent.' %\
+                                              (ambig_code_name, ambig_code, ambig_code_desc, ambig_code_name, ambig_code2, atom_id_name, atom_id2)
 
-                            if not ambig_set_id_name in i:
+                                        self.report.error.appendDescription('invalid_ambiguity_code', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
+                                        self.report.setError()
 
-                                err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_id) + '] %s %s requires %s loop tag.' %\
-                                      (ambig_code_name, ambig_code, ambig_set_id_name)
+                                        if self.__verbose:
+                                            self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ ValueError - %s\n" % err)
 
-                                self.report.error.appendDescription('missing_mandatory_item', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
-                                self.report.setError()
+                                except StopIteration:
+                                    pass
+                                    """
+                                    warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_id) + '] %s %s indicates %s. However, row of %s %s of the same residue was not found.' %\
+                                           (ambig_code_name, ambig_code, ambig_code_desc, atom_id_name, atom_id2)
 
-                                if self.__verbose:
-                                    self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ LookupError  - %s\n" % err)
+                                    self.report.warning.appendDescription('bad_ambiguity_code', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
+                                    self.report.setWarning()
 
-                            else:
+                                    if self.__verbose:
+                                        self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ Warning - %s\n" % warn)
+                                    """
 
-                                ambig_set_id = i[ambig_set_id_name]
+                            elif ambig_code in [4, 5, 6, 9]:
 
-                                if ambig_set_id in self.empty_value:
+                                ambig_set_id_name = 'Ambiguity_set_ID'
 
-                                    err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_id) + '] %s %s requires %s value.' %\
+                                if not ambig_set_id_name in i:
+
+                                    err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_id) + '] %s %s requires %s loop tag.' %\
                                           (ambig_code_name, ambig_code, ambig_set_id_name)
 
-                                    self.report.error.appendDescription('missing_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
+                                    self.report.error.appendDescription('missing_mandatory_item', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
                                     self.report.setError()
 
                                     if self.__verbose:
-                                        self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ ValueError  - %s\n" % err)
+                                        self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ LookupError  - %s\n" % err)
 
                                 else:
 
-                                    ambig_set = [j for j in lp_data if j[ambig_set_id_name] == ambig_set_id and j != i]
+                                    ambig_set_id = i[ambig_set_id_name]
 
-                                    if len(ambig_set) == 0:
+                                    if ambig_set_id in self.empty_value:
 
-                                        err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_id) + '] %s %s requires other rows sharing %s %s.' %\
-                                              (ambig_code_name, ambig_code, ambig_set_id_name, ambig_set_id)
+                                        err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_id) + '] %s %s requires %s value.' %\
+                                              (ambig_code_name, ambig_code, ambig_set_id_name)
 
                                         self.report.error.appendDescription('missing_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
                                         self.report.setError()
 
                                         if self.__verbose:
-                                            self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ LookupError  - %s\n" % err)
+                                            self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ ValueError  - %s\n" % err)
 
-                                    # Intra-residue ambiguities
-                                    elif ambig_code == 4:
+                                    else:
 
-                                        for j in ambig_set:
-                                            chain_id2 = j[chain_id_name]
-                                            seq_id2 = j[seq_id_name]
-                                            comp_id2 = j[comp_id_name]
-                                            atom_id2 = j[atom_id_name]
+                                        ambig_set = [j for j in lp_data if j[ambig_set_id_name] == ambig_set_id and j != i]
 
-                                            if (chain_id2 != chain_id or seq_id2 != seq_id or comp_id2 != comp_id) and atom_id < atom_id2:
+                                        if len(ambig_set) == 0:
 
-                                                err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_id) +\
-                                                      ', %s %s, %s %s] It indicates intra-residue ambiguities. However, row of ' % (ambig_code_name, ambig_code, ambig_set_id_name, ambig_set_id) +\
-                                                      row_tmp % (chain_id2, seq_id2, comp_id2, atom_id2) + ' exists.'
+                                            err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_id) + '] %s %s requires other rows sharing %s %s.' %\
+                                                  (ambig_code_name, ambig_code, ambig_set_id_name, ambig_set_id)
 
-                                                self.report.error.appendDescription('invalid_ambiguity_code', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
-                                                self.report.setError()
+                                            self.report.error.appendDescription('missing_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
+                                            self.report.setError()
 
-                                                if self.__verbose:
-                                                    self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ ValueError - %s\n" % err)
+                                            if self.__verbose:
+                                                self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ LookupError  - %s\n" % err)
 
-                                    # Inter-residue ambiguities
-                                    elif ambig_code == 5:
+                                        # Intra-residue ambiguities
+                                        elif ambig_code == 4:
 
-                                        for j in ambig_set:
-                                            chain_id2 = j[chain_id_name]
-                                            seq_id2 = j[seq_id_name]
-                                            comp_id2 = j[comp_id_name]
-                                            atom_id2 = j[atom_id_name]
+                                            for j in ambig_set:
+                                                chain_id2 = j[chain_id_name]
+                                                seq_id2 = j[seq_id_name]
+                                                comp_id2 = j[comp_id_name]
+                                                atom_id2 = j[atom_id_name]
 
-                                            if ((chain_id2 != chain_id and chain_id < chain_id2) or (seq_id2 == seq_id and atom_id < atom_id2)):
+                                                if (chain_id2 != chain_id or seq_id2 != seq_id or comp_id2 != comp_id) and atom_id < atom_id2:
 
-                                                err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_id) +\
-                                                      ', %s %s, %s %s] It indicates inter-residue ambiguities. However, row of ' % (ambig_code_name, ambig_code, ambig_set_id_name, ambig_set_id) +\
-                                                      row_tmp % (chain_id2, seq_id2, comp_id2, atom_id2) + ' exists.'
+                                                    err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_id) +\
+                                                          ', %s %s, %s %s] It indicates intra-residue ambiguities. However, row of ' % (ambig_code_name, ambig_code, ambig_set_id_name, ambig_set_id) +\
+                                                          row_tmp % (chain_id2, seq_id2, comp_id2, atom_id2) + ' exists.'
 
-                                                self.report.error.appendDescription('invalid_ambiguity_code', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
-                                                self.report.setError()
+                                                    self.report.error.appendDescription('invalid_ambiguity_code', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
+                                                    self.report.setError()
 
-                                                if self.__verbose:
-                                                    self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ ValueError - %s\n" % err)
+                                                    if self.__verbose:
+                                                        self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ ValueError - %s\n" % err)
 
-                                    # Inter-molecular ambiguities
-                                    elif ambig_code == 6:
+                                        # Inter-residue ambiguities
+                                        elif ambig_code == 5:
+
+                                            for j in ambig_set:
+                                                chain_id2 = j[chain_id_name]
+                                                seq_id2 = j[seq_id_name]
+                                                comp_id2 = j[comp_id_name]
+                                                atom_id2 = j[atom_id_name]
+
+                                                if ((chain_id2 != chain_id and chain_id < chain_id2) or (seq_id2 == seq_id and atom_id < atom_id2)):
+
+                                                    err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_id) +\
+                                                          ', %s %s, %s %s] It indicates inter-residue ambiguities. However, row of ' % (ambig_code_name, ambig_code, ambig_set_id_name, ambig_set_id) +\
+                                                          row_tmp % (chain_id2, seq_id2, comp_id2, atom_id2) + ' exists.'
+
+                                                    self.report.error.appendDescription('invalid_ambiguity_code', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
+                                                    self.report.setError()
+
+                                                    if self.__verbose:
+                                                        self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ ValueError - %s\n" % err)
+
+                                        # Inter-molecular ambiguities
+                                        elif ambig_code == 6:
+
+                                            for j in ambig_set:
+                                                chain_id2 = j[chain_id_name]
+                                                seq_id2 = j[seq_id_name]
+                                                comp_id2 = j[comp_id_name]
+                                                atom_id2 = j[atom_id_name]
+                                                value2 = j[value_name]
+
+                                                if chain_id2 == chain_id and (seq_id < seq_id2 or (seq_id == seq_id2 and atom_id < atom_id2)):
+
+                                                    err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_id) +\
+                                                          ', %s %s, %s %s] It indicates inter-molecular ambiguities. However, row of ' % (ambig_code_name, ambig_code, ambig_set_id_name, ambig_set_id) +\
+                                                          row_tmp % (chain_id2, seq_id2, comp_id2, atom_id2) + ' exists.'
+
+                                                    self.report.error.appendDescription('invalid_ambiguity_code', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
+                                                    self.report.setError()
+
+                                                    if self.__verbose:
+                                                        self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ ValueError - %s\n" % err)
 
                                         for j in ambig_set:
                                             chain_id2 = j[chain_id_name]
@@ -6476,11 +8721,11 @@ class NmrDpUtility(object):
                                             atom_id2 = j[atom_id_name]
                                             value2 = j[value_name]
 
-                                            if chain_id2 == chain_id and (seq_id < seq_id2 or (seq_id == seq_id2 and atom_id < atom_id2)):
+                                            if atom_id[0] != atom_id2[0] and atom_id < atom_id2:
 
                                                 err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_id) +\
-                                                      ', %s %s, %s %s] It indicates inter-molecular ambiguities. However, row of ' % (ambig_code_name, ambig_code, ambig_set_id_name, ambig_set_id) +\
-                                                      row_tmp % (chain_id2, seq_id2, comp_id2, atom_id2) + ' exists.'
+                                                      ', %s %s, %s %s] However, observation nucleus of ' % (ambig_code_name, ambig_code, ambig_set_id_name, ambig_set_id) +\
+                                                      row_tmp % (chain_id2, seq_id2, comp_id2, atom_id2) + ' sharing the same %s differs.' % ambig_set_id_name
 
                                                 self.report.error.appendDescription('invalid_ambiguity_code', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
                                                 self.report.setError()
@@ -6488,69 +8733,50 @@ class NmrDpUtility(object):
                                                 if self.__verbose:
                                                     self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ ValueError - %s\n" % err)
 
-                                    for j in ambig_set:
-                                        chain_id2 = j[chain_id_name]
-                                        seq_id2 = j[seq_id_name]
-                                        comp_id2 = j[comp_id_name]
-                                        atom_id2 = j[atom_id_name]
-                                        value2 = j[value_name]
+                                            elif abs(value2 - value) > max_cs_err and value < value2:
 
-                                        if atom_id[0] != atom_id2[0] and atom_id < atom_id2:
+                                                err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_id) +\
+                                                      ', %s %s, %s %s, %s %s] However, %s %s of ' % (value_name, value, ambig_code_name, ambig_code, ambig_set_id_name, ambig_set_id, value_name, value2) +\
+                                                      row_tmp % (chain_id2, seq_id2, comp_id2, atom_id2) +\
+                                                      'differs by %s (tolerance %s).' % (value2 - value, max_cs_err)
 
-                                            err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_id) +\
-                                                  ', %s %s, %s %s] However, observation nucleus of ' % (ambig_code_name, ambig_code, ambig_set_id_name, ambig_set_id) +\
-                                                  row_tmp % (chain_id2, seq_id2, comp_id2, atom_id2) + ' sharing the same %s differs.' % ambig_set_id_name
+                                                self.report.error.appendDescription('invalid_ambiguity_code', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
+                                                self.report.setError()
 
-                                            self.report.error.appendDescription('invalid_ambiguity_code', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
-                                            self.report.setError()
+                                                if self.__verbose:
+                                                    self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ ValueError - %s\n" % err)
 
-                                            if self.__verbose:
-                                                self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ ValueError - %s\n" % err)
+                            else:
 
-                                        elif abs(value2 - value) > max_cs_err and value < value2:
+                                err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_id) + '] Invalid ambiguity code %s (allowed ambig_code %s) exists.' %\
+                                      (ambig_code, self.bmrb_ambiguity_codes)
 
-                                            err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_id) +\
-                                                  ', %s %s, %s %s, %s %s] However, %s %s of ' % (value_name, value, ambig_code_name, ambig_code, ambig_set_id_name, ambig_set_id, value_name, value2) +\
-                                                  row_tmp % (chain_id2, seq_id2, comp_id2, atom_id2) +\
-                                                  'differs by %s (tolerance %s).' % (value2 - value, max_cs_err)
+                                self.report.error.appendDescription('invalid_ambiguity_code', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
+                                self.report.setError()
 
-                                            self.report.error.appendDescription('invalid_ambiguity_code', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
-                                            self.report.setError()
+                                if self.__verbose:
+                                    self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ ValueError - %s\n" % err)
 
-                                            if self.__verbose:
-                                                self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ ValueError - %s\n" % err)
+                except StopIteration:
 
-                        else:
+                    err = "Assigned chemical shifts of saveframe %s did not parsed properly. Please fix problems reported." % sf_framecode
 
-                            err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_id) + '] Invalid ambiguity code %s (allowed ambig_code %s) exists.' %\
-                                  (ambig_code, self.bmrb_ambiguity_codes)
+                    self.report.error.appendDescription('missing_mandatory_content', {'file_name': file_name, 'description': err})
+                    self.report.setError()
 
-                            self.report.error.appendDescription('invalid_ambiguity_code', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
-                            self.report.setError()
+                    if self.__verbose:
+                        self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ Error  - %s\n" % err)
 
-                            if self.__verbose:
-                                self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ ValueError - %s\n" % err)
+                except Exception as e:
 
-            except StopIteration:
+                    self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateCSValue() ++ Error  - %s" % str(e))
+                    self.report.setError()
 
-                err = "Assigned chemical shifts of saveframe %s did not parsed properly. Please fix problems reported." % sf_framecode
+                    if self.__verbose:
+                        self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ Error  - %s" % str(e))
 
-                self.report.error.appendDescription('missing_mandatory_content', {'file_name': file_name, 'description': err})
-                self.report.setError()
-
-                if self.__verbose:
-                    self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ Error  - %s\n" % err)
-
-            except Exception as e:
-
-                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateCSValue() ++ Error  - %s" % str(e))
-                self.report.setError()
-
-                if self.__verbose:
-                    self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ Error  - %s" % str(e))
-
-        if add_details:
-            self.__depositNmrData()
+            if add_details:
+                self.__depositNmrData()
 
         return self.report.getTotalErrors() == __errors
 
@@ -6558,233 +8784,251 @@ class NmrDpUtility(object):
         """ Perform consistency test on peak position and assignment of spectral peaks.
         """
 
-        input_source = self.report.input_sources[0]
-        input_source_dic = input_source.get()
-
-        file_name = input_source_dic['file_name']
-        file_type = input_source_dic['file_type']
-
-        if input_source_dic['content_subtype'] is None:
+        if not self.__combined_mode:
             return False
-
-        content_subtype = 'spectral_peak'
-
-        if not content_subtype in input_source_dic['content_subtype'].keys():
-            return True
 
         __errors = self.report.getTotalErrors()
 
-        sf_category = self.sf_categories[file_type][content_subtype]
-        lp_category = self.lp_categories[file_type][content_subtype]
+        for fileListId in range(self.__file_path_list_len):
 
-        cs_item_names = self.item_names_in_cs_loop[file_type]
-        cs_chain_id_name = cs_item_names['chain_id']
-        cs_seq_id_name = cs_item_names['seq_id']
-        cs_comp_id_name = cs_item_names['comp_id']
-        cs_atom_id_name = cs_item_names['atom_id']
-        cs_value_name = cs_item_names['value']
-        cs_error_name = cs_item_names['error']
-        cs_atom_type = cs_item_names['atom_type']
-        cs_iso_number = cs_item_names['isotope_number']
+            input_source = self.report.input_sources[fileListId]
+            input_source_dic = input_source.get()
 
-        for sf_data in self.__star_data.get_saveframes_by_category(sf_category):
+            file_name = input_source_dic['file_name']
+            file_type = input_source_dic['file_type']
 
-            sf_framecode = sf_data.get_tag('sf_framecode')[0]
-            cs_list = sf_data.get_tag(self.cs_list_sf_tag_name[file_type])[0]
+            if input_source_dic['content_subtype'] is None:
+                continue
 
-            try:
+            content_subtype = 'spectral_peak'
 
-                cs_data = next(l['data'] for l in self.__lp_data['chem_shift'] if l['sf_framecode'] == cs_list)
+            if not content_subtype in input_source_dic['content_subtype'].keys():
+                continue
 
-            except StopIteration:
+            sf_category = self.sf_categories[file_type][content_subtype]
+            lp_category = self.lp_categories[file_type][content_subtype]
 
-                err = "Assigned chemical shifts are mandatory. Referred saveframe %s did not exist." % cs_list
+            cs_item_names = self.item_names_in_cs_loop[file_type]
+            cs_chain_id_name = cs_item_names['chain_id']
+            cs_seq_id_name = cs_item_names['seq_id']
+            cs_comp_id_name = cs_item_names['comp_id']
+            cs_atom_id_name = cs_item_names['atom_id']
+            cs_value_name = cs_item_names['value']
+            cs_error_name = cs_item_names['error']
+            cs_atom_type = cs_item_names['atom_type']
+            cs_iso_number = cs_item_names['isotope_number']
 
-                self.report.error.appendDescription('missing_mandatory_content', {'file_name': file_name, 'sf_framecode': sf_framecode, 'description': err})
-                self.report.setError()
+            for sf_data in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
 
-                if self.__verbose:
-                    self.__lfh.write("+NmrDpUtility.__testCSValueConsistencyInPkLoop() ++ Error  - %s\n" % err)
+                sf_framecode = sf_data.get_tag('sf_framecode')[0]
+                cs_list = sf_data.get_tag(self.cs_list_sf_tag_name[file_type])[0]
 
-                    continue
+                try:
 
-            try:
+                    cs_data = next(l['data'] for l in self.__lp_data['chem_shift'] if l['file_name'] == file_name and l['sf_framecode'] == cs_list)
 
-                _num_dim = sf_data.get_tag(self.num_dim_items[file_type])[0]
-                num_dim = int(_num_dim)
+                except StopIteration:
 
-                if not num_dim in range(1, self.lim_num_dim):
-                    raise ValueError()
+                    err = "Assigned chemical shifts are mandatory. Referred saveframe %s did not exist." % cs_list
 
-            except ValueError: # raised error already at __testIndexConsistency()
-                return False
+                    self.report.error.appendDescription('missing_mandatory_content', {'file_name': file_name, 'sf_framecode': sf_framecode, 'description': err})
+                    self.report.setError()
 
-            max_dim = num_dim + 1
+                    if self.__verbose:
+                        self.__lfh.write("+NmrDpUtility.__testCSValueConsistencyInPkLoop() ++ Error  - %s\n" % err)
 
-            aux_data = next((l['data'] for l in self.__aux_data[content_subtype] if l['sf_framecode'] == sf_framecode and l['category'] == self.aux_lp_categories[file_type][content_subtype][0]), None)
+                        continue
 
-            axis_codes = []
-            abs_pk_pos = []
-            sp_widths = []
+                try:
 
-            if not aux_data is None:
-                for i in range(1, max_dim):
-                    for sp_dim in aux_data:
+                    _num_dim = sf_data.get_tag(self.num_dim_items[file_type])[0]
+                    num_dim = int(_num_dim)
+
+                    if not num_dim in range(1, self.lim_num_dim):
+                        raise ValueError()
+
+                except ValueError: # raised error already at __testIndexConsistency()
+                    return False
+
+                max_dim = num_dim + 1
+
+                aux_data = next((l['data'] for l in self.__aux_data[content_subtype] if l['file_name'] == file_name and l['sf_framecode'] == sf_framecode and l['category'] == self.aux_lp_categories[file_type][content_subtype][0]), None)
+
+                axis_codes = []
+                abs_pk_pos = []
+                sp_widths = []
+
+                if not aux_data is None:
+                    for i in range(1, max_dim):
+                        for sp_dim in aux_data:
+                            if file_type == 'nef':
+                                if sp_dim['dimension_id'] != i:
+                                    continue
+                                axis_codes.append(sp_dim['axis_code'])
+                                abs_pk_pos.append(False if 'absolute_peak_poistions' in sp_dim else sp_dim['absolute_peak_positions'])
+                                sp_width = None if not 'spectral_width' in sp_dim else sp_dim['spectral_width']
+                                if sp_dim['axis_unit'] == 'Hz' and 'spectrometer_frequency' in sp_dim and not sp_width is None:
+                                    sp_freq = sp_dim['spectrometer_frequency']
+                                    sp_width /= sp_freq
+                                sp_widths.append(sp_width)
+                            else:
+                                if sp_dim['ID'] != i:
+                                    continue
+                                axis_codes.append(sp_dim['Axis_code'])
+                                abs_pk_pos.append(False if 'Absolute_peak_position' in sp_dim else sp_dim['Absolute_peak_positions'])
+                                sp_width = None if not 'Sweep_width' in sp_dim else sp_dim['Sweep_width']
+                                if sp_dim['Sweep_width_units'] == 'Hz' and 'Spectrometer_frequency' in sp_dim and not sp_width is None:
+                                    sp_freq = sp_dim['Spectrometer_frequency']
+                                    sp_width /= sp_freq
+                                sp_widths.append(sp_width)
+                            break
+                else:
+                    for i in range(num_dim):
+                        abs_pk_pos.append(False)
+
+                aux_data = next((l['data'] for l in self.__aux_data[content_subtype] if l['file_name'] == file_name and l['sf_framecode'] == sf_framecode and l['category'] == self.aux_lp_categories[file_type][content_subtype][1]), None)
+
+                onebond = [[False] * num_dim for i in range(num_dim)]
+                if not aux_data is None:
+                    for sp_dim_trans in aux_data:
                         if file_type == 'nef':
-                            if sp_dim['dimension_id'] != i:
-                                continue
-                            axis_codes.append(sp_dim['axis_code'])
-                            abs_pk_pos.append(False if 'absolute_peak_poistions' in sp_dim else sp_dim['absolute_peak_positions'])
-                            sp_width = None if not 'spectral_width' in sp_dim else sp_dim['spectral_width']
-                            if sp_dim['axis_unit'] == 'Hz' and 'spectrometer_frequency' in sp_dim and not sp_width is None:
-                                sp_freq = sp_dim['spectrometer_frequency']
-                                sp_width /= sp_freq
-                            sp_widths.append(sp_width)
+                            if sp_dim_trans['transfer_type'] == 'onebond':
+                                dim_1 = sp_dim_trans['dimension_1']
+                                dim_2 = sp_dim_trans['dimension_2']
+                                onebond[dim_1 - 1][dim_2 - 1] = True
+                                onebond[dim_2 - 1][dim_1 - 1] = True
                         else:
-                            if sp_dim['ID'] != i:
-                                continue
-                            axis_codes.append(sp_dim['Axis_code'])
-                            abs_pk_pos.append(False if 'Absolute_peak_position' in sp_dim else sp_dim['Absolute_peak_positions'])
-                            sp_width = None if not 'Sweep_width' in sp_dim else sp_dim['Sweep_width']
-                            if sp_dim['Sweep_width_units'] == 'Hz' and 'Spectrometer_frequency' in sp_dim and not sp_width is None:
-                                sp_freq = sp_dim['Spectrometer_frequency']
-                                sp_width /= sp_freq
-                            sp_widths.append(sp_width)
-                        break
-            else:
-                for i in range(num_dim):
-                    abs_pk_pos.append(False)
+                            if sp_dim_trans['Type'] == 'onebond':
+                                dim_1 = sp_dim_trans['Spectral_dim_ID_1']
+                                dim_2 = sp_dim_trans['Spectral_dim_ID_2']
+                                onebond[dim_1 - 1][dim_2 - 1] = True
+                                onebond[dim_2 - 1][dim_1 - 1] = True
 
-            aux_data = next((l['data'] for l in self.__aux_data[content_subtype] if l['sf_framecode'] == sf_framecode and l['category'] == self.aux_lp_categories[file_type][content_subtype][1]), None)
+                jcoupling = [[False] * num_dim for i in range(num_dim)]
+                if not aux_data is None:
+                    for sp_dim_trans in aux_data:
+                        if file_type == 'nef':
+                            if sp_dim_trans['transfer_type'].startswith('j'):
+                                dim_1 = sp_dim_trans['dimension_1']
+                                dim_2 = sp_dim_trans['dimension_2']
+                                jcoupling[dim_1 - 1][dim_2 - 1] = True
+                                jcoupling[dim_2 - 1][dim_1 - 1] = True
+                        else:
+                            if sp_dim_trans['Type'].startswith('j'):
+                                dim_1 = sp_dim_trans['Spectral_dim_ID_1']
+                                dim_2 = sp_dim_trans['Spectral_dim_ID_2']
+                                jcoupling[dim_1 - 1][dim_2 - 1] = True
+                                jcoupling[dim_2 - 1][dim_1 - 1] = True
 
-            onebond = [[False] * num_dim for i in range(num_dim)]
-            if not aux_data is None:
-                for sp_dim_trans in aux_data:
-                    if file_type == 'nef':
-                        if sp_dim_trans['transfer_type'] == 'onebond':
-                            dim_1 = sp_dim_trans['dimension_1']
-                            dim_2 = sp_dim_trans['dimension_2']
-                            onebond[dim_1 - 1][dim_2 - 1] = True
-                            onebond[dim_2 - 1][dim_1 - 1] = True
-                    else:
-                        if sp_dim_trans['Type'] == 'onebond':
-                            dim_1 = sp_dim_trans['Spectral_dim_ID_1']
-                            dim_2 = sp_dim_trans['Spectral_dim_ID_2']
-                            onebond[dim_1 - 1][dim_2 - 1] = True
-                            onebond[dim_2 - 1][dim_1 - 1] = True
+                relayed = [[False] * num_dim for i in range(num_dim)]
+                if not aux_data is None:
+                    for sp_dim_trans in aux_data:
+                        if file_type == 'nef':
+                            if sp_dim_trans['transfer_type'].startswith('relayed'):
+                                dim_1 = sp_dim_trans['dimension_1']
+                                dim_2 = sp_dim_trans['dimension_2']
+                                relayed[dim_1 - 1][dim_2 - 1] = True
+                                relayed[dim_2 - 1][dim_1 - 1] = True
+                        else:
+                            if sp_dim_trans['Type'].startswith('relayed'):
+                                dim_1 = sp_dim_trans['Spectral_dim_ID_1']
+                                dim_2 = sp_dim_trans['Spectral_dim_ID_2']
+                                relayed[dim_1 - 1][dim_2 - 1] = True
+                                relayed[dim_2 - 1][dim_1 - 1] = True
 
-            jcoupling = [[False] * num_dim for i in range(num_dim)]
-            if not aux_data is None:
-                for sp_dim_trans in aux_data:
-                    if file_type == 'nef':
-                        if sp_dim_trans['transfer_type'].startswith('j'):
-                            dim_1 = sp_dim_trans['dimension_1']
-                            dim_2 = sp_dim_trans['dimension_2']
-                            jcoupling[dim_1 - 1][dim_2 - 1] = True
-                            jcoupling[dim_2 - 1][dim_1 - 1] = True
-                    else:
-                        if sp_dim_trans['Type'].startswith('j'):
-                            dim_1 = sp_dim_trans['Spectral_dim_ID_1']
-                            dim_2 = sp_dim_trans['Spectral_dim_ID_2']
-                            jcoupling[dim_1 - 1][dim_2 - 1] = True
-                            jcoupling[dim_2 - 1][dim_1 - 1] = True
+                item_names = []
+                for dim in range(1, max_dim):
+                    _d = {}
+                    for k, v in self.item_names_in_pk_loop[file_type].items():
+                        if '%s' in v:
+                            v = v % dim
+                        _d[k] = v
+                    item_names.append(_d)
 
-            relayed = [[False] * num_dim for i in range(num_dim)]
-            if not aux_data is None:
-                for sp_dim_trans in aux_data:
-                    if file_type == 'nef':
-                        if sp_dim_trans['transfer_type'].startswith('relayed'):
-                            dim_1 = sp_dim_trans['dimension_1']
-                            dim_2 = sp_dim_trans['dimension_2']
-                            relayed[dim_1 - 1][dim_2 - 1] = True
-                            relayed[dim_2 - 1][dim_1 - 1] = True
-                    else:
-                        if sp_dim_trans['Type'].startswith('relayed'):
-                            dim_1 = sp_dim_trans['Spectral_dim_ID_1']
-                            dim_2 = sp_dim_trans['Spectral_dim_ID_2']
-                            relayed[dim_1 - 1][dim_2 - 1] = True
-                            relayed[dim_2 - 1][dim_1 - 1] = True
+                chain_id_names = []
+                seq_id_names = []
+                comp_id_names = []
+                atom_id_names = []
+                position_names = []
 
-            item_names = []
-            for dim in range(1, max_dim):
-                _d = {}
-                for k, v in self.item_names_in_pk_loop[file_type].items():
-                    if '%s' in v:
-                        v = v % dim
-                    _d[k] = v
-                item_names.append(_d)
+                for d in range(num_dim):
+                    chain_id_names.append(item_names[d]['chain_id'])
+                    seq_id_names.append(item_names[d]['seq_id'])
+                    comp_id_names.append(item_names[d]['comp_id'])
+                    atom_id_names.append(item_names[d]['atom_id'])
+                    position_names.append(item_names[d]['position'])
 
-            chain_id_names = []
-            seq_id_names = []
-            comp_id_names = []
-            atom_id_names = []
-            position_names = []
+                index_tag = self.index_tags[file_type][content_subtype]
+                max_cs_err = self.chem_shift_error['max_exclusive']
 
-            for d in range(num_dim):
-                chain_id_names.append(item_names[d]['chain_id'])
-                seq_id_names.append(item_names[d]['seq_id'])
-                comp_id_names.append(item_names[d]['comp_id'])
-                atom_id_names.append(item_names[d]['atom_id'])
-                position_names.append(item_names[d]['position'])
+                try:
 
-            index_tag = self.index_tags[file_type][content_subtype]
-            max_cs_err = self.chem_shift_error['max_exclusive']
+                    lp_data = next((l['data'] for l in self.__lp_data[content_subtype] if l['file_name'] == file_name and l['sf_framecode'] == sf_framecode), None)
 
-            try:
+                    if not lp_data is None:
 
-                lp_data = next((l['data'] for l in self.__lp_data[content_subtype] if l['sf_framecode'] == sf_framecode), None)
+                        for i in lp_data:
+                            for d in range(num_dim):
+                                chain_id = i[chain_id_names[d]]
+                                if chain_id in self.empty_value:
+                                    continue
 
-                if not lp_data is None:
+                                seq_id = i[seq_id_names[d]]
+                                if seq_id in self.empty_value:
+                                    continue
 
-                    for i in lp_data:
-                        for d in range(num_dim):
-                            chain_id = i[chain_id_names[d]]
-                            if chain_id in self.empty_value:
-                                continue
+                                comp_id = i[comp_id_names[d]]
+                                if comp_id in self.empty_value:
+                                    continue
 
-                            seq_id = i[seq_id_names[d]]
-                            if seq_id in self.empty_value:
-                                continue
+                                atom_id = i[atom_id_names[d]]
+                                if atom_id in self.empty_value:
+                                    continue
 
-                            comp_id = i[comp_id_names[d]]
-                            if comp_id in self.empty_value:
-                                continue
+                                position = i[position_names[d]]
 
-                            atom_id = i[atom_id_names[d]]
-                            if atom_id in self.empty_value:
-                                continue
+                                try:
 
-                            position = i[position_names[d]]
+                                    cs = next(j for j in cs_data if j[cs_chain_id_name] == chain_id and
+                                                                    j[cs_seq_id_name] == seq_id and
+                                                                    j[cs_comp_id_name] == comp_id and
+                                                                    j[cs_atom_id_name] == atom_id)
 
-                            try:
+                                    value = cs[cs_value_name]
+                                    error = cs[cs_error_name]
 
-                                cs = next(j for j in cs_data if j[cs_chain_id_name] == chain_id and
-                                                                j[cs_seq_id_name] == seq_id and
-                                                                j[cs_comp_id_name] == comp_id and
-                                                                j[cs_atom_id_name] == atom_id)
-
-                                value = cs[cs_value_name]
-                                error = cs[cs_error_name]
-
-                                if error is None or error * 5.0 > max_cs_err:
-                                    error = max_cs_err
-                                else:
-                                    error *= 5.0
-
-                                if abs(position - value) > error:
-
-                                    if not abs_pk_pos[d] and not sp_width[d] is None:
-                                        if position < value:
-                                            while position < value:
-                                                position += sp_widths[d]
-                                        elif position > value:
-                                            while position > value:
-                                                position -= sp_widths[d]
+                                    if error is None or error * 5.0 > max_cs_err:
+                                        error = max_cs_err
+                                    else:
+                                        error *= 5.0
 
                                     if abs(position - value) > error:
 
-                                        err = '[Check row of %s %s] Peak position of spectral peak %s %s (%s) in %s saveframe is inconsistent with the assigned chemical shift value %s (difference %s, tolerance %s) in %s saveframe.' %\
-                                              (index_tag, i[index_tag], position_names[d], position, self.__getReducedAtomNotation(chain_id_names[d], chain_id, seq_id_names[d], seq_id, comp_id_names[d], comp_id, atom_id_names[d], atom_id), sf_framecode, value, position - value, error, cs_list)
+                                        if not abs_pk_pos[d] and not sp_width[d] is None:
+                                            if position < value:
+                                                while position < value:
+                                                    position += sp_widths[d]
+                                            elif position > value:
+                                                while position > value:
+                                                    position -= sp_widths[d]
+
+                                        if abs(position - value) > error:
+
+                                            err = '[Check row of %s %s] Peak position of spectral peak %s %s (%s) in %s saveframe is inconsistent with the assigned chemical shift value %s (difference %s, tolerance %s) in %s saveframe.' %\
+                                                  (index_tag, i[index_tag], position_names[d], position, self.__getReducedAtomNotation(chain_id_names[d], chain_id, seq_id_names[d], seq_id, comp_id_names[d], comp_id, atom_id_names[d], atom_id), sf_framecode, value, position - value, error, cs_list)
+
+                                            self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
+                                            self.report.setError()
+
+                                            if self.__verbose:
+                                                self.__lfh.write("+NmrDpUtility.__testCSValueConsistencyInPkLoop() ++ ValueError  - %s\n" % err)
+
+                                    axis_code = str(cs[cs_iso_number]) + cs[cs_atom_type]
+
+                                    if axis_code != axis_codes[d]:
+
+                                        err = '[Check row of %s %s] Assignment of spectral peak %s is inconsistent with axis code %s vs %s.' %\
+                                              (index_tag, i[index_tag], self.__getReducedAtomNotation(chain_id_names[d], chain_id, seq_id_names[d], seq_id, comp_id_names[d], comp_id, atom_id_names[d], atom_id), axis_code, axis_codes[d])
 
                                         self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
                                         self.report.setError()
@@ -6792,12 +9036,10 @@ class NmrDpUtility(object):
                                         if self.__verbose:
                                             self.__lfh.write("+NmrDpUtility.__testCSValueConsistencyInPkLoop() ++ ValueError  - %s\n" % err)
 
-                                axis_code = str(cs[cs_iso_number]) + cs[cs_atom_type]
+                                except StopIteration:
 
-                                if axis_code != axis_codes[d]:
-
-                                    err = '[Check row of %s %s] Assignment of spectral peak %s is inconsistent with axis code %s vs %s.' %\
-                                          (index_tag, i[index_tag], self.__getReducedAtomNotation(chain_id_names[d], chain_id, seq_id_names[d], seq_id, comp_id_names[d], comp_id, atom_id_names[d], atom_id), axis_code, axis_codes[d])
+                                    err = '[Check row of %s %s] Assignment of spectral peak %s was not found in assigned chemical shifts in %s saveframe.' %\
+                                          (index_tag, i[index_tag], self.__getReducedAtomNotation(chain_id_names[d], chain_id, seq_id_names[d], seq_id, comp_id_names[d], comp_id, atom_id_names[d], atom_id), cs_list)
 
                                     self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
                                     self.report.setError()
@@ -6805,92 +9047,81 @@ class NmrDpUtility(object):
                                     if self.__verbose:
                                         self.__lfh.write("+NmrDpUtility.__testCSValueConsistencyInPkLoop() ++ ValueError  - %s\n" % err)
 
-                            except StopIteration:
+                                if True in onebond[d]:
+                                    for d2 in range(num_dim):
+                                        if onebond[d][d2]:
+                                            chain_id2 = i[chain_id_names[d2]]
+                                            seq_id2 = i[seq_id_names[d2]]
+                                            comp_id2 = i[comp_id_names[d2]]
+                                            atom_id2 = i[atom_id_names[d2]]
 
-                                err = '[Check row of %s %s] Assignment of spectral peak %s was not found in assigned chemical shifts in %s saveframe.' %\
-                                      (index_tag, i[index_tag], self.__getReducedAtomNotation(chain_id_names[d], chain_id, seq_id_names[d], seq_id, comp_id_names[d], comp_id, atom_id_names[d], atom_id), cs_list)
+                                            if not atom_id2 is None:
+                                                diff = len(atom_id) != len(atom_id2)
+                                                _atom_id = '_' + (atom_id[1:-1] if atom_id.startswith('H') and diff else atom_id[1:])
+                                                _atom_id2 = '_' + (atom_id2[1:-1] if atom_id2.startswith('H') and diff else atom_id2[1:])
 
-                                self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
-                                self.report.setError()
+                                            if chain_id2 in self.empty_value or seq_id2 in self.empty_value or comp_id2 in self.empty_value or atom_id2 in self.empty_value or\
+                                               (d < d2 and (chain_id2 != chain_id or seq_id2 != seq_id or comp_id2 != comp_id or _atom_id2 != _atom_id)):
 
-                                if self.__verbose:
-                                    self.__lfh.write("+NmrDpUtility.__testCSValueConsistencyInPkLoop() ++ ValueError  - %s\n" % err)
+                                                err = '[Check row of %s %s] Coherence transfer type is onebond. However, assignment of spectral peak is inconsistent with the type, (%s) vs (%s).' %\
+                                                      (index_tag, i[index_tag], self.__getReducedAtomNotation(chain_id_names[d], chain_id, seq_id_names[d], seq_id, comp_id_names[d], comp_id, atom_id_names[d], atom_id),
+                                                       self.__getReducedAtomNotation(chain_id_names[d2], chain_id2, seq_id_names[d2], seq_id2, comp_id_names[d2], comp_id2, atom_id_names[d2], atom_id2))
 
-                            if True in onebond[d]:
-                                for d2 in range(num_dim):
-                                    if onebond[d][d2]:
-                                        chain_id2 = i[chain_id_names[d2]]
-                                        seq_id2 = i[seq_id_names[d2]]
-                                        comp_id2 = i[comp_id_names[d2]]
-                                        atom_id2 = i[atom_id_names[d2]]
+                                                self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
+                                                self.report.setError()
 
-                                        if not atom_id2 is None:
-                                            diff = len(atom_id) != len(atom_id2)
-                                            _atom_id = '_' + (atom_id[1:-1] if atom_id.startswith('H') and diff else atom_id[1:])
-                                            _atom_id2 = '_' + (atom_id2[1:-1] if atom_id2.startswith('H') and diff else atom_id2[1:])
+                                                if self.__verbose:
+                                                    self.__lfh.write("+NmrDpUtility.__testCSValueConsistencyInPkLoop() ++ ValueError  - %s\n" % err)
 
-                                        if chain_id2 in self.empty_value or seq_id2 in self.empty_value or comp_id2 in self.empty_value or atom_id2 in self.empty_value or\
-                                           (d < d2 and (chain_id2 != chain_id or seq_id2 != seq_id or comp_id2 != comp_id or _atom_id2 != _atom_id)):
+                                if True in jcoupling[d]:
+                                    for d2 in range(num_dim):
+                                        if jcoupling[d][d2]:
+                                            chain_id2 = i[chain_id_names[d2]]
+                                            seq_id2 = i[seq_id_names[d2]]
+                                            comp_id2 = i[comp_id_names[d2]]
+                                            atom_id2 = i[atom_id_names[d2]]
 
-                                            err = '[Check row of %s %s] Coherence transfer type is onebond. However, assignment of spectral peak is inconsistent with the type, (%s) vs (%s).' %\
-                                                  (index_tag, i[index_tag], self.__getReducedAtomNotation(chain_id_names[d], chain_id, seq_id_names[d], seq_id, comp_id_names[d], comp_id, atom_id_names[d], atom_id),
-                                                   self.__getReducedAtomNotation(chain_id_names[d2], chain_id2, seq_id_names[d2], seq_id2, comp_id_names[d2], comp_id2, atom_id_names[d2], atom_id2))
+                                            if chain_id2 in self.empty_value or seq_id2 in self.empty_value or comp_id2 in self.empty_value or atom_id2 in self.empty_value or\
+                                               (d < d2 and (chain_id2 != chain_id or abs(seq_id2 - seq_id) > 1)):
 
-                                            self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
-                                            self.report.setError()
+                                                err = '[Check row of %s %s] Coherence transfer type is jcoupling. However, assignment of spectral peak is inconsistent with the type, (s) vs (%s).' %\
+                                                      (index_tag, i[index_tag], self.__getReducedAtomNotation(chain_id_names[d], chain_id, seq_id_names[d], seq_id, comp_id_names[d], comp_id, atom_id_names[d], atom_id),
+                                                       self.__getReducedAtomNotation(chain_id_names[d2], chain_id2, seq_id_names[d2], seq_id2, comp_id_names[d2], comp_id2, atom_id_names[d2], atom_id2))
 
-                                            if self.__verbose:
-                                                self.__lfh.write("+NmrDpUtility.__testCSValueConsistencyInPkLoop() ++ ValueError  - %s\n" % err)
+                                                self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
+                                                self.report.setError()
 
-                            if True in jcoupling[d]:
-                                for d2 in range(num_dim):
-                                    if jcoupling[d][d2]:
-                                        chain_id2 = i[chain_id_names[d2]]
-                                        seq_id2 = i[seq_id_names[d2]]
-                                        comp_id2 = i[comp_id_names[d2]]
-                                        atom_id2 = i[atom_id_names[d2]]
+                                                if self.__verbose:
+                                                    self.__lfh.write("+NmrDpUtility.__testCSValueConsistencyInPkLoop() ++ ValueError  - %s\n" % err)
 
-                                        if chain_id2 in self.empty_value or seq_id2 in self.empty_value or comp_id2 in self.empty_value or atom_id2 in self.empty_value or\
-                                           (d < d2 and (chain_id2 != chain_id or abs(seq_id2 - seq_id) > 1)):
+                                if True in relayed[d]:
+                                    for d2 in range(num_dim):
+                                        if relayed[d][d2]:
+                                            chain_id2 = i[chain_id_names[d2]]
+                                            seq_id2 = i[seq_id_names[d2]]
+                                            comp_id2 = i[comp_id_names[d2]]
+                                            atom_id2 = i[atom_id_names[d2]]
 
-                                            err = '[Check row of %s %s] Coherence transfer type is jcoupling. However, assignment of spectral peak is inconsistent with the type, (s) vs (%s).' %\
-                                                  (index_tag, i[index_tag], self.__getReducedAtomNotation(chain_id_names[d], chain_id, seq_id_names[d], seq_id, comp_id_names[d], comp_id, atom_id_names[d], atom_id),
-                                                   self.__getReducedAtomNotation(chain_id_names[d2], chain_id2, seq_id_names[d2], seq_id2, comp_id_names[d2], comp_id2, atom_id_names[d2], atom_id2))
+                                            if chain_id2 in self.empty_value or seq_id2 in self.empty_value or comp_id2 in self.empty_value or atom_id2 in self.empty_value or\
+                                               (d < d2 and (chain_id2 != chain_id or seq_id2 != seq_id or comp_id2 != comp_id or atom_id[0] != atom_id2[0])):
 
-                                            self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
-                                            self.report.setError()
+                                                err = '[Check row of %s %s] Coherence transfer type is relayed. However, assignment of spectral peak is inconsistent with the type, (%s) vs (%s).' %\
+                                                      (index_tag, i[index_tag], self.__getReducedAtomNotation(chain_id_names[d], chain_id, seq_id_names[d], seq_id, comp_id_names[d], comp_id, atom_id_names[d], atom_id),
+                                                       self.__getReducedAtomNotation(chain_id_names[d2], chain_id2, seq_id_names[d2], seq_id2, comp_id_names[d2], comp_id2, atom_id_names[d2], atom_id2))
 
-                                            if self.__verbose:
-                                                self.__lfh.write("+NmrDpUtility.__testCSValueConsistencyInPkLoop() ++ ValueError  - %s\n" % err)
+                                                self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
+                                                self.report.setError()
 
-                            if True in relayed[d]:
-                                for d2 in range(num_dim):
-                                    if relayed[d][d2]:
-                                        chain_id2 = i[chain_id_names[d2]]
-                                        seq_id2 = i[seq_id_names[d2]]
-                                        comp_id2 = i[comp_id_names[d2]]
-                                        atom_id2 = i[atom_id_names[d2]]
+                                                if self.__verbose:
+                                                    self.__lfh.write("+NmrDpUtility.__testCSValueConsistencyInPkLoop() ++ ValueError  - %s\n" % err)
 
-                                        if chain_id2 in self.empty_value or seq_id2 in self.empty_value or comp_id2 in self.empty_value or atom_id2 in self.empty_value or\
-                                           (d < d2 and (chain_id2 != chain_id or seq_id2 != seq_id or comp_id2 != comp_id or atom_id[0] != atom_id2[0])):
+                except Exception as e:
 
-                                            err = '[Check row of %s %s] Coherence transfer type is relayed. However, assignment of spectral peak is inconsistent with the type, (%s) vs (%s).' %\
-                                                  (index_tag, i[index_tag], self.__getReducedAtomNotation(chain_id_names[d], chain_id, seq_id_names[d], seq_id, comp_id_names[d], comp_id, atom_id_names[d], atom_id),
-                                                   self.__getReducedAtomNotation(chain_id_names[d2], chain_id2, seq_id_names[d2], seq_id2, comp_id_names[d2], comp_id2, atom_id_names[d2], atom_id2))
+                    self.report.error.appendDescription('internal_error', "+NmrDpUtility.__testCSValueConsistencyInPkLoop() ++ Error  - %s" % str(e))
+                    self.report.setError()
 
-                                            self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
-                                            self.report.setError()
-
-                                            if self.__verbose:
-                                                self.__lfh.write("+NmrDpUtility.__testCSValueConsistencyInPkLoop() ++ ValueError  - %s\n" % err)
-
-            except Exception as e:
-
-                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__testCSValueConsistencyInPkLoop() ++ Error  - %s" % str(e))
-                self.report.setError()
-
-                if self.__verbose:
-                    self.__lfh.write("+NmrDpUtility.__testCSValueConsistencyInPkLoop() ++ Error  - %s" % str(e))
+                    if self.__verbose:
+                        self.__lfh.write("+NmrDpUtility.__testCSValueConsistencyInPkLoop() ++ Error  - %s" % str(e))
 
         return self.report.getTotalErrors() == __errors
 
@@ -6898,105 +9129,94 @@ class NmrDpUtility(object):
         """ Perform consistency test on RDC bond vectors.
         """
 
-        input_source = self.report.input_sources[0]
-        input_source_dic = input_source.get()
-
-        file_name = input_source_dic['file_name']
-        file_type = input_source_dic['file_type']
-
-        if input_source_dic['content_subtype'] is None:
-            return False
-
         __errors = self.report.getTotalErrors()
 
-        content_subtype = 'rdc_restraint'
+        for fileListId in range(self.__file_path_list_len):
 
-        if not content_subtype in input_source_dic['content_subtype'].keys():
-            return True
+            input_source = self.report.input_sources[fileListId]
+            input_source_dic = input_source.get()
 
-        sf_category = self.sf_categories[file_type][content_subtype]
-        lp_category = self.lp_categories[file_type][content_subtype]
+            file_name = input_source_dic['file_name']
+            file_type = input_source_dic['file_type']
 
-        item_names = self.item_names_in_rdc_loop[file_type]
-        index_tag = self.index_tags[file_type][content_subtype]
-        chain_id_1_name = item_names['chain_id_1']
-        chain_id_2_name = item_names['chain_id_2']
-        seq_id_1_name = item_names['seq_id_1']
-        seq_id_2_name = item_names['seq_id_2']
-        comp_id_1_name = item_names['comp_id_1']
-        comp_id_2_name = item_names['comp_id_2']
-        atom_id_1_name = item_names['atom_id_1']
-        atom_id_2_name = item_names['atom_id_2']
+            if input_source_dic['content_subtype'] is None:
+                continue
 
-        for sf_data in self.__star_data.get_saveframes_by_category(sf_category):
+            content_subtype = 'rdc_restraint'
 
-            sf_framecode = sf_data.get_tag('sf_framecode')[0]
+            if not content_subtype in input_source_dic['content_subtype'].keys():
+                continue
 
-            try:
+            if self.__star_data_type[fileListId] == 'Loop':
+                continue
 
-                lp_data = next((l['data'] for l in self.__lp_data[content_subtype] if l['sf_framecode'] == sf_framecode), None)
+            sf_category = self.sf_categories[file_type][content_subtype]
+            lp_category = self.lp_categories[file_type][content_subtype]
 
-                if not lp_data is None:
+            item_names = self.item_names_in_rdc_loop[file_type]
+            index_tag = self.index_tags[file_type][content_subtype]
+            chain_id_1_name = item_names['chain_id_1']
+            chain_id_2_name = item_names['chain_id_2']
+            seq_id_1_name = item_names['seq_id_1']
+            seq_id_2_name = item_names['seq_id_2']
+            comp_id_1_name = item_names['comp_id_1']
+            comp_id_2_name = item_names['comp_id_2']
+            atom_id_1_name = item_names['atom_id_1']
+            atom_id_2_name = item_names['atom_id_2']
 
-                    for i in lp_data:
-                        chain_id_1 = i[chain_id_1_name]
-                        seq_id_1 = i[seq_id_1_name]
-                        comp_id_1 = i[comp_id_1_name]
-                        atom_id_1 = i[atom_id_1_name]
-                        chain_id_2 = i[chain_id_2_name]
-                        seq_id_2 = i[seq_id_2_name]
-                        comp_id_2 = i[comp_id_2_name]
-                        atom_id_2 = i[atom_id_2_name]
+            for sf_data in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
 
-                        try:
-                            self.atom_isotopes[atom_id_1[0]]
-                            self.atom_isotopes[atom_id_2[0]]
-                        except KeyError:
+                sf_framecode = sf_data.get_tag('sf_framecode')[0]
 
-                            idx_msg = "[Check row of %s %s] " % (index_tag, i[index_tag])
+                try:
 
-                            err = "%sNon-magnetic susceptible spin appears in RDC vector (chain_id_1 %s, seq_id_1 %s, comp_id_1 %s, atom_id_1 %s, chain_id_2 %s, seq_id_2 %s, comp_id_2 %s, atom_id_2 %s)." %\
-                                  (idx_msg, chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2)
+                    lp_data = next((l['data'] for l in self.__lp_data[content_subtype] if l['file_name'] == file_name and l['sf_framecode'] == sf_framecode), None)
 
-                            self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
-                            self.report.setError()
+                    if not lp_data is None:
 
-                            if self.__verbose:
-                                self.__lfh.write("+NmrDpUtility.__testRDCVector() ++ Error  - %s\n" % err)
+                        for i in lp_data:
+                            chain_id_1 = i[chain_id_1_name]
+                            seq_id_1 = i[seq_id_1_name]
+                            comp_id_1 = i[comp_id_1_name]
+                            atom_id_1 = i[atom_id_1_name]
+                            chain_id_2 = i[chain_id_2_name]
+                            seq_id_2 = i[seq_id_2_name]
+                            comp_id_2 = i[comp_id_2_name]
+                            atom_id_2 = i[atom_id_2_name]
 
-                        if chain_id_1 != chain_id_2:
+                            try:
+                                self.atom_isotopes[atom_id_1[0]]
+                                self.atom_isotopes[atom_id_2[0]]
+                            except KeyError:
 
-                            idx_msg = "[Check row of %s %s] " % (index_tag, i[index_tag])
+                                idx_msg = "[Check row of %s %s] " % (index_tag, i[index_tag])
 
-                            err = "%sInvalid inter-chain RDC vector (chain_id_1 %s, seq_id_1 %s, comp_id_1 %s, atom_id_1 %s, chain_id_2 %s, seq_id_2 %s, comp_id_2 %s, atom_id_2 %s) exists." %\
-                                  (idx_msg, chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2)
+                                err = "%sNon-magnetic susceptible spin appears in RDC vector (chain_id_1 %s, seq_id_1 %s, comp_id_1 %s, atom_id_1 %s, chain_id_2 %s, seq_id_2 %s, comp_id_2 %s, atom_id_2 %s)." %\
+                                      (idx_msg, chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2)
 
-                            self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
-                            self.report.setError()
+                                self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
+                                self.report.setError()
 
-                            if self.__verbose:
-                                self.__lfh.write("+NmrDpUtility.__testRDCVector() ++ Error  - %s\n" % err)
+                                if self.__verbose:
+                                    self.__lfh.write("+NmrDpUtility.__testRDCVector() ++ Error  - %s\n" % err)
 
-                        elif abs(seq_id_1 - seq_id_2) > 1:
+                            if chain_id_1 != chain_id_2:
 
-                            idx_msg = "[Check row of %s %s] " % (index_tag, i[index_tag])
+                                idx_msg = "[Check row of %s %s] " % (index_tag, i[index_tag])
 
-                            err = "%sInvalid inter-residue RDC vector (chain_id_1 %s, seq_id_1 %s, comp_id_1 %s, atom_id_1 %s, chain_id_2 %s, seq_id_2 %s, comp_id_2 %s, atom_id_2 %s) exists." %\
-                                  (idx_msg, chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2)
+                                err = "%sInvalid inter-chain RDC vector (chain_id_1 %s, seq_id_1 %s, comp_id_1 %s, atom_id_1 %s, chain_id_2 %s, seq_id_2 %s, comp_id_2 %s, atom_id_2 %s) exists." %\
+                                      (idx_msg, chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2)
 
-                            self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
-                            self.report.setError()
+                                self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
+                                self.report.setError()
 
-                            if self.__verbose:
-                                self.__lfh.write("+NmrDpUtility.__testRDCVector() ++ Error  - %s\n" % err)
+                                if self.__verbose:
+                                    self.__lfh.write("+NmrDpUtility.__testRDCVector() ++ Error  - %s\n" % err)
 
-                        elif abs(seq_id_1 - seq_id_2) == 1:
+                            elif abs(seq_id_1 - seq_id_2) > 1:
 
-                            if self.__csStat.getTypeOfCompId(comp_id_1)[0] and self.__csStat.getTypeOfCompId(comp_id_2)[0] and\
-                               ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 == 'N') or (seq_id_1 > seq_id_2 and atom_id_1 == 'N' and atom_id_2 == 'C')):
-                                pass
+                                idx_msg = "[Check row of %s %s] " % (index_tag, i[index_tag])
 
-                            else:
                                 err = "%sInvalid inter-residue RDC vector (chain_id_1 %s, seq_id_1 %s, comp_id_1 %s, atom_id_1 %s, chain_id_2 %s, seq_id_2 %s, comp_id_2 %s, atom_id_2 %s) exists." %\
                                       (idx_msg, chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2)
 
@@ -7006,59 +9226,75 @@ class NmrDpUtility(object):
                                 if self.__verbose:
                                     self.__lfh.write("+NmrDpUtility.__testRDCVector() ++ Error  - %s\n" % err)
 
-                        elif atom_id_1 == atom_id_2:
+                            elif abs(seq_id_1 - seq_id_2) == 1:
 
-                            idx_msg = "[Check row of %s %s] " % (index_tag, i[index_tag])
+                                if self.__csStat.getTypeOfCompId(comp_id_1)[0] and self.__csStat.getTypeOfCompId(comp_id_2)[0] and\
+                                   ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 == 'N') or (seq_id_1 > seq_id_2 and atom_id_1 == 'N' and atom_id_2 == 'C')):
+                                    pass
 
-                            err = "%sZero RDC vector (chain_id_1 %s, seq_id_1 %s, comp_id_1 %s, atom_id_1 %s, chain_id_2 %s, seq_id_2 %s, comp_id_2 %s, atom_id_2 %s) exists." %\
-                                  (idx_msg, chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2)
+                                else:
+                                    err = "%sInvalid inter-residue RDC vector (chain_id_1 %s, seq_id_1 %s, comp_id_1 %s, atom_id_1 %s, chain_id_2 %s, seq_id_2 %s, comp_id_2 %s, atom_id_2 %s) exists." %\
+                                          (idx_msg, chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2)
 
-                            self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
-                            self.report.setError()
+                                    self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
+                                    self.report.setError()
 
-                            if self.__verbose:
-                                self.__lfh.write("+NmrDpUtility.__testRDCVector() ++ Error  - %s\n" % err)
+                                    if self.__verbose:
+                                        self.__lfh.write("+NmrDpUtility.__testRDCVector() ++ Error  - %s\n" % err)
 
-                        else:
+                            elif atom_id_1 == atom_id_2:
 
-                            self.__updateChemCompDict(comp_id_1)
+                                idx_msg = "[Check row of %s %s] " % (index_tag, i[index_tag])
 
-                            if self.__last_comp_id_test: # matches with comp_id in CCD
+                                err = "%sZero RDC vector (chain_id_1 %s, seq_id_1 %s, comp_id_1 %s, atom_id_1 %s, chain_id_2 %s, seq_id_2 %s, comp_id_2 %s, atom_id_2 %s) exists." %\
+                                      (idx_msg, chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2)
 
-                                try:
-                                    next(b for b in self.__last_chem_comp_bonds if\
-                                         ((b[self.__ccb_atom_id_1] == atom_id_1 and b[self.__ccb_atom_id_2] == atom_id_2) or\
-                                          (b[self.__ccb_atom_id_1] == atom_id_2 and b[self.__ccb_atom_id_2] == atom_id_1)))
-                                except StopIteration:
+                                self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
+                                self.report.setError()
 
-                                    if self.__nefT.validate_comp_atom(comp_id_1, atom_id_1) and self.__nefT.validate_comp_atom(comp_id_2, atom_id_2):
+                                if self.__verbose:
+                                    self.__lfh.write("+NmrDpUtility.__testRDCVector() ++ Error  - %s\n" % err)
 
-                                        idx_msg = "[Check row of %s %s] " % (index_tag, i[index_tag])
+                            else:
 
-                                        warn = "%sMultiple bonds' RDC vector (chain_id_1 %s, seq_id_1 %s, comp_id_1 %s, atom_id_1 %s, chain_id_2 %s, seq_id_2 %s, comp_id_2 %s, atom_id_2 %s) exists." %\
-                                               (idx_msg, chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2)
+                                self.__updateChemCompDict(comp_id_1)
 
-                                        self.report.warning.appendDescription('remarkable_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
-                                        self.report.setWarning()
+                                if self.__last_comp_id_test: # matches with comp_id in CCD
 
-                                        if self.__verbose:
-                                            self.__lfh.write("+NmrDpUtility.__testRDCVector() ++ Warning  - %s\n" % warn)
+                                    try:
+                                        next(b for b in self.__last_chem_comp_bonds if\
+                                             ((b[self.__ccb_atom_id_1] == atom_id_1 and b[self.__ccb_atom_id_2] == atom_id_2) or\
+                                              (b[self.__ccb_atom_id_1] == atom_id_2 and b[self.__ccb_atom_id_2] == atom_id_1)))
+                                    except StopIteration:
 
-                                        pass
+                                        if self.__nefT.validate_comp_atom(comp_id_1, atom_id_1) and self.__nefT.validate_comp_atom(comp_id_2, atom_id_2):
 
-                                    else: # raised error already somewhere because of invalid atom nomenclature
-                                        pass
+                                            idx_msg = "[Check row of %s %s] " % (index_tag, i[index_tag])
 
-                            else: # raised warning already somewhere because of unknown comp_id
-                                pass
+                                            warn = "%sMultiple bonds' RDC vector (chain_id_1 %s, seq_id_1 %s, comp_id_1 %s, atom_id_1 %s, chain_id_2 %s, seq_id_2 %s, comp_id_2 %s, atom_id_2 %s) exists." %\
+                                                   (idx_msg, chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2)
 
-            except Exception as e:
+                                            self.report.warning.appendDescription('remarkable_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
+                                            self.report.setWarning()
 
-                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__testRDCVector() ++ Error  - %s" % str(e))
-                self.report.setError()
+                                            if self.__verbose:
+                                                self.__lfh.write("+NmrDpUtility.__testRDCVector() ++ Warning  - %s\n" % warn)
 
-                if self.__verbose:
-                    self.__lfh.write("+NmrDpUtility.__testRDCVector() ++ Error  - %s" % str(e))
+                                            pass
+
+                                        else: # raised error already somewhere because of invalid atom nomenclature
+                                            pass
+
+                                else: # raised warning already somewhere because of unknown comp_id
+                                    pass
+
+                except Exception as e:
+
+                    self.report.error.appendDescription('internal_error', "+NmrDpUtility.__testRDCVector() ++ Error  - %s" % str(e))
+                    self.report.setError()
+
+                    if self.__verbose:
+                        self.__lfh.write("+NmrDpUtility.__testRDCVector() ++ Error  - %s" % str(e))
 
         return self.report.getTotalErrors() == __errors
 
@@ -7095,307 +9331,577 @@ class NmrDpUtility(object):
         """ Calculate statistics of experimental data.
         """
 
-        input_source = self.report.input_sources[0]
-        input_source_dic = input_source.get()
-
-        file_type = input_source_dic['file_type']
-        file_name = input_source_dic['file_name']
-
-        if input_source_dic['content_subtype'] is None:
-            return False
-
         __errors = self.report.getTotalErrors()
 
-        seq_align_dic = self.report.sequence_alignment.get()
+        for fileListId in range(self.__file_path_list_len):
 
-        stats = {}
+            input_source = self.report.input_sources[fileListId]
+            input_source_dic = input_source.get()
 
-        for content_subtype in input_source_dic['content_subtype'].keys():
+            file_name = input_source_dic['file_name']
+            file_type = input_source_dic['file_type']
 
-            if content_subtype in ['entry_info', 'poly_seq']:
+            if input_source_dic['content_subtype'] is None:
                 continue
 
-            sf_category = self.sf_categories[file_type][content_subtype]
-            lp_category = self.lp_categories[file_type][content_subtype]
+            seq_align_dic = self.report.sequence_alignment.get()
 
-            index_tag = self.index_tags[file_type][content_subtype]
+            stats = {}
 
-            asm = []
+            for content_subtype in input_source_dic['content_subtype'].keys():
 
-            list_id = 1
+                if content_subtype in ['entry_info', 'poly_seq']:
+                    continue
 
-            for sf_data in self.__star_data.get_saveframes_by_category(sf_category):
+                sf_category = self.sf_categories[file_type][content_subtype]
+                lp_category = self.lp_categories[file_type][content_subtype]
 
-                sf_framecode = sf_data.get_tag('sf_framecode')[0]
+                index_tag = self.index_tags[file_type][content_subtype]
 
-                _list_id = list_id
-                if file_type == 'nmr-star':
-                    val = sf_data.get_tag('ID')
-                    if len(val) > 0:
-                        _list_id = int(val[0])
+                asm = []
 
-                lp_data = next((l['data'] for l in self.__lp_data[content_subtype] if l['sf_framecode'] == sf_framecode), None)
+                list_id = 1
 
-                ent = {'list_id': _list_id, 'sf_framecode': sf_framecode, 'number_of_rows': 0 if lp_data is None else len(lp_data)}
+                if self.__star_data_type[fileListId] == 'Loop':
 
-                if content_subtype == 'dist_restraint' or content_subtype == 'dihed_restraint' or content_subtype == 'rdc_restraint':
+                    sf_data = self.__star_data[fileListId]
+                    sf_framecode = ''
 
-                    type = sf_data.get_tag('restraint_origin' if file_type == 'nef' else 'Constraint_type')
-                    if len(type) > 0 and not type[0] in self.empty_value:
-                        ent['exp_type'] = type[0]
-                    else:
-                        ent['exp_type'] = 'Unknown'
+                    _list_id = list_id
+                    if file_type == 'nmr-star':
+                        val = sf_data.get_tag('ID')
+                        if len(val) > 0:
+                            _list_id = int(val[0])
 
-                elif content_subtype == 'spectral_peak':
+                    lp_data = next((l['data'] for l in self.__lp_data[content_subtype] if l['file_name'] == file_name and l['sf_framecode'] == sf_framecode), None)
 
-                    type = sf_data.get_tag('experiment_type' if file_type == 'nef' else 'Experiment_type')
-                    if len(type) > 0 and not type[0] in self.empty_value:
-                        ent['exp_type'] = type[0]
-                    else:
-                        ent['exp_type'] = 'Unknown'
+                    ent = {'list_id': _list_id, 'sf_framecode': sf_framecode, 'number_of_rows': 0 if lp_data is None else len(lp_data)}
 
-                if not lp_data is None:
+                    if content_subtype == 'dist_restraint' or content_subtype == 'dihed_restraint' or content_subtype == 'rdc_restraint':
 
-                    if content_subtype == 'chem_shift' or content_subtype == 'dist_restraint' or content_subtype == 'dihed_restraint' or content_subtype == 'rdc_restraint' or content_subtype == 'spectral_peak':
+                        type = sf_data.get_tag('restraint_origin' if file_type == 'nef' else 'Constraint_type')
+                        if len(type) > 0 and not type[0] in self.empty_value:
+                            ent['exp_type'] = type[0]
+                        else:
+                            ent['exp_type'] = 'Unknown'
 
-                        sa_name = 'nmr_poly_seq_vs_' + content_subtype
+                    elif content_subtype == 'spectral_peak':
 
-                        if sa_name in seq_align_dic and not seq_align_dic[sa_name] is None:
+                        type = sf_data.get_tag('experiment_type' if file_type == 'nef' else 'Experiment_type')
+                        if len(type) > 0 and not type[0] in self.empty_value:
+                            ent['exp_type'] = type[0]
+                        else:
+                            ent['exp_type'] = 'Unknown'
 
-                            low_seq_coverage = ''
+                    if not lp_data is None:
 
-                            seq_coverage = []
+                        if content_subtype == 'chem_shift' or content_subtype == 'dist_restraint' or content_subtype == 'dihed_restraint' or content_subtype == 'rdc_restraint' or content_subtype == 'spectral_peak':
 
-                            for seq_align in seq_align_dic[sa_name]:
+                            sa_name = 'nmr_poly_seq_vs_' + content_subtype
 
-                                if seq_align['list_id'] == list_id:
+                            if sa_name in seq_align_dic and not seq_align_dic[sa_name] is None:
 
-                                    sc = {}
-                                    sc['chain_id'] = seq_align['chain_id']
-                                    sc['length'] = seq_align['length']
-                                    sc['sequence_coverage'] = seq_align['sequence_coverage']
+                                low_seq_coverage = ''
 
-                                    if seq_align['sequence_coverage'] < self.low_seq_coverage and seq_align['length'] > 1:
-                                        if (not 'exp_type' in ent['exp_type']) or (not ent['exp_type'] in ['disulfide bound', 'paramagnetic relaxation', 'symmetry', 'J-couplings']):
-                                            low_seq_coverage += 'coverage %s for chain_id %s, length %s, ' % (seq_align['sequence_coverage'], seq_align['chain_id'], seq_align['length'])
+                                seq_coverage = []
 
-                                    seq_coverage.append(sc)
+                                for seq_align in seq_align_dic[sa_name]:
 
-                            if len(seq_coverage) > 0:
+                                    if seq_align['list_id'] == list_id:
 
-                                ent['sequence_coverage'] = seq_coverage
+                                        sc = {}
+                                        sc['chain_id'] = seq_align['chain_id']
+                                        sc['length'] = seq_align['length']
+                                        sc['sequence_coverage'] = seq_align['sequence_coverage']
 
-                                if len(low_seq_coverage) > 0:
+                                        if seq_align['sequence_coverage'] < self.low_seq_coverage and seq_align['length'] > 1:
+                                            if (not 'exp_type' in ent['exp_type']) or (not ent['exp_type'] in ['disulfide bound', 'paramagnetic relaxation', 'symmetry', 'J-couplings']):
+                                                low_seq_coverage += 'coverage %s for chain_id %s, length %s, ' % (seq_align['sequence_coverage'], seq_align['chain_id'], seq_align['length'])
 
-                                    warn = 'Sequence coverage of NMR experimental data is relatively low (' + low_seq_coverage[:-2] + ') in %s saveframe.' % sf_framecode
+                                        seq_coverage.append(sc)
 
-                                    self.report.warning.appendDescription('unsufficient_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
-                                    self.report.setWarning()
+                                if len(seq_coverage) > 0:
 
-                                    if self.__verbose:
-                                        self.__lfh.write("+NmrDpUtility.__calculateStatsOfExptlData() ++ Warning  - %s\n" % warn)
+                                    ent['sequence_coverage'] = seq_coverage
 
-                            if content_subtype == 'chem_shift':
+                                    if len(low_seq_coverage) > 0:
+
+                                        warn = 'Sequence coverage of NMR experimental data is relatively low (' + low_seq_coverage[:-2] + ') in %s saveframe.' % sf_framecode
+
+                                        self.report.warning.appendDescription('unsufficient_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
+                                        self.report.setWarning()
+
+                                        if self.__verbose:
+                                            self.__lfh.write("+NmrDpUtility.__calculateStatsOfExptlData() ++ Warning  - %s\n" % warn)
+
+                                if content_subtype == 'chem_shift':
+
+                                    try:
+
+                                        item_names = self.item_names_in_cs_loop[file_type]
+
+                                        anomalous_errs = self.report.error.getValueListWithSf('anomalous_data', file_name, sf_framecode, key='Z_score')
+                                        suspicious_warns = self.report.warning.getValueListWithSf('suspicious_data', file_name, sf_framecode, key='Z_score')
+                                        unusual_warns = self.report.warning.getValueListWithSf('unusual_data', file_name, sf_framecode, key='Z_score')
+
+                                        pattern = r'^' + item_names['value'] + r' ([+-]?([0-9]*[.])?[0-9]+) (.*) Z_score ([+-]?([0-9]*[.])?[0-9]+)\)\.(.*)$'
+
+                                        p = re.compile(pattern)
+
+                                        cs_ann = []
+
+                                        if not anomalous_errs is None:
+
+                                            for a_err in anomalous_errs:
+                                                ann = {}
+                                                ann['level'] = 'anomalous'
+                                                ann['chain_id'] = a_err['row_location'][item_names['chain_id']]
+                                                ann['seq_id'] = int(a_err['row_location'][item_names['seq_id']])
+                                                ann['comp_id'] = a_err['row_location'][item_names['comp_id']]
+                                                ann['atom_id'] = a_err['row_location'][item_names['atom_id']]
+                                                g = p.search(a_err['description']).groups()
+                                                ann['value'] = float(g[0])
+                                                ann['z_score'] = float(g[3])
+
+                                                comp_id = ann['comp_id']
+                                                atom_id = ann['atom_id'].split(' ')[0]
+
+                                                polypeptide_like = self.__csStat.getTypeOfCompId(comp_id)[0]
+
+                                                if self.__csStat.hasEnoughStat(comp_id, polypeptide_like):
+                                                    non_rep_methyl_pros = self.__csStat.getNonRepresentativeMethylProtons(comp_id, excl_minor_atom=True, primary=polypeptide_like)
+
+                                                    if atom_id in non_rep_methyl_pros:
+                                                        continue
+
+                                                cs_ann.append(ann)
+
+                                        if not suspicious_warns is None:
+
+                                            for s_warn in suspicious_warns:
+                                                ann = {}
+                                                ann['level'] = 'suspicious'
+                                                ann['chain_id'] = s_warn['row_location'][item_names['chain_id']]
+                                                ann['seq_id'] = int(s_warn['row_location'][item_names['seq_id']])
+                                                ann['comp_id'] = s_warn['row_location'][item_names['comp_id']]
+                                                ann['atom_id'] = s_warn['row_location'][item_names['atom_id']]
+                                                g = p.search(s_warn['description']).groups()
+                                                ann['value'] = float(g[0])
+                                                ann['z_score'] = float(g[3])
+
+                                                comp_id = ann['comp_id']
+                                                atom_id = ann['atom_id'].split(' ')[0]
+
+                                                polypeptide_like = self.__csStat.getTypeOfCompId(comp_id)[0]
+
+                                                if self.__csStat.hasEnoughStat(comp_id, polypeptide_like):
+                                                    non_rep_methyl_pros = self.__csStat.getNonRepresentativeMethylProtons(comp_id, excl_minor_atom=True, primary=polypeptide_like)
+
+                                                    if atom_id in non_rep_methyl_pros:
+                                                        continue
+
+                                                cs_ann.append(ann)
+
+                                        if not unusual_warns is None:
+
+                                            for u_warn in unusual_warns:
+                                                ann = {}
+                                                ann['level'] = 'unusual'
+                                                ann['chain_id'] = u_warn['row_location'][item_names['chain_id']]
+                                                ann['seq_id'] = int(u_warn['row_location'][item_names['seq_id']])
+                                                ann['comp_id'] = u_warn['row_location'][item_names['comp_id']]
+                                                ann['atom_id'] = u_warn['row_location'][item_names['atom_id']]
+                                                g = p.search(u_warn['description']).groups()
+                                                ann['value'] = float(g[0])
+                                                ann['z_score'] = float(g[3])
+
+                                                comp_id = ann['comp_id']
+                                                atom_id = ann['atom_id'].split(' ')[0]
+
+                                                polypeptide_like = self.__csStat.getTypeOfCompId(comp_id)[0]
+
+                                                if self.__csStat.hasEnoughStat(comp_id, polypeptide_like):
+                                                    non_rep_methyl_pros = self.__csStat.getNonRepresentativeMethylProtons(comp_id, excl_minor_atom=True, primary=polypeptide_like)
+
+                                                    if atom_id in non_rep_methyl_pros:
+                                                        continue
+
+                                                cs_ann.append(ann)
+
+                                    except Exception as e:
+
+                                        self.report.error.appendDescription('internal_error', "+NmrDpUtility.__calculateStatsOfExptlData() ++ Error  - %s" % str(e))
+                                        self.report.setError()
+
+                                        if self.__verbose:
+                                            self.__lfh.write("+NmrDpUtility.__calculateStatsOfExptlData() ++ Error  - %s" % str(e))
+
+                                    self.__calculateStatsOfAssignedChemShift(fileListId, sf_framecode, lp_data, cs_ann, ent)
+
+                                elif content_subtype == 'dist_restraint' or content_subtype == 'dihed_restraint' or content_subtype == 'rdc_restraint':
+
+                                    conflict_id_set = self.__nefT.get_conflict_id_set(sf_data, lp_category, self.consist_key_items[file_type][content_subtype])[0]
+
+                                    conflict_warns = self.report.warning.getValueListWithSf('conflicted_data', file_name, sf_framecode)
+                                    inconsist_warns = self.report.warning.getValueListWithSf('inconsistent_data', file_name, sf_framecode)
+                                    redundant_warns = self.report.warning.getValueListWithSf('redundant_data', file_name, sf_framecode)
+
+                                    inconsistent = set()
+                                    redundant = set()
+
+                                    if not conflict_warns is None:
+
+                                        for c_warn in conflict_warns:
+                                            for index in c_warn['row_locations'][index_tag]:
+                                                inconsistent.add(int(index))
+
+                                    if not inconsist_warns is None:
+
+                                        for i_warn in inconsist_warns:
+                                            for index in i_warn['row_locations'][index_tag]:
+                                                inconsistent.add(int(index))
+
+                                    if not redundant_warns is None:
+
+                                        for d_warn in redundant_warns:
+                                            for index in d_warn['row_locations'][index_tag]:
+                                                redundant.add(int(index))
+
+                                    if content_subtype == 'dist_restraint':
+                                        self.__calculateStatsOfDistanceRestraint(fileListId, sf_framecode, lp_data, conflict_id_set, inconsistent, redundant, ent)
+
+                                    elif content_subtype == 'dihed_restraint':
+                                        self.__calculateStatsOfDihedralRestraint(fileListId, lp_data, conflict_id_set, inconsistent, redundant, ent)
+
+                                    elif content_subtype == 'rdc_restraint':
+                                        self.__calculateStatsOfRdcRestraint(fileListId, lp_data, conflict_id_set, inconsistent, redundant, ent)
+
+                            if content_subtype == 'spectral_peak':
 
                                 try:
 
-                                    item_names = self.item_names_in_cs_loop[file_type]
+                                    _num_dim = sf_data.get_tag(self.num_dim_items[file_type])[0]
+                                    num_dim = int(_num_dim)
 
-                                    anomalous_errs = self.report.error.getValueListWithSf('anomalous_data', file_name, sf_framecode, key='Z_score')
-                                    suspicious_warns = self.report.warning.getValueListWithSf('suspicious_data', file_name, sf_framecode, key='Z_score')
-                                    unusual_warns = self.report.warning.getValueListWithSf('unusual_data', file_name, sf_framecode, key='Z_score')
+                                    if not num_dim in range(1, self.lim_num_dim):
+                                        raise ValueError()
 
-                                    pattern = r'^' + item_names['value'] + r' ([+-]?([0-9]*[.])?[0-9]+) (.*) Z_score ([+-]?([0-9]*[.])?[0-9]+)\)\.(.*)$'
+                                except ValueError: # raised error already at __testIndexConsistency()
+                                    continue
 
-                                    p = re.compile(pattern)
+                                self.__calculateStatsOfSpectralPeak(fileListId, sf_framecode, num_dim, lp_data, ent)
 
-                                    cs_ann = []
+                        else:
 
-                                    if not anomalous_errs is None:
+                            err = "Not found a module for calculation of statistics on content subtype %s." % content_subtype
 
-                                        for a_err in anomalous_errs:
-                                            ann = {}
-                                            ann['level'] = 'anomalous'
-                                            ann['chain_id'] = a_err['row_location'][item_names['chain_id']]
-                                            ann['seq_id'] = int(a_err['row_location'][item_names['seq_id']])
-                                            ann['comp_id'] = a_err['row_location'][item_names['comp_id']]
-                                            ann['atom_id'] = a_err['row_location'][item_names['atom_id']]
-                                            g = p.search(a_err['description']).groups()
-                                            ann['value'] = float(g[0])
-                                            ann['z_score'] = float(g[3])
+                            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__calculateStatsOfExptlData() ++ Error  - %s" % err)
+                            self.report.setError()
 
-                                            comp_id = ann['comp_id']
-                                            atom_id = ann['atom_id'].split(' ')[0]
+                            if self.__verbose:
+                                self.__lfh.write("+NmrDpUtility.__calculateStatsOfExptlData() ++ Error  - %s\n" % err)
 
-                                            polypeptide_like = self.__csStat.getTypeOfCompId(comp_id)[0]
+                            continue
 
-                                            if self.__csStat.hasEnoughStat(comp_id, polypeptide_like):
-                                                non_rep_methyl_pros = self.__csStat.getNonRepresentativeMethylProtons(comp_id, excl_minor_atom=True, primary=polypeptide_like)
+                    has_err = self.report.error.exists(file_name, sf_framecode)
+                    has_warn = self.report.warning.exists(file_name, sf_framecode)
 
-                                                if atom_id in non_rep_methyl_pros:
-                                                    continue
-
-                                            cs_ann.append(ann)
-
-                                    if not suspicious_warns is None:
-
-                                        for s_warn in suspicious_warns:
-                                            ann = {}
-                                            ann['level'] = 'suspicious'
-                                            ann['chain_id'] = s_warn['row_location'][item_names['chain_id']]
-                                            ann['seq_id'] = int(s_warn['row_location'][item_names['seq_id']])
-                                            ann['comp_id'] = s_warn['row_location'][item_names['comp_id']]
-                                            ann['atom_id'] = s_warn['row_location'][item_names['atom_id']]
-                                            g = p.search(s_warn['description']).groups()
-                                            ann['value'] = float(g[0])
-                                            ann['z_score'] = float(g[3])
-
-                                            comp_id = ann['comp_id']
-                                            atom_id = ann['atom_id'].split(' ')[0]
-
-                                            polypeptide_like = self.__csStat.getTypeOfCompId(comp_id)[0]
-
-                                            if self.__csStat.hasEnoughStat(comp_id, polypeptide_like):
-                                                non_rep_methyl_pros = self.__csStat.getNonRepresentativeMethylProtons(comp_id, excl_minor_atom=True, primary=polypeptide_like)
-
-                                                if atom_id in non_rep_methyl_pros:
-                                                    continue
-
-                                            cs_ann.append(ann)
-
-                                    if not unusual_warns is None:
-
-                                        for u_warn in unusual_warns:
-                                            ann = {}
-                                            ann['level'] = 'unusual'
-                                            ann['chain_id'] = u_warn['row_location'][item_names['chain_id']]
-                                            ann['seq_id'] = int(u_warn['row_location'][item_names['seq_id']])
-                                            ann['comp_id'] = u_warn['row_location'][item_names['comp_id']]
-                                            ann['atom_id'] = u_warn['row_location'][item_names['atom_id']]
-                                            g = p.search(u_warn['description']).groups()
-                                            ann['value'] = float(g[0])
-                                            ann['z_score'] = float(g[3])
-
-                                            comp_id = ann['comp_id']
-                                            atom_id = ann['atom_id'].split(' ')[0]
-
-                                            polypeptide_like = self.__csStat.getTypeOfCompId(comp_id)[0]
-
-                                            if self.__csStat.hasEnoughStat(comp_id, polypeptide_like):
-                                                non_rep_methyl_pros = self.__csStat.getNonRepresentativeMethylProtons(comp_id, excl_minor_atom=True, primary=polypeptide_like)
-
-                                                if atom_id in non_rep_methyl_pros:
-                                                    continue
-
-                                            cs_ann.append(ann)
-
-                                except Exception as e:
-
-                                    self.report.error.appendDescription('internal_error', "+NmrDpUtility.__calculateStatsOfExptlData() ++ Error  - %s" % str(e))
-                                    self.report.setError()
-
-                                    if self.__verbose:
-                                        self.__lfh.write("+NmrDpUtility.__calculateStatsOfExptlData() ++ Error  - %s" % str(e))
-
-                                self.__calculateStatsOfAssignedChemShift(sf_framecode, lp_data, cs_ann, ent)
-
-                            elif content_subtype == 'dist_restraint' or content_subtype == 'dihed_restraint' or content_subtype == 'rdc_restraint':
-
-                                conflict_id_set = self.__nefT.get_conflict_id_set(sf_data, lp_category, self.consist_key_items[file_type][content_subtype])[0]
-
-                                conflict_warns = self.report.warning.getValueListWithSf('conflicted_data', file_name, sf_framecode)
-                                inconsist_warns = self.report.warning.getValueListWithSf('inconsistent_data', file_name, sf_framecode)
-                                redundant_warns = self.report.warning.getValueListWithSf('redundant_data', file_name, sf_framecode)
-
-                                inconsistent = set()
-                                redundant = set()
-
-                                if not conflict_warns is None:
-
-                                    for c_warn in conflict_warns:
-                                        for index in c_warn['row_locations'][index_tag]:
-                                            inconsistent.add(int(index))
-
-                                if not inconsist_warns is None:
-
-                                    for i_warn in inconsist_warns:
-                                        for index in i_warn['row_locations'][index_tag]:
-                                            inconsistent.add(int(index))
-
-                                if not redundant_warns is None:
-
-                                    for d_warn in redundant_warns:
-                                        for index in d_warn['row_locations'][index_tag]:
-                                            redundant.add(int(index))
-
-                                if content_subtype == 'dist_restraint':
-                                    self.__calculateStatsOfDistanceRestraint(sf_framecode, lp_data, conflict_id_set, inconsistent, redundant, ent)
-
-                                elif content_subtype == 'dihed_restraint':
-                                    self.__calculateStatsOfDihedralRestraint(lp_data, conflict_id_set, inconsistent, redundant, ent)
-
-                                elif content_subtype == 'rdc_restraint':
-                                    self.__calculateStatsOfRdcRestraint(lp_data, conflict_id_set, inconsistent, redundant, ent)
-
-                        if content_subtype == 'spectral_peak':
-
-                            try:
-
-                                _num_dim = sf_data.get_tag(self.num_dim_items[file_type])[0]
-                                num_dim = int(_num_dim)
-
-                                if not num_dim in range(1, self.lim_num_dim):
-                                    raise ValueError()
-
-                            except ValueError: # raised error already at __testIndexConsistency()
-                                continue
-
-                            self.__calculateStatsOfSpectralPeak(sf_framecode, num_dim, lp_data, ent)
-
-                    else:
-
-                        err = "Not found a module for calculation of statistics on content subtype %s." % content_subtype
-
-                        self.report.error.appendDescription('internal_error', "+NmrDpUtility.__calculateStatsOfExptlData() ++ Error  - %s" % err)
-                        self.report.setError()
-
-                        if self.__verbose:
-                            self.__lfh.write("+NmrDpUtility.__calculateStatsOfExptlData() ++ Error  - %s\n" % err)
-
-                        continue
-
-                has_err = self.report.error.exists(file_name, sf_framecode)
-                has_warn = self.report.warning.exists(file_name, sf_framecode)
-
-                if has_err:
-                    status = 'Error'
-                    ent['error_descriptions'] = self.report.error.getCombinedDescriptions(file_name, sf_framecode)
-                    if has_warn:
+                    if has_err:
+                        status = 'Error'
+                        ent['error_descriptions'] = self.report.error.getCombinedDescriptions(file_name, sf_framecode)
+                        if has_warn:
+                            ent['warning_descriptions'] = self.report.warning.getCombinedDescriptions(file_name, sf_framecode)
+                    elif has_warn:
+                        status = 'Warning'
                         ent['warning_descriptions'] = self.report.warning.getCombinedDescriptions(file_name, sf_framecode)
-                elif has_warn:
-                    status = 'Warning'
-                    ent['warning_descriptions'] = self.report.warning.getCombinedDescriptions(file_name, sf_framecode)
-                else:
-                    status = 'OK'
+                    else:
+                        status = 'OK'
 
-                ent['status'] = status
+                    ent['status'] = status
 
-                asm.append(ent)
+                    asm.append(ent)
 
-                list_id += 1
+                    list_id += 1
 
-            if len(asm) > 0:
-                stats[content_subtype] = asm
+                    if len(asm) > 0:
+                        stats[content_subtype] = asm
 
-        input_source.setItemValue('stats_of_exptl_data', stats)
+                    continue
+
+                # Entry/Saveframe
+
+                for sf_data in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
+
+                    sf_framecode = sf_data.get_tag('sf_framecode')[0]
+
+                    _list_id = list_id
+                    if file_type == 'nmr-star':
+                        val = sf_data.get_tag('ID')
+                        if len(val) > 0:
+                            _list_id = int(val[0])
+
+                    lp_data = next((l['data'] for l in self.__lp_data[content_subtype] if l['file_name'] == file_name and l['sf_framecode'] == sf_framecode), None)
+
+                    ent = {'list_id': _list_id, 'sf_framecode': sf_framecode, 'number_of_rows': 0 if lp_data is None else len(lp_data)}
+
+                    if content_subtype == 'dist_restraint' or content_subtype == 'dihed_restraint' or content_subtype == 'rdc_restraint':
+
+                        type = sf_data.get_tag('restraint_origin' if file_type == 'nef' else 'Constraint_type')
+                        if len(type) > 0 and not type[0] in self.empty_value:
+                            ent['exp_type'] = type[0]
+                        else:
+                            ent['exp_type'] = 'Unknown'
+
+                    elif content_subtype == 'spectral_peak':
+
+                        type = sf_data.get_tag('experiment_type' if file_type == 'nef' else 'Experiment_type')
+                        if len(type) > 0 and not type[0] in self.empty_value:
+                            ent['exp_type'] = type[0]
+                        else:
+                            ent['exp_type'] = 'Unknown'
+
+                    if not lp_data is None:
+
+                        if content_subtype == 'chem_shift' or content_subtype == 'dist_restraint' or content_subtype == 'dihed_restraint' or content_subtype == 'rdc_restraint' or content_subtype == 'spectral_peak':
+
+                            sa_name = 'nmr_poly_seq_vs_' + content_subtype
+
+                            if sa_name in seq_align_dic and not seq_align_dic[sa_name] is None:
+
+                                low_seq_coverage = ''
+
+                                seq_coverage = []
+
+                                for seq_align in seq_align_dic[sa_name]:
+
+                                    if seq_align['list_id'] == list_id:
+
+                                        sc = {}
+                                        sc['chain_id'] = seq_align['chain_id']
+                                        sc['length'] = seq_align['length']
+                                        sc['sequence_coverage'] = seq_align['sequence_coverage']
+
+                                        if seq_align['sequence_coverage'] < self.low_seq_coverage and seq_align['length'] > 1:
+                                            if (not 'exp_type' in ent['exp_type']) or (not ent['exp_type'] in ['disulfide bound', 'paramagnetic relaxation', 'symmetry', 'J-couplings']):
+                                                low_seq_coverage += 'coverage %s for chain_id %s, length %s, ' % (seq_align['sequence_coverage'], seq_align['chain_id'], seq_align['length'])
+
+                                        seq_coverage.append(sc)
+
+                                if len(seq_coverage) > 0:
+
+                                    ent['sequence_coverage'] = seq_coverage
+
+                                    if len(low_seq_coverage) > 0:
+
+                                        warn = 'Sequence coverage of NMR experimental data is relatively low (' + low_seq_coverage[:-2] + ') in %s saveframe.' % sf_framecode
+
+                                        self.report.warning.appendDescription('unsufficient_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
+                                        self.report.setWarning()
+
+                                        if self.__verbose:
+                                            self.__lfh.write("+NmrDpUtility.__calculateStatsOfExptlData() ++ Warning  - %s\n" % warn)
+
+                                if content_subtype == 'chem_shift':
+
+                                    try:
+
+                                        item_names = self.item_names_in_cs_loop[file_type]
+
+                                        anomalous_errs = self.report.error.getValueListWithSf('anomalous_data', file_name, sf_framecode, key='Z_score')
+                                        suspicious_warns = self.report.warning.getValueListWithSf('suspicious_data', file_name, sf_framecode, key='Z_score')
+                                        unusual_warns = self.report.warning.getValueListWithSf('unusual_data', file_name, sf_framecode, key='Z_score')
+
+                                        pattern = r'^' + item_names['value'] + r' ([+-]?([0-9]*[.])?[0-9]+) (.*) Z_score ([+-]?([0-9]*[.])?[0-9]+)\)\.(.*)$'
+
+                                        p = re.compile(pattern)
+
+                                        cs_ann = []
+
+                                        if not anomalous_errs is None:
+
+                                            for a_err in anomalous_errs:
+                                                ann = {}
+                                                ann['level'] = 'anomalous'
+                                                ann['chain_id'] = a_err['row_location'][item_names['chain_id']]
+                                                ann['seq_id'] = int(a_err['row_location'][item_names['seq_id']])
+                                                ann['comp_id'] = a_err['row_location'][item_names['comp_id']]
+                                                ann['atom_id'] = a_err['row_location'][item_names['atom_id']]
+                                                g = p.search(a_err['description']).groups()
+                                                ann['value'] = float(g[0])
+                                                ann['z_score'] = float(g[3])
+
+                                                comp_id = ann['comp_id']
+                                                atom_id = ann['atom_id'].split(' ')[0]
+
+                                                polypeptide_like = self.__csStat.getTypeOfCompId(comp_id)[0]
+
+                                                if self.__csStat.hasEnoughStat(comp_id, polypeptide_like):
+                                                    non_rep_methyl_pros = self.__csStat.getNonRepresentativeMethylProtons(comp_id, excl_minor_atom=True, primary=polypeptide_like)
+
+                                                    if atom_id in non_rep_methyl_pros:
+                                                        continue
+
+                                                cs_ann.append(ann)
+
+                                        if not suspicious_warns is None:
+
+                                            for s_warn in suspicious_warns:
+                                                ann = {}
+                                                ann['level'] = 'suspicious'
+                                                ann['chain_id'] = s_warn['row_location'][item_names['chain_id']]
+                                                ann['seq_id'] = int(s_warn['row_location'][item_names['seq_id']])
+                                                ann['comp_id'] = s_warn['row_location'][item_names['comp_id']]
+                                                ann['atom_id'] = s_warn['row_location'][item_names['atom_id']]
+                                                g = p.search(s_warn['description']).groups()
+                                                ann['value'] = float(g[0])
+                                                ann['z_score'] = float(g[3])
+
+                                                comp_id = ann['comp_id']
+                                                atom_id = ann['atom_id'].split(' ')[0]
+
+                                                polypeptide_like = self.__csStat.getTypeOfCompId(comp_id)[0]
+
+                                                if self.__csStat.hasEnoughStat(comp_id, polypeptide_like):
+                                                    non_rep_methyl_pros = self.__csStat.getNonRepresentativeMethylProtons(comp_id, excl_minor_atom=True, primary=polypeptide_like)
+
+                                                    if atom_id in non_rep_methyl_pros:
+                                                        continue
+
+                                                cs_ann.append(ann)
+
+                                        if not unusual_warns is None:
+
+                                            for u_warn in unusual_warns:
+                                                ann = {}
+                                                ann['level'] = 'unusual'
+                                                ann['chain_id'] = u_warn['row_location'][item_names['chain_id']]
+                                                ann['seq_id'] = int(u_warn['row_location'][item_names['seq_id']])
+                                                ann['comp_id'] = u_warn['row_location'][item_names['comp_id']]
+                                                ann['atom_id'] = u_warn['row_location'][item_names['atom_id']]
+                                                g = p.search(u_warn['description']).groups()
+                                                ann['value'] = float(g[0])
+                                                ann['z_score'] = float(g[3])
+
+                                                comp_id = ann['comp_id']
+                                                atom_id = ann['atom_id'].split(' ')[0]
+
+                                                polypeptide_like = self.__csStat.getTypeOfCompId(comp_id)[0]
+
+                                                if self.__csStat.hasEnoughStat(comp_id, polypeptide_like):
+                                                    non_rep_methyl_pros = self.__csStat.getNonRepresentativeMethylProtons(comp_id, excl_minor_atom=True, primary=polypeptide_like)
+
+                                                    if atom_id in non_rep_methyl_pros:
+                                                        continue
+
+                                                cs_ann.append(ann)
+
+                                    except Exception as e:
+
+                                        self.report.error.appendDescription('internal_error', "+NmrDpUtility.__calculateStatsOfExptlData() ++ Error  - %s" % str(e))
+                                        self.report.setError()
+
+                                        if self.__verbose:
+                                            self.__lfh.write("+NmrDpUtility.__calculateStatsOfExptlData() ++ Error  - %s" % str(e))
+
+                                    self.__calculateStatsOfAssignedChemShift(fileListId, sf_framecode, lp_data, cs_ann, ent)
+
+                                elif content_subtype == 'dist_restraint' or content_subtype == 'dihed_restraint' or content_subtype == 'rdc_restraint':
+
+                                    conflict_id_set = self.__nefT.get_conflict_id_set(sf_data, lp_category, self.consist_key_items[file_type][content_subtype])[0]
+
+                                    conflict_warns = self.report.warning.getValueListWithSf('conflicted_data', file_name, sf_framecode)
+                                    inconsist_warns = self.report.warning.getValueListWithSf('inconsistent_data', file_name, sf_framecode)
+                                    redundant_warns = self.report.warning.getValueListWithSf('redundant_data', file_name, sf_framecode)
+
+                                    inconsistent = set()
+                                    redundant = set()
+
+                                    if not conflict_warns is None:
+
+                                        for c_warn in conflict_warns:
+                                            for index in c_warn['row_locations'][index_tag]:
+                                                inconsistent.add(int(index))
+
+                                    if not inconsist_warns is None:
+
+                                        for i_warn in inconsist_warns:
+                                            for index in i_warn['row_locations'][index_tag]:
+                                                inconsistent.add(int(index))
+
+                                    if not redundant_warns is None:
+
+                                        for d_warn in redundant_warns:
+                                            for index in d_warn['row_locations'][index_tag]:
+                                                redundant.add(int(index))
+
+                                    if content_subtype == 'dist_restraint':
+                                        self.__calculateStatsOfDistanceRestraint(fileListId, sf_framecode, lp_data, conflict_id_set, inconsistent, redundant, ent)
+
+                                    elif content_subtype == 'dihed_restraint':
+                                        self.__calculateStatsOfDihedralRestraint(fileListId, lp_data, conflict_id_set, inconsistent, redundant, ent)
+
+                                    elif content_subtype == 'rdc_restraint':
+                                        self.__calculateStatsOfRdcRestraint(fileListId, lp_data, conflict_id_set, inconsistent, redundant, ent)
+
+                            if content_subtype == 'spectral_peak':
+
+                                try:
+
+                                    _num_dim = sf_data.get_tag(self.num_dim_items[file_type])[0]
+                                    num_dim = int(_num_dim)
+
+                                    if not num_dim in range(1, self.lim_num_dim):
+                                        raise ValueError()
+
+                                except ValueError: # raised error already at __testIndexConsistency()
+                                    continue
+
+                                self.__calculateStatsOfSpectralPeak(fileListId, sf_framecode, num_dim, lp_data, ent)
+
+                        else:
+
+                            err = "Not found a module for calculation of statistics on content subtype %s." % content_subtype
+
+                            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__calculateStatsOfExptlData() ++ Error  - %s" % err)
+                            self.report.setError()
+
+                            if self.__verbose:
+                                self.__lfh.write("+NmrDpUtility.__calculateStatsOfExptlData() ++ Error  - %s\n" % err)
+
+                            continue
+
+                    has_err = self.report.error.exists(file_name, sf_framecode)
+                    has_warn = self.report.warning.exists(file_name, sf_framecode)
+
+                    if has_err:
+                        status = 'Error'
+                        ent['error_descriptions'] = self.report.error.getCombinedDescriptions(file_name, sf_framecode)
+                        if has_warn:
+                            ent['warning_descriptions'] = self.report.warning.getCombinedDescriptions(file_name, sf_framecode)
+                    elif has_warn:
+                        status = 'Warning'
+                        ent['warning_descriptions'] = self.report.warning.getCombinedDescriptions(file_name, sf_framecode)
+                    else:
+                        status = 'OK'
+
+                    ent['status'] = status
+
+                    asm.append(ent)
+
+                    list_id += 1
+
+                if len(asm) > 0:
+                    stats[content_subtype] = asm
+
+            input_source.setItemValue('stats_of_exptl_data', stats)
 
         return self.report.getTotalErrors() == __errors
 
-    def __calculateStatsOfAssignedChemShift(self, sf_framecode, lp_data, cs_ann, ent):
+    def __calculateStatsOfAssignedChemShift(self, file_list_id, sf_framecode, lp_data, cs_ann, ent):
         """ Calculate statistics of assigned chemical shifts.
         """
 
-        input_source = self.report.input_sources[0]
+        input_source = self.report.input_sources[file_list_id]
         input_source_dic = input_source.get()
 
         file_name = input_source_dic['file_name']
@@ -8502,11 +11008,11 @@ class NmrDpUtility(object):
             if self.__verbose:
                 self.__lfh.write("+NmrDpUtility.__calculateStatsOfAssignedChemShift() ++ Error  - %s" % str(e))
 
-    def __calculateStatsOfDistanceRestraint(self, sf_framecode, lp_data, conflict_id_set, inconsistent, redundant, ent):
+    def __calculateStatsOfDistanceRestraint(self, file_list_id, sf_framecode, lp_data, conflict_id_set, inconsistent, redundant, ent):
         """ Calculate statistics of distance restraints.
         """
 
-        input_source = self.report.input_sources[0]
+        input_source = self.report.input_sources[file_list_id]
         input_source_dic = input_source.get()
 
         file_name = input_source_dic['file_name']
@@ -9601,11 +12107,11 @@ class NmrDpUtility(object):
 
         return data_type
 
-    def __calculateStatsOfDihedralRestraint(self, lp_data, conflict_id_set, inconsistent, redundant, ent):
+    def __calculateStatsOfDihedralRestraint(self, file_list_id, lp_data, conflict_id_set, inconsistent, redundant, ent):
         """ Calculate statistics of dihedral angle restraints.
         """
 
-        input_source = self.report.input_sources[0]
+        input_source = self.report.input_sources[file_list_id]
         input_source_dic = input_source.get()
 
         file_type = input_source_dic['file_type']
@@ -10459,11 +12965,11 @@ class NmrDpUtility(object):
 
         return data_type, seq_id_common, comp_id_common
 
-    def __calculateStatsOfRdcRestraint(self, lp_data, conflict_id_set, inconsistent, redundant, ent):
+    def __calculateStatsOfRdcRestraint(self, file_list_id, lp_data, conflict_id_set, inconsistent, redundant, ent):
         """ Calculate statistics of RDC restraints.
         """
 
-        input_source = self.report.input_sources[0]
+        input_source = self.report.input_sources[file_list_id]
         input_source_dic = input_source.get()
 
         file_type = input_source_dic['file_type']
@@ -11050,13 +13556,14 @@ class NmrDpUtility(object):
 
         return vector_type + '_bond_vectors'
 
-    def __calculateStatsOfSpectralPeak(self, sf_framecode, num_dim, lp_data, ent):
+    def __calculateStatsOfSpectralPeak(self, file_list_id, sf_framecode, num_dim, lp_data, ent):
         """ Calculate statistics of spectral peaks.
         """
 
-        input_source = self.report.input_sources[0]
+        input_source = self.report.input_sources[file_list_id]
         input_source_dic = input_source.get()
 
+        file_name = input_source_dic['file_name']
         file_type = input_source_dic['file_type']
 
         content_subtype = 'spectral_peak'
@@ -11082,7 +13589,7 @@ class NmrDpUtility(object):
             ent['number_of_spectral_dimensions'] = num_dim
             ent['spectral_dim'] = []
 
-            aux_data = next((l['data'] for l in self.__aux_data[content_subtype] if l['sf_framecode'] == sf_framecode and l['category'] == self.aux_lp_categories[file_type][content_subtype][1]), None)
+            aux_data = next((l['data'] for l in self.__aux_data[content_subtype] if l['file_name'] == file_name and l['sf_framecode'] == sf_framecode and l['category'] == self.aux_lp_categories[file_type][content_subtype][1]), None)
 
             mag_link = []
 
@@ -11099,7 +13606,7 @@ class NmrDpUtility(object):
                             dim_2 = sp_dim_trans['Spectral_dim_ID_2']
                             mag_link.append((dim_1, dim_2))
 
-            aux_data = next((l['data'] for l in self.__aux_data[content_subtype] if l['sf_framecode'] == sf_framecode and l['category'] == self.aux_lp_categories[file_type][content_subtype][0]), None)
+            aux_data = next((l['data'] for l in self.__aux_data[content_subtype] if l['file_name'] == file_name and l['sf_framecode'] == sf_framecode and l['category'] == self.aux_lp_categories[file_type][content_subtype][0]), None)
 
             if not aux_data is None:
                 for i in range(1, max_dim):
@@ -12081,6 +14588,8 @@ class NmrDpUtility(object):
         if not has_cif_poly_seq:
             return False
 
+        __errors = self.report.getTotalErrors()
+
         nmr_input_source = self.report.input_sources[0]
         nmr_input_source_dic = nmr_input_source.get()
 
@@ -12099,8 +14608,6 @@ class NmrDpUtility(object):
                 self.__lfh.write("+NmrDpUtility.__assignCoordPolymerSequence() ++ Error  - %s\n" % err)
             """
             return False
-
-        __errors = self.report.getTotalErrors()
 
         seq_align_dic = self.report.sequence_alignment.get()
 
@@ -12358,166 +14865,94 @@ class NmrDpUtility(object):
 
         cif_polymer_sequence = cif_input_source_dic['polymer_sequence']
 
-        nmr_input_source = self.report.input_sources[0]
-        nmr_input_source_dic = nmr_input_source.get()
-
-        file_type = nmr_input_source_dic['file_type']
-        file_name = nmr_input_source_dic['file_name']
-
-        seq_align_dic = self.report.sequence_alignment.get()
-        chain_assign_dic = self.report.chain_assignment.get()
-
-        if not 'nmr_poly_seq_vs_model_poly_seq' in chain_assign_dic:
-
-            err = "Chain assignment did not exist, __assignCoordPolymerSequence() should be invoked."
-
-            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__testCoordAtomIdConsistency() ++ Error  - %s" % err)
-            self.report.setError()
-
-            if self.__verbose:
-                self.__lfh.write("+NmrDpUtility.__testCoordAtomIdConsistency() ++ Error  - %s\n" % err)
-
-            return False
-
-        if chain_assign_dic['nmr_poly_seq_vs_model_poly_seq'] is None:
-            return False
-
         __errors = self.report.getTotalErrors()
 
-        nmr2ca = {}
+        for fileListId in range(self.__file_path_list_len):
 
-        for chain_assign in chain_assign_dic['nmr_poly_seq_vs_model_poly_seq']:
+            nmr_input_source = self.report.input_sources[fileListId]
+            nmr_input_source_dic = nmr_input_source.get()
 
-            ref_chain_id = chain_assign['ref_chain_id']
-            test_chain_id = chain_assign['test_chain_id']
+            file_name = nmr_input_source_dic['file_name']
+            file_type = nmr_input_source_dic['file_type']
 
-            result = next((seq_align for seq_align in seq_align_dic['nmr_poly_seq_vs_model_poly_seq'] if seq_align['ref_chain_id'] == ref_chain_id and seq_align['test_chain_id'] == test_chain_id), None)
+            seq_align_dic = self.report.sequence_alignment.get()
+            chain_assign_dic = self.report.chain_assignment.get()
 
-            nmr2ca[str(ref_chain_id)] = result
+            if not 'nmr_poly_seq_vs_model_poly_seq' in chain_assign_dic:
 
-        try:
+                err = "Chain assignment did not exist, __assignCoordPolymerSequence() should be invoked."
 
-            coord = self.__cR.getDictListWithFilter('atom_site',
-                                                    [{'name': 'label_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
-                                                      {'name': 'label_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
-                                                      {'name': 'label_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
-                                                      {'name': 'label_atom_id', 'type': 'str', 'alt_name': 'atom_id'}
-                                                     ],
-                                                    [{'name': 'pdbx_PDB_model_num', 'type': 'int', 'value': 1}
-                                                     ])
+                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__testCoordAtomIdConsistency() ++ Error  - %s" % err)
+                self.report.setError()
 
-        except Exception as e:
+                if self.__verbose:
+                    self.__lfh.write("+NmrDpUtility.__testCoordAtomIdConsistency() ++ Error  - %s\n" % err)
 
-            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__testCoordAtomIdConsistency() ++ Error  - %s" % str(e))
-            self.report.setError()
-
-            if self.__verbose:
-                self.__lfh.write("+NmrDpUtility.__testCoordAtomIdConsistency() ++ Error  - %s" % str(e))
-
-            return False
-
-        if nmr_input_source_dic['content_subtype'] is None:
-            return False
-
-        add_details = False
-
-        for content_subtype in nmr_input_source_dic['content_subtype'].keys():
-
-            if content_subtype in ['entry_info', 'poly_seq']:
                 continue
 
-            sf_category = self.sf_categories[file_type][content_subtype]
-            lp_category = self.lp_categories[file_type][content_subtype]
+            if chain_assign_dic['nmr_poly_seq_vs_model_poly_seq'] is None:
+                continue
 
-            index_tag = self.index_tags[file_type][content_subtype]
+            nmr2ca = {}
 
-            list_id = 1
+            for chain_assign in chain_assign_dic['nmr_poly_seq_vs_model_poly_seq']:
 
-            for sf_data in self.__star_data.get_saveframes_by_category(sf_category):
+                ref_chain_id = chain_assign['ref_chain_id']
+                test_chain_id = chain_assign['test_chain_id']
 
-                sf_framecode = sf_data.get_tag('sf_framecode')[0]
+                result = next((seq_align for seq_align in seq_align_dic['nmr_poly_seq_vs_model_poly_seq'] if seq_align['ref_chain_id'] == ref_chain_id and seq_align['test_chain_id'] == test_chain_id), None)
 
-                if file_type == 'nef' or (not self.__nonblk_bad_nterm):
-                    lp_data = next((l['data'] for l in self.__lp_data[content_subtype] if l['sf_framecode'] == sf_framecode), None)
+                nmr2ca[str(ref_chain_id)] = result
 
-                else:
+            try:
 
-                    if content_subtype == 'spectral_peak':
+                coord = self.__cR.getDictListWithFilter('atom_site',
+                                                        [{'name': 'label_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
+                                                          {'name': 'label_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
+                                                          {'name': 'label_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
+                                                          {'name': 'label_atom_id', 'type': 'str', 'alt_name': 'atom_id'}
+                                                         ],
+                                                        [{'name': 'pdbx_PDB_model_num', 'type': 'int', 'value': 1}
+                                                         ])
 
-                        try:
+            except Exception as e:
 
-                            _num_dim = sf_data.get_tag(self.num_dim_items[file_type])[0]
-                            num_dim = int(_num_dim)
+                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__testCoordAtomIdConsistency() ++ Error  - %s" % str(e))
+                self.report.setError()
 
-                            if not num_dim in range(1, self.lim_num_dim):
-                                raise ValueError()
+                if self.__verbose:
+                    self.__lfh.write("+NmrDpUtility.__testCoordAtomIdConsistency() ++ Error  - %s" % str(e))
 
-                        except ValueError: # raised error already at __testIndexConsistency()
-                            continue
+                continue
 
-                        max_dim = num_dim + 1
+            if nmr_input_source_dic['content_subtype'] is None:
+                continue
 
-                        key_items = []
-                        for dim in range(1, max_dim):
-                            for k in self.pk_key_items[file_type]:
-                                _k = copy.copy(k)
-                                if '%s' in k['name']:
-                                   _k['name'] = k['name'] % dim
-                                key_items.append(_k)
+            add_details = False
 
-                        data_items = []
-                        for d in self.data_items[file_type][content_subtype]:
-                            data_items.append(d)
-                        for dim in range(1, max_dim):
-                            for d in self.pk_data_items[file_type]:
-                                _d = copy.copy(d)
-                                if '%s' in d['name']:
-                                    _d['name'] = d['name'] % dim
-                                data_items.append(_d)
+            for content_subtype in nmr_input_source_dic['content_subtype'].keys():
 
-                    else:
+                if content_subtype in ['entry_info', 'poly_seq']:
+                    continue
 
-                        key_items = self.key_items[file_type][content_subtype]
-                        data_items = self.data_items[file_type][content_subtype]
+                sf_category = self.sf_categories[file_type][content_subtype]
+                lp_category = self.lp_categories[file_type][content_subtype]
 
-                    try:
-                        lp_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, None, None)[0]
-                    except Exception:
-                        continue
+                index_tag = self.index_tags[file_type][content_subtype]
 
-                if not lp_data is None:
+                list_id = 1
 
-                    has_seq_align = False
+                if self.__star_data_type[fileListId] == 'Loop':
 
-                    sa_name = 'nmr_poly_seq_vs_' + content_subtype
+                    sf_data = self.__star_data[fileListId]
+                    sf_framecode = ''
 
-                    if sa_name in seq_align_dic and not seq_align_dic[sa_name] is None:
-
-                        for seq_align in seq_align_dic[sa_name]:
-
-                            if seq_align['list_id'] == list_id:
-                                has_seq_align = True
-                                break
-
-                    if not has_seq_align:
-                        continue
-
-                    item_names = []
-
-                    if content_subtype == 'chem_shift':
-                        max_dim = 2
-
-                        item_names.append(self.item_names_in_cs_loop[file_type])
+                    if file_type == 'nef' or (not self.__nonblk_bad_nterm):
+                        lp_data = next((l['data'] for l in self.__lp_data[content_subtype] if l['file_name'] == file_name and l['sf_framecode'] == sf_framecode), None)
 
                     else:
 
-                        if content_subtype == 'dist_restraint' or content_subtype == 'rdc_restraint':
-                            max_dim = 3
-
-                        elif content_subtype == 'dihed_restraint':
-                            max_dim = 5
-
-                        elif content_subtype == 'spectral_peak':
+                        if content_subtype == 'spectral_peak':
 
                             try:
 
@@ -12532,152 +14967,474 @@ class NmrDpUtility(object):
 
                             max_dim = num_dim + 1
 
+                            key_items = []
+                            for dim in range(1, max_dim):
+                                for k in self.pk_key_items[file_type]:
+                                    _k = copy.copy(k)
+                                    if '%s' in k['name']:
+                                       _k['name'] = k['name'] % dim
+                                    key_items.append(_k)
+
+                            data_items = []
+                            for d in self.data_items[file_type][content_subtype]:
+                                data_items.append(d)
+                            for dim in range(1, max_dim):
+                                for d in self.pk_data_items[file_type]:
+                                    _d = copy.copy(d)
+                                    if '%s' in d['name']:
+                                        _d['name'] = d['name'] % dim
+                                    data_items.append(_d)
+
                         else:
+
+                            key_items = self.key_items[file_type][content_subtype]
+                            data_items = self.data_items[file_type][content_subtype]
+
+                        try:
+                            lp_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, None, None)[0]
+                        except Exception:
                             continue
 
-                        for j in range(1, max_dim):
-                            _item_names = {}
-                            for k, v in self.item_names_in_pk_loop[file_type].items():
-                                if '%s' in v:
-                                    v = v % j
-                                _item_names[k] = v
-                            item_names.append(_item_names)
+                    if not lp_data is None:
 
-                    num_dim = max_dim - 1
+                        has_seq_align = False
 
-                    chain_id_names = []
-                    seq_id_names = []
-                    comp_id_names = []
-                    atom_id_names = []
+                        sa_name = 'nmr_poly_seq_vs_' + content_subtype
 
-                    for j in range(num_dim):
-                        chain_id_names.append(item_names[j]['chain_id'])
-                        seq_id_names.append(item_names[j]['seq_id'])
-                        comp_id_names.append(item_names[j]['comp_id'])
-                        atom_id_names.append(item_names[j]['atom_id'])
+                        if sa_name in seq_align_dic and not seq_align_dic[sa_name] is None:
 
-                    if file_type == 'nmr-star':
+                            for seq_align in seq_align_dic[sa_name]:
 
-                        loop = sf_data.get_loop_by_category(lp_category)
-
-                        details_col = loop.tags.index('Details') if 'Details' in loop.tags else -1
-
-                    for l, i in enumerate(lp_data):
-
-                        for j in range(num_dim):
-                            chain_id = i[chain_id_names[j]]
-                            seq_id = i[seq_id_names[j]]
-                            comp_id = i[comp_id_names[j]]
-                            atom_id = i[atom_id_names[j]]
-
-                            if content_subtype == 'spectral_peak' and (chain_id in self.empty_value or seq_id in self.empty_value or comp_id in self.empty_value or atom_id in self.empty_value):
-                                continue
-
-                            if not str(chain_id) in nmr2ca:
-                                continue
-
-                            ca = nmr2ca[str(chain_id)]
-
-                            cif_chain_id = ca['test_chain_id']
-
-                            cif_seq_id = None
-                            for k in range(ca['length']):
-                                if ca['ref_seq_id'][k] == seq_id:
-                                    cif_seq_id = ca['test_seq_id'][k]
+                                if seq_align['list_id'] == list_id:
+                                    has_seq_align = True
                                     break
 
-                            if cif_seq_id is None:
-                                continue
+                        if not has_seq_align:
+                            continue
 
-                            cif_ps = next(ps for ps in cif_polymer_sequence if ps['chain_id'] == cif_chain_id)
+                        item_names = []
 
-                            cif_comp_id = None
-                            for k in range(len(cif_ps['seq_id'])):
-                                if cif_ps['seq_id'][k] == cif_seq_id:
-                                    cif_comp_id = cif_ps['comp_id'][k]
-                                    break
+                        if content_subtype == 'chem_shift':
+                            max_dim = 2
 
-                            if cif_comp_id is None:
-                                continue
+                            item_names.append(self.item_names_in_cs_loop[file_type])
 
-                            if file_type == 'nef':
-                                _atom_id, ambig_code, details = self.__nefT.get_star_atom(comp_id, atom_id, leave_unmatched=True)
+                        else:
 
-                                if len(_atom_id) == 0:
+                            if content_subtype == 'dist_restraint' or content_subtype == 'rdc_restraint':
+                                max_dim = 3
+
+                            elif content_subtype == 'dihed_restraint':
+                                max_dim = 5
+
+                            elif content_subtype == 'spectral_peak':
+
+                                try:
+
+                                    _num_dim = sf_data.get_tag(self.num_dim_items[file_type])[0]
+                                    num_dim = int(_num_dim)
+
+                                    if not num_dim in range(1, self.lim_num_dim):
+                                        raise ValueError()
+
+                                except ValueError: # raised error already at __testIndexConsistency()
                                     continue
 
-                                if len(_atom_id) == 1 and atom_id == _atom_id[0]:
+                                max_dim = num_dim + 1
+
+                            else:
+                                continue
+
+                            for j in range(1, max_dim):
+                                _item_names = {}
+                                for k, v in self.item_names_in_pk_loop[file_type].items():
+                                    if '%s' in v:
+                                        v = v % j
+                                    _item_names[k] = v
+                                item_names.append(_item_names)
+
+                        num_dim = max_dim - 1
+
+                        chain_id_names = []
+                        seq_id_names = []
+                        comp_id_names = []
+                        atom_id_names = []
+
+                        for j in range(num_dim):
+                            chain_id_names.append(item_names[j]['chain_id'])
+                            seq_id_names.append(item_names[j]['seq_id'])
+                            comp_id_names.append(item_names[j]['comp_id'])
+                            atom_id_names.append(item_names[j]['atom_id'])
+
+                        if file_type == 'nmr-star':
+
+                            loop = sf_data if self.__star_data_type[fileListId] == 'Loop' else sf_data.get_loop_by_category(lp_category)
+
+                            details_col = loop.tags.index('Details') if 'Details' in loop.tags else -1
+
+                        for l, i in enumerate(lp_data):
+
+                            for j in range(num_dim):
+                                chain_id = i[chain_id_names[j]]
+                                seq_id = i[seq_id_names[j]]
+                                comp_id = i[comp_id_names[j]]
+                                atom_id = i[atom_id_names[j]]
+
+                                if content_subtype == 'spectral_peak' and (chain_id in self.empty_value or seq_id in self.empty_value or comp_id in self.empty_value or atom_id in self.empty_value):
+                                    continue
+
+                                if not str(chain_id) in nmr2ca:
+                                    continue
+
+                                ca = nmr2ca[str(chain_id)]
+
+                                cif_chain_id = ca['test_chain_id']
+
+                                cif_seq_id = None
+                                for k in range(ca['length']):
+                                    if ca['ref_seq_id'][k] == seq_id:
+                                        cif_seq_id = ca['test_seq_id'][k]
+                                        break
+
+                                if cif_seq_id is None:
+                                    continue
+
+                                cif_ps = next(ps for ps in cif_polymer_sequence if ps['chain_id'] == cif_chain_id)
+
+                                cif_comp_id = None
+                                for k in range(len(cif_ps['seq_id'])):
+                                    if cif_ps['seq_id'][k] == cif_seq_id:
+                                        cif_comp_id = cif_ps['comp_id'][k]
+                                        break
+
+                                if cif_comp_id is None:
+                                    continue
+
+                                if file_type == 'nef':
+                                    _atom_id, ambig_code, details = self.__nefT.get_star_atom(comp_id, atom_id, leave_unmatched=True)
+
+                                    if len(_atom_id) == 0:
+                                        continue
+
+                                    if len(_atom_id) == 1 and atom_id == _atom_id[0]:
+                                        atom_id_ = atom_id
+                                        atom_name = atom_id
+
+                                        if not details is None:
+                                            atom_name += ', besides that, ' + details.rstrip('.')
+
+                                    else:
+                                        atom_name = atom_id + ' (e.g. '
+
+                                        for atom_id_ in _atom_id:
+                                            atom_name += atom_id_ + ' '
+
+                                        atom_name = atom_name.rstrip() + ')'
+
+                                        # representative atom id
+                                        atom_id_ = _atom_id[0]
+
+                                else:
                                     atom_id_ = atom_id
                                     atom_name = atom_id
 
-                                    if not details is None:
-                                        atom_name += ', besides that, ' + details.rstrip('.')
+                                result = next((c for c in coord if c['chain_id'] == cif_chain_id and c['seq_id'] == cif_seq_id and c['comp_id'] == cif_comp_id and c['atom_id'] == atom_id_), None)
 
-                                else:
-                                    atom_name = atom_id + ' (e.g. '
+                                if result is None:
 
-                                    for atom_id_ in _atom_id:
-                                        atom_name += atom_id_ + ' '
+                                    idx_msg = ''
+                                    if not index_tag is None:
+                                        idx_msg = "[Check row of %s %s] " % (index_tag, i[index_tag])
 
-                                    atom_name = atom_name.rstrip() + ')'
+                                    err = "%sAtom (%s) is not incorporated in the atomic coordinate." %\
+                                          (idx_msg, self.__getReducedAtomNotation(chain_id_names[j], chain_id, seq_id_names[j], seq_id, comp_id_names[j], comp_id, atom_id_names[j], atom_name))
 
-                                    # representative atom id
-                                    atom_id_ = _atom_id[0]
+                                    cyclic = self.__isCyclicPolymer(ref_chain_id)
+
+                                    if self.__nonblk_bad_nterm and seq_id == 1 and atom_id_ == 'H' and (cyclic or comp_id == 'PRO'):
+
+                                        err += ' However, it is acceptable if an appropriate atom name, H1, is given '
+
+                                        if cyclic:
+                                            err += 'because of a cyclic-peptide.'
+                                        else:
+                                            err += 'because sequence (chain_id %s) starts with Proline residue.' % ref_chain_id
+
+                                        self.report.warning.appendDescription('atom_nomenclature_mismatch', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
+                                        self.report.setWarning()
+
+                                        if self.__verbose:
+                                            self.__lfh.write("+NmrDpUtility.__testCoordAtomIdConsistency() ++ Warning  - %s\n" % err)
+
+                                        if file_type == 'nmr-star' and details_col != -1:
+                                            _details = loop.data[l][details_col]
+                                            details = "%s/%s/%s/%s is not incorporated in the atomic coordinate. However, it is acceptable if an appropriate atom name, H1, is given because of a cyclic-peptide.\n" % (chain_id, seq_id, comp_id, atom_name)
+                                            if _details in self.empty_value or (not details in _details):
+                                                if _details in self.empty_value:
+                                                    loop.data[l][details_col] = details
+                                                else:
+                                                    loop.data[l][details_col] += ('' if '\n' in _details else '\n') + details
+                                                add_details = True
+
+                                    else:
+
+                                        self.report.error.appendDescription('invalid_atom_nomenclature', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
+                                        self.report.setError()
+
+                                        if self.__verbose:
+                                            self.__lfh.write("+NmrDpUtility.__testCoordAtomIdConsistency() ++ Error  - %s\n" % err)
+
+                    list_id += 1
+
+                    continue
+
+                # Entry/Saveframe
+
+                for sf_data in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
+
+                    sf_framecode = sf_data.get_tag('sf_framecode')[0]
+
+                    if file_type == 'nef' or (not self.__nonblk_bad_nterm):
+                        lp_data = next((l['data'] for l in self.__lp_data[content_subtype] if l['file_name'] == file_name and l['sf_framecode'] == sf_framecode), None)
+
+                    else:
+
+                        if content_subtype == 'spectral_peak':
+
+                            try:
+
+                                _num_dim = sf_data.get_tag(self.num_dim_items[file_type])[0]
+                                num_dim = int(_num_dim)
+
+                                if not num_dim in range(1, self.lim_num_dim):
+                                    raise ValueError()
+
+                            except ValueError: # raised error already at __testIndexConsistency()
+                                continue
+
+                            max_dim = num_dim + 1
+
+                            key_items = []
+                            for dim in range(1, max_dim):
+                                for k in self.pk_key_items[file_type]:
+                                    _k = copy.copy(k)
+                                    if '%s' in k['name']:
+                                       _k['name'] = k['name'] % dim
+                                    key_items.append(_k)
+
+                            data_items = []
+                            for d in self.data_items[file_type][content_subtype]:
+                                data_items.append(d)
+                            for dim in range(1, max_dim):
+                                for d in self.pk_data_items[file_type]:
+                                    _d = copy.copy(d)
+                                    if '%s' in d['name']:
+                                        _d['name'] = d['name'] % dim
+                                    data_items.append(_d)
+
+                        else:
+
+                            key_items = self.key_items[file_type][content_subtype]
+                            data_items = self.data_items[file_type][content_subtype]
+
+                        try:
+                            lp_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, None, None)[0]
+                        except Exception:
+                            continue
+
+                    if not lp_data is None:
+
+                        has_seq_align = False
+
+                        sa_name = 'nmr_poly_seq_vs_' + content_subtype
+
+                        if sa_name in seq_align_dic and not seq_align_dic[sa_name] is None:
+
+                            for seq_align in seq_align_dic[sa_name]:
+
+                                if seq_align['list_id'] == list_id:
+                                    has_seq_align = True
+                                    break
+
+                        if not has_seq_align:
+                            continue
+
+                        item_names = []
+
+                        if content_subtype == 'chem_shift':
+                            max_dim = 2
+
+                            item_names.append(self.item_names_in_cs_loop[file_type])
+
+                        else:
+
+                            if content_subtype == 'dist_restraint' or content_subtype == 'rdc_restraint':
+                                max_dim = 3
+
+                            elif content_subtype == 'dihed_restraint':
+                                max_dim = 5
+
+                            elif content_subtype == 'spectral_peak':
+
+                                try:
+
+                                    _num_dim = sf_data.get_tag(self.num_dim_items[file_type])[0]
+                                    num_dim = int(_num_dim)
+
+                                    if not num_dim in range(1, self.lim_num_dim):
+                                        raise ValueError()
+
+                                except ValueError: # raised error already at __testIndexConsistency()
+                                    continue
+
+                                max_dim = num_dim + 1
 
                             else:
-                                atom_id_ = atom_id
-                                atom_name = atom_id
+                                continue
 
-                            result = next((c for c in coord if c['chain_id'] == cif_chain_id and c['seq_id'] == cif_seq_id and c['comp_id'] == cif_comp_id and c['atom_id'] == atom_id_), None)
+                            for j in range(1, max_dim):
+                                _item_names = {}
+                                for k, v in self.item_names_in_pk_loop[file_type].items():
+                                    if '%s' in v:
+                                        v = v % j
+                                    _item_names[k] = v
+                                item_names.append(_item_names)
 
-                            if result is None:
+                        num_dim = max_dim - 1
 
-                                idx_msg = ''
-                                if not index_tag is None:
-                                    idx_msg = "[Check row of %s %s] " % (index_tag, i[index_tag])
+                        chain_id_names = []
+                        seq_id_names = []
+                        comp_id_names = []
+                        atom_id_names = []
 
-                                err = "%sAtom (%s) is not incorporated in the atomic coordinate." %\
-                                      (idx_msg, self.__getReducedAtomNotation(chain_id_names[j], chain_id, seq_id_names[j], seq_id, comp_id_names[j], comp_id, atom_id_names[j], atom_name))
+                        for j in range(num_dim):
+                            chain_id_names.append(item_names[j]['chain_id'])
+                            seq_id_names.append(item_names[j]['seq_id'])
+                            comp_id_names.append(item_names[j]['comp_id'])
+                            atom_id_names.append(item_names[j]['atom_id'])
 
-                                cyclic = self.__isCyclicPolymer(ref_chain_id)
+                        if file_type == 'nmr-star':
 
-                                if self.__nonblk_bad_nterm and seq_id == 1 and atom_id_ == 'H' and (cyclic or comp_id == 'PRO'):
+                            loop = sf_data.get_loop_by_category(lp_category)
 
-                                    err += ' However, it is acceptable if an appropriate atom name, H1, is given '
+                            details_col = loop.tags.index('Details') if 'Details' in loop.tags else -1
 
-                                    if cyclic:
-                                        err += 'because of a cyclic-peptide.'
+                        for l, i in enumerate(lp_data):
+
+                            for j in range(num_dim):
+                                chain_id = i[chain_id_names[j]]
+                                seq_id = i[seq_id_names[j]]
+                                comp_id = i[comp_id_names[j]]
+                                atom_id = i[atom_id_names[j]]
+
+                                if content_subtype == 'spectral_peak' and (chain_id in self.empty_value or seq_id in self.empty_value or comp_id in self.empty_value or atom_id in self.empty_value):
+                                    continue
+
+                                if not str(chain_id) in nmr2ca:
+                                    continue
+
+                                ca = nmr2ca[str(chain_id)]
+
+                                cif_chain_id = ca['test_chain_id']
+
+                                cif_seq_id = None
+                                for k in range(ca['length']):
+                                    if ca['ref_seq_id'][k] == seq_id:
+                                        cif_seq_id = ca['test_seq_id'][k]
+                                        break
+
+                                if cif_seq_id is None:
+                                    continue
+
+                                cif_ps = next(ps for ps in cif_polymer_sequence if ps['chain_id'] == cif_chain_id)
+
+                                cif_comp_id = None
+                                for k in range(len(cif_ps['seq_id'])):
+                                    if cif_ps['seq_id'][k] == cif_seq_id:
+                                        cif_comp_id = cif_ps['comp_id'][k]
+                                        break
+
+                                if cif_comp_id is None:
+                                    continue
+
+                                if file_type == 'nef':
+                                    _atom_id, ambig_code, details = self.__nefT.get_star_atom(comp_id, atom_id, leave_unmatched=True)
+
+                                    if len(_atom_id) == 0:
+                                        continue
+
+                                    if len(_atom_id) == 1 and atom_id == _atom_id[0]:
+                                        atom_id_ = atom_id
+                                        atom_name = atom_id
+
+                                        if not details is None:
+                                            atom_name += ', besides that, ' + details.rstrip('.')
+
                                     else:
-                                        err += 'because sequence (chain_id %s) starts with Proline residue.' % ref_chain_id
+                                        atom_name = atom_id + ' (e.g. '
 
-                                    self.report.warning.appendDescription('atom_nomenclature_mismatch', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
-                                    self.report.setWarning()
+                                        for atom_id_ in _atom_id:
+                                            atom_name += atom_id_ + ' '
 
-                                    if self.__verbose:
-                                        self.__lfh.write("+NmrDpUtility.__testCoordAtomIdConsistency() ++ Warning  - %s\n" % err)
+                                        atom_name = atom_name.rstrip() + ')'
 
-                                    if file_type == 'nmr-star' and details_col != -1:
-                                        _details = loop.data[l][details_col]
-                                        details = "%s/%s/%s/%s is not incorporated in the atomic coordinate. However, it is acceptable if an appropriate atom name, H1, is given because of a cyclic-peptide.\n" % (chain_id, seq_id, comp_id, atom_name)
-                                        if _details in self.empty_value or (not details in _details):
-                                            if _details in self.empty_value:
-                                                loop.data[l][details_col] = details
-                                            else:
-                                                loop.data[l][details_col] += ('' if '\n' in _details else '\n') + details
-                                            add_details = True
+                                        # representative atom id
+                                        atom_id_ = _atom_id[0]
 
                                 else:
+                                    atom_id_ = atom_id
+                                    atom_name = atom_id
 
-                                    self.report.error.appendDescription('invalid_atom_nomenclature', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
-                                    self.report.setError()
+                                result = next((c for c in coord if c['chain_id'] == cif_chain_id and c['seq_id'] == cif_seq_id and c['comp_id'] == cif_comp_id and c['atom_id'] == atom_id_), None)
 
-                                    if self.__verbose:
-                                        self.__lfh.write("+NmrDpUtility.__testCoordAtomIdConsistency() ++ Error  - %s\n" % err)
+                                if result is None:
 
-                list_id += 1
+                                    idx_msg = ''
+                                    if not index_tag is None:
+                                        idx_msg = "[Check row of %s %s] " % (index_tag, i[index_tag])
 
-        if add_details:
-            self.__depositNmrData()
+                                    err = "%sAtom (%s) is not incorporated in the atomic coordinate." %\
+                                          (idx_msg, self.__getReducedAtomNotation(chain_id_names[j], chain_id, seq_id_names[j], seq_id, comp_id_names[j], comp_id, atom_id_names[j], atom_name))
+
+                                    cyclic = self.__isCyclicPolymer(ref_chain_id)
+
+                                    if self.__nonblk_bad_nterm and seq_id == 1 and atom_id_ == 'H' and (cyclic or comp_id == 'PRO'):
+
+                                        err += ' However, it is acceptable if an appropriate atom name, H1, is given '
+
+                                        if cyclic:
+                                            err += 'because of a cyclic-peptide.'
+                                        else:
+                                            err += 'because sequence (chain_id %s) starts with Proline residue.' % ref_chain_id
+
+                                        self.report.warning.appendDescription('atom_nomenclature_mismatch', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
+                                        self.report.setWarning()
+
+                                        if self.__verbose:
+                                            self.__lfh.write("+NmrDpUtility.__testCoordAtomIdConsistency() ++ Warning  - %s\n" % err)
+
+                                        if file_type == 'nmr-star' and details_col != -1:
+                                            _details = loop.data[l][details_col]
+                                            details = "%s/%s/%s/%s is not incorporated in the atomic coordinate. However, it is acceptable if an appropriate atom name, H1, is given because of a cyclic-peptide.\n" % (chain_id, seq_id, comp_id, atom_name)
+                                            if _details in self.empty_value or (not details in _details):
+                                                if _details in self.empty_value:
+                                                    loop.data[l][details_col] = details
+                                                else:
+                                                    loop.data[l][details_col] += ('' if '\n' in _details else '\n') + details
+                                                add_details = True
+
+                                    else:
+
+                                        self.report.error.appendDescription('invalid_atom_nomenclature', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
+                                        self.report.setError()
+
+                                        if self.__verbose:
+                                            self.__lfh.write("+NmrDpUtility.__testCoordAtomIdConsistency() ++ Error  - %s\n" % err)
+
+                    list_id += 1
+
+            if add_details:
+                self.__depositNmrData()
 
         return self.report.getTotalErrors() == __errors
 
@@ -12685,11 +15442,24 @@ class NmrDpUtility(object):
         """ Retrieve NMR data processing report from JSON file.
         """
 
+        if not self.__combined_mode:
+            return False
+
         # retrieve sf_category_list which is required to resolve minor issues
         if len(self.__sf_category_list) == 0:
 
-            is_done, self.__star_data_type, self.__star_data = self.__nefT.read_input_file(self.__srcPath)
-            self.__sf_category_list, self.__lp_category_list = self.__nefT.get_data_content(self.__star_data, self.__star_data_type)
+            is_done, star_data_type, star_data = self.__nefT.read_input_file(self.__srcPath)
+            self.__sf_category_list, self.__lp_category_list = self.__nefT.get_data_content(star_data, star_data_type)
+
+            if len(self.__star_data_type) == 0:
+                self.__star_data_type.append(star_data_type)
+            else:
+                self.__star_data_type[0] = star_data_type
+
+            if len(self.__star_data) == 0:
+                self.__star_data.append(star_data)
+            else:
+                self.__star_data[0] = star_data
 
         if 'report_file_path' in self.__inputParamDict:
 
@@ -12720,6 +15490,9 @@ class NmrDpUtility(object):
         """ Resolve conflicted rows in loops.
         """
 
+        if not self.__combined_mode:
+            return False
+
         input_source = self.report.input_sources[0]
         input_source_dic = input_source.get()
 
@@ -12739,7 +15512,7 @@ class NmrDpUtility(object):
             sf_category = self.sf_categories[file_type][content_subtype]
             lp_category = self.lp_categories[file_type][content_subtype]
 
-            for sf_data in self.__star_data.get_saveframes_by_category(sf_category):
+            for sf_data in self.__star_data[0].get_saveframes_by_category(sf_category):
 
                 if content_subtype == 'spectral_peak':
 
@@ -12787,6 +15560,9 @@ class NmrDpUtility(object):
         """ Resolve conflicted rows in auxiliary loops.
         """
 
+        if not self.__combined_mode:
+            return False
+
         input_source = self.report.input_sources[0]
         input_source_dic = input_source.get()
 
@@ -12803,7 +15579,7 @@ class NmrDpUtility(object):
             sf_category = self.sf_categories[file_type][content_subtype]
             lp_category = self.lp_categories[file_type][content_subtype]
 
-            for sf_data in self.__star_data.get_saveframes_by_category(sf_category):
+            for sf_data in self.__star_data[0].get_saveframes_by_category(sf_category):
 
                 if content_subtype == 'spectral_peak':
 
@@ -12849,67 +15625,75 @@ class NmrDpUtility(object):
         """ Append index tag if required.
         """
 
-        input_source = self.report.input_sources[0]
-        input_source_dic = input_source.get()
+        for fileListId in range(self.__file_path_list_len):
 
-        file_name = input_source_dic['file_name']
-        file_type = input_source_dic['file_type']
+            input_source = self.report.input_sources[fileListId]
+            input_source_dic = input_source.get()
 
-        if input_source_dic['content_subtype'] is None:
-            return True
+            file_name = input_source_dic['file_name']
+            file_type = input_source_dic['file_type']
 
-        for content_subtype in input_source_dic['content_subtype'].keys():
-
-            sf_category = self.sf_categories[file_type][content_subtype]
-            lp_category = self.lp_categories[file_type][content_subtype]
-
-            index_tag = self.index_tags[file_type][content_subtype]
-
-            if index_tag is None:
+            if input_source_dic['content_subtype'] is None:
                 continue
 
-            for sf_data in self.__star_data.get_saveframes_by_category(sf_category):
+            for content_subtype in input_source_dic['content_subtype'].keys():
 
-                sf_framecode = sf_data.get_tag('sf_framecode')[0]
+                sf_category = self.sf_categories[file_type][content_subtype]
+                lp_category = self.lp_categories[file_type][content_subtype]
 
-                lp_data = sf_data.get_loop_by_category(lp_category)
+                index_tag = self.index_tags[file_type][content_subtype]
 
-                if index_tag in lp_data.tags:
+                if index_tag is None:
                     continue
 
-                lp_tag = lp_category + '.' + index_tag
-                err = self.__err_template_for_missing_mandatory_lp_tag % (lp_tag, self.readable_file_type[file_type])
+                if self.__star_data_type[fileListId] == 'Loop':
+                    continue
 
-                if self.__check_mandatory_tag and self.__nefT.is_mandatory_tag(lp_tag, file_type):
-                    self.report.error.appendDescription('missing_mandatory_item', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
-                    self.report.setError()
+                for sf_data in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
 
-                    if self.__verbose:
-                        self.__lfh.write("+NmrDpUtility.__appendIndexTag() ++ LookupError  - %s" % err)
+                    sf_framecode = sf_data.get_tag('sf_framecode')[0]
 
-                new_lp_data = pynmrstar.Loop.from_scratch(lp_category)
+                    lp_data = sf_data.get_loop_by_category(lp_category)
 
-                new_lp_data.add_tag(lp_tag)
+                    if index_tag in lp_data.tags:
+                        continue
 
-                for tag in lp_data.tags:
-                    new_lp_data.add_tag(lp_category + '.' + tag)
+                    lp_tag = lp_category + '.' + index_tag
+                    err = self.__err_template_for_missing_mandatory_lp_tag % (lp_tag, self.readable_file_type[file_type])
 
-                for l, i in enumerate(lp_data.data):
-                    new_lp_data.add_data([str(l + 1)] + i)
+                    if self.__check_mandatory_tag and self.__nefT.is_mandatory_tag(lp_tag, file_type):
+                        self.report.error.appendDescription('missing_mandatory_item', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
+                        self.report.setError()
 
-                del sf_data[lp_data]
+                        if self.__verbose:
+                            self.__lfh.write("+NmrDpUtility.__appendIndexTag() ++ LookupError  - %s" % err)
 
-                sf_data.add_loop(new_lp_data)
+                    new_lp_data = pynmrstar.Loop.from_scratch(lp_category)
+
+                    new_lp_data.add_tag(lp_tag)
+
+                    for tag in lp_data.tags:
+                        new_lp_data.add_tag(lp_category + '.' + tag)
+
+                    for l, i in enumerate(lp_data.data):
+                        new_lp_data.add_data([str(l + 1)] + i)
+
+                    del sf_data[lp_data]
+
+                    sf_data.add_loop(new_lp_data)
 
     def __deleteSkippedSf(self):
         """ Delete skipped saveframes.
         """
 
+        if not self.__combined_mode:
+            return False
+
         input_source = self.report.input_sources[0]
         input_source_dic = input_source.get()
 
-        file_type = input_source_dic['file_type']
         file_name = input_source_dic['file_name']
+        file_type = input_source_dic['file_type']
 
         warnings = self.report.warning.getValueList('skipped_sf_category', file_name)
 
@@ -12921,7 +15705,7 @@ class NmrDpUtility(object):
 
         for w in warnings:
 
-            if self.__star_data_type == "Entry" or self.__star_data_type == "Saveframe":
+            if self.__star_data_type[0] == "Entry" or self.__star_data_type[0] == "Saveframe":
 
                 if not 'sf_category' in w:
 
@@ -12935,7 +15719,7 @@ class NmrDpUtility(object):
 
                 else:
 
-                    sf_list = self.__star_data.get_saveframes_by_category(w['sf_category'])
+                    sf_list = self.__star_data[0].get_saveframes_by_category(w['sf_category'])
 
                     if sf_list is None:
 
@@ -12950,11 +15734,11 @@ class NmrDpUtility(object):
                     else:
 
                         for sf_data in reversed(sf_list):
-                            del self.__star_data[sf_data]
+                            del self.__star_data[0][sf_data]
 
             else:
 
-                err = "Unexpected PyNMRSTAR object type %s found about %s file." % (self.__star_data_type, file_name)
+                err = "Unexpected PyNMRSTAR object type %s found about %s file." % (self.__star_data_type[0], file_name)
 
                 self.report.error.appendDescription('internal_error', "+NmrDpUtility.__deleteSkippedSf() ++ Error  - %s" % err)
                 self.report.setError()
@@ -12968,11 +15752,14 @@ class NmrDpUtility(object):
         """ Delete skipped loops.
         """
 
+        if not self.__combined_mode:
+            return False
+
         input_source = self.report.input_sources[0]
         input_source_dic = input_source.get()
 
-        file_type = input_source_dic['file_type']
         file_name = input_source_dic['file_name']
+        file_type = input_source_dic['file_type']
 
         warnings = self.report.warning.getValueList('skipped_lp_category', file_name)
 
@@ -12984,7 +15771,7 @@ class NmrDpUtility(object):
 
         for w in warnings:
 
-            if self.__star_data_type == "Entry" or self.__star_data_type == "Saveframe":
+            if self.__star_data_type[0] == "Entry" or self.__star_data_type[0] == "Saveframe":
 
                 if not 'sf_framecode' in w:
 
@@ -12998,7 +15785,7 @@ class NmrDpUtility(object):
 
                 else:
 
-                    sf_data = self.__star_data.get_saveframe_by_name(w['sf_framecode'])
+                    sf_data = self.__star_data[0].get_saveframe_by_name(w['sf_framecode'])
 
                     if sf_data is None:
 
@@ -13027,7 +15814,7 @@ class NmrDpUtility(object):
 
             else:
 
-                err = "Unexpected PyNMRSTAR object type %s found about %s file." % (self.__star_data_type, file_name)
+                err = "Unexpected PyNMRSTAR object type %s found about %s file." % (self.__star_data_type[0], file_name)
 
                 self.report.error.appendDescription('internal_error', "+NmrDpUtility.__deleteSkippedLoop() ++ Error  - %s" % err)
                 self.report.setError()
@@ -13041,11 +15828,14 @@ class NmrDpUtility(object):
         """ Delete unparsed entry loops.
         """
 
+        if not self.__combined_mode:
+            return False
+
         input_source = self.report.input_sources[0]
         input_source_dic = input_source.get()
 
-        file_type = input_source_dic['file_type']
         file_name = input_source_dic['file_name']
+        file_type = input_source_dic['file_type']
 
         if self.__retain_original:
             return True
@@ -13055,27 +15845,27 @@ class NmrDpUtility(object):
         sf_category = self.sf_categories[file_type][content_subtype]
         lp_category = self.lp_categories[file_type][content_subtype]
 
-        if self.__star_data_type == "Entry" or self.__star_data_type == "Saveframe":
+        if self.__star_data_type[0] == "Entry" or self.__star_data_type[0] == "Saveframe":
 
             if sf_category in self.__sf_category_list:
 
-                sf_data = self.__star_data.get_saveframes_by_category(sf_category)[0]
+                for sf_data in self.__star_data[0].get_saveframes_by_category(sf_category):
 
-                loops = []
+                    loops = []
 
-                for loop in sf_data.loops:
+                    for loop in sf_data.loops:
 
-                    if loop.category == lp_category:
-                        continue
+                        if loop.category == lp_category:
+                            continue
 
-                    loops.append(loop)
+                        loops.append(loop)
 
-                for loop in reversed(loops):
-                    del sf_data[loop]
+                    for loop in reversed(loops):
+                        del sf_data[loop]
 
         else:
 
-            err = "Unexpected PyNMRSTAR object type %s found about %s file." % (self.__star_data_type, file_name)
+            err = "Unexpected PyNMRSTAR object type %s found about %s file." % (self.__star_data_type[0], file_name)
 
             self.report.error.appendDescription('internal_error', "+NmrDpUtility.__deleteUnparsedEntryLoop() ++ Error  - %s" % err)
             self.report.setError()
@@ -13088,6 +15878,9 @@ class NmrDpUtility(object):
     def __updatePolymerSequence(self):
         """ Update polymer sequence.
         """
+
+        if not self.__combined_mode:
+            return False
 
         input_source = self.report.input_sources[0]
         input_source_dic = input_source.get()
@@ -13131,64 +15924,58 @@ class NmrDpUtility(object):
         has_assembly_id = False
         has_entry_id = False
 
-        try:
+        for sf_data in self.__star_data[0].get_saveframes_by_category(sf_category):
 
-            sf_data = self.__star_data.get_saveframes_by_category(sf_category)[0]
+            sf_framecode = sf_data.get_tag('sf_framecode')[0]
 
-            if not sf_data is None:
+            orig_lp_data = next((l['data'] for l in self.__lp_data[content_subtype] if l['file_name'] == file_name and l['sf_framecode'] == sf_framecode), None)
 
-                sf_framecode = sf_data.get_tag('sf_framecode')[0]
+            if orig_lp_data is None:
+                continue
+                # orig_lp_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, None, None)[0]
 
-                orig_lp_data = next((l['data'] for l in self.__lp_data[content_subtype] if l['sf_framecode'] == sf_framecode), None)
+            if file_type == 'nef':
+                if 'residue_variant' in orig_lp_data[0]:
+                    result = next((i for i in orig_lp_data if not i['residue_variant'] in self.empty_value), None)
+                    if not result is None:
+                        has_res_var_dat = True
 
-                if orig_lp_data is None:
-                    orig_lp_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, None, None)[0]
+            else:
+                if 'Auth_variant_ID' in orig_lp_data[0]:
+                    result = next((i for i in orig_lp_data if not i['Auth_variant_ID'] in self.empty_value), None)
+                    if not result is None:
+                        has_res_var_dat = True
 
-                if file_type == 'nef':
-                    if 'residue_variant' in orig_lp_data[0]:
-                        result = next((i for i in orig_lp_data if not i['residue_variant'] in self.empty_value), None)
-                        if not result is None:
-                            has_res_var_dat = True
+                if 'Auth_asym_ID' in orig_lp_data[0]:
+                    result = next((i for i in orig_lp_data if not i['Auth_asym_ID'] in self.empty_value), None)
+                    if not result is None:
+                        has_auth_asym_id = True
 
-                else:
-                    if 'Auth_variant_ID' in orig_lp_data[0]:
-                        result = next((i for i in orig_lp_data if not i['Auth_variant_ID'] in self.empty_value), None)
-                        if not result is None:
-                            has_res_var_dat = True
+                if 'Auth_seq_ID' in orig_lp_data[0]:
+                    result = next((i for i in orig_lp_data if not i['Auth_seq_ID'] in self.empty_value), None)
+                    if not result is None:
+                        has_auth_seq_id = True
 
-                    if 'Auth_asym_ID' in orig_lp_data[0]:
-                        result = next((i for i in orig_lp_data if not i['Auth_asym_ID'] in self.empty_value), None)
-                        if not result is None:
-                            has_auth_asym_id = True
+                if 'Auth_comp_ID' in orig_lp_data[0]:
+                    result = next((i for i in orig_lp_data if not i['Auth_comp_ID'] in self.empty_value), None)
+                    if not result is None:
+                        has_auth_comp_id = True
 
-                    if 'Auth_seq_ID' in orig_lp_data[0]:
-                        result = next((i for i in orig_lp_data if not i['Auth_seq_ID'] in self.empty_value), None)
-                        if not result is None:
-                            has_auth_seq_id = True
+                if 'NEF_index' in orig_lp_data[0]:
+                    result = next((i for i in orig_lp_data if not i['NEF_index'] in self.empty_value), None)
+                    if not result is None:
+                        has_nef_index_dat = True
 
-                    if 'Auth_comp_ID' in orig_lp_data[0]:
-                        result = next((i for i in orig_lp_data if not i['Auth_comp_ID'] in self.empty_value), None)
-                        if not result is None:
-                            has_auth_comp_id = True
+                if 'Assembly_ID' in orig_lp_data[0]:
+                    has_assembly_id = True
 
-                    if 'NEF_index' in orig_lp_data[0]:
-                        result = next((i for i in orig_lp_data if not i['NEF_index'] in self.empty_value), None)
-                        if not result is None:
-                            has_nef_index_dat = True
-
-                    if 'Assembly_ID' in orig_lp_data[0]:
-                        has_assembly_id = True
-
-                    if 'Entry_ID' in orig_lp_data[0]:
-                        has_entry_id = True
-
-        except:
-            pass
+                if 'Entry_ID' in orig_lp_data[0]:
+                    has_entry_id = True
 
         sf_cat_name = 'nef_molecular_system' if file_type == 'nef' else 'Assembly'
         lp_cat_name = '_nef_sequence' if file_type == 'nef' else '_Chem_comp_assembly'
 
-        orig_poly_seq_sf_data = self.__star_data.get_saveframes_by_category(sf_category)[0] if self.__retain_original else None
+        orig_poly_seq_sf_data = self.__star_data[0].get_saveframes_by_category(sf_category)[0] if self.__retain_original else None
 
         poly_seq_sf_data = pynmrstar.Saveframe.from_scratch(sf_cat_name)
 
@@ -13422,14 +16209,14 @@ class NmrDpUtility(object):
 
             # replace polymer sequence
 
-            sf_list = self.__star_data.get_saveframes_by_category(sf_category)
+            sf_list = self.__star_data[0].get_saveframes_by_category(sf_category)
 
             if not sf_list is None:
 
                 for old_sf_data in reversed(sf_list):
-                    del self.__star_data[old_sf_data]
+                    del self.__star_data[0][old_sf_data]
 
-        norm_star_data = copy.copy(self.__star_data)
+        norm_star_data = copy.copy(self.__star_data[0])
 
         for content_subtype in self.nmr_content_subtypes:
 
@@ -13442,7 +16229,7 @@ class NmrDpUtility(object):
 
             elif self.__hasKeyValue(input_source_dic['content_subtype'], content_subtype):
 
-                sf_list = self.__star_data.get_saveframes_by_category(sf_category)
+                sf_list = self.__star_data[0].get_saveframes_by_category(sf_category)
 
                 if not sf_list is None:
 
@@ -13452,7 +16239,7 @@ class NmrDpUtility(object):
                     for sf_data in sf_list:
                         norm_star_data.add_saveframe(sf_data)
 
-        self.__star_data = norm_star_data
+        self.__star_data[0] = norm_star_data
 
         return True
 
@@ -13734,272 +16521,336 @@ class NmrDpUtility(object):
         """ Map disulfide bond of coordinate file to NMR data.
         """
 
-        input_source = self.report.input_sources[0]
-        input_source_dic = input_source.get()
+        is_done = False
 
-        file_name = input_source_dic['file_name']
-        file_type = input_source_dic['file_type']
+        for fileListId in range(self.__file_path_list_len):
 
-        polymer_sequence = input_source_dic['polymer_sequence']
+            input_source = self.report.input_sources[fileListId]
+            input_source_dic = input_source.get()
 
-        if polymer_sequence is None:
-            return False
+            file_name = input_source_dic['file_name']
+            file_type = input_source_dic['file_type']
 
-        seq_align_dic = self.report.sequence_alignment.get()
+            polymer_sequence = input_source_dic['polymer_sequence']
 
-        content_subtype = 'chem_shift'
-
-        if not self.__hasKeyValue(input_source_dic['content_subtype'], content_subtype):
-
-            err = "Assigned chemical shift loop did not exist in %s file." % file_name
-
-            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__mapCoordDisulfideBond2Nmr() ++ Error  - %s" % err)
-            self.report.setError()
-
-            if self.__verbose:
-                self.__lfh.write("+NmrDpUtility.__mapCoordDisulfideBond2Nmr() ++ Error  - %s\n" % err)
-
-            return False
-
-        sf_category = self.sf_categories[file_type][content_subtype]
-        lp_category = self.lp_categories[file_type][content_subtype]
-
-        key_items = self.key_items[file_type][content_subtype]
-        data_items = self.data_items[file_type][content_subtype]
-
-        item_names = self.item_names_in_cs_loop[file_type]
-        chain_id_name = item_names['chain_id']
-        seq_id_name = item_names['seq_id']
-        comp_id_name = item_names['comp_id']
-        atom_id_name = item_names['atom_id']
-        value_name = item_names['value']
-
-        asm = []
-
-        for bond in bond_list:
-
-            cif_chain_id_1 = bond['chain_id_1']
-            cif_seq_id_1 = bond['seq_id_1']
-            cif_chain_id_2 = bond['chain_id_2']
-            cif_seq_id_2 = bond['seq_id_2']
-
-            s1 = self.report.getNmrPolymerSequenceWithModelChainId(cif_chain_id_1)
-
-            if s1 is None:
+            if polymer_sequence is None:
                 continue
 
-            nmr_chain_id_1 = s1['chain_id']
+            seq_align_dic = self.report.sequence_alignment.get()
 
-            result = next((seq_align for seq_align in seq_align_dic['model_poly_seq_vs_nmr_poly_seq'] if seq_align['ref_chain_id'] == cif_chain_id_1 and seq_align['test_chain_id'] == nmr_chain_id_1), None)
+            content_subtype = 'chem_shift'
 
-            if result is None:
+            if not self.__hasKeyValue(input_source_dic['content_subtype'], content_subtype):
+
+                err = "Assigned chemical shift loop did not exist in %s file." % file_name
+
+                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__mapCoordDisulfideBond2Nmr() ++ Error  - %s" % err)
+                self.report.setError()
+
+                if self.__verbose:
+                    self.__lfh.write("+NmrDpUtility.__mapCoordDisulfideBond2Nmr() ++ Error  - %s\n" % err)
+
                 continue
 
-            nmr_seq_id_1 = None
-            for k in range(result['length']):
-                if result['ref_seq_id'][k] == cif_seq_id_1:
-                    nmr_seq_id_1 = result['test_seq_id'][k]
-                    break
+            sf_category = self.sf_categories[file_type][content_subtype]
+            lp_category = self.lp_categories[file_type][content_subtype]
 
-            if nmr_seq_id_1 is None:
-                continue
+            key_items = self.key_items[file_type][content_subtype]
+            data_items = self.data_items[file_type][content_subtype]
 
-            nmr_comp_id_1 = None
-            for k in range(len(s1['seq_id'])):
-                if s1['seq_id'][k] == nmr_seq_id_1:
-                    nmr_comp_id_1 = s1['comp_id'][k]
-                    break
+            item_names = self.item_names_in_cs_loop[file_type]
+            chain_id_name = item_names['chain_id']
+            seq_id_name = item_names['seq_id']
+            comp_id_name = item_names['comp_id']
+            atom_id_name = item_names['atom_id']
+            value_name = item_names['value']
 
-            if nmr_comp_id_1 is None:
-                continue
+            asm = []
 
-            s2 = self.report.getNmrPolymerSequenceWithModelChainId(cif_chain_id_2)
+            for bond in bond_list:
 
-            if s2 is None:
-                continue
+                cif_chain_id_1 = bond['chain_id_1']
+                cif_seq_id_1 = bond['seq_id_1']
+                cif_chain_id_2 = bond['chain_id_2']
+                cif_seq_id_2 = bond['seq_id_2']
 
-            nmr_chain_id_2 = s2['chain_id']
+                s1 = self.report.getNmrPolymerSequenceWithModelChainId(cif_chain_id_1)
 
-            result = next((seq_align for seq_align in seq_align_dic['model_poly_seq_vs_nmr_poly_seq'] if seq_align['ref_chain_id'] == cif_chain_id_2 and seq_align['test_chain_id'] == nmr_chain_id_2), None)
-
-            if result is None:
-                continue
-
-            nmr_seq_id_2 = None
-            for k in range(result['length']):
-                if result['ref_seq_id'][k] == cif_seq_id_2:
-                    nmr_seq_id_2 = result['test_seq_id'][k]
-                    break
-
-            if nmr_seq_id_2 is None:
-                continue
-
-            nmr_comp_id_2 = None
-            for k in range(len(s2['seq_id'])):
-                if s2['seq_id'][k] == nmr_seq_id_2:
-                    nmr_comp_id_2 = s2['comp_id'][k]
-                    break
-
-            if nmr_comp_id_2 is None:
-                continue
-
-            disulf = {}
-            disulf['chain_id_1'] = nmr_chain_id_1
-            disulf['seq_id_1'] = nmr_seq_id_1
-            disulf['comp_id_1'] = nmr_comp_id_1
-            disulf['atom_id_1'] = bond['atom_id_1']
-            disulf['chain_id_2'] = nmr_chain_id_2
-            disulf['seq_id_2'] = nmr_seq_id_2
-            disulf['comp_id_2'] = nmr_comp_id_2
-            disulf['atom_id_2'] = bond['atom_id_2']
-            disulf['distance_value'] = bond['distance_value']
-            disulf['warning_description_1'] = None
-            disulf['warning_description_2'] = None
-
-            ca_chem_shift_1 = None
-            cb_chem_shift_1 = None
-            ca_chem_shift_2 = None
-            cb_chem_shift_2 = None
-
-            for sf_data in self.__star_data.get_saveframes_by_category(sf_category):
-
-                sf_framecode = sf_data.get_tag('sf_framecode')[0]
-
-                if self.report.error.exists(file_name, sf_framecode):
+                if s1 is None:
                     continue
 
-                lp_data = next((l['data'] for l in self.__lp_data[content_subtype] if l['sf_framecode'] == sf_framecode), None)
+                nmr_chain_id_1 = s1['chain_id']
 
-                if lp_data is None:
+                result = next((seq_align for seq_align in seq_align_dic['model_poly_seq_vs_nmr_poly_seq'] if seq_align['ref_chain_id'] == cif_chain_id_1 and seq_align['test_chain_id'] == nmr_chain_id_1), None)
 
-                    try:
+                if result is None:
+                    continue
 
-                        lp_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, None, None)[0]
+                nmr_seq_id_1 = None
+                for k in range(result['length']):
+                    if result['ref_seq_id'][k] == cif_seq_id_1:
+                        nmr_seq_id_1 = result['test_seq_id'][k]
+                        break
 
-                        self.__lp_data[content_subtype].append({'sf_framecode': sf_framecode, 'data': lp_data})
+                if nmr_seq_id_1 is None:
+                    continue
 
-                    except:
-                        pass
+                nmr_comp_id_1 = None
+                for k in range(len(s1['seq_id'])):
+                    if s1['seq_id'][k] == nmr_seq_id_1:
+                        nmr_comp_id_1 = s1['comp_id'][k]
+                        break
 
-                if not lp_data is None:
+                if nmr_comp_id_1 is None:
+                    continue
 
-                    for i in lp_data:
-                        _chain_id = i[chain_id_name]
-                        seq_id = i[seq_id_name]
-                        comp_id = i[comp_id_name]
-                        atom_id = i[atom_id_name]
+                s2 = self.report.getNmrPolymerSequenceWithModelChainId(cif_chain_id_2)
 
-                        if type(_chain_id) is int:
-                            chain_id = str(_chain_id)
-                        else:
-                            chain_id = _chain_id
+                if s2 is None:
+                    continue
 
-                        if chain_id == nmr_chain_id_1 and seq_id == nmr_seq_id_1 and comp_id == nmr_comp_id_1:
-                            if atom_id == 'CA' and ca_chem_shift_1 is None:
-                                ca_chem_shift_1 = i[value_name]
-                            elif atom_id == 'CB' and cb_chem_shift_1 is None:
-                                cb_chem_shift_1 = i[value_name]
+                nmr_chain_id_2 = s2['chain_id']
 
-                        elif chain_id == nmr_chain_id_2 and seq_id == nmr_seq_id_2 and comp_id == nmr_comp_id_2:
-                            if atom_id == 'CA' and ca_chem_shift_2 is None:
-                                ca_chem_shift_2 = i[value_name]
-                            elif atom_id == 'CB' and cb_chem_shift_2 is None:
-                                cb_chem_shift_2 = i[value_name]
+                result = next((seq_align for seq_align in seq_align_dic['model_poly_seq_vs_nmr_poly_seq'] if seq_align['ref_chain_id'] == cif_chain_id_2 and seq_align['test_chain_id'] == nmr_chain_id_2), None)
+
+                if result is None:
+                    continue
+
+                nmr_seq_id_2 = None
+                for k in range(result['length']):
+                    if result['ref_seq_id'][k] == cif_seq_id_2:
+                        nmr_seq_id_2 = result['test_seq_id'][k]
+                        break
+
+                if nmr_seq_id_2 is None:
+                    continue
+
+                nmr_comp_id_2 = None
+                for k in range(len(s2['seq_id'])):
+                    if s2['seq_id'][k] == nmr_seq_id_2:
+                        nmr_comp_id_2 = s2['comp_id'][k]
+                        break
+
+                if nmr_comp_id_2 is None:
+                    continue
+
+                disulf = {}
+                disulf['chain_id_1'] = nmr_chain_id_1
+                disulf['seq_id_1'] = nmr_seq_id_1
+                disulf['comp_id_1'] = nmr_comp_id_1
+                disulf['atom_id_1'] = bond['atom_id_1']
+                disulf['chain_id_2'] = nmr_chain_id_2
+                disulf['seq_id_2'] = nmr_seq_id_2
+                disulf['comp_id_2'] = nmr_comp_id_2
+                disulf['atom_id_2'] = bond['atom_id_2']
+                disulf['distance_value'] = bond['distance_value']
+                disulf['warning_description_1'] = None
+                disulf['warning_description_2'] = None
+
+                ca_chem_shift_1 = None
+                cb_chem_shift_1 = None
+                ca_chem_shift_2 = None
+                cb_chem_shift_2 = None
+
+                if self.__star_data_type[fileListId] == 'Loop':
+
+                    sf_data = self.__star_data[fileListId]
+                    sf_framecode = ''
+
+                    if self.report.error.exists(file_name, sf_framecode):
+                        continue
+
+                    lp_data = next((l['data'] for l in self.__lp_data[content_subtype] if l['file_name'] == file_name and l['sf_framecode'] == sf_framecode), None)
+
+                    if lp_data is None:
+
+                        try:
+
+                            lp_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, None, None)[0]
+
+                            self.__lp_data[content_subtype].append({'file_name': file_name, 'sf_framecode': sf_framecode, 'data': lp_data})
+
+                        except:
+                            pass
+
+                    if not lp_data is None:
+
+                        for i in lp_data:
+                            _chain_id = i[chain_id_name]
+                            seq_id = i[seq_id_name]
+                            comp_id = i[comp_id_name]
+                            atom_id = i[atom_id_name]
+
+                            if type(_chain_id) is int:
+                                chain_id = str(_chain_id)
+                            else:
+                                chain_id = _chain_id
+
+                            if chain_id == nmr_chain_id_1 and seq_id == nmr_seq_id_1 and comp_id == nmr_comp_id_1:
+                                if atom_id == 'CA' and ca_chem_shift_1 is None:
+                                    ca_chem_shift_1 = i[value_name]
+                                elif atom_id == 'CB' and cb_chem_shift_1 is None:
+                                    cb_chem_shift_1 = i[value_name]
+
+                            elif chain_id == nmr_chain_id_2 and seq_id == nmr_seq_id_2 and comp_id == nmr_comp_id_2:
+                                if atom_id == 'CA' and ca_chem_shift_2 is None:
+                                    ca_chem_shift_2 = i[value_name]
+                                elif atom_id == 'CB' and cb_chem_shift_2 is None:
+                                    cb_chem_shift_2 = i[value_name]
+
+                            if ca_chem_shift_1 is None or cb_chem_shift_1 is None or ca_chem_shift_2 is None or cb_chem_shift_2 is None:
+                                pass
+                            else:
+                                break
 
                         if ca_chem_shift_1 is None or cb_chem_shift_1 is None or ca_chem_shift_2 is None or cb_chem_shift_2 is None:
                             pass
                         else:
                             break
 
-                    if ca_chem_shift_1 is None or cb_chem_shift_1 is None or ca_chem_shift_2 is None or cb_chem_shift_2 is None:
-                        pass
-                    else:
-                        break
+                # Entry/Saveframe
 
-            disulf['ca_chem_shift_1'] = ca_chem_shift_1
-            disulf['cb_chem_shift_1'] = cb_chem_shift_1
-            disulf['ca_chem_shift_2'] = ca_chem_shift_2
-            disulf['cb_chem_shift_2'] = cb_chem_shift_2
+                else:
 
-            if not cb_chem_shift_1 is None:
-                if cb_chem_shift_1 < 32.0:
-                    disulf['redox_state_pred_1'] = 'reduced'
-                elif cb_chem_shift_1 > 35.0:
-                    disulf['redox_state_pred_1'] = 'oxidized'
-                elif not cb_chem_shift_2 is None:
-                    if cb_chem_shift_2 < 32.0:
+                    for sf_data in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
+
+                        sf_framecode = sf_data.get_tag('sf_framecode')[0]
+
+                        if self.report.error.exists(file_name, sf_framecode):
+                            continue
+
+                        lp_data = next((l['data'] for l in self.__lp_data[content_subtype] if l['file_name'] == file_name and l['sf_framecode'] == sf_framecode), None)
+
+                        if lp_data is None:
+
+                            try:
+
+                                lp_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, None, None)[0]
+
+                                self.__lp_data[content_subtype].append({'file_name': file_name, 'sf_framecode': sf_framecode, 'data': lp_data})
+
+                            except:
+                                pass
+
+                        if not lp_data is None:
+
+                            for i in lp_data:
+                                _chain_id = i[chain_id_name]
+                                seq_id = i[seq_id_name]
+                                comp_id = i[comp_id_name]
+                                atom_id = i[atom_id_name]
+
+                                if type(_chain_id) is int:
+                                    chain_id = str(_chain_id)
+                                else:
+                                    chain_id = _chain_id
+
+                                if chain_id == nmr_chain_id_1 and seq_id == nmr_seq_id_1 and comp_id == nmr_comp_id_1:
+                                    if atom_id == 'CA' and ca_chem_shift_1 is None:
+                                        ca_chem_shift_1 = i[value_name]
+                                    elif atom_id == 'CB' and cb_chem_shift_1 is None:
+                                        cb_chem_shift_1 = i[value_name]
+
+                                elif chain_id == nmr_chain_id_2 and seq_id == nmr_seq_id_2 and comp_id == nmr_comp_id_2:
+                                    if atom_id == 'CA' and ca_chem_shift_2 is None:
+                                        ca_chem_shift_2 = i[value_name]
+                                    elif atom_id == 'CB' and cb_chem_shift_2 is None:
+                                        cb_chem_shift_2 = i[value_name]
+
+                                if ca_chem_shift_1 is None or cb_chem_shift_1 is None or ca_chem_shift_2 is None or cb_chem_shift_2 is None:
+                                    pass
+                                else:
+                                    break
+
+                            if ca_chem_shift_1 is None or cb_chem_shift_1 is None or ca_chem_shift_2 is None or cb_chem_shift_2 is None:
+                                pass
+                            else:
+                                break
+
+                disulf['ca_chem_shift_1'] = ca_chem_shift_1
+                disulf['cb_chem_shift_1'] = cb_chem_shift_1
+                disulf['ca_chem_shift_2'] = ca_chem_shift_2
+                disulf['cb_chem_shift_2'] = cb_chem_shift_2
+
+                if not cb_chem_shift_1 is None:
+                    if cb_chem_shift_1 < 32.0:
                         disulf['redox_state_pred_1'] = 'reduced'
-                    elif cb_chem_shift_2 > 35.0:
+                    elif cb_chem_shift_1 > 35.0:
                         disulf['redox_state_pred_1'] = 'oxidized'
+                    elif not cb_chem_shift_2 is None:
+                        if cb_chem_shift_2 < 32.0:
+                            disulf['redox_state_pred_1'] = 'reduced'
+                        elif cb_chem_shift_2 > 35.0:
+                            disulf['redox_state_pred_1'] = 'oxidized'
+                        else:
+                            disulf['redox_state_pred_1'] = 'ambiguous'
                     else:
                         disulf['redox_state_pred_1'] = 'ambiguous'
                 else:
-                    disulf['redox_state_pred_1'] = 'ambiguous'
-            else:
-                disulf['redox_state_pred_1'] = 'unknown'
+                    disulf['redox_state_pred_1'] = 'unknown'
 
-            if not cb_chem_shift_2 is None:
-                if cb_chem_shift_2 < 32.0:
-                    disulf['redox_state_pred_2'] = 'reduced'
-                elif cb_chem_shift_2 > 35.0:
-                    disulf['redox_state_pred_2'] = 'oxidized'
-                elif not cb_chem_shift_1 is None:
-                    if cb_chem_shift_1 < 32.0:
+                if not cb_chem_shift_2 is None:
+                    if cb_chem_shift_2 < 32.0:
                         disulf['redox_state_pred_2'] = 'reduced'
-                    elif cb_chem_shift_1 > 35.0:
+                    elif cb_chem_shift_2 > 35.0:
                         disulf['redox_state_pred_2'] = 'oxidized'
+                    elif not cb_chem_shift_1 is None:
+                        if cb_chem_shift_1 < 32.0:
+                            disulf['redox_state_pred_2'] = 'reduced'
+                        elif cb_chem_shift_1 > 35.0:
+                            disulf['redox_state_pred_2'] = 'oxidized'
+                        else:
+                            disulf['redox_state_pred_2'] = 'ambiguous'
                     else:
                         disulf['redox_state_pred_2'] = 'ambiguous'
                 else:
-                    disulf['redox_state_pred_2'] = 'ambiguous'
-            else:
-                disulf['redox_state_pred_2'] = 'unknown'
+                    disulf['redox_state_pred_2'] = 'unknown'
 
-            if disulf['redox_state_pred_1'] == 'ambiguous' and ((not ca_chem_shift_1 is None) or (not cb_chem_shift_1 is None)):
-                oxi, red = self.__predictRedoxStateOfCystein(ca_chem_shift_1, cb_chem_shift_1)
-                disulf['redox_state_pred_1'] = 'oxidized %s (%%), reduced %s (%%)' % ('{:.1f}'.format(oxi * 100.0), '{:.1f}'.format(red * 100.0))
+                if disulf['redox_state_pred_1'] == 'ambiguous' and ((not ca_chem_shift_1 is None) or (not cb_chem_shift_1 is None)):
+                    oxi, red = self.__predictRedoxStateOfCystein(ca_chem_shift_1, cb_chem_shift_1)
+                    disulf['redox_state_pred_1'] = 'oxidized %s (%%), reduced %s (%%)' % ('{:.1f}'.format(oxi * 100.0), '{:.1f}'.format(red * 100.0))
 
-            if disulf['redox_state_pred_2'] == 'ambiguous' and ((not ca_chem_shift_2 is None) or (not cb_chem_shift_2 is None)):
-                oxi, red = self.__predictRedoxStateOfCystein(ca_chem_shift_2, cb_chem_shift_2)
-                disulf['redox_state_pred_2'] = 'oxidized %s (%%), reduced %s (%%)' % ('{:.1f}'.format(oxi * 100.0), '{:.1f}'.format(red * 100.0))
+                if disulf['redox_state_pred_2'] == 'ambiguous' and ((not ca_chem_shift_2 is None) or (not cb_chem_shift_2 is None)):
+                    oxi, red = self.__predictRedoxStateOfCystein(ca_chem_shift_2, cb_chem_shift_2)
+                    disulf['redox_state_pred_2'] = 'oxidized %s (%%), reduced %s (%%)' % ('{:.1f}'.format(oxi * 100.0), '{:.1f}'.format(red * 100.0))
 
-            if disulf['redox_state_pred_1'] != 'oxidized' and disulf['redox_state_pred_1'] != 'unknown':
+                if disulf['redox_state_pred_1'] != 'oxidized' and disulf['redox_state_pred_1'] != 'unknown':
 
-                warn = "Disulfide bond (chain_id_1 %s, seq_id_1 %s, comp_id_1 %s, chain_id_2 %s, seq_id_2 %s, comp_id_2 %s) can not be verified with the assigned chemical shift values (CA_1 %s, CB_1 %s, redox_state_pred_1 %s)." %\
-                       (nmr_chain_id_1, nmr_seq_id_1, nmr_comp_id_1, nmr_chain_id_2, nmr_seq_id_2, nmr_comp_id_2, ca_chem_shift_1, cb_chem_shift_1, disulf['redox_state_pred_1'])
+                    warn = "Disulfide bond (chain_id_1 %s, seq_id_1 %s, comp_id_1 %s, chain_id_2 %s, seq_id_2 %s, comp_id_2 %s) can not be verified with the assigned chemical shift values (CA_1 %s, CB_1 %s, redox_state_pred_1 %s)." %\
+                           (nmr_chain_id_1, nmr_seq_id_1, nmr_comp_id_1, nmr_chain_id_2, nmr_seq_id_2, nmr_comp_id_2, ca_chem_shift_1, cb_chem_shift_1, disulf['redox_state_pred_1'])
 
-                item = 'suspicious_data' if disulf['redox_state_pred_1'] == 'reduced' else 'unusual_data'
+                    item = 'suspicious_data' if disulf['redox_state_pred_1'] == 'reduced' else 'unusual_data'
 
-                self.report.warning.appendDescription(item, {'file_name': file_name, 'sf_framecode': sf_framecode, 'description': warn})
-                self.report.setWarning()
+                    self.report.warning.appendDescription(item, {'file_name': file_name, 'sf_framecode': sf_framecode, 'description': warn})
+                    self.report.setWarning()
 
-                if self.__verbose:
-                    self.__lfh.write("+NmrDpUtility.__mapCoordDisulfideBond2Nmr() ++ Warning  - %s\n" % warn)
+                    if self.__verbose:
+                        self.__lfh.write("+NmrDpUtility.__mapCoordDisulfideBond2Nmr() ++ Warning  - %s\n" % warn)
 
-                disulf['warning_description_1'] = item + ': ' + warn
+                    disulf['warning_description_1'] = item + ': ' + warn
 
-            if disulf['redox_state_pred_2'] != 'oxidized' and disulf['redox_state_pred_2'] != 'unknown':
+                if disulf['redox_state_pred_2'] != 'oxidized' and disulf['redox_state_pred_2'] != 'unknown':
 
-                warn = "Disulfide bond (chain_id_1 %s, seq_id_1 %s, comp_id_1 %s, chain_id_2 %s, seq_id_2 %s, comp_id_2 %s) can not be verified with the assigned chemical shift values (CA_2 %s, CB_2 %s, redox_state_pred_2 %s)." %\
-                       (nmr_chain_id_1, nmr_seq_id_1, nmr_comp_id_1, nmr_chain_id_2, nmr_seq_id_2, nmr_comp_id_2, ca_chem_shift_2, cb_chem_shift_2, disulf['redox_state_pred_2'])
+                    warn = "Disulfide bond (chain_id_1 %s, seq_id_1 %s, comp_id_1 %s, chain_id_2 %s, seq_id_2 %s, comp_id_2 %s) can not be verified with the assigned chemical shift values (CA_2 %s, CB_2 %s, redox_state_pred_2 %s)." %\
+                           (nmr_chain_id_1, nmr_seq_id_1, nmr_comp_id_1, nmr_chain_id_2, nmr_seq_id_2, nmr_comp_id_2, ca_chem_shift_2, cb_chem_shift_2, disulf['redox_state_pred_2'])
 
-                item = 'suspicious_data' if disulf['redox_state_pred_2'] == 'reduced' else 'unusual_data'
+                    item = 'suspicious_data' if disulf['redox_state_pred_2'] == 'reduced' else 'unusual_data'
 
-                self.report.warning.appendDescription(item, {'file_name': file_name, 'sf_framecode': sf_framecode, 'description': warn})
-                self.report.setWarning()
+                    self.report.warning.appendDescription(item, {'file_name': file_name, 'sf_framecode': sf_framecode, 'description': warn})
+                    self.report.setWarning()
 
-                if self.__verbose:
-                    self.__lfh.write("+NmrDpUtility.__mapCoordDisulfideBond2Nmr() ++ Warning  - %s\n" % warn)
+                    if self.__verbose:
+                        self.__lfh.write("+NmrDpUtility.__mapCoordDisulfideBond2Nmr() ++ Warning  - %s\n" % warn)
 
-                disulf['warning_description_2'] = item + ': ' + warn
+                    disulf['warning_description_2'] = item + ': ' + warn
 
-            asm.append(disulf)
+                asm.append(disulf)
 
-        if len(asm) > 0:
-            input_source.setItemValue('disulfide_bond', asm)
-            return True
+            if len(asm) > 0:
+                input_source.setItemValue('disulfide_bond', asm)
+                is_done = True
 
-        return False
+        return is_done
 
     def __extractCoordOtherBond(self):
         """ Extract other bond (neither disulfide nor covalent bond) of coordinate file.
@@ -14088,272 +16939,336 @@ class NmrDpUtility(object):
         """ Map other bond (neither disulfide nor covalent bond) of coordinate file to NMR data.
         """
 
-        input_source = self.report.input_sources[0]
-        input_source_dic = input_source.get()
+        is_done = False
 
-        file_name = input_source_dic['file_name']
-        file_type = input_source_dic['file_type']
+        for fileListId in range(self.__file_path_list_len):
 
-        polymer_sequence = input_source_dic['polymer_sequence']
+            input_source = self.report.input_sources[fileListId]
+            input_source_dic = input_source.get()
 
-        if polymer_sequence is None:
-            return False
+            file_name = input_source_dic['file_name']
+            file_type = input_source_dic['file_type']
 
-        seq_align_dic = self.report.sequence_alignment.get()
+            polymer_sequence = input_source_dic['polymer_sequence']
 
-        content_subtype = 'chem_shift'
-
-        if not self.__hasKeyValue(input_source_dic['content_subtype'], content_subtype):
-
-            err = "Assigned chemical shift loop did not exist in %s file." % file_name
-
-            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__mapCoordOtherBond2Nmr() ++ Error  - %s" % err)
-            self.report.setError()
-
-            if self.__verbose:
-                self.__lfh.write("+NmrDpUtility.__mapCoordOtherBond2Nmr() ++ Error  - %s\n" % err)
-
-            return False
-
-        sf_category = self.sf_categories[file_type][content_subtype]
-        lp_category = self.lp_categories[file_type][content_subtype]
-
-        key_items = self.key_items[file_type][content_subtype]
-        data_items = self.data_items[file_type][content_subtype]
-
-        item_names = self.item_names_in_cs_loop[file_type]
-        chain_id_name = item_names['chain_id']
-        seq_id_name = item_names['seq_id']
-        comp_id_name = item_names['comp_id']
-        atom_id_name = item_names['atom_id']
-        value_name = item_names['value']
-
-        asm = []
-
-        for bond in bond_list:
-
-            cif_chain_id_1 = bond['chain_id_1']
-            cif_seq_id_1 = bond['seq_id_1']
-            cif_chain_id_2 = bond['chain_id_2']
-            cif_seq_id_2 = bond['seq_id_2']
-
-            s1 = self.report.getNmrPolymerSequenceWithModelChainId(cif_chain_id_1)
-
-            if s1 is None:
+            if polymer_sequence is None:
                 continue
 
-            nmr_chain_id_1 = s1['chain_id']
+            seq_align_dic = self.report.sequence_alignment.get()
 
-            result = next((seq_align for seq_align in seq_align_dic['model_poly_seq_vs_nmr_poly_seq'] if seq_align['ref_chain_id'] == cif_chain_id_1 and seq_align['test_chain_id'] == nmr_chain_id_1), None)
+            content_subtype = 'chem_shift'
 
-            if result is None:
+            if not self.__hasKeyValue(input_source_dic['content_subtype'], content_subtype):
+
+                err = "Assigned chemical shift loop did not exist in %s file." % file_name
+
+                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__mapCoordOtherBond2Nmr() ++ Error  - %s" % err)
+                self.report.setError()
+
+                if self.__verbose:
+                    self.__lfh.write("+NmrDpUtility.__mapCoordOtherBond2Nmr() ++ Error  - %s\n" % err)
+
                 continue
 
-            nmr_seq_id_1 = None
-            for k in range(result['length']):
-                if result['ref_seq_id'][k] == cif_seq_id_1:
-                    nmr_seq_id_1 = result['test_seq_id'][k]
-                    break
+            sf_category = self.sf_categories[file_type][content_subtype]
+            lp_category = self.lp_categories[file_type][content_subtype]
 
-            if nmr_seq_id_1 is None:
-                continue
+            key_items = self.key_items[file_type][content_subtype]
+            data_items = self.data_items[file_type][content_subtype]
 
-            nmr_comp_id_1 = None
-            for k in range(len(s1['seq_id'])):
-                if s1['seq_id'][k] == nmr_seq_id_1:
-                    nmr_comp_id_1 = s1['comp_id'][k]
-                    break
+            item_names = self.item_names_in_cs_loop[file_type]
+            chain_id_name = item_names['chain_id']
+            seq_id_name = item_names['seq_id']
+            comp_id_name = item_names['comp_id']
+            atom_id_name = item_names['atom_id']
+            value_name = item_names['value']
 
-            if nmr_comp_id_1 is None:
-                continue
+            asm = []
 
-            s2 = self.report.getNmrPolymerSequenceWithModelChainId(cif_chain_id_2)
+            for bond in bond_list:
 
-            if s2 is None:
-                continue
+                cif_chain_id_1 = bond['chain_id_1']
+                cif_seq_id_1 = bond['seq_id_1']
+                cif_chain_id_2 = bond['chain_id_2']
+                cif_seq_id_2 = bond['seq_id_2']
 
-            nmr_chain_id_2 = s2['chain_id']
+                s1 = self.report.getNmrPolymerSequenceWithModelChainId(cif_chain_id_1)
 
-            result = next((seq_align for seq_align in seq_align_dic['model_poly_seq_vs_nmr_poly_seq'] if seq_align['ref_chain_id'] == cif_chain_id_2 and seq_align['test_chain_id'] == nmr_chain_id_2), None)
-
-            if result is None:
-                continue
-
-            nmr_seq_id_2 = None
-            for k in range(result['length']):
-                if result['ref_seq_id'][k] == cif_seq_id_2:
-                    nmr_seq_id_2 = result['test_seq_id'][k]
-                    break
-
-            if nmr_seq_id_2 is None:
-                continue
-
-            nmr_comp_id_2 = None
-            for k in range(len(s2['seq_id'])):
-                if s2['seq_id'][k] == nmr_seq_id_2:
-                    nmr_comp_id_2 = s2['comp_id'][k]
-                    break
-
-            if nmr_comp_id_2 is None:
-                continue
-
-            other = {}
-            other['chain_id_1'] = nmr_chain_id_1
-            other['seq_id_1'] = nmr_seq_id_1
-            other['comp_id_1'] = nmr_comp_id_1
-            other['atom_id_1'] = bond['atom_id_1']
-            other['chain_id_2'] = nmr_chain_id_2
-            other['seq_id_2'] = nmr_seq_id_2
-            other['comp_id_2'] = nmr_comp_id_2
-            other['atom_id_2'] = bond['atom_id_2']
-            other['distance_value'] = bond['distance_value']
-            other['warning_description_1'] = None
-            other['warning_description_2'] = None
-
-            ca_chem_shift_1 = None
-            cb_chem_shift_1 = None
-            ca_chem_shift_2 = None
-            cb_chem_shift_2 = None
-
-            for sf_data in self.__star_data.get_saveframes_by_category(sf_category):
-
-                sf_framecode = sf_data.get_tag('sf_framecode')[0]
-
-                if self.report.error.exists(file_name, sf_framecode):
+                if s1 is None:
                     continue
 
-                lp_data = next((l['data'] for l in self.__lp_data[content_subtype] if l['sf_framecode'] == sf_framecode), None)
+                nmr_chain_id_1 = s1['chain_id']
 
-                if lp_data is None:
+                result = next((seq_align for seq_align in seq_align_dic['model_poly_seq_vs_nmr_poly_seq'] if seq_align['ref_chain_id'] == cif_chain_id_1 and seq_align['test_chain_id'] == nmr_chain_id_1), None)
 
-                    try:
+                if result is None:
+                    continue
 
-                        lp_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, None, None)[0]
+                nmr_seq_id_1 = None
+                for k in range(result['length']):
+                    if result['ref_seq_id'][k] == cif_seq_id_1:
+                        nmr_seq_id_1 = result['test_seq_id'][k]
+                        break
 
-                        self.__lp_data[content_subtype].append({'sf_framecode': sf_framecode, 'data': lp_data})
+                if nmr_seq_id_1 is None:
+                    continue
 
-                    except:
-                        pass
+                nmr_comp_id_1 = None
+                for k in range(len(s1['seq_id'])):
+                    if s1['seq_id'][k] == nmr_seq_id_1:
+                        nmr_comp_id_1 = s1['comp_id'][k]
+                        break
 
-                if not lp_data is None:
+                if nmr_comp_id_1 is None:
+                    continue
 
-                    for i in lp_data:
-                        _chain_id = i[chain_id_name]
-                        seq_id = i[seq_id_name]
-                        comp_id = i[comp_id_name]
-                        atom_id = i[atom_id_name]
+                s2 = self.report.getNmrPolymerSequenceWithModelChainId(cif_chain_id_2)
 
-                        if type(_chain_id) is int:
-                            chain_id = str(_chain_id)
-                        else:
-                            chain_id = _chain_id
+                if s2 is None:
+                    continue
 
-                        if chain_id == nmr_chain_id_1 and seq_id == nmr_seq_id_1 and comp_id == nmr_comp_id_1:
-                            if atom_id == 'CA' and ca_chem_shift_1 is None:
-                                ca_chem_shift_1 = i[value_name]
-                            elif atom_id == 'CB' and cb_chem_shift_1 is None:
-                                cb_chem_shift_1 = i[value_name]
+                nmr_chain_id_2 = s2['chain_id']
 
-                        elif chain_id == nmr_chain_id_2 and seq_id == nmr_seq_id_2 and comp_id == nmr_comp_id_2:
-                            if atom_id == 'CA' and ca_chem_shift_2 is None:
-                                ca_chem_shift_2 = i[value_name]
-                            elif atom_id == 'CB' and cb_chem_shift_2 is None:
-                                cb_chem_shift_2 = i[value_name]
+                result = next((seq_align for seq_align in seq_align_dic['model_poly_seq_vs_nmr_poly_seq'] if seq_align['ref_chain_id'] == cif_chain_id_2 and seq_align['test_chain_id'] == nmr_chain_id_2), None)
+
+                if result is None:
+                    continue
+
+                nmr_seq_id_2 = None
+                for k in range(result['length']):
+                    if result['ref_seq_id'][k] == cif_seq_id_2:
+                        nmr_seq_id_2 = result['test_seq_id'][k]
+                        break
+
+                if nmr_seq_id_2 is None:
+                    continue
+
+                nmr_comp_id_2 = None
+                for k in range(len(s2['seq_id'])):
+                    if s2['seq_id'][k] == nmr_seq_id_2:
+                        nmr_comp_id_2 = s2['comp_id'][k]
+                        break
+
+                if nmr_comp_id_2 is None:
+                    continue
+
+                other = {}
+                other['chain_id_1'] = nmr_chain_id_1
+                other['seq_id_1'] = nmr_seq_id_1
+                other['comp_id_1'] = nmr_comp_id_1
+                other['atom_id_1'] = bond['atom_id_1']
+                other['chain_id_2'] = nmr_chain_id_2
+                other['seq_id_2'] = nmr_seq_id_2
+                other['comp_id_2'] = nmr_comp_id_2
+                other['atom_id_2'] = bond['atom_id_2']
+                other['distance_value'] = bond['distance_value']
+                other['warning_description_1'] = None
+                other['warning_description_2'] = None
+
+                ca_chem_shift_1 = None
+                cb_chem_shift_1 = None
+                ca_chem_shift_2 = None
+                cb_chem_shift_2 = None
+
+                if self.__star_data_type[fileListId] == 'Loop':
+
+                    sf_data = self.__star_data[fileListId]
+                    sf_framecode = ''
+
+                    if self.report.error.exists(file_name, sf_framecode):
+                        continue
+
+                    lp_data = next((l['data'] for l in self.__lp_data[content_subtype] if l['file_name'] == file_name and l['sf_framecode'] == sf_framecode), None)
+
+                    if lp_data is None:
+
+                        try:
+
+                            lp_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, None, None)[0]
+
+                            self.__lp_data[content_subtype].append({'file_name': file_name, 'sf_framecode': sf_framecode, 'data': lp_data})
+
+                        except:
+                            pass
+
+                    if not lp_data is None:
+
+                        for i in lp_data:
+                            _chain_id = i[chain_id_name]
+                            seq_id = i[seq_id_name]
+                            comp_id = i[comp_id_name]
+                            atom_id = i[atom_id_name]
+
+                            if type(_chain_id) is int:
+                                chain_id = str(_chain_id)
+                            else:
+                                chain_id = _chain_id
+
+                            if chain_id == nmr_chain_id_1 and seq_id == nmr_seq_id_1 and comp_id == nmr_comp_id_1:
+                                if atom_id == 'CA' and ca_chem_shift_1 is None:
+                                    ca_chem_shift_1 = i[value_name]
+                                elif atom_id == 'CB' and cb_chem_shift_1 is None:
+                                    cb_chem_shift_1 = i[value_name]
+
+                            elif chain_id == nmr_chain_id_2 and seq_id == nmr_seq_id_2 and comp_id == nmr_comp_id_2:
+                                if atom_id == 'CA' and ca_chem_shift_2 is None:
+                                    ca_chem_shift_2 = i[value_name]
+                                elif atom_id == 'CB' and cb_chem_shift_2 is None:
+                                    cb_chem_shift_2 = i[value_name]
+
+                            if ca_chem_shift_1 is None or cb_chem_shift_1 is None or ca_chem_shift_2 is None or cb_chem_shift_2 is None:
+                                pass
+                            else:
+                                break
 
                         if ca_chem_shift_1 is None or cb_chem_shift_1 is None or ca_chem_shift_2 is None or cb_chem_shift_2 is None:
                             pass
                         else:
                             break
 
-                    if ca_chem_shift_1 is None or cb_chem_shift_1 is None or ca_chem_shift_2 is None or cb_chem_shift_2 is None:
-                        pass
-                    else:
-                        break
+                # Entry/Saveframe
 
-            other['ca_chem_shift_1'] = ca_chem_shift_1
-            other['cb_chem_shift_1'] = cb_chem_shift_1
-            other['ca_chem_shift_2'] = ca_chem_shift_2
-            other['cb_chem_shift_2'] = cb_chem_shift_2
+                else:
 
-            if not cb_chem_shift_1 is None:
-                if cb_chem_shift_1 < 32.0:
-                    other['redox_state_pred_1'] = 'reduced'
-                elif cb_chem_shift_1 > 35.0:
-                    other['redox_state_pred_1'] = 'oxidized'
-                elif not cb_chem_shift_2 is None:
-                    if cb_chem_shift_2 < 32.0:
+                    for sf_data in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
+
+                        sf_framecode = sf_data.get_tag('sf_framecode')[0]
+
+                        if self.report.error.exists(file_name, sf_framecode):
+                            continue
+
+                        lp_data = next((l['data'] for l in self.__lp_data[content_subtype] if l['file_name'] == file_name and l['sf_framecode'] == sf_framecode), None)
+
+                        if lp_data is None:
+
+                            try:
+
+                                lp_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, None, None)[0]
+
+                                self.__lp_data[content_subtype].append({'file_name': file_name, 'sf_framecode': sf_framecode, 'data': lp_data})
+
+                            except:
+                                pass
+
+                        if not lp_data is None:
+
+                            for i in lp_data:
+                                _chain_id = i[chain_id_name]
+                                seq_id = i[seq_id_name]
+                                comp_id = i[comp_id_name]
+                                atom_id = i[atom_id_name]
+
+                                if type(_chain_id) is int:
+                                    chain_id = str(_chain_id)
+                                else:
+                                    chain_id = _chain_id
+
+                                if chain_id == nmr_chain_id_1 and seq_id == nmr_seq_id_1 and comp_id == nmr_comp_id_1:
+                                    if atom_id == 'CA' and ca_chem_shift_1 is None:
+                                        ca_chem_shift_1 = i[value_name]
+                                    elif atom_id == 'CB' and cb_chem_shift_1 is None:
+                                        cb_chem_shift_1 = i[value_name]
+
+                                elif chain_id == nmr_chain_id_2 and seq_id == nmr_seq_id_2 and comp_id == nmr_comp_id_2:
+                                    if atom_id == 'CA' and ca_chem_shift_2 is None:
+                                        ca_chem_shift_2 = i[value_name]
+                                    elif atom_id == 'CB' and cb_chem_shift_2 is None:
+                                        cb_chem_shift_2 = i[value_name]
+
+                                if ca_chem_shift_1 is None or cb_chem_shift_1 is None or ca_chem_shift_2 is None or cb_chem_shift_2 is None:
+                                    pass
+                                else:
+                                    break
+
+                            if ca_chem_shift_1 is None or cb_chem_shift_1 is None or ca_chem_shift_2 is None or cb_chem_shift_2 is None:
+                                pass
+                            else:
+                                break
+
+                other['ca_chem_shift_1'] = ca_chem_shift_1
+                other['cb_chem_shift_1'] = cb_chem_shift_1
+                other['ca_chem_shift_2'] = ca_chem_shift_2
+                other['cb_chem_shift_2'] = cb_chem_shift_2
+
+                if not cb_chem_shift_1 is None:
+                    if cb_chem_shift_1 < 32.0:
                         other['redox_state_pred_1'] = 'reduced'
-                    elif cb_chem_shift_2 > 35.0:
+                    elif cb_chem_shift_1 > 35.0:
                         other['redox_state_pred_1'] = 'oxidized'
+                    elif not cb_chem_shift_2 is None:
+                        if cb_chem_shift_2 < 32.0:
+                            other['redox_state_pred_1'] = 'reduced'
+                        elif cb_chem_shift_2 > 35.0:
+                            other['redox_state_pred_1'] = 'oxidized'
+                        else:
+                            other['redox_state_pred_1'] = 'ambiguous'
                     else:
                         other['redox_state_pred_1'] = 'ambiguous'
                 else:
-                    other['redox_state_pred_1'] = 'ambiguous'
-            else:
-                other['redox_state_pred_1'] = 'unknown'
+                    other['redox_state_pred_1'] = 'unknown'
 
-            if not cb_chem_shift_2 is None:
-                if cb_chem_shift_2 < 32.0:
-                    other['redox_state_pred_2'] = 'reduced'
-                elif cb_chem_shift_2 > 35.0:
-                    other['redox_state_pred_2'] = 'oxidized'
-                elif not cb_chem_shift_1 is None:
-                    if cb_chem_shift_1 < 32.0:
+                if not cb_chem_shift_2 is None:
+                    if cb_chem_shift_2 < 32.0:
                         other['redox_state_pred_2'] = 'reduced'
-                    elif cb_chem_shift_1 > 35.0:
+                    elif cb_chem_shift_2 > 35.0:
                         other['redox_state_pred_2'] = 'oxidized'
+                    elif not cb_chem_shift_1 is None:
+                        if cb_chem_shift_1 < 32.0:
+                            other['redox_state_pred_2'] = 'reduced'
+                        elif cb_chem_shift_1 > 35.0:
+                            other['redox_state_pred_2'] = 'oxidized'
+                        else:
+                            other['redox_state_pred_2'] = 'ambiguous'
                     else:
                         other['redox_state_pred_2'] = 'ambiguous'
                 else:
-                    other['redox_state_pred_2'] = 'ambiguous'
-            else:
-                other['redox_state_pred_2'] = 'unknown'
+                    other['redox_state_pred_2'] = 'unknown'
 
-            if other['redox_state_pred_1'] == 'ambiguous' and ((not ca_chem_shift_1 is None) or (not cb_chem_shift_1 is None)):
-                oxi, red = self.__predictRedoxStateOfCystein(ca_chem_shift_1, cb_chem_shift_1)
-                other['redox_state_pred_1'] = 'oxidized %s (%%), reduced %s (%%)' % ('{:.1f}'.format(oxi * 100.0), '{:.1f}'.format(red * 100.0))
+                if other['redox_state_pred_1'] == 'ambiguous' and ((not ca_chem_shift_1 is None) or (not cb_chem_shift_1 is None)):
+                    oxi, red = self.__predictRedoxStateOfCystein(ca_chem_shift_1, cb_chem_shift_1)
+                    other['redox_state_pred_1'] = 'oxidized %s (%%), reduced %s (%%)' % ('{:.1f}'.format(oxi * 100.0), '{:.1f}'.format(red * 100.0))
 
-            if other['redox_state_pred_2'] == 'ambiguous' and ((not ca_chem_shift_2 is None) or (not cb_chem_shift_2 is None)):
-                oxi, red = self.__predictRedoxStateOfCystein(ca_chem_shift_2, cb_chem_shift_2)
-                other['redox_state_pred_2'] = 'oxidized %s (%%), reduced %s (%%)' % ('{:.1f}'.format(oxi * 100.0), '{:.1f}'.format(red * 100.0))
+                if other['redox_state_pred_2'] == 'ambiguous' and ((not ca_chem_shift_2 is None) or (not cb_chem_shift_2 is None)):
+                    oxi, red = self.__predictRedoxStateOfCystein(ca_chem_shift_2, cb_chem_shift_2)
+                    other['redox_state_pred_2'] = 'oxidized %s (%%), reduced %s (%%)' % ('{:.1f}'.format(oxi * 100.0), '{:.1f}'.format(red * 100.0))
 
-            if other['redox_state_pred_1'] != 'oxidized' and other['redox_state_pred_1'] != 'unknown':
+                if other['redox_state_pred_1'] != 'oxidized' and other['redox_state_pred_1'] != 'unknown':
 
-                warn = "Other bond (chain_id_1 %s, seq_id_1 %s, comp_id_1 %s, chain_id_2 %s, seq_id_2 %s, comp_id_2 %s) can not be verified with the assigned chemical shift values (CA_1 %s, CB_1 %s, redox_state_pred_1 %s)." %\
-                       (nmr_chain_id_1, nmr_seq_id_1, nmr_comp_id_1, nmr_chain_id_2, nmr_seq_id_2, nmr_comp_id_2, ca_chem_shift_1, cb_chem_shift_1, other['redox_state_pred_1'])
+                    warn = "Other bond (chain_id_1 %s, seq_id_1 %s, comp_id_1 %s, chain_id_2 %s, seq_id_2 %s, comp_id_2 %s) can not be verified with the assigned chemical shift values (CA_1 %s, CB_1 %s, redox_state_pred_1 %s)." %\
+                           (nmr_chain_id_1, nmr_seq_id_1, nmr_comp_id_1, nmr_chain_id_2, nmr_seq_id_2, nmr_comp_id_2, ca_chem_shift_1, cb_chem_shift_1, other['redox_state_pred_1'])
 
-                item = 'suspicious_data' if other['redox_state_pred_1'] == 'reduced' else 'unusual_data'
+                    item = 'suspicious_data' if other['redox_state_pred_1'] == 'reduced' else 'unusual_data'
 
-                self.report.warning.appendDescription(item, {'file_name': file_name, 'sf_framecode': sf_framecode, 'description': warn})
-                self.report.setWarning()
+                    self.report.warning.appendDescription(item, {'file_name': file_name, 'sf_framecode': sf_framecode, 'description': warn})
+                    self.report.setWarning()
 
-                if self.__verbose:
-                    self.__lfh.write("+NmrDpUtility.__mapCoordOtherBond2Nmr() ++ Warning  - %s\n" % warn)
+                    if self.__verbose:
+                        self.__lfh.write("+NmrDpUtility.__mapCoordOtherBond2Nmr() ++ Warning  - %s\n" % warn)
 
-                other['warning_description_1'] = item + ': ' + warn
+                    other['warning_description_1'] = item + ': ' + warn
 
-            if other['redox_state_pred_2'] != 'oxidized' and other['redox_state_pred_2'] != 'unknown':
+                if other['redox_state_pred_2'] != 'oxidized' and other['redox_state_pred_2'] != 'unknown':
 
-                warn = "Other bond (chain_id_1 %s, seq_id_1 %s, comp_id_1 %s, chain_id_2 %s, seq_id_2 %s, comp_id_2 %s) can not be verified with the assigned chemical shift values (CA_2 %s, CB_2 %s, redox_state_pred_2 %s)." %\
-                       (nmr_chain_id_1, nmr_seq_id_1, nmr_comp_id_1, nmr_chain_id_2, nmr_seq_id_2, nmr_comp_id_2, ca_chem_shift_2, cb_chem_shift_2, other['redox_state_pred_2'])
+                    warn = "Other bond (chain_id_1 %s, seq_id_1 %s, comp_id_1 %s, chain_id_2 %s, seq_id_2 %s, comp_id_2 %s) can not be verified with the assigned chemical shift values (CA_2 %s, CB_2 %s, redox_state_pred_2 %s)." %\
+                           (nmr_chain_id_1, nmr_seq_id_1, nmr_comp_id_1, nmr_chain_id_2, nmr_seq_id_2, nmr_comp_id_2, ca_chem_shift_2, cb_chem_shift_2, other['redox_state_pred_2'])
 
-                item = 'suspicious_data' if other['redox_state_pred_2'] == 'reduced' else 'unusual_data'
+                    item = 'suspicious_data' if other['redox_state_pred_2'] == 'reduced' else 'unusual_data'
 
-                self.report.warning.appendDescription(item, {'file_name': file_name, 'sf_framecode': sf_framecode, 'description': warn})
-                self.report.setWarning()
+                    self.report.warning.appendDescription(item, {'file_name': file_name, 'sf_framecode': sf_framecode, 'description': warn})
+                    self.report.setWarning()
 
-                if self.__verbose:
-                    self.__lfh.write("+NmrDpUtility.__mapCoordOtherBond2Nmr() ++ Warning  - %s\n" % warn)
+                    if self.__verbose:
+                        self.__lfh.write("+NmrDpUtility.__mapCoordOtherBond2Nmr() ++ Warning  - %s\n" % warn)
 
-                other['warning_description_2'] = item + ': ' + warn
+                    other['warning_description_2'] = item + ': ' + warn
 
-            asm.append(other)
+                asm.append(other)
 
-        if len(asm) > 0:
-            input_source.setItemValue('other_bond', asm)
-            return True
+            if len(asm) > 0:
+                input_source.setItemValue('other_bond', asm)
+                is_done = True
 
-        return False
+        return is_done
 
     def __predictRedoxStateOfCystein(self, ca_chem_shift, cb_chem_shift):
         """ Return prediction of redox state of Cystein using assigned CA, CB chemical shifts.
@@ -14994,109 +17909,114 @@ class NmrDpUtility(object):
         """ Append element and isotope_number columns in NEF CS loop if required.
         """
 
-        input_source = self.report.input_sources[0]
-        input_source_dic = input_source.get()
+        if not self.__combined_mode:
+            return False
 
-        file_type = input_source_dic['file_type']
+        for fileListId in range(self.__file_path_list_len):
 
-        if file_type != 'nef':
-            return True
+            input_source = self.report.input_sources[fileListId]
+            input_source_dic = input_source.get()
 
-        content_subtype = 'chem_shift'
+            file_type = input_source_dic['file_type']
 
-        if not self.__hasKeyValue(input_source_dic['content_subtype'], content_subtype):
-            return True
+            if file_type != 'nef':
+                continue
 
-        sf_category = self.sf_categories[file_type][content_subtype]
-        lp_category = self.lp_categories[file_type][content_subtype]
+            content_subtype = 'chem_shift'
 
-        cs_item_names = self.item_names_in_cs_loop[file_type]
-        cs_atom_id_name = cs_item_names['atom_id']
-        cs_atom_type = cs_item_names['atom_type']
-        cs_iso_number = cs_item_names['isotope_number']
+            if not self.__hasKeyValue(input_source_dic['content_subtype'], content_subtype):
+                continue
 
-        for sf_data in self.__star_data.get_saveframes_by_category(sf_category):
+            sf_category = self.sf_categories[file_type][content_subtype]
+            lp_category = self.lp_categories[file_type][content_subtype]
 
-            lp_data = sf_data.get_loop_by_category(lp_category)
+            cs_item_names = self.item_names_in_cs_loop[file_type]
+            cs_atom_id_name = cs_item_names['atom_id']
+            cs_atom_type = cs_item_names['atom_type']
+            cs_iso_number = cs_item_names['isotope_number']
 
-            has_atom_type = cs_atom_type in lp_data.tags
-            has_iso_number = cs_iso_number in lp_data.tags
+            for sf_data in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
 
-            atomIdCol = lp_data.tags.index(cs_atom_id_name)
+                lp_data = sf_data.get_loop_by_category(lp_category)
 
-            if has_atom_type and has_iso_number:
+                has_atom_type = cs_atom_type in lp_data.tags
+                has_iso_number = cs_iso_number in lp_data.tags
 
-                atomTypeCol = lp_data.tags.index(cs_atom_type)
-                isoNumCol = lp_data.tags.index(cs_iso_number)
+                atomIdCol = lp_data.tags.index(cs_atom_id_name)
 
-                for row in lp_data.data:
+                if has_atom_type and has_iso_number:
 
-                    atom_id = row[atomIdCol]
+                    atomTypeCol = lp_data.tags.index(cs_atom_type)
+                    isoNumCol = lp_data.tags.index(cs_iso_number)
 
-                    if row[atomTypeCol] in self.empty_value:
-                        row[atomTypeCol] = atom_id[0]
+                    for row in lp_data.data:
 
-                    if row[isoNumCol] is self.empty_value:
+                        atom_id = row[atomIdCol]
 
-                        try:
-                            row[isoNumCol] = self.atom_isotopes[atom_id[0]][0]
-                        except KeyError:
-                            pass
+                        if row[atomTypeCol] in self.empty_value:
+                            row[atomTypeCol] = atom_id[0]
 
-            elif has_atom_type:
+                        if row[isoNumCol] is self.empty_value:
 
-                atomTypeCol = lp_data.tags.index(cs_atom_type)
+                            try:
+                                row[isoNumCol] = self.atom_isotopes[atom_id[0]][0]
+                            except KeyError:
+                                pass
 
-                for row in lp_data.data:
+                elif has_atom_type:
 
-                    atom_id = row[atomIdCol]
+                    atomTypeCol = lp_data.tags.index(cs_atom_type)
 
-                    if row[atomTypeCol] in self.empty_value:
-                        row[atomTypeCol] = atom_id[0]
+                    for row in lp_data.data:
 
-                    try:
-                        iso_num = self.atom_isotopes[atom_id[0]][0]
-                        row.append(iso_num)
-                    except KeyError:
-                        row.append('.')
+                        atom_id = row[atomIdCol]
 
-                lp_data.add_tag(cs_iso_number)
-
-            elif has_iso_number:
-
-                isoNumCol = lp_data.tags.index(cs_iso_number)
-
-                for row in lp_data.data:
-
-                    atom_id = row[atomIdCol]
-
-                    if row[isoNumCol] is self.empty_value:
+                        if row[atomTypeCol] in self.empty_value:
+                            row[atomTypeCol] = atom_id[0]
 
                         try:
-                            row[isoNumCol] = self.atom_isotopes[atom_id[0]][0]
+                            iso_num = self.atom_isotopes[atom_id[0]][0]
+                            row.append(iso_num)
                         except KeyError:
-                            pass
+                            row.append('.')
 
-                    row.append(atom_id[0] if atom_id[0] in self.atom_isotopes else '.')
+                    lp_data.add_tag(cs_iso_number)
 
-                lp_data.add_tag(cs_atom_type)
+                elif has_iso_number:
 
-            else:
+                    isoNumCol = lp_data.tags.index(cs_iso_number)
 
-                for row in lp_data.data:
+                    for row in lp_data.data:
 
-                    atom_id = row[atomIdCol]
+                        atom_id = row[atomIdCol]
 
-                    row.append(atom_id[0] if atom_id[0] in self.atom_isotopes else '.')
+                        if row[isoNumCol] is self.empty_value:
 
-                    try:
-                        iso_num = self.atom_isotopes[atom_id[0]][0]
-                        row.append(iso_num)
-                    except KeyError:
-                        row.append('.')
+                            try:
+                                row[isoNumCol] = self.atom_isotopes[atom_id[0]][0]
+                            except KeyError:
+                                pass
 
-                lp_data.add_tag(cs_atom_type)
-                lp_data.add_tag(cs_iso_number)
+                        row.append(atom_id[0] if atom_id[0] in self.atom_isotopes else '.')
+
+                    lp_data.add_tag(cs_atom_type)
+
+                else:
+
+                    for row in lp_data.data:
+
+                        atom_id = row[atomIdCol]
+
+                        row.append(atom_id[0] if atom_id[0] in self.atom_isotopes else '.')
+
+                        try:
+                            iso_num = self.atom_isotopes[atom_id[0]][0]
+                            row.append(iso_num)
+                        except KeyError:
+                            row.append('.')
+
+                    lp_data.add_tag(cs_atom_type)
+                    lp_data.add_tag(cs_iso_number)
 
         return True
 
@@ -15104,81 +18024,94 @@ class NmrDpUtility(object):
         """ Append weight column in interesting loops, if required.
         """
 
-        input_source = self.report.input_sources[0]
-        input_source_dic = input_source.get()
-
-        file_name = input_source_dic['file_name']
-        file_type = input_source_dic['file_type']
-
-        if input_source_dic['content_subtype'] is None:
+        if not self.__combined_mode:
             return False
 
-        for content_subtype in input_source_dic['content_subtype'].keys():
+        is_done = True
 
-            sf_category = self.sf_categories[file_type][content_subtype]
-            lp_category = self.lp_categories[file_type][content_subtype]
+        for fileListId in range(self.__file_path_list_len):
 
-            weight_tag = self.weight_tags[file_type][content_subtype]
+            input_source = self.report.input_sources[fileListId]
+            input_source_dic = input_source.get()
 
-            if weight_tag is None:
+            file_name = input_source_dic['file_name']
+            file_type = input_source_dic['file_type']
+
+            if input_source_dic['content_subtype'] is None:
+                is_done = False
                 continue
 
-            for sf_data in self.__star_data.get_saveframes_by_category(sf_category):
+            for content_subtype in input_source_dic['content_subtype'].keys():
 
-                sf_framecode = sf_data.get_tag('sf_framecode')[0]
+                sf_category = self.sf_categories[file_type][content_subtype]
+                lp_category = self.lp_categories[file_type][content_subtype]
 
-                lp_data = sf_data.get_loop_by_category(lp_category)
+                weight_tag = self.weight_tags[file_type][content_subtype]
 
-                if weight_tag in lp_data.tags:
+                if weight_tag is None:
                     continue
 
-                lp_tag = lp_category + '.' + weight_tag
-                err = self.__err_template_for_missing_mandatory_lp_tag % (lp_tag, self.readable_file_type[file_type])
+                for sf_data in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
 
-                if self.__check_mandatory_tag and self.__nefT.is_mandatory_tag(lp_tag, file_type):
-                    self.report.error.appendDescription('missing_mandatory_item', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
-                    self.report.setError()
+                    sf_framecode = sf_data.get_tag('sf_framecode')[0]
 
-                    if self.__verbose:
-                        self.__lfh.write("+NmrDpUtility.__appendWeightInLoop() ++ LookupError  - %s" % err)
+                    lp_data = sf_data.get_loop_by_category(lp_category)
 
-                for row in lp_data.data:
-                    row.append('1.0')
+                    if weight_tag in lp_data.tags:
+                        continue
 
-                lp_data.add_tag(weight_tag)
+                    lp_tag = lp_category + '.' + weight_tag
+                    err = self.__err_template_for_missing_mandatory_lp_tag % (lp_tag, self.readable_file_type[file_type])
 
-        return True
+                    if self.__check_mandatory_tag and self.__nefT.is_mandatory_tag(lp_tag, file_type):
+                        self.report.error.appendDescription('missing_mandatory_item', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
+                        self.report.setError()
+
+                        if self.__verbose:
+                            self.__lfh.write("+NmrDpUtility.__appendWeightInLoop() ++ LookupError  - %s" % err)
+
+                    for row in lp_data.data:
+                        row.append('1.0')
+
+                    lp_data.add_tag(weight_tag)
+
+        return is_done
 
     def __appendDihedAngleType(self):
         """ Append dihedral angle type column, if required.
         """
 
-        input_source = self.report.input_sources[0]
-        input_source_dic = input_source.get()
+        if not self.__combined_mode:
+            return False
 
-        file_type = input_source_dic['file_type']
+        for fileListId in range(self.__file_path_list_len):
 
-        content_subtype = 'dihed_restraint'
+            input_source = self.report.input_sources[fileListId]
+            input_source_dic = input_source.get()
 
-        if not self.__hasKeyValue(input_source_dic['content_subtype'], content_subtype):
-            return True
+            file_type = input_source_dic['file_type']
 
-        sf_category = self.sf_categories[file_type][content_subtype]
-        lp_category = self.lp_categories[file_type][content_subtype]
+            content_subtype = 'dihed_restraint'
 
-        angle_type_tag = self.angle_types[file_type]
-
-        for sf_data in self.__star_data.get_saveframes_by_category(sf_category):
-
-            lp_data = sf_data.get_loop_by_category(lp_category)
-
-            if angle_type_tag in lp_data.tags:
+            if not self.__hasKeyValue(input_source_dic['content_subtype'], content_subtype):
                 continue
 
-            for row in lp_data.data:
-                row.append('.')
+            sf_category = self.sf_categories[file_type][content_subtype]
+            lp_category = self.lp_categories[file_type][content_subtype]
 
-            lp_data.add_tag(angle_type_tag)
+            angle_type_tag = self.angle_types[file_type]
+
+            for sf_data in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
+
+                lp_data = sf_data.get_loop_by_category(lp_category)
+
+                if angle_type_tag in lp_data.tags:
+                    continue
+
+                for row in lp_data.data:
+                    row.append('.')
+
+                lp_data.add_tag(angle_type_tag)
 
         return True
 
@@ -15186,50 +18119,55 @@ class NmrDpUtility(object):
         """ Append saveframe tag items, if required.
         """
 
-        input_source = self.report.input_sources[0]
-        input_source_dic = input_source.get()
-
-        file_name = input_source_dic['file_name']
-        file_type = input_source_dic['file_type']
-
-        if input_source_dic['content_subtype'] is None:
+        if not self.__combined_mode:
             return False
 
-        for content_subtype in input_source_dic['content_subtype'].keys():
+        for fileListId in range(self.__file_path_list_len):
 
-            if content_subtype in ['entry_info' 'poly_seq', 'chem_shift']:
+            input_source = self.report.input_sources[fileListId]
+            input_source_dic = input_source.get()
+
+            file_name = input_source_dic['file_name']
+            file_type = input_source_dic['file_type']
+
+            if input_source_dic['content_subtype'] is None:
                 continue
 
-            sf_category = self.sf_categories[file_type][content_subtype]
-            lp_category = self.lp_categories[file_type][content_subtype]
+            for content_subtype in input_source_dic['content_subtype'].keys():
 
-            tag_items = self._sf_tag_items[file_type][content_subtype]
+                if content_subtype in ['entry_info' 'poly_seq', 'chem_shift']:
+                    continue
 
-            if tag_items is None:
-                continue
+                sf_category = self.sf_categories[file_type][content_subtype]
+                lp_category = self.lp_categories[file_type][content_subtype]
 
-            for sf_data in self.__star_data.get_saveframes_by_category(sf_category):
+                tag_items = self._sf_tag_items[file_type][content_subtype]
 
-                sf_framecode = sf_data.get_tag('sf_framecode')[0]
+                if tag_items is None:
+                    continue
 
-                tagNames = [t[0] for t in sf_data.tags]
+                for sf_data in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
 
-                for tag_item in tag_items:
+                    sf_framecode = sf_data.get_tag('sf_framecode')[0]
 
-                    if tag_item in tagNames:
-                        continue
+                    tagNames = [t[0] for t in sf_data.tags]
 
-                    sf_tag = '_' + sf_category + '.' + tag_item
-                    warn = self.__warn_template_for_missing_mandatory_sf_tag % (sf_tag, self.readable_file_type[file_type])
+                    for tag_item in tag_items:
 
-                    if self.__check_mandatory_tag and self.__nefT.is_mandatory_tag(sf_tag, file_type):
-                        self.report.warning.appendDescription('missing_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': sf_category, 'description': warn})
-                        self.report.setWarning()
+                        if tag_item in tagNames:
+                            continue
 
-                        if self.__verbose:
-                            self.__lfh.write("+NmrDpUtility.__appendSfTagItem() ++ Warning  - %s" % warn)
+                        sf_tag = '_' + sf_category + '.' + tag_item
+                        warn = self.__warn_template_for_missing_mandatory_sf_tag % (sf_tag, self.readable_file_type[file_type])
 
-                    sf_data.add_tag(tag_item, '.')
+                        if self.__check_mandatory_tag and self.__nefT.is_mandatory_tag(sf_tag, file_type):
+                            self.report.warning.appendDescription('missing_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': sf_category, 'description': warn})
+                            self.report.setWarning()
+
+                            if self.__verbose:
+                                self.__lfh.write("+NmrDpUtility.__appendSfTagItem() ++ Warning  - %s" % warn)
+
+                        sf_data.add_tag(tag_item, '.')
 
         return True
 
@@ -15237,220 +18175,225 @@ class NmrDpUtility(object):
         """ Update dihedral angle types (phi, psi, omega, chi[1-5] for polypeptide-like residue) if possible.
         """
 
-        input_source = self.report.input_sources[0]
-        input_source_dic = input_source.get()
+        if not self.__combined_mode:
+            return False
 
-        file_type = input_source_dic['file_type']
-        file_name = input_source_dic['file_name']
+        for fileListId in range(self.__file_path_list_len):
 
-        content_subtype = 'dihed_restraint'
+            input_source = self.report.input_sources[fileListId]
+            input_source_dic = input_source.get()
 
-        if not self.__hasKeyValue(input_source_dic['content_subtype'], content_subtype):
-            return True
+            file_name = input_source_dic['file_name']
+            file_type = input_source_dic['file_type']
 
-        item_names = self.item_names_in_dh_loop[file_type]
-        index_id_name = self.index_tags[file_type][content_subtype]
-        chain_id_1_name = item_names['chain_id_1']
-        chain_id_2_name = item_names['chain_id_2']
-        chain_id_3_name = item_names['chain_id_3']
-        chain_id_4_name = item_names['chain_id_4']
-        seq_id_1_name = item_names['seq_id_1']
-        seq_id_2_name = item_names['seq_id_2']
-        seq_id_3_name = item_names['seq_id_3']
-        seq_id_4_name = item_names['seq_id_4']
-        comp_id_1_name = item_names['comp_id_1']
-        atom_id_1_name = item_names['atom_id_1']
-        atom_id_2_name = item_names['atom_id_2']
-        atom_id_3_name = item_names['atom_id_3']
-        atom_id_4_name = item_names['atom_id_4']
-        angle_type_name = item_names['angle_type']
+            content_subtype = 'dihed_restraint'
 
-        sf_category = self.sf_categories[file_type][content_subtype]
-        lp_category = self.lp_categories[file_type][content_subtype]
+            if not self.__hasKeyValue(input_source_dic['content_subtype'], content_subtype):
+                continue
 
-        for sf_data in self.__star_data.get_saveframes_by_category(sf_category):
+            item_names = self.item_names_in_dh_loop[file_type]
+            index_id_name = self.index_tags[file_type][content_subtype]
+            chain_id_1_name = item_names['chain_id_1']
+            chain_id_2_name = item_names['chain_id_2']
+            chain_id_3_name = item_names['chain_id_3']
+            chain_id_4_name = item_names['chain_id_4']
+            seq_id_1_name = item_names['seq_id_1']
+            seq_id_2_name = item_names['seq_id_2']
+            seq_id_3_name = item_names['seq_id_3']
+            seq_id_4_name = item_names['seq_id_4']
+            comp_id_1_name = item_names['comp_id_1']
+            atom_id_1_name = item_names['atom_id_1']
+            atom_id_2_name = item_names['atom_id_2']
+            atom_id_3_name = item_names['atom_id_3']
+            atom_id_4_name = item_names['atom_id_4']
+            angle_type_name = item_names['angle_type']
 
-            sf_framecode = sf_data.get_tag('sf_framecode')[0]
+            sf_category = self.sf_categories[file_type][content_subtype]
+            lp_category = self.lp_categories[file_type][content_subtype]
 
-            lp_data = next((l['data'] for l in self.__lp_data[content_subtype] if l['sf_framecode'] == sf_framecode), None)
+            for sf_data in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
 
-            if lp_data is None:
+                sf_framecode = sf_data.get_tag('sf_framecode')[0]
 
-                key_items = self.key_items[file_type][content_subtype]
-                data_items = self.data_items[file_type][content_subtype]
+                lp_data = next((l['data'] for l in self.__lp_data[content_subtype] if l['file_name'] == file_name and l['sf_framecode'] == sf_framecode), None)
 
-                try:
+                if lp_data is None:
 
-                    lp_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, None, None)[0]
+                    key_items = self.key_items[file_type][content_subtype]
+                    data_items = self.data_items[file_type][content_subtype]
 
-                    self.__lp_data[content_subtype].append({'sf_framecode': w['sf_framecode'], 'data': lp_data})
+                    try:
 
-                except:
-                    pass
+                        lp_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, None, None)[0]
 
-            if not lp_data is None:
+                        self.__lp_data[content_subtype].append({'file_name': file_name, 'sf_framecode': w['sf_framecode'], 'data': lp_data})
 
-                phi_index = []
-                psi_index = []
-                omega_index = []
-                chi1_index = []
-                chi2_index = []
-                chi3_index = []
-                chi4_index = []
-                chi5_index = []
+                    except:
+                        pass
 
-                try:
+                if not lp_data is None:
 
-                    for i in lp_data:
-                        index_id = i[index_id_name]
-                        chain_id_1 = i[chain_id_1_name]
-                        chain_id_2 = i[chain_id_2_name]
-                        chain_id_3 = i[chain_id_3_name]
-                        chain_id_4 = i[chain_id_4_name]
-                        seq_ids = []
-                        seq_ids.append(i[seq_id_1_name])
-                        seq_ids.append(i[seq_id_2_name])
-                        seq_ids.append(i[seq_id_3_name])
-                        seq_ids.append(i[seq_id_4_name])
-                        comp_id = i[comp_id_1_name]
-                        atom_ids = []
-                        atom_ids.append(i[atom_id_1_name])
-                        atom_ids.append(i[atom_id_2_name])
-                        atom_ids.append(i[atom_id_3_name])
-                        atom_ids.append(i[atom_id_4_name])
-                        angle_type = i[angle_type_name]
+                    phi_index = []
+                    psi_index = []
+                    omega_index = []
+                    chi1_index = []
+                    chi2_index = []
+                    chi3_index = []
+                    chi4_index = []
+                    chi5_index = []
 
-                        if not angle_type in self.empty_value:
-                           continue
+                    try:
 
-                        if chain_id_1 != chain_id_2 or chain_id_2 != chain_id_3 or chain_id_3 != chain_id_4:
-                            continue
+                        for i in lp_data:
+                            index_id = i[index_id_name]
+                            chain_id_1 = i[chain_id_1_name]
+                            chain_id_2 = i[chain_id_2_name]
+                            chain_id_3 = i[chain_id_3_name]
+                            chain_id_4 = i[chain_id_4_name]
+                            seq_ids = []
+                            seq_ids.append(i[seq_id_1_name])
+                            seq_ids.append(i[seq_id_2_name])
+                            seq_ids.append(i[seq_id_3_name])
+                            seq_ids.append(i[seq_id_4_name])
+                            comp_id = i[comp_id_1_name]
+                            atom_ids = []
+                            atom_ids.append(i[atom_id_1_name])
+                            atom_ids.append(i[atom_id_2_name])
+                            atom_ids.append(i[atom_id_3_name])
+                            atom_ids.append(i[atom_id_4_name])
+                            angle_type = i[angle_type_name]
 
-                        polypeptide_like = self.__csStat.getTypeOfCompId(comp_id)[0]
+                            if not angle_type in self.empty_value:
+                               continue
 
-                        if not polypeptide_like:
-                            continue
+                            if chain_id_1 != chain_id_2 or chain_id_2 != chain_id_3 or chain_id_3 != chain_id_4:
+                                continue
 
-                        seq_id_common = collections.Counter(seq_ids).most_common()
+                            polypeptide_like = self.__csStat.getTypeOfCompId(comp_id)[0]
 
-                        if len(seq_id_common) == 2:
+                            if not polypeptide_like:
+                                continue
 
-                            # phi or psi
+                            seq_id_common = collections.Counter(seq_ids).most_common()
 
-                            if seq_id_common[0][1] == 3 and seq_id_common[1][1] == 1:
+                            if len(seq_id_common) == 2:
 
-                                # phi
+                                # phi or psi
 
-                                seq_id_prev = seq_id_common[1][0]
+                                if seq_id_common[0][1] == 3 and seq_id_common[1][1] == 1:
 
-                                if seq_id_common[0][0] == seq_id_prev + 1:
+                                    # phi
 
-                                    j = 0
-                                    if seq_ids[j] == seq_id_prev and atom_ids[j] == 'C':
-                                        atom_ids.pop(j)
-                                        if atom_ids == self.dihed_atom_ids:
-                                            phi_index.append(index_id)
+                                    seq_id_prev = seq_id_common[1][0]
 
-                                # psi
+                                    if seq_id_common[0][0] == seq_id_prev + 1:
 
-                                seq_id_next = seq_id_common[1][0]
+                                        j = 0
+                                        if seq_ids[j] == seq_id_prev and atom_ids[j] == 'C':
+                                            atom_ids.pop(j)
+                                            if atom_ids == self.dihed_atom_ids:
+                                                phi_index.append(index_id)
 
-                                if seq_id_common[0][0] == seq_id_next - 1:
+                                    # psi
 
-                                    j = 3
-                                    if seq_ids[j] == seq_id_next and atom_ids[j] == 'N':
-                                        atom_ids.pop(j)
-                                        if atom_ids == self.dihed_atom_ids:
-                                            psi_index.append(index_id)
+                                    seq_id_next = seq_id_common[1][0]
 
-                            # omega
+                                    if seq_id_common[0][0] == seq_id_next - 1:
 
-                            if atom_ids[0] == 'O' and atom_ids[1] == 'C' and atom_ids[2] == 'N' and (atom_ids[3] == 'H' or atom_ids[3] == 'CA') and\
-                               seq_ids[0] == seq_ids[1] and seq_ids[1] + 1 == seq_ids[2] and seq_ids[2] == seq_ids[3]:
-                                omega_index.append(index_id)
+                                        j = 3
+                                        if seq_ids[j] == seq_id_next and atom_ids[j] == 'N':
+                                            atom_ids.pop(j)
+                                            if atom_ids == self.dihed_atom_ids:
+                                                psi_index.append(index_id)
 
-                        elif len(seq_id_common) == 1:
+                                # omega
 
-                            # chi1
+                                if atom_ids[0] == 'O' and atom_ids[1] == 'C' and atom_ids[2] == 'N' and (atom_ids[3] == 'H' or atom_ids[3] == 'CA') and\
+                                   seq_ids[0] == seq_ids[1] and seq_ids[1] + 1 == seq_ids[2] and seq_ids[2] == seq_ids[3]:
+                                    omega_index.append(index_id)
 
-                            if atom_ids[0] == 'N' and atom_ids[1] == 'CA' and atom_ids[2] == 'CB' and self.chi1_atom_id_4_pat.match(atom_ids[3]):
-                                #if (atom_ids[3] == 'CG' and comp_id in ['ARG', 'ASN', 'ASP', 'GLN', 'GLU', 'HIS', 'LEU', 'LYS', 'MET', 'PHE', 'PRO', 'TRP', 'TYR']) or\
-                                #   (atom_ids[3] == 'CG1' and comp_id in ['ILE', 'VAL']) or\
-                                #   (atom_ids[3] == 'OG' and comp_id == 'SER') or\
-                                #   (atom_ids[3] == 'OG1' and comp_id == 'THR') or\
-                                #   (atom_ids[3] == 'SG' and comp_id == 'CYS'):
-                               chi1_index.append(index_id)
+                            elif len(seq_id_common) == 1:
 
-                            # chi2
+                                # chi1
 
-                            if atom_ids[0] == 'CA' and atom_ids[1] == 'CB' and self.chi2_atom_id_3_pat.match(atom_ids[2]) and self.chi2_atom_id_4_pat.match(atom_ids[3]):
-                                #if (atom_ids[2] == 'CG' and atom_ids[3] == 'CD' and comp_id in ['ARG', 'GLN', 'GLU', 'LYS', 'PRO']) or\
-                                #   (atom_ids[2] == 'CG' and atom_ids[3] == 'CD1' and comp_id in ['LEU', 'PHE', 'TRP', 'TYR']) or\
-                                #   (atom_ids[2] == 'CG' and atom_ids[3] == 'ND1' and comp_id == 'HIS') or\
-                                #   (atom_ids[2] == 'CG' and atom_ids[3] == 'OD1' and comp_id in ['ASN', 'ASP']) or\
-                                #   (atom_ids[2] == 'CG' and atom_ids[3] == 'SD' and comp_id == 'MET') or\
-                                #   (atom_ids[2] == 'CG1' and atom_ids[3] == 'CD' and comp_id == 'ILE'):
-                                chi2_index.append(index_id)
+                                if atom_ids[0] == 'N' and atom_ids[1] == 'CA' and atom_ids[2] == 'CB' and self.chi1_atom_id_4_pat.match(atom_ids[3]):
+                                    #if (atom_ids[3] == 'CG' and comp_id in ['ARG', 'ASN', 'ASP', 'GLN', 'GLU', 'HIS', 'LEU', 'LYS', 'MET', 'PHE', 'PRO', 'TRP', 'TYR']) or\
+                                    #   (atom_ids[3] == 'CG1' and comp_id in ['ILE', 'VAL']) or\
+                                    #   (atom_ids[3] == 'OG' and comp_id == 'SER') or\
+                                    #   (atom_ids[3] == 'OG1' and comp_id == 'THR') or\
+                                    #   (atom_ids[3] == 'SG' and comp_id == 'CYS'):
+                                   chi1_index.append(index_id)
 
-                            # chi3
+                                # chi2
 
-                            if atom_ids[0] == 'CB' and atom_ids[1] == 'CG' and self.chi3_atom_id_3_pat.match(atom_ids[2]) and self.chi3_atom_id_4_pat.match(atom_ids[3]):
-                                #if (atom_ids[2] == 'CD' and atom_ids[3] == 'CE' and comp_id == 'LYS') or\
-                                #   (atom_ids[2] == 'CD' and atom_ids[3] == 'NE' and comp_id == 'ARG') or\
-                                #   (atom_ids[2] == 'CD' and atom_ids[3] == 'OE1' and comp_id in ['GLN', 'GLU']) or\
-                                #   (atom_ids[2] == 'SD' and atom_ids[3] == 'CE' and comp_id == 'MET'):
-                                chi3_index.append(index_id)
+                                if atom_ids[0] == 'CA' and atom_ids[1] == 'CB' and self.chi2_atom_id_3_pat.match(atom_ids[2]) and self.chi2_atom_id_4_pat.match(atom_ids[3]):
+                                    #if (atom_ids[2] == 'CG' and atom_ids[3] == 'CD' and comp_id in ['ARG', 'GLN', 'GLU', 'LYS', 'PRO']) or\
+                                    #   (atom_ids[2] == 'CG' and atom_ids[3] == 'CD1' and comp_id in ['LEU', 'PHE', 'TRP', 'TYR']) or\
+                                    #   (atom_ids[2] == 'CG' and atom_ids[3] == 'ND1' and comp_id == 'HIS') or\
+                                    #   (atom_ids[2] == 'CG' and atom_ids[3] == 'OD1' and comp_id in ['ASN', 'ASP']) or\
+                                    #   (atom_ids[2] == 'CG' and atom_ids[3] == 'SD' and comp_id == 'MET') or\
+                                    #   (atom_ids[2] == 'CG1' and atom_ids[3] == 'CD' and comp_id == 'ILE'):
+                                    chi2_index.append(index_id)
 
-                            # chi4
+                                # chi3
 
-                            if atom_ids[0] == 'CG' and atom_ids[1] == 'CD' and self.chi4_atom_id_3_pat.match(atom_ids[2]) and self.chi4_atom_id_4_pat.match(atom_ids[3]):
-                                #if (atom_ids[2] == 'NE' and atom_ids[3] == 'CZ' and comp_id == 'ARG') or\
-                                #  (atom_ids[2] == 'CE' and atom_ids[3] == 'NZ' and comp_id == 'LYS'):
-                                chi4_index.append(index_id)
+                                if atom_ids[0] == 'CB' and atom_ids[1] == 'CG' and self.chi3_atom_id_3_pat.match(atom_ids[2]) and self.chi3_atom_id_4_pat.match(atom_ids[3]):
+                                    #if (atom_ids[2] == 'CD' and atom_ids[3] == 'CE' and comp_id == 'LYS') or\
+                                    #   (atom_ids[2] == 'CD' and atom_ids[3] == 'NE' and comp_id == 'ARG') or\
+                                    #   (atom_ids[2] == 'CD' and atom_ids[3] == 'OE1' and comp_id in ['GLN', 'GLU']) or\
+                                    #   (atom_ids[2] == 'SD' and atom_ids[3] == 'CE' and comp_id == 'MET'):
+                                    chi3_index.append(index_id)
 
-                            # chi5
+                                # chi4
 
-                            if atom_ids == ['CD', 'NE', 'CZ', 'NH1']: # and comp_id == 'ARG':
-                                chi5_index.append(index_id)
+                                if atom_ids[0] == 'CG' and atom_ids[1] == 'CD' and self.chi4_atom_id_3_pat.match(atom_ids[2]) and self.chi4_atom_id_4_pat.match(atom_ids[3]):
+                                    #if (atom_ids[2] == 'NE' and atom_ids[3] == 'CZ' and comp_id == 'ARG') or\
+                                    #  (atom_ids[2] == 'CE' and atom_ids[3] == 'NZ' and comp_id == 'LYS'):
+                                    chi4_index.append(index_id)
 
-                except Exception as e:
+                                # chi5
 
-                    self.report.error.appendDescription('internal_error', "+NmrDpUtility.__updateDihedralAngleType() ++ Error  - %s" % str(e))
-                    self.report.setError()
+                                if atom_ids == ['CD', 'NE', 'CZ', 'NH1']: # and comp_id == 'ARG':
+                                    chi5_index.append(index_id)
 
-                    if self.__verbose:
-                        self.__lfh.write("+NmrDpUtility.__updateDihedralAngleType() ++ Error  - %s" % str(e))
+                    except Exception as e:
 
-                    return False
+                        self.report.error.appendDescription('internal_error', "+NmrDpUtility.__updateDihedralAngleType() ++ Error  - %s" % str(e))
+                        self.report.setError()
 
-                if len(phi_index) + len(psi_index) + len(omega_index) +\
-                   len(chi1_index) + len(chi2_index) + len(chi3_index) + len(chi4_index) + len(chi5_index) > 0:
+                        if self.__verbose:
+                            self.__lfh.write("+NmrDpUtility.__updateDihedralAngleType() ++ Error  - %s" % str(e))
 
-                    lp_data = sf_data.get_loop_by_category(lp_category)
+                        continue
 
-                    idxCol = lp_data.tags.index(index_id_name)
-                    aglCol = lp_data.tags.index(angle_type_name)
+                    if len(phi_index) + len(psi_index) + len(omega_index) +\
+                       len(chi1_index) + len(chi2_index) + len(chi3_index) + len(chi4_index) + len(chi5_index) > 0:
 
-                    for row in lp_data.data:
+                        lp_data = sf_data.get_loop_by_category(lp_category)
 
-                        index_id = int(row[idxCol])
+                        idxCol = lp_data.tags.index(index_id_name)
+                        aglCol = lp_data.tags.index(angle_type_name)
 
-                        if index_id in phi_index:
-                            row[aglCol] = 'PHI'
-                        elif index_id in psi_index:
-                            row[aglCol] = 'PSI'
-                        elif index_id in omega_index:
-                            row[aglCol] = 'OMEGA'
-                        elif index_id in chi1_index:
-                            row[aglCol] = 'CHI1'
-                        elif index_id in chi2_index:
-                            row[aglCol] = 'CHI2'
-                        elif index_id in chi3_index:
-                            row[aglCol] = 'CHI3'
-                        elif index_id in chi4_index:
-                            row[aglCol] = 'CHI4'
-                        elif index_id in chi5_index:
-                            row[aglCol] = 'CHI5'
+                        for row in lp_data.data:
+
+                            index_id = int(row[idxCol])
+
+                            if index_id in phi_index:
+                                row[aglCol] = 'PHI'
+                            elif index_id in psi_index:
+                                row[aglCol] = 'PSI'
+                            elif index_id in omega_index:
+                                row[aglCol] = 'OMEGA'
+                            elif index_id in chi1_index:
+                                row[aglCol] = 'CHI1'
+                            elif index_id in chi2_index:
+                                row[aglCol] = 'CHI2'
+                            elif index_id in chi3_index:
+                                row[aglCol] = 'CHI3'
+                            elif index_id in chi4_index:
+                                row[aglCol] = 'CHI4'
+                            elif index_id in chi5_index:
+                                row[aglCol] = 'CHI5'
 
         return True
 
@@ -15458,11 +18401,14 @@ class NmrDpUtility(object):
         """ Fix disordered indices.
         """
 
+        if not self.__combined_mode:
+            return False
+
         input_source = self.report.input_sources[0]
         input_source_dic = input_source.get()
 
-        file_type = input_source_dic['file_type']
         file_name = input_source_dic['file_name']
+        file_type = input_source_dic['file_type']
 
         warnings = self.report.warning.getValueList('disordered_index', file_name)
 
@@ -15471,7 +18417,7 @@ class NmrDpUtility(object):
 
         for w in warnings:
 
-            if self.__star_data_type == "Entry" or self.__star_data_type == "Saveframe":
+            if self.__star_data_type[0] == "Entry" or self.__star_data_type[0] == "Saveframe":
 
                 if not 'sf_framecode' in w:
 
@@ -15485,7 +18431,7 @@ class NmrDpUtility(object):
 
                 else:
 
-                    sf_data = self.__star_data.get_saveframe_by_name(w['sf_framecode'])
+                    sf_data = self.__star_data[0].get_saveframe_by_name(w['sf_framecode'])
 
                     if sf_data is None:
 
@@ -15530,7 +18476,7 @@ class NmrDpUtility(object):
 
             else:
 
-                err = "Unexpected PyNMRSTAR object type %s found about %s file." % (self.__star_data_type, file_name)
+                err = "Unexpected PyNMRSTAR object type %s found about %s file." % (self.__star_data_type[0], file_name)
 
                 self.report.error.appendDescription('internal_error', "+NmrDpUtility.__fixDisorderedIndex() ++ Error  - %s" % err)
                 self.report.setError()
@@ -15544,11 +18490,14 @@ class NmrDpUtility(object):
         """ Remove non-sense zero values.
         """
 
+        if not self.__combined_mode:
+            return False
+
         input_source = self.report.input_sources[0]
         input_source_dic = input_source.get()
 
-        file_type = input_source_dic['file_type']
         file_name = input_source_dic['file_name']
+        file_type = input_source_dic['file_type']
 
         warnings = self.report.warning.getValueList('missing_data', file_name)
 
@@ -15560,7 +18509,7 @@ class NmrDpUtility(object):
             if not "is non-sense zero value" in w['description']:
                 continue
 
-            if self.__star_data_type == "Entry" or self.__star_data_type == "Saveframe":
+            if self.__star_data_type[0] == "Entry" or self.__star_data_type[0] == "Saveframe":
 
                 if not 'sf_framecode' in w:
 
@@ -15574,7 +18523,7 @@ class NmrDpUtility(object):
 
                 else:
 
-                    sf_data = self.__star_data.get_saveframe_by_name(w['sf_framecode'])
+                    sf_data = self.__star_data[0].get_saveframe_by_name(w['sf_framecode'])
 
                     if sf_data is None:
 
@@ -15633,7 +18582,7 @@ class NmrDpUtility(object):
 
             else:
 
-                err = "Unexpected PyNMRSTAR object type %s found about %s file." % (self.__star_data_type, file_name)
+                err = "Unexpected PyNMRSTAR object type %s found about %s file." % (self.__star_data_type[0], file_name)
 
                 self.report.error.appendDescription('internal_error', "+NmrDpUtility.__removeNonSenseZeroValue() ++ Error  - %s" % err)
                 self.report.setError()
@@ -15647,11 +18596,14 @@ class NmrDpUtility(object):
         """ Fix non-sense negative values.
         """
 
+        if not self.__combined_mode:
+            return False
+
         input_source = self.report.input_sources[0]
         input_source_dic = input_source.get()
 
-        file_type = input_source_dic['file_type']
         file_name = input_source_dic['file_name']
+        file_type = input_source_dic['file_type']
 
         warnings = self.report.warning.getValueList('unusual_data', file_name)
 
@@ -15663,7 +18615,7 @@ class NmrDpUtility(object):
             if not "is non-sense negative value" in w['description']:
                 continue
 
-            if self.__star_data_type == "Entry" or self.__star_data_type == "Saveframe":
+            if self.__star_data_type[0] == "Entry" or self.__star_data_type[0] == "Saveframe":
 
                 if not 'sf_framecode' in w:
 
@@ -15677,7 +18629,7 @@ class NmrDpUtility(object):
 
                 else:
 
-                    sf_data = self.__star_data.get_saveframe_by_name(w['sf_framecode'])
+                    sf_data = self.__star_data[0].get_saveframe_by_name(w['sf_framecode'])
 
                     if sf_data is None:
 
@@ -15736,7 +18688,7 @@ class NmrDpUtility(object):
 
             else:
 
-                err = "Unexpected PyNMRSTAR object type %s found about %s file." % (self.__star_data_type, file_name)
+                err = "Unexpected PyNMRSTAR object type %s found about %s file." % (self.__star_data_type[0], file_name)
 
                 self.report.error.appendDescription('internal_error', "+NmrDpUtility.__fixNonSenseNegativeValue() ++ Error  - %s" % err)
                 self.report.setError()
@@ -15750,11 +18702,14 @@ class NmrDpUtility(object):
         """ Fix enumeration mismatches if possible.
         """
 
+        if not self.__combined_mode:
+            return False
+
         input_source = self.report.input_sources[0]
         input_source_dic = input_source.get()
 
-        file_type = input_source_dic['file_type']
         file_name = input_source_dic['file_name']
+        file_type = input_source_dic['file_type']
 
         warnings = self.report.warning.getValueList('enum_mismatch', file_name)
 
@@ -15767,11 +18722,14 @@ class NmrDpUtility(object):
         """ Fix enumeration mismatches (ignorable) if possible.
         """
 
+        if not self.__combined_mode:
+            return False
+
         input_source = self.report.input_sources[0]
         input_source_dic = input_source.get()
 
-        file_type = input_source_dic['file_type']
         file_name = input_source_dic['file_name']
+        file_type = input_source_dic['file_type']
 
         warnings = self.report.warning.getValueList('enum_mismatch_ignorable', file_name)
 
@@ -15784,11 +18742,14 @@ class NmrDpUtility(object):
         """ Fix enumeration failures if possible.
         """
 
+        if not self.__combined_mode:
+            return False
+
         input_source = self.report.input_sources[0]
         input_source_dic = input_source.get()
 
-        file_type = input_source_dic['file_type']
         file_name = input_source_dic['file_name']
+        file_type = input_source_dic['file_type']
 
         if warnings is None:
             return True
@@ -15807,7 +18768,7 @@ class NmrDpUtility(object):
             itValue = None if g[1] in self.empty_value else g[1]
             itEnum = [str(e.strip("'")) for e in re.sub(r"\', \'", "\',\'", g[2]).split(',')]
 
-            if self.__star_data_type == "Entry" or self.__star_data_type == "Saveframe":
+            if self.__star_data_type[0] == "Entry" or self.__star_data_type[0] == "Saveframe":
 
                 if not 'sf_framecode' in w:
 
@@ -15821,7 +18782,7 @@ class NmrDpUtility(object):
 
                 else:
 
-                    sf_data = self.__star_data.get_saveframe_by_name(w['sf_framecode'])
+                    sf_data = self.__star_data[0].get_saveframe_by_name(w['sf_framecode'])
 
                     if sf_data is None:
 
@@ -15872,7 +18833,7 @@ class NmrDpUtility(object):
 
                                             if (file_type == 'nef' and itName == 'restraint_origin') or (file_type == 'nmr-star' and itName == 'Constraint_type'):
 
-                                                lp_data = next((l['data'] for l in self.__lp_data[content_subtype] if l['sf_framecode'] == w['sf_framecode']), None)
+                                                lp_data = next((l['data'] for l in self.__lp_data[content_subtype] if l['file_name'] == file_name and l['sf_framecode'] == w['sf_framecode']), None)
 
                                                 if lp_data is None:
                                                     lp_category = self.lp_categories[file_type][content_subtype]
@@ -15884,7 +18845,7 @@ class NmrDpUtility(object):
 
                                                         lp_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, None, None)[0]
 
-                                                        self.__lp_data[content_subtype].append({'sf_framecode': w['sf_framecode'], 'data': lp_data})
+                                                        self.__lp_data[content_subtype].append({'file_name': file_name, 'sf_framecode': w['sf_framecode'], 'data': lp_data})
 
                                                     except:
                                                         pass
@@ -15918,7 +18879,7 @@ class NmrDpUtility(object):
 
                                             if (file_type == 'nef' and itName == 'potential_type') or (file_type == 'nmr-star' and itName == 'Potential_type'):
 
-                                                lp_data = next((l['data'] for l in self.__lp_data[content_subtype] if l['sf_framecode'] == w['sf_framecode']), None)
+                                                lp_data = next((l['data'] for l in self.__lp_data[content_subtype] if l['file_name'] == file_name and l['sf_framecode'] == w['sf_framecode']), None)
 
                                                 if lp_data is None:
                                                     lp_category = self.lp_categories[file_type][content_subtype]
@@ -15930,7 +18891,7 @@ class NmrDpUtility(object):
 
                                                         lp_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, None, None)[0]
 
-                                                        self.__lp_data[content_subtype].append({'sf_framecode': w['sf_framecode'], 'data': lp_data})
+                                                        self.__lp_data[content_subtype].append({'file_name': file_name, 'sf_framecode': w['sf_framecode'], 'data': lp_data})
 
                                                     except:
                                                         pass
@@ -16026,7 +18987,7 @@ class NmrDpUtility(object):
 
             else:
 
-                err = "Unexpected PyNMRSTAR object type %s found about %s file." % (self.__star_data_type, file_name)
+                err = "Unexpected PyNMRSTAR object type %s found about %s file." % (self.__star_data_type[0], file_name)
 
                 self.report.error.appendDescription('internal_error', "+NmrDpUtility.__fixEnumerationFailure() ++ Error  - %s" % err)
                 self.report.setError()
@@ -16039,6 +19000,9 @@ class NmrDpUtility(object):
     def __testDistRestraintAsHydrogenBond(self, lp_data):
         """ Detect whether given distance restraints are derived from hydrogen bonds.
         """
+
+        if not self.__combined_mode:
+            return False
 
         if lp_data is None:
             return False
@@ -16166,6 +19130,9 @@ class NmrDpUtility(object):
         """ Detect whether given distance restraints are derived from disulfide bonds.
         """
 
+        if not self.__combined_mode:
+            return False
+
         if lp_data is None:
             return False
 
@@ -16262,6 +19229,9 @@ class NmrDpUtility(object):
         """ Detect whether given distance restraints are derived from symmetric assembly.
         """
 
+        if not self.__combined_mode:
+            return False
+
         if lp_data is None:
             return False
 
@@ -16336,14 +19306,17 @@ class NmrDpUtility(object):
         """ Detect whether given dihedral restraints are derived from backbone chemical shifts.
         """
 
+        if not self.__combined_mode:
+            return False
+
         if lp_data is None:
             return False
 
         input_source = self.report.input_sources[0]
         input_source_dic = input_source.get()
 
-        file_type = input_source_dic['file_type']
         file_name = input_source_dic['file_name']
+        file_type = input_source_dic['file_type']
 
         item_names = self.item_names_in_dh_loop[file_type]
         chain_id_1_name = item_names['chain_id_1']
@@ -16480,14 +19453,14 @@ class NmrDpUtility(object):
             seq_id_name = item_names['seq_id']
             atom_id_name = item_names['atom_id']
 
-            for sf_data in self.__star_data.get_saveframes_by_category(sf_category):
+            for sf_data in self.__star_data[0].get_saveframes_by_category(sf_category):
 
                 sf_framecode = sf_data.get_tag('sf_framecode')[0]
 
                 if self.report.error.exists(file_name, sf_framecode):
                     continue
 
-                lp_data = next((l['data'] for l in self.__lp_data[content_subtype] if l['sf_framecode'] == sf_framecode), None)
+                lp_data = next((l['data'] for l in self.__lp_data[content_subtype] if l['file_name'] == file_name and l['sf_framecode'] == sf_framecode), None)
 
                 if lp_data is None:
 
@@ -16495,7 +19468,7 @@ class NmrDpUtility(object):
 
                         lp_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, None, None)[0]
 
-                        self.__lp_data[content_subtype].append({'sf_framecode': sf_framecode, 'data': lp_data})
+                        self.__lp_data[content_subtype].append({'file_name': file_name, 'sf_framecode': sf_framecode, 'data': lp_data})
 
                     except:
                         pass
@@ -16544,6 +19517,9 @@ class NmrDpUtility(object):
         """ Detect square-well-parabolic potential.
         """
 
+        if not self.__combined_mode:
+            return False
+
         if lp_data is None:
             return False
 
@@ -16585,6 +19561,9 @@ class NmrDpUtility(object):
     def __testRestraintPotentialSWPL(self, content_subtype, lp_data):
         """ Detect square-well-parabolic-linear potential.
         """
+
+        if not self.__combined_mode:
+            return False
 
         if lp_data is None:
             return False
@@ -16628,6 +19607,9 @@ class NmrDpUtility(object):
         """ Detect upper-bound-parabolic potential.
         """
 
+        if not self.__combined_mode:
+            return False
+
         if lp_data is None:
             return False
 
@@ -16669,6 +19651,9 @@ class NmrDpUtility(object):
     def __testRestraintPotentialLBP(self, content_subtype, lp_data):
         """ Detect lower-bound-parabolic potential.
         """
+
+        if not self.__combined_mode:
+            return False
 
         if lp_data is None:
             return False
@@ -16712,6 +19697,9 @@ class NmrDpUtility(object):
         """ Detect upper-bound-parabolic-linear potential.
         """
 
+        if not self.__combined_mode:
+            return False
+
         if lp_data is None:
             return False
 
@@ -16754,6 +19742,9 @@ class NmrDpUtility(object):
         """ Detect lower-bound-parabolic-linear potential.
         """
 
+        if not self.__combined_mode:
+            return False
+
         if lp_data is None:
             return False
 
@@ -16795,6 +19786,9 @@ class NmrDpUtility(object):
     def __testRestraintPonentialLHorP(self, content_subtype, lp_data):
         """ Detect log-harmonic or parabolic potential.
         """
+
+        if not self.__combined_mode:
+            return False
 
         if lp_data is None:
             return False
@@ -16840,11 +19834,14 @@ class NmrDpUtility(object):
         """ Fix bad ambiguity code if possible.
         """
 
+        if not self.__combined_mode:
+            return False
+
         input_source = self.report.input_sources[0]
         input_source_dic = input_source.get()
 
-        file_type = input_source_dic['file_type']
         file_name = input_source_dic['file_name']
+        file_type = input_source_dic['file_type']
 
         # NEF file has no ambiguity code
         if file_type == 'nef':
@@ -16860,7 +19857,7 @@ class NmrDpUtility(object):
             if not "the same residue was not found." in w['description']:
                 continue
 
-            if self.__star_data_type == "Entry" or self.__star_data_type == "Saveframe":
+            if self.__star_data_type[0] == "Entry" or self.__star_data_type[0] == "Saveframe":
 
                 if not 'sf_framecode' in w:
 
@@ -16894,7 +19891,7 @@ class NmrDpUtility(object):
 
                 else:
 
-                    sf_data = self.__star_data.get_saveframe_by_name(w['sf_framecode'])
+                    sf_data = self.__star_data[0].get_saveframe_by_name(w['sf_framecode'])
 
                     if sf_data is None:
 
@@ -16968,7 +19965,7 @@ class NmrDpUtility(object):
 
             else:
 
-                err = "Unexpected PyNMRSTAR object type %s found about %s file." % (self.__star_data_type, file_name)
+                err = "Unexpected PyNMRSTAR object type %s found about %s file." % (self.__star_data_type[0], file_name)
 
                 self.report.error.appendDescription('internal_error', "+NmrDpUtility.__fixBadAmbiguityCode() ++ Error  - %s" % err)
                 self.report.setError()
@@ -16981,6 +19978,9 @@ class NmrDpUtility(object):
     def __resetCapitalStringInLoop(self):
         """ Reset capital string values (chain_id, comp_id, atom_id) in loops depending on file type.
         """
+
+        if not self.__combined_mode:
+            return False
 
         input_source = self.report.input_sources[0]
         input_source_dic = input_source.get()
@@ -16998,7 +19998,7 @@ class NmrDpUtility(object):
             sf_category = self.sf_categories[file_type][content_subtype]
             lp_category = self.lp_categories[file_type][content_subtype]
 
-            for sf_data in self.__star_data.get_saveframes_by_category(sf_category):
+            for sf_data in self.__star_data[0].get_saveframes_by_category(sf_category):
 
                 if content_subtype == 'spectral_peak':
 
@@ -17106,6 +20106,9 @@ class NmrDpUtility(object):
         """ Reset bool values in loops depending on file type.
         """
 
+        if not self.__combined_mode:
+            return False
+
         input_source = self.report.input_sources[0]
         input_source_dic = input_source.get()
 
@@ -17125,7 +20128,7 @@ class NmrDpUtility(object):
             sf_category = self.sf_categories[file_type][content_subtype]
             lp_category = self.lp_categories[file_type][content_subtype]
 
-            for sf_data in self.__star_data.get_saveframes_by_category(sf_category):
+            for sf_data in self.__star_data[0].get_saveframes_by_category(sf_category):
 
                 if content_subtype == 'spectral_peak':
 
@@ -17233,6 +20236,9 @@ class NmrDpUtility(object):
         """ Reset bool values in auxiliary loops depending on file type.
         """
 
+        if not self.__combined_mode:
+            return False
+
         input_source = self.report.input_sources[0]
         input_source_dic = input_source.get()
 
@@ -17252,7 +20258,7 @@ class NmrDpUtility(object):
 
             sf_category = self.sf_categories[file_type][content_subtype]
 
-            for sf_data in self.__star_data.get_saveframes_by_category(sf_category):
+            for sf_data in self.__star_data[0].get_saveframes_by_category(sf_category):
 
                 sf_framecode = sf_data.get_tag('sf_framecode')[0]
 
@@ -17329,6 +20335,9 @@ class NmrDpUtility(object):
         """ Append parent tag of saveframe if not exists.
         """
 
+        if not self.__combined_mode:
+            return False
+
         input_source = self.report.input_sources[0]
         input_source_dic = input_source.get()
 
@@ -17358,7 +20367,7 @@ class NmrDpUtility(object):
 
             if not list_id_tag_in_lp is None:
 
-                for sf_data in self.__star_data.get_saveframes_by_category(sf_category):
+                for sf_data in self.__star_data[0].get_saveframes_by_category(sf_category):
 
                     sf_framecode = sf_data.get_tag('sf_framecode')[0]
 
@@ -17414,6 +20423,12 @@ class NmrDpUtility(object):
         """ Add UNNAMED entry id.
         """
 
+        if not self.__combined_mode:
+            return False
+
+        if len(self.__star_data) != self.__file_path_list_len:
+            return False
+
         input_source = self.report.input_sources[0]
         input_source_dic = input_source.get()
 
@@ -17421,11 +20436,11 @@ class NmrDpUtility(object):
 
         # update datablock name
 
-        if self.__star_data_type == 'Entry':
+        if self.__star_data_type[0] == 'Entry':
             if (self.__release_mode):
-                self.__star_data.entry_id = self.__entry_id + ('' if self.release_type[file_type] in self.empty_value else ('_' + self.release_type[file_type]))
+                self.__star_data[0].entry_id = self.__entry_id + ('' if self.release_type[file_type] in self.empty_value else ('_' + self.release_type[file_type]))
             else:
-                self.__star_data.entry_id = self.__entry_id + '_' + self.content_type[file_type]
+                self.__star_data[0].entry_id = self.__entry_id + '_' + self.content_type[file_type]
 
         if file_type == 'nef':
             return True
@@ -17447,7 +20462,7 @@ class NmrDpUtility(object):
 
                 proc_sf_categories.add(sf_category)
 
-                for sf_data in self.__star_data.get_saveframes_by_category(sf_category):
+                for sf_data in self.__star_data[0].get_saveframes_by_category(sf_category):
 
                     entryIdTag = 'ID' if content_subtype == 'entry_info' else 'Entry_ID'
 
@@ -17519,7 +20534,7 @@ class NmrDpUtility(object):
             if sf_category in proc_sf_categories:
                 continue
 
-            for sf_data in self.__star_data.get_saveframes_by_category(sf_category):
+            for sf_data in self.__star_data[0].get_saveframes_by_category(sf_category):
 
                 entryIdTag = 'ID' if sf_category == 'entry_information' else 'Entry_ID'
 
@@ -17562,6 +20577,9 @@ class NmrDpUtility(object):
         """ Sort assigned chemical shift loop if required.
         """
 
+        if not self.__combined_mode:
+            return False
+
         input_source = self.report.input_sources[0]
         input_source_dic = input_source.get()
 
@@ -17596,14 +20614,14 @@ class NmrDpUtility(object):
         seq_id_name = item_names['seq_id']
         atom_id_name = item_names['atom_id']
 
-        for sf_data in self.__star_data.get_saveframes_by_category(sf_category):
+        for sf_data in self.__star_data[0].get_saveframes_by_category(sf_category):
 
             sf_framecode = sf_data.get_tag('sf_framecode')[0]
 
             if self.report.error.exists(file_name, sf_framecode):
                 continue
 
-            lp_data = next((l['data'] for l in self.__lp_data[content_subtype] if l['sf_framecode'] == sf_framecode), None)
+            lp_data = next((l['data'] for l in self.__lp_data[content_subtype] if l['file_name'] == file_name and l['sf_framecode'] == sf_framecode), None)
 
             if lp_data is None:
 
@@ -17611,7 +20629,7 @@ class NmrDpUtility(object):
 
                     lp_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, None, None)[0]
 
-                    self.__lp_data[content_subtype].append({'sf_framecode': sf_framecode, 'data': lp_data})
+                    self.__lp_data[content_subtype].append({'file_name': file_name, 'sf_framecode': sf_framecode, 'data': lp_data})
 
                 except:
                     pass
@@ -17656,6 +20674,9 @@ class NmrDpUtility(object):
         """ Update _Atom_chem_shift.ID.
         """
 
+        if not self.__combined_mode:
+            return False
+
         input_source = self.report.input_sources[0]
         input_source_dic = input_source.get()
 
@@ -17685,7 +20706,7 @@ class NmrDpUtility(object):
         sf_category = self.sf_categories[file_type][content_subtype]
         lp_category = self.lp_categories[file_type][content_subtype]
 
-        for sf_data in self.__star_data.get_saveframes_by_category(sf_category):
+        for sf_data in self.__star_data[0].get_saveframes_by_category(sf_category):
 
             sf_framecode = sf_data.get_tag('sf_framecode')[0]
 
@@ -17770,6 +20791,9 @@ class NmrDpUtility(object):
         """ Update _Ambiguous_atom_chem_shift loops.
         """
 
+        if not self.__combined_mode:
+            return False
+
         input_source = self.report.input_sources[0]
         input_source_dic = input_source.get()
 
@@ -17802,14 +20826,14 @@ class NmrDpUtility(object):
         key_items = self.key_items[file_type][content_subtype]
         data_items = self.data_items[file_type][content_subtype]
 
-        for sf_data in self.__star_data.get_saveframes_by_category(sf_category):
+        for sf_data in self.__star_data[0].get_saveframes_by_category(sf_category):
 
             sf_framecode = sf_data.get_tag('sf_framecode')[0]
 
             if self.report.error.exists(file_name, sf_framecode):
                 continue
 
-            lp_data = next((l['data'] for l in self.__lp_data[content_subtype] if l['sf_framecode'] == sf_framecode), None)
+            lp_data = next((l['data'] for l in self.__lp_data[content_subtype] if l['file_name'] == file_name and l['sf_framecode'] == sf_framecode), None)
 
             if lp_data is None:
 
@@ -17817,7 +20841,7 @@ class NmrDpUtility(object):
 
                     lp_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, None, None)[0]
 
-                    self.__lp_data[content_subtype].append({'sf_framecode': sf_framecode, 'data': lp_data})
+                    self.__lp_data[content_subtype].append({'file_name': file_name, 'sf_framecode': sf_framecode, 'data': lp_data})
 
                 except:
                     pass
@@ -17875,6 +20899,9 @@ class NmrDpUtility(object):
         """ Deposit next NMR unified data file.
         """
 
+        if not self.__combined_mode:
+            return False
+
         if self.__dstPath is None:
 
             err = "Not found destination file path."
@@ -17887,10 +20914,10 @@ class NmrDpUtility(object):
 
             return False
 
-        if self.__star_data is None:
+        if self.__star_data[0] is None:
             return False
 
-        self.__star_data.write_to_file(self.__dstPath)
+        self.__star_data[0].write_to_file(self.__dstPath)
 
         return not self.report.isError()
 
@@ -17909,6 +20936,9 @@ class NmrDpUtility(object):
     def __translateNef2Str(self):
         """ Translate NEF to NMR-STAR V3.2 file.
         """
+
+        if not self.__combined_mode:
+            return False
 
         input_source = self.report.input_sources[0]
         input_source_dic = input_source.get()
@@ -18008,6 +21038,9 @@ class NmrDpUtility(object):
     def __translateStr2Nef(self):
         """ Translate NMR-STAR V3.2 to NEF file.
         """
+
+        if not self.__combined_mode:
+            return False
 
         input_source = self.report.input_sources[0]
         input_source_dic = input_source.get()

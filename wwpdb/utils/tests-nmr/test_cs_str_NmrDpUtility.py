@@ -24,9 +24,18 @@ class TestNmrDpUtility(unittest.TestCase):
                              'sf-double': ['2la6-cs-sf-double.str'],
                              'sf-double-error': ['2la6-cs-sf-double-error.str'],
                              'loop-double-error': ['2la6-cs-loop-double-error.str'],
-                             'loop-double': ['2la6-cs-loop.str', '2la6-cs-loop-2.str']
+                             'loop-double': ['2la6-cs-loop.str', '2la6-cs-loop-2.str'],
+                             'daother-5213': ['bmr36129.str']
                              }
-        self.model_file_path = '2la6.cif'
+        self.model_file_path = {'data': '2la6.cif',
+                                'sf': '2la6.cif',
+                                'loop': '2la6.cif',
+                                'sf-double': '2la6.cif',
+                                'sf-double-error': '2la6.cif',
+                                'loop-double-error': '2la6.cif',
+                                'loop-double': '2la6.cif',
+                                'daother-5213': 'pdb_extract_10300.cif'
+                                }
         self.utility = NmrDpUtility()
         pass
 
@@ -35,7 +44,7 @@ class TestNmrDpUtility(unittest.TestCase):
 
     def __test_nmr_cs_str_consistency(self, cs_type):
         self.utility.addInput(name='chem_shift_file_path_list', value=[self.data_dir_path + cs_file_path for cs_file_path in self.cs_file_path[cs_type]], type='file_list')
-        self.utility.addInput(name='coordinate_file_path', value=self.data_dir_path + self.model_file_path, type='file')
+        self.utility.addInput(name='coordinate_file_path', value=self.data_dir_path + self.model_file_path[cs_type], type='file')
         self.utility.addInput(name='nonblk_anomalous_cs', value=True, type='param')
         self.utility.addInput(name='nonblk_bad_nterm', value=True, type='param')
         self.utility.addInput(name='resolve_conflict', value=True, type='param')
@@ -72,6 +81,9 @@ class TestNmrDpUtility(unittest.TestCase):
 
     def test_nmr_cs_str_consistency_check_loop_double(self):
         self.__test_nmr_cs_str_consistency('loop-double')
+
+    def test_nmr_cs_str_consistency_check_daother_5213(self):
+        self.__test_nmr_cs_str_consistency('daother-5213')
 
 if __name__ == '__main__':
     unittest.main()

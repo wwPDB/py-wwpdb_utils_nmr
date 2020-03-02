@@ -221,7 +221,7 @@ class NmrDpReport:
 
         restraints = []
 
-        id = getInputSourceIdOfNmrData()
+        id = self.getInputSourceIdOfNmrData()
 
         nmr_input_source_dic = self.input_sources[id].get()
 
@@ -384,7 +384,7 @@ class NmrDpReport:
         """ Return stats of NMR legacy restraints.
         """
 
-        list_id = getInputSourceIdsOfNmrLegacyData()
+        list_id = self.getInputSourceIdsOfNmrLegacyData()
 
         if len(list_id) == 0:
             return None

@@ -15,6 +15,7 @@
 # 05-Feb-2020  M. Yokochi - rescue NEF atom_id w/o wild card notation in methyl group (v2.0.3)
 # 05-Feb-2020  M. Yokochi - relax NEF atom_id that ends with [xy] in methyne/methyl group (v2.0.3)
 # 26-Feb-2020  M. Yokochi - additional support for abnormal NEF atom nomenclature, e.g. HDy% in ASN, HEy% in GLN, seen in CCPN_2mtv_docr.nef (v2.0.4)
+# 02-Mar-2020  M. Yokochi - support 'auto-fill' of key items and 'auto-fill-from' of data items (v2.0.4)
 ##
 import sys
 import os
@@ -34,7 +35,7 @@ from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
 
 (scriptPath, scriptName) = ntpath.split(os.path.realpath(__file__))
 
-__version__ = 'v2.0.3'
+__version__ = 'v2.0.4'
 
 class NEFTranslator(object):
     """ Bi-directional translator between NEF and NMR-STAR
@@ -103,6 +104,18 @@ class NEFTranslator(object):
 
         # ambiguity codes
         self.bmrb_ambiguity_codes = (1, 2, 3, 4, 5, 6, 9)
+
+        # isotope numbers of NMR observable atoms
+        self.atom_isotopes = {'H': [1, 2, 3],
+                              'C': [13],
+                              'N': [15, 14],
+                              'O': [17],
+                              'P': [31],
+                              'S': [33],
+                              'F': [19],
+                              'CD': [113, 111],
+                              'CA': [43]
+                              }
 
         # CCD accessing utility
         self.__cI = ConfigInfo(getSiteId())
@@ -1459,6 +1472,7 @@ class NEFTranslator(object):
         key_names = [k['name'] for k in key_items]
         data_names = [d['name'] for d in data_items]
         mand_data_names = [d['name'] for d in data_items if d['mandatory']]
+        _mand_data_names = [d['name'] for d in data_items if d['mandatory'] and 'auto-fill-from' in d]
 
         key_len = len(key_items)
 
@@ -1506,11 +1520,49 @@ class NEFTranslator(object):
 
             if set(key_names) & set(loop.tags) != set(key_names):
                 missing_tags = list(set(key_names) - set(loop.tags))
-                raise LookupError("Missing mandatory %s loop tag%s." % (missing_tags, 's' if len(missing_tags) > 1 else ''))
+                for k in key_items:
+                    if k['name'] in missing_tags:
+                        if 'auto-fill' in k:
+                            for row in loop.data:
+                                row.append(k['auto-fill'])
+                            loop.add_tag(k['name'])
+                        else:
+                            raise LookupError("Missing mandatory %s loop tag%s." % (missing_tags, 's' if len(missing_tags) > 1 else ''))
 
             if len(mand_data_names) > 0 and set(mand_data_names) & set(loop.tags) != set(mand_data_names):
                 missing_tags = list(set(mand_data_names) - set(loop.tags))
-                raise LookupError("Missing mandatory %s loop tag%s." % (missing_tags, 's' if len(missing_tags) > 1 else ''))
+                for k in key_items:
+                    if k['name'] in missing_tags:
+                        if 'auto-fill' in k:
+                            for row in loop.data:
+                                row.append(k['auto-fill'])
+                            loop.add_tag(k['name'])
+                        else:
+                            raise LookupError("Missing mandatory %s loop tag%s." % (missing_tags, 's' if len(missing_tags) > 1 else ''))
+
+            if (len(_mand_data_names) > 0 and set(_mand_data_names) & set(loop.tags) != set(_mand_data_names)):
+                missing_tags = list(set(_mand_data_names) - set(loop.tags))
+                for d in data_items:
+                    if d['name'] in missing_tags:
+                        if 'auto-fill-from' in d:
+                            if d['name'] == 'element' or d['name'] == 'Atom_type':
+                                from_col = loop.tags.index(d['auto-fill-from'])
+                                for row in loop.data:
+                                    ref = row[from_col]
+                                    if ref.startswith('H') or ref.startswith('Q') or ref.startswith('M'):
+                                        row.append('H')
+                                    else:
+                                        row.append(ref[0])
+                                loop.add_tag(d['name'])
+                            elif d['name'] == 'isotope_number' or d['name'] == 'Atom_isotope_number':
+                                from_col = loop.tags.index(d['auto-fill-from'])
+                                for row in loop.data:
+                                    ref = row[from_col]
+                                    if ref.startswith('H') or ref.startswith('Q') or ref.startswith('M'):
+                                        row.append(1)
+                                    else:
+                                        row.append(self.atom_isotopes[ref[0]][0])
+                                loop.add_tag(d['name'])
 
             if not disallowed_tags is None:
                 if len(set(loop.tags) & set(disallowed_tags)) > 0:
@@ -2024,7 +2076,14 @@ class NEFTranslator(object):
 
             if set(key_names) & set(loop.tags) != set(key_names):
                 missing_tags = list(set(key_names) - set(loop.tags))
-                raise LookupError("Missing mandatory %s loop tag%s." % (missing_tags, 's' if len(missing_tags) > 1 else ''))
+                for k in key_items:
+                    if k['name'] in missing_tags:
+                        if 'auto-fill' in k:
+                            for row in loop.data:
+                                row.append(k['auto-fill'])
+                            loop.add_tag(k['name'])
+                        else:
+                            raise LookupError("Missing mandatory %s loop tag%s." % (missing_tags, 's' if len(missing_tags) > 1 else ''))
 
             keys = set()
             dup_ids = set()
@@ -2396,7 +2455,7 @@ class NEFTranslator(object):
             else:
                 return False
 
-        return atom_id.upper() in atoms
+        return True
 
     def validate_atom(self, star_data, lp_category='Atom_chem_shift', comp_id='Comp_ID', atom_id='Atom_ID'):
         """ Validate atom_id in a given loop against CCD.

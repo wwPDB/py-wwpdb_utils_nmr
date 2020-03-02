@@ -13,8 +13,9 @@
 # 14-Feb-2020  M. Yokochi - add methods to pre-populate pdbx_nmr_spectral_peak_list, apilayer.postModifyNMRPeaks
 # 21-Feb-2020  M. Yokochi - update content-type definitions
 # 28-Feb-2020  M. Yokochi - add support for 'nmr-chemical-shifts' content type (DAOTHER-4515)
+# 02-Mar-2020  M. Yokochi - add support for 'nmr-restraints' content type (DAOTHER-4515)
 ##
-""" Wrapper class for data processing report of NMR unified data.
+""" Wrapper class for data processing report of NMR data.
     @author: Masashi Yokochi
 """
 import logging
@@ -23,7 +24,7 @@ import copy
 import re
 
 class NmrDpReport:
-    """ Wrapper class for data processing report of NMR unified data.
+    """ Wrapper class for data processing report of NMR data.
     """
 
     def __init__(self):
@@ -120,16 +121,23 @@ class NmrDpReport:
 
         return self.input_sources[id]
 
-    def getInputSourceIdOfNmrUnifiedData(self):
-        """ Return input_source_id of NMR unified data file.
-            @return: index of input source of NMR unified data file, -1 otherwise
+    def getInputSourceIdOfNmrData(self):
+        """ Return input_source_id of NMR data file.
+            @return: index of input source of NMR data file, -1 otherwise
         """
 
         for i in self.input_sources:
-            if i.get()['file_type'] in ['nef', 'nmr-star']:
+            if i.get()['content_type'] in ['nmr-data-nef', 'nmr-data-str']:
                 return self.input_sources.index(i)
 
         return -1
+
+    def getInputSourceIdsOfNmrLegacyData(self):
+        """ Return array of input_source_id of NMR legacy data file.
+            @return: array of index of input source of NMR legacy data file, [] otherwise
+        """
+
+        return [self.input_sources.index(i) for i in self.input_sources if i.get()['content_type'] in ['nmr-chemical-shifts', 'nmr-restraints']]
 
     def getInputSourceIdOfCoord(self):
         """ Return input_source_id of coordinate file.
@@ -137,7 +145,7 @@ class NmrDpReport:
         """
 
         for i in self.input_sources:
-            if i.get()['file_type'] == 'pdbx':
+            if i.get()['content_type'] == 'model':
                 return self.input_sources.index(i)
 
         return -1
@@ -146,7 +154,18 @@ class NmrDpReport:
         """ Return effective NMR content subtypes.
         """
 
-        id = self.getInputSourceIdOfNmrUnifiedData()
+        id = self.getInputSourceIdOfNmrData()
+
+        if id < 0:
+            return None
+
+        nmr_input_source_dic = self.input_sources[id].get()
+
+        return {k: v for k, v in nmr_input_source_dic['content_subtype'].items() if v > 0}
+
+    def __getNmrLegacyContentSubTypes(self, id):
+        """ Return effective NMR content subtypes.
+        """
 
         if id < 0:
             return None
@@ -159,7 +178,24 @@ class NmrDpReport:
         """ Return stats of experimental data of a given content subtype.
         """
 
-        id = self.getInputSourceIdOfNmrUnifiedData()
+        id = self.getInputSourceIdOfNmrData()
+
+        if id < 0:
+            return None
+
+        nmr_input_source_dic = self.input_sources[id].get()
+
+        if not 'stats_of_exptl_data' in nmr_input_source_dic:
+            return None
+
+        if not content_subtype in nmr_input_source_dic['stats_of_exptl_data']:
+            return None
+
+        return nmr_input_source_dic['stats_of_exptl_data'][content_subtype]
+
+    def __getNmrLegacyStatsOfExptlData(self, id, content_subtype):
+        """ Return stats of legacy experimental data of a given content subtype.
+        """
 
         if id < 0:
             return None
@@ -181,9 +217,16 @@ class NmrDpReport:
         content_subtypes = self.getNmrContentSubTypes()
 
         if content_subtypes is None:
-            return None
+            return self.__getNmrRestraints()
 
         restraints = []
+
+        id = getInputSourceIdOfNmrData()
+
+        nmr_input_source_dic = self.input_sources[id].get()
+
+        file_name = nmr_input_source_dic['file_name']
+        file_type = 'NEF' if nmr_input_source_dic['file_type'] == 'nef' else 'NMR-STAR'
 
         content_subtype = 'dist_restraint'
 
@@ -231,32 +274,44 @@ class NmrDpReport:
                     elif _noe_exp_type == 'roe':
                         noe_exp_type = 'ROE'
 
-                restraint = {'constraint_type': 'distance',
+                restraint = {'constraint_filename': file_name,
+                             'software_name': file_type,
+                             'constraint_type': 'distance',
                              'constraint_subtype': noe_exp_type,
                              'constraint_number': noe_like}
                 restraints.append(restraint)
             if hydrogen_bonds > 0:
-                restraint = {'constraint_type': 'distance',
+                restraint = {'constraint_filename': file_name,
+                             'software_name': file_type,
+                             'constraint_type': 'distance',
                              'constraint_subtype': 'hydrogen bond',
                              'constraint_number': hydrogen_bonds}
                 restraints.append(restraint)
             if disulfide_bonds > 0:
-                restraint = {'constraint_type': 'distance',
+                restraint = {'constraint_filename': file_name,
+                             'software_name': file_type,
+                             'constraint_type': 'distance',
                              'constraint_subtype': 'disulfide bond',
                              'constraint_number': disulfide_bonds}
                 restraints.append(restraint)
             if diselenide_bonds > 0:
-                restraint = {'constraint_type': 'distance',
+                restraint = {'constraint_filename': file_name,
+                             'software_name': file_type,
+                             'constraint_type': 'distance',
                              'constraint_subtype': 'diselenide bond',
                              'constraint_number': diselenide_bonds}
                 restraints.append(restraint)
             if other_bonds > 0:
-                restraint = {'constraint_type': 'distance',
+                restraint = {'constraint_filename': file_name,
+                             'software_name': file_type,
+                             'constraint_type': 'distance',
                              'constraint_subtype': 'other bond',
                              'constraint_number': other_bonds}
                 restraints.append(restraint)
             if symmetric > 0:
-                restraint = {'constraint_type': 'distance',
+                restraint = {'constraint_filename': file_name,
+                             'software_name': file_type,
+                             'constraint_type': 'distance',
                              'constraint_subtype': 'symmetry',
                              'constraint_number': symmetric}
                 restraints.append(restraint)
@@ -279,22 +334,30 @@ class NmrDpReport:
                     elif k == 'other':
                         others += v
             if proteins > 0:
-                restraint = {'constraint_type': 'protein dihedral angle',
+                restraint = {'constraint_filename': file_name,
+                             'software_name': file_type,
+                             'constraint_type': 'protein dihedral angle',
                              'constraint_subtype': 'Not applicable',
                              'constraint_number': proteins}
                 restraints.append(restraint)
             if nucleic_acids > 0:
-                restraint = {'constraint_type': 'nucleic acid dihedral angle',
+                restraint = {'constraint_filename': file_name,
+                             'software_name': file_type,
+                             'constraint_type': 'nucleic acid dihedral angle',
                              'constraint_subtype': 'Not applicable',
                              'constraint_number': nucleic_acids}
                 restraints.append(restraint)
             if carbohydrates > 0:
-                restraint = {'constraint_type': 'carbohydrate dihedral angle',
+                restraint = {'constraint_filename': file_name,
+                             'software_name': file_type,
+                             'constraint_type': 'carbohydrate dihedral angle',
                              'constraint_subtype': 'Not applicable',
                              'constraint_number': carbohydrates}
                 restraints.append(restraint)
             if others > 0:
-                restraint = {'constraint_type': 'other angle',
+                restraint = {'constraint_filename': file_name,
+                             'software_name': file_type,
+                             'constraint_type': 'other angle',
                              'constraint_subtype': 'Not applicable',
                              'constraint_number': others}
                 restraints.append(restraint)
@@ -307,13 +370,188 @@ class NmrDpReport:
                 for k, v in stat['number_of_constraints'].items():
                     rdc_total += v
 
-            restraint = {'constraint_type': 'intervector projection angle',
+            restraint = {'constraint_filename': file_name,
+                         'software_name': file_type,
+                         'constraint_type': 'intervector projection angle',
                          'constraint_subtype': 'RDC',
                          'constraint_number': rdc_total}
 
             restraints.append(restraint)
 
-        return restraints
+        return restraints if len(restraints) > 0 else None
+
+    def __getNmrRestraints(self):
+        """ Return stats of NMR legacy restraints.
+        """
+
+        list_id = getInputSourceIdsOfNmrLegacyData()
+
+        if len(list_id) == 0:
+            return None
+
+        for id in list_id:
+
+            content_subtypes = self.__getNmrLegacyContentSubTypes(id)
+
+            if content_subtypes is None:
+                continue
+
+            nmr_input_source_dic = self.input_sources[id].get()
+
+            file_name = nmr_input_source_dic['file_name']
+            file_type = 'NEF' if nmr_input_source_dic['file_type'] == 'nef' else 'NMR-STAR'
+
+            content_subtype = 'dist_restraint'
+
+            if content_subtype in content_subtypes:
+                hydrogen_bonds = 0
+                disulfide_bonds = 0
+                diselenide_bonds = 0
+                other_bonds = 0
+                symmetric = 0
+                noe_like = 0
+                noe_exp_type = None
+                for stat in self.__getNmrLegacyStatsOfExptlData(id, content_subtype):
+                    for k, v in stat['number_of_constraints'].items():
+                        if 'hydrogen_bonds' in k:
+                            hydrogen_bonds += v
+                        elif 'disulfide_bonds' in k:
+                            disulfide_bonds += v
+                        elif 'diselenide_bonds' in k:
+                            diselenide_bonds += v
+                        elif 'other_bonds' in k:
+                            other_bonds += v
+                        elif k == 'symmetric_constraints':
+                            symmetric += v
+                        else:
+                            if noe_exp_type is None:
+                                noe_exp_type = stat['exp_type']
+                            noe_like += v
+                if noe_like > 0:
+                    if noe_exp_type == 'Unknown':
+                        noe_exp_type = 'NOE? (To be decided)'
+                    else:
+                        _noe_exp_type = noe_exp_type.lower()
+                        if _noe_exp_type == 'csp':
+                            noe_exp_type = 'CSP'
+                        elif _noe_exp_type == 'noe':
+                            noe_exp_type = 'NOE'
+                        elif _noe_exp_type == 'noe buildup':
+                            noe_exp_type = 'NOE buildup'
+                        elif _noe_exp_type == 'noe not seen':
+                            noe_exp_type = 'NOE not seen'
+                        elif _noe_exp_type == 'pre':
+                            noe_exp_type == 'PRE'
+                        elif _noe_exp_type == 'pre solvent':
+                            noe_exp_type = 'PRE solvent'
+                        elif _noe_exp_type == 'roe':
+                            noe_exp_type = 'ROE'
+
+                    restraint = {'constraint_filename': file_name,
+                                 'software_name': file_type,
+                                 'constraint_type': 'distance',
+                                 'constraint_subtype': noe_exp_type,
+                                 'constraint_number': noe_like}
+                    restraints.append(restraint)
+                if hydrogen_bonds > 0:
+                    restraint = {'constraint_filename': file_name,
+                                 'software_name': file_type,
+                                 'constraint_type': 'distance',
+                                 'constraint_subtype': 'hydrogen bond',
+                                 'constraint_number': hydrogen_bonds}
+                    restraints.append(restraint)
+                if disulfide_bonds > 0:
+                    restraint = {'constraint_filename': file_name,
+                                 'software_name': file_type,
+                                 'constraint_type': 'distance',
+                                 'constraint_subtype': 'disulfide bond',
+                                 'constraint_number': disulfide_bonds}
+                    restraints.append(restraint)
+                if diselenide_bonds > 0:
+                    restraint = {'constraint_filename': file_name,
+                                 'software_name': file_type,
+                                 'constraint_type': 'distance',
+                                 'constraint_subtype': 'diselenide bond',
+                                 'constraint_number': diselenide_bonds}
+                    restraints.append(restraint)
+                if other_bonds > 0:
+                    restraint = {'constraint_filename': file_name,
+                                 'software_name': file_type,
+                                 'constraint_type': 'distance',
+                                 'constraint_subtype': 'other bond',
+                                 'constraint_number': other_bonds}
+                    restraints.append(restraint)
+                if symmetric > 0:
+                    restraint = {'constraint_filename': file_name,
+                                 'software_name': file_type,
+                                 'constraint_type': 'distance',
+                                 'constraint_subtype': 'symmetry',
+                                 'constraint_number': symmetric}
+                    restraints.append(restraint)
+
+            content_subtype = 'dihed_restraint'
+
+            if content_subtype in content_subtypes:
+                proteins = 0;
+                nucleic_acids = 0
+                carbohydrates = 0
+                others = 0
+                for stat in self.__getNmrLegacyStatsOfExptlData(id, content_subtype):
+                    for k, v in stat['number_of_constraints_per_polymer_type'].items():
+                        if k == 'protein':
+                            proteins += v
+                        elif k == 'nucleic_acid':
+                            nucleic_acids += v
+                        elif k == 'carbohydrate':
+                            carbohydrates += v
+                        elif k == 'other':
+                            others += v
+                if proteins > 0:
+                    restraint = {'constraint_filename': file_name,
+                                 'software_name': file_type,
+                                 'constraint_type': 'protein dihedral angle',
+                                 'constraint_subtype': 'Not applicable',
+                                 'constraint_number': proteins}
+                    restraints.append(restraint)
+                if nucleic_acids > 0:
+                    restraint = {'constraint_filename': file_name,
+                                 'software_name': file_type,
+                                 'constraint_type': 'nucleic acid dihedral angle',
+                                 'constraint_subtype': 'Not applicable',
+                                 'constraint_number': nucleic_acids}
+                    restraints.append(restraint)
+                if carbohydrates > 0:
+                    restraint = {'constraint_filename': file_name,
+                                 'software_name': file_type,
+                                 'constraint_type': 'carbohydrate dihedral angle',
+                                 'constraint_subtype': 'Not applicable',
+                                 'constraint_number': carbohydrates}
+                    restraints.append(restraint)
+                if others > 0:
+                    restraint = {'constraint_filename': file_name,
+                                 'software_name': file_type,
+                                 'constraint_type': 'other angle',
+                                 'constraint_subtype': 'Not applicable',
+                                 'constraint_number': others}
+                    restraints.append(restraint)
+
+            content_subtype = 'rdc_restraint'
+
+            if content_subtype in content_subtypes:
+                rdc_total = 0
+                for stat in self.__getNmrLegacyStatsOfExptlData(id, content_subtype):
+                    for k, v in stat['number_of_constraints'].items():
+                        rdc_total += v
+
+                restraint = {'constraint_filename': file_name,
+                             'software_name': file_type,
+                             'constraint_type': 'intervector projection angle',
+                             'constraint_subtype': 'RDC',
+                             'constraint_number': rdc_total}
+
+                restraints.append(restraint)
+
+        return restraints if len(restraints) > 0 else None
 
     def getNmrPeaks(self):
         """ Return stats of NMR spectral peaks.
@@ -338,10 +576,13 @@ class NmrDpReport:
         """ Retrieve NMR polymer sequence having a given chain_id.
         """
 
-        id = self.getInputSourceIdOfNmrUnifiedData()
+        id = self.getInputSourceIdOfNmrData()
 
         if id < 0:
-            return None
+            ids = self.getInputSourceIdsOfNmrLegacyData()
+            if len(ids) == 0:
+                return None
+            id = ids[0]
 
         nmr_input_source_dic = self.input_sources[id].get()
 
@@ -368,10 +609,13 @@ class NmrDpReport:
         """ Retrieve NMR polymer sequence (1-letter code) having a given chain_id.
         """
 
-        id = self.getInputSourceIdOfNmrUnifiedData()
+        id = self.getInputSourceIdOfNmrData()
 
         if id < 0:
-            return None
+            ids = self.getInputSourceIdsOfNmrLegacyData()
+            if len(ids) == 0:
+                return None
+            id = ids[0]
 
         nmr_input_source_dic = self.input_sources[id].get()
 
@@ -422,10 +666,13 @@ class NmrDpReport:
         """ Retrieve NMR polymer sequence corresponding to a given coordinate chain_id.
         """
 
-        id = self.getInputSourceIdOfNmrUnifiedData()
+        id = self.getInputSourceIdOfNmrData()
 
         if id < 0:
-            return None
+            ids = self.getInputSourceIdsOfNmrLegacyData()
+            if len(ids) == 0:
+                return None
+            id = ids[0]
 
         chain_assign_dic = self.chain_assignment.get()
 
@@ -464,10 +711,13 @@ class NmrDpReport:
         """ Retrieve NMR polymer sequence (1-letter code) corresponding to a given coordinate chain_id.
         """
 
-        id = self.getInputSourceIdOfNmrUnifiedData()
+        id = self.getInputSourceIdOfNmrData()
 
         if id < 0:
-            return None
+            ids = self.getInputSourceIdsOfNmrLegacyData()
+            if len(ids) == 0:
+                return None
+            id = ids[0]
 
         chain_assign_dic = self.chain_assignment.get()
 
@@ -662,8 +912,8 @@ class NmrDpReport:
 
         if not self.__immutable:
 
-            file_name = self.input_sources[self.getInputSourceIdOfNmrUnifiedData()].get()['file_name']
-            _file_name = prev_report.input_sources[prev_report.getInputSourceIdOfNmrUnifiedData()].get()['file_name']
+            file_name = self.input_sources[self.getInputSourceIdOfNmrData()].get()['file_name']
+            _file_name = prev_report.input_sources[prev_report.getInputSourceIdOfNmrData()].get()['file_name']
 
             value_list = prev_report.error.getValueList(item, _file_name)
 
@@ -687,8 +937,8 @@ class NmrDpReport:
 
         if not self.__immutable:
 
-            file_name = self.input_sources[self.getInputSourceIdOfNmrUnifiedData()].get()['file_name']
-            _file_name = prev_report.input_sources[prev_report.getInputSourceIdOfNmrUnifiedData()].get()['file_name']
+            file_name = self.input_sources[self.getInputSourceIdOfNmrData()].get()['file_name']
+            _file_name = prev_report.input_sources[prev_report.getInputSourceIdOfNmrData()].get()['file_name']
 
             for item in prev_report.error.get().keys():
 
@@ -732,8 +982,8 @@ class NmrDpReport:
 
             self.corrected_warning = NmrDpReportWarning()
 
-            file_name = self.input_sources[self.getInputSourceIdOfNmrUnifiedData()].get()['file_name']
-            _file_name = prev_report.input_sources[prev_report.getInputSourceIdOfNmrUnifiedData()].get()['file_name']
+            file_name = self.input_sources[self.getInputSourceIdOfNmrData()].get()['file_name']
+            _file_name = prev_report.input_sources[prev_report.getInputSourceIdOfNmrData()].get()['file_name']
 
             for item in prev_report.warning.get().keys():
 
@@ -769,7 +1019,7 @@ class NmrDpReport:
             raise UserWarning('+NmrDpReport.setCorrectedWarning() ++ Warning  - No effects on NMR data processing report because the report is immutable')
 
 class NmrDpReportInputSource:
-    """ Wrapper class for data processing report of NMR unified data (input source).
+    """ Wrapper class for data processing report of NMR data (input source).
     """
 
     def __init__(self):
@@ -778,7 +1028,7 @@ class NmrDpReportInputSource:
                       'non_standard_residue', 'disulfide_bond', 'other_bond',
                       'stats_of_exptl_data')
         self.file_types = ('pdbx', 'nef', 'nmr-star')
-        self.content_types = ('model', 'nmr-data-nef', 'nmr-data-str', 'nmr-chemical-shifts')
+        self.content_types = ('model', 'nmr-data-nef', 'nmr-data-str', 'nmr-chemical-shifts', 'nmr-restraints')
         self.content_subtypes = ('coordinate', 'non_poly', 'entry_info', 'poly_seq', 'chem_shift', 'dist_restraint', 'dihed_restraint', 'rdc_restraint', 'spectral_peak')
 
         self.__contents = {item:None for item in self.items}
@@ -844,7 +1094,7 @@ class NmrDpReportInputSource:
             raise KeyError('+NmrDpReportInputSource.updateNonStandardResidueByExptlData() ++ Error  - Unknown chain_id %s' % chain_id)
 
 class NmrDpReportSequenceAlignment:
-    """ Wrapper class for data processing report of NMR unified data (sequence alignment).
+    """ Wrapper class for data processing report of NMR data (sequence alignment).
     """
 
     def __init__(self):
@@ -868,7 +1118,7 @@ class NmrDpReportSequenceAlignment:
         self.__contents = contents
 
 class NmrDpReportChainAssignment:
-    """ Wrapper class for data processing report of NMR unified data (chain assignment).
+    """ Wrapper class for data processing report of NMR data (chain assignment).
     """
 
     def __init__(self):
@@ -892,7 +1142,7 @@ class NmrDpReportChainAssignment:
         self.__contents = contents
 
 class NmrDpReportError:
-    """ Wrapper class for data processing report of NMR unified data (error).
+    """ Wrapper class for data processing report of NMR data (error).
     """
 
     def __init__(self):

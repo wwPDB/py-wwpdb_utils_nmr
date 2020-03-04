@@ -2455,7 +2455,7 @@ class NEFTranslator(object):
             else:
                 return False
 
-        return True
+        return atom_id in atoms
 
     def validate_atom(self, star_data, lp_category='Atom_chem_shift', comp_id='Comp_ID', atom_id='Atom_ID'):
         """ Validate atom_id in a given loop against CCD.

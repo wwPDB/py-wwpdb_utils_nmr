@@ -15,7 +15,7 @@
 # 05-Feb-2020  M. Yokochi - rescue NEF atom_id w/o wild card notation in methyl group (v2.0.3)
 # 05-Feb-2020  M. Yokochi - relax NEF atom_id that ends with [xy] in methyne/methyl group (v2.0.3)
 # 26-Feb-2020  M. Yokochi - additional support for abnormal NEF atom nomenclature, e.g. HDy% in ASN, HEy% in GLN, seen in CCPN_2mtv_docr.nef (v2.0.4)
-# 02-Mar-2020  M. Yokochi - support 'auto-fill' of key items and 'auto-fill-from' of data items (v2.0.4)
+# 04-Mar-2020  M. Yokochi - support 'default' of key items and 'default-from' of data items (v2.0.4)
 ##
 import sys
 import os
@@ -1472,7 +1472,7 @@ class NEFTranslator(object):
         key_names = [k['name'] for k in key_items]
         data_names = [d['name'] for d in data_items]
         mand_data_names = [d['name'] for d in data_items if d['mandatory']]
-        _mand_data_names = [d['name'] for d in data_items if d['mandatory'] and 'auto-fill-from' in d]
+        _mand_data_names = [d['name'] for d in data_items if d['mandatory'] and 'default-from' in d]
 
         key_len = len(key_items)
 
@@ -1522,9 +1522,9 @@ class NEFTranslator(object):
                 missing_tags = list(set(key_names) - set(loop.tags))
                 for k in key_items:
                     if k['name'] in missing_tags:
-                        if 'auto-fill' in k:
+                        if 'default' in k:
                             for row in loop.data:
-                                row.append(k['auto-fill'])
+                                row.append(k['default'])
                             loop.add_tag(k['name'])
                         else:
                             raise LookupError("Missing mandatory %s loop tag%s." % (missing_tags, 's' if len(missing_tags) > 1 else ''))
@@ -1533,9 +1533,9 @@ class NEFTranslator(object):
                 missing_tags = list(set(mand_data_names) - set(loop.tags))
                 for k in key_items:
                     if k['name'] in missing_tags:
-                        if 'auto-fill' in k:
+                        if 'default' in k:
                             for row in loop.data:
-                                row.append(k['auto-fill'])
+                                row.append(k['default'])
                             loop.add_tag(k['name'])
                         else:
                             raise LookupError("Missing mandatory %s loop tag%s." % (missing_tags, 's' if len(missing_tags) > 1 else ''))
@@ -1544,9 +1544,9 @@ class NEFTranslator(object):
                 missing_tags = list(set(_mand_data_names) - set(loop.tags))
                 for d in data_items:
                     if d['name'] in missing_tags:
-                        if 'auto-fill-from' in d:
+                        if 'default-from' in d:
                             if d['name'] == 'element' or d['name'] == 'Atom_type':
-                                from_col = loop.tags.index(d['auto-fill-from'])
+                                from_col = loop.tags.index(d['default-from'])
                                 for row in loop.data:
                                     ref = row[from_col]
                                     if ref.startswith('H') or ref.startswith('Q') or ref.startswith('M'):
@@ -1555,7 +1555,7 @@ class NEFTranslator(object):
                                         row.append(ref[0])
                                 loop.add_tag(d['name'])
                             elif d['name'] == 'isotope_number' or d['name'] == 'Atom_isotope_number':
-                                from_col = loop.tags.index(d['auto-fill-from'])
+                                from_col = loop.tags.index(d['default-from'])
                                 for row in loop.data:
                                     ref = row[from_col]
                                     if ref.startswith('H') or ref.startswith('Q') or ref.startswith('M'):
@@ -2078,9 +2078,9 @@ class NEFTranslator(object):
                 missing_tags = list(set(key_names) - set(loop.tags))
                 for k in key_items:
                     if k['name'] in missing_tags:
-                        if 'auto-fill' in k:
+                        if 'default' in k:
                             for row in loop.data:
-                                row.append(k['auto-fill'])
+                                row.append(k['default'])
                             loop.add_tag(k['name'])
                         else:
                             raise LookupError("Missing mandatory %s loop tag%s." % (missing_tags, 's' if len(missing_tags) > 1 else ''))

@@ -450,98 +450,98 @@ class NmrDpUtility(object):
                                 }
 
         # key items of loop
-        self.key_items = {'nef': {'poly_seq': [{'name': 'chain_code', 'type': 'str', 'auto-fill': 'A'},
+        self.key_items = {'nef': {'poly_seq': [{'name': 'chain_code', 'type': 'str', 'default': 'A'},
                                                {'name': 'sequence_code', 'type': 'int'},
                                                {'name': 'residue_name', 'type': 'str'}
                                                ],
-                                  'chem_shift': [{'name': 'chain_code', 'type': 'str', 'auto-fill': 'A'},
+                                  'chem_shift': [{'name': 'chain_code', 'type': 'str', 'default': 'A'},
                                                  {'name': 'sequence_code', 'type': 'int'},
                                                  {'name': 'residue_name', 'type': 'str'},
                                                  {'name': 'atom_name', 'type': 'str'}
                                                  ],
                                   'dist_restraint': [{'name': 'restraint_id', 'type': 'positive-int'},
-                                                     {'name': 'chain_code_1', 'type': 'str', 'auto-fill': 'A'},
+                                                     {'name': 'chain_code_1', 'type': 'str', 'default': 'A'},
                                                      {'name': 'sequence_code_1', 'type': 'int'},
                                                      {'name': 'residue_name_1', 'type': 'str'},
                                                      {'name': 'atom_name_1', 'type': 'str'},
-                                                     {'name': 'chain_code_2', 'type': 'str', 'auto-fill': 'A'},
+                                                     {'name': 'chain_code_2', 'type': 'str', 'default': 'A'},
                                                      {'name': 'sequence_code_2', 'type': 'int'},
                                                      {'name': 'residue_name_2', 'type': 'str'},
                                                      {'name': 'atom_name_2', 'type': 'str'}
                                                      ],
                                   'dihed_restraint': [{'name': 'restraint_id', 'type': 'positive-int'},
-                                                      {'name': 'chain_code_1', 'type': 'str', 'auto-fill': 'A'},
+                                                      {'name': 'chain_code_1', 'type': 'str', 'default': 'A'},
                                                       {'name': 'sequence_code_1', 'type': 'int'},
                                                       {'name': 'residue_name_1', 'type': 'str'},
                                                       {'name': 'atom_name_1', 'type': 'str'},
-                                                      {'name': 'chain_code_2', 'type': 'str', 'auto-fill': 'A'},
+                                                      {'name': 'chain_code_2', 'type': 'str', 'default': 'A'},
                                                       {'name': 'sequence_code_2', 'type': 'int'},
                                                       {'name': 'residue_name_2', 'type': 'str'},
                                                       {'name': 'atom_name_2', 'type': 'str'},
-                                                      {'name': 'chain_code_3', 'type': 'str', 'auto-fill': 'A'},
+                                                      {'name': 'chain_code_3', 'type': 'str', 'default': 'A'},
                                                       {'name': 'sequence_code_3', 'type': 'int'},
                                                       {'name': 'residue_name_3', 'type': 'str'},
                                                       {'name': 'atom_name_3', 'type': 'str'},
-                                                      {'name': 'chain_code_4', 'type': 'str', 'auto-fill': 'A'},
+                                                      {'name': 'chain_code_4', 'type': 'str', 'default': 'A'},
                                                       {'name': 'sequence_code_4', 'type': 'int'},
                                                       {'name': 'residue_name_4', 'type': 'str'},
                                                       {'name': 'atom_name_4', 'type': 'str'}
                                                       ],
                                   'rdc_restraint': [{'name': 'restraint_id', 'type': 'positive-int'},
-                                                    {'name': 'chain_code_1', 'type': 'str', 'auto-fill': 'A'},
+                                                    {'name': 'chain_code_1', 'type': 'str', 'default': 'A'},
                                                     {'name': 'sequence_code_1', 'type': 'int'},
                                                     {'name': 'residue_name_1', 'type': 'str'},
                                                     {'name': 'atom_name_1', 'type': 'str'},
-                                                    {'name': 'chain_code_2', 'type': 'str', 'auto-fill': 'A'},
+                                                    {'name': 'chain_code_2', 'type': 'str', 'default': 'A'},
                                                     {'name': 'sequence_code_2', 'type': 'int'},
                                                     {'name': 'residue_name_2', 'type': 'str'},
                                                     {'name': 'atom_name_2', 'type': 'str'}
                                                     ],
                                   'spectral_peak': None
                                   },
-                          'nmr-star': {'poly_seq': [{'name': 'Entity_assembly_ID', 'type': 'positive-int', 'auto-fill': '1'},
+                          'nmr-star': {'poly_seq': [{'name': 'Entity_assembly_ID', 'type': 'positive-int', 'default': '1'},
                                                     {'name': 'Comp_index_ID', 'type': 'int'},
                                                     {'name': 'Comp_ID', 'type': 'str'}
                                                     ],
-                                       'chem_shift': [{'name': 'Entity_assembly_ID', 'type': 'positive-int', 'auto-fill': '1'},
+                                       'chem_shift': [{'name': 'Entity_assembly_ID', 'type': 'positive-int', 'default': '1'},
                                                       {'name': 'Comp_index_ID', 'type': 'int'},
                                                       {'name': 'Comp_ID', 'type': 'str'},
                                                       {'name': 'Atom_ID', 'type': 'str'}
                                                       ],
                                        'dist_restraint': [{'name': 'ID', 'type': 'positive-int'},
-                                                          {'name': 'Entity_assembly_ID_1', 'type': 'positive-int', 'auto-fill': '1'},
+                                                          {'name': 'Entity_assembly_ID_1', 'type': 'positive-int', 'default': '1'},
                                                           {'name': 'Comp_index_ID_1', 'type': 'int'},
                                                           {'name': 'Comp_ID_1', 'type': 'str'},
                                                           {'name': 'Atom_ID_1', 'type': 'str'},
-                                                          {'name': 'Entity_assembly_ID_2', 'type': 'positive-int', 'auto-fill': '1'},
+                                                          {'name': 'Entity_assembly_ID_2', 'type': 'positive-int', 'default': '1'},
                                                           {'name': 'Comp_index_ID_2', 'type': 'int'},
                                                           {'name': 'Comp_ID_2', 'type': 'str'},
                                                           {'name': 'Atom_ID_2', 'type': 'str'}
                                                           ],
                                        'dihed_restraint': [{'name': 'ID', 'type': 'positive-int'},
-                                                           {'name': 'Entity_assembly_ID_1', 'type': 'positive-int', 'auto-fill': '1'},
+                                                           {'name': 'Entity_assembly_ID_1', 'type': 'positive-int', 'default': '1'},
                                                            {'name': 'Comp_index_ID_1', 'type': 'int'},
                                                            {'name': 'Comp_ID_1', 'type': 'str'},
                                                            {'name': 'Atom_ID_1', 'type': 'str'},
-                                                           {'name': 'Entity_assembly_ID_2', 'type': 'positive-int', 'auto-fill': '1'},
+                                                           {'name': 'Entity_assembly_ID_2', 'type': 'positive-int', 'default': '1'},
                                                            {'name': 'Comp_index_ID_2', 'type': 'int'},
                                                            {'name': 'Comp_ID_2', 'type': 'str'},
                                                            {'name': 'Atom_ID_2', 'type': 'str'},
-                                                           {'name': 'Entity_assembly_ID_3', 'type': 'positive-int', 'auto-fill': '1'},
+                                                           {'name': 'Entity_assembly_ID_3', 'type': 'positive-int', 'default': '1'},
                                                            {'name': 'Comp_index_ID_3', 'type': 'int'},
                                                            {'name': 'Comp_ID_3', 'type': 'str'},
                                                            {'name': 'Atom_ID_3', 'type': 'str'},
-                                                           {'name': 'Entity_assembly_ID_4', 'type': 'positive-int', 'auto-fill': '1'},
+                                                           {'name': 'Entity_assembly_ID_4', 'type': 'positive-int', 'default': '1'},
                                                            {'name': 'Comp_index_ID_4', 'type': 'int'},
                                                            {'name': 'Comp_ID_4', 'type': 'str'},
                                                            {'name': 'Atom_ID_4', 'type': 'str'}
                                                            ],
                                        'rdc_restraint': [{'name': 'ID', 'type': 'positive-int'},
-                                                         {'name': 'Entity_assembly_ID_1', 'type': 'positive-int', 'auto-fill': '1'},
+                                                         {'name': 'Entity_assembly_ID_1', 'type': 'positive-int', 'default': '1'},
                                                          {'name': 'Comp_index_ID_1', 'type': 'int'},
                                                          {'name': 'Comp_ID_1', 'type': 'str'},
                                                          {'name': 'Atom_ID_1', 'type': 'str'},
-                                                         {'name': 'Entity_assembly_ID_2', 'type': 'positive-int', 'auto-fill': '1'},
+                                                         {'name': 'Entity_assembly_ID_2', 'type': 'positive-int', 'default': '1'},
                                                          {'name': 'Comp_index_ID_2', 'type': 'int'},
                                                          {'name': 'Comp_ID_2', 'type': 'str'},
                                                          {'name': 'Atom_ID_2', 'type': 'str'}
@@ -565,75 +565,75 @@ class NmrDpUtility(object):
                           }
 
         # key items of loop to check consistency
-        self.consist_key_items = {'nef': {'dist_restraint': [{'name': 'chain_code_1', 'type': 'str', 'auto-fill': 'A'},
+        self.consist_key_items = {'nef': {'dist_restraint': [{'name': 'chain_code_1', 'type': 'str', 'default': 'A'},
                                                              {'name': 'sequence_code_1', 'type': 'int'},
                                                              {'name': 'residue_name_1', 'type': 'str'},
                                                              {'name': 'atom_name_1', 'type': 'str'},
-                                                             {'name': 'chain_code_2', 'type': 'str', 'auto-fill': 'A'},
+                                                             {'name': 'chain_code_2', 'type': 'str', 'default': 'A'},
                                                              {'name': 'sequence_code_2', 'type': 'int'},
                                                              {'name': 'residue_name_2', 'type': 'str'},
                                                              {'name': 'atom_name_2', 'type': 'str'}
                                                              ],
-                                          'dihed_restraint': [{'name': 'chain_code_1', 'type': 'str', 'auto-fill': 'A'},
+                                          'dihed_restraint': [{'name': 'chain_code_1', 'type': 'str', 'default': 'A'},
                                                               {'name': 'sequence_code_1', 'type': 'int'},
                                                               {'name': 'residue_name_1', 'type': 'str'},
                                                               {'name': 'atom_name_1', 'type': 'str'},
-                                                              {'name': 'chain_code_2', 'type': 'str', 'auto-fill': 'A'},
+                                                              {'name': 'chain_code_2', 'type': 'str', 'default': 'A'},
                                                               {'name': 'sequence_code_2', 'type': 'int'},
                                                               {'name': 'residue_name_2', 'type': 'str'},
                                                               {'name': 'atom_name_2', 'type': 'str'},
-                                                              {'name': 'chain_code_3', 'type': 'str', 'auto-fill': 'A'},
+                                                              {'name': 'chain_code_3', 'type': 'str', 'default': 'A'},
                                                               {'name': 'sequence_code_3', 'type': 'int'},
                                                               {'name': 'residue_name_3', 'type': 'str'},
                                                               {'name': 'atom_name_3', 'type': 'str'},
-                                                              {'name': 'chain_code_4', 'type': 'str', 'auto-fill': 'A'},
+                                                              {'name': 'chain_code_4', 'type': 'str', 'default': 'A'},
                                                               {'name': 'sequence_code_4', 'type': 'int'},
                                                               {'name': 'residue_name_4', 'type': 'str'},
                                                               {'name': 'atom_name_4', 'type': 'str'}
                                                               ],
-                                          'rdc_restraint': [{'name': 'chain_code_1', 'type': 'str', 'auto-fill': 'A'},
+                                          'rdc_restraint': [{'name': 'chain_code_1', 'type': 'str', 'default': 'A'},
                                                             {'name': 'sequence_code_1', 'type': 'int'},
                                                             {'name': 'residue_name_1', 'type': 'str'},
                                                             {'name': 'atom_name_1', 'type': 'str'},
-                                                            {'name': 'chain_code_2', 'type': 'str', 'auto-fill': 'A'},
+                                                            {'name': 'chain_code_2', 'type': 'str', 'default': 'A'},
                                                             {'name': 'sequence_code_2', 'type': 'int'},
                                                             {'name': 'residue_name_2', 'type': 'str'},
                                                             {'name': 'atom_name_2', 'type': 'str'}
                                                             ],
                                           'spectral_peak': None
                                           },
-                                  'nmr-star': {'dist_restraint': [{'name': 'Entity_assembly_ID_1', 'type': 'positive-int', 'auto-fill': '1'},
+                                  'nmr-star': {'dist_restraint': [{'name': 'Entity_assembly_ID_1', 'type': 'positive-int', 'default': '1'},
                                                                   {'name': 'Comp_index_ID_1', 'type': 'int'},
                                                                   {'name': 'Comp_ID_1', 'type': 'str'},
                                                                   {'name': 'Atom_ID_1', 'type': 'str'},
-                                                                  {'name': 'Entity_assembly_ID_2', 'type': 'positive-int', 'auto-fill': '1'},
+                                                                  {'name': 'Entity_assembly_ID_2', 'type': 'positive-int', 'default': '1'},
                                                                   {'name': 'Comp_index_ID_2', 'type': 'int'},
                                                                   {'name': 'Comp_ID_2', 'type': 'str'},
                                                                   {'name': 'Atom_ID_2', 'type': 'str'}
                                                                   ],
-                                               'dihed_restraint': [{'name': 'Entity_assembly_ID_1', 'type': 'positive-int', 'auto-fill': '1'},
+                                               'dihed_restraint': [{'name': 'Entity_assembly_ID_1', 'type': 'positive-int', 'default': '1'},
                                                                    {'name': 'Comp_index_ID_1', 'type': 'int'},
                                                                    {'name': 'Comp_ID_1', 'type': 'str'},
                                                                    {'name': 'Atom_ID_1', 'type': 'str'},
-                                                                   {'name': 'Entity_assembly_ID_2', 'type': 'positive-int', 'auto-fill': '1'},
+                                                                   {'name': 'Entity_assembly_ID_2', 'type': 'positive-int', 'default': '1'},
                                                                    {'name': 'Comp_index_ID_2', 'type': 'int'},
                                                                    {'name': 'Comp_ID_2', 'type': 'str'},
                                                                    {'name': 'Atom_ID_2', 'type': 'str'},
-                                                                   {'name': 'Entity_assembly_ID_3', 'type': 'positive-int', 'auto-fill': '1'},
+                                                                   {'name': 'Entity_assembly_ID_3', 'type': 'positive-int', 'default': '1'},
                                                                    {'name': 'Comp_index_ID_3', 'type': 'int'},
                                                                    {'name': 'Comp_ID_3', 'type': 'str'},
                                                                    {'name': 'Atom_ID_3', 'type': 'str'},
-                                                                   {'name': 'Entity_assembly_ID_4', 'type': 'positive-int', 'auto-fill': '1'},
+                                                                   {'name': 'Entity_assembly_ID_4', 'type': 'positive-int', 'default': '1'},
                                                                    {'name': 'Comp_index_ID_4', 'type': 'int'},
                                                                    {'name': 'Comp_ID_4', 'type': 'str'},
                                                                    {'name': 'Atom_ID_4', 'type': 'str'}
                                                                    ],
                                                'rdc_restraint': [
-                                                                 {'name': 'Entity_assembly_ID_1', 'type': 'positive-int', 'auto-fill': '1'},
+                                                                 {'name': 'Entity_assembly_ID_1', 'type': 'positive-int', 'default': '1'},
                                                                  {'name': 'Comp_index_ID_1', 'type': 'int'},
                                                                  {'name': 'Comp_ID_1', 'type': 'str'},
                                                                  {'name': 'Atom_ID_1', 'type': 'str'},
-                                                                 {'name': 'Entity_assembly_ID_2', 'type': 'positive-int', 'auto-fill': '1'},
+                                                                 {'name': 'Entity_assembly_ID_2', 'type': 'positive-int', 'default': '1'},
                                                                  {'name': 'Comp_index_ID_2', 'type': 'int'},
                                                                  {'name': 'Comp_ID_2', 'type': 'str'},
                                                                  {'name': 'Atom_ID_2', 'type': 'str'}
@@ -663,10 +663,10 @@ class NmrDpUtility(object):
                                                    'range': self.chem_shift_range},
                                                   {'name': 'value_uncertainty', 'type': 'range-float', 'mandatory': False,
                                                    'range': self.chem_shift_error},
-                                                  {'name': 'element', 'type': 'enum', 'mandatory': True, 'auto-fill-from': 'atom_name',
+                                                  {'name': 'element', 'type': 'enum', 'mandatory': True, 'default-from': 'atom_name',
                                                    'enum': set(self.atom_isotopes.keys()),
                                                    'enforce-enum': True},
-                                                  {'name': 'isotope_number', 'type': 'enum-int', 'mandatory': True, 'auto-fill-from': 'atom_name',
+                                                  {'name': 'isotope_number', 'type': 'enum-int', 'mandatory': True, 'default-from': 'atom_name',
                                                    'enum': set(isotope_nums),
                                                    'enforce-enum': True}
                                                   ],
@@ -824,10 +824,10 @@ class NmrDpUtility(object):
                                                      {'name': 'NEF_index', 'type': 'index-int', 'mandatory': False},
                                                      {'name': 'Assembly_ID', 'type': 'pointer-index', 'mandatory': False}
                                                      ],
-                                        'chem_shift': [{'name': 'Atom_type', 'type': 'enum', 'mandatory': True, 'auto-fill-from': 'Atom_ID',
+                                        'chem_shift': [{'name': 'Atom_type', 'type': 'enum', 'mandatory': True, 'default-from': 'Atom_ID',
                                                         'enum': set(self.atom_isotopes.keys()),
                                                         'enforce-enum': True},
-                                                       {'name': 'Atom_isotope_number', 'type': 'enum-int', 'mandatory': True, 'auto-fill-from': 'Atom_ID',
+                                                       {'name': 'Atom_isotope_number', 'type': 'enum-int', 'mandatory': True, 'default-from': 'Atom_ID',
                                                         'enum': set(isotope_nums),
                                                         'enforce-enum': True},
                                                        {'name': 'Val', 'type': 'range-float', 'mandatory': True,
@@ -3084,9 +3084,6 @@ class NmrDpUtility(object):
             if not content_subtype in input_source_dic['content_subtype'].keys():
                 continue
 
-            if self.__star_data_type[fileListId] == 'Loop':
-                continue
-
             sf_category = self.sf_categories[file_type][content_subtype]
             lp_category = self.lp_categories[file_type][content_subtype]
 
@@ -3101,6 +3098,7 @@ class NmrDpUtility(object):
                     input_source.setItemValue('polymer_sequence', poly_seq)
 
                     if file_type == 'nmr-star':
+
                         auth_poly_seq = self.__nefT.get_star_auth_seq(sf_data, lp_category)[0]
 
                         for cid in range(len(poly_seq)):
@@ -3215,13 +3213,14 @@ class NmrDpUtility(object):
                         self.__lfh.write("+NmrDpUtility.__extractPolymerSequence() ++ KeyError  - %s" % str(e))
 
                 except LookupError as e:
-
+                    pass
+                    """
                     self.report.error.appendDescription('missing_mandatory_item', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': str(e).strip("'")})
                     self.report.setError()
 
                     if self.__verbose:
                         self.__lfh.write("+NmrDpUtility.__extractPolymerSequence() ++ LookupError  - %s" % str(e))
-
+                    """
                 except ValueError as e:
 
                     self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': str(e).strip("'")})
@@ -3359,7 +3358,8 @@ class NmrDpUtility(object):
 
                 has_poly_seq = True
 
-                if file_type == 'nmr-star' and self.__combined_mode:
+                if file_type == 'nmr-star':
+
                     auth_poly_seq = self.__nefT.get_star_auth_seq(sf_data, lp_category)[0]
 
                     for cid in range(len(poly_seq)):
@@ -3473,13 +3473,14 @@ class NmrDpUtility(object):
                 self.__lfh.write("+NmrDpUtility.__extractPolymerSequenceInLoop() ++ KeyError  - %s" % str(e))
 
         except LookupError as e:
-
+            pass
+            """
             self.report.error.appendDescription('missing_mandatory_item', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': str(e).strip("'")})
             self.report.setError()
 
             if self.__verbose:
                 self.__lfh.write("+NmrDpUtility.__extractPolymerSequenceInLoop() ++ LookupError  - %s" % str(e))
-
+            """
         except ValueError as e:
 
             self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': str(e).strip("'")})
@@ -4371,82 +4372,144 @@ class NmrDpUtility(object):
                     else:
                         pass
 
-            if file_type == 'nmr-star' and self.__combined_mode:
-                auth_pairs = self.__nefT.get_star_auth_comp_atom_pair(sf_data, lp_category)[0]
+            if file_type == 'nmr-star':
 
-                for auth_pair in auth_pairs:
-                    comp_id = auth_pair['comp_id']
-                    auth_atom_ids = auth_pair['atom_id']
+                try:
 
-                    # standard residue
-                    if self.__nefT.get_one_letter_code(comp_id) != 'X':
+                    auth_pairs = self.__nefT.get_star_auth_comp_atom_pair(sf_data, lp_category)[0]
 
-                        _auth_atom_ids = []
-                        for auth_atom_id in auth_atom_ids:
+                    for auth_pair in auth_pairs:
+                        comp_id = auth_pair['comp_id']
+                        auth_atom_ids = auth_pair['atom_id']
 
-                            _auth_atom_id = self.__nefT.get_star_atom(comp_id, auth_atom_id, leave_unmatched=False)[0]
+                        # standard residue
+                        if self.__nefT.get_one_letter_code(comp_id) != 'X':
 
-                            if len(_auth_atom_id) == 0:
+                            _auth_atom_ids = []
+                            for auth_atom_id in auth_atom_ids:
 
-                                warn = "Unmatched author atom ID %s (auth_comp_id %s) exists." % (auth_atom_id, comp_id)
+                                _auth_atom_id = self.__nefT.get_star_atom(comp_id, auth_atom_id, leave_unmatched=False)[0]
 
-                                self.report.warning.appendDescription('atom_nomenclature_mismatch', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
-                                self.report.setWarning()
+                                if len(_auth_atom_id) == 0:
 
-                                if self.__verbose:
-                                    self.__lfh.write("+NmrDpUtility.__validateAtomNomenclature() ++ Warning  - %s\n" % warn)
+                                    warn = "Unmatched author atom ID %s (auth_comp_id %s) exists." % (auth_atom_id, comp_id)
 
-                            else:
-                                _auth_atom_ids.extend(_auth_atom_id)
+                                    self.report.warning.appendDescription('atom_nomenclature_mismatch', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
+                                    self.report.setWarning()
 
-                        auth_atom_ids = sorted(set(_auth_atom_ids))
+                                    if self.__verbose:
+                                        self.__lfh.write("+NmrDpUtility.__validateAtomNomenclature() ++ Warning  - %s\n" % warn)
 
-                        for auth_atom_id in auth_atom_ids:
+                                else:
+                                    _auth_atom_ids.extend(_auth_atom_id)
 
-                            if not self.__nefT.validate_comp_atom(comp_id, auth_atom_id):
+                            auth_atom_ids = sorted(set(_auth_atom_ids))
 
-                                warn = "Unmatched author atom ID %s (auth_comp_id %s) exists." % (auth_atom_id, comp_id)
+                            for auth_atom_id in auth_atom_ids:
 
-                                self.report.warning.appendDescription('atom_nomenclature_mismatch', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
-                                self.report.setWarning()
+                                if not self.__nefT.validate_comp_atom(comp_id, auth_atom_id):
 
-                                if self.__verbose:
-                                    self.__lfh.write("+NmrDpUtility.__validateAtomNomenclature() ++ Warning  - %s\n" % warn)
+                                    warn = "Unmatched author atom ID %s (auth_comp_id %s) exists." % (auth_atom_id, comp_id)
 
-                    # non-standard residue
-                    else:
-                        has_comp_id = False
+                                    self.report.warning.appendDescription('atom_nomenclature_mismatch', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
+                                    self.report.setWarning()
 
-                        for pair in pairs:
+                                    if self.__verbose:
+                                        self.__lfh.write("+NmrDpUtility.__validateAtomNomenclature() ++ Warning  - %s\n" % warn)
 
-                            if pair['comp_id'] != comp_id:
-                                continue
+                        # non-standard residue
+                        else:
+                            has_comp_id = False
 
-                            has_comp_id = True
+                            for pair in pairs:
 
-                            atom_ids = pair['atom_id']
+                                if pair['comp_id'] != comp_id:
+                                    continue
 
-                            if (set(auth_atom_ids) | set(atom_ids)) != set(atom_ids):
+                                has_comp_id = True
 
-                                warn = "Unmatched author atom ID %s (auth_comp_id %s, non-standard residue) exists." % ((set(auth_atom_ids) | set(atom_ids)) - set(atom_ids), comp_id)
+                                atom_ids = pair['atom_id']
 
-                                self.report.warning.appendDescription('atom_nomenclature_mismatch', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
-                                self.report.setWarning()
+                                if (set(auth_atom_ids) | set(atom_ids)) != set(atom_ids):
 
-                                if self.__verbose:
-                                    self.__lfh.write("+NmrDpUtility.__validateAtomNomenclature() ++ Warning  - %s\n" % warn)
+                                    warn = "Unmatched author atom ID %s (auth_comp_id %s, non-standard residue) exists." % ((set(auth_atom_ids) | set(atom_ids)) - set(atom_ids), comp_id)
 
-                            break
+                                    self.report.warning.appendDescription('atom_nomenclature_mismatch', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
+                                    self.report.setWarning()
 
-                        if not has_comp_id:
+                                    if self.__verbose:
+                                        self.__lfh.write("+NmrDpUtility.__validateAtomNomenclature() ++ Warning  - %s\n" % warn)
 
-                                warn = "Unmatched author atom ID %s (auth_comp_id %s, non-standard residue) exists." % (auth_atom_ids, comp_id)
+                                break
 
-                                self.report.warning.appendDescription('atom_nomenclature_mismatch', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
-                                self.report.setWarning()
+                            if not has_comp_id:
 
-                                if self.__verbose:
-                                    self.__lfh.write("+NmrDpUtility.__validateAtomNomenclature() ++ Warning  - %s\n" % warn)
+                                    warn = "Unmatched author atom ID %s (auth_comp_id %s, non-standard residue) exists." % (auth_atom_ids, comp_id)
+
+                                    self.report.warning.appendDescription('atom_nomenclature_mismatch', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
+                                    self.report.setWarning()
+
+                                    if self.__verbose:
+                                        self.__lfh.write("+NmrDpUtility.__validateAtomNomenclature() ++ Warning  - %s\n" % warn)
+
+                except LookupError as e:
+                    pass
+                    """
+                    self.report.error.appendDescription('missing_mandatory_item', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': str(e).strip("'")})
+                    self.report.setError()
+
+                    if self.__verbose:
+                        self.__lfh.write("+NmrDpUtility.__extractPolymerSequence() ++ LookupError  - %s" % str(e))
+                    """
+
+                except ValueError as e:
+
+                    self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': str(e).strip("'")})
+                    self.report.setError()
+
+                    if self.__verbose:
+                        self.__lfh.write("+NmrDpUtility.__validateAtomNomenclature() ++ ValueError  - %s" % str(e))
+
+                except UserWarning as e:
+
+                    warns = str(e).strip("'").split('\n')
+                    proc_warns = set()
+
+                    for warn in warns:
+
+                        if warn == '' or warn in proc_warns:
+                            continue
+
+                        proc_warns.add(warn)
+
+                        invl = warn.startswith('[Invalid data] ')
+
+                        if invl:
+
+                            err = warn[15:]
+
+                            self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
+                            self.report.setError()
+
+                            if self.__verbose:
+                                self.__lfh.write("+NmrDpUtility.__validateAtomNomenclature() ++ ValueError  - %s" % err)
+
+                        else:
+
+                            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateAtomNomenclature() ++ Error  - %s" % warn)
+                            self.report.setError()
+
+                            if self.__verbose:
+                                self.__lfh.write("+NmrDpUtility.__validateAtomNomenclature() ++ Error  - %s" % warn)
+
+                except Exception as e:
+
+                    self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateAtomNomenclature() ++ Error  - %s" % str(e))
+                    self.report.setError()
+
+                    if self.__verbose:
+                        self.__lfh.write("+NmrDpUtility.__validateAtomNomenclature() ++ Error  - %s" % str(e))
+
 
         except LookupError as e:
 
@@ -4564,6 +4627,9 @@ class NmrDpUtility(object):
         """ Validate atom type, isotope number on assigned chemical shifts.
         """
 
+        if not self.__combined_mode:
+            return
+
         try:
 
             if file_type == 'nef':
@@ -4611,13 +4677,11 @@ class NmrDpUtility(object):
 
         except LookupError as e:
 
-            if self.__combined_mode:
+            self.report.error.appendDescription('missing_mandatory_item', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': str(e).strip("'")})
+            self.report.setError()
 
-                self.report.error.appendDescription('missing_mandatory_item', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': str(e).strip("'")})
-                self.report.setError()
-
-                if self.__verbose:
-                    self.__lfh.write("+NmrDpUtility.__validateAtomTypeOfCSLoop() ++ LookupError  - %s" % str(e))
+            if self.__verbose:
+                self.__lfh.write("+NmrDpUtility.__validateAtomTypeOfCSLoop() ++ LookupError  - %s" % str(e))
 
         except ValueError as e:
 

@@ -5185,7 +5185,7 @@ class NmrDpUtility(object):
 
                     if zero:
                         warn = warn[19:]
-                        item = 'missing_data'
+                        item = 'unusual_data'
                     elif nega:
                         warn = warn[23:]
                         item = 'unusual_data'
@@ -5637,7 +5637,7 @@ class NmrDpUtility(object):
 
                                         if zero:
                                             warn = warn[19:]
-                                            item = 'missing_data'
+                                            item = 'unusual_data'
                                         elif nega:
                                             warn = warn[23:]
                                             item = 'unusual_data'
@@ -5962,7 +5962,7 @@ class NmrDpUtility(object):
                                         except StopIteration:
                                             pass
 
-                                self.report.warning.appendDescription('missing_data' if zero else ('unusual_data' if nega else ('enum_mismatch_ignorable' if ignorable else 'enum_mismatch')), {'file_name': file_name, 'sf_framecode': sf_framecode, 'description': warn})
+                                self.report.warning.appendDescription('unusual_data' if zero else ('unusual_data' if nega else ('enum_mismatch_ignorable' if ignorable else 'enum_mismatch')), {'file_name': file_name, 'sf_framecode': sf_framecode, 'description': warn})
                                 self.report.setWarning()
 
                                 if self.__verbose:

@@ -4319,9 +4319,9 @@ class NmrDpUtility(object):
                         if not self.__combined_mode and (atom_id.startswith('Q') or atom_id.startswith('M')):
 
                             if atom_id.startswith('QQ'):
-                                atom_id_ = self.__nefT.get_star_atom(comp_id, 'H' + atom_id[2:] + '%', leave_unmatched=False)[0]
+                                atom_id_ = self.__nefT.get_star_atom(comp_id, 'H' + atom_id[2:] + '%', leave_unmatched=False)[0][0]
                             else:
-                                atom_id_ = self.__nefT.get_star_atom(comp_id, 'H' + atom_id[1:] + '%', leave_unmatched=False)[0]
+                                atom_id_ = self.__nefT.get_star_atom(comp_id, 'H' + atom_id[1:] + '%', leave_unmatched=False)[0][0]
 
                         if not self.__nefT.validate_comp_atom(comp_id, atom_id_):
 

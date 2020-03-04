@@ -4,6 +4,7 @@
 #
 # Updates:
 # 26-Feb-2020  M. Yokochi - load csv resource files if pickle is not available
+# 04-Mar-2020  M. Yokochi - support lazy import of others (non-standard residues, DAOTHER-5498)
 ##
 """ Wrapper class for retrieving BMRB chemical shift statistics.
     @author: Masashi Yokochi
@@ -25,6 +26,9 @@ class BMRBChemShiftStat:
     """
 
     def __init__(self):
+        # lazy import of others (non-standard residues)
+        self.lazy_others = True
+
         # directory
         self.stat_dir = os.path.dirname(__file__) + '/bmrb_cs_stat/'
 
@@ -132,11 +136,16 @@ class BMRBChemShiftStat:
         """ Return whether all BMRB chemical shift statistics are available.
         """
 
-        return len(self.aa_filt) > 0 and len(self.aa_full) > 0 and len(self.dna_filt) > 0 and len(self.dna_full) > 0 and len(self.rna_filt) > 0 and len(self.rna_full) and len(self.others) > 0
+        return len(self.aa_filt) > 0 and len(self.aa_full) > 0 and len(self.dna_filt) > 0 and len(self.dna_full) > 0 and len(self.rna_filt) > 0 and len(self.rna_full) and (len(self.others) > 0 or self.lazy_others)
 
     def hasCompId(self, comp_id):
         """ Return whether a given comp_id has BMRB chemical shift statistics.
         """
+
+        if comp_id in self.__std_comp_ids:
+            return True
+
+        self.loadOtherStatFromCsvFiles()
 
         return comp_id in self.__all_comp_ids
 
@@ -173,13 +182,15 @@ class BMRBChemShiftStat:
         """ Return whether a given comp_id has enough chemical shift statistics.
         """
 
-        if not comp_id in self.__all_comp_ids:
-            return False
-
         if comp_id in self.__std_comp_ids:
             return True
 
         try:
+
+            self.loadOtherStatFromCsvFiles()
+
+            if not comp_id in self.__all_comp_ids:
+                return False
 
             if primary:
                 next(i for i in self.others if i['comp_id'] == comp_id and i['primary'])
@@ -195,9 +206,6 @@ class BMRBChemShiftStat:
         """ Return BMRB chemical shift statistics for a given comp_id.
         """
 
-        if not comp_id in self.__all_comp_ids:
-            return []
-
         if comp_id in self.__aa_comp_ids:
 
             if diamagnetic:
@@ -218,6 +226,11 @@ class BMRBChemShiftStat:
                 return [i for i in self.rna_filt if i['comp_id'] == comp_id]
             else:
                 return [i for i in self.rna_full if i['comp_id'] == comp_id]
+
+        self.loadOtherStatFromCsvFiles()
+
+        if not comp_id in self.__all_comp_ids:
+            return []
 
         return [i for i in self.others if i['comp_id'] == comp_id]
 
@@ -225,9 +238,6 @@ class BMRBChemShiftStat:
         """ Return atom list for a given comp_id.
         """
 
-        if not comp_id in self.__all_comp_ids:
-            self.__appendExtraFromCcd(comp_id)
-
         if comp_id in self.__aa_comp_ids:
 
             if diamagnetic:
@@ -249,7 +259,12 @@ class BMRBChemShiftStat:
             else:
                 return [i for i in self.rna_full if i['comp_id'] == comp_id]
 
-        elif comp_id in self.__oth_comp_ids:
+        self.loadOtherStatFromCsvFiles()
+
+        if not comp_id in self.__all_comp_ids:
+            self.__appendExtraFromCcd(comp_id)
+
+        if comp_id in self.__oth_comp_ids:
             return [i for i in self.others if i['comp_id'] == comp_id]
 
         elif comp_id in self.__ext_comp_ids:
@@ -261,6 +276,9 @@ class BMRBChemShiftStat:
         """ Return maximum ambiguity code of a given atom that does not require declaration of ambiguity set ID.
             @return: one of (1, 2, 3), 0 for not found
         """
+
+        if not comp_id in self.__std_comp_ids:
+            self.loadOtherStatFromCsvFiles()
 
         if not comp_id in self.__all_comp_ids:
             self.__appendExtraFromCcd(comp_id)
@@ -282,6 +300,9 @@ class BMRBChemShiftStat:
     def getGeminalAtom(self, comp_id, atom_id):
         """ Return geminal or aromatic opposite atom of a given atom.
         """
+
+        if not comp_id in self.__std_comp_ids:
+            self.loadOtherStatFromCsvFiles()
 
         if not comp_id in self.__all_comp_ids:
             self.__appendExtraFromCcd(comp_id)
@@ -311,6 +332,9 @@ class BMRBChemShiftStat:
         """ Return all atoms of a given comp_id.
         """
 
+        if not comp_id in self.__std_comp_ids:
+            self.loadOtherStatFromCsvFiles()
+
         if not comp_id in self.__all_comp_ids:
             self.__appendExtraFromCcd(comp_id)
 
@@ -326,6 +350,9 @@ class BMRBChemShiftStat:
     def getBackBoneAtoms(self, comp_id, excl_minor_atom=False, polypeptide_like=False, polynucleotide_like=False, carbohydrates_like=False):
         """ Return backbone atoms of a given comp_id.
         """
+
+        if not comp_id in self.__std_comp_ids:
+            self.loadOtherStatFromCsvFiles()
 
         if not comp_id in self.__all_comp_ids:
             self.__appendExtraFromCcd(comp_id)
@@ -365,6 +392,9 @@ class BMRBChemShiftStat:
         """ Return aromatic atoms of a given comp_id.
         """
 
+        if not comp_id in self.__std_comp_ids:
+            self.loadOtherStatFromCsvFiles()
+
         if not comp_id in self.__all_comp_ids:
             self.__appendExtraFromCcd(comp_id)
 
@@ -380,6 +410,9 @@ class BMRBChemShiftStat:
     def getMethylAtoms(self, comp_id, excl_minor_atom=False, primary=False):
         """ Return atoms in methyl group of a given comp_id.
         """
+
+        if not comp_id in self.__std_comp_ids:
+            self.loadOtherStatFromCsvFiles()
 
         if not comp_id in self.__all_comp_ids:
             self.__appendExtraFromCcd(comp_id)
@@ -408,6 +441,9 @@ class BMRBChemShiftStat:
     def getSideChainAtoms(self, comp_id, excl_minor_atom=False, polypeptide_like=False, polynucleotide_like=False, carbohydrates_like=False):
         """ Return sidechain atoms of a given comp_id.
         """
+
+        if not comp_id in self.__std_comp_ids:
+            self.loadOtherStatFromCsvFiles()
 
         if not comp_id in self.__all_comp_ids:
             self.__appendExtraFromCcd(comp_id)
@@ -460,6 +496,20 @@ class BMRBChemShiftStat:
 
         self.rna_filt = self.loadStatFromCsvFile(self.stat_dir + 'rna_filt.csv', self.na_threshold)
         self.rna_full = self.loadStatFromCsvFile(self.stat_dir + 'rna_full.csv', self.na_threshold)
+
+        if not self.lazy_others:
+            self.others = self.loadStatFromCsvFile(self.stat_dir + 'others.csv', self.aa_threshold, self.na_threshold)
+
+        self.__updateCompIdSet()
+
+        return True
+
+    def loadOtherStatFromCsvFiles(self):
+        """ Load all BMRB chemical shift statistics from CSV files.
+        """
+
+        if len(self.others) > 0 or not self.lazy_others:
+            return
 
         self.others = self.loadStatFromCsvFile(self.stat_dir + 'others.csv', self.aa_threshold, self.na_threshold)
 
@@ -1066,6 +1116,8 @@ class BMRBChemShiftStat:
 
         self.writeStatAsPickleFile(self.rna_filt, self.stat_dir + 'rna_filt.pkl')
         self.writeStatAsPickleFile(self.rna_full, self.stat_dir + 'rna_full.pkl')
+
+        self.loadOtherStatFromCsvFiles()
 
         self.writeStatAsPickleFile(self.others, self.stat_dir + 'others.pkl')
 

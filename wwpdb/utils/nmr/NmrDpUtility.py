@@ -22,6 +22,7 @@
 # 14-Feb-2020  M. Yokochi - add 'spectram_dim' for apilayer.postModifyNMRPeaks
 # 21-Feb-2020  M. Yokochi - update content-type definitions and add release mode (nmr-str2nef-release workflow operation)
 # 02-Mar-2020  M. Yokochi - add 'nmr-cs-nef-consistency-check' and 'nmr-cs-str-consistency-check' workflow operation (DAOTHER-4515)
+# 05-Mar-2020  M. Yokochi - revise warning message (disordered_index) and add alternative enumeration for restraint_origine and Constraint_type (DAOTHER-5485)
 ##
 """ Wrapper class for data processing for NMR data.
     @author: Masashi Yokochi
@@ -1415,6 +1416,106 @@ class NmrDpUtility(object):
                                              }
                               }
 
+        # alternative dictionary of constraint type
+        self.dist_alt_constraint_type = {'noe': 'NOE',
+                                         'noe build-up': 'NOE build-up',
+                                         'NOE buildup': 'NOE build-up',
+                                         'noe buildup': 'NOE build-up',
+                                         'NOE build up': 'NOE build-up',
+                                         'noe build up': 'NOE build-up',
+                                         'noe not seen': 'NOE not seen',
+                                         'roe': 'ROE',
+                                         'roe build-up': 'ROE build-up',
+                                         'ROE buildup': 'ROE build-up',
+                                         'roe buildup': 'ROE build-up',
+                                         'ROE build up': 'ROE build-up',
+                                         'roe build up': 'ROE build-up',
+                                         'roe build-up': 'ROE build-up',
+                                         'hbond': 'hydrogen bond',
+                                         'Hbond': 'hydrogen bond',
+                                         'HBond': 'hydrogen bond',
+                                         'H-bond': 'hydrogen bond',
+                                         'h-bond': 'hydrogen bond',
+                                         'H-Bond': 'hydrogen bond',
+                                         'Disulfide bond': 'disulfide bond',
+                                         'S-S bond': 'disulfide bond',
+                                         'SS bond': 'disulfide bond',
+                                         'disulfide bridge': 'disulfide bond',
+                                         'Disulfide bridge': 'disulfide bond',
+                                         'Hydrogen bond': 'hydrogen bond',
+                                         'PRE': 'paramagnetic relaxation',
+                                         'pre': 'paramagnetic relaxation',
+                                         'Paramagnetic relaxation': 'paramagnetic relaxation',
+                                         'paramagnetic relaxation enhancement': 'paramagnetic relaxation',
+                                         'Paramagnetic relaxation enhancement': 'paramagnetic relaxation'
+                                         }
+
+        self.dihed_alt_constraint_type = {'j-couplings': 'J-couplings',
+                                          'J couplings': 'J-couplings',
+                                          'j couplings': 'J-couplings',
+                                          'J-coupling': 'J-couplings',
+                                          'j-coupling': 'J-couplings',
+                                          'J coupling': 'J-couplings',
+                                          'j coupling': 'J-couplings',
+                                          'Backbone chemical shifts': 'backbone chemical shifts',
+                                          'Mainchain chemical shifts': 'backbone chemical shifts',
+                                          'mainchain chemical shifts': 'backbone chemical shifts',
+                                          'Main chain chemical shifts': 'backbone chemical shifts',
+                                          'main chain chemical shifts': 'backbone chemical shifts',
+                                          'bb chemical shifts': 'backbone chemical shifts',
+                                          'BB chemical shifts': 'backbone chemical shifts',
+                                          'backbone chemical shift': 'backbone chemical shifts',
+                                          'Backbone chemical shift': 'backbone chemical shifts',
+                                          'Mainchain chemical shift': 'backbone chemical shifts',
+                                          'mainchain chemical shift': 'backbone chemical shifts',
+                                          'Main chain chemical shift': 'backbone chemical shifts',
+                                          'main chain chemical shift': 'backbone chemical shifts',
+                                          'bb chemical shift': 'backbone chemical shifts',
+                                          'BB chemical shift': 'backbone chemical shifts',
+                                          'backbone chem shifts': 'backbone chemical shifts',
+                                          'Backbone chem shifts': 'backbone chemical shifts',
+                                          'Mainchain chem shifts': 'backbone chemical shifts',
+                                          'mainchain chem shifts': 'backbone chemical shifts',
+                                          'Main chain chem shifts': 'backbone chemical shifts',
+                                          'main chain chem shifts': 'backbone chemical shifts',
+                                          'bb chem shifts': 'backbone chemical shifts',
+                                          'BB chem shifts': 'backbone chemical shifts',
+                                          'backbone chem shift': 'backbone chemical shifts',
+                                          'Backbone chem shift': 'backbone chemical shifts',
+                                          'Mainchain chem shift': 'backbone chemical shifts',
+                                          'mainchain chem shift': 'backbone chemical shifts',
+                                          'Main chain chem shift': 'backbone chemical shifts',
+                                          'main chain chem shift': 'backbone chemical shifts',
+                                          'bb chem shift': 'backbone chemical shifts',
+                                          'BB chem shift': 'backbone chemical shifts',
+                                          'backbone cs': 'backbone chemical shifts',
+                                          'Backbone cs': 'backbone chemical shifts',
+                                          'Mainchain cs': 'backbone chemical shifts',
+                                          'mainchain cs': 'backbone chemical shifts',
+                                          'Main chain cs': 'backbone chemical shifts',
+                                          'main chain cs': 'backbone chemical shifts',
+                                          'bb cs': 'backbone chemical shifts',
+                                          'BB cs': 'backbone chemical shifts',
+                                          'backbone CS': 'backbone chemical shifts',
+                                          'Backbone CS': 'backbone chemical shifts',
+                                          'Mainchain CS': 'backbone chemical shifts',
+                                          'mainchain CS': 'backbone chemical shifts',
+                                          'Main chain CS': 'backbone chemical shifts',
+                                          'main chain CS': 'backbone chemical shifts',
+                                          'bb CS': 'backbone chemical shifts',
+                                          'BB CS': 'backbone chemical shifts',
+                                          'TALOS': 'backbone chemical shifts',
+                                          'talos': 'backbone chemical shifts',
+                                          'TALOS+': 'backbone chemical shifts',
+                                          'talos+': 'backbone chemical shifts',
+                                          'TALOS-N': 'backbone chemical shifts',
+                                          'talos-n': 'backbone chemical shifts'
+                                          }
+
+        self.rdc_alt_constraint_type = {'rdc': 'RDC',
+                                        'measured': 'RDC'
+                                        }
+
         # saveframe tag items
         self.sf_tag_items = {'nef': {'entry_info': [{'name': 'sf_category', 'type': 'str', 'mandatory': True},
                                                     {'name': 'sf_framecode', 'type': 'str', 'mandatory': True},
@@ -1437,21 +1538,24 @@ class NmrDpUtility(object):
                                                         {'name': 'potential_type', 'type': 'enum', 'mandatory': False,
                                                          'enum': ('log-harmonic', 'parabolic', 'square-well-parabolic', 'square-well-parabolic-linear', 'upper-bound-parabolic', 'lower-bound-parabolic', 'upper-bound-parabolic-linear', 'lower-bound-parabolic-linear')},
                                                         {'name': 'restraint_origin', 'type': 'enum', 'mandatory': False,
-                                                         'enum': ('NOE', 'NOE build-up', 'NOE not seen', 'ROE', 'ROE build-up', 'hydrogen bond', 'disulfide bond', 'paramagnetic relaxation', 'symmetry', 'general distance')}
+                                                         'enum': ('NOE', 'NOE build-up', 'NOE not seen', 'ROE', 'ROE build-up', 'hydrogen bond', 'disulfide bond', 'paramagnetic relaxation', 'symmetry', 'general distance'),
+                                                         'enum-alt': self.dist_alt_constraint_type}
                                                         ],
                                      'dihed_restraint': [{'name': 'sf_category', 'type': 'str', 'mandatory': True},
                                                          {'name': 'sf_framecode', 'type': 'str', 'mandatory': True},
                                                          {'name': 'potential_type', 'type': 'enum', 'mandatory': False,
                                                           'enum': ('log-harmonic', 'parabolic', 'square-well-parabolic', 'square-well-parabolic-linear', 'upper-bound-parabolic', 'lower-bound-parabolic', 'upper-bound-parabolic-linear', 'lower-bound-parabolic-linear')},
                                                          {'name': 'restraint_origin', 'type': 'enum', 'mandatory': False,
-                                                          'enum': ('J-couplings', 'backbone chemical shifts')}
+                                                          'enum': ('J-couplings', 'backbone chemical shifts'),
+                                                          'num-alt': self.dihed_alt_constraint_type}
                                                          ],
                                      'rdc_restraint': [{'name': 'sf_category', 'type': 'str', 'mandatory': True},
                                                        {'name': 'sf_framecode', 'type': 'str', 'mandatory': True},
                                                        {'name': 'potential_type', 'type': 'enum', 'mandatory': False,
                                                         'enum': ('log-harmonic', 'parabolic', 'square-well-parabolic', 'square-well-parabolic-linear', 'upper-bound-parabolic', 'lower-bound-parabolic', 'upper-bound-parabolic-linear', 'lower-bound-parabolic-linear')},
                                                        {'name': 'restraint_origin', 'type': 'enum', 'mandatory': False,
-                                                        'enum': ('RDC')},
+                                                        'enum': ('RDC'),
+                                                        'enum-alt': self.rdc_alt_constraint_type},
                                                        {'name': 'tensor_magnitude', 'type': 'float', 'mandatory': False},
                                                        {'name': 'tensor_rhombicity', 'type': 'positive-float', 'mandatory': False},
                                                        {'name': 'tensor_chain_code', 'type': 'str', 'mandatory': False},
@@ -1488,21 +1592,24 @@ class NmrDpUtility(object):
                                           'dist_restraint': [{'name': 'Sf_category', 'type': 'str', 'mandatory': True},
                                                              {'name': 'Sf_framecode', 'type': 'str', 'mandatory': True},
                                                              {'name': 'Constraint_type', 'type': 'enum', 'mandatory': False,
-                                                              'enum': ('NOE', 'NOE build-up', 'NOE not seen', 'ROE', 'ROE build-up', 'hydrogen bond', 'disulfide bond', 'paramagnetic relaxation', 'symmetry', 'general distance')},
+                                                              'enum': ('NOE', 'NOE build-up', 'NOE not seen', 'ROE', 'ROE build-up', 'hydrogen bond', 'disulfide bond', 'paramagnetic relaxation', 'symmetry', 'general distance'),
+                                                              'num-alt': self.dist_alt_constraint_type},
                                                              {'name': 'Potential_type', 'type': 'enum', 'mandatory': False,
                                                               'enum': ('log-harmonic', 'parabolic', 'square-well-parabolic', 'square-well-parabolic-linear', 'upper-bound-parabolic', 'lower-bound-parabolic', 'upper-bound-parabolic-linear', 'lower-bound-parabolic-linear')}
                                                              ],
                                           'dihed_restraint': [{'name': 'Sf_category', 'type': 'str', 'mandatory': True},
                                                               {'name': 'Sf_framecode', 'type': 'str', 'mandatory': True},
                                                               {'name': 'Constraint_type', 'type': 'enum', 'mandatory': False,
-                                                               'enum': ('J-couplings', 'backbone chemical shifts')},
+                                                               'enum': ('J-couplings', 'backbone chemical shifts'),
+                                                               'enum-alt': self.dihed_alt_constraint_type},
                                                               {'name': 'Potential_type', 'type': 'enum', 'mandatory': False,
                                                                'enum': ('log-harmonic', 'parabolic', 'square-well-parabolic', 'square-well-parabolic-linear', 'upper-bound-parabolic', 'lower-bound-parabolic', 'upper-bound-parabolic-linear', 'lower-bound-parabolic-linear')}
                                                               ],
                                           'rdc_restraint': [{'name': 'Sf_category', 'type': 'str', 'mandatory': True},
                                                               {'name': 'Sf_framecode', 'type': 'str', 'mandatory': True},
                                                               {'name': 'Constraint_type', 'type': 'enum', 'mandatory': False,
-                                                               'enum': ('RDC')},
+                                                               'enum': ('RDC'),
+                                                               'enum-alt': self.rdc_alt_constraint_type},
                                                               {'name': 'Potential_type', 'type': 'enum', 'mandatory': False,
                                                                'enum': ('log-harmonic', 'parabolic', 'square-well-parabolic', 'square-well-parabolic-linear', 'upper-bound-parabolic', 'lower-bound-parabolic', 'upper-bound-parabolic-linear', 'lower-bound-parabolic-linear')},
                                                               {'name': 'Tensor_magnitude', 'type': 'float', 'mandatory': False},
@@ -4958,7 +5065,7 @@ class NmrDpUtility(object):
 
             if indices != range(1, len(indices) + 1):
 
-                warn = "Index (loop tag %s.%s) is disordered." % (lp_category, index_tag)
+                warn = "Index (loop tag %s.%s) is not ordinal numbers." % (lp_category, index_tag)
 
                 self.report.warning.appendDescription('disordered_index', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
                 self.report.setWarning()

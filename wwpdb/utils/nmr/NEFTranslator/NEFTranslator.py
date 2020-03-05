@@ -16,6 +16,7 @@
 # 05-Feb-2020  M. Yokochi - relax NEF atom_id that ends with [xy] in methyne/methyl group (v2.0.3)
 # 26-Feb-2020  M. Yokochi - additional support for abnormal NEF atom nomenclature, e.g. HDy% in ASN, HEy% in GLN, seen in CCPN_2mtv_docr.nef (v2.0.4)
 # 04-Mar-2020  M. Yokochi - support 'default' of key items and 'default-from' of data items (v2.0.4)
+# 05-Mar-2020  M. Yokochi - support alternative enumeration definition, 'enum-alt' (v2.0.5, DAOTHER-5485)
 ##
 import sys
 import os
@@ -1848,7 +1849,10 @@ class NEFTranslator(object):
                             try:
                                 enum = k['enum']
                                 if not val in enum:
-                                    if 'enforce-enum' in k and k['enforce-enum']:
+                                    if 'enum-alt' in k and val in k['enum-alt']:
+                                        val = k['enum-alt'][val]
+                                        i[j] = val
+                                    elif 'enforce-enum' in k and k['enforce-enum']:
                                         raise ValueError("%s%s '%s' must be one of %s." % (self.__idx_msg(idx_tag_ids, tags, ent), name, val, enum))
                                     elif enforce_enum:
                                         user_warn_msg += "[Enumeration error] %s%s '%s' should be one of %s.\n" % (self.__idx_msg(idx_tag_ids, tags, ent), name, val, enum)
@@ -1957,7 +1961,10 @@ class NEFTranslator(object):
                                     try:
                                         enum = d['enum']
                                         if not val in enum:
-                                            if 'enforce-enum' in d and d['enforce-enum']:
+                                            if 'enum-alt' in d and val in d['enum-alt']:
+                                                val = d['enum-alt'][val]
+                                                i[j] = val
+                                            elif 'enforce-enum' in d and d['enforce-enum']:
                                                 raise ValueError("%s%s '%s' must be one of %s." % (self.__idx_msg(idx_tag_ids, tags, ent), name, val, enum))
                                             elif enforce_enum:
                                                 user_warn_msg += "[Enumeration error] %s%s '%s' should be one of %s.\n" % (self.__idx_msg(idx_tag_ids, tags, ent), name, val, enum)
@@ -2343,7 +2350,12 @@ class NEFTranslator(object):
                         try:
                             enum = t['enum']
                             if not val in enum:
-                                if 'enforce-enum' in t and t['enforce-enum']:
+                                if 'enum-alt' in t and val in t['enum-alt']:
+                                    tagNames = [_t[0] for _t in star_data.tags]
+                                    itCol = tagNames.index(name)
+                                    val = t['enum-alt'][val]
+                                    sf_data.tags[itCol][1] = val
+                                elif 'enforce-enum' in t and t['enforce-enum']:
                                     raise ValueError("%s '%s' must be one of %s." % (name, val, enum))
                                 elif enforce_enum:
                                     user_warn_msg += "[Enumeration error] %s '%s' should be one of %s.\n" % (name, val, enum)

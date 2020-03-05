@@ -22,7 +22,7 @@
 # 14-Feb-2020  M. Yokochi - add 'spectram_dim' for apilayer.postModifyNMRPeaks
 # 21-Feb-2020  M. Yokochi - update content-type definitions and add release mode (nmr-str2nef-release workflow operation)
 # 02-Mar-2020  M. Yokochi - add 'nmr-cs-nef-consistency-check' and 'nmr-cs-str-consistency-check' workflow operation (DAOTHER-4515)
-# 05-Mar-2020  M. Yokochi - revise warning message (disordered_index) and add alternative enumeration for restraint_origine and Constraint_type (DAOTHER-5485)
+# 05-Mar-2020  M. Yokochi - revise warning message (disordered_index) and enumerations (DAOTHER-5485)
 ##
 """ Wrapper class for data processing for NMR data.
     @author: Masashi Yokochi
@@ -255,7 +255,7 @@ class NmrDpUtility(object):
 
         # readable file type
         self.readable_file_type = {'nef': 'NEF (NMR Exchange Format)',
-                                   'nmr-star': 'NMR-STAR V3.2',
+                                   'nmr-star': 'NMR-STAR',
                                    'pdbx': 'PDBx/mmCIF',
                                    'unknown': 'unknown'
                                    }
@@ -1417,103 +1417,250 @@ class NmrDpUtility(object):
                               }
 
         # alternative dictionary of constraint type
-        self.dist_alt_constraint_type = {'noe': 'NOE',
-                                         'noe build-up': 'NOE build-up',
-                                         'NOE buildup': 'NOE build-up',
-                                         'noe buildup': 'NOE build-up',
-                                         'NOE build up': 'NOE build-up',
-                                         'noe build up': 'NOE build-up',
-                                         'noe not seen': 'NOE not seen',
-                                         'roe': 'ROE',
-                                         'roe build-up': 'ROE build-up',
-                                         'ROE buildup': 'ROE build-up',
-                                         'roe buildup': 'ROE build-up',
-                                         'ROE build up': 'ROE build-up',
-                                         'roe build up': 'ROE build-up',
-                                         'roe build-up': 'ROE build-up',
-                                         'hbond': 'hydrogen bond',
-                                         'Hbond': 'hydrogen bond',
-                                         'HBond': 'hydrogen bond',
-                                         'H-bond': 'hydrogen bond',
-                                         'h-bond': 'hydrogen bond',
-                                         'H-Bond': 'hydrogen bond',
-                                         'Disulfide bond': 'disulfide bond',
-                                         'S-S bond': 'disulfide bond',
-                                         'SS bond': 'disulfide bond',
-                                         'disulfide bridge': 'disulfide bond',
-                                         'Disulfide bridge': 'disulfide bond',
-                                         'Hydrogen bond': 'hydrogen bond',
-                                         'PRE': 'paramagnetic relaxation',
-                                         'pre': 'paramagnetic relaxation',
-                                         'Paramagnetic relaxation': 'paramagnetic relaxation',
-                                         'paramagnetic relaxation enhancement': 'paramagnetic relaxation',
-                                         'Paramagnetic relaxation enhancement': 'paramagnetic relaxation'
+        self.dist_alt_constraint_type = {'nef': {'NOE': 'noe',
+                                                 'NOE build-up': 'noe_build_up',
+                                                 'noe build-up': 'noe_build_up',
+                                                 'NOE buildup': 'noe_build_up',
+                                                 'noe buildup': 'noe_build_up',
+                                                 'NOE build up': 'noe_build_up',
+                                                 'noe build up': 'noe_build_up',
+                                                 'noe not seen': 'noe_not_seen',
+                                                 'ROE': 'roe',
+                                                 'roe build-up': 'roe_build_up',
+                                                 'ROE buildup': 'roe_build_up',
+                                                 'roe buildup': 'roe_build_up',
+                                                 'ROE build up': 'roe_build_up',
+                                                 'roe build up': 'roe_build_up',
+                                                 'roe build-up': 'roe_build_up',
+                                                 'hydrogen bond': 'hbond',
+                                                 'Hbond': 'hbond',
+                                                 'HBond': 'hbond',
+                                                 'H-bond': 'hbond',
+                                                 'h-bond': 'hbond',
+                                                 'H-Bond': 'hbond',
+                                                 'Hydrogen bond': 'hbond',
+                                                 'disulfide bond': 'disulfide_bond',
+                                                 'Disulfide bond': 'disulfide_bond',
+                                                 'S-S bond': 'disulfide_bond',
+                                                 'SS bond': 'disulfide_bond',
+                                                 'SS-bond': 'disulfide_bond',
+                                                 'disulfide bridge': 'disulfide_bond',
+                                                 'Disulfide bridge': 'disulfide_bond',
+                                                 'paramagnetic relaxation': 'pre',
+                                                 'PRE': 'pre',
+                                                 'Paramagnetic relaxation': 'pre',
+                                                 'paramagnetic relaxation enhancement': 'pre',
+                                                 'Paramagnetic relaxation enhancement': 'pre',
+                                                 'general distance': 'unknown',
+                                                 'distance': 'unknown',
+                                                 'Mutation': 'mutation',
+                                                 'chemical shift perturbation': 'shift_perturbation',
+                                                 'shift perturbation': 'shift_perturbation',
+                                                 'chem shift perturbation': 'shift_perturbation',
+                                                 'CS perturbation': 'shift_perturbation',
+                                                 'csp': 'shift_perturbation',
+                                                 'CSP': 'shift_perturbation'
+                                                 },
+                                         'nmr-star': {'noe': 'NOE',
+                                                      'noe_build_up': 'NOE build-up',
+                                                      'noe build-up': 'NOE build-up',
+                                                      'NOE buildup': 'NOE build-up',
+                                                      'noe buildup': 'NOE build-up',
+                                                      'NOE build up': 'NOE build-up',
+                                                      'noe build up': 'NOE build-up',
+                                                      'noe_not_seen': 'NOE not seen',
+                                                      'noe not seen': 'NOE not seen',
+                                                      'roe': 'ROE',
+                                                      'roe_build_up': 'ROE build-up',
+                                                      'roe build-up': 'ROE build-up',
+                                                      'ROE buildup': 'ROE build-up',
+                                                      'roe buildup': 'ROE build-up',
+                                                      'ROE build up': 'ROE build-up',
+                                                      'roe build up': 'ROE build-up',
+                                                      'roe build-up': 'ROE build-up',
+                                                      'hbond': 'hydrogen bond',
+                                                      'Hbond': 'hydrogen bond',
+                                                      'HBond': 'hydrogen bond',
+                                                      'H-bond': 'hydrogen bond',
+                                                      'h-bond': 'hydrogen bond',
+                                                      'H-Bond': 'hydrogen bond',
+                                                      'Hydrogen bond': 'hydrogen bond',
+                                                      'disulfide_bond': 'disulfide bond',
+                                                      'Disulfide bond': 'disulfide bond',
+                                                      'S-S bond': 'disulfide bond',
+                                                      'SS bond': 'disulfide bond',
+                                                      'SS-bond': 'disulfide bond',
+                                                      'disulfide bridge': 'disulfide bond',
+                                                      'Disulfide bridge': 'disulfide bond',
+                                                      'PRE': 'paramagnetic relaxation',
+                                                      'pre': 'paramagnetic relaxation',
+                                                      'Paramagnetic relaxation': 'paramagnetic relaxation',
+                                                      'paramagnetic relaxation enhancement': 'paramagnetic relaxation',
+                                                      'Paramagnetic relaxation enhancement': 'paramagnetic relaxation',
+                                                      'Mutation': 'mutation',
+                                                      'unknown': 'general distance',
+                                                      'shift_perturbation': 'chemical shift perturbation',
+                                                      'shift perturbation': 'chemical shift perturbation',
+                                                      'chem shift perturbation': 'chemical shift perturbation',
+                                                      'CS perturbation': 'chemical shift perturbation',
+                                                      'csp': 'chemical shift perturbation',
+                                                      'CSP': 'chemical shift perturbation'
+                                                     }
                                          }
 
-        self.dihed_alt_constraint_type = {'j-couplings': 'J-couplings',
-                                          'J couplings': 'J-couplings',
-                                          'j couplings': 'J-couplings',
-                                          'J-coupling': 'J-couplings',
-                                          'j-coupling': 'J-couplings',
-                                          'J coupling': 'J-couplings',
-                                          'j coupling': 'J-couplings',
-                                          'Backbone chemical shifts': 'backbone chemical shifts',
-                                          'Mainchain chemical shifts': 'backbone chemical shifts',
-                                          'mainchain chemical shifts': 'backbone chemical shifts',
-                                          'Main chain chemical shifts': 'backbone chemical shifts',
-                                          'main chain chemical shifts': 'backbone chemical shifts',
-                                          'bb chemical shifts': 'backbone chemical shifts',
-                                          'BB chemical shifts': 'backbone chemical shifts',
-                                          'backbone chemical shift': 'backbone chemical shifts',
-                                          'Backbone chemical shift': 'backbone chemical shifts',
-                                          'Mainchain chemical shift': 'backbone chemical shifts',
-                                          'mainchain chemical shift': 'backbone chemical shifts',
-                                          'Main chain chemical shift': 'backbone chemical shifts',
-                                          'main chain chemical shift': 'backbone chemical shifts',
-                                          'bb chemical shift': 'backbone chemical shifts',
-                                          'BB chemical shift': 'backbone chemical shifts',
-                                          'backbone chem shifts': 'backbone chemical shifts',
-                                          'Backbone chem shifts': 'backbone chemical shifts',
-                                          'Mainchain chem shifts': 'backbone chemical shifts',
-                                          'mainchain chem shifts': 'backbone chemical shifts',
-                                          'Main chain chem shifts': 'backbone chemical shifts',
-                                          'main chain chem shifts': 'backbone chemical shifts',
-                                          'bb chem shifts': 'backbone chemical shifts',
-                                          'BB chem shifts': 'backbone chemical shifts',
-                                          'backbone chem shift': 'backbone chemical shifts',
-                                          'Backbone chem shift': 'backbone chemical shifts',
-                                          'Mainchain chem shift': 'backbone chemical shifts',
-                                          'mainchain chem shift': 'backbone chemical shifts',
-                                          'Main chain chem shift': 'backbone chemical shifts',
-                                          'main chain chem shift': 'backbone chemical shifts',
-                                          'bb chem shift': 'backbone chemical shifts',
-                                          'BB chem shift': 'backbone chemical shifts',
-                                          'backbone cs': 'backbone chemical shifts',
-                                          'Backbone cs': 'backbone chemical shifts',
-                                          'Mainchain cs': 'backbone chemical shifts',
-                                          'mainchain cs': 'backbone chemical shifts',
-                                          'Main chain cs': 'backbone chemical shifts',
-                                          'main chain cs': 'backbone chemical shifts',
-                                          'bb cs': 'backbone chemical shifts',
-                                          'BB cs': 'backbone chemical shifts',
-                                          'backbone CS': 'backbone chemical shifts',
-                                          'Backbone CS': 'backbone chemical shifts',
-                                          'Mainchain CS': 'backbone chemical shifts',
-                                          'mainchain CS': 'backbone chemical shifts',
-                                          'Main chain CS': 'backbone chemical shifts',
-                                          'main chain CS': 'backbone chemical shifts',
-                                          'bb CS': 'backbone chemical shifts',
-                                          'BB CS': 'backbone chemical shifts',
-                                          'TALOS': 'backbone chemical shifts',
-                                          'talos': 'backbone chemical shifts',
-                                          'TALOS+': 'backbone chemical shifts',
-                                          'talos+': 'backbone chemical shifts',
-                                          'TALOS-N': 'backbone chemical shifts',
-                                          'talos-n': 'backbone chemical shifts'
+        self.dihed_alt_constraint_type = {'nef': {'J-couplings': 'jcoupling',
+                                                  'j-couplings': 'jcoupling',
+                                                  'J couplings': 'jcoupling',
+                                                  'j couplings': 'jcoupling',
+                                                  'Jcouplings': 'jcoupling',
+                                                  'jcouplings': 'jcoupling',
+                                                  'J-coupling': 'jcoupling',
+                                                  'j-coupling': 'jcoupling',
+                                                  'J coupling': 'jcoupling',
+                                                  'j coupling': 'jcoupling',
+                                                  'Jcoupling': 'jcoupling',
+                                                  'chemical shift': 'chemical_shift',
+                                                  'Chemical shift': 'chemical_shift',
+                                                  'Chemical_shift': 'chemical_shift',
+                                                  'chemical shifts': 'chemical_shift',
+                                                  'Chemical shifts': 'chemical_shift',
+                                                  'Chemical_shifts': 'chemical_shift',
+                                                  'backone chemical shifts': 'chemical_shift',
+                                                  'Backbone chemical shifts': 'chemical_shift',
+                                                  'Mainchain chemical shifts': 'chemical_shift',
+                                                  'mainchain chemical shifts': 'chemical_shift',
+                                                  'Main chain chemical shifts': 'chemical_shift',
+                                                  'main chain chemical shifts': 'chemical_shift',
+                                                  'bb chemical shifts': 'chemical_shift',
+                                                  'BB chemical shifts': 'chemical_shift',
+                                                  'backbone chemical_shift': 'chemical_shift',
+                                                  'Backbone chemical shift': 'chemical_shift',
+                                                  'Mainchain chemical shift': 'chemical_shift',
+                                                  'mainchain chemical shift': 'chemical_shift',
+                                                  'Main chain chemical shift': 'chemical_shift',
+                                                  'main chain chemical shift': 'chemical_shift',
+                                                  'bb chemical shift': 'chemical_shift',
+                                                  'BB chemical shift': 'chemical_shift',
+                                                  'backbone chem shifts': 'chemical_shift',
+                                                  'Backbone chem shifts': 'chemical_shift',
+                                                  'Mainchain chem shifts': 'chemical_shift',
+                                                  'mainchain chem shifts': 'chemical_shift',
+                                                  'Main chain chem shifts': 'chemical_shift',
+                                                  'main chain chem shifts': 'chemical_shift',
+                                                  'bb chem shifts': 'chemical_shift',
+                                                  'BB chem shifts': 'chemical_shift',
+                                                  'backbone chem shift': 'chemical_shift',
+                                                  'Backbone chem shift': 'chemical_shift',
+                                                  'Mainchain chem shift': 'chemical_shift',
+                                                  'mainchain chem shift': 'chemical_shift',
+                                                  'Main chain chem shift': 'chemical_shift',
+                                                  'main chain chem shift': 'chemical_shift',
+                                                  'bb chem shift': 'chemical_shift',
+                                                  'BB chem shift': 'chemical_shift',
+                                                  'backbone cs': 'chemical_shift',
+                                                  'Backbone cs': 'chemical_shift',
+                                                  'Mainchain cs': 'chemical_shift',
+                                                  'mainchain cs': 'chemical_shift',
+                                                  'Main chain cs': 'chemical_shift',
+                                                  'main chain cs': 'chemical_shift',
+                                                  'bb cs': 'chemical_shift',
+                                                  'BB cs': 'chemical_shift',
+                                                  'backbone CS': 'chemical_shift',
+                                                  'Backbone CS': 'chemical_shift',
+                                                  'Mainchain CS': 'chemical_shift',
+                                                  'mainchain CS': 'chemical_shift',
+                                                  'Main chain CS': 'chemical_shift',
+                                                  'main chain CS': 'chemical_shift',
+                                                  'bb CS': 'chemical_shift',
+                                                  'BB CS': 'chemical_shift',
+                                                  'TALOS': 'chemical_shift',
+                                                  'talos': 'chemical_shift',
+                                                  'TALOS+': 'chemical_shift',
+                                                  'talos+': 'chemical_shift',
+                                                  'TALOS-N': 'chemical_shift',
+                                                  'talos-n': 'chemical_shift'
+                                                  },
+                                          'nmr-star': {'jcoupling': 'J-couplings',
+                                                       'Jcoupling': 'J-couplings',
+                                                       'jcouplings': 'J-couplings',
+                                                       'Jcouplings':'J-couplings',
+                                                       'j-couplings': 'J-couplings',
+                                                       'J couplings': 'J-couplings',
+                                                       'j couplings': 'J-couplings',
+                                                       'J-coupling': 'J-couplings',
+                                                       'j-coupling': 'J-couplings',
+                                                       'J coupling': 'J-couplings',
+                                                       'j coupling': 'J-couplings',
+                                                       'chemical_shift': 'backbone chemical shifts',
+                                                       'Chemical_shift': 'backbone chemical shifts',
+                                                       'chemical_shifts': 'backbone chemical shifts',
+                                                       'Chemical_shifts': 'backbone chemical shifts',
+                                                       'chemical shift': 'backbone chemical shifts',
+                                                       'Chemical shift': 'backbone chemical shifts',
+                                                       'chemical shifts': 'backbone chemical shifts',
+                                                       'Chemical shifts': 'backbone chemical shifts',
+                                                       'Backbone chemical shifts': 'backbone chemical shifts',
+                                                       'Mainchain chemical shifts': 'backbone chemical shifts',
+                                                       'mainchain chemical shifts': 'backbone chemical shifts',
+                                                       'Main chain chemical shifts': 'backbone chemical shifts',
+                                                       'main chain chemical shifts': 'backbone chemical shifts',
+                                                       'bb chemical shifts': 'backbone chemical shifts',
+                                                       'BB chemical shifts': 'backbone chemical shifts',
+                                                       'backbone chemical shift': 'backbone chemical shifts',
+                                                       'Backbone chemical shift': 'backbone chemical shifts',
+                                                       'Mainchain chemical shift': 'backbone chemical shifts',
+                                                       'mainchain chemical shift': 'backbone chemical shifts',
+                                                       'Main chain chemical shift': 'backbone chemical shifts',
+                                                       'main chain chemical shift': 'backbone chemical shifts',
+                                                       'bb chemical shift': 'backbone chemical shifts',
+                                                       'BB chemical shift': 'backbone chemical shifts',
+                                                       'backbone chem shifts': 'backbone chemical shifts',
+                                                       'Backbone chem shifts': 'backbone chemical shifts',
+                                                       'Mainchain chem shifts': 'backbone chemical shifts',
+                                                       'mainchain chem shifts': 'backbone chemical shifts',
+                                                       'Main chain chem shifts': 'backbone chemical shifts',
+                                                       'main chain chem shifts': 'backbone chemical shifts',
+                                                       'bb chem shifts': 'backbone chemical shifts',
+                                                       'BB chem shifts': 'backbone chemical shifts',
+                                                       'backbone chem shift': 'backbone chemical shifts',
+                                                       'Backbone chem shift': 'backbone chemical shifts',
+                                                       'Mainchain chem shift': 'backbone chemical shifts',
+                                                       'mainchain chem shift': 'backbone chemical shifts',
+                                                       'Main chain chem shift': 'backbone chemical shifts',
+                                                       'main chain chem shift': 'backbone chemical shifts',
+                                                       'bb chem shift': 'backbone chemical shifts',
+                                                       'BB chem shift': 'backbone chemical shifts',
+                                                       'backbone cs': 'backbone chemical shifts',
+                                                       'Backbone cs': 'backbone chemical shifts',
+                                                       'Mainchain cs': 'backbone chemical shifts',
+                                                       'mainchain cs': 'backbone chemical shifts',
+                                                       'Main chain cs': 'backbone chemical shifts',
+                                                       'main chain cs': 'backbone chemical shifts',
+                                                       'bb cs': 'backbone chemical shifts',
+                                                       'BB cs': 'backbone chemical shifts',
+                                                       'backbone CS': 'backbone chemical shifts',
+                                                       'Backbone CS': 'backbone chemical shifts',
+                                                       'Mainchain CS': 'backbone chemical shifts',
+                                                       'mainchain CS': 'backbone chemical shifts',
+                                                       'Main chain CS': 'backbone chemical shifts',
+                                                       'main chain CS': 'backbone chemical shifts',
+                                                       'bb CS': 'backbone chemical shifts',
+                                                       'BB CS': 'backbone chemical shifts',
+                                                       'TALOS': 'backbone chemical shifts',
+                                                       'talos': 'backbone chemical shifts',
+                                                       'TALOS+': 'backbone chemical shifts',
+                                                       'talos+': 'backbone chemical shifts',
+                                                       'TALOS-N': 'backbone chemical shifts',
+                                                       'talos-n': 'backbone chemical shifts'
+                                                       }
                                           }
 
-        self.rdc_alt_constraint_type = {'rdc': 'RDC',
-                                        'measured': 'RDC'
+        self.rdc_alt_constraint_type = {'nef': {'RDC': 'measured',
+                                                'rdc': 'measured'
+                                                },
+                                        'nmr-star': {'rdc': 'RDC',
+                                                     'measured': 'RDC'
+                                                     }
                                         }
 
         # saveframe tag items
@@ -1538,24 +1685,24 @@ class NmrDpUtility(object):
                                                         {'name': 'potential_type', 'type': 'enum', 'mandatory': False,
                                                          'enum': ('log-harmonic', 'parabolic', 'square-well-parabolic', 'square-well-parabolic-linear', 'upper-bound-parabolic', 'lower-bound-parabolic', 'upper-bound-parabolic-linear', 'lower-bound-parabolic-linear')},
                                                         {'name': 'restraint_origin', 'type': 'enum', 'mandatory': False,
-                                                         'enum': ('NOE', 'NOE build-up', 'NOE not seen', 'ROE', 'ROE build-up', 'hydrogen bond', 'disulfide bond', 'paramagnetic relaxation', 'symmetry', 'general distance'),
-                                                         'enum-alt': self.dist_alt_constraint_type}
+                                                         'enum': ('noe', 'noe_build_up', 'noe_not_seen', 'roe', 'roe_build_up', 'hbond', 'disulfide_bond', 'pre', 'symmetry', 'unknown', 'mutation', 'shift_pertubation'),
+                                                         'enum-alt': self.dist_alt_constraint_type['nef']}
                                                         ],
                                      'dihed_restraint': [{'name': 'sf_category', 'type': 'str', 'mandatory': True},
                                                          {'name': 'sf_framecode', 'type': 'str', 'mandatory': True},
                                                          {'name': 'potential_type', 'type': 'enum', 'mandatory': False,
                                                           'enum': ('log-harmonic', 'parabolic', 'square-well-parabolic', 'square-well-parabolic-linear', 'upper-bound-parabolic', 'lower-bound-parabolic', 'upper-bound-parabolic-linear', 'lower-bound-parabolic-linear')},
                                                          {'name': 'restraint_origin', 'type': 'enum', 'mandatory': False,
-                                                          'enum': ('J-couplings', 'backbone chemical shifts'),
-                                                          'num-alt': self.dihed_alt_constraint_type}
+                                                          'enum': ('jcoupling', 'chemical_shift'),
+                                                          'num-alt': self.dihed_alt_constraint_type['nef']}
                                                          ],
                                      'rdc_restraint': [{'name': 'sf_category', 'type': 'str', 'mandatory': True},
                                                        {'name': 'sf_framecode', 'type': 'str', 'mandatory': True},
                                                        {'name': 'potential_type', 'type': 'enum', 'mandatory': False,
                                                         'enum': ('log-harmonic', 'parabolic', 'square-well-parabolic', 'square-well-parabolic-linear', 'upper-bound-parabolic', 'lower-bound-parabolic', 'upper-bound-parabolic-linear', 'lower-bound-parabolic-linear')},
                                                        {'name': 'restraint_origin', 'type': 'enum', 'mandatory': False,
-                                                        'enum': ('RDC'),
-                                                        'enum-alt': self.rdc_alt_constraint_type},
+                                                        'enum': ('measured'),
+                                                        'enum-alt': self.rdc_alt_constraint_type['nef']},
                                                        {'name': 'tensor_magnitude', 'type': 'float', 'mandatory': False},
                                                        {'name': 'tensor_rhombicity', 'type': 'positive-float', 'mandatory': False},
                                                        {'name': 'tensor_chain_code', 'type': 'str', 'mandatory': False},
@@ -1592,8 +1739,8 @@ class NmrDpUtility(object):
                                           'dist_restraint': [{'name': 'Sf_category', 'type': 'str', 'mandatory': True},
                                                              {'name': 'Sf_framecode', 'type': 'str', 'mandatory': True},
                                                              {'name': 'Constraint_type', 'type': 'enum', 'mandatory': False,
-                                                              'enum': ('NOE', 'NOE build-up', 'NOE not seen', 'ROE', 'ROE build-up', 'hydrogen bond', 'disulfide bond', 'paramagnetic relaxation', 'symmetry', 'general distance'),
-                                                              'num-alt': self.dist_alt_constraint_type},
+                                                              'enum': ('NOE', 'NOE build-up', 'NOE not seen', 'ROE', 'ROE build-up', 'hydrogen bond', 'disulfide bond', 'paramagnetic relaxation', 'symmetry', 'general distance', 'mutation', 'chemical shift perturbation'),
+                                                              'num-alt': self.dist_alt_constraint_type['nmr-star']},
                                                              {'name': 'Potential_type', 'type': 'enum', 'mandatory': False,
                                                               'enum': ('log-harmonic', 'parabolic', 'square-well-parabolic', 'square-well-parabolic-linear', 'upper-bound-parabolic', 'lower-bound-parabolic', 'upper-bound-parabolic-linear', 'lower-bound-parabolic-linear')}
                                                              ],
@@ -1601,7 +1748,7 @@ class NmrDpUtility(object):
                                                               {'name': 'Sf_framecode', 'type': 'str', 'mandatory': True},
                                                               {'name': 'Constraint_type', 'type': 'enum', 'mandatory': False,
                                                                'enum': ('J-couplings', 'backbone chemical shifts'),
-                                                               'enum-alt': self.dihed_alt_constraint_type},
+                                                               'enum-alt': self.dihed_alt_constraint_type['nmr-star']},
                                                               {'name': 'Potential_type', 'type': 'enum', 'mandatory': False,
                                                                'enum': ('log-harmonic', 'parabolic', 'square-well-parabolic', 'square-well-parabolic-linear', 'upper-bound-parabolic', 'lower-bound-parabolic', 'upper-bound-parabolic-linear', 'lower-bound-parabolic-linear')}
                                                               ],
@@ -1609,7 +1756,7 @@ class NmrDpUtility(object):
                                                               {'name': 'Sf_framecode', 'type': 'str', 'mandatory': True},
                                                               {'name': 'Constraint_type', 'type': 'enum', 'mandatory': False,
                                                                'enum': ('RDC'),
-                                                               'enum-alt': self.rdc_alt_constraint_type},
+                                                               'enum-alt': self.rdc_alt_constraint_type['nmr-star']},
                                                               {'name': 'Potential_type', 'type': 'enum', 'mandatory': False,
                                                                'enum': ('log-harmonic', 'parabolic', 'square-well-parabolic', 'square-well-parabolic-linear', 'upper-bound-parabolic', 'lower-bound-parabolic', 'upper-bound-parabolic-linear', 'lower-bound-parabolic-linear')},
                                                               {'name': 'Tensor_magnitude', 'type': 'float', 'mandatory': False},
@@ -7856,7 +8003,7 @@ class NmrDpUtility(object):
                             sc['sequence_coverage'] = seq_align['sequence_coverage']
 
                             if seq_align['sequence_coverage'] < self.low_seq_coverage and seq_align['length'] > 1:
-                                if (not 'exp_type' in ent['exp_type']) or (not ent['exp_type'] in ['disulfide bound', 'paramagnetic relaxation', 'symmetry', 'J-couplings']):
+                                if (not 'exp_type' in ent['exp_type']) or (not ent['exp_type'] in ['disulfide bound', 'disulfide_bond', 'paramagnetic relaxation', 'pre', 'symmetry', 'J-couplings', 'jcoupling']):
                                     low_seq_coverage += 'coverage %s for chain_id %s, length %s, ' % (seq_align['sequence_coverage'], seq_align['chain_id'], seq_align['length'])
 
                             seq_coverage.append(sc)
@@ -7869,7 +8016,7 @@ class NmrDpUtility(object):
 
                             warn = 'Sequence coverage of NMR experimental data is relatively low (' + low_seq_coverage[:-2] + ') in %s saveframe.' % sf_framecode
 
-                            self.report.warning.appendDescription('unsufficient_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
+                            self.report.warning.appendDescription('insufficient_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
                             self.report.setWarning()
 
                             if self.__verbose:
@@ -16777,10 +16924,10 @@ class NmrDpUtility(object):
                                                         # 'NOE', 'NOE build-up', 'NOE not seen', 'ROE', 'ROE build-up', 'hydrogen bond', 'disulfide bond', 'paramagnetic relaxation', 'symmetry', 'general distance'
 
                                                         if self.__testDistRestraintAsHydrogenBond(lp_data):
-                                                            sf_data.tags[itCol][1] = 'hydrogen bond'
+                                                            sf_data.tags[itCol][1] = 'hbond' if file_type == 'nef' else 'hydrogen bond'
 
                                                         elif self.__testDistRestraintAsDisulfideBond(lp_data):
-                                                            sf_data.tags[itCol][1] = 'disulfide bond'
+                                                            sf_data.tags[itCol][1] = 'disulfide_bond' if file_type == 'nef' else 'disulfide bond'
 
                                                         elif self.__testDistRestraintAsSymmetry(lp_data):
                                                             sf_data.tags[itCol][1] = 'symmetry'
@@ -16790,12 +16937,12 @@ class NmrDpUtility(object):
                                                         # 'J-couplings', 'backbone chemical shifts'
 
                                                         if self.__testDihedRestraintAsBackBoneChemShifts(lp_data):
-                                                            sf_data.tags[itCol][1] = 'backbone chemical shifts'
+                                                            sf_data.tags[itCol][1] = 'chemical_shift' if file_type == 'nef' else 'backbone chemical shifts'
                                                         #else:
                                                         #    sf_data.tags[itCol][1] = 'J-couplings'
 
                                                     elif content_subtype == 'rdc_restraint':
-                                                        sf_data.tags[itCol][1] = 'RDC'
+                                                        sf_data.tags[itCol][1] = 'measured' if file_type =='nef' else 'RDC'
 
                                             if (file_type == 'nef' and itName == 'potential_type') or (file_type == 'nmr-star' and itName == 'Potential_type'):
 

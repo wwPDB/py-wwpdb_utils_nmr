@@ -17229,7 +17229,7 @@ save_nef_distance_restraint_list_hBond_constraint_list
    _Gen_dist_constraint_list.Sf_category      general_distance_constraints
    _Gen_dist_constraint_list.Sf_framecode     nef_distance_restraint_list_hBond_constraint_list
    _Gen_dist_constraint_list.ID               2
-   _Gen_dist_constraint_list.Constraint_type  hbond
+   _Gen_dist_constraint_list.Constraint_type  'hydrogen bond'
    _Gen_dist_constraint_list.Potential_type   unknown
 
    loop_

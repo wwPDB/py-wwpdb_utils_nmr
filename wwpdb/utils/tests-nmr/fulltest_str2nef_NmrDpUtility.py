@@ -43,6 +43,8 @@ class TestNmrDpUtility(unittest.TestCase):
         if not os.access(self.data_dir_path + entry_id + '-str2nef-consistency-log.json', os.F_OK):
             self.__test_nmr_str_consistency(entry_id)
 
+        print(entry_id)
+
         self.utility.setSource(self.data_dir_path + entry_id + '.str')
         self.utility.addInput(name='coordinate_file_path', value=self.data_dir_path + entry_id + '.cif', type='file')
         self.utility.addInput(name='report_file_path', value=self.data_dir_path + entry_id + '-str2nef-consistency-log.json', type='file')

@@ -23,7 +23,7 @@
 # 21-Feb-2020  M. Yokochi - update content-type definitions and add release mode (nmr-str2nef-release workflow operation)
 # 02-Mar-2020  M. Yokochi - add 'nmr-cs-nef-consistency-check' and 'nmr-cs-str-consistency-check' workflow operation (DAOTHER-4515)
 # 05-Mar-2020  M. Yokochi - revise warning message (disordered_index) and enumerations (DAOTHER-5485)
-# 06-Mar-2020  M. Yokochi - fix invalid ambiguity_code while parsing (DAOTHER-5487)
+# 06-Mar-2020  M. Yokochi - fix invalid ambiguity_code while parsing
 ##
 """ Wrapper class for data processing for NMR data.
     @author: Masashi Yokochi

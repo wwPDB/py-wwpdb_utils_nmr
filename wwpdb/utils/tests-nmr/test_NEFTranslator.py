@@ -563,7 +563,7 @@ class TestNEFTranslator(unittest.TestCase):
              '_Gen_dist_constraint.Gen_dist_constraint_list_ID'])
 
     def test_get_star_atom(self):
-        self.assertEqual(self.neft.get_star_atom('CYS', 'HB%'), (['HB2', 'HB3'], 1, None))
+        self.assertEqual(self.neft.get_star_atom('CYS', 'HB%'), (['HB2', 'HB3'], 2, None))
         self.assertEqual(self.neft.get_star_atom('TRP', 'CE%'), (['CE2', 'CE3'], 1, None))
         self.assertEqual(self.neft.get_star_atom('TRP', 'CEX'), (['CE2'], 1, None))
         self.assertEqual(self.neft.get_star_atom('TRP', 'CEY'), (['CE3'], 1, None))

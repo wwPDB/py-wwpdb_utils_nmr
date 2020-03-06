@@ -18,6 +18,7 @@
 # 04-Mar-2020  M. Yokochi - support 'default' of key items and 'default-from' of data items (v2.0.4)
 # 05-Mar-2020  M. Yokochi - support alternative enumeration definition, 'enum-alt' (v2.0.5, DAOTHER-5485)
 # 05-Mar-2020  M. Yokochi - bidirectional convert between restraint_origin (NEF) and Content_type (NMR-STAR) (v2.0.6, DAOTHER-5485)
+# 06-Mar^2020  M. Yokochi - fix ambiguity_code mapping from NEF atom nomenclature (v2.0.7)
 ##
 import sys
 import os
@@ -37,7 +38,7 @@ from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
 
 (scriptPath, scriptName) = ntpath.split(os.path.realpath(__file__))
 
-__version__ = 'v2.0.6'
+__version__ = 'v2.0.7'
 
 class NEFTranslator(object):
     """ Bi-directional translator between NEF and NMR-STAR
@@ -2937,7 +2938,9 @@ class NEFTranslator(object):
 
                 atom_list = [i for i in atoms if re.search(pattern, i)]
 
-                ambiguity_code = 1
+                methyl_atoms = self.__csStat.getMethylAtoms(comp_id)
+
+                ambiguity_code = 1 if atom_list[0] in methyl_atoms else self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_list[0])
 
             elif atm_set == [5, 6]: # endswith [xyXY]
 

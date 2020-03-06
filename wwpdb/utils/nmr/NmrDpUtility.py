@@ -23,6 +23,7 @@
 # 21-Feb-2020  M. Yokochi - update content-type definitions and add release mode (nmr-str2nef-release workflow operation)
 # 02-Mar-2020  M. Yokochi - add 'nmr-cs-nef-consistency-check' and 'nmr-cs-str-consistency-check' workflow operation (DAOTHER-4515)
 # 05-Mar-2020  M. Yokochi - revise warning message (disordered_index) and enumerations (DAOTHER-5485)
+# 06-Mar-2020  M. Yokochi - fix invalid ambiguity_code while parsing (DAOTHER-5487)
 ##
 """ Wrapper class for data processing for NMR data.
     @author: Masashi Yokochi
@@ -7143,10 +7144,13 @@ class NmrDpUtility(object):
 
                         try:
 
-                            ambig_code2 = next(j[ambig_code_name] for j in lp_data if j[chain_id_name] == chain_id and j[seq_id_name] == seq_id and j[comp_id_name] == comp_id and j[atom_id_name] == atom_id2)
+                            j = next(j for j in lp_data if j[chain_id_name] == chain_id and j[seq_id_name] == seq_id and j[comp_id_name] == comp_id and j[atom_id_name] == atom_id2)
+
+                            ambig_code2 = j[ambig_code_name]
 
                             if ambig_code2 != ambig_code:
-
+                                loop.data[lp_data.index(j)][loop.tags.index(ambig_code_name)] = ambig_code
+                                """
                                 err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_id) + '] %s %s indicates %s. However, %s %s of %s %s is inconsistent.' %\
                                       (ambig_code_name, ambig_code, ambig_code_desc, ambig_code_name, ambig_code2, atom_id_name, atom_id2)
 
@@ -7155,7 +7159,7 @@ class NmrDpUtility(object):
 
                                 if self.__verbose:
                                     self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ ValueError - %s\n" % err)
-
+                                """
                         except StopIteration:
                             pass
                             """

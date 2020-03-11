@@ -5211,7 +5211,7 @@ class NmrDpUtility(object):
 
             indices = self.__nefT.get_index(sf_data, lp_category, index_id=index_tag)[0]
 
-            if indices != range(1, len(indices) + 1):
+            if indices != list(range(1, len(indices) + 1)):
 
                 warn = "Index (loop tag %s.%s) is not ordinal numbers." % (lp_category, index_tag)
 

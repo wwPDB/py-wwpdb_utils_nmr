@@ -14,6 +14,7 @@
 # 21-Feb-2020  M. Yokochi - update content-type definitions
 # 28-Feb-2020  M. Yokochi - add support for 'nmr-chemical-shifts' content type (DAOTHER-4515)
 # 02-Mar-2020  M. Yokochi - add support for 'nmr-restraints' content type (DAOTHER-4515)
+# 13-Mar-2020  M. Yokochi - change warning type from suspicious_data to anomalous_data
 ##
 """ Wrapper class for data processing report of NMR data.
     @author: Masashi Yokochi
@@ -1329,7 +1330,7 @@ class NmrDpReportWarning:
         self.items = ('encouragement', 'missing_content', 'missing_saveframe', 'missing_data', 'enum_mismatch', 'enum_mismatch_ignorable',
                       'disordered_index', 'sequence_mismatch', 'atom_nomenclature_mismatch', 'ccd_mismatch',
                       'skipped_sf_category', 'skipped_lp_category',
-                      'suspicious_data', 'unusual_data', 'remarkable_data', 'insufficient_data',
+                      'anomalous_data', 'unusual_data', 'remarkable_data', 'insufficient_data',
                       'conflicted_data', 'inconsistent_data', 'redundant_data')
 
         self.__contents = {item:None for item in self.items}

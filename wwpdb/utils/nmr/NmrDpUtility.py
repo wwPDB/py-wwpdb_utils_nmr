@@ -24,6 +24,7 @@
 # 02-Mar-2020  M. Yokochi - add 'nmr-cs-nef-consistency-check' and 'nmr-cs-str-consistency-check' workflow operation (DAOTHER-4515)
 # 05-Mar-2020  M. Yokochi - revise warning message (disordered_index) and enumerations (DAOTHER-5485)
 # 06-Mar-2020  M. Yokochi - fix invalid ambiguity_code while parsing
+# 13-Mar-2020  M. Yokochi - revise error/warning messages
 ##
 """ Wrapper class for data processing for NMR data.
     @author: Masashi Yokochi
@@ -6547,7 +6548,7 @@ class NmrDpUtility(object):
 
                                         if self.__nonblk_anomalous_cs:
 
-                                            self.report.warning.appendDescription('suspicious_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
+                                            self.report.warning.appendDescription('anomalous_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
                                             self.report.setWarning()
 
                                             if self.__verbose:
@@ -6580,7 +6581,7 @@ class NmrDpUtility(object):
 
                                         if na['ring_angle'] - self.magic_angle * z_score > 0.0 or self.__nonblk_anomalous_cs:
 
-                                            self.report.warning.appendDescription('suspicious_data' if na['ring_angle'] - self.magic_angle * z_score < 0.0 or na['ring_distance'] > self.vicinity_aromatic else 'unusual_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
+                                            self.report.warning.appendDescription('anomalous_data' if na['ring_angle'] - self.magic_angle * z_score < 0.0 or na['ring_distance'] > self.vicinity_aromatic else 'unusual_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
                                             self.report.setWarning()
 
                                             if self.__verbose:
@@ -6611,7 +6612,7 @@ class NmrDpUtility(object):
                                                (value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score,
                                                 pa['chain_id'], pa['seq_id'], pa['comp_id'], pa['atom_id'], pa['distance'])
 
-                                        self.report.warning.appendDescription('suspicious_data' if pa['distance'] > self.vicinity_paramagnetic else 'unusual_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
+                                        self.report.warning.appendDescription('anomalous_data' if pa['distance'] > self.vicinity_paramagnetic else 'unusual_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
                                         self.report.setWarning()
 
                                         if self.__verbose:
@@ -6638,7 +6639,7 @@ class NmrDpUtility(object):
                                                '] %s %s (chain_id %s, seq_id %s, comp_id %s, atom_id %s) must be verified (avg %s, std %s, min %s, max %s, Z_score %.2f). Neither aromatic ring nor paramagnetic atom were found in the vicinity.' %\
                                                (value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score)
 
-                                        self.report.warning.appendDescription('suspicious_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
+                                        self.report.warning.appendDescription('anomalous_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
                                         self.report.setWarning()
 
                                         if self.__verbose:
@@ -6736,7 +6737,7 @@ class NmrDpUtility(object):
 
                                         if self.__nonblk_anomalous_cs:
 
-                                            self.report.warning.appendDescription('suspicious_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
+                                            self.report.warning.appendDescription('anomalous_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
                                             self.report.setWarning()
 
                                             if self.__verbose:
@@ -6771,7 +6772,7 @@ class NmrDpUtility(object):
 
                                             if na['ring_angle'] - self.magic_angle * z_score < 0.0 or na['ring_distance'] > self.vicinity_aromatic:
 
-                                                self.report.warning.appendDescription('suspicious_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
+                                                self.report.warning.appendDescription('anomalous_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
                                                 self.report.setWarning()
 
                                                 if self.__verbose:
@@ -6831,7 +6832,7 @@ class NmrDpUtility(object):
                                                '] %s %s (chain_id %s, seq_id %s, comp_id %s, atom_id %s) must be verified (avg %s, std %s, min %s, max %s, Z_score %.2f). Neither aromatic ring nor paramagnetic atom were found in the vicinity.' %\
                                                (value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score)
 
-                                        self.report.warning.appendDescription('suspicious_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
+                                        self.report.warning.appendDescription('anomalous_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
                                         self.report.setWarning()
 
                                         if self.__verbose:
@@ -6930,7 +6931,7 @@ class NmrDpUtility(object):
 
                                     if self.__nonblk_anomalous_cs:
 
-                                        self.report.warning.appendDescription('suspicious_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
+                                        self.report.warning.appendDescription('anomalous_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
                                         self.report.setWarning()
 
                                         if self.__verbose:
@@ -6963,7 +6964,7 @@ class NmrDpUtility(object):
 
                                     if na['ring_angle'] - self.magic_angle * z_score > 0.0 or self.__nonblk_anomalous_cs:
 
-                                        self.report.warning.appendDescription('suspicious_data' if na['ring_angle'] - self.magic_angle * z_score < 0.0 or na['ring_distance'] > self.vicinity_aromatic else 'unusual_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
+                                        self.report.warning.appendDescription('anomalous_data' if na['ring_angle'] - self.magic_angle * z_score < 0.0 or na['ring_distance'] > self.vicinity_aromatic else 'unusual_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
                                         self.report.setWarning()
 
                                         if self.__verbose:
@@ -6994,7 +6995,7 @@ class NmrDpUtility(object):
                                            (value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score,
                                             pa['chain_id'], pa['seq_id'], pa['comp_id'], pa['atom_id'], pa['distance'])
 
-                                    self.report.warning.appendDescription('suspicious_data' if pa['distance'] > self.vicinity_paramagnetic else 'unusual_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
+                                    self.report.warning.appendDescription('anomalous_data' if pa['distance'] > self.vicinity_paramagnetic else 'unusual_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
                                     self.report.setWarning()
 
                                     if self.__verbose:
@@ -7021,7 +7022,7 @@ class NmrDpUtility(object):
                                            '] %s %s (chain_id %s, seq_id %s, comp_id %s, atom_id %s) must be verified (avg %s, std %s, min %s, max %s, Z_score %.2f). Neither aromatic ring nor paramagnetic atom were found in the vicinity.' %\
                                            (value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score)
 
-                                    self.report.warning.appendDescription('suspicious_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
+                                    self.report.warning.appendDescription('anomalous_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
                                     self.report.setWarning()
 
                                     if self.__verbose:
@@ -8033,7 +8034,7 @@ class NmrDpUtility(object):
                             item_names = self.item_names_in_cs_loop[file_type]
 
                             anomalous_errs = self.report.error.getValueListWithSf('anomalous_data', file_name, sf_framecode, key='Z_score')
-                            suspicious_warns = self.report.warning.getValueListWithSf('suspicious_data', file_name, sf_framecode, key='Z_score')
+                            anomalous_warns = self.report.warning.getValueListWithSf('anomalous_data', file_name, sf_framecode, key='Z_score')
                             unusual_warns = self.report.warning.getValueListWithSf('unusual_data', file_name, sf_framecode, key='Z_score')
 
                             pattern = r'^' + item_names['value'] + r' ([+-]?([0-9]*[.])?[0-9]+) (.*) Z_score ([+-]?([0-9]*[.])?[0-9]+)\)\.(.*)$'
@@ -8068,16 +8069,16 @@ class NmrDpUtility(object):
 
                                     cs_ann.append(ann)
 
-                            if not suspicious_warns is None:
+                            if not anomalous_warns is None:
 
-                                for s_warn in suspicious_warns:
+                                for a_warn in anomalous_warns:
                                     ann = {}
-                                    ann['level'] = 'suspicious'
-                                    ann['chain_id'] = s_warn['row_location'][item_names['chain_id']]
-                                    ann['seq_id'] = int(s_warn['row_location'][item_names['seq_id']])
-                                    ann['comp_id'] = s_warn['row_location'][item_names['comp_id']]
-                                    ann['atom_id'] = s_warn['row_location'][item_names['atom_id']]
-                                    g = p.search(s_warn['description']).groups()
+                                    ann['level'] = 'anomalous'
+                                    ann['chain_id'] = a_warn['row_location'][item_names['chain_id']]
+                                    ann['seq_id'] = int(a_warn['row_location'][item_names['seq_id']])
+                                    ann['comp_id'] = a_warn['row_location'][item_names['comp_id']]
+                                    ann['atom_id'] = a_warn['row_location'][item_names['atom_id']]
+                                    g = p.search(a_warn['description']).groups()
                                     ann['value'] = float(g[0])
                                     ann['z_score'] = float(g[3])
 
@@ -9212,7 +9213,7 @@ class NmrDpUtility(object):
                                     else:
                                         item = 'unusual_data'
                                 else:
-                                    item = 'suspicious_data'
+                                    item = 'anomalous_data'
 
                                 if not item is None:
 
@@ -9319,7 +9320,7 @@ class NmrDpUtility(object):
                                         else:
                                             item = 'unusual_data'
                                     else:
-                                        item = 'suspicious_data'
+                                        item = 'anomalous_data'
 
                                 if not item is None:
 
@@ -14860,7 +14861,7 @@ class NmrDpUtility(object):
                     warn = "Disulfide bond (chain_id_1 %s, seq_id_1 %s, comp_id_1 %s, chain_id_2 %s, seq_id_2 %s, comp_id_2 %s) can not be verified with the assigned chemical shift values (CA_1 %s, CB_1 %s, redox_state_pred_1 %s)." %\
                            (nmr_chain_id_1, nmr_seq_id_1, nmr_comp_id_1, nmr_chain_id_2, nmr_seq_id_2, nmr_comp_id_2, ca_chem_shift_1, cb_chem_shift_1, disulf['redox_state_pred_1'])
 
-                    item = 'suspicious_data' if disulf['redox_state_pred_1'] == 'reduced' else 'unusual_data'
+                    item = 'anomalous_data' if disulf['redox_state_pred_1'] == 'reduced' else 'unusual_data'
 
                     self.report.warning.appendDescription(item, {'file_name': file_name, 'sf_framecode': sf_framecode, 'description': warn})
                     self.report.setWarning()
@@ -14875,7 +14876,7 @@ class NmrDpUtility(object):
                     warn = "Disulfide bond (chain_id_1 %s, seq_id_1 %s, comp_id_1 %s, chain_id_2 %s, seq_id_2 %s, comp_id_2 %s) can not be verified with the assigned chemical shift values (CA_2 %s, CB_2 %s, redox_state_pred_2 %s)." %\
                            (nmr_chain_id_1, nmr_seq_id_1, nmr_comp_id_1, nmr_chain_id_2, nmr_seq_id_2, nmr_comp_id_2, ca_chem_shift_2, cb_chem_shift_2, disulf['redox_state_pred_2'])
 
-                    item = 'suspicious_data' if disulf['redox_state_pred_2'] == 'reduced' else 'unusual_data'
+                    item = 'anomalous_data' if disulf['redox_state_pred_2'] == 'reduced' else 'unusual_data'
 
                     self.report.warning.appendDescription(item, {'file_name': file_name, 'sf_framecode': sf_framecode, 'description': warn})
                     self.report.setWarning()
@@ -15241,7 +15242,7 @@ class NmrDpUtility(object):
                     warn = "Other bond (chain_id_1 %s, seq_id_1 %s, comp_id_1 %s, chain_id_2 %s, seq_id_2 %s, comp_id_2 %s) can not be verified with the assigned chemical shift values (CA_1 %s, CB_1 %s, redox_state_pred_1 %s)." %\
                            (nmr_chain_id_1, nmr_seq_id_1, nmr_comp_id_1, nmr_chain_id_2, nmr_seq_id_2, nmr_comp_id_2, ca_chem_shift_1, cb_chem_shift_1, other['redox_state_pred_1'])
 
-                    item = 'suspicious_data' if other['redox_state_pred_1'] == 'reduced' else 'unusual_data'
+                    item = 'anomalous_data' if other['redox_state_pred_1'] == 'reduced' else 'unusual_data'
 
                     self.report.warning.appendDescription(item, {'file_name': file_name, 'sf_framecode': sf_framecode, 'description': warn})
                     self.report.setWarning()
@@ -15256,7 +15257,7 @@ class NmrDpUtility(object):
                     warn = "Other bond (chain_id_1 %s, seq_id_1 %s, comp_id_1 %s, chain_id_2 %s, seq_id_2 %s, comp_id_2 %s) can not be verified with the assigned chemical shift values (CA_2 %s, CB_2 %s, redox_state_pred_2 %s)." %\
                            (nmr_chain_id_1, nmr_seq_id_1, nmr_comp_id_1, nmr_chain_id_2, nmr_seq_id_2, nmr_comp_id_2, ca_chem_shift_2, cb_chem_shift_2, other['redox_state_pred_2'])
 
-                    item = 'suspicious_data' if other['redox_state_pred_2'] == 'reduced' else 'unusual_data'
+                    item = 'anomalous_data' if other['redox_state_pred_2'] == 'reduced' else 'unusual_data'
 
                     self.report.warning.appendDescription(item, {'file_name': file_name, 'sf_framecode': sf_framecode, 'description': warn})
                     self.report.setWarning()

@@ -3421,7 +3421,7 @@ class NmrDpUtility(object):
 
                                             if _auth_seq_id - _seq_ids[j] != offset:
 
-                                                warn = "auth_seq_id '%s' vs '%d' (auth_asym_id %s, auth_comp_id %s) mismatches." % (auth_seq_id, seq_ids[j] + offset, auth_asym_id, auth_comp_ids[j])
+                                                warn = "auth_seq_id '%s' is inconsistent with '%d' (auth_asym_id %s, auth_comp_id %s)." % (auth_seq_id, seq_ids[j] + offset, auth_asym_id, auth_comp_ids[j])
 
                                                 self.report.warning.appendDescription('sequence_mismatch', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
                                                 self.report.setWarning()
@@ -3447,7 +3447,7 @@ class NmrDpUtility(object):
                                         auth_asym_id = auth_asym_ids[j]
                                         auth_seq_id = auth_seq_ids[j]
 
-                                        warn = "auth_comp_id %s (auth_asym_id %s, auth_seq_id %s) vs %s (chain_id %s, seq_id %s) mismatches." % (auth_comp_id, auth_asym_id, auth_seq_id, comp_id, chain_id, seq_id)
+                                        warn = "auth_comp_id %s (auth_asym_id %s, auth_seq_id %s) is inconsistent with %s (chain_id %s, seq_id %s)." % (auth_comp_id, auth_asym_id, auth_seq_id, comp_id, chain_id, seq_id)
 
                                         self.report.warning.appendDescription('sequence_mismatch', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
                                         self.report.setWarning()
@@ -3683,7 +3683,7 @@ class NmrDpUtility(object):
 
                                         if _auth_seq_id - _seq_ids[j] != offset:
 
-                                            warn = "auth_seq_id '%s' vs '%d' (auth_asym_id %s, auth_comp_id %s) mismatches." % (auth_seq_id, seq_ids[j] + offset, auth_asym_id, auth_comp_ids[j])
+                                            warn = "auth_seq_id '%s' is inconsistent with '%d' (auth_asym_id %s, auth_comp_id %s)." % (auth_seq_id, seq_ids[j] + offset, auth_asym_id, auth_comp_ids[j])
 
                                             self.report.warning.appendDescription('sequence_mismatch', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
                                             self.report.setWarning()
@@ -3709,7 +3709,7 @@ class NmrDpUtility(object):
                                     auth_asym_id = auth_asym_ids[j]
                                     auth_seq_id = auth_seq_ids[j]
 
-                                    warn = "auth_comp_id %s (auth_asym_id %s, auth_seq_id %s) vs %s (chain_id %s, seq_id %s) mismatches." % (auth_comp_id, auth_asym_id, auth_seq_id, comp_id, chain_id, seq_id)
+                                    warn = "auth_comp_id %s (auth_asym_id %s, auth_seq_id %s) is inconsistent with %s (chain_id %s, seq_id %s)." % (auth_comp_id, auth_asym_id, auth_seq_id, comp_id, chain_id, seq_id)
 
                                     self.report.warning.appendDescription('sequence_mismatch', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
                                     self.report.setWarning()
@@ -5213,7 +5213,7 @@ class NmrDpUtility(object):
 
             if indices != list(range(1, len(indices) + 1)):
 
-                warn = "Index (loop tag %s.%s) is not ordinal numbers." % (lp_category, index_tag)
+                warn = "Index (loop tag %s.%s) should be ordinal numbers." % (lp_category, index_tag)
 
                 self.report.warning.appendDescription('disordered_index', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
                 self.report.setWarning()

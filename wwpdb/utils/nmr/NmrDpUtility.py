@@ -6588,7 +6588,7 @@ class NmrDpUtility(object):
 
                                             if file_type == 'nmr-star' and details_col != -1 and (na['ring_angle'] - self.magic_angle * z_score < 0.0 or na['ring_distance'] > self.vicinity_aromatic):
                                                 _details = loop.data[l][details_col]
-                                                details = '%s %s is not within expected range (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest aromatic ring %s/%s/%s is located at %s angstroms, %s degrees.\n' % (value_name, value, avg_value, std_value, min_value, max_value, z_score, na['chain_id'], na['seq_id'], na['comp_id'], na['ring_distance'], na['ring_angle'])
+                                                details = '%s %s is not within expected range (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest aromatic ring %s:%s:%s is located at %s angstroms, %s degrees.\n' % (value_name, value, avg_value, std_value, min_value, max_value, z_score, na['chain_id'], na['seq_id'], na['comp_id'], na['ring_distance'], na['ring_angle'])
                                                 if _details in self.empty_value or (not details in _details):
                                                     if _details in self.empty_value:
                                                         loop.data[l][details_col] = details
@@ -6619,7 +6619,7 @@ class NmrDpUtility(object):
 
                                         if file_type == 'nmr-star' and details_col != -1 and pa['distance'] > self.vicinity_paramagnetic:
                                             _details = loop.data[l][details_col]
-                                            details = '%s %s is not within expected range (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest paramagnetic atom %s/%s/%s is located at %s angstroms.\n' % (value_name, value, avg_value, std_value, min_value, max_value, z_score, na['chain_id'], na['seq_id'], na['comp_id'], na['distance'])
+                                            details = '%s %s is not within expected range (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest paramagnetic atom %s:%s:%s is located at %s angstroms.\n' % (value_name, value, avg_value, std_value, min_value, max_value, z_score, na['chain_id'], na['seq_id'], na['comp_id'], na['distance'])
                                             if _details in self.empty_value or (not details in _details):
                                                 if _details in self.empty_value:
                                                     loop.data[l][details_col] = details
@@ -6779,7 +6779,7 @@ class NmrDpUtility(object):
 
                                                 if file_type == 'nmr-star' and details_col != -1:
                                                     _details = loop.data[l][details_col]
-                                                    details = '%s %s is not within expected range (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest aromatic ring %s/%s/%s is located at %s angstroms, %s degrees.\n' % (value_name, value, avg_value, std_value, min_value, max_value, z_score, na['chain_id'], na['seq_id'], na['comp_id'], na['ring_distance'], na['ring_angle'])
+                                                    details = '%s %s is not within expected range (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest aromatic ring %s:%s:%s is located at %s angstroms, %s degrees.\n' % (value_name, value, avg_value, std_value, min_value, max_value, z_score, na['chain_id'], na['seq_id'], na['comp_id'], na['ring_distance'], na['ring_angle'])
                                                     if _details in self.empty_value or (not details in _details):
                                                         if _details in self.empty_value:
                                                             loop.data[l][details_col] = details
@@ -6812,7 +6812,7 @@ class NmrDpUtility(object):
 
                                             if file_type == 'nmr-star' and details_col != -1:
                                                 _details = loop.data[l][details_col]
-                                                details = '%s %s is not within expected range (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest paramagnetic atom %s/%s/%s is located at %s angstroms.\n' % (value_name, value, avg_value, std_value, min_value, max_value, z_score, na['chain_id'], na['seq_id'], na['comp_id'], na['distance'])
+                                                details = '%s %s is not within expected range (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest paramagnetic atom %s:%s:%s is located at %s angstroms.\n' % (value_name, value, avg_value, std_value, min_value, max_value, z_score, na['chain_id'], na['seq_id'], na['comp_id'], na['distance'])
                                                 if _details in self.empty_value or (not details in _details):
                                                     if _details in self.empty_value:
                                                         loop.data[l][details_col] = details
@@ -6971,7 +6971,7 @@ class NmrDpUtility(object):
 
                                         if file_type == 'nmr-star' and details_col != -1 and (na['ring_angle'] - self.magic_angle * z_score > 0.0 or self.__nonblk_anomalous_cs):
                                             _details = loop.data[l][details_col]
-                                            details = '%s %s is not within expected range (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest aromatic ring %s/%s/%s is located at %s angstroms, %s degrees.\n' % (value_name, value, avg_value, std_value, min_value, max_value, z_score, na['chain_id'], na['seq_id'], na['comp_id'], na['ring_distance'], na['ring_angle'])
+                                            details = '%s %s is not within expected range (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest aromatic ring %s:%s:%s is located at %s angstroms, %s degrees.\n' % (value_name, value, avg_value, std_value, min_value, max_value, z_score, na['chain_id'], na['seq_id'], na['comp_id'], na['ring_distance'], na['ring_angle'])
                                             if _details in self.empty_value or (not details in _details):
                                                 if _details in self.empty_value:
                                                     loop.data[l][details_col] = details
@@ -7002,7 +7002,7 @@ class NmrDpUtility(object):
 
                                     if file_type == 'nmr-star' and details_col != -1 and pa['distance'] > self.vicinity_paramagnetic:
                                         _details = loop.data[l][details_col]
-                                        details = '%s %s is not within expected range (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest paramagnetic atom %s/%s/%s is located at %s angstroms.\n' % (value_name, value, avg_value, std_value, min_value, max_value, z_score, na['chain_id'], na['seq_id'], na['comp_id'], na['distance'])
+                                        details = '%s %s is not within expected range (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest paramagnetic atom %s:%s:%s is located at %s angstroms.\n' % (value_name, value, avg_value, std_value, min_value, max_value, z_score, na['chain_id'], na['seq_id'], na['comp_id'], na['distance'])
                                         if _details in self.empty_value or (not details in _details):
                                             if _details in self.empty_value:
                                                 loop.data[l][details_col] = details
@@ -13066,8 +13066,8 @@ class NmrDpUtility(object):
                             if nmr_comp_id == '.' or i >= len(s2['seq_id']):
                                 unmapped.append({'ref_seq_id': s1['seq_id'][i], 'ref_comp_id': cif_comp_id})
 
-                                warn = "Could not align %s (chain_id %s, seq_id %s, comp_id %s) with any sequence of %s." %\
-                                       (cif_file_name, chain_id, s1['seq_id'][i], cif_comp_id, nmr_file_name)
+                                warn = "%s:%s on chain %s is not present in the NMR data. Please update the sequence in the Macromolecules section." %\
+                                       (s1['seq_id'][i], cif_comp_id, chain_id)
 
                                 self.report.warning.appendDescription('sequence_mismatch', {'file_name': cif_file_name, 'description': warn})
                                 self.report.setWarning()
@@ -13167,8 +13167,8 @@ class NmrDpUtility(object):
                             if cif_comp_id == '.' or i >= len(s2['seq_id']):
                                 unmapped.append({'ref_seq_id': s1['seq_id'][i], 'ref_comp_id': nmr_comp_id})
 
-                                warn = "Could not align %s (chain_id %s, seq_id %s, comp_id %s) with any sequence of %s." %\
-                                       (nmr_file_name, chain_id, s1['seq_id'][i], nmr_comp_id, cif_file_name)
+                                warn = "%s:%s on chain %s is not present in the coordinate. Please update the sequence in the Macromolecules section." %\
+                                       (s1['seq_id'][i], nmr_comp_id, chain_id)
 
                                 self.report.warning.appendDescription('sequence_mismatch', {'file_name': nmr_file_name, 'description': warn})
                                 self.report.setWarning()
@@ -13543,7 +13543,7 @@ class NmrDpUtility(object):
                     if not index_tag is None:
                         idx_msg = "[Check row of %s %s] " % (index_tag, i[index_tag])
 
-                    err = "%sAtom (%s) is not incorporated in the atomic coordinate." %\
+                    err = "%sAtom (%s) is not incorporated in the coordinate." %\
                           (idx_msg, self.__getReducedAtomNotation(chain_id_names[j], chain_id, seq_id_names[j], seq_id, comp_id_names[j], comp_id, atom_id_names[j], atom_name))
 
                     cyclic = self.__isCyclicPolymer(ref_chain_id)
@@ -13556,16 +13556,16 @@ class NmrDpUtility(object):
                             err += 'because of a cyclic-peptide.'
                         else:
                             err += 'because sequence (chain_id %s) starts with Proline residue.' % ref_chain_id
-
+                        """
                         self.report.warning.appendDescription('atom_nomenclature_mismatch', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
                         self.report.setWarning()
 
                         if self.__verbose:
                             self.__lfh.write("+NmrDpUtility.__testCoordAtomIdConsistency() ++ Warning  - %s\n" % err)
-
+                        """
                         if file_type == 'nmr-star' and details_col != -1:
                             _details = loop.data[l][details_col]
-                            details = "%s/%s/%s/%s is not incorporated in the atomic coordinate. However, it is acceptable if an appropriate atom name, H1, is given because of a cyclic-peptide.\n" % (chain_id, seq_id, comp_id, atom_name)
+                            details = "%s:%s:%s:%s is not incorporated in the coordinate. However, it is acceptable if an appropriate atom name, H1, is given because of a cyclic-peptide.\n" % (chain_id, seq_id, comp_id, atom_name)
                             if _details in self.empty_value or (not details in _details):
                                 if _details in self.empty_value:
                                     loop.data[l][details_col] = details

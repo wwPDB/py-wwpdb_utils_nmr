@@ -3865,7 +3865,7 @@ class NmrDpUtility(object):
 
                             if not chain_id in ref_chain_ids:
 
-                                err = "Invalid chain_id %s exists." % chain_id
+                                err = "Invalid chain_id %s." % chain_id
 
                                 self.report.error.appendDescription('sequence_mismatch', {'file_name': file_name, 'sf_framecode': sf_framecode2, 'category': lp_category2, 'description': err})
                                 self.report.setError()
@@ -3886,7 +3886,7 @@ class NmrDpUtility(object):
 
                                         if not seq_id in s1['seq_id']:
 
-                                            err = "Invalid seq_id %s (chain_id %s) exists." % (seq_id, chain_id)
+                                            err = "Invalid seq_id %s (chain_id %s)." % (seq_id, chain_id)
 
                                             self.report.error.appendDescription('sequence_mismatch', {'file_name': file_name, 'sf_framecode': sf_framecode2, 'category': lp_category2, 'description': err})
                                             self.report.setError()
@@ -3899,7 +3899,7 @@ class NmrDpUtility(object):
 
                                             if comp_id != s1['comp_id'][i]:
 
-                                                err = "Invalid comp_id %s vs %s (seq_id %s, chain_id %s) exists." % (comp_id, s1['comp_id'][i], seq_id, chain_id)
+                                                err = "Invalid comp_id %s vs %s (seq_id %s, chain_id %s)." % (comp_id, s1['comp_id'][i], seq_id, chain_id)
 
                                                 self.report.error.appendDescription('sequence_mismatch', {'file_name': file_name, 'sf_framecode': sf_framecode2, 'category': lp_category2, 'description': err})
                                                 self.report.setError()
@@ -4555,7 +4555,7 @@ class NmrDpUtility(object):
 
                             if len(_atom_id) == 0:
 
-                                err = "Invalid atom_id %s (comp_id %s) exists." % (atom_id, comp_id)
+                                err = "Invalid atom_id %s (comp_id %s)." % (atom_id, comp_id)
 
                                 self.report.error.appendDescription('invalid_atom_nomenclature', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
                                 self.report.setError()
@@ -4581,7 +4581,7 @@ class NmrDpUtility(object):
 
                         if not self.__nefT.validate_comp_atom(comp_id, atom_id_):
 
-                            err = "Invalid atom_id %s (comp_id %s) exists." % (atom_id, comp_id)
+                            err = "Invalid atom_id %s (comp_id %s)." % (atom_id, comp_id)
 
                             self.report.error.appendDescription('invalid_atom_nomenclature', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
                             self.report.setError()
@@ -4610,7 +4610,7 @@ class NmrDpUtility(object):
                             else:
                                 cc_name = '(Not available due to CCD status code %s)' % cc_rel_status
 
-                            warn = "Unknown atom_id %s (comp_id %s, chem_comp_name %s) exists." % (unk_atom_ids, comp_id, cc_name)
+                            warn = "Unknown atom_id %s (comp_id %s, chem_comp_name %s)." % (unk_atom_ids, comp_id, cc_name)
 
                             self.report.warning.appendDescription('atom_nomenclature_mismatch', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
                             self.report.setWarning()
@@ -4648,7 +4648,7 @@ class NmrDpUtility(object):
 
                                 if len(_auth_atom_id) == 0:
 
-                                    warn = "Unmatched author atom ID %s (auth_comp_id %s) exists." % (auth_atom_id, comp_id)
+                                    warn = "Unmatched author atom ID %s (auth_comp_id %s)." % (auth_atom_id, comp_id)
 
                                     self.report.warning.appendDescription('atom_nomenclature_mismatch', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
                                     self.report.setWarning()
@@ -4665,7 +4665,7 @@ class NmrDpUtility(object):
 
                                 if not self.__nefT.validate_comp_atom(comp_id, auth_atom_id):
 
-                                    warn = "Unmatched author atom ID %s (auth_comp_id %s) exists." % (auth_atom_id, comp_id)
+                                    warn = "Unmatched author atom ID %s (auth_comp_id %s)." % (auth_atom_id, comp_id)
 
                                     self.report.warning.appendDescription('atom_nomenclature_mismatch', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
                                     self.report.setWarning()
@@ -4688,7 +4688,7 @@ class NmrDpUtility(object):
 
                                 if (set(auth_atom_ids) | set(atom_ids)) != set(atom_ids):
 
-                                    warn = "Unmatched author atom ID %s (auth_comp_id %s, non-standard residue) exists." % ((set(auth_atom_ids) | set(atom_ids)) - set(atom_ids), comp_id)
+                                    warn = "Unmatched author atom ID %s (auth_comp_id %s, non-standard residue)." % ((set(auth_atom_ids) | set(atom_ids)) - set(atom_ids), comp_id)
 
                                     self.report.warning.appendDescription('atom_nomenclature_mismatch', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
                                     self.report.setWarning()
@@ -4700,7 +4700,7 @@ class NmrDpUtility(object):
 
                             if not has_comp_id:
 
-                                    warn = "Unmatched author atom ID %s (auth_comp_id %s, non-standard residue) exists." % (auth_atom_ids, comp_id)
+                                    warn = "Unmatched author atom ID %s (auth_comp_id %s, non-standard residue)." % (auth_atom_ids, comp_id)
 
                                     self.report.warning.appendDescription('atom_nomenclature_mismatch', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
                                     self.report.setWarning()
@@ -4900,7 +4900,7 @@ class NmrDpUtility(object):
 
                 if not atom_type in self.atom_isotopes.keys():
 
-                    err = "Invalid atom_type %s exists." % atom_type
+                    err = "Invalid atom_type %s." % atom_type
 
                     self.report.error.appendDescription('invalid_atom_type', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
                     self.report.setError()
@@ -4912,7 +4912,7 @@ class NmrDpUtility(object):
                     for isotope_num in isotope_nums:
                         if not isotope_num in self.atom_isotopes[atom_type]:
 
-                            err = "Invalid isotope number %s (atom_type %s, allowed isotope number %s) exists." % (isotope_num, atom_type, self.atom_isotopes[atom_type])
+                            err = "Invalid isotope number %s (atom_type %s, allowed isotope number %s)." % (isotope_num, atom_type, self.atom_isotopes[atom_type])
 
                             self.report.error.appendDescription('invalid_isotope_number', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
                             self.report.setError()
@@ -4923,7 +4923,7 @@ class NmrDpUtility(object):
                     for atom_id in atom_ids:
                         if not atom_id.startswith(atom_type):
 
-                            err = "Invalid atom_id %s (atom_type %s) exists." % (atom_id, atom_type)
+                            err = "Invalid atom_id %s (atom_type %s)." % (atom_id, atom_type)
 
                             self.report.error.appendDescription('invalid_atom_nomenclature', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
                             self.report.setError()
@@ -5081,7 +5081,7 @@ class NmrDpUtility(object):
 
                         if ambig_code > allowed_ambig_code:
 
-                            err = "Invalid ambiguity code %s (comp_id %s, atom_id %s, allowed ambig_code %s) exists." % (ambig_code, comp_id, atom_id, [1, allowed_ambig_code, 4, 5, 6, 9])
+                            err = "Invalid ambiguity code %s (comp_id %s, atom_id %s, allowed ambig_code %s)." % (ambig_code, comp_id, atom_id, [1, allowed_ambig_code, 4, 5, 6, 9])
 
                             self.report.error.appendDescription('invalid_ambiguity_code', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
                             self.report.setError()
@@ -7770,7 +7770,7 @@ class NmrDpUtility(object):
 
                                 idx_msg = "[Check row of %s %s] " % (index_tag, i[index_tag])
 
-                                err = "%sInvalid inter-chain RDC vector (%s:%s:%s:%s, %s:%s:%s:%s) exists." %\
+                                err = "%sInvalid inter-chain RDC vector (%s:%s:%s:%s, %s:%s:%s:%s)." %\
                                       (idx_msg, chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2)
 
                                 self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
@@ -7783,7 +7783,7 @@ class NmrDpUtility(object):
 
                                 idx_msg = "[Check row of %s %s] " % (index_tag, i[index_tag])
 
-                                err = "%sInvalid inter-residue RDC vector (%s:%s:%s:%s, %s:%s:%s:%s) exists." %\
+                                err = "%sInvalid inter-residue RDC vector (%s:%s:%s:%s, %s:%s:%s:%s)." %\
                                       (idx_msg, chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2)
 
                                 self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
@@ -7799,7 +7799,7 @@ class NmrDpUtility(object):
                                     pass
 
                                 else:
-                                    err = "%sInvalid inter-residue RDC vector (%s:%s:%s:%s, %s:%s:%s:%s) exists." %\
+                                    err = "%sInvalid inter-residue RDC vector (%s:%s:%s:%s, %s:%s:%s:%s)." %\
                                           (idx_msg, chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2)
 
                                     self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
@@ -7812,7 +7812,7 @@ class NmrDpUtility(object):
 
                                 idx_msg = "[Check row of %s %s] " % (index_tag, i[index_tag])
 
-                                err = "%sZero RDC vector (%s:%s:%s:%s, %s:%s:%s:%s) exists." %\
+                                err = "%sZero RDC vector (%s:%s:%s:%s, %s:%s:%s:%s)." %\
                                       (idx_msg, chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2)
 
                                 self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
@@ -7837,7 +7837,7 @@ class NmrDpUtility(object):
 
                                             idx_msg = "[Check row of %s %s] " % (index_tag, i[index_tag])
 
-                                            warn = "%sRDC vector over multiple covalent bonds (%s:%s:%s:%s, %s:%s:%s:%s) exists." %\
+                                            warn = "%sRDC vector over multiple covalent bonds (%s:%s:%s:%s, %s:%s:%s:%s)." %\
                                                    (idx_msg, chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2)
 
                                             self.report.warning.appendDescription('remarkable_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})

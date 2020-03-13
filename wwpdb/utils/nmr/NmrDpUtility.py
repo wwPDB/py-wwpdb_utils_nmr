@@ -13557,13 +13557,13 @@ class NmrDpUtility(object):
                             err += 'because of a cyclic-peptide.'
                         else:
                             err += 'because sequence (chain_id %s) starts with Proline residue.' % ref_chain_id
-                        """
+
                         self.report.warning.appendDescription('atom_nomenclature_mismatch', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
                         self.report.setWarning()
 
                         if self.__verbose:
                             self.__lfh.write("+NmrDpUtility.__testCoordAtomIdConsistency() ++ Warning  - %s\n" % err)
-                        """
+
                         if file_type == 'nmr-star' and details_col != -1:
                             _details = loop.data[l][details_col]
                             details = "%s:%s:%s:%s is not incorporated in the coordinate. However, it is acceptable if an appropriate atom name, H1, is given because of a cyclic-peptide.\n" % (chain_id, seq_id, comp_id, atom_name)

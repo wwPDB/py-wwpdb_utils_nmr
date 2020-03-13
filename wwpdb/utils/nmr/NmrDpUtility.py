@@ -3393,7 +3393,7 @@ class NmrDpUtility(object):
 
                                         except ValueError:
 
-                                            warn = "auth_seq_id '%s' (auth_asym_id %s, auth_comp_id %s) has to be int." % (auth_seq_id, auth_asym_id, auth_comp_ids[j])
+                                            warn = "auth_seq_id '%s' (auth_asym_id %s, auth_comp_id %s) should be a integer." % (auth_seq_id, auth_asym_id, auth_comp_ids[j])
 
                                             self.report.warning.appendDescription('sequence_mismatch', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
                                             self.report.setWarning()
@@ -3654,7 +3654,7 @@ class NmrDpUtility(object):
 
                                     except ValueError:
 
-                                        warn = "auth_seq_id '%s' (auth_asym_id %s, auth_comp_id %s) has to be int." % (auth_seq_id, auth_asym_id, auth_comp_ids[j])
+                                        warn = "auth_seq_id '%s' (auth_asym_id %s, auth_comp_id %s) should be a integer." % (auth_seq_id, auth_asym_id, auth_comp_ids[j])
 
                                         self.report.warning.appendDescription('sequence_mismatch', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
                                         self.report.setWarning()

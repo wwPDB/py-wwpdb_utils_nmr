@@ -187,6 +187,19 @@ class NEFTranslator(object):
         aromatic_flag = next(d for d in self.__chem_comp_bond_dict if d[0] == '_chem_comp_bond.pdbx_aromatic_flag')
         self.__ccb_aromatic_flag = self.__chem_comp_bond_dict.index(aromatic_flag)
 
+        # readable item type
+        self.readable_item_type = {'str': 'a string',
+                                   'bool': 'a boolean value',
+                                   'int': 'a integer',
+                                   'index-int': 'a unique positive integer',
+                                   'positive-int': 'a positive integer',
+                                   'pointer-index': 'a integer acting as a pointer to the parent item',
+                                   'float': 'a floating point number',
+                                   'positive-float': 'a positive floating point number',
+                                   'range-float': 'a floating point number in a specific range',
+                                   'enum': 'a enumeration value',
+                                   'enum-int': 'a enumeration value restricted to integers'}
+
         # alternative dictionary of constraint type
         self.dist_alt_constraint_type = {'nef': {'NOE': 'noe',
                                                  'NOE build-up': 'noe_build_up',
@@ -2022,31 +2035,31 @@ class NEFTranslator(object):
                             try:
                                 ent[name] = val.lower() in self.true_value
                             except:
-                                raise ValueError("%s%s '%s' must be %s." % (self.__idx_msg(idx_tag_ids, tags, ent), name, val, type))
+                                raise ValueError("%s%s '%s' must be %s." % (self.__idx_msg(idx_tag_ids, tags, ent), name, val, self.readable_item_type[type]))
                         elif type == 'int':
                             try:
                                 ent[name] = int(val)
                             except:
-                                raise ValueError("%s%s '%s' must be %s." % (self.__idx_msg(idx_tag_ids, tags, ent), name, val, type))
+                                raise ValueError("%s%s '%s' must be %s." % (self.__idx_msg(idx_tag_ids, tags, ent), name, val, self.readable_item_type[type]))
                         elif type == 'index-int' or type == 'positive-int':
                             try:
                                 ent[name] = int(val)
                             except:
-                                raise ValueError("%s%s '%s' must be %s." % (self.__idx_msg(idx_tag_ids, tags, ent), name, val, type))
+                                raise ValueError("%s%s '%s' must be %s." % (self.__idx_msg(idx_tag_ids, tags, ent), name, val, self.readable_item_type[type]))
                             if (type == 'index-int' and ent[name] <= 0) or (type == 'positive-int' and (ent[name] < 0 or (ent[name] == 0 and 'enforce-non-zero' in k and k['enforce-non-zero']))):
-                                raise ValueError("%s%s '%s' must be %s." % (self.__idx_msg(idx_tag_ids, tags, ent), name, val, type))
+                                raise ValueError("%s%s '%s' must be %s." % (self.__idx_msg(idx_tag_ids, tags, ent), name, val, self.readable_item_type[type]))
                             elif ent[name] == 0 and enforce_non_zero:
                                 if 'void-zero' in k:
                                     ent[name] = None
                                 else:
-                                    user_warn_msg += "[Zero value error] %s%s '%s' is non-sense zero value as %s.\n" % (self.__idx_msg(idx_tag_ids, tags, ent), name, val, type)
+                                    user_warn_msg += "[Zero value error] %s%s '%s' is non-sense zero value as %s.\n" % (self.__idx_msg(idx_tag_ids, tags, ent), name, val, self.readable_item_type[type])
                         elif type == 'pointer-index':
                             try:
                                 ent[name] = int(val)
                             except:
-                                raise ValueError("%s%s '%s' must be %s." % (self.__idx_msg(idx_tag_ids, tags, ent), name, val, type))
+                                raise ValueError("%s%s '%s' must be %s." % (self.__idx_msg(idx_tag_ids, tags, ent), name, val, self.readable_item_type[type]))
                             if ent[name] <= 0:
-                                raise ValueError("%s%s '%s' must be %s." % (self.__idx_msg(idx_tag_ids, tags, ent), name, val, type))
+                                raise ValueError("%s%s '%s' must be %s." % (self.__idx_msg(idx_tag_ids, tags, ent), name, val, self.readable_item_type[type]))
                             elif static_val[name] is None:
                                 static_val[name] = val
                             elif val != static_val[name] and inc_idx_test:
@@ -2055,19 +2068,19 @@ class NEFTranslator(object):
                             try:
                                 ent[name] = float(val)
                             except:
-                                raise ValueError("%s%s '%s' must be %s." % (self.__idx_msg(idx_tag_ids, tags, ent), name, val, type))
+                                raise ValueError("%s%s '%s' must be %s." % (self.__idx_msg(idx_tag_ids, tags, ent), name, val, self.readable_item_type[type]))
                         elif type == 'positive-float':
                             try:
                                 ent[name] = float(val)
                             except:
-                                raise ValueError("%s%s '%s' must be %s." % (self.__idx_msg(idx_tag_ids, tags, ent), name, val, type))
+                                raise ValueError("%s%s '%s' must be %s." % (self.__idx_msg(idx_tag_ids, tags, ent), name, val, self.readable_item_type[type]))
                             if ent[name] < 0.0 or (ent[name] == 0.0 and 'enforce-non-zero' in k and k['enforce-non-zero']):
-                                raise ValueError("%s%s '%s' must be %s." % (self.__idx_msg(idx_tag_ids, tags, ent), name, val, type))
+                                raise ValueError("%s%s '%s' must be %s." % (self.__idx_msg(idx_tag_ids, tags, ent), name, val, self.readable_item_type[type]))
                             elif ent[name] == 0.0 and enforce_non_zero:
                                 if 'void-zero' in k:
                                     ent[name] = None
                                 else:
-                                    user_warn_msg += "[Zero value error] %s%s '%s' is non-sense zero value as %s.\n" % (self.__idx_msg(idx_tag_ids, tags, ent), name, val, type)
+                                    user_warn_msg += "[Zero value error] %s%s '%s' is non-sense zero value as %s.\n" % (self.__idx_msg(idx_tag_ids, tags, ent), name, val, self.readable_item_type[type])
                         elif type == 'range-float':
                             try:
                                 _range = k['range']
@@ -2075,20 +2088,20 @@ class NEFTranslator(object):
                             except KeyError:
                                 raise Error('Range of key item %s is not defined' % name)
                             except:
-                                raise ValueError("%s%s '%s' must be %s." % (self.__idx_msg(idx_tag_ids, tags, ent), name, val, type))
+                                raise ValueError("%s%s '%s' must be %s." % (self.__idx_msg(idx_tag_ids, tags, ent), name, val, self.readable_item_type[type]))
                             if ('min_exclusive' in _range and _range['min_exclusive'] == 0.0 and ent[name] <= 0.0) or ('min_inclusive' in _range and _range['min_inclusive'] == 0.0 and ent[name] < 0):
                                 if ent[name] < 0.0:
                                     if ('max_inclusive' in _range and abs(ent[name]) > _range['max_inclusive']) or ('max_exclusive' in _range and abs(ent[name]) >= _range['max_exclusive']) or ('enforce-sign' in k and k['enforce-sign']):
                                         raise ValueError("%s%s '%s' must be within range %s." % (self.__idx_msg(idx_tag_ids, tags, ent), name, val, _range))
                                     elif enforce_sign:
-                                        user_warn_msg += "[Negative value error] %s%s '%s' is non-sense negative value as %s, %s.\n" % (self.__idx_msg(idx_tag_ids, tags, ent), name, val, type, _range)
+                                        user_warn_msg += "[Negative value error] %s%s '%s' is non-sense negative value as %s, %s.\n" % (self.__idx_msg(idx_tag_ids, tags, ent), name, val, self.readable_item_type[type], _range)
                                 elif ent[name] == 0.0 and 'enforce-non-zero' in k and k['enforce-non-zero']:
                                     raise ValueError("%s%s '%s' must be within range %s." % (self.__idx_msg(idx_tag_ids, tags, ent), name, val, _range))
                                 elif ent[name] == 0.0 and enforce_non_zero:
                                     if 'void-zero' in k:
                                         ent[name] = None
                                     else:
-                                        user_warn_msg += "[Zero value error] %s%s '%s' is non-sense zero value as %s, %s.\n" % (self.__idx_msg(idx_tag_ids, tags, ent), name, val, type, _range)
+                                        user_warn_msg += "[Zero value error] %s%s '%s' is non-sense zero value as %s, %s.\n" % (self.__idx_msg(idx_tag_ids, tags, ent), name, val, self.readable_item_type[type], _range)
                             elif ('min_exclusive' in _range and ent[name] <= _range['min_exclusive']) or ('min_inclusive' in _range and ent[name] < _range['min_inclusive']) or ('max_inclusive' in _range and ent[name] > _range['max_inclusive']) or ('max_exclusive' in _range and ent[name] >= _range['max_exclusive']):
                                 if 'void-zero' in k and ent[name] == 0.0:
                                     ent[name] = None
@@ -2120,7 +2133,7 @@ class NEFTranslator(object):
                             except KeyError:
                                 raise Error('Enumeration of key item %s is not defined' % name)
                             except:
-                                raise ValueError("%s%s '%s' must be %s." % (self.__idx_msg(idx_tag_ids, tags, ent), name, val, type))
+                                raise ValueError("%s%s '%s' must be %s." % (self.__idx_msg(idx_tag_ids, tags, ent), name, val, self.readable_item_type[type]))
                         else:
                             ent[name] = val
 
@@ -2134,31 +2147,31 @@ class NEFTranslator(object):
                                     try:
                                         ent[name] = val in self.true_value
                                     except:
-                                        raise ValueError("%s%s '%s' must be %s." % (self.__idx_msg(idx_tag_ids, tags, ent), name, val, type))
+                                        raise ValueError("%s%s '%s' must be %s." % (self.__idx_msg(idx_tag_ids, tags, ent), name, val, self.readable_item_type[type]))
                                 elif type == 'int':
                                     try:
                                         ent[name] = int(val)
                                     except:
-                                        raise ValueError("%s%s '%s' must be %s." % (self.__idx_msg(idx_tag_ids, tags, ent), name, val, type))
+                                        raise ValueError("%s%s '%s' must be %s." % (self.__idx_msg(idx_tag_ids, tags, ent), name, val, self.readable_item_type[type]))
                                 elif type == 'index-int' or type == 'positive-int':
                                     try:
                                         ent[name] = int(val)
                                     except:
-                                        raise ValueError("%s%s '%s' must be %s." % (self.__idx_msg(idx_tag_ids, tags, ent), name, val, type))
+                                        raise ValueError("%s%s '%s' must be %s." % (self.__idx_msg(idx_tag_ids, tags, ent), name, val, self.readable_item_type[type]))
                                     if (type == 'index-int' and ent[name] <= 0) or (type == 'positive-int' and (ent[name] < 0 or (ent[name] == 0 and 'enforce-non-zero' in d and d['enforce-non-zero']))):
-                                        raise ValueError("%s%s '%s' must be %s." % (self.__idx_msg(idx_tag_ids, tags, ent), name, val, type))
+                                        raise ValueError("%s%s '%s' must be %s." % (self.__idx_msg(idx_tag_ids, tags, ent), name, val, self.readable_item_type[type]))
                                     elif ent[name] == 0 and enforce_non_zero:
                                         if 'void-zero' in d:
                                             ent[name] = None
                                         else:
-                                            user_warn_msg += "[Zero value error] %s%s '%s' is non-sense zero value as %s.\n" % (self.__idx_msg(idx_tag_ids, tags, ent), name, val, type)
+                                            user_warn_msg += "[Zero value error] %s%s '%s' is non-sense zero value as %s.\n" % (self.__idx_msg(idx_tag_ids, tags, ent), name, val, self.readable_item_type[type])
                                 elif type == 'pointer-index':
                                     try:
                                         ent[name] = int(val)
                                     except:
-                                        raise ValueError("%s%s '%s' must be %s." % (self.__idx_msg(idx_tag_ids, tags, ent), name, val, type))
+                                        raise ValueError("%s%s '%s' must be %s." % (self.__idx_msg(idx_tag_ids, tags, ent), name, val, self.readable_item_type[type]))
                                     if ent[name] <= 0:
-                                        raise ValueError("%s%s '%s' must be %s." % (self.__idx_msg(idx_tag_ids, tags, ent), name, val, type))
+                                        raise ValueError("%s%s '%s' must be %s." % (self.__idx_msg(idx_tag_ids, tags, ent), name, val, self.readable_item_type[type]))
                                     elif static_val[name] is None:
                                         static_val[name] = val
                                     elif val != static_val[name] and inc_idx_test:
@@ -2167,19 +2180,19 @@ class NEFTranslator(object):
                                     try:
                                         ent[name] = float(val)
                                     except:
-                                        raise ValueError("%s%s '%s' must be %s." % (self.__idx_msg(idx_tag_ids, tags, ent), name, val, type))
+                                        raise ValueError("%s%s '%s' must be %s." % (self.__idx_msg(idx_tag_ids, tags, ent), name, val, self.readable_item_type[type]))
                                 elif type == 'positive-float':
                                     try:
                                         ent[name] = float(val)
                                     except:
-                                        raise ValueError("%s%s '%s' must be %s." % (self.__idx_msg(idx_tag_ids, tags, ent), name, val, type))
+                                        raise ValueError("%s%s '%s' must be %s." % (self.__idx_msg(idx_tag_ids, tags, ent), name, val, self.readable_item_type[type]))
                                     if ent[name] < 0.0 or (ent[name] == 0.0 and 'enforce-non-zero' in d and d['enforce-non-zero']):
-                                        raise ValueError("%s%s '%s' must be %s." % (self.__idx_msg(idx_tag_ids, tags, ent), name, val, type))
+                                        raise ValueError("%s%s '%s' must be %s." % (self.__idx_msg(idx_tag_ids, tags, ent), name, val, self.readable_item_type[type]))
                                     elif ent[name] == 0.0 and enforce_non_zero:
                                         if 'void-zero' in d:
                                             ent[name] = None
                                         else:
-                                            user_warn_msg += "[Zero value error] %s%s '%s' is non-sense zero value as %s.\n" % (self.__idx_msg(idx_tag_ids, tags, ent), name, val, type)
+                                            user_warn_msg += "[Zero value error] %s%s '%s' is non-sense zero value as %s.\n" % (self.__idx_msg(idx_tag_ids, tags, ent), name, val, self.readable_item_type[type])
                                 elif type == 'range-float':
                                     try:
                                         _range = d['range']
@@ -2187,20 +2200,20 @@ class NEFTranslator(object):
                                     except KeyError:
                                         raise Error('Range of data item %s is not defined' % name)
                                     except:
-                                        raise ValueError("%s%s '%s' must be %s." % (self.__idx_msg(idx_tag_ids, tags, ent), name, val, type))
+                                        raise ValueError("%s%s '%s' must be %s." % (self.__idx_msg(idx_tag_ids, tags, ent), name, val, self.readable_item_type[type]))
                                     if ('min_exclusive' in _range and _range['min_exclusive'] == 0.0 and ent[name] <= 0.0) or ('min_inclusive' in _range and _range['min_inclusive'] == 0.0 and ent[name] < 0):
                                         if ent[name] < 0.0:
                                             if ('max_inclusive' in _range and abs(ent[name]) > _range['max_inclusive']) or ('max_exclusive' in _range and abs(ent[name]) >= _range['max_exclusive']) or ('enforce-sign' in d and d['enforce-sign']):
                                                 raise ValueError("%s%s '%s' must be within range %s." % (self.__idx_msg(idx_tag_ids, tags, ent), name, val, _range))
                                             elif enforce_sign:
-                                                user_warn_msg += "[Negative value error] %s%s '%s' is non-sense negative value as %s, %s.\n" % (self.__idx_msg(idx_tag_ids, tags, ent), name, val, type, _range)
+                                                user_warn_msg += "[Negative value error] %s%s '%s' is non-sense negative value as %s, %s.\n" % (self.__idx_msg(idx_tag_ids, tags, ent), name, val, self.readable_item_type[type], _range)
                                         elif ent[name] == 0.0 and 'enforce-non-zero' in d and d['enforce-non-zero']:
                                             raise ValueError("%s%s '%s' must be within range %s." % (self.__idx_msg(idx_tag_ids, tags, ent), name, val, _range))
                                         elif ent[name] == 0.0 and enforce_non_zero:
                                             if 'void-zero' in d:
                                                 ent[name] = None
                                             else:
-                                                user_warn_msg += "[Zero value error] %s%s '%s' is non-sense zero value as %s, %s.\n" % (self.__idx_msg(idx_tag_ids, tags, ent), name, val, type, _range)
+                                                user_warn_msg += "[Zero value error] %s%s '%s' is non-sense zero value as %s, %s.\n" % (self.__idx_msg(idx_tag_ids, tags, ent), name, val, self.readable_item_type[type], _range)
                                     elif ('min_exclusive' in _range and ent[name] <= _range['min_exclusive']) or ('min_inclusive' in _range and ent[name] < _range['min_inclusive']) or ('max_inclusive' in _range and ent[name] > _range['max_inclusive']) or ('max_exclusive' in _range and ent[name] >= _range['max_exclusive']):
                                         if 'void-zero' in d and ent[name] == 0.0:
                                             ent[name] = None
@@ -2232,7 +2245,7 @@ class NEFTranslator(object):
                                     except KeyError:
                                         raise Error('Enumeration of data item %s is not defined' % name)
                                     except:
-                                        raise ValueError("%s%s '%s' must be %s." % (self.__idx_msg(idx_tag_ids, tags, ent), name, val, type))
+                                        raise ValueError("%s%s '%s' must be %s." % (self.__idx_msg(idx_tag_ids, tags, ent), name, val, self.readable_item_type[type]))
                                 else:
                                     ent[name] = val
 
@@ -2532,41 +2545,41 @@ class NEFTranslator(object):
                         try:
                             ent[name] = val in self.true_value
                         except:
-                            raise ValueError("%s '%s' must be %s." % (name, val, type))
+                            raise ValueError("%s '%s' must be %s." % (name, val, self.readable_item_type[type]))
                     elif type == 'int':
                         try:
                             ent[name] = int(val)
                         except:
-                            raise ValueError("%s '%s' must be %s." % (name, val, type))
+                            raise ValueError("%s '%s' must be %s." % (name, val, self.readable_item_type[type]))
                     elif type == 'positive-int':
                         try:
                             ent[name] = int(val)
                         except:
-                            raise ValueError("%s '%s' must be %s." % (name, val, type))
+                            raise ValueError("%s '%s' must be %s." % (name, val, self.readable_item_type[type]))
                         if ent[name] < 0 or (ent[name] == 0 and 'enforce-non-zero' in t and t['enforce-non-zero']):
-                            raise ValueError("%s '%s' must be %s." % (name, val, type))
+                            raise ValueError("%s '%s' must be %s." % (name, val, self.readable_item_type[type]))
                         elif ent[name] == 0 and enforce_non_zero:
                             if 'void-zero' in t:
                                 ent[name] = None
                             else:
-                                user_warn_msg += "[Zero value error] %s '%s' is non-sense zero value as %s.\n" % (name, val, type)
+                                user_warn_msg += "[Zero value error] %s '%s' is non-sense zero value as %s.\n" % (name, val, self.readable_item_type[type])
                     elif type == 'float':
                         try:
                             ent[name] = float(val)
                         except:
-                            raise ValueError("%s '%s' must be %s." % (name, val, type))
+                            raise ValueError("%s '%s' must be %s." % (name, val, self.readable_item_type[type]))
                     elif type == 'positive-float':
                         try:
                             ent[name] = float(val)
                         except:
-                            raise ValueError("%s '%s' must be %s." % (name, val, type))
+                            raise ValueError("%s '%s' must be %s." % (name, val, self.readable_item_type[type]))
                         if ent[name] < 0.0 or (ent[name] == 0.0 and 'enforce-non-zero' in t and t['enforce-non-zero']):
-                            raise ValueError("%s '%s' must be %s." % (name, val, type))
+                            raise ValueError("%s '%s' must be %s." % (name, val, self.readable_item_type[type]))
                         elif ent[name] == 0.0 and enforce_non_zero:
                             if 'void-zero' in t:
                                 ent[name] = None
                             else:
-                                user_warn_msg += "[Zero value error] %s '%s' is non-sense zero value as %s.\n" % (name, val, type)
+                                user_warn_msg += "[Zero value error] %s '%s' is non-sense zero value as %s.\n" % (name, val, self.readable_item_type[type])
                     elif type == 'range-float':
                         try:
                             _range = t['range']
@@ -2574,20 +2587,20 @@ class NEFTranslator(object):
                         except KeyError:
                             raise Error('Range of tag item %s is not defined.' % name)
                         except:
-                            raise ValueError("%s '%s' must be %s." % (name, val, type))
+                            raise ValueError("%s '%s' must be %s." % (name, val, self.readable_item_type[type]))
                         if ('min_exclusive' in _range and _range['min_exclusive'] == 0.0 and ent[name] <= 0.0) or ('min_inclusive' in _range and _range['min_inclusive'] == 0.0 and ent[name] < 0):
                             if ent[name] < 0.0:
                                 if ('max_inclusive' in _range and abs(ent[name]) > _range['max_inclusive']) or ('max_exclusive' in _range and abs(ent[name]) >= _range['max_exclusive']) or ('enforce-sign' in t and t['enforce-sign']):
                                     raise ValueError("%s%s '%s' must be within range %s." % (self.__idx_msg(idx_tag_ids, tags, ent), name, val, _range))
                                 elif enforce_sign:
-                                    user_warn_msg += "[Negative value error] %s%s '%s' is non-sense negative value as %s, %s.\n" % (self.__idx_msg(idx_tag_ids, tags, ent), name, val, type, _range)
+                                    user_warn_msg += "[Negative value error] %s%s '%s' is non-sense negative value as %s, %s.\n" % (self.__idx_msg(idx_tag_ids, tags, ent), name, val, self.readable_item_type[type], _range)
                             elif ent[name] == 0.0 and 'enforce-non-zero' in t and t['enforce-non-zero']:
                                 raise ValueError("%s '%s' must be within range %s." % (name, val, _range))
                             elif ent[name] == 0.0 and enforce_non_zero:
                                 if 'void-zero' in t:
                                     ent[name] = None
                                 else:
-                                    user_warn_msg += "[Zero value error] %s '%s' is non-sense zero value as %s, %s.\n" % (name, val, type, _range)
+                                    user_warn_msg += "[Zero value error] %s '%s' is non-sense zero value as %s, %s.\n" % (name, val, self.readable_item_type[type], _range)
                         elif ('min_exclusive' in _range and ent[name] <= _range['min_exclusive']) or ('min_inclusive' in _range and ent[name] < _range['min_inclusive']) or ('max_inclusive' in _range and ent[name] > _range['max_inclusive']) or ('max_exclusive' in _range and ent[name] >= _range['max_exclusive']):
                             if 'void-zero' in t and ent[name] == 0.0:
                                 ent[name] = None
@@ -2623,7 +2636,7 @@ class NEFTranslator(object):
                         except KeyError:
                             raise Error('Enumeration of tag item %s is not defined.' % name)
                         except:
-                            raise ValueError("%s '%s' must be %s." % (name, val, type))
+                            raise ValueError("%s '%s' must be %s." % (name, val, self.readable_item_type[type]))
                     else:
                         ent[name] = val
 

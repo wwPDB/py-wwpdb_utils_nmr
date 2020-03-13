@@ -5509,7 +5509,7 @@ class NmrDpUtility(object):
 
         if (not lp_data is None) and len(lp_data) == 0:
 
-            warn = "Unexpectedly, there are no rows in a loop."
+            warn = "Unexpectedly, a loop has no rows."
 
             self.report.warning.appendDescription('missing_content', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
             self.report.setWarning()
@@ -16577,7 +16577,7 @@ class NmrDpUtility(object):
 
         for w in warnings:
 
-            if not "is non-sense zero value" in w['description']:
+            if not "should not have zero value" in w['description']:
                 continue
 
             if self.__star_data_type[0] == "Entry" or self.__star_data_type[0] == "Saveframe":
@@ -16683,7 +16683,7 @@ class NmrDpUtility(object):
 
         for w in warnings:
 
-            if not "is non-sense negative value" in w['description']:
+            if not "should not have negative value" in w['description']:
                 continue
 
             if self.__star_data_type[0] == "Entry" or self.__star_data_type[0] == "Saveframe":

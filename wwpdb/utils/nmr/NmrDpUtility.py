@@ -3218,7 +3218,7 @@ class NmrDpUtility(object):
                 if not self.__has_star_entity and self.__combined_mode:
                     sf_category = self.sf_categories[file_type][content_subtype]
 
-                    warn = "Saveframe category %s did not exist." % sf_category
+                    warn = "Saveframe category %s does not exist." % sf_category
 
                     self.report.warning.appendDescription('missing_saveframe', {'file_name': file_name, 'description': warn})
                     self.report.setWarning()
@@ -4271,7 +4271,7 @@ class NmrDpUtility(object):
 
             if not has_poly_seq:
                 """
-                err = "Common polymer sequence did not exist, __extractCommonPolymerSequence() should be invoked."
+                err = "Common polymer sequence does not exist, __extractCommonPolymerSequence() should be invoked."
 
                 self.report.error.appendDescription('internal_error', "+NmrDpUtility.__appendPolymerSequenceAlignment() ++ Error  - %s" % err)
                 self.report.setError()
@@ -4844,7 +4844,7 @@ class NmrDpUtility(object):
 
             if not content_subtype in input_source_dic['content_subtype'].keys():
 
-                err = "Assigned chemical shift loop did not exist in %s file." % file_name
+                err = "Assigned chemical shift loop does not exist in %s file." % file_name
 
                 self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateAtomTypeOfCSLoop() ++ Error  - %s" % err)
                 self.report.setError()
@@ -5009,7 +5009,7 @@ class NmrDpUtility(object):
 
             if not content_subtype in input_source_dic['content_subtype'].keys():
 
-                err = "Assigned chemical shift loop did not exist in %s file." % file_name
+                err = "Assigned chemical shift loop does not exist in %s file." % file_name
 
                 self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateAmbigCodeOfCSLoop() ++ Error  - %s" % err)
                 self.report.setError()
@@ -6351,7 +6351,7 @@ class NmrDpUtility(object):
 
             if not content_subtype in input_source_dic['content_subtype'].keys():
 
-                err = "Assigned chemical shift loop did not exist in %s file." % file_name
+                err = "Assigned chemical shift loop does not exist in %s file." % file_name
 
                 self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateCSValue() ++ Error  - %s" % err)
                 self.report.setError()
@@ -7394,7 +7394,7 @@ class NmrDpUtility(object):
 
                 except StopIteration:
 
-                    err = "Assigned chemical shifts are mandatory. Referred saveframe %s did not exist." % cs_list
+                    err = "Assigned chemical shifts are mandatory. Referred saveframe %s does not exist." % cs_list
 
                     self.report.error.appendDescription('missing_mandatory_content', {'file_name': file_name, 'sf_framecode': sf_framecode, 'description': err})
                     self.report.setError()
@@ -12481,7 +12481,7 @@ class NmrDpUtility(object):
 
                 if poly_seq is None:
 
-                    err = "Polymer sequence did not exist, __extractCoordPolymerSequence() should be invoked."
+                    err = "Polymer sequence does not exist, __extractCoordPolymerSequence() should be invoked."
 
                     self.report.error.appendDescription('internal_error', "+NmrDpUtility.__extractCoordNonPolymerScheme() ++ Error  - %s" % err)
                     self.report.setError()
@@ -12782,7 +12782,7 @@ class NmrDpUtility(object):
 
         if not has_nmr_poly_seq:
             """ this will raise internal error if upload NEF file for nmr-str2str-deposit op for NMR-STAR file for nmr-nef2str-deposit
-            err = "Common polymer sequence did not exist, __extractCommonPolymerSequence() should be invoked."
+            err = "Common polymer sequence does not exist, __extractCommonPolymerSequence() should be invoked."
 
             self.report.error.appendDescription('internal_error', "+NmrDpUtility.__appendCoordPolymerSequenceAlignment() ++ Error  - %s" % err)
             self.report.setError()
@@ -12962,7 +12962,7 @@ class NmrDpUtility(object):
 
             if not has_nmr_poly_seq:
                 """ this will raise internal error if upload NEF file for nmr-str2str-deposit op for NMR-STAR file for nmr-nef2str-deposit
-                err = "Common polymer sequence did not exist, __extractCommonPolymerSequence() should be invoked."
+                err = "Common polymer sequence does not exist, __extractCommonPolymerSequence() should be invoked."
 
                 self.report.error.appendDescription('internal_error', "+NmrDpUtility.__assignCoordPolymerSequence() ++ Error  - %s" % err)
                 self.report.setError()
@@ -13243,7 +13243,7 @@ class NmrDpUtility(object):
 
             if not 'nmr_poly_seq_vs_model_poly_seq' in chain_assign_dic:
 
-                err = "Chain assignment did not exist, __assignCoordPolymerSequence() should be invoked."
+                err = "Chain assignment does not exist, __assignCoordPolymerSequence() should be invoked."
 
                 self.report.error.appendDescription('internal_error', "+NmrDpUtility.__testCoordAtomIdConsistency() ++ Error  - %s" % err)
                 self.report.setError()
@@ -14037,7 +14037,7 @@ class NmrDpUtility(object):
 
         if not has_poly_seq:
             """
-            err = "Common polymer sequence did not exist, __extractCommonPolymerSequence() should be invoked."
+            err = "Common polymer sequence does not exist, __extractCommonPolymerSequence() should be invoked."
 
             self.report.error.appendDescription('internal_error', "+NmrDpUtility.__generatePolySeqIfNot() ++ Error  - %s" % err)
             self.report.setError()
@@ -14594,7 +14594,7 @@ class NmrDpUtility(object):
 
         if not 'model_poly_seq_vs_nmr_poly_seq' in chain_assign_dic:
 
-            err = "Chain assignment did not exist, __assignCoordPolymerSequence() should be invoked."
+            err = "Chain assignment does not exist, __assignCoordPolymerSequence() should be invoked."
 
             self.report.error.appendDescription('internal_error', "+NmrDpUtility.__extractCoodDisulfideBond() ++ Error  - %s" % err)
             self.report.setError()
@@ -14687,7 +14687,7 @@ class NmrDpUtility(object):
 
             if not self.__hasKeyValue(input_source_dic['content_subtype'], content_subtype):
 
-                err = "Assigned chemical shift loop did not exist in %s file." % file_name
+                err = "Assigned chemical shift loop does not exist in %s file." % file_name
 
                 self.report.error.appendDescription('internal_error', "+NmrDpUtility.__mapCoordDisulfideBond2Nmr() ++ Error  - %s" % err)
                 self.report.setError()
@@ -14975,7 +14975,7 @@ class NmrDpUtility(object):
 
         if not 'model_poly_seq_vs_nmr_poly_seq' in chain_assign_dic:
 
-            err = "Chain assignment did not exist, __assignCoordPolymerSequence() should be invoked."
+            err = "Chain assignment does not exist, __assignCoordPolymerSequence() should be invoked."
 
             self.report.error.appendDescription('internal_error', "+NmrDpUtility.__extractCoodOtherBond() ++ Error  - %s" % err)
             self.report.setError()
@@ -15068,7 +15068,7 @@ class NmrDpUtility(object):
 
             if not self.__hasKeyValue(input_source_dic['content_subtype'], content_subtype):
 
-                err = "Assigned chemical shift loop did not exist in %s file." % file_name
+                err = "Assigned chemical shift loop does not exist in %s file." % file_name
 
                 self.report.error.appendDescription('internal_error', "+NmrDpUtility.__mapCoordOtherBond2Nmr() ++ Error  - %s" % err)
                 self.report.setError()
@@ -17503,7 +17503,7 @@ class NmrDpUtility(object):
 
             if not self.__hasKeyValue(input_source_dic['content_subtype'], content_subtype):
 
-                err = "Assigned chemical shift loop did not exist in %s file." % file_name
+                err = "Assigned chemical shift loop does not exist in %s file." % file_name
 
                 self.report.error.appendDescription('internal_error', "+NmrDpUtility.__testDihedRestraintAsBackBoneChemShifts() ++ Error  - %s" % err)
                 self.report.setError()
@@ -18661,7 +18661,7 @@ class NmrDpUtility(object):
 
         if not content_subtype in input_source_dic['content_subtype'].keys():
 
-            err = "Assigned chemical shift loop did not exist in %s file." % file_name
+            err = "Assigned chemical shift loop does not exist in %s file." % file_name
 
             self.report.error.appendDescription('internal_error', "+NmrDpUtility.__sortCSLoop() ++ Error  - %s" % err)
             self.report.setError()
@@ -18761,7 +18761,7 @@ class NmrDpUtility(object):
 
         if not content_subtype in input_source_dic['content_subtype'].keys():
 
-            err = "Assigned chemical shift loop did not exist in %s file." % file_name
+            err = "Assigned chemical shift loop does not exist in %s file." % file_name
 
             self.report.error.appendDescription('internal_error', "+NmrDpUtility.__updateAtomChemShiftId() ++ Error  - %s" % err)
             self.report.setError()
@@ -18878,7 +18878,7 @@ class NmrDpUtility(object):
 
         if not content_subtype in input_source_dic['content_subtype'].keys():
 
-            err = "Assigned chemical shift loop did not exist in %s file." % file_name
+            err = "Assigned chemical shift loop does not exist in %s file." % file_name
 
             self.report.error.appendDescription('internal_error', "+NmrDpUtility.__updateAmbiguousAtomChemShift() ++ Error  - %s" % err)
             self.report.setError()

@@ -4235,7 +4235,7 @@ class NmrDpUtility(object):
                             else:
                                 ent['chem_comp_name'].append(None)
 
-                                warn = 'Non standard residue (chain_id %s, seq_id %s, comp_id %s) did not match with chemical component dictionary (CCD).'
+                                warn = 'Non standard residue (%s:%s:%s) did not match with chemical component dictionary (CCD).'
 
                                 self.report.warning.appendDescription('ccd_mismatch', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
                                 self.report.setWarning()
@@ -6543,7 +6543,7 @@ class NmrDpUtility(object):
                                     if na is None and pa is None:
 
                                         err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) +\
-                                              '] %s %s (chain_id %s, seq_id %s, comp_id %s, atom_id %s) is not within expected range (avg %s, std %s, min %s, max %s, Z_score %.2f). Neither aromatic ring nor paramagnetic atom were found in the vicinity. Please check for folded/aliased signals.' %\
+                                              '] %s %s (%s:%s:%s, atom_id %s) is not within expected range (avg %s, std %s, min %s, max %s, Z_score %.2f). Neither aromatic ring nor paramagnetic atom were found in the vicinity. Please check for folded/aliased signals.' %\
                                               (value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score)
 
                                         if self.__nonblk_anomalous_cs:
@@ -6575,7 +6575,7 @@ class NmrDpUtility(object):
                                     elif pa is None:
 
                                         warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) +\
-                                               '] %s %s (chain_id %s, seq_id %s, comp_id %s, atom_id %s) should be verified (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest aromatic ring (chain_id %s, seq_id %s, comp_id %s, ring_atoms %s) is located at %s angstroms, %s degrees.' %\
+                                               '] %s %s (%s:%s:%s:%s) should be verified (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest aromatic ring (%s:%s:%s:%s) is located at %s angstroms, %s degrees.' %\
                                                (value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score,
                                                 na['chain_id'], na['seq_id'], na['comp_id'], na['ring_atoms'], na['ring_distance'], na['ring_angle'])
 
@@ -6608,7 +6608,7 @@ class NmrDpUtility(object):
                                     else:
 
                                         warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) +\
-                                               '] %s %s (chain_id %s, seq_id %s, comp_id %s, atom_id %s) should be verified (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest paramagnetic atom (chain_id %s, seq_id %s, comp_id %s, atom_id %s) is located at %s angstroms.' %\
+                                               '] %s %s (%s:%s:%s, atom_id %s) should be verified (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest paramagnetic atom (%s:%s:%s:%s) is located at %s angstroms.' %\
                                                (value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score,
                                                 pa['chain_id'], pa['seq_id'], pa['comp_id'], pa['atom_id'], pa['distance'])
 
@@ -6636,7 +6636,7 @@ class NmrDpUtility(object):
                                     if na is None and pa is None:
 
                                         warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) +\
-                                               '] %s %s (chain_id %s, seq_id %s, comp_id %s, atom_id %s) must be verified (avg %s, std %s, min %s, max %s, Z_score %.2f). Neither aromatic ring nor paramagnetic atom were found in the vicinity.' %\
+                                               '] %s %s (%s:%s:%s:%s) must be verified (avg %s, std %s, min %s, max %s, Z_score %.2f). Neither aromatic ring nor paramagnetic atom were found in the vicinity.' %\
                                                (value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score)
 
                                         self.report.warning.appendDescription('anomalous_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
@@ -6650,7 +6650,7 @@ class NmrDpUtility(object):
                                         if na['ring_angle'] - self.magic_angle * z_score < 0.0 or na['ring_distance'] > self.vicinity_aromatic:
 
                                             warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) +\
-                                                   '] %s %s (chain_id %s, seq_id %s, comp_id %s, atom_id %s) should be verified (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest aromatic ring (chain_id %s, seq_id %s, comp_id %s, ring_atoms %s) is located at %s angstroms, %s degrees.' %\
+                                                   '] %s %s (%s:%s:%s:%s) should be verified (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest aromatic ring (%s:%s:%s:%s) is located at %s angstroms, %s degrees.' %\
                                                    (value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score,
                                                     na['chain_id'], na['seq_id'], na['comp_id'], na['ring_atoms'], na['ring_distance'], na['ring_angle'])
 
@@ -6665,7 +6665,7 @@ class NmrDpUtility(object):
                                         if pa['distance'] > self.vicinity_paramagnetic:
 
                                             warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) +\
-                                                   '] %s %s (chain_id %s, seq_id %s, comp_id %s, atom_id %s) should be verified (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest paramagnetic atom (chain_id %s, seq_id %s, comp_id %s, atom_id %s) is located at %s angstroms.' %\
+                                                   '] %s %s (%s:%s:%s:%s) should be verified (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest paramagnetic atom (%s:%s:%s:%s) is located at %s angstroms.' %\
                                                    (value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score,
                                                     pa['chain_id'], pa['seq_id'], pa['comp_id'], pa['atom_id'], pa['distance'])
 
@@ -6681,13 +6681,13 @@ class NmrDpUtility(object):
                                     pa = self.__getNearestParamagneticAtom(chain_id, seq_id, atom_id_, self.cutoff_paramagnetic)
 
                                     warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) +\
-                                           '] %s %s (chain_id %s, seq_id %s, comp_id %s, atom_id %s) should be verified (avg %s, std %s, min %s, max %s, Z_score %.2f).' %\
+                                           '] %s %s (%s:%s:%s:%s) should be verified (avg %s, std %s, min %s, max %s, Z_score %.2f).' %\
                                            (value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score)
 
                                     if not na is None:
 
                                         if na['ring_angle'] - self.magic_angle * z_score < 0.0 or na['ring_distance'] > self.vicinity_aromatic:
-                                            warn += ' The nearest aromatic ring (chain_id %s, seq_id %s, comp_id %s, ring_atoms %s) is located at %s angstroms, %s degrees.' %\
+                                            warn += ' The nearest aromatic ring (%s:%s:%s:%s) is located at %s angstroms, %s degrees.' %\
                                                     (na['chain_id'], na['seq_id'], na['comp_id'], na['ring_atoms'], na['ring_distance'], na['ring_angle'])
                                         else:
                                             warn = None
@@ -6695,7 +6695,7 @@ class NmrDpUtility(object):
                                     elif not pa is None:
 
                                         if pa['distance'] > self.vicinity_paramagnetic:
-                                            warn += ' The nearest paramagnetic atom (chain_id %s, seq_id %s, comp_id %s, atom_id %s) is located at %s angstroms.' %\
+                                            warn += ' The nearest paramagnetic atom (%s:%s:%s:%s) is located at %s angstroms.' %\
                                                     (pa['chain_id'], pa['seq_id'], pa['comp_id'], pa['atom_id'], pa['distance'])
                                         else:
                                             warn = None
@@ -6732,7 +6732,7 @@ class NmrDpUtility(object):
                                     if na is None and pa is None:
 
                                         err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) +\
-                                              '] %s %s (chain_id %s, seq_id %s, comp_id %s, atom_id %s) is not within expected range (avg %s, std %s, min %s, max %s, Z_score %.2f). Neither aromatic ring nor paramagnetic atom were found in the vicinity. Please check for folded/aliased signals.' %\
+                                              '] %s %s (%s:%s:%s:%s) is not within expected range (avg %s, std %s, min %s, max %s, Z_score %.2f). Neither aromatic ring nor paramagnetic atom were found in the vicinity. Please check for folded/aliased signals.' %\
                                               (value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score)
 
                                         if self.__nonblk_anomalous_cs:
@@ -6764,7 +6764,7 @@ class NmrDpUtility(object):
                                     elif pa is None:
 
                                         warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) +\
-                                               '] %s %s (chain_id %s, seq_id %s, comp_id %s, atom_id %s) should be verified (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest aromatic ring (chain_id %s, seq_id %s, comp_id %s, ring_atoms %s) is located at %s angstroms, %s degrees.' %\
+                                               '] %s %s (%s:%s:%s:%s) should be verified (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest aromatic ring (%s:%s:%s:%s) is located at %s angstroms, %s degrees.' %\
                                                (value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score,
                                                 na['chain_id'], na['seq_id'], na['comp_id'], na['ring_atoms'], na['ring_distance'], na['ring_angle'])
 
@@ -6801,7 +6801,7 @@ class NmrDpUtility(object):
                                         if pa['distance'] > self.vicinity_paramagnetic:
 
                                             warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) +\
-                                                   '] %s %s (chain_id %s, seq_id %s, comp_id %s, atom_id %s) should be verified (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest paramagnetic atom (chain_id %s, seq_id %s, comp_id %s, atom_id %s) is located at %s angstroms.' %\
+                                                   '] %s %s (%s:%s:%s:%s) should be verified (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest paramagnetic atom (%s:%s:%s:%s) is located at %s angstroms.' %\
                                                    (value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score,
                                                     pa['chain_id'], pa['seq_id'], pa['comp_id'], pa['atom_id'], pa['distance'])
 
@@ -6829,7 +6829,7 @@ class NmrDpUtility(object):
                                     if na is None and pa is None:
 
                                         warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) +\
-                                               '] %s %s (chain_id %s, seq_id %s, comp_id %s, atom_id %s) must be verified (avg %s, std %s, min %s, max %s, Z_score %.2f). Neither aromatic ring nor paramagnetic atom were found in the vicinity.' %\
+                                               '] %s %s (%s:%s:%s:%s) must be verified (avg %s, std %s, min %s, max %s, Z_score %.2f). Neither aromatic ring nor paramagnetic atom were found in the vicinity.' %\
                                                (value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score)
 
                                         self.report.warning.appendDescription('anomalous_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
@@ -6843,7 +6843,7 @@ class NmrDpUtility(object):
                                         if na['ring_angle'] - self.magic_angle * z_score < 0.0 or na['ring_distance'] > self.vicinity_aromatic:
 
                                             warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) +\
-                                                   '] %s %s (chain_id %s, seq_id %s, comp_id %s, atom_id %s) should be verified (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest aromatic ring (chain_id %s, seq_id %s, comp_id %s, ring_atoms %s) is located at %s angstroms, %s degrees.' %\
+                                                   '] %s %s (%s:%s:%s:%s) should be verified (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest aromatic ring (%s:%s:%s:%s) is located at %s angstroms, %s degrees.' %\
                                                    (value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score,
                                                     na['chain_id'], na['seq_id'], na['comp_id'], na['ring_atoms'], na['ring_distance'], na['ring_angle'])
 
@@ -6858,7 +6858,7 @@ class NmrDpUtility(object):
                                         if pa['distance'] > self.vicinity_paramagnetic:
 
                                             warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) +\
-                                                   '] %s %s (chain_id %s, seq_id %s, comp_id %s, atom_id %s) should be verified (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest paramagnetic atom (chain_id %s, seq_id %s, comp_id %s, atom_id %s) is located at %s angstroms.' %\
+                                                   '] %s %s (%s:%s:%s:%s) should be verified (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest paramagnetic atom (%s:%s:%s:%s) is located at %s angstroms.' %\
                                                    (value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score,
                                                     pa['chain_id'], pa['seq_id'], pa['comp_id'], pa['atom_id'], pa['distance'])
 
@@ -6926,7 +6926,7 @@ class NmrDpUtility(object):
                                 if na is None and pa is None:
 
                                     err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) +\
-                                          '] %s %s (chain_id %s, seq_id %s, comp_id %s, atom_id %s) is not within expected range (avg %s, std %s, min %s, max %s, Z_score %.2f). Neither aromatic ring nor paramagnetic atom were found in the vicinity. Please check for folded/aliased signals.' %\
+                                          '] %s %s (%s:%s:%s:%s) is not within expected range (avg %s, std %s, min %s, max %s, Z_score %.2f). Neither aromatic ring nor paramagnetic atom were found in the vicinity. Please check for folded/aliased signals.' %\
                                           (value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score)
 
                                     if self.__nonblk_anomalous_cs:
@@ -6958,7 +6958,7 @@ class NmrDpUtility(object):
                                 elif pa is None:
 
                                     warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) +\
-                                           '] %s %s (chain_id %s, seq_id %s, comp_id %s, atom_id %s) should be verified (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest aromatic ring (chain_id %s, seq_id %s, comp_id %s, ring_atoms %s) is located at %s angstroms, %s degrees.' %\
+                                           '] %s %s (%s:%s:%s:%s) should be verified (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest aromatic ring (%s:%s:%s:%s) is located at %s angstroms, %s degrees.' %\
                                            (value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score,
                                             na['chain_id'], na['seq_id'], na['comp_id'], na['ring_atoms'], na['ring_distance'], na['ring_angle'])
 
@@ -6991,7 +6991,7 @@ class NmrDpUtility(object):
                                 else:
 
                                     warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) +\
-                                           '] %s %s (chain_id %s, seq_id %s, comp_id %s, atom_id %s) should be verified (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest paramagnetic atom (chain_id %s, seq_id %s, comp_id %s, atom_id %s) is located at %s angstroms.' %\
+                                           '] %s %s (%s:%s:%s:%s) should be verified (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest paramagnetic atom (%s:%s:%s:%s) is located at %s angstroms.' %\
                                            (value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score,
                                             pa['chain_id'], pa['seq_id'], pa['comp_id'], pa['atom_id'], pa['distance'])
 
@@ -7019,7 +7019,7 @@ class NmrDpUtility(object):
                                 if na is None and pa is None:
 
                                     warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) +\
-                                           '] %s %s (chain_id %s, seq_id %s, comp_id %s, atom_id %s) must be verified (avg %s, std %s, min %s, max %s, Z_score %.2f). Neither aromatic ring nor paramagnetic atom were found in the vicinity.' %\
+                                           '] %s %s (%s:%s:%s:%s) must be verified (avg %s, std %s, min %s, max %s, Z_score %.2f). Neither aromatic ring nor paramagnetic atom were found in the vicinity.' %\
                                            (value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score)
 
                                     self.report.warning.appendDescription('anomalous_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
@@ -7033,7 +7033,7 @@ class NmrDpUtility(object):
                                     if na['ring_angle'] - self.magic_angle * z_score < 0.0 or na['ring_distance'] > self.vicinity_aromatic:
 
                                         warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) +\
-                                               '] %s %s (chain_id %s, seq_id %s, comp_id %s, atom_id %s) should be verified (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest aromatic ring (chain_id %s, seq_id %s, comp_id %s, ring_atoms %s) is located at %s angstroms, %s degrees.' %\
+                                               '] %s %s (%s:%s:%s:%s) should be verified (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest aromatic ring (%s:%s:%s:%s) is located at %s angstroms, %s degrees.' %\
                                                (value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score,
                                                 na['chain_id'], na['seq_id'], na['comp_id'], na['ring_atoms'], na['ring_distance'], na['ring_angle'])
 
@@ -7048,7 +7048,7 @@ class NmrDpUtility(object):
                                     if pa['distance'] > self.vicinity_paramagnetic:
 
                                         warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) +\
-                                               '] %s %s (chain_id %s, seq_id %s, comp_id %s, atom_id %s) should be verified (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest paramagnetic atom (chain_id %s, seq_id %s, comp_id %s, atom_id %s) is located at %s angstroms.' %\
+                                               '] %s %s (%s:%s:%s:%s) should be verified (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest paramagnetic atom (%s:%s:%s:%s) is located at %s angstroms.' %\
                                                (value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score,
                                                 pa['chain_id'], pa['seq_id'], pa['comp_id'], pa['atom_id'], pa['distance'])
 
@@ -7064,13 +7064,13 @@ class NmrDpUtility(object):
                                 pa = self.__getNearestParamagneticAtom(chain_id, seq_id, atom_id_, self.cutoff_paramagnetic)
 
                                 warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) +\
-                                       '] %s %s (chain_id %s, seq_id %s, comp_id %s, atom_id %s) should be verified (avg %s, std %s, min %s, max %s, Z_score %.2f).' %\
+                                       '] %s %s (%s:%s:%s:%s) should be verified (avg %s, std %s, min %s, max %s, Z_score %.2f).' %\
                                        (value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score)
 
                                 if not na is None:
 
                                     if na['ring_angle'] - self.magic_angle * z_score < 0.0 or na['ring_distance'] > self.vicinity_aromatic:
-                                        warn += ' The nearest aromatic ring (chain_id %s, seq_id %s, comp_id %s, ring_atoms %s) is located at %s angstroms, %s degrees.' %\
+                                        warn += ' The nearest aromatic ring (%s:%s:%s:%s) is located at %s angstroms, %s degrees.' %\
                                                 (na['chain_id'], na['seq_id'], na['comp_id'], na['ring_atoms'], na['ring_distance'], na['ring_angle'])
                                     else:
                                         warn = None
@@ -7078,7 +7078,7 @@ class NmrDpUtility(object):
                                 elif not pa is None:
 
                                     if pa['distance'] > self.vicinity_paramagnetic:
-                                        warn += ' The nearest paramagnetic atom (chain_id %s, seq_id %s, comp_id %s, atom_id %s) is located at %s angstroms.' %\
+                                        warn += ' The nearest paramagnetic atom (%s:%s:%s:%s) is located at %s angstroms.' %\
                                                 (pa['chain_id'], pa['seq_id'], pa['comp_id'], pa['atom_id'], pa['distance'])
                                     else:
                                         warn = None
@@ -7757,7 +7757,7 @@ class NmrDpUtility(object):
 
                                 idx_msg = "[Check row of %s %s] " % (index_tag, i[index_tag])
 
-                                err = "%sNon-magnetic susceptible spin appears in RDC vector (chain_id_1 %s, seq_id_1 %s, comp_id_1 %s, atom_id_1 %s, chain_id_2 %s, seq_id_2 %s, comp_id_2 %s, atom_id_2 %s)." %\
+                                err = "%sNon-magnetic susceptible spin appears in RDC vector (%s:%s:%s:%s, %s:%s:%s:%s)." %\
                                       (idx_msg, chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2)
 
                                 self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
@@ -7770,7 +7770,7 @@ class NmrDpUtility(object):
 
                                 idx_msg = "[Check row of %s %s] " % (index_tag, i[index_tag])
 
-                                err = "%sInvalid inter-chain RDC vector (chain_id_1 %s, seq_id_1 %s, comp_id_1 %s, atom_id_1 %s, chain_id_2 %s, seq_id_2 %s, comp_id_2 %s, atom_id_2 %s) exists." %\
+                                err = "%sInvalid inter-chain RDC vector (%s:%s:%s:%s, %s:%s:%s:%s) exists." %\
                                       (idx_msg, chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2)
 
                                 self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
@@ -7783,7 +7783,7 @@ class NmrDpUtility(object):
 
                                 idx_msg = "[Check row of %s %s] " % (index_tag, i[index_tag])
 
-                                err = "%sInvalid inter-residue RDC vector (chain_id_1 %s, seq_id_1 %s, comp_id_1 %s, atom_id_1 %s, chain_id_2 %s, seq_id_2 %s, comp_id_2 %s, atom_id_2 %s) exists." %\
+                                err = "%sInvalid inter-residue RDC vector (%s:%s:%s:%s, %s:%s:%s:%s) exists." %\
                                       (idx_msg, chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2)
 
                                 self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
@@ -7799,7 +7799,7 @@ class NmrDpUtility(object):
                                     pass
 
                                 else:
-                                    err = "%sInvalid inter-residue RDC vector (chain_id_1 %s, seq_id_1 %s, comp_id_1 %s, atom_id_1 %s, chain_id_2 %s, seq_id_2 %s, comp_id_2 %s, atom_id_2 %s) exists." %\
+                                    err = "%sInvalid inter-residue RDC vector (%s:%s:%s:%s, %s:%s:%s:%s) exists." %\
                                           (idx_msg, chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2)
 
                                     self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
@@ -7812,7 +7812,7 @@ class NmrDpUtility(object):
 
                                 idx_msg = "[Check row of %s %s] " % (index_tag, i[index_tag])
 
-                                err = "%sZero RDC vector (chain_id_1 %s, seq_id_1 %s, comp_id_1 %s, atom_id_1 %s, chain_id_2 %s, seq_id_2 %s, comp_id_2 %s, atom_id_2 %s) exists." %\
+                                err = "%sZero RDC vector (%s:%s:%s:%s, %s:%s:%s:%s) exists." %\
                                       (idx_msg, chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2)
 
                                 self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
@@ -7837,7 +7837,7 @@ class NmrDpUtility(object):
 
                                             idx_msg = "[Check row of %s %s] " % (index_tag, i[index_tag])
 
-                                            warn = "%sRDC vector over multiple covalent bonds (chain_id_1 %s, seq_id_1 %s, comp_id_1 %s, atom_id_1 %s, chain_id_2 %s, seq_id_2 %s, comp_id_2 %s, atom_id_2 %s) exists." %\
+                                            warn = "%sRDC vector over multiple covalent bonds (%s:%s:%s:%s, %s:%s:%s:%s) exists." %\
                                                    (idx_msg, chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2)
 
                                             self.report.warning.appendDescription('remarkable_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
@@ -9223,7 +9223,7 @@ class NmrDpUtility(object):
                                     if not cg_chem_shift is None:
                                         shifts += 'CG %s, ' % cg_chem_shift
 
-                                    warn = "%s-peptide bond (chain_id %s, seq_id %s, comp_id %s) can not be verified with the assigned chemical shift values (%scis_trans_pred %s)." %\
+                                    warn = "%s-peptide bond (%s:%s:%s) can not be verified with the assigned chemical shift values (%scis_trans_pred %s)." %\
                                            ('cis' if pro['in_cis_peptide_bond'] else 'trans', chain_id, seq_id, comp_id, shifts, pro['cis_trans_pred'])
 
                                     self.report.warning.appendDescription(item, {'file_name': file_name, 'sf_framecode': sf_framecode, 'description': warn})
@@ -9334,7 +9334,7 @@ class NmrDpUtility(object):
                                     if not ne2_chem_shift is None:
                                         shifts += 'NE2 %s, ' % ne2_chem_shift
 
-                                    warn = "Tautomeric state %s (chain_id %s, seq_id %s, comp_id %s) can not be verified with the assigned chemical shift values (%stautomeric_state_pred %s)." %\
+                                    warn = "Tautomeric state %s (%s:%s:%s) can not be verified with the assigned chemical shift values (%stautomeric_state_pred %s)." %\
                                            (his['tautomeric_state'], chain_id, seq_id, comp_id, shifts, his['tautomeric_state_pred'])
 
                                     self.report.warning.appendDescription(item, {'file_name': file_name, 'sf_framecode': sf_framecode, 'description': warn})
@@ -9484,7 +9484,7 @@ class NmrDpUtility(object):
                     if upper_linear_limit_name in i and not i[upper_linear_limit_name] is None:
                         values += '%s %s, ' % (upper_linear_limit_name, i[upper_linear_limit_name])
 
-                    warn = "Hydrogen bond constraint (chain_id_1 %s, seq_id_1 %s, comp_id_1 %s, atom_id_1 %s, chain_id_2 %s, seq_id_2 %s, comp_id_2 %s, atom_id_2 %s) is too close (%s)." %\
+                    warn = "Hydrogen bond constraint (%s:%s:%s:%s, %s:%s:%s:%s) is too close (%s)." %\
                            (chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2, values[:-2])
 
                     self.report.warning.appendDescription('unusual_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'description': warn})
@@ -9507,7 +9507,7 @@ class NmrDpUtility(object):
                     if upper_linear_limit_name in i and not i[upper_linear_limit_name] is None:
                         values += '%s %s, ' % (upper_linear_limit_name, i[upper_linear_limit_name])
 
-                    warn = "Disulfide bond constraint (chain_id_1 %s, seq_id_1 %s, comp_id_1 %s, atom_id_1 %s, chain_id_2 %s, seq_id_2 %s, comp_id_2 %s, atom_id_2 %s) is too close (%s)." %\
+                    warn = "Disulfide bond constraint (%s:%s:%s:%s, %s:%s:%s:%s) is too close (%s)." %\
                            (chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2, values[:-2])
 
                     self.report.warning.appendDescription('unusual_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'description': warn})
@@ -9530,7 +9530,7 @@ class NmrDpUtility(object):
                     if upper_linear_limit_name in i and not i[upper_linear_limit_name] is None:
                         values += '%s %s, ' % (upper_linear_limit_name, i[upper_linear_limit_name])
 
-                    warn = "Diselenide bond constraint (chain_id_1 %s, seq_id_1 %s, comp_id_1 %s, atom_id_1 %s, chain_id_2 %s, seq_id_2 %s, comp_id_2 %s, atom_id_2 %s) is too close (%s)." %\
+                    warn = "Diselenide bond constraint (%s:%s:%s:%s, %s:%s:%s:%s) is too close (%s)." %\
                            (chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2, values[:-2])
 
                     self.report.warning.appendDescription('unusual_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'description': warn})
@@ -9553,7 +9553,7 @@ class NmrDpUtility(object):
                     if upper_linear_limit_name in i and not i[upper_linear_limit_name] is None:
                         values += '%s %s, ' % (upper_linear_limit_name, i[upper_linear_limit_name])
 
-                    warn = "Other bond constraint (chain_id_1 %s, seq_id_1 %s, comp_id_1 %s, atom_id_1 %s, chain_id_2 %s, seq_id_2 %s, comp_id_2 %s, atom_id_2 %s) is too close (%s)." %\
+                    warn = "Other bond constraint (%s:%s:%s:%s, %s:%s:%s:%s) is too close (%s)." %\
                            (chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2, values[:-2])
 
                     self.report.warning.appendDescription('unusual_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'description': warn})
@@ -13080,7 +13080,7 @@ class NmrDpUtility(object):
                                 conflict.append({'ref_seq_id': s1['seq_id'][i], 'ref_comp_id': cif_comp_id,
                                                  'test_seq_id': s2['seq_id'][i], 'test_comp_id': nmr_comp_id})
 
-                                err = "Sequence alignment error between %s (chain_id %s, seq_id %s, comp_id %s) and %s (chain_id %s, seq_id %s, comp_id %s)." %\
+                                err = "Sequence alignment error between %s (%s:%s:%s) and %s (%s:%s:%s)." %\
                                       (cif_file_name, chain_id, s1['seq_id'][i], cif_comp_id, nmr_file_name, chain_id2, s2['seq_id'][i], nmr_comp_id)
 
                                 self.report.error.appendDescription('sequence_mismatch', {'file_name': cif_file_name, 'description': err})
@@ -13181,7 +13181,7 @@ class NmrDpUtility(object):
                                 conflict.append({'ref_seq_id': s1['seq_id'][i], 'ref_comp_id': nmr_comp_id,
                                                  'test_seq_id': s2['seq_id'][i], 'test_comp_id': cif_comp_id})
 
-                                err = "Sequence alignment error between %s (chain_id %s, seq_id %s, comp_id %s) and %s (chain_id %s, seq_id %s, comp_id %s)." %\
+                                err = "Sequence alignment error between %s (%s:%s:%s) and %s (%s:%s:%s)." %\
                                       (nmr_file_name, chain_id, s1['seq_id'][i], nmr_comp_id, cif_file_name, chain_id2, s2['seq_id'][i], cif_comp_id)
 
                                 self.report.error.appendDescription('sequence_mismatch', {'file_name': nmr_file_name, 'description': err})
@@ -14858,7 +14858,7 @@ class NmrDpUtility(object):
 
                 if disulf['redox_state_pred_1'] != 'oxidized' and disulf['redox_state_pred_1'] != 'unknown':
 
-                    warn = "Disulfide bond (chain_id_1 %s, seq_id_1 %s, comp_id_1 %s, chain_id_2 %s, seq_id_2 %s, comp_id_2 %s) can not be verified with the assigned chemical shift values (CA_1 %s, CB_1 %s, redox_state_pred_1 %s)." %\
+                    warn = "Disulfide bond (%s:%s:%s, %s:%s:%s) can not be verified with the assigned chemical shift values (CA_1 %s, CB_1 %s, redox_state_pred_1 %s)." %\
                            (nmr_chain_id_1, nmr_seq_id_1, nmr_comp_id_1, nmr_chain_id_2, nmr_seq_id_2, nmr_comp_id_2, ca_chem_shift_1, cb_chem_shift_1, disulf['redox_state_pred_1'])
 
                     item = 'anomalous_data' if disulf['redox_state_pred_1'] == 'reduced' else 'unusual_data'
@@ -14873,7 +14873,7 @@ class NmrDpUtility(object):
 
                 if disulf['redox_state_pred_2'] != 'oxidized' and disulf['redox_state_pred_2'] != 'unknown':
 
-                    warn = "Disulfide bond (chain_id_1 %s, seq_id_1 %s, comp_id_1 %s, chain_id_2 %s, seq_id_2 %s, comp_id_2 %s) can not be verified with the assigned chemical shift values (CA_2 %s, CB_2 %s, redox_state_pred_2 %s)." %\
+                    warn = "Disulfide bond (%s:%s:%s, %s:%s:%s) can not be verified with the assigned chemical shift values (CA_2 %s, CB_2 %s, redox_state_pred_2 %s)." %\
                            (nmr_chain_id_1, nmr_seq_id_1, nmr_comp_id_1, nmr_chain_id_2, nmr_seq_id_2, nmr_comp_id_2, ca_chem_shift_2, cb_chem_shift_2, disulf['redox_state_pred_2'])
 
                     item = 'anomalous_data' if disulf['redox_state_pred_2'] == 'reduced' else 'unusual_data'
@@ -15239,7 +15239,7 @@ class NmrDpUtility(object):
 
                 if other['redox_state_pred_1'] != 'oxidized' and other['redox_state_pred_1'] != 'unknown':
 
-                    warn = "Other bond (chain_id_1 %s, seq_id_1 %s, comp_id_1 %s, chain_id_2 %s, seq_id_2 %s, comp_id_2 %s) can not be verified with the assigned chemical shift values (CA_1 %s, CB_1 %s, redox_state_pred_1 %s)." %\
+                    warn = "Other bond (%s:%s:%s, %s:%s:%s) can not be verified with the assigned chemical shift values (CA_1 %s, CB_1 %s, redox_state_pred_1 %s)." %\
                            (nmr_chain_id_1, nmr_seq_id_1, nmr_comp_id_1, nmr_chain_id_2, nmr_seq_id_2, nmr_comp_id_2, ca_chem_shift_1, cb_chem_shift_1, other['redox_state_pred_1'])
 
                     item = 'anomalous_data' if other['redox_state_pred_1'] == 'reduced' else 'unusual_data'
@@ -15254,7 +15254,7 @@ class NmrDpUtility(object):
 
                 if other['redox_state_pred_2'] != 'oxidized' and other['redox_state_pred_2'] != 'unknown':
 
-                    warn = "Other bond (chain_id_1 %s, seq_id_1 %s, comp_id_1 %s, chain_id_2 %s, seq_id_2 %s, comp_id_2 %s) can not be verified with the assigned chemical shift values (CA_2 %s, CB_2 %s, redox_state_pred_2 %s)." %\
+                    warn = "Other bond (%s:%s:%s, %s:%s:%s) can not be verified with the assigned chemical shift values (CA_2 %s, CB_2 %s, redox_state_pred_2 %s)." %\
                            (nmr_chain_id_1, nmr_seq_id_1, nmr_comp_id_1, nmr_chain_id_2, nmr_seq_id_2, nmr_comp_id_2, ca_chem_shift_2, cb_chem_shift_2, other['redox_state_pred_2'])
 
                     item = 'anomalous_data' if other['redox_state_pred_2'] == 'reduced' else 'unusual_data'

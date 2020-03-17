@@ -2616,11 +2616,17 @@ class NEFTranslator(object):
                                 if 'enum-alt' in t and val in t['enum-alt']:
                                     tagNames = [_t[0] for _t in star_data.tags]
                                     itCol = tagNames.index(name)
-                                    itName = '_' + category + '.' + t
-                                    if val == '?' and self.is_mandatory_tag(itName):
-                                            user_warn_msg += "[Enumeration error] The mandatory type %s is missing and the type must be one of %s. '%s' will be given unless you would like to fix the tag value and re-upload the file.\n" % (itName, enum, t['enum-alt'][val])
-                                    val = t['enum-alt'][val]
-                                    star_data.tags[itCol][1] = val
+                                    itName = '_' + category + '.' + t['name']
+                                    if val == '?' and enforce_enum:
+                                        if self.is_mandatory_tag(itName, file_type):
+                                            user_warn_msg += "[Enumeration error] The mandatory type %s '%s' is missing and the type must be one of %s. '%s' will be given unless you would like to fix the type and re-upload the file.\n" % (itName, val, enum, t['enum-alt'][val])
+                                            val = t['enum-alt'][val]
+                                            star_data.tags[itCol][1] = val
+                                        else:
+                                            user_warn_msg += "[Enumeration error] %s '%s' should be one of %s. The type may be filled with either 'unknown' or estimated value unless you would like to fix the type and re-upload the file.\n" % (name, val, enum)
+                                    else:
+                                        val = t['enum-alt'][val]
+                                        star_data.tags[itCol][1] = val
                                 elif 'enforce-enum' in t and t['enforce-enum']:
                                     raise ValueError("%s '%s' must be one of %s." % (name, val, enum))
                                 elif enforce_enum:

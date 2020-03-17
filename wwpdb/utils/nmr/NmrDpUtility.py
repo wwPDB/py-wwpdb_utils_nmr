@@ -26,6 +26,7 @@
 # 06-Mar-2020  M. Yokochi - fix invalid ambiguity_code while parsing
 # 13-Mar-2020  M. Yokochi - revise error/warning messages
 # 17-Mar-2020  M. Yokochi - add 'undefined' value for potential_type (DAOTHER-5508)
+# 17-Mar-2020  M. Yokochi - revise warning message about enumeration mismatch for potential_type and restraint_origin (DAOTHER-5508)
 ##
 """ Wrapper class for data processing for NMR data.
     @author: Masashi Yokochi
@@ -1464,7 +1465,8 @@ class NmrDpUtility(object):
                                                  'chem shift perturbation': 'shift_perturbation',
                                                  'CS perturbation': 'shift_perturbation',
                                                  'csp': 'shift_perturbation',
-                                                 'CSP': 'shift_perturbation'
+                                                 'CSP': 'shift_perturbation',
+                                                 '?': 'unknown'
                                                  },
                                          'nmr-star': {'noe': 'NOE',
                                                       'noe_build_up': 'NOE build-up',
@@ -1509,7 +1511,8 @@ class NmrDpUtility(object):
                                                       'chem shift perturbation': 'chemical shift perturbation',
                                                       'CS perturbation': 'chemical shift perturbation',
                                                       'csp': 'chemical shift perturbation',
-                                                      'CSP': 'chemical shift perturbation'
+                                                      'CSP': 'chemical shift perturbation',
+                                                      '?': 'unknown'
                                                      }
                                          }
 
@@ -1583,7 +1586,8 @@ class NmrDpUtility(object):
                                                   'TALOS+': 'chemical_shift',
                                                   'talos+': 'chemical_shift',
                                                   'TALOS-N': 'chemical_shift',
-                                                  'talos-n': 'chemical_shift'
+                                                  'talos-n': 'chemical_shift',
+                                                  '?': 'unknown'
                                                   },
                                           'nmr-star': {'jcoupling': 'J-couplings',
                                                        'Jcoupling': 'J-couplings',
@@ -1656,15 +1660,18 @@ class NmrDpUtility(object):
                                                        'TALOS+': 'backbone chemical shifts',
                                                        'talos+': 'backbone chemical shifts',
                                                        'TALOS-N': 'backbone chemical shifts',
-                                                       'talos-n': 'backbone chemical shifts'
+                                                       'talos-n': 'backbone chemical shifts',
+                                                       '?': 'unknown'
                                                        }
                                           }
 
         self.rdc_alt_constraint_type = {'nef': {'RDC': 'measured',
-                                                'rdc': 'measured'
+                                                'rdc': 'measured',
+                                                '?': 'unknown'
                                                 },
                                         'nmr-star': {'rdc': 'RDC',
-                                                     'measured': 'RDC'
+                                                     'measured': 'RDC',
+                                                     '?': 'unknown'
                                                      }
                                         }
 
@@ -2226,8 +2233,10 @@ class NmrDpUtility(object):
         self.chi4_atom_id_4_pat = re.compile(r'^[CN]Z$')
 
         # patterns for enum failure message
-        self.chk_desc_pat = re.compile(r'^(.*) \'(.*)\' should be one of \((.*)\)\.$')
-        self.chk_desc_pat_one = re.compile(r'^(.*) \'(.*)\' should be one of (.*)\.$')
+        self.chk_desc_pat = re.compile(r'^(.*) \'(.*)\' should be one of \((.*)\)\.*$')
+        self.chk_desc_pat_one = re.compile(r'^(.*) \'(.*)\' should be one of (.*)\.*$')
+        self.chk_desc_pat_mand = re.compile(r'^The mandatory type _.*\.(.*) \'(.*)\' is missing and the type must be one of \((.*)\)\.*$')
+        self.chk_desc_pat_mand_one = re.compile(r'^The mandatory type _.*\.(.*) \'(.*)\' is missing and the type must be one of (.*)\.*$')
 
         # main contents of loops
         self.__lp_data = {'poly_seq': [],
@@ -6209,10 +6218,16 @@ class NmrDpUtility(object):
                                 else: # enum
                                     warn = warn[20:]
 
-                                    try:
-                                        g = self.chk_desc_pat.search(warn).groups()
-                                    except AttributeError:
-                                        g = self.chk_desc_pat_one.search(warn).groups()
+                                    if warn.startswith('The mandatory type'):
+                                        try:
+                                            g = self.chk_desc_pat_mand.search(warn).groups()
+                                        except AttributeError:
+                                            g = self.chk_desc_pat_mand_one.search(warn).groups()
+                                    else:
+                                        try:
+                                            g = self.chk_desc_pat.search(warn).groups()
+                                        except AttributeError:
+                                            g = self.chk_desc_pat_one.search(warn).groups()
 
                                     if not self._sf_tag_items[file_type][content_subtype] is None:
 
@@ -16833,13 +16848,19 @@ class NmrDpUtility(object):
 
         for w in warnings:
 
-            if not "should be one of" in w['description']:
+            if not "be one of" in w['description']:
                 continue
 
-            try:
-                g = self.chk_desc_pat.search(w['description']).groups()
-            except AttributeError:
-                g = self.chk_desc_pat_one.search(w['description']).groups()
+            if w['description'].startswith('The mandatory type'):
+                try:
+                    g = self.chk_desc_pat_mand.search(w['description']).groups()
+                except AttributeError:
+                    g = self.chk_desc_pat_mand_one.search(w['description']).groups()
+            else:
+                try:
+                    g = self.chk_desc_pat.search(w['description']).groups()
+                except AttributeError:
+                    g = self.chk_desc_pat_one.search(w['description']).groups()
 
             itName = g[0]
             itValue = None if g[1] in self.empty_value else g[1]
@@ -16942,14 +16963,21 @@ class NmrDpUtility(object):
                                                         elif self.__testDistRestraintAsSymmetry(lp_data):
                                                             sf_data.tags[itCol][1] = 'symmetry'
 
+                                                        else:
+                                                            sf_data.tags[itCol][1] = 'unknown' if file_type == 'nef' else 'general distance'
+
                                                     elif content_subtype == 'dihed_restraint':
 
                                                         # 'J-couplings', 'backbone chemical shifts'
 
                                                         if self.__testDihedRestraintAsBackBoneChemShifts(lp_data):
                                                             sf_data.tags[itCol][1] = 'chemical_shift' if file_type == 'nef' else 'backbone chemical shifts'
+
                                                         #else:
                                                         #    sf_data.tags[itCol][1] = 'J-couplings'
+
+                                                        else:
+                                                            sf_data.tags[itCol][1] = 'unknown'
 
                                                     elif content_subtype == 'rdc_restraint':
                                                         sf_data.tags[itCol][1] = 'measured' if file_type =='nef' else 'RDC'
@@ -16997,6 +17025,8 @@ class NmrDpUtility(object):
                                                             sf_data.tags[itCol][1] = 'log-harmonic'
                                                         else:
                                                             sf_data.tags[itCol][1] = 'parabolic'
+                                                    else:
+                                                        sf_data.tags[itCol][1] = 'undefined'
 
                                         except StopIteration:
 

@@ -4644,7 +4644,7 @@ class NmrDpUtility(object):
 
                                 if len(_auth_atom_id) == 0:
 
-                                    warn = "Unmatched author atom ID %s (auth_comp_id %s)." % (auth_atom_id, comp_id)
+                                    warn = "Unmatched Auth_atom_ID %s (Auth_comp_ID %s)." % (auth_atom_id, comp_id)
 
                                     self.report.warning.appendDescription('atom_nomenclature_mismatch', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
                                     self.report.setWarning()
@@ -4661,7 +4661,7 @@ class NmrDpUtility(object):
 
                                 if not self.__nefT.validate_comp_atom(comp_id, auth_atom_id):
 
-                                    warn = "Unmatched author atom ID %s (auth_comp_id %s)." % (auth_atom_id, comp_id)
+                                    warn = "Unmatched Auth_atom_ID %s (Auth_comp_ID %s)." % (auth_atom_id, comp_id)
 
                                     self.report.warning.appendDescription('atom_nomenclature_mismatch', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
                                     self.report.setWarning()
@@ -4684,7 +4684,7 @@ class NmrDpUtility(object):
 
                                 if (set(auth_atom_ids) | set(atom_ids)) != set(atom_ids):
 
-                                    warn = "Unmatched author atom ID %s (auth_comp_id %s, non-standard residue)." % ((set(auth_atom_ids) | set(atom_ids)) - set(atom_ids), comp_id)
+                                    warn = "Unmatched Auth_atom_ID %s (Auth_comp_ID %s, non-standard residue)." % ((set(auth_atom_ids) | set(atom_ids)) - set(atom_ids), comp_id)
 
                                     self.report.warning.appendDescription('atom_nomenclature_mismatch', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
                                     self.report.setWarning()
@@ -4696,7 +4696,7 @@ class NmrDpUtility(object):
 
                             if not has_comp_id:
 
-                                    warn = "Unmatched author atom ID %s (auth_comp_id %s, non-standard residue)." % (auth_atom_ids, comp_id)
+                                    warn = "Unmatched Auth_atom_ID %s (Auth_comp_ID %s, non-standard residue)." % (auth_atom_ids, comp_id)
 
                                     self.report.warning.appendDescription('atom_nomenclature_mismatch', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
                                     self.report.setWarning()

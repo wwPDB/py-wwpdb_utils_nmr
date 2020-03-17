@@ -2029,7 +2029,7 @@ save_nef_distance_restraint_list_distance_constraint_list
    _nef_distance_restraint_list.sf_category       nef_distance_restraint_list
    _nef_distance_restraint_list.sf_framecode      nef_distance_restraint_list_distance_constraint_list
    _nef_distance_restraint_list.potential_type    square-well-parabolic
-   _nef_distance_restraint_list.restraint_origin  .
+   _nef_distance_restraint_list.restraint_origin  unknown
 
    loop_
       _nef_distance_restraint.index
@@ -7610,7 +7610,7 @@ save_nef_dihedral_restraint_list_dihedral_constraint_list
    _nef_dihedral_restraint_list.sf_category       nef_dihedral_restraint_list
    _nef_dihedral_restraint_list.sf_framecode      nef_dihedral_restraint_list_dihedral_constraint_list
    _nef_dihedral_restraint_list.potential_type    square-well-parabolic
-   _nef_dihedral_restraint_list.restraint_origin  chemical_shift
+   _nef_dihedral_restraint_list.restraint_origin  jcoupling
 
    loop_
       _nef_dihedral_restraint.index

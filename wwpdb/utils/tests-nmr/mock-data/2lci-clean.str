@@ -11385,7 +11385,7 @@ save_nef_distance_restraint_list_distance_constraint_list
    _Gen_dist_constraint_list.Sf_category      general_distance_constraints
    _Gen_dist_constraint_list.Sf_framecode     nef_distance_restraint_list_distance_constraint_list
    _Gen_dist_constraint_list.ID               1
-   _Gen_dist_constraint_list.Constraint_type  .
+   _Gen_dist_constraint_list.Constraint_type  'general distance'
    _Gen_dist_constraint_list.Potential_type   square-well-parabolic
    _Gen_dist_constraint_list.Entry_ID         NEED_ACC_NO
 
@@ -20200,7 +20200,7 @@ save_nef_dihedral_restraint_list_dihedral_constraint_list
    _Torsion_angle_constraint_list.Sf_framecode     nef_dihedral_restraint_list_dihedral_constraint_list
    _Torsion_angle_constraint_list.ID               1
    _Torsion_angle_constraint_list.Potential_type   square-well-parabolic
-   _Torsion_angle_constraint_list.Constraint_type  'backbone chemical shifts'
+   _Torsion_angle_constraint_list.Constraint_type  J-couplings
    _Torsion_angle_constraint_list.Entry_ID         NEED_ACC_NO
 
    loop_

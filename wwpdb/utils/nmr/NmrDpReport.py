@@ -15,6 +15,7 @@
 # 28-Feb-2020  M. Yokochi - add support for 'nmr-chemical-shifts' content type (DAOTHER-4515)
 # 02-Mar-2020  M. Yokochi - add support for 'nmr-restraints' content type (DAOTHER-4515)
 # 13-Mar-2020  M. Yokochi - change warning type from suspicious_data to anomalous_data
+# 17-Mar-2020  M. Yokochi - remove irrelevant warning types in corrected_warning
 ##
 """ Wrapper class for data processing report of NMR data.
     @author: Masashi Yokochi
@@ -981,6 +982,10 @@ class NmrDpReport:
 
         if not self.__immutable:
 
+            ignorable_warning_types = ['atom_nomenclature_mismatch', 'ccd_mismatch', 'enum_mismatch_ignorable', 'sequence_mismatch', 'skipped_sf_category', 'skipped_lp_category', 'missing_content',
+                                       'anomalous_data', 'unusual_data', 'remarkable_data', 'insufficient_data', 'conflicted_data', 'inconsistent_data',
+                                       'total']
+
             self.corrected_warning = NmrDpReportWarning()
 
             file_name = self.input_sources[self.getInputSourceIdOfNmrData()].get()['file_name']
@@ -988,7 +993,7 @@ class NmrDpReport:
 
             for item in prev_report.warning.get().keys():
 
-                if item == 'total':
+                if item in ignorable_warning_types:
                     continue
 
                 value_list = self.warning.getValueList(item, file_name)

@@ -27,6 +27,7 @@
 # 13-Mar-2020  M. Yokochi - revise error/warning messages
 # 17-Mar-2020  M. Yokochi - add 'undefined' value for potential_type (DAOTHER-5508)
 # 17-Mar-2020  M. Yokochi - revise warning message about enumeration mismatch for potential_type and restraint_origin (DAOTHER-5508)
+# 17-Mar-2020  M. Yokochi - check total number of models (DAOTHER-436)
 ##
 """ Wrapper class for data processing for NMR data.
     @author: Masashi Yokochi
@@ -6730,7 +6731,7 @@ class NmrDpUtility(object):
                                         if self.__verbose:
                                             self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ Warning  - %s\n" % warn)
 
-                                elif not cs_stat['primary']:
+                                elif not cs_stat['primary'] and cs_stat['norm_freq'] < 0.03:
 
                                     warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] %s %s is remarkable assignment. Appearance rate of %s in %s is %s %% according to BMRB.' %\
                                            (value_name, value, atom_id, comp_id, cs_stat['norm_freq'] * 100.0)
@@ -7113,7 +7114,7 @@ class NmrDpUtility(object):
                                     if self.__verbose:
                                         self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ Warning  - %s\n" % warn)
 
-                            elif not cs_stat['primary']:
+                            elif not cs_stat['primary'] and cs_stat['norm_freq'] < 0.03:
 
                                 warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] %s %s is remarkable assignment. Appearance rate of %s in %s is %s %% according to BMRB.' %\
                                        (value_name, value, atom_id, comp_id, cs_stat['norm_freq'] * 100.0)
@@ -12330,7 +12331,36 @@ class NmrDpUtility(object):
                 else:
                     self.__entry_id = entry[0]['id']
 
-            return True
+            total_model = 0
+
+            ensemble = self.__cR.getDictList('pdbx_nmr_ensemble')
+
+            if len(ensemble) > 0 and 'conformers_submitted_total_number' in ensemble[0]:
+
+                try:
+                    total_model = int(ensemble[0]['conformers_submitted_total_number'])
+                except ValueError:
+                    pass
+
+            if total_model < 2:
+                err = "Coordinate file %s has %s model. Deposition of minimized average structure must be accompanied with ensemble and must be homogeneous with the ensemble." % (file_name, 'no' if total_model == 0 else ('only one' if total_model == 1 else total_model))
+
+                self.report.error.appendDescription('missing_mandatory_content', {'file_name': file_name, 'description': err})
+                self.report.setError()
+
+                if self.__verbose:
+                    self.__lfh.write("+NmrDpUtility.__parseCoordinate() ++ Error  - %s\n" % err)
+
+                return False
+
+            elif total_model < 8:
+                warn = "Coordinate file %s has %s models. Minimized average structure and a sufficient number of models associated with its ensemble should be deposited." % (file_name, total_model)
+
+                self.report.warning.appendDescription('missing_content', {'file_name': file_name, 'description': warn})
+                self.report.setWarning()
+
+                if self.__verbose:
+                    self.__lfh.write("+NmrDpUtility.__parseCoordinate() ++ Warning  - %s\n" % warn)
 
         except:
             return False
@@ -16856,11 +16886,13 @@ class NmrDpUtility(object):
                     g = self.chk_desc_pat_mand.search(w['description']).groups()
                 except AttributeError:
                     g = self.chk_desc_pat_mand_one.search(w['description']).groups()
+                mandatory_tag = True
             else:
                 try:
                     g = self.chk_desc_pat.search(w['description']).groups()
                 except AttributeError:
                     g = self.chk_desc_pat_one.search(w['description']).groups()
+                mandatory_tag = False
 
             itName = g[0]
             itValue = None if g[1] in self.empty_value else g[1]
@@ -16952,9 +16984,12 @@ class NmrDpUtility(object):
 
                                                     if content_subtype == 'dist_restraint':
 
+                                                        if mandatory_tag:
+                                                            sf_data.tags[itCol][1] = 'unknown' if file_type == 'nef' else 'general distance'
+
                                                         # 'NOE', 'NOE build-up', 'NOE not seen', 'ROE', 'ROE build-up', 'hydrogen bond', 'disulfide bond', 'paramagnetic relaxation', 'symmetry', 'general distance'
 
-                                                        if self.__testDistRestraintAsHydrogenBond(lp_data):
+                                                        elif self.__testDistRestraintAsHydrogenBond(lp_data):
                                                             sf_data.tags[itCol][1] = 'hbond' if file_type == 'nef' else 'hydrogen bond'
 
                                                         elif self.__testDistRestraintAsDisulfideBond(lp_data):
@@ -16968,9 +17003,12 @@ class NmrDpUtility(object):
 
                                                     elif content_subtype == 'dihed_restraint':
 
+                                                        if mandatory_tag:
+                                                            sf_data.tags[itCol][1] = 'unknown'
+
                                                         # 'J-couplings', 'backbone chemical shifts'
 
-                                                        if self.__testDihedRestraintAsBackBoneChemShifts(lp_data):
+                                                        elif self.__testDihedRestraintAsBackBoneChemShifts(lp_data):
                                                             sf_data.tags[itCol][1] = 'chemical_shift' if file_type == 'nef' else 'backbone chemical shifts'
 
                                                         #else:
@@ -16980,7 +17018,11 @@ class NmrDpUtility(object):
                                                             sf_data.tags[itCol][1] = 'unknown'
 
                                                     elif content_subtype == 'rdc_restraint':
-                                                        sf_data.tags[itCol][1] = 'measured' if file_type =='nef' else 'RDC'
+
+                                                        if mandatory_tag:
+                                                            sf_data.tags[itCol][1] = 'unknown'
+                                                        else:
+                                                            sf_data.tags[itCol][1] = 'measured' if file_type =='nef' else 'RDC'
 
                                             if (file_type == 'nef' and itName == 'potential_type') or (file_type == 'nmr-star' and itName == 'Potential_type'):
 
@@ -17008,7 +17050,9 @@ class NmrDpUtility(object):
                                                     # 'upper-bound-parabolic', 'lower-bound-parabolic',
                                                     # 'upper-bound-parabolic-linear', 'lower-bound-parabolic-linear'
 
-                                                    if self.__testRestraintPotentialSWP(content_subtype, lp_data):
+                                                    if mandatory_tag:
+                                                        sf_data.tags[itCol][1] = 'undefined'
+                                                    elif self.__testRestraintPotentialSWP(content_subtype, lp_data):
                                                         sf_data.tags[itCol][1] = 'square-well-parabolic'
                                                     elif self.__testRestraintPotentialSWPL(content_subtype, lp_data):
                                                         sf_data.tags[itCol][1] = 'square-well-parabolic-linear'

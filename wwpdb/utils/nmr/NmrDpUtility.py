@@ -2896,7 +2896,7 @@ class NmrDpUtility(object):
                 try:
                     self.__star_data[file_list_id].get_saveframe_by_name(sf_framecode)
                 except KeyError:
-                    warn = "Saveframe %s mismatches with sf_framecode %s." % (sf_data.name, sf_framecode)
+                    warn = "Saveframe name %s mismatches with sf_framecode value %s." % (sf_data.name, sf_framecode)
 
                     self.report.warning.appendDescription('missing_saveframe', {'file_name': file_name, 'description': warn})
                     self.report.setWarning()
@@ -3137,7 +3137,7 @@ class NmrDpUtility(object):
                 try:
                     self.__star_data[file_list_id].get_saveframe_by_name(sf_framecode)
                 except KeyError:
-                    warn = "Saveframe %s mismatches with sf_framecode %s." % (sf_data.name, sf_framecode)
+                    warn = "Saveframe name %s mismatches with Sf_framecode value %s." % (sf_data.name, sf_framecode)
 
                     self.report.warning.appendDescription('missing_saveframe', {'file_name': file_name, 'description': warn})
                     self.report.setWarning()

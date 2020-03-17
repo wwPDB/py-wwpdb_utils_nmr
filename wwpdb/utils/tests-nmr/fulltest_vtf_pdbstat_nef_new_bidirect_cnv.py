@@ -1,6 +1,6 @@
 ##
-# File: fulltest_vtf_pdbstat_nef_new_NmrDpUtility.py
-# Date:  05-Feb-2020  M. Yokochi
+# File: fulltest_vtf_pdbstat_nef_new_bidirect_cnv.py
+# Date:  17-Mar-2020  M. Yokochi
 #
 # Updates:
 ##
@@ -88,11 +88,9 @@ class TestNmrDpUtility(unittest.TestCase):
         if not report['error'] is None:
             self.assertEqual(report['error']['internal_error'], None)
 
-    def __test_nmr_str2nef_release_check(self, entry_id):
+    def __test_nmr_str2nef_release(self, entry_id):
         if not os.access(self.data_dir_path + entry_id + '-str2nef-consistency-log.json', os.F_OK):
             self.__test_nmr_str_consistency(entry_id)
-
-        print(entry_id)
 
         self.utility.setSource(self.data_dir_path + entry_id + '-nef2str.str')
         self.utility.addInput(name='coordinate_file_path', value=self.data_dir_path + entry_id + '/' + entry_id + '.cif', type='file')
@@ -116,8 +114,52 @@ class TestNmrDpUtility(unittest.TestCase):
         if not report['error'] is None:
             self.assertEqual(report['error']['internal_error'], None)
 
-    def test_nmr_str2nef_release_check(self):
-        self.__test_nmr_str2nef_release_check('2png')
+        print('%s: %s' % (entry_id, report['information']['status']))
+
+    def test_nmr_str2nef_release_1pqx(self):
+        self.__test_nmr_str2nef_release('1pqx')
+
+    def test_nmr_str2nef_release_2jr2(self):
+        self.__test_nmr_str2nef_release('2jr2')
+
+    def test_nmr_str2nef_release_2juw(self):
+        self.__test_nmr_str2nef_release('2juw')
+
+    def test_nmr_str2nef_release_2k2e(self):
+        self.__test_nmr_str2nef_release('2k2e')
+
+    def test_nmr_str2nef_release_2kcu(self):
+        self.__test_nmr_str2nef_release('2kcu')
+
+    def test_nmr_str2nef_release_2kko(self):
+        self.__test_nmr_str2nef_release('2kko')
+
+    def test_nmr_str2nef_release_2ko1(self):
+        self.__test_nmr_str2nef_release('2ko1')
+
+    def test_nmr_str2nef_release_2ko7(self):
+        self.__test_nmr_str2nef_release('2ko7')
+
+    def test_nmr_str2nef_release_2kpu(self):
+        self.__test_nmr_str2nef_release('2kpu')
+
+    def test_nmr_str2nef_release_2kw5(self):
+        self.__test_nmr_str2nef_release('2kw5')
+
+    def test_nmr_str2nef_release_2kzn(self):
+        self.__test_nmr_str2nef_release('2kzn')
+
+    def test_nmr_str2nef_release_2loy(self):
+        self.__test_nmr_str2nef_release('2loy')
+
+    def test_nmr_str2nef_release_2luz(self):
+        self.__test_nmr_str2nef_release('2luz')
+
+    def test_nmr_str2nef_release_2png(self):
+        self.__test_nmr_str2nef_release('2png')
+
+    def test_nmr_str2nef_release_6nbn(self):
+        self.__test_nmr_str2nef_release('6nbn')
 
 if __name__ == '__main__':
     unittest.main()

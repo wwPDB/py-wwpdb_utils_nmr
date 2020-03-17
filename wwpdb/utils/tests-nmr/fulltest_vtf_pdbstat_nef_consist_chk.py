@@ -1,5 +1,5 @@
 ##
-# File: fulltest_vtf_pdbstat_nef_NmrDpUtility.py
+# File: fulltest_vtf_pdbstat_nef_consist_chk.py
 # Date:  10-Dec-2019  M. Yokochi
 #
 # Updates:

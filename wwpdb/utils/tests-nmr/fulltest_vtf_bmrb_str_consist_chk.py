@@ -1,5 +1,5 @@
 ##
-# File: fulltest_vtf_pdbstat_str_NmrDpUtility.py
+# File: fulltest_vtf_bmrb_str_consist_chk.py
 # Date:  10-Dec-2019  M. Yokochi
 #
 # Updates:
@@ -17,39 +17,39 @@ class TestNmrDpUtility(unittest.TestCase):
 
     def setUp(self):
         here = os.path.abspath(os.path.dirname(__file__))
-        self.data_dir_path = os.path.join(here, 'NMR-VTF/PDBStat_examples/')
-        self.data_file_path = {'2k2e': {'str': 'BeR31/BeR31_2k2e.str',
-                                        'cif': 'BeR31/BeR31_2k2e.cif'},
-                               '2jr2': {'str': 'CsR4/CsR4_2jr2.str',
-                                        'cif': 'CsR4/CsR4_2jr2.cif'},
-                               '2kcu': {'str': 'CtR107/CtR107_2kcu.str',
-                                        'cif': 'CtR107/CtR107_2kcu.cif'},
-                               '2ko1': {'str': 'CtR148A/CtR148A_2ko1.str',
-                                        'cif': 'CtR148A/CtR148A_2ko1.cif'},
-                               '2kpu': {'str': 'DhR29B/DhR29B_2kpu.str',
-                                        'cif': 'DhR29B/DhR29B_2kpu.cif'},
-                               '2kyi': {'str': 'DhR8C/DhR8C_2kyi.str',
-                                        'cif': 'DhR8C/DhR8C_2kyi.cif'},
-                               '2ko7': {'str': 'HR41/HR41_2ko7.str',
-                                        'cif': 'HR41/HR41_2ko7.cif'},
-                               'l22_t12': {'str': 'L22_T12/L22_rt.str',
-                                           'cif': 'L22_T12/L22_rt.cif'},
-                               '2kko': {'str': 'MbR242E/MbR242E_2kko.str',
-                                        'cif': 'MbR242E/MbR242E_2kko.cif'},
-                               '2luz': {'str': 'MiR12/MiR12_2luz.str',
-                                        'cif': 'MiR12/MiR12_2luz.cif'},
-                               '2kw5': {'str': 'SgR145/SgR145_2kw5.str',
-                                        'cif': 'SgR145/SgR145_2kw5.cif'},
-                               '2juw': {'str': 'SoR77/SoR77_2juw.str',
-                                        'cif': 'SoR77/SoR77_2juw.cif'},
-                               '2la3': {'str': 'SPR104/SPR104_2l3a.str',
-                                        'cif': 'SPR104/SPR104_2l3a.cif'},
-                               '2kzn': {'str': 'SR10/SR10_2kzn.str',
-                                        'cif': 'SR10/SR10_2kzn.cif'},
-                               '2loy': {'str': 'WR73/WR73_2loy.str',
-                                        'cif': 'WR73/WR73_2loy.cif'},
-                               '1pqx': {'str': 'ZR18/ZR18_1pqx.str',
-                                        'cif': 'ZR18/ZR18_1pqx.cif'}}
+        self.data_dir_path = os.path.join(here, 'NMR-VTF/BMRB/')
+        self.data_file_path = {'2k2e': {'str': 'BeR31/BeR31.str',
+                                        'cif': 'BeR31/BeR31.cif'},
+                               '2jr2': {'str': 'CsR4/CsR4.str',
+                                        'cif': 'CsR4/CsR4.cif'},
+                               '2kcu': {'str': 'CtR107/CtR107.str',
+                                        'cif': 'CtR107/CtR107.cif'},
+                               '2ko1': {'str': 'CtR148A/CtR148A.str',
+                                        'cif': 'CtR148A/CtR148A.cif'},
+                               '2kpu': {'str': 'DhR29B/DhR29B.str',
+                                        'cif': 'DhR29B/DhR29B.cif'},
+                               '2kyi': {'str': 'DhR8C/DhR8C.str',
+                                        'cif': 'DhR8C/DhR8C.cif'},
+                               '2ko7': {'str': 'HR41/HR41.str',
+                                        'cif': 'HR41/HR41.cif'},
+                               'l22_t12': {'str': 'L22_T12/L22_T12.str',
+                                           'cif': 'L22_T12/L22_T12.cif'},
+                               '2kko': {'str': 'MbR242E/MbR242E.str',
+                                        'cif': 'MbR242E/MbR242E.cif'},
+                               '2luz': {'str': 'MiR12/MiR12.str',
+                                        'cif': 'MiR12/MiR12.cif'},
+                               '2kw5': {'str': 'SgR145/SgR145.str',
+                                        'cif': 'SgR145/SgR145.cif'},
+                               '2juw': {'str': 'SoR77/SoR77.str',
+                                        'cif': 'SoR77/SoR77.cif'},
+                               '2la3': {'str': 'SPR104/SPR104.str',
+                                        'cif': 'SPR104/SPR104.cif'},
+                               '2kzn': {'str': 'SR10/SR10.str',
+                                        'cif': 'SR10/SR10.cif'},
+                               '2loy': {'str': 'WR73/WR73.str',
+                                        'cif': 'WR73/WR73.cif'},
+                               '1pqx': {'str': 'ZR18/ZR18.str',
+                                        'cif': 'ZR18/ZR18.cif'}}
         self.utility = NmrDpUtility()
         self.report = NmrDpReport()
         pass
@@ -82,11 +82,11 @@ class TestNmrDpUtility(unittest.TestCase):
 
         self.utility.setSource(self.data_dir_path + self.data_file_path[entry_id]['str'])
         self.utility.addInput(name='coordinate_file_path', value=self.data_dir_path + self.data_file_path[entry_id]['cif'], type='file')
-        self.utility.addInput(name='report_file_path', value=self.data_dir_path + entry_id + '-str-consistency-log.json', type='file')
         self.utility.addInput(name='nonblk_anomalous_cs', value=True, type='param')
         self.utility.addInput(name='nonblk_bad_nterm', value=True, type='param')
         self.utility.addInput(name='resolve_conflict', value=True, type='param')
         self.utility.addInput(name='check_mandatory_tag', value=True, type='param')
+        self.utility.addInput(name='report_file_path', value=self.data_dir_path + entry_id + '-str-consistency-log.json', type='file')
         self.utility.addOutput(name='entry_id', value='NEED_ACC_NO', type='param')
         self.utility.addOutput(name='insert_entry_id_to_loops', value=True, type='param')
         self.utility.setLog(self.data_dir_path + entry_id + '-str2str-deposit-log.json')

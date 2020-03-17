@@ -28,6 +28,7 @@
 # 17-Mar-2020  M. Yokochi - add 'undefined' value for potential_type (DAOTHER-5508)
 # 17-Mar-2020  M. Yokochi - revise warning message about enumeration mismatch for potential_type and restraint_origin (DAOTHER-5508)
 # 17-Mar-2020  M. Yokochi - check total number of models (DAOTHER-436)
+# 17-Mar-2020  M. Yokochi - check consistency between saveframe name and its sf_framecode
 ##
 """ Wrapper class for data processing for NMR data.
     @author: Masashi Yokochi
@@ -2884,6 +2885,31 @@ class NmrDpUtility(object):
         if self.__star_data_type[file_list_id] == 'Loop':
             return False
 
+        for content_subtype in self.nmr_content_subtypes:
+
+            sf_category = self.sf_categories[file_type][content_subtype]
+
+            for sf_data in self.__star_data[file_list_id].get_saveframes_by_category(sf_category):
+
+                sf_framecode = sf_data.get_tag('sf_framecode')[0]
+
+                try:
+                    self.__star_data[file_list_id].get_saveframe_by_name(sf_framecode)
+                except KeyError:
+                    warn = "Saveframe %s mismatches with sf_framecode %s." % (sf_data.name, sf_framecode)
+
+                    self.report.warning.appendDescription('missing_saveframe', {'file_name': file_name, 'description': warn})
+                    self.report.setWarning()
+
+                    if self.__verbose:
+                        self.__lfh.write("+NmrDpUtility.__rescueFormerNef() ++ Warning  - %s\n" % warn)
+
+                    tagNames = [t[0] for t in sf_data.tags]
+
+                    sf_framecode= sf_data.name
+
+                    sf_data.tags[tagNames.index('sf_framecode')][1] = sf_framecode
+
         if not self.__rescue_mode:
             return True
 
@@ -3099,6 +3125,31 @@ class NmrDpUtility(object):
 
         if self.__star_data_type[file_list_id] == 'Loop':
             return False
+
+        for content_subtype in self.nmr_content_subtypes:
+
+            sf_category = self.sf_categories[file_type][content_subtype]
+
+            for sf_data in self.__star_data[file_list_id].get_saveframes_by_category(sf_category):
+
+                sf_framecode = sf_data.get_tag('sf_framecode')[0]
+
+                try:
+                    self.__star_data[file_list_id].get_saveframe_by_name(sf_framecode)
+                except KeyError:
+                    warn = "Saveframe %s mismatches with sf_framecode %s." % (sf_data.name, sf_framecode)
+
+                    self.report.warning.appendDescription('missing_saveframe', {'file_name': file_name, 'description': warn})
+                    self.report.setWarning()
+
+                    if self.__verbose:
+                        self.__lfh.write("+NmrDpUtility.__rescueImmatureStr() ++ Warning  - %s\n" % warn)
+
+                    tagNames = [t[0] for t in sf_data.tags]
+
+                    sf_framecode= sf_data.name
+
+                    sf_data.tags[tagNames.index('Sf_framecode')][1] = sf_data.name
 
         if not self.__rescue_mode:
             return True
@@ -18603,7 +18654,7 @@ class NmrDpUtility(object):
         # update datablock name
 
         if self.__star_data_type[0] == 'Entry':
-            if (self.__release_mode):
+            if self.__release_mode:
                 self.__star_data[0].entry_id = self.__entry_id + ('' if self.release_type[file_type] in self.empty_value else ('_' + self.release_type[file_type]))
             else:
                 self.__star_data[0].entry_id = self.__entry_id + '_' + self.content_type[file_type]

@@ -25,6 +25,7 @@
 # 05-Mar-2020  M. Yokochi - revise warning message (disordered_index) and enumerations (DAOTHER-5485)
 # 06-Mar-2020  M. Yokochi - fix invalid ambiguity_code while parsing
 # 13-Mar-2020  M. Yokochi - revise error/warning messages
+# 17-Mar-2020  M. Yokochi - add 'undefined' value for potential_type (DAOTHER-5508)
 ##
 """ Wrapper class for data processing for NMR data.
     @author: Masashi Yokochi
@@ -1418,6 +1419,8 @@ class NmrDpUtility(object):
                                              }
                               }
 
+        self.alt_potential_type = {'?': 'undefined'}
+
         # alternative dictionary of constraint type
         self.dist_alt_constraint_type = {'nef': {'NOE': 'noe',
                                                  'NOE build-up': 'noe_build_up',
@@ -1685,25 +1688,28 @@ class NmrDpUtility(object):
                                      'dist_restraint': [{'name': 'sf_category', 'type': 'str', 'mandatory': True},
                                                         {'name': 'sf_framecode', 'type': 'str', 'mandatory': True},
                                                         {'name': 'potential_type', 'type': 'enum', 'mandatory': False,
-                                                         'enum': ('log-harmonic', 'parabolic', 'square-well-parabolic', 'square-well-parabolic-linear', 'upper-bound-parabolic', 'lower-bound-parabolic', 'upper-bound-parabolic-linear', 'lower-bound-parabolic-linear')},
+                                                         'enum': ('log-harmonic', 'parabolic', 'square-well-parabolic', 'square-well-parabolic-linear', 'upper-bound-parabolic', 'lower-bound-parabolic', 'upper-bound-parabolic-linear', 'lower-bound-parabolic-linear', 'undefined', 'unknown'),
+                                                         'enum-alt': self.alt_potential_type},
                                                         {'name': 'restraint_origin', 'type': 'enum', 'mandatory': False,
-                                                         'enum': ('noe', 'noe_build_up', 'noe_not_seen', 'roe', 'roe_build_up', 'hbond', 'disulfide_bond', 'pre', 'symmetry', 'unknown', 'mutation', 'shift_pertubation'),
+                                                         'enum': ('noe', 'noe_build_up', 'noe_not_seen', 'roe', 'roe_build_up', 'hbond', 'disulfide_bond', 'pre', 'symmetry', 'mutation', 'shift_pertubation', 'unknown'),
                                                          'enum-alt': self.dist_alt_constraint_type['nef']}
                                                         ],
                                      'dihed_restraint': [{'name': 'sf_category', 'type': 'str', 'mandatory': True},
                                                          {'name': 'sf_framecode', 'type': 'str', 'mandatory': True},
                                                          {'name': 'potential_type', 'type': 'enum', 'mandatory': False,
-                                                          'enum': ('log-harmonic', 'parabolic', 'square-well-parabolic', 'square-well-parabolic-linear', 'upper-bound-parabolic', 'lower-bound-parabolic', 'upper-bound-parabolic-linear', 'lower-bound-parabolic-linear')},
+                                                          'enum': ('parabolic', 'square-well-parabolic', 'square-well-parabolic-linear', 'upper-bound-parabolic', 'lower-bound-parabolic', 'upper-bound-parabolic-linear', 'lower-bound-parabolic-linear', 'undefined', 'unknown'),
+                                                          'enum-alt': self.alt_potential_type},
                                                          {'name': 'restraint_origin', 'type': 'enum', 'mandatory': False,
-                                                          'enum': ('jcoupling', 'chemical_shift'),
+                                                          'enum': ('jcoupling', 'chemical_shift', 'unknown'),
                                                           'num-alt': self.dihed_alt_constraint_type['nef']}
                                                          ],
                                      'rdc_restraint': [{'name': 'sf_category', 'type': 'str', 'mandatory': True},
                                                        {'name': 'sf_framecode', 'type': 'str', 'mandatory': True},
                                                        {'name': 'potential_type', 'type': 'enum', 'mandatory': False,
-                                                        'enum': ('log-harmonic', 'parabolic', 'square-well-parabolic', 'square-well-parabolic-linear', 'upper-bound-parabolic', 'lower-bound-parabolic', 'upper-bound-parabolic-linear', 'lower-bound-parabolic-linear')},
+                                                        'enum': ('parabolic', 'square-well-parabolic', 'square-well-parabolic-linear', 'upper-bound-parabolic', 'lower-bound-parabolic', 'upper-bound-parabolic-linear', 'lower-bound-parabolic-linear', 'undefined', 'unknown'),
+                                                        'enum-alt': self.alt_potential_type},
                                                        {'name': 'restraint_origin', 'type': 'enum', 'mandatory': False,
-                                                        'enum': ('measured'),
+                                                        'enum': ('measured', 'unknown'),
                                                         'enum-alt': self.rdc_alt_constraint_type['nef']},
                                                        {'name': 'tensor_magnitude', 'type': 'float', 'mandatory': False},
                                                        {'name': 'tensor_rhombicity', 'type': 'positive-float', 'mandatory': False},
@@ -1741,26 +1747,29 @@ class NmrDpUtility(object):
                                           'dist_restraint': [{'name': 'Sf_category', 'type': 'str', 'mandatory': True},
                                                              {'name': 'Sf_framecode', 'type': 'str', 'mandatory': True},
                                                              {'name': 'Constraint_type', 'type': 'enum', 'mandatory': False,
-                                                              'enum': ('NOE', 'NOE build-up', 'NOE not seen', 'ROE', 'ROE build-up', 'hydrogen bond', 'disulfide bond', 'paramagnetic relaxation', 'symmetry', 'general distance', 'mutation', 'chemical shift perturbation'),
+                                                              'enum': ('NOE', 'NOE build-up', 'NOE not seen', 'ROE', 'ROE build-up', 'hydrogen bond', 'disulfide bond', 'paramagnetic relaxation', 'symmetry', 'general distance', 'mutation', 'chemical shift perturbation', 'unknown'),
                                                               'num-alt': self.dist_alt_constraint_type['nmr-star']},
                                                              {'name': 'Potential_type', 'type': 'enum', 'mandatory': False,
-                                                              'enum': ('log-harmonic', 'parabolic', 'square-well-parabolic', 'square-well-parabolic-linear', 'upper-bound-parabolic', 'lower-bound-parabolic', 'upper-bound-parabolic-linear', 'lower-bound-parabolic-linear')}
+                                                              'enum': ('log-harmonic', 'parabolic', 'square-well-parabolic', 'square-well-parabolic-linear', 'upper-bound-parabolic', 'lower-bound-parabolic', 'upper-bound-parabolic-linear', 'lower-bound-parabolic-linear', 'undefined', 'unknown'),
+                                                              'enum-alt': self.alt_potential_type}
                                                              ],
                                           'dihed_restraint': [{'name': 'Sf_category', 'type': 'str', 'mandatory': True},
                                                               {'name': 'Sf_framecode', 'type': 'str', 'mandatory': True},
                                                               {'name': 'Constraint_type', 'type': 'enum', 'mandatory': False,
-                                                               'enum': ('J-couplings', 'backbone chemical shifts'),
+                                                               'enum': ('J-couplings', 'backbone chemical shifts', 'unknown'),
                                                                'enum-alt': self.dihed_alt_constraint_type['nmr-star']},
                                                               {'name': 'Potential_type', 'type': 'enum', 'mandatory': False,
-                                                               'enum': ('log-harmonic', 'parabolic', 'square-well-parabolic', 'square-well-parabolic-linear', 'upper-bound-parabolic', 'lower-bound-parabolic', 'upper-bound-parabolic-linear', 'lower-bound-parabolic-linear')}
+                                                               'enum': ('parabolic', 'square-well-parabolic', 'square-well-parabolic-linear', 'upper-bound-parabolic', 'lower-bound-parabolic', 'upper-bound-parabolic-linear', 'lower-bound-parabolic-linear', 'undefined', 'unknown'),
+                                                               'enum-alt': self.alt_potential_type}
                                                               ],
                                           'rdc_restraint': [{'name': 'Sf_category', 'type': 'str', 'mandatory': True},
                                                               {'name': 'Sf_framecode', 'type': 'str', 'mandatory': True},
                                                               {'name': 'Constraint_type', 'type': 'enum', 'mandatory': False,
-                                                               'enum': ('RDC'),
+                                                               'enum': ('RDC', 'unknown'),
                                                                'enum-alt': self.rdc_alt_constraint_type['nmr-star']},
                                                               {'name': 'Potential_type', 'type': 'enum', 'mandatory': False,
-                                                               'enum': ('log-harmonic', 'parabolic', 'square-well-parabolic', 'square-well-parabolic-linear', 'upper-bound-parabolic', 'lower-bound-parabolic', 'upper-bound-parabolic-linear', 'lower-bound-parabolic-linear')},
+                                                               'enum': ('parabolic', 'square-well-parabolic', 'square-well-parabolic-linear', 'upper-bound-parabolic', 'lower-bound-parabolic', 'upper-bound-parabolic-linear', 'lower-bound-parabolic-linear', 'undefined', 'unknown'),
+                                                               'enum-alt': self.alt_potential_type},
                                                               {'name': 'Tensor_magnitude', 'type': 'float', 'mandatory': False},
                                                               {'name': 'Tensor_rhombicity', 'type': 'positive-float', 'mandatory': False},
                                                               {'name': 'Tensor_auth_asym_ID', 'type': 'str', 'mandatory': False},
@@ -6155,7 +6164,7 @@ class NmrDpUtility(object):
 
                     try:
 
-                        sf_tag_data = self.__nefT.check_sf_tag(sf_data, self.sf_tag_items[file_type][content_subtype], self.sf_allowed_tags[file_type][content_subtype],
+                        sf_tag_data = self.__nefT.check_sf_tag(sf_data, file_type, sf_category, self.sf_tag_items[file_type][content_subtype], self.sf_allowed_tags[file_type][content_subtype],
                                                                enforce_non_zero=True, enforce_sign=True, enforce_enum=True)
 
                         self.__testParentChildRelation(file_name, file_type, content_subtype, parent_keys, list_id, sf_framecode, sf_tag_data)
@@ -6232,7 +6241,7 @@ class NmrDpUtility(object):
 
                         try:
 
-                            sf_tag_data = self.__nefT.check_sf_tag(sf_data, self.sf_tag_items[file_type][content_subtype], self.sf_allowed_tags[file_type][content_subtype],
+                            sf_tag_data = self.__nefT.check_sf_tag(sf_data, file_type, sf_category, self.sf_tag_items[file_type][content_subtype], self.sf_allowed_tags[file_type][content_subtype],
                                                                    enfoce_non_zero=False, enforce_sign=False, enforce_enum=False)
 
                             self.__testParentChildRelation(file_name, file_type, content_subtype, parent_keys, list_id, sf_framecode, sf_tag_data)
@@ -16887,7 +16896,7 @@ class NmrDpUtility(object):
                                     val = None
 
                                 if val is itValue or val == itValue:
-                                    if len(itEnum) == 1:
+                                    if len(itEnum) == 2: # include 'unknown' enum value at the last position
                                         sf_data.tags[itCol][1] = itEnum[0]
 
                                     # specific remediation follows

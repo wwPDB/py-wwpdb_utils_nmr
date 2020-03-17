@@ -18,7 +18,8 @@
 # 04-Mar-2020  M. Yokochi - support 'default' of key items and 'default-from' of data items (v2.0.4)
 # 05-Mar-2020  M. Yokochi - support alternative enumeration definition, 'enum-alt' (v2.0.5, DAOTHER-5485)
 # 05-Mar-2020  M. Yokochi - bidirectional convert between restraint_origin (NEF) and Content_type (NMR-STAR) (v2.0.6, DAOTHER-5485)
-# 06-Mar^2020  M. Yokochi - fix ambiguity_code mapping from NEF atom nomenclature (v2.0.7)
+# 06-Mar-2020  M. Yokochi - fix ambiguity_code mapping from NEF atom nomenclature (v2.0.7)
+# 17-Mar-2020  M. Yokochi - fill default value for mandatory saveframe tag (v2.0.8, DAOTHER-5508)
 ##
 import sys
 import os
@@ -38,7 +39,7 @@ from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
 
 (scriptPath, scriptName) = ntpath.split(os.path.realpath(__file__))
 
-__version__ = 'v2.0.7'
+__version__ = 'v2.0.8'
 
 class NEFTranslator(object):
     """ Bi-directional translator between NEF and NMR-STAR
@@ -2455,7 +2456,7 @@ class NEFTranslator(object):
 
         return data
 
-    def check_sf_tag(self, star_data, tag_items, allowed_tags=None, enforce_non_zero=False, enforce_sign=False, enforce_enum=False):
+    def check_sf_tag(self, star_data, file_type, category, tag_items, allowed_tags=None, enforce_non_zero=False, enforce_sign=False, enforce_enum=False):
         """ Extract saveframe tags with sanity check.
             @author: Masashi Yokochi
             @return: list of extracted saveframe tags
@@ -2615,6 +2616,9 @@ class NEFTranslator(object):
                                 if 'enum-alt' in t and val in t['enum-alt']:
                                     tagNames = [_t[0] for _t in star_data.tags]
                                     itCol = tagNames.index(name)
+                                    itName = '_' + category + '.' + t
+                                    if val == '?' and self.is_mandatory_tag(itName):
+                                            user_warn_msg += "[Enumeration error] The mandatory type %s is missing and the type must be one of %s. '%s' will be given unless you would like to fix the tag value and re-upload the file.\n" % (itName, enum, t['enum-alt'][val])
                                     val = t['enum-alt'][val]
                                     star_data.tags[itCol][1] = val
                                 elif 'enforce-enum' in t and t['enforce-enum']:

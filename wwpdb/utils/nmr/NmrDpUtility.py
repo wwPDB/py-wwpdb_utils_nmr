@@ -30,6 +30,7 @@
 # 17-Mar-2020  M. Yokochi - check total number of models (DAOTHER-436)
 # 17-Mar-2020  M. Yokochi - check consistency between saveframe name and sf_framecode value
 # 18-Mar-2020  M. Yokochi - rename warning type from skipped_sf/lp_category to skipped_saveframe/loop_category
+# 18-Mar-2020  M. Yokochi - support 'Saveframe' data type as separated NMR data (DAOTHER-2737)
 ##
 """ Wrapper class for data processing for NMR data.
     @author: Masashi Yokochi
@@ -2883,246 +2884,322 @@ class NmrDpUtility(object):
         if file_type != 'nef':
             return False
 
-        if self.__star_data_type[file_list_id] == 'Loop':
-            return False
+        if self.__combined_mode:
 
-        for content_subtype in self.nmr_content_subtypes:
+            for content_subtype in self.nmr_content_subtypes:
+
+                sf_category = self.sf_categories[file_type][content_subtype]
+
+                for sf_data in self.__star_data[file_list_id].get_saveframes_by_category(sf_category):
+
+                    sf_framecode = sf_data.get_tag('sf_framecode')[0]
+
+                    try:
+                        self.__star_data[file_list_id].get_saveframe_by_name(sf_framecode)
+                    except KeyError:
+
+                        itName = '_' + sf_category + '.sf_framecode'
+
+                        if self.__resolve_conflict:
+                            warn = "%s '%s' should be matched with saveframe name '%s'. %s will be overwritten." % (itName, sf_framecode, sf_data.name, itName)
+
+                            self.report.warning.appendDescription('missing_saveframe', {'file_name': file_name, 'sf_framecode': sf_data.name, 'description': warn})
+                            self.report.setWarning()
+
+                            if self.__verbose:
+                                self.__lfh.write("+NmrDpUtility.__rescueFormerNef() ++ Warning  - %s\n" % warn)
+
+                            tagNames = [t[0] for t in sf_data.tags]
+
+                            sf_framecode= sf_data.name
+
+                            sf_data.tags[tagNames.index('sf_framecode')][1] = sf_framecode
+
+                        else:
+                            err = "%s %s must be matched with saveframe name %s." % (itName, sf_framecode, sf_data.name)
+
+                            self.report.error.appendDescription('format_issue', {'file_name': file_name, 'sf_framecode': sf_data.name, 'description': err})
+                            self.report.setError()
+
+                            if self.__verbose:
+                                self.__lfh.write("+NmrDpUtility.__rescueFormerNef() ++ Error  - %s\n" % err)
+
+        if not self.__rescue_mode:
+            return True
+
+        if self.__combined_mode:
+
+            content_subtype = 'entry_info'
 
             sf_category = self.sf_categories[file_type][content_subtype]
 
             for sf_data in self.__star_data[file_list_id].get_saveframes_by_category(sf_category):
 
-                sf_framecode = sf_data.get_tag('sf_framecode')[0]
+                version = sf_data.get_tag('format_version')[0]
 
-                try:
-                    self.__star_data[file_list_id].get_saveframe_by_name(sf_framecode)
-                except KeyError:
+                if not version.startswith('0.'):
+                    sf_data.format_version = '1.0'
 
-                    itName = '_' + sf_category + '.sf_framecode'
+        else:
 
-                    if self.__resolve_conflict:
-                        warn = "%s '%s' should be matched with saveframe name '%s'. %s will be overwritten." % (itName, sf_framecode, sf_data.name, itName)
+            self.__sf_category_list, self.__lp_category_list = self.__nefT.get_data_content(self.__star_data[file_list_id], self.__star_data_type[file_list_id])
 
-                        self.report.warning.appendDescription('missing_saveframe', {'file_name': file_name, 'sf_framecode': sf_data.name, 'description': warn})
-                        self.report.setWarning()
+            # initialize loop counter
+            lp_counts = {t: 0 for t in self.nmr_content_subtypes}
 
-                        if self.__verbose:
-                            self.__lfh.write("+NmrDpUtility.__rescueFormerNef() ++ Warning  - %s\n" % warn)
+            # increment loop counter of each content subtype
+            for lp_category in self.__lp_category_list:
+                if lp_category in self.lp_categories[file_type].values():
+                    lp_counts[[k for k, v in self.lp_categories[file_type].items() if v == lp_category][0]] += 1
 
-                        tagNames = [t[0] for t in sf_data.tags]
-
-                        sf_framecode= sf_data.name
-
-                        sf_data.tags[tagNames.index('sf_framecode')][1] = sf_framecode
-
-                    else:
-                        err = "%s %s must be matched with saveframe name %s." % (itName, sf_framecode, sf_data.name)
-
-                        self.report.error.appendDescription('format_issue', {'file_name': file_name, 'sf_framecode': sf_data.name, 'description': err})
-                        self.report.setError()
-
-                        if self.__verbose:
-                            self.__lfh.write("+NmrDpUtility.__rescueFormerNef() ++ Error  - %s\n" % err)
-
-        if not self.__rescue_mode:
-            return True
-
-        content_subtype = 'entry_info'
-
-        sf_category = self.sf_categories[file_type][content_subtype]
-
-        for sf_data in self.__star_data[file_list_id].get_saveframes_by_category(sf_category):
-
-            version = sf_data.get_tag('format_version')[0]
-
-            if not version.startswith('0.'):
-                sf_data.format_version = '1.0'
+            content_subtypes = {k: lp_counts[k] for k in lp_counts if lp_counts[k] > 0}
 
         for content_subtype in self.nmr_content_subtypes:
 
             sf_category = self.sf_categories[file_type][content_subtype]
             lp_category = self.lp_categories[file_type][content_subtype]
 
-            for sf_data in self.__star_data[file_list_id].get_saveframes_by_category(sf_category):
+            if self.__star_data_type[file_list_id] == 'Loop':
 
+                if not content_subtype in content_subtypes:
+                    continue
+
+                sf_data = self.__star_data[file_list_id]
+                sf_framecode = ''
+
+                self.__rescueFormerNef__(file_type, file_name, content_subtype, sf_data, sf_framecode, lp_category)
+
+            elif self.__star_data_type[file_list_id] == 'Saveframe':
+
+                if not content_subtype in content_subtypes:
+                    continue
+
+                sf_data = self.__star_data[file_list_id]
                 sf_framecode = sf_data.get_tag('sf_framecode')[0]
+
+                self.__rescueFormerNef__(file_type, file_name, content_subtype, sf_data, sf_framecode, lp_category)
+
+            else:
+
+                for sf_data in self.__star_data[file_list_id].get_saveframes_by_category(sf_category):
+
+                    sf_framecode = sf_data.get_tag('sf_framecode')[0]
+
+                    self.__rescueFormerNef__(file_type, file_name, content_subtype, sf_data, sf_framecode, lp_category)
+
+        return True
+
+    def __rescueFormerNef__(self, file_type, file_name, content_subtype, sf_data, sf_framecode, lp_category):
+        """ Rescue former NEF version prior to 1.0.
+        """
+
+        try:
+            lp_data = sf_data.get_loop_by_category(lp_category)
+        except Exception:
+            lp_data = sf_data
+
+        try:
+
+            index_tag = self.index_tags[file_type][content_subtype]
+
+            if not index_tag is None:
+
+                try:
+                    tag_pos = next(lp_data.tags.index(tag) for tag in lp_data.tags if tag == 'ordinal')
+                    lp_data.tags[tag_pos] = 'index'
+                except StopIteration:
+                    pass
+
+                try:
+                    tag_pos = next(lp_data.tags.index(tag) for tag in lp_data.tags if tag == 'index_id')
+                    lp_data.tags[tag_pos] = 'index'
+                except StopIteration:
+                    pass
+
+            if content_subtype == 'poly_seq':
+
+                try:
+                    tag_pos = next(lp_data.tags.index(tag) for tag in lp_data.tags if tag == 'residue_type')
+                    lp_data.tags[tag_pos] = 'residue_name'
+                except StopIteration:
+                    pass
+
+                if not 'index' in lp_data.tags:
+
+                    lp_tag = lp_category + '.index'
+                    err = self.__err_template_for_missing_mandatory_lp_tag % lp_tag
+
+                    if self.__check_mandatory_tag and self.__nefT.is_mandatory_tag(lp_tag, file_type):
+                        self.report.error.appendDescription('missing_mandatory_item', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
+                        self.report.setError()
+
+                        if self.__verbose:
+                            self.__lfh.write("+NmrDpUtility.__rescueFormerNef() ++ LookupError  - %s" % err)
+
+                    for l, i in enumerate(lp_data):
+                        i.append(l + 1)
+
+                    lp_data.add_tag(lp_category + '.index')
+
+            if content_subtype == 'chem_shift':
+
+                try:
+                    next(tag for tag in sf_data.tags if tag[0] == 'atom_chemical_shift_units')
+                    sf_data.delete_tag('atom_chemical_shift_units')
+                except StopIteration:
+                    pass
+
+                try:
+                    tag_pos = next(lp_data.tags.index(tag) for tag in lp_data.tags if tag == 'residue_type')
+                    lp_data.tags[tag_pos] = 'residue_name'
+                except StopIteration:
+                    pass
+
+                if not 'element' in lp_data.tags:
+
+                    lp_tag = lp_category + '.element'
+                    err = self.__err_template_for_missing_mandatory_lp_tag % lp_tag
+
+                    if self.__check_mandatory_tag and self.__nefT.is_mandatory_tag(lp_tag, file_type):
+                        self.report.error.appendDescription('missing_mandatory_item', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
+                        self.report.setError()
+
+                        if self.__verbose:
+                            self.__lfh.write("+NmrDpUtility.__rescueFormerNef() ++ LookupError  - %s" % err)
+
+                    try:
+                        atom_name_col = lp_data.tags.index('atom_name')
+
+                        for i in lp_data:
+                            atom_type = i[atom_name_col][0]
+                            if atom_type == 'Q' or atom_type == 'M':
+                                atom_type = 'H'
+                            i.append(atom_type)
+
+                        lp_data.add_tag(lp_category + '.element')
+
+                    except ValueError:
+                        pass
+
+                elif not self.__combined_mode:
+
+                    atom_type_col = lp_data.tags.index('element')
+                    atom_name_col = lp_data.tags.index('atom_name')
+
+                    for i in lp_data:
+                        if i[atom_type_col] in self.empty_value:
+                            atom_type = i[atom_name_col][0]
+                            if atom_type == 'Q' or atom_type == 'M':
+                                atom_type = 'H'
+                            i[atom_type_col] = atom_type
+
+                if not 'isotope_number' in lp_data.tags:
+
+                    lp_tag = lp_category + '.isotope_number'
+                    err = self.__err_template_for_missing_mandatory_lp_tag % lp_tag
+
+                    if self.__check_mandatory_tag and self.__nefT.is_mandatory_tag(lp_tag, file_type):
+                        self.report.error.appendDescription('missing_mandatory_item', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
+                        self.report.setError()
+
+                        if self.__verbose:
+                            self.__lfh.write("+NmrDpUtility.__rescueFormerNef() ++ LookupError  - %s" % err)
+
+                    try:
+                        atom_name_col = lp_data.tags.index('atom_name')
+
+                        for i in lp_data:
+                            atom_type = i[atom_name_col][0]
+                            if atom_type == 'Q' or atom_type == 'M':
+                                atom_type = 'H'
+                            i.append(str(self.atom_isotopes[atom_type][0]))
+
+                        lp_data.add_tag(lp_category + '.isotope_number')
+
+                    except ValueError:
+                        pass
+
+                elif not self.__combined_mode:
+
+                    iso_num_col = lp_data.tags.index('isotope_number')
+                    atom_name_col = lp_data.tags.index('atom_name')
+
+                    for i in lp_data:
+                        if i[iso_num_col] in self.empty_value:
+                            atom_type = i[atom_name_col][0]
+                            if atom_type == 'Q' or atom_type == 'M':
+                                atom_type = 'H'
+                            i[iso_num_col] = str(self.atom_isotopes[atom_type][0])
+
+            if content_subtype == 'dihed_restraint':
+
+                if not 'name' in lp_data.tags:
+
+                    lp_tag = lp_category + '.name'
+                    err = self.__err_template_for_missing_mandatory_lp_tag % lp_tag
+
+                    if self.__check_mandatory_tag and self.__nefT.is_mandatory_tag(lp_tag, file_type):
+                        self.report.error.appendDescription('missing_mandatory_item', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
+                        self.report.setError()
+
+                        if self.__verbose:
+                            self.__lfh.write("+NmrDpUtility.__rescueFormerNef() ++ LookupError  - %s" % err)
+
+                    try:
+
+                        for i in lp_data:
+                            i.append('.')
+
+                        lp_data.add_tag(lp_category + '.name')
+
+                    except ValueError:
+                        pass
+
+            if content_subtype == 'rdc_restraint':
+
+                try:
+                    tag = next(tag for tag in sf_data.tags if tag[0] == 'tensor_residue_type')
+                    sf_data.add_tag(sf_category + '.tensor_residue_name', tag[1])
+                    sf_data.delete_tag('tensor_residue_type')
+                except StopIteration:
+                    pass
+
+            if content_subtype == 'dist_restraint' or content_subtype == 'rdc_restraint':
+                max_dim = 3
+
+            elif content_subtype == 'dihed_restraint':
+                max_dim = 5
+
+            elif content_subtype == 'spectral_peak':
 
                 try:
 
-                    lp_data = sf_data.get_loop_by_category(lp_category)
+                    _num_dim = sf_data.get_tag(self.num_dim_items[file_type])[0]
+                    num_dim = int(_num_dim)
 
-                    index_tag = self.index_tags[file_type][content_subtype]
+                    if not num_dim in range(1, self.lim_num_dim):
+                        raise ValueError()
 
-                    if not index_tag is None:
+                except ValueError: # raised error already at __testIndexConsistency()
+                    return
 
-                        try:
-                            tag_pos = next(lp_data.tags.index(tag) for tag in lp_data.tags if tag == 'ordinal')
-                            lp_data.tags[tag_pos] = 'index'
-                        except StopIteration:
-                            pass
+                max_dim = num_dim + 1
 
-                        try:
-                            tag_pos = next(lp_data.tags.index(tag) for tag in lp_data.tags if tag == 'index_id')
-                            lp_data.tags[tag_pos] = 'index'
-                        except StopIteration:
-                            pass
+            else:
+                return
 
-                    if content_subtype == 'poly_seq':
+            for j in range(1, max_dim):
 
-                        try:
-                            tag_pos = next(lp_data.tags.index(tag) for tag in lp_data.tags if tag == 'residue_type')
-                            lp_data.tags[tag_pos] = 'residue_name'
-                        except StopIteration:
-                            pass
+                _residue_type = 'residue_type_' + str(j)
 
-                        if not 'index' in lp_data.tags:
-
-                            lp_tag = lp_category + '.index'
-                            err = self.__err_template_for_missing_mandatory_lp_tag % lp_tag
-
-                            if self.__check_mandatory_tag and self.__nefT.is_mandatory_tag(lp_tag, file_type):
-                                self.report.error.appendDescription('missing_mandatory_item', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
-                                self.report.setError()
-
-                                if self.__verbose:
-                                    self.__lfh.write("+NmrDpUtility.__rescueFormerNef() ++ LookupError  - %s" % err)
-
-                            for l, i in enumerate(lp_data):
-                                i.append(l + 1)
-
-                            lp_data.add_tag(lp_category + '.index')
-
-                    if content_subtype == 'chem_shift':
-
-                        try:
-                            next(tag for tag in sf_data.tags if tag[0] == 'atom_chemical_shift_units')
-                            sf_data.delete_tag('atom_chemical_shift_units')
-                        except StopIteration:
-                            pass
-
-                        try:
-                            tag_pos = next(lp_data.tags.index(tag) for tag in lp_data.tags if tag == 'residue_type')
-                            lp_data.tags[tag_pos] = 'residue_name'
-                        except StopIteration:
-                            pass
-
-                        if not 'element' in lp_data.tags:
-
-                            lp_tag = lp_category + '.element'
-                            err = self.__err_template_for_missing_mandatory_lp_tag % lp_tag
-
-                            if self.__check_mandatory_tag and self.__nefT.is_mandatory_tag(lp_tag, file_type):
-                                self.report.error.appendDescription('missing_mandatory_item', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
-                                self.report.setError()
-
-                                if self.__verbose:
-                                    self.__lfh.write("+NmrDpUtility.__rescueFormerNef() ++ LookupError  - %s" % err)
-
-                            try:
-                                atom_name_col = lp_data.tags.index('atom_name')
-
-                                for i in lp_data:
-                                    i.append(i[atom_name_col][0])
-
-                                lp_data.add_tag(lp_category + '.element')
-
-                            except ValueError:
-                                pass
-
-                        if not 'isotope_number' in lp_data.tags:
-
-                            lp_tag = lp_category + '.isotope_number'
-                            err = self.__err_template_for_missing_mandatory_lp_tag % lp_tag
-
-                            if self.__check_mandatory_tag and self.__nefT.is_mandatory_tag(lp_tag, file_type):
-                                self.report.error.appendDescription('missing_mandatory_item', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
-                                self.report.setError()
-
-                                if self.__verbose:
-                                    self.__lfh.write("+NmrDpUtility.__rescueFormerNef() ++ LookupError  - %s" % err)
-
-                            try:
-                                atom_name_col = lp_data.tags.index('atom_name')
-
-                                for i in lp_data:
-                                    i.append(self.atom_isotopes[i[atom_name_col][0]][0])
-
-                                lp_data.add_tag(lp_category + '.isotope_number')
-
-                            except ValueError:
-                                pass
-
-                    if content_subtype == 'dihed_restraint':
-
-                        if not 'name' in lp_data.tags:
-
-                            lp_tag = lp_category + '.name'
-                            err = self.__err_template_for_missing_mandatory_lp_tag % lp_tag
-
-                            if self.__check_mandatory_tag and self.__nefT.is_mandatory_tag(lp_tag, file_type):
-                                self.report.error.appendDescription('missing_mandatory_item', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
-                                self.report.setError()
-
-                                if self.__verbose:
-                                    self.__lfh.write("+NmrDpUtility.__rescueFormerNef() ++ LookupError  - %s" % err)
-
-                            try:
-
-                                for i in lp_data:
-                                    i.append('.')
-
-                                lp_data.add_tag(lp_category + '.name')
-
-                            except ValueError:
-                                pass
-
-                    if content_subtype == 'rdc_restraint':
-
-                        try:
-                            tag = next(tag for tag in sf_data.tags if tag[0] == 'tensor_residue_type')
-                            sf_data.add_tag(sf_category + '.tensor_residue_name', tag[1])
-                            sf_data.delete_tag('tensor_residue_type')
-                        except StopIteration:
-                            pass
-
-                    if content_subtype == 'dist_restraint' or content_subtype == 'rdc_restraint':
-                        max_dim = 3
-
-                    elif content_subtype == 'dihed_restraint':
-                        max_dim = 5
-
-                    elif content_subtype == 'spectral_peak':
-
-                        try:
-
-                            _num_dim = sf_data.get_tag(self.num_dim_items[file_type])[0]
-                            num_dim = int(_num_dim)
-
-                            if not num_dim in range(1, self.lim_num_dim):
-                                raise ValueError()
-
-                        except ValueError: # raised error already at __testIndexConsistency()
-                            continue
-
-                        max_dim = num_dim + 1
-
-                    else:
-                        continue
-
-                    for j in range(1, max_dim):
-
-                        _residue_type = 'residue_type_' + str(j)
-
-                        try:
-                            tag_pos = next(lp_data.tags.index(tag) for tag in lp_data.tags if tag == _residue_type)
-                            lp_data.tags[tag_pos] = 'residue_name_' + str(j)
-                        except StopIteration:
-                            pass
-
-                except KeyError:
+                try:
+                    tag_pos = next(lp_data.tags.index(tag) for tag in lp_data.tags if tag == _residue_type)
+                    lp_data.tags[tag_pos] = 'residue_name_' + str(j)
+                except StopIteration:
                     pass
 
-        return True
+        except KeyError:
+            pass
 
     def __rescueImmatureStr(self, file_list_id):
         """ Rescue immature NMR-STAR.
@@ -3137,141 +3214,215 @@ class NmrDpUtility(object):
         if file_type != 'nmr-star':
             return False
 
-        if self.__star_data_type[file_list_id] == 'Loop':
-            return False
+        if self.__combined_mode:
 
-        for content_subtype in self.nmr_content_subtypes:
+            for content_subtype in self.nmr_content_subtypes:
 
-            sf_category = self.sf_categories[file_type][content_subtype]
+                sf_category = self.sf_categories[file_type][content_subtype]
 
-            for sf_data in self.__star_data[file_list_id].get_saveframes_by_category(sf_category):
+                for sf_data in self.__star_data[file_list_id].get_saveframes_by_category(sf_category):
 
-                sf_framecode = sf_data.get_tag('sf_framecode')[0]
+                    sf_framecode = sf_data.get_tag('sf_framecode')[0]
 
-                try:
-                    self.__star_data[file_list_id].get_saveframe_by_name(sf_framecode)
-                except KeyError:
+                    try:
+                        self.__star_data[file_list_id].get_saveframe_by_name(sf_framecode)
+                    except KeyError:
 
-                    itName = '_' + sf_category + '.Sf_framecode'
+                        itName = '_' + sf_category + '.Sf_framecode'
 
-                    if self.__resolve_conflict:
-                        warn = "%s '%s' should be matched with saveframe name '%s'. %s will be overwritten." % (itName, sf_framecode, sf_data.name, itName)
+                        if self.__resolve_conflict:
+                            warn = "%s '%s' should be matched with saveframe name '%s'. %s will be overwritten." % (itName, sf_framecode, sf_data.name, itName)
 
-                        self.report.warning.appendDescription('missing_saveframe', {'file_name': file_name, 'sf_framecode': sf_data.name, 'description': warn})
-                        self.report.setWarning()
+                            self.report.warning.appendDescription('missing_saveframe', {'file_name': file_name, 'sf_framecode': sf_data.name, 'description': warn})
+                            self.report.setWarning()
 
-                        if self.__verbose:
-                            self.__lfh.write("+NmrDpUtility.__rescueImmatureStr() ++ Warning  - %s\n" % warn)
+                            if self.__verbose:
+                                self.__lfh.write("+NmrDpUtility.__rescueImmatureStr() ++ Warning  - %s\n" % warn)
 
-                        tagNames = [t[0] for t in sf_data.tags]
+                            tagNames = [t[0] for t in sf_data.tags]
 
-                        sf_framecode= sf_data.name
+                            sf_framecode= sf_data.name
 
-                        sf_data.tags[tagNames.index('Sf_framecode')][1] = sf_data.name
+                            sf_data.tags[tagNames.index('Sf_framecode')][1] = sf_data.name
 
-                    else:
-                        err = "%s %s should be matched with saveframe name %s." % (itName, sf_framecode, sf_data.name)
+                        else:
+                            err = "%s %s should be matched with saveframe name %s." % (itName, sf_framecode, sf_data.name)
 
-                        self.report.error.appendDescription('format_issue', {'file_name': file_name, 'sf_framecode': sf_data.name, 'description': err})
-                        self.report.setError()
+                            self.report.error.appendDescription('format_issue', {'file_name': file_name, 'sf_framecode': sf_data.name, 'description': err})
+                            self.report.setError()
 
-                        if self.__verbose:
-                            self.__lfh.write("+NmrDpUtility.__rescueImmatureStr() ++ Error  - %s\n" % err)
+                            if self.__verbose:
+                                self.__lfh.write("+NmrDpUtility.__rescueImmatureStr() ++ Error  - %s\n" % err)
 
         if not self.__rescue_mode:
             return True
+
+        if not self.__combined_mode:
+
+            self.__sf_category_list, self.__lp_category_list = self.__nefT.get_data_content(self.__star_data[file_list_id], self.__star_data_type[file_list_id])
+
+            # initialize loop counter
+            lp_counts = {t: 0 for t in self.nmr_content_subtypes}
+
+            # increment loop counter of each content subtype
+            for lp_category in self.__lp_category_list:
+                if lp_category in self.lp_categories[file_type].values():
+                    lp_counts[[k for k, v in self.lp_categories[file_type].items() if v == lp_category][0]] += 1
+
+            content_subtypes = {k: lp_counts[k] for k in lp_counts if lp_counts[k] > 0}
 
         for content_subtype in self.nmr_content_subtypes:
 
             sf_category = self.sf_categories[file_type][content_subtype]
             lp_category = self.lp_categories[file_type][content_subtype]
 
-            for sf_data in self.__star_data[file_list_id].get_saveframes_by_category(sf_category):
+            if self.__star_data_type[file_list_id] == 'Loop':
 
+                if not content_subtype in content_subtypes:
+                    continue
+
+                sf_data = self.__star_data[file_list_id]
+                sf_framecode = ''
+
+                self.__rescueImmatureStr__(file_type, file_name, content_subtype, sf_data, sf_framecode, lp_category)
+
+            elif self.__star_data_type[file_list_id] == 'Saveframe':
+
+                if not content_subtype in content_subtypes:
+                    continue
+
+                sf_data = self.__star_data[file_list_id]
                 sf_framecode = sf_data.get_tag('sf_framecode')[0]
 
-                try:
+                self.__rescueImmatureStr__(file_type, file_name, content_subtype, sf_data, sf_framecode, lp_category)
 
-                    lp_data = sf_data.get_loop_by_category(lp_category)
+            else:
 
-                    index_tag = self.index_tags[file_type][content_subtype]
+                for sf_data in self.__star_data[file_list_id].get_saveframes_by_category(sf_category):
 
-                    if content_subtype == 'chem_shift':
+                    sf_framecode = sf_data.get_tag('sf_framecode')[0]
 
-                        if not 'Atom_type' in lp_data.tags:
-
-                            lp_tag = lp_category + '.Atom_type'
-                            err = self.__err_template_for_missing_mandatory_lp_tag % lp_tag
-
-                            if self.__check_mandatory_tag and self.__nefT.is_mandatory_tag(lp_tag, file_type):
-                                self.report.error.appendDescription('missing_mandatory_item', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
-                                self.report.setError()
-
-                                if self.__verbose:
-                                    self.__lfh.write("+NmrDpUtility.__rescueImmatureStr() ++ LookupError  - %s" % err)
-
-                            try:
-                                atom_name_col = lp_data.tags.index('Atom_ID')
-
-                                for i in lp_data:
-                                    i.append(i[atom_name_col][0])
-
-                                lp_data.add_tag(lp_category + '.Atom_type')
-
-                            except ValueError:
-                                pass
-
-                        if not 'Atom_isotope_number' in lp_data.tags:
-
-                            lp_tag = lp_category + '.Atom_isotope_number'
-                            err = self.__err_template_for_missing_mandatory_lp_tag % lp_tag
-
-                            if self.__check_mandatory_tag and self.__nefT.is_mandatory_tag(lp_tag, file_type):
-                                self.report.error.appendDescription('missing_mandatory_item', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
-                                self.report.setError()
-
-                                if self.__verbose:
-                                    self.__lfh.write("+NmrDpUtility.__rescueImmatureStr() ++ LookupError  - %s" % err)
-
-                            try:
-                                atom_name_col = lp_data.tags.index('Atom_ID')
-
-                                for i in lp_data:
-                                    i.append(self.atom_isotopes[i[atom_name_col][0]][0])
-
-                                lp_data.add_tag(lp_category + '.isotope_number')
-
-                            except ValueError:
-                                pass
-
-                    if content_subtype == 'dihed_restraint':
-
-                        if not 'Torsion_angle_name' in lp_data.tags:
-
-                            lp_tag = lp_category + '.Torsion_angle_name'
-                            err = self.__err_template_for_missing_mandatory_lp_tag % lp_tag
-
-                            if self.__check_mandatory_tag and self.__nefT.is_mandatory_tag(lp_tag, file_type):
-                                self.report.error.appendDescription('missing_mandatory_item', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
-                                self.report.setError()
-
-                                if self.__verbose:
-                                    self.__lfh.write("+NmrDpUtility.__rescueImmatureStr() ++ LookupError  - %s" % err)
-
-                            try:
-
-                                for i in lp_data:
-                                    i.append('.')
-
-                                lp_data.add_tag(lp_category + '.Torsion_angle_name')
-
-                            except ValueError:
-                                pass
-
-                except KeyError:
-                    pass
+                    self.__rescueImmatureStr__(file_type, file_name, content_subtype, sf_data, sf_framecode, lp_category)
 
         return True
+
+    def __rescueImmatureStr__(self, file_type, file_name, content_subtype, sf_data, sf_framecode, lp_category):
+        """ Rescue immature NMR-STAR.
+        """
+
+        try:
+            lp_data = sf_data.get_loop_by_category(lp_category)
+        except Exception:
+            lp_data = sf_data
+
+        try:
+
+            index_tag = self.index_tags[file_type][content_subtype]
+
+            if content_subtype == 'chem_shift':
+
+                if not 'Atom_type' in lp_data.tags:
+
+                    lp_tag = lp_category + '.Atom_type'
+                    err = self.__err_template_for_missing_mandatory_lp_tag % lp_tag
+
+                    if self.__check_mandatory_tag and self.__nefT.is_mandatory_tag(lp_tag, file_type):
+                        self.report.error.appendDescription('missing_mandatory_item', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
+                        self.report.setError()
+
+                        if self.__verbose:
+                            self.__lfh.write("+NmrDpUtility.__rescueImmatureStr() ++ LookupError  - %s" % err)
+
+                    try:
+                        atom_name_col = lp_data.tags.index('Atom_ID')
+
+                        for i in lp_data:
+                            atom_type = i[atom_name_col][0]
+                            if atom_type == 'Q' or atom_type == 'M':
+                                atom_type = 'H'
+                            i.append(atom_type)
+
+                        lp_data.add_tag(lp_category + '.Atom_type')
+
+                    except ValueError:
+                        pass
+
+                elif not self.__combined_mode:
+
+                    atom_type_col = lp_data.tags.index('Atom_type')
+                    atom_name_col = lp_data.tags.index('Atom_ID')
+
+                    for i in lp_data:
+                        if i[atom_type_col] in self.empty_value:
+                            atom_type = i[atom_name_col][0]
+                            if atom_type == 'Q' or atom_type == 'M':
+                                atom_type = 'H'
+                            i[atom_type_col] = atom_type
+
+                if not 'Atom_isotope_number' in lp_data.tags:
+
+                    lp_tag = lp_category + '.Atom_isotope_number'
+                    err = self.__err_template_for_missing_mandatory_lp_tag % lp_tag
+
+                    if self.__check_mandatory_tag and self.__nefT.is_mandatory_tag(lp_tag, file_type):
+                        self.report.error.appendDescription('missing_mandatory_item', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
+                        self.report.setError()
+
+                        if self.__verbose:
+                            self.__lfh.write("+NmrDpUtility.__rescueImmatureStr() ++ LookupError  - %s" % err)
+
+                    try:
+                        atom_name_col = lp_data.tags.index('Atom_ID')
+
+                        for i in lp_data:
+                            atom_type = i[atom_name_col][0]
+                            if atom_type == 'Q' or atom_type == 'M':
+                                atom_type = 'H'
+                            i.append(str(self.atom_isotopes[atom_type][0]))
+
+                        lp_data.add_tag(lp_category + '.Atom_isotope_number')
+
+                    except ValueError:
+                        pass
+
+                elif not self.__combined_mode:
+
+                    iso_num_col = lp_data.tags.index('Atom_isotope_number')
+                    atom_name_col = lp_data.tags.index('Atom_ID')
+
+                    for i in lp_data:
+                        if i[iso_num_col] in self.empty_value:
+                            atom_type = i[atom_name_col][0]
+                            if atom_type == 'Q' or atom_type == 'M':
+                                atom_type = 'H'
+                            i[iso_num_col] = str(self.atom_isotopes[atom_type][0])
+
+            if content_subtype == 'dihed_restraint':
+
+                if not 'Torsion_angle_name' in lp_data.tags:
+
+                    lp_tag = lp_category + '.Torsion_angle_name'
+                    err = self.__err_template_for_missing_mandatory_lp_tag % lp_tag
+
+                    if self.__check_mandatory_tag and self.__nefT.is_mandatory_tag(lp_tag, file_type):
+                        self.report.error.appendDescription('missing_mandatory_item', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
+                        self.report.setError()
+
+                        if self.__verbose:
+                            self.__lfh.write("+NmrDpUtility.__rescueImmatureStr() ++ LookupError  - %s" % err)
+
+                    try:
+
+                        for i in lp_data:
+                            i.append('.')
+
+                        lp_data.add_tag(lp_category + '.Torsion_angle_name')
+
+                    except ValueError:
+                        pass
+
+        except KeyError:
+            pass
 
     def __detectContentSubType(self):
         """ Detect content subtypes.
@@ -3681,8 +3832,6 @@ class NmrDpUtility(object):
 
                 has_poly_seq = False
 
-                # Loop
-
                 if self.__star_data_type[fileListId] == 'Loop':
 
                     sf_data = self.__star_data[fileListId]
@@ -3690,7 +3839,12 @@ class NmrDpUtility(object):
 
                     has_poly_seq |= self.__extractPolymerSequenceInLoop__(fileListId, file_name, file_type, content_subtype, sf_data, list_id, sf_framecode, lp_category, poly_seq_list_set)
 
-                # Entry/Saveframe
+                elif self.__star_data_type[fileListId] == 'Saveframe':
+
+                    sf_data = self.__star_data[fileListId]
+                    sf_framecode = sf_data.get_tag('sf_framecode')[0]
+
+                    has_poly_seq |= self.__extractPolymerSequenceInLoop__(fileListId, file_name, file_type, content_subtype, sf_data, list_id, sf_framecode, lp_category, poly_seq_list_set)
 
                 else:
 
@@ -4305,66 +4459,87 @@ class NmrDpUtility(object):
             if not has_poly_seq:
                 continue
 
-            if self.__star_data_type[fileListId] == 'Loop':
-                continue
-
-            polymer_sequence = input_source_dic['polymer_sequence']
-
             sf_category = self.sf_categories[file_type][content_subtype]
             lp_category = self.lp_categories[file_type][content_subtype]
 
-            for sf_data in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
+            if self.__star_data_type[fileListId] == 'Loop':
 
+                sf_data = self.__star_data[fileListId]
+                sf_framecode = ''
+
+                self.__extractNonStandardResidue__(file_name, sf_data, sf_framecode, lp_category, input_source)
+
+            elif self.__star_data_type[fileListId] == 'Saveframe':
+
+                sf_data = self.__star_data[fileListId]
                 sf_framecode = sf_data.get_tag('sf_framecode')[0]
 
-                asm = []
+                self.__extractNonStandardResidue__(file_name, sf_data, sf_framecode, lp_category, input_source)
 
-                for s in polymer_sequence:
+            else:
 
-                    has_non_std_comp_id = False
+                for sf_data in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
 
-                    ent = {'chain_id': s['chain_id'], 'seq_id': [], 'comp_id': [], 'chem_comp_name': [], 'exptl_data': []}
+                    sf_framecode = sf_data.get_tag('sf_framecode')[0]
 
-                    for i in range(len(s['seq_id'])):
-                        seq_id = s['seq_id'][i]
-                        comp_id = s['comp_id'][i]
-
-                        if self.__get1LetterCode(comp_id) == 'X':
-                            has_non_std_comp_id = True
-
-                            ent['seq_id'].append(seq_id)
-                            ent['comp_id'].append(comp_id)
-
-                            self.__updateChemCompDict(comp_id)
-
-                            if self.__last_comp_id_test: # matches with comp_id in CCD
-                                cc_name = self.__last_chem_comp_dict['_chem_comp.name']
-                                cc_rel_status = self.__last_chem_comp_dict['_chem_comp.pdbx_release_status']
-                                if cc_rel_status == 'REL':
-                                    ent['chem_comp_name'].append(cc_name)
-                                else:
-                                    ent['chem_comp_name'].append('(Not available due to CCD status code %s)' % cc_rel_status)
-
-                            else:
-                                ent['chem_comp_name'].append(None)
-
-                                warn = 'Non standard residue (%s:%s:%s) did not match with chemical component dictionary (CCD).'
-
-                                self.report.warning.appendDescription('ccd_mismatch', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
-                                self.report.setWarning()
-
-                                if self.__verbose:
-                                   self.__lfh.write("+NmrDpUtility.__extractNonStandardResidue() ++ Warning  - %s\n" % warn)
-
-                            ent['exptl_data'].append({'chem_shift': False, 'dist_restraint': False, 'dihed_restraint': False, 'rdc_restraint': False, 'spectral_peak': False, 'coordinate': False})
-
-                    if has_non_std_comp_id:
-                        asm.append(ent)
-
-                if len(asm) > 0:
-                    input_source.setItemValue('non_standard_residue', asm)
+                    self.__extractNonStandardResidue__(file_name, sf_data, sf_framecode, lp_category, input_source)
 
         return True
+
+    def __extractNonStandardResidue__(self, file_name, sf_data, sf_framecode, lp_category, input_source):
+        """ Extract non-standard residue.
+        """
+
+        input_source_dic = input_source.get()
+
+        polymer_sequence = input_source_dic['polymer_sequence']
+
+        asm = []
+
+        for s in polymer_sequence:
+
+            has_non_std_comp_id = False
+
+            ent = {'chain_id': s['chain_id'], 'seq_id': [], 'comp_id': [], 'chem_comp_name': [], 'exptl_data': []}
+
+            for i in range(len(s['seq_id'])):
+                seq_id = s['seq_id'][i]
+                comp_id = s['comp_id'][i]
+
+                if self.__get1LetterCode(comp_id) == 'X':
+                    has_non_std_comp_id = True
+
+                    ent['seq_id'].append(seq_id)
+                    ent['comp_id'].append(comp_id)
+
+                    self.__updateChemCompDict(comp_id)
+
+                    if self.__last_comp_id_test: # matches with comp_id in CCD
+                        cc_name = self.__last_chem_comp_dict['_chem_comp.name']
+                        cc_rel_status = self.__last_chem_comp_dict['_chem_comp.pdbx_release_status']
+                        if cc_rel_status == 'REL':
+                            ent['chem_comp_name'].append(cc_name)
+                        else:
+                            ent['chem_comp_name'].append('(Not available due to CCD status code %s)' % cc_rel_status)
+
+                    else:
+                        ent['chem_comp_name'].append(None)
+
+                        warn = 'Non standard residue (%s:%s:%s) did not match with chemical component dictionary (CCD).'
+
+                        self.report.warning.appendDescription('ccd_mismatch', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
+                        self.report.setWarning()
+
+                        if self.__verbose:
+                           self.__lfh.write("+NmrDpUtility.__extractNonStandardResidue() ++ Warning  - %s\n" % warn)
+
+                    ent['exptl_data'].append({'chem_shift': False, 'dist_restraint': False, 'dihed_restraint': False, 'rdc_restraint': False, 'spectral_peak': False, 'coordinate': False})
+
+            if has_non_std_comp_id:
+                asm.append(ent)
+
+        if len(asm) > 0:
+            input_source.setItemValue('non_standard_residue', asm)
 
     def __appendPolymerSequenceAlignment(self):
         """ Append polymer sequence alignment of interesting loops.
@@ -4618,8 +4793,6 @@ class NmrDpUtility(object):
                 sf_category = self.sf_categories[file_type][content_subtype]
                 lp_category = self.lp_categories[file_type][content_subtype]
 
-                # Loop
-
                 if self.__star_data_type[fileListId] == 'Loop':
 
                     sf_data = self.__star_data[fileListId]
@@ -4627,7 +4800,12 @@ class NmrDpUtility(object):
 
                     self.__validateAtomNomenclature__(file_name, file_type, content_subtype, sf_data, sf_framecode, lp_category)
 
-                # Entry/Saveframe
+                elif self.__star_data_type[fileListId] == 'Saveframe':
+
+                    sf_data = self.__star_data[fileListId]
+                    sf_framecode = sf_data.get_tag('sf_framecode')[0]
+
+                    self.__validateAtomNomenclature__(file_name, file_type, content_subtype, sf_data, sf_framecode, lp_category)
 
                 else:
 
@@ -4685,9 +4863,11 @@ class NmrDpUtility(object):
 
                         atom_id_ = atom_id
 
-                        if not self.__combined_mode and (atom_id.startswith('Q') or atom_id.startswith('M')):
+                        if not self.__combined_mode and ((atom_id == 'HN' and self.__csStat.getTypeOfCompId(comp_id)[0]) or atom_id.startswith('Q') or atom_id.startswith('M')):
 
-                            if atom_id.startswith('QQ'):
+                            if atom_id == 'HN':
+                                atom_id_ = self.__nefT.get_star_atom(comp_id, atom_id, leave_unmatched=False)[0][0]
+                            elif atom_id.startswith('QQ'):
                                 atom_id_ = self.__nefT.get_star_atom(comp_id, 'H' + atom_id[2:] + '%', leave_unmatched=False)[0][0]
                             else:
                                 atom_id_ = self.__nefT.get_star_atom(comp_id, 'H' + atom_id[1:] + '%', leave_unmatched=False)[0][0]
@@ -4971,8 +5151,6 @@ class NmrDpUtility(object):
             sf_category = self.sf_categories[file_type][content_subtype]
             lp_category = self.lp_categories[file_type][content_subtype]
 
-            # Loop
-
             if self.__star_data_type[fileListId] == 'Loop':
 
                 sf_data = self.__star_data[fileListId]
@@ -4980,7 +5158,12 @@ class NmrDpUtility(object):
 
                 self.__validateAtomTypeOfCSLoop__(file_name, file_type, sf_data, sf_framecode, lp_category)
 
-            # Entry/Saveframe
+            elif self.__star_data_type[fileListId] == 'Saveframe':
+
+                sf_data = self.__star_data[fileListId]
+                sf_framecode = sf_data.get_tag('sf_framecode')[0]
+
+                self.__validateAtomTypeOfCSLoop__(file_name, file_type, sf_data, sf_framecode, lp_category)
 
             else:
 
@@ -5143,8 +5326,6 @@ class NmrDpUtility(object):
             sf_category = self.sf_categories[file_type][content_subtype]
             lp_category = self.lp_categories[file_type][content_subtype]
 
-            # Loop
-
             if self.__star_data_type[fileListId] == 'Loop':
 
                 sf_data = self.__star_data[fileListId]
@@ -5152,7 +5333,12 @@ class NmrDpUtility(object):
 
                 self.__validateAmbigCodeOfCSLoop__(file_name, sf_data, sf_framecode, lp_category)
 
-            # Entry/Saveframe
+            elif self.__star_data_type[fileListId] == 'Saveframe':
+
+                sf_data = self.__star_data[fileListId]
+                sf_framecode = sf_data.get_tag('sf_framecode')[0]
+
+                self.__validateAmbigCodeOfCSLoop__(file_name, sf_data, sf_framecode, lp_category)
 
             else:
 
@@ -5296,8 +5482,6 @@ class NmrDpUtility(object):
                 if index_tag is None:
                     continue
 
-                # Loop
-
                 if self.__star_data_type[fileListId] == 'Loop':
 
                     sf_data = self.__star_data[fileListId]
@@ -5305,7 +5489,12 @@ class NmrDpUtility(object):
 
                     self.__testIndexConsistency__(file_name, sf_data, sf_framecode, lp_category, index_tag)
 
-                # Entry/Saveframe
+                elif self.__star_data_type[fileListId] == 'Saveframe':
+
+                    sf_data = self.__star_data[fileListId]
+                    sf_framecode = sf_data.get_tag('sf_framecode')[0]
+
+                    self.__testIndexConsistency__(file_name, sf_data, sf_framecode, lp_category, index_tag)
 
                 else:
 
@@ -5424,8 +5613,6 @@ class NmrDpUtility(object):
                 sf_category = self.sf_categories[file_type][content_subtype]
                 lp_category = self.lp_categories[file_type][content_subtype]
 
-                # Loop
-
                 if self.__star_data_type[fileListId] == 'Loop':
 
                     sf_data = self.__star_data[fileListId]
@@ -5433,7 +5620,12 @@ class NmrDpUtility(object):
 
                     self.__testDataConsistencyInLoop__(fileListId, file_name, file_type, content_subtype, sf_data, sf_framecode, lp_category)
 
-                # Entry/Saveframe
+                elif self.__star_data_type[fileListId] == 'Saveframe':
+
+                    sf_data = self.__star_data[fileListId]
+                    sf_framecode = sf_data.get_tag('sf_framecode')[0]
+
+                    self.__testDataConsistencyInLoop__(fileListId, file_name, file_type, content_subtype, sf_data, sf_framecode, lp_category)
 
                 else:
 
@@ -5613,7 +5805,7 @@ class NmrDpUtility(object):
             except:
                 pass
 
-        except Exception as e:
+        except ValueError: #Exception as e:
 
             self.report.error.appendDescription('internal_error', "+NmrDpUtility.__testDataConsistencyInLoop() ++ Error  - %s" % str(e))
             self.report.setError()
@@ -5655,8 +5847,6 @@ class NmrDpUtility(object):
                     sf_category = self.sf_categories[file_type][content_subtype]
                     lp_category = self.lp_categories[file_type][content_subtype]
 
-                    # Loop
-
                     if self.__star_data_type[fileListId] == 'Loop':
 
                         sf_data = self.__star_data_type[fileListId]
@@ -5664,7 +5854,12 @@ class NmrDpUtility(object):
 
                         self.__detectConflictDataInLoop__(file_name, file_type, content_subtype, sf_data, sf_framecode, lp_category)
 
-                    # Entry/Saveframe
+                    elif self.__star_data_type[fileListId] == 'Saveframe':
+
+                        sf_data = self.__star_data[fileListId]
+                        sf_framecode = sf_data.get_tag('sf_framecode')[0]
+
+                        self.__detectConflictDataInLoop__(file_name, file_type, content_subtype, sf_data, sf_framecode, lp_category)
 
                     else:
 
@@ -5887,6 +6082,9 @@ class NmrDpUtility(object):
         """ Perform consistency test on data of auxiliary loops.
         """
 
+        if not self.__combined_mode:
+            return True
+
         __errors = self.report.getTotalErrors()
 
         for fileListId in range(self.__file_path_list_len):
@@ -5904,9 +6102,6 @@ class NmrDpUtility(object):
 
                 sf_category = self.sf_categories[file_type][content_subtype]
                 lp_category = self.lp_categories[file_type][content_subtype]
-
-                if self.__star_data_type[fileListId] == 'Loop':
-                    continue
 
                 for sf_data in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
 
@@ -6230,6 +6425,9 @@ class NmrDpUtility(object):
         """ Perform consistency test on saveframe tags.
         """
 
+        if not self.__combined_mode:
+            return True
+
         __errors = self.report.getTotalErrors()
 
         for fileListId in range(self.__file_path_list_len):
@@ -6250,9 +6448,6 @@ class NmrDpUtility(object):
                 parent_keys = set()
 
                 list_id = 1  # tentative parent key if not exists
-
-                if self.__star_data_type[fileListId] == 'Loop':
-                    continue
 
                 for sf_data in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
 
@@ -6486,8 +6681,6 @@ class NmrDpUtility(object):
 
             add_details = False
 
-            # Loop
-
             if self.__star_data_type[fileListId] == 'Loop':
 
                 sf_data = self.__star_data[fileListId]
@@ -6495,7 +6688,12 @@ class NmrDpUtility(object):
 
                 add_details |= self.__validateCSValue__(fileListId, file_name, file_type, content_subtype, sf_data, sf_framecode, lp_category)
 
-            # Entry/Saveframe
+            elif self.__star_data_type[fileListId] == 'Saveframe':
+
+                sf_data = self.__star_data[fileListId]
+                sf_framecode = sf_data.get_tag('sf_framecode')[0]
+
+                add_details |= self.__validateCSValue__(fileListId, file_name, file_type, content_subtype, sf_data, sf_framecode, lp_category)
 
             else:
 
@@ -6559,9 +6757,9 @@ class NmrDpUtility(object):
                 atom_id = i[atom_id_name]
                 value = i[value_name]
 
-                if file_type == 'nef' or (not self.__combined_mode and (atom_id.startswith('Q') or atom_id.startswith('M'))):
+                if file_type == 'nef' or (not self.__combined_mode and ((atom_id == 'HN' and self.__csStat.getTypeOfCompId(comp_id)[0]) or atom_id.startswith('Q') or atom_id.startswith('M'))):
 
-                    if file_type == 'nef':
+                    if file_type == 'nef' or atom_id == 'HN':
                         _atom_id, ambig_code, details = self.__nefT.get_star_atom(comp_id, atom_id, leave_unmatched=True)
                     elif atom_id.startswith('QQ'):
                         _atom_id, ambig_code, details = self.__nefT.get_star_atom(comp_id, 'H' + atom_id[2:] + '%', leave_unmatched=False)
@@ -7832,156 +8030,175 @@ class NmrDpUtility(object):
             if not content_subtype in input_source_dic['content_subtype'].keys():
                 continue
 
-            if self.__star_data_type[fileListId] == 'Loop':
-                continue
-
             sf_category = self.sf_categories[file_type][content_subtype]
             lp_category = self.lp_categories[file_type][content_subtype]
 
-            item_names = self.item_names_in_rdc_loop[file_type]
-            index_tag = self.index_tags[file_type][content_subtype]
-            chain_id_1_name = item_names['chain_id_1']
-            chain_id_2_name = item_names['chain_id_2']
-            seq_id_1_name = item_names['seq_id_1']
-            seq_id_2_name = item_names['seq_id_2']
-            comp_id_1_name = item_names['comp_id_1']
-            comp_id_2_name = item_names['comp_id_2']
-            atom_id_1_name = item_names['atom_id_1']
-            atom_id_2_name = item_names['atom_id_2']
+            if self.__star_data_type[fileListId] == 'Loop':
 
-            for sf_data in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
+                sf_data = self.__star_data[fileListId]
+                sf_framecode = ''
 
+                self.__testRDCVector__(file_name, file_type, content_subtype, sf_data, sf_framecode, lp_category)
+
+            elif self.__star_data_type[fileListId] == 'Saveframe':
+
+                sf_data = self.__star_data[fileListId]
                 sf_framecode = sf_data.get_tag('sf_framecode')[0]
 
-                try:
+                self.__testRDCVector__(file_name, file_type, content_subtype, sf_data, sf_framecode, lp_category)
 
-                    lp_data = next((l['data'] for l in self.__lp_data[content_subtype] if l['file_name'] == file_name and l['sf_framecode'] == sf_framecode), None)
+            else:
 
-                    if not lp_data is None:
+                for sf_data in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
 
-                        for i in lp_data:
-                            chain_id_1 = i[chain_id_1_name]
-                            seq_id_1 = i[seq_id_1_name]
-                            comp_id_1 = i[comp_id_1_name]
-                            atom_id_1 = i[atom_id_1_name]
-                            chain_id_2 = i[chain_id_2_name]
-                            seq_id_2 = i[seq_id_2_name]
-                            comp_id_2 = i[comp_id_2_name]
-                            atom_id_2 = i[atom_id_2_name]
+                    sf_framecode = sf_data.get_tag('sf_framecode')[0]
 
-                            try:
-                                self.atom_isotopes[atom_id_1[0]]
-                                self.atom_isotopes[atom_id_2[0]]
-                            except KeyError:
-
-                                idx_msg = "[Check row of %s %s] " % (index_tag, i[index_tag])
-
-                                err = "%sNon-magnetic susceptible spin appears in RDC vector (%s:%s:%s:%s, %s:%s:%s:%s)." %\
-                                      (idx_msg, chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2)
-
-                                self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
-                                self.report.setError()
-
-                                if self.__verbose:
-                                    self.__lfh.write("+NmrDpUtility.__testRDCVector() ++ Error  - %s\n" % err)
-
-                            if chain_id_1 != chain_id_2:
-
-                                idx_msg = "[Check row of %s %s] " % (index_tag, i[index_tag])
-
-                                err = "%sInvalid inter-chain RDC vector (%s:%s:%s:%s, %s:%s:%s:%s) in a loop %s." %\
-                                      (idx_msg, chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2, lp_category)
-
-                                self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
-                                self.report.setError()
-
-                                if self.__verbose:
-                                    self.__lfh.write("+NmrDpUtility.__testRDCVector() ++ Error  - %s\n" % err)
-
-                            elif abs(seq_id_1 - seq_id_2) > 1:
-
-                                idx_msg = "[Check row of %s %s] " % (index_tag, i[index_tag])
-
-                                err = "%sInvalid inter-residue RDC vector (%s:%s:%s:%s, %s:%s:%s:%s) in a loop %s." %\
-                                      (idx_msg, chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2, lp_category)
-
-                                self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
-                                self.report.setError()
-
-                                if self.__verbose:
-                                    self.__lfh.write("+NmrDpUtility.__testRDCVector() ++ Error  - %s\n" % err)
-
-                            elif abs(seq_id_1 - seq_id_2) == 1:
-
-                                if self.__csStat.getTypeOfCompId(comp_id_1)[0] and self.__csStat.getTypeOfCompId(comp_id_2)[0] and\
-                                   ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 == 'N') or (seq_id_1 > seq_id_2 and atom_id_1 == 'N' and atom_id_2 == 'C')):
-                                    pass
-
-                                else:
-                                    err = "%sInvalid inter-residue RDC vector (%s:%s:%s:%s, %s:%s:%s:%s) in a loop %s." %\
-                                          (idx_msg, chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2, lp_category)
-
-                                    self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
-                                    self.report.setError()
-
-                                    if self.__verbose:
-                                        self.__lfh.write("+NmrDpUtility.__testRDCVector() ++ Error  - %s\n" % err)
-
-                            elif atom_id_1 == atom_id_2:
-
-                                idx_msg = "[Check row of %s %s] " % (index_tag, i[index_tag])
-
-                                err = "%sZero RDC vector (%s:%s:%s:%s, %s:%s:%s:%s)." %\
-                                      (idx_msg, chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2)
-
-                                self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
-                                self.report.setError()
-
-                                if self.__verbose:
-                                    self.__lfh.write("+NmrDpUtility.__testRDCVector() ++ Error  - %s\n" % err)
-
-                            else:
-
-                                self.__updateChemCompDict(comp_id_1)
-
-                                if self.__last_comp_id_test: # matches with comp_id in CCD
-
-                                    try:
-                                        next(b for b in self.__last_chem_comp_bonds if\
-                                             ((b[self.__ccb_atom_id_1] == atom_id_1 and b[self.__ccb_atom_id_2] == atom_id_2) or\
-                                              (b[self.__ccb_atom_id_1] == atom_id_2 and b[self.__ccb_atom_id_2] == atom_id_1)))
-                                    except StopIteration:
-
-                                        if self.__nefT.validate_comp_atom(comp_id_1, atom_id_1) and self.__nefT.validate_comp_atom(comp_id_2, atom_id_2):
-
-                                            idx_msg = "[Check row of %s %s] " % (index_tag, i[index_tag])
-
-                                            warn = "%sRDC vector over multiple covalent bonds (%s:%s:%s:%s, %s:%s:%s:%s)." %\
-                                                   (idx_msg, chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2)
-
-                                            self.report.warning.appendDescription('remarkable_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
-                                            self.report.setWarning()
-
-                                            if self.__verbose:
-                                                self.__lfh.write("+NmrDpUtility.__testRDCVector() ++ Warning  - %s\n" % warn)
-
-                                            pass
-
-                                        else: # raised error already somewhere because of invalid atom nomenclature
-                                            pass
-
-                                else: # raised warning already somewhere because of unknown comp_id
-                                    pass
-
-                except Exception as e:
-
-                    self.report.error.appendDescription('internal_error', "+NmrDpUtility.__testRDCVector() ++ Error  - %s" % str(e))
-                    self.report.setError()
-
-                    if self.__verbose:
-                        self.__lfh.write("+NmrDpUtility.__testRDCVector() ++ Error  - %s" % str(e))
+                    self.__testRDCVector__(file_name, file_type, content_subtype, sf_data, sf_framecode, lp_category)
 
         return self.report.getTotalErrors() == __errors
+
+    def __testRDCVector__(self, file_name, file_type, content_subtype, sf_data, sf_framecode, lp_category):
+        """ Perform consistency test on RDC bond vectors.
+        """
+
+        item_names = self.item_names_in_rdc_loop[file_type]
+        index_tag = self.index_tags[file_type][content_subtype]
+        chain_id_1_name = item_names['chain_id_1']
+        chain_id_2_name = item_names['chain_id_2']
+        seq_id_1_name = item_names['seq_id_1']
+        seq_id_2_name = item_names['seq_id_2']
+        comp_id_1_name = item_names['comp_id_1']
+        comp_id_2_name = item_names['comp_id_2']
+        atom_id_1_name = item_names['atom_id_1']
+        atom_id_2_name = item_names['atom_id_2']
+
+        try:
+
+            lp_data = next((l['data'] for l in self.__lp_data[content_subtype] if l['file_name'] == file_name and l['sf_framecode'] == sf_framecode), None)
+
+            if not lp_data is None:
+
+                for i in lp_data:
+                    chain_id_1 = i[chain_id_1_name]
+                    seq_id_1 = i[seq_id_1_name]
+                    comp_id_1 = i[comp_id_1_name]
+                    atom_id_1 = i[atom_id_1_name]
+                    chain_id_2 = i[chain_id_2_name]
+                    seq_id_2 = i[seq_id_2_name]
+                    comp_id_2 = i[comp_id_2_name]
+                    atom_id_2 = i[atom_id_2_name]
+
+                    try:
+                        self.atom_isotopes[atom_id_1[0]]
+                        self.atom_isotopes[atom_id_2[0]]
+                    except KeyError:
+
+                        idx_msg = "[Check row of %s %s] " % (index_tag, i[index_tag])
+
+                        err = "%sNon-magnetic susceptible spin appears in RDC vector (%s:%s:%s:%s, %s:%s:%s:%s)." %\
+                              (idx_msg, chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2)
+
+                        self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
+                        self.report.setError()
+
+                        if self.__verbose:
+                            self.__lfh.write("+NmrDpUtility.__testRDCVector() ++ Error  - %s\n" % err)
+
+                    if chain_id_1 != chain_id_2:
+
+                        idx_msg = "[Check row of %s %s] " % (index_tag, i[index_tag])
+
+                        err = "%sInvalid inter-chain RDC vector (%s:%s:%s:%s, %s:%s:%s:%s) in a loop %s." %\
+                              (idx_msg, chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2, lp_category)
+
+                        self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
+                        self.report.setError()
+
+                        if self.__verbose:
+                            self.__lfh.write("+NmrDpUtility.__testRDCVector() ++ Error  - %s\n" % err)
+
+                    elif abs(seq_id_1 - seq_id_2) > 1:
+
+                        idx_msg = "[Check row of %s %s] " % (index_tag, i[index_tag])
+
+                        err = "%sInvalid inter-residue RDC vector (%s:%s:%s:%s, %s:%s:%s:%s) in a loop %s." %\
+                              (idx_msg, chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2, lp_category)
+
+                        self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
+                        self.report.setError()
+
+                        if self.__verbose:
+                            self.__lfh.write("+NmrDpUtility.__testRDCVector() ++ Error  - %s\n" % err)
+
+                    elif abs(seq_id_1 - seq_id_2) == 1:
+
+                        if self.__csStat.getTypeOfCompId(comp_id_1)[0] and self.__csStat.getTypeOfCompId(comp_id_2)[0] and\
+                           ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 == 'N') or (seq_id_1 > seq_id_2 and atom_id_1 == 'N' and atom_id_2 == 'C')):
+                            pass
+
+                        else:
+                            err = "%sInvalid inter-residue RDC vector (%s:%s:%s:%s, %s:%s:%s:%s) in a loop %s." %\
+                                  (idx_msg, chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2, lp_category)
+
+                            self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
+                            self.report.setError()
+
+                            if self.__verbose:
+                                self.__lfh.write("+NmrDpUtility.__testRDCVector() ++ Error  - %s\n" % err)
+
+                    elif atom_id_1 == atom_id_2:
+
+                        idx_msg = "[Check row of %s %s] " % (index_tag, i[index_tag])
+
+                        err = "%sZero RDC vector (%s:%s:%s:%s, %s:%s:%s:%s)." %\
+                              (idx_msg, chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2)
+
+                        self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
+                        self.report.setError()
+
+                        if self.__verbose:
+                            self.__lfh.write("+NmrDpUtility.__testRDCVector() ++ Error  - %s\n" % err)
+
+                    else:
+
+                        self.__updateChemCompDict(comp_id_1)
+
+                        if self.__last_comp_id_test: # matches with comp_id in CCD
+
+                            try:
+                                next(b for b in self.__last_chem_comp_bonds if\
+                                     ((b[self.__ccb_atom_id_1] == atom_id_1 and b[self.__ccb_atom_id_2] == atom_id_2) or\
+                                      (b[self.__ccb_atom_id_1] == atom_id_2 and b[self.__ccb_atom_id_2] == atom_id_1)))
+                            except StopIteration:
+
+                                if self.__nefT.validate_comp_atom(comp_id_1, atom_id_1) and self.__nefT.validate_comp_atom(comp_id_2, atom_id_2):
+
+                                    idx_msg = "[Check row of %s %s] " % (index_tag, i[index_tag])
+
+                                    warn = "%sRDC vector over multiple covalent bonds (%s:%s:%s:%s, %s:%s:%s:%s)." %\
+                                           (idx_msg, chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2)
+
+                                    self.report.warning.appendDescription('remarkable_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
+                                    self.report.setWarning()
+
+                                    if self.__verbose:
+                                        self.__lfh.write("+NmrDpUtility.__testRDCVector() ++ Warning  - %s\n" % warn)
+
+                                    pass
+
+                                else: # raised error already somewhere because of invalid atom nomenclature
+                                    pass
+
+                        else: # raised warning already somewhere because of unknown comp_id
+                            pass
+
+        except Exception as e:
+
+            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__testRDCVector() ++ Error  - %s" % str(e))
+            self.report.setError()
+
+            if self.__verbose:
+                self.__lfh.write("+NmrDpUtility.__testRDCVector() ++ Error  - %s" % str(e))
 
     def __getReducedAtomNotation(self, chain_id_name, chain_id, seq_id_name, seq_id, comp_id_name, comp_id, atom_id_name, atom_id):
         """ Return reduced form of atom notation.
@@ -8045,8 +8262,6 @@ class NmrDpUtility(object):
 
                 list_id = 1
 
-                # Loop
-
                 if self.__star_data_type[fileListId] == 'Loop':
 
                     sf_data = self.__star_data[fileListId]
@@ -8054,7 +8269,12 @@ class NmrDpUtility(object):
 
                     self.__calculateStatsOfExptlData__(fileListId, file_name, file_type, content_subtype, sf_data, list_id, sf_framecode, lp_category, seq_align_dic, asm)
 
-                # Entry/Saveframe
+                elif self.__star_data_type[fileListId] == 'Saveframe':
+
+                    sf_data = self.__star_data[fileListId]
+                    sf_framecode = sf_data.get_tag('sf_framecode')[0]
+
+                    self.__calculateStatsOfExptlData__(fileListId, file_name, file_type, content_subtype, sf_data, list_id, sf_framecode, lp_category, seq_align_dic, asm)
 
                 else:
 
@@ -8469,9 +8689,9 @@ class NmrDpUtility(object):
                                     atom_id = j[atom_id_name]
                                     data_type = str(j[iso_number]) + j[atom_type]
 
-                                    if file_type == 'nef' or (not self.__combined_mode and (atom_id.startswith('Q') or atom_id.startswith('M'))):
+                                    if file_type == 'nef' or (not self.__combined_mode and ((atom_id == 'HN' and self.__csStat.getTypeOfCompId(comp_id)[0]) or atom_id.startswith('Q') or atom_id.startswith('M'))):
 
-                                        if file_type == 'nef':
+                                        if file_type == 'nef' or atom_id == 'HN':
                                             atom_ids = self.__nefT.get_star_atom(comp_id, atom_id, leave_unmatched=False)[0]
                                         elif atom_id.startswith('QQ'):
                                             atom_ids = self.__nefT.get_star_atom(comp_id, 'H' + atom_id[2:] + '%', leave_unmatched=False)[0]
@@ -8608,9 +8828,9 @@ class NmrDpUtility(object):
                                     atom_id = j[atom_id_name]
                                     data_type = str(j[iso_number]) + j[atom_type]
 
-                                    if file_type == 'nef' or (not self.__combined_mode and (atom_id.startswith('Q') or atom_id.startswith('M'))):
+                                    if file_type == 'nef' or (not self.__combined_mode and ((atom_id == 'HN' and self.__csStat.getTypeOfCompId(comp_id)[0]) or atom_id.startswith('Q') or atom_id.startswith('M'))):
 
-                                        if file_type == 'nef':
+                                        if file_type == 'nef' or atom_id == 'HN':
                                             atom_ids = self.__nefT.get_star_atom(comp_id, atom_id, leave_unmatched=False)[0]
                                         elif atom_id.startswith('QQ'):
                                             atom_ids = self.__nefT.get_star_atom(comp_id, 'H' + atom_id[2:] + '%', leave_unmatched=False)[0]
@@ -8734,9 +8954,9 @@ class NmrDpUtility(object):
                                     atom_id = j[atom_id_name]
                                     data_type = str(j[iso_number]) + j[atom_type]
 
-                                    if file_type == 'nef' or (not self.__combined_mode and (atom_id.startswith('Q') or atom_id.startswith('M'))):
+                                    if file_type == 'nef' or (not self.__combined_mode and ((atom_id == 'HN' and self.__csStat.getTypeOfCompId(comp_id)[0]) or atom_id.startswith('Q') or atom_id.startswith('M'))):
 
-                                        if file_type == 'nef':
+                                        if file_type == 'nef' or atom_id == 'HN':
                                             atom_ids = self.__nefT.get_star_atom(comp_id, atom_id, leave_unmatched=False)[0]
                                         elif atom_id.startswith('QQ'):
                                             atom_ids = self.__nefT.get_star_atom(comp_id, 'H' + atom_id[2:] + '%', leave_unmatched=False)[0]
@@ -8849,9 +9069,9 @@ class NmrDpUtility(object):
                                     atom_id = j[atom_id_name]
                                     data_type = str(j[iso_number]) + j[atom_type]
 
-                                    if file_type == 'nef' or (not self.__combined_mode and (atom_id.startswith('Q') or atom_id.startswith('M'))):
+                                    if file_type == 'nef' or (not self.__combined_mode and ((atom_id == 'HN' and self.__csStat.getTypeOfCompId(comp_id)[0]) or atom_id.startswith('Q') or atom_id.startswith('M'))):
 
-                                        if file_type == 'nef':
+                                        if file_type == 'nef' or atom_id == 'HN':
                                             atom_ids = self.__nefT.get_star_atom(comp_id, atom_id, leave_unmatched=False)[0]
                                         elif atom_id.startswith('QQ'):
                                             atom_ids = self.__nefT.get_star_atom(comp_id, 'H' + atom_id[2:] + '%', leave_unmatched=False)[0]
@@ -8956,9 +9176,9 @@ class NmrDpUtility(object):
                                     atom_id = j[atom_id_name]
                                     data_type = str(j[iso_number]) + j[atom_type]
 
-                                    if file_type == 'nef' or (not self.__combined_mode and (atom_id.startswith('Q') or atom_id.startswith('M'))):
+                                    if file_type == 'nef' or (not self.__combined_mode and ((atom_id == 'HN' and self.__csStat.getTypeOfCompId(comp_id)[0]) or atom_id.startswith('Q') or atom_id.startswith('M'))):
 
-                                        if file_type == 'nef':
+                                        if file_type == 'nef' or atom_id == 'HN':
                                             atom_ids = self.__nefT.get_star_atom(comp_id, atom_id, leave_unmatched=False)[0]
                                         elif atom_id.startswith('QQ'):
                                             atom_ids = self.__nefT.get_star_atom(comp_id, 'H' + atom_id[2:] + '%', leave_unmatched=False)[0]
@@ -9027,9 +9247,9 @@ class NmrDpUtility(object):
                 atom_id = i[atom_id_name]
                 value = i[value_name]
 
-                if file_type == 'nef' or (not self.__combined_mode and (atom_id.startswith('Q') or atom_id.startswith('M'))):
+                if file_type == 'nef' or (not self.__combined_mode and ((atom_id == 'HN' and self.__csStat.getTypeOfCompId(comp_id)[0]) or atom_id.startswith('Q') or atom_id.startswith('M'))):
 
-                    if file_type == 'nef':
+                    if file_type == 'nef' or atom_id == 'HN':
                         _atom_id, ambig_code, details = self.__nefT.get_star_atom(comp_id, atom_id, leave_unmatched=True)
                     elif atom_id.startswith('QQ'):
                         _atom_id, ambig_code, details = self.__nefT.get_star_atom(comp_id, 'H' + atom_id[2:] + '%', leave_unmatched=False)
@@ -10516,19 +10736,23 @@ class NmrDpUtility(object):
             data_type = 'intra-residue_constraints'
         elif range_of_seq < 5:
 
-            if file_type == 'nef' or (not self.__combined_mode and (atom_id_1.startswith('Q') or atom_id_1.startswith('M') or atom_id_2.startswith('Q') or atom_id_2.startswith('M'))):
+            if file_type == 'nef' or (not self.__combined_mode and ((atom_id_1 == 'HN' and self.__csStat.getTypeOfCompId(comp_id_1)[0]) or atom_id_1.startswith('Q') or atom_id_1.startswith('M') or (atom_id_2 == 'HN' and self.__csStat.getTypeOfCompId(comp_id_2)[0]) or atom_id_2.startswith('Q') or atom_id_2.startswith('M'))):
 
                 if file_type == 'nef':
                     _atom_id_1 = self.__nefT.get_star_atom(comp_id_1, atom_id_1, leave_unmatched=False)[0]
                     _atom_id_2 = self.__nefT.get_star_atom(comp_id_2, atom_id_2, leave_unmatched=False)[0]
                 else:
-                    if not atom_id_1.startswith('Q') and not atom_id_1.startswith('M'):
+                    if atom_id_1 == 'HN':
+                        _atom_id_1 = self.__nefT.get_star_atom(comp_id_1, atom_id_1, leave_unmatched=False)[0]
+                    elif not atom_id_1.startswith('Q') and not atom_id_1.startswith('M'):
                         _atom_id_1 = atom_id_1
                     elif atom_id_1.startswith('QQ'):
                         _atom_id_1 = self.__nefT.get_star_atom(comp_id_1, 'H' + atom_id_1[2:] + '%', leave_unmatched=False)[0]
                     else:
                         _atom_id_1 = self.__nefT.get_star_atom(comp_id_1, 'H' + atom_id_1[1:] + '%', leave_unmatched=False)[0]
-                    if not atom_id_2.startswith('Q') and not atom_id_2.startswith('M'):
+                    if atom_id_2 == 'HN':
+                        _atom_id_2 = self.__nefT.get_star_atom(comp_id_2, atom_id_2, leave_unmatched=False)[0]
+                    elif not atom_id_2.startswith('Q') and not atom_id_2.startswith('M'):
                         _atom_id_2 = atom_id_2
                     elif atom_id_2.startswith('QQ'):
                         _atom_id_2 = self.__nefT.get_star_atom(comp_id_2, 'H' + atom_id_2[2:] + '%', leave_unmatched=False)[0]
@@ -12440,6 +12664,16 @@ class NmrDpUtility(object):
                 except ValueError:
                     pass
 
+            if len(ensemble) == 0:
+                ensemble = self.__cR.getDictList('rcsb_nmr_ensemble')
+
+                if len(ensemble) > 0 and 'conformers_submitted_total_number' in ensemble[0]:
+
+                    try:
+                        total_model = int(ensemble[0]['conformers_submitted_total_number'])
+                    except ValueError:
+                        pass
+
             if total_model < 2:
                 err = "Coordinate file %s has %s model. Deposition of minimized average structure must be accompanied with ensemble and must be homogeneous with the ensemble." % (file_name, 'no' if total_model == 0 else ('only one' if total_model == 1 else total_model))
 
@@ -13452,8 +13686,6 @@ class NmrDpUtility(object):
 
                 list_id = 1
 
-                # Loop
-
                 if self.__star_data_type[fileListId] == 'Loop':
 
                     sf_data = self.__star_data[fileListId]
@@ -13461,7 +13693,12 @@ class NmrDpUtility(object):
 
                     add_details |= self.__testCoordAtomIdConsistency__(fileListId, file_name, file_type, content_subtype, sf_data, list_id, sf_framecode, lp_category, cif_polymer_sequence, seq_align_dic, nmr2ca, ref_chain_id, coord)
 
-                # Entry/Saveframe
+                elif self.__star_data_type[fileListId] == 'Saveframe':
+
+                    sf_data = self.__star_data[fileListId]
+                    sf_framecode = sf_data.get_tag('sf_framecode')[0]
+
+                    add_details |= self.__testCoordAtomIdConsistency__(fileListId, file_name, file_type, content_subtype, sf_data, list_id, sf_framecode, lp_category, cif_polymer_sequence, seq_align_dic, nmr2ca, ref_chain_id, coord)
 
                 else:
 
@@ -13650,9 +13887,9 @@ class NmrDpUtility(object):
                 if cif_comp_id is None:
                     continue
 
-                if file_type == 'nef' or (not self.__combined_mode and (atom_id.startswith('Q') or atom_id.startswith('M'))):
+                if file_type == 'nef' or (not self.__combined_mode and ((atom_id == 'HN' and self.__csStat.getTypeOfCompId(comp_id)[0]) or atom_id.startswith('Q') or atom_id.startswith('M'))):
 
-                    if file_type == 'nef':
+                    if file_type == 'nef' or atom_id == 'HN':
                         _atom_id, ambig_code, details = self.__nefT.get_star_atom(comp_id, atom_id, leave_unmatched=True)
                     elif atom_id.startswith('QQ'):
                         _atom_id, ambig_code, details = self.__nefT.get_star_atom(comp_id, 'H' + atom_id[2:] + '%', leave_unmatched=False)
@@ -13919,6 +14156,9 @@ class NmrDpUtility(object):
         """ Append index tag if required.
         """
 
+        if not self.__combined_mode:
+            return
+
         for fileListId in range(self.__file_path_list_len):
 
             input_source = self.report.input_sources[fileListId]
@@ -13938,9 +14178,6 @@ class NmrDpUtility(object):
                 index_tag = self.index_tags[file_type][content_subtype]
 
                 if index_tag is None:
-                    continue
-
-                if self.__star_data_type[fileListId] == 'Loop':
                     continue
 
                 for sf_data in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
@@ -14933,8 +15170,6 @@ class NmrDpUtility(object):
                 disulf['warning_description_1'] = None
                 disulf['warning_description_2'] = None
 
-                # Loop
-
                 if self.__star_data_type[fileListId] == 'Loop':
 
                     sf_data = self.__star_data[fileListId]
@@ -14943,8 +15178,13 @@ class NmrDpUtility(object):
                     ca_chem_shift_1, cb_chem_shift_1, ca_chem_shift_2, cb_chem_shift_2 = self.__mapCoordDisulfideBond2Nmr__(file_name, file_type, content_subtype, sf_data, sf_framecode, lp_category,
                                                                                                                             nmr_chain_id_1, nmr_seq_id_1, nmr_comp_id_1, nmr_chain_id_2, nmr_seq_id_2, nmr_comp_id_2)
 
-                # Entry/Saveframe
+                elif self.__star_data_type[fileListId] == 'Saveframe':
 
+                    sf_data = self.__star_data[fileListId]
+                    sf_framecode = sf_data.get_tag('sf_framecode')[0]
+
+                    ca_chem_shift_1, cb_chem_shift_1, ca_chem_shift_2, cb_chem_shift_2 = self.__mapCoordDisulfideBond2Nmr__(file_name, file_type, content_subtype, sf_data, sf_framecode, lp_category,
+                                                                                                                            nmr_chain_id_1, nmr_seq_id_1, nmr_comp_id_1, nmr_chain_id_2, nmr_seq_id_2, nmr_comp_id_2)
                 else:
 
                     for sf_data in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
@@ -15314,8 +15554,6 @@ class NmrDpUtility(object):
                 other['warning_description_1'] = None
                 other['warning_description_2'] = None
 
-                # Loop
-
                 if self.__star_data_type[fileListId] == 'Loop':
 
                     sf_data = self.__star_data[fileListId]
@@ -15324,7 +15562,13 @@ class NmrDpUtility(object):
                     ca_chem_shift_1, cb_chem_shift_1, ca_chem_shift_2, cb_chem_shift_2 = self.__mapCoordOtherBond2Nmr__(file_name, file_type, content_subtype, sf_data, sf_framecode, lp_category,
                                                                                                                         nmr_chain_id_1, nmr_seq_id_1, nmr_comp_id_1, nmr_chain_id_2, nmr_seq_id_2, nmr_comp_id_2)
 
-                # Entry/Saveframe
+                elif self.__star_data_type[fileListId] == 'Saveframe':
+
+                    sf_data = self.__star_data[fileListId]
+                    sf_framecode = sf_data.get_tag('sf_framecode')[0]
+
+                    ca_chem_shift_1, cb_chem_shift_1, ca_chem_shift_2, cb_chem_shift_2 = self.__mapCoordOtherBond2Nmr__(file_name, file_type, content_subtype, sf_data, sf_framecode, lp_category,
+                                                                                                                        nmr_chain_id_1, nmr_seq_id_1, nmr_comp_id_1, nmr_chain_id_2, nmr_seq_id_2, nmr_comp_id_2)
 
                 else:
 

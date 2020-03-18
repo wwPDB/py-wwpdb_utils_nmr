@@ -2901,7 +2901,7 @@ class NmrDpUtility(object):
                     itName = '_' + sf_category + '.sf_framecode'
 
                     if self.__resolve_conflict:
-                        warn = "%s %s should be matched with saveframe name %s. %s will be overwritten." % (itName, sf_framecode, sf_data.name, itName)
+                        warn = "%s '%s' should be matched with saveframe name '%s'. %s will be overwritten." % (itName, sf_framecode, sf_data.name, itName)
 
                         self.report.warning.appendDescription('missing_saveframe', {'file_name': file_name, 'sf_framecode': sf_data.name, 'description': warn})
                         self.report.setWarning()
@@ -3155,7 +3155,7 @@ class NmrDpUtility(object):
                     itName = '_' + sf_category + '.Sf_framecode'
 
                     if self.__resolve_conflict:
-                        warn = "%s %s should be matched with saveframe name %s. %s will be overwritten." % (itName, sf_framecode, sf_data.name, itName)
+                        warn = "%s '%s' should be matched with saveframe name '%s'. %s will be overwritten." % (itName, sf_framecode, sf_data.name, itName)
 
                         self.report.warning.appendDescription('missing_saveframe', {'file_name': file_name, 'sf_framecode': sf_data.name, 'description': warn})
                         self.report.setWarning()

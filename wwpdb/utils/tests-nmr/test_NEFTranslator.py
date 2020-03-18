@@ -559,7 +559,7 @@ class TestNEFTranslator(unittest.TestCase):
              '_Gen_dist_constraint.Comp_ID_1', '_Gen_dist_constraint.Atom_ID_1',
              '_Gen_dist_constraint.Entity_assembly_ID_2', '_Gen_dist_constraint.Comp_index_ID_2',
              '_Gen_dist_constraint.Comp_ID_2', '_Gen_dist_constraint.Atom_ID_2',
-             '_Gen_dist_constraint.Member_logic_code', '_Gen_dist_constraint.Details',
+             '_Gen_dist_constraint.Member_logic_code',
              '_Gen_dist_constraint.Gen_dist_constraint_list_ID'])
 
     def test_get_star_atom(self):
@@ -707,14 +707,13 @@ class TestNEFTranslator(unittest.TestCase):
                   '_Gen_dist_constraint.Comp_index_ID_1', '_Gen_dist_constraint.Comp_ID_1',
                   '_Gen_dist_constraint.Atom_ID_1', '_Gen_dist_constraint.Entity_assembly_ID_2',
                   '_Gen_dist_constraint.Comp_index_ID_2', '_Gen_dist_constraint.Comp_ID_2',
-                  '_Gen_dist_constraint.Atom_ID_2', '_Gen_dist_constraint.Member_logic_code',
-                  '_Gen_dist_constraint.Details']
+                  '_Gen_dist_constraint.Atom_ID_2', '_Gen_dist_constraint.Member_logic_code']
         indat = [['549', '389', '.', 'A', '384', 'TYR', 'HD%', 'A', '449', 'CYS', 'HBy', '1', '.', '.', '.', '.',
                  '5.7', '.']]
         outdat = [[1, '389', '.', 'A', '384', 'TYR', 'HD%', 'A', '449', 'CYS', 'HBy', '1', '.', '.', '.', '.',
-                   '5.7', '.', 1, 13, 'TYR', u'HD1', 1, 78, 'CYS', u'HB3', 'OR', None],
+                   '5.7', '.', 1, 13, 'TYR', u'HD1', 1, 78, 'CYS', u'HB3', 'OR'],
                   [2, '389', '.', 'A', '384', 'TYR', 'HD%', 'A', '449', 'CYS', 'HBy', '1', '.', '.', '.', '.',
-                   '5.7', '.', 1, 13, 'TYR', u'HD2', 1, 78, 'CYS', u'HB3', 'OR', None]]
+                   '5.7', '.', 1, 13, 'TYR', u'HD2', 1, 78, 'CYS', u'HB3', 'OR']]
         self.assertEqual(self.neft.nef2star_dist_row(intag, outtag, indat), outdat)
 
     def test_nef_nmrstar(self):

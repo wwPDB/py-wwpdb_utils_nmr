@@ -20,6 +20,8 @@
 # 05-Mar-2020  M. Yokochi - bidirectional convert between restraint_origin (NEF) and Content_type (NMR-STAR) (v2.0.6, DAOTHER-5485)
 # 06-Mar-2020  M. Yokochi - fix ambiguity_code mapping from NEF atom nomenclature (v2.0.7)
 # 17-Mar-2020  M. Yokochi - fill default value for mandatory saveframe tag (v2.0.8, DAOTHER-5508)
+# 18-Mar-2020  M. Yokochi - convert NEF atom nomenclature in dihedral angle/rdc restraint (v2.0.9)
+# 18-Mar-2020  M. Yokochi - remove invalid NMR-STAR's Details tag in restraint (v2.0.9) 
 ##
 import sys
 import os
@@ -39,7 +41,7 @@ from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
 
 (scriptPath, scriptName) = ntpath.split(os.path.realpath(__file__))
 
-__version__ = 'v2.0.8'
+__version__ = 'v2.0.9'
 
 class NEFTranslator(object):
     """ Bi-directional translator between NEF and NMR-STAR
@@ -2849,13 +2851,15 @@ class NEFTranslator(object):
 
         elif lp_category == '_nef_distance_restraint':
             out_tag.append('_Gen_dist_constraint.Member_logic_code')
-            out_tag.append('_Gen_dist_constraint.Details')
+            # out_tag.append('_Gen_dist_constraint.Details')
             out_tag.append('_Gen_dist_constraint.Gen_dist_constraint_list_ID')
 
         elif lp_category == '_nef_dihedral_restraint':
+            # out_tag.append('_Torsion_angle_constraint.Details')
             out_tag.append('_Torsion_angle_constraint.Torsion_angle_constraint_list_ID')
 
         elif lp_category == '_nef_rdc_restraint':
+            # out_tag.append('_RDC_constraint.Details'
             out_tag.append('_RDC_constraint.RDC_constraint_list_ID')
 
         elif lp_category == '_nef_peak':
@@ -3843,11 +3847,6 @@ class NEFTranslator(object):
                         tag_map[chain_tag] = nef_chain
                         tag_map[seq_tag] = nef_seq
 
-                    if chain_tag == chain_tag_1:
-                        seq_key_1 = seq_key
-                    else:
-                        seq_key_2 = seq_key
-
                 atom_list_1, ambiguity_code_1, details_1 = self.get_star_atom(i[nef_comp_index_1], i[nef_atom_index_1])
                 atom_list_2, ambiguity_code_2, details_2 = self.get_star_atom(i[nef_comp_index_2], i[nef_atom_index_2])
 
@@ -3879,7 +3878,7 @@ class NEFTranslator(object):
                                     buf[data_index] = l
                                 else:
                                     buf[data_index] = data
-
+                            """
                             if details_1 is None and details_2 is None:
                                 pass
 
@@ -3887,13 +3886,8 @@ class NEFTranslator(object):
 
                                 details_index = star_tags.index('_Gen_dist_constraint.Details')
 
-                                if not details_1 is None and details_2 is None:
-                                    buf[details_index] = details_1
-                                elif not details_2 is None and details_1 is None:
-                                    buf[details_index] = details_2
-                                else:
-                                    buf[details_index] = details_1 + ' ' + details_2
-
+                                buf[details_index] = ' '.join(filter(None, [details_1, detail_2]))
+                            """
                         if or_code:
                             buf[member_code_index] = 'OR'
 
@@ -4016,6 +4010,288 @@ class NEFTranslator(object):
                             buf[data_index] = data
 
                 buf_row.append(buf)
+
+            keys = set()
+
+            for i in buf_row:
+
+                key = ''
+                for j in key_indices:
+                    key += ' ' + str(i[j])
+                key.rstrip()
+
+                if key in keys:
+                    continue
+
+                keys.add(key)
+
+                if index_index >= 0:
+                    i[index_index] = index
+
+                index += 1
+
+                out_row.append(i)
+
+        return out_row
+
+    def nef2star_dihed_row(self, nef_tags, star_tags, loop_data):
+        """ Translate rows of data in dihedral restraint loop from NEF into NMR-STAR.
+            @author: Masashi Yokochi
+            @param nef_tags: list of NEF tags
+            @param star_tags: list of NMR-STAR tags
+            @param loop_data: loop data of NEF
+            @return: rows of NMR-STAR
+        """
+
+        out_row = []
+
+        nef_comp_index_1 = nef_tags.index('_nef_dihedral_restraint.residue_name_1')
+        nef_atom_index_1 = nef_tags.index('_nef_dihedral_restraint.atom_name_1')
+        nef_comp_index_2 = nef_tags.index('_nef_dihedral_restraint.residue_name_2')
+        nef_atom_index_2 = nef_tags.index('_nef_dihedral_restraint.atom_name_2')
+        nef_comp_index_3 = nef_tags.index('_nef_dihedral_restraint.residue_name_3')
+        nef_atom_index_3 = nef_tags.index('_nef_dihedral_restraint.atom_name_3')
+        nef_comp_index_4 = nef_tags.index('_nef_dihedral_restraint.residue_name_4')
+        nef_atom_index_4 = nef_tags.index('_nef_dihedral_restraint.atom_name_4')
+
+        for tag in self.get_seq_identifier_tags(nef_tags, 'nef'):
+            chain_tag = tag['chain_tag']
+            seq_tag = tag['seq_tag']
+
+            if chain_tag.endswith('_1'):
+                chain_tag_1 = chain_tag
+                seq_tag_1 = seq_tag
+            elif chain_tag.endswith('_2'):
+                chain_tag_2 = chain_tag
+                seq_tag_2 = seq_tag
+            elif chain_tag.endswith('_3'):
+                chain_tag_3 = chain_tag
+                seq_tag_3 = seq_tag
+            else:
+                chain_tag_4 = chain_tag
+                seq_tag_4 = seq_tag
+
+        try:
+            index_index = star_tags.index('_Torsion_angle_constraint.Index_ID')
+        except ValueError:
+            index_index = -1
+
+        key_indices = [star_tags.index(j) for j in ['_Torsion_angle_constraint.Entity_assembly_ID_1', '_Torsion_angle_constraint.Comp_index_ID_1', '_Torsion_angle_constraint.Atom_ID_1',
+                                                    '_Torsion_angle_constraint.Entity_assembly_ID_2', '_Torsion_angle_constraint.Comp_index_ID_2', '_Torsion_angle_constraint.Atom_ID_2',
+                                                    '_Torsion_angle_constraint.Entity_assembly_ID_3', '_Torsion_angle_constraint.Comp_index_ID_3', '_Torsion_angle_constraint.Atom_ID_3',
+                                                    '_Torsion_angle_constraint.Entity_assembly_ID_4', '_Torsion_angle_constraint.Comp_index_ID_4', '_Torsion_angle_constraint.Atom_ID_4']]
+
+        id_index = nef_tags.index('_nef_dihedral_restraint.restraint_id')
+
+        id_list = sorted(set([int(i[id_index]) for i in loop_data]))
+
+        index = 1
+
+        for id in id_list:
+
+            in_row = [i for i in loop_data if i[id_index] == str(id)]
+
+            buf_row = []
+
+            for i in in_row:
+
+                tag_map = {}
+
+                for tag in self.get_seq_identifier_tags(nef_tags, 'nef'):
+                    chain_tag = tag['chain_tag']
+                    seq_tag = tag['seq_tag']
+
+                    nef_chain = i[nef_tags.index(chain_tag)]
+                    nef_seq = i[nef_tags.index(seq_tag)]
+
+                    seq_key = (nef_chain, nef_seq)
+
+                    try:
+                        tag_map[chain_tag], tag_map[seq_tag] = self.authSeqMap[seq_key]
+                    except KeyError:
+                        tag_map[chain_tag] = nef_chain
+                        tag_map[seq_tag] = nef_seq
+
+                atom_list_1, ambiguity_code_1, details_1 = self.get_star_atom(i[nef_comp_index_1], i[nef_atom_index_1])
+                atom_list_2, ambiguity_code_2, details_2 = self.get_star_atom(i[nef_comp_index_2], i[nef_atom_index_2])
+                atom_list_3, ambiguity_code_3, details_3 = self.get_star_atom(i[nef_comp_index_3], i[nef_atom_index_3])
+                atom_list_4, ambiguity_code_4, details_4 = self.get_star_atom(i[nef_comp_index_4], i[nef_atom_index_4])
+
+                for k in atom_list_1:
+
+                    for l in atom_list_2:
+
+                        for m in atom_list_3:
+
+                            for n in atom_list_4:
+
+                                buf = [None] * len(star_tags)
+
+                                for j in nef_tags:
+
+                                    auth_tag, data_tag = self.get_star_tag(j)
+
+                                    data = i[nef_tags.index(j)]
+
+                                    buf[star_tags.index(auth_tag)] = data
+
+                                    if auth_tag != data_tag:
+
+                                        data_index = star_tags.index(data_tag)
+
+                                        if 'chain_code' in j or 'sequence_code' in j:
+                                            buf[data_index] = tag_map[j]
+                                        elif j == '_nef_dihedral_restraint.atom_name_1':
+                                            buf[data_index] = k
+                                        elif j == '_nef_dihedral_restraint.atom_name_2':
+                                            buf[data_index] = l
+                                        elif j == '_nef_dihedral_restraint.atom_name_3':
+                                            buf[data_index] = m
+                                        elif j == '_nef_dihedral_restraint.atom_name_4':
+                                            buf[data_index] = n
+                                        else:
+                                            buf[data_index] = data
+                                    """
+                                    if details_1 is None and details_2 is None and details_3 is None and details_4 is None:
+                                        pass
+
+                                    else:
+
+                                        details_index = star_tags.index('_Torsion_angle_constraint.Details')
+
+                                        buf[details_index] = ' '.join(filter(None, [details_1, detail_2, details_3, details_4]))
+                                    """
+                                buf_row.append(buf)
+
+            keys = set()
+
+            for i in buf_row:
+
+                key = ''
+                for j in key_indices:
+                    key += ' ' + str(i[j])
+                key.rstrip()
+
+                if key in keys:
+                    continue
+
+                keys.add(key)
+
+                if index_index >= 0:
+                    i[index_index] = index
+
+                index += 1
+
+                out_row.append(i)
+
+        return out_row
+
+    def nef2star_rdc_row(self, nef_tags, star_tags, loop_data):
+        """ Translate rows of data in rdc restraint loop from NEF into NMR-STAR.
+            @author: Masashi Yokochi
+            @param nef_tags: list of NEF tags
+            @param star_tags: list of NMR-STAR tags
+            @param loop_data: loop data of NEF
+            @return: rows of NMR-STAR
+        """
+
+        out_row = []
+
+        nef_comp_index_1 = nef_tags.index('_nef_rdc_restraint.residue_name_1')
+        nef_atom_index_1 = nef_tags.index('_nef_rdc_restraint.atom_name_1')
+        nef_comp_index_2 = nef_tags.index('_nef_rdc_restraint.residue_name_2')
+        nef_atom_index_2 = nef_tags.index('_nef_rdc_restraint.atom_name_2')
+
+        for tag in self.get_seq_identifier_tags(nef_tags, 'nef'):
+            chain_tag = tag['chain_tag']
+            seq_tag = tag['seq_tag']
+
+            if chain_tag.endswith('_1'):
+                chain_tag_1 = chain_tag
+                seq_tag_1 = seq_tag
+            else:
+                chain_tag_2 = chain_tag
+                seq_tag_2 = seq_tag
+
+        try:
+            index_index = star_tags.index('_RDC_constraint.Index_ID')
+        except ValueError:
+            index_index = -1
+
+        key_indices = [star_tags.index(j) for j in ['_RDC_constraint.Entity_assembly_ID_1', '_RDC_constraint.Comp_index_ID_1', '_RDC_constraint.Atom_ID_1',
+                                                    '_RDC_constraint.Entity_assembly_ID_2', '_RDC_constraint.Comp_index_ID_2', '_RDC_constraint.Atom_ID_2']]
+
+        id_index = nef_tags.index('_nef_rdc_restraint.restraint_id')
+
+        id_list = sorted(set([int(i[id_index]) for i in loop_data]))
+
+        index = 1
+
+        for id in id_list:
+
+            in_row = [i for i in loop_data if i[id_index] == str(id)]
+
+            buf_row = []
+
+            for i in in_row:
+
+                tag_map = {}
+
+                for tag in self.get_seq_identifier_tags(nef_tags, 'nef'):
+                    chain_tag = tag['chain_tag']
+                    seq_tag = tag['seq_tag']
+
+                    nef_chain = i[nef_tags.index(chain_tag)]
+                    nef_seq = i[nef_tags.index(seq_tag)]
+
+                    seq_key = (nef_chain, nef_seq)
+
+                    try:
+                        tag_map[chain_tag], tag_map[seq_tag] = self.authSeqMap[seq_key]
+                    except KeyError:
+                        tag_map[chain_tag] = nef_chain
+                        tag_map[seq_tag] = nef_seq
+
+                atom_list_1, ambiguity_code_1, details_1 = self.get_star_atom(i[nef_comp_index_1], i[nef_atom_index_1])
+                atom_list_2, ambiguity_code_2, details_2 = self.get_star_atom(i[nef_comp_index_2], i[nef_atom_index_2])
+
+                for k in atom_list_1:
+
+                    for l in atom_list_2:
+
+                        buf = [None] * len(star_tags)
+
+                        for j in nef_tags:
+
+                            auth_tag, data_tag = self.get_star_tag(j)
+
+                            data = i[nef_tags.index(j)]
+
+                            buf[star_tags.index(auth_tag)] = data
+
+                            if auth_tag != data_tag:
+
+                                data_index = star_tags.index(data_tag)
+
+                                if 'chain_code' in j or 'sequence_code' in j:
+                                    buf[data_index] = tag_map[j]
+                                elif j == '_nef_rdc_restraint.atom_name_1':
+                                    buf[data_index] = k
+                                elif j == '_nef_rdc_restraint.atom_name_2':
+                                    buf[data_index] = l
+                                else:
+                                    buf[data_index] = data
+                            """
+                            if details_1 is None and details_2 is None:
+                                pass
+
+                            else:
+
+                                details_index = star_tags.index('_RDC_constraint.Details')
+
+                                buf[details_index] = ' '.join(filter(None, [details_1, detail_2]))
+                            """
+                        buf_row.append(buf)
 
             keys = set()
 
@@ -4260,23 +4536,23 @@ class NEFTranslator(object):
                                 d[lp.get_tag_names().index('_Gen_dist_constraint.Gen_dist_constraint_list_ID')] = dist_list_id
                                 lp.add_data(d)
 
+                        elif loop.category == '_nef_dihedral_restraint':
+                            rows = self.nef2star_dihed_row(loop.get_tag_names(), lp.get_tag_names(), loop.data)
+                            for d in rows:
+                                d[lp.get_tag_names().index('_Torsion_angle_constraint.Torsion_angle_constraint_list_ID')] = dihed_list_id
+                                lp.add_data(d)
+
+                        elif loop.category == '_nef_rdc_restraint':
+                            rows = self.nef2star_rdc_row(loop.get_tag_names(), lp.get_tag_names(), loop.data)
+                            for d in rows:
+                                d[lp.get_tag_names().index('_RDC_constraint.RDC_constraint_list_ID')] = rdc_list_id
+                                lp.add_data(d)
+
                         else:
 
                             for data in loop.data:
 
-                                if loop.category == '_nef_dihedral_restraint':
-                                    rows = self.nef2star_row(loop.get_tag_names(), lp.get_tag_names(), data)
-                                    for d in rows:
-                                        d[lp.get_tag_names().index('_Torsion_angle_constraint.Torsion_angle_constraint_list_ID')] = dihed_list_id
-                                        lp.add_data(d)
-
-                                elif loop.category == '_nef_rdc_restraint':
-                                    rows = self.nef2star_row(loop.get_tag_names(), lp.get_tag_names(), data)
-                                    for d in rows:
-                                        d[lp.get_tag_names().index('_RDC_constraint.RDC_constraint_list_ID')] = rdc_list_id
-                                        lp.add_data(d)
-
-                                elif loop.category == '_nef_peak':
+                                if loop.category == '_nef_peak':
                                     rows = self.nef2star_row(loop.get_tag_names(), lp.get_tag_names(), data)
                                     for d in rows:
                                         d[lp.get_tag_names().index('_Peak_row_format.Spectral_peak_list_ID')] = peak_list_id
@@ -4461,23 +4737,23 @@ class NEFTranslator(object):
                             d[lp.get_tag_names().index('_Gen_dist_constraint.Gen_dist_constraint_list_ID')] = dist_list_id
                             lp.add_data(d)
 
+                    elif loop.category == '_nef_dihedral_restraint':
+                        rows = self.nef2star_dihed_row(loop.get_tag_names(), lp.get_tag_names(), loop.data)
+                        for d in rows:
+                            d[lp.get_tag_names().index('_Torsion_angle_constraint.Torsion_angle_constraint_list_ID')] = dihed_list_id
+                            lp.add_data(d)
+
+                    elif loop.category == '_nef_rdc_restraint':
+                        rows = self.nef2star_rdc_row(loop.get_tag_names(), lp.get_tag_names(), loop.data)
+                        for d in rows:
+                            d[lp.get_tag_names().index('_RDC_constraint.RDC_constraint_list_ID')] = rdc_list_id
+                            lp.add_data(d)
+
                     else:
 
                         for data in loop.data:
 
-                            if loop.category == '_nef_dihedral_restraint':
-                                rows = self.nef2star_row(loop.get_tag_names(), lp.get_tag_names(), data)
-                                for d in rows:
-                                    d[lp.get_tag_names().index('_Torsion_angle_constraint.Torsion_angle_constraint_list_ID')] = dihed_list_id
-                                    lp.add_data(d)
-
-                            elif loop.category == '_nef_rdc_restraint':
-                                rows = self.nef2star_row(loop.get_tag_names(), lp.get_tag_names(), data)
-                                for d in rows:
-                                    d[lp.get_tag_names().index('_RDC_constraint.RDC_constraint_list_ID')] = rdc_list_id
-                                    lp.add_data(d)
-
-                            elif loop.category == '_nef_peak':
+                            if loop.category == '_nef_peak':
                                 rows = self.nef2star_row(loop.get_tag_names(), lp.get_tag_names(), data)
                                 for d in rows:
                                     d[lp.get_tag_names().index('_Peak_row_format.Spectral_peak_list_ID')] = peak_list_id

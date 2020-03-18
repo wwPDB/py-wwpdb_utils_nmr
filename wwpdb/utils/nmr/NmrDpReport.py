@@ -16,6 +16,7 @@
 # 02-Mar-2020  M. Yokochi - add support for 'nmr-restraints' content type (DAOTHER-4515)
 # 13-Mar-2020  M. Yokochi - change warning type from suspicious_data to anomalous_data
 # 17-Mar-2020  M. Yokochi - remove irrelevant warning types in corrected_warning
+# 18-Mar-2020  M. Yokochi - rename warning type from skipped_sf/lp_category to skipped_saveframe/loop_category
 ##
 """ Wrapper class for data processing report of NMR data.
     @author: Masashi Yokochi
@@ -982,7 +983,7 @@ class NmrDpReport:
 
         if not self.__immutable:
 
-            ignorable_warning_types = ['atom_nomenclature_mismatch', 'ccd_mismatch', 'enum_mismatch_ignorable', 'sequence_mismatch', 'skipped_sf_category', 'skipped_lp_category', 'missing_content',
+            ignorable_warning_types = ['atom_nomenclature_mismatch', 'ccd_mismatch', 'enum_mismatch_ignorable', 'sequence_mismatch', 'skipped_saveframe_category', 'skipped_loop_category', 'missing_content',
                                        'anomalous_data', 'unusual_data', 'remarkable_data', 'insufficient_data', 'conflicted_data', 'inconsistent_data',
                                        'total']
 
@@ -1334,7 +1335,7 @@ class NmrDpReportWarning:
     def __init__(self):
         self.items = ('encouragement', 'missing_content', 'missing_saveframe', 'missing_data', 'enum_mismatch', 'enum_mismatch_ignorable',
                       'disordered_index', 'sequence_mismatch', 'atom_nomenclature_mismatch', 'ccd_mismatch',
-                      'skipped_sf_category', 'skipped_lp_category',
+                      'skipped_saveframe_category', 'skipped_loop_category',
                       'anomalous_data', 'unusual_data', 'remarkable_data', 'insufficient_data',
                       'conflicted_data', 'inconsistent_data', 'redundant_data')
 

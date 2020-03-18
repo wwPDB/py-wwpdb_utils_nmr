@@ -2967,7 +2967,7 @@ class NmrDpUtility(object):
                 sf_data = self.__star_data[file_list_id]
                 sf_framecode = ''
 
-                self.__rescueFormerNef__(file_type, file_name, content_subtype, sf_data, sf_framecode, lp_category)
+                self.__rescueFormerNef__(file_type, file_name, content_subtype, sf_data, sf_framecode, sf_category, lp_category)
 
             elif self.__star_data_type[file_list_id] == 'Saveframe':
 
@@ -2977,7 +2977,7 @@ class NmrDpUtility(object):
                 sf_data = self.__star_data[file_list_id]
                 sf_framecode = sf_data.get_tag('sf_framecode')[0]
 
-                self.__rescueFormerNef__(file_type, file_name, content_subtype, sf_data, sf_framecode, lp_category)
+                self.__rescueFormerNef__(file_type, file_name, content_subtype, sf_data, sf_framecode, sf_category, lp_category)
 
             else:
 
@@ -2985,11 +2985,11 @@ class NmrDpUtility(object):
 
                     sf_framecode = sf_data.get_tag('sf_framecode')[0]
 
-                    self.__rescueFormerNef__(file_type, file_name, content_subtype, sf_data, sf_framecode, lp_category)
+                    self.__rescueFormerNef__(file_type, file_name, content_subtype, sf_data, sf_framecode, sf_category, lp_category)
 
         return True
 
-    def __rescueFormerNef__(self, file_type, file_name, content_subtype, sf_data, sf_framecode, lp_category):
+    def __rescueFormerNef__(self, file_type, file_name, content_subtype, sf_data, sf_framecode, sf_category, lp_category):
         """ Rescue former NEF version prior to 1.0.
         """
 

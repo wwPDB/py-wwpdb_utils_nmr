@@ -31,6 +31,7 @@
 # 17-Mar-2020  M. Yokochi - check consistency between saveframe name and sf_framecode value
 # 18-Mar-2020  M. Yokochi - rename warning type from skipped_sf/lp_category to skipped_saveframe/loop_category
 # 18-Mar-2020  M. Yokochi - support 'Saveframe' data type as separated NMR data (DAOTHER-2737)
+# 19-Mar-2020  M. Yokochi - atom nomenclature should not become a blocker (DAOTHER-5527)
 ##
 """ Wrapper class for data processing for NMR data.
     @author: Masashi Yokochi
@@ -348,7 +349,9 @@ class NmrDpUtility(object):
                                            },
                               'pdbx': {'poly_seq': 'pdbx_poly_seq_scheme',
                                        'non_poly': 'pdbx_nonpoly_scheme',
-                                       'coordinate': 'atom_site'
+                                       'coordinate': 'atom_site',
+                                       'poly_seq_alias': 'ndb_poly_seq_scheme',
+                                       'non_poly_alias': 'ndb_nonpoly_scheme'
                                        }
                               }
 
@@ -563,15 +566,28 @@ class NmrDpUtility(object):
                                                 {'name': 'seq_id', 'type': 'int', 'alt_name': 'seq_id'},
                                                 {'name': 'mon_id', 'type': 'str', 'alt_name': 'comp_id'}
                                                 ],
+                                   'poly_seq_alias': [{'name': 'id', 'type': 'str', 'alt_name': 'chain_id'},
+                                                      {'name': 'seq_id', 'type': 'int', 'alt_name': 'seq_id'},
+                                                      {'name': 'mon_id', 'type': 'str', 'alt_name': 'comp_id'}
+                                                      ],
                                    'non_poly': [{'name': 'asym_id', 'type': 'str', 'alt_name': 'chain_id'},
                                                 {'name': 'pdb_seq_num', 'type': 'int', 'alt_name': 'seq_id'},
                                                 {'name': 'mon_id', 'type': 'str', 'alt_name': 'comp_id'}
                                                 ],
+                                   'non_poly_alias': [{'name': 'asym_id', 'type': 'str', 'alt_name': 'chain_id'},
+                                                      {'name': 'pdb_num', 'type': 'int', 'alt_name': 'seq_id'},
+                                                      {'name': 'mon_id', 'type': 'str', 'alt_name': 'comp_id'}
+                                                      ],
                                    'coordinate': [{'name': 'label_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
                                                   {'name': 'label_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
                                                   {'name': 'label_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
                                                   {'name': 'pdbx_PDB_model_num', 'type': 'int', 'alt_name': 'model_id'}
-                                                  ]
+                                                  ],
+                                   'coordinate_alias': [{'name': 'label_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
+                                                        {'name': 'label_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
+                                                        {'name': 'label_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
+                                                        {'name': 'ndb_model', 'type': 'int', 'alt_name': 'model_id'}
+                                                        ]
                                    }
                           }
 
@@ -12750,13 +12766,21 @@ class NmrDpUtility(object):
 
             elif content_subtype != 'non_poly':
 
-                err = "Category %s is mandatory." % self.lp_categories[file_type][content_subtype]
+                if content_subtype == 'poly_seq' and self.__cR.hasCategory(self.lp_categories[file_type][content_subtype + '_alias']):
+                    lp_counts[content_subtype] = 1
 
-                self.report.error.appendDescription('missing_mandatory_content', {'file_name': file_name, 'description': err})
-                self.report.setError()
+                else:
 
-                if self.__verbose:
-                    self.__lfh.write("+NmrDpUtility.__detectCoordContentSubType() ++ Error  - %s\n" % err)
+                    err = "Category %s is mandatory." % self.lp_categories[file_type][content_subtype]
+
+                    self.report.error.appendDescription('missing_mandatory_content', {'file_name': file_name, 'description': err})
+                    self.report.setError()
+
+                    if self.__verbose:
+                        self.__lfh.write("+NmrDpUtility.__detectCoordContentSubType() ++ Error  - %s\n" % err)
+
+            elif self.__cR.hasCategory(self.lp_categories[file_type][content_subtype + '_alias']):
+                lp_counts[content_subtype] = 1
 
         content_subtypes = {k: lp_counts[k] for k in lp_counts if lp_counts[k] > 0}
 
@@ -12787,11 +12811,18 @@ class NmrDpUtility(object):
         if not content_subtype in input_source_dic['content_subtype'].keys():
             return True
 
+        alias = False
         lp_category = self.lp_categories[file_type][content_subtype]
+        key_items = self.key_items[file_type][content_subtype]
+
+        if not self.__cR.hasCategory(lp_category):
+            alias = True
+            lp_category = self.lp_categories[file_type][content_subtype + '_alias']
+            key_items = self.key_items[file_type][content_subtype + '_alias']
 
         try:
 
-            poly_seq = self.__cR.getPolymerSequence(lp_category, self.key_items[file_type][content_subtype], withStructConf=True)
+            poly_seq = self.__cR.getPolymerSequence(lp_category, key_items, withStructConf=True, alias=alias)
 
             input_source.setItemValue('polymer_sequence', poly_seq)
 
@@ -12854,11 +12885,18 @@ class NmrDpUtility(object):
         if not content_subtype in input_source_dic['content_subtype'].keys():
             return True
 
+        alias = False
         lp_category = self.lp_categories[file_type][content_subtype]
+        key_items = self.key_items[file_type][content_subtype]
+
+        if not self.__cR.hasCategory(lp_category):
+            alias = True
+            lp_category = self.lp_categories[file_type][content_subtype + '_alias']
+            key_items = self.key_items[file_type][content_subtype + '_alias']
 
         try:
 
-            non_poly = self.__cR.getPolymerSequence(lp_category, self.key_items[file_type][content_subtype], withStructConf=False)
+            non_poly = self.__cR.getPolymerSequence(lp_category, key_items, withStructConf=False)
 
             if len(non_poly) > 0:
 
@@ -12901,11 +12939,12 @@ class NmrDpUtility(object):
 
         except ValueError as e:
 
-            self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'category': lp_category, 'description': str(e).strip("'")})
-            self.report.setError()
+            if not alias:
+                self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'category': lp_category, 'description': str(e).strip("'")})
+                self.report.setError()
 
-            if self.__verbose:
-                self.__lfh.write("+NmrDpUtility.__extractCoordNonPolymerScheme() ++ ValueError  - %s" % str(e))
+                if self.__verbose:
+                    self.__lfh.write("+NmrDpUtility.__extractCoordNonPolymerScheme() ++ ValueError  - %s" % str(e))
 
         except Exception as e:
 
@@ -12943,7 +12982,18 @@ class NmrDpUtility(object):
 
             poly_seq_list_set[content_subtype] = []
 
+            alias = False
             lp_category = self.lp_categories[file_type][content_subtype]
+            key_items = self.key_items[file_type][content_subtype]
+
+            if not self.__cR.hasCategory(lp_category):
+                alias = True
+                lp_category = self.lp_categories[file_type][content_subtype + '_alias']
+                key_items = self.key_items[file_type][content_subtype + '_alias']
+
+            elif content_subtype == 'coordinate' and not self.__cR.hasItem(lp_category, 'pdbx_PDB_model_num'):
+                alias = True
+                key_items = self.key_items[file_type][content_subtype + '_alias']
 
             list_id = 1
 
@@ -12951,7 +13001,7 @@ class NmrDpUtility(object):
 
             try:
 
-                poly_seq = self.__cR.getPolymerSequence(lp_category, self.key_items[file_type][content_subtype], withStructConf=False)
+                poly_seq = self.__cR.getPolymerSequence(lp_category, key_items, withStructConf=False)
 
                 if len(poly_seq) > 0:
 
@@ -12977,11 +13027,12 @@ class NmrDpUtility(object):
 
             except ValueError as e:
 
-                self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'category': lp_category, 'description': str(e).strip("'")})
-                self.report.setError()
+                if not(content_subtype == 'non_poly' and alias):
+                    self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'category': lp_category, 'description': str(e).strip("'")})
+                    self.report.setError()
 
-                if self.__verbose:
-                    self.__lfh.write("+NmrDpUtility.__extractCoordPolymerSequenceInLoop() ++ ValueError  - %s" % str(e))
+                    if self.__verbose:
+                        self.__lfh.write("+NmrDpUtility.__extractCoordPolymerSequenceInLoop() ++ ValueError  - %s" % str(e))
 
             except Exception as e:
 
@@ -13203,6 +13254,18 @@ class NmrDpUtility(object):
                 if length == 0:
                     continue
 
+                aligned = [True] * length
+
+                for i in range(length):
+                    myPr = myAlign[i]
+                    if myPr[0].encode() == '.' or myPr[1].encode() == '.':
+                        aligned[i] = False
+                        pass
+                    elif myPr[0] != myPr[1]:
+                        pass
+                    else:
+                        break
+
                 not_aligned = True
                 offset_1 = 0
                 offset_2 = 0
@@ -13212,10 +13275,11 @@ class NmrDpUtility(object):
                 for i in range(length):
                     myPr = myAlign[i]
                     if myPr[0].encode() == '.' or myPr[1].encode() == '.':
-                        if myPr[0].encode() == '.' and myPr[1].encode() != '.'  and not_aligned:
-                            offset_1 += 1
-                        if myPr[0].encode() != '.' and myPr[1].encode() == '.'  and not_aligned:
-                            offset_2 += 1
+                        if not_aligned and not aligned[i]:
+                            if myPr[0].encode() == '.' and myPr[1].encode() != '.':
+                                offset_1 += 1
+                            if myPr[0].encode() != '.' and myPr[1].encode() == '.':
+                                offset_2 += 1
                         unmapped += 1
                     elif myPr[0] != myPr[1]:
                         conflict += 1
@@ -13270,6 +13334,18 @@ class NmrDpUtility(object):
                 if length == 0:
                     continue
 
+                aligned = [True] * length
+
+                for i in range(length):
+                    myPr = myAlign[i]
+                    if myPr[0].encode() == '.' or myPr[1].encode() == '.':
+                        aligned[i] = False
+                        pass
+                    elif myPr[0] != myPr[1]:
+                        pass
+                    else:
+                        break
+
                 not_aligned = True
                 offset_1 = 0
                 offset_2 = 0
@@ -13279,10 +13355,11 @@ class NmrDpUtility(object):
                 for i in range(length):
                     myPr = myAlign[i]
                     if myPr[0].encode() == '.' or myPr[1].encode() == '.':
-                        if myPr[0].encode() == '.' and myPr[1].encode() != '.'  and not_aligned:
-                            offset_1 += 1
-                        if myPr[0].encode() != '.' and myPr[1].encode() == '.'  and not_aligned:
-                            offset_2 += 1
+                        if not_aligned and not aligned[i]:
+                            if myPr[0].encode() == '.' and myPr[1].encode() != '.':
+                                offset_1 += 1
+                            if myPr[0].encode() != '.' and myPr[1].encode() == '.':
+                                offset_2 += 1
                         unmapped += 1
                     elif myPr[0] != myPr[1]:
                         conflict += 1
@@ -13434,6 +13511,60 @@ class NmrDpUtility(object):
 
                     if result['unmapped'] > 0 or result['conflict'] > 0:
 
+                        aligned = [True] * length
+                        seq_id1 = []
+                        seq_id2 = []
+
+                        j = 0
+                        for i in range(length):
+                            myPr = myAlign[i]
+                            if myPr[0].encode() != '.':
+                                seq_id1.append(s1['seq_id'][j])
+                                j += 1
+                            else:
+                                seq_id1.append(None)
+
+                        j = 0
+                        for i in range(length):
+                            myPr = myAlign[i]
+                            if myPr[1].encode() != '.':
+                                seq_id2.append(s2['seq_id'][j])
+                                j += 1
+                            else:
+                                seq_id2.append(None)
+
+                        for i in range(length):
+                            myPr = myAlign[i]
+                            if myPr[0].encode() == '.' or myPr[1].encode() == '.':
+                                aligned[i] = False
+                                pass
+                            elif myPr[0] != myPr[1]:
+                                pass
+                            else:
+                                break
+
+                        for i in reversed(range(length)):
+                            myPr = myAlign[i]
+                            if myPr[0].encode() == '.' or myPr[1].encode() == '.':
+                                aligned[i] = False
+                                pass
+                            elif myPr[0] != myPr[1]:
+                                pass
+                            else:
+                                break
+
+                        for i in range(length):
+                            myPr = myAlign[i]
+                            if aligned[i]:
+                                if myPr[0].encode() == '.':
+                                    if (not seq_id2[i] is None) and ((i > 0 and not seq_id2[i - 1] is None and seq_id2[i - 1] + 1 == seq_id2[i]) or
+                                                                     (i + 1 < len(seq_id2) and not seq_id2[i + 1] is None and seq_id2[i + 1] - 1 == seq_id2[i])):
+                                        aligned[i] = False
+                                if myPr[1].encode() == '.':
+                                    if (not seq_id1[i] is None) and ((i > 0 and not seq_id1[i - 1] is None and seq_id1[i - 1] + 1 == seq_id1[i]) or
+                                                                     (i + 1 < len(seq_id1) and not seq_id1[i + 1] is None and seq_id1[i + 1] - 1 == seq_id1[i])):
+                                        aligned[i] = False
+
                         unmapped = []
                         conflict = []
 
@@ -13445,27 +13576,27 @@ class NmrDpUtility(object):
                             cif_comp_id = myPr[0].encode()
                             nmr_comp_id = myPr[1].encode()
 
-                            if i >= len(s1['seq_id']):
-                                continue
+                            if nmr_comp_id == '.' and cif_comp_id != '.':
 
-                            if nmr_comp_id == '.' or i >= len(s2['seq_id']):
-                                unmapped.append({'ref_seq_id': s1['seq_id'][i], 'ref_comp_id': cif_comp_id})
+                                unmapped.append({'ref_seq_id': seq_id1[i], 'ref_comp_id': cif_comp_id})
 
-                                warn = "%s:%s:%s is not present in the NMR data. Please update the sequence in the Macromolecules section." %\
-                                       (chain_id, s1['seq_id'][i], cif_comp_id)
+                                if not aligned[i]:
+                                    warn = "%s:%s:%s is not present in the NMR data. Please update the sequence in the Macromolecules page." %\
+                                           (chain_id, seq_id1[i], cif_comp_id)
 
-                                self.report.warning.appendDescription('sequence_mismatch', {'file_name': cif_file_name, 'description': warn})
-                                self.report.setWarning()
+                                    self.report.warning.appendDescription('sequence_mismatch', {'file_name': cif_file_name, 'description': warn})
+                                    self.report.setWarning()
 
-                                if self.__verbose:
-                                    self.__lfh.write("+NmrDpUtility.__assignCoordPolymerSequence() ++ Warning  - %s" % warn)
+                                    if self.__verbose:
+                                        self.__lfh.write("+NmrDpUtility.__assignCoordPolymerSequence() ++ Warning  - %s" % warn)
 
-                            elif cif_comp_id != '.' and nmr_comp_id != '.':
-                                conflict.append({'ref_seq_id': s1['seq_id'][i], 'ref_comp_id': cif_comp_id,
-                                                 'test_seq_id': s2['seq_id'][i], 'test_comp_id': nmr_comp_id})
+                            elif nmr_comp_id != cif_comp_id and len(s1['seq_id']) > len(s2['seq_id']):
 
-                                err = "Sequence alignment error between %s (%s:%s:%s) and %s (%s:%s:%s)." %\
-                                      (cif_file_name, chain_id, s1['seq_id'][i], cif_comp_id, nmr_file_name, chain_id2, s2['seq_id'][i], nmr_comp_id)
+                                conflict.append({'ref_seq_id': seq_id1[i], 'ref_comp_id': cif_comp_id,
+                                                 'test_seq_id': seq_id2[i], 'test_comp_id': nmr_comp_id})
+
+                                err = "Sequence alignment error between the coordinate (%s:%s:%s) and the NMR data (%s:%s:%s)." %\
+                                      (chain_id, seq_id1[i], cif_comp_id, chain_id2, seq_id2[i], nmr_comp_id)
 
                                 self.report.error.appendDescription('sequence_mismatch', {'file_name': cif_file_name, 'description': err})
                                 self.report.setError()
@@ -13478,6 +13609,16 @@ class NmrDpUtility(object):
 
                         if len(conflict) > 0:
                             chain_assign['conflict_sequence'] = conflict
+                            chain_assign['conflict'] = len(conflict)
+                            chain_assign['unmapped'] = chain_assign['unmapped'] - len(conflict)
+
+                            result['conflict'] = chain_assign['conflict']
+                            result['unmapped'] = chain_assign['unmapped']
+
+                            _result = next(seq_align for seq_align in seq_align_dic['nmr_poly_seq_vs_model_poly_seq'] if seq_align['ref_chain_id'] == chain_id2 and seq_align['test_chain_id'] == chain_id)
+
+                            _result['conflict'] = chain_assign['conflict']
+                            _result['unmapped'] = chain_assign['unmapped']
 
                     chain_assign_set.append(chain_assign)
 
@@ -13524,19 +13665,75 @@ class NmrDpUtility(object):
 
                     chain_assign = {'ref_chain_id': chain_id, 'test_chain_id': chain_id2, 'length': result['length'], 'conflict': result['conflict'], 'unmapped': result['unmapped'], 'sequence_coverage': result['sequence_coverage']}
 
+                    s1 = next(s for s in nmr_polymer_sequence if s['chain_id'] == chain_id)
+                    s2 = next(s for s in cif_polymer_sequence if s['chain_id'] == chain_id2)
+
+                    self.__pA.setReferenceSequence(s1['comp_id'], 'REF' + _chain_id)
+                    self.__pA.addTestSequence(s2['comp_id'], _chain_id)
+                    self.__pA.doAlign()
+
+                    myAlign = self.__pA.getAlignment(_chain_id)
+
+                    length = len(myAlign)
+
                     if result['unmapped'] > 0 or result['conflict'] > 0:
+
+                        aligned = [True] * length
+                        seq_id1 = []
+                        seq_id2 = []
+
+                        j = 0
+                        for i in range(length):
+                            myPr = myAlign[i]
+                            if myPr[0].encode() != '.':
+                                seq_id1.append(s1['seq_id'][j])
+                                j += 1
+                            else:
+                                seq_id1.append(None)
+
+                        j = 0
+                        for i in range(length):
+                            myPr = myAlign[i]
+                            if myPr[1].encode() != '.':
+                                seq_id2.append(s2['seq_id'][j])
+                                j += 1
+                            else:
+                                seq_id2.append(None)
+
+                        for i in range(length):
+                            myPr = myAlign[i]
+                            if myPr[0].encode() == '.' or myPr[1].encode() == '.':
+                                aligned[i] = False
+                                pass
+                            elif myPr[0] != myPr[1]:
+                                pass
+                            else:
+                                break
+
+                        for i in reversed(range(length)):
+                            myPr = myAlign[i]
+                            if myPr[0].encode() == '.' or myPr[1].encode() == '.':
+                                aligned[i] = False
+                                pass
+                            elif myPr[0] != myPr[1]:
+                                pass
+                            else:
+                                break
+
+                        for i in range(length):
+                            myPr = myAlign[i]
+                            if aligned[i]:
+                                if myPr[0].encode() == '.':
+                                    if (not seq_id2[i] is None) and ((i > 0 and not seq_id2[i - 1] is None and seq_id2[i - 1] + 1 == seq_id2[i]) or
+                                                                     (i + 1 < len(seq_id2) and not seq_id2[i + 1] is None and seq_id2[i + 1] - 1 == seq_id2[i])):
+                                        aligned[i] = False
+                                if myPr[1].encode() == '.':
+                                    if (not seq_id1[i] is None) and ((i > 0 and not seq_id1[i - 1] is None and seq_id1[i - 1] + 1 == seq_id1[i]) or
+                                                                     (i + 1 < len(seq_id1) and not seq_id1[i + 1] is None and seq_id1[i + 1] - 1 == seq_id1[i])):
+                                        aligned[i] = False
 
                         unmapped = []
                         conflict = []
-
-                        s1 = next(s for s in nmr_polymer_sequence if s['chain_id'] == chain_id)
-                        s2 = next(s for s in cif_polymer_sequence if s['chain_id'] == chain_id2)
-
-                        self.__pA.setReferenceSequence(s1['comp_id'], 'REF' + _chain_id)
-                        self.__pA.addTestSequence(s2['comp_id'], _chain_id)
-                        self.__pA.doAlign()
-
-                        myAlign = self.__pA.getAlignment(_chain_id)
 
                         for i in range(len(myAlign)):
                             myPr = myAlign[i]
@@ -13546,27 +13743,27 @@ class NmrDpUtility(object):
                             nmr_comp_id = myPr[0].encode()
                             cif_comp_id = myPr[1].encode()
 
-                            if i >= len(s1['seq_id']):
-                                continue
+                            if cif_comp_id == '.' and nmr_comp_id != '.':
 
-                            if cif_comp_id == '.' or i >= len(s2['seq_id']):
-                                unmapped.append({'ref_seq_id': s1['seq_id'][i], 'ref_comp_id': nmr_comp_id})
+                                unmapped.append({'ref_seq_id': seq_id1[i], 'ref_comp_id': cif_comp_id})
 
-                                warn = "%s:%s:%s is not present in the coordinate. Please update the sequence in the Macromolecules section." %\
-                                       (chain_id, s1['seq_id'][i], nmr_comp_id)
+                                if not aligned[i]:
+                                    warn = "%s:%s:%s is not present in the coordinate. Please update the sequence in the Macromolecules page." %\
+                                           (chain_id, seq_id1[i], nmr_comp_id)
 
-                                self.report.warning.appendDescription('sequence_mismatch', {'file_name': nmr_file_name, 'description': warn})
-                                self.report.setWarning()
+                                    self.report.warning.appendDescription('sequence_mismatch', {'file_name': nmr_file_name, 'description': warn})
+                                    self.report.setWarning()
 
-                                if self.__verbose:
-                                    self.__lfh.write("+NmrDpUtility.__assignCoordPolymerSequence() ++ Warning  - %s" % warn)
+                                    if self.__verbose:
+                                        self.__lfh.write("+NmrDpUtility.__assignCoordPolymerSequence() ++ Warning  - %s" % warn)
 
-                            elif nmr_comp_id != '.' and cif_comp_id != '.':
-                                conflict.append({'ref_seq_id': s1['seq_id'][i], 'ref_comp_id': nmr_comp_id,
-                                                 'test_seq_id': s2['seq_id'][i], 'test_comp_id': cif_comp_id})
+                            elif cif_comp_id != nmr_comp_id and len(s1['seq_id']) > len(s2['seq_id']):
 
-                                err = "Sequence alignment error between %s (%s:%s:%s) and %s (%s:%s:%s)." %\
-                                      (nmr_file_name, chain_id, s1['seq_id'][i], nmr_comp_id, cif_file_name, chain_id2, s2['seq_id'][i], cif_comp_id)
+                                conflict.append({'ref_seq_id': seq_id1[i], 'ref_comp_id': nmr_comp_id,
+                                                 'test_seq_id': seq_id2[i], 'test_comp_id': cif_comp_id})
+
+                                err = "Sequence alignment error between the NMR data (%s:%s:%s) and the coordinate (%s:%s:%s)." %\
+                                      (chain_id, seq_id1[i], nmr_comp_id, chain_id2, seq_id2[i], cif_comp_id)
 
                                 self.report.error.appendDescription('sequence_mismatch', {'file_name': nmr_file_name, 'description': err})
                                 self.report.setError()
@@ -13579,6 +13776,16 @@ class NmrDpUtility(object):
 
                         if len(conflict) > 0:
                             chain_assign['conflict_sequence'] = conflict
+                            chain_assign['conflict'] = len(conflict)
+                            chain_assign['unmapped'] = chain_assign['unmapped'] - len(conflict)
+
+                            result['conflict'] = chain_assign['conflict']
+                            result['unmapped'] = chain_assign['unmapped']
+
+                            _result = next(seq_align for seq_align in seq_align_dic['model_poly_seq_vs_nmr_poly_seq'] if seq_align['ref_chain_id'] == chain_id2 and seq_align['test_chain_id'] == chain_id)
+
+                            _result['conflict'] = chain_assign['conflict']
+                            _result['unmapped'] = chain_assign['unmapped']
 
                     chain_assign_set.append(chain_assign)
 
@@ -13654,13 +13861,15 @@ class NmrDpUtility(object):
 
             try:
 
+                model_num_name = 'pdbx_PDB_model_num' if self.__cR.hasItem('atom_site', 'pdbx_PDB_model_num') else 'ndb_model'
+
                 coord = self.__cR.getDictListWithFilter('atom_site',
                                                         [{'name': 'label_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
-                                                          {'name': 'label_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
-                                                          {'name': 'label_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
-                                                          {'name': 'label_atom_id', 'type': 'str', 'alt_name': 'atom_id'}
+                                                         {'name': 'label_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
+                                                         {'name': 'label_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
+                                                         {'name': 'label_atom_id', 'type': 'str', 'alt_name': 'atom_id'}
                                                          ],
-                                                        [{'name': 'pdbx_PDB_model_num', 'type': 'int', 'value': 1}
+                                                        [{'name': model_num_name, 'type': 'int', 'value': 1}
                                                          ])
 
             except Exception as e:
@@ -13961,7 +14170,7 @@ class NmrDpUtility(object):
                                     loop.data[l][details_col] += ('' if '\n' in _details else '\n') + details
                                 add_details = True
 
-                    else:
+                    elif ca['conflict'] == 0: # no conflict in sequenc alignment
 
                         self.report.error.appendDescription('invalid_atom_nomenclature', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
                         self.report.setError()
@@ -14880,11 +15089,17 @@ class NmrDpUtility(object):
 
             try:
 
+                alias = not self.__cR.hasItem('struct_mon_prot_cis', 'pdbx_PDB_model_num')
+
+                model_num_name = 'ndb_model_num' if alias else 'pdbx_PDB_model_num'
+                label_asym_id_2_name = 'ndb_label_asym_id_2' if alias else 'pdbx_label_asym_id_2'
+                label_seq_id_2_name = 'ndb_label_seq_id_2' if alias else 'pdbx_label_seq_id_2'
+
                 prot_cis = self.__cR.getDictListWithFilter('struct_mon_prot_cis',
-                                                           [{'name': 'pdbx_PDB_model_num', 'type': 'int'}
+                                                           [{'name': model_num_name, 'type': 'int'}
                                                             ],
-                                                           [{'name': 'pdbx_label_asym_id_2', 'type': 'str', 'value': cif_chain_id},
-                                                            {'name': 'pdbx_label_seq_id_2', 'type': 'int', 'value': cif_seq_id}
+                                                           [{'name': label_asym_id_2_name, 'type': 'str', 'value': cif_chain_id},
+                                                            {'name': label_seq_id_2_name, 'type': 'int', 'value': cif_seq_id}
                                                             ])
 
             except Exception as e:
@@ -14930,6 +15145,8 @@ class NmrDpUtility(object):
 
             try:
 
+                model_num_name = 'pdbx_PDB_model_num' if self.__cR.hasItem('atom_site', 'pdbx_PDB_model_num') else 'ndb_model'
+
                 protons = self.__cR.getDictListWithFilter('atom_site',
                                                 [{'name': 'label_atom_id', 'type': 'str', 'alt_name': 'atom_id'}
                                                  ],
@@ -14937,7 +15154,7 @@ class NmrDpUtility(object):
                                                  {'name': 'label_seq_id', 'type': 'int', 'value': cif_seq_id},
                                                  {'name': 'label_comp_id', 'type': 'str', 'value': 'HIS'},
                                                  {'name': 'type_symbol', 'type': 'str', 'value': 'H'},
-                                                 {'name': 'pdbx_PDB_model_num', 'type': 'int', 'value': 1}])
+                                                 {'name': model_num_name, 'type': 'int', 'value': 1}])
 
             except Exception as e:
 
@@ -15936,6 +16153,8 @@ class NmrDpUtility(object):
 
             try:
 
+                model_num_name = 'pdbx_PDB_model_num' if self.__cR.hasItem('atom_site', 'pdbx_PDB_model_num') else 'ndb_model'
+
                 _origin = self.__cR.getDictListWithFilter('atom_site',
                                                 [{'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
                                                  {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
@@ -15944,7 +16163,7 @@ class NmrDpUtility(object):
                                                 [{'name': 'label_asym_id', 'type': 'str', 'value': cif_chain_id},
                                                  {'name': 'label_seq_id', 'type': 'int', 'value': cif_seq_id},
                                                  {'name': 'label_atom_id', 'type': 'str', 'value': nmr_atom_id},
-                                                 {'name': 'pdbx_PDB_model_num', 'type': 'int', 'value': 1}])
+                                                 {'name': model_num_name, 'type': 'int', 'value': 1}])
 
             except Exception as e:
 
@@ -15986,7 +16205,7 @@ class NmrDpUtility(object):
                                                   [{'name': 'Cartn_x', 'type': 'range-float', 'range': {'min_exclusive': (o['x'] - cutoff), 'max_exclusive': (o['x'] + cutoff)}},
                                                    {'name': 'Cartn_y', 'type': 'range-float', 'range': {'min_exclusive': (o['y'] - cutoff), 'max_exclusive': (o['y'] + cutoff)}},
                                                    {'name': 'Cartn_z', 'type': 'range-float', 'range': {'min_exclusive': (o['z'] - cutoff), 'max_exclusive': (o['z'] + cutoff)}},
-                                                   {'name': 'pdbx_PDB_model_num', 'type': 'int', 'value': 1}])
+                                                   {'name': model_num_name, 'type': 'int', 'value': 1}])
 
             except Exception as e:
 
@@ -16003,7 +16222,7 @@ class NmrDpUtility(object):
 
             cutoff2 = cutoff ** 2.0
 
-            neighbor = [n for n in _neighbor if n['seq_id'] != cif_seq_id  and n['type_symbol'] != 'H' and (n['x'] - o['x']) ** 2.0 + (n['y'] - o['y']) ** 2.0 + (n['z'] - o['z']) ** 2.0 < cutoff2 and
+            neighbor = [n for n in _neighbor if n['seq_id'] != cif_seq_id and n['type_symbol'] != 'H' and (n['x'] - o['x']) ** 2.0 + (n['y'] - o['y']) ** 2.0 + (n['z'] - o['z']) ** 2.0 < cutoff2 and
                         n['atom_id'] in self.__csStat.getAromaticAtoms(n['comp_id'])]
 
             if len(neighbor) == 0:
@@ -16148,7 +16367,7 @@ class NmrDpUtility(object):
                                                    {'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
                                                    {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
                                                    {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'},
-                                                   {'name': 'pdbx_PDB_model_num', 'type': 'int', 'alt_name': 'model_id'},
+                                                   {'name': model_num_name, 'type': 'int', 'alt_name': 'model_id'},
                                                    ],
                                                   [{'name': 'label_asym_id', 'type': 'str', 'value': na['cif_chain_id']},
                                                    {'name': 'label_seq_id', 'type': 'int', 'value': na['cif_seq_id']},
@@ -16255,6 +16474,8 @@ class NmrDpUtility(object):
 
             try:
 
+                model_num_name = 'pdbx_PDB_model_num' if self.__cR.hasItem('atom_site', 'pdbx_PDB_model_num') else 'ndb_model'
+
                 _origin = self.__cR.getDictListWithFilter('atom_site',
                                                 [{'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
                                                  {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
@@ -16263,7 +16484,7 @@ class NmrDpUtility(object):
                                                 [{'name': 'label_asym_id', 'type': 'str', 'value': cif_chain_id},
                                                  {'name': 'label_seq_id', 'type': 'int', 'value': cif_seq_id},
                                                  {'name': 'label_atom_id', 'type': 'str', 'value': nmr_atom_id},
-                                                 {'name': 'pdbx_PDB_model_num', 'type': 'int', 'value': 1}])
+                                                 {'name': model_num_name, 'type': 'int', 'value': 1}])
 
             except Exception as e:
 
@@ -16305,7 +16526,7 @@ class NmrDpUtility(object):
                                                   [{'name': 'Cartn_x', 'type': 'range-float', 'range': {'min_exclusive': (o['x'] - cutoff), 'max_exclusive': (o['x'] + cutoff)}},
                                                    {'name': 'Cartn_y', 'type': 'range-float', 'range': {'min_exclusive': (o['y'] - cutoff), 'max_exclusive': (o['y'] + cutoff)}},
                                                    {'name': 'Cartn_z', 'type': 'range-float', 'range': {'min_exclusive': (o['z'] - cutoff), 'max_exclusive': (o['z'] + cutoff)}},
-                                                   {'name': 'pdbx_PDB_model_num', 'type': 'int', 'value': 1}])
+                                                   {'name': model_num_name, 'type': 'int', 'value': 1}])
 
             except Exception as e:
 

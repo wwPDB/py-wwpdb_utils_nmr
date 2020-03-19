@@ -11,6 +11,7 @@
 # 30-Jul-2019   my  - Add 'range-float' as filter item type
 # 05-Aug-2019   my  - Add 'enum' as filter item type
 # 28-Jan-2020   my  - Add 'withStructConf' option of getPolymerSequence
+# 19-Mar-2020   my  - Add hasItem()
 ##
 """ A collection of classes for parsing CIF files.
 """
@@ -112,6 +113,20 @@ class CifReader(object):
 
         return catName in self.__dBlock.getObjNameList()
 
+    def hasItem(self, catName, itName):
+        """ Return whether a given item exists in a category.
+        """
+
+        # get category object
+        catObj = self.__dBlock.getObj(catName)
+
+        if catObj is None:
+            return False
+
+        len_catName = len(catName) + 2
+
+        return itName in [j[len_catName:] for j in catObj.getItemNameList()]
+
     def getDictList(self, catName):
         """ Return a list of dictionaries of a given category.
         """
@@ -140,7 +155,7 @@ class CifReader(object):
 
         return dList
 
-    def getPolymerSequence(self, catName, keyItems, withStructConf=False):
+    def getPolymerSequence(self, catName, keyItems, withStructConf=False, alias=False):
         """ Extracts sequence from a given loop in a CIF file
         """
 
@@ -217,7 +232,7 @@ class CifReader(object):
                     ent['comp_id'] = compDict[c]
 
                     if withStructConf:
-                        ent['struct_conf'] = self.__extractStructConf(c, seqDict[c])
+                        ent['struct_conf'] = self.__extractStructConf(c, seqDict[c], alias)
 
                     asm.append(ent)
 
@@ -226,7 +241,7 @@ class CifReader(object):
 
         return asm
 
-    def __extractStructConf(self, chain_id, seq_ids):
+    def __extractStructConf(self, chain_id, seq_ids, alias=False):
         """ Extract structure conformational annotations.
         """
 
@@ -234,7 +249,7 @@ class CifReader(object):
 
         struct_conf = self.getDictListWithFilter('struct_conf',
                                                  [{'name': 'conf_type_id', 'type': 'str'},
-                                                  {'name': 'pdbx_PDB_helix_id', 'type': 'str'},
+                                                  {'name': 'pdb_id' if alias else 'pdbx_PDB_helix_id', 'type': 'str', 'alt_name': 'helix_id'},
                                                   {'name': 'beg_label_seq_id', 'type': 'int'},
                                                   {'name': 'end_label_seq_id', 'type': 'int'}
                                                   ],
@@ -245,7 +260,7 @@ class CifReader(object):
         for sc in struct_conf:
             for seq_id in range(sc['beg_label_seq_id'], sc['end_label_seq_id'] + 1):
                 if seq_id in seq_ids:
-                    ret[seq_ids.index(seq_id)] = sc['conf_type_id'] + ':' + sc['pdbx_PDB_helix_id']
+                    ret[seq_ids.index(seq_id)] = sc['conf_type_id'] + ':' + sc['helix_id']
 
         struct_sheet_range = self.getDictListWithFilter('struct_sheet_range',
                                                  [{'name': 'sheet_id', 'type': 'str'},

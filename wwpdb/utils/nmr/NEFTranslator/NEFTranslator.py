@@ -21,7 +21,7 @@
 # 06-Mar-2020  M. Yokochi - fix ambiguity_code mapping from NEF atom nomenclature (v2.0.7)
 # 17-Mar-2020  M. Yokochi - fill default value for mandatory saveframe tag (v2.0.8, DAOTHER-5508)
 # 18-Mar-2020  M. Yokochi - convert NEF atom nomenclature in dihedral angle/rdc restraint (v2.0.9)
-# 18-Mar-2020  M. Yokochi - remove invalid NMR-STAR's Details tag in restraint (v2.0.9) 
+# 18-Mar-2020  M. Yokochi - remove invalid NMR-STAR's Details tag in restraint (v2.0.9)
 ##
 import sys
 import os

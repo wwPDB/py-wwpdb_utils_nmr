@@ -4,6 +4,7 @@
 #
 # Updates:
 # 18-Mar-2020  M. Yokochi - support 'Saveframe' data type as separated NMR data (DAOTHER-2737)
+# 19-Mar-2020  M. Yokochi - check chain assignment for identical dimer case (DAOTHER-3343)
 #
 import unittest
 import os
@@ -27,7 +28,8 @@ class TestNmrDpUtility(unittest.TestCase):
                              'loop-double-error': ['2la6-cs-loop-double-error.str'],
                              'loop-double': ['2la6-cs-loop.str', '2la6-cs-loop-2.str'],
                              'daother-5213': ['bmr36129.str'],
-                             'daother-2737': ['rcsb103272-shifts-original.apofepbstar3.str']
+                             'daother-2737': ['rcsb103272-shifts-original.apofepbstar3.str'],
+                             'daother-3343': ['D_1200009291_cs.str']
                              }
         self.model_file_path = {'data': '2la6.cif',
                                 'sf': '2la6.cif',
@@ -37,7 +39,8 @@ class TestNmrDpUtility(unittest.TestCase):
                                 'loop-double-error': '2la6.cif',
                                 'loop-double': '2la6.cif',
                                 'daother-5213': 'pdb_extract_10300.cif',
-                                'daother-2737': 'rcsb103272.cif'
+                                'daother-2737': 'rcsb103272.cif',
+                                'daother-3343': 'D_1200009291_model_P1.cif.V6'
                                 }
         self.utility = NmrDpUtility()
         pass
@@ -90,6 +93,9 @@ class TestNmrDpUtility(unittest.TestCase):
 
     def test_nmr_cs_str_consistency_check_daother_2737(self):
         self.__test_nmr_cs_str_consistency('daother-2737')
+
+    def test_nmr_cs_str_consistency_check_daother_3343(self):
+        self.__test_nmr_cs_str_consistency('daother-3343')
 
 if __name__ == '__main__':
     unittest.main()

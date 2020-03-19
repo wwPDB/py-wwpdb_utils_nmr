@@ -682,6 +682,9 @@ class NmrDpReport:
         if not 'model_poly_seq_vs_nmr_poly_seq' in chain_assign_dic:
             return None
 
+        if chain_assign_dic['model_poly_seq_vs_nmr_poly_seq'] is None:
+            return None
+
         for chain_assign in chain_assign_dic['model_poly_seq_vs_nmr_poly_seq']:
 
             if chain_assign['ref_chain_id'] == cif_chain_id:
@@ -701,6 +704,9 @@ class NmrDpReport:
         chain_assign_dic = self.chain_assignment.get()
 
         if not 'nmr_poly_seq_vs_model_poly_seq' in chain_assign_dic:
+            return None
+
+        if chain_assign_dic['nmr_poly_seq_vs_model_poly_seq'] is None:
             return None
 
         for chain_assign in chain_assign_dic['nmr_poly_seq_vs_model_poly_seq']:
@@ -727,6 +733,9 @@ class NmrDpReport:
         if not 'model_poly_seq_vs_nmr_poly_seq' in chain_assign_dic:
             return None
 
+        if chain_assign_dic['model_poly_seq_vs_nmr_poly_seq'] is None:
+            return None
+
         for chain_assign in chain_assign_dic['model_poly_seq_vs_nmr_poly_seq']:
 
             if chain_assign['ref_chain_id'] == cif_chain_id:
@@ -746,6 +755,9 @@ class NmrDpReport:
         chain_assign_dic = self.chain_assignment.get()
 
         if not 'nmr_poly_seq_vs_model_poly_seq' in chain_assign_dic:
+            return None
+
+        if chain_assign_dic['nmr_poly_seq_vs_model_poly_seq'] is None:
             return None
 
         for chain_assign in chain_assign_dic['nmr_poly_seq_vs_model_poly_seq']:

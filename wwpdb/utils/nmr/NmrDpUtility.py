@@ -12694,6 +12694,8 @@ class NmrDpUtility(object):
                 if self.__verbose:
                     self.__lfh.write("+NmrDpUtility.__parseCoordinate() ++ Warning  - %s\n" % warn)
 
+            return True
+
         except:
             return False
 

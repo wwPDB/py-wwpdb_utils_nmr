@@ -995,7 +995,7 @@ class NmrDpReport:
 
         if not self.__immutable:
 
-            ignorable_warning_types = ['atom_nomenclature_mismatch', 'ccd_mismatch', 'enum_mismatch_ignorable', 'sequence_mismatch', 'skipped_saveframe_category', 'skipped_loop_category', 'missing_content',
+            ignorable_warning_types = ['atom_nomenclature_mismatch', 'ccd_mismatch', 'enum_mismatch_ignorable', 'skipped_saveframe_category', 'skipped_loop_category',
                                        'anomalous_data', 'unusual_data', 'remarkable_data', 'insufficient_data', 'conflicted_data', 'inconsistent_data',
                                        'total']
 

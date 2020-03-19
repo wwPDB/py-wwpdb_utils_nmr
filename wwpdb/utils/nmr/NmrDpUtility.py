@@ -13487,6 +13487,7 @@ class NmrDpUtility(object):
                         _chain_id = chain_id
 
                     result = next(seq_align for seq_align in seq_align_dic['model_poly_seq_vs_nmr_poly_seq'] if seq_align['ref_chain_id'] == chain_id and seq_align['test_chain_id'] == chain_id2)
+                    _result = next(seq_align for seq_align in seq_align_dic['nmr_poly_seq_vs_model_poly_seq'] if seq_align['ref_chain_id'] == chain_id2 and seq_align['test_chain_id'] == chain_id)
 
                     chain_assign = {'ref_chain_id': chain_id, 'test_chain_id': chain_id2, 'length': result['length'], 'conflict': result['conflict'], 'unmapped': result['unmapped'], 'sequence_coverage': result['sequence_coverage']}
 
@@ -13567,6 +13568,8 @@ class NmrDpUtility(object):
 
                         unmapped = []
                         conflict = []
+                        offset_1 = 0
+                        offset_2 = 0
 
                         for i in range(length):
                             myPr = myAlign[i]
@@ -13604,6 +13607,86 @@ class NmrDpUtility(object):
                                 if self.__verbose:
                                     self.__lfh.write("+NmrDpUtility.__assignCoordPolymerSequence() ++ Error  - %s" % err)
 
+                                ref_code = result['ref_code']
+                                test_code = result['test_code']
+                                ref_gauge_code = result['ref_gauge_code']
+                                test_gauge_code = result['test_gauge_code']
+
+                                _ref_code = _result['ref_code']
+                                _test_code = _result['test_code']
+                                _ref_gauge_code = _result['ref_gauge_code']
+                                _test_gauge_code = _result['test_gauge_code']
+
+                                if cif_comp_id == '.':
+
+                                    offset = 0
+                                    hit = False
+                                    while i + offset >= 0:
+                                        if not seq_id1[i + offset] is None:
+                                            hit = True
+                                            break
+                                        offset -= 1
+
+                                    if not hit:
+                                        offset = 0
+                                        while i + offset < length:
+                                            if not seq_id1[i + offset] is None:
+                                                hit = True
+                                            offset += 1
+
+                                    p = offset_1 + s1['seq_id'].index(seq_id1[i + offset]) - offset
+
+                                    ref_code = ref_code[0:p] + '-' + ref_code[p:]
+                                    ref_gauge_code = ref_gauge_code[0:p] + ' ' + ref_gauge_code[p:]
+
+                                    result['ref_code'] = ref_code
+                                    result['ref_gauge_code'] = ref_gauge_code
+                                    result['mid_code'] = self.__getMiddleCode(ref_code, test_code)
+
+                                    _test_code = _test_code[0:p] + '-' + _test_code[p:]
+                                    _test_gauge_code = _test_gauge_code[0:p] + ' ' + _test_gauge_code[p:]
+
+                                    _result['test_code'] = _test_code
+                                    _result['test_gauge_code'] = _test_gauge_code
+                                    _result['mid_code'] = self.__getMiddleCode(_ref_code, _test_code)
+
+                                    offset_1 += 1
+
+                                elif nmr_comp_id == '.':
+
+                                    offset = 0
+                                    hit = False
+                                    while i + offset >= 0:
+                                        if not seq_id2[i + offset] is None:
+                                            hit = True
+                                            break
+                                        offset -= 1
+
+                                    if not hit:
+                                        offset = 0
+                                        while i + offset < length:
+                                            if not seq_id2[i + offset] is None:
+                                                hit = True
+                                            offset += 1
+
+                                    p = offset_2 + s2['seq_id'].index(seq_id2[i + offset]) - offset
+
+                                    test_code = test_code[0:p] + '-' + test_code[p:]
+                                    test_gauge_code = test_gauge_code[0:p] + ' ' + test_gauge_code[p:]
+
+                                    result['test_code'] = test_code
+                                    result['test_gauge_code'] = test_gauge_code
+                                    result['mid_code'] = self.__getMiddleCode(ref_code, test_code)
+
+                                    _ref_code = _ref_code[0:p] + '-' + _ref_code[p:]
+                                    _ref_gauge_code = _ref_gauge_code[0:p] + ' ' + _ref_gauge_code[p:]
+
+                                    _result['ref_code'] = _ref_code
+                                    _result['ref_gauge_code'] = _ref_gauge_code
+                                    _result['mid_code'] = self.__getMiddleCode(_ref_code, _test_code)
+
+                                    offset_2 += 1
+
                         if len(unmapped) > 0:
                             chain_assign['unmapped_sequence'] = unmapped
 
@@ -13614,8 +13697,6 @@ class NmrDpUtility(object):
 
                             result['conflict'] = chain_assign['conflict']
                             result['unmapped'] = chain_assign['unmapped']
-
-                            _result = next(seq_align for seq_align in seq_align_dic['nmr_poly_seq_vs_model_poly_seq'] if seq_align['ref_chain_id'] == chain_id2 and seq_align['test_chain_id'] == chain_id)
 
                             _result['conflict'] = chain_assign['conflict']
                             _result['unmapped'] = chain_assign['unmapped']
@@ -13662,6 +13743,7 @@ class NmrDpUtility(object):
                         _chain_id = chain_id
 
                     result = next(seq_align for seq_align in seq_align_dic['nmr_poly_seq_vs_model_poly_seq'] if seq_align['ref_chain_id'] == chain_id and seq_align['test_chain_id'] == chain_id2)
+                    _result = next(seq_align for seq_align in seq_align_dic['model_poly_seq_vs_nmr_poly_seq'] if seq_align['ref_chain_id'] == chain_id2 and seq_align['test_chain_id'] == chain_id)
 
                     chain_assign = {'ref_chain_id': chain_id, 'test_chain_id': chain_id2, 'length': result['length'], 'conflict': result['conflict'], 'unmapped': result['unmapped'], 'sequence_coverage': result['sequence_coverage']}
 
@@ -13734,6 +13816,8 @@ class NmrDpUtility(object):
 
                         unmapped = []
                         conflict = []
+                        offset_1 = 0
+                        offset_2 = 0
 
                         for i in range(len(myAlign)):
                             myPr = myAlign[i]
@@ -13771,6 +13855,85 @@ class NmrDpUtility(object):
                                 if self.__verbose:
                                     self.__lfh.write("+NmrDpUtility.__assignCoordPolymerSequence() ++ Error  - %s" % err)
 
+                                ref_code = result['ref_code']
+                                test_code = result['test_code']
+                                ref_gauge_code = result['ref_gauge_code']
+                                test_gauge_code = result['test_gauge_code']
+
+                                _ref_code = _result['ref_code']
+                                _test_code = _result['test_code']
+                                _ref_gauge_code = _result['ref_gauge_code']
+                                _test_gauge_code = _result['test_gauge_code']
+
+                                if nmr_comp_id == '.':
+
+                                    offset = 0
+                                    hit = False
+                                    while i + offset >= 0:
+                                        if not seq_id1[i + offset] is None:
+                                            hit = True
+                                            break
+                                        offset -= 1
+
+                                    if not hit:
+                                        offset = 0
+                                        while i + offset < length:
+                                            if not seq_id1[i + offset] is None:
+                                                hit = True
+                                            offset += 1
+
+                                    p = offset_1 + s1['seq_id'].index(seq_id1[i + offset]) - offset
+
+                                    ref_code = ref_code[0:p] + '-' + ref_code[p:]
+                                    ref_gauge_code = ref_gauge_code[0:p] + ' ' + ref_gauge_code[p:]
+
+                                    result['ref_code'] = ref_code
+                                    result['ref_gauge_code'] = ref_gauge_code
+                                    result['mid_code'] = self.__getMiddleCode(ref_code, test_code)
+
+                                    _test_code = _test_code[0:p] + '-' + _test_code[p:]
+                                    _test_gauge_code = _test_gauge_code[0:p] + ' ' + _test_gauge_code[p:]
+
+                                    _result['test_code'] = _test_code
+                                    _result['test_gauge_code'] = _test_gauge_code
+                                    _result['mid_code'] = self.__getMiddleCode(_ref_code, _test_code)
+
+                                    offset_1 += 1
+
+                                elif cif_comp_id == '.':
+
+                                    offset = 0
+                                    hit = False
+                                    while i + offset >= 0:
+                                        if not seq_id2[i + offset] is None:
+                                            hit = True
+                                            break
+                                        offset -= 1
+
+                                    if not hit:
+                                        offset = 0
+                                        while i + offset < length:
+                                            if not seq_id2[i + offset] is None:
+                                                hit = True
+                                            offset += 1
+
+                                    p = offset_2 + s2['seq_id'].index(seq_id2[i + offset]) - offset
+                                    test_code = test_code[0:p] + '-' + test_code[p:]
+                                    test_gauge_code = test_gauge_code[0:p] + ' ' + test_gauge_code[p:]
+
+                                    result['test_code'] = test_code
+                                    result['test_gauge_code'] = test_gauge_code
+                                    result['mid_code'] = self.__getMiddleCode(ref_code, test_code)
+
+                                    _ref_code = _ref_code[0:p] + '-' + _ref_code[p:]
+                                    _ref_gauge_code = _ref_gauge_code[0:p] + ' ' + _ref_gauge_code[p:]
+
+                                    _result['ref_code'] = _ref_code
+                                    _result['ref_gauge_code'] = _ref_gauge_code
+                                    _result['mid_code'] = self.__getMiddleCode(_ref_code, _test_code)
+
+                                    offset_2 += 1
+
                         if len(unmapped) > 0:
                             chain_assign['unmapped_sequence'] = unmapped
 
@@ -13781,8 +13944,6 @@ class NmrDpUtility(object):
 
                             result['conflict'] = chain_assign['conflict']
                             result['unmapped'] = chain_assign['unmapped']
-
-                            _result = next(seq_align for seq_align in seq_align_dic['model_poly_seq_vs_nmr_poly_seq'] if seq_align['ref_chain_id'] == chain_id2 and seq_align['test_chain_id'] == chain_id)
 
                             _result['conflict'] = chain_assign['conflict']
                             _result['unmapped'] = chain_assign['unmapped']

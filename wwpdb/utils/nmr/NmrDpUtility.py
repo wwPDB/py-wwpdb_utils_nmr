@@ -13942,7 +13942,7 @@ class NmrDpUtility(object):
                                 if nmr_comp_id == '.':
                                     nmr_seq_code += ', insersion error'
 
-                                err = "Sequence alignment error between the NMR data (%s:%s:%s) and the coordinate (%s:%s:%s)." %\
+                                err = "Sequence alignment error between the NMR data (%s) and the coordinate (%s)." %\
                                       (nmr_seq_code, cif_seq_code)
 
                                 self.report.error.appendDescription('sequence_mismatch', {'file_name': nmr_file_name, 'description': err})

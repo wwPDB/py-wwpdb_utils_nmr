@@ -84,6 +84,10 @@ class NmrDpUtility(object):
         self.__resolve_conflict = False
         # whether to detect missing mandatory tags as errors
         self.__check_mandatory_tag = False
+        # whether to detect consistency of author sequence (nmr-star specific)
+        self.__check_auth_seq = False
+        # whether to detect empty row in a loop
+        self.__check_empty_loop = False
 
         # default entry_id
         self.__entry_id__ = 'UNNAMED'
@@ -3638,7 +3642,6 @@ class NmrDpUtility(object):
                     input_source.setItemValue('polymer_sequence', poly_seq)
 
                     if file_type == 'nmr-star':
-                        continue
 
                         auth_poly_seq = self.__nefT.get_star_auth_seq(sf_data, lp_category)[0]
 
@@ -3678,16 +3681,16 @@ class NmrDpUtility(object):
                                             total += 1
 
                                         except ValueError:
-                                            pass
-                                            """
-                                            warn = "Auth_seq_ID '%s' (Auth_asym_ID %s, Auth_comp_ID %s) should be a integer." % (auth_seq_id, auth_asym_id, auth_comp_ids[j])
 
-                                            self.report.warning.appendDescription('sequence_mismatch', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
-                                            self.report.setWarning()
+                                            if self.__check_auth_seq:
+                                                warn = "Auth_seq_ID '%s' (Auth_asym_ID %s, Auth_comp_ID %s) should be a integer." % (auth_seq_id, auth_asym_id, auth_comp_ids[j])
 
-                                            if self.__verbose:
-                                                self.__lfh.write("+NmrDpUtility.__extractPolymerSequence() ++ Warning  - %s\n" % warn)
-                                            """
+                                                self.report.warning.appendDescription('sequence_mismatch', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
+                                                self.report.setWarning()
+
+                                                if self.__verbose:
+                                                    self.__lfh.write("+NmrDpUtility.__extractPolymerSequence() ++ Warning  - %s\n" % warn)
+
                                     if total > 1:
 
                                         offset = collections.Counter(offsets).most_common()[0][0]
@@ -3705,16 +3708,15 @@ class NmrDpUtility(object):
                                                 continue
 
                                             if _auth_seq_id - _seq_ids[j] != offset:
-                                                pass
-                                                """
-                                                warn = "Auth_seq_ID '%s' is inconsistent with '%d' (Auth_asym_ID %s, Auth_comp_ID %s)." % (auth_seq_id, seq_ids[j] + offset, auth_asym_id, auth_comp_ids[j])
 
-                                                self.report.warning.appendDescription('sequence_mismatch', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
-                                                self.report.setWarning()
+                                                if self.__check_auth_seq:
+                                                    warn = "Auth_seq_ID '%s' is inconsistent with '%d' (Auth_asym_ID %s, Auth_comp_ID %s)." % (auth_seq_id, seq_ids[j] + offset, auth_asym_id, auth_comp_ids[j])
 
-                                                if self.__verbose:
-                                                    self.__lfh.write("+NmrDpUtility.__extractPolymerSequence() ++ Warning  - %s\n" % warn)
-                                                """
+                                                    self.report.warning.appendDescription('sequence_mismatch', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
+                                                    self.report.setWarning()
+
+                                                    if self.__verbose:
+                                                        self.__lfh.write("+NmrDpUtility.__extractPolymerSequence() ++ Warning  - %s\n" % warn)
 
                                 for i in range(len(comp_ids)):
 
@@ -3733,15 +3735,16 @@ class NmrDpUtility(object):
 
                                         auth_asym_id = auth_asym_ids[j]
                                         auth_seq_id = auth_seq_ids[j]
-                                        """
-                                        warn = "Auth_comp_ID %s (Auth_asym_ID %s, Auth_seq_ID %s) is inconsistent with %s (Entity_assembly_ID %s, Seq_ID %s)." % (auth_comp_id, auth_asym_id, auth_seq_id, comp_id, chain_id, seq_id)
 
-                                        self.report.warning.appendDescription('sequence_mismatch', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
-                                        self.report.setWarning()
+                                        if self.__check_auth_seq:
+                                            warn = "Auth_comp_ID %s (Auth_asym_ID %s, Auth_seq_ID %s) is inconsistent with %s (Entity_assembly_ID %s, Seq_ID %s)." % (auth_comp_id, auth_asym_id, auth_seq_id, comp_id, chain_id, seq_id)
 
-                                        if self.__verbose:
-                                            self.__lfh.write("+NmrDpUtility.__extractPolymerSequence() ++ Warning  - %s\n" % warn)
-                                        """
+                                            self.report.warning.appendDescription('sequence_mismatch', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
+                                            self.report.setWarning()
+
+                                            if self.__verbose:
+                                                self.__lfh.write("+NmrDpUtility.__extractPolymerSequence() ++ Warning  - %s\n" % warn)
+
                                         break
 
                     continue
@@ -3943,16 +3946,16 @@ class NmrDpUtility(object):
                                         total += 1
 
                                     except ValueError:
-                                        pass
-                                        """
-                                        warn = "Auth_seq_ID '%s' (Auth_asym_ID %s, Auth_comp_ID %s) should be a integer." % (auth_seq_id, auth_asym_id, auth_comp_ids[j])
 
-                                        self.report.warning.appendDescription('sequence_mismatch', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
-                                        self.report.setWarning()
+                                        if self.__check_auth_seq:
+                                            warn = "Auth_seq_ID '%s' (Auth_asym_ID %s, Auth_comp_ID %s) should be a integer." % (auth_seq_id, auth_asym_id, auth_comp_ids[j])
 
-                                        if self.__verbose:
-                                            self.__lfh.write("+NmrDpUtility.__extractPolymerSequenceInLoop() ++ Warning  - %s\n" % warn)
-                                        """
+                                            self.report.warning.appendDescription('sequence_mismatch', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
+                                            self.report.setWarning()
+
+                                            if self.__verbose:
+                                                self.__lfh.write("+NmrDpUtility.__extractPolymerSequenceInLoop() ++ Warning  - %s\n" % warn)
+
                                 if total > 1:
 
                                     offset = collections.Counter(offsets).most_common()[0][0]
@@ -3971,16 +3974,15 @@ class NmrDpUtility(object):
                                             continue
 
                                         if _auth_seq_id - _seq_ids[j] != offset:
-                                            pass
-                                            """
-                                            warn = "Auth_seq_ID '%s' is inconsistent with '%d' (Auth_asym_ID %s, Auth_comp_ID %s)." % (auth_seq_id, seq_ids[j] + offset, auth_asym_id, auth_comp_ids[j])
 
-                                            self.report.warning.appendDescription('sequence_mismatch', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
-                                            self.report.setWarning()
+                                            if self.__check_auth_seq:
+                                                warn = "Auth_seq_ID '%s' is inconsistent with '%d' (Auth_asym_ID %s, Auth_comp_ID %s)." % (auth_seq_id, seq_ids[j] + offset, auth_asym_id, auth_comp_ids[j])
 
-                                            if self.__verbose:
-                                                self.__lfh.write("+NmrDpUtility.__extractPolymerSequenceInLoop() ++ Warning  - %s\n" % warn)
-                                            """
+                                                self.report.warning.appendDescription('sequence_mismatch', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
+                                                self.report.setWarning()
+
+                                                if self.__verbose:
+                                                    self.__lfh.write("+NmrDpUtility.__extractPolymerSequenceInLoop() ++ Warning  - %s\n" % warn)
 
                             for i in range(len(comp_ids)):
 
@@ -3999,15 +4001,16 @@ class NmrDpUtility(object):
 
                                     auth_asym_id = auth_asym_ids[j]
                                     auth_seq_id = auth_seq_ids[j]
-                                    """
-                                    warn = "Auth_comp_ID %s (Auth_asym_ID %s, Auth_seq_ID %s) is inconsistent with %s (Entity_assembly_ID %s, Seq_ID %s)." % (auth_comp_id, auth_asym_id, auth_seq_id, comp_id, chain_id, seq_id)
 
-                                    self.report.warning.appendDescription('sequence_mismatch', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
-                                    self.report.setWarning()
+                                    if self.__check_auth_seq:
+                                        warn = "Auth_comp_ID %s (Auth_asym_ID %s, Auth_seq_ID %s) is inconsistent with %s (Entity_assembly_ID %s, Seq_ID %s)." % (auth_comp_id, auth_asym_id, auth_seq_id, comp_id, chain_id, seq_id)
 
-                                    if self.__verbose:
-                                        self.__lfh.write("+NmrDpUtility.__extractPolymerSequenceInLoop() ++ Warning  - %s\n" % warn)
-                                    """
+                                        self.report.warning.appendDescription('sequence_mismatch', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
+                                        self.report.setWarning()
+
+                                        if self.__verbose:
+                                            self.__lfh.write("+NmrDpUtility.__extractPolymerSequenceInLoop() ++ Warning  - %s\n" % warn)
+
                                     break
 
         except KeyError as e:
@@ -5835,8 +5838,8 @@ class NmrDpUtility(object):
 
             if self.__verbose:
                 self.__lfh.write("+NmrDpUtility.__testDataConsistencyInLoop() ++ Error  - %s" % str(e))
-        """
-        if (not lp_data is None) and len(lp_data) == 0:
+
+        if (not lp_data is None) and len(lp_data) == 0 and self.__check_empty_loop:
 
             warn = "Unexpectedly, a loop has no rows."
 
@@ -5845,7 +5848,7 @@ class NmrDpUtility(object):
 
             if self.__verbose:
                 self.__lfh.write("+NmrDpUtility.__testDataConsistencyInLoop() ++ Warning  - %s\n" % warn)
-        """
+
     def __detectConflictDataInLoop(self):
         """ Detect redundant/inconsistent data of interesting loops.
         """
@@ -9566,33 +9569,35 @@ class NmrDpUtility(object):
 
                             pro['in_cis_peptide_bond'] = self.__isProtCis(chain_id, seq_id)
 
-                            if (pro['in_cis_peptide_bond'] and pro['cis_trans_pred'] != 'cis') or (not pro['in_cis_peptide_bond'] and pro['cis_trans_pred'] != 'trans'):
-                                item = None
-                                if ',' in pro['cis_trans_pred']:
-                                    if (pro['in_cis_peptide_bond'] and cis > trs) or\
-                                       (not pro['in_cis_peptide_bond'] and trs > cis):
-                                        pass
+                            if pro['cis_trans_pred'] != 'unknown':
+
+                                if (pro['in_cis_peptide_bond'] and pro['cis_trans_pred'] != 'cis') or (not pro['in_cis_peptide_bond'] and pro['cis_trans_pred'] != 'trans'):
+                                    item = None
+                                    if ',' in pro['cis_trans_pred']:
+                                        if (pro['in_cis_peptide_bond'] and cis > trs) or\
+                                           (not pro['in_cis_peptide_bond'] and trs > cis):
+                                            pass
+                                        else:
+                                            item = 'unusual_data'
                                     else:
-                                        item = 'unusual_data'
-                                else:
-                                    item = 'anomalous_data'
+                                        item = 'anomalous_data'
 
-                                if not item is None:
+                                    if not item is None:
 
-                                    shifts = ''
-                                    if not cb_chem_shift is None:
-                                        shifts += 'CB %s, ' % cb_chem_shift
-                                    if not cg_chem_shift is None:
-                                        shifts += 'CG %s, ' % cg_chem_shift
+                                        shifts = ''
+                                        if not cb_chem_shift is None:
+                                            shifts += 'CB %s, ' % cb_chem_shift
+                                        if not cg_chem_shift is None:
+                                            shifts += 'CG %s, ' % cg_chem_shift
 
-                                    warn = "%s-peptide bond (%s:%s:%s) can not be verified with the assigned chemical shift values (%scis_trans_pred %s)." %\
-                                           ('cis' if pro['in_cis_peptide_bond'] else 'trans', chain_id, seq_id, comp_id, shifts, pro['cis_trans_pred'])
+                                        warn = "%s-peptide bond (%s:%s:%s) can not be verified with the assigned chemical shift values (%scis_trans_pred %s)." %\
+                                               ('cis' if pro['in_cis_peptide_bond'] else 'trans', chain_id, seq_id, comp_id, shifts, pro['cis_trans_pred'])
 
-                                    self.report.warning.appendDescription(item, {'file_name': file_name, 'sf_framecode': sf_framecode, 'description': warn})
-                                    self.report.setWarning()
+                                        self.report.warning.appendDescription(item, {'file_name': file_name, 'sf_framecode': sf_framecode, 'description': warn})
+                                        self.report.setWarning()
 
-                                    if self.__verbose:
-                                        self.__lfh.write("+NmrDpUtility.__calculateStatsOfAssignedChemShift() ++ Warning  - %s\n" % warn)
+                                        if self.__verbose:
+                                            self.__lfh.write("+NmrDpUtility.__calculateStatsOfAssignedChemShift() ++ Warning  - %s\n" % warn)
 
                             pro_cis_trans.append(pro)
 

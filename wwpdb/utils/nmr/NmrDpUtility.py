@@ -8503,7 +8503,6 @@ class NmrDpUtility(object):
                                     ann['seq_id'] = int(a_err['row_location'][item_names['seq_id']])
                                     ann['comp_id'] = a_err['row_location'][item_names['comp_id']]
                                     ann['atom_id'] = a_err['row_location'][item_names['atom_id']]
-                                    g = p.search(a_err['description']).groups()
                                     ann['value'] = a_err['value']
                                     ann['z_score'] = a_err['z_score']
 

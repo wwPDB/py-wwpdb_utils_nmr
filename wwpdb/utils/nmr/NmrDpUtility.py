@@ -13566,18 +13566,6 @@ class NmrDpUtility(object):
                             else:
                                 break
 
-                        for i in range(length):
-                            myPr = myAlign[i]
-                            if aligned[i]:
-                                if myPr[0].encode() == '.':
-                                    if (not seq_id2[i] is None) and ((i > 0 and not seq_id2[i - 1] is None and seq_id2[i - 1] + 1 == seq_id2[i]) or
-                                                                     (i + 1 < len(seq_id2) and not seq_id2[i + 1] is None and seq_id2[i + 1] - 1 == seq_id2[i])):
-                                        aligned[i] = False
-                                if myPr[1].encode() == '.':
-                                    if (not seq_id1[i] is None) and ((i > 0 and not seq_id1[i - 1] is None and seq_id1[i - 1] + 1 == seq_id1[i]) or
-                                                                     (i + 1 < len(seq_id1) and not seq_id1[i + 1] is None and seq_id1[i + 1] - 1 == seq_id1[i])):
-                                        aligned[i] = False
-
                         unmapped = []
                         conflict = []
                         offset_1 = 0
@@ -13605,13 +13593,20 @@ class NmrDpUtility(object):
                                     if self.__verbose:
                                         self.__lfh.write("+NmrDpUtility.__assignCoordPolymerSequence() ++ Warning  - %s" % warn)
 
-                            elif nmr_comp_id != cif_comp_id and len(s1['seq_id']) > len(s2['seq_id']):
+                            elif nmr_comp_id != cif_comp_id and aligned[i]:
 
                                 conflict.append({'ref_seq_id': seq_id1[i], 'ref_comp_id': cif_comp_id,
                                                  'test_seq_id': seq_id2[i], 'test_comp_id': nmr_comp_id})
 
-                                err = "Sequence alignment error between the coordinate (%s:%s:%s) and the NMR data (%s:%s:%s)." %\
-                                      (chain_id, seq_id1[i], cif_comp_id, chain_id2, seq_id2[i], nmr_comp_id)
+                                cif_seq_code = '%s:%s:%s' % (chain_id, seq_id1[i], cif_comp_id)
+                                if cif_comp_id == '.':
+                                    cif_seq_code += ', insersion error'
+                                nmr_seq_code = '%s:%s:%s' % (chain_id2, seq_id2[i], nmr_comp_id)
+                                if nmr_comp_id == '.':
+                                    nmr_seq_code += ', insersion error'
+
+                                err = "Sequence alignment error between the coordinate (%s) and the NMR data (%s)." %\
+                                      (cif_seq_code, nmr_seq_code)
 
                                 self.report.error.appendDescription('sequence_mismatch', {'file_name': cif_file_name, 'description': err})
                                 self.report.setError()
@@ -13818,12 +13813,10 @@ class NmrDpUtility(object):
                             myPr = myAlign[i]
                             if aligned[i]:
                                 if myPr[0].encode() == '.':
-                                    if (not seq_id2[i] is None) and ((i > 0 and not seq_id2[i - 1] is None and seq_id2[i - 1] + 1 == seq_id2[i]) or
-                                                                     (i + 1 < len(seq_id2) and not seq_id2[i + 1] is None and seq_id2[i + 1] - 1 == seq_id2[i])):
+                                    if (not seq_id2[i] is None) and ((i > 0 and not seq_id2[i - 1] is None and seq_id2[i - 1] + 1 == seq_id2[i]) or (i + 1 < len(seq_id2) and not seq_id2[i + 1] is None and seq_id2[i + 1] - 1 == seq_id2[i])):
                                         aligned[i] = False
                                 if myPr[1].encode() == '.':
-                                    if (not seq_id1[i] is None) and ((i > 0 and not seq_id1[i - 1] is None and seq_id1[i - 1] + 1 == seq_id1[i]) or
-                                                                     (i + 1 < len(seq_id1) and not seq_id1[i + 1] is None and seq_id1[i + 1] - 1 == seq_id1[i])):
+                                    if (not seq_id1[i] is None) and ((i > 0 and not seq_id1[i - 1] is None and seq_id1[i - 1] + 1 == seq_id1[i]) or (i + 1 < len(seq_id1) and not seq_id1[i + 1] is None and seq_id1[i + 1] - 1 == seq_id1[i])):
                                         aligned[i] = False
 
                         unmapped = []
@@ -13853,13 +13846,20 @@ class NmrDpUtility(object):
                                     if self.__verbose:
                                         self.__lfh.write("+NmrDpUtility.__assignCoordPolymerSequence() ++ Warning  - %s" % warn)
 
-                            elif cif_comp_id != nmr_comp_id and len(s1['seq_id']) > len(s2['seq_id']):
+                            elif cif_comp_id != nmr_comp_id and aligned[i]:
 
                                 conflict.append({'ref_seq_id': seq_id1[i], 'ref_comp_id': nmr_comp_id,
                                                  'test_seq_id': seq_id2[i], 'test_comp_id': cif_comp_id})
 
+                                cif_seq_code = '%s:%s:%s' % (chain_id2, seq_id2[i], cif_comp_id)
+                                if cif_comp_id == '.':
+                                    cif_seq_code += ', insersion error'
+                                nmr_seq_code = '%s:%s:%s' % (chain_id, seq_id1[i], nmr_comp_id)
+                                if nmr_comp_id == '.':
+                                    nmr_seq_code += ', insersion error'
+
                                 err = "Sequence alignment error between the NMR data (%s:%s:%s) and the coordinate (%s:%s:%s)." %\
-                                      (chain_id, seq_id1[i], nmr_comp_id, chain_id2, seq_id2[i], cif_comp_id)
+                                      (nmr_seq_code, cif_seq_code)
 
                                 self.report.error.appendDescription('sequence_mismatch', {'file_name': nmr_file_name, 'description': err})
                                 self.report.setError()

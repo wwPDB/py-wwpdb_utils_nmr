@@ -17,6 +17,7 @@
 # 13-Mar-2020  M. Yokochi - change warning type from suspicious_data to anomalous_data
 # 17-Mar-2020  M. Yokochi - remove irrelevant warning types in corrected_warning
 # 18-Mar-2020  M. Yokochi - rename warning type from skipped_sf/lp_category to skipped_saveframe/loop_category
+# 23-Mar-2020  M. Yokochi - add 'anomalous_chemical_shift' and 'unusual_chemical_shift' warning types
 ##
 """ Wrapper class for data processing report of NMR data.
     @author: Masashi Yokochi
@@ -996,6 +997,7 @@ class NmrDpReport:
         if not self.__immutable:
 
             ignorable_warning_types = ['atom_nomenclature_mismatch', 'ccd_mismatch', 'enum_mismatch_ignorable', 'skipped_saveframe_category', 'skipped_loop_category',
+                                       'anomalous_chemical_shift', 'unusual_chemical_shift',
                                        'anomalous_data', 'unusual_data', 'remarkable_data', 'insufficient_data', 'conflicted_data', 'inconsistent_data',
                                        'total']
 
@@ -1348,6 +1350,7 @@ class NmrDpReportWarning:
         self.items = ('encouragement', 'missing_content', 'missing_saveframe', 'missing_data', 'enum_mismatch', 'enum_mismatch_ignorable',
                       'disordered_index', 'sequence_mismatch', 'atom_nomenclature_mismatch', 'ccd_mismatch',
                       'skipped_saveframe_category', 'skipped_loop_category',
+                      'anomalous_chemical_shift', 'unusual_chemical_shift',
                       'anomalous_data', 'unusual_data', 'remarkable_data', 'insufficient_data',
                       'conflicted_data', 'inconsistent_data', 'redundant_data')
 
@@ -1521,3 +1524,71 @@ class NmrDpReportWarning:
             return None
 
         return d
+
+    def sortChemicalShiftValidation(self):
+        """ Sort warning about anomalous/unusual chemical shift.
+        """
+
+        if self.__contents is None:
+            return
+
+        d = []
+
+        anomalous_cs = False
+        mixed_status = False
+
+        for item in ['anomalous_data', 'anomalous_chemical_shift', 'unusual_data', 'unusual_chemical_shift']:
+
+            if not item in self.__contents.keys() or self.__contents[item] is None:
+                continue
+
+            _c = [c for c in self.__contents[item] if 'sigma' in c] if 'data' in item else self.__contents[item]
+
+            if len(_c) > 0:
+
+                if 'anomalous' in item:
+                    anomalous_cs = True
+                    for c in _c:
+                        c['status'] = 'A'
+
+                elif anomalous_cs:
+                    mixed_status = True
+
+                d.extend(_c)
+
+                self.__contents[item] = None
+
+        if len(d) == 0:
+            return
+
+        item = 'anomalous_chemical_shift' if anomalous_cs else 'unusual_chemical_shift'
+
+        self.__contents[item] = []
+
+        if mixed_status:
+            for c in d:
+                if not 'status' in c:
+                    c['status'] = 'S'
+                if not 'sigma' in c:
+                    c['sigma'] = 0.0
+
+            for c in sorted(sorted(d, key=lambda i: i['sigma'], reverse=True), key=lambda j: j['status']):
+                if 'description_alt' in c:
+                    c['description'] = c['description_alt']
+                    del c['description_alt']
+                del c['sigma']
+                self.__contents[item].append(c)
+
+        else:
+            for c in d:
+                if 'status' in c and not anomalous_cs:
+                    del c['status']
+                if not 'sigma' in c:
+                    c['sigma'] = 0.0
+
+            for c in sorted(d, key=lambda i: i['sigma'], reverse=True):
+                if 'description_alt' in c:
+                    c['description'] = c['description_alt']
+                    del c['description_alt']
+                del c['sigma']
+                self.__contents[item].append(c)

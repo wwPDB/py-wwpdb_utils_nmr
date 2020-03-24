@@ -18,6 +18,7 @@
 # 17-Mar-2020  M. Yokochi - remove irrelevant warning types in corrected_warning
 # 18-Mar-2020  M. Yokochi - rename warning type from skipped_sf/lp_category to skipped_saveframe/loop_category
 # 23-Mar-2020  M. Yokochi - add 'anomalous_chemical_shift' and 'unusual_chemical_shift' warning types
+# 24-Mar-2020  M. Yokochi - add method to retrieve chemical shift reference (DAOTHER-1682)
 ##
 """ Wrapper class for data processing report of NMR data.
     @author: Masashi Yokochi
@@ -263,13 +264,13 @@ class NmrDpReport:
                     noe_exp_type = 'NOE? (To be decided)'
                 else:
                     _noe_exp_type = noe_exp_type.lower()
-                    if _noe_exp_type == 'csp':
+                    if _noe_exp_type == 'csp' or _noe_exp_type == 'shift_perturbation':
                         noe_exp_type = 'CSP'
                     elif _noe_exp_type == 'noe':
                         noe_exp_type = 'NOE'
-                    elif _noe_exp_type == 'noe buildup':
+                    elif _noe_exp_type == 'noe buildup' or _noe_exp_type == 'noe_build_up':
                         noe_exp_type = 'NOE buildup'
-                    elif _noe_exp_type == 'noe not seen':
+                    elif _noe_exp_type == 'noe not seen' or _noe_exp_type == 'noe_not_seen':
                         noe_exp_type = 'NOE not seen'
                     elif _noe_exp_type == 'pre':
                         noe_exp_type == 'PRE'
@@ -575,6 +576,40 @@ class NmrDpReport:
                 spectral_peaks.append({'list_id': stat['list_id'], 'sf_framecode': stat['sf_framecode'], 'number_of_spectral_dimensions': stat['number_of_spectral_dimensions'], 'spectral_dim': stat['spectral_dim']})
 
         return spectral_peaks
+
+    def getNmrChemShiftRefs(self):
+        """ Return stats of NMR chemical shift references.
+        """
+
+        content_subtypes = self.getNmrContentSubTypes()
+
+        if content_subtypes is None:
+            return None
+
+        chem_shift_refs = []
+
+        content_subtype = 'chem_shift_ref'
+
+        if content_subtype in content_subtypes:
+            for stat in self.getNmrStatsOfExptlData(content_subtype):
+                loop = []
+                for l in stat['loop']:
+                    _l = {}
+                    for k, v in l.items():
+                        if v is None or k == 'Entry_ID':
+                            continue
+                        _l[k.lower()] = v
+                    loop.append(_l)
+
+                saveframe_tag = {}
+                for k, v in stat['saveframe_tag'].items():
+                    if v is None or k == 'Entry_ID' or k.startswith('Sf_'):
+                        continue
+                    saveframe_tag[k.lower()] = v
+
+                chem_shift_refs.append({'list_id': stat['list_id'], 'sf_framecode': stat['sf_framecode'], 'loop': loop, 'saveframe_tag': saveframe_tag})
+
+        return chem_shift_refs
 
     def getNmrPolymerSequenceOf(self, chain_id):
         """ Retrieve NMR polymer sequence having a given chain_id.
@@ -1050,7 +1085,7 @@ class NmrDpReportInputSource:
                       'stats_of_exptl_data')
         self.file_types = ('pdbx', 'nef', 'nmr-star')
         self.content_types = ('model', 'nmr-data-nef', 'nmr-data-str', 'nmr-chemical-shifts', 'nmr-restraints')
-        self.content_subtypes = ('coordinate', 'non_poly', 'entry_info', 'poly_seq', 'chem_shift', 'dist_restraint', 'dihed_restraint', 'rdc_restraint', 'spectral_peak')
+        self.content_subtypes = ('coordinate', 'non_poly', 'entry_info', 'poly_seq', 'chem_shift', 'chem_shift_ref', 'dist_restraint', 'dihed_restraint', 'rdc_restraint', 'spectral_peak')
 
         self.__contents = {item:None for item in self.items}
 
@@ -1542,21 +1577,26 @@ class NmrDpReportWarning:
             if not item in self.__contents.keys() or self.__contents[item] is None:
                 continue
 
-            _c = [c for c in self.__contents[item] if 'sigma' in c] if 'data' in item else self.__contents[item]
+            _d = [c for c in self.__contents[item] if 'sigma' in c] if 'data' in item else self.__contents[item]
+            _d_ = copy.copy(_d)
 
-            if len(_c) > 0:
+            if len(_d) > 0:
 
                 if 'anomalous' in item:
                     anomalous_cs = True
-                    for c in _c:
+                    for c in _d:
                         c['status'] = 'A'
 
                 elif anomalous_cs:
                     mixed_status = True
 
-                d.extend(_c)
+                d.extend(_d)
 
-                self.__contents[item] = None
+                for c in _d_:
+                    self.__contents[item].remove(c)
+
+                if len(self.__contents[item]) == 0:
+                    self.__contents[item] = None
 
         if len(d) == 0:
             return

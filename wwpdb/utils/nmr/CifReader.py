@@ -12,6 +12,7 @@
 # 05-Aug-2019   my  - Add 'enum' as filter item type
 # 28-Jan-2020   my  - Add 'withStructConf' option of getPolymerSequence
 # 19-Mar-2020   my  - Add hasItem()
+# 24-Mar-2020   my  - add 'identical_chain_id' in results of getPolymerSequence()
 ##
 """ A collection of classes for parsing CIF files.
 """
@@ -233,6 +234,16 @@ class CifReader(object):
 
                     if withStructConf:
                         ent['struct_conf'] = self.__extractStructConf(c, seqDict[c], alias)
+
+                    if len(chains) > 1:
+                        identity = []
+                        for _c in chains:
+                            if _c == c:
+                                continue
+                            if compDict[_c] == compDict[c]:
+                                identity.append(_c)
+                        if len(identity) > 0:
+                            ent['identical_chain_id'] = identity
 
                     asm.append(ent)
 

@@ -176,7 +176,7 @@ save_nef_molecular_system
      139   A   139   GLN   middle   .   false    
      140   A   140   ALA   middle   .   false    
      141   A   141   GLU   middle   .   false    
-     142   A   142   PRO   middle   .   false    
+     142   A   142   PRO   middle   .   true     
      143   A   143   ARG   middle   .   false    
      144   A   144   GLU   middle   .   false    
      145   A   145   PHE   middle   .   false    

@@ -6,6 +6,7 @@
 # 09-Oct-2019  M. Yokochi - add unit test for Xplor-NIH enabling 'check_mandatory_tag' option
 # 28-Nov-2019  M. Yokochi - add unit test for NEF-Xplor-NIH-20191016-remediated.nef
 # 26-Feb-2020  M. Yokochi - add unit test for CCPN_2mtv_docr.nef (DAOTHER-4785)
+# 24-Mar-2020  M. Yokochi - add unit test for chemical shift reference (DAOTHER-1682)
 #
 import unittest
 import os
@@ -307,6 +308,24 @@ class TestNmrDpUtility(unittest.TestCase):
         self.utility.setLog(self.data_dir_path + '24642-str2str-deposit-log.json')
         self.utility.setDestination(self.data_dir_path + '24642_2mqq-clean-next.str')
         self.utility.addOutput(name='entry_id', value='2mqq', type='param')
+        self.utility.addOutput(name='insert_entry_id_to_loops', value=True, type='param')
+        self.utility.setVerbose(False)
+
+        self.utility.op('nmr-str2str-deposit')
+
+    def test_nmr_str2str_deposit_chem_shift_ref(self):
+        self.utility.setSource(self.data_dir_path + '2la6-chem-shift-ref.str')
+        self.utility.addInput(name='coordinate_file_path', value=self.data_dir_path + '2la6.cif', type='file')
+        self.utility.setLog(self.data_dir_path + '2la6-chem-shift-ref-consistency-log.json')
+
+        self.utility.op('nmr-str-consistency-check')
+
+        self.utility.setSource(self.data_dir_path + '2la6-chem-shift-ref.str')
+        self.utility.addInput(name='coordinate_file_path', value=self.data_dir_path + '2la6.cif', type='file')
+        self.utility.addInput(name='report_file_path', value=self.data_dir_path + '2la6-chem-shift-ref-consistency-log.json', type='file')
+        self.utility.setLog(self.data_dir_path + '2la6-chem-shift-ref-deposit-log.json')
+        self.utility.setDestination(self.data_dir_path + '2la6-chem-shift-ref-next.str')
+        self.utility.addOutput(name='entry_id', value='2la6', type='param')
         self.utility.addOutput(name='insert_entry_id_to_loops', value=True, type='param')
         self.utility.setVerbose(False)
 

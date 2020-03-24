@@ -260,19 +260,19 @@ class NmrDpReport:
                             noe_exp_type = stat['exp_type']
                         noe_like += v
             if noe_like > 0:
-                if noe_exp_type == 'Unknown':
+                if noe_exp_type.lower() == 'unknown':
                     noe_exp_type = 'NOE? (To be decided)'
                 else:
                     _noe_exp_type = noe_exp_type.lower()
-                    if _noe_exp_type == 'csp' or _noe_exp_type == 'shift_perturbation':
+                    if _noe_exp_type in ('csp', 'chemical shift perturbation', 'shift_perturbation'):
                         noe_exp_type = 'CSP'
                     elif _noe_exp_type == 'noe':
                         noe_exp_type = 'NOE'
-                    elif _noe_exp_type == 'noe buildup' or _noe_exp_type == 'noe_build_up':
+                    elif _noe_exp_type in ('noe buildup', 'noe build-up', 'noe_build_up'):
                         noe_exp_type = 'NOE buildup'
-                    elif _noe_exp_type == 'noe not seen' or _noe_exp_type == 'noe_not_seen':
+                    elif _noe_exp_type in ('noe not seen', 'noe_not_seen'):
                         noe_exp_type = 'NOE not seen'
-                    elif _noe_exp_type == 'pre':
+                    elif _noe_exp_type in ('pre', 'paramagnetic relaxation'):
                         noe_exp_type == 'PRE'
                     elif _noe_exp_type == 'pre solvent':
                         noe_exp_type = 'PRE solvent'
@@ -433,19 +433,19 @@ class NmrDpReport:
                                 noe_exp_type = stat['exp_type']
                             noe_like += v
                 if noe_like > 0:
-                    if noe_exp_type == 'Unknown':
+                    if noe_exp_type.lower() == 'unknown':
                         noe_exp_type = 'NOE? (To be decided)'
                     else:
                         _noe_exp_type = noe_exp_type.lower()
-                        if _noe_exp_type == 'csp':
+                        if _noe_exp_type in ('csp', 'chemical shift perturbation', 'shift_perturbation'):
                             noe_exp_type = 'CSP'
                         elif _noe_exp_type == 'noe':
                             noe_exp_type = 'NOE'
-                        elif _noe_exp_type == 'noe buildup':
+                        elif _noe_exp_type in ('noe buildup', 'noe build-up', 'noe_build_up'):
                             noe_exp_type = 'NOE buildup'
-                        elif _noe_exp_type == 'noe not seen':
+                        elif _noe_exp_type in ('noe not seen', 'noe_not_seen'):
                             noe_exp_type = 'NOE not seen'
-                        elif _noe_exp_type == 'pre':
+                        elif _noe_exp_type in ('pre', 'paramagnetic relaxation'):
                             noe_exp_type == 'PRE'
                         elif _noe_exp_type == 'pre solvent':
                             noe_exp_type = 'PRE solvent'

@@ -199,7 +199,7 @@ class NmrDpReport:
         return nmr_input_source_dic['stats_of_exptl_data'][content_subtype]
 
     def __getNmrLegacyStatsOfExptlData(self, id, content_subtype):
-        """ Return stats of legacy experimental data of a given content subtype.
+        """ Return stats of experimental data of a given content subtype.
         """
 
         if id < 0:
@@ -386,7 +386,7 @@ class NmrDpReport:
         return restraints if len(restraints) > 0 else None
 
     def __getNmrRestraints(self):
-        """ Return stats of NMR legacy restraints.
+        """ Return stats of NMR restraints. (legacy)
         """
 
         list_id = self.getInputSourceIdsOfNmrLegacyData()
@@ -565,7 +565,7 @@ class NmrDpReport:
         content_subtypes = self.getNmrContentSubTypes()
 
         if content_subtypes is None:
-            return None
+            return self.__getNmrPeaks()
 
         spectral_peaks = []
 
@@ -577,6 +577,93 @@ class NmrDpReport:
 
         return spectral_peaks
 
+    def __getNmrPeaks(self):
+        """ Return stats of NMR spectral peaks. (legacy)
+        """
+
+        list_id = self.getInputSourceIdsOfNmrLegacyData()
+
+        if len(list_id) == 0:
+            return []
+
+        spectral_peaks = []
+
+        content_subtype = 'spectral_peak'
+
+        for id in list_id:
+
+            content_subtypes = self.__getNmrLegacyContentSubTypes(id)
+
+            if content_subtypes is None:
+                continue
+
+            for stat in self.__getNmrLegacyStatsOfExptlData(id, content_subtype):
+                spectral_peaks.append({'list_id': stat['list_id'], 'sf_framecode': stat['sf_framecode'], 'number_of_spectral_dimensions': stat['number_of_spectral_dimensions'], 'spectral_dim': stat['spectral_dim']})
+
+        return spectral_peaks
+
+    def getNmrIsotopes(self):
+        """ Return set of isotopes in assigned chemical shifts.
+        """
+
+        content_subtypes = self.getNmrContentSubTypes()
+
+        if content_subtypes is None:
+            return self.__getNmrIsotopes()
+
+        content_subtype = 'chem_shift'
+
+        if not content_subtype in content_subtypes:
+            return None
+
+        isotopes = {}
+
+        pat = re.compile(r'^(\d+)(\D)$')
+
+        for stat in self.getNmrStatsOfExptlData(content_subtype):
+
+            for k in stat['number_of_assignments'].keys():
+                try:
+                    g = pat.search(k.split('_')[0].upper()).groups()
+                    isotopes[g[0]] = g[1]
+                except AttributeError:
+                    pass
+
+        return None if len(isotopes) == 0 else isotopes
+
+    def __getNmrIsotopes(self):
+        """ Return set of isotopes in assigned chemical shifts. (legacy)
+        """
+
+        list_id = self.getInputSourceIdsOfNmrLegacyData()
+
+        if len(list_id) == 0:
+            return None
+
+        content_subtype = 'chem_shift'
+
+        isotopes = {}
+
+        pat = re.compile(r'^(\d+)(\D)$')
+
+        for id in list_id:
+
+            content_subtypes = self.__getNmrLegacyContentSubTypes(id)
+
+            if content_subtypes is None:
+                continue
+
+            for stat in self.__getNmrLegacyStatsOfExptlData(id, content_subtype):
+
+                for k in stat['number_of_assignments'].keys():
+                    try:
+                        g = pat.search(k.split('_')[0].upper()).groups()
+                        isotopes[g[0]] = g[1]
+                    except AttributeError:
+                        pass
+
+        return None if len(isotopes) == 0 else isotopes
+
     def getNmrChemShiftRefs(self):
         """ Return stats of NMR chemical shift references.
         """
@@ -584,14 +671,56 @@ class NmrDpReport:
         content_subtypes = self.getNmrContentSubTypes()
 
         if content_subtypes is None:
+            return self.__getNmrChemShiftRefs()
+
+        content_subtype = 'chem_shift_ref'
+
+        if not content_subtype in content_subtypes:
             return None
 
         chem_shift_refs = []
 
+        for stat in self.getNmrStatsOfExptlData(content_subtype):
+            loop = []
+            for l in stat['loop']:
+                _l = {}
+                for k, v in l.items():
+                    if v is None or k == 'Entry_ID':
+                        continue
+                    _l[k.lower()] = v
+                loop.append(_l)
+
+            saveframe_tag = {}
+            for k, v in stat['saveframe_tag'].items():
+                if v is None or k == 'Entry_ID' or k.startswith('Sf_'):
+                    continue
+                saveframe_tag[k.lower()] = v
+
+            chem_shift_refs.append({'list_id': stat['list_id'], 'sf_framecode': stat['sf_framecode'], 'loop': loop, 'saveframe_tag': saveframe_tag})
+
+        return chem_shift_refs
+
+    def __getNmrChemShiftRefs(self):
+        """ Return stats of NMR chemical shift references. (legacy)
+        """
+
+        list_id = self.getInputSourceIdsOfNmrLegacyData()
+
+        if len(list_id) == 0:
+            return None
+
         content_subtype = 'chem_shift_ref'
 
-        if content_subtype in content_subtypes:
-            for stat in self.getNmrStatsOfExptlData(content_subtype):
+        chem_shift_refs = []
+
+        for id in list_id:
+
+            content_subtypes = self.__getNmrLegacyContentSubTypes(id)
+
+            if content_subtypes is None:
+                continue
+
+            for stat in self.__getNmrLegacyStatsOfExptlData(id, content_subtype):
                 loop = []
                 for l in stat['loop']:
                     _l = {}
@@ -609,7 +738,7 @@ class NmrDpReport:
 
                 chem_shift_refs.append({'list_id': stat['list_id'], 'sf_framecode': stat['sf_framecode'], 'loop': loop, 'saveframe_tag': saveframe_tag})
 
-        return chem_shift_refs
+        return None if len(chem_shift_refs) == 0 else chem_shift_refs
 
     def getNmrPolymerSequenceOf(self, chain_id):
         """ Retrieve NMR polymer sequence having a given chain_id.

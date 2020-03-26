@@ -7479,7 +7479,7 @@ class NmrDpUtility(object):
 
                                     if na['ring_angle'] - self.magic_angle * z_score > 0.0 or self.__nonblk_anomalous_cs:
 
-                                        self.report.warning.appendDescription('anomalous_data' if na['ring_angle'] - self.magic_angle * z_score < 0.0 or na['ring_distance'] > self.vicinity_aromatic else 'unusual_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn, 'value': value, 'z_score': z_score})
+                                        self.report.warning.appendDescription('anomalous_data' if na['ring_angle'] - self.magic_angle * z_score < 0.0 or na['ring_distance'] > self.vicinity_aromatic else 'unusual_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn, 'value': value, 'z_score': z_score, 'description_alt': warn_alt, 'sigma': sigma})
                                         self.report.setWarning()
 
                                         if self.__verbose:

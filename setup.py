@@ -43,7 +43,7 @@ setup(
     #
     # munkres 1.0.12 last to support python 2. Developers did not tag properly
     install_requires=['wwpdb.utils.config ~= 0.9.dev1', 'wwpdb.utils.align',
-                      'pynmrstar', 'pytz', "munkres==1.0.12; python_version == '2.7'", 
+                      'pynmrstar >= 2.6.5', 'pytz', "munkres==1.0.12; python_version == '2.7'", 
                       "munkres; python_version >= '3'", 'mmcif'],
     packages=find_packages(exclude=['wwpdb.utils.tests-nmr', 'mock-data']),
     # Enables Manifest to be used

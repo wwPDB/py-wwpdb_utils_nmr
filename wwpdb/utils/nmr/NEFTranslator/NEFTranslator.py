@@ -463,21 +463,21 @@ class NEFTranslator(object):
             star_data = pynmrstar.Entry.from_file(in_file)
             msg = 'Entry'
 
-        except ValueError:
+        except ValueError as e1:
 
             try:
                 star_data = pynmrstar.Saveframe.from_file(in_file)
                 msg = 'Saveframe'
 
-            except ValueError:
+            except ValueError as e2:
 
                 try:
                     star_data = pynmrstar.Loop.from_file(in_file)
                     msg = 'Loop'
 
-                except ValueError as e:
+                except ValueError as e3:
                     is_ok = False
-                    msg = str(e) # '%s contains no valid saveframe or loop. PyNMRSTAR ++ Error  - %s' % (os.path.basename(in_file), str(e))
+                    msg = str(e1) # '%s contains no valid saveframe or loop. PyNMRSTAR ++ Error  - %s' % (os.path.basename(in_file), str(e))
 
         except Exception as e:
             is_ok = False
@@ -4426,7 +4426,7 @@ class NEFTranslator(object):
         if star_file is None:
             star_file = file_path + '/' + file_name.split('.')[0] + '.str'
 
-        (is_readable, dat_content, nef_data) = self.read_input_file(nef_file)
+        is_readable, dat_content, nef_data = self.read_input_file(nef_file)
 
         try:
             star_data = pynmrstar.Entry.from_scratch(nef_data.entry_id)
@@ -4844,7 +4844,7 @@ class NEFTranslator(object):
         if nef_file is None:
             nef_file = file_path + '/' + file_name.split('.')[0] + '.nef'
 
-        (is_readable, dat_content, star_data) = self.read_input_file(star_file)
+        is_readable, dat_content, star_data = self.read_input_file(star_file)
 
         try:
             nef_data = pynmrstar.Entry.from_scratch(star_data.entry_id)

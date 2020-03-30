@@ -330,13 +330,15 @@ class TestNmrDpUtility(unittest.TestCase):
         self.utility.setVerbose(False)
 
         self.utility.op('nmr-str2str-deposit')
-    """
+
     def test_nmr_str_consistency_check_review(self):
         self.utility.setSource(self.data_dir_path + 'D_800107_nmr-data-str-review_P1.str.V20.rev')
         self.utility.addInput(name='coordinate_file_path', value=self.data_dir_path + 'D_800107_model_P1.cif.V3', type='file')
         self.utility.setLog(self.data_dir_path + 'D_800107_nmr-data-str-consistency-log.json')
 
         self.utility.op('nmr-str-consistency-check')
-    """
+
+        #pynmrstar.Entry.from_file(self.data_dir_path + 'D_800107_nmr-data-str-review_P1.str.V20.rev')
+
 if __name__ == '__main__':
     unittest.main()

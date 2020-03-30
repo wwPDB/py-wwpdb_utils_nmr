@@ -191,8 +191,9 @@ class CifReader(object):
 
             for row in rowList:
                 for j in range(len_key):
-                    if row[itDict[keyNames[j]]] in self.emptyValue:
-                        raise ValueError("%s must not be empty." % itNameList[j])
+                    itCol = itDict[keyNames[j]]
+                    if itCol < len(row) and row[itCol] in self.emptyValue:
+                        raise ValueError("%s must not be empty." % keyNames[j])
 
             compDict = {}
             seqDict = {}

@@ -34,6 +34,7 @@
 # 19-Mar-2020  M. Yokochi - atom nomenclature should not become a blocker (DAOTHER-5527)
 # 24-Mar-2020  M. Yokochi - add support for chemical shift reference (DAOTHER-1682)
 # 24-Mar-2020  M. Yokochi - revise chain assignment for identical dimer case (DAOTHER-3343)
+# 30-Mar-2020  M. Yokochi - preserve original sf_framecode for nef_molecular_system (NEF) or assembly (NMR-STAR)
 ##
 """ Wrapper class for data processing for NMR data.
     @author: Masashi Yokochi
@@ -15141,7 +15142,7 @@ class NmrDpUtility(object):
 
         orig_poly_seq_sf_data = self.__star_data[0].get_saveframes_by_category(sf_category)[0] if self.__retain_original else None
 
-        poly_seq_sf_data = pynmrstar.Saveframe.from_scratch(sf_cat_name)
+        poly_seq_sf_data = pynmrstar.Saveframe.from_scratch(sf_framecode) # sf_cat_name
 
         tagNames = None
 
@@ -15159,7 +15160,7 @@ class NmrDpUtility(object):
 
                 poly_seq_sf_data.add_loop(lp_data)
 
-        tag_names = ['sf_category', 'sf_framecode'] if file_type == 'nef' else ['Sf_category', 'Sf_framecode']
+        tag_names = ['sf_category'] if file_type == 'nef' else ['Sf_category']
         tag_value = 'nef_molecular_system' if file_type == 'nef' else 'assembly'
 
         for tag_name in tag_names:

@@ -35,6 +35,7 @@
 # 24-Mar-2020  M. Yokochi - add support for chemical shift reference (DAOTHER-1682)
 # 24-Mar-2020  M. Yokochi - revise chain assignment for identical dimer case (DAOTHER-3343)
 # 30-Mar-2020  M. Yokochi - preserve original sf_framecode for nef_molecular_system (NEF) or assembly (NMR-STAR)
+# 31-Mar-2020  M. Yokochi - enable processing without log file
 ##
 """ Wrapper class for data processing for NMR data.
     @author: Masashi Yokochi
@@ -94,9 +95,11 @@ class NmrDpUtility(object):
 
         # default entry_id
         self.__entry_id__ = 'UNNAMED'
+        # current entry_id, to be replaced
         self.__entry_id = 'EXTRACT_FROM_COORD'
         # whether to insert entry_id (nmr-star specific)
         self.__insert_entry_id_to_loops = True
+
         # whether to retain original content if possible
         self.__retain_original = True
         # whether to use reduced atom notation
@@ -284,7 +287,7 @@ class NmrDpUtility(object):
                              'pdbx': 'model'
                              }
 
-        # content type for public release
+        # content type used for public release
         self.release_type = {'nef': 'nmr-data',
                              'nmr-star': 'nmr-data',
                              'pdbx': None
@@ -2475,10 +2478,11 @@ class NmrDpUtility(object):
         self.__dstPath = os.path.abspath(fPath)
 
     def setLog(self, fPath):
-        """ Set a log file path.
+        """ Set a log file path for the primary input source.
         """
 
-        self.__logPath = os.path.abspath(fPath)
+        if not fPath is None:
+            self.__logPath = os.path.abspath(fPath)
 
     def addInput(self, name=None, value=None, type='file'):
         """ Add a named input and value to the dictionary of input parameters.
@@ -2659,6 +2663,9 @@ class NmrDpUtility(object):
                 self.report.setCorrectedWarning(self.report_prev)
 
         self.report.warning.sortChemicalShiftValidation()
+
+        if self.__logPath is None:
+            return False
 
         return self.report.writeFile(self.__logPath)
 
@@ -3161,7 +3168,7 @@ class NmrDpUtility(object):
 
                     lp_data.add_tag(lp_category + '.index')
 
-            if content_subtype == 'chem_shift':
+            elif content_subtype == 'chem_shift':
 
                 try:
                     next(tag for tag in sf_data.tags if tag[0] == 'atom_chemical_shift_units')
@@ -3251,7 +3258,7 @@ class NmrDpUtility(object):
                                 atom_type = 'H'
                             i[iso_num_col] = str(self.atom_isotopes[atom_type][0])
 
-            if content_subtype == 'dihed_restraint':
+            elif content_subtype == 'dihed_restraint':
 
                 if not 'name' in lp_data.tags:
 
@@ -3275,7 +3282,7 @@ class NmrDpUtility(object):
                     except ValueError:
                         pass
 
-            if content_subtype == 'rdc_restraint':
+            elif content_subtype == 'rdc_restraint':
 
                 try:
                     tag = next(tag for tag in sf_data.tags if tag[0] == 'tensor_residue_type')
@@ -3523,7 +3530,7 @@ class NmrDpUtility(object):
                                 atom_type = 'H'
                             i[iso_num_col] = str(self.atom_isotopes[atom_type][0])
 
-            if content_subtype == 'dihed_restraint':
+            elif content_subtype == 'dihed_restraint':
 
                 if not 'Torsion_angle_name' in lp_data.tags:
 
@@ -14646,8 +14653,10 @@ class NmrDpUtility(object):
             logging.error("+NmrDpUtility.__retrieveDpReport() ++ Error  - Could not access to file path %s." % fPath)
             raise IOError("+NmrDpUtility.__retrieveDpReport() ++ Error  - Could not access to file path %s." % fPath)
 
-        logging.error("+NmrDpUtility.__retrieveDpReport() ++ Error  - Could not find 'report_file_path' input parameter.")
-        raise KeyError("+NmrDpUtility.__retrieveDpReport() ++ Error  - Could not find 'report_file_path' input parameter.")
+        return False
+
+        #logging.error("+NmrDpUtility.__retrieveDpReport() ++ Error  - Could not find 'report_file_path' input parameter.")
+        #raise KeyError("+NmrDpUtility.__retrieveDpReport() ++ Error  - Could not find 'report_file_path' input parameter.")
 
     def __resolveConflictsInLoop(self):
         """ Resolve conflicted rows in loops.
@@ -20162,8 +20171,9 @@ class NmrDpUtility(object):
 
             self.__srcPath = self.__outputParamDict['nmr-star_file_path']
             self.__dstPath = self.__srcPath
-            self.__logPath = self.__outputParamDict['report_file_path']
-            self.addInput('report_file_path', self.__logPath, type='file')
+            self.__logPath = None if not 'report_file_path' in self.__outputParamDict else self.__outputParamDict['report_file_path']
+            if not self.__logPath is None:
+                self.addInput('report_file_path', self.__logPath, type='file')
             self.__op = 'nmr-star-consistency-check'
 
             # reset cache dictionaries
@@ -20173,6 +20183,9 @@ class NmrDpUtility(object):
 
             for content_subtype in self.__aux_data.keys():
                 self.__aux_data[content_subtype] = []
+
+            for content_subtype in self.__sf_tag_data.keys():
+                self.__sf_tag_data[content_subtype] = []
 
             return True
 
@@ -20266,8 +20279,9 @@ class NmrDpUtility(object):
 
             self.__srcPath = self.__outputParamDict['nef_file_path']
             self.__dstPath = self.__srcPath
-            self.__logPath = self.__outputParamDict['report_file_path']
-            self.addInput('report_file_path', self.__logPath, type='file')
+            self.__logPath = None if not 'report_file_path' in self.__outputParamDict else self.__outputParamDict['report_file_path']
+            if not self.__logPath is None:
+                self.addInput('report_file_path', self.__logPath, type='file')
             self.__op = 'nef-consistency-check'
 
             # reset cache dictionaries
@@ -20277,6 +20291,9 @@ class NmrDpUtility(object):
 
             for content_subtype in self.__aux_data.keys():
                 self.__aux_data[content_subtype] = []
+
+            for content_subtype in self.__sf_tag_data.keys():
+                self.__sf_tag_data[content_subtype] = []
 
             return True
 

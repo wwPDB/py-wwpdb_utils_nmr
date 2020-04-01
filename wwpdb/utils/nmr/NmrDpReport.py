@@ -409,6 +409,12 @@ class NmrDpReport:
             content_subtype = 'dist_restraint'
 
             if content_subtype in content_subtypes:
+
+                stats = self.__getNmrLegacyStatsOfExptlData(id, content_subtype)
+
+                if stats is None:
+                    continue
+
                 hydrogen_bonds = 0
                 disulfide_bonds = 0
                 diselenide_bonds = 0
@@ -416,7 +422,8 @@ class NmrDpReport:
                 symmetric = 0
                 noe_like = 0
                 noe_exp_type = None
-                for stat in self.__getNmrLegacyStatsOfExptlData(id, content_subtype):
+
+                for stat in stats:
                     for k, v in stat['number_of_constraints'].items():
                         if 'hydrogen_bonds' in k:
                             hydrogen_bonds += v
@@ -497,11 +504,18 @@ class NmrDpReport:
             content_subtype = 'dihed_restraint'
 
             if content_subtype in content_subtypes:
+
+                stats = self.__getNmrLegacyStatsOfExptlData(id, content_subtype)
+
+                if stats is None:
+                    continue
+
                 proteins = 0;
                 nucleic_acids = 0
                 carbohydrates = 0
                 others = 0
-                for stat in self.__getNmrLegacyStatsOfExptlData(id, content_subtype):
+
+                for stat in stats:
                     for k, v in stat['number_of_constraints_per_polymer_type'].items():
                         if k == 'protein':
                             proteins += v
@@ -543,8 +557,15 @@ class NmrDpReport:
             content_subtype = 'rdc_restraint'
 
             if content_subtype in content_subtypes:
+
+                stats = self.__getNmrLegacyStatsOfExptlData(id, content_subtype)
+
+                if stats is None:
+                    continue
+
                 rdc_total = 0
-                for stat in self.__getNmrLegacyStatsOfExptlData(id, content_subtype):
+
+                for stat in stats:
                     for k, v in stat['number_of_constraints'].items():
                         rdc_total += v
 
@@ -597,7 +618,12 @@ class NmrDpReport:
             if content_subtypes is None:
                 continue
 
-            for stat in self.__getNmrLegacyStatsOfExptlData(id, content_subtype):
+            stats = self.__getNmrLegacyStatsOfExptlData(id, content_subtype)
+
+            if stats is None:
+                continue
+
+            for stat in stats:
                 spectral_peaks.append({'list_id': stat['list_id'], 'sf_framecode': stat['sf_framecode'], 'number_of_spectral_dimensions': stat['number_of_spectral_dimensions'], 'spectral_dim': stat['spectral_dim']})
 
         return spectral_peaks
@@ -621,7 +647,6 @@ class NmrDpReport:
         pat = re.compile(r'^(\d+)(\D)$')
 
         for stat in self.getNmrStatsOfExptlData(content_subtype):
-
             for k in stat['number_of_assignments'].keys():
                 try:
                     g = pat.search(k.split('_')[0].upper()).groups()
@@ -653,8 +678,12 @@ class NmrDpReport:
             if content_subtypes is None:
                 continue
 
-            for stat in self.__getNmrLegacyStatsOfExptlData(id, content_subtype):
+            stats = self.__getNmrLegacyStatsOfExptlData(id, content_subtype)
 
+            if stats is None:
+                continue
+
+            for stat in stats:
                 for k in stat['number_of_assignments'].keys():
                     try:
                         g = pat.search(k.split('_')[0].upper()).groups()
@@ -720,7 +749,12 @@ class NmrDpReport:
             if content_subtypes is None:
                 continue
 
-            for stat in self.__getNmrLegacyStatsOfExptlData(id, content_subtype):
+            stats = self.__getNmrLegacyStatsOfExptlData(id, content_subtype)
+
+            if stats is None:
+                continue
+
+            for stat in stats:
                 loop = []
                 for l in stat['loop']:
                     _l = {}

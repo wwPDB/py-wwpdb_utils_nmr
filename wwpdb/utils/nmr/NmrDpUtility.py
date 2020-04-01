@@ -2475,7 +2475,8 @@ class NmrDpUtility(object):
         """ Set primary destination file path.
         """
 
-        self.__dstPath = os.path.abspath(fPath)
+        if not fPath is None:
+            self.__dstPath = os.path.abspath(fPath)
 
     def setLog(self, fPath):
         """ Set a log file path for the primary input source.
@@ -14652,6 +14653,11 @@ class NmrDpUtility(object):
 
             logging.error("+NmrDpUtility.__retrieveDpReport() ++ Error  - Could not access to file path %s." % fPath)
             raise IOError("+NmrDpUtility.__retrieveDpReport() ++ Error  - Could not access to file path %s." % fPath)
+
+        else:
+
+            self.__initializeDpReport()
+            self.__dstPath = self.__srcPath
 
         return False
 

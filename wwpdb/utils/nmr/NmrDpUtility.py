@@ -19227,7 +19227,7 @@ class NmrDpUtility(object):
 
                             row[itCol] = val.upper()
 
-                            if file_type == 'nef' and itName.startswith('atom_name'):
+                            if (file_type == 'nef' and itName.startswith('atom_name')) or (file_type == 'nmr-star' and itName.startswith('Auth_atom_ID')):
                                 if 'X' in val:
                                     row[itCol] = re.sub('X', 'x', row[itCol])
                                 elif 'Y' in val:
@@ -19253,7 +19253,7 @@ class NmrDpUtility(object):
 
                             row[itCol] = val.upper()
 
-                            if file_type == 'nef' and itName.startswith('atom_name'):
+                            if (file_type == 'nef' and itName.startswith('atom_name')) or (file_type == 'nmr-star' and itName.startswith('Auth_atom_ID')):
                                 if 'X' in val:
                                     row[itCol] = re.sub('X', 'x', row[itCol])
                                 elif 'Y' in val:

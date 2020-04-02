@@ -5,7 +5,7 @@
 # Update:
 # 06-Aug-2010 - jdw - Generalized construction of methods to apply to any category
 #                     Add accessors for lists of dictionaries.
-# 12-May-2011 - rps - Added check for None when asking for category Object in __getDataList()                      
+# 12-May-2011 - rps - Added check for None when asking for category Object in __getDataList()
 # 2012-10-24    RPS   Updated to reflect reorganization of modules in pdbx packages
 ##
 """
@@ -44,7 +44,7 @@ class ChemCompReader(object):
                              ('chem_comp_identifier',  'table'),
                              ('chem_comp_descriptor',  'table'),
                              ('pdbx_chem_comp_audit',  'table'),
-                             ('pdbx_chem_comp_import', 'table')                             
+                             ('pdbx_chem_comp_import', 'table')
                              ]
         self.__cDict={
             'chem_comp': [
@@ -156,7 +156,7 @@ class ChemCompReader(object):
     def getChemCompDict(self):
         try:
             self.__getComp()
-            dL=self.__getDictList(catName='chem_comp')        
+            dL=self.__getDictList(catName='chem_comp')
             return  dL[0]
         except:
             return {}
@@ -165,7 +165,7 @@ class ChemCompReader(object):
         """ Get the definition data for the input chemical component.    Data is read from chemmical
             component definition file stored in the organization of CVS repository for chemical components.
 
-            Returns True for success or False otherwise.  
+            Returns True for success or False otherwise.
         """
         try:
             block=self.__getDataBlock(self.__filePath,self.__ccU)
@@ -174,7 +174,6 @@ class ChemCompReader(object):
         except:
             traceback.print_exc(file=sys.stdout)
             return False
-
 
     def __getDataBlock(self,filePath,blockId=None):
         """ Worker method to read chemical component definition file and set the target datablock
@@ -199,12 +198,11 @@ class ChemCompReader(object):
                         if (self.__debug):
                             block.printIt(self.__lfh)
                         return block
-                
+
             return None
         except:
             traceback.print_exc(file=self.__lfh)
             return None
-
 
     def __setDataBlock(self,dataBlock=None):
         """ Assigns the input data block as the active internal data block containing the
@@ -222,13 +220,12 @@ class ChemCompReader(object):
 
         return ok
 
-            
     def __getDictList(self,catName='chem_comp'):
         """Return a list of dictionaries of the input category
         """
         # Get category object - from current data block
         itTupList= self.__cDict[catName]
-        catObj=self.__dBlock.getObj(catName)            
+        catObj=self.__dBlock.getObj(catName)
         nRows=catObj.getRowCount()
         #
         # Get column name index.
@@ -241,7 +238,7 @@ class ChemCompReader(object):
         # Find the mapping to the local category definition
         #
         colDict={}
-        # 
+        #
         for ii,itTup in enumerate(itTupList):
             if itTup[0] in itDict:
                 colDict[itTup[0]] = itDict[itTup[0]]
@@ -261,7 +258,6 @@ class ChemCompReader(object):
 
         return dList
 
-
     def __getDataList(self,catName='chem_comp_bond'):
         """Return a list a list of data from the input category including
            data types and default value replacement.
@@ -269,9 +265,9 @@ class ChemCompReader(object):
         itTupList= self.__cDict[catName]
         dataList=[]
         catObj=self.__dBlock.getObj(catName)
-        if( catObj is not None ):            
+        if( catObj is not None ):
             nRows=catObj.getRowCount()
-            
+
             itDict={}
             itNameList=catObj.getItemNameList()
             for idxIt,itName in enumerate(itNameList):
@@ -286,30 +282,30 @@ class ChemCompReader(object):
                     colTupList.append( (-1, itTup[2], itTup[3]) )
             #
             rowList=catObj.getRowList()
-            
+
             for row in rowList:
                 uR=[]
                 for cTup in colTupList:
-                    
+
                     if cTup[0] < 0:
                         uR.append(self.__applyType(cTup[1],cTup[2],cTup[2]) )
                     else:
                         uR.append(self.__applyType(cTup[1],cTup[2],row[cTup[0]]))
-                        
+
                 dataList.append(uR)
-    
+
         return dataList
-                    
+
     def __applyType(self,type,default,val):
         """Apply type conversion to the input value and assign default values to
-           missing values. 
+           missing values.
         """
         tval = val
         if (val is None):
             tval=default
         if (isinstance(tval,str) and (len(tval)<1 or tval == '.' or tval == '?')):
             tval=default
-            
+
         if type == "int":
             return int(str(tval))
         elif type == "float":
@@ -318,7 +314,3 @@ class ChemCompReader(object):
             return str(tval)
         else:
             return tval
-        
-                        
-
-

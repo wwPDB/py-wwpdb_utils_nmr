@@ -36,6 +36,7 @@
 # 24-Mar-2020  M. Yokochi - revise chain assignment for identical dimer case (DAOTHER-3343)
 # 30-Mar-2020  M. Yokochi - preserve original sf_framecode for nef_molecular_system (NEF) or assembly (NMR-STAR)
 # 31-Mar-2020  M. Yokochi - enable processing without log file
+# 03-Apr-2020  M. Yokochi - preserve case code of atom_name (NEF) and Auth_atom_ID/Original_PDB_atom_name (NMR-STAR)
 ##
 """ Wrapper class for data processing for NMR data.
     @author: Masashi Yokochi
@@ -19225,13 +19226,10 @@ class NmrDpUtility(object):
                             if val is self.empty_value:
                                 continue
 
-                            row[itCol] = val.upper()
+                            if (file_type == 'nef' and itName.startswith('atom_name')) or (file_type == 'nmr-star' and (itName.startswith('Auth_atom_ID') or itName == 'Original_PDB_atom_name')):
+                                continue
 
-                            if (file_type == 'nef' and itName.startswith('atom_name')) or (file_type == 'nmr-star' and itName.startswith('Auth_atom_ID')):
-                                if 'X' in val:
-                                    row[itCol] = re.sub('X', 'x', row[itCol])
-                                elif 'Y' in val:
-                                    row[itCol] = re.sub('Y', 'y', row[itCol])
+                            row[itCol] = val.upper()
 
                 if file_type == 'nef':
                     data_names = [d['name'] for d in data_items if d['name'].startswith('chain_code') or d['name'].startswith('residue_name') or d['name'].startswith('atom_name') or d['name'] == 'element']
@@ -19251,13 +19249,10 @@ class NmrDpUtility(object):
                             if val is self.empty_value:
                                 continue
 
-                            row[itCol] = val.upper()
+                            if (file_type == 'nef' and itName.startswith('atom_name')) or (file_type == 'nmr-star' and (itName.startswith('Auth_atom_ID') or itName == 'Original_PDB_atom_name')):
+                                continue
 
-                            if (file_type == 'nef' and itName.startswith('atom_name')) or (file_type == 'nmr-star' and itName.startswith('Auth_atom_ID')):
-                                if 'X' in val:
-                                    row[itCol] = re.sub('X', 'x', row[itCol])
-                                elif 'Y' in val:
-                                    row[itCol] = re.sub('Y', 'y', row[itCol])
+                            row[itCol] = val.upper()
 
         return True
 
@@ -19770,6 +19765,7 @@ class NmrDpUtility(object):
         item_names = self.item_names_in_cs_loop[file_type]
         chain_id_name = item_names['chain_id']
         seq_id_name = item_names['seq_id']
+        iso_number_name = item_names['isotope_number']
         atom_id_name = item_names['atom_id']
 
         for sf_data in self.__star_data[0].get_saveframes_by_category(sf_category):
@@ -19799,18 +19795,19 @@ class NmrDpUtility(object):
                 for l, i in enumerate(lp_data):
                     chain_id = i[chain_id_name]
                     seq_id = i[seq_id_name]
+                    iso_number = i[iso_number_name]
                     atom_id = i[atom_id_name]
 
-                    atoms.append('{:<4}:{:04d}:{:<8}:{:06d}'.format(chain_id, seq_id, atom_id, l))
+                    atoms.append('{:<4}:{:04d}:{:02d}:{:<8}:{:06d}'.format(chain_id, seq_id, iso_number, atom_id, l))
 
                 sorted_atoms = sorted(atoms)
 
                 sorted_id = []
 
                 for j in sorted_atoms:
-                    sorted_id.append(int(j.split(':')[3]))
+                    sorted_id.append(int(j.split(':')[4]))
 
-                if sorted_id != range(l):
+                if sorted_id != list(range(l)):
 
                     lp_data = sf_data.get_loop_by_category(lp_category)
 

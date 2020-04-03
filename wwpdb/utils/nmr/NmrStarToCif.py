@@ -1,6 +1,6 @@
 #
 # File: NmrStarToCif.py
-# Date: 02-Apr-2020
+# Date: 03-Apr-2020
 #
 # Updates:
 ##
@@ -74,22 +74,20 @@ class NmrStarToCif(object):
 
                         extended_items = [original_item for original_item in original_items if original_item not in items]
 
-                        if len(extended_items) == 0:
-                            continue
+                        if len(extended_items) > 0:
+                            dList, iList = cifObj.GetValueAndItemByBlock(k, cs_str)
 
-                        dList, iList = cifObj.GetValueAndItemByBlock(k, cs_str)
+                            auth_items = [original_auth_map[original_item] for original_item in extended_items]
 
-                        auth_items = [original_auth_map[original_item] for original_item in extended_items]
+                            extended_data_list = []
 
-                        extended_data_list = []
+                            for src in dList:
+                                dst = []
+                                for auth_item in auth_items:
+                                    dst.append(src[auth_item])
+                                extended_data_list.append(dst)
 
-                        for src in dList:
-                            dst = []
-                            for auth_item in auth_items:
-                                dst.append(src[auth_item])
-                            extended_data_list.append(dst)
-
-                        cifObj.ExtendCategory(k, cs_str, extended_items, extended_data_list)
+                            cifObj.ExtendCategory(k, cs_str, extended_items, extended_data_list)
 
                         if self.__ow_auth_atom_id:
                             cifObj.CopyValueInRow(k, cs_str, ['Atom_ID'], ['Auth_atom_ID'])

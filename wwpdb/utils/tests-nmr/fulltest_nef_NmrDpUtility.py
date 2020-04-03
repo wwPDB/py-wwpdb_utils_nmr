@@ -38,7 +38,7 @@ class TestNmrDpUtility(unittest.TestCase):
         if not report['error'] is None:
             self.assertEqual(report['error']['internal_error'], None)
 
-    def __test_nmr_nef2str_deposit_check(self, entry_id):
+    def __test_nmr_nef2str_deposit(self, entry_id):
         if not os.access(self.data_dir_path + entry_id + '-nef-consistency-log.json', os.F_OK):
             self.__test_nmr_nef_consistency(entry_id)
 
@@ -102,46 +102,46 @@ class TestNmrDpUtility(unittest.TestCase):
         self.__test_nmr_nef_consistency('2m5o')
 
     def test_nmr_nef2str_deposit_check_1nk2(self):
-        self.__test_nmr_nef2str_deposit_check('1nk2')
+        self.__test_nmr_nef2str_deposit('1nk2')
 
     def test_nmr_nef2str_deposit_check_2kko(self):
-        self.__test_nmr_nef2str_deposit_check('2kko')
+        self.__test_nmr_nef2str_deposit('2kko')
 
     def test_nmr_nef2str_deposit_check_2mqq(self):
-        self.__test_nmr_nef2str_deposit_check('2mqq')
+        self.__test_nmr_nef2str_deposit('2mqq')
 
     def test_nmr_nef2str_deposit_check_2mtv(self):
-        self.__test_nmr_nef2str_deposit_check('2mtv')
+        self.__test_nmr_nef2str_deposit('2mtv')
 
     def test_nmr_nef2str_deposit_check_2l9r(self):
-        self.__test_nmr_nef2str_deposit_check('2l9r')
+        self.__test_nmr_nef2str_deposit('2l9r')
 
     def test_nmr_nef2str_deposit_check_2la6(self):
-        self.__test_nmr_nef2str_deposit_check('2la6')
+        self.__test_nmr_nef2str_deposit('2la6')
 
     def test_nmr_nef2str_deposit_check_2lah(self):
-        self.__test_nmr_nef2str_deposit_check('2lah')
+        self.__test_nmr_nef2str_deposit('2lah')
 
     def test_nmr_nef2str_deposit_check_2lci(self):
-        self.__test_nmr_nef2str_deposit_check('2lci')
+        self.__test_nmr_nef2str_deposit('2lci')
 
     def test_nmr_nef2str_deposit_check_2ln3(self):
-        self.__test_nmr_nef2str_deposit_check('2ln3')
+        self.__test_nmr_nef2str_deposit('2ln3')
 
     def test_nmr_nef2str_deposit_check_2loj(self):
-        self.__test_nmr_nef2str_deposit_check('2loj')
+        self.__test_nmr_nef2str_deposit('2loj')
 
     def test_nmr_nef2str_deposit_check_2ltl(self):
-        self.__test_nmr_nef2str_deposit_check('2ltl')
+        self.__test_nmr_nef2str_deposit('2ltl')
 
     def test_nmr_nef2str_deposit_check_2ltm(self):
-        self.__test_nmr_nef2str_deposit_check('2ltm')
+        self.__test_nmr_nef2str_deposit('2ltm')
 
     def test_nmr_nef2str_deposit_check_2m2e(self):
-        self.__test_nmr_nef2str_deposit_check('2m2e')
+        self.__test_nmr_nef2str_deposit('2m2e')
 
     def test_nmr_nef2str_deposit_check_2m5o(self):
-        self.__test_nmr_nef2str_deposit_check('2m5o')
+        self.__test_nmr_nef2str_deposit('2m5o')
 
 if __name__ == '__main__':
     unittest.main()

@@ -22,7 +22,8 @@
 # 17-Mar-2020  M. Yokochi - fill default value for mandatory saveframe tag (v2.0.8, DAOTHER-5508)
 # 18-Mar-2020  M. Yokochi - convert NEF atom nomenclature in dihedral angle/rdc restraint (v2.0.9)
 # 18-Mar-2020  M. Yokochi - remove invalid NMR-STAR's Details tag in restraint (v2.0.9)
-# 03-Apr-2020  M. Yokochi - hard code information content of lib/atomDict.json and lib/codeDict.json (v2.0.10)
+# 03-Apr-2020  M. Yokochi - remove dependency of lib/atomDict.json and lib/codeDict.json (v2.1.0)
+# 03-Apr-2020  M. Yokochi - fill _Atom_chem_shift.Original_PDB_* items (v2.1.0)
 ##
 import sys
 import os
@@ -40,9 +41,7 @@ from wwpdb.utils.config.ConfigInfo import ConfigInfo, getSiteId
 from wwpdb.utils.nmr.io.ChemCompIo import ChemCompReader
 from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
 
-(scriptPath, scriptName) = ntpath.split(os.path.realpath(__file__))
-
-__version__ = 'v2.0.10'
+__version__ = 'v2.1.0'
 
 class NEFTranslator(object):
     """ Bi-directional translator between NEF and NMR-STAR
@@ -53,46 +52,48 @@ class NEFTranslator(object):
 
     formatter = logging.Formatter('%(asctime)s\t%(levelname)s\t%(message)s')
 
-    mapFile = scriptPath + '/lib/NEF_NMRSTAR_equivalence.csv'
-    NEFinfo = scriptPath + '/lib/NEF_mandatory.csv'
-    NMRSTARinfo = scriptPath + '/lib/NMR-STAR_mandatory.csv'
-    #atmFile = scriptPath + '/lib/atomDict.json'
-    #codeFile = scriptPath + '/lib/codeDict.json'
-
     def __init__(self):
         ch = logging.StreamHandler()
         ch.setFormatter(self.formatter)
 
         self.logger.addHandler(ch)
 
-        (isOk, msg, self.tagMap) = self.__load_csv_data(self.mapFile, transpose=True)
+        # directory
+        self.lib_dir = os.path.dirname(__file__) + '/lib/'
+
+        (isOk, msg, self.tagMap) = self.__load_csv_data(self.lib_dir + 'NEF_NMRSTAR_equivalence.csv', transpose=True)
+
+        if not isOk:
+            self.logger.error(msg)
+
+        (isOk, msg, self.nef_mandatory_tag) = self.__load_csv_data(self.lib_dir + 'NEF_mandatory.csv')
+
+        if not isOk:
+            self.logger.error(msg)
+
+        (isOk, msg, self.star_mandatory_tag) = self.__load_csv_data(self.lib_dir + 'NMR-STAR_mandatory.csv')
 
         if not isOk:
             self.logger.error(msg)
         """
-        (isOk, msg, self.atomDict) = self.__load_json_data(self.atmFile)
+        (isOk, msg, self.atomDict) = self.__load_json_data(self.lib_dir + 'atomDict.json')
 
         if not isOk:
             self.logger.error(msg)
 
-        (isOk, msg, self.codeDict) = self.__load_json_data(self.codeFile)
+        (isOk, msg, self.codeDict) = self.__load_json_data(self.lib_di + 'codeDict.json')
 
         if not isOk:
             self.logger.error(msg)
         """
-        (isOk, msg, self.NEFinfo) = self.__load_csv_data(self.NEFinfo)
-
-        if not isOk:
-            self.logger.error(msg)
-
         ch.flush()
 
-        # BMRB chemical shift statistics
-        self.__csStat = BMRBChemShiftStat()
+        # whether to insert _Atom_chem_shift.Original_PDB_* items
+        self.insert_original_pdb_cs_items = True
 
         # supported version
         self.nef_version = '1.1'
-        self.nmrstar_version = '3.2.1.18'
+        self.star_version = '3.2.1.18'
 
         # format name
         self.nef_format_name = 'nmr_exchange_format'
@@ -201,6 +202,9 @@ class NEFTranslator(object):
                          'T': 'T',
                          'U': 'U'
                          }
+
+        # BMRB chemical shift statistics
+        self.__csStat = BMRBChemShiftStat()
 
         # CCD accessing utility
         self.__cI = ConfigInfo(getSiteId())
@@ -653,7 +657,7 @@ class NEFTranslator(object):
             @return: list of missing mandatory saveframe tags, list of missing mandatory loop tags
         """
 
-        tag_info = self.NEFinfo if file_type == 'nef' else self.NMRSTARinfo
+        mandatory_tag = self.nef_mandatory_tag if file_type == 'nef' else self.star_mandatory_tag
 
         missing_sf_tags = []
         missing_lp_tags = []
@@ -663,7 +667,7 @@ class NEFTranslator(object):
 
             sf_list = [sf.category for sf in star_data.frame_list]
 
-            for _tag in tag_info:
+            for _tag in mandatory_tag:
 
                 if _tag[0][0] == '_' and _tag[1] == 'yes':
 
@@ -679,7 +683,7 @@ class NEFTranslator(object):
             try:
                 star_data = pynmrstar.Saveframe.from_file(in_file)
 
-                for _tag in tag_info:
+                for _tag in mandatory_tag:
 
                     if _tag[0][0] == '_' and _tag[1] == 'yes':
 
@@ -695,7 +699,7 @@ class NEFTranslator(object):
                 try:
                     star_data = pynmrstar.Loop.from_file(in_file)
 
-                    for _tag in tag_info:
+                    for _tag in mandatory_tag:
 
                         if _tag[0][0] == '_' and _tag[0][1:].split('.')[0] == star_data.category and _tag[1] == 'yes':
 
@@ -717,9 +721,9 @@ class NEFTranslator(object):
             @return: True for mandatory tag, False otherwise
         """
 
-        tag_info = self.NEFinfo if file_type == 'nef' else self.NMRSTARinfo
+        mandatory_tag = self.nef_mandatory_tag if file_type == 'nef' else self.star_mandatory_tag
 
-        return next((True for t in tag_info if t[0] == item and t[1] == 'yes'), False)
+        return next((True for t in mandatory_tag if t[0] == item and t[1] == 'yes'), False)
 
     def validate_file(self, in_file, file_subtype='A'):
         """ Validate input NEF/NMR-STAR file.
@@ -2936,6 +2940,12 @@ class NEFTranslator(object):
             out_tag.append('_Atom_chem_shift.Details')
             out_tag.append('_Atom_chem_shift.Assigned_chem_shift_list_ID')
 
+            if self.insert_original_pdb_cs_items:
+                out_tag.append('_Atom_chem_shift.Original_PDB_strand_ID')
+                out_tag.append('_Atom_chem_shift.Original_PDB_residue_no')
+                out_tag.append('_Atom_chem_shift.Original_PDB_residue_name')
+                out_tag.append('_Atom_chem_shift.Original_PDB_atom_name')
+
         elif lp_category == '_nef_distance_restraint':
             out_tag.append('_Gen_dist_constraint.Member_logic_code')
             # out_tag.append('_Gen_dist_constraint.Details')
@@ -3740,6 +3750,12 @@ class NEFTranslator(object):
         star_ambig_set_id_index = star_tags.index('_Atom_chem_shift.Ambiguity_set_ID')
         star_details_index = star_tags.index('_Atom_chem_shift.Details')
 
+        if self.insert_original_pdb_cs_items:
+            star_original_chani_id = star_tags.index('_Atom_chem_shift.Original_PDB_strand_ID')
+            star_original_seq_id = star_tags.index('_Atom_chem_shift.Original_PDB_residue_no')
+            star_original_comp_id = star_tags.index('_Atom_chem_shift.Original_PDB_residue_name')
+            star_original_atom_id = star_tags.index('_Atom_chem_shift.Original_PDB_atom_name')
+
         index = 1;
 
         for nef_chain in self.authChainId:
@@ -3775,10 +3791,20 @@ class NEFTranslator(object):
 
                                 if j == '_nef_chemical_shift.atom_name':
                                     out[star_tags.index(data_tag)] = atom
+                                    if self.insert_original_pdb_cs_items:
+                                        out[star_original_atom_id] = data
                                 elif j == '_nef_chemical_shift.chain_code':
                                     out[star_tags.index(data_tag)] = star_chain
+                                    if self.insert_original_pdb_cs_items:
+                                        out[star_original_chani_id] = data
                                 elif j == '_nef_chemical_shift.sequence_code':
                                     out[star_tags.index(data_tag)] = star_seq
+                                    if self.insert_original_pdb_cs_items:
+                                        out[star_original_seq_id] = data
+                                elif j == '_nef_chemical_shift.residue_name':
+                                    out[star_tags.index(data_tag)] = data
+                                    if self.insert_original_pdb_cs_items:
+                                        out[star_original_comp_id] = data
                                 else:
                                     out[star_tags.index(data_tag)] = data
 
@@ -4665,7 +4691,7 @@ class NEFTranslator(object):
                         sf.add_loop(lp)
 
                     if saveframe.category == 'nef_nmr_meta_data':
-                        sf.add_tag('NMR_STAR_version', self.nmrstar_version)
+                        sf.add_tag('NMR_STAR_version', self.star_version)
 
                         try:
                             loop = sf.get_loop_by_category('_Software_applied_methods')
@@ -4866,7 +4892,7 @@ class NEFTranslator(object):
                     sf.add_loop(lp)
 
                 if saveframe.category == 'nef_nmr_meta_data':
-                    sf.add_tag('NMR_STAR_version', self.nmrstar_version)
+                    sf.add_tag('NMR_STAR_version', self.star_version)
 
                     try:
                         loop = sf.get_loop_by_category('_Software_applied_methods')

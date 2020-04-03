@@ -43,7 +43,7 @@ class TestNmrDpUtility(unittest.TestCase):
         # data directory exists
         self.assertEqual(os.path.isdir(self.data_dir_path), True)
 
-    def test_nmr_nef_consistency_check(self):
+    def test_nmr_nef_consistency(self):
         # no input
         with LogCapture() as logs:
             with self.assertRaises(ValueError):
@@ -65,7 +65,7 @@ class TestNmrDpUtility(unittest.TestCase):
 
         self.utility.op('nmr-nef-consistency-check')
 
-    def test_nmr_str_consistency_check(self):
+    def test_nmr_str_consistency(self):
         # no input
         with LogCapture() as logs:
             with self.assertRaises(ValueError):
@@ -176,9 +176,9 @@ class TestNmrDpUtility(unittest.TestCase):
 
         self.utility.op('nmr-str2str-deposit')
 
-    def test_nmr_nef2str_deposit_check(self):
+    def test_nmr_nef2str_deposit(self):
         if not os.access(self.data_dir_path + '2l9r-nef-consistency-log.json', os.F_OK):
-            self.test_nmr_nef_consistency_check()
+            self.test_nmr_nef_consistency()
 
         self.utility.setSource(self.data_dir_path + '2l9r.nef')
         self.utility.addInput(name='coordinate_file_path', value=self.data_dir_path + '2l9r.cif', type='file')
@@ -244,9 +244,9 @@ class TestNmrDpUtility(unittest.TestCase):
 
         self.utility.op('nmr-nef2str-deposit')
 
-    def test_nmr_str2str_deposit_check(self):
+    def test_nmr_str2str_deposit(self):
         if not os.access(self.data_dir_path + '2l9r-str-consistency-log.json', os.F_OK):
-            self.test_nmr_str_consistency_check()
+            self.test_nmr_str_consistency()
 
         self.utility.setSource(self.data_dir_path + '2l9r.str')
         self.utility.addInput(name='coordinate_file_path', value=self.data_dir_path + '2l9r.cif', type='file')

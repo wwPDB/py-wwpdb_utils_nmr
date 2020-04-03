@@ -21,6 +21,7 @@ class TestNEFTranslator(unittest.TestCase):
         here = os.path.abspath(os.path.dirname(__file__))
         self.data_dir_path = os.path.join(here, 'mock-data/')
         self.neft = NEFTranslator()
+        self.neft.insert_original_pdb_cs_items = False
         self.neft.authChainId = ['A', 'B', 'C']
         self.neft.authSeqMap = {('A', '372'): (1, 1), ('A', '373'): (1, 2), ('A', '374'): (1, 3), ('A', '375'): (1, 4),
                       ('A', '376'): (1, 5), ('A', '377'): (1, 6), ('A', '378'): (1, 7), ('A', '379'): (1, 8),
@@ -100,7 +101,8 @@ class TestNEFTranslator(unittest.TestCase):
 
     def test_load_csv_data(self):
         self.assertTrue(len(self.neft.tagMap) > 0, "Can't read NEF-NMRSTAR_equivalence.csv or its empty")
-        self.assertTrue(len(self.neft.NEFinfo) > 0, "Can't read NEF_mandatory.csv or its empty")
+        self.assertTrue(len(self.neft.nef_mandatory_tag) > 0, "Can't read NEF_mandatory.csv or its empty")
+        self.assertTrue(len(self.neft.star_mandatory_tag) > 0, "Can't read NMR-STAR_mandatory.csv or its empty")
     """
     def test_load_json_data(self):
         self.assertTrue(len(self.neft.codeDict) > 0, "Can't read codeDict.json or its empty")

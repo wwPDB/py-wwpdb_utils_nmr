@@ -4,7 +4,7 @@ Author:  Zukang Feng
 Update:  21-August-2012
 Version: 001  Initial version
 # Update:
-# 02-Apl-2020  M. Yokochi - Re-write Zukang's version to being aware of multiple data blocks
+# 02-Apr-2020  M. Yokochi - Re-write Zukang's version to being aware of multiple data blocks
 ##
 """
 

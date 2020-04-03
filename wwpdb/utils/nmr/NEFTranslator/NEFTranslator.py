@@ -22,6 +22,7 @@
 # 17-Mar-2020  M. Yokochi - fill default value for mandatory saveframe tag (v2.0.8, DAOTHER-5508)
 # 18-Mar-2020  M. Yokochi - convert NEF atom nomenclature in dihedral angle/rdc restraint (v2.0.9)
 # 18-Mar-2020  M. Yokochi - remove invalid NMR-STAR's Details tag in restraint (v2.0.9)
+# 03-Apr-2020  M. Yokochi - hard code information content of lib/atomDict.json and lib/codeDict.json (v2.0.10)
 ##
 import sys
 import os
@@ -41,7 +42,7 @@ from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
 
 (scriptPath, scriptName) = ntpath.split(os.path.realpath(__file__))
 
-__version__ = 'v2.0.9'
+__version__ = 'v2.0.10'
 
 class NEFTranslator(object):
     """ Bi-directional translator between NEF and NMR-STAR
@@ -55,8 +56,8 @@ class NEFTranslator(object):
     mapFile = scriptPath + '/lib/NEF_NMRSTAR_equivalence.csv'
     NEFinfo = scriptPath + '/lib/NEF_mandatory.csv'
     NMRSTARinfo = scriptPath + '/lib/NMR-STAR_mandatory.csv'
-    atmFile = scriptPath + '/lib/atomDict.json'
-    codeFile = scriptPath + '/lib/codeDict.json'
+    #atmFile = scriptPath + '/lib/atomDict.json'
+    #codeFile = scriptPath + '/lib/codeDict.json'
 
     def __init__(self):
         ch = logging.StreamHandler()
@@ -68,7 +69,7 @@ class NEFTranslator(object):
 
         if not isOk:
             self.logger.error(msg)
-
+        """
         (isOk, msg, self.atomDict) = self.__load_json_data(self.atmFile)
 
         if not isOk:
@@ -78,7 +79,7 @@ class NEFTranslator(object):
 
         if not isOk:
             self.logger.error(msg)
-
+        """
         (isOk, msg, self.NEFinfo) = self.__load_csv_data(self.NEFinfo)
 
         if not isOk:
@@ -122,6 +123,84 @@ class NEFTranslator(object):
                               'CD': [113, 111],
                               'CA': [43]
                               }
+
+        # list of atom_id of known residues
+        self.atomDict = {"ALA": ["N", "CA", "C", "O", "CB", "OXT", "H", "H2", "HA", "HB1", "HB2", "HB3", "HXT"],
+                         "ARG": ["N", "CA", "C", "O", "CB", "CG", "CD", "NE", "CZ", "NH1", "NH2", "OXT", "H", "H2", "HA", "HB2", "HB3", "HG2", "HG3", "HD2", "HD3", "HE", "HH11", "HH12", "HH21", "HH22", "HXT"],
+                         "ASN": ["N", "CA", "C", "O", "CB", "CG", "OD1", "ND2", "OXT", "H", "H2", "HA", "HB2", "HB3", "HD21", "HD22", "HXT"],
+                         "ASP": ["N", "CA", "C", "O", "CB", "CG", "OD1", "OD2", "OXT", "H", "H2", "HA", "HB2", "HB3", "HD2", "HXT"],
+                         "ASX": ["N", "CA", "C", "O", "CB", "CG", "XD1", "XD2", "OXT", "H", "H2", "HA", "HB1", "HB2", "HXT"],
+                         "CYS": ["N", "CA", "C", "O", "CB", "SG", "OXT", "H", "H2", "HA", "HB2", "HB3", "HG", "HXT"],
+                         "GLN": ["N", "CA", "C", "O", "CB", "CG", "CD", "OE1", "NE2", "OXT", "H", "H2", "HA", "HB2", "HB3", "HG2", "HG3", "HE21", "HE22", "HXT"],
+                         "GLU": ["N", "CA", "C", "O", "CB", "CG", "CD", "OE1", "OE2", "OXT", "H", "H2", "HA", "HB2", "HB3", "HG2", "HG3", "HE2", "HXT"],
+                         "GLX": ["N", "CA", "C", "O", "CB", "CG", "CD", "XE1", "XE2", "HA", "OXT", "HXT", "HB1", "HB2", "HG1", "HG2", "H", "H2"],
+                         "GLY": ["N", "CA", "C", "O", "OXT", "H", "H2", "HA2", "HA3", "HXT"],
+                         "HIS": ["N", "CA", "C", "O", "CB", "CG", "ND1", "CD2", "CE1", "NE2", "OXT", "H", "H2", "HA", "HB2", "HB3", "HD1", "HD2", "HE1", "HE2", "HXT"],
+                         "ILE": ["N", "CA", "C", "O", "CB", "CG1", "CG2", "CD1", "OXT", "H", "H2", "HA", "HB", "HG12", "HG13", "HG21", "HG22", "HG23", "HD11", "HD12", "HD13", "HXT"],
+                         "LEU": ["N", "CA", "C", "O", "CB", "CG", "CD1", "CD2", "OXT", "H", "H2", "HA", "HB2", "HB3", "HG", "HD11", "HD12", "HD13", "HD21", "HD22", "HD23", "HXT"],
+                         "LYS": ["N", "CA", "C", "O", "CB", "CG", "CD", "CE", "NZ", "OXT", "H", "H2", "HA", "HB2", "HB3", "HG2", "HG3", "HD2", "HD3", "HE2", "HE3", "HZ1", "HZ2", "HZ3", "HXT"],
+                         "MET": ["N", "CA", "C", "O", "CB", "CG", "SD", "CE", "OXT", "H", "H2", "HA", "HB2", "HB3", "HG2", "HG3", "HE1", "HE2", "HE3", "HXT"],
+                         "PHE": ["N", "CA", "C", "O", "CB", "CG", "CD1", "CD2", "CE1", "CE2", "CZ", "OXT", "H", "H2", "HA", "HB2", "HB3", "HD1", "HD2", "HE1", "HE2", "HZ", "HXT"],
+                         "PRO": ["N", "CA", "C", "O", "CB", "CG", "CD", "OXT", "H", "HA", "HB2", "HB3", "HG2", "HG3", "HD2", "HD3", "HXT"],
+                         "SER": ["N", "CA", "C", "O", "CB", "OG", "OXT", "H", "H2", "HA", "HB2", "HB3", "HG", "HXT"],
+                         "THR": ["N", "CA", "C", "O", "CB", "OG1", "CG2", "OXT", "H", "H2", "HA", "HB", "HG1", "HG21", "HG22", "HG23", "HXT"],
+                         "TRP": ["N", "CA", "C", "O", "CB", "CG", "CD1", "CD2", "NE1", "CE2", "CE3", "CZ2", "CZ3", "CH2", "OXT", "H", "H2", "HA", "HB2", "HB3", "HD1", "HE1", "HE3", "HZ2", "HZ3", "HH2", "HXT"],
+                         "TYR": ["N", "CA", "C", "O", "CB", "CG", "CD1", "CD2", "CE1", "CE2", "CZ", "OH", "OXT", "H", "H2", "HA", "HB2", "HB3", "HD1", "HD2", "HE1", "HE2", "HH", "HXT"],
+                         "VAL": ["N", "CA", "C", "O", "CB", "CG1", "CG2", "OXT", "H", "H2", "HA", "HB", "HG11", "HG12", "HG13", "HG21", "HG22", "HG23", "HXT"],
+                         "DA": ["OP3", "P", "OP1", "OP2", "O5'", "C5'", "C4'", "O4'", "C3'", "O3'", "C2'", "C1'", "N9", "C8", "N7", "C5", "C6", "N6", "N1", "C2", "N3", "C4", "HOP3", "HOP2", "H5'", "H5''", "H4'", "H3'", "HO3'", "H2'", "H2''", "H1'", "H8", "H61", "H62", "H2"],
+                         "DC": ["OP3", "P", "OP1", "OP2", "O5'", "C5'", "C4'", "O4'", "C3'", "O3'", "C2'", "C1'", "N1", "C2", "O2", "N3", "C4", "N4", "C5", "C6", "HOP3", "HOP2", "H5'", "H5''", "H4'", "H3'", "HO3'", "H2'", "H2''", "H1'", "H41", "H42", "H5", "H6"],
+                         "DG": ["OP3", "P", "OP1", "OP2", "O5'", "C5'", "C4'", "O4'", "C3'", "O3'", "C2'", "C1'", "N9", "C8", "N7", "C5", "C6", "O6", "N1", "C2", "N2", "N3", "C4", "HOP3", "HOP2", "H5'", "H5''", "H4'", "H3'", "HO3'", "H2'", "H2''", "H1'", "H8", "H1", "H21", "H22"],
+                         "DT": ["OP3", "P", "OP1", "OP2", "O5'", "C5'", "C4'", "O4'", "C3'", "O3'", "C2'", "C1'", "N1", "C2", "O2", "N3", "C4", "O4", "C5", "C7", "C6", "HOP3", "HOP2", "H5'", "H5''", "H4'", "H3'", "HO3'", "H2'", "H2''", "H1'", "H3", "H71", "H72", "H73", "H6"],
+                         "DU": ["OP3", "P", "OP1", "OP2", "O5'", "C5'", "C4'", "O4'", "C3'", "O3'", "C2'", "C1'", "N1", "C2", "O2", "N3", "C4", "O4", "C5", "C6", "HOP3", "HOP2", "H5'", "H5''", "H4'", "H3'", "HO3'", "H2'", "H2''", "H1'", "H3", "H5", "H6"],
+                         "A": ["OP3", "P", "OP1", "OP2", "O5'", "C5'", "C4'", "O4'", "C3'", "O3'", "C2'", "O2'", "C1'", "N9", "C8", "N7", "C5", "C6", "N6", "N1", "C2", "N3", "C4", "HOP3", "HOP2", "H5'", "H5''", "H4'", "H3'", "HO3'", "H2'", "HO2'", "H1'", "H8", "H61", "H62", "H2"],
+                         "C": ["OP3", "P", "OP1", "OP2", "O5'", "C5'", "C4'", "O4'", "C3'", "O3'", "C2'", "O2'", "C1'", "N1", "C2", "O2", "N3", "C4", "N4", "C5", "C6", "HOP3", "HOP2", "H5'", "H5''", "H4'", "H3'", "HO3'", "H2'", "HO2'", "H1'", "H41", "H42", "H5", "H6"],
+                         "G": ["OP3", "P", "OP1", "OP2", "O5'", "C5'", "C4'", "O4'", "C3'", "O3'", "C2'", "O2'", "C1'", "N9", "C8", "N7", "C5", "C6", "O6", "N1", "C2", "N2", "N3", "C4", "HOP3", "HOP2", "H5'", "H5''", "H4'", "H3'", "HO3'", "H2'", "HO2'", "H1'", "H8", "H1", "H21", "H22"],
+                         "T": ["OP3", "P", "OP1", "OP2", "O5'", "C5'", "C4'", "O4'", "C3'", "O3'", "C2'", "C1'", "N1", "C2", "O2", "N3", "C4", "O4", "C5", "C7", "C6", "HOP3", "HOP2", "H5'", "H5''", "H4'", "H3'", "HO3'", "H2'", "H2''", "H1'", "H3", "H71", "H72", "H73", "H6"],
+                         "U": ["OP3", "P", "OP1", "OP2", "O5'", "C5'", "C4'", "O4'", "C3'", "O3'", "C2'", "O2'", "C1'", "N1", "C2", "O2", "N3", "C4", "O4", "C5", "C6", "HOP3", "HOP2", "H5'", "H5''", "H4'", "H3'", "HO3'", "H2'", "HO2'", "H1'", "H3", "H5", "H6"],
+                         #
+                         "PYL": ["CB2", "CG2", "CD2", "CE2", "N2", "CA2", "C2", "O2", "NZ", "CE", "CD", "CG", "CB", "CA", "C", "OXT", "O", "N", "HXT", "HA", "H", "H2", "HB3", "HB2", "HG3", "HG2", "HD3", "HD2", "HE3", "HE2", "HZ", "HA2", "HE22", "HD32", "HD22", "HG22", "HB12", "HB22", "HB32"],
+                         "SEC": ["N", "CA", "CB", "SE", "C", "O", "OXT", "H", "H2", "HA", "HB2", "HB3", "HE", "HXT"],
+                         "UNK": ["N", "CA", "C", "O", "CB", "CG", "OXT", "H", "H2", "HA", "HB1", "HB2", "HG1", "HG2", "HG3", "HXT"],
+                         #
+                         "N": ["OP3", "P", "OP1", "OP2", "O5'", "C5'", "C4'", "O4'", "C3'", "O3'", "C2'", "O2'", "C1'", "HOP3", "HOP2", "H5'", "H5''", "H4'", "H3'", "HO3'", "H2'", "HO2'", "H1'", "H1'2"],
+                         }
+
+        # taken from wwpdb.utils.align.SequenceReferenceData.py
+        self.monDict3 = {'ALA': 'A',
+                         'ARG': 'R',
+                         'ASN': 'N',
+                         'ASP': 'D',
+                         'ASX': 'B',
+                         'CYS': 'C',
+                         'GLN': 'Q',
+                         'GLU': 'E',
+                         'GLX': 'Z',
+                         'GLY': 'G',
+                         'HIS': 'H',
+                         'ILE': 'I',
+                         'LEU': 'L',
+                         'LYS': 'K',
+                         'MET': 'M',
+                         'PHE': 'F',
+                         'PRO': 'P',
+                         'SER': 'S',
+                         'THR': 'T',
+                         'TRP': 'W',
+                         'TYR': 'Y',
+                         'VAL': 'V',
+                         'DA': 'A',
+                         'DC': 'C',
+                         'DG': 'G',
+                         'DT': 'T',
+                         'DU': 'U',
+                         'DI': 'I',
+                         'A': 'A',
+                         'C': 'C',
+                         'G': 'G',
+                         'I': 'I',
+                         'T': 'T',
+                         'U': 'U'
+                         }
 
         # CCD accessing utility
         self.__cI = ConfigInfo(getSiteId())
@@ -484,12 +563,12 @@ class NEFTranslator(object):
             msg = str(e)
 
         return is_ok, msg, star_data
-
+    """
     def __load_json_data(self, json_file):
-        """ Load JSON data to dictionary.
+        "" Load JSON data to dictionary.
             @param json_file: input JSON file path
             @return: status, message, dictionary object
-        """
+        ""
 
         is_ok = True
         msg = 'Load JSON data file %s' % json_file
@@ -504,7 +583,7 @@ class NEFTranslator(object):
             msg = str(e)
 
         return is_ok, msg, data_dict
-
+    """
     def __load_csv_data(self, csv_file, transpose=False):
         """ Load CSV data to list.
             @param cvs_file: input CSV file path
@@ -543,12 +622,20 @@ class NEFTranslator(object):
 
         comp_id = comp_id.upper()
 
+        if comp_id in self.monDict3:
+            return self.monDict3[comp_id]
+        elif comp_id in self.empty_value:
+            return '.'
+        else:
+            return 'X'
+        """
         if comp_id in self.codeDict:
             return self.codeDict[comp_id]
         elif comp_id in self.empty_value:
             return '.'
         else:
             return 'X'
+        """
 
     def get_readable_time_stamp(self, time):
         """ Return time stamp in human readable format for logging.

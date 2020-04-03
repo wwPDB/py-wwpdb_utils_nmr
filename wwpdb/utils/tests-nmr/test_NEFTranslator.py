@@ -101,11 +101,11 @@ class TestNEFTranslator(unittest.TestCase):
     def test_load_csv_data(self):
         self.assertTrue(len(self.neft.tagMap) > 0, "Can't read NEF-NMRSTAR_equivalence.csv or its empty")
         self.assertTrue(len(self.neft.NEFinfo) > 0, "Can't read NEF_mandatory.csv or its empty")
-
+    """
     def test_load_json_data(self):
         self.assertTrue(len(self.neft.codeDict) > 0, "Can't read codeDict.json or its empty")
         self.assertTrue(len(self.neft.atomDict) > 0, "Can't read atomDict.json or its empty")
-
+    """
     def test_get_one_letter_code(self):
         self.assertTrue(self.neft.get_one_letter_code('ALA') == 'A')
         self.assertTrue(self.neft.get_one_letter_code('Ala') == 'A')

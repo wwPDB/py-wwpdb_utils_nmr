@@ -15060,6 +15060,9 @@ class NmrDpUtility(object):
         """ Update polymer sequence.
         """
 
+        if not self.__rescue_mode:
+            return False
+
         if not self.__combined_mode:
             return False
 
@@ -15130,12 +15133,14 @@ class NmrDpUtility(object):
                 if 'Auth_asym_ID' in orig_lp_data[0]:
                     result = next((i for i in orig_lp_data if not i['Auth_asym_ID'] in self.empty_value), None)
                     if not result is None:
-                        has_auth_asym_id = True
+                        #has_auth_asym_id = True
+                        return True
 
                 if 'Auth_seq_ID' in orig_lp_data[0]:
                     result = next((i for i in orig_lp_data if not i['Auth_seq_ID'] in self.empty_value), None)
                     if not result is None:
-                        has_auth_seq_id = True
+                        #has_auth_seq_id = True
+                        return True
 
                 if 'Auth_comp_ID' in orig_lp_data[0]:
                     result = next((i for i in orig_lp_data if not i['Auth_comp_ID'] in self.empty_value), None)
@@ -20113,7 +20118,7 @@ class NmrDpUtility(object):
 
             try:
 
-                is_valid, json_dumps = self.__nefT.nef_to_nmrstar(self.__dstPath, out_file_path)
+                is_valid, json_dumps = self.__nefT.nef_to_nmrstar(self.__dstPath, out_file_path, report=self.report)
 
             except Exception as e:
 
@@ -20221,7 +20226,7 @@ class NmrDpUtility(object):
 
             try:
 
-                is_valid, json_dumps = self.__nefT.nmrstar_to_nef(self.__dstPath, out_file_path)
+                is_valid, json_dumps = self.__nefT.nmrstar_to_nef(self.__dstPath, out_file_path, report=self.report)
 
             except Exception as e:
 

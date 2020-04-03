@@ -19,6 +19,7 @@
 # 18-Mar-2020  M. Yokochi - rename warning type from skipped_sf/lp_category to skipped_saveframe/loop_category
 # 23-Mar-2020  M. Yokochi - add 'anomalous_chemical_shift' and 'unusual_chemical_shift' warning types
 # 24-Mar-2020  M. Yokochi - add method to retrieve chemical shift reference (DAOTHER-1682)
+# 03-Apr-2020  M. Yokochi - add methods to retrieve sequence alignment between coordinate and NMR data
 ##
 """ Wrapper class for data processing report of NMR data.
     @author: Masashi Yokochi
@@ -878,16 +879,112 @@ class NmrDpReport:
 
         chain_assign_dic = self.chain_assignment.get()
 
-        if not 'model_poly_seq_vs_nmr_poly_seq' in chain_assign_dic:
+        key = 'model_poly_seq_vs_nmr_poly_seq'
+
+        if not key in chain_assign_dic:
             return None
 
-        if chain_assign_dic['model_poly_seq_vs_nmr_poly_seq'] is None:
+        if chain_assign_dic[key] is None:
             return None
 
-        for chain_assign in chain_assign_dic['model_poly_seq_vs_nmr_poly_seq']:
+        for chain_assign in chain_assign_dic[key]:
 
             if chain_assign['ref_chain_id'] == cif_chain_id:
                 return self.getNmrPolymerSequenceOf(chain_assign['test_chain_id'])
+
+        return None
+
+    def getSequenceAlignmentWithNmrChainId(self, nmr_chain_id):
+        """ Retrieve sequence alignment (nmr vs model) of a given NMR chain_id.
+        """
+
+        id = self.getInputSourceIdOfCoord()
+
+        if id < 0:
+            return None
+
+        chain_assign_dic = self.chain_assignment.get()
+
+        key = 'nmr_poly_seq_vs_model_poly_seq'
+
+        if not key in chain_assign_dic:
+            return None
+
+        if chain_assign_dic[key] is None:
+            return None
+
+        for chain_assign in chain_assign_dic[key]:
+
+            if chain_assign['ref_chain_id'] == nmr_chain_id:
+
+                if chain_assign['conflict'] > 0:
+                    return None
+
+                cif_chain_id = chain_assign['test_chain_id']
+
+                sequence_align_dic = self.sequence_alignment.get()
+
+                if not key in sequence_align_dic:
+                    return None
+
+                if sequence_align_dic[key] is None:
+                    return None
+
+                for sequence_align in sequence_align_dic[key]:
+
+                    if sequence_align['ref_chain_id'] == nmr_chain_id and sequence_align['test_chain_id'] == cif_chain_id:
+
+                        if sequence_align['conflict'] > 0:
+                            return None
+
+                        return sequence_align
+
+        return None
+
+    def getSequenceAlignmentWithModelChainId(self, cif_chain_id):
+        """ Retrieve sequence alignment (model vs nmr) of a given coordinate chain_id.
+        """
+
+        id = self.getInputSourceIdOfCoord()
+
+        if id < 0:
+            return None
+
+        chain_assign_dic = self.chain_assignment.get()
+
+        key = 'model_poly_seq_vs_nmr_poly_seq'
+
+        if not key in chain_assign_dic:
+            return None
+
+        if chain_assign_dic[key] is None:
+            return None
+
+        for chain_assign in chain_assign_dic[key]:
+
+            if chain_assign['ref_chain_id'] == cif_chain_id:
+
+                if chain_assign['conflict'] > 0:
+                    return None
+
+                nmr_chain_id = chain_assign['test_chain_id']
+
+                sequence_align_dic = self.sequence_alignment.get()
+
+                if not key in sequence_align_dic:
+                    return None
+
+                if sequence_align_dic[key] is None:
+                    return None
+
+                for sequence_align in sequence_align_dic[key]:
+
+                    if sequence_align['ref_chain_id'] == cif_chain_id and sequence_align['test_chain_id'] == nmr_chain_id:
+
+                        if sequence_align['conflict'] > 0:
+                            return None
+
+                        return sequence_align
 
         return None
 
@@ -902,13 +999,15 @@ class NmrDpReport:
 
         chain_assign_dic = self.chain_assignment.get()
 
-        if not 'nmr_poly_seq_vs_model_poly_seq' in chain_assign_dic:
+        key = 'nmr_poly_seq_vs_model_poly_seq'
+
+        if not key in chain_assign_dic:
             return None
 
-        if chain_assign_dic['nmr_poly_seq_vs_model_poly_seq'] is None:
+        if chain_assign_dic[key] is None:
             return None
 
-        for chain_assign in chain_assign_dic['nmr_poly_seq_vs_model_poly_seq']:
+        for chain_assign in chain_assign_dic[key]:
 
             if chain_assign['ref_chain_id'] == nmr_chain_id:
                 return self.getModelPolymerSequenceOf(chain_assign['test_chain_id'])
@@ -929,13 +1028,15 @@ class NmrDpReport:
 
         chain_assign_dic = self.chain_assignment.get()
 
-        if not 'model_poly_seq_vs_nmr_poly_seq' in chain_assign_dic:
+        key = 'model_poly_seq_vs_nmr_poly_seq'
+
+        if not key in chain_assign_dic:
             return None
 
-        if chain_assign_dic['model_poly_seq_vs_nmr_poly_seq'] is None:
+        if chain_assign_dic[key] is None:
             return None
 
-        for chain_assign in chain_assign_dic['model_poly_seq_vs_nmr_poly_seq']:
+        for chain_assign in chain_assign_dic[key]:
 
             if chain_assign['ref_chain_id'] == cif_chain_id:
                 return self.getNmrSeq1LetterCodeOf(chain_assign['test_chain_id'])
@@ -953,13 +1054,15 @@ class NmrDpReport:
 
         chain_assign_dic = self.chain_assignment.get()
 
-        if not 'nmr_poly_seq_vs_model_poly_seq' in chain_assign_dic:
+        key = 'nmr_poly_seq_vs_model_poly_seq'
+
+        if not key in chain_assign_dic:
             return None
 
-        if chain_assign_dic['nmr_poly_seq_vs_model_poly_seq'] is None:
+        if chain_assign_dic[key] is None:
             return None
 
-        for chain_assign in chain_assign_dic['nmr_poly_seq_vs_model_poly_seq']:
+        for chain_assign in chain_assign_dic[key]:
 
             if chain_assign['ref_chain_id'] == nmr_chain_id:
                 return self.getModelSeq1LetterCodeOf(chain_assign['test_chain_id'])

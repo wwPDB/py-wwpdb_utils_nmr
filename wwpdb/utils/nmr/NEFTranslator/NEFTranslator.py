@@ -24,6 +24,7 @@
 # 18-Mar-2020  M. Yokochi - remove invalid NMR-STAR's Details tag in restraint (v2.0.9)
 # 03-Apr-2020  M. Yokochi - remove dependency of lib/atomDict.json and lib/codeDict.json (v2.1.0)
 # 03-Apr-2020  M. Yokochi - fill _Atom_chem_shift.Original_PDB_* items (v2.1.0)
+# 03-Apr-2020  M. Yokochi - synchronize with coordinates' auth_asym_id and auth_seq_id if NMR data processing report is set (v2.2.0)
 ##
 import sys
 import os
@@ -40,8 +41,9 @@ from pytz import utc
 from wwpdb.utils.config.ConfigInfo import ConfigInfo, getSiteId
 from wwpdb.utils.nmr.io.ChemCompIo import ChemCompReader
 from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
+from wwpdb.utils.nmr.NmrDpReport import NmrDpReport
 
-__version__ = 'v2.1.0'
+__version__ = 'v2.2.0'
 
 class NEFTranslator(object):
     """ Bi-directional translator between NEF and NMR-STAR
@@ -3591,12 +3593,13 @@ class NEFTranslator(object):
 
         return out_tags
 
-    def nef2star_seq_row(self, nef_tags, star_tags, loop_data):
+    def nef2star_seq_row(self, nef_tags, star_tags, loop_data, report=None):
         """ Translate rows of data in sequence loop from NEF into NMR-STAR.
             @change: rename the original translate_seq_row() to nef2star_seq_row() by Masashi Yokochi
         	@param nef_tags: list of NEF tags
         	@param star_tags: list of NMR-STAR tags
         	@param loop_data: loop data of NEF
+        	@param report: NMR data processing report
         	@return: rows of NMR-STAR
         """
 
@@ -3612,13 +3615,23 @@ class NEFTranslator(object):
             if len(seq_list) == 0:
                 continue
 
-            _star_chain = self.authChainId.index(nef_chain) + 1
+            cif_chain = None
+            if not report is None:
+                sequence_align = report.getSequenceAlignmentWithNmrChainId(nef_chain)
+                cif_chain = sequence_align['test_chain_id']
 
-            star_chain = str(_star_chain)
+            _star_chain = self.authChainId.index(nef_chain) + 1
 
             offset = None
 
             for _nef_seq in seq_list:
+
+                _cif_seq = None
+                if not cif_chain is None:
+                    try:
+                        _cif_seq = sequence_align['test_seq_id'][sequence_align['ref_seq_id'].index(_nef_seq)]
+                    except Exception:
+                        pass
 
                 nef_seq = str(_nef_seq)
 
@@ -3637,14 +3650,25 @@ class NEFTranslator(object):
 
                     data = i[nef_tags.index(j)]
 
-                    out[star_tags.index(auth_tag)] = data
+                    if j == '_nef_sequence.chain_code':
+                        if cif_chain is None:
+                            out[star_tags.index(auth_tag)] = data
+                        else:
+                            out[star_tags.index(auth_tag)] = cif_chain
+                    elif j == '_nef_sequence.sequence_code':
+                        if _cif_seq is None:
+                            out[star_tags.index(auth_tag)] = data
+                        else:
+                            out[star_tags.index(auth_tag)] = str(_cif_seq)
+                    else:
+                        out[star_tags.index(auth_tag)] = data
 
                     if auth_tag != data_tag:
 
                         data_index = star_tags.index(data_tag)
 
                         if j == '_nef_sequence.chain_code':
-                            out[data_index] = star_chain
+                            out[data_index] = _star_chain
                         elif j == '_nef_sequence.sequence_code':
                             out[data_index] = _star_seq
                         elif data in self.nef_boolean:
@@ -3654,16 +3678,19 @@ class NEFTranslator(object):
 
                 out_row.append(out)
 
-                self.authSeqMap[(nef_chain, nef_seq)] = (star_chain, _star_seq)
+                self.authSeqMap[(nef_chain, _nef_seq)] = (_star_chain, _star_seq)
+                self.selfSeqMap[(nef_chain, _nef_seq)] = (nef_chain if cif_chain is None else cif_chain,
+                                                         _nef_seq if _cif_seq is None else _cif_seq)
 
         return out_row
 
-    def star2nef_seq_row(self, star_tags, nef_tags, loop_data):
+    def star2nef_seq_row(self, star_tags, nef_tags, loop_data, report=None):
         """ Translate rows of data in sequence loop from NMR-STAR into NEF.
             @author: Masashi Yokochi
         	@param star_tags: list of NMR-STAR tags
         	@param nef_tags: list of NEF tags
         	@param loop_data: loop data of NMR-STAR
+        	@param report: NMR data processing report
         	@return: rows of NEF
         """
 
@@ -3674,10 +3701,17 @@ class NEFTranslator(object):
 
         for star_chain in self.authChainId:
 
+            _star_chain = int(star_chain)
+
             seq_list = sorted(set([int(i[seq_index]) for i in loop_data if i[chain_index] == star_chain]))
 
             if len(seq_list) == 0:
                 continue
+
+            cif_chain = None
+            if not report is None:
+                sequence_align = report.getSequenceAlignmentWithNmrChainId(star_chain)
+                cif_chain = sequence_align['test_chain_id']
 
             cid = self.authChainId.index(star_chain)
             if cid <= 26:
@@ -3689,12 +3723,19 @@ class NEFTranslator(object):
 
             for _star_seq in seq_list:
 
+                _cif_seq = None
+                if not cif_chain is None:
+                    try:
+                        _cif_seq = sequence_align['test_seq_id'][sequence_align['ref_seq_id'].index(_star_seq)]
+                    except Exception:
+                        pass
+
                 star_seq = str(_star_seq)
 
                 if offset is None:
                     offset = 1 - _star_seq
 
-                _nef_seq = _star_seq + offset
+                _nef_seq = (_star_seq + offset) if _cif_seq is None else _cif_seq
 
                 i = next(i for i in loop_data if i[chain_index] == star_chain and i[seq_index] == star_seq)
 
@@ -3711,9 +3752,15 @@ class NEFTranslator(object):
                         data_index = nef_tags.index(nef_tag)
 
                         if nef_tag == '_nef_sequence.chain_code':
-                            out[data_index] = nef_chain
+                            if cif_chain is None:
+                                out[data_index] = nef_chain
+                            else:
+                                out[data_index] = cif_chain
                         elif nef_tag == '_nef_sequence.sequence_code':
-                            out[data_index] = _nef_seq
+                            if _cif_seq is None:
+                                out[data_index] = _nef_seq
+                            else:
+                                out[data_index] = _cif_seq
                         elif data in self.star_boolean:
                             out[data_index] = 'true' if data in self.true_value else 'false'
                         else:
@@ -3721,7 +3768,9 @@ class NEFTranslator(object):
 
                 out_row.append(out)
 
-                self.authSeqMap[(star_chain, star_seq)] = (nef_chain, _nef_seq)
+                self.authSeqMap[(_star_chain, _star_seq)] = (nef_chain, _nef_seq)
+                self.selfSeqMap[(_star_chain, _star_seq)] = (_star_chain if cif_chain is None else cif_chain,
+                                                             _star_seq if _cif_seq is None else _cif_seq)
 
         return out_row
 
@@ -3760,11 +3809,12 @@ class NEFTranslator(object):
 
         for nef_chain in self.authChainId:
 
-            for _nef_seq in sorted([int(s) for c, s in self.authSeqMap.keys() if c == nef_chain]):
+            for _nef_seq in sorted([s for c, s in self.authSeqMap.keys() if c == nef_chain]):
 
                 nef_seq = str(_nef_seq)
 
-                star_chain, star_seq = self.authSeqMap[(nef_chain, nef_seq)]
+                star_chain, _star_seq = self.authSeqMap[(nef_chain, _nef_seq)]
+                cif_chain, _cif_seq = self.selfSeqMap[(nef_chain, _nef_seq)]
 
                 in_row = [i for i in loop_data if i[chain_index] == nef_chain and i[seq_index] == nef_seq]
 
@@ -3785,7 +3835,12 @@ class NEFTranslator(object):
 
                             data = i[nef_tags.index(j)]
 
-                            out[star_tags.index(auth_tag)] = data
+                            if j == '_nef_chemical_shift.chain_code':
+                                out[star_tags.index(auth_tag)] = cif_chain
+                            elif j == '_nef_chemical_shift.sequence_code':
+                                out[star_tags.index(auth_tag)] = _cif_seq
+                            else:
+                                out[star_tags.index(auth_tag)] = data
 
                             if auth_tag != data_tag:
 
@@ -3798,7 +3853,7 @@ class NEFTranslator(object):
                                     if self.insert_original_pdb_cs_items:
                                         out[star_original_chani_id] = data
                                 elif j == '_nef_chemical_shift.sequence_code':
-                                    out[star_tags.index(data_tag)] = star_seq
+                                    out[star_tags.index(data_tag)] = _star_seq
                                     if self.insert_original_pdb_cs_items:
                                         out[star_original_seq_id] = data
                                 elif j == '_nef_chemical_shift.residue_name':
@@ -3841,11 +3896,11 @@ class NEFTranslator(object):
 
         for star_chain in self.authChainId:
 
-            for _star_seq in sorted([int(s) for c, s in self.authSeqMap.keys() if c == star_chain]):
+            _star_chain = int(star_chain)
+
+            for _star_seq in sorted([s for c, s in self.authSeqMap.keys() if c == _star_chain]):
 
                 star_seq = str(_star_seq)
-
-                nef_chain, nef_seq = self.authSeqMap[(star_chain, star_seq)]
 
                 in_row = [i for i in loop_data if i[chain_index] == star_chain and i[seq_index] == star_seq]
 
@@ -3859,7 +3914,9 @@ class NEFTranslator(object):
                 if len(atom_list) == 0:
                     continue
 
-                seq_key = (star_chain, star_seq)
+                seq_key = (_star_chain, _star_seq)
+
+                cif_chain, _cif_seq = self.authSeqMap[seq_key]
 
                 if not seq_key in self.atomIdMap:
                     self.atomIdMap[seq_key] = {}
@@ -3881,9 +3938,9 @@ class NEFTranslator(object):
                             if nef_tag == '_nef_chemical_shift.atom_name':
                                 out[data_index] = atom
                             elif nef_tag == '_nef_chemical_shift.chain_code':
-                                out[data_index] = nef_chain
-                            elif j == '_nef_chemical_shift.sequence_code':
-                                out[data_index] = nef_seq
+                                out[data_index] = cif_chain
+                            elif nef_tag == '_nef_chemical_shift.sequence_code':
+                                out[data_index] = _cif_seq
                             else:
                                 star_atom = next(k for k, v in atom_id_map.items() if v == atom)
                                 out[data_index] = next(l[star_tags.index(j)] for l in in_row if l[atom_index] == star_atom)
@@ -3944,21 +4001,27 @@ class NEFTranslator(object):
             for i in in_row:
 
                 tag_map = {}
+                self_tag_map = {}
 
                 for tag in self.get_seq_identifier_tags(nef_tags, 'nef'):
                     chain_tag = tag['chain_tag']
                     seq_tag = tag['seq_tag']
 
                     nef_chain = i[nef_tags.index(chain_tag)]
-                    nef_seq = i[nef_tags.index(seq_tag)]
+                    _nef_seq = i[nef_tags.index(seq_tag)]
+                    if type(_nef_seq) == str and not _nef_seq in self.empty_value:
+                        _nef_seq = int(_nef_seq)
 
-                    seq_key = (nef_chain, nef_seq)
+                    seq_key = (nef_chain, _nef_seq)
 
                     try:
                         tag_map[chain_tag], tag_map[seq_tag] = self.authSeqMap[seq_key]
+                        self_tag_map[chain_tag], self_tag_map[seq_tag] = self.selfSeqMap[seq_key]
                     except KeyError:
                         tag_map[chain_tag] = nef_chain
-                        tag_map[seq_tag] = nef_seq
+                        tag_map[seq_tag] = _nef_seq
+                        self_tag_map[chain_tag] = nef_chain
+                        self_tag_map[seq_tag] = _nef_seq
 
                 atom_list_1, ambiguity_code_1, details_1 = self.get_star_atom(i[nef_comp_index_1], i[nef_atom_index_1])
                 atom_list_2, ambiguity_code_2, details_2 = self.get_star_atom(i[nef_comp_index_2], i[nef_atom_index_2])
@@ -3977,7 +4040,10 @@ class NEFTranslator(object):
 
                             data = i[nef_tags.index(j)]
 
-                            buf[star_tags.index(auth_tag)] = data
+                            if 'chain_code' in j or 'sequence_code' in j:
+                                buf[star_tags.index(auth_tag)] = self_tag_map[j]
+                            else:
+                                buf[star_tags.index(auth_tag)] = data
 
                             if auth_tag != data_tag:
 
@@ -4079,16 +4145,20 @@ class NEFTranslator(object):
                     chain_tag = tag['chain_tag']
                     seq_tag = tag['seq_tag']
 
-                    star_chain = i[star_tags.index(chain_tag)]
-                    star_seq = i[star_tags.index(seq_tag)]
+                    _star_chain = i[star_tags.index(chain_tag)]
+                    if type(_star_chain) == str and not _star_chain in self.empty_value:
+                        _star_chain = int(_star_chain)
+                    _star_seq = i[star_tags.index(seq_tag)]
+                    if type(_star_seq) == str and not _star_seq in self.empty_value:
+                        _star_seq = int(_star_seq)
 
-                    seq_key = (star_chain, star_seq)
+                    seq_key = (_star_chain, _star_seq)
 
                     try:
                         tag_map[chain_tag], tag_map[seq_tag] = self.authSeqMap[seq_key]
                     except KeyError:
-                        tag_map[chain_tag] = star_chain
-                        tag_map[seq_tag] = star_seq
+                        tag_map[chain_tag] = _star_chain
+                        tag_map[seq_tag] = _star_seq
 
                     if chain_tag == chain_tag_1:
                         seq_key_1 = seq_key
@@ -4209,21 +4279,27 @@ class NEFTranslator(object):
             for i in in_row:
 
                 tag_map = {}
+                self_tag_map = {}
 
                 for tag in self.get_seq_identifier_tags(nef_tags, 'nef'):
                     chain_tag = tag['chain_tag']
                     seq_tag = tag['seq_tag']
 
                     nef_chain = i[nef_tags.index(chain_tag)]
-                    nef_seq = i[nef_tags.index(seq_tag)]
+                    _nef_seq = i[nef_tags.index(seq_tag)]
+                    if type(_nef_seq) == str and not _nef_seq in self.empty_value:
+                        _nef_seq = int(_nef_seq)
 
-                    seq_key = (nef_chain, nef_seq)
+                    seq_key = (nef_chain, _nef_seq)
 
                     try:
                         tag_map[chain_tag], tag_map[seq_tag] = self.authSeqMap[seq_key]
+                        self_tag_map[chain_tag], self_tag_map[seq_tag] = self.selfSeqMap[seq_key]
                     except KeyError:
                         tag_map[chain_tag] = nef_chain
-                        tag_map[seq_tag] = nef_seq
+                        tag_map[seq_tag] = _nef_seq
+                        self_tag_map[chain_tag] = nef_chain
+                        self_tag_map[seq_tag] = _nef_seq
 
                 atom_list_1, ambiguity_code_1, details_1 = self.get_star_atom(i[nef_comp_index_1], i[nef_atom_index_1])
                 atom_list_2, ambiguity_code_2, details_2 = self.get_star_atom(i[nef_comp_index_2], i[nef_atom_index_2])
@@ -4246,7 +4322,10 @@ class NEFTranslator(object):
 
                                     data = i[nef_tags.index(j)]
 
-                                    buf[star_tags.index(auth_tag)] = data
+                                    if 'chain_code' in j or 'sequence_code' in j:
+                                        buf[star_tags.index(auth_tag)] = self_tag_map[j]
+                                    else:
+                                        buf[star_tags.index(auth_tag)] = data
 
                                     if auth_tag != data_tag:
 
@@ -4349,21 +4428,27 @@ class NEFTranslator(object):
             for i in in_row:
 
                 tag_map = {}
+                self_tag_map = {}
 
                 for tag in self.get_seq_identifier_tags(nef_tags, 'nef'):
                     chain_tag = tag['chain_tag']
                     seq_tag = tag['seq_tag']
 
                     nef_chain = i[nef_tags.index(chain_tag)]
-                    nef_seq = i[nef_tags.index(seq_tag)]
+                    _nef_seq = i[nef_tags.index(seq_tag)]
+                    if type(_nef_seq) == str and not _nef_seq in self.empty_value:
+                        _nef_seq = int(_nef_seq)
 
-                    seq_key = (nef_chain, nef_seq)
+                    seq_key = (nef_chain, _nef_seq)
 
                     try:
                         tag_map[chain_tag], tag_map[seq_tag] = self.authSeqMap[seq_key]
+                        self_tag_map[chain_tag], self_tag_map[seq_tag] = self.selfSeqMap[seq_key]
                     except KeyError:
                         tag_map[chain_tag] = nef_chain
-                        tag_map[seq_tag] = nef_seq
+                        tag_map[seq_tag] = _nef_seq
+                        self_tag_map[chain_tag] = nef_chain
+                        self_tag_map[seq_tag] = _nef_seq
 
                 atom_list_1, ambiguity_code_1, details_1 = self.get_star_atom(i[nef_comp_index_1], i[nef_atom_index_1])
                 atom_list_2, ambiguity_code_2, details_2 = self.get_star_atom(i[nef_comp_index_2], i[nef_atom_index_2])
@@ -4380,7 +4465,10 @@ class NEFTranslator(object):
 
                             data = i[nef_tags.index(j)]
 
-                            buf[star_tags.index(auth_tag)] = data
+                            if 'chain_code' in j or 'sequence_code' in j:
+                                buf[star_tags.index(auth_tag)] = self_tag_map[j]
+                            else:
+                                buf[star_tags.index(auth_tag)] = data
 
                             if auth_tag != data_tag:
 
@@ -4441,19 +4529,27 @@ class NEFTranslator(object):
         out_row = []
 
         tag_map = {}
+        self_tag_map = {}
 
         for tag in self.get_seq_identifier_tags(nef_tags, 'nef'):
             chain_tag = tag['chain_tag']
             seq_tag = tag['seq_tag']
 
             nef_chain = in_row[nef_tags.index(chain_tag)]
-            nef_seq = in_row[nef_tags.index(seq_tag)]
+            _nef_seq = in_row[nef_tags.index(seq_tag)]
+            if type(_nef_seq) == str and not _nef_seq in self.empty_value:
+                _nef_seq = int(_nef_seq)
+
+            seq_key = (nef_chain, _nef_seq)
 
             try:
-                tag_map[chain_tag], tag_map[seq_tag] = self.authSeqMap[(nef_chain, nef_seq)]
+                tag_map[chain_tag], tag_map[seq_tag] = self.authSeqMap[seq_key]
+                self_tag_map[chain_tag], self_tag_map[seq_tag] = self.selfSeqMap[seq_key]
             except KeyError:
                 tag_map[chain_tag] = nef_chain
-                tag_map[seq_tag] = nef_seq
+                tag_map[seq_tag] = _nef_seq
+                self_tag_map[chain_tag] = nef_chain
+                self_tag_map[seq_tag] = _nef_seq
 
         if len(nef_tags) != len(star_tags):
 
@@ -4465,7 +4561,10 @@ class NEFTranslator(object):
 
                 data = in_row[nef_tags.index(j)]
 
-                out[star_tags.index(auth_tag)] = data
+                if 'chain_code' in j or 'sequence_code' in j:
+                    out[star_tags.index(auth_tag)] = self_tag_map[j]
+                else:
+                    out[star_tags.index(auth_tag)] = data
 
                 if auth_tag != data_tag:
 
@@ -4496,6 +4595,25 @@ class NEFTranslator(object):
 
         out_row = []
 
+        tag_map = {}
+
+        for tag in self.get_seq_identifier_tags(star_tags, 'nmr-star'):
+            chain_tag = tag['chain_tag']
+            seq_tag = tag['seq_tag']
+
+            _star_chain = in_row[star_tags.index(chain_tag)]
+            if type(_star_chain) == str and not _star_chain in self.empty_value:
+                _star_chain = int(_star_chain)
+            _star_seq = in_row[star_tags.index(seq_tag)]
+            if type(_star_seq) == str and not _star_seq in self.empty_value:
+                _star_seq = int(_star_seq)
+
+            try:
+                tag_map[chain_tag], tag_map[seq_tag] = self.authSeqMap[(_star_chain, _star_seq)]
+            except KeyError:
+                tag_map[chain_tag] = _star_chain
+                tag_map[seq_tag] = _star_seq
+
         out = [None] * len(nef_tags)
 
         for j in star_tags:
@@ -4508,12 +4626,8 @@ class NEFTranslator(object):
 
                 data_index = nef_tags.index(nef_tag)
 
-                if 'chain_code' in nef_tag and not data in self.empty_value:
-                    cid = self.authChainId.index(data)
-                    if cid <= 26:
-                        out[data_index] = str(chr(65 + cid))
-                    else:
-                        out[data_index] = str(chr(65 + (cid // 26))) + str(chr(65 + (cid % 26)))
+                if 'chain_code' in nef_tag or 'sequence_code' in nef_tag:
+                    out[data_index] = tag_map[j]
                 elif data in self.star_boolean:
                     out[data_index] = 'true' if data in self.true_value else 'false'
                 else:
@@ -4523,10 +4637,12 @@ class NEFTranslator(object):
 
         return out_row
 
-    def nef_to_nmrstar(self, nef_file, star_file=None):
+    def nef_to_nmrstar(self, nef_file, star_file=None, report=None, report_file=None):
         """ Convert NEF file to NMR-STAR file.
             @param nef_file: input NEF file path
             @param star_file: output NMR-STAR file path
+            @param report: NMR data processing report object (optional)
+            @param report_file: NMR data processing report file (optional), content-type: nmr-data-nef-report, format: json
         """
 
         (file_path, file_name) = ntpath.split(os.path.realpath(nef_file))
@@ -4538,6 +4654,10 @@ class NEFTranslator(object):
 
         if star_file is None:
             star_file = file_path + '/' + file_name.split('.')[0] + '.str'
+
+        if report is None and not report_file is None:
+            report = NmrDpReport()
+            report.loadFile(report_file)
 
         is_readable, dat_content, nef_data = self.read_input_file(nef_file)
 
@@ -4560,6 +4680,7 @@ class NEFTranslator(object):
                 error.append('File content unknown')
 
             self.authSeqMap = None
+            self.selfSeqMap = None
 
             asm_id = 0
             cs_list_id = 0
@@ -4632,7 +4753,8 @@ class NEFTranslator(object):
                         if loop.category == '_nef_sequence':
                             if self.authSeqMap is None:
                                 self.authSeqMap = {}
-                            rows = self.nef2star_seq_row(loop.get_tag_names(), lp.get_tag_names(), loop.data)
+                                self.selfSeqMap = {}
+                            rows = self.nef2star_seq_row(loop.get_tag_names(), lp.get_tag_names(), loop.data, report)
                             for d in rows:
                                 d[lp.get_tag_names().index('_Chem_comp_assembly.Assembly_ID')] = asm_id
                                 lp.add_data(d)
@@ -4833,7 +4955,8 @@ class NEFTranslator(object):
                     if loop.category == '_nef_sequence':
                         if self.authSeqMap is None:
                             self.authSeqMap = {}
-                        rows = self.nef2star_seq_row(loop.get_tag_names(), lp.get_tag_names(), loop.data)
+                            self.selfSeqMap = {}
+                        rows = self.nef2star_seq_row(loop.get_tag_names(), lp.get_tag_names(), loop.data, report)
                         for d in rows:
                             d[lp.get_tag_names().index('_Chem_comp_assembly.Assembly_ID')] = asm_id
                             lp.add_data(d)
@@ -4940,11 +5063,13 @@ class NEFTranslator(object):
 
         return is_done, json.dumps({'info': info, 'warning': warning, 'error': error})
 
-    def nmrstar_to_nef(self, star_file, nef_file=None):
+    def nmrstar_to_nef(self, star_file, nef_file=None, report=None, report_file=None):
         """ Convert NMR-STAR file to NEF file.
             @author: Masashi Yokochi
             @param star_file: input NMR-STAR file path
             @param nef_file: output NEF file path
+            @param report: NMR data processing report object (optional)
+            @param report_file: NMR data processing report file (optional), content-type: nmr-data-str-report, format: json
         """
 
         (file_path, file_name) = ntpath.split(os.path.realpath(star_file))
@@ -4958,6 +5083,10 @@ class NEFTranslator(object):
             nef_file = file_path + '/' + file_name.split('.')[0] + '.nef'
 
         is_readable, dat_content, star_data = self.read_input_file(star_file)
+
+        if report is None and not report_file is None:
+            report = NmrDpReport()
+            report.loadFile(report_file)
 
         try:
             nef_data = pynmrstar.Entry.from_scratch(star_data.entry_id)
@@ -4978,6 +5107,7 @@ class NEFTranslator(object):
                 error.append('File content unknown')
 
             self.authSeqMap = None
+            self.selfSeqMap = None
             self.atomIdMap = None
 
             if dat_content == 'Entry':
@@ -5030,7 +5160,8 @@ class NEFTranslator(object):
                         if loop.category == '_Chem_comp_assembly':
                             if self.authSeqMap is None:
                                 self.authSeqMap = {}
-                            rows = self.star2nef_seq_row(loop.get_tag_names(), lp.get_tag_names(), loop.data)
+                                self.selfSeqMap = {}
+                            rows = self.star2nef_seq_row(loop.get_tag_names(), lp.get_tag_names(), loop.data, report)
                             for d in rows:
                                 lp.add_data(d)
 
@@ -5169,7 +5300,8 @@ class NEFTranslator(object):
                     if loop.category == '_Chem_comp_assembly':
                         if self.authSeqMap is None:
                             self.authSeqMap = {}
-                        rows = self.star2nef_seq_row(loop.get_tag_names(), lp.get_tag_names(), loop.data)
+                            self.selfSeqMap = {}
+                        rows = self.star2nef_seq_row(loop.get_tag_names(), lp.get_tag_names(), loop.data, report)
                         for d in rows:
                             lp.add_data(d)
 

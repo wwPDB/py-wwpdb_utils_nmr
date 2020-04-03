@@ -115,7 +115,7 @@ class TestNmrDpUtility(unittest.TestCase):
             self.assertEqual(report['error']['internal_error'], None)
 
         print('%s: %s' % (entry_id, report['information']['status']))
-
+    """
     def test_nmr_str2nef_release_1pqx(self):
         self.__test_nmr_str2nef_release('1pqx')
 
@@ -151,15 +151,15 @@ class TestNmrDpUtility(unittest.TestCase):
 
     def test_nmr_str2nef_release_2loy(self):
         self.__test_nmr_str2nef_release('2loy')
-
+    """
     def test_nmr_str2nef_release_2luz(self):
         self.__test_nmr_str2nef_release('2luz')
-
+    """
     def test_nmr_str2nef_release_2png(self):
         self.__test_nmr_str2nef_release('2png')
 
     def test_nmr_str2nef_release_6nbn(self):
         self.__test_nmr_str2nef_release('6nbn')
-
+    """
 if __name__ == '__main__':
     unittest.main()

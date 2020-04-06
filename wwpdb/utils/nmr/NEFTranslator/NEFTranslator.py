@@ -24,7 +24,8 @@
 # 18-Mar-2020  M. Yokochi - remove invalid NMR-STAR's Details tag in restraint (v2.0.9)
 # 03-Apr-2020  M. Yokochi - remove dependency of lib/atomDict.json and lib/codeDict.json (v2.1.0)
 # 03-Apr-2020  M. Yokochi - fill _Atom_chem_shift.Original_PDB_* items (v2.1.0)
-# 03-Apr-2020  M. Yokochi - synchronize with coordinates' auth_asym_id and auth_seq_id if NMR data processing report is set (v2.2.0)
+# 03-Apr-2020  M. Yokochi - synchronize with coordinates' auth_asym_id and auth_seq_id for NEF deposition (v2.2.0)
+# 06-Apr-2020  M. Yokochi - fix crash when sequence alignment is not available. (v2.2.1)
 ##
 import sys
 import os
@@ -43,7 +44,7 @@ from wwpdb.utils.nmr.io.ChemCompIo import ChemCompReader
 from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
 from wwpdb.utils.nmr.NmrDpReport import NmrDpReport
 
-__version__ = 'v2.2.0'
+__version__ = 'v2.2.1'
 
 class NEFTranslator(object):
     """ Bi-directional translator between NEF and NMR-STAR
@@ -3617,8 +3618,9 @@ class NEFTranslator(object):
 
             cif_chain = None
             if not report is None:
-                sequence_align = report.getSequenceAlignmentWithNmrChainId(nef_chain)
-                cif_chain = sequence_align['test_chain_id']
+                seq_align = report.getSequenceAlignmentWithNmrChainId(nef_chain)
+                if not seq_align is None:
+                    cif_chain = seq_align['test_chain_id']
 
             _star_chain = self.authChainId.index(nef_chain) + 1
 
@@ -3629,8 +3631,8 @@ class NEFTranslator(object):
                 _cif_seq = None
                 if not cif_chain is None:
                     try:
-                        _cif_seq = sequence_align['test_seq_id'][sequence_align['ref_seq_id'].index(_nef_seq)]
-                    except Exception:
+                        _cif_seq = seq_align['test_seq_id'][seq_align['ref_seq_id'].index(_nef_seq)]
+                    except:
                         pass
 
                 nef_seq = str(_nef_seq)
@@ -3710,8 +3712,9 @@ class NEFTranslator(object):
 
             cif_chain = None
             if not report is None:
-                sequence_align = report.getSequenceAlignmentWithNmrChainId(star_chain)
-                cif_chain = sequence_align['test_chain_id']
+                seq_align = report.getSequenceAlignmentWithNmrChainId(star_chain)
+                if not seq_align is None:
+                    cif_chain = seq_align['test_chain_id']
 
             cid = self.authChainId.index(star_chain)
             if cid <= 26:
@@ -3726,8 +3729,8 @@ class NEFTranslator(object):
                 _cif_seq = None
                 if not cif_chain is None:
                     try:
-                        _cif_seq = sequence_align['test_seq_id'][sequence_align['ref_seq_id'].index(_star_seq)]
-                    except Exception:
+                        _cif_seq = seq_align['test_seq_id'][seq_align['ref_seq_id'].index(_star_seq)]
+                    except:
                         pass
 
                 star_seq = str(_star_seq)
@@ -4637,12 +4640,11 @@ class NEFTranslator(object):
 
         return out_row
 
-    def nef_to_nmrstar(self, nef_file, star_file=None, report=None, report_file=None):
+    def nef_to_nmrstar(self, nef_file, star_file=None, report=None):
         """ Convert NEF file to NMR-STAR file.
             @param nef_file: input NEF file path
             @param star_file: output NMR-STAR file path
             @param report: NMR data processing report object (optional)
-            @param report_file: NMR data processing report file (optional), content-type: nmr-data-nef-report, format: json
         """
 
         (file_path, file_name) = ntpath.split(os.path.realpath(nef_file))
@@ -4654,10 +4656,6 @@ class NEFTranslator(object):
 
         if star_file is None:
             star_file = file_path + '/' + file_name.split('.')[0] + '.str'
-
-        if report is None and not report_file is None:
-            report = NmrDpReport()
-            report.loadFile(report_file)
 
         is_readable, dat_content, nef_data = self.read_input_file(nef_file)
 
@@ -5063,13 +5061,12 @@ class NEFTranslator(object):
 
         return is_done, json.dumps({'info': info, 'warning': warning, 'error': error})
 
-    def nmrstar_to_nef(self, star_file, nef_file=None, report=None, report_file=None):
+    def nmrstar_to_nef(self, star_file, nef_file=None, report=None):
         """ Convert NMR-STAR file to NEF file.
             @author: Masashi Yokochi
             @param star_file: input NMR-STAR file path
             @param nef_file: output NEF file path
             @param report: NMR data processing report object (optional)
-            @param report_file: NMR data processing report file (optional), content-type: nmr-data-str-report, format: json
         """
 
         (file_path, file_name) = ntpath.split(os.path.realpath(star_file))
@@ -5083,10 +5080,6 @@ class NEFTranslator(object):
             nef_file = file_path + '/' + file_name.split('.')[0] + '.nef'
 
         is_readable, dat_content, star_data = self.read_input_file(star_file)
-
-        if report is None and not report_file is None:
-            report = NmrDpReport()
-            report.loadFile(report_file)
 
         try:
             nef_data = pynmrstar.Entry.from_scratch(star_data.entry_id)

@@ -37,6 +37,7 @@
 # 30-Mar-2020  M. Yokochi - preserve original sf_framecode for nef_molecular_system (NEF) or assembly (NMR-STAR)
 # 31-Mar-2020  M. Yokochi - enable processing without log file
 # 03-Apr-2020  M. Yokochi - preserve case code of atom_name (NEF) and Auth_atom_ID/Original_PDB_atom_name (NMR-STAR)
+# 06-Apr-2020  M. Yokochi - synchronize with coordinates' auth_asym_id and auth_seq_id for combined NMR-STAR deposition
 ##
 """ Wrapper class for data processing for NMR data.
     @author: Masashi Yokochi
@@ -192,6 +193,7 @@ class NmrDpUtility(object):
                           self.__deleteSkippedLoop,
                           self.__deleteUnparsedEntryLoop,
                           self.__updatePolymerSequence,
+                          self.__updateAuthSequence,
                           self.__updateDihedralAngleType,
                           self.__fixDisorderedIndex,
                           self.__removeNonSenseZeroValue,
@@ -1423,7 +1425,9 @@ class NmrDpUtility(object):
                                                              'Spectral_peak_ID', 'Spectral_peak_list_ID',
                                                              'PDB_record_ID_1', 'PDB_model_num_1', 'PDB_strand_ID_1', 'PDB_ins_code_1', 'PDB_residue_no_1', 'PDB_residue_name_1', 'PDB_atom_name_1', 'PDB_record_ID_2', 'PDB_model_num_2', 'PDB_strand_ID_2', 'PDB_ins_code_2', 'PDB_residue_no_2', 'PDB_residue_name_2', 'PDB_atom_name_2',
                                                              'Auth_entity_assembly_ID_1', 'Auth_asym_ID_1', 'Auth_chain_ID_1', 'Auth_seq_ID_1', 'Auth_comp_ID_1', 'Auth_atom_ID_1', 'Auth_alt_ID_1', 'Auth_atom_name_1', 'Auth_entity_assembly_ID_2', 'Auth_asym_ID_2', 'Auth_chain_ID_2', 'Auth_seq_ID_2', 'Auth_comp_ID_2', 'Auth_atom_ID_2', 'Auth_alt_ID_2', 'Auth_atom_name_2',
-                                                             'Sf_ID', 'Entry_ID', 'Gen_dist_constraint_list_ID'],
+                                                             'Sf_ID', 'Entry_ID', 'Gen_dist_constraint_list_ID',
+                                                             'Original_PDB_strand_ID_1', 'Original_PDB_residue_no_1', 'Original_PDB_residue_name_1',
+                                                             'Original_PDB_strand_ID_2', 'Original_PDB_residue_no_2', 'Original_PDB_residue_name_2'],
                                           'dihed_restraint': ['Index_ID', 'ID', 'Combination_ID', 'Set_ID', 'Torsion_angle_name',
                                                               'Assembly_atom_ID_1', 'Entity_assembly_ID_1', 'Entity_ID_1', 'Comp_index_ID_1', 'Seq_ID_1', 'Comp_ID_1', 'Atom_ID_1', 'Atom_type_1', 'Resonance_ID_1', 'Assembly_atom_ID_2', 'Entity_assembly_ID_2', 'Entity_ID_2', 'Comp_index_ID_2', 'Seq_ID_2', 'Comp_ID_2', 'Atom_ID_2', 'Atom_type_2', 'Resonance_ID_2',
                                                               'Assembly_atom_ID_3', 'Entity_assembly_ID_3', 'Entity_ID_3', 'Comp_index_ID_3', 'Seq_ID_3', 'Comp_ID_3', 'Atom_ID_3', 'Atom_type_3', 'Resonance_ID_3', 'Assembly_atom_ID_4', 'Entity_assembly_ID_4', 'Entity_ID_4', 'Comp_index_ID_4', 'Seq_ID_4', 'Comp_ID_4', 'Atom_ID_4', 'Atom_type_4', 'Resonance_ID_4',
@@ -1464,7 +1468,7 @@ class NmrDpUtility(object):
                                                             'Auth_entity_assembly_ID_11', 'Auth_entity_ID_11', 'Auth_asym_ID_11', 'Auth_seq_ID_11', 'Auth_comp_ID_11', 'Auth_atom_ID_11', 'Auth_ambiguity_code_11', 'Auth_ambiguity_set_ID_11', 'Auth_entity_assembly_ID_12', 'Auth_entity_ID_12', 'Auth_asym_ID_12', 'Auth_seq_ID_12', 'Auth_comp_ID_12', 'Auth_atom_ID_12', 'Auth_ambiguity_code_12', 'Auth_ambiguity_set_ID_12',
                                                             'Auth_entity_assembly_ID_13', 'Auth_entity_ID_13', 'Auth_asym_ID_13', 'Auth_seq_ID_13', 'Auth_comp_ID_13', 'Auth_atom_ID_13', 'Auth_ambiguity_code_13', 'Auth_ambiguity_set_ID_13', 'Auth_entity_assembly_ID_14', 'Auth_entity_ID_14', 'Auth_asym_ID_14', 'Auth_seq_ID_14', 'Auth_comp_ID_14', 'Auth_atom_ID_14', 'Auth_ambiguity_code_14', 'Auth_ambiguity_set_ID_14',
                                                             'Auth_entity_assembly_ID_15', 'Auth_entity_ID_15', 'Auth_asym_ID_15', 'Auth_seq_ID_15', 'Auth_comp_ID_15', 'Auth_atom_ID_15', 'Auth_ambiguity_code_15', 'Auth_ambiguity_set_ID_15',
-                                                            'Details', 'Sf_ID', 'Entry_ID', 'Spectral_peak_list_ID'],
+                                                            'Details', 'Sf_ID', 'Entry_ID', 'Spectral_peak_list_ID']
                                           }
                               }
 
@@ -3123,9 +3127,9 @@ class NmrDpUtility(object):
         """
 
         try:
-            lp_data = sf_data.get_loop_by_category(lp_category)
-        except Exception:
-            lp_data = sf_data
+            loop = sf_data.get_loop_by_category(lp_category)
+        except:
+            loop = sf_data
 
         try:
 
@@ -3134,26 +3138,26 @@ class NmrDpUtility(object):
             if not index_tag is None:
 
                 try:
-                    tag_pos = next(lp_data.tags.index(tag) for tag in lp_data.tags if tag == 'ordinal')
-                    lp_data.tags[tag_pos] = 'index'
+                    tag_pos = next(loop.tags.index(tag) for tag in loop.tags if tag == 'ordinal')
+                    loop.tags[tag_pos] = 'index'
                 except StopIteration:
                     pass
 
                 try:
-                    tag_pos = next(lp_data.tags.index(tag) for tag in lp_data.tags if tag == 'index_id')
-                    lp_data.tags[tag_pos] = 'index'
+                    tag_pos = next(loop.tags.index(tag) for tag in loop.tags if tag == 'index_id')
+                    loop.tags[tag_pos] = 'index'
                 except StopIteration:
                     pass
 
             if content_subtype == 'poly_seq':
 
                 try:
-                    tag_pos = next(lp_data.tags.index(tag) for tag in lp_data.tags if tag == 'residue_type')
-                    lp_data.tags[tag_pos] = 'residue_name'
+                    tag_pos = next(loop.tags.index(tag) for tag in loop.tags if tag == 'residue_type')
+                    loop.tags[tag_pos] = 'residue_name'
                 except StopIteration:
                     pass
 
-                if not 'index' in lp_data.tags:
+                if not 'index' in loop.tags:
 
                     lp_tag = lp_category + '.index'
                     err = self.__err_template_for_missing_mandatory_lp_tag % lp_tag
@@ -3165,10 +3169,10 @@ class NmrDpUtility(object):
                         if self.__verbose:
                             self.__lfh.write("+NmrDpUtility.__rescueFormerNef() ++ LookupError  - %s" % err)
 
-                    for l, i in enumerate(lp_data):
+                    for l, i in enumerate(loop):
                         i.append(l + 1)
 
-                    lp_data.add_tag(lp_category + '.index')
+                    loop.add_tag(lp_category + '.index')
 
             elif content_subtype == 'chem_shift':
 
@@ -3179,12 +3183,12 @@ class NmrDpUtility(object):
                     pass
 
                 try:
-                    tag_pos = next(lp_data.tags.index(tag) for tag in lp_data.tags if tag == 'residue_type')
-                    lp_data.tags[tag_pos] = 'residue_name'
+                    tag_pos = next(loop.tags.index(tag) for tag in loop.tags if tag == 'residue_type')
+                    loop.tags[tag_pos] = 'residue_name'
                 except StopIteration:
                     pass
 
-                if not 'element' in lp_data.tags:
+                if not 'element' in loop.tags:
 
                     lp_tag = lp_category + '.element'
                     err = self.__err_template_for_missing_mandatory_lp_tag % lp_tag
@@ -3197,32 +3201,32 @@ class NmrDpUtility(object):
                             self.__lfh.write("+NmrDpUtility.__rescueFormerNef() ++ LookupError  - %s" % err)
 
                     try:
-                        atom_name_col = lp_data.tags.index('atom_name')
+                        atom_name_col = loop.tags.index('atom_name')
 
-                        for i in lp_data:
-                            atom_type = i[atom_name_col][0]
+                        for row in loop:
+                            atom_type = row[atom_name_col][0]
                             if atom_type == 'Q' or atom_type == 'M':
                                 atom_type = 'H'
-                            i.append(atom_type)
+                            row.append(atom_type)
 
-                        lp_data.add_tag(lp_category + '.element')
+                        loop.add_tag(lp_category + '.element')
 
                     except ValueError:
                         pass
 
                 elif not self.__combined_mode:
 
-                    atom_type_col = lp_data.tags.index('element')
-                    atom_name_col = lp_data.tags.index('atom_name')
+                    atom_type_col = loop.tags.index('element')
+                    atom_name_col = loop.tags.index('atom_name')
 
-                    for i in lp_data:
-                        if i[atom_type_col] in self.empty_value:
-                            atom_type = i[atom_name_col][0]
+                    for row in loop:
+                        if row[atom_type_col] in self.empty_value:
+                            atom_type = row[atom_name_col][0]
                             if atom_type == 'Q' or atom_type == 'M':
                                 atom_type = 'H'
-                            i[atom_type_col] = atom_type
+                            row[atom_type_col] = atom_type
 
-                if not 'isotope_number' in lp_data.tags:
+                if not 'isotope_number' in loop.tags:
 
                     lp_tag = lp_category + '.isotope_number'
                     err = self.__err_template_for_missing_mandatory_lp_tag % lp_tag
@@ -3235,34 +3239,34 @@ class NmrDpUtility(object):
                             self.__lfh.write("+NmrDpUtility.__rescueFormerNef() ++ LookupError  - %s" % err)
 
                     try:
-                        atom_name_col = lp_data.tags.index('atom_name')
+                        atom_name_col = loop.tags.index('atom_name')
 
-                        for i in lp_data:
-                            atom_type = i[atom_name_col][0]
+                        for row in loop:
+                            atom_type = row[atom_name_col][0]
                             if atom_type == 'Q' or atom_type == 'M':
                                 atom_type = 'H'
-                            i.append(str(self.atom_isotopes[atom_type][0]))
+                            row.append(str(self.atom_isotopes[atom_type][0]))
 
-                        lp_data.add_tag(lp_category + '.isotope_number')
+                        loop.add_tag(lp_category + '.isotope_number')
 
                     except ValueError:
                         pass
 
                 elif not self.__combined_mode:
 
-                    iso_num_col = lp_data.tags.index('isotope_number')
-                    atom_name_col = lp_data.tags.index('atom_name')
+                    iso_num_col = loop.tags.index('isotope_number')
+                    atom_name_col = loop.tags.index('atom_name')
 
-                    for i in lp_data:
-                        if i[iso_num_col] in self.empty_value:
-                            atom_type = i[atom_name_col][0]
+                    for row in loop:
+                        if row[iso_num_col] in self.empty_value:
+                            atom_type = row[atom_name_col][0]
                             if atom_type == 'Q' or atom_type == 'M':
                                 atom_type = 'H'
-                            i[iso_num_col] = str(self.atom_isotopes[atom_type][0])
+                            row[iso_num_col] = str(self.atom_isotopes[atom_type][0])
 
             elif content_subtype == 'dihed_restraint':
 
-                if not 'name' in lp_data.tags:
+                if not 'name' in loop.tags:
 
                     lp_tag = lp_category + '.name'
                     err = self.__err_template_for_missing_mandatory_lp_tag % lp_tag
@@ -3276,10 +3280,10 @@ class NmrDpUtility(object):
 
                     try:
 
-                        for i in lp_data:
-                            i.append('.')
+                        for row in loop:
+                            row.append('.')
 
-                        lp_data.add_tag(lp_category + '.name')
+                        loop.add_tag(lp_category + '.name')
 
                     except ValueError:
                         pass
@@ -3322,8 +3326,8 @@ class NmrDpUtility(object):
                 _residue_type = 'residue_type_' + str(j)
 
                 try:
-                    tag_pos = next(lp_data.tags.index(tag) for tag in lp_data.tags if tag == _residue_type)
-                    lp_data.tags[tag_pos] = 'residue_name_' + str(j)
+                    tag_pos = next(loop.tags.index(tag) for tag in loop.tags if tag == _residue_type)
+                    loop.tags[tag_pos] = 'residue_name_' + str(j)
                 except StopIteration:
                     pass
 
@@ -3446,9 +3450,9 @@ class NmrDpUtility(object):
         """
 
         try:
-            lp_data = sf_data.get_loop_by_category(lp_category)
-        except Exception:
-            lp_data = sf_data
+            loop = sf_data.get_loop_by_category(lp_category)
+        except:
+            loop = sf_data
 
         try:
 
@@ -3456,7 +3460,7 @@ class NmrDpUtility(object):
 
             if content_subtype == 'chem_shift':
 
-                if not 'Atom_type' in lp_data.tags:
+                if not 'Atom_type' in loop.tags:
 
                     lp_tag = lp_category + '.Atom_type'
                     err = self.__err_template_for_missing_mandatory_lp_tag % lp_tag
@@ -3469,32 +3473,32 @@ class NmrDpUtility(object):
                             self.__lfh.write("+NmrDpUtility.__rescueImmatureStr() ++ LookupError  - %s" % err)
 
                     try:
-                        atom_name_col = lp_data.tags.index('Atom_ID')
+                        atom_name_col = loop.tags.index('Atom_ID')
 
-                        for i in lp_data:
-                            atom_type = i[atom_name_col][0]
+                        for row in loop:
+                            atom_type = row[atom_name_col][0]
                             if atom_type == 'Q' or atom_type == 'M':
                                 atom_type = 'H'
-                            i.append(atom_type)
+                            row.append(atom_type)
 
-                        lp_data.add_tag(lp_category + '.Atom_type')
+                        loop.add_tag(lp_category + '.Atom_type')
 
                     except ValueError:
                         pass
 
                 elif not self.__combined_mode:
 
-                    atom_type_col = lp_data.tags.index('Atom_type')
-                    atom_name_col = lp_data.tags.index('Atom_ID')
+                    atom_type_col = loop.tags.index('Atom_type')
+                    atom_name_col = loop.tags.index('Atom_ID')
 
-                    for i in lp_data:
-                        if i[atom_type_col] in self.empty_value:
-                            atom_type = i[atom_name_col][0]
+                    for row in loop:
+                        if row[atom_type_col] in self.empty_value:
+                            atom_type = row[atom_name_col][0]
                             if atom_type == 'Q' or atom_type == 'M':
                                 atom_type = 'H'
-                            i[atom_type_col] = atom_type
+                            row[atom_type_col] = atom_type
 
-                if not 'Atom_isotope_number' in lp_data.tags:
+                if not 'Atom_isotope_number' in loop.tags:
 
                     lp_tag = lp_category + '.Atom_isotope_number'
                     err = self.__err_template_for_missing_mandatory_lp_tag % lp_tag
@@ -3507,34 +3511,34 @@ class NmrDpUtility(object):
                             self.__lfh.write("+NmrDpUtility.__rescueImmatureStr() ++ LookupError  - %s" % err)
 
                     try:
-                        atom_name_col = lp_data.tags.index('Atom_ID')
+                        atom_name_col = loop.tags.index('Atom_ID')
 
-                        for i in lp_data:
-                            atom_type = i[atom_name_col][0]
+                        for row in loop:
+                            atom_type = row[atom_name_col][0]
                             if atom_type == 'Q' or atom_type == 'M':
                                 atom_type = 'H'
-                            i.append(str(self.atom_isotopes[atom_type][0]))
+                            row.append(str(self.atom_isotopes[atom_type][0]))
 
-                        lp_data.add_tag(lp_category + '.Atom_isotope_number')
+                        loop.add_tag(lp_category + '.Atom_isotope_number')
 
                     except ValueError:
                         pass
 
                 elif not self.__combined_mode:
 
-                    iso_num_col = lp_data.tags.index('Atom_isotope_number')
-                    atom_name_col = lp_data.tags.index('Atom_ID')
+                    iso_num_col = loop.tags.index('Atom_isotope_number')
+                    atom_name_col = loop.tags.index('Atom_ID')
 
-                    for i in lp_data:
-                        if i[iso_num_col] in self.empty_value:
-                            atom_type = i[atom_name_col][0]
+                    for row in loop:
+                        if row[iso_num_col] in self.empty_value:
+                            atom_type = row[atom_name_col][0]
                             if atom_type == 'Q' or atom_type == 'M':
                                 atom_type = 'H'
-                            i[iso_num_col] = str(self.atom_isotopes[atom_type][0])
+                            row[iso_num_col] = str(self.atom_isotopes[atom_type][0])
 
             elif content_subtype == 'dihed_restraint':
 
-                if not 'Torsion_angle_name' in lp_data.tags:
+                if not 'Torsion_angle_name' in loop.tags:
 
                     lp_tag = lp_category + '.Torsion_angle_name'
                     err = self.__err_template_for_missing_mandatory_lp_tag % lp_tag
@@ -3548,10 +3552,10 @@ class NmrDpUtility(object):
 
                     try:
 
-                        for i in lp_data:
-                            i.append('.')
+                        for row in loop:
+                            row.append('.')
 
-                        lp_data.add_tag(lp_category + '.Torsion_angle_name')
+                        loop.add_tag(lp_category + '.Torsion_angle_name')
 
                     except ValueError:
                         pass
@@ -6389,10 +6393,10 @@ class NmrDpUtility(object):
                                         conflict_id = self.__nefT.get_conflict_id(sf_data, lp_category, key_items)[0]
 
                                         if len(conflict_id) > 0:
-                                            loop = sf_data.get_loop_by_category(lp_category)
+                                            _loop = sf_data.get_loop_by_category(lp_category)
 
                                             for l in conflict_id:
-                                                del loop.data[l]
+                                                del _loop.data[l]
 
                                     aux_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, allowed_tags, None)[0]
 
@@ -6424,7 +6428,7 @@ class NmrDpUtility(object):
 
                         else:
 
-                            err = "%s loop category exists unexpectedly." % loop.category
+                            err = "%s loop category exists unexpectedly." % lp_category
 
                             self.report.error.appendDescription('format_issue', {'file_name': file_name, 'sf_framecode': sf_framecode, 'description': err})
                             self.report.setError()
@@ -6887,7 +6891,7 @@ class NmrDpUtility(object):
 
                 try:
                     lp_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, None, None)[0]
-                except Exception:
+                except:
                     return False
 
             chk_row_tmp = "[Check row of {0} %s, {1} %s, {2} %s, {3} %s".format(chain_id_name, seq_id_name, comp_id_name, atom_id_name)
@@ -14409,7 +14413,7 @@ class NmrDpUtility(object):
 
             try:
                 lp_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, None, None)[0]
-            except Exception:
+            except:
                 return False
 
         if lp_data is None:
@@ -14790,10 +14794,10 @@ class NmrDpUtility(object):
                             conflict_id = self.__nefT.get_conflict_id(sf_data, lp_category, key_items)[0]
 
                             if len(conflict_id) > 0:
-                                loop = sf_data.get_loop_by_category(lp_category)
+                                _loop = sf_data.get_loop_by_category(lp_category)
 
                                 for l in conflict_id:
-                                    del loop.data[l]
+                                    del _loop.data[l]
 
                         except:
                             pass
@@ -14832,9 +14836,9 @@ class NmrDpUtility(object):
 
                     sf_framecode = sf_data.get_tag('sf_framecode')[0]
 
-                    lp_data = sf_data.get_loop_by_category(lp_category)
+                    loop = sf_data.get_loop_by_category(lp_category)
 
-                    if index_tag in lp_data.tags:
+                    if index_tag in loop.tags:
                         continue
 
                     lp_tag = lp_category + '.' + index_tag
@@ -14849,19 +14853,19 @@ class NmrDpUtility(object):
                             if self.__verbose:
                                 self.__lfh.write("+NmrDpUtility.__appendIndexTag() ++ LookupError  - %s" % err)
 
-                    new_lp_data = pynmrstar.Loop.from_scratch(lp_category)
+                    new_loop = pynmrstar.Loop.from_scratch(lp_category)
 
-                    new_lp_data.add_tag(lp_tag)
+                    new_loop.add_tag(lp_tag)
 
-                    for tag in lp_data.tags:
-                        new_lp_data.add_tag(lp_category + '.' + tag)
+                    for tag in loop.tags:
+                        new_loop.add_tag(lp_category + '.' + tag)
 
-                    for l, i in enumerate(lp_data.data):
-                        new_lp_data.add_data([str(l + 1)] + i)
+                    for l, i in enumerate(loop.data):
+                        new_loop.add_data([str(l + 1)] + i)
 
-                    del sf_data[lp_data]
+                    del sf_data[loop]
 
-                    sf_data.add_loop(new_lp_data)
+                    sf_data.add_loop(new_loop)
 
     def __deleteSkippedSf(self):
         """ Delete skipped saveframes.
@@ -15086,7 +15090,7 @@ class NmrDpUtility(object):
             """
             return False
 
-        if self.__srcPath is self.__dstPath:
+        if self.__srcPath == self.__dstPath:
             return True
 
         content_subtype = 'poly_seq'
@@ -15115,48 +15119,50 @@ class NmrDpUtility(object):
             orig_lp_data = next((l['data'] for l in self.__lp_data[content_subtype] if l['file_name'] == file_name and l['sf_framecode'] == sf_framecode), None)
 
             if orig_lp_data is None:
-                continue
-                # orig_lp_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, None, None)[0]
+                try:
+                    orig_lp_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, None, None)[0]
+                except:
+                    pass
 
-            if file_type == 'nef':
-                if 'residue_variant' in orig_lp_data[0]:
-                    result = next((i for i in orig_lp_data if not i['residue_variant'] in self.empty_value), None)
-                    if not result is None:
-                        has_res_var_dat = True
+            if not orig_lp_data is None:
 
-            else:
-                if 'Auth_variant_ID' in orig_lp_data[0]:
-                    result = next((i for i in orig_lp_data if not i['Auth_variant_ID'] in self.empty_value), None)
-                    if not result is None:
-                        has_res_var_dat = True
+                if file_type == 'nef':
+                    if 'residue_variant' in orig_lp_data:
+                        result = next((i for i in orig_lp_data if not i['residue_variant'] in self.empty_value), None)
+                        if not result is None:
+                            has_res_var_dat = True
 
-                if 'Auth_asym_ID' in orig_lp_data[0]:
-                    result = next((i for i in orig_lp_data if not i['Auth_asym_ID'] in self.empty_value), None)
-                    if not result is None:
-                        #has_auth_asym_id = True
-                        return True
+                else:
+                    if 'Auth_variant_ID' in orig_lp_data:
+                        result = next((i for i in orig_lp_data if not i['Auth_variant_ID'] in self.empty_value), None)
+                        if not result is None:
+                            has_res_var_dat = True
 
-                if 'Auth_seq_ID' in orig_lp_data[0]:
-                    result = next((i for i in orig_lp_data if not i['Auth_seq_ID'] in self.empty_value), None)
-                    if not result is None:
-                        #has_auth_seq_id = True
-                        return True
+                    if 'Auth_asym_ID' in orig_lp_data:
+                        result = next((i for i in orig_lp_data if not i['Auth_asym_ID'] in self.empty_value), None)
+                        if not result is None:
+                            has_auth_asym_id = True
 
-                if 'Auth_comp_ID' in orig_lp_data[0]:
-                    result = next((i for i in orig_lp_data if not i['Auth_comp_ID'] in self.empty_value), None)
-                    if not result is None:
-                        has_auth_comp_id = True
+                    if 'Auth_seq_ID' in orig_lp_data:
+                        result = next((i for i in orig_lp_data if not i['Auth_seq_ID'] in self.empty_value), None)
+                        if not result is None:
+                            has_auth_seq_id = True
 
-                if 'NEF_index' in orig_lp_data[0]:
-                    result = next((i for i in orig_lp_data if not i['NEF_index'] in self.empty_value), None)
-                    if not result is None:
-                        has_nef_index_dat = True
+                    if 'Auth_comp_ID' in orig_lp_data:
+                        result = next((i for i in orig_lp_data if not i['Auth_comp_ID'] in self.empty_value), None)
+                        if not result is None:
+                            has_auth_comp_id = True
 
-                if 'Assembly_ID' in orig_lp_data[0]:
-                    has_assembly_id = True
+                    if 'NEF_index' in orig_lp_data:
+                        result = next((i for i in orig_lp_data if not i['NEF_index'] in self.empty_value), None)
+                        if not result is None:
+                            has_nef_index_dat = True
 
-                if 'Entry_ID' in orig_lp_data[0]:
-                    has_entry_id = True
+                    if 'Assembly_ID' in orig_lp_data:
+                        has_assembly_id = True
+
+                    if 'Entry_ID' in orig_lp_data:
+                        has_entry_id = True
 
         sf_cat_name = 'nef_molecular_system' if file_type == 'nef' else 'Assembly'
         lp_cat_name = '_nef_sequence' if file_type == 'nef' else '_Chem_comp_assembly'
@@ -15174,12 +15180,12 @@ class NmrDpUtility(object):
             for tag in orig_poly_seq_sf_data.tags:
                 poly_seq_sf_data.add_tag(sf_cat_name + '.' + tag[0], tag[1])
 
-            for lp_data in orig_poly_seq_sf_data.loops:
+            for loop in orig_poly_seq_sf_data.loops:
 
-                if lp_data.category == lp_cat_name:
+                if loop.category == lp_cat_name:
                     continue
 
-                poly_seq_sf_data.add_loop(lp_data)
+                poly_seq_sf_data.add_loop(loop)
 
         tag_names = ['sf_category'] if file_type == 'nef' else ['Sf_category']
         tag_value = 'nef_molecular_system' if file_type == 'nef' else 'assembly'
@@ -15190,25 +15196,25 @@ class NmrDpUtility(object):
             else:
                 poly_seq_sf_data.tags[tagNames.index(tag_name)][1] = tag_value
 
-        lp_data = pynmrstar.Loop.from_scratch(lp_cat_name)
+        loop = pynmrstar.Loop.from_scratch(lp_cat_name)
 
         has_index_tag = not self.index_tags[file_type][content_subtype] is None
 
         if has_index_tag:
-            lp_data.add_tag(lp_cat_name + '.' + self.index_tags[file_type][content_subtype])
+            loop.add_tag(lp_cat_name + '.' + self.index_tags[file_type][content_subtype])
 
         for key_item in key_items:
-            lp_data.add_tag(lp_cat_name + '.' + key_item['name'])
+            loop.add_tag(lp_cat_name + '.' + key_item['name'])
 
         for data_item in data_items:
             data_name = data_item['name']
             if data_name != 'NEF_index':
-                lp_data.add_tag(lp_cat_name + '.' + data_name)
+                loop.add_tag(lp_cat_name + '.' + data_name)
             elif has_nef_index_dat:
-                lp_data.add_tag(lp_cat_name + '.' + data_name)
+                loop.add_tag(lp_cat_name + '.' + data_name)
 
         if has_entry_id:
-            lp_data.add_tag(lp_cat_name + '.Entry_ID')
+            loop.add_tag(lp_cat_name + '.Entry_ID')
 
         polymer_sequence = input_source_dic['polymer_sequence']
 
@@ -15387,11 +15393,11 @@ class NmrDpUtility(object):
                             else:
                                 row.append('.')
 
-                    lp_data.add_data(row)
+                    loop.add_data(row)
 
                     row_id += 1
 
-            poly_seq_sf_data.add_loop(lp_data)
+            poly_seq_sf_data.add_loop(loop)
 
             # replace polymer sequence
 
@@ -15428,6 +15434,161 @@ class NmrDpUtility(object):
         self.__star_data[0] = norm_star_data
 
         return True
+
+    def __updateAuthSequence(self):
+        """ Update auth sequence in NMR-STAR.
+        """
+
+        if not self.__rescue_mode:
+            return False
+
+        if not self.__combined_mode:
+            return False
+
+        input_source = self.report.input_sources[0]
+        input_source_dic = input_source.get()
+
+        file_name = input_source_dic['file_name']
+        file_type = input_source_dic['file_type']
+
+        if file_type == 'nef':
+            return True
+
+        has_poly_seq = self.__hasKeyValue(input_source_dic, 'polymer_sequence')
+
+        if not has_poly_seq:
+            """
+            err = "Common polymer sequence does not exist, __extractCommonPolymerSequence() should be invoked."
+
+            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__generatePolySeqIfNot() ++ Error  - %s" % err)
+            self.report.setError()
+
+            if self.__verbose:
+                self.__lfh.write("+NmrDpUtility.__generatePolySeqIfNot() ++ Error  - %s\n" % err)
+            """
+            return False
+
+        if self.__srcPath == self.__dstPath:
+            return True
+
+        chain_assign_dic = self.report.chain_assignment.get()
+
+        if not 'nmr_poly_seq_vs_model_poly_seq' in chain_assign_dic:
+            """
+            err = "Chain assignment does not exist, __assignCoordPolymerSequence() should be invoked."
+
+            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__extractCoodDisulfideBond() ++ Error  - %s" % err)
+            self.report.setError()
+
+            if self.__verbose:
+                self.__lfh.write("+NmrDpUtility.__extractCoodDisulfideBond() ++ Error  - %s\n" % err)
+            """
+            return False
+
+        if chain_assign_dic['nmr_poly_seq_vs_model_poly_seq'] is None:
+            return False
+
+        if input_source_dic['content_subtype'] is None:
+            return False
+
+        seqAlignMap = {}
+
+        polymer_sequence = input_source_dic['polymer_sequence']
+
+        for s in polymer_sequence:
+            chain_id = s['chain_id']
+            seqAlignMap[chain_id] = self.report.getSequenceAlignmentWithNmrChainId(chain_id)
+
+        if len(seqAlignMap) == 0:
+            return False
+
+        tags = ['Entity_assembly_ID', 'Comp_index_ID', 'Auth_asym_ID', 'Auth_seq_ID']
+
+        self.authSeqMap = {}
+
+        content_subtype = 'poly_seq'
+
+        sf_category = self.sf_categories[file_type][content_subtype]
+        lp_category = self.lp_categories[file_type][content_subtype]
+
+        for sf_data in self.__star_data[0].get_saveframes_by_category(sf_category):
+
+            loop = sf_data.get_loop_by_category(lp_category)
+
+            star_chain_index = loop.tags.index(tags[0])
+            star_seq_index = loop.tags.index(tags[1])
+
+            for row in loop:
+                star_chain = row[star_chain_index]
+                star_seq = row[star_seq_index]
+
+                star_chain_ = str(star_chain)
+
+                if star_chain_ in seqAlignMap:
+                    seq_align = seqAlignMap[star_chain_]
+
+                    if seq_align is None:
+                        continue
+
+                    try:
+                        auth_seq = seq_align['test_seq_id'][seq_align['ref_seq_id'].index(star_seq)]
+                        self.authSeqMap[(star_chain, star_seq)] = (seq_align['test_chain_id'], auth_seq)
+                    except:
+                        pass
+
+        if len(self.authSeqMap) == 0:
+            return False
+
+        for content_subtype in input_source_dic['content_subtype'].keys():
+
+            if content_subtype in ['entry_info']:
+                continue
+
+            sf_category = self.sf_categories[file_type][content_subtype]
+            lp_category = self.lp_categories[file_type][content_subtype]
+
+            for sf_data in self.__star_data[0].get_saveframes_by_category(sf_category):
+
+                loop = sf_data.get_loop_by_category(lp_category)
+
+                if set(tags) & set(loop.tags) == set(tags):
+                    self.__updateAuthSequence__(loop, tags)
+
+                else:
+                    for i in range(1, 16):
+                        _tags = [t + '_' + str(i) for t in tags]
+
+                        if set(_tags) & set(loop.tags) == set(_tags):
+                            self.__updateAuthSequence__(loop, _tags)
+                        else:
+                            break
+
+        return True
+
+    def __updateAuthSequence__(self, loop, tags):
+        """ Update auth sequence in NMR-STAR.
+        """
+
+        # Entity_assembly_ID*
+        star_chain_index = loop.tags.index(tags[0])
+        # Comp_index_ID*
+        star_seq_index = loop.tags.index(tags[1])
+        # Auth_asym_ID*
+        auth_chain_index = loop.tags.index(tags[2])
+        # Auth_seq_ID*
+        auth_seq_index = loop.tags.index(tags[3])
+
+        for row in loop:
+            star_chain = row[star_chain_index]
+            star_seq = row[star_seq_index]
+
+            if star_chain in self.empty_value or star_seq in self.empty_value:
+                continue
+
+            seq_key = (star_chain, star_seq)
+
+            if seq_key in self.authSeqMap:
+                row[auth_chain_index], row[auth_seq_index] = self.authSeqMap[seq_key]
 
     def __isCyclicPolymer(self, nmr_chain_id):
         """ Return whether a given chain is cyclic polymer based on coordinate annotation.
@@ -17068,19 +17229,19 @@ class NmrDpUtility(object):
 
             for sf_data in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
 
-                lp_data = sf_data.get_loop_by_category(lp_category)
+                loop = sf_data.get_loop_by_category(lp_category)
 
-                has_atom_type = cs_atom_type in lp_data.tags
-                has_iso_number = cs_iso_number in lp_data.tags
+                has_atom_type = cs_atom_type in loop.tags
+                has_iso_number = cs_iso_number in loop.tags
 
-                atomIdCol = lp_data.tags.index(cs_atom_id_name)
+                atomIdCol = loop.tags.index(cs_atom_id_name)
 
                 if has_atom_type and has_iso_number:
 
-                    atomTypeCol = lp_data.tags.index(cs_atom_type)
-                    isoNumCol = lp_data.tags.index(cs_iso_number)
+                    atomTypeCol = loop.tags.index(cs_atom_type)
+                    isoNumCol = loop.tags.index(cs_iso_number)
 
-                    for row in lp_data.data:
+                    for row in loop.data:
 
                         atom_id = row[atomIdCol]
 
@@ -17096,9 +17257,9 @@ class NmrDpUtility(object):
 
                 elif has_atom_type:
 
-                    atomTypeCol = lp_data.tags.index(cs_atom_type)
+                    atomTypeCol = loop.tags.index(cs_atom_type)
 
-                    for row in lp_data.data:
+                    for row in loop.data:
 
                         atom_id = row[atomIdCol]
 
@@ -17111,13 +17272,13 @@ class NmrDpUtility(object):
                         except KeyError:
                             row.append('.')
 
-                    lp_data.add_tag(cs_iso_number)
+                    loop.add_tag(cs_iso_number)
 
                 elif has_iso_number:
 
-                    isoNumCol = lp_data.tags.index(cs_iso_number)
+                    isoNumCol = loop.tags.index(cs_iso_number)
 
-                    for row in lp_data.data:
+                    for row in loop.data:
 
                         atom_id = row[atomIdCol]
 
@@ -17130,11 +17291,11 @@ class NmrDpUtility(object):
 
                         row.append(atom_id[0] if atom_id[0] in self.atom_isotopes else '.')
 
-                    lp_data.add_tag(cs_atom_type)
+                    loop.add_tag(cs_atom_type)
 
                 else:
 
-                    for row in lp_data.data:
+                    for row in loop.data:
 
                         atom_id = row[atomIdCol]
 
@@ -17146,8 +17307,8 @@ class NmrDpUtility(object):
                         except KeyError:
                             row.append('.')
 
-                    lp_data.add_tag(cs_atom_type)
-                    lp_data.add_tag(cs_iso_number)
+                    loop.add_tag(cs_atom_type)
+                    loop.add_tag(cs_iso_number)
 
         return True
 
@@ -17186,9 +17347,9 @@ class NmrDpUtility(object):
 
                     sf_framecode = sf_data.get_tag('sf_framecode')[0]
 
-                    lp_data = sf_data.get_loop_by_category(lp_category)
+                    loop = sf_data.get_loop_by_category(lp_category)
 
-                    if weight_tag in lp_data.tags:
+                    if weight_tag in loop.tags:
                         continue
 
                     lp_tag = lp_category + '.' + weight_tag
@@ -17203,10 +17364,10 @@ class NmrDpUtility(object):
                             if self.__verbose:
                                 self.__lfh.write("+NmrDpUtility.__appendWeightInLoop() ++ LookupError  - %s" % err)
 
-                    for row in lp_data.data:
+                    for row in loop.data:
                         row.append('1.0')
 
-                    lp_data.add_tag(weight_tag)
+                    loop.add_tag(weight_tag)
 
         return is_done
 
@@ -17236,15 +17397,15 @@ class NmrDpUtility(object):
 
             for sf_data in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
 
-                lp_data = sf_data.get_loop_by_category(lp_category)
+                loop = sf_data.get_loop_by_category(lp_category)
 
-                if angle_type_tag in lp_data.tags:
+                if angle_type_tag in loop.tags:
                     continue
 
-                for row in lp_data.data:
+                for row in loop.data:
                     row.append('.')
 
-                lp_data.add_tag(angle_type_tag)
+                loop.add_tag(angle_type_tag)
 
         return True
 
@@ -17504,12 +17665,12 @@ class NmrDpUtility(object):
                     if len(phi_index) + len(psi_index) + len(omega_index) +\
                        len(chi1_index) + len(chi2_index) + len(chi3_index) + len(chi4_index) + len(chi5_index) > 0:
 
-                        lp_data = sf_data.get_loop_by_category(lp_category)
+                        loop = sf_data.get_loop_by_category(lp_category)
 
-                        idxCol = lp_data.tags.index(index_id_name)
-                        aglCol = lp_data.tags.index(angle_type_name)
+                        idxCol = loop.tags.index(index_id_name)
+                        aglCol = loop.tags.index(angle_type_name)
 
-                        for row in lp_data.data:
+                        for row in loop.data:
 
                             index_id = int(row[idxCol])
 
@@ -17596,8 +17757,8 @@ class NmrDpUtility(object):
 
                             content_subtype = next(c for c in input_source_dic['content_subtype'].keys() if self.lp_categories[file_type][c] == w['category'] and not self.index_tags[file_type][c] is None)
 
-                            lp_data = sf_data.get_loop_by_category(w['category'])
-                            lp_data.renumber_rows(self.index_tags[file_type][content_subtype])
+                            loop = sf_data.get_loop_by_category(w['category'])
+                            loop.renumber_rows(self.index_tags[file_type][content_subtype])
 
                         except StopIteration:
 
@@ -17686,9 +17847,9 @@ class NmrDpUtility(object):
 
                         itName = w['description'].split(' ')[0]
 
-                        lp_data = sf_data.get_loop_by_category(w['category'])
+                        loop = sf_data.get_loop_by_category(w['category'])
 
-                        if not itName in lp_data.tags:
+                        if not itName in loop.tags:
 
                             err = "Could not find loop tag %s in %s category, %s saveframe, %s file." % (itName, w['category'], w['sf_framecode'], file_name)
 
@@ -17700,9 +17861,9 @@ class NmrDpUtility(object):
 
                         else:
 
-                            itCol = lp_data.tags.index(itName)
+                            itCol = loop.tags.index(itName)
 
-                            for row in lp_data.data:
+                            for row in loop.data:
 
                                 val = row[itCol]
 
@@ -17792,9 +17953,9 @@ class NmrDpUtility(object):
 
                         itName = w['description'].split(' ')[0]
 
-                        lp_data = sf_data.get_loop_by_category(w['category'])
+                        loop = sf_data.get_loop_by_category(w['category'])
 
-                        if not itName in lp_data.tags:
+                        if not itName in loop.tags:
 
                             err = "Could not find loop tag %s in %s category, %s saveframe, %s file." % (itName, w['category'], w['sf_framecode'], file_name)
 
@@ -17806,9 +17967,9 @@ class NmrDpUtility(object):
 
                         else:
 
-                            itCol = lp_data.tags.index(itName)
+                            itCol = loop.tags.index(itName)
 
-                            for row in lp_data.data:
+                            for row in loop.data:
 
                                 val = row[itCol]
 
@@ -18097,9 +18258,9 @@ class NmrDpUtility(object):
 
                     else:
 
-                        lp_data = sf_data.get_loop_by_category(w['category'])
+                        loop = sf_data.get_loop_by_category(w['category'])
 
-                        if not itName in lp_data.tags:
+                        if not itName in loop.tags:
 
                             err = "Could not find loop tag %s in %s category, %s saveframe, %s file." % (itName, w['category'], w['sf_framecode'], file_name)
 
@@ -18111,9 +18272,9 @@ class NmrDpUtility(object):
 
                         else:
 
-                            itCol = lp_data.tags.index(itName)
+                            itCol = loop.tags.index(itName)
 
-                            for row in lp_data.data:
+                            for row in loop.data:
 
                                 val = row[itCol]
 
@@ -19074,9 +19235,9 @@ class NmrDpUtility(object):
                     itName = description[0]
                     itVal = description[1]
 
-                    lp_data = sf_data.get_loop_by_category(w['category'])
+                    loop = sf_data.get_loop_by_category(w['category'])
 
-                    if not itName in lp_data.tags:
+                    if not itName in loop.tags:
 
                         err = "Could not find loop tag %s in %s category, %s saveframe, %s file." % (itName, w['category'], w['sf_framecode'], file_name)
 
@@ -19088,7 +19249,7 @@ class NmrDpUtility(object):
 
                     else:
 
-                        itCol = lp_data.tags.index(itName)
+                        itCol = loop.tags.index(itName)
 
                         itColVal = {str(itCol): itVal}
 
@@ -19096,8 +19257,8 @@ class NmrDpUtility(object):
 
                         for k, v in w['row_location'].items():
 
-                            if k in lp_data.tags:
-                                itColVal[str(lp_data.tags.index(k))] = v
+                            if k in loop.tags:
+                                itColVal[str(loop.tags.index(k))] = v
 
                             else:
 
@@ -19114,7 +19275,7 @@ class NmrDpUtility(object):
                         if not has_loop_tag:
                             continue
 
-                        for row in lp_data.data:
+                        for row in loop.data:
 
                             exist = True
 
@@ -19211,7 +19372,7 @@ class NmrDpUtility(object):
                     key_items = self.key_items[file_type][content_subtype]
                     data_items = self.data_items[file_type][content_subtype]
 
-                lp_data = sf_data.get_loop_by_category(lp_category)
+                loop = sf_data.get_loop_by_category(lp_category)
 
                 if file_type == 'nef':
                     key_names = [k['name'] for k in key_items if k['name'].startswith('chain_code') or k['name'].startswith('residue_name') or k['name'].startswith('atom_name') or k['name'] == 'element']
@@ -19220,11 +19381,11 @@ class NmrDpUtility(object):
 
                 for itName in key_names:
 
-                    if itName in lp_data.tags:
+                    if itName in loop.tags:
 
-                        itCol = lp_data.tags.index(itName)
+                        itCol = loop.tags.index(itName)
 
-                        for row in lp_data.data:
+                        for row in loop.data:
 
                             val = row[itCol]
 
@@ -19243,11 +19404,11 @@ class NmrDpUtility(object):
 
                 for itName in data_names:
 
-                    if itName in lp_data.tags:
+                    if itName in loop.tags:
 
-                        itCol = lp_data.tags.index(itName)
+                        itCol = loop.tags.index(itName)
 
-                        for row in lp_data.data:
+                        for row in loop.data:
 
                             val = row[itCol]
 
@@ -19347,17 +19508,17 @@ class NmrDpUtility(object):
 
                 if has_bool_key or has_bool_data:
 
-                    lp_data = sf_data.get_loop_by_category(lp_category)
+                    loop = sf_data.get_loop_by_category(lp_category)
 
                     if has_bool_key:
 
                         for itName in [k['name'] for k in key_items if k['type'] == 'bool']:
 
-                            if itName in lp_data.tags:
+                            if itName in loop.tags:
 
-                                itCol = lp_data.tags.index(itName)
+                                itCol = loop.tags.index(itName)
 
-                                for row in lp_data.data:
+                                for row in loop.data:
 
                                     val = row[itCol]
 
@@ -19373,11 +19534,11 @@ class NmrDpUtility(object):
 
                         for itName in [d['name'] for d in data_items if d['type'] == 'bool']:
 
-                            if itName in lp_data.tags:
+                            if itName in loop.tags:
 
-                                itCol = lp_data.tags.index(itName)
+                                itCol = loop.tags.index(itName)
 
-                                for row in lp_data.data:
+                                for row in loop.data:
 
                                     val = row[itCol]
 
@@ -19446,17 +19607,17 @@ class NmrDpUtility(object):
 
                         if has_bool_key or has_bool_data:
 
-                            lp_data = sf_data.get_loop_by_category(lp_category)
+                            _loop = sf_data.get_loop_by_category(lp_category)
 
                             if has_bool_key:
 
                                 for itName in [k['name'] for k in key_items if k['type'] == 'bool']:
 
-                                    if itName in lp_data.tags:
+                                    if itName in _loop.tags:
 
-                                        itCol = lp_data.tags.index(itName)
+                                        itCol = _loop.tags.index(itName)
 
-                                        for row in lp_data.data:
+                                        for row in _loop.data:
 
                                             val = row[itCol]
 
@@ -19472,11 +19633,11 @@ class NmrDpUtility(object):
 
                                 for itName in [d['name'] for d in data_items if d['type'] == 'bool']:
 
-                                    if itName in lp_data.tags:
+                                    if itName in _loop.tags:
 
-                                        itCol = lp_data.tags.index(itName)
+                                        itCol = _loop.tags.index(itName)
 
-                                        for row in lp_data.data:
+                                        for row in _loop.data:
 
                                             val = row[itCol]
 
@@ -19535,17 +19696,17 @@ class NmrDpUtility(object):
                     if (not warn_desc is None) and warn_desc.split(' ')[0] == self.sf_tag_prefixes[file_type][content_subtype].lstrip('_') + '.ID':
                         continue
 
-                    lp_data = sf_data.get_loop_by_category(lp_category)
+                    loop = sf_data.get_loop_by_category(lp_category)
 
                     itName = list_id_tag_in_lp['name']
 
-                    if itName in lp_data.tags:
+                    if itName in loop.tags:
 
-                        itCol = lp_data.tags.index(itName)
+                        itCol = loop.tags.index(itName)
 
                         list_ids = []
 
-                        for row in lp_data.data:
+                        for row in loop.data:
 
                             val = row[itCol]
 
@@ -19639,25 +19800,25 @@ class NmrDpUtility(object):
 
                         entryIdTag = 'Entry_ID'
 
-                        lp_data = sf_data.get_loop_by_category(lp_category)
+                        loop = sf_data.get_loop_by_category(lp_category)
 
-                        if not lp_data is None:
+                        if not loop is None:
 
                             if entryIdTag in self.allowed_tags[file_type][content_subtype]:
 
-                                if entryIdTag in lp_data.tags:
+                                if entryIdTag in loop.tags:
 
-                                    itCol = lp_data.tags.index(entryIdTag)
+                                    itCol = loop.tags.index(entryIdTag)
 
-                                    for row in lp_data.data:
+                                    for row in loop.data:
                                         row[itCol] = self.__entry_id
 
                                 else:
 
-                                    for row in lp_data.data:
+                                    for row in loop.data:
                                         row.append(self.__entry_id)
 
-                                    lp_data.add_tag(entryIdTag)
+                                    loop.add_tag(entryIdTag)
 
                         for loop in sf_data.loops:
 
@@ -19668,23 +19829,23 @@ class NmrDpUtility(object):
 
                             #elif lp_category in self.aux_lp_categories[file_type][content_subtype]:
 
-                            lp_data = sf_data.get_loop_by_category(lp_category)
+                            _loop = sf_data.get_loop_by_category(lp_category)
 
                                 #if entryIdTag in self.aux_allowed_tags[file_type][content_subtype][lp_category]:
 
-                            if entryIdTag in lp_data.tags:
+                            if entryIdTag in _loop.tags:
 
-                                itCol = lp_data.tags.index(entryIdTag)
+                                itCol = _loop.tags.index(entryIdTag)
 
-                                for row in lp_data.data:
+                                for row in _loop.data:
                                     row[itCol] = self.__entry_id
 
                             else:
 
-                                for row in lp_data.data:
+                                for row in _loop.data:
                                     row.append(self.__entry_id)
 
-                                lp_data.add_tag(entryIdTag)
+                                _loop.add_tag(entryIdTag)
 
         # skipped saveframe categories
         for sf_category in set(self.__sf_category_list):
@@ -19713,21 +19874,21 @@ class NmrDpUtility(object):
 
                         lp_category = loop.category
 
-                        lp_data = sf_data.get_loop_by_category(lp_category)
+                        _loop = sf_data.get_loop_by_category(lp_category)
 
-                        if entryIdTag in lp_data.tags:
+                        if entryIdTag in _loop.tags:
 
-                            itCol = lp_data.tags.index(entryIdTag)
+                            itCol = _loop.tags.index(entryIdTag)
 
-                            for row in lp_data.data:
+                            for row in _loop.data:
                                 row[itCol] = self.__entry_id
 
                         else:
 
-                            for row in lp_data.data:
+                            for row in _loop.data:
                                 row.append(self.__entry_id)
 
-                            lp_data.add_tag(entryIdTag)
+                            _loop.add_tag(entryIdTag)
 
         return True
 
@@ -19814,19 +19975,19 @@ class NmrDpUtility(object):
 
                 if sorted_id != list(range(l)):
 
-                    lp_data = sf_data.get_loop_by_category(lp_category)
+                    loop = sf_data.get_loop_by_category(lp_category)
 
-                    new_lp_data = pynmrstar.Loop.from_scratch(lp_category)
+                    new_loop = pynmrstar.Loop.from_scratch(lp_category)
 
-                    for tag in lp_data.tags:
-                        new_lp_data.add_tag(lp_category + '.' + tag)
+                    for tag in loop.tags:
+                        new_loop.add_tag(lp_category + '.' + tag)
 
                     for i in sorted_id:
-                        new_lp_data.add_data(lp_data[i])
+                        new_loop.add_data(loop[i])
 
-                    del sf_data[lp_data]
+                    del sf_data[loop]
 
-                    sf_data.add_loop(new_lp_data)
+                    sf_data.add_loop(new_loop)
 
         return True
 
@@ -19873,21 +20034,21 @@ class NmrDpUtility(object):
             if self.report.error.exists(file_name, sf_framecode):
                 continue
 
-            lp_data = sf_data.get_loop_by_category(lp_category)
+            loop = sf_data.get_loop_by_category(lp_category)
 
             ambig_set_id_name = 'Ambiguity_set_ID'
 
-            ambig_set_id_col = lp_data.tags.index(ambig_set_id_name)
+            ambig_set_id_col = loop.tags.index(ambig_set_id_name)
 
             ambig_set_id_dic = {}
 
-            if ambig_set_id_name in lp_data.tags:
+            if ambig_set_id_name in loop.tags:
 
                 ambig_set_ids = []
 
-                for i in lp_data:
+                for row in loop:
 
-                    ambig_set_id = i[ambig_set_id_col]
+                    ambig_set_id = row[ambig_set_id_col]
 
                     if not ambig_set_id in self.empty_value:
                         ambig_set_ids.append(str(ambig_set_id))
@@ -19910,14 +20071,14 @@ class NmrDpUtility(object):
 
             if disordered_ambig_set_id:
 
-                for i in lp_data:
-                    ambig_set_id = i[ambig_set_id_col]
+                for row in loop:
+                    ambig_set_id = row[ambig_set_id_col]
 
                     if not ambig_set_id in self.empty_value:
-                        i[ambig_set_id_col] = int(ambig_set_id_dic[str(ambig_set_id)])
+                        row[ambig_set_id_col] = int(ambig_set_id_dic[str(ambig_set_id)])
 
-            if 'ID' in lp_data.tags:
-                lp_data.renumber_rows('ID')
+            if 'ID' in loop.tags:
+                loop.renumber_rows('ID')
 
             else:
 
@@ -19933,19 +20094,19 @@ class NmrDpUtility(object):
                         if self.__verbose:
                             self.__lfh.write("+NmrDpUtility.__updateAtomChemShiftId() ++ LookupError  - %s" % err)
 
-                new_lp_data = pynmrstar.Loop.from_scratch(lp_category)
+                new_loop = pynmrstar.Loop.from_scratch(lp_category)
 
-                new_lp_data.add_tag(lp_tag)
+                new_loop.add_tag(lp_tag)
 
-                for tag in lp_data.tags:
-                    new_lp_data.add_tag(lp_category + '.' + tag)
+                for tag in loop.tags:
+                    new_loop.add_tag(lp_category + '.' + tag)
 
-                for l, i in enumerate(lp_data):
-                    new_lp_data.add_data([str(l + 1)] + i)
+                for l, i in enumerate(loop):
+                    new_loop.add_data([str(l + 1)] + i)
 
-                del sf_data[lp_data]
+                del sf_data[loop]
 
-                sf_data.add_loop(new_lp_data)
+                sf_data.add_loop(new_loop)
 
         return True
 
@@ -20024,19 +20185,19 @@ class NmrDpUtility(object):
 
                     aux_lp_cateogry = '_Ambiguous_atom_chem_shift'
 
-                    for aux_loop in sf_data.loops:
+                    for _loop in sf_data.loops:
 
-                        if aux_loop.category == aux_lp_cateogry:
-                            del sf_data[aux_loop]
+                        if _loop.category == aux_lp_cateogry:
+                            del sf_data[_loop]
                             break
 
-                    aux_lp_data = pynmrstar.Loop.from_scratch(aux_lp_cateogry)
-                    aux_lp_data.add_tag(aux_lp_cateogry + '.Ambiguous_shift_set_ID')
-                    aux_lp_data.add_tag(aux_lp_cateogry + '.Assigned_chem_shift_list_ID')
-                    aux_lp_data.add_tag(aux_lp_cateogry + '.Atom_chem_shift_ID')
+                    _loop = pynmrstar.Loop.from_scratch(aux_lp_cateogry)
+                    _loop.add_tag(aux_lp_cateogry + '.Ambiguous_shift_set_ID')
+                    _loop.add_tag(aux_lp_cateogry + '.Assigned_chem_shift_list_ID')
+                    _loop.add_tag(aux_lp_cateogry + '.Atom_chem_shift_ID')
 
                     if self.__insert_entry_id_to_loops:
-                        aux_lp_data.add_tag(aux_lp_cateogry + '.Entry_ID')
+                        _loop.add_tag(aux_lp_cateogry + '.Entry_ID')
 
                     for l, i in enumerate(lp_data):
 
@@ -20051,9 +20212,9 @@ class NmrDpUtility(object):
                             if self.__insert_entry_id_to_loops:
                                 row.append(self.__entry_id)
 
-                            aux_lp_data.add_data(row)
+                            _loop.add_data(row)
 
-                    sf_data.add_loop(aux_lp_data)
+                    sf_data.add_loop(_loop)
 
         return True
 

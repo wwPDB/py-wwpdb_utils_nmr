@@ -294,10 +294,7 @@ class NmrStarToCif(object):
 
                 return True
 
-        except StopIteration:
-            pass
-        """
         except Exception as e:
             self.__lfh.write('+ERROR- NmrStarToCif.convert() %s\n' % e)
-        """
+
         return False

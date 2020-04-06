@@ -4,6 +4,7 @@
 #
 # Updates:
 # 06-Apr-2020  M. Yokochi - add support for Original_pdb_* items in restraints/peak lists
+# 06-Apr-2020  M. Yokochi - add clean() for NMR legacy deposition (DAOTHER-2874)
 ##
 """ Wrapper class for NMR-STAR to CIF converter.
     @author: Masashi Yokochi
@@ -21,6 +22,8 @@ class NmrStarToCif(object):
 
         # whether to add _pdbx_nmr_assigned_chem_shift_list category (for backward compatibility)
         self.__add_cs_list_cif = False
+        # whether to remove _pdbx_nmr_assigned_chem_shift_list (DAOTHER-2874)
+        self.__remove_cs_list_cif = True
         # whether to add Original_pdb_* items in chemical shifts
         self.__add_original_pdb_in_chem_shift = True
         # whether to add Original_pdb_* items in distance restraints
@@ -31,8 +34,42 @@ class NmrStarToCif(object):
         # empty value
         self.empty_value = (None, '', '.', '?')
 
+    def clean(self, cifPath=None):
+        """Clean CIF formatted NMR data for NMR legacy deposition
+        """
+
+        if cifPath is None:
+            return False
+
+        try:
+
+            # post modification for converted CIF file
+
+            cifObj = mmCIFUtil(filePath=cifPath)
+
+            categories = cifObj.GetCategories()
+
+            cs_list_cif = 'pdbx_nmr_assigned_chem_shift_list'
+
+            # remove _pdbx_nmr_assigned_chem_shift_list for each _Assigned_chem_shift_list for backward compatibility
+            if self.__remove_cs_list_cif:
+
+                for k, v in categories.items():
+
+                    if cs_list_cif in v:
+                        cifObj.RemoveCategory(k, cs_list_cif)
+
+                cifObj.WriteCif(outputFilePath=cifPath)
+
+            return True
+
+        except Exception as e:
+            self.__lfh.write('+ERROR- NmrStarToCif.clean() %s\n' % e)
+
+        return False
+
     def convert(self, strPath=None, cifPath=None, originalFileName=None, fileType='nm-uni-nef'):
-        """ Convert NMR-STAR to CIF
+        """ Convert NMR-STAR to CIF for NMR unified deposition
         """
 
         if strPath is None or cifPath is None:
@@ -62,11 +99,11 @@ class NmrStarToCif(object):
 
                 categories = cifObj.GetCategories()
 
+                cs_list_str = 'Assigned_chem_shift_list'
+                cs_list_cif = 'pdbx_nmr_assigned_chem_shift_list'
+
                 # add _pdbx_nmr_assigned_chem_shift_list for each _Assigned_chem_shift_list for backward compatibility
                 if self.__add_cs_list_cif:
-
-                    cs_list_str = 'Assigned_chem_shift_list'
-                    cs_list_cif = 'pdbx_nmr_assigned_chem_shift_list'
 
                     for k, v in categories.items():
 

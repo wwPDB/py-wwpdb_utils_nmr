@@ -22,8 +22,11 @@ class TestNmrStarToCif(unittest.TestCase):
     def tearDown(self):
         pass
 
-    def test_convert(self):
+    def test_unified(self):
         self.nmrstar_to_cif.convert(strPath=self.data_dir_path + 'D_800269_nmr-data-str_P1.str.V1', cifPath=self.data_dir_path + 'D_800269_nmr-data-str_P1.cif.V1', originalFileName='2png.nef')
+
+    def test_legacy(self):
+        self.nmrstar_to_cif.clean(cifPath=self.data_dir_path + 'D_800262_cs-upload-convert_P1.cif.V8')
 
 if __name__ == '__main__':
     unittest.main()

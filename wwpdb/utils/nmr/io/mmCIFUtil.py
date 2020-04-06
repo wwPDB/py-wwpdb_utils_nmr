@@ -149,6 +149,19 @@ class mmCIFUtil:
         #
         self.__dataList[self.__dataMap[blockName]].append(category)
 
+    def RemoveCategory(self, blockName, catName):
+        """Remove Category in a given Data Block
+        """
+        if blockName not in self.__dataMap:
+            return
+
+        catObj = self.__dataList[self.__dataMap[blockName]].getObj(catName)
+
+        if catObj is None:
+            return
+
+        self.__dataList[self.__dataMap[blockName]].remove(catName)
+
     def InsertData(self, blockName, catName, dataList):
         """Insert data in a given Data Block and Category
         """

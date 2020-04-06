@@ -1,0 +1,925 @@
+data_D_1200009291_cs.str
+
+loop_
+_Atom_chem_shift.ID
+_Atom_chem_shift.Entity_assembly_ID
+_Atom_chem_shift.Entity_ID
+_Atom_chem_shift.Comp_index_ID
+_Atom_chem_shift.Seq_ID
+_Atom_chem_shift.Comp_ID
+_Atom_chem_shift.Atom_ID
+_Atom_chem_shift.Atom_type
+_Atom_chem_shift.Atom_isotope_number
+_Atom_chem_shift.Val
+_Atom_chem_shift.Val_err
+_Atom_chem_shift.Assign_fig_of_merit
+_Atom_chem_shift.Ambiguity_code
+_Atom_chem_shift.Occupancy
+_Atom_chem_shift.Resonance_ID
+_Atom_chem_shift.Auth_entity_assembly_ID
+_Atom_chem_shift.Auth_asym_ID
+_Atom_chem_shift.Auth_seq_ID
+_Atom_chem_shift.Auth_comp_ID
+_Atom_chem_shift.Auth_atom_ID
+_Atom_chem_shift.Original_PDB_strand_ID
+_Atom_chem_shift.Original_PDB_residue_no
+_Atom_chem_shift.Original_PDB_residue_name
+_Atom_chem_shift.Original_PDB_atom_name
+_Atom_chem_shift.Details
+_Atom_chem_shift.Entry_ID
+_Atom_chem_shift.Assigned_chem_shift_list_ID
+_Atom_chem_shift.Assembly_atom_ID
+_Atom_chem_shift.Ambiguity_set_ID
+  1  1  1   2   2  PRO  HA    H   1    4.475  0.002  ?  1  ?   319  .  A   2  PRO  HA    A   2  PRO  HA    .  6G8O  1  ?  ?  
+  2  1  1   2   2  PRO  HB2   H   1    2.058      ?  ?  2  ?   326  .  A   2  PRO  HB2   A   2  PRO  1HB   .  6G8O  1  ?  ?  
+  3  1  1   2   2  PRO  HB3   H   1    1.859      ?  ?  2  ?   327  .  A   2  PRO  HB3   A   2  PRO  2HB   .  6G8O  1  ?  ?  
+  4  1  1   2   2  PRO  HG2   H   1    1.826      ?  ?  2  ?   324  .  A   2  PRO  HG2   A   2  PRO  1HG   .  6G8O  1  ?  ?  
+  5  1  1   2   2  PRO  HG3   H   1    1.938      ?  ?  2  ?   325  .  A   2  PRO  HG3   A   2  PRO  2HG   .  6G8O  1  ?  ?  
+  6  1  1   2   2  PRO  HD2   H   1    3.424  0.003  ?  1  ?   321  .  A   2  PRO  HD2   A   2  PRO  1HD   .  6G8O  1  ?  ?  
+  7  1  1   2   2  PRO  HD3   H   1    3.424  0.003  ?  1  ?   320  .  A   2  PRO  HD3   A   2  PRO  2HD   .  6G8O  1  ?  ?  
+  8  1  1   2   2  PRO  C     C  13  176.528      ?  ?  1  ?   315  .  A   2  PRO  C     A   2  PRO  C     .  6G8O  1  ?  ?  
+  9  1  1   2   2  PRO  CA    C  13   62.831      ?  ?  1  ?   314  .  A   2  PRO  CA    A   2  PRO  CA    .  6G8O  1  ?  ?  
+ 10  1  1   2   2  PRO  CB    C  13   31.994  0.008  ?  1  ?   316  .  A   2  PRO  CB    A   2  PRO  CB    .  6G8O  1  ?  ?  
+ 11  1  1   2   2  PRO  CG    C  13   27.209   0.02  ?  1  ?   318  .  A   2  PRO  CG    A   2  PRO  CG    .  6G8O  1  ?  ?  
+ 12  1  1   2   2  PRO  CD    C  13   49.065      ?  ?  1  ?   317  .  A   2  PRO  CD    A   2  PRO  CD    .  6G8O  1  ?  ?  
+ 13  1  1   3   3  LYS  H     H   1    8.942  0.001  ?  1  ?   118  .  A   3  LYS  H     A   3  LYS  H     .  6G8O  1  ?  ?  
+ 14  1  1   3   3  LYS  HA    H   1    4.491      ?  ?  1  ?   328  .  A   3  LYS  HA    A   3  LYS  HA    .  6G8O  1  ?  ?  
+ 15  1  1   3   3  LYS  HB2   H   1    1.907      ?  ?  2  ?   335  .  A   3  LYS  HB2   A   3  LYS  1HB   .  6G8O  1  ?  ?  
+ 16  1  1   3   3  LYS  HB3   H   1    2.009      ?  ?  2  ?   336  .  A   3  LYS  HB3   A   3  LYS  2HB   .  6G8O  1  ?  ?  
+ 17  1  1   3   3  LYS  HG2   H   1    1.556      ?  ?  2  ?   339  .  A   3  LYS  HG2   A   3  LYS  1HG   .  6G8O  1  ?  ?  
+ 18  1  1   3   3  LYS  HG3   H   1    1.617      ?  ?  2  ?   340  .  A   3  LYS  HG3   A   3  LYS  2HG   .  6G8O  1  ?  ?  
+ 19  1  1   3   3  LYS  HD2   H   1    1.696      ?  ?  1  ?   338  .  A   3  LYS  HD2   A   3  LYS  1HD   .  6G8O  1  ?  ?  
+ 20  1  1   3   3  LYS  HD3   H   1    1.696      ?  ?  1  ?   337  .  A   3  LYS  HD3   A   3  LYS  2HD   .  6G8O  1  ?  ?  
+ 21  1  1   3   3  LYS  HE2   H   1    3.044      ?  ?  1  ?   331  .  A   3  LYS  HE2   A   3  LYS  1HE   .  6G8O  1  ?  ?  
+ 22  1  1   3   3  LYS  HE3   H   1    3.044      ?  ?  1  ?   330  .  A   3  LYS  HE3   A   3  LYS  2HE   .  6G8O  1  ?  ?  
+ 23  1  1   3   3  LYS  C     C  13  176.910      ?  ?  1  ?   313  .  A   3  LYS  C     A   3  LYS  C     .  6G8O  1  ?  ?  
+ 24  1  1   3   3  LYS  CA    C  13   56.551      ?  ?  1  ?   311  .  A   3  LYS  CA    A   3  LYS  CA    .  6G8O  1  ?  ?  
+ 25  1  1   3   3  LYS  CB    C  13   34.119  0.001  ?  1  ?   312  .  A   3  LYS  CB    A   3  LYS  CB    .  6G8O  1  ?  ?  
+ 26  1  1   3   3  LYS  CG    C  13   24.971  0.004  ?  1  ?   334  .  A   3  LYS  CG    A   3  LYS  CG    .  6G8O  1  ?  ?  
+ 27  1  1   3   3  LYS  CD    C  13   28.669      ?  ?  1  ?   333  .  A   3  LYS  CD    A   3  LYS  CD    .  6G8O  1  ?  ?  
+ 28  1  1   3   3  LYS  CE    C  13   42.295      ?  ?  1  ?   332  .  A   3  LYS  CE    A   3  LYS  CE    .  6G8O  1  ?  ?  
+ 29  1  1   3   3  LYS  N     N  15  120.338  0.006  ?  1  ?   119  .  A   3  LYS  N     A   3  LYS  N     .  6G8O  1  ?  ?  
+ 30  1  1   4   4  THR  H     H   1    7.418  0.002  ?  1  ?   121  .  A   4  THR  H     A   4  THR  H     .  6G8O  1  ?  ?  
+ 31  1  1   4   4  THR  HA    H   1    4.733      ?  ?  1  ?   346  .  A   4  THR  HA    A   4  THR  HA    .  6G8O  1  ?  ?  
+ 32  1  1   4   4  THR  HB    H   1    4.636      ?  ?  1  ?   345  .  A   4  THR  HB    A   4  THR  HB    .  6G8O  1  ?  ?  
+ 33  1  1   4   4  THR  HG21  H   1    1.267      ?  ?  1  ?   347  .  A   4  THR  HG21  A   4  THR  1HG2  .  6G8O  1  ?  ?  
+ 34  1  1   4   4  THR  HG22  H   1    1.267      ?  ?  1  ?   347  .  A   4  THR  HG22  A   4  THR  2HG2  .  6G8O  1  ?  ?  
+ 35  1  1   4   4  THR  HG23  H   1    1.267      ?  ?  1  ?   347  .  A   4  THR  HG23  A   4  THR  3HG2  .  6G8O  1  ?  ?  
+ 36  1  1   4   4  THR  C     C  13  174.398      ?  ?  1  ?   343  .  A   4  THR  C     A   4  THR  C     .  6G8O  1  ?  ?  
+ 37  1  1   4   4  THR  CA    C  13   58.961      ?  ?  1  ?   310  .  A   4  THR  CA    A   4  THR  CA    .  6G8O  1  ?  ?  
+ 38  1  1   4   4  THR  CB    C  13   72.926      ?  ?  1  ?   309  .  A   4  THR  CB    A   4  THR  CB    .  6G8O  1  ?  ?  
+ 39  1  1   4   4  THR  CG2   C  13   21.814      ?  ?  1  ?   344  .  A   4  THR  CG2   A   4  THR  CG2   .  6G8O  1  ?  ?  
+ 40  1  1   4   4  THR  N     N  15  107.285    0.0  ?  1  ?   122  .  A   4  THR  N     A   4  THR  N     .  6G8O  1  ?  ?  
+ 41  1  1   5   5  LEU  H     H   1    8.897  0.001  ?  1  ?    19  .  A   5  LEU  H     A   5  LEU  H     .  6G8O  1  ?  ?  
+ 42  1  1   5   5  LEU  HA    H   1    3.833      ?  ?  1  ?   353  .  A   5  LEU  HA    A   5  LEU  HA    .  6G8O  1  ?  ?  
+ 43  1  1   5   5  LEU  HB2   H   1    1.107      ?  ?  2  ?   354  .  A   5  LEU  HB2   A   5  LEU  1HB   .  6G8O  1  ?  ?  
+ 44  1  1   5   5  LEU  HB3   H   1    1.675      ?  ?  2  ?   355  .  A   5  LEU  HB3   A   5  LEU  2HB   .  6G8O  1  ?  ?  
+ 45  1  1   5   5  LEU  HG    H   1    1.324      ?  ?  1  ?   356  .  A   5  LEU  HG    A   5  LEU  HG    .  6G8O  1  ?  ?  
+ 46  1  1   5   5  LEU  HD11  H   1    0.762  0.001  ?  2  ?   357  .  A   5  LEU  HD11  A   5  LEU  1HD1  .  6G8O  1  ?  ?  
+ 47  1  1   5   5  LEU  HD12  H   1    0.762  0.001  ?  2  ?   357  .  A   5  LEU  HD12  A   5  LEU  2HD1  .  6G8O  1  ?  ?  
+ 48  1  1   5   5  LEU  HD13  H   1    0.762  0.001  ?  2  ?   357  .  A   5  LEU  HD13  A   5  LEU  3HD1  .  6G8O  1  ?  ?  
+ 49  1  1   5   5  LEU  HD21  H   1    0.474  0.002  ?  2  ?   358  .  A   5  LEU  HD21  A   5  LEU  1HD2  .  6G8O  1  ?  ?  
+ 50  1  1   5   5  LEU  HD22  H   1    0.474  0.002  ?  2  ?   358  .  A   5  LEU  HD22  A   5  LEU  2HD2  .  6G8O  1  ?  ?  
+ 51  1  1   5   5  LEU  HD23  H   1    0.474  0.002  ?  2  ?   358  .  A   5  LEU  HD23  A   5  LEU  3HD2  .  6G8O  1  ?  ?  
+ 52  1  1   5   5  LEU  C     C  13  177.932      ?  ?  1  ?   479  .  A   5  LEU  C     A   5  LEU  C     .  6G8O  1  ?  ?  
+ 53  1  1   5   5  LEU  CA    C  13   57.951      ?  ?  1  ?   341  .  A   5  LEU  CA    A   5  LEU  CA    .  6G8O  1  ?  ?  
+ 54  1  1   5   5  LEU  CB    C  13   41.897  0.003  ?  1  ?   342  .  A   5  LEU  CB    A   5  LEU  CB    .  6G8O  1  ?  ?  
+ 55  1  1   5   5  LEU  CG    C  13   27.071      ?  ?  1  ?   350  .  A   5  LEU  CG    A   5  LEU  CG    .  6G8O  1  ?  ?  
+ 56  1  1   5   5  LEU  CD1   C  13   25.840      ?  ?  2  ?   352  .  A   5  LEU  CD1   A   5  LEU  CD1   .  6G8O  1  ?  ?  
+ 57  1  1   5   5  LEU  CD2   C  13   23.996      ?  ?  2  ?   351  .  A   5  LEU  CD2   A   5  LEU  CD2   .  6G8O  1  ?  ?  
+ 58  1  1   5   5  LEU  N     N  15  122.546  0.013  ?  1  ?    20  .  A   5  LEU  N     A   5  LEU  N     .  6G8O  1  ?  ?  
+ 59  1  1   6   6  HIS  H     H   1    8.687    0.0  ?  1  ?    39  .  A   6  HIS  H     A   6  HIS  H     .  6G8O  1  ?  ?  
+ 60  1  1   6   6  HIS  HA    H   1    4.016      ?  ?  1  ?   363  .  A   6  HIS  HA    A   6  HIS  HA    .  6G8O  1  ?  ?  
+ 61  1  1   6   6  HIS  HB2   H   1    3.097    0.0  ?  2  ?   359  .  A   6  HIS  HB2   A   6  HIS  1HB   .  6G8O  1  ?  ?  
+ 62  1  1   6   6  HIS  HB3   H   1    3.183  0.007  ?  2  ?   364  .  A   6  HIS  HB3   A   6  HIS  2HB   .  6G8O  1  ?  ?  
+ 63  1  1   6   6  HIS  HD2   H   1    7.255  0.001  ?  1  ?   695  .  A   6  HIS  HD2   A   6  HIS  HD2   .  6G8O  1  ?  ?  
+ 64  1  1   6   6  HIS  HE1   H   1    8.118  0.008  ?  1  ?   761  .  A   6  HIS  HE1   A   6  HIS  HE1   .  6G8O  1  ?  ?  
+ 65  1  1   6   6  HIS  C     C  13  176.958      ?  ?  1  ?   362  .  A   6  HIS  C     A   6  HIS  C     .  6G8O  1  ?  ?  
+ 66  1  1   6   6  HIS  CA    C  13   60.180      ?  ?  1  ?   348  .  A   6  HIS  CA    A   6  HIS  CA    .  6G8O  1  ?  ?  
+ 67  1  1   6   6  HIS  CB    C  13   29.183  0.002  ?  1  ?   349  .  A   6  HIS  CB    A   6  HIS  CB    .  6G8O  1  ?  ?  
+ 68  1  1   6   6  HIS  CD2   C  13  119.843  0.144  ?  1  ?   760  .  A   6  HIS  CD2   A   6  HIS  CD2   .  6G8O  1  ?  ?  
+ 69  1  1   6   6  HIS  CE1   C  13  137.691  0.012  ?  1  ?   762  .  A   6  HIS  CE1   A   6  HIS  CE1   .  6G8O  1  ?  ?  
+ 70  1  1   6   6  HIS  N     N  15  116.303  0.006  ?  1  ?    40  .  A   6  HIS  N     A   6  HIS  N     .  6G8O  1  ?  ?  
+ 71  1  1   7   7  GLU  H     H   1    7.597  0.001  ?  1  ?    35  .  A   7  GLU  H     A   7  GLU  H     .  6G8O  1  ?  ?  
+ 72  1  1   7   7  GLU  HA    H   1    3.962      ?  ?  1  ?   365  .  A   7  GLU  HA    A   7  GLU  HA    .  6G8O  1  ?  ?  
+ 73  1  1   7   7  GLU  HB2   H   1    2.046      ?  ?  1  ?   369  .  A   7  GLU  HB2   A   7  GLU  1HB   .  6G8O  1  ?  ?  
+ 74  1  1   7   7  GLU  HB3   H   1    2.046      ?  ?  1  ?   371  .  A   7  GLU  HB3   A   7  GLU  2HB   .  6G8O  1  ?  ?  
+ 75  1  1   7   7  GLU  HG2   H   1    2.323      ?  ?  2  ?   370  .  A   7  GLU  HG2   A   7  GLU  1HG   .  6G8O  1  ?  ?  
+ 76  1  1   7   7  GLU  HG3   H   1    2.199      ?  ?  2  ?   372  .  A   7  GLU  HG3   A   7  GLU  2HG   .  6G8O  1  ?  ?  
+ 77  1  1   7   7  GLU  C     C  13  178.808      ?  ?  1  ?   480  .  A   7  GLU  C     A   7  GLU  C     .  6G8O  1  ?  ?  
+ 78  1  1   7   7  GLU  CA    C  13   59.035      ?  ?  1  ?   360  .  A   7  GLU  CA    A   7  GLU  CA    .  6G8O  1  ?  ?  
+ 79  1  1   7   7  GLU  CB    C  13   30.507      ?  ?  1  ?   361  .  A   7  GLU  CB    A   7  GLU  CB    .  6G8O  1  ?  ?  
+ 80  1  1   7   7  GLU  CG    C  13   36.868  0.009  ?  1  ?   368  .  A   7  GLU  CG    A   7  GLU  CG    .  6G8O  1  ?  ?  
+ 81  1  1   7   7  GLU  N     N  15  117.887  0.009  ?  1  ?    36  .  A   7  GLU  N     A   7  GLU  N     .  6G8O  1  ?  ?  
+ 82  1  1   8   8  LEU  H     H   1    7.606    0.0  ?  1  ?    61  .  A   8  LEU  H     A   8  LEU  H     .  6G8O  1  ?  ?  
+ 83  1  1   8   8  LEU  HA    H   1    3.810      ?  ?  1  ?   373  .  A   8  LEU  HA    A   8  LEU  HA    .  6G8O  1  ?  ?  
+ 84  1  1   8   8  LEU  HB2   H   1    1.792      ?  ?  2  ?   382  .  A   8  LEU  HB2   A   8  LEU  1HB   .  6G8O  1  ?  ?  
+ 85  1  1   8   8  LEU  HB3   H   1    1.297      ?  ?  2  ?   383  .  A   8  LEU  HB3   A   8  LEU  2HB   .  6G8O  1  ?  ?  
+ 86  1  1   8   8  LEU  HG    H   1    1.220      ?  ?  1  ?   381  .  A   8  LEU  HG    A   8  LEU  HG    .  6G8O  1  ?  ?  
+ 87  1  1   8   8  LEU  HD11  H   1    0.296  0.004  ?  2  ?   377  .  A   8  LEU  HD11  A   8  LEU  1HD1  .  6G8O  1  ?  ?  
+ 88  1  1   8   8  LEU  HD12  H   1    0.296  0.004  ?  2  ?   377  .  A   8  LEU  HD12  A   8  LEU  2HD1  .  6G8O  1  ?  ?  
+ 89  1  1   8   8  LEU  HD13  H   1    0.296  0.004  ?  2  ?   377  .  A   8  LEU  HD13  A   8  LEU  3HD1  .  6G8O  1  ?  ?  
+ 90  1  1   8   8  LEU  HD21  H   1    0.704  0.001  ?  2  ?   378  .  A   8  LEU  HD21  A   8  LEU  1HD2  .  6G8O  1  ?  ?  
+ 91  1  1   8   8  LEU  HD22  H   1    0.704  0.001  ?  2  ?   378  .  A   8  LEU  HD22  A   8  LEU  2HD2  .  6G8O  1  ?  ?  
+ 92  1  1   8   8  LEU  HD23  H   1    0.704  0.001  ?  2  ?   378  .  A   8  LEU  HD23  A   8  LEU  3HD2  .  6G8O  1  ?  ?  
+ 93  1  1   8   8  LEU  C     C  13  177.542      ?  ?  1  ?   376  .  A   8  LEU  C     A   8  LEU  C     .  6G8O  1  ?  ?  
+ 94  1  1   8   8  LEU  CA    C  13   58.515      ?  ?  1  ?   366  .  A   8  LEU  CA    A   8  LEU  CA    .  6G8O  1  ?  ?  
+ 95  1  1   8   8  LEU  CB    C  13   41.499  0.014  ?  1  ?   367  .  A   8  LEU  CB    A   8  LEU  CB    .  6G8O  1  ?  ?  
+ 96  1  1   8   8  LEU  CG    C  13   27.408      ?  ?  1  ?   380  .  A   8  LEU  CG    A   8  LEU  CG    .  6G8O  1  ?  ?  
+ 97  1  1   8   8  LEU  CD1   C  13   25.565      ?  ?  2  ?   709  .  A   8  LEU  CD1   A   8  LEU  CD1   .  6G8O  1  ?  ?  
+ 98  1  1   8   8  LEU  CD2   C  13   24.623      ?  ?  2  ?   710  .  A   8  LEU  CD2   A   8  LEU  CD2   .  6G8O  1  ?  ?  
+ 99  1  1   8   8  LEU  N     N  15  120.538  0.005  ?  1  ?    62  .  A   8  LEU  N     A   8  LEU  N     .  6G8O  1  ?  ?  
+100  1  1   9   9  LEU  H     H   1    8.049  0.001  ?  1  ?    59  .  A   9  LEU  H     A   9  LEU  H     .  6G8O  1  ?  ?  
+101  1  1   9   9  LEU  HA    H   1    3.675      ?  ?  1  ?   385  .  A   9  LEU  HA    A   9  LEU  HA    .  6G8O  1  ?  ?  
+102  1  1   9   9  LEU  HB2   H   1    0.851      ?  ?  2  ?   389  .  A   9  LEU  HB2   A   9  LEU  1HB   .  6G8O  1  ?  ?  
+103  1  1   9   9  LEU  HB3   H   1    1.639      ?  ?  2  ?   390  .  A   9  LEU  HB3   A   9  LEU  2HB   .  6G8O  1  ?  ?  
+104  1  1   9   9  LEU  HG    H   1    1.552      ?  ?  1  ?  1565  .  A   9  LEU  HG    A   9  LEU  HG    .  6G8O  1  ?  ?  
+105  1  1   9   9  LEU  HD11  H   1    0.477  0.001  ?  2  ?   393  .  A   9  LEU  HD11  A   9  LEU  1HD1  .  6G8O  1  ?  ?  
+106  1  1   9   9  LEU  HD12  H   1    0.477  0.001  ?  2  ?   393  .  A   9  LEU  HD12  A   9  LEU  2HD1  .  6G8O  1  ?  ?  
+107  1  1   9   9  LEU  HD13  H   1    0.477  0.001  ?  2  ?   393  .  A   9  LEU  HD13  A   9  LEU  3HD1  .  6G8O  1  ?  ?  
+108  1  1   9   9  LEU  HD21  H   1    0.707      ?  ?  2  ?   394  .  A   9  LEU  HD21  A   9  LEU  1HD2  .  6G8O  1  ?  ?  
+109  1  1   9   9  LEU  HD22  H   1    0.707      ?  ?  2  ?   394  .  A   9  LEU  HD22  A   9  LEU  2HD2  .  6G8O  1  ?  ?  
+110  1  1   9   9  LEU  HD23  H   1    0.707      ?  ?  2  ?   394  .  A   9  LEU  HD23  A   9  LEU  3HD2  .  6G8O  1  ?  ?  
+111  1  1   9   9  LEU  C     C  13  179.422      ?  ?  1  ?   388  .  A   9  LEU  C     A   9  LEU  C     .  6G8O  1  ?  ?  
+112  1  1   9   9  LEU  CA    C  13   57.668      ?  ?  1  ?   374  .  A   9  LEU  CA    A   9  LEU  CA    .  6G8O  1  ?  ?  
+113  1  1   9   9  LEU  CB    C  13   40.055  0.004  ?  1  ?   375  .  A   9  LEU  CB    A   9  LEU  CB    .  6G8O  1  ?  ?  
+114  1  1   9   9  LEU  CG    C  13   27.009      ?  ?  1  ?  1567  .  A   9  LEU  CG    A   9  LEU  CG    .  6G8O  1  ?  ?  
+115  1  1   9   9  LEU  CD1   C  13   21.919      ?  ?  2  ?   391  .  A   9  LEU  CD1   A   9  LEU  CD1   .  6G8O  1  ?  ?  
+116  1  1   9   9  LEU  CD2   C  13   26.398      ?  ?  2  ?   392  .  A   9  LEU  CD2   A   9  LEU  CD2   .  6G8O  1  ?  ?  
+117  1  1   9   9  LEU  N     N  15  115.792  0.015  ?  1  ?    60  .  A   9  LEU  N     A   9  LEU  N     .  6G8O  1  ?  ?  
+118  1  1  10  10  GLU  H     H   1    8.092  0.002  ?  1  ?   108  .  A  10  GLU  H     A  10  GLU  H     .  6G8O  1  ?  ?  
+119  1  1  10  10  GLU  HA    H   1    4.020      ?  ?  1  ?   398  .  A  10  GLU  HA    A  10  GLU  HA    .  6G8O  1  ?  ?  
+120  1  1  10  10  GLU  HB2   H   1    1.976      ?  ?  1  ?   399  .  A  10  GLU  HB2   A  10  GLU  1HB   .  6G8O  1  ?  ?  
+121  1  1  10  10  GLU  HB3   H   1    1.976      ?  ?  1  ?   400  .  A  10  GLU  HB3   A  10  GLU  2HB   .  6G8O  1  ?  ?  
+122  1  1  10  10  GLU  HG2   H   1    2.117      ?  ?  2  ?   401  .  A  10  GLU  HG2   A  10  GLU  1HG   .  6G8O  1  ?  ?  
+123  1  1  10  10  GLU  HG3   H   1    2.239      ?  ?  2  ?   402  .  A  10  GLU  HG3   A  10  GLU  2HG   .  6G8O  1  ?  ?  
+124  1  1  10  10  GLU  C     C  13  179.999      ?  ?  1  ?   396  .  A  10  GLU  C     A  10  GLU  C     .  6G8O  1  ?  ?  
+125  1  1  10  10  GLU  CA    C  13   59.340      ?  ?  1  ?   386  .  A  10  GLU  CA    A  10  GLU  CA    .  6G8O  1  ?  ?  
+126  1  1  10  10  GLU  CB    C  13   29.588      ?  ?  1  ?   387  .  A  10  GLU  CB    A  10  GLU  CB    .  6G8O  1  ?  ?  
+127  1  1  10  10  GLU  CG    C  13   36.339  0.007  ?  1  ?   397  .  A  10  GLU  CG    A  10  GLU  CG    .  6G8O  1  ?  ?  
+128  1  1  10  10  GLU  N     N  15  118.645  0.018  ?  1  ?   109  .  A  10  GLU  N     A  10  GLU  N     .  6G8O  1  ?  ?  
+129  1  1  11  11  ARG  H     H   1    7.924  0.002  ?  1  ?    29  .  A  11  ARG  H     A  11  ARG  H     .  6G8O  1  ?  ?  
+130  1  1  11  11  ARG  HA    H   1    4.071      ?  ?  1  ?   403  .  A  11  ARG  HA    A  11  ARG  HA    .  6G8O  1  ?  ?  
+131  1  1  11  11  ARG  HB2   H   1    2.049      ?  ?  1  ?   414  .  A  11  ARG  HB2   A  11  ARG  1HB   .  6G8O  1  ?  ?  
+132  1  1  11  11  ARG  HB3   H   1    2.049      ?  ?  1  ?   415  .  A  11  ARG  HB3   A  11  ARG  2HB   .  6G8O  1  ?  ?  
+133  1  1  11  11  ARG  HG2   H   1    1.714      ?  ?  2  ?   412  .  A  11  ARG  HG2   A  11  ARG  1HG   .  6G8O  1  ?  ?  
+134  1  1  11  11  ARG  HG3   H   1    1.770      ?  ?  2  ?   413  .  A  11  ARG  HG3   A  11  ARG  2HG   .  6G8O  1  ?  ?  
+135  1  1  11  11  ARG  HD2   H   1    3.226      ?  ?  2  ?   410  .  A  11  ARG  HD2   A  11  ARG  1HD   .  6G8O  1  ?  ?  
+136  1  1  11  11  ARG  HD3   H   1    3.139      ?  ?  2  ?   411  .  A  11  ARG  HD3   A  11  ARG  2HD   .  6G8O  1  ?  ?  
+137  1  1  11  11  ARG  C     C  13  178.060      ?  ?  1  ?   407  .  A  11  ARG  C     A  11  ARG  C     .  6G8O  1  ?  ?  
+138  1  1  11  11  ARG  CA    C  13   58.395      ?  ?  1  ?   395  .  A  11  ARG  CA    A  11  ARG  CA    .  6G8O  1  ?  ?  
+139  1  1  11  11  ARG  CB    C  13   29.670      ?  ?  1  ?   406  .  A  11  ARG  CB    A  11  ARG  CB    .  6G8O  1  ?  ?  
+140  1  1  11  11  ARG  CG    C  13   26.837  0.009  ?  1  ?   409  .  A  11  ARG  CG    A  11  ARG  CG    .  6G8O  1  ?  ?  
+141  1  1  11  11  ARG  CD    C  13   42.849  0.012  ?  1  ?   408  .  A  11  ARG  CD    A  11  ARG  CD    .  6G8O  1  ?  ?  
+142  1  1  11  11  ARG  N     N  15  120.110  0.013  ?  1  ?    30  .  A  11  ARG  N     A  11  ARG  N     .  6G8O  1  ?  ?  
+143  1  1  12  12  ILE  H     H   1    7.291  0.002  ?  1  ?    65  .  A  12  ILE  H     A  12  ILE  H     .  6G8O  1  ?  ?  
+144  1  1  12  12  ILE  HA    H   1    4.676      ?  ?  1  ?   416  .  A  12  ILE  HA    A  12  ILE  HA    .  6G8O  1  ?  ?  
+145  1  1  12  12  ILE  HB    H   1    2.271      ?  ?  1  ?   421  .  A  12  ILE  HB    A  12  ILE  HB    .  6G8O  1  ?  ?  
+146  1  1  12  12  ILE  HG12  H   1    1.165      ?  ?  2  ?   422  .  A  12  ILE  HG12  A  12  ILE  1HG1  .  6G8O  1  ?  ?  
+147  1  1  12  12  ILE  HG13  H   1    1.630      ?  ?  2  ?   423  .  A  12  ILE  HG13  A  12  ILE  2HG1  .  6G8O  1  ?  ?  
+148  1  1  12  12  ILE  HG21  H   1    0.893      ?  ?  1  ?   424  .  A  12  ILE  HG21  A  12  ILE  1HG2  .  6G8O  1  ?  ?  
+149  1  1  12  12  ILE  HG22  H   1    0.893      ?  ?  1  ?   424  .  A  12  ILE  HG22  A  12  ILE  2HG2  .  6G8O  1  ?  ?  
+150  1  1  12  12  ILE  HG23  H   1    0.893      ?  ?  1  ?   424  .  A  12  ILE  HG23  A  12  ILE  3HG2  .  6G8O  1  ?  ?  
+151  1  1  12  12  ILE  HD11  H   1    0.663      ?  ?  1  ?   425  .  A  12  ILE  HD11  A  12  ILE  1HD1  .  6G8O  1  ?  ?  
+152  1  1  12  12  ILE  HD12  H   1    0.663      ?  ?  1  ?   425  .  A  12  ILE  HD12  A  12  ILE  2HD1  .  6G8O  1  ?  ?  
+153  1  1  12  12  ILE  HD13  H   1    0.663      ?  ?  1  ?   425  .  A  12  ILE  HD13  A  12  ILE  3HD1  .  6G8O  1  ?  ?  
+154  1  1  12  12  ILE  C     C  13  175.365      ?  ?  1  ?   426  .  A  12  ILE  C     A  12  ILE  C     .  6G8O  1  ?  ?  
+155  1  1  12  12  ILE  CA    C  13   60.504      ?  ?  1  ?   404  .  A  12  ILE  CA    A  12  ILE  CA    .  6G8O  1  ?  ?  
+156  1  1  12  12  ILE  CB    C  13   37.794      ?  ?  1  ?   405  .  A  12  ILE  CB    A  12  ILE  CB    .  6G8O  1  ?  ?  
+157  1  1  12  12  ILE  CG1   C  13   24.938  0.003  ?  1  ?   418  .  A  12  ILE  CG1   A  12  ILE  CG1   .  6G8O  1  ?  ?  
+158  1  1  12  12  ILE  CG2   C  13   17.209      ?  ?  1  ?   419  .  A  12  ILE  CG2   A  12  ILE  CG2   .  6G8O  1  ?  ?  
+159  1  1  12  12  ILE  CD1   C  13   14.304      ?  ?  1  ?   420  .  A  12  ILE  CD1   A  12  ILE  CD1   .  6G8O  1  ?  ?  
+160  1  1  12  12  ILE  N     N  15  106.835  0.006  ?  1  ?    66  .  A  12  ILE  N     A  12  ILE  N     .  6G8O  1  ?  ?  
+161  1  1  13  13  GLY  H     H   1    7.544    0.0  ?  1  ?    25  .  A  13  GLY  H     A  13  GLY  H     .  6G8O  1  ?  ?  
+162  1  1  13  13  GLY  HA2   H   1    4.098      ?  ?  2  ?   427  .  A  13  GLY  HA2   A  13  GLY  1HA   .  6G8O  1  ?  ?  
+163  1  1  13  13  GLY  HA3   H   1    3.961      ?  ?  2  ?   428  .  A  13  GLY  HA3   A  13  GLY  2HA   .  6G8O  1  ?  ?  
+164  1  1  13  13  GLY  C     C  13  175.953      ?  ?  1  ?   431  .  A  13  GLY  C     A  13  GLY  C     .  6G8O  1  ?  ?  
+165  1  1  13  13  GLY  CA    C  13   47.042  0.001  ?  1  ?   417  .  A  13  GLY  CA    A  13  GLY  CA    .  6G8O  1  ?  ?  
+166  1  1  13  13  GLY  N     N  15  110.193  0.008  ?  1  ?    26  .  A  13  GLY  N     A  13  GLY  N     .  6G8O  1  ?  ?  
+167  1  1  14  14  LEU  H     H   1    8.301    0.0  ?  1  ?   114  .  A  14  LEU  H     A  14  LEU  H     .  6G8O  1  ?  ?  
+168  1  1  14  14  LEU  HA    H   1    4.751      ?  ?  1  ?   432  .  A  14  LEU  HA    A  14  LEU  HA    .  6G8O  1  ?  ?  
+169  1  1  14  14  LEU  HB2   H   1    1.232  0.002  ?  2  ?   436  .  A  14  LEU  HB2   A  14  LEU  1HB   .  6G8O  1  ?  ?  
+170  1  1  14  14  LEU  HB3   H   1    1.885  0.003  ?  2  ?   437  .  A  14  LEU  HB3   A  14  LEU  2HB   .  6G8O  1  ?  ?  
+171  1  1  14  14  LEU  HG    H   1    1.435  0.004  ?  1  ?   442  .  A  14  LEU  HG    A  14  LEU  HG    .  6G8O  1  ?  ?  
+172  1  1  14  14  LEU  HD11  H   1    0.378   0.01  ?  2  ?   438  .  A  14  LEU  HD11  A  14  LEU  1HD1  .  6G8O  1  ?  ?  
+173  1  1  14  14  LEU  HD12  H   1    0.378   0.01  ?  2  ?   438  .  A  14  LEU  HD12  A  14  LEU  2HD1  .  6G8O  1  ?  ?  
+174  1  1  14  14  LEU  HD13  H   1    0.378   0.01  ?  2  ?   438  .  A  14  LEU  HD13  A  14  LEU  3HD1  .  6G8O  1  ?  ?  
+175  1  1  14  14  LEU  HD21  H   1    0.839  0.006  ?  2  ?   441  .  A  14  LEU  HD21  A  14  LEU  1HD2  .  6G8O  1  ?  ?  
+176  1  1  14  14  LEU  HD22  H   1    0.839  0.006  ?  2  ?   441  .  A  14  LEU  HD22  A  14  LEU  2HD2  .  6G8O  1  ?  ?  
+177  1  1  14  14  LEU  HD23  H   1    0.839  0.006  ?  2  ?   441  .  A  14  LEU  HD23  A  14  LEU  3HD2  .  6G8O  1  ?  ?  
+178  1  1  14  14  LEU  C     C  13  176.262      ?  ?  1  ?   435  .  A  14  LEU  C     A  14  LEU  C     .  6G8O  1  ?  ?  
+179  1  1  14  14  LEU  CA    C  13   52.964      ?  ?  1  ?   429  .  A  14  LEU  CA    A  14  LEU  CA    .  6G8O  1  ?  ?  
+180  1  1  14  14  LEU  CB    C  13   42.672  0.006  ?  1  ?   430  .  A  14  LEU  CB    A  14  LEU  CB    .  6G8O  1  ?  ?  
+181  1  1  14  14  LEU  CG    C  13   25.623      ?  ?  1  ?   444  .  A  14  LEU  CG    A  14  LEU  CG    .  6G8O  1  ?  ?  
+182  1  1  14  14  LEU  CD1   C  13   22.044      ?  ?  2  ?   440  .  A  14  LEU  CD1   A  14  LEU  CD1   .  6G8O  1  ?  ?  
+183  1  1  14  14  LEU  CD2   C  13   27.954      ?  ?  2  ?   443  .  A  14  LEU  CD2   A  14  LEU  CD2   .  6G8O  1  ?  ?  
+184  1  1  14  14  LEU  N     N  15  119.598  0.001  ?  1  ?   115  .  A  14  LEU  N     A  14  LEU  N     .  6G8O  1  ?  ?  
+185  1  1  15  15  GLU  H     H   1    9.316  0.007  ?  1  ?    57  .  A  15  GLU  H     A  15  GLU  H     .  6G8O  1  ?  ?  
+186  1  1  15  15  GLU  HA    H   1    3.815      ?  ?  1  ?   449  .  A  15  GLU  HA    A  15  GLU  HA    .  6G8O  1  ?  ?  
+187  1  1  15  15  GLU  HB2   H   1    1.921      ?  ?  2  ?   450  .  A  15  GLU  HB2   A  15  GLU  1HB   .  6G8O  1  ?  ?  
+188  1  1  15  15  GLU  HB3   H   1    1.978      ?  ?  2  ?   451  .  A  15  GLU  HB3   A  15  GLU  2HB   .  6G8O  1  ?  ?  
+189  1  1  15  15  GLU  HG2   H   1    2.242      ?  ?  2  ?   452  .  A  15  GLU  HG2   A  15  GLU  1HG   .  6G8O  1  ?  ?  
+190  1  1  15  15  GLU  HG3   H   1    2.263      ?  ?  2  ?   453  .  A  15  GLU  HG3   A  15  GLU  2HG   .  6G8O  1  ?  ?  
+191  1  1  15  15  GLU  C     C  13  178.625      ?  ?  1  ?   447  .  A  15  GLU  C     A  15  GLU  C     .  6G8O  1  ?  ?  
+192  1  1  15  15  GLU  CA    C  13   59.654      ?  ?  1  ?   433  .  A  15  GLU  CA    A  15  GLU  CA    .  6G8O  1  ?  ?  
+193  1  1  15  15  GLU  CB    C  13   28.594  0.003  ?  1  ?   434  .  A  15  GLU  CB    A  15  GLU  CB    .  6G8O  1  ?  ?  
+194  1  1  15  15  GLU  CG    C  13   35.872  0.001  ?  1  ?   448  .  A  15  GLU  CG    A  15  GLU  CG    .  6G8O  1  ?  ?  
+195  1  1  15  15  GLU  N     N  15  121.610  0.003  ?  1  ?    58  .  A  15  GLU  N     A  15  GLU  N     .  6G8O  1  ?  ?  
+196  1  1  16  16  GLU  H     H   1    9.205  0.001  ?  1  ?     5  .  A  16  GLU  H     A  16  GLU  H     .  6G8O  1  ?  ?  
+197  1  1  16  16  GLU  HA    H   1    4.256      ?  ?  1  ?   463  .  A  16  GLU  HA    A  16  GLU  HA    .  6G8O  1  ?  ?  
+198  1  1  16  16  GLU  HB2   H   1    1.763      ?  ?  2  ?   464  .  A  16  GLU  HB2   A  16  GLU  1HB   .  6G8O  1  ?  ?  
+199  1  1  16  16  GLU  HB3   H   1    2.035      ?  ?  2  ?   465  .  A  16  GLU  HB3   A  16  GLU  2HB   .  6G8O  1  ?  ?  
+200  1  1  16  16  GLU  HG2   H   1    1.444  0.005  ?  2  ?   466  .  A  16  GLU  HG2   A  16  GLU  1HG   .  6G8O  1  ?  ?  
+201  1  1  16  16  GLU  HG3   H   1    1.147  0.006  ?  2  ?   467  .  A  16  GLU  HG3   A  16  GLU  2HG   .  6G8O  1  ?  ?  
+202  1  1  16  16  GLU  C     C  13  176.826      ?  ?  1  ?   461  .  A  16  GLU  C     A  16  GLU  C     .  6G8O  1  ?  ?  
+203  1  1  16  16  GLU  CA    C  13   58.398      ?  ?  1  ?   445  .  A  16  GLU  CA    A  16  GLU  CA    .  6G8O  1  ?  ?  
+204  1  1  16  16  GLU  CB    C  13   28.964  0.047  ?  1  ?   446  .  A  16  GLU  CB    A  16  GLU  CB    .  6G8O  1  ?  ?  
+205  1  1  16  16  GLU  CG    C  13   34.630  0.001  ?  1  ?   462  .  A  16  GLU  CG    A  16  GLU  CG    .  6G8O  1  ?  ?  
+206  1  1  16  16  GLU  N     N  15  121.027  0.005  ?  1  ?     6  .  A  16  GLU  N     A  16  GLU  N     .  6G8O  1  ?  ?  
+207  1  1  17  17  HIS  H     H   1    7.715  0.004  ?  1  ?    75  .  A  17  HIS  H     A  17  HIS  H     .  6G8O  1  ?  ?  
+208  1  1  17  17  HIS  HA    H   1    5.076      ?  ?  1  ?   468  .  A  17  HIS  HA    A  17  HIS  HA    .  6G8O  1  ?  ?  
+209  1  1  17  17  HIS  HB2   H   1    3.307  0.005  ?  2  ?   469  .  A  17  HIS  HB2   A  17  HIS  1HB   .  6G8O  1  ?  ?  
+210  1  1  17  17  HIS  HB3   H   1    2.786  0.006  ?  2  ?   470  .  A  17  HIS  HB3   A  17  HIS  2HB   .  6G8O  1  ?  ?  
+211  1  1  17  17  HIS  HD2   H   1    6.675  0.004  ?  1  ?   698  .  A  17  HIS  HD2   A  17  HIS  HD2   .  6G8O  1  ?  ?  
+212  1  1  17  17  HIS  HE1   H   1    7.992  0.003  ?  1  ?   763  .  A  17  HIS  HE1   A  17  HIS  HE1   .  6G8O  1  ?  ?  
+213  1  1  17  17  HIS  C     C  13  175.300      ?  ?  1  ?   458  .  A  17  HIS  C     A  17  HIS  C     .  6G8O  1  ?  ?  
+214  1  1  17  17  HIS  CA    C  13   56.403      ?  ?  1  ?   460  .  A  17  HIS  CA    A  17  HIS  CA    .  6G8O  1  ?  ?  
+215  1  1  17  17  HIS  CB    C  13   30.960  0.006  ?  1  ?   459  .  A  17  HIS  CB    A  17  HIS  CB    .  6G8O  1  ?  ?  
+216  1  1  17  17  HIS  CD2   C  13  117.145  0.125  ?  1  ?   753  .  A  17  HIS  CD2   A  17  HIS  CD2   .  6G8O  1  ?  ?  
+217  1  1  17  17  HIS  CE1   C  13  139.906  0.036  ?  1  ?   764  .  A  17  HIS  CE1   A  17  HIS  CE1   .  6G8O  1  ?  ?  
+218  1  1  17  17  HIS  N     N  15  117.729  0.005  ?  1  ?    76  .  A  17  HIS  N     A  17  HIS  N     .  6G8O  1  ?  ?  
+219  1  1  18  18  THR  H     H   1    7.967  0.001  ?  1  ?    97  .  A  18  THR  H     A  18  THR  H     .  6G8O  1  ?  ?  
+220  1  1  18  18  THR  HA    H   1    4.260      ?  ?  1  ?   526  .  A  18  THR  HA    A  18  THR  HA    .  6G8O  1  ?  ?  
+221  1  1  18  18  THR  HB    H   1    3.537      ?  ?  1  ?   527  .  A  18  THR  HB    A  18  THR  HB    .  6G8O  1  ?  ?  
+222  1  1  18  18  THR  HG21  H   1    1.112  0.002  ?  1  ?   528  .  A  18  THR  HG21  A  18  THR  1HG2  .  6G8O  1  ?  ?  
+223  1  1  18  18  THR  HG22  H   1    1.112  0.002  ?  1  ?   528  .  A  18  THR  HG22  A  18  THR  2HG2  .  6G8O  1  ?  ?  
+224  1  1  18  18  THR  HG23  H   1    1.112  0.002  ?  1  ?   528  .  A  18  THR  HG23  A  18  THR  3HG2  .  6G8O  1  ?  ?  
+225  1  1  18  18  THR  C     C  13  175.875      ?  ?  1  ?   457  .  A  18  THR  C     A  18  THR  C     .  6G8O  1  ?  ?  
+226  1  1  18  18  THR  CA    C  13   68.638      ?  ?  1  ?   454  .  A  18  THR  CA    A  18  THR  CA    .  6G8O  1  ?  ?  
+227  1  1  18  18  THR  CB    C  13   68.435      ?  ?  1  ?   525  .  A  18  THR  CB    A  18  THR  CB    .  6G8O  1  ?  ?  
+228  1  1  18  18  THR  CG2   C  13   21.773      ?  ?  1  ?   456  .  A  18  THR  CG2   A  18  THR  CG2   .  6G8O  1  ?  ?  
+229  1  1  18  18  THR  N     N  15  117.681  0.017  ?  1  ?    98  .  A  18  THR  N     A  18  THR  N     .  6G8O  1  ?  ?  
+230  1  1  19  19  SER  H     H   1    8.665  0.003  ?  1  ?   130  .  A  19  SER  H     A  19  SER  H     .  6G8O  1  ?  ?  
+231  1  1  19  19  SER  HA    H   1    4.136      ?  ?  1  ?   471  .  A  19  SER  HA    A  19  SER  HA    .  6G8O  1  ?  ?  
+232  1  1  19  19  SER  HB2   H   1    3.977      ?  ?  2  ?   473  .  A  19  SER  HB2   A  19  SER  1HB   .  6G8O  1  ?  ?  
+233  1  1  19  19  SER  HB3   H   1    3.944      ?  ?  2  ?   474  .  A  19  SER  HB3   A  19  SER  2HB   .  6G8O  1  ?  ?  
+234  1  1  19  19  SER  C     C  13  175.898      ?  ?  1  ?   481  .  A  19  SER  C     A  19  SER  C     .  6G8O  1  ?  ?  
+235  1  1  19  19  SER  CA    C  13   62.374      ?  ?  1  ?   455  .  A  19  SER  CA    A  19  SER  CA    .  6G8O  1  ?  ?  
+236  1  1  19  19  SER  CB    C  13   62.217  0.002  ?  1  ?   482  .  A  19  SER  CB    A  19  SER  CB    .  6G8O  1  ?  ?  
+237  1  1  19  19  SER  N     N  15  115.249  0.018  ?  1  ?   131  .  A  19  SER  N     A  19  SER  N     .  6G8O  1  ?  ?  
+238  1  1  20  20  THR  H     H   1    7.882    0.0  ?  1  ?    37  .  A  20  THR  H     A  20  THR  H     .  6G8O  1  ?  ?  
+239  1  1  20  20  THR  HA    H   1    3.933      ?  ?  1  ?   484  .  A  20  THR  HA    A  20  THR  HA    .  6G8O  1  ?  ?  
+240  1  1  20  20  THR  HB    H   1    4.321      ?  ?  1  ?   483  .  A  20  THR  HB    A  20  THR  HB    .  6G8O  1  ?  ?  
+241  1  1  20  20  THR  HG21  H   1    1.357      ?  ?  1  ?   485  .  A  20  THR  HG21  A  20  THR  1HG2  .  6G8O  1  ?  ?  
+242  1  1  20  20  THR  HG22  H   1    1.357      ?  ?  1  ?   485  .  A  20  THR  HG22  A  20  THR  2HG2  .  6G8O  1  ?  ?  
+243  1  1  20  20  THR  HG23  H   1    1.357      ?  ?  1  ?   485  .  A  20  THR  HG23  A  20  THR  3HG2  .  6G8O  1  ?  ?  
+244  1  1  20  20  THR  C     C  13  176.532      ?  ?  1  ?   487  .  A  20  THR  C     A  20  THR  C     .  6G8O  1  ?  ?  
+245  1  1  20  20  THR  CA    C  13   66.133      ?  ?  1  ?   476  .  A  20  THR  CA    A  20  THR  CA    .  6G8O  1  ?  ?  
+246  1  1  20  20  THR  CB    C  13   68.667      ?  ?  1  ?   475  .  A  20  THR  CB    A  20  THR  CB    .  6G8O  1  ?  ?  
+247  1  1  20  20  THR  CG2   C  13   22.775      ?  ?  1  ?   486  .  A  20  THR  CG2   A  20  THR  CG2   .  6G8O  1  ?  ?  
+248  1  1  20  20  THR  N     N  15  118.177  0.002  ?  1  ?    38  .  A  20  THR  N     A  20  THR  N     .  6G8O  1  ?  ?  
+249  1  1  21  21  LEU  H     H   1    7.977  0.003  ?  1  ?    33  .  A  21  LEU  H     A  21  LEU  H     .  6G8O  1  ?  ?  
+250  1  1  21  21  LEU  HA    H   1    4.133  0.007  ?  1  ?   489  .  A  21  LEU  HA    A  21  LEU  HA    .  6G8O  1  ?  ?  
+251  1  1  21  21  LEU  HB2   H   1    2.001  0.005  ?  2  ?   494  .  A  21  LEU  HB2   A  21  LEU  1HB   .  6G8O  1  ?  ?  
+252  1  1  21  21  LEU  HB3   H   1    1.816  0.003  ?  2  ?   495  .  A  21  LEU  HB3   A  21  LEU  2HB   .  6G8O  1  ?  ?  
+253  1  1  21  21  LEU  HD11  H   1    0.603  0.003  ?  2  ?   490  .  A  21  LEU  HD11  A  21  LEU  1HD1  .  6G8O  1  ?  ?  
+254  1  1  21  21  LEU  HD12  H   1    0.603  0.003  ?  2  ?   490  .  A  21  LEU  HD12  A  21  LEU  2HD1  .  6G8O  1  ?  ?  
+255  1  1  21  21  LEU  HD13  H   1    0.603  0.003  ?  2  ?   490  .  A  21  LEU  HD13  A  21  LEU  3HD1  .  6G8O  1  ?  ?  
+256  1  1  21  21  LEU  HD21  H   1    0.837  0.001  ?  2  ?   491  .  A  21  LEU  HD21  A  21  LEU  1HD2  .  6G8O  1  ?  ?  
+257  1  1  21  21  LEU  HD22  H   1    0.837  0.001  ?  2  ?   491  .  A  21  LEU  HD22  A  21  LEU  2HD2  .  6G8O  1  ?  ?  
+258  1  1  21  21  LEU  HD23  H   1    0.837  0.001  ?  2  ?   491  .  A  21  LEU  HD23  A  21  LEU  3HD2  .  6G8O  1  ?  ?  
+259  1  1  21  21  LEU  C     C  13  178.540      ?  ?  1  ?   488  .  A  21  LEU  C     A  21  LEU  C     .  6G8O  1  ?  ?  
+260  1  1  21  21  LEU  CA    C  13   59.621      ?  ?  1  ?   477  .  A  21  LEU  CA    A  21  LEU  CA    .  6G8O  1  ?  ?  
+261  1  1  21  21  LEU  CB    C  13   40.378  0.009  ?  1  ?   478  .  A  21  LEU  CB    A  21  LEU  CB    .  6G8O  1  ?  ?  
+262  1  1  21  21  LEU  CD1   C  13   23.984      ?  ?  2  ?   492  .  A  21  LEU  CD1   A  21  LEU  CD1   .  6G8O  1  ?  ?  
+263  1  1  21  21  LEU  CD2   C  13   26.671      ?  ?  2  ?   493  .  A  21  LEU  CD2   A  21  LEU  CD2   .  6G8O  1  ?  ?  
+264  1  1  21  21  LEU  N     N  15  121.954  0.008  ?  1  ?    34  .  A  21  LEU  N     A  21  LEU  N     .  6G8O  1  ?  ?  
+265  1  1  22  22  LEU  H     H   1    8.500  0.002  ?  1  ?    11  .  A  22  LEU  H     A  22  LEU  H     .  6G8O  1  ?  ?  
+266  1  1  22  22  LEU  HA    H   1    4.078      ?  ?  1  ?   497  .  A  22  LEU  HA    A  22  LEU  HA    .  6G8O  1  ?  ?  
+267  1  1  22  22  LEU  HB2   H   1    1.889      ?  ?  2  ?   498  .  A  22  LEU  HB2   A  22  LEU  1HB   .  6G8O  1  ?  ?  
+268  1  1  22  22  LEU  HB3   H   1    1.622      ?  ?  2  ?   499  .  A  22  LEU  HB3   A  22  LEU  2HB   .  6G8O  1  ?  ?  
+269  1  1  22  22  LEU  HG    H   1    1.884      ?  ?  1  ?   501  .  A  22  LEU  HG    A  22  LEU  HG    .  6G8O  1  ?  ?  
+270  1  1  22  22  LEU  HD11  H   1    1.028      ?  ?  2  ?   502  .  A  22  LEU  HD11  A  22  LEU  1HD1  .  6G8O  1  ?  ?  
+271  1  1  22  22  LEU  HD12  H   1    1.028      ?  ?  2  ?   502  .  A  22  LEU  HD12  A  22  LEU  2HD1  .  6G8O  1  ?  ?  
+272  1  1  22  22  LEU  HD13  H   1    1.028      ?  ?  2  ?   502  .  A  22  LEU  HD13  A  22  LEU  3HD1  .  6G8O  1  ?  ?  
+273  1  1  22  22  LEU  HD21  H   1    0.946      ?  ?  2  ?   503  .  A  22  LEU  HD21  A  22  LEU  1HD2  .  6G8O  1  ?  ?  
+274  1  1  22  22  LEU  HD22  H   1    0.946      ?  ?  2  ?   503  .  A  22  LEU  HD22  A  22  LEU  2HD2  .  6G8O  1  ?  ?  
+275  1  1  22  22  LEU  HD23  H   1    0.946      ?  ?  2  ?   503  .  A  22  LEU  HD23  A  22  LEU  3HD2  .  6G8O  1  ?  ?  
+276  1  1  22  22  LEU  C     C  13  181.396      ?  ?  1  ?   156  .  A  22  LEU  C     A  22  LEU  C     .  6G8O  1  ?  ?  
+277  1  1  22  22  LEU  CA    C  13   58.718      ?  ?  1  ?   154  .  A  22  LEU  CA    A  22  LEU  CA    .  6G8O  1  ?  ?  
+278  1  1  22  22  LEU  CB    C  13   42.333  0.002  ?  1  ?   155  .  A  22  LEU  CB    A  22  LEU  CB    .  6G8O  1  ?  ?  
+279  1  1  22  22  LEU  CG    C  13   27.390      ?  ?  1  ?   500  .  A  22  LEU  CG    A  22  LEU  CG    .  6G8O  1  ?  ?  
+280  1  1  22  22  LEU  CD1   C  13   24.021      ?  ?  2  ?   504  .  A  22  LEU  CD1   A  22  LEU  CD1   .  6G8O  1  ?  ?  
+281  1  1  22  22  LEU  CD2   C  13   25.511      ?  ?  2  ?   496  .  A  22  LEU  CD2   A  22  LEU  CD2   .  6G8O  1  ?  ?  
+282  1  1  22  22  LEU  N     N  15  120.894  0.006  ?  1  ?    12  .  A  22  LEU  N     A  22  LEU  N     .  6G8O  1  ?  ?  
+283  1  1  23  23  LEU  H     H   1    8.452  0.001  ?  1  ?    47  .  A  23  LEU  H     A  23  LEU  H     .  6G8O  1  ?  ?  
+284  1  1  23  23  LEU  HA    H   1    4.182      ?  ?  1  ?   152  .  A  23  LEU  HA    A  23  LEU  HA    .  6G8O  1  ?  ?  
+285  1  1  23  23  LEU  HB2   H   1    1.645      ?  ?  2  ?   674  .  A  23  LEU  HB2   A  23  LEU  1HB   .  6G8O  1  ?  ?  
+286  1  1  23  23  LEU  HB3   H   1    1.860      ?  ?  2  ?   675  .  A  23  LEU  HB3   A  23  LEU  2HB   .  6G8O  1  ?  ?  
+287  1  1  23  23  LEU  HG    H   1    1.837      ?  ?  1  ?   673  .  A  23  LEU  HG    A  23  LEU  HG    .  6G8O  1  ?  ?  
+288  1  1  23  23  LEU  HD11  H   1    0.903      ?  ?  2  ?   778  .  A  23  LEU  HD11  A  23  LEU  1HD1  .  6G8O  1  ?  ?  
+289  1  1  23  23  LEU  HD12  H   1    0.903      ?  ?  2  ?   778  .  A  23  LEU  HD12  A  23  LEU  2HD1  .  6G8O  1  ?  ?  
+290  1  1  23  23  LEU  HD13  H   1    0.903      ?  ?  2  ?   778  .  A  23  LEU  HD13  A  23  LEU  3HD1  .  6G8O  1  ?  ?  
+291  1  1  23  23  LEU  HD21  H   1    0.906      ?  ?  2  ?   779  .  A  23  LEU  HD21  A  23  LEU  1HD2  .  6G8O  1  ?  ?  
+292  1  1  23  23  LEU  HD22  H   1    0.906      ?  ?  2  ?   779  .  A  23  LEU  HD22  A  23  LEU  2HD2  .  6G8O  1  ?  ?  
+293  1  1  23  23  LEU  HD23  H   1    0.906      ?  ?  2  ?   779  .  A  23  LEU  HD23  A  23  LEU  3HD2  .  6G8O  1  ?  ?  
+294  1  1  23  23  LEU  C     C  13  178.053      ?  ?  1  ?   153  .  A  23  LEU  C     A  23  LEU  C     .  6G8O  1  ?  ?  
+295  1  1  23  23  LEU  CA    C  13   56.893      ?  ?  1  ?   147  .  A  23  LEU  CA    A  23  LEU  CA    .  6G8O  1  ?  ?  
+296  1  1  23  23  LEU  CB    C  13   42.072  0.003  ?  1  ?   148  .  A  23  LEU  CB    A  23  LEU  CB    .  6G8O  1  ?  ?  
+297  1  1  23  23  LEU  CG    C  13   27.133      ?  ?  1  ?   149  .  A  23  LEU  CG    A  23  LEU  CG    .  6G8O  1  ?  ?  
+298  1  1  23  23  LEU  CD1   C  13   24.675      ?  ?  2  ?   150  .  A  23  LEU  CD1   A  23  LEU  CD1   .  6G8O  1  ?  ?  
+299  1  1  23  23  LEU  CD2   C  13   23.379      ?  ?  2  ?   151  .  A  23  LEU  CD2   A  23  LEU  CD2   .  6G8O  1  ?  ?  
+300  1  1  23  23  LEU  N     N  15  118.340  0.017  ?  1  ?    48  .  A  23  LEU  N     A  23  LEU  N     .  6G8O  1  ?  ?  
+301  1  1  24  24  ASN  H     H   1    7.435  0.001  ?  1  ?    63  .  A  24  ASN  H     A  24  ASN  H     .  6G8O  1  ?  ?  
+302  1  1  24  24  ASN  HA    H   1    4.881      ?  ?  1  ?   138  .  A  24  ASN  HA    A  24  ASN  HA    .  6G8O  1  ?  ?  
+303  1  1  24  24  ASN  HB2   H   1    3.121  0.004  ?  2  ?   139  .  A  24  ASN  HB2   A  24  ASN  1HB   .  6G8O  1  ?  ?  
+304  1  1  24  24  ASN  HB3   H   1    2.770  0.003  ?  2  ?   140  .  A  24  ASN  HB3   A  24  ASN  2HB   .  6G8O  1  ?  ?  
+305  1  1  24  24  ASN  HD21  H   1    7.347    0.0  ?  1  ?    96  .  A  24  ASN  HD21  A  24  ASN  1HD2  .  6G8O  1  ?  ?  
+306  1  1  24  24  ASN  HD22  H   1    8.559  0.002  ?  1  ?   777  .  A  24  ASN  HD22  A  24  ASN  2HD2  .  6G8O  1  ?  ?  
+307  1  1  24  24  ASN  C     C  13  173.916      ?  ?  1  ?   135  .  A  24  ASN  C     A  24  ASN  C     .  6G8O  1  ?  ?  
+308  1  1  24  24  ASN  CA    C  13   53.782      ?  ?  1  ?   136  .  A  24  ASN  CA    A  24  ASN  CA    .  6G8O  1  ?  ?  
+309  1  1  24  24  ASN  CB    C  13   40.766  0.003  ?  1  ?   137  .  A  24  ASN  CB    A  24  ASN  CB    .  6G8O  1  ?  ?  
+310  1  1  24  24  ASN  CG    C  13  178.335  0.001  ?  1  ?  1578  .  A  24  ASN  CG    A  24  ASN  CG    .  6G8O  1  ?  ?  
+311  1  1  24  24  ASN  N     N  15  115.641  0.006  ?  1  ?    64  .  A  24  ASN  N     A  24  ASN  N     .  6G8O  1  ?  ?  
+312  1  1  24  24  ASN  ND2   N  15  116.873  0.341  ?  1  ?   776  .  A  24  ASN  ND2   A  24  ASN  ND2   .  6G8O  1  ?  ?  
+313  1  1  25  25  GLY  H     H   1    7.678  0.002  ?  1  ?    49  .  A  25  GLY  H     A  25  GLY  H     .  6G8O  1  ?  ?  
+314  1  1  25  25  GLY  HA2   H   1    4.050      ?  ?  2  ?   133  .  A  25  GLY  HA2   A  25  GLY  1HA   .  6G8O  1  ?  ?  
+315  1  1  25  25  GLY  HA3   H   1    3.602      ?  ?  2  ?   134  .  A  25  GLY  HA3   A  25  GLY  2HA   .  6G8O  1  ?  ?  
+316  1  1  25  25  GLY  C     C  13  173.936      ?  ?  1  ?   146  .  A  25  GLY  C     A  25  GLY  C     .  6G8O  1  ?  ?  
+317  1  1  25  25  GLY  CA    C  13   45.873  0.006  ?  1  ?   132  .  A  25  GLY  CA    A  25  GLY  CA    .  6G8O  1  ?  ?  
+318  1  1  25  25  GLY  N     N  15  104.378   0.01  ?  1  ?    50  .  A  25  GLY  N     A  25  GLY  N     .  6G8O  1  ?  ?  
+319  1  1  26  26  TYR  H     H   1    8.244  0.002  ?  1  ?    85  .  A  26  TYR  H     A  26  TYR  H     .  6G8O  1  ?  ?  
+320  1  1  26  26  TYR  HA    H   1    4.464   0.02  ?  1  ?   141  .  A  26  TYR  HA    A  26  TYR  HA    .  6G8O  1  ?  ?  
+321  1  1  26  26  TYR  HB2   H   1    2.980  0.006  ?  2  ?   142  .  A  26  TYR  HB2   A  26  TYR  1HB   .  6G8O  1  ?  ?  
+322  1  1  26  26  TYR  HB3   H   1    2.462  0.005  ?  2  ?   143  .  A  26  TYR  HB3   A  26  TYR  2HB   .  6G8O  1  ?  ?  
+323  1  1  26  26  TYR  HD1   H   1    6.806  0.001  ?  1  ?   699  .  A  26  TYR  HD1   A  26  TYR  HD1   .  6G8O  1  ?  ?  
+324  1  1  26  26  TYR  HD2   H   1    6.806  0.001  ?  1  ?   699  .  A  26  TYR  HD2   A  26  TYR  HD2   .  6G8O  1  ?  ?  
+325  1  1  26  26  TYR  HE1   H   1    6.527  0.001  ?  1  ?   702  .  A  26  TYR  HE1   A  26  TYR  HE1   .  6G8O  1  ?  ?  
+326  1  1  26  26  TYR  HE2   H   1    6.527  0.001  ?  1  ?   702  .  A  26  TYR  HE2   A  26  TYR  HE2   .  6G8O  1  ?  ?  
+327  1  1  26  26  TYR  C     C  13  172.757      ?  ?  1  ?   215  .  A  26  TYR  C     A  26  TYR  C     .  6G8O  1  ?  ?  
+328  1  1  26  26  TYR  CA    C  13   57.220      ?  ?  1  ?   144  .  A  26  TYR  CA    A  26  TYR  CA    .  6G8O  1  ?  ?  
+329  1  1  26  26  TYR  CB    C  13   37.661   0.01  ?  1  ?   145  .  A  26  TYR  CB    A  26  TYR  CB    .  6G8O  1  ?  ?  
+330  1  1  26  26  TYR  CD1   C  13  132.765  0.043  ?  1  ?   746  .  A  26  TYR  CD1   A  26  TYR  CD1   .  6G8O  1  ?  ?  
+331  1  1  26  26  TYR  CD2   C  13  132.765  0.043  ?  1  ?   746  .  A  26  TYR  CD2   A  26  TYR  CD2   .  6G8O  1  ?  ?  
+332  1  1  26  26  TYR  CE1   C  13  118.174  0.038  ?  1  ?   752  .  A  26  TYR  CE1   A  26  TYR  CE1   .  6G8O  1  ?  ?  
+333  1  1  26  26  TYR  CE2   C  13  118.174  0.038  ?  1  ?   752  .  A  26  TYR  CE2   A  26  TYR  CE2   .  6G8O  1  ?  ?  
+334  1  1  26  26  TYR  N     N  15  121.341  0.001  ?  1  ?    86  .  A  26  TYR  N     A  26  TYR  N     .  6G8O  1  ?  ?  
+335  1  1  27  27  GLN  H     H   1    8.627  0.007  ?  1  ?   106  .  A  27  GLN  H     A  27  GLN  H     .  6G8O  1  ?  ?  
+336  1  1  27  27  GLN  HA    H   1    4.545      ?  ?  1  ?   216  .  A  27  GLN  HA    A  27  GLN  HA    .  6G8O  1  ?  ?  
+337  1  1  27  27  GLN  HB2   H   1    2.218      ?  ?  2  ?   676  .  A  27  GLN  HB2   A  27  GLN  1HB   .  6G8O  1  ?  ?  
+338  1  1  27  27  GLN  HB3   H   1    2.096      ?  ?  2  ?   677  .  A  27  GLN  HB3   A  27  GLN  2HB   .  6G8O  1  ?  ?  
+339  1  1  27  27  GLN  HG2   H   1    2.339      ?  ?  2  ?   678  .  A  27  GLN  HG2   A  27  GLN  1HG   .  6G8O  1  ?  ?  
+340  1  1  27  27  GLN  HG3   H   1    2.286      ?  ?  2  ?   679  .  A  27  GLN  HG3   A  27  GLN  2HG   .  6G8O  1  ?  ?  
+341  1  1  27  27  GLN  HE21  H   1    6.793  0.001  ?  1  ?    83  .  A  27  GLN  HE21  A  27  GLN  1HE2  .  6G8O  1  ?  ?  
+342  1  1  27  27  GLN  HE22  H   1    7.462    0.0  ?  1  ?   101  .  A  27  GLN  HE22  A  27  GLN  2HE2  .  6G8O  1  ?  ?  
+343  1  1  27  27  GLN  C     C  13  176.892      ?  ?  1  ?   223  .  A  27  GLN  C     A  27  GLN  C     .  6G8O  1  ?  ?  
+344  1  1  27  27  GLN  CA    C  13   56.891      ?  ?  1  ?   213  .  A  27  GLN  CA    A  27  GLN  CA    .  6G8O  1  ?  ?  
+345  1  1  27  27  GLN  CB    C  13   31.501  0.002  ?  1  ?   214  .  A  27  GLN  CB    A  27  GLN  CB    .  6G8O  1  ?  ?  
+346  1  1  27  27  GLN  CG    C  13   34.563  0.002  ?  1  ?   220  .  A  27  GLN  CG    A  27  GLN  CG    .  6G8O  1  ?  ?  
+347  1  1  27  27  GLN  CD    C  13  179.982  0.008  ?  1  ?  1571  .  A  27  GLN  CD    A  27  GLN  CD    .  6G8O  1  ?  ?  
+348  1  1  27  27  GLN  N     N  15  117.825  0.007  ?  1  ?   107  .  A  27  GLN  N     A  27  GLN  N     .  6G8O  1  ?  ?  
+349  1  1  27  27  GLN  NE2   N  15  111.221  0.253  ?  1  ?    84  .  A  27  GLN  NE2   A  27  GLN  NE2   .  6G8O  1  ?  ?  
+350  1  1  28  28  THR  H     H   1    8.464  0.003  ?  1  ?   218  .  A  28  THR  H     A  28  THR  H     .  6G8O  1  ?  ?  
+351  1  1  28  28  THR  HA    H   1    4.931      ?  ?  1  ?   242  .  A  28  THR  HA    A  28  THR  HA    .  6G8O  1  ?  ?  
+352  1  1  28  28  THR  HB    H   1    4.781      ?  ?  1  ?   243  .  A  28  THR  HB    A  28  THR  HB    .  6G8O  1  ?  ?  
+353  1  1  28  28  THR  HG21  H   1    1.294      ?  ?  1  ?   228  .  A  28  THR  HG21  A  28  THR  1HG2  .  6G8O  1  ?  ?  
+354  1  1  28  28  THR  HG22  H   1    1.294      ?  ?  1  ?   228  .  A  28  THR  HG22  A  28  THR  2HG2  .  6G8O  1  ?  ?  
+355  1  1  28  28  THR  HG23  H   1    1.294      ?  ?  1  ?   228  .  A  28  THR  HG23  A  28  THR  3HG2  .  6G8O  1  ?  ?  
+356  1  1  28  28  THR  C     C  13  175.607      ?  ?  1  ?   227  .  A  28  THR  C     A  28  THR  C     .  6G8O  1  ?  ?  
+357  1  1  28  28  THR  CA    C  13   59.261      ?  ?  1  ?   221  .  A  28  THR  CA    A  28  THR  CA    .  6G8O  1  ?  ?  
+358  1  1  28  28  THR  CB    C  13   73.264      ?  ?  1  ?   222  .  A  28  THR  CB    A  28  THR  CB    .  6G8O  1  ?  ?  
+359  1  1  28  28  THR  CG2   C  13   21.566      ?  ?  1  ?   226  .  A  28  THR  CG2   A  28  THR  CG2   .  6G8O  1  ?  ?  
+360  1  1  28  28  THR  N     N  15  109.471  0.016  ?  1  ?   217  .  A  28  THR  N     A  28  THR  N     .  6G8O  1  ?  ?  
+361  1  1  29  29  LEU  H     H   1    8.908  0.002  ?  1  ?    79  .  A  29  LEU  H     A  29  LEU  H     .  6G8O  1  ?  ?  
+362  1  1  29  29  LEU  HA    H   1    4.024  0.003  ?  1  ?   229  .  A  29  LEU  HA    A  29  LEU  HA    .  6G8O  1  ?  ?  
+363  1  1  29  29  LEU  HB2   H   1    1.828      ?  ?  2  ?   681  .  A  29  LEU  HB2   A  29  LEU  1HB   .  6G8O  1  ?  ?  
+364  1  1  29  29  LEU  HB3   H   1    1.418      ?  ?  2  ?   682  .  A  29  LEU  HB3   A  29  LEU  2HB   .  6G8O  1  ?  ?  
+365  1  1  29  29  LEU  HG    H   1    1.505      ?  ?  1  ?   680  .  A  29  LEU  HG    A  29  LEU  HG    .  6G8O  1  ?  ?  
+366  1  1  29  29  LEU  HD11  H   1    0.710  0.004  ?  2  ?   244  .  A  29  LEU  HD11  A  29  LEU  1HD1  .  6G8O  1  ?  ?  
+367  1  1  29  29  LEU  HD12  H   1    0.710  0.004  ?  2  ?   244  .  A  29  LEU  HD12  A  29  LEU  2HD1  .  6G8O  1  ?  ?  
+368  1  1  29  29  LEU  HD13  H   1    0.710  0.004  ?  2  ?   244  .  A  29  LEU  HD13  A  29  LEU  3HD1  .  6G8O  1  ?  ?  
+369  1  1  29  29  LEU  HD21  H   1    0.602      ?  ?  2  ?   245  .  A  29  LEU  HD21  A  29  LEU  1HD2  .  6G8O  1  ?  ?  
+370  1  1  29  29  LEU  HD22  H   1    0.602      ?  ?  2  ?   245  .  A  29  LEU  HD22  A  29  LEU  2HD2  .  6G8O  1  ?  ?  
+371  1  1  29  29  LEU  HD23  H   1    0.602      ?  ?  2  ?   245  .  A  29  LEU  HD23  A  29  LEU  3HD2  .  6G8O  1  ?  ?  
+372  1  1  29  29  LEU  C     C  13  178.306      ?  ?  1  ?   235  .  A  29  LEU  C     A  29  LEU  C     .  6G8O  1  ?  ?  
+373  1  1  29  29  LEU  CA    C  13   58.073      ?  ?  1  ?   224  .  A  29  LEU  CA    A  29  LEU  CA    .  6G8O  1  ?  ?  
+374  1  1  29  29  LEU  CB    C  13   40.810  0.003  ?  1  ?   225  .  A  29  LEU  CB    A  29  LEU  CB    .  6G8O  1  ?  ?  
+375  1  1  29  29  LEU  CG    C  13   27.667      ?  ?  1  ?   236  .  A  29  LEU  CG    A  29  LEU  CG    .  6G8O  1  ?  ?  
+376  1  1  29  29  LEU  CD1   C  13   25.510      ?  ?  2  ?   237  .  A  29  LEU  CD1   A  29  LEU  CD1   .  6G8O  1  ?  ?  
+377  1  1  29  29  LEU  CD2   C  13   23.572      ?  ?  2  ?   238  .  A  29  LEU  CD2   A  29  LEU  CD2   .  6G8O  1  ?  ?  
+378  1  1  29  29  LEU  N     N  15  120.477  0.016  ?  1  ?    80  .  A  29  LEU  N     A  29  LEU  N     .  6G8O  1  ?  ?  
+379  1  1  30  30  GLU  H     H   1    8.037  0.002  ?  1  ?   231  .  A  30  GLU  H     A  30  GLU  H     .  6G8O  1  ?  ?  
+380  1  1  30  30  GLU  HA    H   1    3.969      ?  ?  1  ?   239  .  A  30  GLU  HA    A  30  GLU  HA    .  6G8O  1  ?  ?  
+381  1  1  30  30  GLU  HB2   H   1    2.039      ?  ?  1  ?   246  .  A  30  GLU  HB2   A  30  GLU  1HB   .  6G8O  1  ?  ?  
+382  1  1  30  30  GLU  HB3   H   1    2.039      ?  ?  1  ?   247  .  A  30  GLU  HB3   A  30  GLU  2HB   .  6G8O  1  ?  ?  
+383  1  1  30  30  GLU  HG2   H   1    2.408      ?  ?  2  ?   543  .  A  30  GLU  HG2   A  30  GLU  1HG   .  6G8O  1  ?  ?  
+384  1  1  30  30  GLU  HG3   H   1    2.316      ?  ?  2  ?   544  .  A  30  GLU  HG3   A  30  GLU  2HG   .  6G8O  1  ?  ?  
+385  1  1  30  30  GLU  C     C  13  179.057      ?  ?  1  ?   545  .  A  30  GLU  C     A  30  GLU  C     .  6G8O  1  ?  ?  
+386  1  1  30  30  GLU  CA    C  13   59.926      ?  ?  1  ?   233  .  A  30  GLU  CA    A  30  GLU  CA    .  6G8O  1  ?  ?  
+387  1  1  30  30  GLU  CB    C  13   29.010      ?  ?  1  ?   234  .  A  30  GLU  CB    A  30  GLU  CB    .  6G8O  1  ?  ?  
+388  1  1  30  30  GLU  CG    C  13   36.581    0.0  ?  1  ?   535  .  A  30  GLU  CG    A  30  GLU  CG    .  6G8O  1  ?  ?  
+389  1  1  30  30  GLU  N     N  15  117.124  0.019  ?  1  ?   230  .  A  30  GLU  N     A  30  GLU  N     .  6G8O  1  ?  ?  
+390  1  1  31  31  ASP  H     H   1    7.657  0.013  ?  1  ?   241  .  A  31  ASP  H     A  31  ASP  H     .  6G8O  1  ?  ?  
+391  1  1  31  31  ASP  HA    H   1    4.447   0.02  ?  1  ?   209  .  A  31  ASP  HA    A  31  ASP  HA    .  6G8O  1  ?  ?  
+392  1  1  31  31  ASP  HB2   H   1    2.970  0.016  ?  2  ?   211  .  A  31  ASP  HB2   A  31  ASP  1HB   .  6G8O  1  ?  ?  
+393  1  1  31  31  ASP  HB3   H   1    3.042    0.0  ?  2  ?   212  .  A  31  ASP  HB3   A  31  ASP  2HB   .  6G8O  1  ?  ?  
+394  1  1  31  31  ASP  C     C  13  178.774      ?  ?  1  ?   207  .  A  31  ASP  C     A  31  ASP  C     .  6G8O  1  ?  ?  
+395  1  1  31  31  ASP  CA    C  13   57.038      ?  ?  1  ?   206  .  A  31  ASP  CA    A  31  ASP  CA    .  6G8O  1  ?  ?  
+396  1  1  31  31  ASP  CB    C  13   42.351  0.004  ?  1  ?   210  .  A  31  ASP  CB    A  31  ASP  CB    .  6G8O  1  ?  ?  
+397  1  1  31  31  ASP  N     N  15  118.206  0.001  ?  1  ?   240  .  A  31  ASP  N     A  31  ASP  N     .  6G8O  1  ?  ?  
+398  1  1  32  32  PHE  H     H   1    8.034  0.001  ?  1  ?    51  .  A  32  PHE  H     A  32  PHE  H     .  6G8O  1  ?  ?  
+399  1  1  32  32  PHE  HA    H   1    3.958  0.003  ?  1  ?   208  .  A  32  PHE  HA    A  32  PHE  HA    .  6G8O  1  ?  ?  
+400  1  1  32  32  PHE  HB2   H   1    3.006  0.013  ?  2  ?   683  .  A  32  PHE  HB2   A  32  PHE  1HB   .  6G8O  1  ?  ?  
+401  1  1  32  32  PHE  HB3   H   1    3.203  0.002  ?  2  ?   684  .  A  32  PHE  HB3   A  32  PHE  2HB   .  6G8O  1  ?  ?  
+402  1  1  32  32  PHE  HD1   H   1    6.782  0.001  ?  1  ?   701  .  A  32  PHE  HD1   A  32  PHE  HD1   .  6G8O  1  ?  ?  
+403  1  1  32  32  PHE  HD2   H   1    6.782  0.001  ?  1  ?   701  .  A  32  PHE  HD2   A  32  PHE  HD2   .  6G8O  1  ?  ?  
+404  1  1  32  32  PHE  HE1   H   1    6.883  0.003  ?  1  ?   704  .  A  32  PHE  HE1   A  32  PHE  HE1   .  6G8O  1  ?  ?  
+405  1  1  32  32  PHE  HE2   H   1    6.883  0.003  ?  1  ?   704  .  A  32  PHE  HE2   A  32  PHE  HE2   .  6G8O  1  ?  ?  
+406  1  1  32  32  PHE  HZ    H   1    7.068  0.003  ?  1  ?   749  .  A  32  PHE  HZ    A  32  PHE  HZ    .  6G8O  1  ?  ?  
+407  1  1  32  32  PHE  C     C  13  175.028      ?  ?  1  ?   193  .  A  32  PHE  C     A  32  PHE  C     .  6G8O  1  ?  ?  
+408  1  1  32  32  PHE  CA    C  13   61.193      ?  ?  1  ?   191  .  A  32  PHE  CA    A  32  PHE  CA    .  6G8O  1  ?  ?  
+409  1  1  32  32  PHE  CB    C  13   40.545  0.001  ?  1  ?   192  .  A  32  PHE  CB    A  32  PHE  CB    .  6G8O  1  ?  ?  
+410  1  1  32  32  PHE  CD1   C  13  131.392  0.153  ?  1  ?   745  .  A  32  PHE  CD1   A  32  PHE  CD1   .  6G8O  1  ?  ?  
+411  1  1  32  32  PHE  CD2   C  13  131.392  0.153  ?  1  ?   745  .  A  32  PHE  CD2   A  32  PHE  CD2   .  6G8O  1  ?  ?  
+412  1  1  32  32  PHE  CE1   C  13  130.267  0.094  ?  1  ?   748  .  A  32  PHE  CE1   A  32  PHE  CE1   .  6G8O  1  ?  ?  
+413  1  1  32  32  PHE  CE2   C  13  130.267  0.094  ?  1  ?   748  .  A  32  PHE  CE2   A  32  PHE  CE2   .  6G8O  1  ?  ?  
+414  1  1  32  32  PHE  CZ    C  13  129.142   0.03  ?  1  ?   750  .  A  32  PHE  CZ    A  32  PHE  CZ    .  6G8O  1  ?  ?  
+415  1  1  32  32  PHE  N     N  15  119.895  0.001  ?  1  ?    52  .  A  32  PHE  N     A  32  PHE  N     .  6G8O  1  ?  ?  
+416  1  1  33  33  LYS  H     H   1    7.606    0.0  ?  1  ?    77  .  A  33  LYS  H     A  33  LYS  H     .  6G8O  1  ?  ?  
+417  1  1  33  33  LYS  HA    H   1    3.924    0.0  ?  1  ?   188  .  A  33  LYS  HA    A  33  LYS  HA    .  6G8O  1  ?  ?  
+418  1  1  33  33  LYS  HB2   H   1    1.905      ?  ?  2  ?   200  .  A  33  LYS  HB2   A  33  LYS  1HB   .  6G8O  1  ?  ?  
+419  1  1  33  33  LYS  HB3   H   1    1.971      ?  ?  2  ?   201  .  A  33  LYS  HB3   A  33  LYS  2HB   .  6G8O  1  ?  ?  
+420  1  1  33  33  LYS  HG2   H   1    1.516      ?  ?  2  ?   204  .  A  33  LYS  HG2   A  33  LYS  1HG   .  6G8O  1  ?  ?  
+421  1  1  33  33  LYS  HG3   H   1    1.740      ?  ?  2  ?   205  .  A  33  LYS  HG3   A  33  LYS  2HG   .  6G8O  1  ?  ?  
+422  1  1  33  33  LYS  HD2   H   1    1.741      ?  ?  1  ?   203  .  A  33  LYS  HD2   A  33  LYS  1HD   .  6G8O  1  ?  ?  
+423  1  1  33  33  LYS  HD3   H   1    1.741      ?  ?  1  ?   202  .  A  33  LYS  HD3   A  33  LYS  2HD   .  6G8O  1  ?  ?  
+424  1  1  33  33  LYS  HE2   H   1    3.030      ?  ?  2  ?   189  .  A  33  LYS  HE2   A  33  LYS  1HE   .  6G8O  1  ?  ?  
+425  1  1  33  33  LYS  HE3   H   1    2.906      ?  ?  2  ?   190  .  A  33  LYS  HE3   A  33  LYS  2HE   .  6G8O  1  ?  ?  
+426  1  1  33  33  LYS  C     C  13  176.299      ?  ?  1  ?   184  .  A  33  LYS  C     A  33  LYS  C     .  6G8O  1  ?  ?  
+427  1  1  33  33  LYS  CA    C  13   58.898      ?  ?  1  ?   182  .  A  33  LYS  CA    A  33  LYS  CA    .  6G8O  1  ?  ?  
+428  1  1  33  33  LYS  CB    C  13   32.996  0.001  ?  1  ?   183  .  A  33  LYS  CB    A  33  LYS  CB    .  6G8O  1  ?  ?  
+429  1  1  33  33  LYS  CG    C  13   25.584  0.023  ?  1  ?   187  .  A  33  LYS  CG    A  33  LYS  CG    .  6G8O  1  ?  ?  
+430  1  1  33  33  LYS  CD    C  13   30.288      ?  ?  1  ?   186  .  A  33  LYS  CD    A  33  LYS  CD    .  6G8O  1  ?  ?  
+431  1  1  33  33  LYS  CE    C  13   42.190  0.007  ?  1  ?   185  .  A  33  LYS  CE    A  33  LYS  CE    .  6G8O  1  ?  ?  
+432  1  1  33  33  LYS  N     N  15  113.893  0.008  ?  1  ?    78  .  A  33  LYS  N     A  33  LYS  N     .  6G8O  1  ?  ?  
+433  1  1  34  34  GLU  H     H   1    7.152    0.0  ?  1  ?   123  .  A  34  GLU  H     A  34  GLU  H     .  6G8O  1  ?  ?  
+434  1  1  34  34  GLU  HA    H   1    4.258  0.004  ?  1  ?   181  .  A  34  GLU  HA    A  34  GLU  HA    .  6G8O  1  ?  ?  
+435  1  1  34  34  GLU  HB2   H   1    2.333      ?  ?  2  ?   687  .  A  34  GLU  HB2   A  34  GLU  1HB   .  6G8O  1  ?  ?  
+436  1  1  34  34  GLU  HB3   H   1    1.973  0.004  ?  2  ?   688  .  A  34  GLU  HB3   A  34  GLU  2HB   .  6G8O  1  ?  ?  
+437  1  1  34  34  GLU  HG2   H   1    2.453  0.004  ?  2  ?   685  .  A  34  GLU  HG2   A  34  GLU  1HG   .  6G8O  1  ?  ?  
+438  1  1  34  34  GLU  HG3   H   1    2.234      ?  ?  2  ?   686  .  A  34  GLU  HG3   A  34  GLU  2HG   .  6G8O  1  ?  ?  
+439  1  1  34  34  GLU  C     C  13  176.250      ?  ?  1  ?   179  .  A  34  GLU  C     A  34  GLU  C     .  6G8O  1  ?  ?  
+440  1  1  34  34  GLU  CA    C  13   55.574      ?  ?  1  ?   177  .  A  34  GLU  CA    A  34  GLU  CA    .  6G8O  1  ?  ?  
+441  1  1  34  34  GLU  CB    C  13   29.794  0.001  ?  1  ?   178  .  A  34  GLU  CB    A  34  GLU  CB    .  6G8O  1  ?  ?  
+442  1  1  34  34  GLU  CG    C  13   35.866  0.004  ?  1  ?   180  .  A  34  GLU  CG    A  34  GLU  CG    .  6G8O  1  ?  ?  
+443  1  1  34  34  GLU  N     N  15  115.137   0.01  ?  1  ?   124  .  A  34  GLU  N     A  34  GLU  N     .  6G8O  1  ?  ?  
+444  1  1  35  35  LEU  H     H   1    7.323  0.001  ?  1  ?    53  .  A  35  LEU  H     A  35  LEU  H     .  6G8O  1  ?  ?  
+445  1  1  35  35  LEU  HA    H   1    3.783  0.004  ?  1  ?   176  .  A  35  LEU  HA    A  35  LEU  HA    .  6G8O  1  ?  ?  
+446  1  1  35  35  LEU  HB2   H   1    1.017  0.008  ?  1  ?   195  .  A  35  LEU  HB2   A  35  LEU  1HB   .  6G8O  1  ?  ?  
+447  1  1  35  35  LEU  HB3   H   1    1.017  0.008  ?  1  ?   194  .  A  35  LEU  HB3   A  35  LEU  2HB   .  6G8O  1  ?  ?  
+448  1  1  35  35  LEU  HG    H   1    1.215      ?  ?  1  ?   691  .  A  35  LEU  HG    A  35  LEU  HG    .  6G8O  1  ?  ?  
+449  1  1  35  35  LEU  HD11  H   1    0.156  0.009  ?  2  ?   689  .  A  35  LEU  HD11  A  35  LEU  1HD1  .  6G8O  1  ?  ?  
+450  1  1  35  35  LEU  HD12  H   1    0.156  0.009  ?  2  ?   689  .  A  35  LEU  HD12  A  35  LEU  2HD1  .  6G8O  1  ?  ?  
+451  1  1  35  35  LEU  HD13  H   1    0.156  0.009  ?  2  ?   689  .  A  35  LEU  HD13  A  35  LEU  3HD1  .  6G8O  1  ?  ?  
+452  1  1  35  35  LEU  HD21  H   1    0.162  0.013  ?  2  ?   690  .  A  35  LEU  HD21  A  35  LEU  1HD2  .  6G8O  1  ?  ?  
+453  1  1  35  35  LEU  HD22  H   1    0.162  0.013  ?  2  ?   690  .  A  35  LEU  HD22  A  35  LEU  2HD2  .  6G8O  1  ?  ?  
+454  1  1  35  35  LEU  HD23  H   1    0.162  0.013  ?  2  ?   690  .  A  35  LEU  HD23  A  35  LEU  3HD2  .  6G8O  1  ?  ?  
+455  1  1  35  35  LEU  C     C  13  176.051      ?  ?  1  ?   175  .  A  35  LEU  C     A  35  LEU  C     .  6G8O  1  ?  ?  
+456  1  1  35  35  LEU  CA    C  13   56.945      ?  ?  1  ?   173  .  A  35  LEU  CA    A  35  LEU  CA    .  6G8O  1  ?  ?  
+457  1  1  35  35  LEU  CB    C  13   42.785      ?  ?  1  ?   174  .  A  35  LEU  CB    A  35  LEU  CB    .  6G8O  1  ?  ?  
+458  1  1  35  35  LEU  CG    C  13   26.317      ?  ?  1  ?   692  .  A  35  LEU  CG    A  35  LEU  CG    .  6G8O  1  ?  ?  
+459  1  1  35  35  LEU  CD1   C  13   24.279      ?  ?  2  ?   694  .  A  35  LEU  CD1   A  35  LEU  CD1   .  6G8O  1  ?  ?  
+460  1  1  35  35  LEU  CD2   C  13   25.588      ?  ?  2  ?   693  .  A  35  LEU  CD2   A  35  LEU  CD2   .  6G8O  1  ?  ?  
+461  1  1  35  35  LEU  N     N  15  121.537  0.007  ?  1  ?    54  .  A  35  LEU  N     A  35  LEU  N     .  6G8O  1  ?  ?  
+462  1  1  36  36  ARG  H     H   1    9.616  0.011  ?  1  ?    94  .  A  36  ARG  H     A  36  ARG  H     .  6G8O  1  ?  ?  
+463  1  1  36  36  ARG  HA    H   1    4.620      ?  ?  1  ?   170  .  A  36  ARG  HA    A  36  ARG  HA    .  6G8O  1  ?  ?  
+464  1  1  36  36  ARG  HB2   H   1    2.089      ?  ?  2  ?   196  .  A  36  ARG  HB2   A  36  ARG  1HB   .  6G8O  1  ?  ?  
+465  1  1  36  36  ARG  HB3   H   1    1.744  0.015  ?  2  ?   197  .  A  36  ARG  HB3   A  36  ARG  2HB   .  6G8O  1  ?  ?  
+466  1  1  36  36  ARG  HG2   H   1    1.775  0.015  ?  1  ?   199  .  A  36  ARG  HG2   A  36  ARG  1HG   .  6G8O  1  ?  ?  
+467  1  1  36  36  ARG  HG3   H   1    1.775  0.015  ?  1  ?   198  .  A  36  ARG  HG3   A  36  ARG  2HG   .  6G8O  1  ?  ?  
+468  1  1  36  36  ARG  HD2   H   1    3.361  0.004  ?  2  ?   171  .  A  36  ARG  HD2   A  36  ARG  1HD   .  6G8O  1  ?  ?  
+469  1  1  36  36  ARG  HD3   H   1    3.167  0.003  ?  2  ?   172  .  A  36  ARG  HD3   A  36  ARG  2HD   .  6G8O  1  ?  ?  
+470  1  1  36  36  ARG  C     C  13  177.141      ?  ?  1  ?   167  .  A  36  ARG  C     A  36  ARG  C     .  6G8O  1  ?  ?  
+471  1  1  36  36  ARG  CA    C  13   53.203      ?  ?  1  ?   165  .  A  36  ARG  CA    A  36  ARG  CA    .  6G8O  1  ?  ?  
+472  1  1  36  36  ARG  CB    C  13   33.768  0.002  ?  1  ?   166  .  A  36  ARG  CB    A  36  ARG  CB    .  6G8O  1  ?  ?  
+473  1  1  36  36  ARG  CG    C  13   26.770      ?  ?  1  ?   169  .  A  36  ARG  CG    A  36  ARG  CG    .  6G8O  1  ?  ?  
+474  1  1  36  36  ARG  CD    C  13   42.983  0.002  ?  1  ?   168  .  A  36  ARG  CD    A  36  ARG  CD    .  6G8O  1  ?  ?  
+475  1  1  36  36  ARG  N     N  15  125.994  0.004  ?  1  ?    95  .  A  36  ARG  N     A  36  ARG  N     .  6G8O  1  ?  ?  
+476  1  1  37  37  GLU  H     H   1    9.024  0.001  ?  1  ?    91  .  A  37  GLU  H     A  37  GLU  H     .  6G8O  1  ?  ?  
+477  1  1  37  37  GLU  HA    H   1    3.694      ?  ?  1  ?   164  .  A  37  GLU  HA    A  37  GLU  HA    .  6G8O  1  ?  ?  
+478  1  1  37  37  GLU  HB2   H   1    1.970      ?  ?  2  ?   713  .  A  37  GLU  HB2   A  37  GLU  1HB   .  6G8O  1  ?  ?  
+479  1  1  37  37  GLU  HB3   H   1    2.074      ?  ?  2  ?   714  .  A  37  GLU  HB3   A  37  GLU  2HB   .  6G8O  1  ?  ?  
+480  1  1  37  37  GLU  HG2   H   1    2.251      ?  ?  1  ?   711  .  A  37  GLU  HG2   A  37  GLU  1HG   .  6G8O  1  ?  ?  
+481  1  1  37  37  GLU  HG3   H   1    2.251      ?  ?  1  ?   712  .  A  37  GLU  HG3   A  37  GLU  2HG   .  6G8O  1  ?  ?  
+482  1  1  37  37  GLU  C     C  13  178.122      ?  ?  1  ?   161  .  A  37  GLU  C     A  37  GLU  C     .  6G8O  1  ?  ?  
+483  1  1  37  37  GLU  CA    C  13   61.212      ?  ?  1  ?   158  .  A  37  GLU  CA    A  37  GLU  CA    .  6G8O  1  ?  ?  
+484  1  1  37  37  GLU  CB    C  13   29.383  0.003  ?  1  ?   160  .  A  37  GLU  CB    A  37  GLU  CB    .  6G8O  1  ?  ?  
+485  1  1  37  37  GLU  CG    C  13   36.930      ?  ?  1  ?   163  .  A  37  GLU  CG    A  37  GLU  CG    .  6G8O  1  ?  ?  
+486  1  1  37  37  GLU  N     N  15  121.532  0.002  ?  1  ?    92  .  A  37  GLU  N     A  37  GLU  N     .  6G8O  1  ?  ?  
+487  1  1  38  38  THR  H     H   1    7.701  0.001  ?  1  ?    43  .  A  38  THR  H     A  38  THR  H     .  6G8O  1  ?  ?  
+488  1  1  38  38  THR  HA    H   1    3.936      ?  ?  1  ?   255  .  A  38  THR  HA    A  38  THR  HA    .  6G8O  1  ?  ?  
+489  1  1  38  38  THR  HB    H   1    3.959      ?  ?  1  ?   715  .  A  38  THR  HB    A  38  THR  HB    .  6G8O  1  ?  ?  
+490  1  1  38  38  THR  HG21  H   1    1.065      ?  ?  1  ?   162  .  A  38  THR  HG21  A  38  THR  1HG2  .  6G8O  1  ?  ?  
+491  1  1  38  38  THR  HG22  H   1    1.065      ?  ?  1  ?   162  .  A  38  THR  HG22  A  38  THR  2HG2  .  6G8O  1  ?  ?  
+492  1  1  38  38  THR  HG23  H   1    1.065      ?  ?  1  ?   162  .  A  38  THR  HG23  A  38  THR  3HG2  .  6G8O  1  ?  ?  
+493  1  1  38  38  THR  C     C  13  176.394      ?  ?  1  ?   250  .  A  38  THR  C     A  38  THR  C     .  6G8O  1  ?  ?  
+494  1  1  38  38  THR  CA    C  13   64.788      ?  ?  1  ?   157  .  A  38  THR  CA    A  38  THR  CA    .  6G8O  1  ?  ?  
+495  1  1  38  38  THR  CB    C  13   68.074      ?  ?  1  ?   159  .  A  38  THR  CB    A  38  THR  CB    .  6G8O  1  ?  ?  
+496  1  1  38  38  THR  CG2   C  13   21.527      ?  ?  1  ?   254  .  A  38  THR  CG2   A  38  THR  CG2   .  6G8O  1  ?  ?  
+497  1  1  38  38  THR  N     N  15  108.477  0.015  ?  1  ?    44  .  A  38  THR  N     A  38  THR  N     .  6G8O  1  ?  ?  
+498  1  1  39  39  HIS  H     H   1    7.263    0.0  ?  1  ?   102  .  A  39  HIS  H     A  39  HIS  H     .  6G8O  1  ?  ?  
+499  1  1  39  39  HIS  HA    H   1    4.410    0.0  ?  1  ?   251  .  A  39  HIS  HA    A  39  HIS  HA    .  6G8O  1  ?  ?  
+500  1  1  39  39  HIS  HB2   H   1    3.178  0.008  ?  1  ?   253  .  A  39  HIS  HB2   A  39  HIS  1HB   .  6G8O  1  ?  ?  
+501  1  1  39  39  HIS  HB3   H   1    3.178  0.008  ?  1  ?   252  .  A  39  HIS  HB3   A  39  HIS  2HB   .  6G8O  1  ?  ?  
+502  1  1  39  39  HIS  HD2   H   1    7.170  0.001  ?  1  ?   697  .  A  39  HIS  HD2   A  39  HIS  HD2   .  6G8O  1  ?  ?  
+503  1  1  39  39  HIS  HE1   H   1    7.724  0.003  ?  1  ?   758  .  A  39  HIS  HE1   A  39  HIS  HE1   .  6G8O  1  ?  ?  
+504  1  1  39  39  HIS  C     C  13  178.282      ?  ?  1  ?   258  .  A  39  HIS  C     A  39  HIS  C     .  6G8O  1  ?  ?  
+505  1  1  39  39  HIS  CA    C  13   59.166      ?  ?  1  ?   248  .  A  39  HIS  CA    A  39  HIS  CA    .  6G8O  1  ?  ?  
+506  1  1  39  39  HIS  CB    C  13   31.619      ?  ?  1  ?   249  .  A  39  HIS  CB    A  39  HIS  CB    .  6G8O  1  ?  ?  
+507  1  1  39  39  HIS  CD2   C  13  117.026  0.181  ?  1  ?   757  .  A  39  HIS  CD2   A  39  HIS  CD2   .  6G8O  1  ?  ?  
+508  1  1  39  39  HIS  CE1   C  13  138.108  0.013  ?  1  ?   759  .  A  39  HIS  CE1   A  39  HIS  CE1   .  6G8O  1  ?  ?  
+509  1  1  39  39  HIS  N     N  15  121.181  0.002  ?  1  ?   103  .  A  39  HIS  N     A  39  HIS  N     .  6G8O  1  ?  ?  
+510  1  1  40  40  LEU  H     H   1    7.529    0.0  ?  1  ?    45  .  A  40  LEU  H     A  40  LEU  H     .  6G8O  1  ?  ?  
+511  1  1  40  40  LEU  HA    H   1    3.872      ?  ?  1  ?   260  .  A  40  LEU  HA    A  40  LEU  HA    .  6G8O  1  ?  ?  
+512  1  1  40  40  LEU  HB2   H   1    2.006      ?  ?  2  ?   716  .  A  40  LEU  HB2   A  40  LEU  1HB   .  6G8O  1  ?  ?  
+513  1  1  40  40  LEU  HB3   H   1    1.547      ?  ?  2  ?   717  .  A  40  LEU  HB3   A  40  LEU  2HB   .  6G8O  1  ?  ?  
+514  1  1  40  40  LEU  HG    H   1    1.741      ?  ?  1  ?   718  .  A  40  LEU  HG    A  40  LEU  HG    .  6G8O  1  ?  ?  
+515  1  1  40  40  LEU  HD11  H   1    0.693      ?  ?  1  ?   265  .  A  40  LEU  HD11  A  40  LEU  1HD1  .  6G8O  1  ?  ?  
+516  1  1  40  40  LEU  HD12  H   1    0.693      ?  ?  1  ?   265  .  A  40  LEU  HD12  A  40  LEU  2HD1  .  6G8O  1  ?  ?  
+517  1  1  40  40  LEU  HD13  H   1    0.693      ?  ?  1  ?   265  .  A  40  LEU  HD13  A  40  LEU  3HD1  .  6G8O  1  ?  ?  
+518  1  1  40  40  LEU  C     C  13  178.578      ?  ?  1  ?   263  .  A  40  LEU  C     A  40  LEU  C     .  6G8O  1  ?  ?  
+519  1  1  40  40  LEU  CA    C  13   58.190      ?  ?  1  ?   256  .  A  40  LEU  CA    A  40  LEU  CA    .  6G8O  1  ?  ?  
+520  1  1  40  40  LEU  CB    C  13   40.200  0.007  ?  1  ?   257  .  A  40  LEU  CB    A  40  LEU  CB    .  6G8O  1  ?  ?  
+521  1  1  40  40  LEU  CG    C  13   26.892      ?  ?  1  ?   264  .  A  40  LEU  CG    A  40  LEU  CG    .  6G8O  1  ?  ?  
+522  1  1  40  40  LEU  CD1   C  13   23.941      ?  ?  1  ?   719  .  A  40  LEU  CD1   A  40  LEU  CD1   .  6G8O  1  ?  ?  
+523  1  1  40  40  LEU  N     N  15  116.033  0.017  ?  1  ?    46  .  A  40  LEU  N     A  40  LEU  N     .  6G8O  1  ?  ?  
+524  1  1  41  41  ASN  H     H   1    7.836  0.001  ?  1  ?     3  .  A  41  ASN  H     A  41  ASN  H     .  6G8O  1  ?  ?  
+525  1  1  41  41  ASN  HA    H   1    4.403      ?  ?  1  ?   266  .  A  41  ASN  HA    A  41  ASN  HA    .  6G8O  1  ?  ?  
+526  1  1  41  41  ASN  HB2   H   1    3.153      ?  ?  2  ?   267  .  A  41  ASN  HB2   A  41  ASN  1HB   .  6G8O  1  ?  ?  
+527  1  1  41  41  ASN  HB3   H   1    2.931      ?  ?  2  ?   268  .  A  41  ASN  HB3   A  41  ASN  2HB   .  6G8O  1  ?  ?  
+528  1  1  41  41  ASN  HD21  H   1    7.196  0.002  ?  1  ?    89  .  A  41  ASN  HD21  A  41  ASN  1HD2  .  6G8O  1  ?  ?  
+529  1  1  41  41  ASN  HD22  H   1    7.759    0.0  ?  1  ?   120  .  A  41  ASN  HD22  A  41  ASN  2HD2  .  6G8O  1  ?  ?  
+530  1  1  41  41  ASN  C     C  13  178.924      ?  ?  1  ?   272  .  A  41  ASN  C     A  41  ASN  C     .  6G8O  1  ?  ?  
+531  1  1  41  41  ASN  CA    C  13   55.851      ?  ?  1  ?   261  .  A  41  ASN  CA    A  41  ASN  CA    .  6G8O  1  ?  ?  
+532  1  1  41  41  ASN  CB    C  13   36.828    0.0  ?  1  ?   262  .  A  41  ASN  CB    A  41  ASN  CB    .  6G8O  1  ?  ?  
+533  1  1  41  41  ASN  CG    C  13  176.300  0.012  ?  1  ?  1575  .  A  41  ASN  CG    A  41  ASN  CG    .  6G8O  1  ?  ?  
+534  1  1  41  41  ASN  N     N  15  116.952  0.009  ?  1  ?     4  .  A  41  ASN  N     A  41  ASN  N     .  6G8O  1  ?  ?  
+535  1  1  41  41  ASN  ND2   N  15  111.965  0.256  ?  1  ?    90  .  A  41  ASN  ND2   A  41  ASN  ND2   .  6G8O  1  ?  ?  
+536  1  1  42  42  GLU  H     H   1    7.744    0.0  ?  1  ?    87  .  A  42  GLU  H     A  42  GLU  H     .  6G8O  1  ?  ?  
+537  1  1  42  42  GLU  HA    H   1    4.057      ?  ?  1  ?   271  .  A  42  GLU  HA    A  42  GLU  HA    .  6G8O  1  ?  ?  
+538  1  1  42  42  GLU  HB2   H   1    2.261      ?  ?  2  ?   720  .  A  42  GLU  HB2   A  42  GLU  1HB   .  6G8O  1  ?  ?  
+539  1  1  42  42  GLU  HB3   H   1    2.172      ?  ?  2  ?   721  .  A  42  GLU  HB3   A  42  GLU  2HB   .  6G8O  1  ?  ?  
+540  1  1  42  42  GLU  HG2   H   1    2.361      ?  ?  2  ?   722  .  A  42  GLU  HG2   A  42  GLU  1HG   .  6G8O  1  ?  ?  
+541  1  1  42  42  GLU  HG3   H   1    2.466      ?  ?  2  ?   723  .  A  42  GLU  HG3   A  42  GLU  2HG   .  6G8O  1  ?  ?  
+542  1  1  42  42  GLU  C     C  13  178.080      ?  ?  1  ?   277  .  A  42  GLU  C     A  42  GLU  C     .  6G8O  1  ?  ?  
+543  1  1  42  42  GLU  CA    C  13   59.022      ?  ?  1  ?   269  .  A  42  GLU  CA    A  42  GLU  CA    .  6G8O  1  ?  ?  
+544  1  1  42  42  GLU  CB    C  13   29.339  0.003  ?  1  ?   270  .  A  42  GLU  CB    A  42  GLU  CB    .  6G8O  1  ?  ?  
+545  1  1  42  42  GLU  CG    C  13   36.199  0.001  ?  1  ?   278  .  A  42  GLU  CG    A  42  GLU  CG    .  6G8O  1  ?  ?  
+546  1  1  42  42  GLU  N     N  15  121.693  0.007  ?  1  ?    88  .  A  42  GLU  N     A  42  GLU  N     .  6G8O  1  ?  ?  
+547  1  1  43  43  LEU  H     H   1    7.771  0.002  ?  1  ?   273  .  A  43  LEU  H     A  43  LEU  H     .  6G8O  1  ?  ?  
+548  1  1  43  43  LEU  HA    H   1    4.140      ?  ?  1  ?   279  .  A  43  LEU  HA    A  43  LEU  HA    .  6G8O  1  ?  ?  
+549  1  1  43  43  LEU  HB2   H   1    1.593      ?  ?  2  ?   724  .  A  43  LEU  HB2   A  43  LEU  1HB   .  6G8O  1  ?  ?  
+550  1  1  43  43  LEU  HB3   H   1    1.526      ?  ?  2  ?   725  .  A  43  LEU  HB3   A  43  LEU  2HB   .  6G8O  1  ?  ?  
+551  1  1  43  43  LEU  HG    H   1    1.916      ?  ?  1  ?   302  .  A  43  LEU  HG    A  43  LEU  HG    .  6G8O  1  ?  ?  
+552  1  1  43  43  LEU  HD11  H   1    0.632  0.004  ?  2  ?   286  .  A  43  LEU  HD11  A  43  LEU  1HD1  .  6G8O  1  ?  ?  
+553  1  1  43  43  LEU  HD12  H   1    0.632  0.004  ?  2  ?   286  .  A  43  LEU  HD12  A  43  LEU  2HD1  .  6G8O  1  ?  ?  
+554  1  1  43  43  LEU  HD13  H   1    0.632  0.004  ?  2  ?   286  .  A  43  LEU  HD13  A  43  LEU  3HD1  .  6G8O  1  ?  ?  
+555  1  1  43  43  LEU  HD21  H   1    0.846  0.006  ?  2  ?   287  .  A  43  LEU  HD21  A  43  LEU  1HD2  .  6G8O  1  ?  ?  
+556  1  1  43  43  LEU  HD22  H   1    0.846  0.006  ?  2  ?   287  .  A  43  LEU  HD22  A  43  LEU  2HD2  .  6G8O  1  ?  ?  
+557  1  1  43  43  LEU  HD23  H   1    0.846  0.006  ?  2  ?   287  .  A  43  LEU  HD23  A  43  LEU  3HD2  .  6G8O  1  ?  ?  
+558  1  1  43  43  LEU  C     C  13  175.720      ?  ?  1  ?   282  .  A  43  LEU  C     A  43  LEU  C     .  6G8O  1  ?  ?  
+559  1  1  43  43  LEU  CA    C  13   55.065      ?  ?  1  ?   275  .  A  43  LEU  CA    A  43  LEU  CA    .  6G8O  1  ?  ?  
+560  1  1  43  43  LEU  CB    C  13   42.321  0.002  ?  1  ?   276  .  A  43  LEU  CB    A  43  LEU  CB    .  6G8O  1  ?  ?  
+561  1  1  43  43  LEU  CG    C  13   26.872      ?  ?  1  ?   283  .  A  43  LEU  CG    A  43  LEU  CG    .  6G8O  1  ?  ?  
+562  1  1  43  43  LEU  CD1   C  13   25.346      ?  ?  2  ?   284  .  A  43  LEU  CD1   A  43  LEU  CD1   .  6G8O  1  ?  ?  
+563  1  1  43  43  LEU  CD2   C  13   23.507      ?  ?  2  ?   285  .  A  43  LEU  CD2   A  43  LEU  CD2   .  6G8O  1  ?  ?  
+564  1  1  43  43  LEU  N     N  15  117.385  0.012  ?  1  ?   274  .  A  43  LEU  N     A  43  LEU  N     .  6G8O  1  ?  ?  
+565  1  1  44  44  ASN  H     H   1    7.913    0.0  ?  1  ?   128  .  A  44  ASN  H     A  44  ASN  H     .  6G8O  1  ?  ?  
+566  1  1  44  44  ASN  HA    H   1    4.242      ?  ?  1  ?   288  .  A  44  ASN  HA    A  44  ASN  HA    .  6G8O  1  ?  ?  
+567  1  1  44  44  ASN  HB2   H   1    3.272      ?  ?  2  ?   289  .  A  44  ASN  HB2   A  44  ASN  1HB   .  6G8O  1  ?  ?  
+568  1  1  44  44  ASN  HB3   H   1    2.636      ?  ?  2  ?   290  .  A  44  ASN  HB3   A  44  ASN  2HB   .  6G8O  1  ?  ?  
+569  1  1  44  44  ASN  HD21  H   1    7.465  0.001  ?  1  ?    71  .  A  44  ASN  HD21  A  44  ASN  1HD2  .  6G8O  1  ?  ?  
+570  1  1  44  44  ASN  HD22  H   1    6.681  0.001  ?  1  ?   127  .  A  44  ASN  HD22  A  44  ASN  2HD2  .  6G8O  1  ?  ?  
+571  1  1  44  44  ASN  C     C  13  174.445      ?  ?  1  ?   293  .  A  44  ASN  C     A  44  ASN  C     .  6G8O  1  ?  ?  
+572  1  1  44  44  ASN  CA    C  13   54.275      ?  ?  1  ?   280  .  A  44  ASN  CA    A  44  ASN  CA    .  6G8O  1  ?  ?  
+573  1  1  44  44  ASN  CB    C  13   37.630  0.001  ?  1  ?   281  .  A  44  ASN  CB    A  44  ASN  CB    .  6G8O  1  ?  ?  
+574  1  1  44  44  ASN  CG    C  13  178.093  0.005  ?  1  ?  1569  .  A  44  ASN  CG    A  44  ASN  CG    .  6G8O  1  ?  ?  
+575  1  1  44  44  ASN  N     N  15  115.963  0.003  ?  1  ?   129  .  A  44  ASN  N     A  44  ASN  N     .  6G8O  1  ?  ?  
+576  1  1  44  44  ASN  ND2   N  15  110.759  0.243  ?  1  ?    72  .  A  44  ASN  ND2   A  44  ASN  ND2   .  6G8O  1  ?  ?  
+577  1  1  45  45  ILE  H     H   1    7.854  0.004  ?  1  ?     1  .  A  45  ILE  H     A  45  ILE  H     .  6G8O  1  ?  ?  
+578  1  1  45  45  ILE  HA    H   1    4.101      ?  ?  1  ?   294  .  A  45  ILE  HA    A  45  ILE  HA    .  6G8O  1  ?  ?  
+579  1  1  45  45  ILE  HB    H   1    1.548      ?  ?  1  ?   705  .  A  45  ILE  HB    A  45  ILE  HB    .  6G8O  1  ?  ?  
+580  1  1  45  45  ILE  HG12  H   1    1.410      ?  ?  2  ?   706  .  A  45  ILE  HG12  A  45  ILE  1HG1  .  6G8O  1  ?  ?  
+581  1  1  45  45  ILE  HG13  H   1    0.579      ?  ?  2  ?   707  .  A  45  ILE  HG13  A  45  ILE  2HG1  .  6G8O  1  ?  ?  
+582  1  1  45  45  ILE  HG21  H   1    0.571      ?  ?  1  ?   708  .  A  45  ILE  HG21  A  45  ILE  1HG2  .  6G8O  1  ?  ?  
+583  1  1  45  45  ILE  HG22  H   1    0.571      ?  ?  1  ?   708  .  A  45  ILE  HG22  A  45  ILE  2HG2  .  6G8O  1  ?  ?  
+584  1  1  45  45  ILE  HG23  H   1    0.571      ?  ?  1  ?   708  .  A  45  ILE  HG23  A  45  ILE  3HG2  .  6G8O  1  ?  ?  
+585  1  1  45  45  ILE  HD11  H   1    0.374  0.011  ?  1  ?   439  .  A  45  ILE  HD11  A  45  ILE  1HD1  .  6G8O  1  ?  ?  
+586  1  1  45  45  ILE  HD12  H   1    0.374  0.011  ?  1  ?   439  .  A  45  ILE  HD12  A  45  ILE  2HD1  .  6G8O  1  ?  ?  
+587  1  1  45  45  ILE  HD13  H   1    0.374  0.011  ?  1  ?   439  .  A  45  ILE  HD13  A  45  ILE  3HD1  .  6G8O  1  ?  ?  
+588  1  1  45  45  ILE  C     C  13  174.305      ?  ?  1  ?   297  .  A  45  ILE  C     A  45  ILE  C     .  6G8O  1  ?  ?  
+589  1  1  45  45  ILE  CA    C  13   61.452      ?  ?  1  ?   291  .  A  45  ILE  CA    A  45  ILE  CA    .  6G8O  1  ?  ?  
+590  1  1  45  45  ILE  CB    C  13   37.046      ?  ?  1  ?   292  .  A  45  ILE  CB    A  45  ILE  CB    .  6G8O  1  ?  ?  
+591  1  1  45  45  ILE  CG1   C  13   26.682  0.002  ?  1  ?   298  .  A  45  ILE  CG1   A  45  ILE  CG1   .  6G8O  1  ?  ?  
+592  1  1  45  45  ILE  CG2   C  13   16.130      ?  ?  1  ?   299  .  A  45  ILE  CG2   A  45  ILE  CG2   .  6G8O  1  ?  ?  
+593  1  1  45  45  ILE  CD1   C  13   12.834      ?  ?  1  ?   300  .  A  45  ILE  CD1   A  45  ILE  CD1   .  6G8O  1  ?  ?  
+594  1  1  45  45  ILE  N     N  15  120.320  0.004  ?  1  ?     2  .  A  45  ILE  N     A  45  ILE  N     .  6G8O  1  ?  ?  
+595  1  1  46  46  MET  H     H   1    7.784  0.001  ?  1  ?    41  .  A  46  MET  H     A  46  MET  H     .  6G8O  1  ?  ?  
+596  1  1  46  46  MET  HA    H   1    4.607      ?  ?  1  ?   301  .  A  46  MET  HA    A  46  MET  HA    .  6G8O  1  ?  ?  
+597  1  1  46  46  MET  HB2   H   1    2.157      ?  ?  2  ?   768  .  A  46  MET  HB2   A  46  MET  1HB   .  6G8O  1  ?  ?  
+598  1  1  46  46  MET  HB3   H   1    1.946      ?  ?  2  ?   769  .  A  46  MET  HB3   A  46  MET  2HB   .  6G8O  1  ?  ?  
+599  1  1  46  46  MET  HG2   H   1    2.698      ?  ?  2  ?   765  .  A  46  MET  HG2   A  46  MET  1HG   .  6G8O  1  ?  ?  
+600  1  1  46  46  MET  HG3   H   1    2.257      ?  ?  2  ?   767  .  A  46  MET  HG3   A  46  MET  2HG   .  6G8O  1  ?  ?  
+601  1  1  46  46  MET  HE1   H   1    2.048      ?  ?  1  ?   744  .  A  46  MET  HE1   A  46  MET  1HE   .  6G8O  1  ?  ?  
+602  1  1  46  46  MET  HE2   H   1    2.048      ?  ?  1  ?   744  .  A  46  MET  HE2   A  46  MET  2HE   .  6G8O  1  ?  ?  
+603  1  1  46  46  MET  HE3   H   1    2.048      ?  ?  1  ?   744  .  A  46  MET  HE3   A  46  MET  3HE   .  6G8O  1  ?  ?  
+604  1  1  46  46  MET  C     C  13  177.217      ?  ?  1  ?   305  .  A  46  MET  C     A  46  MET  C     .  6G8O  1  ?  ?  
+605  1  1  46  46  MET  CA    C  13   54.113      ?  ?  1  ?   295  .  A  46  MET  CA    A  46  MET  CA    .  6G8O  1  ?  ?  
+606  1  1  46  46  MET  CB    C  13   32.099  0.002  ?  1  ?   296  .  A  46  MET  CB    A  46  MET  CB    .  6G8O  1  ?  ?  
+607  1  1  46  46  MET  CG    C  13   32.134  0.002  ?  1  ?   766  .  A  46  MET  CG    A  46  MET  CG    .  6G8O  1  ?  ?  
+608  1  1  46  46  MET  CE    C  13   16.389      ?  ?  1  ?   743  .  A  46  MET  CE    A  46  MET  CE    .  6G8O  1  ?  ?  
+609  1  1  46  46  MET  N     N  15  120.753  0.021  ?  1  ?    42  .  A  46  MET  N     A  46  MET  N     .  6G8O  1  ?  ?  
+610  1  1  47  47  ASP  H     H   1    8.160  0.003  ?  1  ?   112  .  A  47  ASP  H     A  47  ASP  H     .  6G8O  1  ?  ?  
+611  1  1  47  47  ASP  HA    H   1    4.648      ?  ?  1  ?   306  .  A  47  ASP  HA    A  47  ASP  HA    .  6G8O  1  ?  ?  
+612  1  1  47  47  ASP  HB2   H   1    2.329  0.002  ?  2  ?   307  .  A  47  ASP  HB2   A  47  ASP  1HB   .  6G8O  1  ?  ?  
+613  1  1  47  47  ASP  HB3   H   1    2.159  0.001  ?  2  ?   308  .  A  47  ASP  HB3   A  47  ASP  2HB   .  6G8O  1  ?  ?  
+614  1  1  47  47  ASP  CA    C  13   52.806      ?  ?  1  ?   303  .  A  47  ASP  CA    A  47  ASP  CA    .  6G8O  1  ?  ?  
+615  1  1  47  47  ASP  CB    C  13   41.865  0.002  ?  1  ?   304  .  A  47  ASP  CB    A  47  ASP  CB    .  6G8O  1  ?  ?  
+616  1  1  47  47  ASP  N     N  15  123.990   0.01  ?  1  ?   113  .  A  47  ASP  N     A  47  ASP  N     .  6G8O  1  ?  ?  
+617  1  1  48  48  PRO  HA    H   1    4.118      ?  ?  1  ?   593  .  A  48  PRO  HA    A  48  PRO  HA    .  6G8O  1  ?  ?  
+618  1  1  48  48  PRO  HB2   H   1    1.959      ?  ?  2  ?   594  .  A  48  PRO  HB2   A  48  PRO  1HB   .  6G8O  1  ?  ?  
+619  1  1  48  48  PRO  HB3   H   1    2.405      ?  ?  2  ?   595  .  A  48  PRO  HB3   A  48  PRO  2HB   .  6G8O  1  ?  ?  
+620  1  1  48  48  PRO  HG2   H   1    2.078      ?  ?  2  ?   596  .  A  48  PRO  HG2   A  48  PRO  1HG   .  6G8O  1  ?  ?  
+621  1  1  48  48  PRO  HG3   H   1    2.135      ?  ?  2  ?   597  .  A  48  PRO  HG3   A  48  PRO  2HG   .  6G8O  1  ?  ?  
+622  1  1  48  48  PRO  HD2   H   1    3.739      ?  ?  2  ?   736  .  A  48  PRO  HD2   A  48  PRO  1HD   .  6G8O  1  ?  ?  
+623  1  1  48  48  PRO  HD3   H   1    4.118      ?  ?  2  ?   737  .  A  48  PRO  HD3   A  48  PRO  2HD   .  6G8O  1  ?  ?  
+624  1  1  48  48  PRO  C     C  13  180.035      ?  ?  1  ?   592  .  A  48  PRO  C     A  48  PRO  C     .  6G8O  1  ?  ?  
+625  1  1  48  48  PRO  CA    C  13   65.698      ?  ?  1  ?   589  .  A  48  PRO  CA    A  48  PRO  CA    .  6G8O  1  ?  ?  
+626  1  1  48  48  PRO  CB    C  13   32.466  0.005  ?  1  ?   588  .  A  48  PRO  CB    A  48  PRO  CB    .  6G8O  1  ?  ?  
+627  1  1  48  48  PRO  CG    C  13   27.626  0.001  ?  1  ?   591  .  A  48  PRO  CG    A  48  PRO  CG    .  6G8O  1  ?  ?  
+628  1  1  48  48  PRO  CD    C  13   51.254    0.0  ?  1  ?   590  .  A  48  PRO  CD    A  48  PRO  CD    .  6G8O  1  ?  ?  
+629  1  1  49  49  GLN  H     H   1    8.477  0.004  ?  1  ?   587  .  A  49  GLN  H     A  49  GLN  H     .  6G8O  1  ?  ?  
+630  1  1  49  49  GLN  HA    H   1    4.058  0.002  ?  1  ?   585  .  A  49  GLN  HA    A  49  GLN  HA    .  6G8O  1  ?  ?  
+631  1  1  49  49  GLN  HB2   H   1    2.371  0.002  ?  2  ?   772  .  A  49  GLN  HB2   A  49  GLN  1HB   .  6G8O  1  ?  ?  
+632  1  1  49  49  GLN  HB3   H   1    2.155  0.003  ?  2  ?   773  .  A  49  GLN  HB3   A  49  GLN  2HB   .  6G8O  1  ?  ?  
+633  1  1  49  49  GLN  HG2   H   1    2.423      ?  ?  2  ?   770  .  A  49  GLN  HG2   A  49  GLN  1HG   .  6G8O  1  ?  ?  
+634  1  1  49  49  GLN  HG3   H   1    2.225      ?  ?  2  ?   771  .  A  49  GLN  HG3   A  49  GLN  2HG   .  6G8O  1  ?  ?  
+635  1  1  49  49  GLN  HE21  H   1    6.827    0.0  ?  1  ?    17  .  A  49  GLN  HE21  A  49  GLN  1HE2  .  6G8O  1  ?  ?  
+636  1  1  49  49  GLN  HE22  H   1    7.745    0.0  ?  1  ?    93  .  A  49  GLN  HE22  A  49  GLN  2HE2  .  6G8O  1  ?  ?  
+637  1  1  49  49  GLN  C     C  13  178.312      ?  ?  1  ?   583  .  A  49  GLN  C     A  49  GLN  C     .  6G8O  1  ?  ?  
+638  1  1  49  49  GLN  CA    C  13   60.024      ?  ?  1  ?   582  .  A  49  GLN  CA    A  49  GLN  CA    .  6G8O  1  ?  ?  
+639  1  1  49  49  GLN  CB    C  13   28.938  0.003  ?  1  ?   581  .  A  49  GLN  CB    A  49  GLN  CB    .  6G8O  1  ?  ?  
+640  1  1  49  49  GLN  CG    C  13   36.061  0.012  ?  1  ?   584  .  A  49  GLN  CG    A  49  GLN  CG    .  6G8O  1  ?  ?  
+641  1  1  49  49  GLN  CD    C  13  179.523  0.009  ?  1  ?  1574  .  A  49  GLN  CD    A  49  GLN  CD    .  6G8O  1  ?  ?  
+642  1  1  49  49  GLN  N     N  15  118.140  0.003  ?  1  ?   586  .  A  49  GLN  N     A  49  GLN  N     .  6G8O  1  ?  ?  
+643  1  1  49  49  GLN  NE2   N  15  111.427  0.259  ?  1  ?    18  .  A  49  GLN  NE2   A  49  GLN  NE2   .  6G8O  1  ?  ?  
+644  1  1  50  50  HIS  H     H   1    8.251  0.001  ?  1  ?    73  .  A  50  HIS  H     A  50  HIS  H     .  6G8O  1  ?  ?  
+645  1  1  50  50  HIS  HA    H   1    4.306  0.001  ?  1  ?   577  .  A  50  HIS  HA    A  50  HIS  HA    .  6G8O  1  ?  ?  
+646  1  1  50  50  HIS  HB2   H   1    3.371    0.0  ?  2  ?   578  .  A  50  HIS  HB2   A  50  HIS  1HB   .  6G8O  1  ?  ?  
+647  1  1  50  50  HIS  HB3   H   1    2.842  0.004  ?  2  ?   579  .  A  50  HIS  HB3   A  50  HIS  2HB   .  6G8O  1  ?  ?  
+648  1  1  50  50  HIS  HD2   H   1    6.904  0.001  ?  1  ?   696  .  A  50  HIS  HD2   A  50  HIS  HD2   .  6G8O  1  ?  ?  
+649  1  1  50  50  HIS  HE1   H   1    8.025  0.004  ?  1  ?   755  .  A  50  HIS  HE1   A  50  HIS  HE1   .  6G8O  1  ?  ?  
+650  1  1  50  50  HIS  C     C  13  178.198      ?  ?  1  ?   580  .  A  50  HIS  C     A  50  HIS  C     .  6G8O  1  ?  ?  
+651  1  1  50  50  HIS  CA    C  13   58.798      ?  ?  1  ?   575  .  A  50  HIS  CA    A  50  HIS  CA    .  6G8O  1  ?  ?  
+652  1  1  50  50  HIS  CB    C  13   31.750  0.003  ?  1  ?   576  .  A  50  HIS  CB    A  50  HIS  CB    .  6G8O  1  ?  ?  
+653  1  1  50  50  HIS  CD2   C  13  117.067  0.171  ?  1  ?   754  .  A  50  HIS  CD2   A  50  HIS  CD2   .  6G8O  1  ?  ?  
+654  1  1  50  50  HIS  CE1   C  13  139.959   0.01  ?  1  ?   756  .  A  50  HIS  CE1   A  50  HIS  CE1   .  6G8O  1  ?  ?  
+655  1  1  50  50  HIS  N     N  15  119.845  0.005  ?  1  ?    74  .  A  50  HIS  N     A  50  HIS  N     .  6G8O  1  ?  ?  
+656  1  1  51  51  ARG  H     H   1    8.473  0.007  ?  1  ?    31  .  A  51  ARG  H     A  51  ARG  H     .  6G8O  1  ?  ?  
+657  1  1  51  51  ARG  HA    H   1    3.631      ?  ?  1  ?   539  .  A  51  ARG  HA    A  51  ARG  HA    .  6G8O  1  ?  ?  
+658  1  1  51  51  ARG  HB2   H   1    1.908      ?  ?  2  ?   540  .  A  51  ARG  HB2   A  51  ARG  1HB   .  6G8O  1  ?  ?  
+659  1  1  51  51  ARG  HB3   H   1    1.683      ?  ?  2  ?   541  .  A  51  ARG  HB3   A  51  ARG  2HB   .  6G8O  1  ?  ?  
+660  1  1  51  51  ARG  HG2   H   1    1.793      ?  ?  2  ?   379  .  A  51  ARG  HG2   A  51  ARG  1HG   .  6G8O  1  ?  ?  
+661  1  1  51  51  ARG  HG3   H   1    1.282      ?  ?  2  ?   542  .  A  51  ARG  HG3   A  51  ARG  2HG   .  6G8O  1  ?  ?  
+662  1  1  51  51  ARG  HD2   H   1    3.435      ?  ?  2  ?   537  .  A  51  ARG  HD2   A  51  ARG  1HD   .  6G8O  1  ?  ?  
+663  1  1  51  51  ARG  HD3   H   1    2.744      ?  ?  2  ?   538  .  A  51  ARG  HD3   A  51  ARG  2HD   .  6G8O  1  ?  ?  
+664  1  1  51  51  ARG  HE    H   1    7.784      ?  ?  1  ?  1579  .  A  51  ARG  HE    A  51  ARG  HE    .  6G8O  1  ?  ?  
+665  1  1  51  51  ARG  C     C  13  177.005      ?  ?  1  ?   536  .  A  51  ARG  C     A  51  ARG  C     .  6G8O  1  ?  ?  
+666  1  1  51  51  ARG  CA    C  13   60.249      ?  ?  1  ?   531  .  A  51  ARG  CA    A  51  ARG  CA    .  6G8O  1  ?  ?  
+667  1  1  51  51  ARG  CB    C  13   31.629  0.014  ?  1  ?   532  .  A  51  ARG  CB    A  51  ARG  CB    .  6G8O  1  ?  ?  
+668  1  1  51  51  ARG  CG    C  13   29.679    0.0  ?  1  ?   534  .  A  51  ARG  CG    A  51  ARG  CG    .  6G8O  1  ?  ?  
+669  1  1  51  51  ARG  CD    C  13   45.224  0.002  ?  1  ?   533  .  A  51  ARG  CD    A  51  ARG  CD    .  6G8O  1  ?  ?  
+670  1  1  51  51  ARG  N     N  15  116.254   0.01  ?  1  ?    32  .  A  51  ARG  N     A  51  ARG  N     .  6G8O  1  ?  ?  
+671  1  1  51  51  ARG  NE    N  15   83.055      ?  ?  1  ?  1581  .  A  51  ARG  NE    A  51  ARG  NE    .  6G8O  1  ?  ?  
+672  1  1  52  52  ALA  H     H   1    7.648    0.0  ?  1  ?    21  .  A  52  ALA  H     A  52  ALA  H     .  6G8O  1  ?  ?  
+673  1  1  52  52  ALA  HA    H   1    4.131      ?  ?  1  ?   551  .  A  52  ALA  HA    A  52  ALA  HA    .  6G8O  1  ?  ?  
+674  1  1  52  52  ALA  HB1   H   1    1.567      ?  ?  1  ?   550  .  A  52  ALA  HB1   A  52  ALA  1HB   .  6G8O  1  ?  ?  
+675  1  1  52  52  ALA  HB2   H   1    1.567      ?  ?  1  ?   550  .  A  52  ALA  HB2   A  52  ALA  2HB   .  6G8O  1  ?  ?  
+676  1  1  52  52  ALA  HB3   H   1    1.567      ?  ?  1  ?   550  .  A  52  ALA  HB3   A  52  ALA  3HB   .  6G8O  1  ?  ?  
+677  1  1  52  52  ALA  C     C  13  181.103      ?  ?  1  ?   552  .  A  52  ALA  C     A  52  ALA  C     .  6G8O  1  ?  ?  
+678  1  1  52  52  ALA  CA    C  13   55.135      ?  ?  1  ?   530  .  A  52  ALA  CA    A  52  ALA  CA    .  6G8O  1  ?  ?  
+679  1  1  52  52  ALA  CB    C  13   18.480      ?  ?  1  ?   529  .  A  52  ALA  CB    A  52  ALA  CB    .  6G8O  1  ?  ?  
+680  1  1  52  52  ALA  N     N  15  118.464   0.01  ?  1  ?    22  .  A  52  ALA  N     A  52  ALA  N     .  6G8O  1  ?  ?  
+681  1  1  53  53  LYS  H     H   1    8.075  0.002  ?  1  ?   547  .  A  53  LYS  H     A  53  LYS  H     .  6G8O  1  ?  ?  
+682  1  1  53  53  LYS  HA    H   1    4.012      ?  ?  1  ?   558  .  A  53  LYS  HA    A  53  LYS  HA    .  6G8O  1  ?  ?  
+683  1  1  53  53  LYS  HB2   H   1    2.047      ?  ?  2  ?   564  .  A  53  LYS  HB2   A  53  LYS  1HB   .  6G8O  1  ?  ?  
+684  1  1  53  53  LYS  HB3   H   1    1.721      ?  ?  2  ?   565  .  A  53  LYS  HB3   A  53  LYS  2HB   .  6G8O  1  ?  ?  
+685  1  1  53  53  LYS  HG2   H   1    1.334      ?  ?  2  ?   566  .  A  53  LYS  HG2   A  53  LYS  1HG   .  6G8O  1  ?  ?  
+686  1  1  53  53  LYS  HG3   H   1    2.045      ?  ?  2  ?   567  .  A  53  LYS  HG3   A  53  LYS  2HG   .  6G8O  1  ?  ?  
+687  1  1  53  53  LYS  HD2   H   1    1.712  0.007  ?  1  ?   562  .  A  53  LYS  HD2   A  53  LYS  1HD   .  6G8O  1  ?  ?  
+688  1  1  53  53  LYS  HD3   H   1    1.705      ?  ?  1  ?   563  .  A  53  LYS  HD3   A  53  LYS  2HD   .  6G8O  1  ?  ?  
+689  1  1  53  53  LYS  HE2   H   1    2.952      ?  ?  1  ?   559  .  A  53  LYS  HE2   A  53  LYS  1HE   .  6G8O  1  ?  ?  
+690  1  1  53  53  LYS  HE3   H   1    2.952      ?  ?  1  ?   560  .  A  53  LYS  HE3   A  53  LYS  2HE   .  6G8O  1  ?  ?  
+691  1  1  53  53  LYS  C     C  13  178.055      ?  ?  1  ?   555  .  A  53  LYS  C     A  53  LYS  C     .  6G8O  1  ?  ?  
+692  1  1  53  53  LYS  CA    C  13   60.983      ?  ?  1  ?   549  .  A  53  LYS  CA    A  53  LYS  CA    .  6G8O  1  ?  ?  
+693  1  1  53  53  LYS  CB    C  13   34.200  0.025  ?  1  ?   548  .  A  53  LYS  CB    A  53  LYS  CB    .  6G8O  1  ?  ?  
+694  1  1  53  53  LYS  CG    C  13   26.213  0.013  ?  1  ?   557  .  A  53  LYS  CG    A  53  LYS  CG    .  6G8O  1  ?  ?  
+695  1  1  53  53  LYS  CD    C  13   30.240      ?  ?  1  ?   556  .  A  53  LYS  CD    A  53  LYS  CD    .  6G8O  1  ?  ?  
+696  1  1  53  53  LYS  CE    C  13   42.216      ?  ?  1  ?   561  .  A  53  LYS  CE    A  53  LYS  CE    .  6G8O  1  ?  ?  
+697  1  1  53  53  LYS  N     N  15  118.584  0.003  ?  1  ?   546  .  A  53  LYS  N     A  53  LYS  N     .  6G8O  1  ?  ?  
+698  1  1  54  54  LEU  H     H   1    8.133  0.011  ?  1  ?    13  .  A  54  LEU  H     A  54  LEU  H     .  6G8O  1  ?  ?  
+699  1  1  54  54  LEU  HA    H   1    3.889  0.004  ?  1  ?   524  .  A  54  LEU  HA    A  54  LEU  HA    .  6G8O  1  ?  ?  
+700  1  1  54  54  LEU  HB2   H   1    1.855  0.005  ?  2  ?   571  .  A  54  LEU  HB2   A  54  LEU  1HB   .  6G8O  1  ?  ?  
+701  1  1  54  54  LEU  HB3   H   1    1.209  0.012  ?  2  ?   572  .  A  54  LEU  HB3   A  54  LEU  2HB   .  6G8O  1  ?  ?  
+702  1  1  54  54  LEU  HG    H   1    1.853  0.007  ?  1  ?   323  .  A  54  LEU  HG    A  54  LEU  HG    .  6G8O  1  ?  ?  
+703  1  1  54  54  LEU  HD11  H   1    0.659  0.002  ?  2  ?   569  .  A  54  LEU  HD11  A  54  LEU  1HD1  .  6G8O  1  ?  ?  
+704  1  1  54  54  LEU  HD12  H   1    0.659  0.002  ?  2  ?   569  .  A  54  LEU  HD12  A  54  LEU  2HD1  .  6G8O  1  ?  ?  
+705  1  1  54  54  LEU  HD13  H   1    0.659  0.002  ?  2  ?   569  .  A  54  LEU  HD13  A  54  LEU  3HD1  .  6G8O  1  ?  ?  
+706  1  1  54  54  LEU  HD21  H   1    0.816  0.017  ?  2  ?   570  .  A  54  LEU  HD21  A  54  LEU  1HD2  .  6G8O  1  ?  ?  
+707  1  1  54  54  LEU  HD22  H   1    0.816  0.017  ?  2  ?   570  .  A  54  LEU  HD22  A  54  LEU  2HD2  .  6G8O  1  ?  ?  
+708  1  1  54  54  LEU  HD23  H   1    0.816  0.017  ?  2  ?   570  .  A  54  LEU  HD23  A  54  LEU  3HD2  .  6G8O  1  ?  ?  
+709  1  1  54  54  LEU  C     C  13  178.218      ?  ?  1  ?   568  .  A  54  LEU  C     A  54  LEU  C     .  6G8O  1  ?  ?  
+710  1  1  54  54  LEU  CA    C  13   58.712      ?  ?  1  ?   554  .  A  54  LEU  CA    A  54  LEU  CA    .  6G8O  1  ?  ?  
+711  1  1  54  54  LEU  CB    C  13   42.139  0.003  ?  1  ?   553  .  A  54  LEU  CB    A  54  LEU  CB    .  6G8O  1  ?  ?  
+712  1  1  54  54  LEU  CG    C  13   26.684      ?  ?  1  ?   726  .  A  54  LEU  CG    A  54  LEU  CG    .  6G8O  1  ?  ?  
+713  1  1  54  54  LEU  CD1   C  13   26.924      ?  ?  2  ?   573  .  A  54  LEU  CD1   A  54  LEU  CD1   .  6G8O  1  ?  ?  
+714  1  1  54  54  LEU  CD2   C  13   24.018      ?  ?  2  ?   574  .  A  54  LEU  CD2   A  54  LEU  CD2   .  6G8O  1  ?  ?  
+715  1  1  54  54  LEU  N     N  15  117.871  0.008  ?  1  ?    14  .  A  54  LEU  N     A  54  LEU  N     .  6G8O  1  ?  ?  
+716  1  1  55  55  LEU  H     H   1    8.384    0.0  ?  1  ?     7  .  A  55  LEU  H     A  55  LEU  H     .  6G8O  1  ?  ?  
+717  1  1  55  55  LEU  HA    H   1    3.912      ?  ?  1  ?   512  .  A  55  LEU  HA    A  55  LEU  HA    .  6G8O  1  ?  ?  
+718  1  1  55  55  LEU  HB2   H   1    1.774      ?  ?  2  ?   515  .  A  55  LEU  HB2   A  55  LEU  1HB   .  6G8O  1  ?  ?  
+719  1  1  55  55  LEU  HB3   H   1    1.483      ?  ?  2  ?   516  .  A  55  LEU  HB3   A  55  LEU  2HB   .  6G8O  1  ?  ?  
+720  1  1  55  55  LEU  HG    H   1    1.720      ?  ?  1  ?   517  .  A  55  LEU  HG    A  55  LEU  HG    .  6G8O  1  ?  ?  
+721  1  1  55  55  LEU  HD11  H   1    0.582      ?  ?  2  ?   513  .  A  55  LEU  HD11  A  55  LEU  1HD1  .  6G8O  1  ?  ?  
+722  1  1  55  55  LEU  HD12  H   1    0.582      ?  ?  2  ?   513  .  A  55  LEU  HD12  A  55  LEU  2HD1  .  6G8O  1  ?  ?  
+723  1  1  55  55  LEU  HD13  H   1    0.582      ?  ?  2  ?   513  .  A  55  LEU  HD13  A  55  LEU  3HD1  .  6G8O  1  ?  ?  
+724  1  1  55  55  LEU  HD21  H   1    0.779      ?  ?  2  ?   514  .  A  55  LEU  HD21  A  55  LEU  1HD2  .  6G8O  1  ?  ?  
+725  1  1  55  55  LEU  HD22  H   1    0.779      ?  ?  2  ?   514  .  A  55  LEU  HD22  A  55  LEU  2HD2  .  6G8O  1  ?  ?  
+726  1  1  55  55  LEU  HD23  H   1    0.779      ?  ?  2  ?   514  .  A  55  LEU  HD23  A  55  LEU  3HD2  .  6G8O  1  ?  ?  
+727  1  1  55  55  LEU  C     C  13  179.833      ?  ?  1  ?   511  .  A  55  LEU  C     A  55  LEU  C     .  6G8O  1  ?  ?  
+728  1  1  55  55  LEU  CA    C  13   57.655      ?  ?  1  ?   507  .  A  55  LEU  CA    A  55  LEU  CA    .  6G8O  1  ?  ?  
+729  1  1  55  55  LEU  CB    C  13   40.881  0.004  ?  1  ?   508  .  A  55  LEU  CB    A  55  LEU  CB    .  6G8O  1  ?  ?  
+730  1  1  55  55  LEU  CG    C  13   26.740      ?  ?  1  ?   518  .  A  55  LEU  CG    A  55  LEU  CG    .  6G8O  1  ?  ?  
+731  1  1  55  55  LEU  CD1   C  13   21.963      ?  ?  2  ?   520  .  A  55  LEU  CD1   A  55  LEU  CD1   .  6G8O  1  ?  ?  
+732  1  1  55  55  LEU  CD2   C  13   25.434      ?  ?  2  ?   519  .  A  55  LEU  CD2   A  55  LEU  CD2   .  6G8O  1  ?  ?  
+733  1  1  55  55  LEU  N     N  15  115.583  0.008  ?  1  ?     8  .  A  55  LEU  N     A  55  LEU  N     .  6G8O  1  ?  ?  
+734  1  1  56  56  THR  H     H   1    7.707    0.0  ?  1  ?    67  .  A  56  THR  H     A  56  THR  H     .  6G8O  1  ?  ?  
+735  1  1  56  56  THR  HA    H   1    3.907      ?  ?  1  ?   610  .  A  56  THR  HA    A  56  THR  HA    .  6G8O  1  ?  ?  
+736  1  1  56  56  THR  HB    H   1    4.276      ?  ?  1  ?   523  .  A  56  THR  HB    A  56  THR  HB    .  6G8O  1  ?  ?  
+737  1  1  56  56  THR  HG21  H   1    1.313      ?  ?  1  ?   522  .  A  56  THR  HG21  A  56  THR  1HG2  .  6G8O  1  ?  ?  
+738  1  1  56  56  THR  HG22  H   1    1.313      ?  ?  1  ?   522  .  A  56  THR  HG22  A  56  THR  2HG2  .  6G8O  1  ?  ?  
+739  1  1  56  56  THR  HG23  H   1    1.313      ?  ?  1  ?   522  .  A  56  THR  HG23  A  56  THR  3HG2  .  6G8O  1  ?  ?  
+740  1  1  56  56  THR  C     C  13  175.287      ?  ?  1  ?   672  .  A  56  THR  C     A  56  THR  C     .  6G8O  1  ?  ?  
+741  1  1  56  56  THR  CA    C  13   67.740      ?  ?  1  ?   506  .  A  56  THR  CA    A  56  THR  CA    .  6G8O  1  ?  ?  
+742  1  1  56  56  THR  CB    C  13   68.349      ?  ?  1  ?   505  .  A  56  THR  CB    A  56  THR  CB    .  6G8O  1  ?  ?  
+743  1  1  56  56  THR  CG2   C  13   21.060      ?  ?  1  ?   521  .  A  56  THR  CG2   A  56  THR  CG2   .  6G8O  1  ?  ?  
+744  1  1  56  56  THR  N     N  15  116.185  0.001  ?  1  ?    68  .  A  56  THR  N     A  56  THR  N     .  6G8O  1  ?  ?  
+745  1  1  57  57  ALA  H     H   1    8.136  0.007  ?  1  ?    69  .  A  57  ALA  H     A  57  ALA  H     .  6G8O  1  ?  ?  
+746  1  1  57  57  ALA  HA    H   1    3.890  0.002  ?  1  ?   602  .  A  57  ALA  HA    A  57  ALA  HA    .  6G8O  1  ?  ?  
+747  1  1  57  57  ALA  HB1   H   1    1.494  0.003  ?  1  ?   601  .  A  57  ALA  HB1   A  57  ALA  1HB   .  6G8O  1  ?  ?  
+748  1  1  57  57  ALA  HB2   H   1    1.494  0.003  ?  1  ?   601  .  A  57  ALA  HB2   A  57  ALA  2HB   .  6G8O  1  ?  ?  
+749  1  1  57  57  ALA  HB3   H   1    1.494  0.003  ?  1  ?   601  .  A  57  ALA  HB3   A  57  ALA  3HB   .  6G8O  1  ?  ?  
+750  1  1  57  57  ALA  C     C  13  177.941      ?  ?  1  ?   599  .  A  57  ALA  C     A  57  ALA  C     .  6G8O  1  ?  ?  
+751  1  1  57  57  ALA  CA    C  13   55.478      ?  ?  1  ?   510  .  A  57  ALA  CA    A  57  ALA  CA    .  6G8O  1  ?  ?  
+752  1  1  57  57  ALA  CB    C  13   18.078      ?  ?  1  ?   509  .  A  57  ALA  CB    A  57  ALA  CB    .  6G8O  1  ?  ?  
+753  1  1  57  57  ALA  N     N  15  122.111  0.016  ?  1  ?    70  .  A  57  ALA  N     A  57  ALA  N     .  6G8O  1  ?  ?  
+754  1  1  58  58  ALA  H     H   1    8.131  0.012  ?  1  ?    23  .  A  58  ALA  H     A  58  ALA  H     .  6G8O  1  ?  ?  
+755  1  1  58  58  ALA  HA    H   1    3.782      ?  ?  1  ?   609  .  A  58  ALA  HA    A  58  ALA  HA    .  6G8O  1  ?  ?  
+756  1  1  58  58  ALA  HB1   H   1    1.174  0.011  ?  1  ?   608  .  A  58  ALA  HB1   A  58  ALA  1HB   .  6G8O  1  ?  ?  
+757  1  1  58  58  ALA  HB2   H   1    1.174  0.011  ?  1  ?   608  .  A  58  ALA  HB2   A  58  ALA  2HB   .  6G8O  1  ?  ?  
+758  1  1  58  58  ALA  HB3   H   1    1.174  0.011  ?  1  ?   608  .  A  58  ALA  HB3   A  58  ALA  3HB   .  6G8O  1  ?  ?  
+759  1  1  58  58  ALA  C     C  13  179.139      ?  ?  1  ?   607  .  A  58  ALA  C     A  58  ALA  C     .  6G8O  1  ?  ?  
+760  1  1  58  58  ALA  CA    C  13   56.306      ?  ?  1  ?   598  .  A  58  ALA  CA    A  58  ALA  CA    .  6G8O  1  ?  ?  
+761  1  1  58  58  ALA  CB    C  13   18.177      ?  ?  1  ?   606  .  A  58  ALA  CB    A  58  ALA  CB    .  6G8O  1  ?  ?  
+762  1  1  58  58  ALA  N     N  15  119.087  0.012  ?  1  ?    24  .  A  58  ALA  N     A  58  ALA  N     .  6G8O  1  ?  ?  
+763  1  1  59  59  GLU  H     H   1    7.763  0.009  ?  1  ?     9  .  A  59  GLU  H     A  59  GLU  H     .  6G8O  1  ?  ?  
+764  1  1  59  59  GLU  HA    H   1    3.982      ?  ?  1  ?   614  .  A  59  GLU  HA    A  59  GLU  HA    .  6G8O  1  ?  ?  
+765  1  1  59  59  GLU  HB2   H   1    2.310      ?  ?  2  ?   774  .  A  59  GLU  HB2   A  59  GLU  1HB   .  6G8O  1  ?  ?  
+766  1  1  59  59  GLU  HB3   H   1    1.933      ?  ?  2  ?   775  .  A  59  GLU  HB3   A  59  GLU  2HB   .  6G8O  1  ?  ?  
+767  1  1  59  59  GLU  HG2   H   1    2.319      ?  ?  2  ?   727  .  A  59  GLU  HG2   A  59  GLU  1HG   .  6G8O  1  ?  ?  
+768  1  1  59  59  GLU  HG3   H   1    2.371      ?  ?  2  ?   728  .  A  59  GLU  HG3   A  59  GLU  2HG   .  6G8O  1  ?  ?  
+769  1  1  59  59  GLU  C     C  13  178.945      ?  ?  1  ?   605  .  A  59  GLU  C     A  59  GLU  C     .  6G8O  1  ?  ?  
+770  1  1  59  59  GLU  CA    C  13   58.724      ?  ?  1  ?   603  .  A  59  GLU  CA    A  59  GLU  CA    .  6G8O  1  ?  ?  
+771  1  1  59  59  GLU  CB    C  13   29.182  0.001  ?  1  ?   604  .  A  59  GLU  CB    A  59  GLU  CB    .  6G8O  1  ?  ?  
+772  1  1  59  59  GLU  CG    C  13   35.366  0.003  ?  1  ?   613  .  A  59  GLU  CG    A  59  GLU  CG    .  6G8O  1  ?  ?  
+773  1  1  59  59  GLU  N     N  15  115.789    0.0  ?  1  ?    10  .  A  59  GLU  N     A  59  GLU  N     .  6G8O  1  ?  ?  
+774  1  1  60  60  LEU  H     H   1    8.056  0.001  ?  1  ?   116  .  A  60  LEU  H     A  60  LEU  H     .  6G8O  1  ?  ?  
+775  1  1  60  60  LEU  HA    H   1    4.156  0.001  ?  1  ?   620  .  A  60  LEU  HA    A  60  LEU  HA    .  6G8O  1  ?  ?  
+776  1  1  60  60  LEU  HB2   H   1    1.481  0.012  ?  2  ?   600  .  A  60  LEU  HB2   A  60  LEU  1HB   .  6G8O  1  ?  ?  
+777  1  1  60  60  LEU  HB3   H   1    1.836  0.021  ?  2  ?   625  .  A  60  LEU  HB3   A  60  LEU  2HB   .  6G8O  1  ?  ?  
+778  1  1  60  60  LEU  HG    H   1    1.863  0.007  ?  1  ?   623  .  A  60  LEU  HG    A  60  LEU  HG    .  6G8O  1  ?  ?  
+779  1  1  60  60  LEU  HD11  H   1    0.791  0.013  ?  2  ?   619  .  A  60  LEU  HD11  A  60  LEU  1HD1  .  6G8O  1  ?  ?  
+780  1  1  60  60  LEU  HD12  H   1    0.791  0.013  ?  2  ?   619  .  A  60  LEU  HD12  A  60  LEU  2HD1  .  6G8O  1  ?  ?  
+781  1  1  60  60  LEU  HD13  H   1    0.791  0.013  ?  2  ?   619  .  A  60  LEU  HD13  A  60  LEU  3HD1  .  6G8O  1  ?  ?  
+782  1  1  60  60  LEU  HD21  H   1    0.810  0.005  ?  2  ?   621  .  A  60  LEU  HD21  A  60  LEU  1HD2  .  6G8O  1  ?  ?  
+783  1  1  60  60  LEU  HD22  H   1    0.810  0.005  ?  2  ?   621  .  A  60  LEU  HD22  A  60  LEU  2HD2  .  6G8O  1  ?  ?  
+784  1  1  60  60  LEU  HD23  H   1    0.810  0.005  ?  2  ?   621  .  A  60  LEU  HD23  A  60  LEU  3HD2  .  6G8O  1  ?  ?  
+785  1  1  60  60  LEU  C     C  13  178.669      ?  ?  1  ?   617  .  A  60  LEU  C     A  60  LEU  C     .  6G8O  1  ?  ?  
+786  1  1  60  60  LEU  CA    C  13   56.959      ?  ?  1  ?   219  .  A  60  LEU  CA    A  60  LEU  CA    .  6G8O  1  ?  ?  
+787  1  1  60  60  LEU  CB    C  13   41.632   0.01  ?  1  ?   612  .  A  60  LEU  CB    A  60  LEU  CB    .  6G8O  1  ?  ?  
+788  1  1  60  60  LEU  CG    C  13   27.595      ?  ?  1  ?   622  .  A  60  LEU  CG    A  60  LEU  CG    .  6G8O  1  ?  ?  
+789  1  1  60  60  LEU  CD1   C  13   23.089      ?  ?  2  ?   618  .  A  60  LEU  CD1   A  60  LEU  CD1   .  6G8O  1  ?  ?  
+790  1  1  60  60  LEU  CD2   C  13   26.072      ?  ?  2  ?   624  .  A  60  LEU  CD2   A  60  LEU  CD2   .  6G8O  1  ?  ?  
+791  1  1  60  60  LEU  N     N  15  117.674  0.013  ?  1  ?   117  .  A  60  LEU  N     A  60  LEU  N     .  6G8O  1  ?  ?  
+792  1  1  61  61  LEU  H     H   1    8.000    0.0  ?  1  ?    99  .  A  61  LEU  H     A  61  LEU  H     .  6G8O  1  ?  ?  
+793  1  1  61  61  LEU  HA    H   1    4.146  0.008  ?  1  ?   472  .  A  61  LEU  HA    A  61  LEU  HA    .  6G8O  1  ?  ?  
+794  1  1  61  61  LEU  HB2   H   1    1.553    0.0  ?  2  ?   731  .  A  61  LEU  HB2   A  61  LEU  1HB   .  6G8O  1  ?  ?  
+795  1  1  61  61  LEU  HB3   H   1    1.925      ?  ?  2  ?   732  .  A  61  LEU  HB3   A  61  LEU  2HB   .  6G8O  1  ?  ?  
+796  1  1  61  61  LEU  HD11  H   1    0.813  0.009  ?  2  ?   729  .  A  61  LEU  HD11  A  61  LEU  1HD1  .  6G8O  1  ?  ?  
+797  1  1  61  61  LEU  HD12  H   1    0.813  0.009  ?  2  ?   729  .  A  61  LEU  HD12  A  61  LEU  2HD1  .  6G8O  1  ?  ?  
+798  1  1  61  61  LEU  HD13  H   1    0.813  0.009  ?  2  ?   729  .  A  61  LEU  HD13  A  61  LEU  3HD1  .  6G8O  1  ?  ?  
+799  1  1  61  61  LEU  HD21  H   1    0.726  0.014  ?  2  ?   730  .  A  61  LEU  HD21  A  61  LEU  1HD2  .  6G8O  1  ?  ?  
+800  1  1  61  61  LEU  HD22  H   1    0.726  0.014  ?  2  ?   730  .  A  61  LEU  HD22  A  61  LEU  2HD2  .  6G8O  1  ?  ?  
+801  1  1  61  61  LEU  HD23  H   1    0.726  0.014  ?  2  ?   730  .  A  61  LEU  HD23  A  61  LEU  3HD2  .  6G8O  1  ?  ?  
+802  1  1  61  61  LEU  C     C  13  178.428      ?  ?  1  ?   629  .  A  61  LEU  C     A  61  LEU  C     .  6G8O  1  ?  ?  
+803  1  1  61  61  LEU  CA    C  13   56.746      ?  ?  1  ?   615  .  A  61  LEU  CA    A  61  LEU  CA    .  6G8O  1  ?  ?  
+804  1  1  61  61  LEU  CB    C  13   42.238  0.001  ?  1  ?   616  .  A  61  LEU  CB    A  61  LEU  CB    .  6G8O  1  ?  ?  
+805  1  1  61  61  LEU  CD1   C  13   26.188      ?  ?  2  ?   630  .  A  61  LEU  CD1   A  61  LEU  CD1   .  6G8O  1  ?  ?  
+806  1  1  61  61  LEU  CD2   C  13   24.112      ?  ?  2  ?   733  .  A  61  LEU  CD2   A  61  LEU  CD2   .  6G8O  1  ?  ?  
+807  1  1  61  61  LEU  N     N  15  118.769  0.011  ?  1  ?   100  .  A  61  LEU  N     A  61  LEU  N     .  6G8O  1  ?  ?  
+808  1  1  62  62  LEU  H     H   1    7.677  0.002  ?  1  ?   104  .  A  62  LEU  H     A  62  LEU  H     .  6G8O  1  ?  ?  
+809  1  1  62  62  LEU  HA    H   1    4.019      ?  ?  1  ?   632  .  A  62  LEU  HA    A  62  LEU  HA    .  6G8O  1  ?  ?  
+810  1  1  62  62  LEU  HB2   H   1    1.844      ?  ?  2  ?   635  .  A  62  LEU  HB2   A  62  LEU  1HB   .  6G8O  1  ?  ?  
+811  1  1  62  62  LEU  HB3   H   1    1.657      ?  ?  2  ?   636  .  A  62  LEU  HB3   A  62  LEU  2HB   .  6G8O  1  ?  ?  
+812  1  1  62  62  LEU  HG    H   1    1.740      ?  ?  1  ?   637  .  A  62  LEU  HG    A  62  LEU  HG    .  6G8O  1  ?  ?  
+813  1  1  62  62  LEU  HD11  H   1    0.908      ?  ?  2  ?   633  .  A  62  LEU  HD11  A  62  LEU  1HD1  .  6G8O  1  ?  ?  
+814  1  1  62  62  LEU  HD12  H   1    0.908      ?  ?  2  ?   633  .  A  62  LEU  HD12  A  62  LEU  2HD1  .  6G8O  1  ?  ?  
+815  1  1  62  62  LEU  HD13  H   1    0.908      ?  ?  2  ?   633  .  A  62  LEU  HD13  A  62  LEU  3HD1  .  6G8O  1  ?  ?  
+816  1  1  62  62  LEU  HD21  H   1    0.949      ?  ?  2  ?   634  .  A  62  LEU  HD21  A  62  LEU  1HD2  .  6G8O  1  ?  ?  
+817  1  1  62  62  LEU  HD22  H   1    0.949      ?  ?  2  ?   634  .  A  62  LEU  HD22  A  62  LEU  2HD2  .  6G8O  1  ?  ?  
+818  1  1  62  62  LEU  HD23  H   1    0.949      ?  ?  2  ?   634  .  A  62  LEU  HD23  A  62  LEU  3HD2  .  6G8O  1  ?  ?  
+819  1  1  62  62  LEU  C     C  13  178.094      ?  ?  1  ?   639  .  A  62  LEU  C     A  62  LEU  C     .  6G8O  1  ?  ?  
+820  1  1  62  62  LEU  CA    C  13   58.043      ?  ?  1  ?   628  .  A  62  LEU  CA    A  62  LEU  CA    .  6G8O  1  ?  ?  
+821  1  1  62  62  LEU  CB    C  13   42.031  0.001  ?  1  ?   627  .  A  62  LEU  CB    A  62  LEU  CB    .  6G8O  1  ?  ?  
+822  1  1  62  62  LEU  CG    C  13   26.870      ?  ?  1  ?   638  .  A  62  LEU  CG    A  62  LEU  CG    .  6G8O  1  ?  ?  
+823  1  1  62  62  LEU  CD1   C  13   24.580      ?  ?  2  ?   734  .  A  62  LEU  CD1   A  62  LEU  CD1   .  6G8O  1  ?  ?  
+824  1  1  62  62  LEU  CD2   C  13   24.784      ?  ?  2  ?   735  .  A  62  LEU  CD2   A  62  LEU  CD2   .  6G8O  1  ?  ?  
+825  1  1  62  62  LEU  N     N  15  119.401  0.004  ?  1  ?   105  .  A  62  LEU  N     A  62  LEU  N     .  6G8O  1  ?  ?  
+826  1  1  63  63  ASP  H     H   1    7.865  0.001  ?  1  ?    81  .  A  63  ASP  H     A  63  ASP  H     .  6G8O  1  ?  ?  
+827  1  1  63  63  ASP  HA    H   1    4.601      ?  ?  1  ?   643  .  A  63  ASP  HA    A  63  ASP  HA    .  6G8O  1  ?  ?  
+828  1  1  63  63  ASP  HB2   H   1    2.366  0.001  ?  2  ?   644  .  A  63  ASP  HB2   A  63  ASP  1HB   .  6G8O  1  ?  ?  
+829  1  1  63  63  ASP  HB3   H   1    2.619      ?  ?  2  ?   645  .  A  63  ASP  HB3   A  63  ASP  2HB   .  6G8O  1  ?  ?  
+830  1  1  63  63  ASP  C     C  13  176.548      ?  ?  1  ?   642  .  A  63  ASP  C     A  63  ASP  C     .  6G8O  1  ?  ?  
+831  1  1  63  63  ASP  CA    C  13   54.565      ?  ?  1  ?   631  .  A  63  ASP  CA    A  63  ASP  CA    .  6G8O  1  ?  ?  
+832  1  1  63  63  ASP  CB    C  13   40.992  0.005  ?  1  ?   626  .  A  63  ASP  CB    A  63  ASP  CB    .  6G8O  1  ?  ?  
+833  1  1  63  63  ASP  N     N  15  116.792  0.004  ?  1  ?    82  .  A  63  ASP  N     A  63  ASP  N     .  6G8O  1  ?  ?  
+834  1  1  64  64  TYR  H     H   1    7.926  0.002  ?  1  ?    15  .  A  64  TYR  H     A  64  TYR  H     .  6G8O  1  ?  ?  
+835  1  1  64  64  TYR  HA    H   1    4.534  0.003  ?  1  ?   329  .  A  64  TYR  HA    A  64  TYR  HA    .  6G8O  1  ?  ?  
+836  1  1  64  64  TYR  HB2   H   1    2.877  0.004  ?  2  ?   651  .  A  64  TYR  HB2   A  64  TYR  1HB   .  6G8O  1  ?  ?  
+837  1  1  64  64  TYR  HB3   H   1    3.007  0.004  ?  2  ?   652  .  A  64  TYR  HB3   A  64  TYR  2HB   .  6G8O  1  ?  ?  
+838  1  1  64  64  TYR  HD1   H   1    7.038  0.002  ?  1  ?   700  .  A  64  TYR  HD1   A  64  TYR  HD1   .  6G8O  1  ?  ?  
+839  1  1  64  64  TYR  HD2   H   1    7.038  0.002  ?  1  ?   700  .  A  64  TYR  HD2   A  64  TYR  HD2   .  6G8O  1  ?  ?  
+840  1  1  64  64  TYR  HE1   H   1    6.662  0.002  ?  1  ?   703  .  A  64  TYR  HE1   A  64  TYR  HE1   .  6G8O  1  ?  ?  
+841  1  1  64  64  TYR  HE2   H   1    6.662  0.002  ?  1  ?   703  .  A  64  TYR  HE2   A  64  TYR  HE2   .  6G8O  1  ?  ?  
+842  1  1  64  64  TYR  C     C  13  175.531      ?  ?  1  ?   650  .  A  64  TYR  C     A  64  TYR  C     .  6G8O  1  ?  ?  
+843  1  1  64  64  TYR  CA    C  13   58.890      ?  ?  1  ?   641  .  A  64  TYR  CA    A  64  TYR  CA    .  6G8O  1  ?  ?  
+844  1  1  64  64  TYR  CB    C  13   39.038  0.006  ?  1  ?   640  .  A  64  TYR  CB    A  64  TYR  CB    .  6G8O  1  ?  ?  
+845  1  1  64  64  TYR  CD1   C  13  132.942  0.054  ?  1  ?   747  .  A  64  TYR  CD1   A  64  TYR  CD1   .  6G8O  1  ?  ?  
+846  1  1  64  64  TYR  CD2   C  13  132.942  0.054  ?  1  ?   747  .  A  64  TYR  CD2   A  64  TYR  CD2   .  6G8O  1  ?  ?  
+847  1  1  64  64  TYR  CE1   C  13  118.016  0.128  ?  1  ?   751  .  A  64  TYR  CE1   A  64  TYR  CE1   .  6G8O  1  ?  ?  
+848  1  1  64  64  TYR  CE2   C  13  118.016  0.128  ?  1  ?   751  .  A  64  TYR  CE2   A  64  TYR  CE2   .  6G8O  1  ?  ?  
+849  1  1  64  64  TYR  N     N  15  119.134  0.021  ?  1  ?    16  .  A  64  TYR  N     A  64  TYR  N     .  6G8O  1  ?  ?  
+850  1  1  65  65  ASP  H     H   1    8.147  0.009  ?  1  ?   647  .  A  65  ASP  H     A  65  ASP  H     .  6G8O  1  ?  ?  
+851  1  1  65  65  ASP  HA    H   1    4.734      ?  ?  1  ?   655  .  A  65  ASP  HA    A  65  ASP  HA    .  6G8O  1  ?  ?  
+852  1  1  65  65  ASP  HB2   H   1    2.590      ?  ?  2  ?   656  .  A  65  ASP  HB2   A  65  ASP  1HB   .  6G8O  1  ?  ?  
+853  1  1  65  65  ASP  HB3   H   1    2.760      ?  ?  2  ?   657  .  A  65  ASP  HB3   A  65  ASP  2HB   .  6G8O  1  ?  ?  
+854  1  1  65  65  ASP  C     C  13  176.263      ?  ?  1  ?   654  .  A  65  ASP  C     A  65  ASP  C     .  6G8O  1  ?  ?  
+855  1  1  65  65  ASP  CA    C  13   54.296      ?  ?  1  ?   648  .  A  65  ASP  CA    A  65  ASP  CA    .  6G8O  1  ?  ?  
+856  1  1  65  65  ASP  CB    C  13   41.337  0.033  ?  1  ?   649  .  A  65  ASP  CB    A  65  ASP  CB    .  6G8O  1  ?  ?  
+857  1  1  65  65  ASP  N     N  15  122.200  0.007  ?  1  ?   646  .  A  65  ASP  N     A  65  ASP  N     .  6G8O  1  ?  ?  
+858  1  1  66  66  THR  H     H   1    8.007  0.002  ?  1  ?   110  .  A  66  THR  H     A  66  THR  H     .  6G8O  1  ?  ?  
+859  1  1  66  66  THR  HA    H   1    4.315  0.002  ?  1  ?   661  .  A  66  THR  HA    A  66  THR  HA    .  6G8O  1  ?  ?  
+860  1  1  66  66  THR  HB    H   1    4.365      ?  ?  1  ?   259  .  A  66  THR  HB    A  66  THR  HB    .  6G8O  1  ?  ?  
+861  1  1  66  66  THR  HG21  H   1    1.188  0.008  ?  1  ?   384  .  A  66  THR  HG21  A  66  THR  1HG2  .  6G8O  1  ?  ?  
+862  1  1  66  66  THR  HG22  H   1    1.188  0.008  ?  1  ?   384  .  A  66  THR  HG22  A  66  THR  2HG2  .  6G8O  1  ?  ?  
+863  1  1  66  66  THR  HG23  H   1    1.188  0.008  ?  1  ?   384  .  A  66  THR  HG23  A  66  THR  3HG2  .  6G8O  1  ?  ?  
+864  1  1  66  66  THR  C     C  13  175.346      ?  ?  1  ?   659  .  A  66  THR  C     A  66  THR  C     .  6G8O  1  ?  ?  
+865  1  1  66  66  THR  CA    C  13   62.051      ?  ?  1  ?   653  .  A  66  THR  CA    A  66  THR  CA    .  6G8O  1  ?  ?  
+866  1  1  66  66  THR  CB    C  13   69.679      ?  ?  1  ?   611  .  A  66  THR  CB    A  66  THR  CB    .  6G8O  1  ?  ?  
+867  1  1  66  66  THR  CG2   C  13   21.792      ?  ?  1  ?   660  .  A  66  THR  CG2   A  66  THR  CG2   .  6G8O  1  ?  ?  
+868  1  1  66  66  THR  N     N  15  113.312  0.004  ?  1  ?   111  .  A  66  THR  N     A  66  THR  N     .  6G8O  1  ?  ?  
+869  1  1  67  67  GLY  H     H   1    8.438  0.001  ?  1  ?    27  .  A  67  GLY  H     A  67  GLY  H     .  6G8O  1  ?  ?  
+870  1  1  67  67  GLY  HA2   H   1    4.026      ?  ?  1  ?   664  .  A  67  GLY  HA2   A  67  GLY  1HA   .  6G8O  1  ?  ?  
+871  1  1  67  67  GLY  HA3   H   1    4.026      ?  ?  1  ?   665  .  A  67  GLY  HA3   A  67  GLY  2HA   .  6G8O  1  ?  ?  
+872  1  1  67  67  GLY  C     C  13  174.335      ?  ?  1  ?   666  .  A  67  GLY  C     A  67  GLY  C     .  6G8O  1  ?  ?  
+873  1  1  67  67  GLY  CA    C  13   45.658      ?  ?  1  ?   658  .  A  67  GLY  CA    A  67  GLY  CA    .  6G8O  1  ?  ?  
+874  1  1  67  67  GLY  N     N  15  110.765  0.002  ?  1  ?    28  .  A  67  GLY  N     A  67  GLY  N     .  6G8O  1  ?  ?  
+875  1  1  68  68  CYS  H     H   1    8.272  0.001  ?  1  ?    55  .  A  68  CYS  H     A  68  CYS  H     .  6G8O  1  ?  ?  
+876  1  1  68  68  CYS  HA    H   1    4.735      ?  ?  1  ?   669  .  A  68  CYS  HA    A  68  CYS  HA    .  6G8O  1  ?  ?  
+877  1  1  68  68  CYS  HB2   H   1    3.310      ?  ?  2  ?   670  .  A  68  CYS  HB2   A  68  CYS  1HB   .  6G8O  1  ?  ?  
+878  1  1  68  68  CYS  HB3   H   1    2.974      ?  ?  2  ?   671  .  A  68  CYS  HB3   A  68  CYS  2HB   .  6G8O  1  ?  ?  
+879  1  1  68  68  CYS  C     C  13  173.998      ?  ?  1  ?   668  .  A  68  CYS  C     A  68  CYS  C     .  6G8O  1  ?  ?  
+880  1  1  68  68  CYS  CA    C  13   55.500      ?  ?  1  ?   662  .  A  68  CYS  CA    A  68  CYS  CA    .  6G8O  1  ?  ?  
+881  1  1  68  68  CYS  CB    C  13   40.978    0.0  ?  1  ?   663  .  A  68  CYS  CB    A  68  CYS  CB    .  6G8O  1  ?  ?  
+882  1  1  68  68  CYS  N     N  15  118.707  0.002  ?  1  ?    56  .  A  68  CYS  N     A  68  CYS  N     .  6G8O  1  ?  ?  
+883  1  1  69  69  GLU  H     H   1    8.078  0.001  ?  1  ?   125  .  A  69  GLU  H     A  69  GLU  H     .  6G8O  1  ?  ?  
+884  1  1  69  69  GLU  HA    H   1    4.126      ?  ?  1  ?   738  .  A  69  GLU  HA    A  69  GLU  HA    .  6G8O  1  ?  ?  
+885  1  1  69  69  GLU  HB2   H   1    2.059      ?  ?  2  ?   322  .  A  69  GLU  HB2   A  69  GLU  1HB   .  6G8O  1  ?  ?  
+886  1  1  69  69  GLU  HB3   H   1    1.916      ?  ?  2  ?   741  .  A  69  GLU  HB3   A  69  GLU  2HB   .  6G8O  1  ?  ?  
+887  1  1  69  69  GLU  HG2   H   1    2.228      ?  ?  1  ?   739  .  A  69  GLU  HG2   A  69  GLU  1HG   .  6G8O  1  ?  ?  
+888  1  1  69  69  GLU  HG3   H   1    2.228      ?  ?  1  ?   740  .  A  69  GLU  HG3   A  69  GLU  2HG   .  6G8O  1  ?  ?  
+889  1  1  69  69  GLU  CA    C  13   58.337      ?  ?  1  ?   232  .  A  69  GLU  CA    A  69  GLU  CA    .  6G8O  1  ?  ?  
+890  1  1  69  69  GLU  CB    C  13   31.118  0.004  ?  1  ?   667  .  A  69  GLU  CB    A  69  GLU  CB    .  6G8O  1  ?  ?  
+891  1  1  69  69  GLU  CG    C  13   36.698      ?  ?  1  ?   742  .  A  69  GLU  CG    A  69  GLU  CG    .  6G8O  1  ?  ?  
+892  1  1  69  69  GLU  N     N  15  127.192    0.0  ?  1  ?   126  .  A  69  GLU  N     A  69  GLU  N     .  6G8O  1  ?  ?  
+##

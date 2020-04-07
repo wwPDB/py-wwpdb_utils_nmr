@@ -124,10 +124,11 @@ _Chem_comp_assembly.Entry_ID
 ##
 data_nef_chemical_shift_list_
 
-_Assigned_chem_shift_list.Sf_category   assigned_chemical_shifts
-_Assigned_chem_shift_list.Sf_framecode  nef_chemical_shift_list_
-_Assigned_chem_shift_list.ID            1
-_Assigned_chem_shift_list.Entry_ID      2PNG
+_Assigned_chem_shift_list.Sf_category     assigned_chemical_shifts
+_Assigned_chem_shift_list.Sf_framecode    nef_chemical_shift_list_
+_Assigned_chem_shift_list.ID              1
+_Assigned_chem_shift_list.Entry_ID        2PNG
+_Assigned_chem_shift_list.Data_file_name  2png.nef
 #
 loop_
 _Atom_chem_shift.ID
@@ -1141,6 +1142,7 @@ _Gen_dist_constraint_list.ID               1
 _Gen_dist_constraint_list.Constraint_type  NOE
 _Gen_dist_constraint_list.Potential_type   undefined
 _Gen_dist_constraint_list.Entry_ID         2PNG
+_Gen_dist_constraint_list.Data_file_name   2png.nef
 #
 loop_
 _Gen_dist_constraint.Index_ID

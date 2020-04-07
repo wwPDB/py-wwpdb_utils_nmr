@@ -4,13 +4,13 @@
 #
 # Updates:
 # 06-Apr-2020  M. Yokochi - add support for Original_pdb_* items in restraints/peak lists
-# 06-Apr-2020  M. Yokochi - add clean() for NMR legacy deposition (DAOTHER-2874)
+# 07-Apr-2020  M. Yokochi - add clean() for NMR legacy deposition (DAOTHER-2874)
 ##
 """ Wrapper class for NMR-STAR to CIF converter.
     @author: Masashi Yokochi
 """
 import sys
-import logging
+
 from mmcif.io.IoAdapterPy import IoAdapterPy
 from wwpdb.utils.nmr.io.mmCIFUtil import mmCIFUtil
 
@@ -20,8 +20,6 @@ class NmrStarToCif(object):
         self.__verbose = verbose
         self.__lfh = log
 
-        # whether to add _pdbx_nmr_assigned_chem_shift_list category (for backward compatibility)
-        self.__add_cs_list_cif = False
         # whether to remove _pdbx_nmr_assigned_chem_shift_list (DAOTHER-2874)
         self.__remove_cs_list_cif = True
         # whether to add Original_pdb_* items in chemical shifts
@@ -34,7 +32,7 @@ class NmrStarToCif(object):
         # empty value
         self.empty_value = (None, '', '.', '?')
 
-    def clean(self, cifPath=None):
+    def clean(self, cifPath=None, originalCsFileNameList=None, originalMrFileNameList=None):
         """Clean CIF formatted NMR data for NMR legacy deposition
         """
 
@@ -49,17 +47,94 @@ class NmrStarToCif(object):
 
             categories = cifObj.GetCategories()
 
+            cs_list_str = 'Assigned_chem_shift_list'
             cs_list_cif = 'pdbx_nmr_assigned_chem_shift_list'
 
-            # remove _pdbx_nmr_assigned_chem_shift_list for each _Assigned_chem_shift_list for backward compatibility
-            if self.__remove_cs_list_cif:
+            # remove _pdbx_nmr_assigned_chem_shift_list
 
-                for k, v in categories.items():
+            for k, v in categories.items():
 
-                    if cs_list_cif in v:
+                if cs_list_cif in v:
+
+                    if self.__remove_cs_list_cif or not cs_list_str in v:
                         cifObj.RemoveCategory(k, cs_list_cif)
 
-                cifObj.WriteCif(outputFilePath=cifPath)
+            # add the following saveframe tag
+            if self.__remove_cs_list_cif:
+
+                content_subtypes = ('chem_shift', 'dist_restraint', 'dihed_restraint', 'rdc_restraint', 'spectral_peak')
+
+                sf_tags = {'chem_shift': 'Assigned_chem_shift_list',
+                           'dist_restraint': 'Gen_dist_constraint_list',
+                           'dihed_restraint': 'Torsion_angle_constraint_list',
+                           'rdc_restraint': 'RDC_constraint_list',
+                           'spectral_peak': 'Spectral_peak_list'}
+                lp_tags = {'chem_shift': 'Atom_chem_shift',
+                           'dist_restraint': 'Gen_dist_constraint',
+                           'dihed_restraint': 'Torsion_angle_constraint',
+                           'rdc_restraint': 'RDC_constraint',
+                           'spectral_peak': 'Peak_row_format'}
+                sf_catgories = {'chem_shift': 'assigned_chemical_shifts',
+                                'dist_restraint': 'general_distance_constraints',
+                                'dihed_restraint': 'torsion_angle_constraints',
+                                'rdc_restraint': 'RDC_constraints',
+                                'spectral_peak': 'spectral_peak_list'}
+                list_id_tags = {'chem_shift': 'Assigned_chem_shift_list_ID',
+                                'dist_restraint': 'Gen_dist_constraint_list_ID',
+                                'dihed_restraint': 'Torsion_angle_constraint_list_ID',
+                                'rdc_restraint': 'RDC_constraint_list_ID',
+                                'spectral_peak': 'Spectral_peak_list_ID'}
+
+                sf_category_tag = 'Sf_category'
+                sf_framecode_tag = 'Sf_framecode'
+                entry_id_tag = 'Entry_ID'
+                id_tag = 'ID'
+                data_file_name_tag = 'Data_file_name'
+
+                cs_list_id = 0
+                mr_list_id = 0
+
+                for content_subtype in content_subtypes:
+
+                    for k, v in categories.items():
+
+                        if lp_tags[content_subtype] in v:
+
+                            dList, iList = cifObj.GetValueAndItemByBlock(k, lp_tags[content_subtype])
+
+                            try:
+                                entry_id = next(row[entry_id_tag] for row in dList if not row[entry_id_tag] in self.empty_value)
+                            except:
+                                entry_id = '?'
+
+                            try:
+                                list_id = next(row[list_id_tags[content_subtype]] for row in dList if not row[list_id_tags[content_subtype]] in self.empty_value)
+                            except:
+                                list_id = '?'
+
+                            if content_subtype == 'chem_shift':
+                                originalFileName = '?' if originalCsFileNameList is None or cs_list_id >= len(originalCsFileNameList) else originalCsFileNameList[cs_list_id]
+                                cs_list_id += 1
+                            else:
+                                originalFileName = '?' if originalMrFileNameList is None or mr_list_id >= len(originalMrFileNameList) else originalMrFileNameList[mr_list_id]
+                                mr_list_id += 1
+
+                            sf_item_names = [sf_category_tag, sf_framecode_tag, entry_id_tag, id_tag, data_file_name_tag]
+                            sf_item_values = [sf_catgories[content_subtype], k, entry_id, list_id, originalFileName]
+
+                            if sf_tags[content_subtype] in v:
+                                attrs = cifObj.GetAttributes(k, sf_tags[content_subtype])
+                                for i, sf_item_name in enumerate(sf_item_names):
+                                    if sf_item_name in attrs:
+                                        cifObj.UpdateSingleRowValue(k, sf_tags[content_subtype], sf_item_name, 0, sf_item_values[i])
+                                    else:
+                                        cifObj.ExtendCategory(k, sf_tags[content_subtype], [sf_item_name], [[sf_item_values[i]]])
+
+                            else:
+                                cifObj.AddCategory(k, sf_tags[content_subtype], sf_item_names)
+                                cifObj.InsertData(k, sf_tags[content_subtype], [sf_item_values])
+
+            cifObj.WriteCif(outputFilePath=cifPath)
 
             return True
 
@@ -99,11 +174,28 @@ class NmrStarToCif(object):
 
                 categories = cifObj.GetCategories()
 
+                # add Data_file_name item in the following saveframe tag
+
+                sf_tags = ['Assigned_chem_shift_list', 'Gen_dist_constraint_list', 'Torsion_angle_constraint_list', 'RDC_constraint_list', 'Spectral_peak_list']
+                data_file_name_tag = 'Data_file_name'
+
+                for sf_tag in sf_tags:
+
+                    for k, v in categories.items():
+
+                        if sf_tag in v:
+                            attrs = cifObj.GetAttributes(k, sf_tag)
+
+                            if data_file_name_tag in attrs:
+                                cifObj.UpdateSingleRowValue(k, sf_tag, data_file_name_tag, 0, originalFileName)
+                            else:
+                                cifObj.ExtendCategory(k, sf_tag, [data_file_name_tag], [[originalFileName]])
+
                 cs_list_str = 'Assigned_chem_shift_list'
                 cs_list_cif = 'pdbx_nmr_assigned_chem_shift_list'
 
                 # add _pdbx_nmr_assigned_chem_shift_list for each _Assigned_chem_shift_list for backward compatibility
-                if self.__add_cs_list_cif:
+                if not self.__remove_cs_list_cif:
 
                     for k, v in categories.items():
 

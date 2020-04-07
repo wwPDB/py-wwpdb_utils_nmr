@@ -20240,6 +20240,9 @@ class NmrDpUtility(object):
         if self.__star_data[0] is None:
             return False
 
+        if self.__dstPath == self.__srcPath and self.__release_mode:
+            return True
+
         self.__star_data[0].write_to_file(self.__dstPath)
 
         return not self.report.isError()

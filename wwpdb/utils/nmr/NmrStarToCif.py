@@ -70,7 +70,7 @@ class NmrStarToCif(object):
                             info['data_file_name'] = dList['data_file_name']
                         cs_list_cif_info.append(info)
 
-                    if self.__remove_cs_list_cif or not cs_list_str in v:
+                    if self.__remove_cs_list_cif or not cs_loop_str in v:
                         cifObj.RemoveCategory(k, cs_list_cif)
 
             # add the following saveframe tag

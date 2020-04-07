@@ -10,6 +10,7 @@ import sys
 
 from wwpdb.utils.nmr.NmrStarToCif import NmrStarToCif
 from testfixtures import LogCapture
+from shutil import copyfile
 
 class TestNmrStarToCif(unittest.TestCase):
 
@@ -26,6 +27,7 @@ class TestNmrStarToCif(unittest.TestCase):
         self.nmrstar_to_cif.convert(strPath=self.data_dir_path + 'D_800269_nmr-data-str_P1.str.V1', cifPath=self.data_dir_path + 'D_800269_nmr-data-str_P1.cif.V1', originalFileName='2png.nef')
 
     def test_legacy(self):
+        copyfile(self.data_dir_path + 'D_800262_cs-upload-convert_P1.cif.V1', self.data_dir_path + 'D_800262_cs-upload-convert_P1.cif.V8')
         self.nmrstar_to_cif.clean(cifPath=self.data_dir_path + 'D_800262_cs-upload-convert_P1.cif.V8', originalCsFileNameList=['D_800262_cs.str'])
 
 if __name__ == '__main__':

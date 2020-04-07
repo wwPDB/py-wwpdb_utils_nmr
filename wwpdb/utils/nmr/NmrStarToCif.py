@@ -47,14 +47,28 @@ class NmrStarToCif(object):
 
             categories = cifObj.GetCategories()
 
-            cs_list_str = 'Assigned_chem_shift_list'
+            cs_loop_str = 'Atom_chem_shift'
             cs_list_cif = 'pdbx_nmr_assigned_chem_shift_list'
 
             # remove _pdbx_nmr_assigned_chem_shift_list
 
+            cs_list_cif_info = []
+
             for k, v in categories.items():
 
                 if cs_list_cif in v:
+
+                    if cs_loop_str in v:
+                        dList, iList = cifObj.GetValueAndItemByBlock(k, cs_list_cif)
+
+                        info = {'sf_framecode': k}
+                        if 'entry_id' in dList:
+                            info['entry_id'] = dList['entry_id']
+                        if 'id' in dList:
+                            info['id'] = dList['id']
+                        if 'data_file_name' in dList:
+                            info['data_file_name'] = dList['data_file_name']
+                        cs_list_cif_info.append(info)
 
                     if self.__remove_cs_list_cif or not cs_list_str in v:
                         cifObj.RemoveCategory(k, cs_list_cif)
@@ -118,6 +132,17 @@ class NmrStarToCif(object):
                             else:
                                 originalFileName = '?' if originalMrFileNameList is None or mr_list_id >= len(originalMrFileNameList) else originalMrFileNameList[mr_list_id]
                                 mr_list_id += 1
+
+                            try:
+                                info = next(info for info in cs_list_cif_info if info['sf_framecode'] == k)
+                                if 'entry_id' in info and not info['entry_id'] in self.empty_value:
+                                    entry_id = info['entry_id']
+                                if 'id' in info and not info['id'] in self.empty_value:
+                                    list_id = info['id']
+                                if 'data_file_name' in info and not info['data_file_name'] in self.empty_value:
+                                    originalFileName = info['data_file_name']
+                            except StopIteration:
+                                pass
 
                             sf_item_names = [sf_category_tag, sf_framecode_tag, entry_id_tag, id_tag, data_file_name_tag]
                             sf_item_values = [sf_catgories[content_subtype], k, entry_id, list_id, originalFileName]
@@ -191,7 +216,7 @@ class NmrStarToCif(object):
                             else:
                                 cifObj.ExtendCategory(k, sf_tag, [data_file_name_tag], [[originalFileName]])
 
-                cs_list_str = 'Assigned_chem_shift_list'
+                cs_loop_str = 'Atom_chem_shift'
                 cs_list_cif = 'pdbx_nmr_assigned_chem_shift_list'
 
                 # add _pdbx_nmr_assigned_chem_shift_list for each _Assigned_chem_shift_list for backward compatibility
@@ -199,9 +224,25 @@ class NmrStarToCif(object):
 
                     for k, v in categories.items():
 
-                        if cs_list_str in v:
+                        if cs_loop_str in v:
+
+                            entry_id_tag = 'Entry_ID'
+                            list_id_tag = 'Assigned_chem_shift_list_ID'
+
+                            dList, iList = cifObj.GetValueAndItemByBlock(k, cs_loop_str)
+
+                            try:
+                                entry_id = next(row[entry_id_tag] for row in dList if not row[entry_id_tag] in self.empty_value)
+                            except:
+                                entry_id = '?'
+
+                            try:
+                                list_id = next(row[list_id_tag] for row in dList if not row[list_id_tag] in self.empty_value)
+                            except:
+                                list_id = '?'
+
                             cifObj.AddCategory(k, cs_list_cif, ['entry_id', 'id', 'data_file_name'])
-                            cifObj.InsertData(k, cs_list_cif, [[cifObj.GetSingleValue(k, cs_list_str, 'Entry_ID'), cifObj.GetSingleValue(k, cs_list_str, 'ID'), originalFileName]])
+                            cifObj.InsertData(k, cs_list_cif, [[entry_id, list_id, originalFileName]])
 
                 # add _Atom_chem_shift.Original_PDB_* items
 

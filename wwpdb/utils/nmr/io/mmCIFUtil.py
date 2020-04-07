@@ -13,6 +13,7 @@ __email__ = "zfeng@rcsb.rutgers.edu"
 __version__ = "V0.001"
 
 import sys
+import copy
 
 from mmcif.api.DataCategory import DataCategory
 from mmcif.api.PdbxContainers import DataContainer
@@ -29,7 +30,6 @@ class mmCIFUtil:
         self.__filePath = filePath
         self.__dataList = []
         self.__dataMap = {}
-        self.__containerList = []
         self.__blockNameList = []
         self.__read()
 
@@ -46,7 +46,6 @@ class mmCIFUtil:
                 idx = 0
                 for container in self.__dataList:
                     blockName = container.getName()
-                    self.__containerList.append(container)
                     self.__blockNameList.append(blockName)
                     self.__dataMap[blockName] = idx
                     idx += 1
@@ -161,6 +160,29 @@ class mmCIFUtil:
             return
 
         self.__dataList[self.__dataMap[blockName]].remove(catName)
+
+    def MoveCategoryToTop(self, blockName, catName):
+        """Move Category to top in a given Data Block
+        """
+        if blockName not in self.__dataMap:
+            return
+
+        catObj = self.__dataList[self.__dataMap[blockName]].getObj(catName)
+
+        if catObj is None:
+            return
+
+        _catNameList = copy.copy(self.__dataList[self.__dataMap[blockName]].getObjNameList())
+        _catNameList.remove(catName)
+
+        _catObjList = [copy.copy(catObj)]
+        _catObjList.extend([copy.copy(self.__dataList[self.__dataMap[blockName]].getObj(_catName)) for _catName in _catNameList])
+
+        for _catName in _catNameList:
+            self.__dataList[self.__dataMap[blockName]].remove(_catName)
+
+        for _catObj in _catObjList:
+            self.__dataList[self.__dataMap[blockName]].append(_catObj)
 
     def InsertData(self, blockName, catName, dataList):
         """Insert data in a given Data Block and Category

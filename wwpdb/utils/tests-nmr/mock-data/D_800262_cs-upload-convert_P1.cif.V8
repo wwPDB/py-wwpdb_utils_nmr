@@ -1,5 +1,11 @@
 data_D_1200009291_cs.str
 
+_Assigned_chem_shift_list.Sf_category     assigned_chemical_shifts
+_Assigned_chem_shift_list.Sf_framecode    D_1200009291_cs.str
+_Assigned_chem_shift_list.Entry_ID        6G8O
+_Assigned_chem_shift_list.ID              1
+_Assigned_chem_shift_list.Data_file_name  D_800262_cs.str
+#
 loop_
 _Atom_chem_shift.ID
 _Atom_chem_shift.Entity_assembly_ID
@@ -922,10 +928,4 @@ _Atom_chem_shift.Ambiguity_set_ID
 890  1  1  69  69  GLU  CB    C  13   31.118  0.004  ?  1  ?   667  .  A  69  GLU  CB    A  69  GLU  CB    .  6G8O  1  ?  ?  
 891  1  1  69  69  GLU  CG    C  13   36.698      ?  ?  1  ?   742  .  A  69  GLU  CG    A  69  GLU  CG    .  6G8O  1  ?  ?  
 892  1  1  69  69  GLU  N     N  15  127.192    0.0  ?  1  ?   126  .  A  69  GLU  N     A  69  GLU  N     .  6G8O  1  ?  ?  
-#
-_Assigned_chem_shift_list.Sf_category     assigned_chemical_shifts
-_Assigned_chem_shift_list.Sf_framecode    D_1200009291_cs.str
-_Assigned_chem_shift_list.Entry_ID        6G8O
-_Assigned_chem_shift_list.ID              1
-_Assigned_chem_shift_list.Data_file_name  D_800262_cs.str
 ##

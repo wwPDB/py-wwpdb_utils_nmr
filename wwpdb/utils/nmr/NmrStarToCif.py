@@ -159,6 +159,8 @@ class NmrStarToCif(object):
                                 cifObj.AddCategory(k, sf_tags[content_subtype], sf_item_names)
                                 cifObj.InsertData(k, sf_tags[content_subtype], [sf_item_values])
 
+                            cifObj.MoveCategoryToTop(k, sf_tags[content_subtype])
+
             cifObj.WriteCif(outputFilePath=cifPath)
 
             return True
@@ -277,7 +279,6 @@ class NmrStarToCif(object):
 
                         if overwrite_auth_atom_id:
                             cifObj.CopyValueInRow(k, lp_category, atom_id_tags, auth_atom_id_tags)
-
 
                 # add _Gen_dist_constraint.Original_PDB_* items
 

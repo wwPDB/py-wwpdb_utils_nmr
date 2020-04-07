@@ -275,7 +275,7 @@ class NmrStarToCif(object):
                                 extended_data_list.append(dst)
 
                             if self.__add_original_pdb_in_chem_shift:
-                                cifObj.ExtendCategory(k, lp_category, extended_items, extended_data_list)
+                                cifObj.ExtendCategory(k, lp_category, extended_items, extended_data_list, items.index('Auth_atom_ID') + 1)
 
                         if overwrite_auth_atom_id:
                             cifObj.CopyValueInRow(k, lp_category, atom_id_tags, auth_atom_id_tags)
@@ -318,7 +318,7 @@ class NmrStarToCif(object):
                                 extended_data_list.append(dst)
 
                             if self.__add_original_pdb_in_dist_restraint:
-                                cifObj.ExtendCategory(k, lp_category, extended_items, extended_data_list)
+                                cifObj.ExtendCategory(k, lp_category, extended_items, extended_data_list, items.index('Auth_atom_ID_2') + 1)
 
                         if overwrite_auth_atom_id:
                             cifObj.CopyValueInRow(k, lp_category, _atom_id_tags, _auth_atom_id_tags)
@@ -362,7 +362,7 @@ class NmrStarToCif(object):
                                         dst.append(src[auth_item])
                                     extended_data_list.append(dst)
 
-                                cifObj.ExtendCategory(k, lp_category, extended_items, extended_data_list)
+                                cifObj.ExtendCategory(k, lp_category, extended_items, extended_data_list, items.index('Auth_atom_ID_4') + 1)
 
                             if overwrite_auth_atom_id:
                                 cifObj.CopyValueInRow(k, lp_category, _atom_id_tags, _auth_atom_id_tags)
@@ -404,7 +404,7 @@ class NmrStarToCif(object):
                                         dst.append(src[auth_item])
                                     extended_data_list.append(dst)
 
-                                cifObj.ExtendCategory(k, lp_category, extended_items, extended_data_list)
+                                cifObj.ExtendCategory(k, lp_category, extended_items, extended_data_list, items.index('Auth_atom_ID_2') + 1)
 
                             if overwrite_auth_atom_id:
                                 cifObj.CopyValueInRow(k, lp_category, _atom_id_tags, _auth_atom_id_tags)
@@ -456,7 +456,7 @@ class NmrStarToCif(object):
                                         extended_data_list.append(dst)
 
                                     if has_auth_value:
-                                        cifObj.ExtendCategory(k, lp_category, extended_items, extended_data_list)
+                                        cifObj.ExtendCategory(k, lp_category, extended_items, extended_data_list, items.index('Auth_atom_ID_%s' % (max_dim - 1)) + 1)
 
                                 if overwrite_auth_atom_id and has_auth_value:
                                     cifObj.CopyValueInRow(k, lp_category, _atom_id_tags, _auth_atom_id_tags)

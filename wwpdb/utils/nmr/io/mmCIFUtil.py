@@ -4,7 +4,7 @@ Author:  Zukang Feng
 Update:  21-August-2012
 Version: 001  Initial version
 # Update:
-# 02-Apr-2020  M. Yokochi - Re-write Zukang's version to being aware of multiple data blocks
+# 07-Apr-2020  M. Yokochi - Re-write Zukang's version to being aware of multiple data blocks
 ##
 """
 
@@ -198,7 +198,7 @@ class mmCIFUtil:
         for data in dataList:
             catObj.append(data)
 
-    def ExtendCategory(self, blockName, catName, items, dataList):
+    def ExtendCategory(self, blockName, catName, items, dataList, col=-1):
         """Extend existing Category in a given Data Block
         """
         if blockName not in self.__dataMap:
@@ -209,19 +209,49 @@ class mmCIFUtil:
         if catObj is None:
             return
 
-        for item in items:
-            catObj.appendAttribute(item)
+        append_items = col < 0 or col >= catObj.getAttributeCount()
 
-        rowList = catObj.getRowList()
         data_len = len(dataList)
         empty_row = ['.'] * len(items)
 
-        for idx, row in enumerate(rowList):
+        if append_items:
 
-            if idx < data_len:
-                row.extend(dataList[idx])
-            else:
-                row.extend(empty_row)
+            for item in items:
+                catObj.appendAttribute(item)
+
+            rowList = catObj.getRowList()
+
+            for idx, row in enumerate(rowList):
+
+                if idx < data_len:
+                    row.extend(dataList[idx])
+                else:
+                    row.extend(empty_row)
+
+        else:
+
+            attrNameList = catObj.getAttributeList()
+
+            _attrNameList = attrNameList[0:col] + items + attrNameList[col:]
+
+            rowList = catObj.getRowList()
+
+            _rowList = []
+
+            for idx, row in enumerate(rowList):
+                _row = row[0:col]
+
+                if idx < data_len:
+                    _row.extend(dataList[idx])
+                else:
+                    _row.extend(empty_row)
+
+                _row.extend(row[col:])
+
+                _rowList.append(_row)
+
+            catObj.setAttributeNameList(_attrNameList)
+            catObj.setRowList(_rowList)
 
     def CopyValueInRow(self, blockName, catName, srcItems, dstItems):
         """Copy value from source items to destination items

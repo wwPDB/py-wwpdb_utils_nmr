@@ -38,6 +38,7 @@
 # 31-Mar-2020  M. Yokochi - enable processing without log file
 # 03-Apr-2020  M. Yokochi - preserve case code of atom_name (NEF) and Auth_atom_ID/Original_PDB_atom_name (NMR-STAR)
 # 06-Apr-2020  M. Yokochi - synchronize with coordinates' auth_asym_id and auth_seq_id for combined NMR-STAR deposition
+# 10-Apr-2020  M. Yokochi - fix crash in case of format issue
 ##
 """ Wrapper class for data processing for NMR data.
     @author: Masashi Yokochi
@@ -1614,7 +1615,7 @@ class NmrDpUtility(object):
                                                   'chemical shifts': 'chemical_shift',
                                                   'Chemical shifts': 'chemical_shift',
                                                   'Chemical_shifts': 'chemical_shift',
-                                                  'backone chemical shifts': 'chemical_shift',
+                                                  'backbone chemical shifts': 'chemical_shift',
                                                   'Backbone chemical shifts': 'chemical_shift',
                                                   'Mainchain chemical shifts': 'chemical_shift',
                                                   'mainchain chemical shifts': 'chemical_shift',
@@ -1622,7 +1623,7 @@ class NmrDpUtility(object):
                                                   'main chain chemical shifts': 'chemical_shift',
                                                   'bb chemical shifts': 'chemical_shift',
                                                   'BB chemical shifts': 'chemical_shift',
-                                                  'backbone chemical_shift': 'chemical_shift',
+                                                  'backbone chemical shift': 'chemical_shift',
                                                   'Backbone chemical shift': 'chemical_shift',
                                                   'Mainchain chemical shift': 'chemical_shift',
                                                   'mainchain chemical shift': 'chemical_shift',
@@ -2995,9 +2996,6 @@ class NmrDpUtility(object):
                         is_done = False
 
                     file_path_list_len += 1
-
-        if not is_done:
-            self.__rescue_mode = False
 
         return is_done
 
@@ -14874,7 +14872,7 @@ class NmrDpUtility(object):
         """ Delete skipped saveframes.
         """
 
-        if not self.__rescue_mode:
+        if len(self.__star_data) == 0:
             return False
 
         if not self.__combined_mode:
@@ -14943,7 +14941,7 @@ class NmrDpUtility(object):
         """ Delete skipped loops.
         """
 
-        if not self.__rescue_mode:
+        if len(self.__star_data) == 0:
             return False
 
         if not self.__combined_mode:
@@ -15022,7 +15020,7 @@ class NmrDpUtility(object):
         """ Delete unparsed entry loops.
         """
 
-        if not self.__rescue_mode:
+        if len(self.__star_data) == 0:
             return False
 
         if not self.__combined_mode:
@@ -15076,7 +15074,7 @@ class NmrDpUtility(object):
         """ Update polymer sequence.
         """
 
-        if not self.__rescue_mode:
+        if len(self.__star_data) == 0:
             return False
 
         if not self.__combined_mode:
@@ -15451,7 +15449,7 @@ class NmrDpUtility(object):
         """ Update auth sequence in NMR-STAR.
         """
 
-        if not self.__rescue_mode:
+        if len(self.__star_data) == 0:
             return False
 
         if not self.__combined_mode:
@@ -17709,7 +17707,7 @@ class NmrDpUtility(object):
         """ Fix disordered indices.
         """
 
-        if not self.__rescue_mode:
+        if len(self.__star_data) == 0:
             return False
 
         if not self.__combined_mode:
@@ -17801,7 +17799,7 @@ class NmrDpUtility(object):
         """ Remove non-sense zero values.
         """
 
-        if not self.__rescue_mode:
+        if len(self.__star_data) == 0:
             return False
 
         if not self.__combined_mode:
@@ -17910,7 +17908,7 @@ class NmrDpUtility(object):
         """ Fix non-sense negative values.
         """
 
-        if not self.__rescue_mode:
+        if len(self.__star_data) == 0:
             return False
 
         if not self.__combined_mode:
@@ -18059,7 +18057,7 @@ class NmrDpUtility(object):
         """ Fix enumeration failures if possible.
         """
 
-        if not self.__rescue_mode:
+        if len(self.__star_data) == 0:
             return False
 
         if not self.__combined_mode:
@@ -19183,7 +19181,7 @@ class NmrDpUtility(object):
         """ Fix bad ambiguity code if possible.
         """
 
-        if not self.__rescue_mode:
+        if len(self.__star_data) == 0:
             return False
 
         if not self.__combined_mode:
@@ -19772,7 +19770,7 @@ class NmrDpUtility(object):
         """ Add UNNAMED entry id.
         """
 
-        if not self.__rescue_mode:
+        if len(self.__star_data) == 0:
             return False
 
         if not self.__combined_mode:

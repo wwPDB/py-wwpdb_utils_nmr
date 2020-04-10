@@ -2996,6 +2996,9 @@ class NmrDpUtility(object):
 
                     file_path_list_len += 1
 
+        if not is_done:
+            self.__rescue_mode = False
+
         return is_done
 
     def __rescueFormerNef(self, file_list_id):
@@ -14871,6 +14874,9 @@ class NmrDpUtility(object):
         """ Delete skipped saveframes.
         """
 
+        if not self.__rescue_mode:
+            return False
+
         if not self.__combined_mode:
             return False
 
@@ -14890,7 +14896,7 @@ class NmrDpUtility(object):
 
         for w in warnings:
 
-            if self.__star_data_type[0] == "Entry" or self.__star_data_type[0] == "Saveframe":
+            if self.__star_data_type[0] == 'Entry' or self.__star_data_type[0] == 'Saveframe':
 
                 if not 'sf_category' in w:
 
@@ -14937,6 +14943,9 @@ class NmrDpUtility(object):
         """ Delete skipped loops.
         """
 
+        if not self.__rescue_mode:
+            return False
+
         if not self.__combined_mode:
             return False
 
@@ -14956,7 +14965,7 @@ class NmrDpUtility(object):
 
         for w in warnings:
 
-            if self.__star_data_type[0] == "Entry" or self.__star_data_type[0] == "Saveframe":
+            if self.__star_data_type[0] == 'Entry' or self.__star_data_type[0] == 'Saveframe':
 
                 if not 'sf_framecode' in w:
 
@@ -15013,6 +15022,9 @@ class NmrDpUtility(object):
         """ Delete unparsed entry loops.
         """
 
+        if not self.__rescue_mode:
+            return False
+
         if not self.__combined_mode:
             return False
 
@@ -15030,7 +15042,7 @@ class NmrDpUtility(object):
         sf_category = self.sf_categories[file_type][content_subtype]
         lp_category = self.lp_categories[file_type][content_subtype]
 
-        if self.__star_data_type[0] == "Entry" or self.__star_data_type[0] == "Saveframe":
+        if self.__star_data_type[0] == 'Entry' or self.__star_data_type[0] == 'Saveframe':
 
             if sf_category in self.__sf_category_list:
 
@@ -17697,6 +17709,9 @@ class NmrDpUtility(object):
         """ Fix disordered indices.
         """
 
+        if not self.__rescue_mode:
+            return False
+
         if not self.__combined_mode:
             return False
 
@@ -17713,7 +17728,7 @@ class NmrDpUtility(object):
 
         for w in warnings:
 
-            if self.__star_data_type[0] == "Entry" or self.__star_data_type[0] == "Saveframe":
+            if self.__star_data_type[0] == 'Entry' or self.__star_data_type[0] == 'Saveframe':
 
                 if not 'sf_framecode' in w:
 
@@ -17786,6 +17801,9 @@ class NmrDpUtility(object):
         """ Remove non-sense zero values.
         """
 
+        if not self.__rescue_mode:
+            return False
+
         if not self.__combined_mode:
             return False
 
@@ -17805,7 +17823,7 @@ class NmrDpUtility(object):
             if not "should not have zero value" in w['description']:
                 continue
 
-            if self.__star_data_type[0] == "Entry" or self.__star_data_type[0] == "Saveframe":
+            if self.__star_data_type[0] == 'Entry' or self.__star_data_type[0] == 'Saveframe':
 
                 if not 'sf_framecode' in w:
 
@@ -17892,6 +17910,9 @@ class NmrDpUtility(object):
         """ Fix non-sense negative values.
         """
 
+        if not self.__rescue_mode:
+            return False
+
         if not self.__combined_mode:
             return False
 
@@ -17911,7 +17932,7 @@ class NmrDpUtility(object):
             if not "should not have negative value" in w['description']:
                 continue
 
-            if self.__star_data_type[0] == "Entry" or self.__star_data_type[0] == "Saveframe":
+            if self.__star_data_type[0] == 'Entry' or self.__star_data_type[0] == 'Saveframe':
 
                 if not 'sf_framecode' in w:
 
@@ -18038,6 +18059,9 @@ class NmrDpUtility(object):
         """ Fix enumeration failures if possible.
         """
 
+        if not self.__rescue_mode:
+            return False
+
         if not self.__combined_mode:
             return False
 
@@ -18072,7 +18096,7 @@ class NmrDpUtility(object):
             itValue = None if g[1] in self.empty_value else g[1]
             itEnum = [str(e.strip("'")) for e in re.sub(r"\', \'", "\',\'", g[2]).split(',')]
 
-            if self.__star_data_type[0] == "Entry" or self.__star_data_type[0] == "Saveframe":
+            if self.__star_data_type[0] == 'Entry' or self.__star_data_type[0] == 'Saveframe':
 
                 if not 'sf_framecode' in w:
 
@@ -19159,6 +19183,9 @@ class NmrDpUtility(object):
         """ Fix bad ambiguity code if possible.
         """
 
+        if not self.__rescue_mode:
+            return False
+
         if not self.__combined_mode:
             return False
 
@@ -19182,7 +19209,7 @@ class NmrDpUtility(object):
             if not "the same residue was not found." in w['description']:
                 continue
 
-            if self.__star_data_type[0] == "Entry" or self.__star_data_type[0] == "Saveframe":
+            if self.__star_data_type[0] == 'Entry' or self.__star_data_type[0] == 'Saveframe':
 
                 if not 'sf_framecode' in w:
 
@@ -19745,6 +19772,9 @@ class NmrDpUtility(object):
         """ Add UNNAMED entry id.
         """
 
+        if not self.__rescue_mode:
+            return False
+
         if not self.__combined_mode:
             return False
 
@@ -20237,7 +20267,7 @@ class NmrDpUtility(object):
 
             return False
 
-        if self.__star_data[0] is None:
+        if len(self.__star_data) == 0 or self.__star_data[0] is None:
             return False
 
         if self.__dstPath == self.__srcPath and self.__release_mode:

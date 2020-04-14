@@ -15650,10 +15650,10 @@ class NmrDpUtility(object):
                                                                 [{'name': 'dist', 'type': 'float'}
                                                                  ],
                                                                 [{'name': 'PDB_model_num', 'type': 'int', 'value': 1},
-                                                                 {'name': 'label_asym_id_1', 'type': 'str', 'value': cif_chain_id},
+                                                                 {'name': 'auth_asym_id_1', 'type': 'str', 'value': cif_chain_id},
                                                                  {'name': 'auth_seq_id_1', 'type': 'int', 'value': beg_cif_seq_id},
                                                                  {'name': 'auth_atom_id_1', 'type': 'str', 'value': 'N'},
-                                                                 {'name': 'label_asym_id_2', 'type': 'str', 'value': cif_chain_id},
+                                                                 {'name': 'auth_asym_id_2', 'type': 'str', 'value': cif_chain_id},
                                                                  {'name': 'auth_seq_id_2', 'type': 'int', 'value': end_cif_seq_id},
                                                                  {'name': 'auth_atom_id_2', 'type': 'str', 'value': 'C'}
                                                                  ])

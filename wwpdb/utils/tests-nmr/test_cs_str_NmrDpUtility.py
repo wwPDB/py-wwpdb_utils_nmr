@@ -5,6 +5,7 @@
 # Updates:
 # 18-Mar-2020  M. Yokochi - support 'Saveframe' data type as separated NMR data (DAOTHER-2737)
 # 19-Mar-2020  M. Yokochi - check chain assignment for identical dimer case (DAOTHER-3343)
+# 14-Apr-2020  M. Yokochi - add 'no-cs-row' and 'no-cs-loop' unit tests
 #
 import unittest
 import os
@@ -27,6 +28,8 @@ class TestNmrDpUtility(unittest.TestCase):
                              'sf-double-error': ['2la6-cs-sf-double-error.str'],
                              'loop-double-error': ['2la6-cs-loop-double-error.str'],
                              'loop-double': ['2la6-cs-loop.str', '2la6-cs-loop-2.str'],
+                             'no-cs-row': ['2la6-no-cs-row.str'],
+                             'no-cs-loop': ['2la6-no-cs-loop.str'],
                              'daother-5213': ['bmr36129.str'],
                              'daother-2737': ['rcsb103272-shifts-original.apofepbstar3.str'],
                              'daother-3343': ['D_1200009291_cs.str']
@@ -38,6 +41,8 @@ class TestNmrDpUtility(unittest.TestCase):
                                 'sf-double-error': '2la6.cif',
                                 'loop-double-error': '2la6.cif',
                                 'loop-double': '2la6.cif',
+                                'no-cs-row': '2la6.cif',
+                                'no-cs-loop': '2la6.cif',
                                 'daother-5213': 'pdb_extract_10300.cif',
                                 'daother-2737': 'rcsb103272.cif',
                                 'daother-3343': 'D_1200009291_model_P1.cif.V6'
@@ -87,6 +92,12 @@ class TestNmrDpUtility(unittest.TestCase):
 
     def test_nmr_cs_str_consistency_check_loop_double(self):
         self.__test_nmr_cs_str_consistency('loop-double')
+
+    def test_nmr_cs_str_consistency_check_no_cs_row(self):
+        self.__test_nmr_cs_str_consistency('no-cs-row')
+
+    def test_nmr_cs_str_consistency_check_no_cs_loop(self):
+        self.__test_nmr_cs_str_consistency('no-cs-loop')
 
     def test_nmr_cs_str_consistency_check_daother_5213(self):
         self.__test_nmr_cs_str_consistency('daother-5213')

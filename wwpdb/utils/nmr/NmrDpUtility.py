@@ -39,6 +39,7 @@
 # 03-Apr-2020  M. Yokochi - preserve case code of atom_name (NEF) and Auth_atom_ID/Original_PDB_atom_name (NMR-STAR)
 # 06-Apr-2020  M. Yokochi - synchronize with coordinates' auth_asym_id and auth_seq_id for combined NMR-STAR deposition
 # 10-Apr-2020  M. Yokochi - fix crash in case of format issue
+# 14-Apr-2020  M. Yokochi - fix dependency on label_seq_id, instead of using auth_seq_id in case (DAOTHER-5584)
 ##
 """ Wrapper class for data processing for NMR data.
     @author: Masashi Yokochi
@@ -607,13 +608,13 @@ class NmrDpUtility(object):
                                                       {'name': 'mon_id', 'type': 'str', 'alt_name': 'comp_id'}
                                                       ],
                                    'coordinate': [{'name': 'label_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
-                                                  {'name': 'label_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
-                                                  {'name': 'label_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
+                                                  {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
+                                                  {'name': 'auth_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
                                                   {'name': 'pdbx_PDB_model_num', 'type': 'int', 'alt_name': 'model_id'}
                                                   ],
                                    'coordinate_alias': [{'name': 'label_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
-                                                        {'name': 'label_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
-                                                        {'name': 'label_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
+                                                        {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
+                                                        {'name': 'auth_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
                                                         {'name': 'ndb_model', 'type': 'int', 'alt_name': 'model_id'}
                                                         ]
                                    }
@@ -13367,6 +13368,10 @@ class NmrDpUtility(object):
             polymer_sequence_in_loop = input_source_dic['polymer_sequence_in_loop']
 
             for content_subtype in polymer_sequence_in_loop.keys():
+
+                if content_subtype == 'non_poly':
+                    continue
+
                 list_len = len(polymer_sequence_in_loop[content_subtype])
 
                 seq_align_set = []
@@ -14300,7 +14305,8 @@ class NmrDpUtility(object):
 
                 coord = self.__cR.getDictListWithFilter('atom_site',
                                                         [{'name': 'label_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
-                                                         {'name': 'label_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
+                                                         {'name': 'label_seq_id', 'type': 'str', 'alt_name': 'seq_id'},
+                                                         {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'auth_seq_id'}, # non-polymer
                                                          {'name': 'label_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
                                                          {'name': 'label_atom_id', 'type': 'str', 'alt_name': 'atom_id'}
                                                          ],
@@ -14567,7 +14573,7 @@ class NmrDpUtility(object):
                     atom_id_ = atom_id
                     atom_name = atom_id
 
-                result = next((c for c in coord if c['chain_id'] == cif_chain_id and c['seq_id'] == cif_seq_id and c['comp_id'] == cif_comp_id and c['atom_id'] == atom_id_), None)
+                result = next((c for c in coord if c['chain_id'] == cif_chain_id and ((not c['seq_id'] is None and int(c['seq_id']) == cif_seq_id) or (c['seq_id'] is None and c['auth_seq_id'] == cif_seq_id)) and c['comp_id'] == cif_comp_id and c['atom_id'] == atom_id_), None)
 
                 if result is None:
 
@@ -15487,11 +15493,11 @@ class NmrDpUtility(object):
             """
             err = "Chain assignment does not exist, __assignCoordPolymerSequence() should be invoked."
 
-            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__extractCoodDisulfideBond() ++ Error  - %s" % err)
+            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__extractCoordDisulfideBond() ++ Error  - %s" % err)
             self.report.setError()
 
             if self.__verbose:
-                self.__lfh.write("+NmrDpUtility.__extractCoodDisulfideBond() ++ Error  - %s\n" % err)
+                self.__lfh.write("+NmrDpUtility.__extractCoordDisulfideBond() ++ Error  - %s\n" % err)
             """
             return False
 
@@ -15644,10 +15650,10 @@ class NmrDpUtility(object):
                                                                 [{'name': 'dist', 'type': 'float'}
                                                                  ],
                                                                 [{'name': 'PDB_model_num', 'type': 'int', 'value': 1},
-                                                                 {'name': 'auth_asym_id_1', 'type': 'str', 'value': cif_chain_id},
+                                                                 {'name': 'label_asym_id_1', 'type': 'str', 'value': cif_chain_id},
                                                                  {'name': 'auth_seq_id_1', 'type': 'int', 'value': beg_cif_seq_id},
                                                                  {'name': 'auth_atom_id_1', 'type': 'str', 'value': 'N'},
-                                                                 {'name': 'auth_asym_id_2', 'type': 'str', 'value': cif_chain_id},
+                                                                 {'name': 'label_asym_id_2', 'type': 'str', 'value': cif_chain_id},
                                                                  {'name': 'auth_seq_id_2', 'type': 'int', 'value': end_cif_seq_id},
                                                                  {'name': 'auth_atom_id_2', 'type': 'str', 'value': 'C'}
                                                                  ])
@@ -15816,11 +15822,11 @@ class NmrDpUtility(object):
 
             err = "Chain assignment does not exist, __assignCoordPolymerSequence() should be invoked."
 
-            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__extractCoodDisulfideBond() ++ Error  - %s" % err)
+            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__extractCoordDisulfideBond() ++ Error  - %s" % err)
             self.report.setError()
 
             if self.__verbose:
-                self.__lfh.write("+NmrDpUtility.__extractCoodDisulfideBond() ++ Error  - %s\n" % err)
+                self.__lfh.write("+NmrDpUtility.__extractCoordDisulfideBond() ++ Error  - %s\n" % err)
 
             return False
 
@@ -15844,11 +15850,11 @@ class NmrDpUtility(object):
 
         except Exception as e:
 
-            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__extractCoodDisulfideBond() ++ Error  - %s" % str(e))
+            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__extractCoordDisulfideBond() ++ Error  - %s" % str(e))
             self.report.setError()
 
             if self.__verbose:
-                self.__lfh.write("+NmrDpUtility.__extractCoodDisulfideBond() ++ Error  - %s" % str(e))
+                self.__lfh.write("+NmrDpUtility.__extractCoordDisulfideBond() ++ Error  - %s" % str(e))
 
             return False
 
@@ -16200,11 +16206,11 @@ class NmrDpUtility(object):
 
             err = "Chain assignment does not exist, __assignCoordPolymerSequence() should be invoked."
 
-            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__extractCoodOtherBond() ++ Error  - %s" % err)
+            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__extractCoordOtherBond() ++ Error  - %s" % err)
             self.report.setError()
 
             if self.__verbose:
-                self.__lfh.write("+NmrDpUtility.__extractCoodOtherBond() ++ Error  - %s\n" % err)
+                self.__lfh.write("+NmrDpUtility.__extractCoordOtherBond() ++ Error  - %s\n" % err)
 
             return False
 
@@ -16228,11 +16234,11 @@ class NmrDpUtility(object):
 
         except Exception as e:
 
-            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__extractCoodOtherBond() ++ Error  - %s" % str(e))
+            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__extractCoordOtherBond() ++ Error  - %s" % str(e))
             self.report.setError()
 
             if self.__verbose:
-                self.__lfh.write("+NmrDpUtility.__extractCoodOtherBond() ++ Error  - %s" % str(e))
+                self.__lfh.write("+NmrDpUtility.__extractCoordOtherBond() ++ Error  - %s" % str(e))
 
             return False
 
@@ -17128,7 +17134,7 @@ class NmrDpUtility(object):
 
                 _neighbor = self.__cR.getDictListWithFilter('atom_site',
                                                   [{'name': 'label_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
-                                                   {'name': 'label_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
+                                                   {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'seq_id'}, # non-polymer
                                                    {'name': 'label_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
                                                    {'name': 'label_atom_id', 'type': 'str', 'alt_name': 'atom_id'},
                                                    {'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
@@ -17178,7 +17184,7 @@ class NmrDpUtility(object):
                                                    {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'}
                                                    ],
                                                   [{'name': 'label_asym_id', 'type': 'str', 'value': np['chain_id']},
-                                                   {'name': 'label_seq_id', 'type': 'int', 'value': np['seq_id']},
+                                                   {'name': 'auth_seq_id', 'type': 'int', 'value': np['seq_id']}, # non-polymer
                                                    {'name': 'label_comp_id', 'type': 'str', 'value': np['comp_id']},
                                                    {'name': 'label_atom_id', 'type': 'str', 'value': np['atom_id']},
                                                    ])

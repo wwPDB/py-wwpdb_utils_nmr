@@ -40,6 +40,7 @@
 # 06-Apr-2020  M. Yokochi - synchronize with coordinates' auth_asym_id and auth_seq_id for combined NMR-STAR deposition
 # 10-Apr-2020  M. Yokochi - fix crash in case of format issue
 # 14-Apr-2020  M. Yokochi - fix dependency on label_seq_id, instead of using auth_seq_id in case (DAOTHER-5584)
+# 15-Apr-2020  M. Yokochi - preparation for DAOTHER-4060
 ##
 """ Wrapper class for data processing for NMR data.
     @author: Masashi Yokochi
@@ -2394,6 +2395,9 @@ class NmrDpUtility(object):
 
         self.__ccR = ChemCompReader(self.__verbose, self.__lfh)
         self.__ccR.setCachePath(self.__ccCvsPath)
+
+        # total number of models
+        self.__total_models = 0
 
         self.__last_comp_id = None
         self.__last_comp_id_test = False
@@ -12892,14 +12896,14 @@ class NmrDpUtility(object):
                 else:
                     self.__entry_id = entry[0]['id']
 
-            total_model = 0
+            self.__total_models = 0
 
             ensemble = self.__cR.getDictList('pdbx_nmr_ensemble')
 
             if len(ensemble) > 0 and 'conformers_submitted_total_number' in ensemble[0]:
 
                 try:
-                    total_model = int(ensemble[0]['conformers_submitted_total_number'])
+                    self.__total_models = int(ensemble[0]['conformers_submitted_total_number'])
                 except ValueError:
                     pass
 
@@ -12909,12 +12913,12 @@ class NmrDpUtility(object):
                 if len(ensemble) > 0 and 'conformers_submitted_total_number' in ensemble[0]:
 
                     try:
-                        total_model = int(ensemble[0]['conformers_submitted_total_number'])
+                        self.__total_models = int(ensemble[0]['conformers_submitted_total_number'])
                     except ValueError:
                         pass
 
-            if total_model < 2:
-                err = "Coordinate file %s has %s model. Deposition of minimized average structure must be accompanied with ensemble and must be homogeneous with the ensemble." % (file_name, 'no' if total_model == 0 else ('only one' if total_model == 1 else total_model))
+            if self.__total_models < 2:
+                err = "Coordinate file %s has %s model. Deposition of minimized average structure must be accompanied with ensemble and must be homogeneous with the ensemble." % (file_name, 'no' if self.__total_models == 0 else ('only one' if self.__total_models == 1 else self.__total_models))
 
                 self.report.error.appendDescription('missing_mandatory_content', {'file_name': file_name, 'description': err})
                 self.report.setError()
@@ -12924,8 +12928,8 @@ class NmrDpUtility(object):
 
                 return False
 
-            elif total_model < 8:
-                warn = "Coordinate file %s has %s models. Minimized average structure and a sufficient number of models associated with its ensemble should be deposited." % (file_name, total_model)
+            elif self.__total_models < 8:
+                warn = "Coordinate file %s has %s models. Minimized average structure and a sufficient number of models associated with its ensemble should be deposited." % (file_name, self.__total_models)
 
                 self.report.warning.appendDescription('insufficient_data', {'file_name': file_name, 'description': warn})
                 self.report.setWarning()
@@ -13045,7 +13049,7 @@ class NmrDpUtility(object):
 
         try:
 
-            poly_seq = self.__cR.getPolymerSequence(lp_category, key_items, withStructConf=True, alias=alias)
+            poly_seq = self.__cR.getPolymerSequence(lp_category, key_items, withStructConf=True, alias=alias, total_models=self.__total_models)
 
             input_source.setItemValue('polymer_sequence', poly_seq)
 
@@ -13119,7 +13123,7 @@ class NmrDpUtility(object):
 
         try:
 
-            non_poly = self.__cR.getPolymerSequence(lp_category, key_items, withStructConf=False)
+            non_poly = self.__cR.getPolymerSequence(lp_category, key_items)
 
             if len(non_poly) > 0:
 
@@ -13224,7 +13228,7 @@ class NmrDpUtility(object):
 
             try:
 
-                poly_seq = self.__cR.getPolymerSequence(lp_category, key_items, withStructConf=False)
+                poly_seq = self.__cR.getPolymerSequence(lp_category, key_items)
 
                 if len(poly_seq) > 0:
 

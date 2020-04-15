@@ -13,11 +13,12 @@
 # 28-Jan-2020   my  - Add 'withStructConf' option of getPolymerSequence
 # 19-Mar-2020   my  - Add hasItem()
 # 24-Mar-2020   my  - add 'identical_chain_id' in results of getPolymerSequence()
+# 15-Apr-2020   my  - add 'total_models' option of getPolymerSequence (DAOTHER-4060)
 ##
 """ A collection of classes for parsing CIF files.
 """
 
-import sys,time,os,traceback
+import sys,time,os,traceback,math
 from mmcif.io.PdbxReader import PdbxReader
 
 class CifReader(object):
@@ -156,7 +157,7 @@ class CifReader(object):
 
         return dList
 
-    def getPolymerSequence(self, catName, keyItems, withStructConf=False, alias=False):
+    def getPolymerSequence(self, catName, keyItems, withStructConf=False, alias=False, total_models=1):
         """ Extracts sequence from a given loop in a CIF file
         """
 
@@ -236,6 +237,9 @@ class CifReader(object):
                     if withStructConf:
                         ent['struct_conf'] = self.__extractStructConf(c, seqDict[c], alias)
 
+                    if total_models > 1:
+                        ent['ca_rmsd'] = self.__calculateCAlphaRMSD(c, seqDict[c], alias, total_models)
+
                     if len(chains) > 1:
                         identity = []
                         for _c in chains:
@@ -288,6 +292,40 @@ class CifReader(object):
             for seq_id in range(ssr['beg_label_seq_id'], ssr['end_label_seq_id'] + 1):
                 if seq_id in seq_ids:
                     ret[seq_ids.index(seq_id)] = 'STRN:' + ssr['sheet_id'] + ':' + ssr['id']
+
+        return ret
+
+    def __calculateCAlphaRMSD(self, chain_id, seq_ids, alias=False, total_models=1):
+        """ Calculate RMSD of alpha carbons in the ensemble.
+        """
+
+        ret = [None] * len(seq_ids)
+
+        if total_models < 2:
+            return ret
+
+        for seq_id in seq_ids:
+
+            ca_atom_site = self.getDictListWithFilter('atom_site',
+                                                [{'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
+                                                 {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
+                                                 {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'},
+                                                 {'name': 'ndb_model' if alias else 'pdbx_PDB_model_num', 'type': 'int', 'alt_name': 'model_id'}
+                                                 ],
+                                                [{'name': 'label_asym_id', 'type': 'str', 'value': chain_id},
+                                                 {'name': 'label_seq_id', 'type': 'int', 'value': seq_id},
+                                                 {'name': 'label_atom_id', 'type': 'str', 'value': 'CA'}])
+
+            if len(ca_atom_site) == total_models:
+                try:
+                    ref_ca = next(ref_ca for ref_ca in ca_atom_site if ref_ca['model_id'] == 1)
+                    rmsd2 = 0.0
+                    for ca in [ca for ca in ca_atom_site if ca['model_id'] != 1]:
+                        rmsd2 += (ca['x'] - ref_ca['x']) ** 2 + (ca['y'] - ref_ca['y']) ** 2 + (ca['z'] - ref_ca['z']) ** 2
+                except StopIteration:
+                    continue
+
+                ret[seq_ids.index(seq_id)] = float('{:.2f}'.format(math.sqrt(rmsd2)))
 
         return ret
 

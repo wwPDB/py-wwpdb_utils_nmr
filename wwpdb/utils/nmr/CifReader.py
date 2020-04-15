@@ -237,8 +237,41 @@ class CifReader(object):
                     if withStructConf:
                         ent['struct_conf'] = self.__extractStructConf(c, seqDict[c], alias)
 
-                    if total_models > 1:
-                        ent['ca_rmsd'] = self.__calculateCAlphaRMSD(c, seqDict[c], alias, total_models)
+                    entity_poly = self.getDictList('entity_poly')
+
+                    type = next((e['type'] for e in entity_poly if c in e['pdbx_strand_id'].split(',')), None)
+
+                    if not type is None:
+                        ent['type'] = type
+
+                        if total_models > 1:
+                            if 'polypeptide' in type:
+
+                                ca_atom_sites = self.getDictListWithFilter('atom_site',
+                                                [{'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
+                                                 {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
+                                                 {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'},
+                                                 {'name': 'label_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
+                                                 {'name': 'ndb_model' if alias else 'pdbx_PDB_model_num', 'type': 'int', 'alt_name': 'model_id'}
+                                                 ],
+                                                [{'name': 'label_asym_id', 'type': 'str', 'value': c},
+                                                 {'name': 'label_atom_id', 'type': 'str', 'value': 'CA'}])
+
+                                ent['ca_rmsd'] = self.__calculateRMSD(c, seqDict[c], alias, total_models, ca_atom_sites)
+
+                            elif 'ribonucleotide' in type:
+
+                                p_atom_sites = self.getDictListWithFilter('atom_site',
+                                                [{'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
+                                                 {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
+                                                 {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'},
+                                                 {'name': 'label_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
+                                                 {'name': 'ndb_model' if alias else 'pdbx_PDB_model_num', 'type': 'int', 'alt_name': 'model_id'}
+                                                 ],
+                                                [{'name': 'label_asym_id', 'type': 'str', 'value': c},
+                                                 {'name': 'label_atom_id', 'type': 'str', 'value': 'P'}])
+
+                                ent['p_rmsd'] = self.__calculateRMSD(c, seqDict[c], alias, total_models, p_atom_sites)
 
                     if len(chains) > 1:
                         identity = []
@@ -295,33 +328,25 @@ class CifReader(object):
 
         return ret
 
-    def __calculateCAlphaRMSD(self, chain_id, seq_ids, alias=False, total_models=1):
-        """ Calculate RMSD of alpha carbons in the ensemble.
+    def __calculateRMSD(self, chain_id, seq_ids, alias=False, total_models=1, atom_sites=None):
+        """ Calculate RMSD of alpha carbons/phosphates in the ensemble.
         """
 
         ret = [None] * len(seq_ids)
 
-        if total_models < 2:
+        if total_models < 2 or atom_sites is None:
             return ret
 
         for seq_id in seq_ids:
 
-            ca_atom_site = self.getDictListWithFilter('atom_site',
-                                                [{'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
-                                                 {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
-                                                 {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'},
-                                                 {'name': 'ndb_model' if alias else 'pdbx_PDB_model_num', 'type': 'int', 'alt_name': 'model_id'}
-                                                 ],
-                                                [{'name': 'label_asym_id', 'type': 'str', 'value': chain_id},
-                                                 {'name': 'label_seq_id', 'type': 'int', 'value': seq_id},
-                                                 {'name': 'label_atom_id', 'type': 'str', 'value': 'CA'}])
+            _atom_site = [a for a in atom_sites if a['seq_id'] == seq_id]
 
-            if len(ca_atom_site) == total_models:
+            if len(_atom_site) == total_models:
                 try:
-                    ref_ca = next(ref_ca for ref_ca in ca_atom_site if ref_ca['model_id'] == 1)
+                    ref_atom = next(ref_atom for ref_atom in _atom_site if ref_atom['model_id'] == 1)
                     rmsd2 = 0.0
-                    for ca in [ca for ca in ca_atom_site if ca['model_id'] != 1]:
-                        rmsd2 += (ca['x'] - ref_ca['x']) ** 2 + (ca['y'] - ref_ca['y']) ** 2 + (ca['z'] - ref_ca['z']) ** 2
+                    for atom in [atom for atom in _atom_site if atom['model_id'] != 1]:
+                        rmsd2 += (atom['x'] - ref_atom['x']) ** 2 + (atom['y'] - ref_atom['y']) ** 2 + (atom['z'] - ref_atom['z']) ** 2
                 except StopIteration:
                     continue
 

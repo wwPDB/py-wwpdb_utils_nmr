@@ -20,6 +20,7 @@
 # 23-Mar-2020  M. Yokochi - add 'anomalous_chemical_shift' and 'unusual_chemical_shift' warning types
 # 24-Mar-2020  M. Yokochi - add method to retrieve chemical shift reference (DAOTHER-1682)
 # 03-Apr-2020  M. Yokochi - add methods to retrieve sequence alignment between coordinate and NMR data
+# 15-Apr-2020  M. Yokochi - add getAverageRMSDWithinRange() (DAOTHER-4060)
 ##
 """ Wrapper class for data processing report of NMR data.
     @author: Masashi Yokochi
@@ -1068,6 +1069,37 @@ class NmrDpReport:
                 return self.getModelSeq1LetterCodeOf(chain_assign['test_chain_id'])
 
         return None
+
+    def getAverageRMSDWithinRange(self, cif_chain_id, cif_beg_seq_id, cif_end_seq_id):
+        """ Calculate average RMSD of alpha carbons/phosphates within a given range in the ensemble.
+        """
+
+        poly_seq = self.getModelPolymerSequenceOf(cif_chain_id)
+
+        if poly_seq is None or not 'type' in poly_seq:
+            return None
+
+        type = ent['type']
+
+        if 'polypeptide' in type:
+            rmsd_label = 'ca_rmsd'
+        elif 'ribonucleotide' in type:
+            rmsd_label = 'p_rmsd'
+        else:
+            return None
+
+        if not rmsd_label in ent:
+            return None
+
+        if not (cif_beg_seq_id in poly_seq['seq_id'] and cif_end_seq_id in poly_seq['seq_id']):
+            return None
+
+        rmsd = [s[rmsd_label] for s in poly_seq if s['seq_id'] >= cif_beg_seq_id and s['seq_id'] <= cif_end_seq_id and not s[rmsd_label] is None]
+
+        if len(rmsd) == 0:
+            return None
+
+        return sum[rmsd] / len(rmsd)
 
     def getTotalErrors(self):
         return self.error.getTotal()

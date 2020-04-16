@@ -14519,7 +14519,7 @@ class NmrDpUtility(object):
                 ca = nmr2ca[str(chain_id)]
 
                 cif_chain_id = ca['test_chain_id']
-                
+
                 cif_seq_id = None
                 for k in range(ca['length']):
                     if ca['ref_seq_id'][k] == seq_id:

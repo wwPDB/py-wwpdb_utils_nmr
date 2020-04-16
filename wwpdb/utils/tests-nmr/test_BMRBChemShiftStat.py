@@ -3,6 +3,7 @@
 # Date:  29-Jul-2019  M. Yokochi
 #
 # Updates:
+# 16-Apr-2020  M. Yokochi - fix ambiguity code of atom name starts with 'Q' (e.g. LYZ:QZ)
 ##
 import unittest
 import os
@@ -91,7 +92,7 @@ class TestBMRBChemShiftStat(unittest.TestCase):
         self.assertEqual(self.bmrb_cs_stat.getSideChainAtoms('PRO'), ['CB', 'CD', 'CG', 'HB2', 'HB3', 'HD2', 'HD3', 'HG2', 'HG3'])
         self.assertEqual(self.bmrb_cs_stat.getSideChainAtoms('ARG'), ['CB', 'CD', 'CG', 'CZ', 'HB2', 'HB3', 'HD2', 'HD3', 'HE', 'HG2', 'HG3', 'HH11', 'HH12', 'HH21', 'HH22', 'NE', 'NH1', 'NH2'])
         self.assertEqual(self.bmrb_cs_stat.getSideChainAtoms('ARG', excl_minor_atom=True), ['CB', 'CD', 'CG', 'HB2', 'HB3', 'HD2', 'HD3', 'HE', 'HG2', 'HG3', 'NE'])
-        self.assertEqual(self.bmrb_cs_stat.getSideChainAtoms('LYS'), ['CB', 'CD', 'CE', 'CG', 'HB2', 'HB3', 'HD2', 'HD3', 'HE2', 'HE3', 'HG2', 'HG3', 'NZ', 'HZ1', 'HZ2'])
+        self.assertEqual(self.bmrb_cs_stat.getSideChainAtoms('LYS'), ['CB', 'CD', 'CE', 'CG', 'HB2', 'HB3', 'HD2', 'HD3', 'HE2', 'HE3', 'HG2', 'HG3', 'NZ', 'HZ1', 'HZ2', 'HZ3'])
         self.assertEqual(self.bmrb_cs_stat.getSideChainAtoms('LYS', excl_minor_atom=True), ['CB', 'CD', 'CE', 'CG', 'HB2', 'HB3', 'HD2', 'HD3', 'HE2', 'HE3', 'HG2', 'HG3'])
         self.assertEqual(self.bmrb_cs_stat.getSideChainAtoms('PTR', polypeptide_like=True), ['CB', 'CD1', 'CD2', 'CE1', 'CE2', 'HB2', 'HB3', 'HD1', 'HD2', 'HE1', 'HE2'])
         self.assertEqual(self.bmrb_cs_stat.getSideChainAtoms('PTR', excl_minor_atom=True, polypeptide_like=True), ['CB', 'CD1', 'CD2', 'CE1', 'CE2', 'HB2', 'HB3', 'HD1', 'HD2', 'HE1', 'HE2'])
@@ -115,6 +116,7 @@ class TestBMRBChemShiftStat(unittest.TestCase):
         self.assertEqual(self.bmrb_cs_stat.getMaxAmbigCodeWoSetId('TRP', 'CE2'), 1)
         self.assertEqual(self.bmrb_cs_stat.getMaxAmbigCodeWoSetId('TYR', 'HE2'), 3)
         self.assertEqual(self.bmrb_cs_stat.getMaxAmbigCodeWoSetId('GLU', 'HB2'), 2)
+        self.assertEqual(self.bmrb_cs_stat.getMaxAmbigCodeWoSetId('LYS', 'HZ1'), 1)
 
 if __name__ == '__main__':
     unittest.main()

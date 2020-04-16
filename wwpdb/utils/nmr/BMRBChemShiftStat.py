@@ -5,6 +5,7 @@
 # Updates:
 # 26-Feb-2020  M. Yokochi - load csv resource files if pickle is not available
 # 04-Mar-2020  M. Yokochi - support lazy import of others (non-standard residues, DAOTHER-5498)
+# 16-Apr-2020  M. Yokochi - fix ambiguity code of atom name starts with 'Q' (e.g. LYZ:QZ)
 ##
 """ Wrapper class for retrieving BMRB chemical shift statistics.
     @author: Masashi Yokochi
@@ -563,7 +564,7 @@ class BMRBChemShiftStat:
                 elif row['atom_id'].startswith('Q'):
                     _atom_id = re.sub(r'^Q', 'H', row['atom_id'])
 
-                    for i in range(1, 3):
+                    for i in range(1, 4):
                         _row = {}
                         _row['comp_id'] = comp_id
                         _row['atom_id'] = _atom_id + str(i)
@@ -579,7 +580,7 @@ class BMRBChemShiftStat:
                             _row['std'] = None
                         _row['min'] = float(row['min'])
                         _row['max'] = float(row['max'])
-                        _row['desc'] = 'geminal'
+                        _row['desc'] = 'methyl'
                         _row['primary'] = False
                         _row['norm_freq'] = None
 

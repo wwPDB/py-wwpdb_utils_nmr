@@ -12795,7 +12795,8 @@ class NmrDpUtility(object):
                 cif_seq_id = None
                 for k in range(result['length']):
                     if result['ref_seq_id'][k] == nmr_seq_id:
-                        cif_seq_id = result['test_seq_id'][k]
+                        if k < len(result['test_seq_id']):
+                            cif_seq_id = result['test_seq_id'][k]
                         break
 
                 if cif_seq_id is None:
@@ -14518,11 +14519,12 @@ class NmrDpUtility(object):
                 ca = nmr2ca[str(chain_id)]
 
                 cif_chain_id = ca['test_chain_id']
-
+                
                 cif_seq_id = None
                 for k in range(ca['length']):
                     if ca['ref_seq_id'][k] == seq_id:
-                        cif_seq_id = ca['test_seq_id'][k]
+                        if k < len(ca['test_seq_id']):
+                            cif_seq_id = ca['test_seq_id'][k]
                         break
 
                 if cif_seq_id is None:
@@ -15700,7 +15702,8 @@ class NmrDpUtility(object):
             cif_seq_id = None
             for k in range(result['length']):
                 if result['ref_seq_id'][k] == nmr_seq_id:
-                    cif_seq_id = result['test_seq_id'][k]
+                    if k < len(result['test_seq_id']):
+                        cif_seq_id = result['test_seq_id'][k]
                     break
 
             if cif_seq_id is None:
@@ -15756,7 +15759,8 @@ class NmrDpUtility(object):
             cif_seq_id = None
             for k in range(result['length']):
                 if result['ref_seq_id'][k] == nmr_seq_id and result['ref_code'][k] == 'H':
-                    cif_seq_id = result['test_seq_id'][k]
+                    if k < len(result['test_seq_id']):
+                        cif_seq_id = result['test_seq_id'][k]
                     break
 
             if cif_seq_id is None:
@@ -15950,7 +15954,8 @@ class NmrDpUtility(object):
                 nmr_seq_id_1 = None
                 for k in range(result['length']):
                     if result['ref_seq_id'][k] == cif_seq_id_1:
-                        nmr_seq_id_1 = result['test_seq_id'][k]
+                        if k < len(result['test_seq_id']):
+                            nmr_seq_id_1 = result['test_seq_id'][k]
                         break
 
                 if nmr_seq_id_1 is None:
@@ -15980,7 +15985,8 @@ class NmrDpUtility(object):
                 nmr_seq_id_2 = None
                 for k in range(result['length']):
                     if result['ref_seq_id'][k] == cif_seq_id_2:
-                        nmr_seq_id_2 = result['test_seq_id'][k]
+                        if k < len(result['test_seq_id']):
+                            nmr_seq_id_2 = result['test_seq_id'][k]
                         break
 
                 if nmr_seq_id_2 is None:
@@ -16334,7 +16340,8 @@ class NmrDpUtility(object):
                 nmr_seq_id_1 = None
                 for k in range(result['length']):
                     if result['ref_seq_id'][k] == cif_seq_id_1:
-                        nmr_seq_id_1 = result['test_seq_id'][k]
+                        if k < len(result['test_seq_id']):
+                            nmr_seq_id_1 = result['test_seq_id'][k]
                         break
 
                 if nmr_seq_id_1 is None:
@@ -16364,7 +16371,8 @@ class NmrDpUtility(object):
                 nmr_seq_id_2 = None
                 for k in range(result['length']):
                     if result['ref_seq_id'][k] == cif_seq_id_2:
-                        nmr_seq_id_2 = result['test_seq_id'][k]
+                        if k < len(result['test_seq_id']):
+                            nmr_seq_id_2 = result['test_seq_id'][k]
                         break
 
                 if nmr_seq_id_2 is None:
@@ -16764,7 +16772,8 @@ class NmrDpUtility(object):
             cif_seq_id = None
             for k in range(result['length']):
                 if result['ref_seq_id'][k] == nmr_seq_id:
-                    cif_seq_id = result['test_seq_id'][k]
+                    if k < len(result['test_seq_id']):
+                        cif_seq_id = result['test_seq_id'][k]
                     break
 
             if cif_seq_id is None:
@@ -16867,7 +16876,8 @@ class NmrDpUtility(object):
                     _nmr_seq_id = None
                     for k in range(result['length']):
                         if result['ref_seq_id'][k] == n['seq_id']:
-                            _nmr_seq_id = result['test_seq_id'][k]
+                            if k < len(result['test_seq_id']):
+                                _nmr_seq_id = result['test_seq_id'][k]
                             break
 
                     atom_list.append({'chain_id': _nmr_chain_id, 'seq_id': _nmr_seq_id, 'cif_chain_id': _cif_chain_id, 'cif_seq_id': n['seq_id'], 'comp_id': n['comp_id'], 'atom_id': n['atom_id'],
@@ -17085,7 +17095,8 @@ class NmrDpUtility(object):
             cif_seq_id = None
             for k in range(result['length']):
                 if result['ref_seq_id'][k] == nmr_seq_id:
-                    cif_seq_id = result['test_seq_id'][k]
+                    if k < len(result['test_seq_id']):
+                        cif_seq_id = result['test_seq_id'][k]
                     break
 
             if cif_seq_id is None:

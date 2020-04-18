@@ -21,6 +21,7 @@
 # 24-Mar-2020  M. Yokochi - add method to retrieve chemical shift reference (DAOTHER-1682)
 # 03-Apr-2020  M. Yokochi - add methods to retrieve sequence alignment between coordinate and NMR data
 # 15-Apr-2020  M. Yokochi - add getAverageRMSDWithinRange() (DAOTHER-4060)
+# 18-Apr-2020  M. Yokochi - fix error of apilayer - getNmrSeqAlignment in NMR legacy deposition (DAOTHER-5594)
 ##
 """ Wrapper class for data processing report of NMR data.
     @author: Masashi Yokochi
@@ -870,14 +871,6 @@ class NmrDpReport:
         """ Retrieve NMR polymer sequence corresponding to a given coordinate chain_id.
         """
 
-        id = self.getInputSourceIdOfNmrData()
-
-        if id < 0:
-            ids = self.getInputSourceIdsOfNmrLegacyData()
-            if len(ids) == 0:
-                return None
-            id = ids[0]
-
         chain_assign_dic = self.chain_assignment.get()
 
         key = 'model_poly_seq_vs_nmr_poly_seq'
@@ -898,11 +891,6 @@ class NmrDpReport:
     def getSequenceAlignmentWithNmrChainId(self, nmr_chain_id):
         """ Retrieve sequence alignment (nmr vs model) of a given NMR chain_id.
         """
-
-        id = self.getInputSourceIdOfCoord()
-
-        if id < 0:
-            return None
 
         chain_assign_dic = self.chain_assignment.get()
 
@@ -946,11 +934,6 @@ class NmrDpReport:
         """ Retrieve sequence alignment (model vs nmr) of a given coordinate chain_id.
         """
 
-        id = self.getInputSourceIdOfCoord()
-
-        if id < 0:
-            return None
-
         chain_assign_dic = self.chain_assignment.get()
 
         key = 'model_poly_seq_vs_nmr_poly_seq'
@@ -993,11 +976,6 @@ class NmrDpReport:
         """ Retrieve coordinate polymer sequence corresponding to a given NMR chain_id.
         """
 
-        id = self.getInputSourceIdOfCoord()
-
-        if id < 0:
-            return None
-
         chain_assign_dic = self.chain_assignment.get()
 
         key = 'nmr_poly_seq_vs_model_poly_seq'
@@ -1019,14 +997,6 @@ class NmrDpReport:
         """ Retrieve NMR polymer sequence (1-letter code) corresponding to a given coordinate chain_id.
         """
 
-        id = self.getInputSourceIdOfNmrData()
-
-        if id < 0:
-            ids = self.getInputSourceIdsOfNmrLegacyData()
-            if len(ids) == 0:
-                return None
-            id = ids[0]
-
         chain_assign_dic = self.chain_assignment.get()
 
         key = 'model_poly_seq_vs_nmr_poly_seq'
@@ -1047,11 +1017,6 @@ class NmrDpReport:
     def getModelSeq1LetterCodeWithNmrChainId(self, nmr_chain_id):
         """ Retrieve coordinate polymer sequence (1-letter code) corresponding to a given NMR chain_id.
         """
-
-        id = self.getInputSourceIdOfCoord()
-
-        if id < 0:
-            return None
 
         chain_assign_dic = self.chain_assignment.get()
 

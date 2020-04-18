@@ -40,6 +40,7 @@
 # 06-Apr-2020  M. Yokochi - synchronize with coordinates' auth_asym_id and auth_seq_id for combined NMR-STAR deposition
 # 10-Apr-2020  M. Yokochi - fix crash in case of format issue
 # 14-Apr-2020  M. Yokochi - fix dependency on label_seq_id, instead of using auth_seq_id in case (DAOTHER-5584)
+# 18-Apr-2020  M. Yokochi - fix no model error in coordinate and allow missing 'sf_framecode' in legacy deposition (DAOTHER-5594)
 ##
 """ Wrapper class for data processing for NMR data.
     @author: Masashi Yokochi
@@ -3000,6 +3001,21 @@ class NmrDpUtility(object):
 
         return is_done
 
+    def __getFirstTagValue(self, data=None, tag=None):
+        """ Return the first value of a given tag from PyNMRSTAR data.
+            @return: The first tag value, empty string otherwise.
+        """
+
+        if data is None or tag is None:
+            return ''
+
+        array = data.get_tag(tag)
+
+        if len(array) == 0:
+            return ''
+
+        return array[0]
+
     def __rescueFormerNef(self, file_list_id):
         """ Rescue former NEF version prior to 1.0.
         """
@@ -3024,7 +3040,7 @@ class NmrDpUtility(object):
 
                 for sf_data in self.__star_data[file_list_id].get_saveframes_by_category(sf_category):
 
-                    sf_framecode = sf_data.get_tag('sf_framecode')[0]
+                    sf_framecode = self.__getFirstTagValue(sf_data, 'sf_framecode')
 
                     try:
                         self.__star_data[file_list_id].get_saveframe_by_name(sf_framecode)
@@ -3110,7 +3126,7 @@ class NmrDpUtility(object):
                     continue
 
                 sf_data = self.__star_data[file_list_id]
-                sf_framecode = sf_data.get_tag('sf_framecode')[0]
+                sf_framecode = self.__getFirstTagValue(sf_data, 'sf_framecode')
 
                 self.__rescueFormerNef__(file_type, file_name, content_subtype, sf_data, sf_framecode, sf_category, lp_category)
 
@@ -3118,7 +3134,7 @@ class NmrDpUtility(object):
 
                 for sf_data in self.__star_data[file_list_id].get_saveframes_by_category(sf_category):
 
-                    sf_framecode = sf_data.get_tag('sf_framecode')[0]
+                    sf_framecode = self.__getFirstTagValue(sf_data, 'sf_framecode')
 
                     self.__rescueFormerNef__(file_type, file_name, content_subtype, sf_data, sf_framecode, sf_category, lp_category)
 
@@ -3360,7 +3376,7 @@ class NmrDpUtility(object):
 
                 for sf_data in self.__star_data[file_list_id].get_saveframes_by_category(sf_category):
 
-                    sf_framecode = sf_data.get_tag('sf_framecode')[0]
+                    sf_framecode = self.__getFirstTagValue(sf_data, 'sf_framecode')
 
                     try:
                         self.__star_data[file_list_id].get_saveframe_by_name(sf_framecode)
@@ -3433,7 +3449,7 @@ class NmrDpUtility(object):
                     continue
 
                 sf_data = self.__star_data[file_list_id]
-                sf_framecode = sf_data.get_tag('sf_framecode')[0]
+                sf_framecode = self.__getFirstTagValue(sf_data, 'sf_framecode')
 
                 self.__rescueImmatureStr__(file_type, file_name, content_subtype, sf_data, sf_framecode, lp_category)
 
@@ -3441,7 +3457,7 @@ class NmrDpUtility(object):
 
                 for sf_data in self.__star_data[file_list_id].get_saveframes_by_category(sf_category):
 
-                    sf_framecode = sf_data.get_tag('sf_framecode')[0]
+                    sf_framecode = self.__getFirstTagValue(sf_data, 'sf_framecode')
 
                     self.__rescueImmatureStr__(file_type, file_name, content_subtype, sf_data, sf_framecode, lp_category)
 
@@ -3754,7 +3770,7 @@ class NmrDpUtility(object):
 
             for sf_data in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
 
-                sf_framecode = sf_data.get_tag('sf_framecode')[0]
+                sf_framecode = self.__getFirstTagValue(sf_data, 'sf_framecode')
 
                 try:
 
@@ -3986,7 +4002,7 @@ class NmrDpUtility(object):
                 elif self.__star_data_type[fileListId] == 'Saveframe':
 
                     sf_data = self.__star_data[fileListId]
-                    sf_framecode = sf_data.get_tag('sf_framecode')[0]
+                    sf_framecode = self.__getFirstTagValue(sf_data, 'sf_framecode')
 
                     has_poly_seq |= self.__extractPolymerSequenceInLoop__(fileListId, file_name, file_type, content_subtype, sf_data, list_id, sf_framecode, lp_category, poly_seq_list_set)
 
@@ -3994,7 +4010,7 @@ class NmrDpUtility(object):
 
                     for sf_data in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
 
-                        sf_framecode = sf_data.get_tag('sf_framecode')[0]
+                        sf_framecode = self.__getFirstTagValue(sf_data, 'sf_framecode')
 
                         has_poly_seq |= self.__extractPolymerSequenceInLoop__(fileListId, file_name, file_type, content_subtype, sf_data, list_id, sf_framecode, lp_category, poly_seq_list_set)
 
@@ -4619,7 +4635,7 @@ class NmrDpUtility(object):
             elif self.__star_data_type[fileListId] == 'Saveframe':
 
                 sf_data = self.__star_data[fileListId]
-                sf_framecode = sf_data.get_tag('sf_framecode')[0]
+                sf_framecode = self.__getFirstTagValue(sf_data, 'sf_framecode')
 
                 self.__extractNonStandardResidue__(file_name, sf_data, sf_framecode, lp_category, input_source)
 
@@ -4627,7 +4643,7 @@ class NmrDpUtility(object):
 
                 for sf_data in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
 
-                    sf_framecode = sf_data.get_tag('sf_framecode')[0]
+                    sf_framecode = self.__getFirstTagValue(sf_data, 'sf_framecode')
 
                     self.__extractNonStandardResidue__(file_name, sf_data, sf_framecode, lp_category, input_source)
 
@@ -4950,7 +4966,7 @@ class NmrDpUtility(object):
                 elif self.__star_data_type[fileListId] == 'Saveframe':
 
                     sf_data = self.__star_data[fileListId]
-                    sf_framecode = sf_data.get_tag('sf_framecode')[0]
+                    sf_framecode = self.__getFirstTagValue(sf_data, 'sf_framecode')
 
                     self.__validateAtomNomenclature__(file_name, file_type, content_subtype, sf_data, sf_framecode, lp_category)
 
@@ -4958,7 +4974,7 @@ class NmrDpUtility(object):
 
                     for sf_data in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
 
-                        sf_framecode = sf_data.get_tag('sf_framecode')[0]
+                        sf_framecode = self.__getFirstTagValue(sf_data, 'sf_framecode')
 
                         self.__validateAtomNomenclature__(file_name, file_type, content_subtype, sf_data, sf_framecode, lp_category)
 
@@ -5308,7 +5324,7 @@ class NmrDpUtility(object):
             elif self.__star_data_type[fileListId] == 'Saveframe':
 
                 sf_data = self.__star_data[fileListId]
-                sf_framecode = sf_data.get_tag('sf_framecode')[0]
+                sf_framecode = self.__getFirstTagValue(sf_data, 'sf_framecode')
 
                 self.__validateAtomTypeOfCSLoop__(file_name, file_type, sf_data, sf_framecode, lp_category)
 
@@ -5316,7 +5332,7 @@ class NmrDpUtility(object):
 
                 for sf_data in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
 
-                    sf_framecode = sf_data.get_tag('sf_framecode')[0]
+                    sf_framecode = self.__getFirstTagValue(sf_data, 'sf_framecode')
 
                     self.__validateAtomTypeOfCSLoop__(file_name, file_type, sf_data, sf_framecode, lp_category)
 
@@ -5483,7 +5499,7 @@ class NmrDpUtility(object):
             elif self.__star_data_type[fileListId] == 'Saveframe':
 
                 sf_data = self.__star_data[fileListId]
-                sf_framecode = sf_data.get_tag('sf_framecode')[0]
+                sf_framecode = self.__getFirstTagValue(sf_data, 'sf_framecode')
 
                 self.__validateAmbigCodeOfCSLoop__(file_name, sf_data, sf_framecode, lp_category)
 
@@ -5491,7 +5507,7 @@ class NmrDpUtility(object):
 
                 for sf_data in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
 
-                    sf_framecode = sf_data.get_tag('sf_framecode')[0]
+                    sf_framecode = self.__getFirstTagValue(sf_data, 'sf_framecode')
 
                     self.__validateAmbigCodeOfCSLoop__(file_name, sf_data, sf_framecode, lp_category)
 
@@ -5639,7 +5655,7 @@ class NmrDpUtility(object):
                 elif self.__star_data_type[fileListId] == 'Saveframe':
 
                     sf_data = self.__star_data[fileListId]
-                    sf_framecode = sf_data.get_tag('sf_framecode')[0]
+                    sf_framecode = self.__getFirstTagValue(sf_data, 'sf_framecode')
 
                     self.__testIndexConsistency__(file_name, sf_data, sf_framecode, lp_category, index_tag)
 
@@ -5647,7 +5663,7 @@ class NmrDpUtility(object):
 
                     for sf_data in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
 
-                        sf_framecode = sf_data.get_tag('sf_framecode')[0]
+                        sf_framecode = self.__getFirstTagValue(sf_data, 'sf_framecode')
 
                         self.__testIndexConsistency__(file_name, sf_data, sf_framecode, lp_category, index_tag)
 
@@ -5770,7 +5786,7 @@ class NmrDpUtility(object):
                 elif self.__star_data_type[fileListId] == 'Saveframe':
 
                     sf_data = self.__star_data[fileListId]
-                    sf_framecode = sf_data.get_tag('sf_framecode')[0]
+                    sf_framecode = self.__getFirstTagValue(sf_data, 'sf_framecode')
 
                     self.__testDataConsistencyInLoop__(fileListId, file_name, file_type, content_subtype, sf_data, sf_framecode, lp_category)
 
@@ -5778,7 +5794,7 @@ class NmrDpUtility(object):
 
                     for sf_data in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
 
-                        sf_framecode = sf_data.get_tag('sf_framecode')[0]
+                        sf_framecode = self.__getFirstTagValue(sf_data, 'sf_framecode')
 
                         self.__testDataConsistencyInLoop__(fileListId, file_name, file_type, content_subtype, sf_data, sf_framecode, lp_category)
 
@@ -6004,7 +6020,7 @@ class NmrDpUtility(object):
                     elif self.__star_data_type[fileListId] == 'Saveframe':
 
                         sf_data = self.__star_data[fileListId]
-                        sf_framecode = sf_data.get_tag('sf_framecode')[0]
+                        sf_framecode = self.__getFirstTagValue(sf_data, 'sf_framecode')
 
                         self.__detectConflictDataInLoop__(file_name, file_type, content_subtype, sf_data, sf_framecode, lp_category)
 
@@ -6012,7 +6028,7 @@ class NmrDpUtility(object):
 
                         for sf_data in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
 
-                            sf_framecode = sf_data.get_tag('sf_framecode')[0]
+                            sf_framecode = self.__getFirstTagValue(sf_data, 'sf_framecode')
 
                             self.__detectConflictDataInLoop__(file_name, file_type, content_subtype, sf_data, sf_framecode, lp_category)
 
@@ -6252,7 +6268,7 @@ class NmrDpUtility(object):
 
                 for sf_data in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
 
-                    sf_framecode = sf_data.get_tag('sf_framecode')[0]
+                    sf_framecode = self.__getFirstTagValue(sf_data, 'sf_framecode')
 
                     if content_subtype == 'spectral_peak':
 
@@ -6598,7 +6614,7 @@ class NmrDpUtility(object):
 
                 for sf_data in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
 
-                    sf_framecode = sf_data.get_tag('sf_framecode')[0]
+                    sf_framecode = self.__getFirstTagValue(sf_data, 'sf_framecode')
 
                     if sf_data.tag_prefix != self.sf_tag_prefixes[file_type][content_subtype]:
 
@@ -6842,7 +6858,7 @@ class NmrDpUtility(object):
             elif self.__star_data_type[fileListId] == 'Saveframe':
 
                 sf_data = self.__star_data[fileListId]
-                sf_framecode = sf_data.get_tag('sf_framecode')[0]
+                sf_framecode = self.__getFirstTagValue(sf_data, 'sf_framecode')
 
                 add_details |= self.__validateCSValue__(fileListId, file_name, file_type, content_subtype, sf_data, sf_framecode, lp_category)
 
@@ -6850,7 +6866,7 @@ class NmrDpUtility(object):
 
                 for sf_data in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
 
-                    sf_framecode = sf_data.get_tag('sf_framecode')[0]
+                    sf_framecode = self.__getFirstTagValue(sf_data, 'sf_framecode')
 
                     add_details |= self.__validateCSValue__(fileListId, file_name, file_type, content_subtype, sf_data, sf_framecode, lp_category)
 
@@ -7942,7 +7958,7 @@ class NmrDpUtility(object):
 
             for sf_data in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
 
-                sf_framecode = sf_data.get_tag('sf_framecode')[0]
+                sf_framecode = self.__getFirstTagValue(sf_data, 'sf_framecode')
                 cs_list = sf_data.get_tag(self.cs_list_sf_tag_name[file_type])[0]
 
                 try:
@@ -8282,7 +8298,7 @@ class NmrDpUtility(object):
             elif self.__star_data_type[fileListId] == 'Saveframe':
 
                 sf_data = self.__star_data[fileListId]
-                sf_framecode = sf_data.get_tag('sf_framecode')[0]
+                sf_framecode = self.__getFirstTagValue(sf_data, 'sf_framecode')
 
                 self.__testRDCVector__(file_name, file_type, content_subtype, sf_data, sf_framecode, lp_category)
 
@@ -8290,7 +8306,7 @@ class NmrDpUtility(object):
 
                 for sf_data in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
 
-                    sf_framecode = sf_data.get_tag('sf_framecode')[0]
+                    sf_framecode = self.__getFirstTagValue(sf_data, 'sf_framecode')
 
                     self.__testRDCVector__(file_name, file_type, content_subtype, sf_data, sf_framecode, lp_category)
 
@@ -8511,7 +8527,7 @@ class NmrDpUtility(object):
                 elif self.__star_data_type[fileListId] == 'Saveframe':
 
                     sf_data = self.__star_data[fileListId]
-                    sf_framecode = sf_data.get_tag('sf_framecode')[0]
+                    sf_framecode = self.__getFirstTagValue(sf_data, 'sf_framecode')
 
                     self.__calculateStatsOfExptlData__(fileListId, file_name, file_type, content_subtype, sf_data, list_id, sf_framecode, lp_category, seq_align_dic, asm)
 
@@ -8519,7 +8535,7 @@ class NmrDpUtility(object):
 
                     for sf_data in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
 
-                        sf_framecode = sf_data.get_tag('sf_framecode')[0]
+                        sf_framecode = self.__getFirstTagValue(sf_data, 'sf_framecode')
 
                         self.__calculateStatsOfExptlData__(fileListId, file_name, file_type, content_subtype, sf_data, list_id, sf_framecode, lp_category, seq_align_dic, asm)
 
@@ -9879,7 +9895,7 @@ class NmrDpUtility(object):
                                 elif bip < 0.001 and pi < 0.001:
                                     his['tautomeric_state_pred'] = 'tau-tautomer'
                                 elif bip < 0.001 and tau < 0.001:
-                                    his['tautomeric_statem_pred'] = 'pi-tautomer'
+                                    his['tautomeric_state_pred'] = 'pi-tautomer'
                                 else:
                                     his['tautomeric_state_pred'] = 'biprotonated %s (%%), tau-tautomer %s (%%), pi-tautomer %s (%%)' % ('{:.1f}'.format(bip * 100.0), '{:.1f}'.format(tau * 100.0), '{:.1f}'.format(pi * 100.0))
                             else:
@@ -12914,6 +12930,26 @@ class NmrDpUtility(object):
                     except ValueError:
                         pass
 
+                else:
+
+                    try:
+
+                        model_num_name = 'pdbx_PDB_model_num' if self.__cR.hasItem('atom_site', 'pdbx_PDB_model_num') else 'ndb_model'
+
+                        coord = self.__cR.getDictListWithFilter('atom_site',
+                                                                [{'name': model_num_name, 'type': 'int', 'alt_name': 'model_id'}
+                                                                 ])
+
+                        total_model = max([c['model_id'] for c in coord])
+
+                    except Exception as e:
+
+                        self.report.error.appendDescription('internal_error', "+NmrDpUtility.__parseCoordinate() ++ Error  - %s" % str(e))
+                        self.report.setError()
+
+                        if self.__verbose:
+                            self.__lfh.write("+NmrDpUtility.__parseCoordinate() ++ Error  - %s" % str(e))
+
             if total_model < 2:
                 err = "Coordinate file %s has %s model. Deposition of minimized average structure must be accompanied with ensemble and must be homogeneous with the ensemble." % (file_name, 'no' if total_model == 0 else ('only one' if total_model == 1 else total_model))
 
@@ -14349,7 +14385,7 @@ class NmrDpUtility(object):
                 elif self.__star_data_type[fileListId] == 'Saveframe':
 
                     sf_data = self.__star_data[fileListId]
-                    sf_framecode = sf_data.get_tag('sf_framecode')[0]
+                    sf_framecode = self.__getFirstTagValue(sf_data, 'sf_framecode')
 
                     add_details |= self.__testCoordAtomIdConsistency__(fileListId, file_name, file_type, content_subtype, sf_data, list_id, sf_framecode, lp_category, cif_polymer_sequence, seq_align_dic, nmr2ca, ref_chain_id, coord)
 
@@ -14357,7 +14393,7 @@ class NmrDpUtility(object):
 
                     for sf_data in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
 
-                        sf_framecode = sf_data.get_tag('sf_framecode')[0]
+                        sf_framecode = self.__getFirstTagValue(sf_data, 'sf_framecode')
 
                         add_details |= self.__testCoordAtomIdConsistency__(fileListId, file_name, file_type, content_subtype, sf_data, list_id, sf_framecode, lp_category, cif_polymer_sequence, seq_align_dic, nmr2ca, ref_chain_id, coord)
 
@@ -14843,7 +14879,7 @@ class NmrDpUtility(object):
 
                 for sf_data in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
 
-                    sf_framecode = sf_data.get_tag('sf_framecode')[0]
+                    sf_framecode = self.__getFirstTagValue(sf_data, 'sf_framecode')
 
                     loop = sf_data.get_loop_by_category(lp_category)
 
@@ -15132,7 +15168,7 @@ class NmrDpUtility(object):
 
         for sf_data in self.__star_data[0].get_saveframes_by_category(sf_category):
 
-            sf_framecode = sf_data.get_tag('sf_framecode')[0]
+            sf_framecode = self.__getFirstTagValue(sf_data, 'sf_framecode')
 
             orig_lp_data = next((l['data'] for l in self.__lp_data[content_subtype] if l['file_name'] == file_name and l['sf_framecode'] == sf_framecode), None)
 
@@ -15610,7 +15646,7 @@ class NmrDpUtility(object):
 
     def __isCyclicPolymer(self, nmr_chain_id):
         """ Return whether a given chain is cyclic polymer based on coordinate annotation.
-            @return: True for cyclic polymer or False otherwise
+            @return: True for cyclic polymer, False otherwise
         """
 
         s = self.report.getModelPolymerSequenceWithNmrChainId(nmr_chain_id)
@@ -15683,7 +15719,7 @@ class NmrDpUtility(object):
 
     def __isProtCis(self, nmr_chain_id, nmr_seq_id):
         """ Return whether type of peptide conformer of a given sequence is cis based on coordinate annotation.
-            @return: True for cis peptide conformer or False otherwise
+            @return: True for cis peptide conformer, False otherwise
         """
 
         s = self.report.getModelPolymerSequenceWithNmrChainId(nmr_chain_id)
@@ -16025,7 +16061,7 @@ class NmrDpUtility(object):
                 elif self.__star_data_type[fileListId] == 'Saveframe':
 
                     sf_data = self.__star_data[fileListId]
-                    sf_framecode = sf_data.get_tag('sf_framecode')[0]
+                    sf_framecode = self.__getFirstTagValue(sf_data, 'sf_framecode')
 
                     ca_chem_shift_1, cb_chem_shift_1, ca_chem_shift_2, cb_chem_shift_2 = self.__mapCoordDisulfideBond2Nmr__(file_name, file_type, content_subtype, sf_data, sf_framecode, lp_category,
                                                                                                                             nmr_chain_id_1, nmr_seq_id_1, nmr_comp_id_1, nmr_chain_id_2, nmr_seq_id_2, nmr_comp_id_2)
@@ -16033,7 +16069,7 @@ class NmrDpUtility(object):
 
                     for sf_data in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
 
-                        sf_framecode = sf_data.get_tag('sf_framecode')[0]
+                        sf_framecode = self.__getFirstTagValue(sf_data, 'sf_framecode')
 
                         ca_chem_shift_1, cb_chem_shift_1, ca_chem_shift_2, cb_chem_shift_2 = self.__mapCoordDisulfideBond2Nmr__(file_name, file_type, content_subtype, sf_data, sf_framecode, lp_category,
                                                                                                                                 nmr_chain_id_1, nmr_seq_id_1, nmr_comp_id_1, nmr_chain_id_2, nmr_seq_id_2, nmr_comp_id_2)
@@ -16411,7 +16447,7 @@ class NmrDpUtility(object):
                 elif self.__star_data_type[fileListId] == 'Saveframe':
 
                     sf_data = self.__star_data[fileListId]
-                    sf_framecode = sf_data.get_tag('sf_framecode')[0]
+                    sf_framecode = self.__getFirstTagValue(sf_data, 'sf_framecode')
 
                     ca_chem_shift_1, cb_chem_shift_1, ca_chem_shift_2, cb_chem_shift_2 = self.__mapCoordOtherBond2Nmr__(file_name, file_type, content_subtype, sf_data, sf_framecode, lp_category,
                                                                                                                         nmr_chain_id_1, nmr_seq_id_1, nmr_comp_id_1, nmr_chain_id_2, nmr_seq_id_2, nmr_comp_id_2)
@@ -16420,7 +16456,7 @@ class NmrDpUtility(object):
 
                     for sf_data in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
 
-                        sf_framecode = sf_data.get_tag('sf_framecode')[0]
+                        sf_framecode = self.__getFirstTagValue(sf_data, 'sf_framecode')
 
                         ca_chem_shift_1, cb_chem_shift_1, ca_chem_shift_2, cb_chem_shift_2 = self.__mapCoordOtherBond2Nmr__(file_name, file_type, content_subtype, sf_data, sf_framecode, lp_category,
                                                                                                                             nmr_chain_id_1, nmr_seq_id_1, nmr_comp_id_1, nmr_chain_id_2, nmr_seq_id_2, nmr_comp_id_2)
@@ -17372,7 +17408,7 @@ class NmrDpUtility(object):
 
                 for sf_data in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
 
-                    sf_framecode = sf_data.get_tag('sf_framecode')[0]
+                    sf_framecode = self.__getFirstTagValue(sf_data, 'sf_framecode')
 
                     loop = sf_data.get_loop_by_category(lp_category)
 
@@ -17469,7 +17505,7 @@ class NmrDpUtility(object):
 
                 for sf_data in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
 
-                    sf_framecode = sf_data.get_tag('sf_framecode')[0]
+                    sf_framecode = self.__getFirstTagValue(sf_data, 'sf_framecode')
 
                     tagNames = [t[0] for t in sf_data.tags]
 
@@ -17536,7 +17572,7 @@ class NmrDpUtility(object):
 
             for sf_data in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
 
-                sf_framecode = sf_data.get_tag('sf_framecode')[0]
+                sf_framecode = self.__getFirstTagValue(sf_data, 'sf_framecode')
 
                 lp_data = next((l['data'] for l in self.__lp_data[content_subtype] if l['file_name'] == file_name and l['sf_framecode'] == sf_framecode), None)
 
@@ -18819,7 +18855,7 @@ class NmrDpUtility(object):
 
             for sf_data in self.__star_data[0].get_saveframes_by_category(sf_category):
 
-                sf_framecode = sf_data.get_tag('sf_framecode')[0]
+                sf_framecode = self.__getFirstTagValue(sf_data, 'sf_framecode')
 
                 if self.report.error.exists(file_name, sf_framecode):
                     continue
@@ -19622,7 +19658,7 @@ class NmrDpUtility(object):
 
             for sf_data in self.__star_data[0].get_saveframes_by_category(sf_category):
 
-                sf_framecode = sf_data.get_tag('sf_framecode')[0]
+                sf_framecode = self.__getFirstTagValue(sf_data, 'sf_framecode')
 
                 for loop in sf_data.loops:
 
@@ -19731,7 +19767,7 @@ class NmrDpUtility(object):
 
                 for sf_data in self.__star_data[0].get_saveframes_by_category(sf_category):
 
-                    sf_framecode = sf_data.get_tag('sf_framecode')[0]
+                    sf_framecode = self.__getFirstTagValue(sf_data, 'sf_framecode')
 
                     warn_desc = self.report.warning.getDescription('duplicated_index', file_name, sf_framecode)
 
@@ -19981,7 +20017,7 @@ class NmrDpUtility(object):
 
         for sf_data in self.__star_data[0].get_saveframes_by_category(sf_category):
 
-            sf_framecode = sf_data.get_tag('sf_framecode')[0]
+            sf_framecode = self.__getFirstTagValue(sf_data, 'sf_framecode')
 
             if self.report.error.exists(file_name, sf_framecode):
                 continue
@@ -20074,7 +20110,7 @@ class NmrDpUtility(object):
 
         for sf_data in self.__star_data[0].get_saveframes_by_category(sf_category):
 
-            sf_framecode = sf_data.get_tag('sf_framecode')[0]
+            sf_framecode = self.__getFirstTagValue(sf_data, 'sf_framecode')
 
             if self.report.error.exists(file_name, sf_framecode):
                 continue
@@ -20196,7 +20232,7 @@ class NmrDpUtility(object):
 
         for sf_data in self.__star_data[0].get_saveframes_by_category(sf_category):
 
-            sf_framecode = sf_data.get_tag('sf_framecode')[0]
+            sf_framecode = self.__getFirstTagValue(sf_data, 'sf_framecode')
 
             if self.report.error.exists(file_name, sf_framecode):
                 continue

@@ -23,6 +23,7 @@
 # 15-Apr-2020  M. Yokochi - add getAverageRMSDWithinRange() (DAOTHER-4060)
 # 18-Apr-2020  M. Yokochi - fix error of apilayer - getNmrSeqAlignment in NMR legacy deposition (DAOTHER-5594)
 # 19-Apr-2020  M. Yokochi - support concatenated CS data in NMR legacy deposition (DAOTHER-5594)
+# 19 Apr-2020  M. Yokochi - add 'not_superimposed_model' warning type (DAOTHER-4060)
 ##
 """ Wrapper class for data processing report of NMR data.
     @author: Masashi Yokochi
@@ -834,9 +835,9 @@ class NmrDpReport:
 
         code = ''
 
-        for idx, comp_id in enumerate(ps['comp_id']):
+        for seq_id, comp_id in zip(ps['seq_id'], ps['comp_id']):
 
-            if not fullSequence and ps['seq_id'][idx] in unmappedSeqId:
+            if not fullSequence and seq_id in unmappedSeqId:
                 continue
 
             if comp_id in self.monDict3:
@@ -1676,7 +1677,8 @@ class NmrDpReportWarning:
                       'skipped_saveframe_category', 'skipped_loop_category',
                       'anomalous_chemical_shift', 'unusual_chemical_shift',
                       'anomalous_data', 'unusual_data', 'remarkable_data', 'insufficient_data',
-                      'conflicted_data', 'inconsistent_data', 'redundant_data')
+                      'conflicted_data', 'inconsistent_data', 'redundant_data',
+                      'not_superimposed_model')
 
         self.__contents = {item:None for item in self.items}
 

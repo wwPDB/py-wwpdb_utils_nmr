@@ -14,12 +14,32 @@
 # 19-Mar-2020   my  - Add hasItem()
 # 24-Mar-2020   my  - add 'identical_chain_id' in results of getPolymerSequence()
 # 15-Apr-2020   my  - add 'total_models' option of getPolymerSequence (DAOTHER-4060)
+# 19-Apr-2020   my  - add random rotation test for detection of non-superimposed models (DAOTHER-4060)
 ##
 """ A collection of classes for parsing CIF files.
 """
 
 import sys,time,os,traceback,math
 from mmcif.io.PdbxReader import PdbxReader
+
+import numpy as np
+
+import random
+
+def M(axis, theta):
+    """ Return the rotation matrix associated with counterclockwise rotation about the given axis by theta radians.
+    """
+
+    axis = np.asarray(axis)
+    axis = axis / math.sqrt(np.dot(axis, axis))
+    a = math.cos(theta / 2.0)
+    b, c, d = -axis * math.sin(theta / 2.0)
+    aa, bb, cc, dd = a * a, b * b, c * c, d * d
+    bc, ad, ac, ab, bd, cd = b * c, a * d, a * c, a * b, b * d, c * d
+
+    return np.array([[aa + bb - cc - dd, 2 * (bc + ad), 2 * (bd - ac)],
+                     [2 * (bc - ad), aa + cc - bb - dd, 2 * (cd + ab)],
+                     [2 * (bd + ac), 2 * (cd - ab), aa + dd - bb - cc]])
 
 class CifReader(object):
     """ Accessor methods for parsing CIF files.
@@ -41,6 +61,9 @@ class CifReader(object):
 
         # allowed item types
         self.itemTypes = ('str', 'bool', 'int', 'float', 'range-float', 'enum')
+
+        # random rotation test for detection of non-superimposed models (DAOTHER-4060)
+        self.random_rotaion_test = False
 
     def setFilePath(self, filePath):
         """ Set file path and test readability.
@@ -245,6 +268,15 @@ class CifReader(object):
                         ent['type'] = type
 
                         if total_models > 1:
+
+                            randomM = None
+                            if self.random_rotaion_test:
+                                randomM = {}
+                                for model_id in range(1, total_models + 1):
+                                    axis = [random.uniform(-1.0, 1.0), random.uniform(-1.0, 1.0), random.uniform(-1.0, 1.0)]
+                                    theta = random.uniform(-np.pi, np.pi)
+                                    randomM[model_id] = M(axis, theta)
+
                             if 'polypeptide' in type:
 
                                 ca_atom_sites = self.getDictListWithFilter('atom_site',
@@ -257,7 +289,7 @@ class CifReader(object):
                                                 [{'name': 'label_asym_id', 'type': 'str', 'value': c},
                                                  {'name': 'label_atom_id', 'type': 'str', 'value': 'CA'}])
 
-                                ent['ca_rmsd'] = self.__calculateRMSD(c, seqDict[c], alias, total_models, ca_atom_sites)
+                                ent['ca_rmsd'] = self.__calculateRMSD(c, seqDict[c], alias, total_models, ca_atom_sites, randomM)
 
                             elif 'ribonucleotide' in type:
 
@@ -271,7 +303,7 @@ class CifReader(object):
                                                 [{'name': 'label_asym_id', 'type': 'str', 'value': c},
                                                  {'name': 'label_atom_id', 'type': 'str', 'value': 'P'}])
 
-                                ent['p_rmsd'] = self.__calculateRMSD(c, seqDict[c], alias, total_models, p_atom_sites)
+                                ent['p_rmsd'] = self.__calculateRMSD(c, seqDict[c], alias, total_models, p_atom_sites, randomM)
 
                     if len(chains) > 1:
                         identity = []
@@ -328,7 +360,7 @@ class CifReader(object):
 
         return ret
 
-    def __calculateRMSD(self, chain_id, seq_ids, alias=False, total_models=1, atom_sites=None):
+    def __calculateRMSD(self, chain_id, seq_ids, alias=False, total_models=1, atom_sites=None, randomM=None):
         """ Calculate RMSD of alpha carbons/phosphates in the ensemble.
         """
 
@@ -349,15 +381,21 @@ class CifReader(object):
                     if len(_atom_site) == total_models:
                         try:
                             ref_atom = next(ref_atom for ref_atom in _atom_site if ref_atom['model_id'] == ref_model_id)
+                            ref_v = [ref_atom['x'], ref_atom['y'], ref_atom['z']]
+                            if self.random_rotaion_test:
+                                ref_v = np.dot(randomM[ref_model_id], ref_v)
                             rmsd2 = 0.0
                             for atom in [atom for atom in _atom_site if atom['model_id'] != ref_model_id]:
-                                rmsd2 += (atom['x'] - ref_atom['x']) ** 2 + (atom['y'] - ref_atom['y']) ** 2 + (atom['z'] - ref_atom['z']) ** 2
+                                v = [atom['x'], atom['y'], atom['z']]
+                                if self.random_rotaion_test:
+                                    v = np.dot(randomM[atom['model_id']], v)
+                                rmsd2 += (v[0] - ref_v[0]) ** 2 + (v[1] - ref_v[1]) ** 2 + (v[2] - ref_v[2]) ** 2
                         except StopIteration:
                             continue
 
                         ret[seq_ids.index(seq_id)] = float('{:.2f}'.format(math.sqrt(rmsd2 / (total_models - 1))))
 
-            #item['rmsd'] = ret
+            item['rmsd'] = ret
 
             _ret = [r for r in ret if not r is None]
 
@@ -397,6 +435,10 @@ class CifReader(object):
 
             if mean_rmsd - _mean_rmsd > 0.2 or stddev_rmsd - _stddev_rmsd > 0.2:
                 self.__calculateFilteredRMSD(_ret, _mean_rmsd, _stddev_rmsd, item)
+            elif len(item['filtered_stddev_rmsd']) > 2:
+               model = np.polyfit(item['filtered_stddev_rmsd'], item['filtered_mean_rmsd'], 2)
+               for y in [0.5, 1.0]:
+                   item['calibrated_mean_rmsd_with_stddev_rmsd_' + str(y)] = float('{:.2f}'.format(model[2] + model[1] * y + model[0] * (y ** 2)))
 
     def getDictListWithFilter(self, catName, dataItems, filterItems=None):
         """ Return a list of dictionaries of a given category with filter.

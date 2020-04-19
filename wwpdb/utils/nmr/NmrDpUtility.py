@@ -12944,7 +12944,7 @@ class NmrDpUtility(object):
                                                                 [{'name': model_num_name, 'type': 'int', 'alt_name': 'model_id'}
                                                                  ])
 
-                        total_model = max([c['model_id'] for c in coord])
+                        self.__total_models = max([c['model_id'] for c in coord])
 
                     except Exception as e:
 
@@ -12954,8 +12954,8 @@ class NmrDpUtility(object):
                         if self.__verbose:
                             self.__lfh.write("+NmrDpUtility.__parseCoordinate() ++ Error  - %s" % str(e))
 
-            if total_model < 2:
-                err = "Coordinate file %s has %s model. Deposition of minimized average structure must be accompanied with ensemble and must be homogeneous with the ensemble." % (file_name, 'no' if total_model == 0 else ('only one' if total_model == 1 else total_model))
+            if self.__total_models < 2:
+                err = "Coordinate file %s has %s model. Deposition of minimized average structure must be accompanied with ensemble and must be homogeneous with the ensemble." % (file_name, 'no' if self.__total_models == 0 else ('only one' if self.__total_models == 1 else self.__total_models))
 
                 self.report.error.appendDescription('missing_mandatory_content', {'file_name': file_name, 'description': err})
                 self.report.setError()

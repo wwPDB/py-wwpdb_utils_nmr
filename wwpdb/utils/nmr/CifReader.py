@@ -332,27 +332,71 @@ class CifReader(object):
         """ Calculate RMSD of alpha carbons/phosphates in the ensemble.
         """
 
-        ret = [None] * len(seq_ids)
+        list = []
 
-        if total_models < 2 or atom_sites is None:
-            return ret
+        for ref_model_id in range(1, total_models + 1):
 
-        for seq_id in seq_ids:
+            item = {'model_id': ref_model_id}
 
-            _atom_site = [a for a in atom_sites if a['seq_id'] == seq_id]
+            ret = [None] * len(seq_ids)
 
-            if len(_atom_site) == total_models:
-                try:
-                    ref_atom = next(ref_atom for ref_atom in _atom_site if ref_atom['model_id'] == 1)
-                    rmsd2 = 0.0
-                    for atom in [atom for atom in _atom_site if atom['model_id'] != 1]:
-                        rmsd2 += (atom['x'] - ref_atom['x']) ** 2 + (atom['y'] - ref_atom['y']) ** 2 + (atom['z'] - ref_atom['z']) ** 2
-                except StopIteration:
-                    continue
+            if total_models > 1 and not atom_sites is None:
 
-                ret[seq_ids.index(seq_id)] = float('{:.2f}'.format(math.sqrt(rmsd2)))
+                for seq_id in seq_ids:
 
-        return ret
+                    _atom_site = [a for a in atom_sites if a['seq_id'] == seq_id]
+
+                    if len(_atom_site) == total_models:
+                        try:
+                            ref_atom = next(ref_atom for ref_atom in _atom_site if ref_atom['model_id'] == ref_model_id)
+                            rmsd2 = 0.0
+                            for atom in [atom for atom in _atom_site if atom['model_id'] != ref_model_id]:
+                                rmsd2 += (atom['x'] - ref_atom['x']) ** 2 + (atom['y'] - ref_atom['y']) ** 2 + (atom['z'] - ref_atom['z']) ** 2
+                        except StopIteration:
+                            continue
+
+                        ret[seq_ids.index(seq_id)] = float('{:.2f}'.format(math.sqrt(rmsd2 / (total_models - 1))))
+
+            #item['rmsd'] = ret
+
+            _ret = [r for r in ret if not r is None]
+
+            _len_rmsd = len(_ret)
+
+            if _len_rmsd >= 8:
+                _mean_rmsd = sum(_ret) / _len_rmsd
+                _stddev_rmsd = math.sqrt(sum([(r - _mean_rmsd) ** 2 for r in _ret]) / (_len_rmsd - 1))
+
+                item['filtered_total_count'] = [_len_rmsd]
+                item['filtered_mean_rmsd'] = [float('{:.2f}'.format(_mean_rmsd))]
+                item['filtered_max_rmsd'] = [max(_ret)]
+                item['filtered_stddev_rmsd'] = [float('{:.2f}'.format(_stddev_rmsd))]
+
+                self.__calculateFilteredRMSD(_ret, _mean_rmsd, _stddev_rmsd, item)
+
+            list.append(item)
+
+        return list
+
+    def __calculateFilteredRMSD(self, ret, mean_rmsd, stddev_rmsd, item):
+        """ Calculate filtered RMSD.
+        """
+
+        _ret = [r for r in ret if r < mean_rmsd + stddev_rmsd]
+
+        _len_rmsd = len(_ret)
+
+        if _len_rmsd >= 8:
+            _mean_rmsd = sum(_ret) / _len_rmsd
+            _stddev_rmsd = math.sqrt(sum([(r - _mean_rmsd) ** 2 for r in _ret]) / (_len_rmsd - 1))
+
+            item['filtered_total_count'].append(_len_rmsd)
+            item['filtered_mean_rmsd'].append(float('{:.2f}'.format(_mean_rmsd)))
+            item['filtered_max_rmsd'].append(max(_ret))
+            item['filtered_stddev_rmsd'].append(float('{:.2f}'.format(_stddev_rmsd)))
+
+            if mean_rmsd - _mean_rmsd > 0.2 or stddev_rmsd - _stddev_rmsd > 0.2:
+                self.__calculateFilteredRMSD(_ret, _mean_rmsd, _stddev_rmsd, item)
 
     def getDictListWithFilter(self, catName, dataItems, filterItems=None):
         """ Return a list of dictionaries of a given category with filter.

@@ -41,6 +41,7 @@
 # 10-Apr-2020  M. Yokochi - fix crash in case of format issue
 # 14-Apr-2020  M. Yokochi - fix dependency on label_seq_id, instead of using auth_seq_id in case (DAOTHER-5584)
 # 18-Apr-2020  M. Yokochi - fix no model error in coordinate and allow missing 'sf_framecode' in legacy deposition (DAOTHER-5594)
+# 19-Apr-2020  M. Yokochi - support concatenated CS data in NMR legacy deposition (DAOTHER-5594)
 ##
 """ Wrapper class for data processing for NMR data.
     @author: Masashi Yokochi
@@ -13717,6 +13718,7 @@ class NmrDpUtility(object):
                 # from model to nmr
 
                 mat = []
+                indices = []
 
                 for s1 in cif_polymer_sequence:
                     chain_id = s1['chain_id']
@@ -13730,16 +13732,19 @@ class NmrDpUtility(object):
 
                         if not result is None:
                             cost[nmr_polymer_sequence.index(s2)] = result['unmapped'] + result['conflict'] - result['length']
+                            if not self.__combined_mode and result['length'] >= len(s1['seq_id']):
+                                indices.append((cif_polymer_sequence.index(s1), nmr_polymer_sequence.index(s2)))
 
                     mat.append(cost)
 
-                indices = m.compute(mat)
+                if self.__combined_mode:
+                    indices = m.compute(mat)
 
                 chain_assign_set = []
 
                 for row, column in indices:
 
-                    if mat[row][column] >= 0:
+                    if self.__combined_mode and mat[row][column] >= 0:
                         continue
 
                     chain_id = cif_polymer_sequence[row]['chain_id']
@@ -13994,6 +13999,7 @@ class NmrDpUtility(object):
                 # from nmr to model
 
                 mat = []
+                indices = []
 
                 for s1 in nmr_polymer_sequence:
                     chain_id = s1['chain_id']
@@ -14007,16 +14013,19 @@ class NmrDpUtility(object):
 
                         if not result is None:
                             cost[cif_polymer_sequence.index(s2)] = result['unmapped'] + result['conflict'] - result['length']
+                            if not self.__combined_mode and result['length'] >= len(s2['seq_id']):
+                                indices.append((nmr_polymer_sequence.index(s1), cif_polymer_sequence.index(s2)))
 
                     mat.append(cost)
 
-                indices = m.compute(mat)
+                if self.__combined_mode:
+                    indices = m.compute(mat)
 
                 chain_assign_set = []
 
                 for row, column in indices:
 
-                    if mat[row][column] >= 0:
+                    if self.__combined_mode and mat[row][column] >= 0:
                         continue
 
                     chain_id = nmr_polymer_sequence[row]['chain_id']

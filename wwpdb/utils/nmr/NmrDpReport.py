@@ -21,6 +21,7 @@
 # 24-Mar-2020  M. Yokochi - add method to retrieve chemical shift reference (DAOTHER-1682)
 # 03-Apr-2020  M. Yokochi - add methods to retrieve sequence alignment between coordinate and NMR data
 # 18-Apr-2020  M. Yokochi - fix error of apilayer - getNmrSeqAlignment in NMR legacy deposition (DAOTHER-5594)
+# 19-Apr-2020  M. Yokochi - support concatenated CS data in NMR legacy deposition (DAOTHER-5594)
 ##
 """ Wrapper class for data processing report of NMR data.
     @author: Masashi Yokochi
@@ -809,7 +810,7 @@ class NmrDpReport:
 
         return next((ps for ps in cif_polymer_sequence if ps['chain_id'] == chain_id), None)
 
-    def getNmrSeq1LetterCodeOf(self, chain_id):
+    def getNmrSeq1LetterCodeOf(self, chain_id, fullSequence=True, unmappedSeqId=[]):
         """ Retrieve NMR polymer sequence (1-letter code) having a given chain_id.
         """
 
@@ -831,7 +832,12 @@ class NmrDpReport:
             return None
 
         code = ''
-        for comp_id in ps['comp_id']:
+
+        for idx, comp_id in enumerate(ps['comp_id']):
+
+            if not fullSequence and ps['seq_id'][idx] in unmappedSeqId:
+                continue
+
             if comp_id in self.monDict3:
                 code += self.monDict3[comp_id]
             else:
@@ -996,6 +1002,9 @@ class NmrDpReport:
         """ Retrieve NMR polymer sequence (1-letter code) corresponding to a given coordinate chain_id.
         """
 
+        fullSeqeucne = self.getInputSourceIdOfNmrData() != -1
+        unmappedSeqId = []
+
         chain_assign_dic = self.chain_assignment.get()
 
         key = 'model_poly_seq_vs_nmr_poly_seq'
@@ -1006,10 +1015,27 @@ class NmrDpReport:
         if chain_assign_dic[key] is None:
             return None
 
+        if not fullSeqeucne:
+
+            _key = 'nmr_poly_seq_vs_model_poly_seq'
+
+            if _key in chain_assign_dic and not chain_assign_dic[_key] is None:
+
+                for _chain_assign in chain_assign_dic[_key]:
+
+                    if _chain_assign['test_chain_id'] == cif_chain_id:
+
+                        if 'unmapped_sequence' in _chain_assign:
+
+                            for unmapped_sequence in _chain_assign['unmapped_sequence']:
+                                unmappedSeqId.append(unmapped_sequence['ref_seq_id'])
+
+                        break
+
         for chain_assign in chain_assign_dic[key]:
 
             if chain_assign['ref_chain_id'] == cif_chain_id:
-                return self.getNmrSeq1LetterCodeOf(chain_assign['test_chain_id'])
+                return self.getNmrSeq1LetterCodeOf(chain_assign['test_chain_id'], fullSequence=fullSeqeucne, unmappedSeqId=unmappedSeqId)
 
         return None
 

@@ -62,6 +62,9 @@ class CifReader(object):
         # allowed item types
         self.itemTypes = ('str', 'bool', 'int', 'float', 'range-float', 'enum')
 
+        # whether to hold RMSD calculation details
+        self.__hold_rmsd_calculation = False
+
         # random rotation test for detection of non-superimposed models (DAOTHER-4060)
         self.__random_rotaion_test = False
 
@@ -398,7 +401,8 @@ class CifReader(object):
 
                         ret[seq_ids.index(seq_id)] = float('{:.2f}'.format(math.sqrt(rmsd2 / (total_models - 1))))
 
-            #item['rmsd'] = ret
+            if self.__hold_rmsd_calculation:
+                item['rmsd'] = ret
 
             _ret = [r for r in ret if not r is None]
 
@@ -415,7 +419,7 @@ class CifReader(object):
 
                 self.__calculateFilteredRMSD(_ret, _mean_rmsd, _stddev_rmsd, item)
 
-            if 'filtered_total_count' in item:
+            if not self.__hold_rmsd_calculation and 'filtered_total_count' in item:
                 del item['filtered_total_count']
                 del item['filtered_mean_rmsd']
                 del item['filtered_max_rmsd']

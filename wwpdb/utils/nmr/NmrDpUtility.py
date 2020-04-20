@@ -1484,7 +1484,7 @@ class NmrDpUtility(object):
                                               }
 
         # error template for missing mandatory loop tag
-        self.__err_template_for_missing_mandatory_lp_tag = "The mandatory loop tag '%s' is missing. Please verify the value and re-upload the file."
+        self.__err_template_for_missing_mandatory_lp_tag = "The mandatory loop tag '%s' is missing. Please verify the value and re-upload the data file."
 
         # saveframe tag prefixes (saveframe holder categories)
         self.sf_tag_prefixes = {'nef': {'entry_info': '_nef_nmr_meta_data',
@@ -1958,7 +1958,7 @@ class NmrDpUtility(object):
                                 }
 
         # warning template for missing mandatory saveframe tag
-        self.__warn_template_for_missing_mandatory_sf_tag = "The mandatory saveframe tag '%s' is missing. Please verify the value and re-upload the file."
+        self.__warn_template_for_missing_mandatory_sf_tag = "The mandatory saveframe tag '%s' is missing. Please verify the value and re-upload the data file."
 
         # auxiliary loop categories
         self.aux_lp_categories = {'nef': {'entry_info': [],
@@ -13054,7 +13054,7 @@ class NmrDpUtility(object):
                         for r in rmsd:
                             model_id = r['model_id']
 
-                            if 'rmsd_in_well_defined_region' in r and r['rmsd_in_well_defined_region'] > 5.0:
+                            if 'rmsd_in_well_defined_region' in r and r['rmsd_in_well_defined_region'] > 4.0:
                                 if not chain_id in not_superimposed_models:
                                     not_superimposed_models[chain_id] = [{'model_id': model_id, 'rmsd': r['rmsd_in_well_defined_region']}]
                                 else:
@@ -13068,7 +13068,7 @@ class NmrDpUtility(object):
                     for r in rmsd:
                         rmsd_string += str(r['rmsd']) + ' (' + str(r['model_id']) + '), '
 
-                    warn = 'Coordinates (chain_id %s) are not superimposed, RMSD (model_id) %s angstroms. Please update the model file.' % (chain_id, rmsd_string[:-2])
+                    warn = 'Coordinates (chain_id %s) are not superimposed, RMSD (model_id): %s angstroms. Please superimpose the coordinates and re-upload the model file.' % (chain_id, rmsd_string[:-2])
 
                     self.report.warning.appendDescription('not_superimposed_model', {'file_name': file_name, 'category': 'atom_site', 'description': warn})
                     self.report.setWarning()

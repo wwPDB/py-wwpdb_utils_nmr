@@ -63,7 +63,10 @@ class CifReader(object):
         self.itemTypes = ('str', 'bool', 'int', 'float', 'range-float', 'enum')
 
         # random rotation test for detection of non-superimposed models (DAOTHER-4060)
-        self.random_rotaion_test = False
+        self.__random_rotaion_test = False
+
+        if self.__random_rotaion_test:
+            self.__lfh.write("+WARNING- CifReader.__init__() Enabled random rotation test\n")
 
     def setFilePath(self, filePath):
         """ Set file path and test readability.
@@ -270,7 +273,7 @@ class CifReader(object):
                         if total_models > 1:
 
                             randomM = None
-                            if self.random_rotaion_test:
+                            if self.__random_rotaion_test:
                                 randomM = {}
                                 for model_id in range(1, total_models + 1):
                                     axis = [random.uniform(-1.0, 1.0), random.uniform(-1.0, 1.0), random.uniform(-1.0, 1.0)]
@@ -382,12 +385,12 @@ class CifReader(object):
                         try:
                             ref_atom = next(ref_atom for ref_atom in _atom_site if ref_atom['model_id'] == ref_model_id)
                             ref_v = [ref_atom['x'], ref_atom['y'], ref_atom['z']]
-                            if self.random_rotaion_test:
+                            if self.__random_rotaion_test:
                                 ref_v = np.dot(randomM[ref_model_id], ref_v)
                             rmsd2 = 0.0
                             for atom in [atom for atom in _atom_site if atom['model_id'] != ref_model_id]:
                                 v = [atom['x'], atom['y'], atom['z']]
-                                if self.random_rotaion_test:
+                                if self.__random_rotaion_test:
                                     v = np.dot(randomM[atom['model_id']], v)
                                 rmsd2 += (v[0] - ref_v[0]) ** 2 + (v[1] - ref_v[1]) ** 2 + (v[2] - ref_v[2]) ** 2
                         except StopIteration:
@@ -395,7 +398,7 @@ class CifReader(object):
 
                         ret[seq_ids.index(seq_id)] = float('{:.2f}'.format(math.sqrt(rmsd2 / (total_models - 1))))
 
-            item['rmsd'] = ret
+            #item['rmsd'] = ret
 
             _ret = [r for r in ret if not r is None]
 
@@ -412,7 +415,14 @@ class CifReader(object):
 
                 self.__calculateFilteredRMSD(_ret, _mean_rmsd, _stddev_rmsd, item)
 
-            list.append(item)
+            if 'filtered_total_count' in item:
+                del item['filtered_total_count']
+                del item['filtered_mean_rmsd']
+                del item['filtered_max_rmsd']
+                del item['filtered_stddev_rmsd']
+
+            if 'rmsd_in_well_defined_region' in item:
+                list.append(item)
 
         return list
 
@@ -437,8 +447,8 @@ class CifReader(object):
                 self.__calculateFilteredRMSD(_ret, _mean_rmsd, _stddev_rmsd, item)
             elif len(item['filtered_stddev_rmsd']) > 2:
                model = np.polyfit(item['filtered_stddev_rmsd'], item['filtered_mean_rmsd'], 2)
-               for y in [0.5, 1.0]:
-                   item['calibrated_mean_rmsd_with_stddev_rmsd_' + str(y)] = float('{:.2f}'.format(model[2] + model[1] * y + model[0] * (y ** 2)))
+               for y in [1.0]:
+                   item['rmsd_in_well_defined_region'] = float('{:.2f}'.format(model[2] + model[1] * y + model[0] * (y ** 2)))
 
     def getDictListWithFilter(self, catName, dataItems, filterItems=None):
         """ Return a list of dictionaries of a given category with filter.

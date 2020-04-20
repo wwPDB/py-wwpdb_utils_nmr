@@ -13054,17 +13054,21 @@ class NmrDpUtility(object):
                         for r in rmsd:
                             model_id = r['model_id']
 
-                            if 'calibrated_mean_rmsd_with_stddev_rmsd_1.0' in r and r['calibrated_mean_rmsd_with_stddev_rmsd_1.0'] > 5.0:
+                            if 'rmsd_in_well_defined_region' in r and r['rmsd_in_well_defined_region'] > 5.0:
                                 if not chain_id in not_superimposed_models:
-                                    not_superimposed_models[chain_id] = [model_id]
+                                    not_superimposed_models[chain_id] = [{'model_id': model_id, 'rmsd': r['rmsd_in_well_defined_region']}]
                                 else:
-                                    not_superimposed_models[chain_id].append(model_id)
+                                    not_superimposed_models[chain_id].append({'model_id': model_id, 'rmsd': r['rmsd_in_well_defined_region']})
 
             if len(not_superimposed_models) > 0:
 
-                for chain_id, model_ids in not_superimposed_models.items():
+                for chain_id, rmsd in not_superimposed_models.items():
 
-                    warn = 'Coordinates (chain_id %s, model_id %s) are not superimposed. Please update the model file.' % (chain_id, model_ids)
+                    rmsd_string = ''
+                    for r in rmsd:
+                        rmsd_string += str(r['rmsd']) + ' (' + str(r['model_id']) + '), '
+
+                    warn = 'Coordinates (chain_id %s) are not superimposed, RMSD (model_id) %s angstroms. Please update the model file.' % (chain_id, rmsd_string[:-2])
 
                     self.report.warning.appendDescription('not_superimposed_model', {'file_name': file_name, 'category': 'atom_site', 'description': warn})
                     self.report.setWarning()

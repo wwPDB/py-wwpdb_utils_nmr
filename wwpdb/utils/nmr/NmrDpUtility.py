@@ -13739,6 +13739,8 @@ class NmrDpUtility(object):
 
                 chain_assign_set = []
 
+                concatenated_nmr_chain = {}
+
                 for row, column in indices:
 
                     if mat[row][column] >= 0:
@@ -13751,7 +13753,9 @@ class NmrDpUtility(object):
                                     _cif_chains.append(cif_polymer_sequence[_row]['chain_id'])
 
                             if len(_cif_chains) > 1:
-                                warn = 'Concatenated sequence in NMR data (chain_id %s) should be split according to the coordinates (chain_id %s) during succeeding bioculation.' % (nmr_polymer_sequence[column]['chain_id'], _cif_chains)
+                                chain_id2 = nmr_polymer_sequence[column]['chain_id']
+                                concatenated_nmr_chain[chain_id2] = _cif_chains
+                                warn = 'Concatenated sequence in NMR data (chain_id %s) should be split according to the coordinates (chain_id %s) during bioculation.' % (chain_id2, _cif_chains)
 
                                 self.report.warning.appendDescription('concatenated_sequence', {'file_name': nmr_file_name, 'description': warn})
                                 self.report.setWarning()
@@ -14136,14 +14140,16 @@ class NmrDpUtility(object):
                                 unmapped.append({'ref_seq_id': seq_id1[i], 'ref_comp_id': cif_comp_id})
 
                                 if not aligned[i]:
-                                    warn = "%s:%s:%s is not present in the coordinate (chain_id %s). Please update the sequence in the Macromolecules page." %\
-                                           (chain_id, seq_id1[i], nmr_comp_id, chain_id2)
 
-                                    self.report.warning.appendDescription('sequence_mismatch', {'file_name': nmr_file_name, 'description': warn})
-                                    self.report.setWarning()
+                                    if self.__combined_mode or not chain_id in concatenated_nmr_chain or not chain_id2 in concatenated_nmr_chain[chain_id]:
+                                        warn = "%s:%s:%s is not present in the coordinate (chain_id %s). Please update the sequence in the Macromolecules page." %\
+                                               (chain_id, seq_id1[i], nmr_comp_id, chain_id2)
 
-                                    if self.__verbose:
-                                        self.__lfh.write("+NmrDpUtility.__assignCoordPolymerSequence() ++ Warning  - %s" % warn)
+                                        self.report.warning.appendDescription('sequence_mismatch', {'file_name': nmr_file_name, 'description': warn})
+                                        self.report.setWarning()
+
+                                        if self.__verbose:
+                                            self.__lfh.write("+NmrDpUtility.__assignCoordPolymerSequence() ++ Warning  - %s" % warn)
 
                             elif cif_comp_id != nmr_comp_id and aligned[i]:
 

@@ -13064,11 +13064,11 @@ class NmrDpUtility(object):
 
                 for chain_id, rmsd in not_superimposed_models.items():
 
-                    rmsd_string = ''
-                    for r in rmsd:
-                        rmsd_string += str(r['rmsd']) + ' (' + str(r['model_id']) + '), '
+                    #rmsd_string = ''
+                    #for r in rmsd:
+                    #    rmsd_string += str(r['rmsd']) + ' (' + str(r['model_id']) + '), '
 
-                    warn = 'Coordinates (chain_id %s) are not superimposed, RMSD (model_id): %s angstroms. Please superimpose the coordinates and re-upload the model file.' % (chain_id, rmsd_string[:-2])
+                    warn = 'Coordinates (chain_id %s) are not superimposed, RMSD in estimated well-defined region is %s angstromes. Please superimpose the coordinates and re-upload the model file.' % (chain_id, rmsd[0]['rmsd'])
 
                     self.report.warning.appendDescription('not_superimposed_model', {'file_name': file_name, 'category': 'atom_site', 'description': warn})
                     self.report.setWarning()

@@ -24,6 +24,7 @@
 # 18-Apr-2020  M. Yokochi - fix error of apilayer - getNmrSeqAlignment in NMR legacy deposition (DAOTHER-5594)
 # 19-Apr-2020  M. Yokochi - support concatenated CS data in NMR legacy deposition (DAOTHER-5594)
 # 19 Apr-2020  M. Yokochi - add 'not_superimposed_model' warning type (DAOTHER-4060)
+# 20 Apr-2020  M. Yokochi - add 'concatenated_sequence' warning type (DAOTHER-5594)
 ##
 """ Wrapper class for data processing report of NMR data.
     @author: Masashi Yokochi
@@ -1678,7 +1679,7 @@ class NmrDpReportWarning:
                       'anomalous_chemical_shift', 'unusual_chemical_shift',
                       'anomalous_data', 'unusual_data', 'remarkable_data', 'insufficient_data',
                       'conflicted_data', 'inconsistent_data', 'redundant_data',
-                      'not_superimposed_model')
+                      'concatenated_sequence', 'not_superimposed_model')
 
         self.__contents = {item:None for item in self.items}
 

@@ -42,6 +42,8 @@
 # 14-Apr-2020  M. Yokochi - fix dependency on label_seq_id, instead of using auth_seq_id in case (DAOTHER-5584)
 # 18-Apr-2020  M. Yokochi - fix no model error in coordinate and allow missing 'sf_framecode' in legacy deposition (DAOTHER-5594)
 # 19-Apr-2020  M. Yokochi - support concatenated CS data in NMR legacy deposition (DAOTHER-5594)
+# 22-Apr-2020  M. Yokochi - convert comp_id in capital letters (DAOTHER-5600)
+# 22-Apr-2020  M. Yokochi - fix GLY:HA1/HA2 to GLY:HA2/HA3 (DAOTHER-5600)
 ##
 """ Wrapper class for data processing for NMR data.
     @author: Masashi Yokochi
@@ -491,61 +493,61 @@ class NmrDpUtility(object):
         # key items of loop
         self.key_items = {'nef': {'poly_seq': [{'name': 'chain_code', 'type': 'str', 'default': 'A'},
                                                {'name': 'sequence_code', 'type': 'int'},
-                                               {'name': 'residue_name', 'type': 'str'}
+                                               {'name': 'residue_name', 'type': 'str', 'uppercase': True}
                                                ],
                                   'chem_shift': [{'name': 'chain_code', 'type': 'str', 'default': 'A'},
                                                  {'name': 'sequence_code', 'type': 'int'},
-                                                 {'name': 'residue_name', 'type': 'str'},
+                                                 {'name': 'residue_name', 'type': 'str', 'uppercase': True},
                                                  {'name': 'atom_name', 'type': 'str'}
                                                  ],
                                   'chem_shift_ref': None,
                                   'dist_restraint': [{'name': 'restraint_id', 'type': 'positive-int'},
                                                      {'name': 'chain_code_1', 'type': 'str', 'default': 'A'},
                                                      {'name': 'sequence_code_1', 'type': 'int'},
-                                                     {'name': 'residue_name_1', 'type': 'str'},
+                                                     {'name': 'residue_name_1', 'type': 'str', 'uppercase': True},
                                                      {'name': 'atom_name_1', 'type': 'str'},
                                                      {'name': 'chain_code_2', 'type': 'str', 'default': 'A'},
                                                      {'name': 'sequence_code_2', 'type': 'int'},
-                                                     {'name': 'residue_name_2', 'type': 'str'},
+                                                     {'name': 'residue_name_2', 'type': 'str', 'uppercase': True},
                                                      {'name': 'atom_name_2', 'type': 'str'}
                                                      ],
                                   'dihed_restraint': [{'name': 'restraint_id', 'type': 'positive-int'},
                                                       {'name': 'chain_code_1', 'type': 'str', 'default': 'A'},
                                                       {'name': 'sequence_code_1', 'type': 'int'},
-                                                      {'name': 'residue_name_1', 'type': 'str'},
+                                                      {'name': 'residue_name_1', 'type': 'str', 'uppercase': True},
                                                       {'name': 'atom_name_1', 'type': 'str'},
                                                       {'name': 'chain_code_2', 'type': 'str', 'default': 'A'},
                                                       {'name': 'sequence_code_2', 'type': 'int'},
-                                                      {'name': 'residue_name_2', 'type': 'str'},
+                                                      {'name': 'residue_name_2', 'type': 'str', 'uppercase': True},
                                                       {'name': 'atom_name_2', 'type': 'str'},
                                                       {'name': 'chain_code_3', 'type': 'str', 'default': 'A'},
                                                       {'name': 'sequence_code_3', 'type': 'int'},
-                                                      {'name': 'residue_name_3', 'type': 'str'},
+                                                      {'name': 'residue_name_3', 'type': 'str', 'uppercase': True},
                                                       {'name': 'atom_name_3', 'type': 'str'},
                                                       {'name': 'chain_code_4', 'type': 'str', 'default': 'A'},
                                                       {'name': 'sequence_code_4', 'type': 'int'},
-                                                      {'name': 'residue_name_4', 'type': 'str'},
+                                                      {'name': 'residue_name_4', 'type': 'str', 'uppercase': True},
                                                       {'name': 'atom_name_4', 'type': 'str'}
                                                       ],
                                   'rdc_restraint': [{'name': 'restraint_id', 'type': 'positive-int'},
                                                     {'name': 'chain_code_1', 'type': 'str', 'default': 'A'},
                                                     {'name': 'sequence_code_1', 'type': 'int'},
-                                                    {'name': 'residue_name_1', 'type': 'str'},
+                                                    {'name': 'residue_name_1', 'type': 'str', 'uppercase': True},
                                                     {'name': 'atom_name_1', 'type': 'str'},
                                                     {'name': 'chain_code_2', 'type': 'str', 'default': 'A'},
                                                     {'name': 'sequence_code_2', 'type': 'int'},
-                                                    {'name': 'residue_name_2', 'type': 'str'},
+                                                    {'name': 'residue_name_2', 'type': 'str', 'uppercase': True},
                                                     {'name': 'atom_name_2', 'type': 'str'}
                                                     ],
                                   'spectral_peak': None
                                   },
                           'nmr-star': {'poly_seq': [{'name': 'Entity_assembly_ID', 'type': 'positive-int', 'default': '1'},
                                                     {'name': 'Comp_index_ID', 'type': 'int'},
-                                                    {'name': 'Comp_ID', 'type': 'str'}
+                                                    {'name': 'Comp_ID', 'type': 'str', 'uppercase': True}
                                                     ],
                                        'chem_shift': [{'name': 'Entity_assembly_ID', 'type': 'positive-int', 'default': '1'},
                                                       {'name': 'Comp_index_ID', 'type': 'int'},
-                                                      {'name': 'Comp_ID', 'type': 'str'},
+                                                      {'name': 'Comp_ID', 'type': 'str', 'uppercase': True},
                                                       {'name': 'Atom_ID', 'type': 'str'}
                                                       ],
                                        'chem_shift_ref': [{'name': 'Atom_type', 'type': 'enum', 'enum': set(self.atom_isotopes.keys()),
@@ -556,39 +558,39 @@ class NmrDpUtility(object):
                                        'dist_restraint': [{'name': 'ID', 'type': 'positive-int'},
                                                           {'name': 'Entity_assembly_ID_1', 'type': 'positive-int', 'default': '1'},
                                                           {'name': 'Comp_index_ID_1', 'type': 'int'},
-                                                          {'name': 'Comp_ID_1', 'type': 'str'},
+                                                          {'name': 'Comp_ID_1', 'type': 'str', 'uppercase': True},
                                                           {'name': 'Atom_ID_1', 'type': 'str'},
                                                           {'name': 'Entity_assembly_ID_2', 'type': 'positive-int', 'default': '1'},
                                                           {'name': 'Comp_index_ID_2', 'type': 'int'},
-                                                          {'name': 'Comp_ID_2', 'type': 'str'},
+                                                          {'name': 'Comp_ID_2', 'type': 'str', 'uppercase': True},
                                                           {'name': 'Atom_ID_2', 'type': 'str'}
                                                           ],
                                        'dihed_restraint': [{'name': 'ID', 'type': 'positive-int'},
                                                            {'name': 'Entity_assembly_ID_1', 'type': 'positive-int', 'default': '1'},
                                                            {'name': 'Comp_index_ID_1', 'type': 'int'},
-                                                           {'name': 'Comp_ID_1', 'type': 'str'},
+                                                           {'name': 'Comp_ID_1', 'type': 'str', 'uppercase': True},
                                                            {'name': 'Atom_ID_1', 'type': 'str'},
                                                            {'name': 'Entity_assembly_ID_2', 'type': 'positive-int', 'default': '1'},
                                                            {'name': 'Comp_index_ID_2', 'type': 'int'},
-                                                           {'name': 'Comp_ID_2', 'type': 'str'},
+                                                           {'name': 'Comp_ID_2', 'type': 'str', 'uppercase': True},
                                                            {'name': 'Atom_ID_2', 'type': 'str'},
                                                            {'name': 'Entity_assembly_ID_3', 'type': 'positive-int', 'default': '1'},
                                                            {'name': 'Comp_index_ID_3', 'type': 'int'},
-                                                           {'name': 'Comp_ID_3', 'type': 'str'},
+                                                           {'name': 'Comp_ID_3', 'type': 'str', 'uppercase': True},
                                                            {'name': 'Atom_ID_3', 'type': 'str'},
                                                            {'name': 'Entity_assembly_ID_4', 'type': 'positive-int', 'default': '1'},
                                                            {'name': 'Comp_index_ID_4', 'type': 'int'},
-                                                           {'name': 'Comp_ID_4', 'type': 'str'},
+                                                           {'name': 'Comp_ID_4', 'type': 'str', 'uppercase': True},
                                                            {'name': 'Atom_ID_4', 'type': 'str'}
                                                            ],
                                        'rdc_restraint': [{'name': 'ID', 'type': 'positive-int'},
                                                          {'name': 'Entity_assembly_ID_1', 'type': 'positive-int', 'default': '1'},
                                                          {'name': 'Comp_index_ID_1', 'type': 'int'},
-                                                         {'name': 'Comp_ID_1', 'type': 'str'},
+                                                         {'name': 'Comp_ID_1', 'type': 'str', 'uppercase': True},
                                                          {'name': 'Atom_ID_1', 'type': 'str'},
                                                          {'name': 'Entity_assembly_ID_2', 'type': 'positive-int', 'default': '1'},
                                                          {'name': 'Comp_index_ID_2', 'type': 'int'},
-                                                         {'name': 'Comp_ID_2', 'type': 'str'},
+                                                         {'name': 'Comp_ID_2', 'type': 'str', 'uppercase': True},
                                                          {'name': 'Atom_ID_2', 'type': 'str'}
                                                          ],
                                        'spectral_peak': None
@@ -625,75 +627,75 @@ class NmrDpUtility(object):
         # key items of loop to check consistency
         self.consist_key_items = {'nef': {'dist_restraint': [{'name': 'chain_code_1', 'type': 'str', 'default': 'A'},
                                                              {'name': 'sequence_code_1', 'type': 'int'},
-                                                             {'name': 'residue_name_1', 'type': 'str'},
+                                                             {'name': 'residue_name_1', 'type': 'str', 'uppercase': True},
                                                              {'name': 'atom_name_1', 'type': 'str'},
                                                              {'name': 'chain_code_2', 'type': 'str', 'default': 'A'},
                                                              {'name': 'sequence_code_2', 'type': 'int'},
-                                                             {'name': 'residue_name_2', 'type': 'str'},
+                                                             {'name': 'residue_name_2', 'type': 'str', 'uppercase': True},
                                                              {'name': 'atom_name_2', 'type': 'str'}
                                                              ],
                                           'dihed_restraint': [{'name': 'chain_code_1', 'type': 'str', 'default': 'A'},
                                                               {'name': 'sequence_code_1', 'type': 'int'},
-                                                              {'name': 'residue_name_1', 'type': 'str'},
+                                                              {'name': 'residue_name_1', 'type': 'str', 'uppercase': True},
                                                               {'name': 'atom_name_1', 'type': 'str'},
                                                               {'name': 'chain_code_2', 'type': 'str', 'default': 'A'},
                                                               {'name': 'sequence_code_2', 'type': 'int'},
-                                                              {'name': 'residue_name_2', 'type': 'str'},
+                                                              {'name': 'residue_name_2', 'type': 'str', 'uppercase': True},
                                                               {'name': 'atom_name_2', 'type': 'str'},
                                                               {'name': 'chain_code_3', 'type': 'str', 'default': 'A'},
                                                               {'name': 'sequence_code_3', 'type': 'int'},
-                                                              {'name': 'residue_name_3', 'type': 'str'},
+                                                              {'name': 'residue_name_3', 'type': 'str', 'uppercase': True},
                                                               {'name': 'atom_name_3', 'type': 'str'},
                                                               {'name': 'chain_code_4', 'type': 'str', 'default': 'A'},
                                                               {'name': 'sequence_code_4', 'type': 'int'},
-                                                              {'name': 'residue_name_4', 'type': 'str'},
+                                                              {'name': 'residue_name_4', 'type': 'str', 'uppercase': True},
                                                               {'name': 'atom_name_4', 'type': 'str'}
                                                               ],
                                           'rdc_restraint': [{'name': 'chain_code_1', 'type': 'str', 'default': 'A'},
                                                             {'name': 'sequence_code_1', 'type': 'int'},
-                                                            {'name': 'residue_name_1', 'type': 'str'},
+                                                            {'name': 'residue_name_1', 'type': 'str', 'uppercase': True},
                                                             {'name': 'atom_name_1', 'type': 'str'},
                                                             {'name': 'chain_code_2', 'type': 'str', 'default': 'A'},
                                                             {'name': 'sequence_code_2', 'type': 'int'},
-                                                            {'name': 'residue_name_2', 'type': 'str'},
+                                                            {'name': 'residue_name_2', 'type': 'str', 'uppercase': True},
                                                             {'name': 'atom_name_2', 'type': 'str'}
                                                             ],
                                           'spectral_peak': None
                                           },
                                   'nmr-star': {'dist_restraint': [{'name': 'Entity_assembly_ID_1', 'type': 'positive-int', 'default': '1'},
                                                                   {'name': 'Comp_index_ID_1', 'type': 'int'},
-                                                                  {'name': 'Comp_ID_1', 'type': 'str'},
+                                                                  {'name': 'Comp_ID_1', 'type': 'str', 'uppercase': True},
                                                                   {'name': 'Atom_ID_1', 'type': 'str'},
                                                                   {'name': 'Entity_assembly_ID_2', 'type': 'positive-int', 'default': '1'},
                                                                   {'name': 'Comp_index_ID_2', 'type': 'int'},
-                                                                  {'name': 'Comp_ID_2', 'type': 'str'},
+                                                                  {'name': 'Comp_ID_2', 'type': 'str', 'uppercase': True},
                                                                   {'name': 'Atom_ID_2', 'type': 'str'}
                                                                   ],
                                                'dihed_restraint': [{'name': 'Entity_assembly_ID_1', 'type': 'positive-int', 'default': '1'},
                                                                    {'name': 'Comp_index_ID_1', 'type': 'int'},
-                                                                   {'name': 'Comp_ID_1', 'type': 'str'},
+                                                                   {'name': 'Comp_ID_1', 'type': 'str', 'uppercase': True},
                                                                    {'name': 'Atom_ID_1', 'type': 'str'},
                                                                    {'name': 'Entity_assembly_ID_2', 'type': 'positive-int', 'default': '1'},
                                                                    {'name': 'Comp_index_ID_2', 'type': 'int'},
-                                                                   {'name': 'Comp_ID_2', 'type': 'str'},
+                                                                   {'name': 'Comp_ID_2', 'type': 'str', 'uppercase': True},
                                                                    {'name': 'Atom_ID_2', 'type': 'str'},
                                                                    {'name': 'Entity_assembly_ID_3', 'type': 'positive-int', 'default': '1'},
                                                                    {'name': 'Comp_index_ID_3', 'type': 'int'},
-                                                                   {'name': 'Comp_ID_3', 'type': 'str'},
+                                                                   {'name': 'Comp_ID_3', 'type': 'str', 'uppercase': True},
                                                                    {'name': 'Atom_ID_3', 'type': 'str'},
                                                                    {'name': 'Entity_assembly_ID_4', 'type': 'positive-int', 'default': '1'},
                                                                    {'name': 'Comp_index_ID_4', 'type': 'int'},
-                                                                   {'name': 'Comp_ID_4', 'type': 'str'},
+                                                                   {'name': 'Comp_ID_4', 'type': 'str', 'uppercase': True},
                                                                    {'name': 'Atom_ID_4', 'type': 'str'}
                                                                    ],
                                                'rdc_restraint': [
                                                                  {'name': 'Entity_assembly_ID_1', 'type': 'positive-int', 'default': '1'},
                                                                  {'name': 'Comp_index_ID_1', 'type': 'int'},
-                                                                 {'name': 'Comp_ID_1', 'type': 'str'},
+                                                                 {'name': 'Comp_ID_1', 'type': 'str', 'uppercase': True},
                                                                  {'name': 'Atom_ID_1', 'type': 'str'},
                                                                  {'name': 'Entity_assembly_ID_2', 'type': 'positive-int', 'default': '1'},
                                                                  {'name': 'Comp_index_ID_2', 'type': 'int'},
-                                                                 {'name': 'Comp_ID_2', 'type': 'str'},
+                                                                 {'name': 'Comp_ID_2', 'type': 'str', 'uppercase': True},
                                                                  {'name': 'Atom_ID_2', 'type': 'str'}
                                                                  ],
                                                'spectral_peak': None
@@ -1364,7 +1366,7 @@ class NmrDpUtility(object):
                                       {'name': 'sequence_code_%s', 'type': 'int', 'mandatory': False,
                                        'relax-key-if-exist': True},
                                       {'name': 'residue_name_%s', 'type': 'str', 'mandatory': False,
-                                       'relax-key-if-exist': True},
+                                       'relax-key-if-exist': True, 'uppercase': True},
                                       {'name': 'atom_name_%s', 'type': 'str', 'mandatory': False,
                                        'relax-key-if-exist': True}],
                               'nmr-star': [{'name': 'Position_uncertainty_%s', 'type': 'range-float', 'mandatory': False,
@@ -1375,7 +1377,7 @@ class NmrDpUtility(object):
                                            {'name': 'Comp_index_ID_%s', 'type': 'int', 'mandatory': False,
                                             'relax-key-if-exist': True},
                                            {'name': 'Comp_ID_%s', 'type': 'str', 'mandatory': False,
-                                            'relax-key-if-exist': True},
+                                            'relax-key-if-exist': True, 'uppercase': True},
                                            {'name': 'Atom_ID_%s', 'type': 'str', 'mandatory': False,
                                             'relax-key-if-exist': True},
                                            {'name': 'Auth_asym_ID_%s', 'type': 'str', 'mandatory': False},
@@ -5038,13 +5040,27 @@ class NmrDpUtility(object):
 
                         if not self.__nefT.validate_comp_atom(comp_id, atom_id_):
 
-                            err = "Invalid atom_id %s (comp_id %s) in a loop %s." % (atom_id, comp_id, lp_category)
+                            if comp_id == 'GLY' and atom_id_ == 'HA1':
 
-                            self.report.error.appendDescription('invalid_atom_nomenclature', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
-                            self.report.setError()
+                                warn = "Changed GLY:HA1/HA2 in the NMR data according to the IUPAC nomenclature, GLY:HA2/HA3, respectively."
 
-                            if self.__verbose:
-                                self.__lfh.write("+NmrDpUtility.__validateAtomNomenclature() ++ Error  - %s\n" % err)
+                                self.report.warning.appendDescription('atom_nomenclature_mismatch', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
+                                self.report.setWarning()
+
+                                if self.__verbose:
+                                    self.__lfh.write("+NmrDpUtility.__validateAtomNomenclature() ++ Warning  - %s\n" % warn)
+
+                                self.__fixGlycineAtomNomenclature()
+
+                            else:
+
+                                err = "Invalid atom_id %s (comp_id %s) in a loop %s." % (atom_id, comp_id, lp_category)
+
+                                self.report.error.appendDescription('invalid_atom_nomenclature', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
+                                self.report.setError()
+
+                                if self.__verbose:
+                                    self.__lfh.write("+NmrDpUtility.__validateAtomNomenclature() ++ Error  - %s\n" % err)
 
                 # non-standard residue
                 else:
@@ -5279,6 +5295,132 @@ class NmrDpUtility(object):
 
             if self.__verbose:
                 self.__lfh.write("+NmrDpUtility.__validateAtomNomenclature() ++ Error  - %s" % str(e))
+
+    def __fixGlycineAtomNomenclature(self):
+        """ Fix Glycine atom nomenclature, which converts GLY:HA1/HA2 to GLY:HA2/HA3, respectively.
+        """
+
+        for fileListId in range(self.__file_path_list_len):
+
+            input_source = self.report.input_sources[fileListId]
+            input_source_dic = input_source.get()
+
+            file_name = input_source_dic['file_name']
+            file_type = input_source_dic['file_type']
+
+            if input_source_dic['content_subtype'] is None:
+                continue
+
+            for content_subtype in input_source_dic['content_subtype'].keys():
+
+                if content_subtype == ['entry_info', 'poly_seq', 'chem_shift_ref']:
+                    continue
+
+                sf_category = self.sf_categories[file_type][content_subtype]
+                lp_category = self.lp_categories[file_type][content_subtype]
+
+                if self.__star_data_type[fileListId] == 'Loop':
+
+                    sf_data = self.__star_data[fileListId]
+                    sf_framecode = ''
+
+                    self.__fixGlycineAtomNomenclature__(fileListId, file_name, file_type, content_subtype, sf_data, sf_framecode, lp_category)
+
+                elif self.__star_data_type[fileListId] == 'Saveframe':
+
+                    sf_data = self.__star_data[fileListId]
+                    sf_framecode = self.__getFirstTagValue(sf_data, 'sf_framecode')
+
+                    self.__fixGlycineAtomNomenclature__(fileListId, file_name, file_type, content_subtype, sf_data, sf_framecode, lp_category)
+
+                else:
+
+                    for sf_data in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
+
+                        sf_framecode = self.__getFirstTagValue(sf_data, 'sf_framecode')
+
+                        self.__fixGlycineAtomNomenclature__(fileListId, file_name, file_type, content_subtype, sf_data, sf_framecode, lp_category)
+
+    def __fixGlycineAtomNomenclature__(self, file_list_id, file_name, file_type, content_subtype, sf_data, sf_framecode, lp_category):
+        """ Fix Glycine atom nomenclature, which converts GLY:HA1/HA2 to GLY:HA2/HA3, respectively.
+        """
+
+        comp_id_name = 'residue_name' if file_type == 'nef' else 'Comp_ID'
+        atom_id_name = 'atom_name' if file_type == 'nef' else 'Atom_ID'
+
+        max_dim = 2
+
+        if content_subtype == 'dist_restraint' or content_subtype == 'rdc_restraint':
+            max_dim = 3
+
+        elif content_subtype == 'dihed_restraint':
+            max_dim = 5
+
+        elif content_subtype == 'spectral_peak':
+
+            try:
+
+                _num_dim = sf_data.get_tag(self.num_dim_items[file_type])[0]
+                num_dim = int(_num_dim)
+
+                if not num_dim in range(1, self.lim_num_dim):
+                    raise ValueError()
+
+            except ValueError: # raised error already at __testIndexConsistency()
+                return False
+
+            max_dim = num_dim + 1
+
+        loop = sf_data if self.__star_data_type[file_list_id] == 'Loop' else sf_data.get_loop_by_category(lp_category)
+
+        if max_dim == 2:
+
+            comp_id_col = loop.tags.index(comp_id_name) if comp_id_name in loop.tags else -1
+            atom_id_col = loop.tags.index(atom_id_name) if atom_id_name in loop.tags else -1
+
+            if comp_id_col == -1 or atom_id_col == -1:
+                return
+
+            for row in loop:
+
+                comp_id = row[comp_id_col].upper()
+
+                if comp_id != 'GLY':
+                    continue
+
+                atom_id = row[atom_id_col]
+
+                if atom_id == 'HA1':
+                    row[atom_id_col] = 'HA2'
+                elif atom_id == 'HA2':
+                    row[atom_id_col] = 'HA3'
+
+        else:
+
+            for i in range(1, max_dim):
+
+                _comp_id_name = comp_id_name + '_' + str(i)
+                _atom_id_name = atom_id_name + '_' + str(i)
+
+                comp_id_col = loop.tags.index(_comp_id_name) if _comp_id_name in loop.tags else -1
+                atom_id_col = loop.tags.index(_atom_id_name) if _atom_id_name in loop.tags else -1
+
+                if comp_id_col == -1 or atom_id_col == -1:
+                    continue
+
+                for row in loop:
+
+                    comp_id = row[comp_id_col].upper()
+
+                    if comp_id != 'GLY':
+                        continue
+
+                    atom_id = row[atom_id_col]
+
+                    if atom_id == 'HA1':
+                        row[atom_id_col] = 'HA2'
+                    elif atom_id == 'HA2':
+                        row[atom_id_col] = 'HA3'
 
     def __validateAtomTypeOfCSLoop(self):
         """ Validate atom type, isotope number on assigned chemical shifts.
@@ -12798,9 +12940,12 @@ class NmrDpUtility(object):
 
         cif_chain_id = s['chain_id']
 
+        if not 'struct_conf' in s:
+            return nmr_struct_conf
+
         seq_align_dic = self.report.sequence_alignment.get()
 
-        if not 'struct_conf' in s:
+        if not self.__hasKeyValue(seq_align_dic, 'nmr_poly_seq_vs_model_poly_seq'):
             return nmr_struct_conf
 
         result = next((seq_align for seq_align in seq_align_dic['nmr_poly_seq_vs_model_poly_seq'] if seq_align['ref_chain_id'] == nmr_chain_id and seq_align['test_chain_id'] == cif_chain_id), None)
@@ -13701,7 +13846,7 @@ class NmrDpUtility(object):
 
             seq_align_dic = self.report.sequence_alignment.get()
 
-            if 'model_poly_seq_vs_nmr_poly_seq' in seq_align_dic and 'nmr_poly_seq_vs_model_poly_seq' in seq_align_dic:
+            if self.__hasKeyValue(seq_align_dic, 'model_poly_seq_vs_nmr_poly_seq') and self.__hasKeyValue(seq_align_dic, 'nmr_poly_seq_vs_model_poly_seq'):
 
                 cif_polymer_sequence = cif_input_source_dic['polymer_sequence']
                 nmr_polymer_sequence = nmr_input_source_dic['polymer_sequence']
@@ -14331,7 +14476,10 @@ class NmrDpUtility(object):
 
                 continue
 
-            if chain_assign_dic['nmr_poly_seq_vs_model_poly_seq'] is None:
+            if not self.__hasKeyValue(seq_align_dic, 'nmr_poly_seq_vs_model_poly_seq'):
+                continue
+
+            if not self.__hasKeyValue(chain_assign_dic, 'nmr_poly_seq_vs_model_poly_seq'):
                 continue
 
             nmr2ca = {}
@@ -15548,7 +15696,7 @@ class NmrDpUtility(object):
             """
             return False
 
-        if chain_assign_dic['nmr_poly_seq_vs_model_poly_seq'] is None:
+        if not self.__hasKeyValue(chain_assign_dic, 'nmr_poly_seq_vs_model_poly_seq'):
             return False
 
         if input_source_dic['content_subtype'] is None:
@@ -15740,6 +15888,9 @@ class NmrDpUtility(object):
 
         seq_align_dic = self.report.sequence_alignment.get()
 
+        if not self.__hasKeyValue(seq_align_dic, 'nmr_poly_seq_vs_model_poly_seq'):
+            return False
+
         result = next((seq_align for seq_align in seq_align_dic['nmr_poly_seq_vs_model_poly_seq'] if seq_align['ref_chain_id'] == nmr_chain_id and seq_align['test_chain_id'] == cif_chain_id), None)
 
         if not result is None:
@@ -15796,6 +15947,9 @@ class NmrDpUtility(object):
         cif_chain_id = s['chain_id']
 
         seq_align_dic = self.report.sequence_alignment.get()
+
+        if not self.__hasKeyValue(seq_align_dic, 'nmr_poly_seq_vs_model_poly_seq'):
+            return 'unknown'
 
         result = next((seq_align for seq_align in seq_align_dic['nmr_poly_seq_vs_model_poly_seq'] if seq_align['ref_chain_id'] == nmr_chain_id and seq_align['test_chain_id'] == cif_chain_id), None)
 
@@ -15879,7 +16033,7 @@ class NmrDpUtility(object):
 
             return False
 
-        if chain_assign_dic['model_poly_seq_vs_nmr_poly_seq'] is None:
+        if not self.__hasKeyValue(chain_assign_dic, 'model_poly_seq_vs_nmr_poly_seq'):
             return False
 
         try:
@@ -15970,6 +16124,9 @@ class NmrDpUtility(object):
                 if self.__verbose:
                     self.__lfh.write("+NmrDpUtility.__mapCoordDisulfideBond2Nmr() ++ Error  - %s\n" % err)
 
+                continue
+
+            if not self.__hasKeyValue(seq_align_dic, 'model_poly_seq_vs_nmr_poly_seq'):
                 continue
 
             sf_category = self.sf_categories[file_type][content_subtype]
@@ -16265,7 +16422,7 @@ class NmrDpUtility(object):
 
             return False
 
-        if chain_assign_dic['model_poly_seq_vs_nmr_poly_seq'] is None:
+        if not self.__hasKeyValue(chain_assign_dic, 'model_poly_seq_vs_nmr_poly_seq'):
             return False
 
         try:
@@ -16356,6 +16513,9 @@ class NmrDpUtility(object):
                 if self.__verbose:
                     self.__lfh.write("+NmrDpUtility.__mapCoordOtherBond2Nmr() ++ Error  - %s\n" % err)
 
+                continue
+
+            if not self.__hasKeyValue(seq_align_dic, 'model_poly_seq_vs_nmr_poly_seq'):
                 continue
 
             sf_category = self.sf_categories[file_type][content_subtype]
@@ -16810,6 +16970,9 @@ class NmrDpUtility(object):
 
         seq_align_dic = self.report.sequence_alignment.get()
 
+        if not self.__hasKeyValue(seq_align_dic, 'nmr_poly_seq_vs_model_poly_seq'):
+            return None
+
         result = next((seq_align for seq_align in seq_align_dic['nmr_poly_seq_vs_model_poly_seq'] if seq_align['ref_chain_id'] == nmr_chain_id and seq_align['test_chain_id'] == cif_chain_id), None)
 
         if not result is None:
@@ -16899,6 +17062,9 @@ class NmrDpUtility(object):
                         n['atom_id'] in self.__csStat.getAromaticAtoms(n['comp_id'])]
 
             if len(neighbor) == 0:
+                return None
+
+            if not self.__hasKeyValue(seq_align_dic, 'model_poly_seq_vs_nmr_poly_seq'):
                 return None
 
             atom_list = []
@@ -17132,6 +17298,9 @@ class NmrDpUtility(object):
         cif_chain_id = s['chain_id']
 
         seq_align_dic = self.report.sequence_alignment.get()
+
+        if not self.__hasKeyValue(seq_align_dic, 'nmr_poly_seq_vs_model_poly_seq'):
+            return None
 
         result = next((seq_align for seq_align in seq_align_dic['nmr_poly_seq_vs_model_poly_seq'] if seq_align['ref_chain_id'] == nmr_chain_id and seq_align['test_chain_id'] == cif_chain_id), None)
 

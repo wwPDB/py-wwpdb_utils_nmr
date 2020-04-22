@@ -28,6 +28,7 @@
 # 06-Apr-2020  M. Yokochi - fix crash when sequence alignment is not available. (v2.2.1)
 # 10-Apr-2020  M. Yokochi - fix crash in case of format issue (v2.2.2)
 # 10-Apr-2020  M. Yokochi - fix typo in alternative enumeration definition (v2.2.2)
+# 22-Apr-2020  M. Yokochi - convert comp_id in capital letters (v2.2.3, DAOTHER-5600)
 ##
 import sys
 import os
@@ -46,7 +47,7 @@ from wwpdb.utils.nmr.io.ChemCompIo import ChemCompReader
 from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
 from wwpdb.utils.nmr.NmrDpReport import NmrDpReport
 
-__version__ = 'v2.2.2'
+__version__ = 'v2.2.3'
 
 class NEFTranslator(object):
     """ Bi-directional translator between NEF and NMR-STAR
@@ -1062,18 +1063,18 @@ class NEFTranslator(object):
                 if len(sorted_seq[0].split(' ')[-1]) > 1:
                     if len(chains) > 1:
                         for c in chains:
-                            cmp_dict[c] = [i.split(' ')[-1] for i in sorted_seq if i.split(' ')[0] == c]
+                            cmp_dict[c] = [i.split(' ')[-1].upper() for i in sorted_seq if i.split(' ')[0] == c]
                             seq_dict[c] = [int(i.split(' ')[1]) for i in sorted_seq if i.split(' ')[0] == c]
                     else:
-                        cmp_dict[list(chains)[0]] = [i.split(' ')[-1] for i in sorted_seq]
+                        cmp_dict[list(chains)[0]] = [i.split(' ')[-1].upper() for i in sorted_seq]
                         seq_dict[list(chains)[0]] = [int(i.split(' ')[1]) for i in sorted_seq]
                 else:
                     if len(chains) > 1:
                         for c in chains:
-                            cmp_dict[c] = [i.split(' ')[-1] for i in sorted_seq if i.split(' ')[0] == c]
+                            cmp_dict[c] = [i.split(' ')[-1].upper() for i in sorted_seq if i.split(' ')[0] == c]
                             seq_dict[c] = [int(i.split(' ')[1]) for i in sorted_seq if i.split(' ')[0] == c]
                     else:
-                        cmp_dict[list(chains)[0]] = [i.split(' ')[-1] for i in sorted_seq]
+                        cmp_dict[list(chains)[0]] = [i.split(' ')[-1].upper() for i in sorted_seq]
                         seq_dict[list(chains)[0]] = [int(i.split(' ')[1]) for i in sorted_seq]
 
                 asm = [] # assembly of a loop
@@ -1193,18 +1194,18 @@ class NEFTranslator(object):
                 if len(sorted_seq[0].split(' ')[-1]) > 1:
                     if len(chains) > 1:
                         for c in chains:
-                            cmp_dict[c] = [i.split(' ')[-1] for i in sorted_seq if i.split(' ')[0] == c]
+                            cmp_dict[c] = [i.split(' ')[-1].upper() for i in sorted_seq if i.split(' ')[0] == c]
                             seq_dict[c] = [int(i.split(' ')[1]) for i in sorted_seq if i.split(' ')[0] == c]
                     else:
-                        cmp_dict[list(chains)[0]] = [i.split(' ')[-1] for i in sorted_seq]
+                        cmp_dict[list(chains)[0]] = [i.split(' ')[-1].upper() for i in sorted_seq]
                         seq_dict[list(chains)[0]] = [int(i.split(' ')[1]) for i in sorted_seq]
                 else:
                     if len(chains) > 1:
                         for c in chains:
-                            cmp_dict[c] = [i.split(' ')[-1] for i in sorted_seq if i.split(' ')[0] == c]
+                            cmp_dict[c] = [i.split(' ')[-1].upper() for i in sorted_seq if i.split(' ')[0] == c]
                             seq_dict[c] = [int(i.split(' ')[1]) for i in sorted_seq if i.split(' ')[0] == c]
                     else:
-                        cmp_dict[list(chains)[0]] = [i.split(' ')[-1] for i in sorted_seq]
+                        cmp_dict[list(chains)[0]] = [i.split(' ')[-1].upper() for i in sorted_seq]
                         seq_dict[list(chains)[0]] = [int(i.split(' ')[1]) for i in sorted_seq]
 
                 asm = [] # assembly of a loop
@@ -1454,8 +1455,8 @@ class NEFTranslator(object):
             if len(user_warn_msg) > 0:
                 raise UserWarning(user_warn_msg)
 
-            comps = sorted(set([i[0] for i in pair_data]))
-            sorted_comp_atom = sorted(set(['{} {}'.format(i[0], i[1]) for i in pair_data]))
+            comps = sorted(set([i[0].upper() for i in pair_data]))
+            sorted_comp_atom = sorted(set(['{} {}'.format(i[0].upper(), i[1]) for i in pair_data]))
 
             for c in comps:
                 atm_dict[c] = [i.split(' ')[1] for i in sorted_comp_atom if i.split(' ')[0] == c]
@@ -1678,8 +1679,8 @@ class NEFTranslator(object):
             if len(user_warn_msg) > 0:
                 raise UserWarning(user_warn_msg)
 
-            ambigs = sorted(set(['{}:{}'.format(i[0], i[2]) for i in ambig_data]))
-            sorted_atm = sorted(set(['{}:{} {}'.format(i[0], i[2], i[1]) for i in ambig_data]))
+            ambigs = sorted(set(['{}:{}'.format(i[0].upper(), i[2]) for i in ambig_data]))
+            sorted_atm = sorted(set(['{}:{} {}'.format(i[0].upper(), i[2], i[1]) for i in ambig_data]))
 
             for a in ambigs:
                 atm_dict[a] = [i.split(' ')[1] for i in sorted_atm if i.split(' ')[0] == a]
@@ -2244,7 +2245,10 @@ class NEFTranslator(object):
                             except:
                                 raise ValueError("%s%s '%s' must be %s." % (self.__idx_msg(idx_tag_ids, tags, ent), name, val, self.readable_item_type[type]))
                         else:
-                            ent[name] = val
+                            if 'uppercase' in k and k['uppercase']:
+                                ent[name] = val.upper()
+                            else:
+                                ent[name] = val
 
                     else:
                         for d in data_items:
@@ -2364,7 +2368,10 @@ class NEFTranslator(object):
                                     except:
                                         raise ValueError("%s%s '%s' must be %s." % (self.__idx_msg(idx_tag_ids, tags, ent), name, val, self.readable_item_type[type]))
                                 else:
-                                    ent[name] = val
+                                    if 'uppercase' in d and d['uppercase']:
+                                        ent[name] = val.upper()
+                                    else:
+                                        ent[name] = val
 
                 for d in data_items:
                     if 'group-mandatory' in d and d['group-mandatory']:
@@ -2455,6 +2462,7 @@ class NEFTranslator(object):
         data = [] # data of all loops
 
         key_names = [k['name'] for k in key_items]
+        uppercases = [('uppercase' in k and k['uppercase']) for k in key_items]
 
         key_len = len(key_items)
 
@@ -2478,7 +2486,7 @@ class NEFTranslator(object):
 
                 key = ''
                 for j in range(key_len):
-                    key += ' ' + i[j]
+                    key += ' ' + (i[j].upper() if uppercases[j] else i[j])
                 key.rstrip()
 
                 if key in keys:
@@ -2508,6 +2516,7 @@ class NEFTranslator(object):
         data = [] # data of all loops
 
         key_names = [k['name'] for k in key_items]
+        uppercases = [('uppercase' in k and k['uppercase']) for k in key_items]
 
         key_len = len(key_items)
 
@@ -2526,7 +2535,7 @@ class NEFTranslator(object):
 
                 key = ''
                 for j in range(key_len):
-                    key += ' ' + i[j]
+                    key += ' ' + (i[j].upper() if uppercases[j] else i[j])
                 key.rstrip()
 
                 if key in keys:

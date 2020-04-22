@@ -22,6 +22,7 @@
 # 03-Apr-2020  M. Yokochi - add methods to retrieve sequence alignment between coordinate and NMR data
 # 18-Apr-2020  M. Yokochi - fix error of apilayer - getNmrSeqAlignment in NMR legacy deposition (DAOTHER-5594)
 # 19-Apr-2020  M. Yokochi - support concatenated CS data in NMR legacy deposition (DAOTHER-5594)
+# 22-Apr-2020  M. Yokochi - add 'ambiguity_code_mismatch' warning type (DAOTHER-5601)
 ##
 """ Wrapper class for data processing report of NMR data.
     @author: Masashi Yokochi
@@ -1640,7 +1641,7 @@ class NmrDpReportWarning:
 
     def __init__(self):
         self.items = ('encouragement', 'missing_content', 'missing_saveframe', 'missing_data', 'enum_mismatch', 'enum_mismatch_ignorable',
-                      'disordered_index', 'sequence_mismatch', 'atom_nomenclature_mismatch', 'ccd_mismatch',
+                      'disordered_index', 'sequence_mismatch', 'atom_nomenclature_mismatch', 'ccd_mismatch', 'ambiguity_code_mismatch',
                       'skipped_saveframe_category', 'skipped_loop_category',
                       'anomalous_chemical_shift', 'unusual_chemical_shift',
                       'anomalous_data', 'unusual_data', 'remarkable_data', 'insufficient_data',

@@ -7862,9 +7862,14 @@ class NmrDpUtility(object):
 
                             if allowed_ambig_code == 1:
 
-                                j = next(j for j in lp_data if j[chain_id_name] == chain_id and j[seq_id_name] == seq_id and j[comp_id_name] == comp_id and j[atom_id_name] == atom_id2)
+                                try:
 
-                                loop.data[lp_data.index(j)][loop.tags.index(ambig_code_name)] = 1
+                                    j = next(j for j in lp_data if j[chain_id_name] == chain_id and j[seq_id_name] == seq_id and j[comp_id_name] == comp_id and j[atom_id_name] == atom_id2)
+
+                                    loop.data[lp_data.index(j)][loop.tags.index(ambig_code_name)] = 1
+
+                                except StopIteration:
+                                    pass
 
                             else:
 
@@ -7891,7 +7896,7 @@ class NmrDpUtility(object):
                                 warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_id) + "] %s '%s' indicates %s. However, %s %s of %s %s is inconsistent." %\
                                        (ambig_code_name, ambig_code, ambig_code_desc, ambig_code_name, ambig_code2, atom_id_name, atom_id2)
 
-                                self.report.warning.appendDescription('ambiguity_code_mismatch', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': rr})
+                                self.report.warning.appendDescription('ambiguity_code_mismatch', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
                                 self.report.setWarning()
 
                                 if self.__verbose:

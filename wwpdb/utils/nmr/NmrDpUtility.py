@@ -45,6 +45,7 @@
 # 22-Apr-2020  M. Yokochi - convert comp_id in capital letters (DAOTHER-5600)
 # 22-Apr-2020  M. Yokochi - fix GLY:HA1/HA2 to GLY:HA2/HA3 (DAOTHER-5600)
 # 22-Apr-2020  M. Yokochi - fix ambiguity code mismatch if possible (DAOTHER-5601)
+# 22-Apr-2020  M. Yokochi - fix None type object is not iterable error (DAOTHER-5602)
 ##
 """ Wrapper class for data processing for NMR data.
     @author: Masashi Yokochi
@@ -3606,7 +3607,8 @@ class NmrDpUtility(object):
             self.__sf_category_list, self.__lp_category_list = self.__nefT.get_data_content(self.__star_data[fileListId], self.__star_data_type[fileListId])
 
             for sf_category in self.__sf_category_list:
-                if not sf_category in self.sf_categories[file_type].values():
+
+                if not sf_category is None and not sf_category in self.sf_categories[file_type].values():
 
                     if file_type == 'nmr-star' and sf_category == 'entity':
                         self.__has_star_entity = True
@@ -3624,6 +3626,7 @@ class NmrDpUtility(object):
 
             # increment loop counter of each content subtype
             for lp_category in self.__lp_category_list:
+
                 if lp_category in self.lp_categories[file_type].values():
                     lp_counts[[k for k, v in self.lp_categories[file_type].items() if v == lp_category][0]] += 1
 

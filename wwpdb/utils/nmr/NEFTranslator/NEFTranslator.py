@@ -29,6 +29,7 @@
 # 10-Apr-2020  M. Yokochi - fix crash in case of format issue (v2.2.2)
 # 10-Apr-2020  M. Yokochi - fix typo in alternative enumeration definition (v2.2.2)
 # 22-Apr-2020  M. Yokochi - convert comp_id in capital letters (v2.2.3, DAOTHER-5600)
+# 22-Apr-2020  M. Yokochi - fix None type object is not iterable error (v2.2.4, DAOTHER-5602)
 ##
 import sys
 import os
@@ -47,7 +48,7 @@ from wwpdb.utils.nmr.io.ChemCompIo import ChemCompReader
 from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
 from wwpdb.utils.nmr.NmrDpReport import NmrDpReport
 
-__version__ = 'v2.2.3'
+__version__ = 'v2.2.4'
 
 class NEFTranslator(object):
     """ Bi-directional translator between NEF and NMR-STAR
@@ -765,8 +766,8 @@ class NEFTranslator(object):
 
                 info.append('{} saveframes and {} loops found'.format(len(sf_list), len(lp_list)))
 
-                nef_sf_list = [i for i in sf_list if 'nef' in i]
-                nef_lp_list = [i for i in lp_list if 'nef' in i]
+                nef_sf_list = [i for i in sf_list if not i is None and 'nef' in i]
+                nef_lp_list = [i for i in lp_list if not i is None and 'nef' in i]
 
                 info.append('{} saveframes and {} loops found with NEF prefix'.format(len(nef_sf_list), len(nef_lp_list)))
 

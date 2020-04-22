@@ -7,6 +7,7 @@
 # 19-Mar-2020  M. Yokochi - check chain assignment for identical dimer case (DAOTHER-3343)
 # 14-Apr-2020  M. Yokochi - add 'no-cs-row' and 'no-cs-loop' unit tests
 # 22-Apr-2020  M. Yokochi - add a unit test for DAOTHER-5600
+# 22-Apr-2020  M. Yokochi - add a unit test for DAOTHER-5602
 #
 import unittest
 import os
@@ -35,7 +36,8 @@ class TestNmrDpUtility(unittest.TestCase):
                              'daother-2737': ['rcsb103272-shifts-original.apofepbstar3.str'],
                              'daother-3343': ['D_1200009291_cs.str'],
                              'daother-5594': ['rcsb104069shifts-revised.str'],
-                             'daother-5600': ['D_1000246544_cs-upload_P1.str.V1']
+                             'daother-5600': ['D_1000246544_cs-upload_P1.str.V1'],
+                             'daother-5602': ['NMR-6v88_cs_rev.str']
                              }
         self.model_file_path = {'data': '2la6.cif',
                                 'sf': '2la6.cif',
@@ -50,7 +52,8 @@ class TestNmrDpUtility(unittest.TestCase):
                                 'daother-2737': 'rcsb103272.cif',
                                 'daother-3343': 'D_1200009291_model_P1.cif.V6',
                                 'daother-5594': 'rcsb104069-coords-converted.cif',
-                                'daother-5600': 'D_1000246544_model-upload_P1.cif.V1'
+                                'daother-5600': 'D_1000246544_model-upload_P1.cif.V1',
+                                'daother-5602': 'NMR-6v88.cif'
                                 }
         self.utility = NmrDpUtility()
         pass
@@ -119,6 +122,9 @@ class TestNmrDpUtility(unittest.TestCase):
 
     def test_nmr_cs_str_consistency_check_daother_5600(self):
         self.__test_nmr_cs_str_consistency('daother-5600')
+
+    def test_nmr_cs_str_consistency_check_daother_5602(self):
+        self.__test_nmr_cs_str_consistency('daother-5602')
 
 if __name__ == '__main__':
     unittest.main()

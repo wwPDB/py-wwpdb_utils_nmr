@@ -44,7 +44,7 @@
 # 19-Apr-2020  M. Yokochi - support concatenated CS data in NMR legacy deposition (DAOTHER-5594)
 # 22-Apr-2020  M. Yokochi - convert comp_id in capital letters (DAOTHER-5600)
 # 22-Apr-2020  M. Yokochi - fix GLY:HA1/HA2 to GLY:HA2/HA3 (DAOTHER-5600)
-# 22-Apr-2020  M. Yokochi - fix invalid ambiguity code if possible (DAOTHER-5601)
+# 22-Apr-2020  M. Yokochi - fix ambiguity code mismatch if possible (DAOTHER-5601)
 ##
 """ Wrapper class for data processing for NMR data.
     @author: Masashi Yokochi
@@ -5689,7 +5689,7 @@ class NmrDpUtility(object):
 
                             if allowed_ambig_code == 1:
 
-                                warn = "Ambiguity code %s (comp_id %s, atom_id %s) should be '1' according to the BMRB definition."
+                                warn = "Ambiguity code '%s' (comp_id %s, atom_id %s) should be '1' according to the BMRB definition." % (ambig_code, comp_id, atom_id)
 
                                 self.report.warning.appendDescription('ambiguity_code_mismatch', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
                                 self.report.setWarning()
@@ -5699,7 +5699,7 @@ class NmrDpUtility(object):
 
                             else:
 
-                                err = "Invalid ambiguity code %s (comp_id %s, atom_id %s, allowed ambig_code %s) in a loop %s." % (ambig_code, comp_id, atom_id, [1, allowed_ambig_code, 4, 5, 6, 9], lp_category)
+                                err = "Invalid ambiguity code '%s' (comp_id %s, atom_id %s, allowed ambig_code %s) in a loop %s." % (ambig_code, comp_id, atom_id, [1, allowed_ambig_code, 4, 5, 6, 9], lp_category)
 
                                 self.report.error.appendDescription('invalid_ambiguity_code', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
                                 self.report.setError()
@@ -7868,7 +7868,7 @@ class NmrDpUtility(object):
 
                             else:
 
-                                err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_id) + '] Invalid %s %s (allowed ambig_code %s) in a loop %s.' %\
+                                err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_id) + "] Invalid %s '%s' (allowed ambig_code %s) in a loop %s." %\
                                       (ambig_code_name, ambig_code, [1, allowed_ambig_code, 4, 5, 6, 9], lp_category)
 
                                 self.report.error.appendDescription('invalid_ambiguity_code', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
@@ -7887,20 +7887,20 @@ class NmrDpUtility(object):
 
                             if ambig_code2 != ambig_code:
                                 loop.data[lp_data.index(j)][loop.tags.index(ambig_code_name)] = ambig_code
-                                """
-                                err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_id) + '] %s %s indicates %s. However, %s %s of %s %s is inconsistent.' %\
-                                      (ambig_code_name, ambig_code, ambig_code_desc, ambig_code_name, ambig_code2, atom_id_name, atom_id2)
 
-                                self.report.error.appendDescription('invalid_ambiguity_code', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
-                                self.report.setError()
+                                warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_id) + "] %s '%s' indicates %s. However, %s %s of %s %s is inconsistent." %\
+                                       (ambig_code_name, ambig_code, ambig_code_desc, ambig_code_name, ambig_code2, atom_id_name, atom_id2)
+
+                                self.report.warning.appendDescription('ambiguity_code_mismatch', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': rr})
+                                self.report.setWarning()
 
                                 if self.__verbose:
-                                    self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ ValueError - %s\n" % err)
-                                """
+                                    self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ Warning - %s\n" % warn)
+
                         except StopIteration:
                             pass
                             """
-                            warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_id) + '] %s %s indicates %s. However, row of %s %s of the same residue was not found.' %\
+                            warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_id) + "] %s '%s' indicates %s. However, row of %s %s of the same residue was not found." %\
                                    (ambig_code_name, ambig_code, ambig_code_desc, atom_id_name, atom_id2)
 
                             self.report.warning.appendDescription('bad_ambiguity_code', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
@@ -7967,7 +7967,7 @@ class NmrDpUtility(object):
                                         if (chain_id2 != chain_id or seq_id2 != seq_id or comp_id2 != comp_id) and atom_id < atom_id2:
 
                                             err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_id) +\
-                                                  ', %s %s, %s %s] It indicates intra-residue ambiguities. However, row of ' % (ambig_code_name, ambig_code, ambig_set_id_name, ambig_set_id) +\
+                                                  ", %s '%s', %s %s] It indicates intra-residue ambiguities. However, row of " % (ambig_code_name, ambig_code, ambig_set_id_name, ambig_set_id) +\
                                                   row_tmp % (chain_id2, seq_id2, comp_id2, atom_id2) + ' exists.'
 
                                             self.report.error.appendDescription('invalid_ambiguity_code', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
@@ -7988,7 +7988,7 @@ class NmrDpUtility(object):
                                         if ((chain_id2 != chain_id and chain_id < chain_id2) or (seq_id2 == seq_id and atom_id < atom_id2)):
 
                                             err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_id) +\
-                                                  ', %s %s, %s %s] It indicates inter-residue ambiguities. However, row of ' % (ambig_code_name, ambig_code, ambig_set_id_name, ambig_set_id) +\
+                                                  ", %s '%s', %s %s] It indicates inter-residue ambiguities. However, row of " % (ambig_code_name, ambig_code, ambig_set_id_name, ambig_set_id) +\
                                                   row_tmp % (chain_id2, seq_id2, comp_id2, atom_id2) + ' exists.'
 
                                             self.report.error.appendDescription('invalid_ambiguity_code', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
@@ -8010,7 +8010,7 @@ class NmrDpUtility(object):
                                         if chain_id2 == chain_id and (seq_id < seq_id2 or (seq_id == seq_id2 and atom_id < atom_id2)):
 
                                             err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_id) +\
-                                                  ', %s %s, %s %s] It indicates inter-molecular ambiguities. However, row of ' % (ambig_code_name, ambig_code, ambig_set_id_name, ambig_set_id) +\
+                                                  ", %s '%s', %s %s] It indicates inter-molecular ambiguities. However, row of " % (ambig_code_name, ambig_code, ambig_set_id_name, ambig_set_id) +\
                                                   row_tmp % (chain_id2, seq_id2, comp_id2, atom_id2) + ' exists.'
 
                                             self.report.error.appendDescription('invalid_ambiguity_code', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
@@ -8029,7 +8029,7 @@ class NmrDpUtility(object):
                                     if atom_id[0] != atom_id2[0] and atom_id < atom_id2:
 
                                         err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_id) +\
-                                              ', %s %s, %s %s] However, observation nucleus of ' % (ambig_code_name, ambig_code, ambig_set_id_name, ambig_set_id) +\
+                                              ", %s '%s', %s %s] However, observation nucleus of " % (ambig_code_name, ambig_code, ambig_set_id_name, ambig_set_id) +\
                                               row_tmp % (chain_id2, seq_id2, comp_id2, atom_id2) + ' sharing the same %s differs.' % ambig_set_id_name
 
                                         self.report.error.appendDescription('invalid_ambiguity_code', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
@@ -8041,7 +8041,7 @@ class NmrDpUtility(object):
                                     elif abs(value2 - value) > max_cs_err and value < value2:
 
                                         err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_id) +\
-                                              ', %s %s, %s %s, %s %s] However, %s %s of ' % (value_name, value, ambig_code_name, ambig_code, ambig_set_id_name, ambig_set_id, value_name, value2) +\
+                                              ", %s %s, %s '%s', %s %s] However, %s %s of " % (value_name, value, ambig_code_name, ambig_code, ambig_set_id_name, ambig_set_id, value_name, value2) +\
                                               row_tmp % (chain_id2, seq_id2, comp_id2, atom_id2) +\
                                               'differs by %s (tolerance %s).' % (value2 - value, max_cs_err)
 
@@ -8053,7 +8053,7 @@ class NmrDpUtility(object):
 
                     else:
 
-                        err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_id) + '] Invalid ambiguity code %s (allowed ambig_code %s) in a loop.' %\
+                        err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_id) + "] Invalid ambiguity code '%s' (allowed ambig_code %s) in a loop." %\
                               (ambig_code, self.bmrb_ambiguity_codes, lp_category)
 
                         self.report.error.appendDescription('invalid_ambiguity_code', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})

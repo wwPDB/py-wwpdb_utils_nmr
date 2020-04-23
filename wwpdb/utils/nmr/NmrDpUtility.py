@@ -7172,15 +7172,15 @@ class NmrDpUtility(object):
 
                             has_cs_stat = True
 
-                            if atom_id.startswith('H') and 'methyl' in cs_stat['desc']:
-                                methyl_cs_key = "%s %04d %s" % (chain_id, seq_id, atom_id[:-1])
+                            if atom_id_.startswith('H') and 'methyl' in cs_stat['desc']:
+                                methyl_cs_key = "%s %04d %s" % (chain_id, seq_id, atom_id_[:-1])
 
                                 if not methyl_cs_key in methyl_cs_vals:
                                     methyl_cs_vals[methyl_cs_key] = value
 
                                 elif value != methyl_cs_vals[methyl_cs_key]:
 
-                                    err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] Chemical shift values in the same methyl group %s %s vs %s are inconsistent.' %\
+                                    err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] Chemical shift values in the same methyl group (%s %s vs %s) are inconsistent.' %\
                                           (value_name, value, methyl_cs_vals[methyl_cs_key])
 
                                     self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
@@ -7612,15 +7612,15 @@ class NmrDpUtility(object):
 
                             has_cs_stat = True
 
-                            if atom_id.startswith('H') and 'methyl' in cs_stat['desc']:
-                                methyl_cs_key = "%s %04d %s" % (chain_id, seq_id, atom_id[:-1])
+                            if atom_id_.startswith('H') and 'methyl' in cs_stat['desc']:
+                                methyl_cs_key = "%s %04d %s" % (chain_id, seq_id, atom_id_[:-1])
 
                                 if not methyl_cs_key in methyl_cs_vals:
                                     methyl_cs_vals[methyl_cs_key] = value
 
                                 elif value != methyl_cs_vals[methyl_cs_key]:
 
-                                    err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] Chemical shift values in the same methyl group %s %s vs %s are inconsistent.' %\
+                                    err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] Chemical shift values in the same methyl group (%s %s vs %s) are inconsistent.' %\
                                           (value_name, value, methyl_cs_vals[methyl_cs_key])
 
                                     self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
@@ -7886,11 +7886,21 @@ class NmrDpUtility(object):
                     if ambig_code in self.empty_value or ambig_code == 1:
                         continue
 
-                    allowed_ambig_code = self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id)
+                    _atom_id = atom_id
+
+                    if (atom_id == 'HN' and self.__csStat.getTypeOfCompId(comp_id)[0]) or\
+                        atom_id.startswith('Q') or\
+                        atom_id.startswith('M') or\
+                        self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id) == 0:
+                        _atom_id = self.__getRepresentativeAtomId(file_type, comp_id, atom_id)
+
+                    allowed_ambig_code = self.__csStat.getMaxAmbigCodeWoSetId(comp_id, _atom_id)
 
                     if ambig_code == 2 or ambig_code == 3:
 
                         ambig_code_desc = 'ambiguity of geminal atoms or geminal methyl proton groups' if ambig_code == 2 else 'aromatic atoms on opposite sides of symmetrical rings'
+
+                        _atom_id2 = self.__csStat.getGeminalAtom(comp_id, _atom_id)
 
                         if ambig_code != allowed_ambig_code:
 
@@ -7898,7 +7908,7 @@ class NmrDpUtility(object):
 
                                 try:
 
-                                    j = next(j for j in lp_data if j[chain_id_name] == chain_id and j[seq_id_name] == seq_id and j[comp_id_name] == comp_id and j[atom_id_name] == atom_id2)
+                                    j = next(j for j in lp_data if j[chain_id_name] == chain_id and j[seq_id_name] == seq_id and j[comp_id_name] == comp_id and j[atom_id_name] == _atom_id2)
 
                                     loop.data[lp_data.index(j)][loop.tags.index(ambig_code_name)] = 1
 
@@ -7916,11 +7926,9 @@ class NmrDpUtility(object):
                                 if self.__verbose:
                                     self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ ValueError - %s\n" % err)
 
-                        atom_id2 = self.__csStat.getGeminalAtom(comp_id, atom_id)
-
                         try:
 
-                            j = next(j for j in lp_data if j[chain_id_name] == chain_id and j[seq_id_name] == seq_id and j[comp_id_name] == comp_id and j[atom_id_name] == atom_id2)
+                            j = next(j for j in lp_data if j[chain_id_name] == chain_id and j[seq_id_name] == seq_id and j[comp_id_name] == comp_id and j[atom_id_name] == _atom_id2)
 
                             ambig_code2 = j[ambig_code_name]
 
@@ -8003,7 +8011,15 @@ class NmrDpUtility(object):
                                         comp_id2 = j[comp_id_name]
                                         atom_id2 = j[atom_id_name]
 
-                                        if (chain_id2 != chain_id or seq_id2 != seq_id or comp_id2 != comp_id) and atom_id < atom_id2:
+                                        _atom_id2 = atom_id2
+
+                                        if (atom_id2 == 'HN' and self.__csStat.getTypeOfCompId(comp_id2)[0]) or\
+                                            atom_id2.startswith('Q') or\
+                                            atom_id2.startswith('M') or\
+                                            self.__csStat.getMaxAmbigCodeWoSetId(comp_id2, atom_id2) == 0:
+                                            _atom_id2 = self.__getRepresentativeAtomId(file_type, comp_id2, atom_id2)
+
+                                        if (chain_id2 != chain_id or seq_id2 != seq_id or comp_id2 != comp_id) and _atom_id < _atom_id2:
 
                                             err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_id) +\
                                                   ", %s '%s', %s %s] It indicates intra-residue ambiguities. However, row of " % (ambig_code_name, ambig_code, ambig_set_id_name, ambig_set_id) +\
@@ -8024,7 +8040,15 @@ class NmrDpUtility(object):
                                         comp_id2 = j[comp_id_name]
                                         atom_id2 = j[atom_id_name]
 
-                                        if ((chain_id2 != chain_id and chain_id < chain_id2) or (seq_id2 == seq_id and atom_id < atom_id2)):
+                                        _atom_id2 = atom_id2
+
+                                        if (atom_id2 == 'HN' and self.__csStat.getTypeOfCompId(comp_id2)[0]) or\
+                                            atom_id2.startswith('Q') or\
+                                            atom_id2.startswith('M') or\
+                                            self.__csStat.getMaxAmbigCodeWoSetId(comp_id2, atom_id2) == 0:
+                                            _atom_id2 = self.__getRepresentativeAtomId(file_type, comp_id2, atom_id2)
+
+                                        if ((chain_id2 != chain_id and chain_id < chain_id2) or (seq_id2 == seq_id and _atom_id < _atom_id2)):
 
                                             err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_id) +\
                                                   ", %s '%s', %s %s] It indicates inter-residue ambiguities. However, row of " % (ambig_code_name, ambig_code, ambig_set_id_name, ambig_set_id) +\
@@ -8046,7 +8070,15 @@ class NmrDpUtility(object):
                                         atom_id2 = j[atom_id_name]
                                         value2 = j[value_name]
 
-                                        if chain_id2 == chain_id and (seq_id < seq_id2 or (seq_id == seq_id2 and atom_id < atom_id2)):
+                                        _atom_id2 = atom_id2
+
+                                        if (atom_id2 == 'HN' and self.__csStat.getTypeOfCompId(comp_id2)[0]) or\
+                                            atom_id2.startswith('Q') or\
+                                            atom_id2.startswith('M') or\
+                                            self.__csStat.getMaxAmbigCodeWoSetId(comp_id2, atom_id2) == 0:
+                                            _atom_id2 = self.__getRepresentativeAtomId(file_type, comp_id2, atom_id2)
+
+                                        if chain_id2 == chain_id and (seq_id < seq_id2 or (seq_id == seq_id2 and _atom_id < _atom_id2)):
 
                                             err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_id) +\
                                                   ", %s '%s', %s %s] It indicates inter-molecular ambiguities. However, row of " % (ambig_code_name, ambig_code, ambig_set_id_name, ambig_set_id) +\
@@ -8065,7 +8097,15 @@ class NmrDpUtility(object):
                                     atom_id2 = j[atom_id_name]
                                     value2 = j[value_name]
 
-                                    if atom_id[0] != atom_id2[0] and atom_id < atom_id2:
+                                    _atom_id2 = atom_id2
+
+                                    if (atom_id2 == 'HN' and self.__csStat.getTypeOfCompId(comp_id2)[0]) or\
+                                        atom_id2.startswith('Q') or\
+                                        atom_id2.startswith('M') or\
+                                        self.__csStat.getMaxAmbigCodeWoSetId(comp_id2, atom_id2) == 0:
+                                        _atom_id2 = self.__getRepresentativeAtomId(file_type, comp_id2, atom_id2)
+
+                                    if _atom_id[0] != _atom_id2[0] and _atom_id < _atom_id2:
 
                                         err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_id) +\
                                               ", %s '%s', %s %s] However, observation nucleus of " % (ambig_code_name, ambig_code, ambig_set_id_name, ambig_set_id) +\

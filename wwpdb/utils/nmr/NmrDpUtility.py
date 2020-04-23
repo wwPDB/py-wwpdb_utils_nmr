@@ -48,6 +48,7 @@
 # 22-Apr-2020  M. Yokochi - fix None type object is not iterable error (DAOTHER-5602)
 # 23-Apr-2020  M. Yokochi - support conventional atom name for methyl group without wildcard character, e.g. ALA:HB (DAOTHER-5603)
 # 23-Apr-2020  M. Yokochi - change missing ambiguity_set_id error to warning (DAOTHER-5609)
+# 23-Apr-2020  M. Yokochi - make sure to parse chem_shift_ref saveframe tag (DAOTHER-5610)
 ##
 """ Wrapper class for data processing for NMR data.
     @author: Masashi Yokochi

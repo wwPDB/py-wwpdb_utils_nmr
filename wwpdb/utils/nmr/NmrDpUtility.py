@@ -6783,9 +6783,6 @@ class NmrDpUtility(object):
         """ Perform consistency test on saveframe tags.
         """
 
-        if not self.__combined_mode:
-            return True
-
         __errors = self.report.getTotalErrors()
 
         for fileListId in range(self.__file_path_list_len):

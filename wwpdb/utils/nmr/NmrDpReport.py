@@ -715,19 +715,23 @@ class NmrDpReport:
 
         for stat in self.getNmrStatsOfExptlData(content_subtype):
             loop = []
-            for l in stat['loop']:
-                _l = {}
-                for k, v in l.items():
-                    if v is None or k == 'Entry_ID':
-                        continue
-                    _l[k.lower()] = v
-                loop.append(_l)
+
+            if not stat['loop'] is None:
+                for l in stat['loop']:
+                    _l = {}
+                    for k, v in l.items():
+                        if v is None or k == 'Entry_ID':
+                            continue
+                        _l[k.lower()] = v
+                    loop.append(_l)
 
             saveframe_tag = {}
-            for k, v in stat['saveframe_tag'].items():
-                if v is None or k == 'Entry_ID' or k.startswith('Sf_'):
-                    continue
-                saveframe_tag[k.lower()] = v
+
+            if not stat['saveframe_tag'] is None:
+                for k, v in stat['saveframe_tag'].items():
+                    if v is None or k == 'Entry_ID' or k.startswith('Sf_'):
+                        continue
+                    saveframe_tag[k.lower()] = v
 
             chem_shift_refs.append({'list_id': stat['list_id'], 'sf_framecode': stat['sf_framecode'], 'loop': loop, 'saveframe_tag': saveframe_tag})
 
@@ -760,19 +764,23 @@ class NmrDpReport:
 
             for stat in stats:
                 loop = []
-                for l in stat['loop']:
-                    _l = {}
-                    for k, v in l.items():
-                        if v is None or k == 'Entry_ID':
-                            continue
-                        _l[k.lower()] = v
-                    loop.append(_l)
+
+                if not stat['loop'] is None:
+                    for l in stat['loop']:
+                        _l = {}
+                        for k, v in l.items():
+                            if v is None or k == 'Entry_ID':
+                                continue
+                            _l[k.lower()] = v
+                        loop.append(_l)
 
                 saveframe_tag = {}
-                for k, v in stat['saveframe_tag'].items():
-                    if v is None or k == 'Entry_ID' or k.startswith('Sf_'):
-                        continue
-                    saveframe_tag[k.lower()] = v
+
+                if not stat['saveframe_tag'] is None:
+                    for k, v in stat['saveframe_tag'].items():
+                        if v is None or k == 'Entry_ID' or k.startswith('Sf_'):
+                            continue
+                        saveframe_tag[k.lower()] = v
 
                 chem_shift_refs.append({'list_id': stat['list_id'], 'sf_framecode': stat['sf_framecode'], 'loop': loop, 'saveframe_tag': saveframe_tag})
 

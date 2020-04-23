@@ -46,6 +46,9 @@
 # 22-Apr-2020  M. Yokochi - fix GLY:HA1/HA2 to GLY:HA2/HA3 (DAOTHER-5600)
 # 22-Apr-2020  M. Yokochi - fix ambiguity code mismatch if possible (DAOTHER-5601)
 # 22-Apr-2020  M. Yokochi - fix None type object is not iterable error (DAOTHER-5602)
+# 23-Apr-2020  M. Yokochi - support conventional atom name for methyl group without wildcard character, e.g. ALA:HB (DAOTHER-5603)
+# 23-Apr-2020  M. Yokochi - change missing ambiguity_set_id error to warning (DAOTHER-5609)
+# 23-Apr-2020  M. Yokochi - make sure to parse chem_shift_ref saveframe tag (DAOTHER-5610)
 ##
 """ Wrapper class for data processing for NMR data.
     @author: Masashi Yokochi
@@ -543,11 +546,11 @@ class NmrDpUtility(object):
                                                     ],
                                   'spectral_peak': None
                                   },
-                          'nmr-star': {'poly_seq': [{'name': 'Entity_assembly_ID', 'type': 'positive-int', 'default': '1'},
+                          'nmr-star': {'poly_seq': [{'name': 'Entity_assembly_ID', 'type': 'positive-int', 'default': '1', 'default-from': 'self'},
                                                     {'name': 'Comp_index_ID', 'type': 'int'},
                                                     {'name': 'Comp_ID', 'type': 'str', 'uppercase': True}
                                                     ],
-                                       'chem_shift': [{'name': 'Entity_assembly_ID', 'type': 'positive-int', 'default': '1'},
+                                       'chem_shift': [{'name': 'Entity_assembly_ID', 'type': 'positive-int', 'default': '1', 'default-from': 'self'},
                                                       {'name': 'Comp_index_ID', 'type': 'int'},
                                                       {'name': 'Comp_ID', 'type': 'str', 'uppercase': True},
                                                       {'name': 'Atom_ID', 'type': 'str'}
@@ -558,39 +561,39 @@ class NmrDpUtility(object):
                                                            'enforce-enum': True},
                                                           {'name': 'Mol_common_name', 'type': 'str'}],
                                        'dist_restraint': [{'name': 'ID', 'type': 'positive-int'},
-                                                          {'name': 'Entity_assembly_ID_1', 'type': 'positive-int', 'default': '1'},
+                                                          {'name': 'Entity_assembly_ID_1', 'type': 'positive-int', 'default': '1', 'default-from': 'self'},
                                                           {'name': 'Comp_index_ID_1', 'type': 'int'},
                                                           {'name': 'Comp_ID_1', 'type': 'str', 'uppercase': True},
                                                           {'name': 'Atom_ID_1', 'type': 'str'},
-                                                          {'name': 'Entity_assembly_ID_2', 'type': 'positive-int', 'default': '1'},
+                                                          {'name': 'Entity_assembly_ID_2', 'type': 'positive-int', 'default': '1', 'default-from': 'self'},
                                                           {'name': 'Comp_index_ID_2', 'type': 'int'},
                                                           {'name': 'Comp_ID_2', 'type': 'str', 'uppercase': True},
                                                           {'name': 'Atom_ID_2', 'type': 'str'}
                                                           ],
                                        'dihed_restraint': [{'name': 'ID', 'type': 'positive-int'},
-                                                           {'name': 'Entity_assembly_ID_1', 'type': 'positive-int', 'default': '1'},
+                                                           {'name': 'Entity_assembly_ID_1', 'type': 'positive-int', 'default': '1', 'default-from': 'self'},
                                                            {'name': 'Comp_index_ID_1', 'type': 'int'},
                                                            {'name': 'Comp_ID_1', 'type': 'str', 'uppercase': True},
                                                            {'name': 'Atom_ID_1', 'type': 'str'},
-                                                           {'name': 'Entity_assembly_ID_2', 'type': 'positive-int', 'default': '1'},
+                                                           {'name': 'Entity_assembly_ID_2', 'type': 'positive-int', 'default': '1', 'default-from': 'self'},
                                                            {'name': 'Comp_index_ID_2', 'type': 'int'},
                                                            {'name': 'Comp_ID_2', 'type': 'str', 'uppercase': True},
                                                            {'name': 'Atom_ID_2', 'type': 'str'},
-                                                           {'name': 'Entity_assembly_ID_3', 'type': 'positive-int', 'default': '1'},
+                                                           {'name': 'Entity_assembly_ID_3', 'type': 'positive-int', 'default': '1', 'default-from': 'self'},
                                                            {'name': 'Comp_index_ID_3', 'type': 'int'},
                                                            {'name': 'Comp_ID_3', 'type': 'str', 'uppercase': True},
                                                            {'name': 'Atom_ID_3', 'type': 'str'},
-                                                           {'name': 'Entity_assembly_ID_4', 'type': 'positive-int', 'default': '1'},
+                                                           {'name': 'Entity_assembly_ID_4', 'type': 'positive-int', 'default': '1', 'default-from': 'self'},
                                                            {'name': 'Comp_index_ID_4', 'type': 'int'},
                                                            {'name': 'Comp_ID_4', 'type': 'str', 'uppercase': True},
                                                            {'name': 'Atom_ID_4', 'type': 'str'}
                                                            ],
                                        'rdc_restraint': [{'name': 'ID', 'type': 'positive-int'},
-                                                         {'name': 'Entity_assembly_ID_1', 'type': 'positive-int', 'default': '1'},
+                                                         {'name': 'Entity_assembly_ID_1', 'type': 'positive-int', 'default': '1', 'default-from': 'self'},
                                                          {'name': 'Comp_index_ID_1', 'type': 'int'},
                                                          {'name': 'Comp_ID_1', 'type': 'str', 'uppercase': True},
                                                          {'name': 'Atom_ID_1', 'type': 'str'},
-                                                         {'name': 'Entity_assembly_ID_2', 'type': 'positive-int', 'default': '1'},
+                                                         {'name': 'Entity_assembly_ID_2', 'type': 'positive-int', 'default': '1', 'default-from': 'self'},
                                                          {'name': 'Comp_index_ID_2', 'type': 'int'},
                                                          {'name': 'Comp_ID_2', 'type': 'str', 'uppercase': True},
                                                          {'name': 'Atom_ID_2', 'type': 'str'}
@@ -664,38 +667,38 @@ class NmrDpUtility(object):
                                                             ],
                                           'spectral_peak': None
                                           },
-                                  'nmr-star': {'dist_restraint': [{'name': 'Entity_assembly_ID_1', 'type': 'positive-int', 'default': '1'},
+                                  'nmr-star': {'dist_restraint': [{'name': 'Entity_assembly_ID_1', 'type': 'positive-int', 'default': '1', 'default-from': 'self'},
                                                                   {'name': 'Comp_index_ID_1', 'type': 'int'},
                                                                   {'name': 'Comp_ID_1', 'type': 'str', 'uppercase': True},
                                                                   {'name': 'Atom_ID_1', 'type': 'str'},
-                                                                  {'name': 'Entity_assembly_ID_2', 'type': 'positive-int', 'default': '1'},
+                                                                  {'name': 'Entity_assembly_ID_2', 'type': 'positive-int', 'default': '1', 'default-from': 'self'},
                                                                   {'name': 'Comp_index_ID_2', 'type': 'int'},
                                                                   {'name': 'Comp_ID_2', 'type': 'str', 'uppercase': True},
                                                                   {'name': 'Atom_ID_2', 'type': 'str'}
                                                                   ],
-                                               'dihed_restraint': [{'name': 'Entity_assembly_ID_1', 'type': 'positive-int', 'default': '1'},
+                                               'dihed_restraint': [{'name': 'Entity_assembly_ID_1', 'type': 'positive-int', 'default': '1', 'default-from': 'self'},
                                                                    {'name': 'Comp_index_ID_1', 'type': 'int'},
                                                                    {'name': 'Comp_ID_1', 'type': 'str', 'uppercase': True},
                                                                    {'name': 'Atom_ID_1', 'type': 'str'},
-                                                                   {'name': 'Entity_assembly_ID_2', 'type': 'positive-int', 'default': '1'},
+                                                                   {'name': 'Entity_assembly_ID_2', 'type': 'positive-int', 'default': '1', 'default-from': 'self'},
                                                                    {'name': 'Comp_index_ID_2', 'type': 'int'},
                                                                    {'name': 'Comp_ID_2', 'type': 'str', 'uppercase': True},
                                                                    {'name': 'Atom_ID_2', 'type': 'str'},
-                                                                   {'name': 'Entity_assembly_ID_3', 'type': 'positive-int', 'default': '1'},
+                                                                   {'name': 'Entity_assembly_ID_3', 'type': 'positive-int', 'default': '1', 'default-from': 'self'},
                                                                    {'name': 'Comp_index_ID_3', 'type': 'int'},
                                                                    {'name': 'Comp_ID_3', 'type': 'str', 'uppercase': True},
                                                                    {'name': 'Atom_ID_3', 'type': 'str'},
-                                                                   {'name': 'Entity_assembly_ID_4', 'type': 'positive-int', 'default': '1'},
+                                                                   {'name': 'Entity_assembly_ID_4', 'type': 'positive-int', 'default': '1', 'default-from': 'self'},
                                                                    {'name': 'Comp_index_ID_4', 'type': 'int'},
                                                                    {'name': 'Comp_ID_4', 'type': 'str', 'uppercase': True},
                                                                    {'name': 'Atom_ID_4', 'type': 'str'}
                                                                    ],
                                                'rdc_restraint': [
-                                                                 {'name': 'Entity_assembly_ID_1', 'type': 'positive-int', 'default': '1'},
+                                                                 {'name': 'Entity_assembly_ID_1', 'type': 'positive-int', 'default': '1', 'default-from': 'self'},
                                                                  {'name': 'Comp_index_ID_1', 'type': 'int'},
                                                                  {'name': 'Comp_ID_1', 'type': 'str', 'uppercase': True},
                                                                  {'name': 'Atom_ID_1', 'type': 'str'},
-                                                                 {'name': 'Entity_assembly_ID_2', 'type': 'positive-int', 'default': '1'},
+                                                                 {'name': 'Entity_assembly_ID_2', 'type': 'positive-int', 'default': '1', 'default-from': 'self'},
                                                                  {'name': 'Comp_index_ID_2', 'type': 'int'},
                                                                  {'name': 'Comp_ID_2', 'type': 'str', 'uppercase': True},
                                                                  {'name': 'Atom_ID_2', 'type': 'str'}
@@ -1374,6 +1377,7 @@ class NmrDpUtility(object):
                               'nmr-star': [{'name': 'Position_uncertainty_%s', 'type': 'range-float', 'mandatory': False,
                                             'range': self.chem_shift_error},
                                            {'name': 'Entity_assembly_ID_%s', 'type': 'positive-int', 'mandatory': False,
+                                            'default': '1', 'default-from': 'self',
                                             'enforce-non-zero': True,
                                             'relax-key-if-exist': True},
                                            {'name': 'Comp_index_ID_%s', 'type': 'int', 'mandatory': False,
@@ -4987,6 +4991,35 @@ class NmrDpUtility(object):
 
         return not self.report.isError()
 
+    def __getRepresentativeAtomId(self, file_type, comp_id, atom_id):
+        """ Return a representative atom ID in IUPAC atom nomenclature for a given atom_id.
+        """
+
+        _atom_id = self.__getAtomLIdList(file_type, comp_id, atom_id)
+
+        return atom_id if len(_atom_id) == 0 else _atom_id[0]
+
+    def __getAtomLIdList(self, file_type, comp_id, atom_id):
+        """ Return atom ID list in IUPAC atom nomenclature for a given atom_id.
+        """
+
+        return self.__getAtomIdListWithAmbigCode(file_type, comp_id, atom_id, leave_unmatched=False)[0]
+
+    def __getAtomIdListWithAmbigCode(self, file_type, comp_id, atom_id, leave_unmatched=True):
+        """ Return lists of atom ID, ambiguity_code, details in IUPAC atom nomenclature for a given atom_id.
+        """
+
+        if file_type == 'nef' or atom_id == 'HN' or atom_id.endswith('%') or atom_id.endswith('*'):
+            return self.__nefT.get_star_atom(comp_id, atom_id, leave_unmatched=leave_unmatched)
+        elif atom_id.startswith('QQ'):
+            return self.__nefT.get_star_atom(comp_id, 'H' + atom_id[2:] + '%', leave_unmatched=leave_unmatched)
+        elif atom_id.startswith('Q') or atom_id.startswith('M'):
+            return self.__nefT.get_star_atom(comp_id, 'H' + atom_id[1:] + '%', leave_unmatched=leave_unmatched)
+        elif atom_id + '2' in self.__csStat.getAllAtoms(comp_id):
+            return self.__nefT.get_star_atom(comp_id, atom_id + '%', leave_unmatched=leave_unmatched)
+        else:
+            return self.__nefT.get_star_atom(comp_id, atom_id, leave_unmatched=leave_unmatched)
+
     def __validateAtomNomenclature__(self, file_name, file_type, content_subtype, sf_data, sf_framecode, lp_category):
         """ Validate atom nomenclature using NEFTranslator and CCD.
         """
@@ -5033,14 +5066,11 @@ class NmrDpUtility(object):
 
                         atom_id_ = atom_id
 
-                        if not self.__combined_mode and ((atom_id == 'HN' and self.__csStat.getTypeOfCompId(comp_id)[0]) or atom_id.startswith('Q') or atom_id.startswith('M')):
-
-                            if atom_id == 'HN':
-                                atom_id_ = self.__nefT.get_star_atom(comp_id, atom_id, leave_unmatched=False)[0][0]
-                            elif atom_id.startswith('QQ'):
-                                atom_id_ = self.__nefT.get_star_atom(comp_id, 'H' + atom_id[2:] + '%', leave_unmatched=False)[0][0]
-                            else:
-                                atom_id_ = self.__nefT.get_star_atom(comp_id, 'H' + atom_id[1:] + '%', leave_unmatched=False)[0][0]
+                        if not self.__combined_mode and ((atom_id == 'HN' and self.__csStat.getTypeOfCompId(comp_id)[0]) or
+                                                         atom_id.startswith('Q') or
+                                                         atom_id.startswith('M') or
+                                                         self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id) == 0):
+                            atom_id_ = self.__getRepresentativeAtomId(file_type, comp_id, atom_id)
 
                         if not self.__nefT.validate_comp_atom(comp_id, atom_id_):
 
@@ -5242,7 +5272,6 @@ class NmrDpUtility(object):
 
                     if self.__verbose:
                         self.__lfh.write("+NmrDpUtility.__validateAtomNomenclature() ++ Error  - %s" % str(e))
-
 
         except LookupError as e:
 
@@ -5641,14 +5670,14 @@ class NmrDpUtility(object):
                 sf_data = self.__star_data[fileListId]
                 sf_framecode = ''
 
-                self.__validateAmbigCodeOfCSLoop__(file_name, sf_data, sf_framecode, lp_category)
+                self.__validateAmbigCodeOfCSLoop__(file_name, file_type, sf_data, sf_framecode, lp_category)
 
             elif self.__star_data_type[fileListId] == 'Saveframe':
 
                 sf_data = self.__star_data[fileListId]
                 sf_framecode = self.__getFirstTagValue(sf_data, 'sf_framecode')
 
-                self.__validateAmbigCodeOfCSLoop__(file_name, sf_data, sf_framecode, lp_category)
+                self.__validateAmbigCodeOfCSLoop__(file_name, file_type, sf_data, sf_framecode, lp_category)
 
             else:
 
@@ -5656,11 +5685,11 @@ class NmrDpUtility(object):
 
                     sf_framecode = self.__getFirstTagValue(sf_data, 'sf_framecode')
 
-                    self.__validateAmbigCodeOfCSLoop__(file_name, sf_data, sf_framecode, lp_category)
+                    self.__validateAmbigCodeOfCSLoop__(file_name, file_type, sf_data, sf_framecode, lp_category)
 
         return not self.report.isError()
 
-    def __validateAmbigCodeOfCSLoop__(self, file_name, sf_data, sf_framecode, lp_category):
+    def __validateAmbigCodeOfCSLoop__(self, file_name, file_type, sf_data, sf_framecode, lp_category):
         """ Validate ambiguity code on assigned chemical shifts.
         """
 
@@ -5686,11 +5715,19 @@ class NmrDpUtility(object):
 
                     for atom_id in atom_ids:
 
-                        allowed_ambig_code = self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id)
+                        _atom_id = atom_id
+
+                        if (atom_id == 'HN' and self.__csStat.getTypeOfCompId(comp_id)[0]) or\
+                            atom_id.startswith('Q') or\
+                            atom_id.startswith('M') or\
+                            self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id) == 0:
+                            _atom_id = self.__getRepresentativeAtomId(file_type, comp_id, atom_id)
+
+                        allowed_ambig_code = self.__csStat.getMaxAmbigCodeWoSetId(comp_id, _atom_id)
 
                         if ambig_code > allowed_ambig_code:
 
-                            if allowed_ambig_code == 1:
+                            if allowed_ambig_code < 1:
 
                                 warn = "Ambiguity code '%s' (comp_id %s, atom_id %s) should be '1' according to the BMRB definition." % (ambig_code, comp_id, atom_id)
 
@@ -6747,9 +6784,6 @@ class NmrDpUtility(object):
         """ Perform consistency test on saveframe tags.
         """
 
-        if not self.__combined_mode:
-            return True
-
         __errors = self.report.getTotalErrors()
 
         for fileListId in range(self.__file_path_list_len):
@@ -6761,6 +6795,9 @@ class NmrDpUtility(object):
             file_type = input_source_dic['file_type']
 
             if input_source_dic['content_subtype'] is None:
+                continue
+
+            if self.__star_data_type[fileListId] != 'Entry':
                 continue
 
             for content_subtype in input_source_dic['content_subtype'].keys():
@@ -6775,7 +6812,7 @@ class NmrDpUtility(object):
 
                     sf_framecode = self.__getFirstTagValue(sf_data, 'sf_framecode')
 
-                    if sf_data.tag_prefix != self.sf_tag_prefixes[file_type][content_subtype]:
+                    if self.__combined_mode and sf_data.tag_prefix != self.sf_tag_prefixes[file_type][content_subtype]:
 
                         err = "Saveframe tag prefix %s did not match with %s in saveframe %s." % (sf_data.tag_prefix, self.sf_tag_prefixes[file_type][content_subtype], sf_framecode)
 
@@ -6789,7 +6826,14 @@ class NmrDpUtility(object):
 
                     try:
 
-                        sf_tag_data = self.__nefT.check_sf_tag(sf_data, file_type, sf_category, self.sf_tag_items[file_type][content_subtype], self.sf_allowed_tags[file_type][content_subtype],
+                        sf_tag_items = copy.copy(self.sf_tag_items[file_type][content_subtype])
+
+                        if not self.__combined_mode:
+                            for sf_tag_item in sf_tag_items:
+                                if sf_tag_item['name'] == 'sf_framecode' if file_type == 'nef' else 'Sf_framecode':
+                                    sf_tag_item['mandatory'] = False
+
+                        sf_tag_data = self.__nefT.check_sf_tag(sf_data, file_type, sf_category, sf_tag_items, self.sf_allowed_tags[file_type][content_subtype],
                                                                enforce_non_zero=True, enforce_sign=True, enforce_enum=True)
 
                         self.__testParentChildRelation(file_name, file_type, content_subtype, parent_keys, list_id, sf_framecode, sf_tag_data)
@@ -6874,7 +6918,7 @@ class NmrDpUtility(object):
 
                         try:
 
-                            sf_tag_data = self.__nefT.check_sf_tag(sf_data, file_type, sf_category, self.sf_tag_items[file_type][content_subtype], self.sf_allowed_tags[file_type][content_subtype],
+                            sf_tag_data = self.__nefT.check_sf_tag(sf_data, file_type, sf_category, sf_tag_items, self.sf_allowed_tags[file_type][content_subtype],
                                                                    enfoce_non_zero=False, enforce_sign=False, enforce_enum=False)
 
                             self.__testParentChildRelation(file_name, file_type, content_subtype, parent_keys, list_id, sf_framecode, sf_tag_data)
@@ -7083,14 +7127,11 @@ class NmrDpUtility(object):
                 atom_id = i[atom_id_name]
                 value = i[value_name]
 
-                if file_type == 'nef' or (not self.__combined_mode and ((atom_id == 'HN' and self.__csStat.getTypeOfCompId(comp_id)[0]) or atom_id.startswith('Q') or atom_id.startswith('M'))):
-
-                    if file_type == 'nef' or atom_id == 'HN':
-                        _atom_id, ambig_code, details = self.__nefT.get_star_atom(comp_id, atom_id, leave_unmatched=True)
-                    elif atom_id.startswith('QQ'):
-                        _atom_id, ambig_code, details = self.__nefT.get_star_atom(comp_id, 'H' + atom_id[2:] + '%', leave_unmatched=False)
-                    else:
-                        _atom_id, ambig_code, details = self.__nefT.get_star_atom(comp_id, 'H' + atom_id[1:] + '%', leave_unmatched=False)
+                if file_type == 'nef' or (not self.__combined_mode and ((atom_id == 'HN' and self.__csStat.getTypeOfCompId(comp_id)[0]) or
+                                                                        atom_id.startswith('Q') or
+                                                                        atom_id.startswith('M') or
+                                                                        self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id) == 0)):
+                    (_atom_id, ambig_code, details) = self.__getAtomIdListWithAmbigCode(file_type, comp_id, atom_id)
 
                     if len(_atom_id) == 0:
                         continue
@@ -7141,15 +7182,15 @@ class NmrDpUtility(object):
 
                             has_cs_stat = True
 
-                            if atom_id.startswith('H') and 'methyl' in cs_stat['desc']:
-                                methyl_cs_key = "%s %04d %s" % (chain_id, seq_id, atom_id[:-1])
+                            if atom_id_.startswith('H') and 'methyl' in cs_stat['desc']:
+                                methyl_cs_key = "%s %04d %s" % (chain_id, seq_id, atom_id_[:-1])
 
                                 if not methyl_cs_key in methyl_cs_vals:
                                     methyl_cs_vals[methyl_cs_key] = value
 
                                 elif value != methyl_cs_vals[methyl_cs_key]:
 
-                                    err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] Chemical shift values in the same methyl group %s %s vs %s are inconsistent.' %\
+                                    err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] Chemical shift values in the same methyl group (%s %s vs %s) are inconsistent.' %\
                                           (value_name, value, methyl_cs_vals[methyl_cs_key])
 
                                     self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
@@ -7581,15 +7622,15 @@ class NmrDpUtility(object):
 
                             has_cs_stat = True
 
-                            if atom_id.startswith('H') and 'methyl' in cs_stat['desc']:
-                                methyl_cs_key = "%s %04d %s" % (chain_id, seq_id, atom_id[:-1])
+                            if atom_id_.startswith('H') and 'methyl' in cs_stat['desc']:
+                                methyl_cs_key = "%s %04d %s" % (chain_id, seq_id, atom_id_[:-1])
 
                                 if not methyl_cs_key in methyl_cs_vals:
                                     methyl_cs_vals[methyl_cs_key] = value
 
                                 elif value != methyl_cs_vals[methyl_cs_key]:
 
-                                    err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] Chemical shift values in the same methyl group %s %s vs %s are inconsistent.' %\
+                                    err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] Chemical shift values in the same methyl group (%s %s vs %s) are inconsistent.' %\
                                           (value_name, value, methyl_cs_vals[methyl_cs_key])
 
                                     self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
@@ -7855,11 +7896,21 @@ class NmrDpUtility(object):
                     if ambig_code in self.empty_value or ambig_code == 1:
                         continue
 
-                    allowed_ambig_code = self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id)
+                    _atom_id = atom_id
+
+                    if (atom_id == 'HN' and self.__csStat.getTypeOfCompId(comp_id)[0]) or\
+                        atom_id.startswith('Q') or\
+                        atom_id.startswith('M') or\
+                        self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id) == 0:
+                        _atom_id = self.__getRepresentativeAtomId(file_type, comp_id, atom_id)
+
+                    allowed_ambig_code = self.__csStat.getMaxAmbigCodeWoSetId(comp_id, _atom_id)
 
                     if ambig_code == 2 or ambig_code == 3:
 
                         ambig_code_desc = 'ambiguity of geminal atoms or geminal methyl proton groups' if ambig_code == 2 else 'aromatic atoms on opposite sides of symmetrical rings'
+
+                        _atom_id2 = self.__csStat.getGeminalAtom(comp_id, _atom_id)
 
                         if ambig_code != allowed_ambig_code:
 
@@ -7867,7 +7918,7 @@ class NmrDpUtility(object):
 
                                 try:
 
-                                    j = next(j for j in lp_data if j[chain_id_name] == chain_id and j[seq_id_name] == seq_id and j[comp_id_name] == comp_id and j[atom_id_name] == atom_id2)
+                                    j = next(j for j in lp_data if j[chain_id_name] == chain_id and j[seq_id_name] == seq_id and j[comp_id_name] == comp_id and j[atom_id_name] == _atom_id2)
 
                                     loop.data[lp_data.index(j)][loop.tags.index(ambig_code_name)] = 1
 
@@ -7885,11 +7936,9 @@ class NmrDpUtility(object):
                                 if self.__verbose:
                                     self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ ValueError - %s\n" % err)
 
-                        atom_id2 = self.__csStat.getGeminalAtom(comp_id, atom_id)
-
                         try:
 
-                            j = next(j for j in lp_data if j[chain_id_name] == chain_id and j[seq_id_name] == seq_id and j[comp_id_name] == comp_id and j[atom_id_name] == atom_id2)
+                            j = next(j for j in lp_data if j[chain_id_name] == chain_id and j[seq_id_name] == seq_id and j[comp_id_name] == comp_id and j[atom_id_name] == _atom_id2)
 
                             ambig_code2 = j[ambig_code_name]
 
@@ -7903,7 +7952,7 @@ class NmrDpUtility(object):
                                 self.report.setWarning()
 
                                 if self.__verbose:
-                                    self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ Warning - %s\n" % warn)
+                                    self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ Warning  - %s\n" % warn)
 
                         except StopIteration:
                             pass
@@ -7915,7 +7964,7 @@ class NmrDpUtility(object):
                             self.report.setWarning()
 
                             if self.__verbose:
-                                self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ Warning - %s\n" % warn)
+                                self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ Warning  - %s\n" % warn)
                             """
 
                     elif ambig_code in [4, 5, 6, 9]:
@@ -7939,14 +7988,14 @@ class NmrDpUtility(object):
 
                             if ambig_set_id in self.empty_value:
 
-                                err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_id) + '] %s %s requires %s value.' %\
-                                      (ambig_code_name, ambig_code, ambig_set_id_name)
+                                warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_id) + '] %s %s requires %s value.' %\
+                                       (ambig_code_name, ambig_code, ambig_set_id_name)
 
-                                self.report.error.appendDescription('missing_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
-                                self.report.setError()
+                                self.report.warning.appendDescription('missing_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
+                                self.report.setWarning()
 
                                 if self.__verbose:
-                                    self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ ValueError  - %s\n" % err)
+                                    self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ Warning  - %s\n" % warn)
 
                             else:
 
@@ -7972,7 +8021,15 @@ class NmrDpUtility(object):
                                         comp_id2 = j[comp_id_name]
                                         atom_id2 = j[atom_id_name]
 
-                                        if (chain_id2 != chain_id or seq_id2 != seq_id or comp_id2 != comp_id) and atom_id < atom_id2:
+                                        _atom_id2 = atom_id2
+
+                                        if (atom_id2 == 'HN' and self.__csStat.getTypeOfCompId(comp_id2)[0]) or\
+                                            atom_id2.startswith('Q') or\
+                                            atom_id2.startswith('M') or\
+                                            self.__csStat.getMaxAmbigCodeWoSetId(comp_id2, atom_id2) == 0:
+                                            _atom_id2 = self.__getRepresentativeAtomId(file_type, comp_id2, atom_id2)
+
+                                        if (chain_id2 != chain_id or seq_id2 != seq_id or comp_id2 != comp_id) and _atom_id < _atom_id2:
 
                                             err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_id) +\
                                                   ", %s '%s', %s %s] It indicates intra-residue ambiguities. However, row of " % (ambig_code_name, ambig_code, ambig_set_id_name, ambig_set_id) +\
@@ -7993,7 +8050,15 @@ class NmrDpUtility(object):
                                         comp_id2 = j[comp_id_name]
                                         atom_id2 = j[atom_id_name]
 
-                                        if ((chain_id2 != chain_id and chain_id < chain_id2) or (seq_id2 == seq_id and atom_id < atom_id2)):
+                                        _atom_id2 = atom_id2
+
+                                        if (atom_id2 == 'HN' and self.__csStat.getTypeOfCompId(comp_id2)[0]) or\
+                                            atom_id2.startswith('Q') or\
+                                            atom_id2.startswith('M') or\
+                                            self.__csStat.getMaxAmbigCodeWoSetId(comp_id2, atom_id2) == 0:
+                                            _atom_id2 = self.__getRepresentativeAtomId(file_type, comp_id2, atom_id2)
+
+                                        if ((chain_id2 != chain_id and chain_id < chain_id2) or (seq_id2 == seq_id and _atom_id < _atom_id2)):
 
                                             err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_id) +\
                                                   ", %s '%s', %s %s] It indicates inter-residue ambiguities. However, row of " % (ambig_code_name, ambig_code, ambig_set_id_name, ambig_set_id) +\
@@ -8015,7 +8080,15 @@ class NmrDpUtility(object):
                                         atom_id2 = j[atom_id_name]
                                         value2 = j[value_name]
 
-                                        if chain_id2 == chain_id and (seq_id < seq_id2 or (seq_id == seq_id2 and atom_id < atom_id2)):
+                                        _atom_id2 = atom_id2
+
+                                        if (atom_id2 == 'HN' and self.__csStat.getTypeOfCompId(comp_id2)[0]) or\
+                                            atom_id2.startswith('Q') or\
+                                            atom_id2.startswith('M') or\
+                                            self.__csStat.getMaxAmbigCodeWoSetId(comp_id2, atom_id2) == 0:
+                                            _atom_id2 = self.__getRepresentativeAtomId(file_type, comp_id2, atom_id2)
+
+                                        if chain_id2 == chain_id and (seq_id < seq_id2 or (seq_id == seq_id2 and _atom_id < _atom_id2)):
 
                                             err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_id) +\
                                                   ", %s '%s', %s %s] It indicates inter-molecular ambiguities. However, row of " % (ambig_code_name, ambig_code, ambig_set_id_name, ambig_set_id) +\
@@ -8034,7 +8107,15 @@ class NmrDpUtility(object):
                                     atom_id2 = j[atom_id_name]
                                     value2 = j[value_name]
 
-                                    if atom_id[0] != atom_id2[0] and atom_id < atom_id2:
+                                    _atom_id2 = atom_id2
+
+                                    if (atom_id2 == 'HN' and self.__csStat.getTypeOfCompId(comp_id2)[0]) or\
+                                        atom_id2.startswith('Q') or\
+                                        atom_id2.startswith('M') or\
+                                        self.__csStat.getMaxAmbigCodeWoSetId(comp_id2, atom_id2) == 0:
+                                        _atom_id2 = self.__getRepresentativeAtomId(file_type, comp_id2, atom_id2)
+
+                                    if _atom_id[0] != _atom_id2[0] and _atom_id < _atom_id2:
 
                                         err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_id) +\
                                               ", %s '%s', %s %s] However, observation nucleus of " % (ambig_code_name, ambig_code, ambig_set_id_name, ambig_set_id) +\
@@ -9114,14 +9195,11 @@ class NmrDpUtility(object):
                                     atom_id = j[atom_id_name]
                                     data_type = str(j[iso_number]) + j[atom_type]
 
-                                    if file_type == 'nef' or (not self.__combined_mode and ((atom_id == 'HN' and self.__csStat.getTypeOfCompId(comp_id)[0]) or atom_id.startswith('Q') or atom_id.startswith('M'))):
-
-                                        if file_type == 'nef' or atom_id == 'HN':
-                                            atom_ids = self.__nefT.get_star_atom(comp_id, atom_id, leave_unmatched=False)[0]
-                                        elif atom_id.startswith('QQ'):
-                                            atom_ids = self.__nefT.get_star_atom(comp_id, 'H' + atom_id[2:] + '%', leave_unmatched=False)[0]
-                                        else:
-                                            atom_ids = self.__nefT.get_star_atom(comp_id, 'H' + atom_id[1:] + '%', leave_unmatched=False)[0]
+                                    if file_type == 'nef' or (not self.__combined_mode and ((atom_id == 'HN' and self.__csStat.getTypeOfCompId(comp_id)[0]) or
+                                                                                            atom_id.startswith('Q') or
+                                                                                            atom_id.startswith('M') or
+                                                                                            self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id) == 0)):
+                                        atom_ids = self.__getAtomLIdList(file_type, comp_id, atom_id)
 
                                         if len(atom_ids) == 0:
                                             continue
@@ -9253,14 +9331,11 @@ class NmrDpUtility(object):
                                     atom_id = j[atom_id_name]
                                     data_type = str(j[iso_number]) + j[atom_type]
 
-                                    if file_type == 'nef' or (not self.__combined_mode and ((atom_id == 'HN' and self.__csStat.getTypeOfCompId(comp_id)[0]) or atom_id.startswith('Q') or atom_id.startswith('M'))):
-
-                                        if file_type == 'nef' or atom_id == 'HN':
-                                            atom_ids = self.__nefT.get_star_atom(comp_id, atom_id, leave_unmatched=False)[0]
-                                        elif atom_id.startswith('QQ'):
-                                            atom_ids = self.__nefT.get_star_atom(comp_id, 'H' + atom_id[2:] + '%', leave_unmatched=False)[0]
-                                        else:
-                                            atom_ids = self.__nefT.get_star_atom(comp_id, 'H' + atom_id[1:] + '%', leave_unmatched=False)[0]
+                                    if file_type == 'nef' or (not self.__combined_mode and ((atom_id == 'HN' and self.__csStat.getTypeOfCompId(comp_id)[0]) or
+                                                                                            atom_id.startswith('Q') or
+                                                                                            atom_id.startswith('M') or
+                                                                                            self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id) == 0)):
+                                        atom_ids = self.__getAtomLIdList(file_type, comp_id, atom_id)
 
                                         if len(atom_ids) == 0:
                                             continue
@@ -9379,14 +9454,11 @@ class NmrDpUtility(object):
                                     atom_id = j[atom_id_name]
                                     data_type = str(j[iso_number]) + j[atom_type]
 
-                                    if file_type == 'nef' or (not self.__combined_mode and ((atom_id == 'HN' and self.__csStat.getTypeOfCompId(comp_id)[0]) or atom_id.startswith('Q') or atom_id.startswith('M'))):
-
-                                        if file_type == 'nef' or atom_id == 'HN':
-                                            atom_ids = self.__nefT.get_star_atom(comp_id, atom_id, leave_unmatched=False)[0]
-                                        elif atom_id.startswith('QQ'):
-                                            atom_ids = self.__nefT.get_star_atom(comp_id, 'H' + atom_id[2:] + '%', leave_unmatched=False)[0]
-                                        else:
-                                            atom_ids = self.__nefT.get_star_atom(comp_id, 'H' + atom_id[1:] + '%', leave_unmatched=False)[0]
+                                    if file_type == 'nef' or (not self.__combined_mode and ((atom_id == 'HN' and self.__csStat.getTypeOfCompId(comp_id)[0]) or
+                                                                                            atom_id.startswith('Q') or
+                                                                                            atom_id.startswith('M') or
+                                                                                            self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id) == 0)):
+                                        atom_ids = self.__getAtomLIdList(file_type, comp_id, atom_id)
 
                                         if len(atom_ids) == 0:
                                             continue
@@ -9494,14 +9566,11 @@ class NmrDpUtility(object):
                                     atom_id = j[atom_id_name]
                                     data_type = str(j[iso_number]) + j[atom_type]
 
-                                    if file_type == 'nef' or (not self.__combined_mode and ((atom_id == 'HN' and self.__csStat.getTypeOfCompId(comp_id)[0]) or atom_id.startswith('Q') or atom_id.startswith('M'))):
-
-                                        if file_type == 'nef' or atom_id == 'HN':
-                                            atom_ids = self.__nefT.get_star_atom(comp_id, atom_id, leave_unmatched=False)[0]
-                                        elif atom_id.startswith('QQ'):
-                                            atom_ids = self.__nefT.get_star_atom(comp_id, 'H' + atom_id[2:] + '%', leave_unmatched=False)[0]
-                                        else:
-                                            atom_ids = self.__nefT.get_star_atom(comp_id, 'H' + atom_id[1:] + '%', leave_unmatched=False)[0]
+                                    if file_type == 'nef' or (not self.__combined_mode and ((atom_id == 'HN' and self.__csStat.getTypeOfCompId(comp_id)[0]) or
+                                                                                            atom_id.startswith('Q') or
+                                                                                            atom_id.startswith('M') or
+                                                                                            self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id) == 0)):
+                                        atom_ids = self.__getAtomLIdList(file_type, comp_id, atom_id)
 
                                         if len(atom_ids) == 0:
                                             continue
@@ -9601,14 +9670,11 @@ class NmrDpUtility(object):
                                     atom_id = j[atom_id_name]
                                     data_type = str(j[iso_number]) + j[atom_type]
 
-                                    if file_type == 'nef' or (not self.__combined_mode and ((atom_id == 'HN' and self.__csStat.getTypeOfCompId(comp_id)[0]) or atom_id.startswith('Q') or atom_id.startswith('M'))):
-
-                                        if file_type == 'nef' or atom_id == 'HN':
-                                            atom_ids = self.__nefT.get_star_atom(comp_id, atom_id, leave_unmatched=False)[0]
-                                        elif atom_id.startswith('QQ'):
-                                            atom_ids = self.__nefT.get_star_atom(comp_id, 'H' + atom_id[2:] + '%', leave_unmatched=False)[0]
-                                        else:
-                                            atom_ids = self.__nefT.get_star_atom(comp_id, 'H' + atom_id[1:] + '%', leave_unmatched=False)[0]
+                                    if file_type == 'nef' or (not self.__combined_mode and ((atom_id == 'HN' and self.__csStat.getTypeOfCompId(comp_id)[0]) or
+                                                                                            atom_id.startswith('Q') or
+                                                                                            atom_id.startswith('M') or
+                                                                                            self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id) == 0)):
+                                        atom_ids = self.__getAtomLIdList(file_type, comp_id, atom_id)
 
                                         if len(atom_ids) == 0:
                                             continue
@@ -9672,14 +9738,11 @@ class NmrDpUtility(object):
                 atom_id = i[atom_id_name]
                 value = i[value_name]
 
-                if file_type == 'nef' or (not self.__combined_mode and ((atom_id == 'HN' and self.__csStat.getTypeOfCompId(comp_id)[0]) or atom_id.startswith('Q') or atom_id.startswith('M'))):
-
-                    if file_type == 'nef' or atom_id == 'HN':
-                        _atom_id, ambig_code, details = self.__nefT.get_star_atom(comp_id, atom_id, leave_unmatched=True)
-                    elif atom_id.startswith('QQ'):
-                        _atom_id, ambig_code, details = self.__nefT.get_star_atom(comp_id, 'H' + atom_id[2:] + '%', leave_unmatched=False)
-                    else:
-                        _atom_id, ambig_code, details = self.__nefT.get_star_atom(comp_id, 'H' + atom_id[1:] + '%', leave_unmatched=False)
+                if file_type == 'nef' or (not self.__combined_mode and ((atom_id == 'HN' and self.__csStat.getTypeOfCompId(comp_id)[0]) or
+                                                                        atom_id.startswith('Q') or
+                                                                        atom_id.startswith('M') or
+                                                                        self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id) == 0)):
+                    (_atom_id, ambig_code, details) = self.__getAtomIdListWithAmbigCode(file_type, comp_id, atom_id)
 
                     if len(_atom_id) == 0:
                         continue
@@ -11163,28 +11226,16 @@ class NmrDpUtility(object):
             data_type = 'intra-residue_constraints'
         elif range_of_seq < 5:
 
-            if file_type == 'nef' or (not self.__combined_mode and ((atom_id_1 == 'HN' and self.__csStat.getTypeOfCompId(comp_id_1)[0]) or atom_id_1.startswith('Q') or atom_id_1.startswith('M') or (atom_id_2 == 'HN' and self.__csStat.getTypeOfCompId(comp_id_2)[0]) or atom_id_2.startswith('Q') or atom_id_2.startswith('M'))):
-
-                if file_type == 'nef':
-                    _atom_id_1 = self.__nefT.get_star_atom(comp_id_1, atom_id_1, leave_unmatched=False)[0]
-                    _atom_id_2 = self.__nefT.get_star_atom(comp_id_2, atom_id_2, leave_unmatched=False)[0]
-                else:
-                    if atom_id_1 == 'HN':
-                        _atom_id_1 = self.__nefT.get_star_atom(comp_id_1, atom_id_1, leave_unmatched=False)[0]
-                    elif not atom_id_1.startswith('Q') and not atom_id_1.startswith('M'):
-                        _atom_id_1 = atom_id_1
-                    elif atom_id_1.startswith('QQ'):
-                        _atom_id_1 = self.__nefT.get_star_atom(comp_id_1, 'H' + atom_id_1[2:] + '%', leave_unmatched=False)[0]
-                    else:
-                        _atom_id_1 = self.__nefT.get_star_atom(comp_id_1, 'H' + atom_id_1[1:] + '%', leave_unmatched=False)[0]
-                    if atom_id_2 == 'HN':
-                        _atom_id_2 = self.__nefT.get_star_atom(comp_id_2, atom_id_2, leave_unmatched=False)[0]
-                    elif not atom_id_2.startswith('Q') and not atom_id_2.startswith('M'):
-                        _atom_id_2 = atom_id_2
-                    elif atom_id_2.startswith('QQ'):
-                        _atom_id_2 = self.__nefT.get_star_atom(comp_id_2, 'H' + atom_id_2[2:] + '%', leave_unmatched=False)[0]
-                    else:
-                        _atom_id_2 = self.__nefT.get_star_atom(comp_id_2, 'H' + atom_id_2[1:] + '%', leave_unmatched=False)[0]
+            if file_type == 'nef' or (not self.__combined_mode and ((atom_id_1 == 'HN' and self.__csStat.getTypeOfCompId(comp_id_1)[0]) or
+                                                                    atom_id_1.startswith('Q') or
+                                                                    atom_id_1.startswith('M') or
+                                                                    self.__csStat.getMaxAmbigCodeWoSetId(comp_id_1, atom_id_1) == 0 or
+                                                                    (atom_id_2 == 'HN' and self.__csStat.getTypeOfCompId(comp_id_2)[0]) or
+                                                                    atom_id_2.startswith('Q') or
+                                                                    atom_id_2.startswith('M') or
+                                                                    self.__csStat.getMaxAmbigCodeWoSetId(comp_id_2, atom_id_2) == 0)):
+                _atom_id_1 = self.__getAtomLIdList(file_type, comp_id_1, atom_id_1)
+                _atom_id_2 = self.__getAtomLIdList(file_type, comp_id_2, atom_id_2)
 
                 if len(_atom_id_1) > 0 and len(_atom_id_2) > 0:
                     is_sc_atom_1 = _atom_id_1[0] in self.__csStat.getSideChainAtoms(comp_id_1)
@@ -14763,14 +14814,11 @@ class NmrDpUtility(object):
                 if cif_comp_id is None:
                     continue
 
-                if file_type == 'nef' or (not self.__combined_mode and ((atom_id == 'HN' and self.__csStat.getTypeOfCompId(comp_id)[0]) or atom_id.startswith('Q') or atom_id.startswith('M'))):
-
-                    if file_type == 'nef' or atom_id == 'HN':
-                        _atom_id, ambig_code, details = self.__nefT.get_star_atom(comp_id, atom_id, leave_unmatched=True)
-                    elif atom_id.startswith('QQ'):
-                        _atom_id, ambig_code, details = self.__nefT.get_star_atom(comp_id, 'H' + atom_id[2:] + '%', leave_unmatched=False)
-                    else:
-                        _atom_id, ambig_code, details = self.__nefT.get_star_atom(comp_id, 'H' + atom_id[1:] + '%', leave_unmatched=False)
+                if file_type == 'nef' or (not self.__combined_mode and ((atom_id == 'HN' and self.__csStat.getTypeOfCompId(comp_id)[0]) or
+                                                                        atom_id.startswith('Q') or
+                                                                        atom_id.startswith('M') or
+                                                                        self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id) == 0)):
+                    (_atom_id, ambig_code, details) = self.__getAtomIdListWithAmbigCode(file_type, comp_id, atom_id)
 
                     if len(_atom_id) == 0:
                         continue

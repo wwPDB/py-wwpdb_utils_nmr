@@ -47,6 +47,7 @@
 # 22-Apr-2020  M. Yokochi - fix ambiguity code mismatch if possible (DAOTHER-5601)
 # 22-Apr-2020  M. Yokochi - fix None type object is not iterable error (DAOTHER-5602)
 # 23-Apr-2020  M. Yokochi - support conventional atom name for methyl group without wildcard character, e.g. ALA:HB (DAOTHER-5603)
+# 23-Apr-2020  M. Yokochi - change missing ambiguity_set_id error to warning (DAOTHER-5609)
 ##
 """ Wrapper class for data processing for NMR data.
     @author: Masashi Yokochi
@@ -544,11 +545,11 @@ class NmrDpUtility(object):
                                                     ],
                                   'spectral_peak': None
                                   },
-                          'nmr-star': {'poly_seq': [{'name': 'Entity_assembly_ID', 'type': 'positive-int', 'default': '1'},
+                          'nmr-star': {'poly_seq': [{'name': 'Entity_assembly_ID', 'type': 'positive-int', 'default': '1', 'default-from': 'self'},
                                                     {'name': 'Comp_index_ID', 'type': 'int'},
                                                     {'name': 'Comp_ID', 'type': 'str', 'uppercase': True}
                                                     ],
-                                       'chem_shift': [{'name': 'Entity_assembly_ID', 'type': 'positive-int', 'default': '1'},
+                                       'chem_shift': [{'name': 'Entity_assembly_ID', 'type': 'positive-int', 'default': '1', 'default-from': 'self'},
                                                       {'name': 'Comp_index_ID', 'type': 'int'},
                                                       {'name': 'Comp_ID', 'type': 'str', 'uppercase': True},
                                                       {'name': 'Atom_ID', 'type': 'str'}
@@ -559,39 +560,39 @@ class NmrDpUtility(object):
                                                            'enforce-enum': True},
                                                           {'name': 'Mol_common_name', 'type': 'str'}],
                                        'dist_restraint': [{'name': 'ID', 'type': 'positive-int'},
-                                                          {'name': 'Entity_assembly_ID_1', 'type': 'positive-int', 'default': '1'},
+                                                          {'name': 'Entity_assembly_ID_1', 'type': 'positive-int', 'default': '1', 'default-from': 'self'},
                                                           {'name': 'Comp_index_ID_1', 'type': 'int'},
                                                           {'name': 'Comp_ID_1', 'type': 'str', 'uppercase': True},
                                                           {'name': 'Atom_ID_1', 'type': 'str'},
-                                                          {'name': 'Entity_assembly_ID_2', 'type': 'positive-int', 'default': '1'},
+                                                          {'name': 'Entity_assembly_ID_2', 'type': 'positive-int', 'default': '1', 'default-from': 'self'},
                                                           {'name': 'Comp_index_ID_2', 'type': 'int'},
                                                           {'name': 'Comp_ID_2', 'type': 'str', 'uppercase': True},
                                                           {'name': 'Atom_ID_2', 'type': 'str'}
                                                           ],
                                        'dihed_restraint': [{'name': 'ID', 'type': 'positive-int'},
-                                                           {'name': 'Entity_assembly_ID_1', 'type': 'positive-int', 'default': '1'},
+                                                           {'name': 'Entity_assembly_ID_1', 'type': 'positive-int', 'default': '1', 'default-from': 'self'},
                                                            {'name': 'Comp_index_ID_1', 'type': 'int'},
                                                            {'name': 'Comp_ID_1', 'type': 'str', 'uppercase': True},
                                                            {'name': 'Atom_ID_1', 'type': 'str'},
-                                                           {'name': 'Entity_assembly_ID_2', 'type': 'positive-int', 'default': '1'},
+                                                           {'name': 'Entity_assembly_ID_2', 'type': 'positive-int', 'default': '1', 'default-from': 'self'},
                                                            {'name': 'Comp_index_ID_2', 'type': 'int'},
                                                            {'name': 'Comp_ID_2', 'type': 'str', 'uppercase': True},
                                                            {'name': 'Atom_ID_2', 'type': 'str'},
-                                                           {'name': 'Entity_assembly_ID_3', 'type': 'positive-int', 'default': '1'},
+                                                           {'name': 'Entity_assembly_ID_3', 'type': 'positive-int', 'default': '1', 'default-from': 'self'},
                                                            {'name': 'Comp_index_ID_3', 'type': 'int'},
                                                            {'name': 'Comp_ID_3', 'type': 'str', 'uppercase': True},
                                                            {'name': 'Atom_ID_3', 'type': 'str'},
-                                                           {'name': 'Entity_assembly_ID_4', 'type': 'positive-int', 'default': '1'},
+                                                           {'name': 'Entity_assembly_ID_4', 'type': 'positive-int', 'default': '1', 'default-from': 'self'},
                                                            {'name': 'Comp_index_ID_4', 'type': 'int'},
                                                            {'name': 'Comp_ID_4', 'type': 'str', 'uppercase': True},
                                                            {'name': 'Atom_ID_4', 'type': 'str'}
                                                            ],
                                        'rdc_restraint': [{'name': 'ID', 'type': 'positive-int'},
-                                                         {'name': 'Entity_assembly_ID_1', 'type': 'positive-int', 'default': '1'},
+                                                         {'name': 'Entity_assembly_ID_1', 'type': 'positive-int', 'default': '1', 'default-from': 'self'},
                                                          {'name': 'Comp_index_ID_1', 'type': 'int'},
                                                          {'name': 'Comp_ID_1', 'type': 'str', 'uppercase': True},
                                                          {'name': 'Atom_ID_1', 'type': 'str'},
-                                                         {'name': 'Entity_assembly_ID_2', 'type': 'positive-int', 'default': '1'},
+                                                         {'name': 'Entity_assembly_ID_2', 'type': 'positive-int', 'default': '1', 'default-from': 'self'},
                                                          {'name': 'Comp_index_ID_2', 'type': 'int'},
                                                          {'name': 'Comp_ID_2', 'type': 'str', 'uppercase': True},
                                                          {'name': 'Atom_ID_2', 'type': 'str'}
@@ -665,38 +666,38 @@ class NmrDpUtility(object):
                                                             ],
                                           'spectral_peak': None
                                           },
-                                  'nmr-star': {'dist_restraint': [{'name': 'Entity_assembly_ID_1', 'type': 'positive-int', 'default': '1'},
+                                  'nmr-star': {'dist_restraint': [{'name': 'Entity_assembly_ID_1', 'type': 'positive-int', 'default': '1', 'default-from': 'self'},
                                                                   {'name': 'Comp_index_ID_1', 'type': 'int'},
                                                                   {'name': 'Comp_ID_1', 'type': 'str', 'uppercase': True},
                                                                   {'name': 'Atom_ID_1', 'type': 'str'},
-                                                                  {'name': 'Entity_assembly_ID_2', 'type': 'positive-int', 'default': '1'},
+                                                                  {'name': 'Entity_assembly_ID_2', 'type': 'positive-int', 'default': '1', 'default-from': 'self'},
                                                                   {'name': 'Comp_index_ID_2', 'type': 'int'},
                                                                   {'name': 'Comp_ID_2', 'type': 'str', 'uppercase': True},
                                                                   {'name': 'Atom_ID_2', 'type': 'str'}
                                                                   ],
-                                               'dihed_restraint': [{'name': 'Entity_assembly_ID_1', 'type': 'positive-int', 'default': '1'},
+                                               'dihed_restraint': [{'name': 'Entity_assembly_ID_1', 'type': 'positive-int', 'default': '1', 'default-from': 'self'},
                                                                    {'name': 'Comp_index_ID_1', 'type': 'int'},
                                                                    {'name': 'Comp_ID_1', 'type': 'str', 'uppercase': True},
                                                                    {'name': 'Atom_ID_1', 'type': 'str'},
-                                                                   {'name': 'Entity_assembly_ID_2', 'type': 'positive-int', 'default': '1'},
+                                                                   {'name': 'Entity_assembly_ID_2', 'type': 'positive-int', 'default': '1', 'default-from': 'self'},
                                                                    {'name': 'Comp_index_ID_2', 'type': 'int'},
                                                                    {'name': 'Comp_ID_2', 'type': 'str', 'uppercase': True},
                                                                    {'name': 'Atom_ID_2', 'type': 'str'},
-                                                                   {'name': 'Entity_assembly_ID_3', 'type': 'positive-int', 'default': '1'},
+                                                                   {'name': 'Entity_assembly_ID_3', 'type': 'positive-int', 'default': '1', 'default-from': 'self'},
                                                                    {'name': 'Comp_index_ID_3', 'type': 'int'},
                                                                    {'name': 'Comp_ID_3', 'type': 'str', 'uppercase': True},
                                                                    {'name': 'Atom_ID_3', 'type': 'str'},
-                                                                   {'name': 'Entity_assembly_ID_4', 'type': 'positive-int', 'default': '1'},
+                                                                   {'name': 'Entity_assembly_ID_4', 'type': 'positive-int', 'default': '1', 'default-from': 'self'},
                                                                    {'name': 'Comp_index_ID_4', 'type': 'int'},
                                                                    {'name': 'Comp_ID_4', 'type': 'str', 'uppercase': True},
                                                                    {'name': 'Atom_ID_4', 'type': 'str'}
                                                                    ],
                                                'rdc_restraint': [
-                                                                 {'name': 'Entity_assembly_ID_1', 'type': 'positive-int', 'default': '1'},
+                                                                 {'name': 'Entity_assembly_ID_1', 'type': 'positive-int', 'default': '1', 'default-from': 'self'},
                                                                  {'name': 'Comp_index_ID_1', 'type': 'int'},
                                                                  {'name': 'Comp_ID_1', 'type': 'str', 'uppercase': True},
                                                                  {'name': 'Atom_ID_1', 'type': 'str'},
-                                                                 {'name': 'Entity_assembly_ID_2', 'type': 'positive-int', 'default': '1'},
+                                                                 {'name': 'Entity_assembly_ID_2', 'type': 'positive-int', 'default': '1', 'default-from': 'self'},
                                                                  {'name': 'Comp_index_ID_2', 'type': 'int'},
                                                                  {'name': 'Comp_ID_2', 'type': 'str', 'uppercase': True},
                                                                  {'name': 'Atom_ID_2', 'type': 'str'}
@@ -1375,6 +1376,7 @@ class NmrDpUtility(object):
                               'nmr-star': [{'name': 'Position_uncertainty_%s', 'type': 'range-float', 'mandatory': False,
                                             'range': self.chem_shift_error},
                                            {'name': 'Entity_assembly_ID_%s', 'type': 'positive-int', 'mandatory': False,
+                                            'default': '1', 'default-from': 'self',
                                             'enforce-non-zero': True,
                                             'relax-key-if-exist': True},
                                            {'name': 'Comp_index_ID_%s', 'type': 'int', 'mandatory': False,
@@ -7942,7 +7944,7 @@ class NmrDpUtility(object):
                                 self.report.setWarning()
 
                                 if self.__verbose:
-                                    self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ Warning - %s\n" % warn)
+                                    self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ Warning  - %s\n" % warn)
 
                         except StopIteration:
                             pass
@@ -7954,7 +7956,7 @@ class NmrDpUtility(object):
                             self.report.setWarning()
 
                             if self.__verbose:
-                                self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ Warning - %s\n" % warn)
+                                self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ Warning  - %s\n" % warn)
                             """
 
                     elif ambig_code in [4, 5, 6, 9]:
@@ -7978,14 +7980,14 @@ class NmrDpUtility(object):
 
                             if ambig_set_id in self.empty_value:
 
-                                err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_id) + '] %s %s requires %s value.' %\
-                                      (ambig_code_name, ambig_code, ambig_set_id_name)
+                                warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_id) + '] %s %s requires %s value.' %\
+                                       (ambig_code_name, ambig_code, ambig_set_id_name)
 
-                                self.report.error.appendDescription('missing_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
-                                self.report.setError()
+                                self.report.warning.appendDescription('missing_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
+                                self.report.setWarning()
 
                                 if self.__verbose:
-                                    self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ ValueError  - %s\n" % err)
+                                    self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ Warning  - %s\n" % warn)
 
                             else:
 

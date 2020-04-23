@@ -30,6 +30,8 @@
 # 10-Apr-2020  M. Yokochi - fix typo in alternative enumeration definition (v2.2.2)
 # 22-Apr-2020  M. Yokochi - convert comp_id in capital letters (v2.2.3, DAOTHER-5600)
 # 22-Apr-2020  M. Yokochi - fix None type object is not iterable error (v2.2.4, DAOTHER-5602)
+# 23-Apr-2020  M. Yokochi - fix type mismatch if 'default' value is set (v2.2.5, DAOTHER-5609)
+# 23-Apr-2020  M. Yokochi - fix type mismatch if 'default-from' is 'self' (v2.2.5, DAOTHER-5609)
 ##
 import sys
 import os
@@ -48,7 +50,7 @@ from wwpdb.utils.nmr.io.ChemCompIo import ChemCompReader
 from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
 from wwpdb.utils.nmr.NmrDpReport import NmrDpReport
 
-__version__ = 'v2.2.4'
+__version__ = 'v2.2.5'
 
 class NEFTranslator(object):
     """ Bi-directional translator between NEF and NMR-STAR
@@ -2143,12 +2145,22 @@ class NEFTranslator(object):
                             try:
                                 ent[name] = int(val)
                             except:
-                                raise ValueError("%s%s '%s' must be %s." % (self.__idx_msg(idx_tag_ids, tags, ent), name, val, self.readable_item_type[type]))
+                                if 'default-from' in k and k['default-from'] == 'self':
+                                    ent[name] = self.letter_to_int(val)
+                                elif 'default' in k:
+                                    ent[name] = int(k['default'])
+                                else:
+                                    raise ValueError("%s%s '%s' must be %s." % (self.__idx_msg(idx_tag_ids, tags, ent), name, val, self.readable_item_type[type]))
                         elif type == 'index-int' or type == 'positive-int':
                             try:
                                 ent[name] = int(val)
                             except:
-                                raise ValueError("%s%s '%s' must be %s." % (self.__idx_msg(idx_tag_ids, tags, ent), name, val, self.readable_item_type[type]))
+                                if 'default-from' in k and k['default-from'] == 'self':
+                                    ent[name] = self.letter_to_int(val, 1)
+                                elif 'default' in k:
+                                    ent[name] = int(k['default'])
+                                else:
+                                    raise ValueError("%s%s '%s' must be %s." % (self.__idx_msg(idx_tag_ids, tags, ent), name, val, self.readable_item_type[type]))
                             if (type == 'index-int' and ent[name] <= 0) or (type == 'positive-int' and (ent[name] < 0 or (ent[name] == 0 and 'enforce-non-zero' in k and k['enforce-non-zero']))):
                                 raise ValueError("%s%s '%s' must be %s." % (self.__idx_msg(idx_tag_ids, tags, ent), name, val, self.readable_item_type[type]))
                             elif ent[name] == 0 and enforce_non_zero:
@@ -2162,7 +2174,12 @@ class NEFTranslator(object):
                             try:
                                 ent[name] = int(val)
                             except:
-                                raise ValueError("%s%s '%s' must be %s." % (self.__idx_msg(idx_tag_ids, tags, ent), name, val, self.readable_item_type[type]))
+                                if 'default-from' in k and k['default-from'] == 'self':
+                                    ent[name] = self.letter_to_int(val, 1)
+                                elif 'default' in k:
+                                    ent[name] = int(k['default'])
+                                else:
+                                    raise ValueError("%s%s '%s' must be %s." % (self.__idx_msg(idx_tag_ids, tags, ent), name, val, self.readable_item_type[type]))
                             if ent[name] <= 0:
                                 raise ValueError("%s%s '%s' must be %s." % (self.__idx_msg(idx_tag_ids, tags, ent), name, val, self.readable_item_type[type]))
                             elif static_val[name] is None:
@@ -2266,12 +2283,22 @@ class NEFTranslator(object):
                                     try:
                                         ent[name] = int(val)
                                     except:
-                                        raise ValueError("%s%s '%s' must be %s." % (self.__idx_msg(idx_tag_ids, tags, ent), name, val, self.readable_item_type[type]))
+                                        if 'default-from' in d and d['default-from'] == 'self':
+                                            ent[name] = self.letter_to_int(val)
+                                        elif 'default' in d:
+                                            ent[name] = int(d['default'])
+                                        else:
+                                            raise ValueError("%s%s '%s' must be %s." % (self.__idx_msg(idx_tag_ids, tags, ent), name, val, self.readable_item_type[type]))
                                 elif type == 'index-int' or type == 'positive-int':
                                     try:
                                         ent[name] = int(val)
                                     except:
-                                        raise ValueError("%s%s '%s' must be %s." % (self.__idx_msg(idx_tag_ids, tags, ent), name, val, self.readable_item_type[type]))
+                                        if 'default-from' in d and d['default-from'] == 'self':
+                                            ent[name] = self.letter_to_int(val, 1)
+                                        elif 'default' in d:
+                                            ent[name] = int(d['default'])
+                                        else:
+                                            raise ValueError("%s%s '%s' must be %s." % (self.__idx_msg(idx_tag_ids, tags, ent), name, val, self.readable_item_type[type]))
                                     if (type == 'index-int' and ent[name] <= 0) or (type == 'positive-int' and (ent[name] < 0 or (ent[name] == 0 and 'enforce-non-zero' in d and d['enforce-non-zero']))):
                                         raise ValueError("%s%s '%s' must be %s." % (self.__idx_msg(idx_tag_ids, tags, ent), name, val, self.readable_item_type[type]))
                                     elif ent[name] == 0 and enforce_non_zero:
@@ -2285,7 +2312,12 @@ class NEFTranslator(object):
                                     try:
                                         ent[name] = int(val)
                                     except:
-                                        raise ValueError("%s%s '%s' must be %s." % (self.__idx_msg(idx_tag_ids, tags, ent), name, val, self.readable_item_type[type]))
+                                        if 'default-from' in d and d['default-from'] == 'self':
+                                            ent[name] = self.letter_to_int(val, 1)
+                                        elif 'default' in d:
+                                            ent[name] = int(d['default'])
+                                        else:
+                                            raise ValueError("%s%s '%s' must be %s." % (self.__idx_msg(idx_tag_ids, tags, ent), name, val, self.readable_item_type[type]))
                                     if ent[name] <= 0:
                                         raise ValueError("%s%s '%s' must be %s." % (self.__idx_msg(idx_tag_ids, tags, ent), name, val, self.readable_item_type[type]))
                                     elif static_val[name] is None:
@@ -2429,6 +2461,28 @@ class NEFTranslator(object):
             data.append([])
 
         return data
+
+    def letter_to_int(self, code, min=0):
+        """ Return digit from string.
+        """
+
+        alphabet = 'abcdefghijklmnopqrstuvwxyz'
+
+        unit = 1
+        ret = 0
+
+        for c in ''.join(reversed(code.lower())):
+
+            if c.isdigit():
+                ret += unit * int(c)
+            elif c.isalpha():
+                ret += unit * (alphabet.index(c) + 1)
+            else:
+                continue
+
+            unit *= 27
+
+        return ret if ret >= min else min
 
     def __idx_msg(self, idx_tag_ids, tags, ent):
         """ Return description about current index.
@@ -2677,12 +2731,22 @@ class NEFTranslator(object):
                         try:
                             ent[name] = int(val)
                         except:
-                            raise ValueError("%s '%s' must be %s." % (name, val, self.readable_item_type[type]))
+                            if 'default-from' in t and t['default-from'] == 'self':
+                                ent[name] = self.letter_to_int(val)
+                            elif 'default' in t:
+                                ent[name] = int(t['default'])
+                            else:
+                                raise ValueError("%s '%s' must be %s." % (name, val, self.readable_item_type[type]))
                     elif type == 'positive-int':
                         try:
                             ent[name] = int(val)
                         except:
-                            raise ValueError("%s '%s' must be %s." % (name, val, self.readable_item_type[type]))
+                            if 'default-from' in t and t['default-from'] == 'self':
+                                ent[name] = self.letter_to_int(val, 1)
+                            elif 'default' in t:
+                                ent[name] = int(t['default'])
+                            else:
+                                raise ValueError("%s '%s' must be %s." % (name, val, self.readable_item_type[type]))
                         if ent[name] < 0 or (ent[name] == 0 and 'enforce-non-zero' in t and t['enforce-non-zero']):
                             raise ValueError("%s '%s' must be %s." % (name, val, self.readable_item_type[type]))
                         elif ent[name] == 0 and enforce_non_zero:
@@ -4189,6 +4253,7 @@ class NEFTranslator(object):
                     _star_chain = i[star_tags.index(chain_tag)]
                     if type(_star_chain) == str and not _star_chain in self.empty_value:
                         _star_chain = int(_star_chain)
+
                     _star_seq = i[star_tags.index(seq_tag)]
                     if type(_star_seq) == str and not _star_seq in self.empty_value:
                         _star_seq = int(_star_seq)
@@ -4645,6 +4710,7 @@ class NEFTranslator(object):
             _star_chain = in_row[star_tags.index(chain_tag)]
             if type(_star_chain) == str and not _star_chain in self.empty_value:
                 _star_chain = int(_star_chain)
+
             _star_seq = in_row[star_tags.index(seq_tag)]
             if type(_star_seq) == str and not _star_seq in self.empty_value:
                 _star_seq = int(_star_seq)

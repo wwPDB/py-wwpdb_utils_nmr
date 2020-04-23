@@ -6797,6 +6797,9 @@ class NmrDpUtility(object):
             if input_source_dic['content_subtype'] is None:
                 continue
 
+            if self.__star_data_type[fileListId] != 'Entry':
+                continue
+
             for content_subtype in input_source_dic['content_subtype'].keys():
 
                 sf_category = self.sf_categories[file_type][content_subtype]
@@ -6809,7 +6812,7 @@ class NmrDpUtility(object):
 
                     sf_framecode = self.__getFirstTagValue(sf_data, 'sf_framecode')
 
-                    if sf_data.tag_prefix != self.sf_tag_prefixes[file_type][content_subtype]:
+                    if self.__combined_mode and sf_data.tag_prefix != self.sf_tag_prefixes[file_type][content_subtype]:
 
                         err = "Saveframe tag prefix %s did not match with %s in saveframe %s." % (sf_data.tag_prefix, self.sf_tag_prefixes[file_type][content_subtype], sf_framecode)
 
@@ -6823,7 +6826,14 @@ class NmrDpUtility(object):
 
                     try:
 
-                        sf_tag_data = self.__nefT.check_sf_tag(sf_data, file_type, sf_category, self.sf_tag_items[file_type][content_subtype], self.sf_allowed_tags[file_type][content_subtype],
+                        sf_tag_items = copy.copy(self.sf_tag_items[file_type][content_subtype])
+
+                        if not self.__combined_mode:
+                            for sf_tag_item in sf_tag_items:
+                                if sf_tag_item['name'] == 'sf_framecode' if file_type == 'nef' else 'Sf_framecode':
+                                    sf_tag_item['mandatory'] = False
+
+                        sf_tag_data = self.__nefT.check_sf_tag(sf_data, file_type, sf_category, sf_tag_items, self.sf_allowed_tags[file_type][content_subtype],
                                                                enforce_non_zero=True, enforce_sign=True, enforce_enum=True)
 
                         self.__testParentChildRelation(file_name, file_type, content_subtype, parent_keys, list_id, sf_framecode, sf_tag_data)
@@ -6908,7 +6918,7 @@ class NmrDpUtility(object):
 
                         try:
 
-                            sf_tag_data = self.__nefT.check_sf_tag(sf_data, file_type, sf_category, self.sf_tag_items[file_type][content_subtype], self.sf_allowed_tags[file_type][content_subtype],
+                            sf_tag_data = self.__nefT.check_sf_tag(sf_data, file_type, sf_category, sf_tag_items, self.sf_allowed_tags[file_type][content_subtype],
                                                                    enfoce_non_zero=False, enforce_sign=False, enforce_enum=False)
 
                             self.__testParentChildRelation(file_name, file_type, content_subtype, parent_keys, list_id, sf_framecode, sf_tag_data)

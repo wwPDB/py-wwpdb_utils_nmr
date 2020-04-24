@@ -43,7 +43,7 @@ class TestNmrDpUtility(unittest.TestCase):
                              'daother-5602': ['NMR-6v88_cs_rev.str'],
                              'daother-5603': ['D_1000245188_cs-upload_P1.str.V1'],
                              'daother-5609': ['D_1000248498_cs-upload_P1.str.V1'],
-                             'daother-5610': ['6jpp_mod_cs.str']
+                             'daother-5610': ['6jpp_cs.str'] # ['6jpp_mod_cs.str']
                              }
         self.model_file_path = {'data': '2la6.cif',
                                 'sf': '2la6.cif',
@@ -88,7 +88,10 @@ class TestNmrDpUtility(unittest.TestCase):
         if not report['error'] is None:
             self.assertEqual(report['error']['internal_error'], None)
 
-        print('%s: %s' % (cs_type, report['information']['status']))
+        if report['error'] is None or report['error']['format_issue'] is None:
+            print('%s: %s' % (cs_type, report['information']['status']))
+        else:
+            print('%s: %s\n format_issue: %s' % (cs_type, report['information']['status'], report['error']['format_issue'][0]['description']))
 
     def test_nmr_cs_str_consistency_check_data(self):
         self.__test_nmr_cs_str_consistency('data')

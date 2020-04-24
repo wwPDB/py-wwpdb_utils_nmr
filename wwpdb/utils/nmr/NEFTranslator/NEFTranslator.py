@@ -30,8 +30,9 @@
 # 10-Apr-2020  M. Yokochi - fix typo in alternative enumeration definition (v2.2.2)
 # 22-Apr-2020  M. Yokochi - convert comp_id in capital letters (v2.2.3, DAOTHER-5600)
 # 22-Apr-2020  M. Yokochi - fix None type object is not iterable error (v2.2.4, DAOTHER-5602)
-# 23-Apr-2020  M. Yokochi - fix type mismatch if 'default' value is set (v2.2.5, DAOTHER-5609)
-# 23-Apr-2020  M. Yokochi - fix type mismatch if 'default-from' is 'self' (v2.2.5, DAOTHER-5609)
+# 24-Apr-2020  M. Yokochi - fix type mismatch if 'default' value is set (v2.2.5, DAOTHER-5609)
+# 24-Apr-2020  M. Yokochi - fix type mismatch if 'default-from' is 'self' (v2.2.5, DAOTHER-5609)
+# 24-Apr-2020  M. Yokochi - revise error message (v2.2.6, DAOTHER-5611)
 ##
 import sys
 import os
@@ -50,7 +51,7 @@ from wwpdb.utils.nmr.io.ChemCompIo import ChemCompReader
 from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
 from wwpdb.utils.nmr.NmrDpReport import NmrDpReport
 
-__version__ = 'v2.2.5'
+__version__ = 'v2.2.6'
 
 class NEFTranslator(object):
     """ Bi-directional translator between NEF and NMR-STAR
@@ -570,8 +571,13 @@ class NEFTranslator(object):
                     msg = 'Loop'
 
                 except ValueError as e3:
+
                     is_ok = False
-                    msg = str(e1) # '%s contains no valid saveframe or loop. PyNMRSTAR ++ Error  - %s' % (os.path.basename(in_file), str(e))
+
+                    if not 'internaluseyoushouldntseethis_frame' in str(e3):
+                        msg = str(e3)
+                    else:
+                        msg = str(e1) # '%s contains no valid saveframe or loop. PyNMRSTAR ++ Error  - %s' % (os.path.basename(in_file), str(e))
 
         except Exception as e:
             is_ok = False
@@ -750,6 +756,9 @@ class NEFTranslator(object):
 
         file_type = 'unknown'
 
+        err_template_for_missing_mandatory_loop = "The mandatory loop '%s' is missing. Please re-upload the file."
+        err_template_for_empty_mandatory_loop = "The mandatory loop '%s' is empty. Please re-upload the file."
+
         try:
 
             is_done, data_type, star_data = self.read_input_file(in_file)
@@ -791,33 +800,33 @@ class NEFTranslator(object):
                         for lp_info in minimal_info_nef_a:
                             if lp_info not in lp_list:
                                 is_valid = False
-                                error.append('{} loop not found'.format(lp_info))
+                                error.append(err_template_for_missing_mandatory_loop % lp_info)
                             else:
                                 if self.is_empty_loop(star_data, lp_info, data_type):
                                     is_valid = False
-                                    error.append('{} loop is empty'.format(lp_info))
+                                    error.append(err_template_for_empty_mandatory_loop % lp_info)
 
                     elif file_subtype == 'S':
 
                         for lp_info in minimal_info_nef_s:
                             if lp_info not in lp_list:
                                 is_valid = False
-                                error.append('{} loop not found'.format(lp_info))
+                                error.append(err_template_for_missing_mandatory_loop % lp_info)
                             else:
                                 if self.is_empty_loop(star_data, lp_info, data_type):
                                     is_valid = False
-                                    error.append('{} loop is empty'.format(lp_info))
+                                    error.append(err_template_for_empty_mandatory_loop % lp_info)
 
                     elif file_subtype == 'R':
 
                         for lp_info in minimal_info_nef_r:
                             if lp_info not in lp_list:
                                 is_valid = False
-                                error.append('{} loop not found'.format(lp_info))
+                                error.append(err_template_for_missing_mandatory_loop % lp_info)
                             else:
                                 if self.is_empty_loop(star_data, lp_info, data_type):
                                     is_valid = False
-                                    error.append('{} loop is empty'.format(lp_info))
+                                    error.append(err_template_for_empty_mandatory_loop % lp_info)
 
                     else:
                         is_valid = False
@@ -829,33 +838,33 @@ class NEFTranslator(object):
                         for lp_info in minimal_info_star_a:
                             if lp_info not in lp_list:
                                 is_valid = False
-                                error.append('{} loop not found'.format(lp_info))
+                                error.append(err_template_for_missing_mandatory_loop % lp_info)
                             else:
                                 if self.is_empty_loop(star_data, lp_info, data_type):
                                     is_valid = False
-                                    error.append('{} loop is empty'.format(lp_info))
+                                    error.append(err_template_for_empty_mandatory_loop % lp_info)
 
                     elif file_subtype == 'S':
 
                         for lp_info in minimal_info_star_s:
                             if lp_info not in lp_list:
                                 is_valid = False
-                                error.append('{} loop not found'.format(lp_info))
+                                error.append(err_template_for_missing_mandatory_loop % lp_info)
                             else:
                                 if self.is_empty_loop(star_data, lp_info, data_type):
                                     is_valid = False
-                                    error.append('{} loop is empty'.format(lp_info))
+                                    error.append(err_template_for_empty_mandatory_loop % lp_info)
 
                     elif file_subtype == 'R':
 
                         for lp_info in minimal_info_star_r:
                             if lp_info not in lp_list:
                                 is_valid = False
-                                error.append('{} loop not found'.format(lp_info))
+                                error.append(err_template_for_missing_mandatory_loop % lp_info)
                             else:
                                 if self.is_empty_loop(star_data, lp_info, data_type):
                                     is_valid = False
-                                    error.append('{} loop is empty'.format(lp_info))
+                                    error.append(err_template_for_empty_mandatory_loop % lp_info)
 
                     else:
                         is_valid = False
@@ -2018,7 +2027,7 @@ class NEFTranslator(object):
                             raise ValueError("%s must not be empty. #_of_row %s, data_of_row %s." % (name, l + 1, r))
                         else:
                             for d in data_items:
-                                if d['name'] == name and d['mandatory']:
+                                if d['name'] == name and d['mandatory'] and not 'default' in d:
                                     r = {}
                                     for _j in range(len(loop.tags)):
                                         r[loop.tags[_j]] = loop.data[l][_j]
@@ -2272,7 +2281,7 @@ class NEFTranslator(object):
                         for d in data_items:
                             if d['name'] == name:
                                 type = d['type']
-                                if val in self.empty_value:
+                                if val in self.empty_value and ('enum' in type or (not 'default-from' in d and not 'default' in d)):
                                    ent[name] = None
                                 elif type == 'bool':
                                     try:
@@ -2711,7 +2720,7 @@ class NEFTranslator(object):
         for name, val in sf_tags.items():
             if val in self.empty_value:
                 for t in tag_items:
-                    if t['name'] == name and t['mandatory']:
+                    if t['name'] == name and t['mandatory'] and not 'default' in t:
                         raise ValueError("%s must not be empty." % name)
 
         ent = {} # entity
@@ -2720,7 +2729,7 @@ class NEFTranslator(object):
             for t in tag_items:
                 if t['name'] == name:
                     type = t['type']
-                    if val in self.empty_value and type != 'enum':
+                    if val in self.empty_value and ('enum' in type or (not 'default-from' in t and not 'default' in t)):
                        ent[name] = None
                     elif type == 'bool':
                         try:

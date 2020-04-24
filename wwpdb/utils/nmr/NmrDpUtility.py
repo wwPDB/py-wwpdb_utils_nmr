@@ -50,7 +50,9 @@
 # 23-Apr-2020  M. Yokochi - change missing ambiguity_set_id error to warning (DAOTHER-5609)
 # 23-Apr-2020  M. Yokochi - make sure to parse chem_shift_ref saveframe tag (DAOTHER-5610)
 # 23-Apr-2020  M. Yokochi - implement automatic format correction (DAOTHER-5603, 5610)
-# 24-Apr-2020  M. Yokochi - separate format_issue and missing_mandatory_content. (DAOTHER-5611)
+# 24-Apr-2020  M. Yokochi - separate format_issue error and missing_mandatory_content error (DAOTHER-5611)
+# 24-Apr-2020  M. Yokochi - support 'QR' pseudo atom name (DAOTHER-5611)
+# 24-Apr-2020  M. Yokochi - allow mandatory value is missing in NMR separated deposition (DAOTHER-5611)
 ##
 """ Wrapper class for data processing for NMR data.
     @author: Masashi Yokochi
@@ -6497,7 +6499,8 @@ class NmrDpUtility(object):
         try:
 
             lp_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, allowed_tags, disallowed_tags,
-                                             inc_idx_test=True, enforce_non_zero=True, enforce_sign=True, enforce_enum=True)[0]
+                                             inc_idx_test=True, enforce_non_zero=True, enforce_sign=True, enforce_enum=True,
+                                             exc_missing=(not self.__combined_mode))[0]
 
             self.__lp_data[content_subtype].append({'file_name': file_name, 'sf_framecode': sf_framecode, 'data': lp_data})
 
@@ -6600,7 +6603,8 @@ class NmrDpUtility(object):
 
             try:
 
-                lp_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, allowed_tags, disallowed_tags)[0]
+                lp_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, allowed_tags, disallowed_tags,
+                                                 exc_missing=(not self.__combined_mode))[0]
 
                 self.__lp_data[content_subtype].append({'file_name': file_name, 'sf_framecode': sf_framecode, 'data': lp_data})
 
@@ -6946,7 +6950,8 @@ class NmrDpUtility(object):
                             try:
 
                                 aux_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, allowed_tags, None,
-                                                                  inc_idx_test=True, enforce_non_zero=True, enforce_sign=True, enforce_enum=True)[0]
+                                                                  inc_idx_test=True, enforce_non_zero=True, enforce_sign=True, enforce_enum=True,
+                                                                  exc_missing=(not self.__combined_mode))[0]
 
                                 self.__aux_data[content_subtype].append({'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'data': aux_data})
 
@@ -7055,7 +7060,8 @@ class NmrDpUtility(object):
                                             for l in conflict_id:
                                                 del _loop.data[l]
 
-                                    aux_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, allowed_tags, None)[0]
+                                    aux_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, allowed_tags, None,
+                                                                      exc_missing=(not self.__combined_mode))[0]
 
                                     self.__aux_data[content_subtype].append({'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'data': aux_data})
 
@@ -7560,7 +7566,8 @@ class NmrDpUtility(object):
                 data_items = self.data_items[file_type][content_subtype]
 
                 try:
-                    lp_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, None, None)[0]
+                    lp_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, None, None,
+                                                     exc_missing=(not self.__combined_mode))[0]
                 except:
                     return False
 
@@ -15148,7 +15155,8 @@ class NmrDpUtility(object):
                 data_items = self.data_items[file_type][content_subtype]
 
             try:
-                lp_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, None, None)[0]
+                lp_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, None, None,
+                                                 exc_missing=(not self.__combined_mode))[0]
             except:
                 return False
 
@@ -15863,7 +15871,8 @@ class NmrDpUtility(object):
 
             if orig_lp_data is None:
                 try:
-                    orig_lp_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, None, None)[0]
+                    orig_lp_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, None, None,
+                                                          exc_missing=(not self.__combined_mode))[0]
                 except:
                     pass
 
@@ -16890,7 +16899,8 @@ class NmrDpUtility(object):
 
                 try:
 
-                    lp_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, None, None)[0]
+                    lp_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, None, None,
+                                                     exc_missing=(not self.__combined_mode))[0]
 
                     self.__lp_data[content_subtype].append({'file_name': file_name, 'sf_framecode': sf_framecode, 'data': lp_data})
 
@@ -17280,7 +17290,8 @@ class NmrDpUtility(object):
 
                 try:
 
-                    lp_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, None, None)[0]
+                    lp_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, None, None,
+                                                     exc_missing=(not self.__combined_mode))[0]
 
                     self.__lp_data[content_subtype].append({'file_name': file_name, 'sf_framecode': sf_framecode, 'data': lp_data})
 
@@ -18293,7 +18304,8 @@ class NmrDpUtility(object):
 
                     try:
 
-                        lp_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, None, None)[0]
+                        lp_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, None, None,
+                                                         exc_missing=(not self.__combined_mode))[0]
 
                         self.__lp_data[content_subtype].append({'file_name': file_name, 'sf_framecode': w['sf_framecode'], 'data': lp_data})
 
@@ -18932,7 +18944,8 @@ class NmrDpUtility(object):
 
                                                 try:
 
-                                                    lp_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, None, None)[0]
+                                                    lp_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, None, None,
+                                                                                     exc_missing=(not self.__combined_mode))[0]
 
                                                     self.__lp_data[content_subtype].append({'file_name': file_name, 'sf_framecode': w['sf_framecode'], 'data': lp_data})
 
@@ -18995,7 +19008,8 @@ class NmrDpUtility(object):
 
                                                 try:
 
-                                                    lp_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, None, None)[0]
+                                                    lp_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, None, None,
+                                                                                     exc_missing=(not self.__combined_mode))[0]
 
                                                     self.__lp_data[content_subtype].append({'file_name': file_name, 'sf_framecode': w['sf_framecode'], 'data': lp_data})
 
@@ -19576,7 +19590,8 @@ class NmrDpUtility(object):
 
                     try:
 
-                        lp_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, None, None)[0]
+                        lp_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, None, None,
+                                                         exc_missing=(not self.__combined_mode))[0]
 
                         self.__lp_data[content_subtype].append({'file_name': file_name, 'sf_framecode': sf_framecode, 'data': lp_data})
 
@@ -20738,7 +20753,8 @@ class NmrDpUtility(object):
 
                 try:
 
-                    lp_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, None, None)[0]
+                    lp_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, None, None,
+                                                     exc_missing=(not self.__combined_mode))[0]
 
                     self.__lp_data[content_subtype].append({'file_name': file_name, 'sf_framecode': sf_framecode, 'data': lp_data})
 
@@ -20953,7 +20969,8 @@ class NmrDpUtility(object):
 
                 try:
 
-                    lp_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, None, None)[0]
+                    lp_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, None, None,
+                                                     exc_missing=(not self.__combined_mode))[0]
 
                     self.__lp_data[content_subtype].append({'file_name': file_name, 'sf_framecode': sf_framecode, 'data': lp_data})
 

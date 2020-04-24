@@ -5241,9 +5241,11 @@ class NmrDpUtility(object):
                             ref_gauge_code = self.__getGaugeCode(s1['seq_id'])
                             test_gauge_code = self.__getGaugeCode(_s2['seq_id'])
 
+                            matched = mid_code.count('|')
+
                             seq_align = {'list_id': polymer_sequence_in_loop[content_subtype][list_id]['list_id'],
                                          'sf_framecode': polymer_sequence_in_loop[content_subtype][list_id]['sf_framecode'],
-                                         'chain_id': chain_id, 'length': ref_length, 'conflict': conflict, 'unmapped': unmapped,
+                                         'chain_id': chain_id, 'length': ref_length, 'matched': matched, 'conflict': conflict, 'unmapped': unmapped,
                                          'sequence_coverage': float('{:.3f}'.format(float(length - (unmapped + conflict)) / float(ref_length))),
                                          'ref_seq_id': s1['seq_id'],
                                          'ref_gauge_code': ref_gauge_code, 'ref_code': ref_code, 'mid_code': mid_code, 'test_code': test_code, 'test_gauge_code': test_gauge_code}
@@ -5449,6 +5451,11 @@ class NmrDpUtility(object):
             return self.__nefT.get_star_atom(comp_id, atom_id, leave_unmatched=leave_unmatched)
         elif atom_id.startswith('QQ'):
             return self.__nefT.get_star_atom(comp_id, 'H' + atom_id[2:] + '%', leave_unmatched=leave_unmatched)
+        elif atom_id == 'QR':
+            atom_list, ambiguity_code, details = self.__nefT.get_star_atom(comp_id, 'HD%', leave_unmatched=leave_unmatched)
+            atom_list_2 = self.__nefT.get_star_atom(comp_id, 'HE%', leave_unmatched=leave_unmatched)[0]
+            atom_list.extend(atom_list_2)
+            return atom_list, ambiguity_code, details
         elif atom_id.startswith('Q') or atom_id.startswith('M'):
             return self.__nefT.get_star_atom(comp_id, 'H' + atom_id[1:] + '%', leave_unmatched=leave_unmatched)
         elif atom_id + '2' in self.__csStat.getAllAtoms(comp_id):
@@ -14130,8 +14137,10 @@ class NmrDpUtility(object):
                             ref_gauge_code = self.__getGaugeCode(s1['seq_id'])
                             test_gauge_code = self.__getGaugeCode(_s2['seq_id'])
 
+                            matched = mid_code.count('|')
+
                             seq_align = {'list_id': polymer_sequence_in_loop[content_subtype][list_id]['list_id'],
-                                         'chain_id': chain_id, 'length': ref_length, 'conflict': conflict, 'unmapped': unmapped,
+                                         'chain_id': chain_id, 'length': ref_length, 'matched': matched, 'conflict': conflict, 'unmapped': unmapped,
                                          'sequence_coverage': float('{:.3f}'.format(float(length - (unmapped + conflict)) / float(ref_length))),
                                          'ref_seq_id': s1['seq_id'],
                                          'ref_gauge_code': ref_gauge_code, 'ref_code': ref_code, 'mid_code': mid_code, 'test_code': test_code, 'test_gauge_code': test_gauge_code}
@@ -14232,7 +14241,9 @@ class NmrDpUtility(object):
                 ref_gauge_code = self.__getGaugeCode(_s1['seq_id'])
                 test_gauge_code = self.__getGaugeCode(_s2['seq_id'])
 
-                seq_align = {'ref_chain_id': chain_id, 'test_chain_id': chain_id2, 'length': ref_length, 'conflict': conflict,'unmapped': unmapped,
+                matched = mid_code.count('|')
+
+                seq_align = {'ref_chain_id': chain_id, 'test_chain_id': chain_id2, 'length': ref_length, 'matched': matched, 'conflict': conflict,'unmapped': unmapped,
                              'sequence_coverage': float('{:.3f}'.format(float(length - (unmapped + conflict)) / float(ref_length))),
                              'ref_seq_id': _s1['seq_id'], 'test_seq_id': _s2['seq_id'],
                              'ref_gauge_code': ref_gauge_code, 'ref_code': ref_code, 'mid_code': mid_code, 'test_code': test_code, 'test_gauge_code': test_gauge_code}
@@ -14312,7 +14323,9 @@ class NmrDpUtility(object):
                 ref_gauge_code = self.__getGaugeCode(_s1['seq_id'])
                 test_gauge_code = self.__getGaugeCode(_s2['seq_id'])
 
-                seq_align = {'ref_chain_id': chain_id, 'test_chain_id': chain_id2, 'length': ref_length, 'conflict': conflict, 'unmapped': unmapped,
+                matched = mid_code.count('|')
+
+                seq_align = {'ref_chain_id': chain_id, 'test_chain_id': chain_id2, 'length': ref_length, 'matched': matched, 'conflict': conflict, 'unmapped': unmapped,
                              'sequence_coverage': float('{:.3f}'.format(float(length - (unmapped + conflict)) / float(ref_length))),
                              'ref_seq_id': _s1['seq_id'], 'test_seq_id': _s2['seq_id'],
                              'ref_gauge_code': ref_gauge_code, 'ref_code': ref_code, 'mid_code': mid_code, 'test_code': test_code, 'test_gauge_code': test_gauge_code}
@@ -14425,7 +14438,7 @@ class NmrDpUtility(object):
                     result = next(seq_align for seq_align in seq_align_dic['model_poly_seq_vs_nmr_poly_seq'] if seq_align['ref_chain_id'] == chain_id and seq_align['test_chain_id'] == chain_id2)
                     _result = next(seq_align for seq_align in seq_align_dic['nmr_poly_seq_vs_model_poly_seq'] if seq_align['ref_chain_id'] == chain_id2 and seq_align['test_chain_id'] == chain_id)
 
-                    chain_assign = {'ref_chain_id': chain_id, 'test_chain_id': chain_id2, 'length': result['length'], 'conflict': result['conflict'], 'unmapped': result['unmapped'], 'sequence_coverage': result['sequence_coverage']}
+                    chain_assign = {'ref_chain_id': chain_id, 'test_chain_id': chain_id2, 'length': result['length'], 'matched': result['matched'], 'conflict': result['conflict'], 'unmapped': result['unmapped'], 'sequence_coverage': result['sequence_coverage']}
 
                     s1 = next(s for s in cif_polymer_sequence if s['chain_id'] == chain_id)
                     s2 = next(s for s in nmr_polymer_sequence if s['chain_id'] == chain_id2)
@@ -14706,7 +14719,7 @@ class NmrDpUtility(object):
                     result = next(seq_align for seq_align in seq_align_dic['nmr_poly_seq_vs_model_poly_seq'] if seq_align['ref_chain_id'] == chain_id and seq_align['test_chain_id'] == chain_id2)
                     _result = next(seq_align for seq_align in seq_align_dic['model_poly_seq_vs_nmr_poly_seq'] if seq_align['ref_chain_id'] == chain_id2 and seq_align['test_chain_id'] == chain_id)
 
-                    chain_assign = {'ref_chain_id': chain_id, 'test_chain_id': chain_id2, 'length': result['length'], 'conflict': result['conflict'], 'unmapped': result['unmapped'], 'sequence_coverage': result['sequence_coverage']}
+                    chain_assign = {'ref_chain_id': chain_id, 'test_chain_id': chain_id2, 'length': result['length'], 'matched': result['matched'], 'conflict': result['conflict'], 'unmapped': result['unmapped'], 'sequence_coverage': result['sequence_coverage']}
 
                     s1 = next(s for s in nmr_polymer_sequence if s['chain_id'] == chain_id)
                     s2 = next(s for s in cif_polymer_sequence if s['chain_id'] == chain_id2)

@@ -88,10 +88,14 @@ class TestNmrDpUtility(unittest.TestCase):
         if not report['error'] is None:
             self.assertEqual(report['error']['internal_error'], None)
 
-        if report['error'] is None or report['error']['format_issue'] is None:
+        if report['error'] is None:
             print('%s: %s' % (cs_type, report['information']['status']))
-        else:
+        elif not report['error']['format_issue'] is None:
             print('%s: %s\n format_issue: %s' % (cs_type, report['information']['status'], report['error']['format_issue'][0]['description']))
+        elif not report['error']['missing_mandatory_content'] is None:
+            print('%s: %s\n missing_mandatory_content: %s' % (cs_type, report['information']['status'], report['error']['missing_mandatory_content'][0]['description']))
+        else:
+            print('%s: %s' % (cs_type, report['information']['status']))
 
     def test_nmr_cs_str_consistency_check_data(self):
         self.__test_nmr_cs_str_consistency('data')

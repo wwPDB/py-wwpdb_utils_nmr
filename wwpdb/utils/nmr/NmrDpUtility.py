@@ -70,6 +70,7 @@ import copy
 import collections
 import re
 import math
+import codecs
 
 from munkres import Munkres
 
@@ -2880,6 +2881,15 @@ class NmrDpUtility(object):
 
         if self.__combined_mode:
 
+            codec = self.__detectBOM(srcPath, 'utf-8')
+
+            srcPath_ = None
+
+            if codec != 'utf-8':
+                srcPath_ = srcPath + '~'
+                self.__convertCodec(srcPath, srcPath_, codec, 'utf-8')
+                srcPath = srcPath_
+
             is_valid, json_dumps = self.__nefT.validate_file(srcPath, 'A') # 'A' for NMR unified data, 'S' for assigned chemical shifts, 'R' for restraints.
 
             message = json.loads(json_dumps)
@@ -2952,9 +2962,24 @@ class NmrDpUtility(object):
 
                 is_done = False
 
+            if not srcPath_ is None:
+                try:
+                    os.remove(srcPath_)
+                except:
+                    pass
+
         else:
 
             for csListId, csPath in enumerate(self.__inputParamDict['chem_shift_file_path_list']):
+
+                codec = self.__detectBOM(csPath, 'utf-8')
+
+                csPath_ = None
+
+                if codec != 'utf-8':
+                    csPath_ = csPath + '~'
+                    self.__convertCodec(csPath, csPath_, codec, 'utf-8')
+                    csPath = csPath_
 
                 is_valid, json_dumps = self.__nefT.validate_file(csPath, 'S') # 'A' for NMR unified data, 'S' for assigned chemical shifts, 'R' for restraints.
 
@@ -3084,11 +3109,26 @@ class NmrDpUtility(object):
 
                         is_done = False
 
+                if not csPath_ is None:
+                    try:
+                        os.remove(csPath_)
+                    except:
+                        pass
+
             if 'restraint_file_path_list' in self.__inputParamDict:
 
                 file_path_list_len = self.__cs_file_path_list_len
 
                 for mrPath in self.__inputParamDict['restraint_file_path_list']:
+
+                    codec = self.__detectBOM(mrPath, 'utf-8')
+
+                    mrPath_ = None
+
+                    if codec != 'utf-8':
+                        mrPath_ = mrPath + '~'
+                        self.__convertCodec(mrPath, mrPath_, codec, 'utf-8')
+                        mrPath = mrPath_
 
                     is_valid, json_dumps = self.__nefT.validate_file(mrPath, 'R') # 'A' for NMR unified data, 'S' for assigned chemical shifts, 'R' for restraints.
 
@@ -3220,6 +3260,12 @@ class NmrDpUtility(object):
 
                     file_path_list_len += 1
 
+                    if not mrPath_ is None:
+                        try:
+                            os.remove(mrPath_)
+                        except:
+                            pass
+
         return is_done
 
     def __fixFormatIssueOfInputSource(self, file_type, srcPath=None, message=None):
@@ -3248,10 +3294,7 @@ class NmrDpUtility(object):
             with open(_srcPath, 'r') as ifp:
                 with open(_srcPath + '~', 'w') as ofp:
                     ofp.write('data_' + os.path.basename(srcPath) + '\n\n')
-                    line = ifp.readline()
-                    ofp.write(line)
-                    while line:
-                        line = ifp.readline()
+                    for line in ifp:
                         ofp.write(line)
 
                     ofp.close()
@@ -3277,13 +3320,7 @@ class NmrDpUtility(object):
 
             with open(_srcPath, 'r') as ifp:
                 with open(_srcPath + '~', 'w') as ofp:
-                    line = ifp.readline()
-                    if datablock_pattern.match(line):
-                        pass_datablock = True
-                    else:
-                        ofp.write(line)
-                    while line:
-                        line = ifp.readline()
+                    for line in ifp:
                         if pass_datablock:
                             ofp.write(line)
                         elif datablock_pattern.match(line):
@@ -3336,11 +3373,7 @@ class NmrDpUtility(object):
                     sf_framecode_pattern = re.compile(r'\s*save_' + sf_framecode + r'\s*')
 
                     with open(_srcPath, 'r') as ifp:
-                        line = ifp.readline()
-                        if sf_framecode_pattern.match(line):
-                            pass_sf_framecode = True
-                        while line:
-                            line = ifp.readline()
+                        for line in ifp:
                             if pass_sf_framecode:
                                 if pass_sf_loop:
                                     if lp_category_pattern.match(line):
@@ -3373,12 +3406,7 @@ class NmrDpUtility(object):
 
                 with open(_srcPath, 'r') as ifp:
                     with open(_srcPath + '~', 'w') as ofp:
-                        line = ifp.readline()
-                        if sf_framecode_pattern.match(line):
-                            pass_sf_framecode = True
-                        ofp.write(line)
-                        while line:
-                            line = ifp.readline()
+                        for line in ifp:
                             if pass_sf_loop:
                                 ofp.write(line)
                             elif pass_sf_framecode:
@@ -3440,13 +3468,7 @@ class NmrDpUtility(object):
                         i = 1
 
                         with open(_srcPath, 'r') as ifp:
-                            line = ifp.readline()
-                            if loop_pattern.match(line):
-                                pass_loop = True
-                                _i = i
-                            i += 1
-                            while line:
-                                line = ifp.readline()
+                            for line in ifp:
                                 if pass_loop:
                                     if lp_category_pattern.match(line):
                                         _lp_category = '_' + lp_category_pattern.search(line).groups()[0]
@@ -3485,18 +3507,7 @@ class NmrDpUtility(object):
             with open(_srcPath, 'r') as ifp:
                 with open(_srcPath + '~', 'w') as ofp:
                     ofp.write('data_' + os.path.basename(srcPath) + '\n\n')
-                    line = ifp.readline()
-                    if i in target_loop_locations:
-                        target = next(target for target in targets if target['loop_location'] == i)
-                        if 'sf_category' in target:
-                            ofp.write('save_' + target['sf_framecode'] + '\n')
-                            ofp.write(target['sf_tag_prefix'] + '.' + ('sf_framecode' if file_type == 'nef' else 'Sf_framecode') + '   ' + target['sf_framecode'] + '\n')
-                            ofp.write(target['sf_tag_prefix'] + '.' + ('sf_category' if file_type == 'nef' else 'Sf_category') + '    ' + target['sf_category'] + '\n')
-                            ofp.write('#\n')
-                    ofp.write(line)
-                    i += 1
-                    while line:
-                        line = ifp.readline()
+                    for line in ifp:
                         if i in target_loop_locations:
                             target = next(target for target in targets if target['loop_location'] == i)
                             if 'sf_category' in target:
@@ -3521,6 +3532,35 @@ class NmrDpUtility(object):
             pass
 
         return _srcPath, tempPaths
+
+    def __detectBOM(self, in_file, default='utf-8'):
+        """ Detect BOM of input file.
+        """
+
+        with open(in_file, 'rb') as f:
+            raw = f.read(4)
+
+        for enc,boms in \
+                ('utf-8-sig',(codecs.BOM_UTF8)),\
+                ('utf-16',(codecs.BOM_UTF16_LE,codecs.BOM_UTF16_BE)),\
+                ('utf-32',(codecs.BOM_UTF32_LE,codecs.BOM_UTF32_BE)):
+            if any(raw.startswith(bom) for bom in boms):
+                return enc
+
+        return default
+
+    def __convertCodec(self, in_file, out_file, in_codec='utf-8', out_codec='utf-8'):
+        """ Convert codec of input file to UTF-8.
+        """
+
+        with open(in_file, 'rb') as ifp:
+            with open(out_file, 'w+b') as ofp:
+                contents = ifp.read()
+                ofp.write(contents.decode(in_codec).encode(out_codec))
+
+                ofp.close()
+
+            ifp.close()
 
     def __getFirstTagValue(self, data=None, tag=None):
         """ Return the first value of a given tag from PyNMRSTAR data.

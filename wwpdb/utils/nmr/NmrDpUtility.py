@@ -53,6 +53,8 @@
 # 24-Apr-2020  M. Yokochi - separate format_issue error and missing_mandatory_content error (DAOTHER-5611)
 # 24-Apr-2020  M. Yokochi - support 'QR' pseudo atom name (DAOTHER-5611)
 # 24-Apr-2020  M. Yokochi - allow mandatory value is missing in NMR separated deposition (DAOTHER-5611)
+# 25-Apr-2020  M. Yokochi - implement automatic format correction for 6PSI entry (DAOTHE-5611)
+# 25-Apr-2020  M. Yokochi - add 'entity' content subtype (DAOTHER-5611)
 ##
 """ Wrapper class for data processing for NMR data.
     @author: Masashi Yokochi
@@ -292,7 +294,7 @@ class NmrDpUtility(object):
         self.true_value = ('true', 't', 'yes', 'y', '1')
 
         # NMR content types
-        self.nmr_content_subtypes = ('entry_info', 'poly_seq', 'chem_shift', 'chem_shift_ref', 'dist_restraint', 'dihed_restraint', 'rdc_restraint', 'spectral_peak')
+        self.nmr_content_subtypes = ('entry_info', 'poly_seq', 'entity', 'chem_shift', 'chem_shift_ref', 'dist_restraint', 'dihed_restraint', 'rdc_restraint', 'spectral_peak')
 
         # CIF content types
         self.cif_content_subtypes = ('poly_seq', 'non_poly', 'coordinate')
@@ -347,6 +349,7 @@ class NmrDpUtility(object):
         # saveframe categories
         self.sf_categories = {'nef': {'entry_info': 'nef_nmr_meta_data',
                                       'poly_seq': 'nef_molecular_system',
+                                      'entity': None,
                                       'chem_shift': 'nef_chemical_shift_list',
                                       'chem_shift_ref': None,
                                       'dist_restraint': 'nef_distance_restraint_list',
@@ -356,8 +359,10 @@ class NmrDpUtility(object):
                                       },
                               'nmr-star': {'entry_info': 'entry_information',
                                            'poly_seq': 'assembly',
+                                           'entity': 'entity',
                                            'chem_shift': 'assigned_chemical_shifts',
                                            'chem_shift_ref': 'chem_shift_reference',
+                                           'entity': 'entity',
                                            'dist_restraint': 'general_distance_constraints',
                                            'dihed_restraint': 'torsion_angle_constraints',
                                            'rdc_restraint': 'RDC_constraints',
@@ -368,6 +373,7 @@ class NmrDpUtility(object):
         # loop categories
         self.lp_categories = {'nef': {'entry_info': '_nef_program_script',
                                       'poly_seq': '_nef_sequence',
+                                      'entity': None,
                                       'chem_shift': '_nef_chemical_shift',
                                       'chem_shift_ref': None,
                                       'dist_restraint': '_nef_distance_restraint',
@@ -377,6 +383,7 @@ class NmrDpUtility(object):
                                       },
                               'nmr-star': {'entry_info': '_Software_applied_methods',
                                            'poly_seq': '_Chem_comp_assembly',
+                                           'entity': '_Entity_comp_index',
                                            'chem_shift': '_Atom_chem_shift',
                                            'chem_shift_ref': '_Chem_shift_ref',
                                            'dist_restraint': '_Gen_dist_constraint',
@@ -393,8 +400,8 @@ class NmrDpUtility(object):
                               }
 
         # allowed chem shift range
-        self.chem_shift_range = {'min_exclusive': -300.0, 'max_exclusive': 300.0}
-        self.chem_shift_error = {'min_inclusive': 0.0, 'max_inclusive': 3.0}
+        self.chem_shift_range = {'min_exclusive': -500.0, 'max_exclusive': 500.0}
+        self.chem_shift_error = {'min_inclusive': 0.0, 'max_inclusive': 5.0}
 
         # allowed distance range
         self.dist_restraint_range = {'min_inclusive': 1.0, 'max_inclusive': 50.0}
@@ -439,6 +446,7 @@ class NmrDpUtility(object):
         # loop index tags
         self.index_tags = {'nef': {'entry_info': None,
                                    'poly_seq': 'index',
+                                   'entity': None,
                                    'chem_shift': None,
                                    'chem_shift_ref': None,
                                    'dist_restraint': 'index',
@@ -448,6 +456,7 @@ class NmrDpUtility(object):
                                    },
                            'nmr-star': {'entry_info': None,
                                         'poly_seq': None,
+                                        'entity': None,
                                         'chem_shift': None,
                                         'chem_shift_ref': None,
                                         'dist_restraint': 'Index_ID',
@@ -464,6 +473,7 @@ class NmrDpUtility(object):
         # weight tags
         self.weight_tags = {'nef': {'entry_info': None,
                                     'poly_seq': None,
+                                    'entity': None,
                                     'chem_shift': None,
                                     'chem_shift_ref': None,
                                     'dist_restraint': 'weight',
@@ -473,6 +483,7 @@ class NmrDpUtility(object):
                                     },
                             'nmr-star': {'entry_info': None,
                                          'poly_seq': None,
+                                         'entity': None,
                                          'chem_shift': None,
                                          'chem_shift_ref': None,
                                          'dist_restraint': 'Weight',
@@ -509,6 +520,7 @@ class NmrDpUtility(object):
                                                {'name': 'sequence_code', 'type': 'int'},
                                                {'name': 'residue_name', 'type': 'str', 'uppercase': True}
                                                ],
+                                  'entity': None,
                                   'chem_shift': [{'name': 'chain_code', 'type': 'str', 'default': 'A'},
                                                  {'name': 'sequence_code', 'type': 'int'},
                                                  {'name': 'residue_name', 'type': 'str', 'uppercase': True},
@@ -559,6 +571,7 @@ class NmrDpUtility(object):
                                                     {'name': 'Comp_index_ID', 'type': 'int'},
                                                     {'name': 'Comp_ID', 'type': 'str', 'uppercase': True}
                                                     ],
+                                       'entity': None,
                                        'chem_shift': [{'name': 'Entity_assembly_ID', 'type': 'positive-int', 'default': '1', 'default-from': 'self'},
                                                       {'name': 'Comp_index_ID', 'type': 'int'},
                                                       {'name': 'Comp_ID', 'type': 'str', 'uppercase': True},
@@ -733,6 +746,7 @@ class NmrDpUtility(object):
                                                 {'name': 'residue_variant', 'type': 'str', 'mandatory': False},
                                                 {'name': 'cis_peptide', 'type': 'bool', 'mandatory': False}
                                                 ],
+                                   'entity': None,
                                    'chem_shift': [{'name': 'value', 'type': 'range-float', 'mandatory': True,
                                                    'range': self.chem_shift_range},
                                                   {'name': 'value_uncertainty', 'type': 'range-float', 'mandatory': False, 'void-zero': True,
@@ -899,6 +913,7 @@ class NmrDpUtility(object):
                                                      {'name': 'NEF_index', 'type': 'index-int', 'mandatory': False},
                                                      {'name': 'Assembly_ID', 'type': 'pointer-index', 'mandatory': False, 'default': '1'}
                                                      ],
+                                        'entity': None,
                                         'chem_shift': [{'name': 'Atom_type', 'type': 'enum', 'mandatory': True, 'default-from': 'Atom_ID',
                                                         'enum': set(self.atom_isotopes.keys()),
                                                         'enforce-enum': True},
@@ -1407,6 +1422,7 @@ class NmrDpUtility(object):
         # allowed loop tags
         self.allowed_tags = {'nef': {'entry_info': ['program_name', 'script_name', 'script'],
                                      'poly_seq': ['index', 'chain_code', 'sequence_code', 'residue_name', 'linking', 'residue_variant', 'cis_peptide'],
+                                     'entity': None,
                                      'chem_shift': ['chain_code', 'sequence_code', 'residue_name', 'atom_name', 'value', 'value_uncertainty', 'element', 'isotope_number'],
                                      'chem_shift_ref': None,
                                      'dist_restraint': ['index', 'restraint_id', 'restraint_combination_id', 'chain_code_1', 'sequence_code_1', 'residue_name_1', 'atom_name_1', 'chain_code_2', 'sequence_code_2', 'residue_name_2', 'atom_name_2', 'weight', 'target_value', 'target_value_uncertainty', 'lower_linear_limit', 'lower_limit', 'upper_limit', 'upper_linear_limit'],
@@ -1435,6 +1451,7 @@ class NmrDpUtility(object):
                                      },
                              'nmr-star': {'entry_info': ['Software_ID', 'Software_label', 'Methods_ID', 'Methods_label', 'Software_name', 'Script_name', 'Script', 'Software_specific_info', 'Sf_ID', 'Entry_ID', 'Software_applied_list_ID'],
                                           'poly_seq': ['Assembly_chem_comp_ID', 'Entity_assembly_ID', 'Entity_ID', 'Comp_index_ID', 'Comp_ID', 'Seq_ID', 'Auth_entity_assembly_ID', 'Auth_asym_ID', 'Auth_seq_ID', 'Auth_comp_ID', 'Auth_variant_ID', 'Sequence_linking', 'Cis_residue', 'NEF_index', 'Sf_ID', 'Entry_ID', 'Assembly_ID'],
+                                          'entity': None,
                                           'chem_shift': ['ID', 'Assembly_atom_ID', 'Entity_assembly_ID', 'Entity_ID', 'Comp_index_ID', 'Seq_ID', 'Comp_ID', 'Atom_ID', 'Atom_type', 'Atom_isotope_number', 'Val', 'Val_err', 'Assign_fig_of_merit', 'Ambiguity_code', 'Ambiguity_set_ID', 'Occupancy', 'Resonance_ID',
                                                          'Auth_entity_assembly_ID', 'Auth_asym_ID', 'Auth_seq_ID', 'Auth_comp_ID', 'Auth_atom_ID',
                                                          'PDB_record_ID', 'PDB_model_num', 'PDB_strand_ID', 'PDB_ins_code', 'PDB_residue_no', 'PDB_residue_name', 'PDB_atom_name',
@@ -1504,6 +1521,7 @@ class NmrDpUtility(object):
         # saveframe tag prefixes (saveframe holder categories)
         self.sf_tag_prefixes = {'nef': {'entry_info': '_nef_nmr_meta_data',
                                         'poly_seq': '_nef_molecular_system',
+                                        'entity': None,
                                         'chem_shift': '_nef_chemical_shift_list',
                                         'chem_shift_ref': None,
                                         'dist_restraint': '_nef_distance_restraint_list',
@@ -1513,6 +1531,7 @@ class NmrDpUtility(object):
                                         },
                                 'nmr-star': {'entry_info': '_Entry',
                                              'poly_seq': '_Assembly',
+                                             'entity': '_Entity',
                                              'chem_shift': '_Assigned_chem_shift_list',
                                              'chem_shift_ref': '_Chem_shift_reference',
                                              'dist_restraint': '_Gen_dist_constraint_list',
@@ -1788,6 +1807,7 @@ class NmrDpUtility(object):
                                                     {'name': 'uuid', 'type': 'str', 'mandatory': True},
                                                     {'name': 'coordinate_file_name', 'type': 'str', 'mandatory': False}
                                                    ],
+                                     'entity': None,
                                      'poly_seq': [{'name': 'sf_category', 'type': 'str', 'mandatory': True},
                                                   {'name': 'sf_framecode', 'type': 'str', 'mandatory': True}
                                                   ],
@@ -1848,6 +1868,7 @@ class NmrDpUtility(object):
                                                          {'name': 'UUID', 'type': 'str', 'mandatory': False},
                                                          {'name': 'Related_coordinate_file_name', 'type': 'str', 'mandatory': False}
                                                          ],
+                                          'entity': None,
                                           'poly_seq': [{'name': 'Sf_category', 'type': 'str', 'mandatory': True},
                                                        {'name': 'Sf_framecode', 'type': 'str', 'mandatory': True}
                                                        ],
@@ -1916,6 +1937,7 @@ class NmrDpUtility(object):
         # required saveframe tag items by NmrDpUtility
         self._sf_tag_items = {'nef': {'entry_info': None,
                                       'poly_seq': None,
+                                      'entity': None,
                                       'chem_shift': None,
                                       'chem_shift_ref': None,
                                       'dist_restraint': ['restraint_origin', 'potential_type'],
@@ -1925,6 +1947,7 @@ class NmrDpUtility(object):
                                      },
                               'nmr-star': {'entry_info': None,
                                            'poly_seq': None,
+                                           'entity': None,
                                            'chem_shift': None,
                                            'chem_shift_ref': None,
                                            'dist_restraint': ['Constraint_type', 'Potential_type'],
@@ -1937,6 +1960,7 @@ class NmrDpUtility(object):
         # allowed saveframe tags
         self.sf_allowed_tags = {'nef': {'entry_info': ['sf_category', 'sf_framecode', 'format_name', 'format_version', 'program_name', 'program_version', 'creation_date', 'uuid', 'coordinate_file_name'],
                                         'poly_seq': ['sf_category', 'sf_framecode'],
+                                        'entity': None,
                                         'chem_shift': ['sf_category', 'sf_framecode'],
                                         'chem_shift_ref': None,
                                         'dist_restraint': ['sf_category', 'sf_framecode', 'potential_type', 'restraint_origin'],
@@ -1957,6 +1981,7 @@ class NmrDpUtility(object):
                                                             'PDB_deposit_site', 'PDB_process_site', 'BMRB_deposit_site', 'BMRB_process_site', 'BMRB_annotator', 'BMRB_internal_directory_name', 'RCSB_annotator', 'Author_approval_type', 'Assigned_BMRB_ID', 'Assigned_BMRB_deposition_code', 'Assigned_PDB_ID', 'Assigned_PDB_deposition_code', 'Assigned_restart_ID'],
                                              'poly_seq': ['Sf_category', 'Sf_framecode', 'Entry_ID', 'Sf_ID', 'ID', 'Name', 'BMRB_code', 'Number_of_components', 'Organic_ligands', 'Metal_ions', 'Non_standard_bonds', 'Ambiguous_conformational_states', 'Ambiguous_chem_comp_sites', 'Molecules_in_chemical_exchange',
                                                           'Paramagnetic', 'Thiol_state', 'Molecular_mass', 'Enzyme_commission_number', 'Details', 'DB_query_date', 'DB_query_revised_last_date'],
+                                             'entity': None,
                                              'chem_shift': ['Sf_category', 'Sf_framecode', 'Entry_ID', 'Sf_ID', 'ID', 'Name', 'Data_file_name', 'Sample_condition_list_ID', 'Sample_condition_list_label', 'Chem_shift_reference_ID', 'Chem_shift_reference_label',
                                                             'Chem_shift_1H_err', 'Chem_shift_13C_err', 'Chem_shift_15N_err', 'Chem_shift_31P_err', 'Chem_shift_2H_err', 'Chem_shift_19F_err',
                                                             'Error_derivation_method', 'Details', 'Text_data_format', 'Text_data'],
@@ -1978,6 +2003,7 @@ class NmrDpUtility(object):
         # auxiliary loop categories
         self.aux_lp_categories = {'nef': {'entry_info': [],
                                           'poly_seq':  [],
+                                          'entity': [],
                                           'chem_shift': [],
                                           'chem_shift_ref': [],
                                           'dist_restraint': [],
@@ -1987,8 +2013,10 @@ class NmrDpUtility(object):
                                           },
                                   'nmr-star': {'entry_info': [],
                                                'poly_seq':  [],
+                                               'entity': [],
                                                'chem_shift': [],
                                                'chem_shift_ref': [],
+                                               'entity': ['_Entity_poly_seq'],
                                                'dist_restraint': [],
                                                'dihed_restraint': [],
                                                'rdc_restraint': [],
@@ -1999,6 +2027,7 @@ class NmrDpUtility(object):
         # linked loop categories
         self.linked_lp_categories = {'nef': {'entry_info': ['_nef_related_entries', '_nef_program_script', '_nef_run_history'],
                                              'poly_seq':  ['_nef_sequence', '_nef_covalent_links'],
+                                             'entity': [],
                                              'chem_shift': ['_nef_chemical_shift'],
                                              'chem_shift_ref': [],
                                              'dist_restraint': ['_nef_distance_restraint'],
@@ -2046,6 +2075,7 @@ class NmrDpUtility(object):
                                                   'poly_seq':  ['_Assembly_type', '_Entity_assembly', '_Bond', '_Entity_deleted_atom', '_Struct_asym', '_Assembly_db_link', '_Assembly_common_name', '_Assembly_systematic_name', '_Assembly_interaction', '_Chem_comp_assembly', '_PDBX_poly_seq_scheme', '_PDBX_nonpoly_scheme', '_Atom_type', '_Atom', '_Assembly_bio_function', '_Angle', '_Torsion_angle',
                                                                 '_Assembly_segment', '_Assembly_segment_description', '_Assembly_keyword', '_Assembly_citation', '_Author_annotation', '_Sample_component', '_Chemical_rate', '_Auto_relaxation', '_Theoretical_auto_relaxation',
                                                                 '_Binding_result', '_Binding_partners', '_Struct_anno_char' ],
+                                                  'entity': [],
                                                   'chem_shift': ['_Chem_shift_experiment', '_Systematic_chem_shift_offset', '_Chem_shift_software', '_Atom_chem_shift', '_Ambiguous_atom_chem_shift', '_Spectral_peak_list', '_Assigned_peak_chem_shift', '_Assigned_spectral_transition'],
                                                   'chem_shift_ref': ['_Chem_shift_ref', '_Assigned_chem_shift_list', '_Chem_shifts_calc_type'],
                                                   'dist_restraint': ['_Gen_dist_constraint_expt', '_Gen_dist_constraint_software', '_Gen_dist_constraint_software_param', '_Gen_dist_constraint', '_Gen_dist_constraint_comment_org', '_Gen_dist_constraint_parse_err', '_Gen_dist_constraint_parse_file', '_Gen_dist_constraint_conv_err'],
@@ -2058,6 +2088,7 @@ class NmrDpUtility(object):
         # auxiliary loop key items
         self.aux_key_items = {'nef': {'entry_info': None,
                                       'poly_seq':  None,
+                                      'entity': None,
                                       'chem_shift': None,
                                       'chem_shift_ref': None,
                                       'dist_restraint': None,
@@ -2073,6 +2104,7 @@ class NmrDpUtility(object):
                                       },
                               'nmr-star': {'entry_info': None,
                                            'poly_seq':  None,
+                                           'entity': None,
                                            'chem_shift': None,
                                            'chem_shift_ref': None,
                                            'dist_restraint': None,
@@ -2091,6 +2123,7 @@ class NmrDpUtility(object):
         # auxiliary loop data items
         self.aux_data_items = {'nef': {'entry_info': None,
                                        'poly_seq':  None,
+                                       'entity': None,
                                        'chem_shift': None,
                                        'chem_shift_ref': None,
                                        'dist_restraint': None,
@@ -2120,6 +2153,7 @@ class NmrDpUtility(object):
                                        },
                                   'nmr-star': {'entry_info': None,
                                                'poly_seq':  None,
+                                               'entity': None,
                                                'chem_shift': None,
                                                'chem_shift_ref': None,
                                                'dist_restraint': None,
@@ -2154,6 +2188,7 @@ class NmrDpUtility(object):
         # allowed auxiliary loop tags
         self.aux_allowed_tags = {'nef': {'entry_info': None,
                                          'poly_seq':  None,
+                                         'entity': None,
                                          'chem_shift': None,
                                          'chem_shift_ref': None,
                                          'dist_restraint': None,
@@ -2166,6 +2201,7 @@ class NmrDpUtility(object):
                                          },
                                  'nmr-star': {'entry_info': None,
                                               'poly_seq':  None,
+                                              'entity': None,
                                               'chem_shift': None,
                                               'chem_shift_ref': None,
                                               'dist_restraint': None,
@@ -2373,6 +2409,7 @@ class NmrDpUtility(object):
         # main contents of loops
         self.__lp_data = {'entry_info': [],
                           'poly_seq': [],
+                          'entity': [],
                           'chem_shift': [],
                           'chem_shift_ref': [],
                           'dist_restraint': [],
@@ -2384,6 +2421,7 @@ class NmrDpUtility(object):
         # auxiliary contents of loops
         self.__aux_data = {'entry_info': [],
                            'poly_seq': [],
+                           'entity': [],
                            'chem_shift': [],
                            'chem_shift_ref': [],
                            'dist_restraint': [],
@@ -2395,6 +2433,7 @@ class NmrDpUtility(object):
         # contents of savefram tags
         self.__sf_tag_data = {'entry_info': [],
                               'poly_seq': [],
+                              'entity': [],
                               'chem_shift': [],
                               'chem_shift_ref': [],
                               'dist_restraint': [],
@@ -3193,6 +3232,11 @@ class NmrDpUtility(object):
         if not self.__fix_format_issue:
             return _srcPath, tempPaths
 
+        datablock_pattern = re.compile(r'\s*data_\S?\s*')
+        loop_pattern = re.compile(r'\s*loop_\s*')
+        stop_pattern = re.compile(r'\s*stop_\s*')
+        lp_category_pattern = re.compile(r'\s*_(.*)\..*\s*')
+
         try:
 
             next(msg for msg in message['error'] if "Only 'save_NAME' is valid in the body of a NMR-STAR file. Found 'loop_'." in msg)
@@ -3202,8 +3246,6 @@ class NmrDpUtility(object):
                 self.__lfh.write("+NmrDpUtility.__fixFormatIssueOfInputSource() ++ Warning  - %s\n" % warn)
 
             pass_datablock = False
-
-            datablock_pattern = re.compile(r'\s*data_\S?\s*')
 
             with open(_srcPath, 'r') as ifp:
                 with open(_srcPath + '~', 'w') as ofp:
@@ -3243,8 +3285,6 @@ class NmrDpUtility(object):
                 self.__lfh.write("+NmrDpUtility.__validateInputSource() ++ Warning  - %s\n" % warn)
 
             msg_pattern = re.compile(r'^' + msg_template + r" '(.*)'$")
-            loop_pattern = re.compile(r'\s*loop_\s*')
-            lp_category_pattern = re.compile(r'\s*_(.*)\..*\s*')
 
             targets = []
 
@@ -3319,7 +3359,7 @@ class NmrDpUtility(object):
                                     if 'sf_category' in target:
                                         ofp.write(target['sf_tag_prefix'] + '.' + ('sf_framecode' if file_type == 'nef' else 'Sf_framecode') + '   ' + sf_framecode + '\n')
                                         ofp.write(target['sf_tag_prefix'] + '.' + ('sf_category' if file_type == 'nef' else 'Sf_category') + '    ' + target['sf_category'] + '\n')
-                                    ofp.write('#\n')
+                                        ofp.write('#\n')
                                     ofp.write(line)
                             elif sf_framecode_pattern.match(line):
                                 pass_sf_framecode = True
@@ -3332,6 +3372,122 @@ class NmrDpUtility(object):
                         ofp.close()
 
                     ifp.close()
+
+        except StopIteration:
+            pass
+
+        try:
+
+            msg_template = "You attempted to parse one loop but the source you provided had more than one loop. Please either parse all loops as a saveframe or only parse one loop. Loops detected:"
+
+            msg = next(msg for msg in message['error'] if msg_template in msg)
+            warn = 'Multiple loops hook directly into the datablock without saveframe.'
+
+            if self.__verbose:
+                self.__lfh.write("+NmrDpUtility.__validateInputSource() ++ Warning  - %s\n" % warn)
+
+            msg_pattern = re.compile(r'^' + msg_template + r" \[(.*)\]$")
+            lp_obj_pattern = re.compile(r"\<pynmrstar\.Loop '(.*)'\>")
+
+            targets = []
+
+            for msg in message['error']:
+
+                if not msg_template in msg:
+                    continue
+
+                try:
+
+                    g = msg_pattern.search(msg).groups()
+
+                    for lp_obj in g[0].split(', '):
+
+                        lp_category = str(lp_obj_pattern.search(lp_obj).groups()[0])
+
+                        target = {'lp_category': lp_category}
+
+                        pass_loop = False
+                        in_loop = False
+
+                        i = 1
+
+                        with open(_srcPath, 'r') as ifp:
+                            line = ifp.readline()
+                            if loop_pattern.match(line):
+                                pass_loop = True
+                                _i = i
+                            i += 1
+                            while line:
+                                line = ifp.readline()
+                                if pass_loop:
+                                    if lp_category_pattern.match(line):
+                                        _lp_category = '_' + lp_category_pattern.search(line).groups()[0]
+                                        if lp_category == _lp_category:
+                                            target['loop_location'] = _i
+                                            content_subtype = next((k for k, v in self.lp_categories[file_type].items() if v == target['lp_category']), None)
+                                            if not content_subtype is None:
+                                                target['sf_category'] = self.sf_categories[file_type][content_subtype]
+                                                target['sf_tag_prefix'] = self.sf_tag_prefixes[file_type][content_subtype]
+                                                target['sf_framecode'] = target['sf_category'] + '_1'
+                                        pass_loop = False
+                                        in_loop = True
+                                elif loop_pattern.match(line):
+                                    pass_loop = True
+                                    in_loop = False
+                                    _i = i
+                                elif stop_pattern.match(line):
+                                    if 'loop_location' in target and not 'stop_location' in target:
+                                        target['stop_location'] = i
+                                    in_loop = False
+
+                                i += 1
+
+                        ifp.close()
+
+                        targets.append(target)
+
+                except AttributeError:
+                    pass
+
+            target_loop_locations = [target['loop_location'] for target in targets]
+            target_stop_locations = [target['stop_location'] for target in targets]
+
+            i = 1
+
+            with open(_srcPath, 'r') as ifp:
+                with open(_srcPath + '~', 'w') as ofp:
+                    ofp.write('data_' + os.path.basename(srcPath) + '\n\n')
+                    line = ifp.readline()
+                    if i in target_loop_locations:
+                        target = next(target for target in targets if target['loop_location'] == i)
+                        if 'sf_category' in target:
+                            ofp.write('save_' + target['sf_framecode'] + '\n')
+                            ofp.write(target['sf_tag_prefix'] + '.' + ('sf_framecode' if file_type == 'nef' else 'Sf_framecode') + '   ' + target['sf_framecode'] + '\n')
+                            ofp.write(target['sf_tag_prefix'] + '.' + ('sf_category' if file_type == 'nef' else 'Sf_category') + '    ' + target['sf_category'] + '\n')
+                            ofp.write('#\n')
+                    ofp.write(line)
+                    i += 1
+                    while line:
+                        line = ifp.readline()
+                        if i in target_loop_locations:
+                            target = next(target for target in targets if target['loop_location'] == i)
+                            if 'sf_category' in target:
+                                ofp.write('save_' + target['sf_framecode'] + '\n')
+                                ofp.write(target['sf_tag_prefix'] + '.' + ('sf_framecode' if file_type == 'nef' else 'Sf_framecode') + '   ' + target['sf_framecode'] + '\n')
+                                ofp.write(target['sf_tag_prefix'] + '.' + ('sf_category' if file_type == 'nef' else 'Sf_category') + '    ' + target['sf_category'] + '\n')
+                                ofp.write('#\n')
+                        ofp.write(line)
+                        if i in target_stop_locations:
+                            target = next(target for target in targets if target['stop_location'] == i)
+                            if 'sf_category' in target:
+                                ofp.write('save_\n')
+                        i += 1
+
+                    _srcPath = ofp.name
+                    tempPaths.append(_srcPath)
+                    ofp.close()
+
+                ifp.close()
 
         except StopIteration:
             pass
@@ -5343,7 +5499,7 @@ class NmrDpUtility(object):
             return self.__nefT.get_star_atom(comp_id, atom_id, leave_unmatched=leave_unmatched)
         elif atom_id.startswith('QQ'):
             return self.__nefT.get_star_atom(comp_id, 'H' + atom_id[2:] + '%', leave_unmatched=leave_unmatched)
-        elif atom_id == 'QR':
+        elif atom_id.startswith('QR'):
             qr_atoms = set([atom_id[:-1] + '%' for atom_id in self.__csStat.getAromaticAtoms(comp_id) if atom_id[0] == 'H' and self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id) == 3])
             if len(qr_atoms) == 0:
                 return [], None, None
@@ -5685,7 +5841,7 @@ class NmrDpUtility(object):
 
             for content_subtype in input_source_dic['content_subtype'].keys():
 
-                if content_subtype == ['entry_info', 'poly_seq', 'chem_shift_ref']:
+                if content_subtype == ['entry_info', 'entity', 'poly_seq', 'chem_shift_ref']:
                     continue
 
                 sf_category = self.sf_categories[file_type][content_subtype]
@@ -6305,7 +6461,7 @@ class NmrDpUtility(object):
 
             for content_subtype in input_source_dic['content_subtype'].keys():
 
-                if content_subtype == 'entry_info':
+                if content_subtype in ['entry_info', 'entity']:
                     continue
 
                 sf_category = self.sf_categories[file_type][content_subtype]
@@ -7144,6 +7300,9 @@ class NmrDpUtility(object):
                 continue
 
             for content_subtype in input_source_dic['content_subtype'].keys():
+
+                if content_subtype == 'entity':
+                    continue
 
                 sf_category = self.sf_categories[file_type][content_subtype]
 

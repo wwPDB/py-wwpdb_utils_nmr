@@ -1,0 +1,107 @@
+###################################################################
+#       Chemical Shift Ambiguity Index Value Definitions          #
+#                                                                 #
+# The values other than 1 are used for those atoms with different #
+# chemical shifts that cannot be assigned to stereospecific atoms #
+# or to specific residues or chains.                              #
+#                                                                 #
+#   Index Value            Definition                             #
+#                                                                 #
+#      1             Unique (including isolated methyl protons,   #
+#                         geminal atoms, and geminal methyl       #
+#                         groups with identical chemical shifts)  #
+#                         (e.g. ILE HD11, HD12, HD13 protons)     #
+#      2             Ambiguity of geminal atoms or geminal methyl #
+#                         proton groups (e.g. ASP HB2 and HB3     #
+#                         protons, LEU CD1 and CD2 carbons, or    #
+#                         LEU HD11, HD12, HD13 and HD21, HD22,    #
+#                         HD23 methyl protons)                    #
+#      3             Aromatic atoms on opposite sides of          #
+#                         symmetrical rings (e.g. TYR HE1 and HE2 #
+#                         protons)                                #
+#      4             Intraresidue ambiguities (e.g. LYS HG and    #
+#                         HD protons or TRP HZ2 and HZ3 protons)  #
+#      5             Interresidue ambiguities (LYS 12 vs. LYS 27) #
+#      6             Intermolecular ambiguities (e.g. ASP 31 CA   #
+#                         in monomer 1 and ASP 31 CA in monomer 2 #
+#                         of an asymmetrical homodimer, duplex    #
+#                         DNA assignments, or other assignments   #
+#                         that may apply to atoms in one or more  #
+#                         molecule in the molecular assembly)     #
+#      9             Ambiguous, specific ambiguity not defined    #
+#                                                                 #
+###################################################################
+loop_
+    _Atom_chem_shift.ID
+    _Atom_chem_shift.Comp_index_ID
+    _Atom_chem_shift.Comp_ID
+    _Atom_chem_shift.Atom_ID
+    _Atom_chem_shift.Val
+
+1              1              Phe              CA             56.059         
+2              1              Phe              HA             4.098          
+3              1              Phe              CB             40.011         
+4              2              Phe              N              120.039        
+5              2              Phe              CA             57.861         
+6              2              Phe              HA             4.499          
+7              2              Phe              CB             39.903         
+8              3              Ser              N              117.022        
+9              3              Ser              CA             57.497         
+10             3              Ser              HA             4.248          
+11             3              Ser              CB             64.109         
+12             4              Leu              N              124.030        
+13             4              Leu              CA             55.732         
+14             4              Leu              HA             4.164          
+15             4              Leu              CB             42.674         
+16             5              Ile              N              118.891        
+17             5              Ile              CA             63.943         
+18             5              Ile              HA             3.974          
+19             5              Ile              CB             36.332         
+20             6              Pro              CA             57.557         
+21             6              Pro              HA             4.108          
+22             6              Pro              CB             30.982         
+23             7              Ser              N              112.482        
+24             7              Ser              CA             61.117         
+25             7              Ser              HA             4.180          
+26             7              Ser              CB             63.407         
+27             8              Leu              N              124.380        
+28             8              Leu              CA             65.702         
+29             8              Leu              HA             4.126          
+30             8              Leu              CB             42.254         
+31             9              Val              N              118.418        
+32             9              Val              CA             66.242         
+33             9              Val              HA             3.576          
+34             9              Val              CB             31.694         
+35             10             Gly              N              105.560        
+36             10             Gly              CA             47.137         
+37             10             Gly              HA1            3.686          
+38             10             Gly              HA2            3.745          
+39             11             Gly              N              109.267        
+40             11             Gly              CA             46.515         
+41             11             Gly              HA2            3.776          
+42             12             Leu              N              123.974        
+43             12             Leu              CA             57.698         
+44             12             Leu              HA             4.039          
+45             12             Leu              CB             41.868         
+46             13             Ile              N              117.855        
+47             13             Ile              CA             64.665         
+48             13             Ile              HA             3.661          
+49             13             Ile              CB             38.033         
+50             14             Ser              N              113.798        
+51             14             Ser              CA             61.219         
+52             14             Ser              HA             4.081          
+53             14             Ser              CB             62.771         
+54             15             Ala              N              124.041        
+55             15             Ala              CA             54.036         
+56             15             Ala              HA             4.058          
+57             15             Ala              CB             18.037         
+58             16             Phe              N              116.971        
+59             16             Phe              CA             58.792         
+60             16             Phe              HA             4.410          
+61             16             Phe              CB             39.278         
+62             17             Lys              N              122.904        
+63             17             Lys              CA             56.531         
+64             17             Lys              HA             4.093          
+65             17             Lys              CB             32.630         
+
+stop_

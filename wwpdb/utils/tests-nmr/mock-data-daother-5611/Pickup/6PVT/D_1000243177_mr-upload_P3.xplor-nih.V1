@@ -1,0 +1,174 @@
+
+!    3 E  -68.761  148.278   11.026   15.772    0.717 0.818 25  9 Strong
+assign (resid    2 and name C and segid B   ) (resid    3 and name N and segid B   )
+       (resid    3 and name CA and segid B  ) (resid    3 and name C and segid B   )    1.0  -68.8   22.1 2
+assign (resid    3 and name N and segid B   ) (resid    3 and name CA and segid B  )
+       (resid    3 and name C and segid B   ) (resid    4 and name N and segid B   )    1.0  148.3   31.5 2
+
+!    4 P  -52.563  -37.709    3.860    5.230    0.507 0.832 25  9 Strong
+assign (resid    3 and name C and segid B   ) (resid    4 and name N and segid B   )
+       (resid    4 and name CA and segid B  ) (resid    4 and name C and segid B   )    1.0  -52.6   20.0 2
+assign (resid    4 and name N and segid B   ) (resid    4 and name CA and segid B  )
+       (resid    4 and name C and segid B   ) (resid    5 and name N and segid B   )    1.0  -37.7   20.0 2
+
+!    7 I  -62.214  -37.639    5.245    6.340    0.248 0.888 25 10 Strong
+assign (resid    6 and name C and segid B   ) (resid    7 and name N and segid B   )
+       (resid    7 and name CA and segid B  ) (resid    7 and name C and segid B   )    1.0  -62.2   20.0 2
+assign (resid    7 and name N and segid B   ) (resid    7 and name CA and segid B  )
+       (resid    7 and name C and segid B   ) (resid    8 and name N and segid B   )    1.0  -37.6   20.0 2
+
+!    8 L  -65.940  -37.716    4.412    5.084    0.198 0.911 25 12 Strong
+assign (resid    7 and name C and segid B   ) (resid    8 and name N and segid B   )
+       (resid    8 and name CA and segid B  ) (resid    8 and name C and segid B   )    1.0  -65.9   20.0 2
+assign (resid    8 and name N and segid B   ) (resid    8 and name CA and segid B  )
+       (resid    8 and name C and segid B   ) (resid    9 and name N and segid B   )    1.0  -37.7   20.0 2
+
+!    9 S  -66.410  -36.378    5.465    5.012    0.142 0.925 25 12 Strong
+assign (resid    8 and name C and segid B   ) (resid    9 and name N and segid B   )
+       (resid    9 and name CA and segid B  ) (resid    9 and name C and segid B   )    1.0  -66.4   20.0 2
+assign (resid    9 and name N and segid B   ) (resid    9 and name CA and segid B  )
+       (resid    9 and name C and segid B   ) (resid   10 and name N and segid B   )    1.0  -36.4   20.0 2
+
+!   10 I  -64.917  -40.614    4.296    4.189    0.121 0.927 25 12 Strong
+assign (resid    9 and name C and segid B   ) (resid   10 and name N and segid B   )
+       (resid   10 and name CA and segid B  ) (resid   10 and name C and segid B   )    1.0  -64.9   20.0 2
+assign (resid   10 and name N and segid B   ) (resid   10 and name CA and segid B  )
+       (resid   10 and name C and segid B   ) (resid   11 and name N and segid B   )    1.0  -40.6   20.0 2
+
+!   11 C  -61.795  -41.863    3.757    4.623    0.130 0.925 25 12 Strong
+assign (resid   10 and name C and segid B   ) (resid   11 and name N and segid B   )
+       (resid   11 and name CA and segid B  ) (resid   11 and name C and segid B   )    1.0  -61.8   20.0 2
+assign (resid   11 and name N and segid B   ) (resid   11 and name CA and segid B  )
+       (resid   11 and name C and segid B   ) (resid   12 and name N and segid B   )    1.0  -41.9   20.0 2
+
+!   12 S  -66.298  -37.990    5.748    5.469    0.116 0.918 25 12 Strong
+assign (resid   11 and name C and segid B   ) (resid   12 and name N and segid B   )
+       (resid   12 and name CA and segid B  ) (resid   12 and name C and segid B   )    1.0  -66.3   20.0 2
+assign (resid   12 and name N and segid B   ) (resid   12 and name CA and segid B  )
+       (resid   12 and name C and segid B   ) (resid   13 and name N and segid B   )    1.0  -38.0   20.0 2
+
+!   13 F  -63.484  -43.655    3.803    5.126    0.116 0.911 25 12 Strong
+assign (resid   12 and name C and segid B   ) (resid   13 and name N and segid B   )
+       (resid   13 and name CA and segid B  ) (resid   13 and name C and segid B   )    1.0  -63.5   20.0 2
+assign (resid   13 and name N and segid B   ) (resid   13 and name CA and segid B  )
+       (resid   13 and name C and segid B   ) (resid   14 and name N and segid B   )    1.0  -43.7   20.0 2
+
+!   14 I  -65.192  -39.945    5.159    4.978    0.119 0.910 25 12 Strong
+assign (resid   13 and name C and segid B   ) (resid   14 and name N and segid B   )
+       (resid   14 and name CA and segid B  ) (resid   14 and name C and segid B   )    1.0  -65.2   20.0 2
+assign (resid   14 and name N and segid B   ) (resid   14 and name CA and segid B  )
+       (resid   14 and name C and segid B   ) (resid   15 and name N and segid B   )    1.0  -39.9   20.0 2
+
+!   15 L  -66.110  -37.007    5.959    5.698    0.102 0.901 25 12 Strong
+assign (resid   14 and name C and segid B   ) (resid   15 and name N and segid B   )
+       (resid   15 and name CA and segid B  ) (resid   15 and name C and segid B   )    1.0  -66.1   20.0 2
+assign (resid   15 and name N and segid B   ) (resid   15 and name CA and segid B  )
+       (resid   15 and name C and segid B   ) (resid   16 and name N and segid B   )    1.0  -37.0   20.0 2
+
+!   16 S  -66.425  -37.927    3.832    5.611    0.118 0.887 25 12 Strong
+assign (resid   15 and name C and segid B   ) (resid   16 and name N and segid B   )
+       (resid   16 and name CA and segid B  ) (resid   16 and name C and segid B   )    1.0  -66.4   20.0 2
+assign (resid   16 and name N and segid B   ) (resid   16 and name CA and segid B  )
+       (resid   16 and name C and segid B   ) (resid   17 and name N and segid B   )    1.0  -37.9   20.0 2
+
+!   17 A  -63.753  -40.045    4.717    5.791    0.116 0.875 25 12 Strong
+assign (resid   16 and name C and segid B   ) (resid   17 and name N and segid B   )
+       (resid   17 and name CA and segid B  ) (resid   17 and name C and segid B   )    1.0  -63.8   20.0 2
+assign (resid   17 and name N and segid B   ) (resid   17 and name CA and segid B  )
+       (resid   17 and name C and segid B   ) (resid   18 and name N and segid B   )    1.0  -40.0   20.0 2
+
+!   18 L  -64.693  -37.765    5.378    6.381    0.130 0.879 25 11 Strong
+assign (resid   17 and name C and segid B   ) (resid   18 and name N and segid B   )
+       (resid   18 and name CA and segid B  ) (resid   18 and name C and segid B   )    1.0  -64.7   20.0 2
+assign (resid   18 and name N and segid B   ) (resid   18 and name CA and segid B  )
+       (resid   18 and name C and segid B   ) (resid   19 and name N and segid B   )    1.0  -37.8   20.0 2
+
+!   19 H  -65.528  -36.962    4.191    5.216    0.134 0.893 25 11 Strong
+assign (resid   18 and name C and segid B   ) (resid   19 and name N and segid B   )
+       (resid   19 and name CA and segid B  ) (resid   19 and name C and segid B   )    1.0  -65.5   20.0 2
+assign (resid   19 and name N and segid B   ) (resid   19 and name CA and segid B  )
+       (resid   19 and name C and segid B   ) (resid   20 and name N and segid B   )    1.0  -37.0   20.0 2
+
+!   20 F  -66.499  -39.800    3.561    5.916    0.132 0.898 25 11 Strong
+assign (resid   19 and name C and segid B   ) (resid   20 and name N and segid B   )
+       (resid   20 and name CA and segid B  ) (resid   20 and name C and segid B   )    1.0  -66.5   20.0 2
+assign (resid   20 and name N and segid B   ) (resid   20 and name CA and segid B  )
+       (resid   20 and name C and segid B   ) (resid   21 and name N and segid B   )    1.0  -39.8   20.0 2
+
+!   21 M  -63.971  -41.345    3.729    4.270    0.148 0.900 25 12 Strong
+assign (resid   20 and name C and segid B   ) (resid   21 and name N and segid B   )
+       (resid   21 and name CA and segid B  ) (resid   21 and name C and segid B   )    1.0  -64.0   20.0 2
+assign (resid   21 and name N and segid B   ) (resid   21 and name CA and segid B  )
+       (resid   21 and name C and segid B   ) (resid   22 and name N and segid B   )    1.0  -41.3   20.0 2
+
+!   22 A  -64.224  -37.754    5.055    4.404    0.140 0.901 25 12 Strong
+assign (resid   21 and name C and segid B   ) (resid   22 and name N and segid B   )
+       (resid   22 and name CA and segid B  ) (resid   22 and name C and segid B   )    1.0  -64.2   20.0 2
+assign (resid   22 and name N and segid B   ) (resid   22 and name CA and segid B  )
+       (resid   22 and name C and segid B   ) (resid   23 and name N and segid B   )    1.0  -37.8   20.0 2
+
+!   23 W  -64.863  -41.538    5.036    6.467    0.149 0.907 25 12 Strong
+assign (resid   22 and name C and segid B   ) (resid   23 and name N and segid B   )
+       (resid   23 and name CA and segid B  ) (resid   23 and name C and segid B   )    1.0  -64.9   20.0 2
+assign (resid   23 and name N and segid B   ) (resid   23 and name CA and segid B  )
+       (resid   23 and name C and segid B   ) (resid   24 and name N and segid B   )    1.0  -41.5   20.0 2
+
+!   24 T  -66.987  -38.938    3.494    4.692    0.176 0.907 25 12 Strong
+assign (resid   23 and name C and segid B   ) (resid   24 and name N and segid B   )
+       (resid   24 and name CA and segid B  ) (resid   24 and name C and segid B   )    1.0  -67.0   20.0 2
+assign (resid   24 and name N and segid B   ) (resid   24 and name CA and segid B  )
+       (resid   24 and name C and segid B   ) (resid   25 and name N and segid B   )    1.0  -38.9   20.0 2
+
+!   25 I  -66.764  -38.829    4.142    4.649    0.260 0.899 25 11 Strong
+assign (resid   24 and name C and segid B   ) (resid   25 and name N and segid B   )
+       (resid   25 and name CA and segid B  ) (resid   25 and name C and segid B   )    1.0  -66.8   20.0 2
+assign (resid   25 and name N and segid B   ) (resid   25 and name CA and segid B  )
+       (resid   25 and name C and segid B   ) (resid   26 and name N and segid B   )    1.0  -38.8   20.0 2
+
+!   26 G  -66.292  -26.277    5.656    8.713    0.423 0.888 25 10 Strong
+assign (resid   25 and name C and segid B   ) (resid   26 and name N and segid B   )
+       (resid   26 and name CA and segid B  ) (resid   26 and name C and segid B   )    1.0  -66.3   20.0 2
+assign (resid   26 and name N and segid B   ) (resid   26 and name CA and segid B  )
+       (resid   26 and name C and segid B   ) (resid   27 and name N and segid B   )    1.0  -26.3   20.0 2
+
+!   27 H  -84.888  -11.980   12.508   12.724    0.512 0.886 10 10 Generous
+assign (resid   26 and name C and segid B   ) (resid   27 and name N and segid B   )
+       (resid   27 and name CA and segid B  ) (resid   27 and name C and segid B   )    1.0  -84.9   37.5 2
+assign (resid   27 and name N and segid B   ) (resid   27 and name CA and segid B  )
+       (resid   27 and name C and segid B   ) (resid   28 and name N and segid B   )    1.0  -12.0   38.2 2
+
+!   28 L  -82.362  132.420   13.066   10.026    0.616 0.894 25 11 Strong
+assign (resid   27 and name C and segid B   ) (resid   28 and name N and segid B   )
+       (resid   28 and name CA and segid B  ) (resid   28 and name C and segid B   )    1.0  -82.4   26.1 2
+assign (resid   28 and name N and segid B   ) (resid   28 and name CA and segid B  )
+       (resid   28 and name C and segid B   ) (resid   29 and name N and segid B   )    1.0  132.4   20.1 2
+
+!   29 N -110.369  138.687   14.615    9.544    0.567 0.905 25 12 Strong
+assign (resid   28 and name C and segid B   ) (resid   29 and name N and segid B   )
+       (resid   29 and name CA and segid B  ) (resid   29 and name C and segid B   )    1.0 -110.4   29.2 2
+assign (resid   29 and name N and segid B   ) (resid   29 and name CA and segid B  )
+       (resid   29 and name C and segid B   ) (resid   30 and name N and segid B   )    1.0  138.7   20.0 2
+
+!   30 Q -121.296  143.162   12.474   11.345    0.552 0.905 25 12 Strong
+assign (resid   29 and name C and segid B   ) (resid   30 and name N and segid B   )
+       (resid   30 and name CA and segid B  ) (resid   30 and name C and segid B   )    1.0 -121.3   24.9 2
+assign (resid   30 and name N and segid B   ) (resid   30 and name CA and segid B  )
+       (resid   30 and name C and segid B   ) (resid   31 and name N and segid B   )    1.0  143.2   22.7 2
+
+!   31 I -125.555  133.187   12.745    8.929    0.490 0.892 25 12 Strong
+assign (resid   30 and name C and segid B   ) (resid   31 and name N and segid B   )
+       (resid   31 and name CA and segid B  ) (resid   31 and name C and segid B   )    1.0 -125.6   25.5 2
+assign (resid   31 and name N and segid B   ) (resid   31 and name CA and segid B  )
+       (resid   31 and name C and segid B   ) (resid   32 and name N and segid B   )    1.0  133.2   20.0 2
+
+!   32 K  -93.113  120.342   15.834   13.174    0.501 0.866 25 12 Strong
+assign (resid   31 and name C and segid B   ) (resid   32 and name N and segid B   )
+       (resid   32 and name CA and segid B  ) (resid   32 and name C and segid B   )    1.0  -93.1   31.7 2
+assign (resid   32 and name N and segid B   ) (resid   32 and name CA and segid B  )
+       (resid   32 and name C and segid B   ) (resid   33 and name N and segid B   )    1.0  120.3   26.3 2
+
+!   33 R  -71.859  135.002   15.310   12.214    0.602 0.856 25 11 Strong
+assign (resid   32 and name C and segid B   ) (resid   33 and name N and segid B   )
+       (resid   33 and name CA and segid B  ) (resid   33 and name C and segid B   )    1.0  -71.9   30.6 2
+assign (resid   33 and name N and segid B   ) (resid   33 and name CA and segid B  )
+       (resid   33 and name C and segid B   ) (resid   34 and name N and segid B   )    1.0  135.0   24.4 2

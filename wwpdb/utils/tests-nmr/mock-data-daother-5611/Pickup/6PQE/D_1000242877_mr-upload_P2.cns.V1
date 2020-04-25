@@ -1,0 +1,1722 @@
+ assign (resid 253 and name HG1* )  (resid 255 and name HG2* )  3.56  1.76  1.76 !peak 5 #SUP 1.00 
+ assign (resid 205 and name HG2* )  (resid 255 and name HG2* )  3.61  1.81  1.81 !peak 6 #SUP 1.00 #QF 0.66 
+ assign (resid 255 and name HG2* )  (resid 255 and name HG11 )  2.54  0.74  0.74 !peak 7 #SUP 0.99 #QF 0.99 
+ assign (resid 173 and name HB*  )  (resid 197 and name HD1* )  3.40  1.60  1.60 !peak 16 #SUP 0.52 #QF 0.52 
+ assign (resid 173 and name HB*  )  (resid 219 and name HG2* )  3.09  1.29  1.29 !peak 21 #SUP 0.99 #QF 0.99 
+ assign (resid 212 and name HB*  )  (resid 219 and name HG2* )  2.81  1.01  1.01 !peak 23 #SUP 0.85 #QF 0.85 
+ assign (resid 212 and name HB*  )  (resid 251 and name HD2* )  2.73  0.93  0.93 !peak 32 #SUP 0.89 #QF 0.89 
+ assign (resid 213 and name HE*  )  (resid 215 and name HD2* )  3.29  1.49  1.49 !peak 48 #SUP 0.23 #QF 0.23 
+ assign (resid 215 and name HB2  )  (resid 215 and name HD1* )  2.68  0.88  0.88 !peak 50 #SUP 1.00 #QF 0.98 
+ assign (resid 199 and name HG2* )  (resid 203 and name HG2* )  3.18  1.38  1.38 !peak 56 #SUP 0.99 #QF 0.92 
+ assign (resid 203 and name HG2* )  (resid 223 and name HG1* )  2.58  0.78  0.78 !peak 57 #SUP 0.98 #QF 0.98 
+ assign (resid 203 and name HG2* )  (resid 206 and name HG1* )  3.05  1.25  1.25 !peak 58 #SUP 1.00 
+ assign (resid 203 and name HG2* )  (resid 204 and name HB*  )  2.97  1.17  1.17 !peak 60 #SUP 1.00 
+ assign (resid 203 and name HG2* )  (resid 203 and name HG12 )  2.51  0.71  0.71 !peak 65 #SUP 0.99 #QF 0.99 
+ assign (resid 197 and name HD2* )  (resid 199 and name HG1* )  3.47  1.67  1.67 !peak 69 #SUP 0.99 #QF 0.99 
+ assign (resid 199 and name HG1* )  (resid 223 and name HG2* )  2.58  0.78  0.78 !peak 71 #SUP 0.98 #QF 0.96 
+ assign (resid 219 and name HG1* )  (resid 249 and name HD2* )  3.36  1.56  1.56 !peak 78 #SUP 0.94 #QF 0.94 
+ assign (resid 235 and name HD2* )  (resid 249 and name HD2* )  3.12  1.32  1.32 !peak 79 #SUP 0.99 #QF 0.99 
+ assign (resid 238 and name HB1  )  (resid 249 and name HD2* )  3.02  1.22  1.22 !peak 83 #SUP 0.93 #QF 0.76 
+ assign (resid 219 and name HG2* )  (resid 249 and name HD2* )  3.36  1.56  1.56 !peak 85 #SUP 0.91 #QF 0.91 
+ assign (resid 172 and name HG2* )  (resid 173 and name HB*  )  3.16  1.36  1.36 !peak 91 #SUP 0.90 #QF 0.90 
+ assign (resid 199 and name HG1* )  (resid 255 and name HD1* )  2.74  0.94  0.94 !peak 98 #SUP 0.99 #QF 0.49 
+ assign (resid 199 and name HG2* )  (resid 255 and name HD1* )  2.74  0.94  0.94 !peak 99 #SUP 0.97 #QF 0.97 
+ assign (resid 253 and name HG1* )  (resid 255 and name HD1* )  2.49  0.69  0.69 !peak 100 #SUP 0.98 #QF 0.98 
+ assign (resid 229 and name HB*  )  (resid 255 and name HD1* )  2.92  1.12  1.12 !peak 101 #SUP 0.99 #QF 0.99 
+ assign (resid 204 and name HB*  )  (resid 255 and name HD1* )  2.30  0.50  0.50 !peak 102 #SUP 1.00 #QF 0.98 
+ assign (resid 199 and name HG1* )  (resid 203 and name HD1* )  3.78  1.98  1.98 !peak 110 #SUP 1.00 
+ assign (resid 203 and name HD1* )  (resid 210 and name HG1* )  3.11  1.31  1.31 !peak 111 #SUP 0.99 #QF 0.99 
+ assign (resid 201 and name HB*  )  (resid 205 and name HG2* )  2.90  1.10  1.10 !peak 126 #SUP 0.90 #QF 0.90 
+ assign (resid 201 and name HB*  )  (resid 205 and name HG1* )  3.83  2.03  2.03 !peak 127 #SUP 0.96 #QF 0.96 
+ assign (resid 204 and name HB*  )  (resid 255 and name HG11 )  2.98  1.18  1.18 !peak 137 #SUP 0.97 #QF 0.91 
+ assign (resid 204 and name HB*  )  (resid 255 and name HG12 )  3.46  1.66  1.66 !peak 137 #SUP 0.97 #QF 0.91 
+ assign (resid 199 and name HG1* )  (resid 204 and name HB*  )  2.82  1.02  1.02 !peak 138 #SUP 0.99 #QF 0.49 
+ assign (resid 199 and name HG2* )  (resid 204 and name HB*  )  2.82  1.02  1.02 !peak 139 #SUP 0.96 #QF 0.96 
+ assign (resid 204 and name HB*  )  (resid 223 and name HG1* )  2.61  0.81  0.81 !peak 140 #SUP 0.93 #QF 0.93 
+ assign (resid 204 and name HB*  )  (resid 255 and name HG2* )  2.47  0.67  0.67 !peak 143 #SUP 1.00 
+ assign (resid 229 and name HB*  )  (resid 255 and name HG11 )  2.84  1.04  1.04 !peak 150 #SUP 1.00 #QF 0.99 
+ assign (resid 229 and name HB*  )  (resid 255 and name HG2* )  3.06  1.26  1.26 !peak 154 #SUP 1.00 
+ assign (resid 243 and name HG2  )  (resid 244 and name HB*  )  2.87  1.07  1.07 !peak 160 #SUP 0.94 #QF 0.94 
+ assign (resid 209 and name HG1  )  (resid 222 and name HB*  )  2.75  0.95  0.95 !peak 167 #SUP 0.88 #QF 0.88 
+ assign (resid 203 and name HG12 )  (resid 206 and name HG1* )  3.03  1.23  1.23 !peak 187 #SUP 0.65 #QF 0.65 
+ assign (resid 219 and name HG2* )  (resid 235 and name HG   )  3.52  1.72  1.72 !peak 214 #SUP 0.85 #QF 0.85 
+ assign (resid 253 and name HG1* )  (resid 255 and name HG12 )  2.67  0.87  0.87 !peak 221 #SUP 0.71 #QF 0.71 
+ assign (resid 221 and name HG1* )  (resid 233 and name HD1* )  2.58  0.78  0.78 !peak 228 #SUP 0.43 #QF 0.43 
+ assign (resid 221 and name HG1* )  (resid 233 and name HD2* )  2.88  1.08  1.08 !peak 229 #SUP 0.59 #QF 0.59 
+ assign (resid 229 and name HB*  )  (resid 253 and name HG1* )  2.98  1.18  1.18 !peak 237 #SUP 0.96 #QF 0.96 
+ assign (resid 197 and name HD2* )  (resid 199 and name HG2* )  3.47  1.67  1.67 !peak 258 #SUP 0.81 #QF 0.81 
+ assign (resid 199 and name HG2* )  (resid 223 and name HG2* )  2.58  0.78  0.78 !peak 264 #SUP 0.99 #QF 0.99 
+ assign (resid 203 and name HG2* )  (resid 223 and name HG2* )  2.66  0.86  0.86 !peak 268 #SUP 0.98 #QF 0.98 
+ assign (resid 199 and name HG2* )  (resid 203 and name HD1* )  3.78  1.98  1.98 !peak 273 #SUP 0.84 #QF 0.84 
+ assign (resid 197 and name HD1* )  (resid 212 and name HB*  )  2.28  0.48  0.47 !peak 284 #SUP 0.93 #QF 0.93 
+ assign (resid 197 and name HD1* )  (resid 221 and name HG1* )  2.57  0.77  0.77 !peak 285 #SUP 0.73 #QF 0.73 
+ assign (resid 199 and name HG1* )  (resid 203 and name HG2* )  3.18  1.38  1.38 !peak 298 #SUP 0.73 #QF 0.73 
+ assign (resid 212 and name HB*  )  (resid 249 and name HD2* )  2.87  1.07  1.07 !peak 345 #SUP 0.98 #QF 0.50 
+ assign (resid 212 and name HB*  )  (resid 235 and name HD2* )  3.26  1.46  1.46 !peak 346 #SUP 1.00 
+ assign (resid 212 and name HB*  )  (resid 251 and name HD1* )  2.73  0.93  0.93 !peak 347 #SUP 1.00 #QF 0.99 
+ assign (resid 212 and name HB*  )  (resid 219 and name HG1* )  2.81  1.01  1.01 !peak 350 #SUP 0.86 #QF 0.86 
+ assign (resid 196 and name HG2* )  (resid 197 and name HD1* )  3.92  2.12  2.12 !peak 362 #SUP 0.60 #QF 0.60 
+ assign (resid 172 and name HG2* )  (resid 235 and name HD2* )  3.50  1.70  1.70 !peak 387 #SUP 0.98 #QF 0.98 
+ assign (resid 172 and name HG2* )  (resid 235 and name HD1* )  3.34  1.54  1.54 !peak 388 #SUP 0.96 #QF 0.96 
+ assign (resid 255 and name HG2* )  (resid 256 and name HG2* )  3.13  1.33  1.33 !peak 414 #SUP 0.92 #QF 0.92 
+ assign (resid 197 and name HD2* )  (resid 227 and name HG2* )  3.67  1.87  1.87 !peak 454 #SUP 0.63 #QF 0.63 
+ assign (resid 227 and name HG2* )  (resid 229 and name HB*  )  3.68  1.88  1.88 !peak 458 #SUP 0.90 #QF 0.90 
+ assign (resid 227 and name HG2* )  (resid 255 and name HD1* )  2.85  1.05  1.05 !peak 460 #SUP 0.95 #QF 0.95 
+ assign (resid 219 and name HG1* )  (resid 235 and name HG   )  3.52  1.72  1.72 !peak 469 #SUP 0.95 #QF 0.95 
+ assign (resid 219 and name HG1* )  (resid 235 and name HD2* )  2.90  1.10  1.10 !peak 471 #SUP 1.00 
+ assign (resid 173 and name HB*  )  (resid 219 and name HG1* )  3.09  1.29  1.29 !peak 480 #SUP 0.92 #QF 0.92 
+ assign (resid 197 and name HD2* )  (resid 210 and name HG1* )  3.22  1.42  1.42 !peak 491 #SUP 0.96 #QF 0.96 
+ assign (resid 203 and name HG2* )  (resid 210 and name HG1* )  2.97  1.17  1.17 !peak 495 #SUP 0.99 #QF 0.99 
+ assign (resid 197 and name HD2* )  (resid 223 and name HG1* )  3.19  1.39  1.39 !peak 499 #SUP 0.96 #QF 0.96 
+ assign (resid 199 and name HG1* )  (resid 223 and name HG1* )  2.60  0.80  0.80 !peak 501 #SUP 0.91 #QF 0.52 
+ assign (resid 199 and name HG2* )  (resid 223 and name HG1* )  2.60  0.80  0.80 !peak 502 #SUP 1.00 #QF 0.90 
+ assign (resid 206 and name HG1* )  (resid 223 and name HG1* )  3.88  2.08  2.08 !peak 504 #SUP 0.66 #QF 0.66 
+ assign (resid 223 and name HG1* )  (resid 255 and name HD1* )  2.98  1.18  1.18 !peak 511 #SUP 0.85 #QF 0.85 
+ assign (resid 203 and name HG2* )  (resid 210 and name HG2* )  2.97  1.17  1.17 !peak 519 #SUP 0.85 #QF 0.85 
+ assign (resid 203 and name HD1* )  (resid 210 and name HG2* )  3.11  1.31  1.31 !peak 523 #SUP 0.98 #QF 0.98 
+ assign (resid 219 and name HG2* )  (resid 235 and name HD2* )  2.90  1.10  1.10 !peak 543 #SUP 1.00 
+ assign (resid 212 and name HB*  )  (resid 235 and name HD1* )  2.98  1.18  1.18 !peak 556 #SUP 0.99 #QF 0.99 
+ assign (resid 219 and name HG1* )  (resid 235 and name HD1* )  2.63  0.83  0.83 !peak 557 #SUP 0.97 #QF 0.97 
+ assign (resid 219 and name HG2* )  (resid 235 and name HD1* )  2.63  0.83  0.83 !peak 558 #SUP 1.00 
+ assign (resid 235 and name HB1  )  (resid 235 and name HD1* )  2.83  1.03  1.03 !peak 559 #SUP 0.99 #QF 0.88 
+ assign (resid 235 and name HB2  )  (resid 235 and name HD1* )  2.97  1.17  1.17 !peak 559 #SUP 0.99 #QF 0.88 
+ assign (resid 197 and name HD2* )  (resid 233 and name HD1* )  3.07  1.27  1.27 !peak 630 #SUP 0.97 #QF 0.97 
+ assign (resid 197 and name HD2* )  (resid 233 and name HD2* )  3.18  1.38  1.38 !peak 631 #SUP 0.90 #QF 0.83 
+ assign (resid 197 and name HD2* )  (resid 212 and name HB*  )  2.94  1.14  1.14 !peak 634 #SUP 1.00 
+ assign (resid 197 and name HD2* )  (resid 223 and name HG2* )  2.71  0.91  0.91 !peak 635 #SUP 0.95 #QF 0.95 
+ assign (resid 197 and name HD2* )  (resid 221 and name HG1* )  2.55  0.75  0.75 !peak 636 #SUP 0.98 #QF 0.95 
+ assign (resid 197 and name HD2* )  (resid 210 and name HG2* )  3.22  1.42  1.42 !peak 637 #SUP 1.00 
+ assign (resid 197 and name HG   )  (resid 233 and name HD1* )  3.23  1.43  1.43 !peak 639 #SUP 0.92 #QF 0.92 
+ assign (resid 212 and name HB*  )  (resid 233 and name HD1* )  3.37  1.57  1.57 !peak 642 #SUP 0.91 #QF 0.63 
+ assign (resid 204 and name HB*  )  (resid 227 and name HB   )  2.90  1.10  1.10 !peak 11 #SUP 0.97 #QF 0.97 
+ assign (resid 227 and name HG2* )  (resid 231 and name HG1  )  3.08  1.28  1.28 !peak 14 #SUP 0.99 #QF 0.99 
+ assign (resid 204 and name HB*  )  (resid 227 and name HG2* )  2.90  1.10  1.10 !peak 16 #SUP 0.99 #QF 0.99 
+ assign (resid 227 and name HG2* )  (resid 231 and name HB2  )  2.97  1.17  1.17 !peak 21 #SUP 0.88 #QF 0.80 
+ assign (resid 227 and name HG2* )  (resid 253 and name HB   )  3.31  1.51  1.51 !peak 21 #SUP 0.88 #QF 0.80 
+ assign (resid 176 and name HE3  )  (resid 227 and name HG2* )  3.29  1.49  1.49 !peak 24 #SUP 0.93 #QF 0.93 
+ assign (resid 227 and name HG2* )  (resid 228 and name HN   )  3.10  1.30  1.30 !peak 25 #SUP 0.94 #QF 0.94 
+ assign (resid 227 and name HN   )  (resid 227 and name HG2* )  3.13  1.33  1.33 !peak 26 #SUP 0.98 #QF 0.98 
+ assign (resid 223 and name HA   )  (resid 223 and name HG1* )  2.74  0.94  0.94 !peak 34 #SUP 0.95 #QF 0.65 
+ assign (resid 223 and name HA   )  (resid 223 and name HG2* )  2.89  1.09  1.09 !peak 34 #SUP 0.95 #QF 0.65 
+ assign (resid 221 and name HG1* )  (resid 223 and name HA   )  2.99  1.19  1.19 !peak 35 #SUP 0.88 #QF 0.88 
+ assign (resid 223 and name HA   )  (resid 224 and name HG1  )  3.34  1.54  1.54 !peak 36 #SUP 0.33 #QF 0.33 
+ assign (resid 229 and name HA   )  (resid 255 and name HB   )  3.46  1.66  1.66 !peak 54 #SUP 0.93 #QF 0.93 
+ assign (resid 229 and name HA   )  (resid 231 and name HG1  )  3.51  1.71  1.71 !peak 55 #SUP 0.92 #QF 0.92 
+ assign (resid 229 and name HA   )  (resid 255 and name HG12 )  2.97  1.17  1.17 !peak 57 #SUP 1.00 
+ assign (resid 229 and name HA   )  (resid 253 and name HG1* )  2.69  0.89  0.89 !peak 58 #SUP 0.98 #QF 0.98 
+ assign (resid 229 and name HA   )  (resid 254 and name HA   )  3.25  1.45  1.45 !peak 59 #SUP 0.83 #QF 0.83 
+ assign (resid 249 and name HD1* )  (resid 251 and name HB1  )  2.91  1.11  1.11 !peak 73 #SUP 0.88 #QF 0.88 
+ assign (resid 249 and name HN   )  (resid 249 and name HD1* )  3.49  1.69  1.69 !peak 83 #SUP 0.74 #QF 0.74 
+ assign (resid 194 and name HA   )  (resid 249 and name HD1* )  3.25  1.45  1.45 !peak 84 #SUP 0.96 #QF 0.96 
+ assign (resid 249 and name HA   )  (resid 249 and name HD1* )  2.70  0.90  0.90 !peak 85 #SUP 0.97 #QF 0.97 
+ assign (resid 215 and name HB1  )  (resid 215 and name HD1* )  2.83  1.03  1.03 !peak 117 #SUP 0.98 #QF 0.98 
+ assign (resid 241 and name HB2  )  (resid 242 and name HA2  )  3.28  1.48  1.48 !peak 133 #SUP 0.67 #QF 0.67 
+ assign (resid 242 and name HA1  )  (resid 243 and name HG2  )  3.28  1.48  1.48 !peak 134 #SUP 0.91 #QF 0.91 
+ assign (resid 194 and name HA   )  (resid 195 and name HA   )  3.46  1.66  1.66 !peak 147 #SUP 0.69 #QF 0.69 
+ assign (resid 194 and name HA   )  (resid 250 and name HB1  )  3.38  1.58  1.58 !peak 154 #SUP 0.95 #QF 0.95 
+ assign (resid 194 and name HA   )  (resid 250 and name HB2  )  3.32  1.52  1.52 !peak 155 #SUP 0.95 #QF 0.95 
+ assign (resid 194 and name HA   )  (resid 195 and name HB*  )  3.35  1.55  1.55 !peak 156 #SUP 0.70 #QF 0.70 
+ assign (resid 175 and name HA   )  (resid 175 and name HG1  )  3.08  1.28  1.28 !peak 167 #SUP 0.96 #QF 0.96 
+ assign (resid 175 and name HA   )  (resid 175 and name HG2  )  3.08  1.28  1.28 !peak 168 #SUP 0.87 #QF 0.87 
+ assign (resid 216 and name HA   )  (resid 216 and name HG2  )  2.91  1.11  1.11 !peak 173 #SUP 0.91 #QF 0.91 
+ assign (resid 176 and name HB1  )  (resid 176 and name HE3  )  3.09  1.29  1.29 !peak 191 #SUP 0.51 #QF 0.51 
+ assign (resid 220 and name HN   )  (resid 220 and name HB1  )  2.84  1.04  1.04 !peak 194 #SUP 0.54 #QF 0.54 
+ assign (resid 236 and name HA   )  (resid 236 and name HG2  )  2.98  1.18  1.18 !peak 208 #SUP 0.97 #QF 0.97 
+ assign (resid 236 and name HA   )  (resid 236 and name HG1  )  2.91  1.11  1.11 !peak 209 #SUP 0.99 #QF 0.99 
+ assign (resid 236 and name HA   )  (resid 248 and name HA   )  2.96  1.16  1.16 !peak 214 #SUP 0.99 #QF 0.99 
+ assign (resid 219 and name HA   )  (resid 219 and name HB   )  2.54  0.74  0.74 !peak 391 #SUP 0.95 #QF 0.95 
+ assign (resid 218 and name HG2  )  (resid 219 and name HA   )  3.57  1.77  1.77 !peak 392 #SUP 0.89 #QF 0.89 
+ assign (resid 219 and name HA   )  (resid 220 and name HB2  )  3.23  1.43  1.43 !peak 393 #SUP 0.67 #QF 0.67 
+ assign (resid 199 and name HG1* )  (resid 200 and name HD2  )  3.38  1.58  1.58 !peak 404 #SUP 0.79 #QF 0.79 
+ assign (resid 199 and name HA   )  (resid 199 and name HG1* )  2.86  1.06  1.06 !peak 408 #SUP 0.74 #QF 0.74 
+ assign (resid 215 and name HD1* )  (resid 240 and name HD1  )  2.95  1.15  1.15 !peak 411 #SUP 0.93 #QF 0.93 
+ assign (resid 195 and name HB*  )  (resid 196 and name HB   )  3.46  1.66  1.66 !peak 418 #SUP 0.48 #QF 0.48 
+ assign (resid 196 and name HB   )  (resid 254 and name HG1  )  3.57  1.77  1.77 !peak 420 #SUP 0.77 #QF 0.77 
+ assign (resid 172 and name HB   )  (resid 173 and name HB*  )  2.95  1.15  1.15 !peak 426 #SUP 0.89 #QF 0.89 
+ assign (resid 172 and name HB   )  (resid 173 and name HN   )  2.93  1.13  1.14 !peak 428 #SUP 0.98 #QF 0.98 
+ assign (resid 205 and name HA   )  (resid 227 and name HN   )  3.03  1.23  1.23 !peak 433 #SUP 0.90 #QF 0.90 
+ assign (resid 205 and name HA   )  (resid 205 and name HG2* )  2.40  0.60  0.60 !peak 436 #SUP 0.98 #QF 0.98 
+ assign (resid 205 and name HA   )  (resid 205 and name HG1* )  2.44  0.64  0.64 !peak 437 #SUP 0.99 #QF 0.99 
+ assign (resid 205 and name HA   )  (resid 226 and name HB1  )  3.33  1.53  1.53 !peak 439 #SUP 0.99 #QF 0.99 
+ assign (resid 204 and name HB*  )  (resid 205 and name HA   )  3.07  1.27  1.27 !peak 441 #SUP 0.99 #QF 0.99 
+ assign (resid 205 and name HA   )  (resid 226 and name HA   )  2.61  0.81  0.81 !peak 443 #SUP 0.97 #QF 0.97 
+ assign (resid 227 and name HA   )  (resid 228 and name HB2  )  3.35  1.55  1.55 !peak 448 #SUP 0.97 #QF 0.97 
+ assign (resid 227 and name HA   )  (resid 227 and name HG2* )  2.64  0.84  0.84 !peak 450 #SUP 0.99 #QF 0.99 
+ assign (resid 223 and name HG1* )  (resid 227 and name HA   )  3.70  1.90  1.90 !peak 451 #SUP 0.99 #QF 0.99 
+ assign (resid 227 and name HA   )  (resid 228 and name HN   )  2.63  0.83  0.83 !peak 454 #SUP 0.96 #QF 0.96 
+ assign (resid 201 and name HB*  )  (resid 202 and name HA   )  3.10  1.30  1.30 !peak 461 #SUP 0.54 #QF 0.54 
+ assign (resid 202 and name HA   )  (resid 204 and name HB*  )  3.77  1.97  1.97 !peak 463 #SUP 0.49 #QF 0.49 
+ assign (resid 202 and name HA   )  (resid 205 and name HG1* )  3.09  1.29  1.29 !peak 464 #SUP 0.94 #QF 0.94 
+ assign (resid 202 and name HA   )  (resid 205 and name HB   )  2.63  0.83  0.83 !peak 468 #SUP 0.64 #QF 0.64 
+ assign (resid 202 and name HA   )  (resid 204 and name HN   )  3.30  1.50  1.50 !peak 477 #SUP 0.88 #QF 0.88 
+ assign (resid 242 and name HA1  )  (resid 243 and name HA   )  3.57  1.77  1.77 !peak 481 #SUP 0.98 #QF 0.98 
+ assign (resid 243 and name HA   )  (resid 245 and name HN   )  3.35  1.55  1.55 !peak 485 #SUP 0.96 #QF 0.96 
+ assign (resid 206 and name HA   )  (resid 207 and name HN   )  2.85  1.05  1.05 !peak 487 #SUP 1.00 
+ assign (resid 206 and name HA   )  (resid 225 and name HA   )  3.08  1.28  1.28 !peak 491 #SUP 0.97 #QF 0.97 
+ assign (resid 206 and name HA   )  (resid 206 and name HB   )  2.39  0.59  0.59 !peak 492 #SUP 0.97 #QF 0.97 
+ assign (resid 206 and name HA   )  (resid 206 and name HG2* )  2.40  0.60  0.60 !peak 496 #SUP 0.94 #QF 0.94 
+ assign (resid 205 and name HG1* )  (resid 206 and name HA   )  2.78  0.98  0.98 !peak 497 #SUP 0.99 #QF 0.99 
+ assign (resid 241 and name HA   )  (resid 246 and name HG1  )  2.92  1.12  1.12 !peak 500 #SUP 0.98 #QF 0.98 
+ assign (resid 241 and name HA   )  (resid 246 and name HG2  )  2.80  1.00  1.00 !peak 502 #SUP 0.99 #QF 0.99 
+ assign (resid 241 and name HA   )  (resid 242 and name HA2  )  3.43  1.63  1.63 !peak 504 #SUP 0.99 #QF 0.99 
+ assign (resid 241 and name HA   )  (resid 242 and name HA1  )  3.41  1.61  1.61 !peak 505 #SUP 0.67 #QF 0.67 
+ assign (resid 241 and name HA   )  (resid 247 and name HN   )  3.15  1.35  1.36 !peak 506 #SUP 0.97 #QF 0.97 
+ assign (resid 172 and name HA   )  (resid 172 and name HG2* )  2.28  0.48  0.47 !peak 515 #SUP 0.81 #QF 0.81 
+ assign (resid 200 and name HA   )  (resid 201 and name HB*  )  3.20  1.40  1.40 !peak 522 #SUP 0.97 #QF 0.97 
+ assign (resid 200 and name HA   )  (resid 256 and name HG2* )  3.06  1.26  1.26 !peak 523 #SUP 0.84 #QF 0.76 
+ assign (resid 200 and name HA   )  (resid 256 and name HN   )  2.80  1.00  1.00 !peak 525 #SUP 0.57 #QF 0.57 
+ assign (resid 213 and name HN   )  (resid 218 and name HA   )  3.82  2.02  2.02 !peak 528 #SUP 0.84 #QF 0.84 
+ assign (resid 214 and name HB   )  (resid 218 and name HA   )  2.94  1.14  1.14 !peak 533 #SUP 0.24 #QF 0.24 
+ assign (resid 218 and name HA   )  (resid 219 and name HA   )  3.47  1.67  1.67 !peak 535 #SUP 0.92 #QF 0.92 
+ assign (resid 212 and name HB*  )  (resid 218 and name HA   )  3.48  1.68  1.68 !peak 545 #SUP 0.84 #QF 0.84 
+ assign (resid 196 and name HA   )  (resid 252 and name HN   )  2.79  0.99  0.99 !peak 546 #SUP 0.65 #QF 0.65 
+ assign (resid 196 and name HA   )  (resid 196 and name HG2* )  2.66  0.86  0.86 !peak 551 #SUP 0.88 #QF 0.88 
+ assign (resid 221 and name HA   )  (resid 222 and name HB*  )  3.13  1.33  1.33 !peak 553 #SUP 0.96 #QF 0.96 
+ assign (resid 203 and name HG2* )  (resid 223 and name HA   )  3.67  1.87  1.87 !peak 559 #SUP 0.87 #QF 0.70 
+ assign (resid 223 and name HA   )  (resid 233 and name HD2* )  3.91  2.11  2.11 !peak 559 #SUP 0.87 #QF 0.70 
+ assign (resid 176 and name HZ2  )  (resid 223 and name HA   )  3.03  1.23  1.23 !peak 562 #SUP 0.82 #QF 0.82 
+ assign (resid 210 and name HA   )  (resid 210 and name HG1* )  2.73  0.93  0.93 !peak 567 #SUP 0.93 #QF 0.93 
+ assign (resid 210 and name HA   )  (resid 210 and name HG2* )  2.73  0.93  0.93 !peak 569 #SUP 0.95 #QF 0.95 
+ assign (resid 210 and name HA   )  (resid 210 and name HB   )  2.55  0.75  0.75 !peak 570 #SUP 0.25 #QF 0.25 
+ assign (resid 210 and name HA   )  (resid 211 and name HA   )  3.30  1.50  1.50 !peak 574 #SUP 0.81 #QF 0.81 
+ assign (resid 209 and name HA   )  (resid 210 and name HA   )  3.40  1.60  1.60 !peak 575 #SUP 0.83 #QF 0.83 
+ assign (resid 210 and name HA   )  (resid 211 and name HN   )  2.43  0.63  0.63 !peak 577 #SUP 0.83 #QF 0.83 
+ assign (resid 199 and name HA   )  (resid 200 and name HD2  )  2.70  0.90  0.90 !peak 578 #SUP 0.92 #QF 0.92 
+ assign (resid 199 and name HA   )  (resid 199 and name HG2* )  2.86  1.06  1.06 !peak 580 #SUP 0.74 #QF 0.74 
+ assign (resid 199 and name HA   )  (resid 255 and name HD1* )  3.68  1.88  1.88 !peak 581 #SUP 0.67 #QF 0.67 
+ assign (resid 199 and name HA   )  (resid 210 and name HB   )  3.03  1.23  1.23 !peak 582 #SUP 0.25 #QF 0.25 
+ assign (resid 199 and name HA   )  (resid 200 and name HD1  )  2.65  0.85  0.85 !peak 585 #SUP 0.92 #QF 0.92 
+ assign (resid 199 and name HN   )  (resid 255 and name HA   )  3.06  1.26  1.26 !peak 588 #SUP 0.91 #QF 0.91 
+ assign (resid 199 and name HB   )  (resid 255 and name HA   )  3.04  1.24  1.24 !peak 591 #SUP 1.00 #QF 0.41 
+ assign (resid 255 and name HA   )  (resid 255 and name HG11 )  3.00  1.20  1.20 !peak 592 #SUP 0.79 #QF 0.79 
+ assign (resid 255 and name HA   )  (resid 255 and name HG12 )  3.05  1.25  1.25 !peak 593 #SUP 0.84 #QF 0.84 
+ assign (resid 255 and name HA   )  (resid 255 and name HD1* )  2.71  0.91  0.91 !peak 596 #SUP 0.94 #QF 0.94 
+ assign (resid 255 and name HA   )  (resid 255 and name HG2* )  2.58  0.78  0.78 !peak 597 #SUP 0.92 #QF 0.92 
+ assign (resid 203 and name HA   )  (resid 208 and name HA1  )  3.27  1.47  1.47 !peak 599 #SUP 0.89 #QF 0.89 
+ assign (resid 203 and name HA   )  (resid 208 and name HA2  )  3.48  1.68  1.68 !peak 600 #SUP 0.98 #QF 0.98 
+ assign (resid 200 and name HD2  )  (resid 203 and name HA   )  3.66  1.86  1.86 !peak 603 #SUP 0.98 #QF 0.98 
+ assign (resid 203 and name HA   )  (resid 206 and name HB   )  3.62  1.82  1.82 !peak 604 #SUP 1.00 
+ assign (resid 200 and name HG2  )  (resid 203 and name HA   )  3.34  1.54  1.54 !peak 605 #SUP 0.82 #QF 0.82 
+ assign (resid 203 and name HA   )  (resid 203 and name HG12 )  2.77  0.97  0.97 !peak 607 #SUP 1.00 
+ assign (resid 203 and name HA   )  (resid 204 and name HB*  )  3.79  1.99  1.99 !peak 608 #SUP 0.93 #QF 0.93 
+ assign (resid 203 and name HA   )  (resid 206 and name HG1* )  2.61  0.81  0.80 !peak 609 #SUP 0.88 #QF 0.68 
+ assign (resid 203 and name HA   )  (resid 203 and name HG2* )  2.54  0.74  0.74 !peak 611 #SUP 1.00 
+ assign (resid 203 and name HA   )  (resid 207 and name HN   )  3.09  1.29  1.29 !peak 616 #SUP 0.95 #QF 0.95 
+ assign (resid 209 and name HA   )  (resid 222 and name HA   )  2.69  0.89  0.89 !peak 619 #SUP 0.99 #QF 0.99 
+ assign (resid 209 and name HA   )  (resid 220 and name HG2  )  3.31  1.51  1.51 !peak 620 #SUP 0.70 #QF 0.70 
+ assign (resid 209 and name HA   )  (resid 209 and name HG2  )  3.00  1.20  1.20 !peak 624 #SUP 0.98 #QF 0.98 
+ assign (resid 209 and name HA   )  (resid 209 and name HG1  )  2.89  1.09  1.09 !peak 625 #SUP 0.95 #QF 0.95 
+ assign (resid 209 and name HA   )  (resid 223 and name HG2* )  2.93  1.13  1.13 !peak 626 #SUP 0.99 #QF 0.83 
+ assign (resid 209 and name HA   )  (resid 221 and name HG1* )  3.31  1.51  1.51 !peak 631 #SUP 0.92 #QF 0.92 
+ assign (resid 209 and name HA   )  (resid 221 and name HN   )  3.29  1.49  1.49 !peak 632 #SUP 0.99 #QF 0.99 
+ assign (resid 232 and name HA   )  (resid 253 and name HG2* )  3.46  1.66  1.66 !peak 644 #SUP 0.91 #QF 0.91 
+ assign (resid 232 and name HA   )  (resid 233 and name HD1* )  3.98  2.18  2.18 !peak 645 #SUP 0.62 #QF 0.26 
+ assign (resid 232 and name HA   )  (resid 253 and name HG1* )  3.68  1.88  1.88 !peak 646 #SUP 0.86 #QF 0.86 
+ assign (resid 232 and name HA   )  (resid 232 and name HG1  )  3.05  1.25  1.24 !peak 647 #SUP 0.74 #QF 0.74 
+ assign (resid 232 and name HA   )  (resid 252 and name HA   )  2.98  1.18  1.18 !peak 649 #SUP 0.89 #QF 0.89 
+ assign (resid 198 and name HA   )  (resid 256 and name HG2* )  2.77  0.97  0.97 !peak 652 #SUP 0.88 #QF 0.88 
+ assign (resid 198 and name HA   )  (resid 254 and name HB1  )  3.16  1.36  1.36 !peak 655 #SUP 0.94 #QF 0.94 
+ assign (resid 196 and name HG2* )  (resid 198 and name HA   )  3.27  1.47  1.47 !peak 657 #SUP 0.95 #QF 0.60 
+ assign (resid 197 and name HB1  )  (resid 198 and name HA   )  3.81  2.01  2.01 !peak 657 #SUP 0.95 #QF 0.60 
+ assign (resid 198 and name HA   )  (resid 254 and name HG1  )  3.49  1.69  1.69 !peak 658 #SUP 0.91 #QF 0.91 
+ assign (resid 198 and name HA   )  (resid 254 and name HB2  )  3.16  1.36  1.36 !peak 659 #SUP 0.67 #QF 0.67 
+ assign (resid 198 and name HA   )  (resid 253 and name HA   )  4.04  2.24  2.24 !peak 661 #SUP 0.62 #QF 0.62 
+ assign (resid 198 and name HA   )  (resid 199 and name HA   )  3.38  1.58  1.57 !peak 662 #SUP 0.64 #QF 0.64 
+ assign (resid 198 and name HA   )  (resid 256 and name HN   )  3.60  1.80  1.80 !peak 667 #SUP 0.89 #QF 0.89 
+ assign (resid 213 and name HE*  )  (resid 215 and name HA   )  3.26  1.46  1.47 !peak 669 #SUP 0.32 #QF 0.32 
+ assign (resid 215 and name HA   )  (resid 215 and name HD2* )  2.46  0.66  0.66 !peak 673 #SUP 0.87 #QF 0.87 
+ assign (resid 214 and name HB   )  (resid 215 and name HA   )  3.55  1.75  1.75 !peak 680 #SUP 0.76 #QF 0.76 
+ assign (resid 215 and name HA   )  (resid 240 and name HD1  )  3.51  1.71  1.71 !peak 684 #SUP 0.74 #QF 0.74 
+ assign (resid 215 and name HA   )  (resid 240 and name HE1  )  3.06  1.26  1.26 !peak 687 #SUP 0.76 #QF 0.76 
+ assign (resid 226 and name HA   )  (resid 226 and name HD2  )  3.30  1.50  1.50 !peak 689 #SUP 0.94 #QF 0.94 
+ assign (resid 205 and name HG2* )  (resid 226 and name HA   )  3.08  1.28  1.28 !peak 695 #SUP 0.98 #QF 0.98 
+ assign (resid 205 and name HG1* )  (resid 226 and name HA   )  3.18  1.38  1.38 !peak 697 #SUP 0.97 #QF 0.97 
+ assign (resid 201 and name HA   )  (resid 256 and name HN   )  3.52  1.72  1.72 !peak 706 #SUP 0.99 #QF 0.99 
+ assign (resid 201 and name HA   )  (resid 204 and name HN   )  3.02  1.22  1.22 !peak 707 #SUP 0.93 #QF 0.93 
+ assign (resid 200 and name HA   )  (resid 201 and name HA   )  3.32  1.52  1.52 !peak 709 #SUP 0.96 #QF 0.96 
+ assign (resid 201 and name HA   )  (resid 255 and name HA   )  3.54  1.74  1.74 !peak 710 #SUP 0.97 #QF 0.97 
+ assign (resid 201 and name HA   )  (resid 255 and name HG2* )  2.45  0.65  0.65 !peak 712 #SUP 0.89 #QF 0.89 
+ assign (resid 201 and name HA   )  (resid 255 and name HD1* )  2.83  1.03  1.03 !peak 713 #SUP 1.00 
+ assign (resid 201 and name HA   )  (resid 204 and name HB*  )  2.65  0.85  0.85 !peak 715 #SUP 0.90 #QF 0.90 
+ assign (resid 231 and name HA   )  (resid 231 and name HD2  )  3.50  1.70  1.70 !peak 717 #SUP 0.99 #QF 0.99 
+ assign (resid 231 and name HA   )  (resid 231 and name HD1  )  3.60  1.80  1.80 !peak 719 #SUP 0.98 #QF 0.98 
+ assign (resid 231 and name HA   )  (resid 232 and name HB1  )  3.14  1.34  1.34 !peak 723 #SUP 0.67 #QF 0.67 
+ assign (resid 229 and name HB*  )  (resid 254 and name HA   )  2.76  0.96  0.96 !peak 741 #SUP 0.85 #QF 0.85 
+ assign (resid 254 and name HA   )  (resid 256 and name HG2* )  3.55  1.75  1.75 !peak 742 #SUP 0.86 #QF 0.86 
+ assign (resid 254 and name HA   )  (resid 255 and name HG12 )  3.06  1.26  1.26 !peak 745 #SUP 0.95 #QF 0.95 
+ assign (resid 254 and name HA   )  (resid 254 and name HD2  )  3.23  1.43  1.43 !peak 746 #SUP 0.93 #QF 0.93 
+ assign (resid 232 and name HD1  )  (resid 250 and name HA   )  3.60  1.80  1.80 !peak 749 #SUP 0.78 #QF 0.67 
+ assign (resid 235 and name HG   )  (resid 250 and name HA   )  3.85  2.05  2.05 !peak 749 #SUP 0.78 #QF 0.67 
+ assign (resid 204 and name HA   )  (resid 223 and name HB   )  3.20  1.40  1.40 !peak 752 #SUP 0.75 #QF 0.75 
+ assign (resid 204 and name HA   )  (resid 227 and name HG2* )  3.18  1.38  1.38 !peak 754 #SUP 0.99 #QF 0.99 
+ assign (resid 204 and name HA   )  (resid 223 and name HG1* )  2.57  0.77  0.77 !peak 755 #SUP 0.90 #QF 0.90 
+ assign (resid 203 and name HG2* )  (resid 204 and name HA   )  3.10  1.30  1.30 !peak 757 #SUP 0.99 #QF 0.99 
+ assign (resid 204 and name HA   )  (resid 255 and name HD1* )  3.23  1.43  1.43 !peak 758 #SUP 1.00 
+ assign (resid 204 and name HA   )  (resid 227 and name HN   )  3.02  1.22  1.22 !peak 760 #SUP 0.98 #QF 0.98 
+ assign (resid 203 and name HN   )  (resid 204 and name HA   )  3.91  2.11  2.11 !peak 763 #SUP 0.90 #QF 0.90 
+ assign (resid 172 and name HG2* )  (resid 173 and name HA   )  3.35  1.55  1.55 !peak 806 #SUP 0.89 #QF 0.89 
+ assign (resid 232 and name HG1  )  (resid 251 and name HA   )  3.43  1.63  1.63 !peak 812 #SUP 0.95 #QF 0.95 
+ assign (resid 232 and name HB2  )  (resid 251 and name HA   )  3.21  1.41  1.41 !peak 816 #SUP 0.43 #QF 0.43 
+ assign (resid 251 and name HA   )  (resid 252 and name HN   )  2.73  0.93  0.93 !peak 818 #SUP 0.91 #QF 0.91 
+ assign (resid 222 and name HA   )  (resid 223 and name HG2* )  3.13  1.33  1.33 !peak 821 #SUP 0.96 #QF 0.96 
+ assign (resid 210 and name HN   )  (resid 222 and name HA   )  3.16  1.36  1.36 !peak 824 #SUP 0.97 #QF 0.97 
+ assign (resid 197 and name HD1* )  (resid 212 and name HA   )  2.70  0.90  0.90 !peak 831 #SUP 0.98 #QF 0.98 
+ assign (resid 200 and name HD1  )  (resid 210 and name HG1* )  3.67  1.87  1.87 !peak 837 #SUP 0.99 #QF 0.99 
+ assign (resid 200 and name HD1  )  (resid 203 and name HD1* )  2.79  0.99  0.99 !peak 838 #SUP 0.98 #QF 0.98 
+ assign (resid 199 and name HG2* )  (resid 200 and name HD2  )  3.38  1.58  1.58 !peak 840 #SUP 1.00 #QF 0.98 
+ assign (resid 201 and name HB*  )  (resid 202 and name HD2  )  2.53  0.73  0.73 !peak 861 #SUP 0.99 #QF 0.99 
+ assign (resid 201 and name HB*  )  (resid 202 and name HD1  )  2.70  0.90  0.90 !peak 862 #SUP 1.00 
+ assign (resid 207 and name HA2  )  (resid 225 and name HD1  )  3.38  1.58  1.57 !peak 866 #SUP 0.75 #QF 0.75 
+ assign (resid 200 and name HB2  )  (resid 202 and name HD2  )  3.03  1.23  1.23 !peak 870 #SUP 1.00 
+ assign (resid 200 and name HB2  )  (resid 202 and name HD1  )  2.92  1.12  1.12 !peak 871 #SUP 0.99 #QF 0.99 
+ assign (resid 200 and name HB1  )  (resid 202 and name HD2  )  2.85  1.05  1.05 !peak 878 #SUP 0.72 #QF 0.72 
+ assign (resid 224 and name HB2  )  (resid 225 and name HD2  )  3.30  1.50  1.50 !peak 880 #SUP 0.69 #QF 0.69 
+ assign (resid 202 and name HD1  )  (resid 203 and name HN   )  3.08  1.28  1.28 !peak 884 #SUP 0.98 #QF 0.98 
+ assign (resid 240 and name HB1  )  (resid 241 and name HD1  )  3.07  1.27  1.27 !peak 891 #SUP 0.95 #QF 0.95 
+ assign (resid 240 and name HB2  )  (resid 241 and name HD1  )  3.48  1.68  1.68 !peak 892 #SUP 0.96 #QF 0.96 
+ assign (resid 240 and name HB1  )  (resid 241 and name HD2  )  3.07  1.27  1.27 !peak 893 #SUP 0.78 #QF 0.78 
+ assign (resid 240 and name HB2  )  (resid 241 and name HD2  )  3.48  1.68  1.68 !peak 894 #SUP 0.89 #QF 0.89 
+ assign (resid 240 and name HD1  )  (resid 241 and name HD1  )  3.13  1.33  1.33 !peak 898 #SUP 0.98 #QF 0.98 
+ assign (resid 240 and name HD1  )  (resid 241 and name HD2  )  3.13  1.33  1.33 !peak 899 #SUP 0.55 #QF 0.55 
+ assign (resid 242 and name HA2  )  (resid 243 and name HD1  )  2.57  0.77  0.77 !peak 911 #SUP 0.91 #QF 0.91 
+ assign (resid 242 and name HA1  )  (resid 243 and name HD1  )  2.63  0.83  0.83 !peak 912 #SUP 0.99 #QF 0.99 
+ assign (resid 242 and name HA2  )  (resid 243 and name HD2  )  2.58  0.78  0.78 !peak 913 #SUP 0.97 #QF 0.97 
+ assign (resid 242 and name HA1  )  (resid 243 and name HD2  )  2.59  0.79  0.79 !peak 914 #SUP 0.97 #QF 0.97 
+ assign (resid 242 and name HN   )  (resid 243 and name HD1  )  3.77  1.97  1.97 !peak 922 #SUP 0.81 #QF 0.81 
+ assign (resid 242 and name HN   )  (resid 243 and name HD2  )  3.40  1.60  1.60 !peak 923 #SUP 0.96 #QF 0.96 
+ assign (resid 195 and name HB*  )  (resid 251 and name HB1  )  3.22  1.42  1.42 !peak 928 #SUP 0.33 #QF 0.33 
+ assign (resid 199 and name HB   )  (resid 227 and name HG2* )  3.66  1.86  1.86 !peak 929 #SUP 0.58 #QF 0.23 
+ assign (resid 232 and name HB1  )  (resid 253 and name HG2* )  3.82  2.02  2.02 !peak 929 #SUP 0.58 #QF 0.23 
+ assign (resid 196 and name HG2* )  (resid 252 and name HA   )  3.79  1.99  1.99 !peak 941 #SUP 0.50 #QF 0.50 
+ assign (resid 195 and name HB*  )  (resid 196 and name HG2* )  3.64  1.84  1.84 !peak 946 #SUP 0.47 #QF 0.47 
+ assign (resid 196 and name HG2* )  (resid 254 and name HG1  )  2.93  1.13  1.13 !peak 947 #SUP 0.27 #QF 0.27 
+ assign (resid 236 and name HB1  )  (resid 237 and name HA1  )  3.22  1.42  1.42 !peak 992 #SUP 0.70 #QF 0.70 
+ assign (resid 229 and name HA   )  (resid 230 and name HA1  )  3.41  1.61  1.61 !peak 1000 #SUP 0.65 #QF 0.65 
+ assign (resid 229 and name HB*  )  (resid 230 and name HA2  )  3.28  1.48  1.48 !peak 1005 #SUP 0.54 #QF 0.54 
+ assign (resid 203 and name HG2* )  (resid 208 and name HA1  )  2.90  1.10  1.10 !peak 1013 #SUP 0.99 #QF 0.99 
+ assign (resid 203 and name HG2* )  (resid 208 and name HA2  )  2.96  1.16  1.16 !peak 1015 #SUP 0.73 #QF 0.73 
+ assign (resid 208 and name HA2  )  (resid 209 and name HN   )  2.69  0.89  0.89 !peak 1019 #SUP 0.87 #QF 0.87 
+ assign (resid 203 and name HD1* )  (resid 208 and name HA1  )  3.23  1.43  1.43 !peak 1027 #SUP 0.97 #QF 0.97 
+ assign (resid 206 and name HA   )  (resid 207 and name HA2  )  3.80  2.00  2.00 !peak 1034 #SUP 0.50 #QF 0.50 
+ assign (resid 207 and name HA1  )  (resid 223 and name HG1* )  3.52  1.72  1.72 !peak 1039 #SUP 0.41 #QF 0.41 
+ assign (resid 207 and name HA2  )  (resid 223 and name HG1* )  3.20  1.40  1.40 !peak 1040 #SUP 0.90 #QF 0.90 
+ assign (resid 231 and name HB2  )  (resid 231 and name HD2  )  2.88  1.08  1.08 !peak 1041 #SUP 0.88 #QF 0.88 
+ assign (resid 231 and name HB1  )  (resid 231 and name HD2  )  2.74  0.94  0.94 !peak 1042 #SUP 1.00 #QF 0.60 
+ assign (resid 227 and name HG2* )  (resid 231 and name HD2  )  2.95  1.15  1.15 !peak 1043 #SUP 0.99 #QF 0.99 
+ assign (resid 176 and name HE3  )  (resid 231 and name HD2  )  3.20  1.40  1.40 !peak 1051 #SUP 0.98 #QF 0.98 
+ assign (resid 227 and name HG2* )  (resid 231 and name HD1  )  2.95  1.15  1.15 !peak 1052 #SUP 0.99 #QF 0.96 
+ assign (resid 231 and name HB1  )  (resid 231 and name HD1  )  2.74  0.94  0.94 !peak 1054 #SUP 1.00 #QF 0.85 
+ assign (resid 231 and name HB2  )  (resid 231 and name HD1  )  2.88  1.08  1.08 !peak 1055 #SUP 0.98 #QF 0.98 
+ assign (resid 226 and name HA   )  (resid 226 and name HD1  )  3.27  1.47  1.47 !peak 1059 #SUP 0.46 #QF 0.46 
+ assign (resid 254 and name HA   )  (resid 254 and name HD1  )  3.04  1.24  1.24 !peak 1061 #SUP 0.87 #QF 0.87 
+ assign (resid 205 and name HG2* )  (resid 226 and name HD2  )  3.17  1.37  1.37 !peak 1063 #SUP 0.97 #QF 0.97 
+ assign (resid 205 and name HG1* )  (resid 226 and name HD2  )  3.17  1.37  1.37 !peak 1064 #SUP 0.76 #QF 0.76 
+ assign (resid 226 and name HB2  )  (resid 226 and name HD2  )  2.82  1.02  1.03 !peak 1065 #SUP 0.99 #QF 0.99 
+ assign (resid 226 and name HB1  )  (resid 226 and name HD2  )  3.15  1.35  1.35 !peak 1066 #SUP 1.00 
+ assign (resid 205 and name HA   )  (resid 226 and name HD2  )  3.10  1.30  1.30 !peak 1070 #SUP 0.96 #QF 0.96 
+ assign (resid 226 and name HN   )  (resid 226 and name HD2  )  3.51  1.71  1.71 !peak 1071 #SUP 0.97 #QF 0.97 
+ assign (resid 226 and name HB2  )  (resid 226 and name HD1  )  2.68  0.88  0.88 !peak 1072 #SUP 0.88 #QF 0.88 
+ assign (resid 254 and name HB1  )  (resid 254 and name HD2  )  2.89  1.09  1.09 !peak 1098 #SUP 0.95 #QF 0.95 
+ assign (resid 196 and name HG2* )  (resid 254 and name HD1  )  2.82  1.02  1.03 !peak 1100 #SUP 0.95 #QF 0.95 
+ assign (resid 220 and name HG1  )  (resid 221 and name HN   )  3.24  1.44  1.44 !peak 1123 #SUP 0.95 #QF 0.95 
+ assign (resid 211 and name HN   )  (resid 220 and name HG2  )  3.24  1.44  1.44 !peak 1125 #SUP 0.85 #QF 0.85 
+ assign (resid 211 and name HN   )  (resid 220 and name HG1  )  3.03  1.23  1.23 !peak 1126 #SUP 0.85 #QF 0.85 
+ assign (resid 220 and name HA   )  (resid 220 and name HG2  )  3.01  1.21  1.21 !peak 1127 #SUP 1.00 
+ assign (resid 211 and name HA   )  (resid 220 and name HG1  )  3.22  1.42  1.42 !peak 1128 #SUP 0.53 #QF 0.53 
+ assign (resid 220 and name HA   )  (resid 220 and name HG1  )  3.01  1.21  1.21 !peak 1129 #SUP 0.90 #QF 0.90 
+ assign (resid 216 and name HA   )  (resid 216 and name HG1  )  2.91  1.11  1.11 !peak 1136 #SUP 0.79 #QF 0.79 
+ assign (resid 216 and name HN   )  (resid 216 and name HG2  )  3.38  1.58  1.57 !peak 1140 #SUP 0.98 #QF 0.98 
+ assign (resid 216 and name HN   )  (resid 216 and name HG1  )  3.38  1.58  1.57 !peak 1141 #SUP 1.00 
+ assign (resid 203 and name HB   )  (resid 255 and name HD1* )  3.83  2.03  2.03 !peak 1145 #SUP 0.83 #QF 0.83 
+ assign (resid 203 and name HB   )  (resid 204 and name HN   )  3.16  1.36  1.36 !peak 1149 #SUP 0.99 #QF 0.99 
+ assign (resid 229 and name HB*  )  (resid 255 and name HB   )  2.87  1.07  1.07 !peak 1153 #SUP 0.99 #QF 0.91 
+ assign (resid 254 and name HA   )  (resid 255 and name HB   )  3.52  1.72  1.72 !peak 1157 #SUP 0.99 #QF 0.99 
+ assign (resid 212 and name HB*  )  (resid 219 and name HB   )  3.47  1.67  1.67 !peak 1161 #SUP 0.58 #QF 0.58 
+ assign (resid 219 and name HB   )  (resid 220 and name HN   )  2.69  0.89  0.89 !peak 1165 #SUP 0.21 #QF 0.21 
+ assign (resid 209 and name HB1  )  (resid 220 and name HG1  )  3.28  1.48  1.48 !peak 1181 #SUP 0.58 #QF 0.58 
+ assign (resid 209 and name HB2  )  (resid 210 and name HN   )  3.23  1.43  1.43 !peak 1186 #SUP 0.98 #QF 0.98 
+ assign (resid 199 and name HB   )  (resid 204 and name HB*  )  3.45  1.65  1.65 !peak 1192 #SUP 0.76 #QF 0.40 
+ assign (resid 220 and name HA   )  (resid 221 and name HB   )  3.28  1.48  1.48 !peak 1195 #SUP 0.86 #QF 0.86 
+ assign (resid 210 and name HN   )  (resid 221 and name HB   )  3.76  1.96  1.96 !peak 1200 #SUP 0.99 #QF 0.99 
+ assign (resid 221 and name HB   )  (resid 222 and name HN   )  3.23  1.43  1.43 !peak 1201 #SUP 1.00 
+ assign (resid 191 and name HA   )  (resid 191 and name HG2  )  2.91  1.11  1.11 !peak 1206 #SUP 0.91 #QF 0.91 
+ assign (resid 191 and name HA   )  (resid 191 and name HG1  )  2.96  1.16  1.16 !peak 1207 #SUP 0.96 #QF 0.96 
+ assign (resid 191 and name HG1  )  (resid 242 and name HA2  )  3.99  2.19  2.19 !peak 1208 #SUP 0.92 #QF 0.27 
+ assign (resid 191 and name HG2  )  (resid 242 and name HA2  )  3.30  1.50  1.50 !peak 1209 #SUP 0.59 #QF 0.59 
+ assign (resid 191 and name HG1  )  (resid 242 and name HA1  )  3.70  1.90  1.90 !peak 1210 #SUP 0.94 #QF 0.94 
+ assign (resid 191 and name HG2  )  (resid 242 and name HA1  )  3.28  1.48  1.48 !peak 1211 #SUP 0.90 #QF 0.90 
+ assign (resid 228 and name HB1  )  (resid 228 and name HG1  )  2.45  0.65  0.65 !peak 1221 #SUP 0.94 #QF 0.94 
+ assign (resid 228 and name HG1  )  (resid 229 and name HN   )  2.92  1.12  1.12 !peak 1226 #SUP 0.94 #QF 0.94 
+ assign (resid 228 and name HN   )  (resid 228 and name HG1  )  3.22  1.42  1.42 !peak 1227 #SUP 0.95 #QF 0.95 
+ assign (resid 227 and name HG2* )  (resid 228 and name HG1  )  3.84  2.04  2.04 !peak 1230 #SUP 0.82 #QF 0.82 
+ assign (resid 200 and name HB2  )  (resid 203 and name HD1* )  3.28  1.48  1.48 !peak 1238 #SUP 0.99 #QF 0.99 
+ assign (resid 206 and name HB   )  (resid 207 and name HN   )  3.18  1.38  1.38 !peak 1243 #SUP 0.96 #QF 0.96 
+ assign (resid 224 and name HA   )  (resid 225 and name HD1  )  2.59  0.79  0.79 !peak 1279 #SUP 0.98 #QF 0.98 
+ assign (resid 224 and name HA   )  (resid 225 and name HD2  )  2.64  0.84  0.84 !peak 1280 #SUP 0.99 #QF 0.99 
+ assign (resid 243 and name HB2  )  (resid 244 and name HN   )  3.26  1.46  1.46 !peak 1293 #SUP 0.98 #QF 0.98 
+ assign (resid 243 and name HB2  )  (resid 244 and name HB*  )  3.25  1.45  1.45 !peak 1294 #SUP 0.99 #QF 0.99 
+ assign (resid 224 and name HB1  )  (resid 225 and name HD2  )  3.30  1.50  1.50 !peak 1296 #SUP 0.99 #QF 0.92 
+ assign (resid 206 and name HA   )  (resid 225 and name HB1  )  3.23  1.43  1.43 !peak 1304 #SUP 0.91 #QF 0.91 
+ assign (resid 205 and name HB   )  (resid 226 and name HA   )  3.55  1.75  1.75 !peak 1309 #SUP 0.68 #QF 0.68 
+ assign (resid 235 and name HA   )  (resid 236 and name HB2  )  3.35  1.55  1.55 !peak 1341 #SUP 0.84 #QF 0.84 
+ assign (resid 236 and name HN   )  (resid 236 and name HB2  )  2.98  1.18  1.18 !peak 1350 #SUP 0.91 #QF 0.91 
+ assign (resid 236 and name HN   )  (resid 236 and name HB1  )  2.91  1.11  1.11 !peak 1351 #SUP 0.93 #QF 0.93 
+ assign (resid 236 and name HB2  )  (resid 237 and name HN   )  3.34  1.54  1.54 !peak 1352 #SUP 1.00 
+ assign (resid 203 and name HG2* )  (resid 223 and name HB   )  3.13  1.33  1.33 !peak 1365 #SUP 0.96 #QF 0.96 
+ assign (resid 211 and name HB2  )  (resid 220 and name HG1  )  3.28  1.48  1.48 !peak 1371 #SUP 0.93 #QF 0.93 
+ assign (resid 211 and name HN   )  (resid 211 and name HB2  )  2.84  1.04  1.04 !peak 1375 #SUP 0.86 #QF 0.86 
+ assign (resid 211 and name HB1  )  (resid 212 and name HN   )  3.08  1.28  1.28 !peak 1377 #SUP 0.93 #QF 0.93 
+ assign (resid 211 and name HB2  )  (resid 212 and name HN   )  3.15  1.35  1.35 !peak 1378 #SUP 0.89 #QF 0.89 
+ assign (resid 211 and name HB2  )  (resid 220 and name HA   )  3.38  1.58  1.58 !peak 1384 #SUP 0.67 #QF 0.67 
+ assign (resid 210 and name HA   )  (resid 211 and name HB1  )  3.47  1.67  1.67 !peak 1385 #SUP 0.92 #QF 0.92 
+ assign (resid 220 and name HB1  )  (resid 221 and name HN   )  3.30  1.50  1.50 !peak 1390 #SUP 0.71 #QF 0.71 
+ assign (resid 231 and name HB2  )  (resid 253 and name HG2* )  3.03  1.23  1.23 !peak 1397 #SUP 0.95 #QF 0.73 
+ assign (resid 231 and name HB1  )  (resid 253 and name HG2* )  3.03  1.23  1.23 !peak 1398 #SUP 0.91 #QF 0.91 
+ assign (resid 228 and name HA   )  (resid 228 and name HG1  )  2.59  0.79  0.79 !peak 1415 #SUP 0.93 #QF 0.93 
+ assign (resid 228 and name HA   )  (resid 255 and name HG11 )  2.72  0.92  0.92 !peak 1418 #SUP 0.66 #QF 0.66 
+ assign (resid 204 and name HB*  )  (resid 228 and name HA   )  3.31  1.51  1.51 !peak 1419 #SUP 0.52 #QF 0.52 
+ assign (resid 227 and name HG2* )  (resid 228 and name HA   )  3.17  1.37  1.37 !peak 1420 #SUP 0.90 #QF 0.90 
+ assign (resid 228 and name HA   )  (resid 255 and name HD1* )  2.80  1.00  1.00 !peak 1421 #SUP 0.92 #QF 0.92 
+ assign (resid 228 and name HA   )  (resid 229 and name HN   )  2.45  0.65  0.65 !peak 1423 #SUP 0.85 #QF 0.85 
+ assign (resid 235 and name HA   )  (resid 236 and name HA   )  3.45  1.65  1.65 !peak 1426 #SUP 0.74 #QF 0.74 
+ assign (resid 235 and name HA   )  (resid 235 and name HG   )  2.91  1.11  1.11 !peak 1429 #SUP 0.33 #QF 0.33 
+ assign (resid 238 and name HA   )  (resid 238 and name HG2  )  2.89  1.09  1.09 !peak 1431 #SUP 0.47 #QF 0.47 
+ assign (resid 229 and name HA   )  (resid 253 and name HB   )  3.05  1.25  1.24 !peak 1437 #SUP 0.55 #QF 0.55 
+ assign (resid 227 and name HG2* )  (resid 229 and name HA   )  3.08  1.28  1.28 !peak 1438 #SUP 0.54 #QF 0.54 
+ assign (resid 228 and name HA   )  (resid 229 and name HA   )  3.51  1.71  1.71 !peak 1439 #SUP 0.90 #QF 0.78 
+ assign (resid 229 and name HA   )  (resid 230 and name HA2  )  3.76  1.96  1.96 !peak 1439 #SUP 0.90 #QF 0.78 
+ assign (resid 209 and name HA   )  (resid 209 and name HD1  )  3.43  1.63  1.63 !peak 1468 #SUP 0.97 #QF 0.97 
+ assign (resid 209 and name HA   )  (resid 209 and name HD2  )  3.43  1.63  1.63 !peak 1469 #SUP 0.78 #QF 0.78 
+ assign (resid 203 and name HG2* )  (resid 203 and name HG11 )  2.86  1.06  1.06 !peak 1478 #SUP 0.91 #QF 0.91 
+ assign (resid 203 and name HA   )  (resid 203 and name HG11 )  2.93  1.13  1.14 !peak 1483 #SUP 0.98 #QF 0.98 
+ assign (resid 201 and name HB*  )  (resid 202 and name HG2  )  3.50  1.70  1.70 !peak 1494 #SUP 0.91 #QF 0.91 
+ assign (resid 200 and name HG1  )  (resid 203 and name HD1* )  3.33  1.53  1.53 !peak 1514 #SUP 0.99 #QF 0.45 
+ assign (resid 211 and name HA   )  (resid 211 and name HG1  )  3.05  1.25  1.24 !peak 1542 #SUP 0.84 #QF 0.84 
+ assign (resid 211 and name HA   )  (resid 211 and name HG2  )  3.02  1.22  1.22 !peak 1548 #SUP 0.95 #QF 0.95 
+ assign (resid 229 and name HB*  )  (resid 255 and name HG12 )  2.60  0.80  0.80 !peak 1574 #SUP 0.88 #QF 0.88 
+ assign (resid 229 and name HA   )  (resid 255 and name HG11 )  3.25  1.45  1.45 !peak 1582 #SUP 0.92 #QF 0.92 
+ assign (resid 254 and name HA   )  (resid 254 and name HG2  )  3.02  1.22  1.22 !peak 1609 #SUP 0.75 #QF 0.75 
+ assign (resid 196 and name HG2* )  (resid 254 and name HG2  )  3.28  1.48  1.48 !peak 1622 #SUP 0.73 #QF 0.73 
+ assign (resid 212 and name HA   )  (resid 251 and name HD2* )  3.76  1.96  1.96 !peak 1626 #SUP 0.93 #QF 0.61 
+ assign (resid 251 and name HB2  )  (resid 251 and name HD2* )  3.19  1.39  1.39 !peak 1628 #SUP 0.94 #QF 0.94 
+ assign (resid 232 and name HG2  )  (resid 252 and name HA   )  3.53  1.73  1.73 !peak 1642 #SUP 0.97 #QF 0.97 
+ assign (resid 232 and name HG1  )  (resid 252 and name HA   )  3.30  1.50  1.50 !peak 1643 #SUP 0.70 #QF 0.70 
+ assign (resid 232 and name HN   )  (resid 232 and name HG1  )  3.54  1.74  1.74 !peak 1646 #SUP 0.96 #QF 0.96 
+ assign (resid 209 and name HN   )  (resid 209 and name HG1  )  3.58  1.78  1.78 !peak 1660 #SUP 0.98 #QF 0.76 
+ assign (resid 209 and name HG1  )  (resid 222 and name HN   )  3.68  1.88  1.88 !peak 1660 #SUP 0.98 #QF 0.76 
+ assign (resid 209 and name HG2  )  (resid 222 and name HN   )  3.20  1.40  1.40 !peak 1661 #SUP 0.68 #QF 0.68 
+ assign (resid 249 and name HD2* )  (resid 251 and name HB1  )  3.09  1.29  1.29 !peak 1668 #SUP 0.81 #QF 0.81 
+ assign (resid 235 and name HD1* )  (resid 249 and name HD2* )  2.57  0.77  0.77 !peak 1669 #SUP 1.00 #QF 0.78 
+ assign (resid 235 and name HG   )  (resid 249 and name HD2* )  3.14  1.34  1.34 !peak 1670 #SUP 1.00 #QF 0.87 
+ assign (resid 195 and name HB*  )  (resid 249 and name HD2* )  3.26  1.46  1.46 !peak 1671 #SUP 1.00 #QF 0.94 
+ assign (resid 197 and name HB2  )  (resid 197 and name HD2* )  2.88  1.08  1.08 !peak 1674 #SUP 0.93 #QF 0.93 
+ assign (resid 197 and name HB1  )  (resid 197 and name HD2* )  2.74  0.94  0.94 !peak 1676 #SUP 0.88 #QF 0.88 
+ assign (resid 197 and name HD2* )  (resid 253 and name HG2* )  2.83  1.03  1.03 !peak 1677 #SUP 0.92 #QF 0.92 
+ assign (resid 214 and name HB   )  (resid 249 and name HD2* )  3.25  1.45  1.45 !peak 1680 #SUP 0.38 #QF 0.38 
+ assign (resid 235 and name HD2* )  (resid 238 and name HB1  )  3.87  2.07  2.07 !peak 1686 #SUP 0.95 #QF 0.95 
+ assign (resid 221 and name HB   )  (resid 235 and name HD2* )  3.44  1.64  1.64 !peak 1687 #SUP 0.26 #QF 0.26 
+ assign (resid 235 and name HB1  )  (resid 235 and name HD2* )  2.86  1.06  1.06 !peak 1688 #SUP 1.00 
+ assign (resid 173 and name HB*  )  (resid 235 and name HD2* )  2.56  0.76  0.76 !peak 1689 #SUP 0.58 #QF 0.58 
+ assign (resid 235 and name HB2  )  (resid 235 and name HD2* )  2.70  0.90  0.90 !peak 1690 #SUP 0.95 #QF 0.95 
+ assign (resid 235 and name HA   )  (resid 235 and name HD2* )  2.98  1.18  1.18 !peak 1692 #SUP 0.91 #QF 0.91 
+ assign (resid 173 and name HA   )  (resid 235 and name HD2* )  3.10  1.30  1.30 !peak 1693 #SUP 1.00 #QF 0.98 
+ assign (resid 235 and name HD2* )  (resid 236 and name HN   )  3.33  1.53  1.53 !peak 1696 #SUP 0.90 #QF 0.90 
+ assign (resid 215 and name HA   )  (resid 215 and name HD1* )  3.15  1.35  1.36 !peak 1698 #SUP 0.73 #QF 0.73 
+ assign (resid 219 and name HB   )  (resid 235 and name HD1* )  3.26  1.46  1.47 !peak 1703 #SUP 0.65 #QF 0.65 
+ assign (resid 251 and name HB2  )  (resid 251 and name HD1* )  3.19  1.39  1.39 !peak 1704 #SUP 0.89 #QF 0.57 
+ assign (resid 173 and name HB*  )  (resid 235 and name HD1* )  2.63  0.83  0.83 !peak 1707 #SUP 0.66 #QF 0.66 
+ assign (resid 235 and name HD1* )  (resid 238 and name HG1  )  2.74  0.94  0.94 !peak 1709 #SUP 1.00 #QF 0.98 
+ assign (resid 251 and name HA   )  (resid 251 and name HD1* )  3.14  1.34  1.34 !peak 1711 #SUP 0.94 #QF 0.94 
+ assign (resid 212 and name HA   )  (resid 251 and name HD1* )  3.76  1.96  1.96 !peak 1712 #SUP 0.70 #QF 0.70 
+ assign (resid 235 and name HA   )  (resid 235 and name HD1* )  2.98  1.18  1.18 !peak 1713 #SUP 0.99 #QF 0.99 
+ assign (resid 235 and name HD1* )  (resid 236 and name HN   )  3.64  1.84  1.84 !peak 1718 #SUP 0.97 #QF 0.97 
+ assign (resid 197 and name HD1* )  (resid 251 and name HA   )  4.24  2.44  2.44 !peak 1720 #SUP 0.95 #QF 0.94 
+ assign (resid 197 and name HD1* )  (resid 211 and name HA   )  3.30  1.50  1.50 !peak 1722 #SUP 0.46 #QF 0.46 
+ assign (resid 197 and name HA   )  (resid 197 and name HD1* )  2.51  0.71  0.71 !peak 1723 #SUP 0.97 #QF 0.92 
+ assign (resid 197 and name HD1* )  (resid 253 and name HA   )  3.50  1.70  1.70 !peak 1724 #SUP 0.83 #QF 0.83 
+ assign (resid 197 and name HD1* )  (resid 210 and name HB   )  3.15  1.35  1.36 !peak 1726 #SUP 0.37 #QF 0.37 
+ assign (resid 197 and name HB2  )  (resid 197 and name HD1* )  2.80  1.00  1.00 !peak 1727 #SUP 0.95 #QF 0.88 
+ assign (resid 215 and name HB1  )  (resid 215 and name HD2* )  2.89  1.09  1.09 !peak 1727 #SUP 0.95 #QF 0.88 
+ assign (resid 197 and name HD1* )  (resid 221 and name HN   )  3.39  1.59  1.59 !peak 1730 #SUP 0.82 #QF 0.82 
+ assign (resid 197 and name HD1* )  (resid 211 and name HN   )  3.40  1.60  1.60 !peak 1731 #SUP 0.98 #QF 0.56 
+ assign (resid 197 and name HD1* )  (resid 213 and name HN   )  3.50  1.70  1.70 !peak 1731 #SUP 0.98 #QF 0.56 
+ assign (resid 215 and name HB2  )  (resid 215 and name HD2* )  2.76  0.96  0.96 !peak 1733 #SUP 0.89 #QF 0.89 
+ assign (resid 197 and name HD1* )  (resid 251 and name HB2  )  2.87  1.07  1.07 !peak 1734 #SUP 0.49 #QF 0.49 
+ assign (resid 215 and name HD2* )  (resid 240 and name HD1  )  2.84  1.04  1.04 !peak 1735 #SUP 0.90 #QF 0.90 
+ assign (resid 195 and name HB*  )  (resid 249 and name HD1* )  2.76  0.96  0.96 !peak 1737 #SUP 0.80 #QF 0.80 
+ assign (resid 195 and name HB*  )  (resid 252 and name HN   )  3.35  1.55  1.55 !peak 1742 #SUP 0.90 #QF 0.90 
+ assign (resid 195 and name HB*  )  (resid 197 and name HN   )  3.51  1.71  1.71 !peak 1743 #SUP 0.71 #QF 0.71 
+ assign (resid 195 and name HB*  )  (resid 251 and name HB2  )  3.22  1.42  1.42 !peak 1749 #SUP 0.81 #QF 0.81 
+ assign (resid 230 and name HN   )  (resid 255 and name HD1* )  4.01  2.21  2.21 !peak 1759 #SUP 0.91 #QF 0.91 
+ assign (resid 227 and name HN   )  (resid 255 and name HD1* )  3.12  1.32  1.32 !peak 1760 #SUP 0.99 #QF 0.55 
+ assign (resid 229 and name HN   )  (resid 255 and name HD1* )  3.09  1.29  1.29 !peak 1760 #SUP 0.99 #QF 0.55 
+ assign (resid 255 and name HN   )  (resid 255 and name HD1* )  2.96  1.16  1.16 !peak 1761 #SUP 1.00 #QF 0.99 
+ assign (resid 255 and name HD1* )  (resid 256 and name HN   )  3.18  1.38  1.38 !peak 1761 #SUP 1.00 #QF 0.99 
+ assign (resid 204 and name HN   )  (resid 255 and name HD1* )  3.33  1.53  1.53 !peak 1762 #SUP 0.99 #QF 0.99 
+ assign (resid 228 and name HB1  )  (resid 255 and name HD1* )  4.00  2.20  2.20 !peak 1767 #SUP 0.99 #QF 0.83 
+ assign (resid 253 and name HB   )  (resid 255 and name HD1* )  3.61  1.81  1.81 !peak 1767 #SUP 0.99 #QF 0.83 
+ assign (resid 199 and name HB   )  (resid 255 and name HD1* )  2.91  1.11  1.11 !peak 1768 #SUP 1.00 #QF 0.48 
+ assign (resid 203 and name HN   )  (resid 203 and name HD1* )  3.11  1.31  1.31 !peak 1776 #SUP 0.99 #QF 0.99 
+ assign (resid 199 and name HA   )  (resid 203 and name HD1* )  3.24  1.44  1.44 !peak 1777 #SUP 0.99 #QF 0.65 
+ assign (resid 203 and name HD1* )  (resid 210 and name HA   )  2.97  1.17  1.17 !peak 1777 #SUP 0.99 #QF 0.65 
+ assign (resid 203 and name HA   )  (resid 203 and name HD1* )  2.94  1.14  1.14 !peak 1780 #SUP 1.00 
+ assign (resid 200 and name HD2  )  (resid 203 and name HD1* )  2.91  1.11  1.11 !peak 1781 #SUP 0.99 #QF 0.99 
+ assign (resid 200 and name HG2  )  (resid 203 and name HD1* )  2.80  1.00  1.00 !peak 1783 #SUP 0.98 #QF 0.98 
+ assign (resid 203 and name HB   )  (resid 203 and name HD1* )  2.77  0.97  0.97 !peak 1784 #SUP 0.99 #QF 0.99 
+ assign (resid 203 and name HD1* )  (resid 204 and name HB*  )  3.97  2.17  2.17 !peak 1786 #SUP 0.85 #QF 0.85 
+ assign (resid 199 and name HA   )  (resid 203 and name HG2* )  3.41  1.61  1.61 !peak 1804 #SUP 1.00 #QF 0.85 
+ assign (resid 200 and name HD1  )  (resid 203 and name HG2* )  3.31  1.51  1.51 !peak 1806 #SUP 1.00 #QF 0.61 
+ assign (resid 203 and name HG2* )  (resid 255 and name HD1* )  3.64  1.84  1.84 !peak 1807 #SUP 0.86 #QF 0.86 
+ assign (resid 201 and name HB*  )  (resid 202 and name HG1  )  3.50  1.70  1.70 !peak 1814 #SUP 0.96 #QF 0.96 
+ assign (resid 201 and name HB*  )  (resid 202 and name HB1  )  3.34  1.54  1.54 !peak 1815 #SUP 0.81 #QF 0.81 
+ assign (resid 201 and name HB*  )  (resid 255 and name HG2* )  2.68  0.88  0.88 !peak 1818 #SUP 0.98 #QF 0.98 
+ assign (resid 201 and name HB*  )  (resid 255 and name HD1* )  3.56  1.76  1.76 !peak 1819 #SUP 0.99 #QF 0.99 
+ assign (resid 229 and name HN   )  (resid 229 and name HB*  )  2.60  0.80  0.80 !peak 1827 #SUP 0.98 #QF 0.98 
+ assign (resid 229 and name HB*  )  (resid 255 and name HN   )  3.10  1.30  1.30 !peak 1828 #SUP 0.97 #QF 0.97 
+ assign (resid 229 and name HB*  )  (resid 231 and name HN   )  3.39  1.59  1.59 !peak 1829 #SUP 0.95 #QF 0.95 
+ assign (resid 228 and name HA   )  (resid 229 and name HB*  )  3.23  1.43  1.43 !peak 1831 #SUP 0.97 #QF 0.97 
+ assign (resid 229 and name HB*  )  (resid 230 and name HA1  )  3.35  1.55  1.55 !peak 1833 #SUP 0.88 #QF 0.88 
+ assign (resid 228 and name HB1  )  (resid 229 and name HB*  )  3.33  1.53  1.53 !peak 1834 #SUP 0.93 #QF 0.93 
+ assign (resid 222 and name HB*  )  (resid 223 and name HN   )  2.84  1.04  1.04 !peak 1851 #SUP 0.99 #QF 0.99 
+ assign (resid 209 and name HA   )  (resid 222 and name HB*  )  3.26  1.46  1.47 !peak 1853 #SUP 0.95 #QF 0.95 
+ assign (resid 209 and name HD1  )  (resid 222 and name HB*  )  3.17  1.37  1.37 !peak 1859 #SUP 0.87 #QF 0.87 
+ assign (resid 222 and name HB*  )  (resid 223 and name HG2* )  3.46  1.66  1.66 !peak 1862 #SUP 0.70 #QF 0.70 
+ assign (resid 221 and name HG1* )  (resid 222 and name HB*  )  3.47  1.67  1.67 !peak 1863 #SUP 0.98 #QF 0.98 
+ assign (resid 173 and name HB*  )  (resid 235 and name HG   )  3.11  1.31  1.31 !peak 1867 #SUP 0.60 #QF 0.60 
+ assign (resid 219 and name HN   )  (resid 219 and name HG2* )  3.07  1.27  1.27 !peak 1886 #SUP 0.62 #QF 0.62 
+ assign (resid 219 and name HG2* )  (resid 220 and name HN   )  3.35  1.55  1.55 !peak 1887 #SUP 0.70 #QF 0.70 
+ assign (resid 218 and name HA   )  (resid 219 and name HG2* )  3.85  2.05  2.05 !peak 1890 #SUP 0.53 #QF 0.53 
+ assign (resid 219 and name HA   )  (resid 219 and name HG2* )  3.12  1.32  1.32 !peak 1891 #SUP 0.99 #QF 0.99 
+ assign (resid 210 and name HN   )  (resid 221 and name HG1* )  3.12  1.32  1.32 !peak 1901 #SUP 0.99 #QF 0.99 
+ assign (resid 221 and name HG1* )  (resid 222 and name HN   )  2.90  1.10  1.10 !peak 1902 #SUP 0.99 #QF 0.99 
+ assign (resid 176 and name HE3  )  (resid 253 and name HG1* )  3.51  1.71  1.71 !peak 1903 #SUP 0.99 #QF 0.82 
+ assign (resid 231 and name HN   )  (resid 253 and name HG1* )  3.26  1.46  1.47 !peak 1903 #SUP 0.99 #QF 0.82 
+ assign (resid 176 and name HZ2  )  (resid 221 and name HG1* )  3.20  1.40  1.40 !peak 1904 #SUP 0.95 #QF 0.92 
+ assign (resid 253 and name HG1* )  (resid 255 and name HA   )  3.38  1.58  1.58 !peak 1905 #SUP 0.97 #QF 0.97 
+ assign (resid 211 and name HA   )  (resid 221 and name HG1* )  3.73  1.93  1.93 !peak 1906 #SUP 0.42 #QF 0.42 
+ assign (resid 253 and name HG1* )  (resid 254 and name HA   )  2.94  1.14  1.14 !peak 1907 #SUP 0.76 #QF 0.76 
+ assign (resid 221 and name HA   )  (resid 221 and name HG1* )  2.70  0.90  0.90 !peak 1908 #SUP 1.00 
+ assign (resid 173 and name HB*  )  (resid 221 and name HG1* )  2.95  1.15  1.15 !peak 1914 #SUP 0.55 #QF 0.55 
+ assign (resid 197 and name HG   )  (resid 221 and name HG1* )  2.99  1.19  1.19 !peak 1915 #SUP 0.98 #QF 0.98 
+ assign (resid 227 and name HG2* )  (resid 253 and name HG1* )  2.55  0.75  0.75 !peak 1916 #SUP 0.89 #QF 0.67 
+ assign (resid 209 and name HN   )  (resid 223 and name HG2* )  3.36  1.56  1.56 !peak 1923 #SUP 0.62 #QF 0.62 
+ assign (resid 200 and name HD1  )  (resid 223 and name HG2* )  4.14  2.34  2.34 !peak 1926 #SUP 0.86 #QF 0.55 
+ assign (resid 208 and name HA2  )  (resid 223 and name HG2* )  4.59  2.79  2.79 !peak 1926 #SUP 0.86 #QF 0.55 
+ assign (resid 223 and name HG2* )  (resid 227 and name HB   )  4.45  2.65  2.65 !peak 1926 #SUP 0.86 #QF 0.55 
+ assign (resid 210 and name HB   )  (resid 223 and name HG2* )  3.28  1.48  1.48 !peak 1928 #SUP 0.36 #QF 0.36 
+ assign (resid 197 and name HD1* )  (resid 212 and name HN   )  3.23  1.43  1.43 !peak 1948 #SUP 0.97 #QF 0.97 
+ assign (resid 197 and name HD1* )  (resid 198 and name HN   )  2.73  0.93  0.93 !peak 1949 #SUP 0.99 #QF 0.99 
+ assign (resid 197 and name HD1* )  (resid 233 and name HD2* )  3.32  1.52  1.52 !peak 1955 #SUP 0.74 #QF 0.74 
+ assign (resid 194 and name HD1  )  (resid 249 and name HD1* )  3.85  2.05  2.05 !peak 1964 #SUP 0.70 #QF 0.70 
+ assign (resid 215 and name HD1* )  (resid 238 and name HA   )  3.39  1.59  1.59 !peak 1969 #SUP 0.76 #QF 0.59 
+ assign (resid 251 and name HA   )  (resid 251 and name HD2* )  3.14  1.34  1.34 !peak 1971 #SUP 0.96 #QF 0.96 
+ assign (resid 206 and name HG2* )  (resid 207 and name HN   )  3.25  1.45  1.45 !peak 1975 #SUP 0.85 #QF 0.85 
+ assign (resid 206 and name HN   )  (resid 206 and name HG2* )  3.09  1.29  1.29 !peak 1977 #SUP 0.78 #QF 0.78 
+ assign (resid 206 and name HG2* )  (resid 207 and name HA2  )  3.86  2.06  2.06 !peak 1979 #SUP 0.76 #QF 0.76 
+ assign (resid 206 and name HG2* )  (resid 225 and name HA   )  3.82  2.02  2.02 !peak 1980 #SUP 0.97 #QF 0.97 
+ assign (resid 203 and name HA   )  (resid 206 and name HG2* )  3.69  1.89  1.89 !peak 1983 #SUP 0.66 #QF 0.66 
+ assign (resid 212 and name HB*  )  (resid 213 and name HN   )  2.87  1.07  1.07 !peak 1991 #SUP 0.99 #QF 0.99 
+ assign (resid 211 and name HA   )  (resid 212 and name HB*  )  3.06  1.26  1.26 !peak 1992 #SUP 0.96 #QF 0.96 
+ assign (resid 212 and name HB*  )  (resid 221 and name HB   )  3.17  1.37  1.37 !peak 1994 #SUP 0.84 #QF 0.84 
+ assign (resid 212 and name HB*  )  (resid 251 and name HB2  )  3.20  1.40  1.40 !peak 1995 #SUP 0.85 #QF 0.85 
+ assign (resid 195 and name HB*  )  (resid 212 and name HB*  )  3.36  1.56  1.56 !peak 1996 #SUP 0.97 #QF 0.45 
+ assign (resid 197 and name HB2  )  (resid 212 and name HB*  )  3.51  1.71  1.71 !peak 1996 #SUP 0.97 #QF 0.45 
+ assign (resid 197 and name HG   )  (resid 212 and name HB*  )  3.31  1.51  1.51 !peak 1997 #SUP 0.95 #QF 0.95 
+ assign (resid 196 and name HG2* )  (resid 254 and name HB1  )  2.85  1.05  1.05 !peak 2004 #SUP 0.82 #QF 0.82 
+ assign (resid 196 and name HG2* )  (resid 254 and name HB2  )  2.85  1.05  1.05 !peak 2005 #SUP 0.78 #QF 0.78 
+ assign (resid 172 and name HG2* )  (resid 219 and name HB   )  3.39  1.59  1.59 !peak 2019 #SUP 0.73 #QF 0.73 
+ assign (resid 236 and name HG1  )  (resid 237 and name HN   )  4.06  2.26  2.26 !peak 2024 #SUP 1.00 #QF 0.97 
+ assign (resid 237 and name HN   )  (resid 238 and name HG2  )  4.28  2.48  2.48 !peak 2024 #SUP 1.00 #QF 0.97 
+ assign (resid 236 and name HN   )  (resid 238 and name HG2  )  3.21  1.41  1.41 !peak 2025 #SUP 0.90 #QF 0.90 
+ assign (resid 209 and name HG1  )  (resid 222 and name HA   )  3.20  1.40  1.40 !peak 2029 #SUP 0.99 #QF 0.99 
+ assign (resid 235 and name HD1* )  (resid 238 and name HG2  )  3.15  1.35  1.36 !peak 2031 #SUP 0.77 #QF 0.77 
+ assign (resid 199 and name HN   )  (resid 256 and name HG2* )  3.22  1.42  1.42 !peak 2035 #SUP 0.95 #QF 0.95 
+ assign (resid 256 and name HN   )  (resid 256 and name HG2* )  2.97  1.17  1.17 !peak 2036 #SUP 0.98 #QF 0.98 
+ assign (resid 255 and name HA   )  (resid 256 and name HG2* )  3.28  1.48  1.48 !peak 2038 #SUP 0.87 #QF 0.87 
+ assign (resid 254 and name HB1  )  (resid 256 and name HG2* )  3.19  1.39  1.39 !peak 2043 #SUP 0.75 #QF 0.75 
+ assign (resid 254 and name HG2  )  (resid 256 and name HG2* )  3.52  1.72  1.72 !peak 2046 #SUP 0.76 #QF 0.76 
+ assign (resid 254 and name HG1  )  (resid 256 and name HG2* )  3.11  1.31  1.31 !peak 2047 #SUP 0.68 #QF 0.68 
+ assign (resid 205 and name HN   )  (resid 205 and name HG1* )  2.99  1.19  1.19 !peak 2050 #SUP 0.90 #QF 0.90 
+ assign (resid 205 and name HG1* )  (resid 225 and name HA   )  3.48  1.68  1.68 !peak 2054 #SUP 0.69 #QF 0.69 
+ assign (resid 205 and name HG1* )  (resid 226 and name HB1  )  3.92  2.12  2.12 !peak 2061 #SUP 0.72 #QF 0.72 
+ assign (resid 196 and name HA   )  (resid 197 and name HD1* )  3.75  1.95  1.95 !peak 2075 #SUP 0.82 #QF 0.82 
+ assign (resid 230 and name HA2  )  (resid 253 and name HB   )  3.72  1.92  1.92 !peak 2088 #SUP 0.95 #QF 0.95 
+ assign (resid 215 and name HD1* )  (resid 241 and name HD1  )  3.48  1.68  1.68 !peak 2102 #SUP 0.98 #QF 0.85 
+ assign (resid 202 and name HD2  )  (resid 255 and name HG2* )  3.54  1.74  1.74 !peak 2108 #SUP 0.86 #QF 0.86 
+ assign (resid 200 and name HD2  )  (resid 203 and name HG2* )  3.39  1.59  1.59 !peak 2110 #SUP 0.91 #QF 0.91 
+ assign (resid 204 and name HA   )  (resid 227 and name HB   )  2.68  0.88  0.88 !peak 2116 #SUP 0.97 #QF 0.97 
+ assign (resid 203 and name HA   )  (resid 204 and name HA   )  3.52  1.72  1.72 !peak 2117 #SUP 0.76 #QF 0.76 
+ assign (resid 204 and name HA   )  (resid 206 and name HG1* )  3.77  1.97  1.97 !peak 2118 #SUP 0.90 #QF 0.90 
+ assign (resid 253 and name HA   )  (resid 254 and name HA   )  3.41  1.61  1.61 !peak 2122 #SUP 0.69 #QF 0.69 
+ assign (resid 236 and name HA   )  (resid 248 and name HB1  )  3.19  1.39  1.39 !peak 2128 #SUP 0.86 #QF 0.86 
+ assign (resid 225 and name HB2  )  (resid 226 and name HA   )  3.75  1.95  1.95 !peak 2129 #SUP 0.95 #QF 0.95 
+ assign (resid 172 and name HG2* )  (resid 219 and name HA   )  3.15  1.35  1.35 !peak 2169 #SUP 0.57 #QF 0.57 
+ assign (resid 210 and name HA   )  (resid 220 and name HA   )  3.63  1.83  1.83 !peak 2186 #SUP 0.40 #QF 0.40 
+ assign (resid 200 and name HD1  )  (resid 210 and name HA   )  3.90  2.10  2.10 !peak 2188 #SUP 0.62 #QF 0.62 
+ assign (resid 206 and name HA   )  (resid 226 and name HN   )  3.20  1.40  1.40 !peak 2189 #SUP 0.99 #QF 0.99 
+ assign (resid 243 and name HA   )  (resid 244 and name HA   )  3.43  1.63  1.63 !peak 2192 #SUP 0.76 #QF 0.76 
+ assign (resid 243 and name HA   )  (resid 244 and name HB*  )  3.53  1.73  1.73 !peak 2194 #SUP 0.92 #QF 0.92 
+ assign (resid 215 and name HD2* )  (resid 238 and name HA   )  3.58  1.78  1.78 !peak 2223 #SUP 0.48 #QF 0.48 
+ assign (resid 234 and name HA   )  (resid 235 and name HA   )  3.35  1.55  1.55 !peak 2234 #SUP 0.93 #QF 0.93 
+ assign (resid 196 and name HB   )  (resid 197 and name HA   )  3.78  1.98  1.98 !peak 2258 #SUP 0.69 #QF 0.69 
+ assign (resid 197 and name HA   )  (resid 197 and name HD2* )  3.07  1.27  1.27 !peak 2277 #SUP 0.82 #QF 0.82 
+ assign (resid 243 and name HG2  )  (resid 244 and name HA   )  3.56  1.76  1.76 !peak 2291 #SUP 0.47 #QF 0.47 
+ assign (resid 212 and name HA   )  (resid 251 and name HB2  )  3.56  1.76  1.76 !peak 2300 #SUP 0.91 #QF 0.91 
+ assign (resid 197 and name HB2  )  (resid 212 and name HA   )  3.68  1.88  1.88 !peak 2301 #SUP 0.30 #QF 0.30 
+ assign (resid 203 and name HG12 )  (resid 208 and name HA1  )  3.34  1.54  1.54 !peak 2308 #SUP 0.97 #QF 0.97 
+ assign (resid 207 and name HA2  )  (resid 225 and name HA   )  3.19  1.39  1.39 !peak 2339 #SUP 0.92 #QF 0.92 
+ assign (resid 203 and name HG2* )  (resid 207 and name HA2  )  3.39  1.59  1.59 !peak 2344 #SUP 0.97 #QF 0.97 
+ assign (resid 198 and name HA   )  (resid 253 and name HG1* )  3.82  2.02  2.02 !peak 2355 #SUP 0.98 #QF 0.98 
+ assign (resid 239 and name HN   )  (resid 248 and name HA   )  3.28  1.48  1.48 !peak 2366 #SUP 0.47 #QF 0.47 
+ assign (resid 238 and name HB2  )  (resid 248 and name HA   )  3.17  1.37  1.37 !peak 2388 #SUP 0.37 #QF 0.37 
+ assign (resid 236 and name HG2  )  (resid 248 and name HA   )  3.78  1.98  1.98 !peak 2390 #SUP 0.51 #QF 0.51 
+ assign (resid 194 and name HA   )  (resid 249 and name HA   )  3.85  2.05  2.05 !peak 2410 #SUP 0.29 #QF 0.29 
+ assign (resid 249 and name HA   )  (resid 249 and name HD2* )  3.10  1.30  1.30 !peak 2434 #SUP 0.96 #QF 0.96 
+ assign (resid 250 and name HN   )  (resid 251 and name HA   )  3.70  1.90  1.90 !peak 2438 #SUP 0.57 #QF 0.57 
+ assign (resid 195 and name HA   )  (resid 252 and name HN   )  3.70  1.90  1.90 !peak 2444 #SUP 0.52 #QF 0.52 
+ assign (resid 194 and name HD1  )  (resid 195 and name HA   )  3.36  1.56  1.56 !peak 2450 #SUP 0.28 #QF 0.28 
+ assign (resid 195 and name HA   )  (resid 249 and name HD1* )  3.29  1.49  1.49 !peak 2458 #SUP 0.68 #QF 0.68 
+ assign (resid 233 and name HN   )  (resid 250 and name HA   )  3.53  1.73  1.73 !peak 2461 #SUP 0.34 #QF 0.34 
+ assign (resid 232 and name HG1  )  (resid 250 and name HA   )  3.03  1.23  1.23 !peak 2473 #SUP 0.49 #QF 0.49 
+ assign (resid 249 and name HB1  )  (resid 250 and name HA   )  3.70  1.90  1.90 !peak 2474 #SUP 0.56 #QF 0.56 
+ assign (resid 254 and name HA   )  (resid 255 and name HA   )  3.33  1.53  1.53 !peak 2481 #SUP 0.49 #QF 0.49 
+ assign (resid 200 and name HA   )  (resid 255 and name HA   )  3.31  1.51  1.51 !peak 2489 #SUP 0.40 #QF 0.40 
+ assign (resid 200 and name HA   )  (resid 202 and name HD2  )  3.03  1.23  1.23 !peak 2493 #SUP 0.44 #QF 0.44 
+ assign (resid 200 and name HA   )  (resid 202 and name HD1  )  3.50  1.70  1.70 !peak 2495 #SUP 0.73 #QF 0.73 
+ assign (resid 200 and name HA   )  (resid 255 and name HD1* )  3.55  1.75  1.75 !peak 2501 #SUP 0.92 #QF 0.92 
+ assign (resid 223 and name HA   )  (resid 224 and name HA   )  3.39  1.59  1.59 !peak 2515 #SUP 0.70 #QF 0.70 
+ assign (resid 207 and name HA2  )  (resid 224 and name HA   )  3.13  1.33  1.33 !peak 2517 #SUP 0.91 #QF 0.91 
+ assign (resid 224 and name HA   )  (resid 225 and name HB1  )  3.64  1.84  1.84 !peak 2521 #SUP 0.79 #QF 0.79 
+ assign (resid 223 and name HG1* )  (resid 224 and name HA   )  3.29  1.49  1.49 !peak 2523 #SUP 0.66 #QF 0.66 
+ assign (resid 219 and name HN   )  (resid 220 and name HA   )  3.60  1.80  1.80 !peak 2556 #SUP 0.66 #QF 0.66 
+ assign (resid 211 and name HA   )  (resid 220 and name HA   )  2.68  0.88  0.88 !peak 2564 #SUP 0.53 #QF 0.53 
+ assign (resid 241 and name HA   )  (resid 246 and name HA   )  2.65  0.85  0.85 !peak 2566 #SUP 0.48 #QF 0.48 
+ assign (resid 220 and name HA   )  (resid 221 and name HA   )  3.37  1.57  1.57 !peak 2568 #SUP 0.59 #QF 0.59 
+ assign (resid 191 and name HG2  )  (resid 246 and name HA   )  3.72  1.92  1.92 !peak 2579 #SUP 0.58 #QF 0.58 
+ assign (resid 197 and name HD1* )  (resid 220 and name HA   )  3.44  1.64  1.64 !peak 2584 #SUP 0.46 #QF 0.46 
+ assign (resid 221 and name HA   )  (resid 222 and name HA   )  3.34  1.54  1.54 !peak 2591 #SUP 0.85 #QF 0.85 
+ assign (resid 223 and name HA   )  (resid 227 and name HG2* )  3.51  1.71  1.71 !peak 2593 #SUP 0.94 #QF 0.23 
+ assign (resid 227 and name HA   )  (resid 228 and name HA   )  3.42  1.62  1.62 !peak 2602 #SUP 0.97 #QF 0.97 
+ assign (resid 204 and name HB*  )  (resid 227 and name HA   )  3.23  1.43  1.43 !peak 2604 #SUP 0.72 #QF 0.72 
+ assign (resid 211 and name HA   )  (resid 220 and name HG2  )  3.22  1.42  1.42 !peak 2615 #SUP 0.86 #QF 0.86 
+ assign (resid 209 and name HB1  )  (resid 220 and name HG2  )  3.15  1.35  1.35 !peak 2618 #SUP 0.97 #QF 0.66 
+ assign (resid 209 and name HD2  )  (resid 220 and name HG2  )  3.41  1.61  1.61 !peak 2618 #SUP 0.97 #QF 0.66 
+ assign (resid 220 and name HG2  )  (resid 221 and name HG1* )  3.68  1.88  1.88 !peak 2620 #SUP 0.97 #QF 0.97 
+ assign (resid 210 and name HB   )  (resid 211 and name HN   )  2.75  0.95  0.95 !peak 2628 #SUP 0.25 #QF 0.25 
+ assign (resid 209 and name HD2  )  (resid 220 and name HG1  )  3.61  1.81  1.81 !peak 2634 #SUP 0.82 #QF 0.77 
+ assign (resid 209 and name HG2  )  (resid 220 and name HG1  )  3.57  1.77  1.77 !peak 2635 #SUP 0.65 #QF 0.28 
+ assign (resid 199 and name HB   )  (resid 210 and name HG1* )  3.08  1.28  1.28 !peak 2643 #SUP 0.89 #QF 0.89 
+ assign (resid 199 and name HB   )  (resid 210 and name HG2* )  3.08  1.28  1.28 !peak 2644 #SUP 0.60 #QF 0.34 
+ assign (resid 199 and name HB   )  (resid 223 and name HG2* )  2.91  1.11  1.11 !peak 2644 #SUP 0.60 #QF 0.34 
+ assign (resid 199 and name HB   )  (resid 253 and name HG1* )  3.00  1.20  1.20 !peak 2646 #SUP 0.77 #QF 0.77 
+ assign (resid 225 and name HB2  )  (resid 226 and name HB2  )  2.81  1.01  1.01 !peak 2675 #SUP 0.75 #QF 0.75 
+ assign (resid 202 and name HB1  )  (resid 203 and name HN   )  3.25  1.45  1.45 !peak 2679 #SUP 0.93 #QF 0.93 
+ assign (resid 211 and name HB1  )  (resid 212 and name HA   )  3.67  1.87  1.87 !peak 2685 #SUP 0.55 #QF 0.55 
+ assign (resid 228 and name HG1  )  (resid 255 and name HG11 )  3.28  1.48  1.48 !peak 2725 #SUP 0.68 #QF 0.68 
+ assign (resid 205 and name HB   )  (resid 206 and name HB   )  3.32  1.52  1.52 !peak 2731 #SUP 0.97 #QF 0.97 
+ assign (resid 205 and name HG1* )  (resid 206 and name HB   )  3.23  1.43  1.43 !peak 2732 #SUP 0.98 #QF 0.98 
+ assign (resid 238 and name HB1  )  (resid 249 and name HB2  )  2.97  1.17  1.17 !peak 2736 #SUP 0.37 #QF 0.37 
+ assign (resid 242 and name HA1  )  (resid 243 and name HB1  )  3.93  2.13  2.13 !peak 2739 #SUP 0.72 #QF 0.72 
+ assign (resid 231 and name HG1  )  (resid 232 and name HN   )  3.50  1.70  1.70 !peak 2759 #SUP 0.93 #QF 0.93 
+ assign (resid 231 and name HA   )  (resid 231 and name HG1  )  3.11  1.31  1.31 !peak 2762 #SUP 0.96 #QF 0.96 
+ assign (resid 231 and name HG1  )  (resid 253 and name HG2* )  3.49  1.69  1.69 !peak 2769 #SUP 0.98 #QF 0.97 
+ assign (resid 231 and name HG1  )  (resid 253 and name HG1* )  3.40  1.60  1.60 !peak 2771 #SUP 0.79 #QF 0.79 
+ assign (resid 209 and name HD1  )  (resid 220 and name HB2  )  3.51  1.71  1.71 !peak 2781 #SUP 0.63 #QF 0.63 
+ assign (resid 236 and name HG2  )  (resid 248 and name HB1  )  3.02  1.22  1.22 !peak 2793 #SUP 0.61 #QF 0.61 
+ assign (resid 229 and name HN   )  (resid 255 and name HG11 )  3.30  1.50  1.50 !peak 2796 #SUP 0.85 #QF 0.85 
+ assign (resid 255 and name HN   )  (resid 255 and name HG11 )  3.03  1.23  1.23 !peak 2797 #SUP 0.98 #QF 0.98 
+ assign (resid 223 and name HG2* )  (resid 233 and name HD1* )  3.31  1.51  1.51 !peak 2810 #SUP 0.60 #QF 0.60 
+ assign (resid 252 and name HA   )  (resid 253 and name HG2* )  3.33  1.53  1.53 !peak 2816 #SUP 0.48 #QF 0.48 
+ assign (resid 253 and name HA   )  (resid 253 and name HG2* )  2.80  1.00  1.00 !peak 2818 #SUP 0.66 #QF 0.66 
+ assign (resid 197 and name HB2  )  (resid 253 and name HG2* )  3.13  1.33  1.33 !peak 2819 #SUP 0.78 #QF 0.78 
+ assign (resid 204 and name HB*  )  (resid 205 and name HG2* )  2.81  1.01  1.01 !peak 2820 #SUP 0.96 #QF 0.96 
+ assign (resid 197 and name HG   )  (resid 253 and name HG2* )  3.30  1.50  1.50 !peak 2821 #SUP 0.87 #QF 0.87 
+ assign (resid 219 and name HN   )  (resid 219 and name HG1* )  3.07  1.27  1.27 !peak 2822 #SUP 0.95 #QF 0.95 
+ assign (resid 219 and name HG1* )  (resid 220 and name HN   )  3.35  1.55  1.55 !peak 2823 #SUP 0.99 #QF 0.99 
+ assign (resid 218 and name HA   )  (resid 219 and name HG1* )  3.85  2.05  2.05 !peak 2824 #SUP 1.00 
+ assign (resid 219 and name HA   )  (resid 219 and name HG1* )  3.12  1.32  1.32 !peak 2828 #SUP 1.00 
+ assign (resid 223 and name HN   )  (resid 223 and name HG1* )  3.20  1.40  1.40 !peak 2846 #SUP 1.00 
+ assign (resid 223 and name HG1* )  (resid 227 and name HN   )  3.44  1.64  1.64 !peak 2847 #SUP 0.68 #QF 0.68 
+ assign (resid 208 and name HN   )  (resid 223 and name HG1* )  3.31  1.51  1.51 !peak 2848 #SUP 0.99 #QF 0.99 
+ assign (resid 223 and name HG1* )  (resid 227 and name HB   )  2.76  0.96  0.96 !peak 2851 #SUP 0.98 #QF 0.98 
+ assign (resid 200 and name HD2  )  (resid 223 and name HG1* )  3.66  1.86  1.86 !peak 2853 #SUP 0.56 #QF 0.56 
+ assign (resid 223 and name HG1* )  (resid 227 and name HG2* )  2.67  0.87  0.87 !peak 2857 #SUP 0.93 #QF 0.93 
+ assign (resid 223 and name HG1* )  (resid 253 and name HG1* )  2.86  1.06  1.06 !peak 2859 #SUP 0.47 #QF 0.47 
+ assign (resid 210 and name HG2* )  (resid 211 and name HN   )  3.09  1.29  1.29 !peak 2865 #SUP 0.92 #QF 0.92 
+ assign (resid 200 and name HD1  )  (resid 210 and name HG2* )  3.67  1.87  1.87 !peak 2868 #SUP 0.60 #QF 0.60 
+ assign (resid 197 and name HG   )  (resid 210 and name HG2* )  3.36  1.56  1.56 !peak 2874 #SUP 0.82 #QF 0.82 
+ assign (resid 210 and name HG1* )  (resid 211 and name HN   )  3.09  1.29  1.29 !peak 2885 #SUP 0.92 #QF 0.92 
+ assign (resid 256 and name HN   )  (resid 256 and name HB   )  2.88  1.08  1.08 !peak 2905 #SUP 0.95 #QF 0.95 
+ assign (resid 227 and name HB   )  (resid 228 and name HN   )  3.20  1.40  1.40 !peak 2934 #SUP 0.97 #QF 0.97 
+ assign (resid 227 and name HB   )  (resid 253 and name HG1* )  3.36  1.56  1.56 !peak 2940 #SUP 0.69 #QF 0.69 
+ assign (resid 227 and name HB   )  (resid 255 and name HD1* )  3.38  1.58  1.58 !peak 2941 #SUP 0.92 #QF 0.92 
+ assign (resid 205 and name HA   )  (resid 206 and name HA   )  3.53  1.73  1.73 !peak 2943 #SUP 0.86 #QF 0.86 
+ assign (resid 214 and name HB   )  (resid 215 and name HB2  )  3.27  1.47  1.47 !peak 2989 #SUP 0.62 #QF 0.62 
+ assign (resid 172 and name HB   )  (resid 219 and name HB   )  3.25  1.45  1.45 !peak 3129 #SUP 0.55 #QF 0.55 
+ assign (resid 209 and name HD2  )  (resid 220 and name HB1  )  3.31  1.51  1.51 !peak 3131 #SUP 0.94 #QF 0.33 
+ assign (resid 209 and name HD1  )  (resid 220 and name HB1  )  3.24  1.44  1.44 !peak 3132 #SUP 0.60 #QF 0.60 
+ assign (resid 173 and name HB*  )  (resid 220 and name HB1  )  3.66  1.86  1.86 !peak 3133 #SUP 0.36 #QF 0.36 
+ assign (resid 235 and name HB2  )  (resid 238 and name HG2  )  3.25  1.45  1.45 !peak 3146 #SUP 0.79 #QF 0.79 
+ assign (resid 235 and name HB1  )  (resid 238 and name HG1  )  3.31  1.51  1.51 !peak 3152 #SUP 1.00 
+ assign (resid 196 and name HA   )  (resid 197 and name HB2  )  3.31  1.51  1.51 !peak 3164 #SUP 0.69 #QF 0.69 
+ assign (resid 249 and name HB2  )  (resid 249 and name HD2* )  3.16  1.36  1.36 !peak 3171 #SUP 0.99 #QF 0.99 
+ assign (resid 205 and name HA   )  (resid 226 and name HD1  )  3.26  1.46  1.46 !peak 3204 #SUP 0.94 #QF 0.75 
+ assign (resid 226 and name HB1  )  (resid 226 and name HD1  )  2.76  0.96  0.96 !peak 3205 #SUP 0.86 #QF 0.86 
+ assign (resid 205 and name HG1* )  (resid 226 and name HD1  )  3.42  1.62  1.62 !peak 3207 #SUP 0.65 #QF 0.65 
+ assign (resid 225 and name HB2  )  (resid 226 and name HD2  )  3.50  1.70  1.70 !peak 3210 #SUP 0.87 #QF 0.87 
+ assign (resid 206 and name HA   )  (resid 207 and name HA1  )  3.51  1.71  1.71 !peak 3256 #SUP 0.67 #QF 0.67 
+ assign (resid 207 and name HA1  )  (resid 225 and name HD1  )  2.87  1.07  1.07 !peak 3258 #SUP 0.71 #QF 0.71 
+ assign (resid 207 and name HA1  )  (resid 225 and name HD2  )  3.31  1.51  1.51 !peak 3259 #SUP 0.43 #QF 0.43 
+ assign (resid 237 and name HA2  )  (resid 246 and name HN   )  3.36  1.56  1.56 !peak 3263 #SUP 0.25 #QF 0.25 
+ assign (resid 237 and name HA2  )  (resid 248 and name HA   )  3.34  1.54  1.54 !peak 3268 #SUP 0.74 #QF 0.74 
+ assign (resid 236 and name HA   )  (resid 237 and name HA2  )  3.34  1.54  1.54 !peak 3269 #SUP 0.80 #QF 0.80 
+ assign (resid 199 and name HA   )  (resid 200 and name HG2  )  3.39  1.59  1.59 !peak 3281 #SUP 0.74 #QF 0.74 
+ assign (resid 255 and name HN   )  (resid 255 and name HG12 )  3.13  1.33  1.33 !peak 3291 #SUP 0.91 #QF 0.91 
+ assign (resid 197 and name HG   )  (resid 212 and name HA   )  3.55  1.75  1.75 !peak 3295 #SUP 0.56 #QF 0.56 
+ assign (resid 197 and name HG   )  (resid 210 and name HG1* )  3.36  1.56  1.56 !peak 3302 #SUP 0.31 #QF 0.31 
+ assign (resid 222 and name HA   )  (resid 223 and name HA   )  3.67  1.87  1.87 !peak 3337 #SUP 0.91 #QF 0.85 
+ assign (resid 221 and name HG1* )  (resid 222 and name HA   )  3.24  1.44  1.44 !peak 3341 #SUP 0.99 #QF 0.99 
+ assign (resid 215 and name HD1* )  (resid 241 and name HD2  )  3.48  1.68  1.68 !peak 3349 #SUP 0.68 #QF 0.37 
+ assign (resid 236 and name HN   )  (resid 237 and name HA1  )  4.00  2.20  2.20 !peak 3353 #SUP 0.69 #QF 0.48 
+ assign (resid 237 and name HA1  )  (resid 246 and name HN   )  4.29  2.49  2.49 !peak 3353 #SUP 0.69 #QF 0.48 
+ assign (resid 236 and name HA   )  (resid 237 and name HA1  )  3.38  1.58  1.58 !peak 3362 #SUP 0.25 #QF 0.25 
+ assign (resid 208 and name HA2  )  (resid 209 and name HA   )  3.54  1.74  1.74 !peak 3372 #SUP 0.91 #QF 0.91 
+ assign (resid 235 and name HB1  )  (resid 238 and name HB2  )  3.34  1.54  1.54 !peak 3387 #SUP 0.82 #QF 0.62 
+ assign (resid 238 and name HB2  )  (resid 249 and name HB2  )  3.42  1.62  1.62 !peak 3387 #SUP 0.82 #QF 0.62 
+ assign (resid 197 and name HN   )  (resid 197 and name HD2* )  3.30  1.50  1.50 !peak 3413 #SUP 0.92 #QF 0.81 
+ assign (resid 197 and name HD2* )  (resid 210 and name HN   )  3.81  2.01  2.01 !peak 3413 #SUP 0.92 #QF 0.81 
+ assign (resid 240 and name HA   )  (resid 240 and name HD1  )  3.08  1.28  1.28 !peak 1 #SUP 0.91 #QF 0.91 
+ assign (resid 215 and name HB2  )  (resid 240 and name HD1  )  3.56  1.76  1.76 !peak 9 #SUP 0.78 #QF 0.78 
+ assign (resid 176 and name HE3  )  (resid 231 and name HB1  )  2.97  1.17  1.17 !peak 13 #SUP 0.72 #QF 0.72 
+ assign (resid 176 and name HA   )  (resid 176 and name HE3  )  3.32  1.52  1.52 !peak 14 #SUP 0.80 #QF 0.80 
+ assign (resid 175 and name HA   )  (resid 176 and name HD1  )  3.08  1.28  1.28 !peak 16 #SUP 0.77 #QF 0.77 
+ assign (resid 176 and name HD1  )  (resid 224 and name HG1  )  3.61  1.81  1.81 !peak 23 #SUP 0.43 #QF 0.43 
+ assign (resid 176 and name HH2  )  (resid 253 and name HG1* )  3.35  1.55  1.55 !peak 34 #SUP 0.80 #QF 0.61 
+ assign (resid 194 and name HE1  )  (resid 232 and name HG1  )  3.70  1.90  1.90 !peak 40 #SUP 0.90 #QF 0.90 
+ assign (resid 194 and name HA   )  (resid 194 and name HE1  )  3.33  1.53  1.53 !peak 43 #SUP 0.59 #QF 0.59 
+ assign (resid 194 and name HD1  )  (resid 250 and name HB2  )  3.17  1.37  1.37 !peak 50 #SUP 0.63 #QF 0.63 
+ assign (resid 194 and name HA   )  (resid 194 and name HD1  )  3.08  1.28  1.28 !peak 52 #SUP 0.95 #QF 0.95 
+ assign (resid 176 and name HZ3  )  (resid 227 and name HG2* )  2.98  1.18  1.18 !peak 57 #SUP 0.68 #QF 0.58 
+ assign (resid 176 and name HD1  )  (resid 221 and name HG1* )  3.41  1.61  1.61 !peak 58 #SUP 0.69 #QF 0.69 
+ assign (resid 215 and name HD2* )  (resid 240 and name HE1  )  3.02  1.22  1.22 !peak 61 #SUP 0.91 #QF 0.91 
+ assign (resid 232 and name HG1  )  (resid 250 and name HD2  )  3.45  1.65  1.65 !peak 72 #SUP 0.84 #QF 0.64 
+ assign (resid 232 and name HD1  )  (resid 250 and name HD2  )  3.38  1.58  1.57 !peak 73 #SUP 0.48 #QF 0.48 
+ assign (resid 232 and name HG2  )  (resid 250 and name HD2  )  3.72  1.92  1.92 !peak 74 #SUP 0.79 #QF 0.32 
+ assign (resid 234 and name HA   )  (resid 250 and name HD2  )  3.30  1.50  1.50 !peak 80 #SUP 0.67 #QF 0.67 
+ assign (resid 250 and name HA   )  (resid 250 and name HD2  )  3.13  1.33  1.33 !peak 82 #SUP 0.85 #QF 0.85 
+ assign (resid 250 and name HN   )  (resid 250 and name HD1  )  3.36  1.56  1.56 !peak 83 #SUP 0.77 #QF 0.44 
+ assign (resid 250 and name HN   )  (resid 250 and name HD2  )  3.08  1.28  1.28 !peak 83 #SUP 0.77 #QF 0.44 
+ assign (resid 234 and name HN   )  (resid 250 and name HD2  )  3.45  1.65  1.65 !peak 85 #SUP 0.62 #QF 0.62 
+ assign (resid 194 and name HD1  )  (resid 250 and name HB1  )  3.20  1.40  1.40 !peak 88 #SUP 0.77 #QF 0.77 
+ assign (resid 176 and name HA   )  (resid 176 and name HD1  )  3.05  1.25  1.24 !peak 93 #SUP 0.80 #QF 0.80 
+ assign (resid 176 and name HE3  )  (resid 231 and name HD1  )  3.20  1.40  1.40 !peak 97 #SUP 0.78 #QF 0.78 
+ assign (resid 176 and name HB2  )  (resid 176 and name HE3  )  3.09  1.29  1.29 !peak 98 #SUP 0.65 #QF 0.65 
+ assign (resid 234 and name HG1  )  (resid 250 and name HE2  )  3.57  1.77  1.77 !peak 101 #SUP 0.57 #QF 0.57 
+ assign (resid 234 and name HG2  )  (resid 250 and name HE2  )  3.57  1.77  1.77 !peak 102 #SUP 0.66 #QF 0.66 
+ assign (resid 234 and name HB1  )  (resid 250 and name HE2  )  2.88  1.08  1.08 !peak 103 #SUP 0.75 #QF 0.75 
+ assign (resid 234 and name HB2  )  (resid 250 and name HE2  )  2.88  1.08  1.08 !peak 105 #SUP 0.52 #QF 0.52 
+ assign (resid 248 and name HB2  )  (resid 250 and name HE2  )  2.98  1.18  1.18 !peak 107 #SUP 0.31 #QF 0.31 
+ assign (resid 176 and name HE1  )  (resid 223 and name HA   )  2.83  1.03  1.03 !peak 7 #SUP 0.85 #QF 0.85 
+ assign (resid 176 and name HE1  )  (resid 222 and name HN   )  3.33  1.53  1.53 !peak 8 #SUP 0.77 #QF 0.77 
+ assign (resid 198 and name HN   )  (resid 199 and name HN   )  3.17  1.37  1.37 !peak 10 #SUP 0.98 #QF 0.98 
+ assign (resid 197 and name HB1  )  (resid 198 and name HN   )  3.06  1.26  1.26 !peak 12 #SUP 0.92 #QF 0.92 
+ assign (resid 197 and name HD2* )  (resid 198 and name HN   )  3.39  1.59  1.59 !peak 14 #SUP 0.97 #QF 0.97 
+ assign (resid 197 and name HB2  )  (resid 198 and name HN   )  3.42  1.62  1.62 !peak 16 #SUP 0.94 #QF 0.94 
+ assign (resid 198 and name HN   )  (resid 198 and name HB2  )  2.79  0.99  0.99 !peak 17 #SUP 0.74 #QF 0.74 
+ assign (resid 198 and name HN   )  (resid 198 and name HB1  )  2.79  0.99  0.99 !peak 18 #SUP 0.74 #QF 0.74 
+ assign (resid 205 and name HB   )  (resid 206 and name HN   )  2.32  0.52  0.52 !peak 22 #SUP 0.86 #QF 0.86 
+ assign (resid 216 and name HN   )  (resid 217 and name HN   )  2.40  0.60  0.60 !peak 25 #SUP 0.86 #QF 0.86 
+ assign (resid 214 and name HB   )  (resid 216 and name HN   )  2.51  0.71  0.71 !peak 29 #SUP 0.93 #QF 0.93 
+ assign (resid 216 and name HN   )  (resid 216 and name HB2  )  2.85  1.05  1.05 !peak 33 #SUP 0.68 #QF 0.68 
+ assign (resid 176 and name HE1  )  (resid 223 and name HG2* )  3.06  1.26  1.26 !peak 36 #SUP 0.70 #QF 0.70 
+ assign (resid 176 and name HE1  )  (resid 221 and name HG1* )  2.85  1.05  1.05 !peak 37 #SUP 0.83 #QF 0.83 
+ assign (resid 176 and name HE1  )  (resid 222 and name HB*  )  3.23  1.43  1.43 !peak 39 #SUP 0.85 #QF 0.85 
+ assign (resid 253 and name HA   )  (resid 254 and name HN   )  2.35  0.55  0.55 !peak 41 #SUP 0.80 #QF 0.80 
+ assign (resid 198 and name HA   )  (resid 254 and name HN   )  3.12  1.32  1.32 !peak 43 #SUP 0.87 #QF 0.87 
+ assign (resid 197 and name HN   )  (resid 254 and name HN   )  3.07  1.27  1.27 !peak 45 #SUP 0.42 #QF 0.42 
+ assign (resid 199 and name HN   )  (resid 254 and name HN   )  2.86  1.06  1.06 !peak 49 #SUP 0.73 #QF 0.73 
+ assign (resid 253 and name HB   )  (resid 254 and name HN   )  3.28  1.48  1.48 !peak 50 #SUP 0.99 #QF 0.99 
+ assign (resid 254 and name HN   )  (resid 254 and name HB1  )  2.61  0.81  0.81 !peak 51 #SUP 1.00 
+ assign (resid 254 and name HN   )  (resid 254 and name HB2  )  2.61  0.81  0.81 !peak 52 #SUP 0.75 #QF 0.75 
+ assign (resid 254 and name HN   )  (resid 254 and name HG1  )  3.39  1.59  1.59 !peak 54 #SUP 0.56 #QF 0.56 
+ assign (resid 197 and name HB1  )  (resid 254 and name HN   )  2.72  0.92  0.92 !peak 55 #SUP 0.38 #QF 0.38 
+ assign (resid 253 and name HG1* )  (resid 254 and name HN   )  2.51  0.71  0.71 !peak 58 #SUP 0.90 #QF 0.90 
+ assign (resid 235 and name HN   )  (resid 250 and name HA   )  3.05  1.25  1.25 !peak 59 #SUP 0.64 #QF 0.64 
+ assign (resid 234 and name HA   )  (resid 235 and name HN   )  2.54  0.74  0.74 !peak 61 #SUP 0.80 #QF 0.80 
+ assign (resid 235 and name HN   )  (resid 249 and name HD2* )  3.45  1.65  1.65 !peak 62 #SUP 0.88 #QF 0.88 
+ assign (resid 235 and name HN   )  (resid 235 and name HD2* )  2.76  0.96  0.96 !peak 63 #SUP 0.66 #QF 0.66 
+ assign (resid 235 and name HN   )  (resid 235 and name HG   )  2.62  0.82  0.82 !peak 65 #SUP 0.73 #QF 0.73 
+ assign (resid 235 and name HN   )  (resid 235 and name HB2  )  2.72  0.92  0.92 !peak 67 #SUP 0.92 #QF 0.92 
+ assign (resid 234 and name HN   )  (resid 235 and name HN   )  3.14  1.34  1.34 !peak 68 #SUP 0.78 #QF 0.78 
+ assign (resid 235 and name HN   )  (resid 251 and name HN   )  3.70  1.90  1.90 !peak 71 #SUP 0.93 #QF 0.93 
+ assign (resid 222 and name HN   )  (resid 222 and name HB*  )  2.25  0.45  0.45 !peak 73 #SUP 0.81 #QF 0.81 
+ assign (resid 221 and name HA   )  (resid 222 and name HN   )  2.26  0.46  0.46 !peak 75 #SUP 0.85 #QF 0.85 
+ assign (resid 209 and name HA   )  (resid 222 and name HN   )  3.60  1.80  1.80 !peak 78 #SUP 0.78 #QF 0.78 
+ assign (resid 221 and name HN   )  (resid 222 and name HN   )  3.41  1.61  1.61 !peak 80 #SUP 0.95 #QF 0.95 
+ assign (resid 232 and name HA   )  (resid 253 and name HN   )  2.92  1.12  1.12 !peak 82 #SUP 0.67 #QF 0.67 
+ assign (resid 212 and name HN   )  (resid 218 and name HA   )  3.36  1.56  1.56 !peak 87 #SUP 0.91 #QF 0.91 
+ assign (resid 212 and name HN   )  (resid 212 and name HB*  )  2.36  0.56  0.56 !peak 92 #SUP 0.89 #QF 0.89 
+ assign (resid 200 and name HA   )  (resid 201 and name HN   )  2.26  0.46  0.46 !peak 95 #SUP 0.86 #QF 0.86 
+ assign (resid 201 and name HN   )  (resid 201 and name HA   )  2.49  0.69  0.69 !peak 97 #SUP 0.98 #QF 0.98 
+ assign (resid 201 and name HN   )  (resid 202 and name HD2  )  2.58  0.78  0.78 !peak 98 #SUP 0.97 #QF 0.97 
+ assign (resid 201 and name HN   )  (resid 202 and name HD1  )  2.65  0.85  0.85 !peak 99 #SUP 0.98 #QF 0.98 
+ assign (resid 200 and name HB2  )  (resid 201 and name HN   )  2.65  0.85  0.85 !peak 100 #SUP 0.94 #QF 0.94 
+ assign (resid 201 and name HN   )  (resid 201 and name HB*  )  2.24  0.44  0.44 !peak 102 #SUP 0.88 #QF 0.88 
+ assign (resid 232 and name HA   )  (resid 233 and name HN   )  2.69  0.89  0.89 !peak 103 #SUP 0.93 #QF 0.93 
+ assign (resid 232 and name HB1  )  (resid 233 and name HN   )  3.31  1.51  1.51 !peak 105 #SUP 0.44 #QF 0.44 
+ assign (resid 232 and name HG2  )  (resid 233 and name HN   )  3.10  1.30  1.30 !peak 107 #SUP 0.87 #QF 0.87 
+ assign (resid 233 and name HN   )  (resid 253 and name HG2* )  3.29  1.49  1.49 !peak 110 #SUP 0.49 #QF 0.49 
+ assign (resid 194 and name HA   )  (resid 250 and name HN   )  2.92  1.12  1.12 !peak 115 #SUP 0.82 #QF 0.82 
+ assign (resid 249 and name HA   )  (resid 250 and name HN   )  2.57  0.77  0.77 !peak 116 #SUP 0.86 #QF 0.86 
+ assign (resid 250 and name HN   )  (resid 250 and name HB1  )  3.05  1.25  1.24 !peak 118 #SUP 0.87 #QF 0.87 
+ assign (resid 249 and name HD1* )  (resid 250 and name HN   )  2.59  0.79  0.79 !peak 122 #SUP 0.80 #QF 0.80 
+ assign (resid 222 and name HA   )  (resid 223 and name HN   )  2.31  0.51  0.51 !peak 123 #SUP 0.82 #QF 0.82 
+ assign (resid 207 and name HA2  )  (resid 223 and name HN   )  3.71  1.91  1.91 !peak 125 #SUP 0.69 #QF 0.69 
+ assign (resid 209 and name HA   )  (resid 223 and name HN   )  2.61  0.81  0.81 !peak 126 #SUP 0.95 #QF 0.95 
+ assign (resid 210 and name HN   )  (resid 223 and name HN   )  2.98  1.18  1.18 !peak 128 #SUP 0.83 #QF 0.83 
+ assign (resid 222 and name HN   )  (resid 223 and name HN   )  3.28  1.48  1.48 !peak 129 #SUP 0.67 #QF 0.67 
+ assign (resid 223 and name HN   )  (resid 223 and name HB   )  2.47  0.67  0.67 !peak 132 #SUP 0.76 #QF 0.76 
+ assign (resid 223 and name HN   )  (resid 223 and name HG2* )  2.38  0.58  0.58 !peak 134 #SUP 0.79 #QF 0.79 
+ assign (resid 197 and name HN   )  (resid 252 and name HN   )  2.86  1.06  1.06 !peak 138 #SUP 0.50 #QF 0.50 
+ assign (resid 196 and name HA   )  (resid 197 and name HN   )  2.30  0.50  0.50 !peak 140 #SUP 0.68 #QF 0.68 
+ assign (resid 197 and name HN   )  (resid 253 and name HA   )  2.78  0.98  0.98 !peak 143 #SUP 0.52 #QF 0.52 
+ assign (resid 197 and name HN   )  (resid 197 and name HB2  )  2.60  0.80  0.80 !peak 146 #SUP 0.82 #QF 0.82 
+ assign (resid 196 and name HG2* )  (resid 197 and name HN   )  2.65  0.85  0.85 !peak 147 #SUP 0.99 #QF 0.85 
+ assign (resid 197 and name HN   )  (resid 197 and name HB1  )  2.81  1.01  1.01 !peak 147 #SUP 0.99 #QF 0.85 
+ assign (resid 197 and name HN   )  (resid 197 and name HD1* )  3.07  1.27  1.27 !peak 148 #SUP 0.97 #QF 0.97 
+ assign (resid 235 and name HA   )  (resid 236 and name HN   )  2.35  0.55  0.55 !peak 155 #SUP 0.86 #QF 0.86 
+ assign (resid 235 and name HB1  )  (resid 236 and name HN   )  2.56  0.76  0.76 !peak 158 #SUP 0.69 #QF 0.69 
+ assign (resid 236 and name HN   )  (resid 236 and name HG2  )  2.92  1.12  1.12 !peak 159 #SUP 0.92 #QF 0.92 
+ assign (resid 236 and name HN   )  (resid 238 and name HG1  )  3.43  1.63  1.63 !peak 160 #SUP 0.71 #QF 0.25 
+ assign (resid 173 and name HN   )  (resid 173 and name HB*  )  2.35  0.55  0.55 !peak 162 #SUP 0.81 #QF 0.81 
+ assign (resid 172 and name HG2* )  (resid 173 and name HN   )  2.90  1.10  1.10 !peak 163 #SUP 0.95 #QF 0.95 
+ assign (resid 255 and name HA   )  (resid 256 and name HN   )  2.23  0.43  0.43 !peak 166 #SUP 0.56 #QF 0.56 
+ assign (resid 250 and name HN   )  (resid 250 and name HB2  )  2.90  1.10  1.10 !peak 169 #SUP 0.97 #QF 0.97 
+ assign (resid 249 and name HB2  )  (resid 250 and name HN   )  3.32  1.52  1.52 !peak 170 #SUP 0.99 #QF 0.99 
+ assign (resid 250 and name HN   )  (resid 251 and name HN   )  3.30  1.50  1.50 !peak 172 #SUP 0.44 #QF 0.44 
+ assign (resid 199 and name HN   )  (resid 256 and name HN   )  2.90  1.10  1.10 !peak 174 #SUP 0.81 #QF 0.81 
+ assign (resid 198 and name HA   )  (resid 199 and name HN   )  2.30  0.50  0.50 !peak 176 #SUP 0.90 #QF 0.90 
+ assign (resid 199 and name HN   )  (resid 199 and name HB   )  2.76  0.96  0.96 !peak 180 #SUP 0.91 #QF 0.91 
+ assign (resid 199 and name HN   )  (resid 254 and name HB2  )  3.06  1.26  1.26 !peak 181 #SUP 0.71 #QF 0.71 
+ assign (resid 220 and name HG2  )  (resid 221 and name HN   )  2.87  1.07  1.07 !peak 186 #SUP 0.89 #QF 0.89 
+ assign (resid 221 and name HN   )  (resid 221 and name HB   )  2.64  0.84  0.84 !peak 187 #SUP 0.91 #QF 0.91 
+ assign (resid 209 and name HG2  )  (resid 221 and name HN   )  3.14  1.34  1.34 !peak 190 #SUP 0.84 #QF 0.70 
+ assign (resid 221 and name HN   )  (resid 221 and name HG1* )  2.39  0.59  0.59 !peak 191 #SUP 0.92 #QF 0.92 
+ assign (resid 220 and name HA   )  (resid 221 and name HN   )  2.37  0.57  0.57 !peak 193 #SUP 0.82 #QF 0.82 
+ assign (resid 232 and name HG1  )  (resid 251 and name HN   )  2.91  1.11  1.11 !peak 205 #SUP 0.89 #QF 0.89 
+ assign (resid 251 and name HN   )  (resid 251 and name HB1  )  2.78  0.98  0.98 !peak 206 #SUP 0.93 #QF 0.93 
+ assign (resid 251 and name HN   )  (resid 251 and name HB2  )  2.92  1.12  1.12 !peak 207 #SUP 0.92 #QF 0.92 
+ assign (resid 250 and name HB2  )  (resid 251 and name HN   )  3.44  1.64  1.64 !peak 208 #SUP 0.97 #QF 0.97 
+ assign (resid 250 and name HB1  )  (resid 251 and name HN   )  3.02  1.22  1.22 !peak 209 #SUP 0.98 #QF 0.98 
+ assign (resid 234 and name HA   )  (resid 251 and name HN   )  3.18  1.38  1.38 !peak 210 #SUP 0.70 #QF 0.70 
+ assign (resid 250 and name HA   )  (resid 251 and name HN   )  2.35  0.55  0.55 !peak 211 #SUP 0.85 #QF 0.85 
+ assign (resid 232 and name HA   )  (resid 251 and name HN   )  3.46  1.66  1.66 !peak 212 #SUP 0.97 #QF 0.97 
+ assign (resid 250 and name HD2  )  (resid 251 and name HN   )  3.21  1.41  1.41 !peak 213 #SUP 0.84 #QF 0.84 
+ assign (resid 233 and name HN   )  (resid 251 and name HN   )  2.70  0.90  0.90 !peak 215 #SUP 0.70 #QF 0.70 
+ assign (resid 233 and name HN   )  (resid 234 and name HN   )  3.37  1.57  1.57 !peak 219 #SUP 0.81 #QF 0.81 
+ assign (resid 233 and name HA   )  (resid 234 and name HN   )  2.56  0.76  0.76 !peak 221 #SUP 0.68 #QF 0.68 
+ assign (resid 234 and name HN   )  (resid 234 and name HB2  )  2.98  1.18  1.18 !peak 222 #SUP 0.97 #QF 0.97 
+ assign (resid 234 and name HN   )  (resid 234 and name HB1  )  2.98  1.18  1.18 !peak 223 #SUP 0.95 #QF 0.95 
+ assign (resid 234 and name HN   )  (resid 234 and name HG2  )  3.00  1.20  1.20 !peak 225 #SUP 0.91 #QF 0.91 
+ assign (resid 234 and name HN   )  (resid 234 and name HG1  )  3.00  1.20  1.20 !peak 226 #SUP 0.98 #QF 0.38 
+ assign (resid 231 and name HB2  )  (resid 232 and name HN   )  2.75  0.95  0.95 !peak 227 #SUP 0.96 #QF 0.96 
+ assign (resid 232 and name HN   )  (resid 232 and name HB1  )  2.73  0.93  0.93 !peak 228 #SUP 0.93 #QF 0.93 
+ assign (resid 231 and name HB1  )  (resid 232 and name HN   )  2.50  0.70  0.70 !peak 229 #SUP 0.89 #QF 0.89 
+ assign (resid 232 and name HN   )  (resid 232 and name HG2  )  2.78  0.98  0.98 !peak 230 #SUP 0.89 #QF 0.89 
+ assign (resid 232 and name HN   )  (resid 253 and name HG2* )  3.18  1.38  1.38 !peak 232 #SUP 0.70 #QF 0.70 
+ assign (resid 231 and name HA   )  (resid 232 and name HN   )  2.44  0.64  0.64 !peak 236 #SUP 0.94 #QF 0.94 
+ assign (resid 232 and name HN   )  (resid 252 and name HA   )  3.41  1.61  1.61 !peak 237 #SUP 0.99 #QF 0.99 
+ assign (resid 232 and name HN   )  (resid 233 and name HN   )  3.21  1.41  1.41 !peak 241 #SUP 0.98 #QF 0.98 
+ assign (resid 211 and name HN   )  (resid 211 and name HB1  )  2.23  0.43  0.43 !peak 250 #SUP 0.70 #QF 0.70 
+ assign (resid 175 and name HN   )  (resid 234 and name HN   )  3.25  1.45  1.45 !peak 254 #SUP 0.61 #QF 0.61 
+ assign (resid 175 and name HN   )  (resid 175 and name HG1  )  2.90  1.10  1.10 !peak 258 #SUP 0.84 #QF 0.84 
+ assign (resid 174 and name HA2  )  (resid 175 and name HN   )  2.55  0.75  0.75 !peak 262 #SUP 0.94 #QF 0.94 
+ assign (resid 174 and name HA1  )  (resid 175 and name HN   )  2.64  0.84  0.84 !peak 263 #SUP 0.86 #QF 0.86 
+ assign (resid 208 and name HA1  )  (resid 209 and name HN   )  2.28  0.48  0.48 !peak 271 #SUP 0.85 #QF 0.85 
+ assign (resid 209 and name HN   )  (resid 209 and name HB2  )  2.46  0.66  0.66 !peak 274 #SUP 0.73 #QF 0.73 
+ assign (resid 203 and name HG12 )  (resid 209 and name HN   )  2.92  1.12  1.12 !peak 275 #SUP 0.98 #QF 0.93 
+ assign (resid 209 and name HN   )  (resid 209 and name HB1  )  2.64  0.84  0.84 !peak 275 #SUP 0.98 #QF 0.93 
+ assign (resid 203 and name HD1* )  (resid 209 and name HN   )  2.59  0.79  0.79 !peak 280 #SUP 0.88 #QF 0.88 
+ assign (resid 203 and name HG2* )  (resid 209 and name HN   )  2.58  0.78  0.78 !peak 281 #SUP 0.95 #QF 0.95 
+ assign (resid 209 and name HN   )  (resid 223 and name HN   )  3.30  1.50  1.50 !peak 282 #SUP 0.65 #QF 0.65 
+ assign (resid 208 and name HN   )  (resid 209 and name HN   )  2.98  1.18  1.18 !peak 286 #SUP 0.88 #QF 0.88 
+ assign (resid 204 and name HN   )  (resid 204 and name HB*  )  2.24  0.44  0.44 !peak 287 #SUP 0.87 #QF 0.87 
+ assign (resid 203 and name HA   )  (resid 204 and name HN   )  2.86  1.06  1.06 !peak 292 #SUP 0.97 #QF 0.97 
+ assign (resid 173 and name HA   )  (resid 174 and name HN   )  2.53  0.73  0.73 !peak 297 #SUP 0.96 #QF 0.96 
+ assign (resid 173 and name HB*  )  (resid 174 and name HN   )  2.59  0.79  0.79 !peak 302 #SUP 0.91 #QF 0.91 
+ assign (resid 172 and name HN   )  (resid 172 and name HG2* )  3.05  1.25  1.24 !peak 306 #SUP 0.94 #QF 0.94 
+ assign (resid 172 and name HN   )  (resid 172 and name HB   )  2.61  0.81  0.81 !peak 308 #SUP 0.88 #QF 0.88 
+ assign (resid 172 and name HN   )  (resid 173 and name HN   )  2.97  1.17  1.17 !peak 309 #SUP 0.48 #QF 0.48 
+ assign (resid 211 and name HA   )  (resid 212 and name HN   )  2.22  0.42  0.42 !peak 311 #SUP 0.78 #QF 0.78 
+ assign (resid 225 and name HB1  )  (resid 226 and name HN   )  3.12  1.32  1.32 !peak 312 #SUP 0.93 #QF 0.93 
+ assign (resid 226 and name HN   )  (resid 226 and name HB2  )  2.71  0.91  0.91 !peak 313 #SUP 0.94 #QF 0.94 
+ assign (resid 226 and name HN   )  (resid 226 and name HB1  )  3.20  1.40  1.40 !peak 314 #SUP 0.99 #QF 0.99 
+ assign (resid 225 and name HB2  )  (resid 226 and name HN   )  2.71  0.91  0.91 !peak 315 #SUP 0.78 #QF 0.78 
+ assign (resid 204 and name HB*  )  (resid 226 and name HN   )  3.34  1.54  1.54 !peak 317 #SUP 0.71 #QF 0.71 
+ assign (resid 205 and name HG2* )  (resid 226 and name HN   )  2.99  1.19  1.19 !peak 318 #SUP 0.92 #QF 0.92 
+ assign (resid 205 and name HG1* )  (resid 226 and name HN   )  2.94  1.14  1.14 !peak 319 #SUP 0.99 #QF 0.99 
+ assign (resid 226 and name HN   )  (resid 226 and name HA   )  2.24  0.44  0.44 !peak 321 #SUP 0.44 #QF 0.44 
+ assign (resid 205 and name HA   )  (resid 226 and name HN   )  2.47  0.67  0.67 !peak 322 #SUP 0.97 #QF 0.97 
+ assign (resid 205 and name HN   )  (resid 226 and name HN   )  3.17  1.37  1.37 !peak 326 #SUP 0.63 #QF 0.63 
+ assign (resid 230 and name HN   )  (resid 231 and name HN   )  2.52  0.72  0.72 !peak 329 #SUP 0.94 #QF 0.94 
+ assign (resid 231 and name HN   )  (resid 232 and name HN   )  3.40  1.60  1.60 !peak 330 #SUP 0.84 #QF 0.84 
+ assign (resid 230 and name HA2  )  (resid 231 and name HN   )  2.86  1.06  1.06 !peak 332 #SUP 0.94 #QF 0.94 
+ assign (resid 231 and name HN   )  (resid 231 and name HA   )  2.49  0.69  0.69 !peak 333 #SUP 0.74 #QF 0.74 
+ assign (resid 229 and name HA   )  (resid 231 and name HN   )  2.88  1.08  1.08 !peak 334 #SUP 0.58 #QF 0.58 
+ assign (resid 231 and name HN   )  (resid 231 and name HB2  )  2.49  0.69  0.69 !peak 337 #SUP 0.82 #QF 0.71 
+ assign (resid 231 and name HN   )  (resid 253 and name HB   )  2.61  0.81  0.80 !peak 337 #SUP 0.82 #QF 0.71 
+ assign (resid 231 and name HN   )  (resid 231 and name HG1  )  2.29  0.49  0.49 !peak 338 #SUP 0.67 #QF 0.67 
+ assign (resid 236 and name HA   )  (resid 249 and name HN   )  3.25  1.45  1.45 !peak 342 #SUP 0.87 #QF 0.87 
+ assign (resid 248 and name HA   )  (resid 249 and name HN   )  2.46  0.66  0.66 !peak 343 #SUP 0.92 #QF 0.92 
+ assign (resid 248 and name HB2  )  (resid 249 and name HN   )  2.69  0.89  0.89 !peak 344 #SUP 0.64 #QF 0.64 
+ assign (resid 248 and name HB1  )  (resid 249 and name HN   )  2.98  1.18  1.18 !peak 345 #SUP 0.85 #QF 0.85 
+ assign (resid 249 and name HN   )  (resid 249 and name HB2  )  2.71  0.91  0.91 !peak 346 #SUP 0.93 #QF 0.93 
+ assign (resid 238 and name HB2  )  (resid 249 and name HN   )  2.74  0.94  0.94 !peak 347 #SUP 0.45 #QF 0.45 
+ assign (resid 249 and name HN   )  (resid 249 and name HB1  )  2.69  0.89  0.89 !peak 349 #SUP 0.89 #QF 0.89 
+ assign (resid 235 and name HN   )  (resid 249 and name HN   )  2.82  1.02  1.02 !peak 355 #SUP 0.94 #QF 0.94 
+ assign (resid 236 and name HN   )  (resid 249 and name HN   )  3.61  1.81  1.81 !peak 357 #SUP 0.81 #QF 0.81 
+ assign (resid 239 and name HN   )  (resid 249 and name HN   )  2.93  1.13  1.13 !peak 358 #SUP 0.98 #QF 0.98 
+ assign (resid 175 and name HN   )  (resid 233 and name HD2* )  3.63  1.83  1.83 !peak 359 #SUP 0.70 #QF 0.70 
+ assign (resid 212 and name HA   )  (resid 213 and name HN   )  2.52  0.72  0.72 !peak 360 #SUP 0.97 #QF 0.97 
+ assign (resid 246 and name HN   )  (resid 246 and name HG1  )  2.67  0.87  0.87 !peak 363 #SUP 0.59 #QF 0.59 
+ assign (resid 243 and name HB1  )  (resid 244 and name HN   )  3.16  1.36  1.36 !peak 365 #SUP 0.98 #QF 0.98 
+ assign (resid 243 and name HG2  )  (resid 244 and name HN   )  2.51  0.71  0.71 !peak 366 #SUP 0.52 #QF 0.52 
+ assign (resid 244 and name HN   )  (resid 244 and name HB*  )  2.29  0.49  0.49 !peak 367 #SUP 0.84 #QF 0.84 
+ assign (resid 243 and name HD2  )  (resid 244 and name HN   )  2.71  0.91  0.91 !peak 370 #SUP 0.95 #QF 0.95 
+ assign (resid 243 and name HD1  )  (resid 244 and name HN   )  3.09  1.29  1.29 !peak 371 #SUP 0.93 #QF 0.93 
+ assign (resid 191 and name HN   )  (resid 191 and name HG2  )  2.86  1.06  1.06 !peak 376 #SUP 0.53 #QF 0.53 
+ assign (resid 218 and name HA   )  (resid 219 and name HN   )  2.37  0.57  0.57 !peak 386 #SUP 0.98 #QF 0.98 
+ assign (resid 211 and name HA   )  (resid 219 and name HN   )  3.23  1.43  1.43 !peak 389 #SUP 0.69 #QF 0.69 
+ assign (resid 218 and name HB2  )  (resid 219 and name HN   )  2.78  0.98  0.98 !peak 392 #SUP 0.97 #QF 0.97 
+ assign (resid 219 and name HN   )  (resid 219 and name HB   )  2.93  1.13  1.13 !peak 393 #SUP 0.98 #QF 0.98 
+ assign (resid 218 and name HB1  )  (resid 219 and name HN   )  2.78  0.98  0.98 !peak 394 #SUP 0.95 #QF 0.95 
+ assign (resid 212 and name HB*  )  (resid 219 and name HN   )  2.80  1.00  1.00 !peak 397 #SUP 0.89 #QF 0.89 
+ assign (resid 247 and name HA1  )  (resid 248 and name HN   )  2.55  0.75  0.75 !peak 400 #SUP 0.90 #QF 0.90 
+ assign (resid 247 and name HA2  )  (resid 248 and name HN   )  2.55  0.75  0.75 !peak 404 #SUP 0.90 #QF 0.90 
+ assign (resid 191 and name HB2  )  (resid 248 and name HN   )  3.28  1.48  1.48 !peak 407 #SUP 0.69 #QF 0.69 
+ assign (resid 248 and name HN   )  (resid 248 and name HB2  )  2.92  1.12  1.12 !peak 408 #SUP 0.93 #QF 0.93 
+ assign (resid 191 and name HB1  )  (resid 248 and name HN   )  3.28  1.48  1.48 !peak 409 #SUP 0.82 #QF 0.82 
+ assign (resid 248 and name HN   )  (resid 248 and name HB1  )  2.79  0.99  0.99 !peak 410 #SUP 0.74 #QF 0.74 
+ assign (resid 248 and name HN   )  (resid 249 and name HN   )  3.52  1.72  1.72 !peak 414 #SUP 1.00 
+ assign (resid 209 and name HA   )  (resid 210 and name HN   )  2.29  0.49  0.49 !peak 416 #SUP 0.95 #QF 0.95 
+ assign (resid 210 and name HN   )  (resid 220 and name HA   )  3.20  1.40  1.40 !peak 417 #SUP 0.94 #QF 0.94 
+ assign (resid 210 and name HN   )  (resid 221 and name HN   )  2.60  0.80  0.80 !peak 419 #SUP 0.98 #QF 0.98 
+ assign (resid 210 and name HN   )  (resid 220 and name HG2  )  2.69  0.89  0.89 !peak 423 #SUP 0.58 #QF 0.58 
+ assign (resid 209 and name HB1  )  (resid 210 and name HN   )  2.81  1.01  1.01 !peak 425 #SUP 0.97 #QF 0.97 
+ assign (resid 209 and name HG2  )  (resid 210 and name HN   )  2.85  1.05  1.05 !peak 426 #SUP 0.96 #QF 0.96 
+ assign (resid 209 and name HG1  )  (resid 210 and name HN   )  3.05  1.25  1.24 !peak 427 #SUP 0.99 #QF 0.99 
+ assign (resid 210 and name HN   )  (resid 210 and name HG1* )  2.72  0.92  0.92 !peak 428 #SUP 0.98 #QF 0.98 
+ assign (resid 210 and name HN   )  (resid 210 and name HG2* )  2.72  0.92  0.92 !peak 429 #SUP 0.91 #QF 0.80 
+ assign (resid 210 and name HN   )  (resid 223 and name HG2* )  2.71  0.91  0.91 !peak 429 #SUP 0.91 #QF 0.80 
+ assign (resid 169 and name HB1  )  (resid 170 and name HN   )  3.23  1.43  1.43 !peak 431 #SUP 0.87 #QF 0.87 
+ assign (resid 169 and name HA   )  (resid 170 and name HN   )  2.34  0.54  0.54 !peak 432 #SUP 0.77 #QF 0.77 
+ assign (resid 169 and name HB2  )  (resid 170 and name HN   )  3.23  1.43  1.43 !peak 435 #SUP 0.86 #QF 0.86 
+ assign (resid 200 and name HB2  )  (resid 203 and name HN   )  2.77  0.97  0.97 !peak 437 #SUP 0.82 #QF 0.82 
+ assign (resid 202 and name HB2  )  (resid 203 and name HN   )  2.71  0.91  0.91 !peak 438 #SUP 0.91 #QF 0.91 
+ assign (resid 203 and name HN   )  (resid 203 and name HB   )  2.29  0.49  0.49 !peak 439 #SUP 0.75 #QF 0.75 
+ assign (resid 203 and name HN   )  (resid 203 and name HG12 )  2.90  1.10  1.10 !peak 440 #SUP 0.98 #QF 0.98 
+ assign (resid 203 and name HN   )  (resid 203 and name HG11 )  2.51  0.71  0.71 !peak 442 #SUP 0.96 #QF 0.96 
+ assign (resid 203 and name HN   )  (resid 203 and name HG2* )  2.95  1.15  1.15 !peak 446 #SUP 0.99 #QF 0.99 
+ assign (resid 202 and name HD2  )  (resid 203 and name HN   )  2.69  0.89  0.89 !peak 449 #SUP 0.93 #QF 0.93 
+ assign (resid 200 and name HD2  )  (resid 203 and name HN   )  3.08  1.28  1.28 !peak 452 #SUP 0.93 #QF 0.93 
+ assign (resid 203 and name HN   )  (resid 204 and name HN   )  2.41  0.61  0.61 !peak 455 #SUP 0.96 #QF 0.96 
+ assign (resid 201 and name HN   )  (resid 203 and name HN   )  3.38  1.58  1.57 !peak 458 #SUP 0.72 #QF 0.72 
+ assign (resid 238 and name HN   )  (resid 238 and name HB2  )  2.56  0.76  0.76 !peak 461 #SUP 0.83 #QF 0.83 
+ assign (resid 238 and name HN   )  (resid 249 and name HB1  )  3.30  1.50  1.50 !peak 463 #SUP 0.30 #QF 0.30 
+ assign (resid 238 and name HN   )  (resid 238 and name HB1  )  2.94  1.14  1.14 !peak 464 #SUP 0.99 #QF 0.99 
+ assign (resid 236 and name HA   )  (resid 238 and name HN   )  2.85  1.05  1.05 !peak 466 #SUP 0.98 #QF 0.98 
+ assign (resid 237 and name HA1  )  (resid 238 and name HN   )  2.79  0.99  0.99 !peak 467 #SUP 0.97 #QF 0.97 
+ assign (resid 237 and name HA2  )  (resid 238 and name HN   )  2.79  0.99  0.99 !peak 468 #SUP 0.88 #QF 0.88 
+ assign (resid 238 and name HN   )  (resid 248 and name HA   )  2.57  0.77  0.77 !peak 469 #SUP 0.87 #QF 0.87 
+ assign (resid 237 and name HN   )  (resid 238 and name HN   )  2.61  0.81  0.81 !peak 471 #SUP 0.99 #QF 0.99 
+ assign (resid 236 and name HN   )  (resid 238 and name HN   )  3.16  1.36  1.36 !peak 472 #SUP 0.73 #QF 0.73 
+ assign (resid 238 and name HN   )  (resid 239 and name HN   )  2.52  0.72  0.72 !peak 473 #SUP 0.96 #QF 0.96 
+ assign (resid 238 and name HN   )  (resid 249 and name HN   )  2.94  1.14  1.14 !peak 474 #SUP 0.95 #QF 0.95 
+ assign (resid 230 and name HN   )  (resid 230 and name HA2  )  2.47  0.67  0.67 !peak 475 #SUP 0.95 #QF 0.95 
+ assign (resid 229 and name HA   )  (resid 230 and name HN   )  2.31  0.51  0.51 !peak 476 #SUP 0.96 #QF 0.96 
+ assign (resid 230 and name HN   )  (resid 253 and name HB   )  2.75  0.95  0.95 !peak 478 #SUP 0.82 #QF 0.82 
+ assign (resid 230 and name HN   )  (resid 231 and name HG1  )  3.49  1.69  1.69 !peak 480 #SUP 0.93 #QF 0.93 
+ assign (resid 230 and name HN   )  (resid 254 and name HG2  )  3.78  1.98  1.98 !peak 481 #SUP 0.29 #QF 0.29 
+ assign (resid 229 and name HB*  )  (resid 230 and name HN   )  2.44  0.64  0.64 !peak 482 #SUP 0.95 #QF 0.95 
+ assign (resid 230 and name HN   )  (resid 253 and name HG1* )  2.99  1.19  1.19 !peak 485 #SUP 0.98 #QF 0.98 
+ assign (resid 236 and name HN   )  (resid 237 and name HN   )  3.35  1.55  1.55 !peak 490 #SUP 0.99 #QF 0.99 
+ assign (resid 237 and name HN   )  (resid 239 and name HN   )  3.08  1.28  1.28 !peak 491 #SUP 0.90 #QF 0.90 
+ assign (resid 237 and name HN   )  (resid 249 and name HN   )  3.47  1.67  1.67 !peak 492 #SUP 0.86 #QF 0.86 
+ assign (resid 237 and name HN   )  (resid 248 and name HA   )  2.71  0.91  0.91 !peak 494 #SUP 0.96 #QF 0.96 
+ assign (resid 237 and name HN   )  (resid 238 and name HA   )  3.80  2.00  2.00 !peak 495 #SUP 0.94 #QF 0.94 
+ assign (resid 236 and name HA   )  (resid 237 and name HN   )  2.40  0.60  0.60 !peak 496 #SUP 0.98 #QF 0.98 
+ assign (resid 237 and name HN   )  (resid 248 and name HB2  )  3.22  1.42  1.42 !peak 499 #SUP 0.80 #QF 0.80 
+ assign (resid 237 and name HN   )  (resid 248 and name HB1  )  3.08  1.28  1.28 !peak 500 #SUP 0.77 #QF 0.77 
+ assign (resid 236 and name HB1  )  (resid 237 and name HN   )  2.87  1.07  1.07 !peak 501 #SUP 0.84 #QF 0.84 
+ assign (resid 207 and name HN   )  (resid 207 and name HA2  )  2.37  0.57  0.57 !peak 506 #SUP 0.95 #QF 0.95 
+ assign (resid 207 and name HN   )  (resid 225 and name HA   )  2.57  0.77  0.77 !peak 507 #SUP 0.62 #QF 0.62 
+ assign (resid 207 and name HN   )  (resid 207 and name HA1  )  2.51  0.71  0.71 !peak 508 #SUP 1.00 
+ assign (resid 203 and name HB   )  (resid 207 and name HN   )  3.97  2.17  2.17 !peak 511 #SUP 0.88 #QF 0.88 
+ assign (resid 204 and name HB*  )  (resid 207 and name HN   )  3.48  1.68  1.68 !peak 513 #SUP 0.88 #QF 0.88 
+ assign (resid 206 and name HG1* )  (resid 207 and name HN   )  2.40  0.60  0.60 !peak 514 #SUP 0.90 #QF 0.90 
+ assign (resid 203 and name HG2* )  (resid 207 and name HN   )  3.16  1.36  1.36 !peak 516 #SUP 0.99 #QF 0.99 
+ assign (resid 206 and name HN   )  (resid 207 and name HN   )  2.29  0.49  0.49 !peak 517 #SUP 0.98 #QF 0.98 
+ assign (resid 206 and name HN   )  (resid 225 and name HA   )  3.38  1.58  1.57 !peak 523 #SUP 0.77 #QF 0.77 
+ assign (resid 203 and name HA   )  (resid 206 and name HN   )  3.11  1.31  1.31 !peak 525 #SUP 0.74 #QF 0.74 
+ assign (resid 206 and name HN   )  (resid 206 and name HB   )  2.42  0.62  0.62 !peak 526 #SUP 0.95 #QF 0.95 
+ assign (resid 206 and name HN   )  (resid 206 and name HG1* )  2.22  0.42  0.42 !peak 532 #SUP 0.69 #QF 0.69 
+ assign (resid 205 and name HG1* )  (resid 206 and name HN   )  2.52  0.72  0.72 !peak 533 #SUP 0.95 #QF 0.95 
+ assign (resid 205 and name HN   )  (resid 207 and name HN   )  2.97  1.17  1.17 !peak 535 #SUP 0.67 #QF 0.67 
+ assign (resid 204 and name HN   )  (resid 205 and name HN   )  2.40  0.60  0.60 !peak 536 #SUP 0.95 #QF 0.95 
+ assign (resid 202 and name HA   )  (resid 205 and name HN   )  2.81  1.01  1.01 !peak 538 #SUP 0.92 #QF 0.92 
+ assign (resid 205 and name HN   )  (resid 205 and name HB   )  2.24  0.44  0.44 !peak 543 #SUP 0.87 #QF 0.87 
+ assign (resid 204 and name HB*  )  (resid 205 and name HN   )  2.43  0.63  0.63 !peak 545 #SUP 0.90 #QF 0.90 
+ assign (resid 205 and name HN   )  (resid 205 and name HG2* )  2.47  0.67  0.67 !peak 546 #SUP 0.97 #QF 0.97 
+ assign (resid 242 and name HN   )  (resid 246 and name HN   )  3.16  1.36  1.36 !peak 567 #SUP 0.55 #QF 0.55 
+ assign (resid 191 and name HE22 )  (resid 242 and name HN   )  2.92  1.12  1.12 !peak 572 #SUP 0.98 #QF 0.98 
+ assign (resid 242 and name HN   )  (resid 246 and name HA   )  2.56  0.76  0.76 !peak 573 #SUP 0.91 #QF 0.91 
+ assign (resid 241 and name HA   )  (resid 242 and name HN   )  2.28  0.48  0.48 !peak 574 #SUP 0.95 #QF 0.95 
+ assign (resid 242 and name HN   )  (resid 242 and name HA1  )  2.42  0.62  0.62 !peak 576 #SUP 0.95 #QF 0.95 
+ assign (resid 241 and name HB1  )  (resid 242 and name HN   )  3.03  1.23  1.23 !peak 582 #SUP 0.97 #QF 0.97 
+ assign (resid 241 and name HB2  )  (resid 242 and name HN   )  2.61  0.81  0.80 !peak 583 #SUP 0.95 #QF 0.95 
+ assign (resid 242 and name HN   )  (resid 246 and name HG1  )  2.90  1.10  1.10 !peak 584 #SUP 1.00 
+ assign (resid 242 and name HN   )  (resid 246 and name HG2  )  2.78  0.98  0.98 !peak 586 #SUP 0.92 #QF 0.92 
+ assign (resid 244 and name HA   )  (resid 245 and name HN   )  2.57  0.77  0.77 !peak 588 #SUP 0.94 #QF 0.94 
+ assign (resid 242 and name HA1  )  (resid 245 and name HN   )  2.89  1.09  1.09 !peak 590 #SUP 0.92 #QF 0.92 
+ assign (resid 244 and name HN   )  (resid 245 and name HN   )  2.36  0.56  0.56 !peak 596 #SUP 0.96 #QF 0.96 
+ assign (resid 242 and name HN   )  (resid 245 and name HN   )  2.87  1.07  1.07 !peak 597 #SUP 0.98 #QF 0.98 
+ assign (resid 191 and name HE22 )  (resid 245 and name HN   )  3.37  1.57  1.57 !peak 600 #SUP 0.66 #QF 0.66 
+ assign (resid 214 and name HB   )  (resid 217 and name HN   )  2.69  0.89  0.89 !peak 604 #SUP 0.87 #QF 0.87 
+ assign (resid 207 and name HN   )  (resid 208 and name HN   )  2.73  0.93  0.93 !peak 613 #SUP 0.96 #QF 0.96 
+ assign (resid 203 and name HG2* )  (resid 208 and name HN   )  2.60  0.80  0.80 !peak 615 #SUP 0.92 #QF 0.92 
+ assign (resid 208 and name HN   )  (resid 223 and name HB   )  2.40  0.60  0.60 !peak 619 #SUP 0.65 #QF 0.65 
+ assign (resid 207 and name HA2  )  (resid 208 and name HN   )  2.32  0.52  0.52 !peak 621 #SUP 0.49 #QF 0.49 
+ assign (resid 226 and name HN   )  (resid 227 and name HN   )  2.68  0.88  0.88 !peak 633 #SUP 0.99 #QF 0.99 
+ assign (resid 226 and name HA   )  (resid 227 and name HN   )  2.38  0.59  0.59 !peak 634 #SUP 0.93 #QF 0.70 
+ assign (resid 227 and name HN   )  (resid 227 and name HB   )  2.52  0.72  0.72 !peak 634 #SUP 0.93 #QF 0.70 
+ assign (resid 226 and name HB1  )  (resid 227 and name HN   )  3.28  1.48  1.48 !peak 635 #SUP 0.93 #QF 0.93 
+ assign (resid 204 and name HB*  )  (resid 227 and name HN   )  2.66  0.86  0.86 !peak 637 #SUP 0.77 #QF 0.77 
+ assign (resid 226 and name HB2  )  (resid 227 and name HN   )  3.48  1.68  1.68 !peak 643 #SUP 0.82 #QF 0.82 
+ assign (resid 246 and name HG1  )  (resid 247 and name HN   )  3.31  1.51  1.51 !peak 660 #SUP 0.94 #QF 0.94 
+ assign (resid 246 and name HG2  )  (resid 247 and name HN   )  3.35  1.55  1.55 !peak 661 #SUP 0.82 #QF 0.82 
+ assign (resid 246 and name HN   )  (resid 247 and name HN   )  3.53  1.73  1.73 !peak 662 #SUP 1.00 
+ assign (resid 247 and name HN   )  (resid 248 and name HN   )  3.28  1.48  1.48 !peak 663 #SUP 0.93 #QF 0.93 
+ assign (resid 175 and name HN   )  (resid 235 and name HD2* )  3.61  1.81  1.81 !peak 664 #SUP 0.79 #QF 0.67 
+ assign (resid 174 and name HN   )  (resid 235 and name HD1* )  3.57  1.77  1.77 !peak 678 #SUP 0.89 #QF 0.42 
+ assign (resid 175 and name HN   )  (resid 175 and name HG2  )  2.90  1.10  1.10 !peak 681 #SUP 0.96 #QF 0.96 
+ assign (resid 191 and name HN   )  (resid 191 and name HG1  )  2.75  0.95  0.95 !peak 683 #SUP 0.76 #QF 0.76 
+ assign (resid 197 and name HG   )  (resid 198 and name HN   )  2.70  0.90  0.90 !peak 684 #SUP 0.92 #QF 0.92 
+ assign (resid 203 and name HG2* )  (resid 204 and name HN   )  2.75  0.95  0.95 !peak 689 #SUP 0.98 #QF 0.98 
+ assign (resid 216 and name HN   )  (resid 216 and name HB1  )  2.85  1.05  1.05 !peak 695 #SUP 0.67 #QF 0.67 
+ assign (resid 215 and name HB2  )  (resid 216 and name HN   )  2.60  0.80  0.80 !peak 696 #SUP 0.47 #QF 0.47 
+ assign (resid 229 and name HN   )  (resid 255 and name HG12 )  2.72  0.92  0.92 !peak 700 #SUP 0.65 #QF 0.65 
+ assign (resid 229 and name HN   )  (resid 230 and name HA1  )  3.96  2.16  2.16 !peak 704 #SUP 0.24 #QF 0.24 
+ assign (resid 238 and name HN   )  (resid 238 and name HG2  )  2.48  0.68  0.68 !peak 716 #SUP 0.69 #QF 0.69 
+ assign (resid 242 and name HA1  )  (resid 244 and name HN   )  2.87  1.07  1.07 !peak 718 #SUP 0.83 #QF 0.83 
+ assign (resid 245 and name HN   )  (resid 246 and name HN   )  3.35  1.55  1.55 !peak 722 #SUP 0.91 #QF 0.91 
+ assign (resid 249 and name HN   )  (resid 250 and name HN   )  3.36  1.56  1.56 !peak 726 #SUP 1.00 
+ assign (resid 194 and name HD1  )  (resid 252 and name HN   )  2.94  1.14  1.14 !peak 727 #SUP 0.66 #QF 0.66 
+ assign (resid 196 and name HG2* )  (resid 252 and name HN   )  3.19  1.39  1.39 !peak 728 #SUP 0.97 #QF 0.96 
+ assign (resid 251 and name HB1  )  (resid 252 and name HN   )  3.41  1.61  1.61 !peak 728 #SUP 0.97 #QF 0.96 
+ assign (resid 232 and name HN   )  (resid 253 and name HN   )  3.42  1.62  1.62 !peak 732 #SUP 0.94 #QF 0.94 
+ assign (resid 191 and name HG2  )  (resid 191 and name HE22 )  2.93  1.13  1.14 !peak 733 #SUP 0.83 #QF 0.83 
+ assign (resid 191 and name HE22 )  (resid 242 and name HA2  )  3.17  1.37  1.37 !peak 735 #SUP 0.75 #QF 0.75 
+ assign (resid 191 and name HE22 )  (resid 242 and name HA1  )  2.89  1.09  1.09 !peak 736 #SUP 0.85 #QF 0.85 
+ assign (resid 228 and name HG1  )  (resid 228 and name HE22 )  2.92  1.12  1.12 !peak 738 #SUP 0.91 #QF 0.91 
+ assign (resid 228 and name HB1  )  (resid 228 and name HE22 )  3.44  1.64  1.64 !peak 739 #SUP 0.53 #QF 0.53 
+ assign (resid 228 and name HB2  )  (resid 228 and name HE22 )  3.03  1.23  1.23 !peak 740 #SUP 0.97 #QF 0.97 
+ assign (resid 191 and name HE21 )  (resid 247 and name HN   )  3.00  1.20  1.20 !peak 742 #SUP 0.60 #QF 0.60 
+ assign (resid 212 and name HB*  )  (resid 221 and name HN   )  3.28  1.48  1.48 !peak 751 #SUP 0.42 #QF 0.42 
+ assign (resid 199 and name HN   )  (resid 200 and name HD2  )  3.65  1.85  1.85 !peak 757 #SUP 0.95 #QF 0.95 
+ assign (resid 200 and name HA   )  (resid 203 and name HN   )  3.55  1.75  1.75 !peak 790 #SUP 0.84 #QF 0.84 
+ assign (resid 230 and name HN   )  (resid 254 and name HN   )  3.84  2.04  2.04 !peak 793 #SUP 0.38 #QF 0.38 
+ assign (resid 230 and name HN   )  (resid 252 and name HA   )  3.96  2.16  2.16 !peak 794 #SUP 0.40 #QF 0.40 
+ assign (resid 194 and name HD1  )  (resid 250 and name HN   )  3.55  1.75  1.75 !peak 799 #SUP 0.95 #QF 0.95 
+ assign (resid 197 and name HA   )  (resid 198 and name HN   )  2.25  0.45  0.45 !peak 844 #SUP 0.82 #QF 0.82 
+ assign (resid 254 and name HN   )  (resid 255 and name HN   )  3.33  1.53  1.53 !peak 878 #SUP 0.96 #QF 0.96 
+ assign (resid 254 and name HA   )  (resid 255 and name HN   )  2.28  0.48  0.47 !peak 882 #SUP 0.66 #QF 0.66 
+ assign (resid 229 and name HA   )  (resid 255 and name HN   )  2.89  1.09  1.09 !peak 883 #SUP 0.60 #QF 0.60 
+ assign (resid 254 and name HD2  )  (resid 255 and name HN   )  3.14  1.34  1.34 !peak 884 #SUP 0.66 #QF 0.66 
+ assign (resid 255 and name HN   )  (resid 255 and name HB   )  2.31  0.51  0.51 !peak 886 #SUP 0.50 #QF 0.50 
+ assign (resid 170 and name HN   )  (resid 171 and name HN   )  3.12  1.32  1.32 !peak 891 #SUP 0.40 #QF 0.40 
+ assign (resid 209 and name HN   )  (resid 223 and name HB   )  3.46  1.66  1.66 !peak 1020 #SUP 0.56 #QF 0.56 
+ assign (resid 251 and name HB2  )  (resid 252 and name HN   )  3.27  1.47  1.47 !peak 1037 #SUP 0.49 #QF 0.49 
+ assign (resid 232 and name HG1  )  (resid 252 and name HN   )  3.57  1.77  1.77 !peak 1038 #SUP 0.37 #QF 0.37 
+ assign (resid 235 and name HN   )  (resid 250 and name HD2  )  3.18  1.38  1.38 !peak 1097 #SUP 0.68 #QF 0.68 
+ assign (resid 235 and name HN   )  (resid 249 and name HB1  )  3.22  1.42  1.42 !peak 1100 #SUP 0.67 #QF 0.67 
+ assign (resid 234 and name HN   )  (resid 251 and name HN   )  3.93  2.13  2.13 !peak 1102 #SUP 0.50 #QF 0.50 
+ assign (resid 249 and name HN   )  (resid 250 and name HE2  )  3.73  1.93  1.93 !peak 1114 #SUP 0.45 #QF 0.45 
+ assign (resid 227 and name HN   )  (resid 228 and name HN   )  3.48  1.68  1.68 !peak 1125 #SUP 0.52 #QF 0.52 
+ assign (resid 191 and name HN   )  (resid 191 and name HE21 )  4.08  2.28  2.28 !peak 1153 #SUP 0.98 #QF 0.98 
+ assign (resid 169 and name HN   )  (resid 170 and name HN   )  3.40  1.60  1.60 !peak 1201 #SUP 0.98 #QF 0.98 
+ assign (resid 239 and name HN   )  (resid 248 and name HN   )  3.28  1.48  1.48 !peak 1232 #SUP 0.40 #QF 0.40 
+ assign (resid 238 and name HB1  )  (resid 239 and name HN   )  3.33  1.53  1.53 !peak 1240 #SUP 0.50 #QF 0.50 
+ assign (resid 238 and name HG2  )  (resid 239 and name HN   )  3.52  1.72  1.72 !peak 1242 #SUP 0.39 #QF 0.39 
+ assign (resid 215 and name HD1* )  (resid 239 and name HN   )  3.74  1.94  1.94 !peak 1243 #SUP 0.56 #QF 0.33 
+ assign (resid 215 and name HD2* )  (resid 239 and name HN   )  3.94  2.14  2.14 !peak 1243 #SUP 0.56 #QF 0.33 
+ assign (resid 243 and name HD1  )  (resid 245 and name HN   )  3.80  2.00  2.00 !peak 1293 #SUP 1.00 
+ assign (resid 215 and name HA   )  (resid 217 and name HN   )  3.95  2.15  2.15 !peak 1302 #SUP 0.55 #QF 0.55 
+ assign (resid 215 and name HB1  )  (resid 217 and name HN   )  3.97  2.17  2.17 !peak 1307 #SUP 0.34 #QF 0.34 
+ assign (resid 206 and name HN   )  (resid 208 and name HN   )  3.84  2.04  2.04 !peak 1313 #SUP 0.48 #QF 0.48 
+ assign (resid 204 and name HN   )  (resid 206 and name HN   )  3.29  1.49  1.49 !peak 1314 #SUP 0.82 #QF 0.82 
+ assign (resid 212 and name HN   )  (resid 213 and name HN   )  3.43  1.63  1.63 !peak 1318 #SUP 0.44 #QF 0.44 
+ assign (resid 228 and name HN   )  (resid 228 and name HB2  )  3.06  1.26  1.26 !peak 1366 #SUP 0.89 #QF 0.89 
+ assign (resid 191 and name HE22 )  (resid 246 and name HA   )  3.22  1.42  1.42 !peak 1384 #SUP 0.73 #QF 0.73 
+ assign (resid 191 and name HE21 )  (resid 242 and name HN   )  3.05  1.25  1.24 !peak 1396 #SUP 0.95 #QF 0.95 
+ assign (resid 191 and name HE21 )  (resid 246 and name HN   )  3.79  1.99  1.99 !peak 1399 #SUP 0.94 #QF 0.94 
+ assign (resid 191 and name HE21 )  (resid 242 and name HA1  )  2.89  1.09  1.09 !peak 1400 #SUP 1.00 
+ assign (resid 191 and name HE21 )  (resid 242 and name HA2  )  2.98  1.18  1.18 !peak 1402 #SUP 0.80 #QF 0.80 
+ assign (resid 191 and name HA   )  (resid 191 and name HE21 )  3.18  1.38  1.38 !peak 1403 #SUP 0.94 #QF 0.94 
+ assign (resid 191 and name HB1  )  (resid 191 and name HE21 )  2.90  1.10  1.10 !peak 1404 #SUP 0.89 #QF 0.89 
+ assign (resid 191 and name HB2  )  (resid 191 and name HE21 )  2.90  1.10  1.10 !peak 1406 #SUP 0.56 #QF 0.56 
+ assign (resid 228 and name HB2  )  (resid 228 and name HE21 )  2.97  1.17  1.17 !peak 1412 #SUP 0.73 #QF 0.73 
+ assign (resid 228 and name HG1  )  (resid 228 and name HE21 )  2.54  0.74  0.74 !peak 1413 #SUP 0.78 #QF 0.78 
+ assign (resid 228 and name HB1  )  (resid 228 and name HE21 )  3.17  1.37  1.37 !peak 1414 #SUP 0.95 #QF 0.95 
+ assign (resid 227 and name HA   )  (resid 228 and name HE21 )  3.08  1.28  1.28 !peak 1415 #SUP 0.86 #QF 0.86 
+ assign (resid 228 and name HA   )  (resid 228 and name HE21 )  3.12  1.32  1.32 !peak 1416 #SUP 0.93 #QF 0.93 
+ assign (resid 228 and name HE21 )  (resid 229 and name HN   )  3.64  1.84  1.84 !peak 1419 #SUP 0.92 #QF 0.92 
+ assign (resid 227 and name HN   )  (resid 228 and name HE22 )  3.48  1.68  1.68 !peak 1421 #SUP 0.61 #QF 0.61 
+ assign (resid 226 and name HA   )  (resid 228 and name HE22 )  3.47  1.67  1.67 !peak 1424 #SUP 0.96 #QF 0.31 
+ assign (resid 227 and name HA   )  (resid 228 and name HE22 )  3.58  1.78  1.78 !peak 1424 #SUP 0.96 #QF 0.31 
+ assign (resid 177 and name HA   )  (resid 177 and name HE21 )  3.36  1.56  1.56 !peak 1429 #SUP 0.92 #QF 0.92 
+ assign (resid 169 and name HA   )  (resid 169 and name HG*  )  2.61  0.81  0.80 !peak 729 
+ assign (resid 169 and name HB*  )  (resid 170 and name HN   )  2.78  0.98  0.98 !peak 431 
+ assign (resid 169 and name HG*  )  (resid 170 and name HN   )  3.11  1.31  1.31 !peak 430 
+ assign (resid 172 and name HN   )  (resid 219 and name HG*  )  3.38  1.58  1.58 !peak 1197 
+ assign (resid 172 and name HA   )  (resid 219 and name HG*  )  3.24  1.44  1.44 !peak 516 
+ assign (resid 172 and name HB   )  (resid 219 and name HG*  )  2.84  1.04  1.04 !peak 425 
+ assign (resid 172 and name HG2* )  (resid 219 and name HG*  )  2.28  0.48  0.48 !peak 22 
+ assign (resid 173 and name HN   )  (resid 174 and name HA*  )  3.98  2.18  2.18 !peak 898 
+ assign (resid 173 and name HN   )  (resid 219 and name HG*  )  3.09  1.29  1.29 !peak 1391 
+ assign (resid 173 and name HA   )  (resid 174 and name HA*  )  3.43  1.63  1.63 !peak 164 
+ assign (resid 173 and name HA   )  (resid 219 and name HG*  )  3.26  1.46  1.46 !peak 805 
+ assign (resid 173 and name HB*  )  (resid 174 and name HA*  )  3.19  1.39  1.39 !peak 47 
+ assign (resid 173 and name HB*  )  (resid 219 and name HG*  )  2.76  0.96  0.96 !peak 21 
+ assign (resid 173 and name HB*  )  (resid 251 and name HD*  )  3.25  1.45  1.45 !peak 176 
+ assign (resid 174 and name HN   )  (resid 219 and name HG*  )  3.41  1.61  1.61 !peak 678 
+ assign (resid 174 and name HA*  )  (resid 175 and name HN   )  2.33  0.53  0.53 !peak 263 
+ assign (resid 174 and name HA*  )  (resid 175 and name HA   )  3.67  1.87  1.87 !peak 414 
+ assign (resid 174 and name HA*  )  (resid 233 and name HD2* )  3.72  1.92  1.92 !peak 2338 
+ assign (resid 174 and name HA*  )  (resid 234 and name HG*  )  3.26  1.46  1.46 !peak 48 
+ assign (resid 174 and name HA*  )  (resid 235 and name HD2* )  2.87  1.07  1.07 !peak 417 
+ assign (resid 174 and name HA*  )  (resid 236 and name HN   )  3.79  1.99  1.99 !peak 777 
+ assign (resid 175 and name HN   )  (resid 175 and name HB*  )  2.42  0.62  0.62 !peak 259 
+ assign (resid 175 and name HN   )  (resid 175 and name HG*  )  2.57  0.77  0.77 !peak 258 
+ assign (resid 175 and name HN   )  (resid 234 and name HG*  )  3.17  1.37  1.37 !peak 256 
+ assign (resid 175 and name HG*  )  (resid 176 and name HD1  )  3.80  2.00  2.00 !peak 59 
+ assign (resid 175 and name HG*  )  (resid 234 and name HN   )  3.99  2.19  2.19 !peak 766 
+ assign (resid 176 and name HB*  )  (resid 176 and name HD1  )  2.56  0.76  0.76 !peak 15 
+ assign (resid 176 and name HB*  )  (resid 176 and name HE3  )  2.70  0.90  0.90 !peak 98 
+ assign (resid 176 and name HD1  )  (resid 179 and name HB*  )  3.44  1.64  1.64 !peak 100 
+ assign (resid 176 and name HD1  )  (resid 179 and name HG*  )  3.66  1.86  1.86 !peak 18 
+ assign (resid 176 and name HD1  )  (resid 224 and name HD*  )  3.36  1.56  1.56 !peak 60 
+ assign (resid 176 and name HE3  )  (resid 231 and name HD*  )  2.75  0.95  0.95 !peak 97 
+ assign (resid 177 and name HB*  )  (resid 177 and name HE21 )  2.75  0.95  0.95 !peak 1426 
+ assign (resid 177 and name HG*  )  (resid 177 and name HE21 )  2.32  0.52  0.52 !peak 1425 
+ assign (resid 179 and name HA   )  (resid 179 and name HG*  )  2.86  1.06  1.06 !peak 201 
+ assign (resid 179 and name HA   )  (resid 179 and name HD*  )  3.26  1.46  1.47 !peak 1461 
+ assign (resid 179 and name HB*  )  (resid 179 and name HD*  )  2.73  0.93  0.93 !peak 2786 
+ assign (resid 179 and name HB*  )  (resid 179 and name HE*  )  2.95  1.15  1.15 !peak 2666 
+ assign (resid 179 and name HG*  )  (resid 179 and name HE*  )  2.49  0.69  0.70 !peak 3223 
+ assign (resid 190 and name HB*  )  (resid 191 and name HN   )  2.68  0.88  0.88 !peak 381 
+ assign (resid 191 and name HN   )  (resid 191 and name HB*  )  2.82  1.02  1.02 !peak 377 
+ assign (resid 191 and name HB*  )  (resid 191 and name HE21 )  2.49  0.69  0.69 !peak 1406 
+ assign (resid 191 and name HB*  )  (resid 191 and name HE22 )  3.28  1.48  1.48 !peak 1408 
+ assign (resid 191 and name HB*  )  (resid 247 and name HN   )  3.16  1.36  1.36 !peak 646 
+ assign (resid 191 and name HB*  )  (resid 247 and name HA*  )  2.90  1.10  1.10 !peak 70 
+ assign (resid 191 and name HB*  )  (resid 248 and name HN   )  3.06  1.26  1.26 !peak 409 
+ assign (resid 191 and name HG1  )  (resid 247 and name HA*  )  3.20  1.40  1.40 !peak 2721 
+ assign (resid 191 and name HE21 )  (resid 247 and name HA*  )  2.99  1.19  1.19 !peak 1401 
+ assign (resid 194 and name HB*  )  (resid 194 and name HD2  )  2.62  0.82  0.82 !peak 51 
+ assign (resid 194 and name HD1  )  (resid 232 and name HE*  )  2.98  1.18  1.18 !peak 1109 
+ assign (resid 194 and name HD1  )  (resid 252 and name HB*  )  3.65  1.85  1.85 !peak 87 
+ assign (resid 194 and name HE1  )  (resid 232 and name HE*  )  2.67  0.87  0.87 !peak 35 
+ assign (resid 194 and name HE1  )  (resid 252 and name HB*  )  3.04  1.24  1.24 !peak 38 
+ assign (resid 195 and name HB*  )  (resid 251 and name HD*  )  2.70  0.90  0.90 !peak 36 
+ assign (resid 196 and name HA   )  (resid 251 and name HD*  )  3.29  1.49  1.49 !peak 2076 
+ assign (resid 197 and name HN   )  (resid 251 and name HD*  )  2.92  1.12  1.12 !peak 149 
+ assign (resid 197 and name HA   )  (resid 198 and name HB*  )  3.28  1.48  1.48 !peak 2265 
+ assign (resid 197 and name HA   )  (resid 251 and name HD*  )  3.00  1.20  1.20 !peak 2275 
+ assign (resid 197 and name HB2  )  (resid 199 and name HG*  )  3.66  1.86  1.86 !peak 403 
+ assign (resid 197 and name HG   )  (resid 199 and name HG*  )  3.07  1.27  1.27 !peak 3304 
+ assign (resid 197 and name HG   )  (resid 210 and name HG*  )  2.93  1.13  1.13 !peak 2874 
+ assign (resid 197 and name HG   )  (resid 251 and name HD*  )  2.76  0.96  0.96 !peak 3305 
+ assign (resid 197 and name HD1* )  (resid 198 and name HB*  )  3.71  1.91  1.91 !peak 1951 
+ assign (resid 197 and name HD1* )  (resid 210 and name HG*  )  2.45  0.65  0.65 !peak 286 
+ assign (resid 197 and name HD1* )  (resid 219 and name HG*  )  3.54  1.74  1.74 !peak 473 
+ assign (resid 197 and name HD1* )  (resid 251 and name HD*  )  2.48  0.68  0.68 !peak 1953 
+ assign (resid 197 and name HD2* )  (resid 199 and name HG*  )  2.79  0.99  0.99 !peak 69 
+ assign (resid 197 and name HD2* )  (resid 210 and name HG*  )  2.62  0.82  0.82 !peak 637 
+ assign (resid 197 and name HD2* )  (resid 251 and name HD*  )  2.54  0.74  0.74 !peak 93 
+ assign (resid 198 and name HN   )  (resid 198 and name HB*  )  2.35  0.55  0.55 !peak 17 
+ assign (resid 198 and name HA   )  (resid 199 and name HG*  )  2.92  1.12  1.12 !peak 656 
+ assign (resid 198 and name HB*  )  (resid 256 and name HG2* )  2.93  1.13  1.13 !peak 2042 
+ assign (resid 199 and name HN   )  (resid 199 and name HG*  )  2.46  0.66  0.66 !peak 184 
+ assign (resid 199 and name HA   )  (resid 199 and name HG*  )  2.49  0.69  0.70 !peak 580 
+ assign (resid 199 and name HA   )  (resid 210 and name HG*  )  2.67  0.87  0.87 !peak 2887 
+ assign (resid 199 and name HB   )  (resid 210 and name HG*  )  2.68  0.88  0.88 !peak 2644 
+ assign (resid 199 and name HG*  )  (resid 200 and name HA   )  3.45  1.65  1.65 !peak 2499 
+ assign (resid 199 and name HG*  )  (resid 200 and name HG2  )  3.23  1.43  1.43 !peak 1937 
+ assign (resid 199 and name HG*  )  (resid 200 and name HD2  )  2.83  1.03  1.03 !peak 840 
+ assign (resid 199 and name HG*  )  (resid 200 and name HD1  )  2.98  1.18  1.18 !peak 1927 
+ assign (resid 199 and name HG*  )  (resid 201 and name HA   )  3.64  1.84  1.84 !peak 1925 
+ assign (resid 199 and name HG*  )  (resid 203 and name HN   )  3.21  1.41  1.41 !peak 1933 
+ assign (resid 199 and name HG*  )  (resid 203 and name HB   )  2.85  1.05  1.05 !peak 1144 
+ assign (resid 199 and name HG*  )  (resid 203 and name HG2* )  2.35  0.55  0.55 !peak 56 
+ assign (resid 199 and name HG*  )  (resid 203 and name HG12 )  3.50  1.70  1.70 !peak 1939 
+ assign (resid 199 and name HG*  )  (resid 203 and name HG11 )  3.80  2.00  2.00 !peak 256 
+ assign (resid 199 and name HG*  )  (resid 203 and name HD1* )  3.06  1.26  1.26 !peak 273 
+ assign (resid 199 and name HG*  )  (resid 204 and name HN   )  2.53  0.73  0.73 !peak 290 
+ assign (resid 199 and name HG*  )  (resid 204 and name HA   )  3.06  1.26  1.26 !peak 1935 
+ assign (resid 199 and name HG*  )  (resid 204 and name HB*  )  2.39  0.59  0.59 !peak 139 
+ assign (resid 199 and name HG*  )  (resid 210 and name HG*  )  2.48  0.68  0.68 !peak 1942 
+ assign (resid 199 and name HG*  )  (resid 223 and name HG1* )  2.27  0.47  0.47 !peak 502 
+ assign (resid 199 and name HG*  )  (resid 223 and name HG2* )  2.24  0.44  0.44 !peak 264 
+ assign (resid 199 and name HG*  )  (resid 227 and name HB   )  4.05  2.25  2.25 !peak 405 
+ assign (resid 199 and name HG*  )  (resid 227 and name HG2* )  3.06  1.26  1.26 !peak 18 
+ assign (resid 199 and name HG*  )  (resid 229 and name HB*  )  3.82  2.02  2.02 !peak 151 
+ assign (resid 199 and name HG*  )  (resid 253 and name HA   )  3.27  1.47  1.47 !peak 407 
+ assign (resid 199 and name HG*  )  (resid 253 and name HG1* )  2.43  0.63  0.63 !peak 232 
+ assign (resid 199 and name HG*  )  (resid 254 and name HN   )  2.73  0.93  0.93 !peak 57 
+ assign (resid 199 and name HG*  )  (resid 254 and name HB2  )  3.35  1.55  1.55 !peak 400 
+ assign (resid 199 and name HG*  )  (resid 255 and name HA   )  3.30  1.50  1.50 !peak 2482 
+ assign (resid 199 and name HG*  )  (resid 255 and name HD1* )  2.56  0.76  0.76 !peak 99 
+ assign (resid 200 and name HB1  )  (resid 210 and name HG*  )  3.78  1.98  1.98 !peak 2892 
+ assign (resid 200 and name HG2  )  (resid 210 and name HG*  )  3.51  1.71  1.71 !peak 527 
+ assign (resid 200 and name HG1  )  (resid 210 and name HG*  )  3.56  1.76  1.76 !peak 527 
+ assign (resid 200 and name HD2  )  (resid 210 and name HG*  )  3.03  1.23  1.23 !peak 839 
+ assign (resid 200 and name HD1  )  (resid 210 and name HG*  )  2.97  1.17  1.17 !peak 837 
+ assign (resid 201 and name HB*  )  (resid 202 and name HG*  )  3.09  1.29  1.29 !peak 1814 
+ assign (resid 202 and name HG*  )  (resid 203 and name HN   )  3.26  1.46  1.47 !peak 2745 
+ assign (resid 203 and name HG2* )  (resid 210 and name HG*  )  2.49  0.69  0.70 !peak 495 
+ assign (resid 203 and name HG12 )  (resid 210 and name HG*  )  3.21  1.41  1.41 !peak 2894 
+ assign (resid 203 and name HG11 )  (resid 210 and name HG*  )  3.73  1.93  1.93 !peak 328 
+ assign (resid 203 and name HD1* )  (resid 210 and name HG*  )  2.42  0.62  0.62 !peak 111 
+ assign (resid 204 and name HB*  )  (resid 210 and name HG*  )  3.63  1.83  1.83 !peak 2896 
+ assign (resid 208 and name HN   )  (resid 210 and name HG*  )  3.47  1.67  1.67 !peak 1282 
+ assign (resid 209 and name HN   )  (resid 209 and name HE*  )  3.69  1.89  1.89 !peak 1016 
+ assign (resid 209 and name HN   )  (resid 210 and name HG*  )  2.99  1.19  1.19 !peak 279 
+ assign (resid 209 and name HA   )  (resid 209 and name HE*  )  3.27  1.47  1.47 !peak 3230 
+ assign (resid 209 and name HA   )  (resid 210 and name HG*  )  3.14  1.34  1.34 !peak 2866 
+ assign (resid 209 and name HB1  )  (resid 210 and name HG*  )  3.82  2.02  2.02 !peak 2873 
+ assign (resid 209 and name HG2  )  (resid 209 and name HE*  )  2.79  0.99  0.99 !peak 1106 
+ assign (resid 209 and name HG2  )  (resid 210 and name HG*  )  4.12  2.32  2.32 !peak 2895 
+ assign (resid 209 and name HG1  )  (resid 209 and name HE*  )  2.52  0.72  0.72 !peak 1107 
+ assign (resid 209 and name HD2  )  (resid 209 and name HE*  )  2.31  0.51  0.51 !peak 1105 
+ assign (resid 209 and name HE*  )  (resid 222 and name HA   )  3.11  1.31  1.31 !peak 3231 
+ assign (resid 209 and name HE*  )  (resid 222 and name HB*  )  3.28  1.48  1.48 !peak 1856 
+ assign (resid 210 and name HN   )  (resid 210 and name HG*  )  2.38  0.58  0.58 !peak 429 
+ assign (resid 210 and name HG*  )  (resid 211 and name HN   )  2.75  0.95  0.95 !peak 2885 
+ assign (resid 210 and name HG*  )  (resid 211 and name HB1  )  3.82  2.02  2.02 !peak 2872 
+ assign (resid 210 and name HG*  )  (resid 212 and name HB*  )  3.12  1.32  1.32 !peak 2876 
+ assign (resid 210 and name HG*  )  (resid 221 and name HN   )  3.34  1.54  1.54 !peak 2862 
+ assign (resid 210 and name HG*  )  (resid 221 and name HB   )  3.27  1.47  1.47 !peak 1194 
+ assign (resid 210 and name HG*  )  (resid 221 and name HG1* )  2.46  0.66  0.66 !peak 235 
+ assign (resid 210 and name HG*  )  (resid 223 and name HA   )  3.90  2.10  2.10 !peak 2593 
+ assign (resid 210 and name HG*  )  (resid 223 and name HG2* )  2.58  0.78  0.78 !peak 2897 
+ assign (resid 210 and name HG*  )  (resid 233 and name HD1* )  3.42  1.62  1.62 !peak 514 
+ assign (resid 210 and name HG*  )  (resid 255 and name HD1* )  3.85  2.05  2.05 !peak 498 
+ assign (resid 211 and name HB2  )  (resid 211 and name HD*  )  2.85  1.05  1.05 !peak 1370 
+ assign (resid 211 and name HB1  )  (resid 211 and name HD*  )  2.50  0.70  0.70 !peak 1095 
+ assign (resid 211 and name HG*  )  (resid 211 and name HD*  )  2.18  0.38  0.38 !peak 1096 
+ assign (resid 211 and name HG*  )  (resid 212 and name HN   )  2.63  0.83  0.83 !peak 692 
+ assign (resid 211 and name HG*  )  (resid 212 and name HA   )  3.39  1.59  1.59 !peak 2302 
+ assign (resid 211 and name HG*  )  (resid 212 and name HB*  )  3.66  1.86  1.86 !peak 1996 
+ assign (resid 211 and name HG*  )  (resid 218 and name HA   )  3.41  1.61  1.61 !peak 542 
+ assign (resid 211 and name HG*  )  (resid 218 and name HB*  )  3.02  1.22  1.22 !peak 3285 
+ assign (resid 211 and name HG*  )  (resid 218 and name HG2  )  3.53  1.73  1.73 !peak 1540 
+ assign (resid 211 and name HG*  )  (resid 219 and name HN   )  3.01  1.21  1.21 !peak 396 
+ assign (resid 211 and name HG*  )  (resid 220 and name HG1  )  3.66  1.86  1.86 !peak 2635 
+ assign (resid 211 and name HD*  )  (resid 212 and name HN   )  3.07  1.27  1.27 !peak 1088 
+ assign (resid 211 and name HD*  )  (resid 218 and name HA   )  3.38  1.58  1.58 !peak 538 
+ assign (resid 211 and name HD*  )  (resid 218 and name HB*  )  2.97  1.17  1.17 !peak 1328 
+ assign (resid 211 and name HD*  )  (resid 218 and name HG1  )  3.23  1.43  1.43 !peak 1094 
+ assign (resid 211 and name HD*  )  (resid 219 and name HN   )  3.23  1.43  1.43 !peak 1188 
+ assign (resid 212 and name HA   )  (resid 213 and name HB*  )  3.43  1.63  1.63 !peak 836 
+ assign (resid 212 and name HA   )  (resid 219 and name HG*  )  3.34  1.54  1.54 !peak 2827 
+ assign (resid 212 and name HA   )  (resid 251 and name HD*  )  2.89  1.09  1.09 !peak 1712 
+ assign (resid 212 and name HB*  )  (resid 219 and name HG*  )  2.21  0.41  0.41 !peak 350 
+ assign (resid 212 and name HB*  )  (resid 251 and name HD*  )  2.32  0.52  0.52 !peak 32 
+ assign (resid 213 and name HB*  )  (resid 213 and name HE*  )  3.17  1.37  1.37 !peak 46 
+ assign (resid 213 and name HG*  )  (resid 213 and name HE*  )  2.54  0.74  0.74 !peak 45 
+ assign (resid 214 and name HB   )  (resid 217 and name HA*  )  3.09  1.29  1.29 !peak 2965 
+ assign (resid 214 and name HB   )  (resid 219 and name HG*  )  3.15  1.35  1.35 !peak 2826 
+ assign (resid 215 and name HD1* )  (resid 216 and name HG*  )  3.63  1.83  1.83 !peak 2623 
+ assign (resid 215 and name HD1* )  (resid 241 and name HD*  )  3.08  1.28  1.28 !peak 3349 
+ assign (resid 215 and name HD2* )  (resid 241 and name HD*  )  3.11  1.31  1.31 !peak 1950 
+ assign (resid 216 and name HN   )  (resid 216 and name HB*  )  2.38  0.58  0.58 !peak 695 
+ assign (resid 216 and name HN   )  (resid 216 and name HG*  )  3.03  1.23  1.23 !peak 1141 
+ assign (resid 216 and name HN   )  (resid 217 and name HA*  )  3.39  1.59  1.59 !peak 31 
+ assign (resid 216 and name HA   )  (resid 216 and name HG*  )  2.63  0.83  0.83 !peak 1136 
+ assign (resid 216 and name HB*  )  (resid 217 and name HN   )  3.14  1.34  1.34 !peak 609 
+ assign (resid 217 and name HN   )  (resid 218 and name HD*  )  3.50  1.70  1.70 !peak 1304 
+ assign (resid 218 and name HA   )  (resid 219 and name HG*  )  3.23  1.43  1.43 !peak 2824 
+ assign (resid 218 and name HB*  )  (resid 219 and name HN   )  2.49  0.69  0.70 !peak 394 
+ assign (resid 218 and name HB*  )  (resid 219 and name HG*  )  3.08  1.28  1.28 !peak 2835 
+ assign (resid 218 and name HG2  )  (resid 219 and name HG*  )  3.85  2.05  2.05 !peak 2832 
+ assign (resid 219 and name HA   )  (resid 219 and name HG*  )  2.61  0.81  0.80 !peak 2828 
+ assign (resid 219 and name HG*  )  (resid 220 and name HN   )  2.96  1.16  1.16 !peak 1887 
+ assign (resid 219 and name HG*  )  (resid 220 and name HB2  )  3.24  1.44  1.44 !peak 2688 
+ assign (resid 219 and name HG*  )  (resid 220 and name HB1  )  3.46  1.66  1.66 !peak 195 
+ assign (resid 219 and name HG*  )  (resid 235 and name HB1  )  3.51  1.71  1.71 !peak 2836 
+ assign (resid 219 and name HG*  )  (resid 235 and name HG   )  3.11  1.31  1.31 !peak 469 
+ assign (resid 219 and name HG*  )  (resid 235 and name HD1* )  2.30  0.50  0.50 !peak 557 
+ assign (resid 219 and name HG*  )  (resid 235 and name HD2* )  2.58  0.78  0.78 !peak 543 
+ assign (resid 219 and name HG*  )  (resid 238 and name HE*  )  2.97  1.17  1.17 !peak 2830 
+ assign (resid 219 and name HG*  )  (resid 249 and name HD2* )  2.61  0.81  0.80 !peak 78 
+ assign (resid 219 and name HG*  )  (resid 251 and name HD*  )  2.89  1.09  1.09 !peak 581 
+ assign (resid 221 and name HB   )  (resid 251 and name HD*  )  3.51  1.71  1.71 !peak 1627 
+ assign (resid 224 and name HB*  )  (resid 225 and name HD2  )  2.85  1.05  1.05 !peak 880 
+ assign (resid 224 and name HB*  )  (resid 225 and name HD1  )  2.89  1.09  1.09 !peak 903 
+ assign (resid 227 and name HA   )  (resid 231 and name HD*  )  3.79  1.99  1.99 !peak 444 
+ assign (resid 227 and name HG2* )  (resid 231 and name HD*  )  2.64  0.84  0.84 !peak 1052 
+ assign (resid 228 and name HN   )  (resid 231 and name HD*  )  3.54  1.74  1.74 !peak 1050 
+ assign (resid 230 and name HN   )  (resid 252 and name HG*  )  2.81  1.01  1.01 !peak 479 
+ assign (resid 230 and name HA2  )  (resid 252 and name HG*  )  2.98  1.18  1.18 !peak 1004 
+ assign (resid 230 and name HA1  )  (resid 252 and name HG*  )  3.47  1.67  1.67 !peak 998 
+ assign (resid 231 and name HN   )  (resid 231 and name HD*  )  3.34  1.54  1.54 !peak 336 
+ assign (resid 231 and name HA   )  (resid 231 and name HD*  )  3.28  1.48  1.48 !peak 719 
+ assign (resid 231 and name HD*  )  (resid 232 and name HN   )  3.49  1.69  1.69 !peak 234 
+ assign (resid 231 and name HD*  )  (resid 253 and name HG1* )  3.07  1.27  1.27 !peak 1053 
+ assign (resid 232 and name HA   )  (resid 232 and name HE*  )  3.19  1.39  1.39 !peak 3215 
+ assign (resid 232 and name HA   )  (resid 252 and name HB*  )  3.61  1.81  1.81 !peak 2351 
+ assign (resid 232 and name HB1  )  (resid 252 and name HG*  )  3.92  2.12  2.12 !peak 2642 
+ assign (resid 232 and name HG1  )  (resid 232 and name HE*  )  2.60  0.80  0.80 !peak 1104 
+ assign (resid 232 and name HE*  )  (resid 250 and name HD2  )  3.88  2.08  2.08 !peak 3214 
+ assign (resid 232 and name HE*  )  (resid 251 and name HN   )  3.46  1.66  1.66 !peak 3212 
+ assign (resid 232 and name HE*  )  (resid 252 and name HN   )  3.08  1.28  1.28 !peak 1031 
+ assign (resid 232 and name HE*  )  (resid 252 and name HA   )  2.89  1.09  1.09 !peak 3216 
+ assign (resid 234 and name HN   )  (resid 234 and name HB*  )  2.57  0.77  0.77 !peak 222 
+ assign (resid 234 and name HN   )  (resid 234 and name HG*  )  2.57  0.77  0.77 !peak 225 
+ assign (resid 234 and name HN   )  (resid 234 and name HD*  )  3.44  1.64  1.64 !peak 669 
+ assign (resid 234 and name HA   )  (resid 234 and name HD*  )  3.45  1.65  1.65 !peak 3194 
+ assign (resid 234 and name HB*  )  (resid 234 and name HD*  )  2.57  0.77  0.77 !peak 1079 
+ assign (resid 234 and name HB*  )  (resid 235 and name HN   )  2.92  1.12  1.12 !peak 712 
+ assign (resid 234 and name HB*  )  (resid 250 and name HE2  )  2.62  0.82  0.82 !peak 105 
+ assign (resid 234 and name HB*  )  (resid 250 and name HD2  )  3.23  1.43  1.43 !peak 72 
+ assign (resid 234 and name HG*  )  (resid 235 and name HD2* )  3.41  1.61  1.61 !peak 646 
+ assign (resid 234 and name HG*  )  (resid 250 and name HE2  )  3.23  1.43  1.43 !peak 102 
+ assign (resid 234 and name HD*  )  (resid 250 and name HE2  )  2.93  1.13  1.14 !peak 1084 
+ assign (resid 234 and name HD*  )  (resid 250 and name HD2  )  3.60  1.80  1.80 !peak 3192 
+ assign (resid 235 and name HG   )  (resid 251 and name HD*  )  2.86  1.06  1.06 !peak 1706 
+ assign (resid 235 and name HD1* )  (resid 238 and name HE*  )  3.25  1.45  1.45 !peak 1716 
+ assign (resid 235 and name HD1* )  (resid 251 and name HD*  )  2.30  0.50  0.50 !peak 572 
+ assign (resid 235 and name HD2* )  (resid 238 and name HE*  )  3.50  1.70  1.70 !peak 1694 
+ assign (resid 236 and name HN   )  (resid 236 and name HD*  )  3.48  1.68  1.68 !peak 2785 
+ assign (resid 236 and name HN   )  (resid 236 and name HE*  )  3.98  2.18  2.18 !peak 780 
+ assign (resid 236 and name HN   )  (resid 238 and name HE*  )  4.19  2.39  2.39 !peak 780 
+ assign (resid 236 and name HA   )  (resid 236 and name HD*  )  2.60  0.80  0.80 !peak 207 
+ assign (resid 236 and name HB2  )  (resid 236 and name HE*  )  3.33  1.53  1.53 !peak 1338 
+ assign (resid 236 and name HB1  )  (resid 236 and name HE*  )  3.24  1.44  1.44 !peak 1339 
+ assign (resid 236 and name HG2  )  (resid 236 and name HD*  )  2.31  0.51  0.51 !peak 2794 
+ assign (resid 236 and name HG2  )  (resid 236 and name HE*  )  2.92  1.12  1.12 !peak 1656 
+ assign (resid 236 and name HD*  )  (resid 237 and name HN   )  2.59  0.79  0.79 !peak 680 
+ assign (resid 236 and name HD*  )  (resid 248 and name HA   )  3.09  1.29  1.29 !peak 2386 
+ assign (resid 236 and name HE*  )  (resid 237 and name HN   )  3.41  1.61  1.61 !peak 792 
+ assign (resid 237 and name HA2  )  (resid 246 and name HB*  )  3.35  1.55  1.55 !peak 993 
+ assign (resid 237 and name HA2  )  (resid 246 and name HD*  )  3.99  2.19  2.19 !peak 3204 
+ assign (resid 238 and name HN   )  (resid 238 and name HE*  )  3.55  1.75  1.75 !peak 459 
+ assign (resid 238 and name HG2  )  (resid 238 and name HE*  )  2.81  1.01  1.01 !peak 1657 
+ assign (resid 240 and name HB2  )  (resid 241 and name HD*  )  3.07  1.27  1.27 !peak 892 
+ assign (resid 240 and name HB1  )  (resid 241 and name HG*  )  3.31  1.51  1.51 !peak 1570 
+ assign (resid 241 and name HA   )  (resid 246 and name HB*  )  2.87  1.07  1.07 !peak 501 
+ assign (resid 241 and name HA   )  (resid 246 and name HD*  )  3.26  1.46  1.47 !peak 503 
+ assign (resid 242 and name HN   )  (resid 245 and name HA*  )  3.24  1.44  1.44 !peak 577 
+ assign (resid 242 and name HN   )  (resid 246 and name HB*  )  3.26  1.46  1.46 !peak 585 
+ assign (resid 244 and name HA   )  (resid 245 and name HA*  )  3.45  1.65  1.65 !peak 2284 
+ assign (resid 244 and name HB*  )  (resid 245 and name HA*  )  3.13  1.33  1.33 !peak 138 
+ assign (resid 245 and name HN   )  (resid 245 and name HA*  )  2.26  0.46  0.46 !peak 591 
+ assign (resid 245 and name HA*  )  (resid 246 and name HN   )  2.33  0.53  0.53 !peak 1136 
+ assign (resid 246 and name HN   )  (resid 246 and name HD*  )  3.40  1.60  1.60 !peak 3199 
+ assign (resid 246 and name HA   )  (resid 246 and name HD*  )  3.15  1.35  1.35 !peak 3202 
+ assign (resid 246 and name HA   )  (resid 247 and name HA*  )  3.35  1.55  1.55 !peak 2567 
+ assign (resid 246 and name HB*  )  (resid 246 and name HD*  )  2.33  0.53  0.53 !peak 1073 
+ assign (resid 246 and name HB*  )  (resid 247 and name HN   )  2.89  1.09  1.09 !peak 644 
+ assign (resid 246 and name HB*  )  (resid 247 and name HA*  )  3.47  1.67  1.67 !peak 3382 
+ assign (resid 246 and name HD*  )  (resid 247 and name HN   )  3.44  1.64  1.64 !peak 731 
+ assign (resid 249 and name HD1* )  (resid 251 and name HD*  )  2.79  0.99  0.99 !peak 309 
+ assign (resid 249 and name HD2* )  (resid 251 and name HD*  )  2.69  0.89  0.89 !peak 1968 
+ assign (resid 250 and name HA   )  (resid 251 and name HD*  )  3.29  1.49  1.49 !peak 2475 
+ assign (resid 251 and name HN   )  (resid 251 and name HD*  )  2.93  1.13  1.14 !peak 204 
+ assign (resid 251 and name HA   )  (resid 251 and name HD*  )  2.85  1.05  1.05 !peak 1711 
+ assign (resid 251 and name HA   )  (resid 252 and name HB*  )  3.68  1.88  1.88 !peak 817 
+ assign (resid 251 and name HB1  )  (resid 251 and name HD*  )  2.57  0.77  0.77 !peak 1710 
+ assign (resid 252 and name HN   )  (resid 252 and name HG*  )  3.31  1.51  1.51 !peak 2621 
+ assign (resid 197 and name HD1* )  (resid 251 and name HD2* )  3.15  1.35  1.36 !peak 93 #SUP 0.91 #QF 0.20 
+ assign (resid 204 and name HB*  )  (resid 253 and name HG1* )  3.17  1.37  1.37 !peak 238 #SUP 0.93 #QF 0.93 
+ assign (resid 197 and name HD2* )  (resid 251 and name HD2* )  3.15  1.35  1.36 !peak 280 #SUP 0.85 #QF 0.85 
+ assign (resid 201 and name HB*  )  (resid 256 and name HG2* )  3.83  2.03  2.03 !peak 417 #SUP 0.85 #QF 0.85 
+ assign (resid 227 and name HG2* )  (resid 231 and name HG2  )  2.99  1.19  1.19 !peak 453 #SUP 0.98 #QF 0.98 
+ assign (resid 197 and name HD1* )  (resid 251 and name HD1* )  3.15  1.35  1.36 !peak 631 #SUP 0.60 #QF 0.60 
+ assign (resid 227 and name HG2* )  (resid 231 and name HB1  )  3.53  1.73  1.73 !peak 21 #SUP 1.00 #QF 0.36 
+ assign (resid 227 and name HG2* )  (resid 231 and name HN   )  3.84  2.04  2.04 !peak 24 #SUP 0.99 #QF 0.51 
+ assign (resid 229 and name HA   )  (resid 231 and name HB2  )  3.51  1.71  1.71 !peak 55 #SUP 0.93 #QF 0.93 
+ assign (resid 249 and name HN   )  (resid 249 and name HD2* )  3.49  1.69  1.69 !peak 83 #SUP 0.74 #QF 0.74 
+ assign (resid 173 and name HB*  )  (resid 174 and name HA1  )  3.25  1.45  1.45 !peak 161 #SUP 0.97 #QF 0.97 
+ assign (resid 174 and name HA1  )  (resid 175 and name HA   )  3.85  2.05  2.05 !peak 163 #SUP 0.88 #QF 0.61 
+ assign (resid 173 and name HA   )  (resid 174 and name HA1  )  3.49  1.69  1.69 !peak 164 #SUP 0.49 #QF 0.49 
+ assign (resid 227 and name HA   )  (resid 231 and name HD1  )  3.42  1.62  1.62 !peak 444 #SUP 0.98 #QF 0.98 
+ assign (resid 211 and name HG1  )  (resid 218 and name HA   )  3.61  1.81  1.81 !peak 542 #SUP 0.78 #QF 0.78 
+ assign (resid 209 and name HB1  )  (resid 210 and name HA   )  3.51  1.71  1.71 !peak 571 #SUP 0.70 #QF 0.70 
+ assign (resid 255 and name HA   )  (resid 256 and name HB   )  3.63  1.83  1.83 !peak 590 #SUP 0.98 #QF 0.98 
+ assign (resid 232 and name HG2  )  (resid 250 and name HA   )  3.45  1.65  1.65 !peak 749 #SUP 0.67 #QF 0.67 
+ assign (resid 173 and name HA   )  (resid 235 and name HD1* )  3.61  1.81  1.81 !peak 805 #SUP 1.00 #QF 0.83 
+ assign (resid 251 and name HA   )  (resid 252 and name HB1  )  3.30  1.50  1.50 !peak 817 #SUP 0.61 #QF 0.61 
+ assign (resid 208 and name HN   )  (resid 222 and name HA   )  3.95  2.15  2.15 !peak 825 #SUP 0.93 #QF 0.93 
+ assign (resid 237 and name HA1  )  (resid 246 and name HB2  )  3.76  1.96  1.96 !peak 992 #SUP 0.79 #QF 0.70 
+ assign (resid 231 and name HD1  )  (resid 253 and name HG1* )  3.39  1.59  1.59 !peak 1044 #SUP 0.92 #QF 0.92 
+ assign (resid 229 and name HA   )  (resid 231 and name HD1  )  3.96  2.16  2.16 !peak 1048 #SUP 0.96 #QF 0.94 
+ assign (resid 228 and name HN   )  (resid 231 and name HD1  )  3.30  1.50  1.50 !peak 1050 #SUP 0.87 #QF 0.87 
+ assign (resid 205 and name HG2* )  (resid 226 and name HD1  )  3.63  1.83  1.83 !peak 1064 #SUP 0.79 #QF 0.79 
+ assign (resid 220 and name HN   )  (resid 220 and name HG1  )  3.60  1.80  1.80 !peak 1125 #SUP 0.95 #QF 0.80 
+ assign (resid 209 and name HB2  )  (resid 220 and name HB1  )  4.02  2.22  2.22 !peak 1181 #SUP 0.78 #QF 0.41 
+ assign (resid 228 and name HB2  )  (resid 228 and name HG2  )  2.45  0.65  0.65 !peak 1221 #SUP 0.93 #QF 0.93 
+ assign (resid 227 and name HA   )  (resid 228 and name HG2  )  4.13  2.33  2.33 !peak 1224 #SUP 0.95 #QF 0.95 
+ assign (resid 228 and name HN   )  (resid 228 and name HG2  )  2.96  1.16  1.16 !peak 1227 #SUP 0.95 #QF 0.95 
+ assign (resid 227 and name HG2* )  (resid 228 and name HG2  )  4.10  2.30  2.30 !peak 1230 #SUP 0.82 #QF 0.82 
+ assign (resid 235 and name HG   )  (resid 238 and name HB2  )  3.77  1.97  1.97 !peak 1331 #SUP 0.27 #QF 0.27 
+ assign (resid 211 and name HB2  )  (resid 220 and name HG2  )  3.42  1.62  1.62 !peak 1371 #SUP 0.96 #QF 0.96 
+ assign (resid 228 and name HA   )  (resid 228 and name HG2  )  2.91  1.11  1.11 !peak 1415 #SUP 0.94 #QF 0.94 
+ assign (resid 211 and name HG2  )  (resid 218 and name HB1  )  3.28  1.48  1.48 !peak 1540 #SUP 0.85 #QF 0.58 
+ assign (resid 254 and name HG1  )  (resid 255 and name HA   )  4.47  2.67  2.67 !peak 1607 #SUP 0.54 #QF 0.54 
+ assign (resid 209 and name HN   )  (resid 209 and name HG2  )  3.72  1.92  1.92 !peak 1661 #SUP 0.99 #QF 0.97 
+ assign (resid 219 and name HB   )  (resid 235 and name HD2* )  3.56  1.76  1.76 !peak 1687 #SUP 0.62 #QF 0.48 
+ assign (resid 197 and name HA   )  (resid 251 and name HD1* )  3.70  1.90  1.90 !peak 1712 #SUP 0.95 #QF 0.89 
+ assign (resid 203 and name HG2* )  (resid 210 and name HA   )  3.80  2.00  2.00 !peak 1804 #SUP 1.00 #QF 0.85 
+ assign (resid 229 and name HB*  )  (resid 253 and name HB   )  3.60  1.80  1.80 !peak 1834 #SUP 0.99 #QF 0.99 
+ assign (resid 213 and name HE*  )  (resid 215 and name HB1  )  3.99  2.19  2.19 !peak 1884 #SUP 0.49 #QF 0.49 
+ assign (resid 253 and name HG1* )  (resid 254 and name HB1  )  3.51  1.71  1.71 !peak 1912 #SUP 0.99 #QF 0.99 
+ assign (resid 197 and name HD2* )  (resid 251 and name HD1* )  3.15  1.35  1.36 !peak 1968 #SUP 0.98 #QF 0.98 
+ assign (resid 196 and name HA   )  (resid 251 and name HD2* )  3.64  1.84  1.84 !peak 1971 #SUP 0.97 #QF 0.36 
+ assign (resid 172 and name HG2* )  (resid 220 and name HA   )  4.00  2.20  2.20 !peak 2015 #SUP 0.36 #QF 0.36 
+ assign (resid 172 and name HG2* )  (resid 220 and name HB1  )  3.83  2.03  2.03 !peak 2019 #SUP 0.77 #QF 0.66 
+ assign (resid 199 and name HB   )  (resid 256 and name HG2* )  3.77  1.97  1.97 !peak 2043 #SUP 0.61 #QF 0.61 
+ assign (resid 255 and name HB   )  (resid 256 and name HG2* )  4.27  2.47  2.47 !peak 2044 #SUP 0.59 #QF 0.44 
+ assign (resid 196 and name HA   )  (resid 251 and name HD1* )  3.64  1.84  1.84 !peak 2076 #SUP 0.50 #QF 0.25 
+ assign (resid 202 and name HD1  )  (resid 255 and name HG2* )  3.94  2.14  2.14 !peak 2106 #SUP 0.94 #QF 0.94 
+ assign (resid 197 and name HA   )  (resid 251 and name HD2* )  3.70  1.90  1.90 !peak 2275 #SUP 0.45 #QF 0.45 
+ assign (resid 195 and name HB*  )  (resid 212 and name HA   )  3.69  1.89  1.89 !peak 2302 #SUP 0.25 #QF 0.25 
+ assign (resid 242 and name HA1  )  (resid 246 and name HG1  )  3.86  2.06  2.06 !peak 2321 #SUP 0.23 #QF 0.23 
+ assign (resid 232 and name HA   )  (resid 252 and name HB1  )  3.92  2.12  2.12 !peak 2351 #SUP 0.21 #QF 0.21 
+ assign (resid 219 and name HA   )  (resid 220 and name HG1  )  3.99  2.19  2.19 !peak 2616 #SUP 0.69 #QF 0.69 
+ assign (resid 211 and name HG2  )  (resid 220 and name HG1  )  3.49  1.69  1.69 !peak 2619 #SUP 0.76 #QF 0.76 
+ assign (resid 209 and name HB2  )  (resid 220 and name HG2  )  3.70  1.90  1.90 !peak 2654 #SUP 0.38 #QF 0.38 
+ assign (resid 211 and name HG1  )  (resid 218 and name HB2  )  3.34  1.54  1.54 !peak 2668 #SUP 0.98 #QF 0.98 
+ assign (resid 231 and name HG2  )  (resid 232 and name HN   )  3.21  1.41  1.41 !peak 2759 #SUP 0.92 #QF 0.92 
+ assign (resid 231 and name HA   )  (resid 231 and name HG2  )  3.11  1.31  1.31 !peak 2762 #SUP 0.96 #QF 0.96 
+ assign (resid 231 and name HG2  )  (resid 253 and name HG2* )  3.47  1.67  1.67 !peak 2769 #SUP 1.00 #QF 0.97 
+ assign (resid 231 and name HG2  )  (resid 253 and name HG1* )  3.55  1.75  1.75 !peak 2771 #SUP 0.78 #QF 0.78 
+ assign (resid 211 and name HG1  )  (resid 212 and name HN   )  3.27  1.47  1.47 !peak 2803 #SUP 0.92 #QF 0.92 
+ assign (resid 211 and name HG1  )  (resid 220 and name HG1  )  3.71  1.91  1.91 !peak 2806 #SUP 0.33 #QF 0.33 
+ assign (resid 198 and name HA   )  (resid 256 and name HB   )  3.85  2.05  2.05 !peak 2907 #SUP 0.91 #QF 0.91 
+ assign (resid 214 and name HB   )  (resid 215 and name HB1  )  3.86  2.06  2.06 !peak 2989 #SUP 0.62 #QF 0.62 
+ assign (resid 172 and name HB   )  (resid 220 and name HB1  )  3.11  1.31  1.31 !peak 3129 #SUP 0.28 #QF 0.28 
+ assign (resid 225 and name HB2  )  (resid 226 and name HD1  )  3.21  1.41  1.41 !peak 3210 #SUP 0.84 #QF 0.84 
+ assign (resid 215 and name HB1  )  (resid 240 and name HD1  )  3.40  1.60  1.60 !peak 9 #SUP 0.77 #QF 0.77 
+ assign (resid 176 and name HE3  )  (resid 231 and name HG2  )  2.97  1.17  1.17 !peak 13 #SUP 0.81 #QF 0.81 
+ assign (resid 173 and name HB*  )  (resid 176 and name HD1  )  3.91  2.11  2.11 !peak 24 #SUP 0.44 #QF 0.44 
+ assign (resid 194 and name HE1  )  (resid 252 and name HB1  )  3.08  1.28  1.28 !peak 38 #SUP 0.29 #QF 0.29 
+ assign (resid 194 and name HD1  )  (resid 252 and name HB1  )  3.98  2.18  2.18 !peak 87 #SUP 0.91 #QF 0.87 
+ assign (resid 194 and name HE1  )  (resid 250 and name HB1  )  3.58  1.78  1.78 !peak 118 #SUP 0.85 #QF 0.85 
+ assign (resid 234 and name HB1  )  (resid 235 and name HN   )  3.38  1.58  1.57 !peak 66 #SUP 0.93 #QF 0.93 
+ assign (resid 235 and name HN   )  (resid 235 and name HB1  )  2.83  1.03  1.03 !peak 67 #SUP 0.94 #QF 0.94 
+ assign (resid 235 and name HN   )  (resid 236 and name HN   )  3.77  1.97  1.97 !peak 68 #SUP 0.99 #QF 0.79 
+ assign (resid 201 and name HN   )  (resid 256 and name HN   )  3.03  1.23  1.23 !peak 94 #SUP 0.99 #QF 0.99 
+ assign (resid 197 and name HN   )  (resid 252 and name HA   )  3.47  1.67  1.67 !peak 141 #SUP 0.59 #QF 0.59 
+ assign (resid 199 and name HN   )  (resid 254 and name HB1  )  3.20  1.40  1.40 !peak 181 #SUP 0.78 #QF 0.78 
+ assign (resid 199 and name HN   )  (resid 253 and name HG1* )  3.22  1.42  1.42 !peak 185 #SUP 0.91 #QF 0.91 
+ assign (resid 232 and name HN   )  (resid 232 and name HB2  )  3.23  1.43  1.43 !peak 228 #SUP 0.94 #QF 0.94 
+ assign (resid 231 and name HD2  )  (resid 232 and name HN   )  3.55  1.75  1.75 !peak 234 #SUP 1.00 
+ assign (resid 174 and name HN   )  (resid 174 and name HA2  )  2.52  0.72  0.72 !peak 298 #SUP 0.99 #QF 0.99 
+ assign (resid 174 and name HN   )  (resid 174 and name HA1  )  2.51  0.71  0.71 !peak 299 #SUP 1.00 
+ assign (resid 226 and name HN   )  (resid 226 and name HD1  )  3.03  1.23  1.23 !peak 324 #SUP 0.95 #QF 0.95 
+ assign (resid 231 and name HN   )  (resid 231 and name HD1  )  3.53  1.73  1.73 !peak 335 #SUP 0.89 #QF 0.89 
+ assign (resid 231 and name HN   )  (resid 231 and name HD2  )  3.55  1.75  1.75 !peak 336 #SUP 0.88 #QF 0.88 
+ assign (resid 211 and name HG2  )  (resid 219 and name HN   )  3.05  1.25  1.24 !peak 396 #SUP 0.56 #QF 0.56 
+ assign (resid 230 and name HN   )  (resid 231 and name HB2  )  3.36  1.56  1.56 !peak 480 #SUP 0.92 #QF 0.92 
+ assign (resid 245 and name HN   )  (resid 245 and name HA2  )  2.52  0.72  0.72 !peak 589 #SUP 0.97 #QF 0.97 
+ assign (resid 245 and name HN   )  (resid 245 and name HA1  )  2.52  0.72  0.72 !peak 591 #SUP 0.99 #QF 0.99 
+ assign (resid 244 and name HB*  )  (resid 245 and name HN   )  3.01  1.21  1.21 !peak 595 #SUP 0.90 #QF 0.90 
+ assign (resid 208 and name HN   )  (resid 223 and name HN   )  2.92  1.12  1.12 !peak 614 #SUP 0.97 #QF 0.97 
+ assign (resid 246 and name HB2  )  (resid 247 and name HN   )  2.92  1.12  1.12 !peak 644 #SUP 0.59 #QF 0.59 
+ assign (resid 211 and name HG2  )  (resid 212 and name HN   )  2.68  0.88  0.88 !peak 692 #SUP 0.95 #QF 0.95 
+ assign (resid 215 and name HB1  )  (resid 216 and name HN   )  3.02  1.22  1.22 !peak 696 #SUP 0.89 #QF 0.89 
+ assign (resid 234 and name HB2  )  (resid 235 and name HN   )  3.38  1.58  1.57 !peak 712 #SUP 0.99 #QF 0.99 
+ assign (resid 228 and name HG2  )  (resid 228 and name HE22 )  2.92  1.12  1.12 !peak 738 #SUP 0.91 #QF 0.91 
+ assign (resid 174 and name HA1  )  (resid 236 and name HN   )  3.58  1.78  1.78 !peak 777 #SUP 0.49 #QF 0.49 
+ assign (resid 171 and name HN   )  (resid 172 and name HN   )  3.76  1.96  1.96 !peak 892 #SUP 0.65 #QF 0.47 
+ assign (resid 173 and name HN   )  (resid 174 and name HA2  )  4.08  2.28  2.28 !peak 898 #SUP 0.52 #QF 0.52 
+ assign (resid 242 and name HN   )  (resid 244 and name HN   )  3.74  1.94  1.94 !peak 1148 #SUP 0.62 #QF 0.62 
+ assign (resid 197 and name HN   )  (resid 213 and name HN   )  4.10  2.30  2.30 !peak 1319 #SUP 0.50 #QF 0.50 
+ assign (resid 228 and name HN   )  (resid 228 and name HB1  )  3.06  1.26  1.26 !peak 1366 #SUP 0.89 #QF 0.89 
+ assign (resid 191 and name HE21 )  (resid 247 and name HA1  )  3.33  1.53  1.53 !peak 1401 #SUP 0.76 #QF 0.76 
+ assign (resid 191 and name HE21 )  (resid 247 and name HA2  )  3.33  1.53  1.53 !peak 1402 #SUP 0.77 #QF 0.44 
+ assign (resid 228 and name HG2  )  (resid 228 and name HE21 )  2.54  0.74  0.74 !peak 1413 #SUP 0.74 #QF 0.74 
+ assign (resid 226 and name HA   )  (resid 228 and name HE21 )  3.42  1.62  1.62 !peak 1415 #SUP 0.89 #QF 0.35 
+ assign (resid 228 and name HE22 )  (resid 229 and name HN   )  4.40  2.60  2.60 !peak 1420 #SUP 0.65 #QF 0.65 
+ assign (resid 172 and name HG2* )  (resid 235 and name HD*  )  3.07  1.27  1.27 !peak 388 
+ assign (resid 173 and name HA   )  (resid 235 and name HD*  )  3.17  1.37  1.37 !peak 1693 
+ assign (resid 173 and name HB*  )  (resid 209 and name HD*  )  3.92  2.12  2.12 !peak 174 
+ assign (resid 173 and name HB*  )  (resid 221 and name HG*  )  3.06  1.26  1.26 !peak 1914 
+ assign (resid 173 and name HB*  )  (resid 235 and name HB*  )  3.35  1.55  1.55 !peak 3144 
+ assign (resid 173 and name HB*  )  (resid 235 and name HD*  )  2.47  0.67  0.67 !peak 1689 
+ assign (resid 174 and name HN   )  (resid 235 and name HD*  )  2.84  1.04  1.04 !peak 678 
+ assign (resid 174 and name HA2  )  (resid 235 and name HD*  )  3.34  1.54  1.54 !peak 416 
+ assign (resid 174 and name HA1  )  (resid 233 and name HD*  )  3.47  1.67  1.67 !peak 2338 
+ assign (resid 174 and name HA1  )  (resid 235 and name HD*  )  2.98  1.18  1.18 !peak 48 
+ assign (resid 175 and name HN   )  (resid 233 and name HD*  )  3.74  1.94  1.94 !peak 359 
+ assign (resid 176 and name HD1  )  (resid 221 and name HG*  )  3.10  1.30  1.30 !peak 58 
+ assign (resid 176 and name HE1  )  (resid 221 and name HG*  )  2.84  1.04  1.04 !peak 37 
+ assign (resid 176 and name HE1  )  (resid 223 and name HG*  )  3.18  1.38  1.38 !peak 36 
+ assign (resid 176 and name HZ2  )  (resid 221 and name HG*  )  3.10  1.30  1.30 !peak 1904 
+ assign (resid 190 and name HB*  )  (resid 191 and name HG*  )  3.75  1.95  1.95 !peak 1211 
+ assign (resid 191 and name HN   )  (resid 191 and name HG*  )  2.56  0.76  0.76 !peak 376 
+ assign (resid 191 and name HG*  )  (resid 191 and name HE21 )  2.49  0.69  0.69 !peak 1405 
+ assign (resid 191 and name HG*  )  (resid 191 and name HE22 )  2.82  1.02  1.02 !peak 1407 
+ assign (resid 191 and name HG*  )  (resid 242 and name HA2  )  3.69  1.89  1.89 !peak 1208 
+ assign (resid 191 and name HG*  )  (resid 242 and name HA1  )  3.36  1.56  1.56 !peak 1210 
+ assign (resid 191 and name HG*  )  (resid 247 and name HA*  )  3.30  1.50  1.50 !peak 2721 
+ assign (resid 191 and name HE22 )  (resid 247 and name HA*  )  3.46  1.66  1.66 !peak 1409 
+ assign (resid 194 and name HA   )  (resid 249 and name HD*  )  3.51  1.71  1.71 !peak 157 
+ assign (resid 194 and name HB*  )  (resid 194 and name HD1  )  2.69  0.89  0.89 !peak 51 
+ assign (resid 194 and name HD1  )  (resid 249 and name HD*  )  3.96  2.16  2.16 !peak 1964 
+ assign (resid 194 and name HD1  )  (resid 252 and name HG*  )  4.30  2.50  2.50 !peak 87 
+ assign (resid 194 and name HE1  )  (resid 232 and name HD*  )  3.52  1.72  1.72 !peak 119 
+ assign (resid 195 and name HA   )  (resid 249 and name HD*  )  3.87  2.07  2.07 !peak 2458 
+ assign (resid 195 and name HA   )  (resid 251 and name HD*  )  4.14  2.35  2.35 !peak 2458 
+ assign (resid 195 and name HB*  )  (resid 249 and name HD*  )  2.72  0.92  0.92 !peak 1737 
+ assign (resid 196 and name HA   )  (resid 252 and name HG*  )  2.89  1.09  1.09 !peak 549 
+ assign (resid 196 and name HG2* )  (resid 197 and name HD*  )  3.89  2.09  2.09 !peak 362 
+ assign (resid 196 and name HG2* )  (resid 252 and name HG*  )  3.01  1.21  1.21 !peak 2004 
+ assign (resid 196 and name HG2* )  (resid 254 and name HD*  )  3.03  1.23  1.23 !peak 1100 
+ assign (resid 197 and name HN   )  (resid 197 and name HD*  )  2.98  1.18  1.18 !peak 148 
+ assign (resid 197 and name HN   )  (resid 252 and name HG*  )  3.13  1.33  1.33 !peak 145 
+ assign (resid 197 and name HA   )  (resid 197 and name HD*  )  2.49  0.69  0.70 !peak 1723 
+ assign (resid 197 and name HB2  )  (resid 197 and name HD*  )  2.54  0.74  0.74 !peak 1727 
+ assign (resid 197 and name HB1  )  (resid 251 and name HD*  )  2.90  1.10  1.10 !peak 1710 
+ assign (resid 197 and name HG   )  (resid 221 and name HG*  )  3.26  1.46  1.46 !peak 1915 
+ assign (resid 197 and name HG   )  (resid 233 and name HD*  )  3.64  1.84  1.84 !peak 639 
+ assign (resid 197 and name HD*  )  (resid 198 and name HN   )  2.68  0.88  0.88 !peak 1949 
+ assign (resid 197 and name HD*  )  (resid 198 and name HB*  )  3.68  1.88  1.88 !peak 1951 
+ assign (resid 197 and name HD*  )  (resid 199 and name HG*  )  2.61  0.81  0.81 !peak 633 
+ assign (resid 197 and name HD*  )  (resid 210 and name HN   )  3.78  1.98  1.98 !peak 3413 
+ assign (resid 197 and name HD*  )  (resid 210 and name HB   )  3.27  1.47  1.47 !peak 1726 
+ assign (resid 197 and name HD*  )  (resid 210 and name HG*  )  2.34  0.54  0.54 !peak 515 
+ assign (resid 197 and name HD*  )  (resid 211 and name HA   )  3.29  1.49  1.49 !peak 1722 
+ assign (resid 197 and name HD*  )  (resid 211 and name HD*  )  3.86  2.06  2.06 !peak 3189 
+ assign (resid 197 and name HD*  )  (resid 212 and name HN   )  3.21  1.41  1.41 !peak 1948 
+ assign (resid 197 and name HD*  )  (resid 212 and name HA   )  2.68  0.88  0.88 !peak 1723 
+ assign (resid 197 and name HD*  )  (resid 212 and name HB*  )  2.26  0.46  0.46 !peak 284 
+ assign (resid 197 and name HD*  )  (resid 213 and name HN   )  3.12  1.32  1.32 !peak 1731 
+ assign (resid 197 and name HD*  )  (resid 219 and name HG*  )  3.66  1.86  1.86 !peak 473 
+ assign (resid 197 and name HD*  )  (resid 220 and name HA   )  3.55  1.75  1.75 !peak 2584 
+ assign (resid 197 and name HD*  )  (resid 221 and name HN   )  3.23  1.43  1.43 !peak 1730 
+ assign (resid 197 and name HD*  )  (resid 221 and name HG*  )  2.43  0.63  0.63 !peak 285 
+ assign (resid 197 and name HD*  )  (resid 223 and name HG*  )  2.68  0.88  0.88 !peak 635 
+ assign (resid 197 and name HD*  )  (resid 233 and name HD*  )  3.31  1.51  1.51 !peak 630 
+ assign (resid 197 and name HD*  )  (resid 251 and name HD*  )  2.38  0.59  0.59 !peak 280 
+ assign (resid 197 and name HD*  )  (resid 253 and name HG1* )  2.95  1.15  1.15 !peak 636 
+ assign (resid 197 and name HD*  )  (resid 253 and name HG2* )  2.87  1.07  1.07 !peak 1677 
+ assign (resid 199 and name HB   )  (resid 223 and name HG*  )  3.28  1.48  1.48 !peak 2644 
+ assign (resid 199 and name HG*  )  (resid 200 and name HB2  )  3.60  1.80  1.80 !peak 1238 
+ assign (resid 199 and name HG*  )  (resid 210 and name HB   )  3.63  1.83  1.83 !peak 1937 
+ assign (resid 199 and name HG*  )  (resid 223 and name HG*  )  2.69  0.89  0.89 !peak 264 
+ assign (resid 199 and name HG*  )  (resid 253 and name HG2* )  3.26  1.46  1.46 !peak 402 
+ assign (resid 199 and name HG*  )  (resid 254 and name HB1  )  3.63  1.83  1.83 !peak 400 
+ assign (resid 200 and name HD2  )  (resid 223 and name HG*  )  3.94  2.14  2.14 !peak 2853 
+ assign (resid 201 and name HB*  )  (resid 205 and name HG*  )  2.72  0.92  0.92 !peak 339 
+ assign (resid 202 and name HA   )  (resid 205 and name HG*  )  2.96  1.16  1.16 !peak 464 
+ assign (resid 203 and name HA   )  (resid 206 and name HG*  )  2.60  0.80  0.80 !peak 609 
+ assign (resid 203 and name HG2* )  (resid 206 and name HG*  )  3.04  1.24  1.24 !peak 58 
+ assign (resid 203 and name HG2* )  (resid 223 and name HG*  )  2.43  0.63  0.63 !peak 57 
+ assign (resid 203 and name HG12 )  (resid 206 and name HG*  )  3.15  1.35  1.35 !peak 187 
+ assign (resid 203 and name HD1* )  (resid 209 and name HG*  )  4.33  2.53  2.53 !peak 1786 
+ assign (resid 204 and name HA   )  (resid 206 and name HG*  )  3.74  1.94  1.94 !peak 2118 
+ assign (resid 204 and name HA   )  (resid 223 and name HG*  )  2.56  0.76  0.76 !peak 755 
+ assign (resid 204 and name HB*  )  (resid 205 and name HG*  )  2.81  1.01  1.01 !peak 2820 
+ assign (resid 204 and name HB*  )  (resid 223 and name HG*  )  2.61  0.81  0.80 !peak 140 
+ assign (resid 205 and name HN   )  (resid 205 and name HG*  )  2.35  0.55  0.55 !peak 547 
+ assign (resid 205 and name HA   )  (resid 205 and name HG*  )  2.34  0.54  0.54 !peak 436 
+ assign (resid 205 and name HG*  )  (resid 206 and name HN   )  2.42  0.62  0.62 !peak 533 
+ assign (resid 205 and name HG*  )  (resid 206 and name HA   )  2.77  0.97  0.97 !peak 497 
+ assign (resid 205 and name HG*  )  (resid 206 and name HB   )  3.22  1.42  1.42 !peak 2732 
+ assign (resid 205 and name HG*  )  (resid 225 and name HA   )  3.91  2.11  2.11 !peak 2054 
+ assign (resid 205 and name HG*  )  (resid 226 and name HN   )  3.00  1.20  1.20 !peak 318 
+ assign (resid 205 and name HG*  )  (resid 226 and name HA   )  2.96  1.16  1.16 !peak 695 
+ assign (resid 205 and name HG*  )  (resid 226 and name HD2  )  2.67  0.87  0.87 !peak 1052 
+ assign (resid 205 and name HG*  )  (resid 226 and name HD1  )  3.25  1.45  1.45 !peak 1063 
+ assign (resid 206 and name HN   )  (resid 206 and name HG*  )  2.36  0.56  0.56 !peak 532 
+ assign (resid 206 and name HA   )  (resid 206 and name HG*  )  2.38  0.58  0.58 !peak 496 
+ assign (resid 206 and name HG*  )  (resid 207 and name HN   )  2.38  0.58  0.58 !peak 514 
+ assign (resid 206 and name HG*  )  (resid 207 and name HA2  )  3.97  2.17  2.17 !peak 1979 
+ assign (resid 206 and name HG*  )  (resid 223 and name HG*  )  3.67  1.87  1.87 !peak 504 
+ assign (resid 206 and name HG*  )  (resid 225 and name HA   )  3.94  2.14  2.14 !peak 1980 
+ assign (resid 207 and name HA2  )  (resid 223 and name HG*  )  3.19  1.39  1.39 !peak 1040 
+ assign (resid 207 and name HA1  )  (resid 223 and name HG*  )  3.35  1.55  1.55 !peak 1039 
+ assign (resid 208 and name HN   )  (resid 223 and name HG*  )  3.29  1.49  1.49 !peak 2848 
+ assign (resid 209 and name HN   )  (resid 223 and name HG*  )  3.49  1.69  1.69 !peak 1923 
+ assign (resid 209 and name HA   )  (resid 209 and name HD*  )  3.11  1.31  1.31 !peak 1468 
+ assign (resid 209 and name HA   )  (resid 221 and name HG*  )  3.30  1.50  1.50 !peak 631 
+ assign (resid 209 and name HA   )  (resid 223 and name HG*  )  3.22  1.42  1.42 !peak 626 
+ assign (resid 209 and name HB2  )  (resid 209 and name HD*  )  2.29  0.49  0.49 !peak 1463 
+ assign (resid 209 and name HB2  )  (resid 209 and name HE*  )  2.42  0.62  0.62 !peak 1105 
+ assign (resid 209 and name HG*  )  (resid 209 and name HE*  )  2.56  0.76  0.76 !peak 1107 
+ assign (resid 209 and name HG*  )  (resid 210 and name HN   )  2.71  0.91  0.91 !peak 426 
+ assign (resid 209 and name HG*  )  (resid 210 and name HA   )  3.85  2.05  2.05 !peak 2029 
+ assign (resid 209 and name HG*  )  (resid 210 and name HG*  )  3.57  1.77  1.77 !peak 514 
+ assign (resid 209 and name HG*  )  (resid 220 and name HG2  )  3.30  1.50  1.50 !peak 2635 
+ assign (resid 209 and name HG*  )  (resid 221 and name HN   )  3.09  1.29  1.29 !peak 190 
+ assign (resid 209 and name HG*  )  (resid 222 and name HN   )  3.58  1.78  1.78 !peak 1659 
+ assign (resid 209 and name HG*  )  (resid 222 and name HA   )  4.13  2.33  2.33 !peak 2029 
+ assign (resid 209 and name HD*  )  (resid 220 and name HB1  )  3.02  1.22  1.22 !peak 3132 
+ assign (resid 209 and name HD*  )  (resid 220 and name HG2  )  3.02  1.22  1.22 !peak 2634 
+ assign (resid 209 and name HD*  )  (resid 220 and name HG1  )  3.69  1.89  1.89 !peak 2618 
+ assign (resid 209 and name HD*  )  (resid 221 and name HN   )  3.07  1.27  1.27 !peak 189 
+ assign (resid 209 and name HD*  )  (resid 222 and name HN   )  3.30  1.50  1.50 !peak 2787 
+ assign (resid 209 and name HD*  )  (resid 222 and name HB*  )  2.91  1.11  1.11 !peak 166 
+ assign (resid 209 and name HE*  )  (resid 222 and name HN   )  3.91  2.11  2.11 !peak 867 
+ assign (resid 210 and name HN   )  (resid 221 and name HG*  )  3.11  1.31  1.31 !peak 1901 
+ assign (resid 210 and name HN   )  (resid 223 and name HG*  )  3.28  1.48  1.48 !peak 1921 
+ assign (resid 210 and name HA   )  (resid 210 and name HG*  )  2.56  0.76  0.76 !peak 567 
+ assign (resid 210 and name HB   )  (resid 223 and name HG*  )  3.41  1.61  1.61 !peak 1928 
+ assign (resid 210 and name HG*  )  (resid 221 and name HG*  )  2.46  0.66  0.66 !peak 235 
+ assign (resid 210 and name HG*  )  (resid 223 and name HG*  )  3.29  1.49  1.49 !peak 1929 
+ assign (resid 210 and name HG*  )  (resid 233 and name HD*  )  3.90  2.10  2.10 !peak 514 
+ assign (resid 211 and name HA   )  (resid 211 and name HD*  )  3.10  1.30  1.30 !peak 1089 
+ assign (resid 211 and name HG2  )  (resid 211 and name HD*  )  2.31  0.51  0.51 !peak 1097 
+ assign (resid 211 and name HD*  )  (resid 213 and name HN   )  3.08  1.28  1.28 !peak 1086 
+ assign (resid 211 and name HD*  )  (resid 218 and name HB2  )  3.25  1.45  1.45 !peak 1327 
+ assign (resid 211 and name HD*  )  (resid 218 and name HB1  )  3.03  1.23  1.23 !peak 1093 
+ assign (resid 212 and name HB*  )  (resid 233 and name HD*  )  3.35  1.55  1.55 !peak 642 
+ assign (resid 212 and name HB*  )  (resid 235 and name HD*  )  2.93  1.13  1.14 !peak 541 
+ assign (resid 212 and name HB*  )  (resid 249 and name HD*  )  3.15  1.35  1.35 !peak 603 
+ assign (resid 212 and name HB*  )  (resid 251 and name HB*  )  3.57  1.77  1.77 !peak 1995 
+ assign (resid 213 and name HE*  )  (resid 215 and name HD*  )  3.86  2.06  2.06 !peak 48 
+ assign (resid 214 and name HB   )  (resid 215 and name HD*  )  2.87  1.07  1.07 !peak 3003 
+ assign (resid 214 and name HB   )  (resid 218 and name HD*  )  3.79  1.99  1.99 !peak 2968 
+ assign (resid 214 and name HB   )  (resid 249 and name HD*  )  3.53  1.73  1.73 !peak 1682 
+ assign (resid 215 and name HA   )  (resid 215 and name HD*  )  2.84  1.04  1.04 !peak 1732 
+ assign (resid 215 and name HB1  )  (resid 215 and name HD*  )  2.63  0.83  0.83 !peak 1733 
+ assign (resid 215 and name HD*  )  (resid 216 and name HN   )  2.50  0.70  0.70 !peak 35 
+ assign (resid 215 and name HD*  )  (resid 216 and name HA   )  3.33  1.53  1.53 !peak 1724 
+ assign (resid 215 and name HD*  )  (resid 216 and name HB*  )  2.73  0.93  0.93 !peak 1734 
+ assign (resid 215 and name HD*  )  (resid 216 and name HG*  )  3.29  1.49  1.49 !peak 2623 
+ assign (resid 215 and name HD*  )  (resid 217 and name HN   )  3.18  1.38  1.38 !peak 607 
+ assign (resid 215 and name HD*  )  (resid 238 and name HA   )  3.17  1.37  1.37 !peak 2223 
+ assign (resid 215 and name HD*  )  (resid 239 and name HN   )  3.74  1.94  1.94 !peak 1243 
+ assign (resid 215 and name HD*  )  (resid 240 and name HD1  )  2.78  0.98  0.98 !peak 65 
+ assign (resid 215 and name HD*  )  (resid 240 and name HE1  )  3.01  1.21  1.21 !peak 61 
+ assign (resid 215 and name HD*  )  (resid 241 and name HG*  )  2.82  1.02  1.03 !peak 52 
+ assign (resid 215 and name HD*  )  (resid 241 and name HD*  )  2.93  1.13  1.14 !peak 3349 
+ assign (resid 218 and name HB2  )  (resid 219 and name HG*  )  3.54  1.74  1.74 !peak 2835 
+ assign (resid 218 and name HB1  )  (resid 219 and name HG*  )  3.77  1.97  1.97 !peak 2833 
+ assign (resid 219 and name HB   )  (resid 235 and name HD*  )  3.22  1.42  1.42 !peak 1687 
+ assign (resid 219 and name HG*  )  (resid 235 and name HB*  )  3.56  1.76  1.76 !peak 2836 
+ assign (resid 219 and name HG*  )  (resid 235 and name HD*  )  2.21  0.41  0.41 !peak 542 
+ assign (resid 219 and name HG*  )  (resid 249 and name HD*  )  2.60  0.80  0.80 !peak 78 
+ assign (resid 220 and name HG2  )  (resid 221 and name HG*  )  3.79  1.99  1.99 !peak 2637 
+ assign (resid 221 and name HN   )  (resid 221 and name HG*  )  2.39  0.59  0.59 !peak 191 
+ assign (resid 221 and name HB   )  (resid 235 and name HD*  )  3.64  1.84  1.84 !peak 1687 
+ assign (resid 221 and name HG*  )  (resid 222 and name HN   )  2.90  1.10  1.10 !peak 1902 
+ assign (resid 221 and name HG*  )  (resid 222 and name HA   )  3.23  1.43  1.43 !peak 3341 
+ assign (resid 221 and name HG*  )  (resid 222 and name HB*  )  3.32  1.52  1.52 !peak 1863 
+ assign (resid 221 and name HG*  )  (resid 223 and name HA   )  3.11  1.31  1.31 !peak 35 
+ assign (resid 221 and name HG*  )  (resid 233 and name HD*  )  2.56  0.76  0.76 !peak 228 
+ assign (resid 221 and name HG*  )  (resid 251 and name HD*  )  3.25  1.45  1.45 !peak 581 
+ assign (resid 222 and name HA   )  (resid 223 and name HG*  )  3.12  1.32  1.32 !peak 821 
+ assign (resid 222 and name HB*  )  (resid 223 and name HG*  )  3.48  1.68  1.68 !peak 266 
+ assign (resid 223 and name HN   )  (resid 223 and name HG*  )  2.36  0.56  0.56 !peak 134 
+ assign (resid 223 and name HA   )  (resid 223 and name HG*  )  2.61  0.81  0.81 !peak 34 
+ assign (resid 223 and name HA   )  (resid 224 and name HG*  )  3.28  1.48  1.48 !peak 36 
+ assign (resid 223 and name HG*  )  (resid 224 and name HA   )  3.28  1.48  1.48 !peak 2523 
+ assign (resid 223 and name HG*  )  (resid 227 and name HN   )  3.28  1.48  1.48 !peak 2847 
+ assign (resid 223 and name HG*  )  (resid 227 and name HA   )  3.53  1.73  1.73 !peak 451 
+ assign (resid 223 and name HG*  )  (resid 227 and name HB   )  2.73  0.93  0.93 !peak 2851 
+ assign (resid 223 and name HG*  )  (resid 227 and name HG2* )  2.48  0.68  0.68 !peak 501 
+ assign (resid 223 and name HG*  )  (resid 233 and name HD*  )  3.68  1.88  1.88 !peak 2810 
+ assign (resid 223 and name HG*  )  (resid 253 and name HG1* )  2.97  1.17  1.17 !peak 2859 
+ assign (resid 223 and name HG*  )  (resid 253 and name HG2* )  3.64  1.84  1.84 !peak 1929 
+ assign (resid 229 and name HA   )  (resid 230 and name HA*  )  3.26  1.46  1.46 !peak 1000 
+ assign (resid 229 and name HB*  )  (resid 230 and name HA*  )  3.05  1.25  1.25 !peak 1005 
+ assign (resid 230 and name HA*  )  (resid 253 and name HB   )  3.78  1.98  1.98 !peak 2088 
+ assign (resid 231 and name HA   )  (resid 232 and name HB*  )  3.18  1.38  1.38 !peak 3319 
+ assign (resid 232 and name HN   )  (resid 232 and name HE*  )  3.83  2.03  2.03 !peak 908 
+ assign (resid 232 and name HB*  )  (resid 233 and name HN   )  3.22  1.42  1.42 !peak 106 
+ assign (resid 232 and name HE*  )  (resid 253 and name HN   )  3.31  1.51  1.51 !peak 3212 
+ assign (resid 233 and name HD*  )  (resid 234 and name HN   )  3.01  1.21  1.21 !peak 226 
+ assign (resid 233 and name HD*  )  (resid 235 and name HD*  )  3.80  2.00  2.00 !peak 2811 
+ assign (resid 233 and name HD*  )  (resid 249 and name HD*  )  3.04  1.24  1.24 !peak 641 
+ assign (resid 235 and name HN   )  (resid 235 and name HB*  )  2.57  0.77  0.77 !peak 67 
+ assign (resid 235 and name HN   )  (resid 235 and name HD*  )  3.17  1.37  1.37 !peak 1695 
+ assign (resid 235 and name HN   )  (resid 249 and name HB*  )  3.45  1.65  1.65 !peak 1100 
+ assign (resid 235 and name HN   )  (resid 249 and name HD*  )  3.16  1.36  1.36 !peak 62 
+ assign (resid 235 and name HA   )  (resid 235 and name HD*  )  2.55  0.75  0.75 !peak 1430 
+ assign (resid 235 and name HB*  )  (resid 235 and name HD*  )  2.43  0.63  0.63 !peak 1690 
+ assign (resid 235 and name HB*  )  (resid 238 and name HB2  )  3.01  1.21  1.21 !peak 3387 
+ assign (resid 235 and name HB*  )  (resid 238 and name HB1  )  2.93  1.13  1.14 !peak 2736 
+ assign (resid 235 and name HB*  )  (resid 238 and name HG2  )  3.48  1.68  1.68 !peak 3146 
+ assign (resid 235 and name HB*  )  (resid 249 and name HN   )  2.98  1.18  1.18 !peak 346 
+ assign (resid 235 and name HB*  )  (resid 249 and name HD*  )  2.93  1.13  1.14 !peak 1670 
+ assign (resid 235 and name HG   )  (resid 249 and name HD*  )  3.58  1.78  1.78 !peak 1671 
+ assign (resid 235 and name HD*  )  (resid 236 and name HN   )  2.63  0.83  0.83 !peak 156 
+ assign (resid 235 and name HD*  )  (resid 236 and name HA   )  3.52  1.72  1.72 !peak 704 
+ assign (resid 235 and name HD*  )  (resid 238 and name HN   )  3.35  1.55  1.55 !peak 714 
+ assign (resid 235 and name HD*  )  (resid 238 and name HB1  )  3.84  2.04  2.04 !peak 1686 
+ assign (resid 235 and name HD*  )  (resid 238 and name HG2  )  3.17  1.37  1.37 !peak 2031 
+ assign (resid 235 and name HD*  )  (resid 238 and name HG1  )  2.73  0.93  0.93 !peak 1709 
+ assign (resid 235 and name HD*  )  (resid 238 and name HE*  )  3.08  1.28  1.28 !peak 1716 
+ assign (resid 235 and name HD*  )  (resid 249 and name HD*  )  2.53  0.73  0.73 !peak 79 
+ assign (resid 236 and name HN   )  (resid 236 and name HG*  )  3.59  1.79  1.79 !peak 2025 
+ assign (resid 236 and name HA   )  (resid 236 and name HG*  )  2.72  0.92  0.92 !peak 209 
+ assign (resid 236 and name HA   )  (resid 248 and name HB*  )  3.15  1.35  1.35 !peak 2128 
+ assign (resid 236 and name HG*  )  (resid 236 and name HD*  )  2.19  0.39  0.39 !peak 2794 
+ assign (resid 236 and name HG*  )  (resid 236 and name HE*  )  2.67  0.87  0.87 !peak 1657 
+ assign (resid 236 and name HG*  )  (resid 237 and name HN   )  3.29  1.49  1.49 !peak 502 
+ assign (resid 236 and name HG*  )  (resid 248 and name HA   )  3.57  1.77  1.77 !peak 2390 
+ assign (resid 236 and name HG*  )  (resid 248 and name HB*  )  2.95  1.15  1.15 !peak 2793 
+ assign (resid 238 and name HN   )  (resid 249 and name HB*  )  3.39  1.59  1.59 !peak 463 
+ assign (resid 238 and name HN   )  (resid 249 and name HD*  )  3.44  1.64  1.64 !peak 715 
+ assign (resid 238 and name HA   )  (resid 249 and name HD*  )  3.65  1.85  1.85 !peak 1682 
+ assign (resid 238 and name HB2  )  (resid 249 and name HD*  )  3.30  1.50  1.50 !peak 83 
+ assign (resid 238 and name HB1  )  (resid 249 and name HD*  )  3.17  1.37  1.37 !peak 83 
+ assign (resid 238 and name HG2  )  (resid 249 and name HD*  )  3.08  1.28  1.28 !peak 1668 
+ assign (resid 239 and name HN   )  (resid 249 and name HD*  )  3.91  2.11  2.11 !peak 1243 
+ assign (resid 242 and name HN   )  (resid 246 and name HD*  )  3.54  1.74  1.74 !peak 587 
+ assign (resid 245 and name HA*  )  (resid 246 and name HB2  )  3.55  1.75  1.75 !peak 3382 
+ assign (resid 246 and name HB2  )  (resid 246 and name HD*  )  3.46  1.66  1.66 !peak 1073 
+ assign (resid 247 and name HA*  )  (resid 248 and name HB*  )  4.30  2.50  2.50 !peak 69 
+ assign (resid 248 and name HN   )  (resid 248 and name HB*  )  2.67  0.87  0.87 !peak 410 
+ assign (resid 248 and name HB*  )  (resid 249 and name HN   )  2.69  0.89  0.89 !peak 344 
+ assign (resid 248 and name HB*  )  (resid 250 and name HE2  )  2.84  1.04  1.04 !peak 107 
+ assign (resid 249 and name HN   )  (resid 249 and name HB*  )  2.63  0.83  0.83 !peak 349 
+ assign (resid 249 and name HN   )  (resid 249 and name HD*  )  3.08  1.28  1.28 !peak 350 
+ assign (resid 249 and name HA   )  (resid 249 and name HD*  )  2.65  0.85  0.85 !peak 85 
+ assign (resid 249 and name HB*  )  (resid 250 and name HN   )  3.02  1.22  1.22 !peak 170 
+ assign (resid 249 and name HD*  )  (resid 250 and name HN   )  2.58  0.78  0.78 !peak 122 
+ assign (resid 249 and name HD*  )  (resid 251 and name HN   )  3.08  1.28  1.28 !peak 204 
+ assign (resid 249 and name HD*  )  (resid 251 and name HA   )  3.13  1.33  1.33 !peak 809 
+ assign (resid 249 and name HD*  )  (resid 251 and name HB*  )  2.47  0.67  0.67 !peak 73 
+ assign (resid 249 and name HD*  )  (resid 251 and name HD*  )  2.80  1.00  1.00 !peak 573 
+ assign (resid 249 and name HD*  )  (resid 252 and name HN   )  3.96  2.16  2.16 !peak 78 
+ assign (resid 251 and name HN   )  (resid 251 and name HB*  )  2.59  0.79  0.79 !peak 206 
+ assign (resid 251 and name HB*  )  (resid 252 and name HN   )  3.07  1.27  1.27 !peak 1037 
+ assign (resid 251 and name HD*  )  (resid 252 and name HN   )  3.45  1.65  1.65 !peak 1717 
+ assign (resid 251 and name HD*  )  (resid 253 and name HN   )  3.84  2.04  2.04 !peak 1717 
+ assign (resid 254 and name HA   )  (resid 254 and name HD*  )  2.88  1.08  1.08 !peak 1061 
+ assign (resid 254 and name HB2  )  (resid 254 and name HD*  )  2.79  0.99  0.99 !peak 1098 
+ assign (resid 254 and name HD*  )  (resid 255 and name HN   )  3.10  1.30  1.30 !peak 884 
+ assign (resid 173 and name HN   )  (resid 235 and name HD*  )  3.10  1.30  1.30 !peak 1445 
+ assign (resid 175 and name HN   )  (resid 235 and name HD*  )  4.20  2.40  2.40 !peak 664 
+ assign (resid 176 and name HH2  )  (resid 197 and name HD*  )  3.10  1.30  1.30 !peak 3848 
+ assign (resid 176 and name HH2  )  (resid 221 and name HG*  )  3.10  1.30  1.30 !peak 34 
+ assign (resid 177 and name HE*  )  (resid 253 and name HG*  )  3.10  1.30  1.30 !
+ assign (resid 176 and name HD1  )  (resid 224 and name HB*  )  3.90  2.10  2.10 !peak 99 
+ assign (resid 176 and name HD1  )  (resid 224 and name HG*  )  3.55  1.75  1.75 !peak 23 
+ assign (resid 176 and name HE1  )  (resid 224 and name HG*  )  3.60  1.80  1.80 !peak 38 
+ assign (resid 176 and name HE1  )  (resid 197 and name HG   )  4.20  2.40  2.40 !
+ assign (resid 176 and name HD1  )  (resid 177 and name HG*  )  3.90  2.10  2.10 !peak 99 
+ assign (resid 176 and name HH2  )  (resid 253 and name HG2* )  3.10  1.30  1.30 !
+ assign (resid 176 and name HH2  )  (resid 223 and name HG1* )  3.65  1.85  1.85 !
+ assign (resid 176 and name HZ3  )  (resid 253 and name HG2* )  3.10  1.30  1.30 !
+ assign (resid 175 and name HN   )  (resid 234 and name HD*  )  3.65  1.85  1.85 !
+ assign (resid 172 and name HN   )  (resid 219 and name HG2* )  3.65  1.85  1.85 !peak 1197 
+ assign (resid 172 and name HA   )  (resid 219 and name HG2* )  3.24  1.44  1.44 !peak 516 
+ assign (resid 172 and name HB   )  (resid 219 and name HG2* )  2.86  1.06  1.06 !peak 425 
+ assign (resid 172 and name HB   )  (resid 220 and name HB*  )  3.07  1.27  1.27 !peak 3129 
+ assign (resid 172 and name HG2* )  (resid 219 and name HG2* )  2.28  0.48  0.48 !peak 22 
+ assign (resid 173 and name HB*  )  (resid 197 and name HD*  )  3.65  1.85  1.85 !peak 16 

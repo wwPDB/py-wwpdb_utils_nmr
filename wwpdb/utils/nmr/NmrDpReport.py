@@ -25,6 +25,9 @@
 # 19-Apr-2020  M. Yokochi - support concatenated CS data in NMR legacy deposition (DAOTHER-5594)
 # 19 Apr-2020  M. Yokochi - add 'not_superimposed_model' warning type (DAOTHER-4060)
 # 20 Apr-2020  M. Yokochi - add 'concatenated_sequence' warning type (DAOTHER-5594)
+# 22-Apr-2020  M. Yokochi - add 'ambiguity_code_mismatch' warning type (DAOTHER-5601)
+# 25-Apr-2020  M. Yokochi - add 'entity' content subtype (DAOTHER-5611)
+# 25-Apr-2020  M. Yokochi - add 'corrected_format_issue' warning type (DAOTHER-5611)
 ##
 """ Wrapper class for data processing report of NMR data.
     @author: Masashi Yokochi
@@ -717,19 +720,23 @@ class NmrDpReport:
 
         for stat in self.getNmrStatsOfExptlData(content_subtype):
             loop = []
-            for l in stat['loop']:
-                _l = {}
-                for k, v in l.items():
-                    if v is None or k == 'Entry_ID':
-                        continue
-                    _l[k.lower()] = v
-                loop.append(_l)
+
+            if not stat['loop'] is None:
+                for l in stat['loop']:
+                    _l = {}
+                    for k, v in l.items():
+                        if v is None or k == 'Entry_ID':
+                            continue
+                        _l[k.lower()] = v
+                    loop.append(_l)
 
             saveframe_tag = {}
-            for k, v in stat['saveframe_tag'].items():
-                if v is None or k == 'Entry_ID' or k.startswith('Sf_'):
-                    continue
-                saveframe_tag[k.lower()] = v
+
+            if not stat['saveframe_tag'] is None:
+                for k, v in stat['saveframe_tag'].items():
+                    if v is None or k == 'Entry_ID' or k.startswith('Sf_'):
+                        continue
+                    saveframe_tag[k.lower()] = v
 
             chem_shift_refs.append({'list_id': stat['list_id'], 'sf_framecode': stat['sf_framecode'], 'loop': loop, 'saveframe_tag': saveframe_tag})
 
@@ -762,19 +769,23 @@ class NmrDpReport:
 
             for stat in stats:
                 loop = []
-                for l in stat['loop']:
-                    _l = {}
-                    for k, v in l.items():
-                        if v is None or k == 'Entry_ID':
-                            continue
-                        _l[k.lower()] = v
-                    loop.append(_l)
+
+                if not stat['loop'] is None:
+                    for l in stat['loop']:
+                        _l = {}
+                        for k, v in l.items():
+                            if v is None or k == 'Entry_ID':
+                                continue
+                            _l[k.lower()] = v
+                        loop.append(_l)
 
                 saveframe_tag = {}
-                for k, v in stat['saveframe_tag'].items():
-                    if v is None or k == 'Entry_ID' or k.startswith('Sf_'):
-                        continue
-                    saveframe_tag[k.lower()] = v
+
+                if not stat['saveframe_tag'] is None:
+                    for k, v in stat['saveframe_tag'].items():
+                        if v is None or k == 'Entry_ID' or k.startswith('Sf_'):
+                            continue
+                        saveframe_tag[k.lower()] = v
 
                 chem_shift_refs.append({'list_id': stat['list_id'], 'sf_framecode': stat['sf_framecode'], 'loop': loop, 'saveframe_tag': saveframe_tag})
 
@@ -1376,7 +1387,7 @@ class NmrDpReportInputSource:
                       'stats_of_exptl_data')
         self.file_types = ('pdbx', 'nef', 'nmr-star')
         self.content_types = ('model', 'nmr-data-nef', 'nmr-data-str', 'nmr-chemical-shifts', 'nmr-restraints')
-        self.content_subtypes = ('coordinate', 'non_poly', 'entry_info', 'poly_seq', 'chem_shift', 'chem_shift_ref', 'dist_restraint', 'dihed_restraint', 'rdc_restraint', 'spectral_peak')
+        self.content_subtypes = ('coordinate', 'non_poly', 'entry_info', 'poly_seq', 'entity', 'chem_shift', 'chem_shift_ref', 'dist_restraint', 'dihed_restraint', 'rdc_restraint', 'spectral_peak')
 
         self.__contents = {item:None for item in self.items}
 
@@ -1673,8 +1684,9 @@ class NmrDpReportWarning:
     """
 
     def __init__(self):
-        self.items = ('encouragement', 'missing_content', 'missing_saveframe', 'missing_data', 'enum_mismatch', 'enum_mismatch_ignorable',
-                      'disordered_index', 'sequence_mismatch', 'atom_nomenclature_mismatch', 'ccd_mismatch',
+        self.items = ('encouragement', 'missing_content', 'missing_saveframe', 'missing_data', 'enum_mismatch',
+                      'enum_mismatch_ignorable', 'corrected_format_issue',
+                      'disordered_index', 'sequence_mismatch', 'atom_nomenclature_mismatch', 'ccd_mismatch', 'ambiguity_code_mismatch',
                       'skipped_saveframe_category', 'skipped_loop_category',
                       'anomalous_chemical_shift', 'unusual_chemical_shift',
                       'anomalous_data', 'unusual_data', 'remarkable_data', 'insufficient_data',

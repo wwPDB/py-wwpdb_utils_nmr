@@ -6,6 +6,11 @@
 # 18-Mar-2020  M. Yokochi - support 'Saveframe' data type as separated NMR data (DAOTHER-2737)
 # 19-Mar-2020  M. Yokochi - check chain assignment for identical dimer case (DAOTHER-3343)
 # 14-Apr-2020  M. Yokochi - add 'no-cs-row' and 'no-cs-loop' unit tests
+# 22-Apr-2020  M. Yokochi - add a unit test for DAOTHER-5600
+# 22-Apr-2020  M. Yokochi - add a unit test for DAOTHER-5602
+# 23-Apr-2020  M. Yokochi - add a unit test for DAOTHER-5603
+# 23-Apr-2020  M. Yokochi - add a unit test for DAOTHER-5609
+# 23-Apr-2020  M. Yokochi - add a unit test for DAOTHER-5610
 #
 import unittest
 import os
@@ -33,8 +38,13 @@ class TestNmrDpUtility(unittest.TestCase):
                              'daother-5213': ['bmr36129.str'],
                              'daother-2737': ['rcsb103272-shifts-original.apofepbstar3.str'],
                              'daother-3343': ['D_1200009291_cs.str'],
-                             'daother-5594': ['rcsb104069shifts-revised.str'],
+                             'daother-5594': ['rcsb104069shiftsoriginal.str'], #['rcsb104069shifts-revised.str']
                              'daother-4060': ['bmr547_dummy.str']
+                             'daother-5600': ['D_1000246544_cs-upload_P1.str.V1'],
+                             'daother-5602': ['NMR-6v88_cs_rev.str'],
+                             'daother-5603': ['D_1000245188_cs-upload_P1.str.V1'],
+                             'daother-5609': ['D_1000248498_cs-upload_P1.str.V1'],
+                             'daother-5610': ['6jpp_cs.str'] # ['6jpp_mod_cs.str']
                              }
         self.model_file_path = {'data': '2la6.cif',
                                 'sf': '2la6.cif',
@@ -50,6 +60,11 @@ class TestNmrDpUtility(unittest.TestCase):
                                 'daother-3343': 'D_1200009291_model_P1.cif.V6',
                                 'daother-5594': 'rcsb104069-coords-converted.cif',
                                 'daother-4060': '1dmo.cif'
+                                'daother-5600': 'D_1000246544_model-upload_P1.cif.V1',
+                                'daother-5602': 'NMR-6v88.cif',
+                                'daother-5603': 'D_1000245188_model-upload_P1.cif.V1',
+                                'daother-5609': 'D_1000248498_model-upload_P1.cif.V1',
+                                'daother-5610': '6jpp.cif'
                                 }
         self.utility = NmrDpUtility()
         pass
@@ -65,6 +80,7 @@ class TestNmrDpUtility(unittest.TestCase):
         self.utility.addInput(name='resolve_conflict', value=True, type='param')
         self.utility.addInput(name='check_mandatory_tag', value=False, type='param')
         self.utility.setLog(self.data_dir_path + cs_type + '-cs-str-consistency-log.json')
+        self.utility.setVerbose(False)
 
         self.utility.op('nmr-cs-str-consistency-check')
 
@@ -74,7 +90,14 @@ class TestNmrDpUtility(unittest.TestCase):
         if not report['error'] is None:
             self.assertEqual(report['error']['internal_error'], None)
 
-        print('%s: %s' % (cs_type, report['information']['status']))
+        if report['error'] is None:
+            print('%s: %s' % (cs_type, report['information']['status']))
+        elif not report['error']['format_issue'] is None:
+            print('%s: %s\n format_issue: %s' % (cs_type, report['information']['status'], report['error']['format_issue'][0]['description']))
+        elif not report['error']['missing_mandatory_content'] is None:
+            print('%s: %s\n missing_mandatory_content: %s' % (cs_type, report['information']['status'], report['error']['missing_mandatory_content'][0]['description']))
+        else:
+            print('%s: %s' % (cs_type, report['information']['status']))
 
     def test_nmr_cs_str_consistency_check_data(self):
         self.__test_nmr_cs_str_consistency('data')
@@ -117,6 +140,21 @@ class TestNmrDpUtility(unittest.TestCase):
 
     def test_nmr_cs_str_consistency_check_daother_4060(self):
         self.__test_nmr_cs_str_consistency('daother-4060')
+
+    def test_nmr_cs_str_consistency_check_daother_5600(self):
+        self.__test_nmr_cs_str_consistency('daother-5600')
+
+    def test_nmr_cs_str_consistency_check_daother_5602(self):
+        self.__test_nmr_cs_str_consistency('daother-5602')
+
+    def test_nmr_cs_str_consistency_check_daother_5603(self):
+        self.__test_nmr_cs_str_consistency('daother-5603')
+
+    def test_nmr_cs_str_consistency_check_daother_5609(self):
+        self.__test_nmr_cs_str_consistency('daother-5609')
+
+    def test_nmr_cs_str_consistency_check_daother_5610(self):
+        self.__test_nmr_cs_str_consistency('daother-5610')
 
 if __name__ == '__main__':
     unittest.main()

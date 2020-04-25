@@ -40,8 +40,8 @@
 # 06-Apr-2020  M. Yokochi - synchronize with coordinates' auth_asym_id and auth_seq_id for combined NMR-STAR deposition
 # 10-Apr-2020  M. Yokochi - fix crash in case of format issue
 # 14-Apr-2020  M. Yokochi - fix dependency on label_seq_id, instead of using auth_seq_id in case (DAOTHER-5584)
-# 18-Apr-2020  M. Yokochi - fix no model error in coordinate and allow missing 'sf_framecode' in legacy deposition (DAOTHER-5594)
-# 19-Apr-2020  M. Yokochi - support concatenated CS data in NMR legacy deposition (DAOTHER-5594)
+# 18-Apr-2020  M. Yokochi - fix no model error in coordinate and allow missing 'sf_framecode' in NMR separated deposition (DAOTHER-5594)
+# 19-Apr-2020  M. Yokochi - support concatenated CS data in NMR separated deposition (DAOTHER-5594)
 # 22-Apr-2020  M. Yokochi - convert comp_id in capital letters (DAOTHER-5600)
 # 22-Apr-2020  M. Yokochi - fix GLY:HA1/HA2 to GLY:HA2/HA3 (DAOTHER-5600)
 # 22-Apr-2020  M. Yokochi - fix ambiguity code mismatch if possible (DAOTHER-5601)
@@ -96,7 +96,7 @@ class NmrDpUtility(object):
 
         # whether to run initial rescue routine
         self.__rescue_mode = True
-        # whether NMR unified deposition or not (NMR legacy deposition)
+        # whether NMR combined deposition or not (NMR separated deposition)
         self.__combined_mode = True
         # whether to use datablock name of public release
         self.__release_mode = False
@@ -4182,10 +4182,10 @@ class NmrDpUtility(object):
 
             for sf_category in self.__sf_category_list:
 
-                if not sf_category is None and not sf_category in self.sf_categories[file_type].values():
+                if file_type == 'nmr-star' and sf_category == 'entity':
+                    self.__has_star_entity = True
 
-                    if file_type == 'nmr-star' and sf_category == 'entity':
-                        self.__has_star_entity = True
+                if not sf_category is None and not sf_category in self.sf_categories[file_type].values():
 
                     warn = "Skipped parsing '%s' saveframe category." % sf_category
 
@@ -5014,7 +5014,7 @@ class NmrDpUtility(object):
             if has_poly_seq or (not has_poly_seq_in_loop):
                 continue
 
-            if self.__extractPolymerSequenceInEntity(fileListId):
+            if self.__extractPolymerSequenceInEntityAssembly(fileListId):
                 continue
 
             polymer_sequence_in_loop = input_source_dic['polymer_sequence_in_loop']
@@ -5068,19 +5068,16 @@ class NmrDpUtility(object):
                 if has_poly_seq or (not has_poly_seq_in_loop):
                     continue
 
-                if self.__extractPolymerSequenceInEntity(fileListId):
+                if self.__extractPolymerSequenceInEntityAssembly(fileListId):
                     continue
 
                 input_source.setItemValue('polymer_sequence', asm)
 
         return True
 
-    def __extractPolymerSequenceInEntity(self, file_list_id):
-        """ Extract polymer sequence in entity loops.
+    def __extractPolymerSequenceInEntityAssembly(self, file_list_id):
+        """ Extract polymer sequence in entity loops. (NMR combined deposition)
         """
-
-        if not self.__combined_mode:
-            return False
 
         input_source = self.report.input_sources[file_list_id]
         input_source_dic = input_source.get()
@@ -5089,6 +5086,9 @@ class NmrDpUtility(object):
 
         if file_type != 'nmr-star' or (not self.__has_star_entity):
             return False
+
+        if not self.__combined_mode:
+            return self.__extractPolymerSequenceInEntityLoop(file_list_id)
 
         for sf_data in self.__star_data[file_list_id].get_saveframes_by_category('assembly'):
 
@@ -5173,7 +5173,86 @@ class NmrDpUtility(object):
 
                 asm.append({'chain_id': chain_id, 'seq_id': [int(i.split(' ')[0]) for i in sorted_seq], 'comp_id':  [i.split(' ')[-1] for i in sorted_seq]})
 
+            if len(asm) > 0:
+                input_source.setItemValue('polymer_sequence', asm)
+                return True
+
             break
+
+        return False
+
+    def __extractPolymerSequenceInEntityLoop(self, file_list_id):
+        """ Extract polymer sequence in entity loops. (NMR separated deposition)
+        """
+
+        input_source = self.report.input_sources[file_list_id]
+        input_source_dic = input_source.get()
+
+        file_type = input_source_dic['file_type']
+
+        if file_type != 'nmr-star' or (not self.__has_star_entity):
+            return False
+
+        if self.__combined_mode:
+            return self.__extractPolymerSequenceInEntityAssembly(file_list_id)
+
+        star_data = self.__star_data[file_list_id]
+
+        lp_category = '_Entity_comp_index'
+
+        try:
+            loops = star_data.get_loops_by_category(lp_category)
+        except AttributeError:
+            try:
+                loops = [star_data.get_loop_by_category(lp_category)]
+            except AttributeError:
+                return False
+
+        asm = [] # molecular assembly of a loop
+
+        chain_ids = set()
+        seq = dict()
+
+        for loop in loops:
+
+            if loop is None:
+                continue
+
+            tags = ['ID', 'Comp_ID', 'Entity_ID']
+            tags_ = ['ID', 'Comp_ID']
+
+            dat = []
+
+            if set(tags) & set(loop.tags) == set(tags):
+                dat = loop.get_data_by_tag(tags)
+                for i in dat:
+                    if i[2] in self.empty_value:
+                        i[2] = 1
+            elif set(tags_) & set(loop.tags) == set(tags_): # No Entity_ID tag case
+                dat = loop.get_data_by_tag(tags_)
+                for i in dat:
+                    i.append('1')
+
+            for i in dat:
+
+                if i[0] in self.empty_value or i[1] in self.empty_value or i[2] in self.empty_value:
+                    return False
+
+                try:
+                    c = str(i[2])
+
+                    chain_ids.add(c)
+                    if not c in seq:
+                        seq[c] = set()
+                    seq[c].add('{:04d} {}'.format(int(i[0]), i[1]))
+                except ValueError:
+                    return False
+
+        for chain_id in chain_ids:
+
+            sorted_seq = sorted(seq[chain_id])
+
+            asm.append({'chain_id': chain_id, 'seq_id': [int(i.split(' ')[0]) for i in sorted_seq], 'comp_id':  [i.split(' ')[-1] for i in sorted_seq]})
 
         if len(asm) > 0:
             input_source.setItemValue('polymer_sequence', asm)
@@ -5429,8 +5508,6 @@ class NmrDpUtility(object):
 
                             for j in range(len(ref_code)):
                                 if ref_code[j] == 'X' and test_code[j] == 'X':
-                                    if input_source_dic['non_standard_residue'] is None: # no polimer sequence
-                                        print ('ENTER')
                                     input_source.updateNonStandardResidueByExptlData(chain_id, s1['seq_id'][j], content_subtype)
 
                 if len(seq_align_set) > 0:
@@ -7084,6 +7161,9 @@ class NmrDpUtility(object):
                 continue
 
             for content_subtype in input_source_dic['content_subtype'].keys():
+
+                if content_subtype == 'entity':
+                    continue
 
                 sf_category = self.sf_categories[file_type][content_subtype]
                 lp_category = self.lp_categories[file_type][content_subtype]
@@ -20303,7 +20383,7 @@ class NmrDpUtility(object):
 
         for content_subtype in input_source_dic['content_subtype'].keys():
 
-            if content_subtype == 'entry_info':
+            if content_subtype in ['entry_info', 'entity']:
                 continue
 
             sf_category = self.sf_categories[file_type][content_subtype]

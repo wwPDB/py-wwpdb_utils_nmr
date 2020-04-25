@@ -38,7 +38,7 @@ class TestNmrDpUtility(unittest.TestCase):
                              'daother-5213': ['bmr36129.str'],
                              'daother-2737': ['rcsb103272-shifts-original.apofepbstar3.str'],
                              'daother-3343': ['D_1200009291_cs.str'],
-                             'daother-5594': ['rcsb104069shifts-revised.str'],
+                             'daother-5594': ['rcsb104069shiftsoriginal.str'], #['rcsb104069shifts-revised.str']
                              'daother-5600': ['D_1000246544_cs-upload_P1.str.V1'],
                              'daother-5602': ['NMR-6v88_cs_rev.str'],
                              'daother-5603': ['D_1000245188_cs-upload_P1.str.V1'],

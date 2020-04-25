@@ -3287,7 +3287,7 @@ class NmrDpUtility(object):
         try:
 
             next(msg for msg in message['error'] if "Invalid file. NMR-STAR files must start with 'data_'. Did you accidentally select the wrong file?" in msg)
-            warn = 'Saveframes without the datablock.'
+            warn = 'The datablock must hook saveframe(s).'
 
             self.report.warning.appendDescription('corrected_format_issue', {'file_name': file_name, 'description': warn})
             self.report.setWarning()
@@ -3315,7 +3315,7 @@ class NmrDpUtility(object):
         try:
 
             next(msg for msg in message['error'] if "Only 'save_NAME' is valid in the body of a NMR-STAR file. Found 'loop_'." in msg)
-            warn = 'A loop hooks directly into the datablock without saveframe.'
+            warn = 'Instead of the datablock, a saveframe must hook the loop.'
 
             self.report.warning.appendDescription('corrected_format_issue', {'file_name': file_name, 'description': warn})
             self.report.setWarning()
@@ -3351,7 +3351,7 @@ class NmrDpUtility(object):
             msg_template = "The tag prefix was never set! Either the saveframe had no tags, you tried to read a version 2.1 file without setting ALLOW_V2_ENTRIES to True, or there is something else wrong with your file. Saveframe error occured:"
 
             msg = next(msg for msg in message['error'] if msg_template in msg)
-            warn = 'A loop is not in a saveframe with NMR-STAR V3.1 saveframe tags.'
+            warn = 'The saveframe has no tags or NMR-STAR V2.1 tags.'
 
             self.report.warning.appendDescription('corrected_format_issue', {'file_name': file_name, 'description': warn})
             self.report.setWarning()
@@ -3447,7 +3447,7 @@ class NmrDpUtility(object):
             msg_template = "You attempted to parse one loop but the source you provided had more than one loop. Please either parse all loops as a saveframe or only parse one loop. Loops detected:"
 
             msg = next(msg for msg in message['error'] if msg_template in msg)
-            warn = 'Multiple loops hook directly into the datablock without saveframe.'
+            warn = 'Instead of the datablock, saveframe(s) must hook these multiple loops.'
 
             self.report.warning.appendDescription('corrected_format_issue', {'file_name': file_name, 'description': warn})
             self.report.setWarning()

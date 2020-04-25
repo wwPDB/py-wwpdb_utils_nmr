@@ -4561,7 +4561,7 @@ class NmrDpUtility(object):
 
             for content_subtype in self.nmr_content_subtypes:
 
-                if content_subtype in ['entry_info', 'poly_seq'] or (not self.__hasKeyValue(input_source_dic['content_subtype'], content_subtype)):
+                if content_subtype in ['entry_info', 'poly_seq', 'entity'] or (not self.__hasKeyValue(input_source_dic['content_subtype'], content_subtype)):
                     continue
 
                 poly_seq_list_set[content_subtype] = []
@@ -5138,7 +5138,9 @@ class NmrDpUtility(object):
                 except KeyError:
                     return False
 
-                _loop = _sf_data.get_loop_by_category('_Entity_comp_index')
+                content_subtype = 'entity'
+
+                _loop = _sf_data.get_loop_by_category(self.lp_categories[file_type][content_subtype])
 
                 if _loop is None:
                     return False
@@ -5198,7 +5200,9 @@ class NmrDpUtility(object):
 
         star_data = self.__star_data[file_list_id]
 
-        lp_category = '_Entity_comp_index'
+        content_subtype = 'entity'
+
+        lp_category = self.lp_categories[file_type][content_subtype]
 
         try:
             loops = star_data.get_loops_by_category(lp_category)
@@ -6047,7 +6051,7 @@ class NmrDpUtility(object):
 
             for content_subtype in input_source_dic['content_subtype'].keys():
 
-                if content_subtype == ['entry_info', 'entity', 'poly_seq', 'chem_shift_ref']:
+                if content_subtype == ['entry_info', 'poly_seq', 'entity', 'chem_shift_ref']:
                     continue
 
                 sf_category = self.sf_categories[file_type][content_subtype]
@@ -6533,6 +6537,9 @@ class NmrDpUtility(object):
                 continue
 
             for content_subtype in input_source_dic['content_subtype'].keys():
+
+                if content_subtype == 'entity':
+                    continue
 
                 sf_category = self.sf_categories[file_type][content_subtype]
                 lp_category = self.lp_categories[file_type][content_subtype]
@@ -7655,7 +7662,7 @@ class NmrDpUtility(object):
         """ Perform consistency test on saveframe category and loop category relationship of interesting loops.
         """
 
-        if file_type == 'nef' or content_subtype == 'entry_info':
+        if file_type == 'nef' or content_subtype in ['entry_info', 'entity']:
             return True
 
         __errors = self.report.getTotalErrors()
@@ -9478,7 +9485,7 @@ class NmrDpUtility(object):
 
             for content_subtype in input_source_dic['content_subtype'].keys():
 
-                if content_subtype in ['entry_info', 'poly_seq']:
+                if content_subtype in ['entry_info', 'poly_seq', 'entity']:
                     continue
 
                 sf_category = self.sf_categories[file_type][content_subtype]
@@ -14181,7 +14188,7 @@ class NmrDpUtility(object):
 
         for content_subtype in self.cif_content_subtypes:
 
-            if content_subtype in ['entry_info', 'poly_seq'] or (not self.__hasKeyValue(input_source_dic['content_subtype'], content_subtype)):
+            if content_subtype in ['entry_info', 'poly_seq', 'entity'] or (not self.__hasKeyValue(input_source_dic['content_subtype'], content_subtype)):
                 continue
 
             poly_seq_list_set[content_subtype] = []
@@ -15328,7 +15335,7 @@ class NmrDpUtility(object):
 
             for content_subtype in nmr_input_source_dic['content_subtype'].keys():
 
-                if content_subtype in ['entry_info', 'poly_seq']:
+                if content_subtype in ['entry_info', 'poly_seq', 'entity']:
                     continue
 
                 sf_category = self.sf_categories[file_type][content_subtype]
@@ -15693,7 +15700,7 @@ class NmrDpUtility(object):
 
         for content_subtype in input_source_dic['content_subtype'].keys():
 
-            if content_subtype == 'entry_info':
+            if content_subtype in ['entry_info', 'entity']:
                 continue
 
             sf_category = self.sf_categories[file_type][content_subtype]
@@ -15763,6 +15770,9 @@ class NmrDpUtility(object):
 
         for content_subtype in input_source_dic['content_subtype'].keys():
 
+            if content_subtype == 'entity':
+                continue
+
             sf_category = self.sf_categories[file_type][content_subtype]
             lp_category = self.lp_categories[file_type][content_subtype]
 
@@ -15827,6 +15837,9 @@ class NmrDpUtility(object):
                 continue
 
             for content_subtype in input_source_dic['content_subtype'].keys():
+
+                if content_subtype == 'entity':
+                    continue
 
                 sf_category = self.sf_categories[file_type][content_subtype]
                 lp_category = self.lp_categories[file_type][content_subtype]
@@ -16555,7 +16568,7 @@ class NmrDpUtility(object):
 
         for content_subtype in input_source_dic['content_subtype'].keys():
 
-            if content_subtype in ['entry_info']:
+            if content_subtype in ['entry_info', 'entity']:
                 continue
 
             sf_category = self.sf_categories[file_type][content_subtype]
@@ -18381,6 +18394,9 @@ class NmrDpUtility(object):
 
             for content_subtype in input_source_dic['content_subtype'].keys():
 
+                if content_subtype == 'entity':
+                    continue
+
                 sf_category = self.sf_categories[file_type][content_subtype]
                 lp_category = self.lp_categories[file_type][content_subtype]
 
@@ -18475,7 +18491,7 @@ class NmrDpUtility(object):
 
             for content_subtype in input_source_dic['content_subtype'].keys():
 
-                if content_subtype in ['entry_info' 'poly_seq', 'chem_shift']:
+                if content_subtype in ['entry_info' 'poly_seq', 'entity', 'chem_shift']:
                     continue
 
                 sf_category = self.sf_categories[file_type][content_subtype]
@@ -20507,7 +20523,7 @@ class NmrDpUtility(object):
 
         for content_subtype in input_source_dic['content_subtype'].keys():
 
-            if content_subtype == 'entry_info':
+            if content_subtype in ['entry_info', 'entity']:
                 continue
 
             sf_category = self.sf_categories[file_type][content_subtype]
@@ -20638,7 +20654,7 @@ class NmrDpUtility(object):
 
         for content_subtype in input_source_dic['content_subtype'].keys():
 
-            if content_subtype == 'entry_info':
+            if content_subtype in ['entry_info', 'entity']:
                 continue
 
             sf_category = self.sf_categories[file_type][content_subtype]
@@ -20737,7 +20753,7 @@ class NmrDpUtility(object):
 
         for content_subtype in input_source_dic['content_subtype'].keys():
 
-            if content_subtype == 'entry_info':
+            if content_subtype in ['entry_info', 'entity']:
                 continue
 
             sf_category = self.sf_categories[file_type][content_subtype]
@@ -20843,6 +20859,9 @@ class NmrDpUtility(object):
         if not input_source_dic['content_subtype'] is None:
 
             for content_subtype in input_source_dic['content_subtype'].keys():
+
+                if content_subtype == 'entity':
+                    continue
 
                 sf_category = self.sf_categories[file_type][content_subtype]
                 lp_category = self.lp_categories[file_type][content_subtype]

@@ -55,7 +55,7 @@
 # 24-Apr-2020  M. Yokochi - allow mandatory value is missing in NMR separated deposition (DAOTHER-5611)
 # 25-Apr-2020  M. Yokochi - implement automatic format correction for 6NZN, 6PQF, 6PSI entry (DAOTHE-5611)
 # 25-Apr-2020  M. Yokochi - add 'entity' content subtype (DAOTHER-5611)
-# 25-Apr-2020  M. Yokochi - add 'resolved_format_issue' warning type (DAOTHER-5611)
+# 25-Apr-2020  M. Yokochi - add 'corrected_format_issue' warning type (DAOTHER-5611)
 ##
 """ Wrapper class for data processing for NMR data.
     @author: Masashi Yokochi
@@ -3289,7 +3289,7 @@ class NmrDpUtility(object):
             next(msg for msg in message['error'] if "Invalid file. NMR-STAR files must start with 'data_'. Did you accidentally select the wrong file?" in msg)
             warn = 'Saveframes without the datablock.'
 
-            self.report.warning.appendDescription('resolved_format_issue', {'file_name': file_name, 'description': warn})
+            self.report.warning.appendDescription('corrected_format_issue', {'file_name': file_name, 'description': warn})
             self.report.setWarning()
 
             if self.__verbose:
@@ -3317,7 +3317,7 @@ class NmrDpUtility(object):
             next(msg for msg in message['error'] if "Only 'save_NAME' is valid in the body of a NMR-STAR file. Found 'loop_'." in msg)
             warn = 'A loop hooks directly into the datablock without saveframe.'
 
-            self.report.warning.appendDescription('resolved_format_issue', {'file_name': file_name, 'description': warn})
+            self.report.warning.appendDescription('corrected_format_issue', {'file_name': file_name, 'description': warn})
             self.report.setWarning()
 
             if self.__verbose:
@@ -3353,7 +3353,7 @@ class NmrDpUtility(object):
             msg = next(msg for msg in message['error'] if msg_template in msg)
             warn = 'A loop is not in a saveframe with NMR-STAR V3.1 saveframe tags.'
 
-            self.report.warning.appendDescription('resolved_format_issue', {'file_name': file_name, 'description': warn})
+            self.report.warning.appendDescription('corrected_format_issue', {'file_name': file_name, 'description': warn})
             self.report.setWarning()
 
             if self.__verbose:
@@ -3449,7 +3449,7 @@ class NmrDpUtility(object):
             msg = next(msg for msg in message['error'] if msg_template in msg)
             warn = 'Multiple loops hook directly into the datablock without saveframe.'
 
-            self.report.warning.appendDescription('resolved_format_issue', {'file_name': file_name, 'description': warn})
+            self.report.warning.appendDescription('corrected_format_issue', {'file_name': file_name, 'description': warn})
             self.report.setWarning()
 
             if self.__verbose:

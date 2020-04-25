@@ -1,0 +1,764 @@
+# Restraints file 1: unambig_final.tbl
+! Unambiguous restraint list for the DUM restraints to
+! keep the DUM atoms in place during all stages of docking!
+!
+! All restraints are based on two-tag selection to NAO atom
+!
+! + ssNMR restraint to keep 26mer structure intact during the full flexible MD steps 
+! are in BMRB Entry 25534/ pdb id 2N0R
+! citation: Marchanka, A., Simon, B., Althoff-Ospelt, G., Carlomagno, T. 
+"RNA structure determination by solid-state NMR spectroscopy"  Nat. Commun. 6, 7024-7024 (2015)
+!
+! K32C restraints form folder "clusters_2019-05-22-13-04-18"
+!
+! DUM fixing restraints !!
+!
+assign (segid     A  and resid  127 and name  DUM ) (segid     A  and resid   18 and name   CA ) 28.0   0.0   0.0
+assign (segid     A  and resid  128 and name  DUM ) (segid     A  and resid   18 and name   CA ) 28.3   0.0   0.0
+assign (segid     A  and resid  127 and name  DUM ) (segid     A  and resid   19 and name   CA ) 26.0   0.0   0.0
+assign (segid     A  and resid  128 and name  DUM ) (segid     A  and resid   19 and name   CA ) 25.9   0.0   0.0
+assign (segid     A  and resid  127 and name  DUM ) (segid     A  and resid   20 and name   CA ) 22.9   0.0   0.0
+assign (segid     A  and resid  128 and name  DUM ) (segid     A  and resid   20 and name   CA ) 23.4   0.0   0.0
+assign (segid     A  and resid  127 and name  DUM ) (segid     A  and resid   21 and name   CA ) 23.1   0.0   0.0
+assign (segid     A  and resid  128 and name  DUM ) (segid     A  and resid   21 and name   CA ) 23.6   0.0   0.0
+assign (segid     A  and resid  127 and name  DUM ) (segid     A  and resid   22 and name   CA ) 22.8   0.0   0.0
+assign (segid     A  and resid  128 and name  DUM ) (segid     A  and resid   22 and name   CA ) 22.2   0.0   0.0
+assign (segid     A  and resid  127 and name  DUM ) (segid     A  and resid   23 and name   CA ) 20.2   0.0   0.0
+assign (segid     A  and resid  128 and name  DUM ) (segid     A  and resid   23 and name   CA ) 19.7   0.0   0.0
+assign (segid     A  and resid  127 and name  DUM ) (segid     A  and resid   24 and name   CA ) 17.9   0.0   0.0
+assign (segid     A  and resid  128 and name  DUM ) (segid     A  and resid   24 and name   CA ) 17.9   0.0   0.0
+assign (segid     A  and resid  127 and name  DUM ) (segid     A  and resid   25 and name   CA ) 19.3   0.0   0.0
+assign (segid     A  and resid  128 and name  DUM ) (segid     A  and resid   25 and name   CA ) 18.3   0.0   0.0
+assign (segid     A  and resid  127 and name  DUM ) (segid     A  and resid   26 and name   CA ) 18.4   0.0   0.0
+assign (segid     A  and resid  128 and name  DUM ) (segid     A  and resid   26 and name   CA ) 16.5   0.0   0.0
+assign (segid     A  and resid  127 and name  DUM ) (segid     A  and resid   33 and name   CA ) 10.5   0.0   0.0
+assign (segid     A  and resid  128 and name  DUM ) (segid     A  and resid   33 and name   CA ) 12.1   0.0   0.0
+assign (segid     A  and resid  127 and name  DUM ) (segid     A  and resid   34 and name   CA ) 10.9   0.0   0.0
+assign (segid     A  and resid  128 and name  DUM ) (segid     A  and resid   34 and name   CA ) 14.1   0.0   0.0
+assign (segid     A  and resid  127 and name  DUM ) (segid     A  and resid   40 and name   CA ) 14.2   0.0   0.0
+assign (segid     A  and resid  128 and name  DUM ) (segid     A  and resid   40 and name   CA ) 18.8   0.0   0.0
+assign (segid     A  and resid  127 and name  DUM ) (segid     A  and resid   41 and name   CA ) 15.7   0.0   0.0
+assign (segid     A  and resid  128 and name  DUM ) (segid     A  and resid   41 and name   CA ) 21.1   0.0   0.0
+assign (segid     A  and resid  127 and name  DUM ) (segid     A  and resid   42 and name   CA ) 12.7   0.0   0.0
+assign (segid     A  and resid  128 and name  DUM ) (segid     A  and resid   42 and name   CA ) 18.5   0.0   0.0
+assign (segid     A  and resid  127 and name  DUM ) (segid     A  and resid   43 and name   CA ) 10.9   0.0   0.0
+assign (segid     A  and resid  128 and name  DUM ) (segid     A  and resid   43 and name   CA ) 16.1   0.0   0.0
+assign (segid     A  and resid  127 and name  DUM ) (segid     A  and resid   44 and name   CA ) 14.2   0.0   0.0
+assign (segid     A  and resid  128 and name  DUM ) (segid     A  and resid   44 and name   CA ) 19.1   0.0   0.0
+assign (segid     A  and resid  127 and name  DUM ) (segid     A  and resid   52 and name   CA ) 17.4   0.0   0.0
+assign (segid     A  and resid  128 and name  DUM ) (segid     A  and resid   52 and name   CA ) 20.3   0.0   0.0
+assign (segid     A  and resid  127 and name  DUM ) (segid     A  and resid   53 and name   CA ) 20.0   0.0   0.0
+assign (segid     A  and resid  128 and name  DUM ) (segid     A  and resid   53 and name   CA ) 22.6   0.0   0.0
+assign (segid     A  and resid  127 and name  DUM ) (segid     A  and resid   63 and name   CA ) 25.7   0.0   0.0
+assign (segid     A  and resid  128 and name  DUM ) (segid     A  and resid   63 and name   CA ) 30.6   0.0   0.0
+assign (segid     A  and resid  127 and name  DUM ) (segid     A  and resid   64 and name   CA ) 24.0   0.0   0.0
+assign (segid     A  and resid  128 and name  DUM ) (segid     A  and resid   64 and name   CA ) 28.6   0.0   0.0
+assign (segid     A  and resid  127 and name  DUM ) (segid     A  and resid   65 and name   CA ) 26.5   0.0   0.0
+assign (segid     A  and resid  128 and name  DUM ) (segid     A  and resid   65 and name   CA ) 31.2   0.0   0.0
+assign (segid     A  and resid  127 and name  DUM ) (segid     A  and resid   66 and name   CA ) 24.1   0.0   0.0
+assign (segid     A  and resid  128 and name  DUM ) (segid     A  and resid   66 and name   CA ) 29.2   0.0   0.0
+assign (segid     A  and resid  127 and name  DUM ) (segid     A  and resid   67 and name   CA ) 21.6   0.0   0.0
+assign (segid     A  and resid  128 and name  DUM ) (segid     A  and resid   67 and name   CA ) 26.2   0.0   0.0
+assign (segid     A  and resid  127 and name  DUM ) (segid     A  and resid   68 and name   CA ) 24.4   0.0   0.0
+assign (segid     A  and resid  128 and name  DUM ) (segid     A  and resid   68 and name   CA ) 28.6   0.0   0.0
+assign (segid     A  and resid  127 and name  DUM ) (segid     A  and resid   69 and name   CA ) 25.2   0.0   0.0
+assign (segid     A  and resid  128 and name  DUM ) (segid     A  and resid   69 and name   CA ) 29.8   0.0   0.0
+assign (segid     A  and resid  127 and name  DUM ) (segid     A  and resid   70 and name   CA ) 21.6   0.0   0.0
+assign (segid     A  and resid  128 and name  DUM ) (segid     A  and resid   70 and name   CA ) 26.5   0.0   0.0
+assign (segid     A  and resid  127 and name  DUM ) (segid     A  and resid   71 and name   CA ) 20.8   0.0   0.0
+assign (segid     A  and resid  128 and name  DUM ) (segid     A  and resid   71 and name   CA ) 25.0   0.0   0.0
+assign (segid     A  and resid  127 and name  DUM ) (segid     A  and resid   72 and name   CA ) 23.6   0.0   0.0
+assign (segid     A  and resid  128 and name  DUM ) (segid     A  and resid   72 and name   CA ) 27.6   0.0   0.0
+assign (segid     A  and resid  127 and name  DUM ) (segid     A  and resid   79 and name   CA ) 23.9   0.0   0.0
+assign (segid     A  and resid  128 and name  DUM ) (segid     A  and resid   79 and name   CA ) 26.2   0.0   0.0
+assign (segid     A  and resid  127 and name  DUM ) (segid     A  and resid   80 and name   CA ) 25.7   0.0   0.0
+assign (segid     A  and resid  128 and name  DUM ) (segid     A  and resid   80 and name   CA ) 28.1   0.0   0.0
+assign (segid     A  and resid  127 and name  DUM ) (segid     A  and resid   86 and name   CA ) 26.2   0.0   0.0
+assign (segid     A  and resid  128 and name  DUM ) (segid     A  and resid   86 and name   CA ) 27.5   0.0   0.0
+assign (segid     A  and resid  127 and name  DUM ) (segid     A  and resid   87 and name   CA ) 22.7   0.0   0.0
+assign (segid     A  and resid  128 and name  DUM ) (segid     A  and resid   87 and name   CA ) 24.3   0.0   0.0
+assign (segid     A  and resid  127 and name  DUM ) (segid     A  and resid   88 and name   CA ) 21.8   0.0   0.0
+assign (segid     A  and resid  128 and name  DUM ) (segid     A  and resid   88 and name   CA ) 23.6   0.0   0.0
+assign (segid     A  and resid  127 and name  DUM ) (segid     A  and resid   89 and name   CA ) 23.1   0.0   0.0
+assign (segid     A  and resid  128 and name  DUM ) (segid     A  and resid   89 and name   CA ) 24.0   0.0   0.0
+assign (segid     A  and resid  127 and name  DUM ) (segid     A  and resid  101 and name   CA ) 14.0   0.0   0.0
+assign (segid     A  and resid  128 and name  DUM ) (segid     A  and resid  101 and name   CA ) 17.0   0.0   0.0
+assign (segid     A  and resid  127 and name  DUM ) (segid     A  and resid  102 and name   CA ) 12.9   0.0   0.0
+assign (segid     A  and resid  128 and name  DUM ) (segid     A  and resid  102 and name   CA ) 14.7   0.0   0.0
+assign (segid     A  and resid  127 and name  DUM ) (segid     A  and resid  103 and name   CA )  9.4   0.0   0.0
+assign (segid     A  and resid  128 and name  DUM ) (segid     A  and resid  103 and name   CA ) 11.5   0.0   0.0
+assign (segid     A  and resid  127 and name  DUM ) (segid     A  and resid  110 and name   CA ) 21.7   0.0   0.0
+assign (segid     A  and resid  128 and name  DUM ) (segid     A  and resid  110 and name   CA ) 19.8   0.0   0.0
+assign (segid     A  and resid  127 and name  DUM ) (segid     A  and resid  111 and name   CA ) 22.2   0.0   0.0
+assign (segid     A  and resid  128 and name  DUM ) (segid     A  and resid  111 and name   CA ) 21.0   0.0   0.0
+assign (segid     A  and resid  127 and name  DUM ) (segid     A  and resid  112 and name   CA ) 19.5   0.0   0.0
+assign (segid     A  and resid  128 and name  DUM ) (segid     A  and resid  112 and name   CA ) 19.2   0.0   0.0
+assign (segid     A  and resid  127 and name  DUM ) (segid     A  and resid  113 and name   CA ) 21.2   0.0   0.0
+assign (segid     A  and resid  128 and name  DUM ) (segid     A  and resid  113 and name   CA ) 20.8   0.0   0.0
+assign (segid     A  and resid  127 and name  DUM ) (segid     A  and resid  114 and name   CA ) 24.8   0.0   0.0
+assign (segid     A  and resid  128 and name  DUM ) (segid     A  and resid  114 and name   CA ) 24.3   0.0   0.0
+assign (segid     A  and resid  127 and name  DUM ) (segid     A  and resid  115 and name   CA ) 24.2   0.0   0.0
+assign (segid     A  and resid  128 and name  DUM ) (segid     A  and resid  115 and name   CA ) 24.5   0.0   0.0
+assign (segid     A  and resid  127 and name  DUM ) (segid     A  and resid  116 and name   CA ) 23.1   0.0   0.0
+assign (segid     A  and resid  128 and name  DUM ) (segid     A  and resid  116 and name   CA ) 24.0   0.0   0.0
+assign (segid     A  and resid  127 and name  DUM ) (segid     A  and resid  117 and name   CA ) 26.4   0.0   0.0
+assign (segid     A  and resid  128 and name  DUM ) (segid     A  and resid  117 and name   CA ) 27.1   0.0   0.0
+!
+! N38C restraints
+! Source is in folder:"clusters_2019-05-22-12-43-05"
+!
+! DUM fixing restraints !!
+!
+assign (segid     A  and resid  129 and name  DUM ) (segid     A  and resid   18 and name   CA ) 30.7   0.0   0.0
+assign (segid     A  and resid  130 and name  DUM ) (segid     A  and resid   18 and name   CA ) 29.7   0.0   0.0
+assign (segid     A  and resid  129 and name  DUM ) (segid     A  and resid   19 and name   CA ) 30.7   0.0   0.0
+assign (segid     A  and resid  130 and name  DUM ) (segid     A  and resid   19 and name   CA ) 30.4   0.0   0.0
+assign (segid     A  and resid  129 and name  DUM ) (segid     A  and resid   20 and name   CA ) 27.0   0.0   0.0
+assign (segid     A  and resid  130 and name  DUM ) (segid     A  and resid   20 and name   CA ) 26.8   0.0   0.0
+assign (segid     A  and resid  129 and name  DUM ) (segid     A  and resid   21 and name   CA ) 26.8   0.0   0.0
+assign (segid     A  and resid  130 and name  DUM ) (segid     A  and resid   21 and name   CA ) 26.0   0.0   0.0
+assign (segid     A  and resid  129 and name  DUM ) (segid     A  and resid   22 and name   CA ) 29.2   0.0   0.0
+assign (segid     A  and resid  130 and name  DUM ) (segid     A  and resid   22 and name   CA ) 28.8   0.0   0.0
+assign (segid     A  and resid  129 and name  DUM ) (segid     A  and resid   23 and name   CA ) 27.8   0.0   0.0
+assign (segid     A  and resid  130 and name  DUM ) (segid     A  and resid   23 and name   CA ) 28.0   0.0   0.0
+assign (segid     A  and resid  129 and name  DUM ) (segid     A  and resid   24 and name   CA ) 25.1   0.0   0.0
+assign (segid     A  and resid  130 and name  DUM ) (segid     A  and resid   24 and name   CA ) 25.2   0.0   0.0
+assign (segid     A  and resid  129 and name  DUM ) (segid     A  and resid   25 and name   CA ) 27.7   0.0   0.0
+assign (segid     A  and resid  130 and name  DUM ) (segid     A  and resid   25 and name   CA ) 27.5   0.0   0.0
+assign (segid     A  and resid  129 and name  DUM ) (segid     A  and resid   26 and name   CA ) 29.5   0.0   0.0
+assign (segid     A  and resid  130 and name  DUM ) (segid     A  and resid   26 and name   CA ) 29.9   0.0   0.0
+assign (segid     A  and resid  129 and name  DUM ) (segid     A  and resid   33 and name   CA ) 20.1   0.0   0.0
+assign (segid     A  and resid  130 and name  DUM ) (segid     A  and resid   33 and name   CA ) 21.2   0.0   0.0
+assign (segid     A  and resid  129 and name  DUM ) (segid     A  and resid   34 and name   CA ) 16.6   0.0   0.0
+assign (segid     A  and resid  130 and name  DUM ) (segid     A  and resid   34 and name   CA ) 17.5   0.0   0.0
+assign (segid     A  and resid  129 and name  DUM ) (segid     A  and resid   40 and name   CA ) 12.0   0.0   0.0
+assign (segid     A  and resid  130 and name  DUM ) (segid     A  and resid   40 and name   CA ) 13.3   0.0   0.0
+assign (segid     A  and resid  129 and name  DUM ) (segid     A  and resid   41 and name   CA )  9.4   0.0   0.0
+assign (segid     A  and resid  130 and name  DUM ) (segid     A  and resid   41 and name   CA ) 11.5   0.0   0.0
+assign (segid     A  and resid  129 and name  DUM ) (segid     A  and resid   42 and name   CA )  9.3   0.0   0.0
+assign (segid     A  and resid  130 and name  DUM ) (segid     A  and resid   42 and name   CA ) 12.6   0.0   0.0
+assign (segid     A  and resid  129 and name  DUM ) (segid     A  and resid   43 and name   CA ) 13.0   0.0   0.0
+assign (segid     A  and resid  130 and name  DUM ) (segid     A  and resid   43 and name   CA ) 15.9   0.0   0.0
+assign (segid     A  and resid  129 and name  DUM ) (segid     A  and resid   44 and name   CA ) 13.4   0.0   0.0
+assign (segid     A  and resid  130 and name  DUM ) (segid     A  and resid   44 and name   CA ) 16.4   0.0   0.0
+assign (segid     A  and resid  129 and name  DUM ) (segid     A  and resid   52 and name   CA ) 18.5   0.0   0.0
+assign (segid     A  and resid  130 and name  DUM ) (segid     A  and resid   52 and name   CA ) 19.5   0.0   0.0
+assign (segid     A  and resid  129 and name  DUM ) (segid     A  and resid   53 and name   CA ) 19.6   0.0   0.0
+assign (segid     A  and resid  130 and name  DUM ) (segid     A  and resid   53 and name   CA ) 19.5   0.0   0.0
+assign (segid     A  and resid  129 and name  DUM ) (segid     A  and resid   63 and name   CA ) 12.0   0.0   0.0
+assign (segid     A  and resid  130 and name  DUM ) (segid     A  and resid   63 and name   CA )  9.2   0.0   0.0
+assign (segid     A  and resid  129 and name  DUM ) (segid     A  and resid   64 and name   CA ) 13.1   0.0   0.0
+assign (segid     A  and resid  130 and name  DUM ) (segid     A  and resid   64 and name   CA ) 11.6   0.0   0.0
+assign (segid     A  and resid  129 and name  DUM ) (segid     A  and resid   65 and name   CA ) 14.5   0.0   0.0
+assign (segid     A  and resid  130 and name  DUM ) (segid     A  and resid   65 and name   CA ) 13.4   0.0   0.0
+assign (segid     A  and resid  129 and name  DUM ) (segid     A  and resid   66 and name   CA ) 12.2   0.0   0.0
+assign (segid     A  and resid  130 and name  DUM ) (segid     A  and resid   66 and name   CA ) 12.5   0.0   0.0
+assign (segid     A  and resid  129 and name  DUM ) (segid     A  and resid   67 and name   CA ) 13.5   0.0   0.0
+assign (segid     A  and resid  130 and name  DUM ) (segid     A  and resid   67 and name   CA ) 14.3   0.0   0.0
+assign (segid     A  and resid  129 and name  DUM ) (segid     A  and resid   68 and name   CA ) 17.0   0.0   0.0
+assign (segid     A  and resid  130 and name  DUM ) (segid     A  and resid   68 and name   CA ) 17.6   0.0   0.0
+assign (segid     A  and resid  129 and name  DUM ) (segid     A  and resid   69 and name   CA ) 16.4   0.0   0.0
+assign (segid     A  and resid  130 and name  DUM ) (segid     A  and resid   69 and name   CA ) 17.8   0.0   0.0
+assign (segid     A  and resid  129 and name  DUM ) (segid     A  and resid   70 and name   CA ) 14.0   0.0   0.0
+assign (segid     A  and resid  130 and name  DUM ) (segid     A  and resid   70 and name   CA ) 16.2   0.0   0.0
+assign (segid     A  and resid  129 and name  DUM ) (segid     A  and resid   71 and name   CA ) 16.9   0.0   0.0
+assign (segid     A  and resid  130 and name  DUM ) (segid     A  and resid   71 and name   CA ) 19.0   0.0   0.0
+assign (segid     A  and resid  129 and name  DUM ) (segid     A  and resid   72 and name   CA ) 19.6   0.0   0.0
+assign (segid     A  and resid  130 and name  DUM ) (segid     A  and resid   72 and name   CA ) 22.0   0.0   0.0
+assign (segid     A  and resid  129 and name  DUM ) (segid     A  and resid   79 and name   CA ) 22.9   0.0   0.0
+assign (segid     A  and resid  130 and name  DUM ) (segid     A  and resid   79 and name   CA ) 23.0   0.0   0.0
+assign (segid     A  and resid  129 and name  DUM ) (segid     A  and resid   80 and name   CA ) 23.1   0.0   0.0
+assign (segid     A  and resid  130 and name  DUM ) (segid     A  and resid   80 and name   CA ) 22.3   0.0   0.0
+assign (segid     A  and resid  129 and name  DUM ) (segid     A  and resid   86 and name   CA ) 25.9   0.0   0.0
+assign (segid     A  and resid  130 and name  DUM ) (segid     A  and resid   86 and name   CA ) 23.6   0.0   0.0
+assign (segid     A  and resid  129 and name  DUM ) (segid     A  and resid   87 and name   CA ) 22.9   0.0   0.0
+assign (segid     A  and resid  130 and name  DUM ) (segid     A  and resid   87 and name   CA ) 21.2   0.0   0.0
+assign (segid     A  and resid  129 and name  DUM ) (segid     A  and resid   88 and name   CA ) 21.8   0.0   0.0
+assign (segid     A  and resid  130 and name  DUM ) (segid     A  and resid   88 and name   CA ) 19.9   0.0   0.0
+assign (segid     A  and resid  129 and name  DUM ) (segid     A  and resid   89 and name   CA ) 25.4   0.0   0.0
+assign (segid     A  and resid  130 and name  DUM ) (segid     A  and resid   89 and name   CA ) 23.4   0.0   0.0
+assign (segid     A  and resid  129 and name  DUM ) (segid     A  and resid  101 and name   CA ) 17.2   0.0   0.0
+assign (segid     A  and resid  130 and name  DUM ) (segid     A  and resid  101 and name   CA ) 18.3   0.0   0.0
+assign (segid     A  and resid  129 and name  DUM ) (segid     A  and resid  102 and name   CA ) 20.4   0.0   0.0
+assign (segid     A  and resid  130 and name  DUM ) (segid     A  and resid  102 and name   CA ) 21.8   0.0   0.0
+assign (segid     A  and resid  129 and name  DUM ) (segid     A  and resid  103 and name   CA ) 20.1   0.0   0.0
+assign (segid     A  and resid  130 and name  DUM ) (segid     A  and resid  103 and name   CA ) 22.3   0.0   0.0
+assign (segid     A  and resid  129 and name  DUM ) (segid     A  and resid  110 and name   CA ) 33.0   0.0   0.0
+assign (segid     A  and resid  130 and name  DUM ) (segid     A  and resid  110 and name   CA ) 34.5   0.0   0.0
+assign (segid     A  and resid  129 and name  DUM ) (segid     A  and resid  111 and name   CA ) 31.6   0.0   0.0
+assign (segid     A  and resid  130 and name  DUM ) (segid     A  and resid  111 and name   CA ) 32.6   0.0   0.0
+assign (segid     A  and resid  129 and name  DUM ) (segid     A  and resid  112 and name   CA ) 28.1   0.0   0.0
+assign (segid     A  and resid  130 and name  DUM ) (segid     A  and resid  112 and name   CA ) 29.3   0.0   0.0
+assign (segid     A  and resid  129 and name  DUM ) (segid     A  and resid  113 and name   CA ) 29.9   0.0   0.0
+assign (segid     A  and resid  130 and name  DUM ) (segid     A  and resid  113 and name   CA ) 31.6   0.0   0.0
+assign (segid     A  and resid  129 and name  DUM ) (segid     A  and resid  114 and name   CA ) 32.2   0.0   0.0
+assign (segid     A  and resid  130 and name  DUM ) (segid     A  and resid  114 and name   CA ) 33.4   0.0   0.0
+assign (segid     A  and resid  129 and name  DUM ) (segid     A  and resid  115 and name   CA ) 29.6   0.0   0.0
+assign (segid     A  and resid  130 and name  DUM ) (segid     A  and resid  115 and name   CA ) 30.4   0.0   0.0
+assign (segid     A  and resid  129 and name  DUM ) (segid     A  and resid  116 and name   CA ) 27.7   0.0   0.0
+assign (segid     A  and resid  130 and name  DUM ) (segid     A  and resid  116 and name   CA ) 29.1   0.0   0.0
+assign (segid     A  and resid  129 and name  DUM ) (segid     A  and resid  117 and name   CA ) 30.8   0.0   0.0
+assign (segid     A  and resid  130 and name  DUM ) (segid     A  and resid  117 and name   CA ) 32.2   0.0   0.0
+!
+!
+! I93C restraints
+! Source is in folder:"clusters_2019-05-22-12-17-12"
+!
+! DUM fixing restraints !!
+!
+!
+assign (segid     A  and resid  131 and name  DUM ) (segid     A  and resid   18 and name   CA ) 24.1   0.0   0.0
+assign (segid     A  and resid  132 and name  DUM ) (segid     A  and resid   18 and name   CA ) 23.8   0.0   0.0
+assign (segid     A  and resid  131 and name  DUM ) (segid     A  and resid   19 and name   CA ) 24.3   0.0   0.0
+assign (segid     A  and resid  132 and name  DUM ) (segid     A  and resid   19 and name   CA ) 24.1   0.0   0.0
+assign (segid     A  and resid  131 and name  DUM ) (segid     A  and resid   20 and name   CA ) 21.9   0.0   0.0
+assign (segid     A  and resid  132 and name  DUM ) (segid     A  and resid   20 and name   CA ) 22.0   0.0   0.0
+assign (segid     A  and resid  131 and name  DUM ) (segid     A  and resid   21 and name   CA ) 19.3   0.0   0.0
+assign (segid     A  and resid  132 and name  DUM ) (segid     A  and resid   21 and name   CA ) 19.1   0.0   0.0
+assign (segid     A  and resid  131 and name  DUM ) (segid     A  and resid   22 and name   CA ) 19.1   0.0   0.0
+assign (segid     A  and resid  132 and name  DUM ) (segid     A  and resid   22 and name   CA ) 18.9   0.0   0.0
+assign (segid     A  and resid  131 and name  DUM ) (segid     A  and resid   23 and name   CA ) 19.6   0.0   0.0
+assign (segid     A  and resid  132 and name  DUM ) (segid     A  and resid   23 and name   CA ) 19.8   0.0   0.0
+assign (segid     A  and resid  131 and name  DUM ) (segid     A  and resid   24 and name   CA ) 15.9   0.0   0.0
+assign (segid     A  and resid  132 and name  DUM ) (segid     A  and resid   24 and name   CA ) 16.2   0.0   0.0
+assign (segid     A  and resid  131 and name  DUM ) (segid     A  and resid   25 and name   CA ) 14.8   0.0   0.0
+assign (segid     A  and resid  132 and name  DUM ) (segid     A  and resid   25 and name   CA ) 14.7   0.0   0.0
+assign (segid     A  and resid  131 and name  DUM ) (segid     A  and resid   26 and name   CA ) 16.8   0.0   0.0
+assign (segid     A  and resid  132 and name  DUM ) (segid     A  and resid   26 and name   CA ) 16.9   0.0   0.0
+assign (segid     A  and resid  131 and name  DUM ) (segid     A  and resid   33 and name   CA ) 12.7   0.0   0.0
+assign (segid     A  and resid  132 and name  DUM ) (segid     A  and resid   33 and name   CA ) 14.1   0.0   0.0
+assign (segid     A  and resid  131 and name  DUM ) (segid     A  and resid   34 and name   CA ) 12.0   0.0   0.0
+assign (segid     A  and resid  132 and name  DUM ) (segid     A  and resid   34 and name   CA ) 13.6   0.0   0.0
+assign (segid     A  and resid  131 and name  DUM ) (segid     A  and resid   40 and name   CA ) 17.2   0.0   0.0
+assign (segid     A  and resid  132 and name  DUM ) (segid     A  and resid   40 and name   CA ) 18.7   0.0   0.0
+assign (segid     A  and resid  131 and name  DUM ) (segid     A  and resid   41 and name   CA ) 20.3   0.0   0.0
+assign (segid     A  and resid  132 and name  DUM ) (segid     A  and resid   41 and name   CA ) 22.0   0.0   0.0
+assign (segid     A  and resid  131 and name  DUM ) (segid     A  and resid   42 and name   CA ) 19.8   0.0   0.0
+assign (segid     A  and resid  132 and name  DUM ) (segid     A  and resid   42 and name   CA ) 21.7   0.0   0.0
+assign (segid     A  and resid  131 and name  DUM ) (segid     A  and resid   43 and name   CA ) 19.3   0.0   0.0
+assign (segid     A  and resid  132 and name  DUM ) (segid     A  and resid   43 and name   CA ) 21.2   0.0   0.0
+assign (segid     A  and resid  131 and name  DUM ) (segid     A  and resid   44 and name   CA ) 22.7   0.0   0.0
+assign (segid     A  and resid  132 and name  DUM ) (segid     A  and resid   44 and name   CA ) 24.4   0.0   0.0
+assign (segid     A  and resid  131 and name  DUM ) (segid     A  and resid   52 and name   CA ) 20.8   0.0   0.0
+assign (segid     A  and resid  132 and name  DUM ) (segid     A  and resid   52 and name   CA ) 21.8   0.0   0.0
+assign (segid     A  and resid  131 and name  DUM ) (segid     A  and resid   53 and name   CA ) 20.2   0.0   0.0
+assign (segid     A  and resid  132 and name  DUM ) (segid     A  and resid   53 and name   CA ) 20.9   0.0   0.0
+assign (segid     A  and resid  131 and name  DUM ) (segid     A  and resid   63 and name   CA ) 23.6   0.0   0.0
+assign (segid     A  and resid  132 and name  DUM ) (segid     A  and resid   63 and name   CA ) 24.6   0.0   0.0
+assign (segid     A  and resid  131 and name  DUM ) (segid     A  and resid   64 and name   CA ) 23.2   0.0   0.0
+assign (segid     A  and resid  132 and name  DUM ) (segid     A  and resid   64 and name   CA ) 24.2   0.0   0.0
+assign (segid     A  and resid  131 and name  DUM ) (segid     A  and resid   65 and name   CA ) 27.0   0.0   0.0
+assign (segid     A  and resid  132 and name  DUM ) (segid     A  and resid   65 and name   CA ) 28.0   0.0   0.0
+assign (segid     A  and resid  131 and name  DUM ) (segid     A  and resid   66 and name   CA ) 26.9   0.0   0.0
+assign (segid     A  and resid  132 and name  DUM ) (segid     A  and resid   66 and name   CA ) 28.1   0.0   0.0
+assign (segid     A  and resid  131 and name  DUM ) (segid     A  and resid   67 and name   CA ) 25.0   0.0   0.0
+assign (segid     A  and resid  132 and name  DUM ) (segid     A  and resid   67 and name   CA ) 26.2   0.0   0.0
+assign (segid     A  and resid  131 and name  DUM ) (segid     A  and resid   68 and name   CA ) 28.0   0.0   0.0
+assign (segid     A  and resid  132 and name  DUM ) (segid     A  and resid   68 and name   CA ) 29.1   0.0   0.0
+assign (segid     A  and resid  131 and name  DUM ) (segid     A  and resid   69 and name   CA ) 30.4   0.0   0.0
+assign (segid     A  and resid  132 and name  DUM ) (segid     A  and resid   69 and name   CA ) 31.7   0.0   0.0
+assign (segid     A  and resid  131 and name  DUM ) (segid     A  and resid   70 and name   CA ) 28.0   0.0   0.0
+assign (segid     A  and resid  132 and name  DUM ) (segid     A  and resid   70 and name   CA ) 29.5   0.0   0.0
+assign (segid     A  and resid  131 and name  DUM ) (segid     A  and resid   71 and name   CA ) 27.7   0.0   0.0
+assign (segid     A  and resid  132 and name  DUM ) (segid     A  and resid   71 and name   CA ) 29.1   0.0   0.0
+assign (segid     A  and resid  131 and name  DUM ) (segid     A  and resid   72 and name   CA ) 31.4   0.0   0.0
+assign (segid     A  and resid  132 and name  DUM ) (segid     A  and resid   72 and name   CA ) 32.8   0.0   0.0
+assign (segid     A  and resid  131 and name  DUM ) (segid     A  and resid   79 and name   CA ) 25.2   0.0   0.0
+assign (segid     A  and resid  132 and name  DUM ) (segid     A  and resid   79 and name   CA ) 25.7   0.0   0.0
+assign (segid     A  and resid  131 and name  DUM ) (segid     A  and resid   80 and name   CA ) 24.5   0.0   0.0
+assign (segid     A  and resid  132 and name  DUM ) (segid     A  and resid   80 and name   CA ) 24.8   0.0   0.0
+assign (segid     A  and resid  131 and name  DUM ) (segid     A  and resid   86 and name   CA ) 17.3   0.0   0.0
+assign (segid     A  and resid  132 and name  DUM ) (segid     A  and resid   86 and name   CA ) 16.6   0.0   0.0
+assign (segid     A  and resid  131 and name  DUM ) (segid     A  and resid   87 and name   CA ) 15.6   0.0   0.0
+assign (segid     A  and resid  132 and name  DUM ) (segid     A  and resid   87 and name   CA ) 15.4   0.0   0.0
+assign (segid     A  and resid  131 and name  DUM ) (segid     A  and resid   88 and name   CA ) 12.4   0.0   0.0
+assign (segid     A  and resid  132 and name  DUM ) (segid     A  and resid   88 and name   CA ) 12.1   0.0   0.0
+assign (segid     A  and resid  131 and name  DUM ) (segid     A  and resid   89 and name   CA ) 12.0   0.0   0.0
+assign (segid     A  and resid  132 and name  DUM ) (segid     A  and resid   89 and name   CA ) 11.2   0.0   0.0
+assign (segid     A  and resid  131 and name  DUM ) (segid     A  and resid  101 and name   CA ) 17.1   0.0   0.0
+assign (segid     A  and resid  132 and name  DUM ) (segid     A  and resid  101 and name   CA ) 18.4   0.0   0.0
+assign (segid     A  and resid  131 and name  DUM ) (segid     A  and resid  102 and name   CA ) 17.5   0.0   0.0
+assign (segid     A  and resid  132 and name  DUM ) (segid     A  and resid  102 and name   CA ) 18.7   0.0   0.0
+assign (segid     A  and resid  131 and name  DUM ) (segid     A  and resid  103 and name   CA ) 17.7   0.0   0.0
+assign (segid     A  and resid  132 and name  DUM ) (segid     A  and resid  103 and name   CA ) 19.3   0.0   0.0
+assign (segid     A  and resid  131 and name  DUM ) (segid     A  and resid  110 and name   CA ) 27.0   0.0   0.0
+assign (segid     A  and resid  132 and name  DUM ) (segid     A  and resid  110 and name   CA ) 27.6   0.0   0.0
+assign (segid     A  and resid  131 and name  DUM ) (segid     A  and resid  111 and name   CA ) 25.4   0.0   0.0
+assign (segid     A  and resid  132 and name  DUM ) (segid     A  and resid  111 and name   CA ) 25.8   0.0   0.0
+assign (segid     A  and resid  131 and name  DUM ) (segid     A  and resid  112 and name   CA ) 23.9   0.0   0.0
+assign (segid     A  and resid  132 and name  DUM ) (segid     A  and resid  112 and name   CA ) 24.6   0.0   0.0
+assign (segid     A  and resid  131 and name  DUM ) (segid     A  and resid  113 and name   CA ) 27.4   0.0   0.0
+assign (segid     A  and resid  132 and name  DUM ) (segid     A  and resid  113 and name   CA ) 28.2   0.0   0.0
+assign (segid     A  and resid  131 and name  DUM ) (segid     A  and resid  114 and name   CA ) 29.5   0.0   0.0
+assign (segid     A  and resid  132 and name  DUM ) (segid     A  and resid  114 and name   CA ) 30.0   0.0   0.0
+assign (segid     A  and resid  131 and name  DUM ) (segid     A  and resid  115 and name   CA ) 27.6   0.0   0.0
+assign (segid     A  and resid  132 and name  DUM ) (segid     A  and resid  115 and name   CA ) 28.1   0.0   0.0
+assign (segid     A  and resid  131 and name  DUM ) (segid     A  and resid  116 and name   CA ) 28.5   0.0   0.0
+assign (segid     A  and resid  132 and name  DUM ) (segid     A  and resid  116 and name   CA ) 29.2   0.0   0.0
+assign (segid     A  and resid  131 and name  DUM ) (segid     A  and resid  117 and name   CA ) 32.2   0.0   0.0
+assign (segid     A  and resid  132 and name  DUM ) (segid     A  and resid  117 and name   CA ) 32.9   0.0   0.0
+
+# Restraints file 2: ambig-final.tbl
+! Ambiguous restraint list
+! For CSP and PRE restraints to DUM atoms
+! Initially CSP sets
+! (G36, N38, K84, I93 and A98)
+assign ( resid 36  and segid A) ( segid B ) 2.0 2.0 0.0
+assign ( resid 38  and segid A) ( segid B ) 2.0 2.0 0.0
+assign ( resid 84  and segid A) ( segid B ) 2.0 2.0 0.0
+assign ( resid 93  and segid A) ( segid B ) 2.0 2.0 0.0
+assign ( resid 98  and segid A) ( segid B ) 2.0 2.0 0.0
+!
+! K32C restraints form folder "clusters_2019-05-22-13-04-18"
+!
+! PRE restraints !!
+!
+assign (segid     B  and resid    3 and name  C2' )
+       (
+        (segid     A  and resid  127 and name  DUM )
+    or
+        (segid     A  and resid  128 and name  DUM )
+       ) 13.3  11.3   5.2
+assign (segid     B  and resid    5 and name  C1' )
+       (
+        (segid     A  and resid  127 and name  DUM )
+    or
+        (segid     A  and resid  128 and name  DUM )
+       ) 15.7  13.7  10.5
+assign (segid     B  and resid    5 and name  C2' )
+       (
+        (segid     A  and resid  127 and name  DUM )
+    or
+        (segid     A  and resid  128 and name  DUM )
+       ) 17.8  15.8  10.3
+assign (segid     B  and resid    5 and name  C3' )
+       (
+        (segid     A  and resid  127 and name  DUM )
+    or
+        (segid     A  and resid  128 and name  DUM )
+       ) 13.3  11.3   7.7
+assign (segid     B  and resid    5 and name  C4' )
+       (
+        (segid     A  and resid  127 and name  DUM )
+    or
+        (segid     A  and resid  128 and name  DUM )
+       ) 14.3  12.3   9.5
+assign (segid     B  and resid    5 and name  C5' )
+       (
+        (segid     A  and resid  127 and name  DUM )
+    or
+        (segid     A  and resid  128 and name  DUM )
+       ) 14.6  12.6   8.3
+assign (segid     B  and resid   15 and name  C1' )
+       (
+        (segid     A  and resid  127 and name  DUM )
+    or
+        (segid     A  and resid  128 and name  DUM )
+       ) 20.4   0.0  29.6
+assign (segid     B  and resid   15 and name  C2' )
+       (
+        (segid     A  and resid  127 and name  DUM )
+    or
+        (segid     A  and resid  128 and name  DUM )
+       ) 20.4   0.0  29.6
+assign (segid     B  and resid   18 and name  C1' )
+       (
+        (segid     A  and resid  127 and name  DUM )
+    or
+        (segid     A  and resid  128 and name  DUM )
+       ) 24.3   4.8  25.7
+assign (segid     B  and resid   18 and name  C2' )
+       (
+        (segid     A  and resid  127 and name  DUM )
+    or
+        (segid     A  and resid  128 and name  DUM )
+       ) 23.4   7.1  26.6
+assign (segid     B  and resid   19 and name  C1' )
+       (
+        (segid     A  and resid  127 and name  DUM )
+    or
+        (segid     A  and resid  128 and name  DUM )
+       ) 19.2   6.6   8.7
+assign (segid     B  and resid   19 and name  C2' )
+       (
+        (segid     A  and resid  127 and name  DUM )
+    or
+        (segid     A  and resid  128 and name  DUM )
+       ) 24.3   8.2  25.7
+assign (segid     B  and resid   19 and name  C3' )
+       (
+        (segid     A  and resid  127 and name  DUM )
+    or
+        (segid     A  and resid  128 and name  DUM )
+       ) 23.6   7.6  26.4
+assign (segid     B  and resid   19 and name  C4' )
+       (
+        (segid     A  and resid  127 and name  DUM )
+    or
+        (segid     A  and resid  128 and name  DUM )
+       ) 19.3   8.2  10.6
+assign (segid     B  and resid   19 and name  C5' )
+       (
+        (segid     A  and resid  127 and name  DUM )
+    or
+        (segid     A  and resid  128 and name  DUM )
+       ) 23.3   9.3  26.7
+assign (segid     B  and resid   20 and name  C1' )
+       (
+        (segid     A  and resid  127 and name  DUM )
+    or
+        (segid     A  and resid  128 and name  DUM )
+       ) 24.3   6.0  25.7
+assign (segid     B  and resid   20 and name  C2' )
+       (
+        (segid     A  and resid  127 and name  DUM )
+    or
+        (segid     A  and resid  128 and name  DUM )
+       ) 24.3   5.7  25.7
+assign (segid     B  and resid   20 and name  C3' )
+       (
+        (segid     A  and resid  127 and name  DUM )
+    or
+        (segid     A  and resid  128 and name  DUM )
+       ) 24.3   4.8  25.7
+assign (segid     B  and resid   20 and name  C4' )
+       (
+        (segid     A  and resid  127 and name  DUM )
+    or
+        (segid     A  and resid  128 and name  DUM )
+       ) 24.3   7.7  25.7
+assign (segid     B  and resid   20 and name  C5' )
+       (
+        (segid     A  and resid  127 and name  DUM )
+    or
+        (segid     A  and resid  128 and name  DUM )
+       ) 22.3   7.5  27.7
+assign (segid     B  and resid   22 and name  C1' )
+       (
+        (segid     A  and resid  127 and name  DUM )
+    or
+        (segid     A  and resid  128 and name  DUM )
+       ) 20.8   5.7   7.7
+assign (segid     B  and resid   22 and name  C2' )
+       (
+        (segid     A  and resid  127 and name  DUM )
+    or
+        (segid     A  and resid  128 and name  DUM )
+       ) 21.6   6.4  28.4
+assign (segid     B  and resid   23 and name  C1' )
+       (
+        (segid     A  and resid  127 and name  DUM )
+    or
+        (segid     A  and resid  128 and name  DUM )
+       ) 24.3   7.1  25.7
+assign (segid     B  and resid   23 and name  C2' )
+       (
+        (segid     A  and resid  127 and name  DUM )
+    or
+        (segid     A  and resid  128 and name  DUM )
+       ) 18.5   6.6   8.6
+!
+! N38C restraints
+! Source is in folder:"clusters_2019-05-22-12-43-05"
+!
+! PRE restraints !!
+!
+assign (segid     B  and resid    3 and name  C2' )
+       (
+        (segid     A  and resid  129 and name  DUM )
+    or
+        (segid     A  and resid  130 and name  DUM )
+       ) 13.5  11.5   9.8
+assign (segid     B  and resid    5 and name  C1' )
+       (
+        (segid     A  and resid  129 and name  DUM )
+    or
+        (segid     A  and resid  130 and name  DUM )
+       ) 25.2   9.7  24.8
+assign (segid     B  and resid    5 and name  C2' )
+       (
+        (segid     A  and resid  129 and name  DUM )
+    or
+        (segid     A  and resid  130 and name  DUM )
+       ) 22.0   9.6  28.0
+assign (segid     B  and resid    5 and name  C3' )
+       (
+        (segid     A  and resid  129 and name  DUM )
+    or
+        (segid     A  and resid  130 and name  DUM )
+       ) 25.2  11.3  24.8
+assign (segid     B  and resid    5 and name  C4' )
+       (
+        (segid     A  and resid  129 and name  DUM )
+    or
+        (segid     A  and resid  130 and name  DUM )
+       ) 25.2  10.0  24.8
+assign (segid     B  and resid    5 and name  C5' )
+       (
+        (segid     A  and resid  129 and name  DUM )
+    or
+        (segid     A  and resid  130 and name  DUM )
+       ) 23.5   9.6  26.5
+assign (segid     B  and resid   15 and name  C1' )
+       (
+        (segid     A  and resid  129 and name  DUM )
+    or
+        (segid     A  and resid  130 and name  DUM )
+       ) 25.2   7.4  24.8
+assign (segid     B  and resid   15 and name  C2' )
+       (
+        (segid     A  and resid  129 and name  DUM )
+    or
+        (segid     A  and resid  130 and name  DUM )
+       ) 18.8   0.0  31.2
+assign (segid     B  and resid   18 and name  C1' )
+       (
+        (segid     A  and resid  129 and name  DUM )
+    or
+        (segid     A  and resid  130 and name  DUM )
+       ) 22.4   8.2  11.3
+assign (segid     B  and resid   18 and name  C2' )
+       (
+        (segid     A  and resid  129 and name  DUM )
+    or
+        (segid     A  and resid  130 and name  DUM )
+       ) 21.5   8.0  11.1
+assign (segid     B  and resid   19 and name  C1' )
+       (
+        (segid     A  and resid  129 and name  DUM )
+    or
+        (segid     A  and resid  130 and name  DUM )
+       ) 19.2   9.0  12.5
+assign (segid     B  and resid   19 and name  C2' )
+       (
+        (segid     A  and resid  129 and name  DUM )
+    or
+        (segid     A  and resid  130 and name  DUM )
+       ) 18.2   8.8  12.2
+assign (segid     B  and resid   19 and name  C3' )
+       (
+        (segid     A  and resid  129 and name  DUM )
+    or
+        (segid     A  and resid  130 and name  DUM )
+       ) 19.9   8.5  11.8
+assign (segid     B  and resid   19 and name  C4' )
+       (
+        (segid     A  and resid  129 and name  DUM )
+    or
+        (segid     A  and resid  130 and name  DUM )
+       ) 18.0   8.6  12.1
+assign (segid     B  and resid   19 and name  C5' )
+       (
+        (segid     A  and resid  129 and name  DUM )
+    or
+        (segid     A  and resid  130 and name  DUM )
+       ) 23.8   9.4  26.2
+assign (segid     B  and resid   20 and name  C1' )
+       (
+        (segid     A  and resid  129 and name  DUM )
+    or
+        (segid     A  and resid  130 and name  DUM )
+       ) 13.6  11.6  11.1
+assign (segid     B  and resid   20 and name  C2' )
+       (
+        (segid     A  and resid  129 and name  DUM )
+    or
+        (segid     A  and resid  130 and name  DUM )
+       ) 13.5  11.5   8.4
+assign (segid     B  and resid   20 and name  C3' )
+       (
+        (segid     A  and resid  129 and name  DUM )
+    or
+        (segid     A  and resid  130 and name  DUM )
+       ) 21.2  19.2   0.0
+assign (segid     B  and resid   20 and name  C4' )
+       (
+        (segid     A  and resid  129 and name  DUM )
+    or
+        (segid     A  and resid  130 and name  DUM )
+       ) 13.8  11.8  13.3
+assign (segid     B  and resid   20 and name  C5' )
+       (
+        (segid     A  and resid  129 and name  DUM )
+    or
+        (segid     A  and resid  130 and name  DUM )
+       ) 13.5  11.5   9.1
+assign (segid     B  and resid   22 and name  C1' )
+       (
+        (segid     A  and resid  129 and name  DUM )
+    or
+        (segid     A  and resid  130 and name  DUM )
+       ) 23.7   8.9  26.3
+assign (segid     B  and resid   22 and name  C2' )
+       (
+        (segid     A  and resid  129 and name  DUM )
+    or
+        (segid     A  and resid  130 and name  DUM )
+       ) 25.2   7.7  24.8
+assign (segid     B  and resid   23 and name  C1' )
+       (
+        (segid     A  and resid  129 and name  DUM )
+    or
+        (segid     A  and resid  130 and name  DUM )
+       ) 17.9   8.5  11.9
+assign (segid     B  and resid   23 and name  C2' )
+       (
+        (segid     A  and resid  129 and name  DUM )
+    or
+        (segid     A  and resid  130 and name  DUM )
+       ) 18.7   8.9  12.4
+!
+! E61C restraints is not included in this round!
+!
+!
+! I93C restraints
+! Source is in folder:"clusters_2019-05-22-12-17-12"
+!
+! PRE restraints !!
+!
+!
+assign (segid     B  and resid    3 and name  C2' )
+       (
+        (segid     A  and resid  131 and name  DUM )
+    or
+        (segid     A  and resid  132 and name  DUM )
+       ) 24.5  11.2  17.1
+assign (segid     B  and resid    5 and name  C1' )
+       (
+        (segid     A  and resid  131 and name  DUM )
+    or
+        (segid     A  and resid  132 and name  DUM )
+       ) 12.5  10.5  15.3
+assign (segid     B  and resid    5 and name  C2' )
+       (
+        (segid     A  and resid  131 and name  DUM )
+    or
+        (segid     A  and resid  132 and name  DUM )
+       ) 12.5  10.5  11.0
+assign (segid     B  and resid    5 and name  C3' )
+       (
+        (segid     A  and resid  131 and name  DUM )
+    or
+        (segid     A  and resid  132 and name  DUM )
+       ) 12.5  10.5  15.1
+assign (segid     B  and resid    5 and name  C4' )
+       (
+        (segid     A  and resid  131 and name  DUM )
+    or
+        (segid     A  and resid  132 and name  DUM )
+       ) 23.0  21.0   0.0
+assign (segid     B  and resid    5 and name  C5' )
+       (
+        (segid     A  and resid  131 and name  DUM )
+    or
+        (segid     A  and resid  132 and name  DUM )
+       ) 12.5  10.5  13.4
+assign (segid     B  and resid   15 and name  C1' )
+       (
+        (segid     A  and resid  131 and name  DUM )
+    or
+        (segid     A  and resid  132 and name  DUM )
+       ) 14.0  12.0  13.2
+assign (segid     B  and resid   15 and name  C2' )
+       (
+        (segid     A  and resid  131 and name  DUM )
+    or
+        (segid     A  and resid  132 and name  DUM )
+       ) 14.8   8.6  13.0
+assign (segid     B  and resid   18 and name  C1' )
+       (
+        (segid     A  and resid  131 and name  DUM )
+    or
+        (segid     A  and resid  132 and name  DUM )
+       ) 12.6  10.6  13.4
+assign (segid     B  and resid   18 and name  C2' )
+       (
+        (segid     A  and resid  131 and name  DUM )
+    or
+        (segid     A  and resid  132 and name  DUM )
+       ) 23.0  21.0   0.0
+assign (segid     B  and resid   19 and name  C1' )
+       (
+        (segid     A  and resid  131 and name  DUM )
+    or
+        (segid     A  and resid  132 and name  DUM )
+       ) 12.5  10.5  13.2
+assign (segid     B  and resid   19 and name  C2' )
+       (
+        (segid     A  and resid  131 and name  DUM )
+    or
+        (segid     A  and resid  132 and name  DUM )
+       ) 12.5  10.5  12.2
+assign (segid     B  and resid   19 and name  C3' )
+       (
+        (segid     A  and resid  131 and name  DUM )
+    or
+        (segid     A  and resid  132 and name  DUM )
+       ) 12.5  10.5  14.4
+assign (segid     B  and resid   19 and name  C4' )
+       (
+        (segid     A  and resid  131 and name  DUM )
+    or
+        (segid     A  and resid  132 and name  DUM )
+       ) 23.0  21.0   0.0
+assign (segid     B  and resid   19 and name  C5' )
+       (
+        (segid     A  and resid  131 and name  DUM )
+    or
+        (segid     A  and resid  132 and name  DUM )
+       ) 12.5  10.5  12.9
+assign (segid     B  and resid   20 and name  C1' )
+       (
+        (segid     A  and resid  131 and name  DUM )
+    or
+        (segid     A  and resid  132 and name  DUM )
+       ) 22.4  10.4  15.9
+assign (segid     B  and resid   20 and name  C2' )
+       (
+        (segid     A  and resid  131 and name  DUM )
+    or
+        (segid     A  and resid  132 and name  DUM )
+       ) 25.1  11.3  17.3
+assign (segid     B  and resid   20 and name  C3' )
+       (
+        (segid     A  and resid  131 and name  DUM )
+    or
+        (segid     A  and resid  132 and name  DUM )
+       ) 16.8   9.6  14.6
+assign (segid     B  and resid   20 and name  C4' )
+       (
+        (segid     A  and resid  131 and name  DUM )
+    or
+        (segid     A  and resid  132 and name  DUM )
+       ) 22.6  10.3  15.8
+assign (segid     B  and resid   20 and name  C5' )
+       (
+        (segid     A  and resid  131 and name  DUM )
+    or
+        (segid     A  and resid  132 and name  DUM )
+       ) 23.3  10.0  15.5
+assign (segid     B  and resid   22 and name  C1' )
+       (
+        (segid     A  and resid  131 and name  DUM )
+    or
+        (segid     A  and resid  132 and name  DUM )
+       ) 12.5  10.5  10.7
+assign (segid     B  and resid   22 and name  C2' )
+       (
+        (segid     A  and resid  131 and name  DUM )
+    or
+        (segid     A  and resid  132 and name  DUM )
+       ) 12.5  10.5  10.6
+assign (segid     B  and resid   23 and name  C1' )
+       (
+        (segid     A  and resid  131 and name  DUM )
+    or
+        (segid     A  and resid  132 and name  DUM )
+       ) 20.7   9.9  15.1
+assign (segid     B  and resid   23 and name  C2' )
+       (
+        (segid     A  and resid  131 and name  DUM )
+    or
+        (segid     A  and resid  132 and name  DUM )
+       ) 23.2  10.5  16.1
+!

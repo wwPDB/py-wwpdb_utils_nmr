@@ -1,0 +1,124 @@
+!!  Intermolecular NOEs for BM2
+
+!!  NOE  distances  obtained  from  13C-19F REDOR and 19F-19F CODEX               
+!!  numbers  specify:  distance,  lower error,  upper error         
+
+! F20-X contacts
+!=====================================================================A-B
+assign (resid   20 and name   HZ and segid A)   (resid  16 and name  CB and segid B)   6.2  1.5  2.4   
+assign (resid   20 and name   HZ and segid A)   (resid  16 and name  CB and segid B)   6.3  1.5  2.7
+assign (resid   20 and name   HZ and segid A)   (resid  18 and name  CD2 and segid B)  7.3  1.2  1.5
+assign (resid   20 and name   HZ and segid A)   (resid  18 and (name  CG or name CD1) and segid B)  5.6  1.0  1.2
+assign (resid   20 and name   HZ and segid A)   (resid  18 and name  CB and segid B)   5.6  1.0  1.0   
+assign (resid   20 and name   HZ and segid A)   (resid  18 and name  CA and segid B)   6.3  1.2  1.8
+assign (resid   20 and name   HZ and segid A)   (resid  19 and name  CA and segid B)   7.0  2.4  4.0
+assign (resid   20 and name   HZ and segid A)   (resid  19 and name  CD2 and segid B)  5.4  1.5  2.1
+assign (resid   20 and name   HZ and segid A)   (resid  21 and name  CA and segid B)   7.5  1.0  1.5
+assign (resid   20 and name   HZ and segid A)   (resid  21 and name  CB and segid B)   6.6  2.0  2.0
+assign (resid   20 and name   HZ and segid A)   (resid  22 and name  CA and segid B)   6.5  1.5  2.4
+assign (resid   20 and name   HZ and segid A)   (resid  22 and name  CB and segid B)   7.6  1.2  1.2
+assign (resid   20 and name   HZ and segid A)   (resid  23 and name  CG and segid B)   6.1  1.0  1.0  
+assign (resid   20 and name   HZ and segid A)   (resid  23 and name  CE3 and segid B)   16.4 8.0 8.0
+assign (resid   20 and name   HZ and segid A)   (resid  23 and name  CH2 and segid B)   16.4 8.0 8.0
+assign (resid   20 and name   HZ and segid A)   (resid  23 and name  CZ3 and segid B)   16.4 8.0 8.0  
+!=====================================================================B-C
+assign (resid   20 and name   HZ and segid B)   (resid  16 and name  CB and segid C)   6.2  1.5  2.4   
+assign (resid   20 and name   HZ and segid B)   (resid  16 and name  CB and segid C)   6.3  1.5  2.7
+assign (resid   20 and name   HZ and segid B)   (resid  18 and name  CD2 and segid C)  7.3  1.2  1.5
+assign (resid   20 and name   HZ and segid B)   (resid  18 and (name  CG or name CD1) and segid C)  5.6  1.0  1.2
+assign (resid   20 and name   HZ and segid B)   (resid  18 and name  CB and segid C)   5.6  1.0  1.0   
+assign (resid   20 and name   HZ and segid B)   (resid  18 and name  CA and segid C)   6.3  1.2  1.8
+assign (resid   20 and name   HZ and segid B)   (resid  19 and name  CA and segid C)   7.0  2.4  4.0
+assign (resid   20 and name   HZ and segid B)   (resid  19 and name  CD2 and segid C)  5.4  1.5  2.1
+assign (resid   20 and name   HZ and segid B)   (resid  21 and name  CA and segid C)   7.5  1.0  1.5
+assign (resid   20 and name   HZ and segid B)   (resid  21 and name  CB and segid C)   6.6  2.0  2.0
+assign (resid   20 and name   HZ and segid B)   (resid  22 and name  CA and segid C)   6.5  1.5  2.4
+assign (resid   20 and name   HZ and segid B)   (resid  22 and name  CB and segid C)   7.6  1.2  1.2
+assign (resid   20 and name   HZ and segid B)   (resid  23 and name  CG and segid C)   6.1  1.0  1.0   
+assign (resid   20 and name   HZ and segid B)   (resid  23 and name  CE3 and segid C)   16.4 8.0 8.0
+assign (resid   20 and name   HZ and segid B)   (resid  23 and name  CH2 and segid C)   16.4 8.0 8.0
+assign (resid   20 and name   HZ and segid B)   (resid  23 and name  CZ3 and segid C)   16.4 8.0 8.0 
+!=====================================================================C-D
+assign (resid   20 and name   HZ and segid C)   (resid  16 and name  CB and segid D)   6.2  1.5  2.4   
+assign (resid   20 and name   HZ and segid C)   (resid  16 and name  CB and segid D)   6.3  1.5  2.7
+assign (resid   20 and name   HZ and segid C)   (resid  18 and name  CD2 and segid D)  7.3  1.2  1.5
+assign (resid   20 and name   HZ and segid C)   (resid  18 and (name  CG or name CD1) and segid D)  5.6  1.0  1.2
+assign (resid   20 and name   HZ and segid C)   (resid  18 and name  CB and segid D)   5.6  1.0  1.0   
+assign (resid   20 and name   HZ and segid C)   (resid  18 and name  CA and segid D)   6.3  1.2  1.8
+assign (resid   20 and name   HZ and segid C)   (resid  19 and name  CA and segid D)   7.0  2.4  4.0
+assign (resid   20 and name   HZ and segid C)   (resid  19 and name  CD2 and segid D)  5.4  1.5  2.1
+assign (resid   20 and name   HZ and segid C)   (resid  21 and name  CA and segid D)   7.5  1.0  1.5
+assign (resid   20 and name   HZ and segid C)   (resid  21 and name  CB and segid D)   6.6  2.0  2.0
+assign (resid   20 and name   HZ and segid C)   (resid  22 and name  CA and segid D)   6.5  1.5  2.4
+assign (resid   20 and name   HZ and segid C)   (resid  22 and name  CB and segid D)   7.6  1.2  1.2
+assign (resid   20 and name   HZ and segid C)   (resid  23 and name  CG and segid D)   6.1  1.0  1.0
+assign (resid   20 and name   HZ and segid C)   (resid  23 and name  CE3 and segid D)   16.4 8.0 8.0
+assign (resid   20 and name   HZ and segid C)   (resid  23 and name  CH2 and segid D)   16.4 8.0 8.0
+assign (resid   20 and name   HZ and segid C)   (resid  23 and name  CZ3 and segid D)   16.4 8.0 8.0    
+!=====================================================================D-A
+assign (resid   20 and name   HZ and segid D)   (resid  16 and name  CB and segid A)   6.2  1.5  2.4   
+assign (resid   20 and name   HZ and segid D)   (resid  16 and name  CB and segid A)   6.3  1.5  2.7
+assign (resid   20 and name   HZ and segid D)   (resid  18 and name  CD2 and segid A)  7.3  1.2  1.5
+assign (resid   20 and name   HZ and segid D)   (resid  18 and (name  CG or name CD1) and segid A)  5.6  1.0  1.2
+assign (resid   20 and name   HZ and segid D)   (resid  18 and name  CB and segid A)   5.6  1.0  1.0   
+assign (resid   20 and name   HZ and segid D)   (resid  18 and name  CA and segid A)   6.3  1.2  1.8
+assign (resid   20 and name   HZ and segid D)   (resid  19 and name  CA and segid A)   7.0  2.4  4.0
+assign (resid   20 and name   HZ and segid D)   (resid  19 and name  CD2 and segid A)  5.4  1.5  2.1
+assign (resid   20 and name   HZ and segid D)   (resid  21 and name  CA and segid A)   7.5  1.0  1.5
+assign (resid   20 and name   HZ and segid D)   (resid  21 and name  CB and segid A)   6.6  2.0  2.0
+assign (resid   20 and name   HZ and segid D)   (resid  22 and name  CA and segid A)   6.5  1.5  2.4
+assign (resid   20 and name   HZ and segid D)   (resid  22 and name  CB and segid A)   7.6  1.2  1.2
+assign (resid   20 and name   HZ and segid D)   (resid  23 and name  CG and segid A)   6.1  1.0  1.0    
+assign (resid   20 and name   HZ and segid D)   (resid  23 and name  CE3 and segid A)   16.4 8.0 8.0
+assign (resid   20 and name   HZ and segid D)   (resid  23 and name  CH2 and segid A)   16.4 8.0 8.0
+assign (resid   20 and name   HZ and segid D)   (resid  23 and name  CZ3 and segid A)   16.4 8.0 8.0
+
+! F5-X contacts
+!=====================================================================A-B
+assign (resid   5 and name   HZ and segid A)   (resid  4 and name  CA and  segid B)   16.9 10.0 10.0
+assign (resid   5 and name   HZ and segid A)   (resid  4 and name  CD and  segid B)   16.4 10.0 10.0
+assign (resid   5 and name   HZ and segid A)   (resid  7 and name  CD1 and segid B)   5.5  1.0  1.0
+assign (resid   5 and name   HZ and segid A)   (resid  7 and name  CG2 and segid B)   6.0  1.0  1.0
+assign (resid   5 and name   HZ and segid A)   (resid  7 and name  CG1 and segid B)   5.8  1.0  1.0
+assign (resid   5 and name   HZ and segid A)   (resid  7 and name  CB and  segid B)   6.0  1.0  1.0
+assign (resid   5 and name   HZ and segid A)   (resid  7 and name  CA and  segid B)   5.9  1.5  1.5 
+!=====================================================================B-C
+assign (resid   5 and name   HZ and segid B)   (resid  4 and name  CA and  segid C)   16.9 10.0 10.0
+assign (resid   5 and name   HZ and segid B)   (resid  4 and name  CD and  segid C)   16.4 10.0 10.0
+assign (resid   5 and name   HZ and segid B)   (resid  7 and name  CD1 and segid C)   5.5  1.0  1.0
+assign (resid   5 and name   HZ and segid B)   (resid  7 and name  CG2 and segid C)   6.0  1.0  1.0
+assign (resid   5 and name   HZ and segid B)   (resid  7 and name  CG1 and segid C)   5.8  1.0  1.0
+assign (resid   5 and name   HZ and segid B)   (resid  7 and name  CB and  segid C)   6.0  1.0  1.0
+assign (resid   5 and name   HZ and segid B)   (resid  7 and name  CA and  segid C)   5.9  1.5  1.5 
+!=====================================================================C-D
+assign (resid   5 and name   HZ and segid C)   (resid  4 and name  CA and  segid D)   16.9 10.0 10.0
+assign (resid   5 and name   HZ and segid C)   (resid  4 and name  CD and  segid D)   16.4 10.0 10.0
+assign (resid   5 and name   HZ and segid C)   (resid  7 and name  CD1 and segid D)   5.5  1.0  1.0
+assign (resid   5 and name   HZ and segid C)   (resid  7 and name  CG2 and segid D)   6.0  1.0  1.0
+assign (resid   5 and name   HZ and segid C)   (resid  7 and name  CG1 and segid D)   5.8  1.0  1.0
+assign (resid   5 and name   HZ and segid C)   (resid  7 and name  CB and  segid D)   6.0  1.0  1.0
+assign (resid   5 and name   HZ and segid C)   (resid  7 and name  CA and  segid D)   5.9  1.5  1.5 
+!=====================================================================D-A
+assign (resid   5 and name   HZ and segid D)   (resid  4 and name  CA and  segid A)   16.9 10.0 10.0
+assign (resid   5 and name   HZ and segid D)   (resid  4 and name  CD and  segid A)   16.4 10.0 10.0
+assign (resid   5 and name   HZ and segid D)   (resid  7 and name  CD1 and segid A)   5.5  1.0  1.0
+assign (resid   5 and name   HZ and segid D)   (resid  7 and name  CG2 and segid A)   6.0  1.0  1.0
+assign (resid   5 and name   HZ and segid D)   (resid  7 and name  CG1 and segid A)   5.8  1.0  1.0
+assign (resid   5 and name   HZ and segid D)   (resid  7 and name  CB and  segid A)   6.0  1.0  1.0
+assign (resid   5 and name   HZ and segid D)   (resid  7 and name  CA and  segid A)   5.9  1.5  1.5 
+
+
+
+! CODEX restraints
+!=====================================================================W23
+assign (resid  23 and name  HZ3 and segid A)   (resid  23 and name  HZ3 and segid B)   10.5  2.0  2.0
+assign (resid  23 and name  HZ3 and segid A)   (resid  23 and name  HZ3 and segid C)   14.8  2.0  2.0
+assign (resid  23 and name  HZ3 and segid B)   (resid  23 and name  HZ3 and segid C)   10.5  2.0  2.0
+assign (resid  23 and name  HZ3 and segid B)   (resid  23 and name  HZ3 and segid D)   14.8  2.0  2.0
+assign (resid  23 and name  HZ3 and segid C)   (resid  23 and name  HZ3 and segid D)   10.5  2.0  2.0
+assign (resid  23 and name  HZ3 and segid D)   (resid  23 and name  HZ3 and segid A)   10.5  2.0  2.0
+!=====================================================================F5
+assign (resid   5 and name   HZ and segid A)   (resid   5 and name   HZ and segid B)    9.4  2.0  5.0
+assign (resid   5 and name   HZ and segid B)   (resid   5 and name   HZ and segid C)    9.4  2.0  5.0
+assign (resid   5 and name   HZ and segid C)   (resid   5 and name   HZ and segid D)    9.4  2.0  5.0
+assign (resid   5 and name   HZ and segid D)   (resid   5 and name   HZ and segid A)    9.4  2.0  5.0

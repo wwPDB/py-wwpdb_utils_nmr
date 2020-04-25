@@ -34,7 +34,7 @@
 # 24-Apr-2020  M. Yokochi - fix type mismatch if 'default-from' is 'self' (v2.2.5, DAOTHER-5609)
 # 24-Apr-2020  M. Yokochi - revise error message in validate_file() (v2.2.6, DAOTHER-5611)
 # 25-Apr-2020  M. Yokochi - add 'excl_missing_data' option of check_data() for NMR separated deposition (v2.2.7, DAOTHER-5611)
-# 25-Apr-2020  M. Yokochi - detect codec of file and convert to UTF-8, if required (DAOTHER-5611)
+# 25-Apr-2020  M. Yokochi - fill default value if Entity_assembly_ID is blank (v2.2.8, DAOTHER-5611)
 ##
 import sys
 import os
@@ -53,7 +53,7 @@ from wwpdb.utils.nmr.io.ChemCompIo import ChemCompReader
 from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
 from wwpdb.utils.nmr.NmrDpReport import NmrDpReport
 
-__version__ = 'v2.2.7'
+__version__ = 'v2.2.8'
 
 class NEFTranslator(object):
     """ Bi-directional translator between NEF and NMR-STAR
@@ -1023,6 +1023,9 @@ class NEFTranslator(object):
 
             if set(tags) & set(loop.tags) == set(tags):
                 seq_data = loop.get_data_by_tag(tags)
+                for i in seq_data:
+                    if i[2] in self.empty_value:
+                        i[2] = 1
             else:
                 _tags_exist = False
                 for i in range(1, 16):
@@ -1143,6 +1146,9 @@ class NEFTranslator(object):
 
             if set(tags) & set(loop.tags) == set(tags):
                 seq_data = loop.get_data_by_tag(tags)
+                for i in seq_data:
+                    if i[2] in self.empty_value:
+                        i[2] = 1
             elif set(tags_) & set(loop.tags) == set(tags_): # No Entity_assembly_ID tag case
                 seq_data = loop.get_data_by_tag(tags_)
                 for i in seq_data:

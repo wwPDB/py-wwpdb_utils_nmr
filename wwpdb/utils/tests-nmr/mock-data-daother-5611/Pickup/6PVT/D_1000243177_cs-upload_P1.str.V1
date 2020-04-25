@@ -1,0 +1,274 @@
+###################################################################
+#       Chemical Shift Ambiguity Index Value Definitions          #
+#                                                                 #
+# The values other than 1 are used for those atoms with different #
+# chemical shifts that cannot be assigned to stereospecific atoms #
+# or to specific residues or chains.                              #
+#                                                                 #
+#   Index Value            Definition                             #
+#                                                                 #
+#      1             Unique (including isolated methyl protons,   #
+#                         geminal atoms, and geminal methyl       #
+#                         groups with identical chemical shifts)  #
+#                         (e.g. ILE HD11, HD12, HD13 protons)     #
+#      2             Ambiguity of geminal atoms or geminal methyl #
+#                         proton groups (e.g. ASP HB2 and HB3     #
+#                         protons, LEU CD1 and CD2 carbons, or    #
+#                         LEU HD11, HD12, HD13 and HD21, HD22,    #
+#                         HD23 methyl protons)                    #
+#      3             Aromatic atoms on opposite sides of          #
+#                         symmetrical rings (e.g. TYR HE1 and HE2 #
+#                         protons)                                #
+#      4             Intraresidue ambiguities (e.g. LYS HG and    #
+#                         HD protons or TRP HZ2 and HZ3 protons)  #
+#      5             Interresidue ambiguities (LYS 12 vs. LYS 27) #
+#      6             Intermolecular ambiguities (e.g. ASP 31 CA   #
+#                         in monomer 1 and ASP 31 CA in monomer 2 #
+#                         of an asymmetrical homodimer, duplex    #
+#                         DNA assignments, or other assignments   #
+#                         that may apply to atoms in one or more  #
+#                         molecule in the molecular assembly)     #
+#      9             Ambiguous, specific ambiguity not defined    #
+#                                                                 #
+###################################################################
+loop_
+    _Atom_chem_shift.ID
+    _Atom_chem_shift.Comp_ID
+    _Atom_chem_shift.Comp_index_ID
+    _Atom_chem_shift.Atom_ID
+    _Atom_chem_shift.Val
+
+1              PHE             2              CA            56.5           
+2              PHE             2              CB            36.4           
+13             GLU             3              CA            52.9           
+14             GLU             3              CB            26.4           
+15             GLU             3              C              174.8          
+17             GLU             3              CG        33.9           
+19             GLU             3              CD        180.5          
+25             PRO             4              CA            64.7           
+26             PRO             4              CB            30.4           
+27             PRO             4              C              175.9          
+28             PRO             4              N              136.9          
+29             PRO             4              CG        25.9           
+31             PRO             4              CD        48.7           
+37             PHE             5              CA            56.9           
+38             PHE             5              CB            36.2           
+41             PHE             5              CG        135.9          
+43             PHE             5              CD        130            
+45             PHE             5              CE            128.4          
+49             GLN             6              CA            53.8           
+50             GLN             6              CB            27.1           
+53             GLN             6              CG        32.1           
+55             GLN             6              CD        178.1          
+61             ILE             7              CA            64             
+62             ILE             7              CB            36.8           
+63             ILE             7              C              176.4          
+64             ILE             7              N              122.6          
+65             ILE             7              CG1        28             
+66             ILE             7              CG2           15.9           
+67             ILE             7              CD1        12.3           
+73             LEU             8              CA            56.7           
+74             LEU             8              CB            39.6           
+75             LEU             8              C              176.7          
+76             LEU             8              N              120.5          
+77             LEU             8              CG        25.9           
+79             LEU             8              CD1        24.9           
+80             LEU             8              CD2           22.5           
+85             SER             9              CA            60.5           
+86             SER             9              CB            60.9           
+87             SER             9              C              176.1          
+88             SER             9              N              116.7          
+97             ILE            10             CA            63.7           
+98             ILE            10             CB            36.1           
+99             ILE            10             C              175.8          
+100            ILE            10             N              119.2          
+101            ILE            10             CG1        27.7           
+102            ILE            10             CG2           15.7           
+103            ILE            10             CD1        12.4           
+109            CYS            11             CA            63.1           
+110            CYS            11             CB            25.3           
+111            CYS            11             C              175.2          
+112            CYS            11             N              118.7          
+121            SER            12             CA            60.3           
+122            SER            12             CB            60.8           
+123            SER            12             C              175.4          
+124            SER            12             N              115.9          
+133            PHE            13             CA            59.8           
+134            PHE            13             CB            37.6           
+135            PHE            13             C              175.5          
+136            PHE            13             N              120.7          
+137            PHE            13             CG        135.2          
+139            PHE            13             CD        129.1          
+141            PHE            13             CE            128.6          
+145            ILE            14             CA            63.6           
+146            ILE            14             CB            36.5           
+147            ILE            14             C              176.6          
+148            ILE            14             N              119.2          
+149            ILE            14             CG1        27.9           
+150            ILE            14             CG2           15.8           
+151            ILE            14             CD1        12.1           
+157            LEU            15             CA            56.6           
+158            LEU            15             CB            39.8           
+159            LEU            15             C              176.2          
+160            LEU            15             N              119.8          
+161            LEU            15             CG        24.9           
+163            LEU            15             CD1        24.9           
+164            LEU            15             CD2           23.8           
+169            SER            16             CA            60.6           
+170            SER            16             CB            60.9           
+171            SER            16             C              175            
+172            SER            16             N              116.1          
+181            ALA            17             CA            53.6           
+182            ALA            17             CB            15.6           
+183            ALA            17             C              176.5          
+184            ALA            17             N              126            
+193            LEU            18             CA            56.2           
+194            LEU            18             CB            40.4           
+195            LEU            18             C              175.3          
+196            LEU            18             N              119.9          
+197            LEU            18             CG        25             
+199            LEU            18             CD1        24.5           
+200            LEU            18             CD2           21.5           
+205            HIS            19             CA            55.5           
+206            HIS            19             CB            26.2           
+207            HIS            19             C              176.6          
+209            HIS            19             CG        129.8          
+212            HIS            19             CD2           118.1          
+214            HIS            19             CE1       136.7          
+217            PHE            20             CA            60             
+218            PHE            20             CB            37.4           
+219            PHE            20             C              174.9          
+220            PHE            20             N              122.2          
+221            PHE            20             CG        135            
+223            PHE            20             CD        129.1          
+225            PHE            20             CE            128.3          
+229            MET            21             CA            57.8           
+230            MET            21             CB            30.8           
+231            MET            21             C              175.2          
+232            MET            21             N              120.8          
+233            MET            21             CG        31.6           
+241            ALA            22             CA            53.7           
+242            ALA            22             CB            16.5           
+243            ALA            22             C              177            
+244            ALA            22             N              122.6          
+253            TRP            23             CA            60.3           
+254            TRP            23             CB            26.4           
+255            TRP            23             C              176.4          
+256            TRP            23             N              119.5          
+257            TRP            23             CG        112.1          
+259            TRP            23             CD1        121.4          
+262            TRP            23             CE2       136.4          
+265            THR            24             CA            66             
+266            THR            24             CB            66.3           
+267            THR            24             C              174.3          
+268            THR            24             N              119.2          
+270            THR            24             CG2           19.8           
+277            ILE            25             CA            63.7           
+278            ILE            25             CB            36.1           
+279            ILE            25             C              175.8          
+280            ILE            25             N              121.3          
+281            ILE            25             CG1        27.8           
+282            ILE            25             CG2           15.9           
+283            ILE            25             CD1        12.2           
+289            GLY            26             CA            45.3           
+291            GLY            26             C              174.5          
+292            GLY            26             N              107            
+301            HIS            27             CA            56.7           
+302            HIS            27             CB            26.5           
+303            HIS            27             C              172.4          
+305            HIS            27             CG        129.7          
+308            HIS            27             CD2           118            
+310            HIS            27             CE1       136.9          
+313            LEU            28             CA            53.4           
+314            LEU            28             CB            40             
+315            LEU            28             C              172.5          
+316            LEU            28             N              130            
+317            LEU            28             CG        26.1           
+319            LEU            28             CD        24.3           
+325            ASN            29             CA            50.7           
+326            ASN            29             CB            40             
+327            ASN            29             C              171.9          
+328            ASN            29             N              127.7          
+329            ASN            29             CG        174.5          
+337            GLN            30             CA            52.8           
+338            GLN            30             CB            32             
+339            GLN            30             C              172.3          
+340            GLN            30             N              125.8          
+341            GLN            30             CG        33.2           
+343            GLN            30             CD        176.4          
+349            ILE            31             CA            58.2           
+350            ILE            31             CB            40.3           
+351            ILE            31             C              172.8          
+352            ILE            31             N              125.7          
+353            ILE            31             CG1        26.1           
+354            ILE            31             CG2           15.4           
+355            ILE            31             CD1        13.4           
+361            LYS            32             CA            52.7           
+362            LYS            32             CB            30.8           
+363            LYS            32             C              173.2          
+364            LYS            32             N              127.1          
+365            LYS            32             CG        26.1           
+367            LYS            32             CD        27.6           
+369            LYS            32             CE            40.2           
+372            LYS            32             NZ       34.6           
+373            ARG            33             CA            53.3           
+374            ARG            33             CB            29.6           
+375            ARG            33             C              175.9          
+376            ARG            33             N              131            
+377            ARG            33             CG        25.8           
+379            ARG            33             CD        41.5           
+382            ARG            33             CZ       157.8          
+385            GLY            34             CA            43.4           
+387            GLY            34             C              171.9          
+388            GLY            34             N              113.4          
+397            VAL            35             CA            59.8           
+398            VAL            35             CB            31.5           
+399            VAL            35             C              171            
+400            VAL            35             N              120.5          
+401            VAL            35             CG1        19.9 
+401            VAL            35             CG2        19.9             
+409            ASN            36             CA            51.1           
+410            ASN            36             CB            42.7           
+411            ASN            36             C              172.1          
+412            ASN            36             N              123.7          
+413            ASN            36             CG        174.4          
+419            ASN            36             ND2     117.5          
+421            MET            37             CA            55.3           
+422            MET            37             CB            35.2           
+424            MET            37             N              119.9          
+425            MET            37             CG        30.4           
+429            MET            37             CE            15.2           
+433            GLY            43             CA            42.7           
+436            GLY            43             N              114.1          
+445            PRO            44             CA            61.1           
+446            PRO            44             CB            31.3           
+447            PRO            44             C              171.9          
+448            PRO            44             N              132.4          
+449            PRO            44             CG        25.8           
+451            PRO            44             CD        48.4           
+457            ASN            45             CA            51.6           
+458            ASN            45             CB            37.2           
+469            LYS            46             CA            55             
+470            LYS            46             CB            31.3           
+473            LYS            46             CG        23             
+475            LYS            46             CD        27.3           
+477            LYS            46             CE            40.3           
+481            GLU            47             CA            54.7           
+482            GLU            47             CB            28.2           
+485            GLU            47             CG        33.8           
+493            THR            48             CA            59.9           
+494            THR            48             CB            69.1           
+497            THR            48             CG2        19.7           
+505            ILE            49             CA            59.3           
+506            ILE            49             CB            37             
+510            ILE            49             CG2           15.7           
+511            ILE            49             CD1        11.2           
+517            ASN            50             CA            51.6           
+518            ASN            50             CB            37.1           
+529            ARG            51             CA            55.7           
+530            ARG            51             CB            29.7           
+533            ARG            51             CG        25.5           
+535            ARG            51             CD        41.7           
+
+stop_
+

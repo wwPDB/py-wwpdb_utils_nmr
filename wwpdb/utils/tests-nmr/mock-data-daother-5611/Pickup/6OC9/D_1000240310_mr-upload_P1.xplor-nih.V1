@@ -1,0 +1,1386 @@
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid A and resid 9    and name N   )
+       ( segid A and resid 9    and name HN  )  100  0.2000
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid A and resid 10    and name N   )
+       ( segid A and resid 10    and name HN  )  100  0.2000
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid A and resid 11    and name N   )
+       ( segid A and resid 11    and name HN  )  100  0.2000
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid A and resid 12    and name N   )
+       ( segid A and resid 12    and name HN  )  100  0.2000
+
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid A and resid 17    and name N   )
+       ( segid A and resid 17    and name HN  )  100  0.2000
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid A and resid 18    and name N   )
+       ( segid A and resid 18    and name HN  )  100  0.2000
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid A and resid 19    and name N   )
+       ( segid A and resid 19    and name HN  )  100  0.2000
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid A and resid 20    and name N   )
+       ( segid A and resid 20    and name HN  )  100  0.2000
+
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid A and resid 21    and name N   )
+       ( segid A and resid 21    and name HN  )  100  0.2000
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid A and resid 24    and name N   )
+       ( segid A and resid 24    and name HN  )  100  0.2000
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid A and resid 31    and name N   )
+       ( segid A and resid 31    and name HN  )  100  0.2000
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid A and resid 32    and name N   )
+       ( segid A and resid 32    and name HN  )  100  0.2000
+
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid A and resid 33    and name N   )
+       ( segid A and resid 33    and name HN  )  100  0.2000
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid A and resid 34    and name N   )
+       ( segid A and resid 34    and name HN  )  100  0.2000
+
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid A and resid 35    and name N   )
+       ( segid A and resid 35    and name HN  )  100  0.2000
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid A and resid 36    and name N   )
+       ( segid A and resid 36    and name HN  )  100  0.2000
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid A and resid 37    and name N   )
+       ( segid A and resid 37    and name HN  )  100  0.2000
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid A and resid 38    and name N   )
+       ( segid A and resid 38    and name HN  )  100  0.2000
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid A and resid 39    and name N   )
+       ( segid A and resid 39    and name HN  )  100  0.2000
+
+
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid B and resid 9    and name N   )
+       ( segid B and resid 9    and name HN  )  100  0.2000
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid B and resid 10    and name N   )
+       ( segid B and resid 10    and name HN  )  100  0.2000
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid B and resid 11    and name N   )
+       ( segid B and resid 11    and name HN  )  100  0.2000
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid B and resid 12    and name N   )
+       ( segid B and resid 12    and name HN  )  100  0.2000
+
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid B and resid 17    and name N   )
+       ( segid B and resid 17    and name HN  )  100  0.2000
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid B and resid 18    and name N   )
+       ( segid B and resid 18    and name HN  )  100  0.2000
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid B and resid 19    and name N   )
+       ( segid B and resid 19    and name HN  )  100  0.2000
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid B and resid 20    and name N   )
+       ( segid B and resid 20    and name HN  )  100  0.2000
+
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid B and resid 21    and name N   )
+       ( segid B and resid 21    and name HN  )  100  0.2000
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid B and resid 24    and name N   )
+       ( segid B and resid 24    and name HN  )  100  0.2000
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid B and resid 31    and name N   )
+       ( segid B and resid 31    and name HN  )  100  0.2000
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid B and resid 32    and name N   )
+       ( segid B and resid 32    and name HN  )  100  0.2000
+
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid B and resid 33    and name N   )
+       ( segid B and resid 33    and name HN  )  100  0.2000
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid B and resid 34    and name N   )
+       ( segid B and resid 34    and name HN  )  100  0.2000
+
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid B and resid 35    and name N   )
+       ( segid B and resid 35    and name HN  )  100  0.2000
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid B and resid 36    and name N   )
+       ( segid B and resid 36    and name HN  )  100  0.2000
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid B and resid 37    and name N   )
+       ( segid B and resid 37    and name HN  )  100  0.2000
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid B and resid 38    and name N   )
+       ( segid B and resid 38    and name HN  )  100  0.2000
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid B and resid 39    and name N   )
+       ( segid B and resid 39    and name HN  )  100  0.2000
+
+
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid C and resid 9    and name N   )
+       ( segid C and resid 9    and name HN  )  100  0.2000
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid C and resid 10    and name N   )
+       ( segid C and resid 10    and name HN  )  100  0.2000
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid C and resid 11    and name N   )
+       ( segid C and resid 11    and name HN  )  100  0.2000
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid C and resid 12    and name N   )
+       ( segid C and resid 12    and name HN  )  100  0.2000
+
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid C and resid 17    and name N   )
+       ( segid C and resid 17    and name HN  )  100  0.2000
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid C and resid 18    and name N   )
+       ( segid C and resid 18    and name HN  )  100  0.2000
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid C and resid 19    and name N   )
+       ( segid C and resid 19    and name HN  )  100  0.2000
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid C and resid 20    and name N   )
+       ( segid C and resid 20    and name HN  )  100  0.2000
+
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid C and resid 21    and name N   )
+       ( segid C and resid 21    and name HN  )  100  0.2000
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid C and resid 24    and name N   )
+       ( segid C and resid 24    and name HN  )  100  0.2000
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid C and resid 31    and name N   )
+       ( segid C and resid 31    and name HN  )  100  0.2000
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid C and resid 32    and name N   )
+       ( segid C and resid 32    and name HN  )  100  0.2000
+
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid C and resid 33    and name N   )
+       ( segid C and resid 33    and name HN  )  100  0.2000
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid C and resid 34    and name N   )
+       ( segid C and resid 34    and name HN  )  100  0.2000
+
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid C and resid 35    and name N   )
+       ( segid C and resid 35    and name HN  )  100  0.2000
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid C and resid 36    and name N   )
+       ( segid C and resid 36    and name HN  )  100  0.2000
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid C and resid 37    and name N   )
+       ( segid C and resid 37    and name HN  )  100  0.2000
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid C and resid 38    and name N   )
+       ( segid C and resid 38    and name HN  )  100  0.2000
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid C and resid 39    and name N   )
+       ( segid C and resid 39    and name HN  )  100  0.2000
+
+
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid D and resid 9    and name N   )
+       ( segid D and resid 9    and name HN  )  100  0.2000
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid D and resid 10    and name N   )
+       ( segid D and resid 10    and name HN  )  100  0.2000
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid D and resid 11    and name N   )
+       ( segid D and resid 11    and name HN  )  100  0.2000
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid D and resid 12    and name N   )
+       ( segid D and resid 12    and name HN  )  100  0.2000
+
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid D and resid 17    and name N   )
+       ( segid D and resid 17    and name HN  )  100  0.2000
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid D and resid 18    and name N   )
+       ( segid D and resid 18    and name HN  )  100  0.2000
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid D and resid 19    and name N   )
+       ( segid D and resid 19    and name HN  )  100  0.2000
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid D and resid 20    and name N   )
+       ( segid D and resid 20    and name HN  )  100  0.2000
+
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid D and resid 21    and name N   )
+       ( segid D and resid 21    and name HN  )  100  0.2000
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid D and resid 24    and name N   )
+       ( segid D and resid 24    and name HN  )  100  0.2000
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid D and resid 31    and name N   )
+       ( segid D and resid 31    and name HN  )  100  0.2000
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid D and resid 32    and name N   )
+       ( segid D and resid 32    and name HN  )  100  0.2000
+
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid D and resid 33    and name N   )
+       ( segid D and resid 33    and name HN  )  100  0.2000
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid D and resid 34    and name N   )
+       ( segid D and resid 34    and name HN  )  100  0.2000
+
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid D and resid 35    and name N   )
+       ( segid D and resid 35    and name HN  )  100  0.2000
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid D and resid 36    and name N   )
+       ( segid D and resid 36    and name HN  )  100  0.2000
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid D and resid 37    and name N   )
+       ( segid D and resid 37    and name HN  )  100  0.2000
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid D and resid 38    and name N   )
+       ( segid D and resid 38    and name HN  )  100  0.2000
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid D and resid 39    and name N   )
+       ( segid D and resid 39    and name HN  )  100  0.2000
+
+
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid E and resid 9    and name N   )
+       ( segid E and resid 9    and name HN  )  100  0.2000
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid E and resid 10    and name N   )
+       ( segid E and resid 10    and name HN  )  100  0.2000
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid E and resid 11    and name N   )
+       ( segid E and resid 11    and name HN  )  100  0.2000
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid E and resid 12    and name N   )
+       ( segid E and resid 12    and name HN  )  100  0.2000
+
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid E and resid 17    and name N   )
+       ( segid E and resid 17    and name HN  )  100  0.2000
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid E and resid 18    and name N   )
+       ( segid E and resid 18    and name HN  )  100  0.2000
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid E and resid 19    and name N   )
+       ( segid E and resid 19    and name HN  )  100  0.2000
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid E and resid 20    and name N   )
+       ( segid E and resid 20    and name HN  )  100  0.2000
+
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid E and resid 21    and name N   )
+       ( segid E and resid 21    and name HN  )  100  0.2000
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid E and resid 24    and name N   )
+       ( segid E and resid 24    and name HN  )  100  0.2000
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid E and resid 31    and name N   )
+       ( segid E and resid 31    and name HN  )  100  0.2000
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid E and resid 32    and name N   )
+       ( segid E and resid 32    and name HN  )  100  0.2000
+
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid E and resid 33    and name N   )
+       ( segid E and resid 33    and name HN  )  100  0.2000
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid E and resid 34    and name N   )
+       ( segid E and resid 34    and name HN  )  100  0.2000
+
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid E and resid 35    and name N   )
+       ( segid E and resid 35    and name HN  )  100  0.2000
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid E and resid 36    and name N   )
+       ( segid E and resid 36    and name HN  )  100  0.2000
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid E and resid 37    and name N   )
+       ( segid E and resid 37    and name HN  )  100  0.2000
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid E and resid 38    and name N   )
+       ( segid E and resid 38    and name HN  )  100  0.2000
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid E and resid 39    and name N   )
+       ( segid E and resid 39    and name HN  )  100  0.2000
+
+
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid F and resid 9    and name N   )
+       ( segid F and resid 9    and name HN  )  100  0.2000
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid F and resid 10    and name N   )
+       ( segid F and resid 10    and name HN  )  100  0.2000
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid F and resid 11    and name N   )
+       ( segid F and resid 11    and name HN  )  100  0.2000
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid F and resid 12    and name N   )
+       ( segid F and resid 12    and name HN  )  100  0.2000
+
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid F and resid 17    and name N   )
+       ( segid F and resid 17    and name HN  )  100  0.2000
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid F and resid 18    and name N   )
+       ( segid F and resid 18    and name HN  )  100  0.2000
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid F and resid 19    and name N   )
+       ( segid F and resid 19    and name HN  )  100  0.2000
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid F and resid 20    and name N   )
+       ( segid F and resid 20    and name HN  )  100  0.2000
+
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid F and resid 21    and name N   )
+       ( segid F and resid 21    and name HN  )  100  0.2000
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid F and resid 24    and name N   )
+       ( segid F and resid 24    and name HN  )  100  0.2000
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid F and resid 31    and name N   )
+       ( segid F and resid 31    and name HN  )  100  0.2000
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid F and resid 32    and name N   )
+       ( segid F and resid 32    and name HN  )  100  0.2000
+
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid F and resid 33    and name N   )
+       ( segid F and resid 33    and name HN  )  100  0.2000
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid F and resid 34    and name N   )
+       ( segid F and resid 34    and name HN  )  100  0.2000
+
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid F and resid 35    and name N   )
+       ( segid F and resid 35    and name HN  )  100  0.2000
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid F and resid 36    and name N   )
+       ( segid F and resid 36    and name HN  )  100  0.2000
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid F and resid 37    and name N   )
+       ( segid F and resid 37    and name HN  )  100  0.2000
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid F and resid 38    and name N   )
+       ( segid F and resid 38    and name HN  )  100  0.2000
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid F and resid 39    and name N   )
+       ( segid F and resid 39    and name HN  )  100  0.2000
+
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid G and resid 9    and name N   )
+       ( segid G and resid 9    and name HN  )  100  0.2000
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid G and resid 10    and name N   )
+       ( segid G and resid 10    and name HN  )  100  0.2000
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid G and resid 11    and name N   )
+       ( segid G and resid 11    and name HN  )  100  0.2000
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid G and resid 12    and name N   )
+       ( segid G and resid 12    and name HN  )  100  0.2000
+
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid G and resid 17    and name N   )
+       ( segid G and resid 17    and name HN  )  100  0.2000
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid G and resid 18    and name N   )
+       ( segid G and resid 18    and name HN  )  100  0.2000
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid G and resid 19    and name N   )
+       ( segid G and resid 19    and name HN  )  100  0.2000
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid G and resid 20    and name N   )
+       ( segid G and resid 20    and name HN  )  100  0.2000
+
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid G and resid 21    and name N   )
+       ( segid G and resid 21    and name HN  )  100  0.2000
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid G and resid 24    and name N   )
+       ( segid G and resid 24    and name HN  )  100  0.2000
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid G and resid 31    and name N   )
+       ( segid G and resid 31    and name HN  )  100  0.2000
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid G and resid 32    and name N   )
+       ( segid G and resid 32    and name HN  )  100  0.2000
+
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid G and resid 33    and name N   )
+       ( segid G and resid 33    and name HN  )  100  0.2000
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid G and resid 34    and name N   )
+       ( segid G and resid 34    and name HN  )  100  0.2000
+
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid G and resid 35    and name N   )
+       ( segid G and resid 35    and name HN  )  100  0.2000
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid G and resid 36    and name N   )
+       ( segid G and resid 36    and name HN  )  100  0.2000
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid G and resid 37    and name N   )
+       ( segid G and resid 37    and name HN  )  100  0.2000
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid G and resid 38    and name N   )
+       ( segid G and resid 38    and name HN  )  100  0.2000
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid G and resid 39    and name N   )
+       ( segid G and resid 39    and name HN  )  100  0.2000
+
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid H and resid 9    and name N   )
+       ( segid H and resid 9    and name HN  )  100  0.2000
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid H and resid 10    and name N   )
+       ( segid H and resid 10    and name HN  )  100  0.2000
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid H and resid 11    and name N   )
+       ( segid H and resid 11    and name HN  )  100  0.2000
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid H and resid 12    and name N   )
+       ( segid H and resid 12    and name HN  )  100  0.2000
+
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid H and resid 17    and name N   )
+       ( segid H and resid 17    and name HN  )  100  0.2000
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid H and resid 18    and name N   )
+       ( segid H and resid 18    and name HN  )  100  0.2000
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid H and resid 19    and name N   )
+       ( segid H and resid 19    and name HN  )  100  0.2000
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid H and resid 20    and name N   )
+       ( segid H and resid 20    and name HN  )  100  0.2000
+
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid H and resid 21    and name N   )
+       ( segid H and resid 21    and name HN  )  100  0.2000
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid H and resid 24    and name N   )
+       ( segid H and resid 24    and name HN  )  100  0.2000
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid H and resid 31    and name N   )
+       ( segid H and resid 31    and name HN  )  100  0.2000
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid H and resid 32    and name N   )
+       ( segid H and resid 32    and name HN  )  100  0.2000
+
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid H and resid 33    and name N   )
+       ( segid H and resid 33    and name HN  )  100  0.2000
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid H and resid 34    and name N   )
+       ( segid H and resid 34    and name HN  )  100  0.2000
+
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid H and resid 35    and name N   )
+       ( segid H and resid 35    and name HN  )  100  0.2000
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid H and resid 36    and name N   )
+       ( segid H and resid 36    and name HN  )  100  0.2000
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid H and resid 37    and name N   )
+       ( segid H and resid 37    and name HN  )  100  0.2000
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid H and resid 38    and name N   )
+       ( segid H and resid 38    and name HN  )  100  0.2000
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid H and resid 39    and name N   )
+       ( segid H and resid 39    and name HN  )  100  0.2000
+
+
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid I and resid 9    and name N   )
+       ( segid I and resid 9    and name HN  )  100  0.2000
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid I and resid 10    and name N   )
+       ( segid I and resid 10    and name HN  )  100  0.2000
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid I and resid 11    and name N   )
+       ( segid I and resid 11    and name HN  )  100  0.2000
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid I and resid 12    and name N   )
+       ( segid I and resid 12    and name HN  )  100  0.2000
+
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid I and resid 17    and name N   )
+       ( segid I and resid 17    and name HN  )  100  0.2000
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid I and resid 18    and name N   )
+       ( segid I and resid 18    and name HN  )  100  0.2000
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid I and resid 19    and name N   )
+       ( segid I and resid 19    and name HN  )  100  0.2000
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid I and resid 20    and name N   )
+       ( segid I and resid 20    and name HN  )  100  0.2000
+
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid I and resid 21    and name N   )
+       ( segid I and resid 21    and name HN  )  100  0.2000
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid I and resid 24    and name N   )
+       ( segid I and resid 24    and name HN  )  100  0.2000
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid I and resid 31    and name N   )
+       ( segid I and resid 31    and name HN  )  100  0.2000
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid I and resid 32    and name N   )
+       ( segid I and resid 32    and name HN  )  100  0.2000
+
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid I and resid 33    and name N   )
+       ( segid I and resid 33    and name HN  )  100  0.2000
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid I and resid 34    and name N   )
+       ( segid I and resid 34    and name HN  )  100  0.2000
+
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid I and resid 35    and name N   )
+       ( segid I and resid 35    and name HN  )  100  0.2000
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid I and resid 36    and name N   )
+       ( segid I and resid 36    and name HN  )  100  0.2000
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid I and resid 37    and name N   )
+       ( segid I and resid 37    and name HN  )  100  0.2000
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid I and resid 38    and name N   )
+       ( segid I and resid 38    and name HN  )  100  0.2000
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid I and resid 39    and name N   )
+       ( segid I and resid 39    and name HN  )  100  0.2000
+
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid J and resid 9    and name N   )
+       ( segid J and resid 9    and name HN  )  100  0.2000
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid J and resid 10    and name N   )
+       ( segid J and resid 10    and name HN  )  100  0.2000
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid J and resid 11    and name N   )
+       ( segid J and resid 11    and name HN  )  100  0.2000
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid J and resid 12    and name N   )
+       ( segid J and resid 12    and name HN  )  100  0.2000
+
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid J and resid 17    and name N   )
+       ( segid J and resid 17    and name HN  )  100  0.2000
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid J and resid 18    and name N   )
+       ( segid J and resid 18    and name HN  )  100  0.2000
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid J and resid 19    and name N   )
+       ( segid J and resid 19    and name HN  )  100  0.2000
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid J and resid 20    and name N   )
+       ( segid J and resid 20    and name HN  )  100  0.2000
+
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid J and resid 21    and name N   )
+       ( segid J and resid 21    and name HN  )  100  0.2000
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid J and resid 24    and name N   )
+       ( segid J and resid 24    and name HN  )  100  0.2000
+
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid J and resid 31    and name N   )
+       ( segid J and resid 31    and name HN  )  100  0.2000
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid J and resid 32    and name N   )
+       ( segid J and resid 32    and name HN  )  100  0.2000
+
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid J and resid 33    and name N   )
+       ( segid J and resid 33    and name HN  )  100  0.2000
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid J and resid 34    and name N   )
+       ( segid J and resid 34    and name HN  )  100  0.2000
+
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid J and resid 35    and name N   )
+       ( segid J and resid 35    and name HN  )  100  0.2000
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid J and resid 36    and name N   )
+       ( segid J and resid 36    and name HN  )  100  0.2000
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid J and resid 37    and name N   )
+       ( segid J and resid 37    and name HN  )  100  0.2000
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid J and resid 38    and name N   )
+       ( segid J and resid 38    and name HN  )  100  0.2000
+
+assign ( resid 500  and name OO  )
+       ( resid 500  and name Z   )
+       ( resid 500  and name X   )
+       ( resid 500  and name Y   )
+       ( segid J and resid 39    and name N   )
+       ( segid J and resid 39    and name HN  )  100  0.2000

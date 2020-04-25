@@ -24,7 +24,7 @@
 # 19-Apr-2020  M. Yokochi - support concatenated CS data in NMR legacy deposition (DAOTHER-5594)
 # 22-Apr-2020  M. Yokochi - add 'ambiguity_code_mismatch' warning type (DAOTHER-5601)
 # 25-Apr-2020  M. Yokochi - add 'entity' content subtype (DAOTHER-5611)
-# 25-Apr-2020  M. Yokochi - add 'resolved_format_issue' warning type (DAOTHER-5611)
+# 25-Apr-2020  M. Yokochi - add 'corrected_format_issue' warning type (DAOTHER-5611)
 ##
 """ Wrapper class for data processing report of NMR data.
     @author: Masashi Yokochi
@@ -1651,7 +1651,7 @@ class NmrDpReportWarning:
 
     def __init__(self):
         self.items = ('encouragement', 'missing_content', 'missing_saveframe', 'missing_data', 'enum_mismatch',
-                      'enum_mismatch_ignorable', 'resolved_format_issue',
+                      'enum_mismatch_ignorable', 'corrected_format_issue',
                       'disordered_index', 'sequence_mismatch', 'atom_nomenclature_mismatch', 'ccd_mismatch', 'ambiguity_code_mismatch',
                       'skipped_saveframe_category', 'skipped_loop_category',
                       'anomalous_chemical_shift', 'unusual_chemical_shift',

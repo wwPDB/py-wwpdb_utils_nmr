@@ -53,8 +53,9 @@
 # 24-Apr-2020  M. Yokochi - separate format_issue error and missing_mandatory_content error (DAOTHER-5611)
 # 24-Apr-2020  M. Yokochi - support 'QR' pseudo atom name (DAOTHER-5611)
 # 24-Apr-2020  M. Yokochi - allow mandatory value is missing in NMR separated deposition (DAOTHER-5611)
-# 25-Apr-2020  M. Yokochi - implement automatic format correction for 6PQF, 6PSI entry (DAOTHE-5611)
+# 25-Apr-2020  M. Yokochi - implement automatic format correction for 6NZN, 6PQF, 6PSI entry (DAOTHE-5611)
 # 25-Apr-2020  M. Yokochi - add 'entity' content subtype (DAOTHER-5611)
+# 25-Apr-2020  M. Yokochi - add 'resolved_format_issue' warning type (DAOTHER-5611)
 ##
 """ Wrapper class for data processing for NMR data.
     @author: Masashi Yokochi
@@ -3027,7 +3028,7 @@ class NmrDpUtility(object):
 
                 else:
 
-                    _csPath, tempPaths = self.__fixFormatIssueOfInputSource(file_type, csPath, message)
+                    _csPath, tempPaths = self.__fixFormatIssueOfInputSource(file_name, file_type, csPath, message)
 
                     corrected = False
 
@@ -3176,7 +3177,7 @@ class NmrDpUtility(object):
 
                     else:
 
-                        _mrPath, tempPaths = self.__fixFormatIssueOfInputSource(file_type, mrPath, message)
+                        _mrPath, tempPaths = self.__fixFormatIssueOfInputSource(file_name, file_type, mrPath, message)
 
                         corrected = False
 
@@ -3268,7 +3269,7 @@ class NmrDpUtility(object):
 
         return is_done
 
-    def __fixFormatIssueOfInputSource(self, file_type, srcPath=None, message=None):
+    def __fixFormatIssueOfInputSource(self, file_name, file_type, srcPath=None, message=None):
         """ Fix format issue of NMR data.
         """
 
@@ -3287,6 +3288,9 @@ class NmrDpUtility(object):
 
             next(msg for msg in message['error'] if "Invalid file. NMR-STAR files must start with 'data_'. Did you accidentally select the wrong file?" in msg)
             warn = 'Saveframes without the datablock.'
+
+            self.report.warning.appendDescription('resolved_format_issue', {'file_name': file_name, 'description': warn})
+            self.report.setWarning()
 
             if self.__verbose:
                 self.__lfh.write("+NmrDpUtility.__fixFormatIssueOfInputSource() ++ Warning  - %s\n" % warn)
@@ -3312,6 +3316,9 @@ class NmrDpUtility(object):
 
             next(msg for msg in message['error'] if "Only 'save_NAME' is valid in the body of a NMR-STAR file. Found 'loop_'." in msg)
             warn = 'A loop hooks directly into the datablock without saveframe.'
+
+            self.report.warning.appendDescription('resolved_format_issue', {'file_name': file_name, 'description': warn})
+            self.report.setWarning()
 
             if self.__verbose:
                 self.__lfh.write("+NmrDpUtility.__fixFormatIssueOfInputSource() ++ Warning  - %s\n" % warn)
@@ -3345,6 +3352,9 @@ class NmrDpUtility(object):
 
             msg = next(msg for msg in message['error'] if msg_template in msg)
             warn = 'A loop is not in a saveframe with NMR-STAR V3.1 saveframe tags.'
+
+            self.report.warning.appendDescription('resolved_format_issue', {'file_name': file_name, 'description': warn})
+            self.report.setWarning()
 
             if self.__verbose:
                 self.__lfh.write("+NmrDpUtility.__validateInputSource() ++ Warning  - %s\n" % warn)
@@ -3439,6 +3449,9 @@ class NmrDpUtility(object):
             msg = next(msg for msg in message['error'] if msg_template in msg)
             warn = 'Multiple loops hook directly into the datablock without saveframe.'
 
+            self.report.warning.appendDescription('resolved_format_issue', {'file_name': file_name, 'description': warn})
+            self.report.setWarning()
+
             if self.__verbose:
                 self.__lfh.write("+NmrDpUtility.__validateInputSource() ++ Warning  - %s\n" % warn)
 
@@ -3501,6 +3514,10 @@ class NmrDpUtility(object):
 
             target_loop_locations = [target['loop_location'] for target in targets]
             target_stop_locations = [target['stop_location'] for target in targets]
+            ignored_loop_locations = []
+            for target in targets:
+                if 'sf_category' not in target:
+                    ignored_loop_locations.extend(list(range(target['loop_location'], target['stop_location'] + 1)))
 
             i = 1
 
@@ -3515,7 +3532,8 @@ class NmrDpUtility(object):
                                 ofp.write(target['sf_tag_prefix'] + '.' + ('sf_framecode' if file_type == 'nef' else 'Sf_framecode') + '   ' + target['sf_framecode'] + '\n')
                                 ofp.write(target['sf_tag_prefix'] + '.' + ('sf_category' if file_type == 'nef' else 'Sf_category') + '    ' + target['sf_category'] + '\n')
                                 ofp.write('#\n')
-                        ofp.write(line)
+                        if not i in ignored_loop_locations:
+                            ofp.write(line)
                         if i in target_stop_locations:
                             target = next(target for target in targets if target['stop_location'] == i)
                             if 'sf_category' in target:
@@ -3679,7 +3697,7 @@ class NmrDpUtility(object):
                 sf_data = self.__star_data[file_list_id]
                 sf_framecode = ''
 
-                self.__rescueFormerNef__(file_type, file_name, content_subtype, sf_data, sf_framecode, sf_category, lp_category)
+                self.__rescueFormerNef__(file_name, file_type, content_subtype, sf_data, sf_framecode, sf_category, lp_category)
 
             elif self.__star_data_type[file_list_id] == 'Saveframe':
 
@@ -3689,7 +3707,7 @@ class NmrDpUtility(object):
                 sf_data = self.__star_data[file_list_id]
                 sf_framecode = self.__getFirstTagValue(sf_data, 'sf_framecode')
 
-                self.__rescueFormerNef__(file_type, file_name, content_subtype, sf_data, sf_framecode, sf_category, lp_category)
+                self.__rescueFormerNef__(file_name, file_type, content_subtype, sf_data, sf_framecode, sf_category, lp_category)
 
             else:
 
@@ -3697,11 +3715,11 @@ class NmrDpUtility(object):
 
                     sf_framecode = self.__getFirstTagValue(sf_data, 'sf_framecode')
 
-                    self.__rescueFormerNef__(file_type, file_name, content_subtype, sf_data, sf_framecode, sf_category, lp_category)
+                    self.__rescueFormerNef__(file_name, file_type, content_subtype, sf_data, sf_framecode, sf_category, lp_category)
 
         return True
 
-    def __rescueFormerNef__(self, file_type, file_name, content_subtype, sf_data, sf_framecode, sf_category, lp_category):
+    def __rescueFormerNef__(self, file_name, file_type, content_subtype, sf_data, sf_framecode, sf_category, lp_category):
         """ Rescue former NEF version prior to 1.0.
         """
 
@@ -4002,7 +4020,7 @@ class NmrDpUtility(object):
                 sf_data = self.__star_data[file_list_id]
                 sf_framecode = ''
 
-                self.__rescueImmatureStr__(file_type, file_name, content_subtype, sf_data, sf_framecode, lp_category)
+                self.__rescueImmatureStr__(file_name, file_type, content_subtype, sf_data, sf_framecode, lp_category)
 
             elif self.__star_data_type[file_list_id] == 'Saveframe':
 
@@ -4012,7 +4030,7 @@ class NmrDpUtility(object):
                 sf_data = self.__star_data[file_list_id]
                 sf_framecode = self.__getFirstTagValue(sf_data, 'sf_framecode')
 
-                self.__rescueImmatureStr__(file_type, file_name, content_subtype, sf_data, sf_framecode, lp_category)
+                self.__rescueImmatureStr__(file_name, file_type, content_subtype, sf_data, sf_framecode, lp_category)
 
             else:
 
@@ -4020,11 +4038,11 @@ class NmrDpUtility(object):
 
                     sf_framecode = self.__getFirstTagValue(sf_data, 'sf_framecode')
 
-                    self.__rescueImmatureStr__(file_type, file_name, content_subtype, sf_data, sf_framecode, lp_category)
+                    self.__rescueImmatureStr__(file_name, file_type, content_subtype, sf_data, sf_framecode, lp_category)
 
         return True
 
-    def __rescueImmatureStr__(self, file_type, file_name, content_subtype, sf_data, sf_framecode, lp_category):
+    def __rescueImmatureStr__(self, file_name, file_type, content_subtype, sf_data, sf_framecode, lp_category):
         """ Rescue immature NMR-STAR.
         """
 

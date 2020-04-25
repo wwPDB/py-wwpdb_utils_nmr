@@ -33,7 +33,7 @@
 # 24-Apr-2020  M. Yokochi - fix type mismatch if 'default' value is set (v2.2.5, DAOTHER-5609)
 # 24-Apr-2020  M. Yokochi - fix type mismatch if 'default-from' is 'self' (v2.2.5, DAOTHER-5609)
 # 24-Apr-2020  M. Yokochi - revise error message in validate_file() (v2.2.6, DAOTHER-5611)
-# 24-Apr-2020  M. Yokochi - add 'exc_missing' option of check_data() for NMR separated deposition (v2.2.7, DAOTHER-5611)
+# 24-Apr-2020  M. Yokochi - add 'excl_missing_data' option of check_data() for NMR separated deposition (v2.2.7, DAOTHER-5611)
 ##
 import sys
 import os
@@ -51,6 +51,7 @@ from wwpdb.utils.config.ConfigInfo import ConfigInfo, getSiteId
 from wwpdb.utils.nmr.io.ChemCompIo import ChemCompReader
 from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
 from wwpdb.utils.nmr.NmrDpReport import NmrDpReport
+from __builtin__ import True
 
 __version__ = 'v2.2.7'
 
@@ -1827,7 +1828,9 @@ class NEFTranslator(object):
 
         return self.check_data(star_data, lp_category, key_items, data_items)
 
-    def check_data(self, star_data, lp_category, key_items, data_items, allowed_tags=None, disallowed_tags=None, inc_idx_test=False, enforce_non_zero=False, enforce_sign=False, enforce_enum=False, exc_missing=False):
+    def check_data(self, star_data, lp_category, key_items, data_items, allowed_tags=None, disallowed_tags=None,
+                   test_on_index=False, enforce_non_zero=False, enforce_sign=False, enforce_enum=False,
+                   excl_missing_data=False):
         """ Extract data with sanity check from any given loops in an NEF/NMR-STAR file.
             @author: Masashi Yokochi
             @return: list of extracted data for each loop
@@ -1999,7 +2002,7 @@ class NEFTranslator(object):
 
             tag_data = loop.get_data_by_tag(tags)
 
-            if inc_idx_test and len(idx_tag_ids) > 0:
+            if test_on_index and len(idx_tag_ids) > 0:
 
                 for l, _j in enumerate(idx_tag_ids):
 
@@ -2017,7 +2020,7 @@ class NEFTranslator(object):
                             r[loop.tags[j]] = loop.data[l][j]
                         raise ValueError("%s must be int. #_of_row %s, data_of_row %s." % (tags[_j], l + 1, r))
 
-            if not exc_missing:
+            if not excl_missing_data:
                 for l, i in enumerate(tag_data):
                     for j in range(tag_len):
                         if i[j] in self.empty_value:
@@ -2035,7 +2038,7 @@ class NEFTranslator(object):
                                             r[loop.tags[_j]] = loop.data[l][_j]
                                         raise ValueError("%s must not be empty. #_of_row %s, data_of_row %s." % (name, l + 1, r))
 
-            if inc_idx_test:
+            if test_on_index:
                 keys = set()
 
                 rechk = False
@@ -2141,7 +2144,7 @@ class NEFTranslator(object):
             for l, i in enumerate(tag_data):
                 ent = {} # entity
 
-                missing = False
+                missing_mandatory_data = False
 
                 for j in range(tag_len):
                     name = tags[j]
@@ -2153,8 +2156,8 @@ class NEFTranslator(object):
                             try:
                                 ent[name] = val.lower() in self.true_value
                             except:
-                                if exc_missing:
-                                    missing = True
+                                if excl_missing_data:
+                                    missing_mandatory_data = True
                                     continue
                                 else:
                                     raise ValueError("%s%s '%s' must be %s." % (self.__idx_msg(idx_tag_ids, tags, ent), name, val, self.readable_item_type[type]))
@@ -2166,8 +2169,8 @@ class NEFTranslator(object):
                                     ent[name] = self.letter_to_int(val)
                                 elif 'default' in k:
                                     ent[name] = int(k['default'])
-                                elif exc_missing:
-                                    missing = True
+                                elif excl_missing_data:
+                                    missing_mandatory_data = True
                                     continue
                                 else:
                                     raise ValueError("%s%s '%s' must be %s." % (self.__idx_msg(idx_tag_ids, tags, ent), name, val, self.readable_item_type[type]))
@@ -2179,8 +2182,8 @@ class NEFTranslator(object):
                                     ent[name] = self.letter_to_int(val, 1)
                                 elif 'default' in k:
                                     ent[name] = int(k['default'])
-                                elif exc_missing:
-                                    missing = True
+                                elif excl_missing_data:
+                                    missing_mandatory_data = True
                                     continue
                                 else:
                                     raise ValueError("%s%s '%s' must be %s." % (self.__idx_msg(idx_tag_ids, tags, ent), name, val, self.readable_item_type[type]))
@@ -2201,8 +2204,8 @@ class NEFTranslator(object):
                                     ent[name] = self.letter_to_int(val, 1)
                                 elif 'default' in k:
                                     ent[name] = int(k['default'])
-                                elif exc_missing:
-                                    missing = True
+                                elif excl_missing_data:
+                                    missing_mandatory_data = True
                                     continue
                                 else:
                                     raise ValueError("%s%s '%s' must be %s." % (self.__idx_msg(idx_tag_ids, tags, ent), name, val, self.readable_item_type[type]))
@@ -2210,14 +2213,14 @@ class NEFTranslator(object):
                                 raise ValueError("%s%s '%s' must be %s." % (self.__idx_msg(idx_tag_ids, tags, ent), name, val, self.readable_item_type[type]))
                             elif static_val[name] is None:
                                 static_val[name] = val
-                            elif val != static_val[name] and inc_idx_test:
+                            elif val != static_val[name] and test_on_index:
                                 raise ValueError("%s%s %s vs %s must be %s." % (self.__idx_msg(idx_tag_ids, tags, ent), name, val, static_val[name], type))
                         elif type == 'float':
                             try:
                                 ent[name] = float(val)
                             except:
-                                if exc_missing:
-                                    missing = True
+                                if excl_missing_data:
+                                    missing_mandatory_data = True
                                     continue
                                 else:
                                     raise ValueError("%s%s '%s' must be %s." % (self.__idx_msg(idx_tag_ids, tags, ent), name, val, self.readable_item_type[type]))
@@ -2225,8 +2228,8 @@ class NEFTranslator(object):
                             try:
                                 ent[name] = float(val)
                             except:
-                                if exc_missing:
-                                    missing = True
+                                if excl_missing_data:
+                                    missing_mandatory_data = True
                                     continue
                                 else:
                                     raise ValueError("%s%s '%s' must be %s." % (self.__idx_msg(idx_tag_ids, tags, ent), name, val, self.readable_item_type[type]))
@@ -2246,8 +2249,8 @@ class NEFTranslator(object):
                             except KeyError:
                                 raise Error('Range of key item %s is not defined' % name)
                             except:
-                                if exc_missing:
-                                    missing = True
+                                if excl_missing_data:
+                                    missing_mandatory_data = True
                                     continue
                                 else:
                                     raise ValueError("%s%s '%s' must be %s." % (self.__idx_msg(idx_tag_ids, tags, ent), name, val, self.readable_item_type[type]))
@@ -2281,8 +2284,8 @@ class NEFTranslator(object):
                                         val = k['enum-alt'][val]
                                         i[j] = val
                                     elif 'enforce-enum' in k and k['enforce-enum']:
-                                        if exc_missing:
-                                            missing = True
+                                        if excl_missing_data:
+                                            missing_mandatory_data = True
                                             continue
                                         else:
                                             raise ValueError("%s%s '%s' must be one of %s." % (self.__idx_msg(idx_tag_ids, tags, ent), name, val, enum))
@@ -2303,12 +2306,15 @@ class NEFTranslator(object):
                             except KeyError:
                                 raise Error('Enumeration of key item %s is not defined' % name)
                             except:
-                                if exc_missing:
-                                    missing = True
+                                if excl_missing_data:
+                                    missing_mandatory_data = True
                                     continue
                                 else:
                                     raise ValueError("%s%s '%s' must be %s." % (self.__idx_msg(idx_tag_ids, tags, ent), name, val, self.readable_item_type[type]))
                         else:
+                            if val in self.empty_value:
+                                missing_mandatory_data = True
+                                continue
                             if 'uppercase' in k and k['uppercase']:
                                 ent[name] = val.upper()
                             else:
@@ -2319,8 +2325,8 @@ class NEFTranslator(object):
                             if d['name'] == name:
                                 type = d['type']
                                 if val in self.empty_value and ('enum' in type or (not 'default-from' in d and not 'default' in d)):
-                                    if d['mandatory'] and exc_missing:
-                                        missing = True
+                                    if d['mandatory'] and excl_missing_data:
+                                        missing_mandatory_data = True
                                         continue
                                     ent[name] = None
                                 elif type == 'bool':
@@ -2371,7 +2377,7 @@ class NEFTranslator(object):
                                         raise ValueError("%s%s '%s' must be %s." % (self.__idx_msg(idx_tag_ids, tags, ent), name, val, self.readable_item_type[type]))
                                     elif static_val[name] is None:
                                         static_val[name] = val
-                                    elif val != static_val[name] and inc_idx_test:
+                                    elif val != static_val[name] and test_on_index:
                                         raise ValueError("%s%s %s vs %s must be %s." % (self.__idx_msg(idx_tag_ids, tags, ent), name, val, static_val[name], type))
                                 elif type == 'float':
                                     try:
@@ -2499,8 +2505,10 @@ class NEFTranslator(object):
                             if not has_member:
                                 raise ValueError("%sOne of data items %s must not be empty." % (self.__idx_msg(idx_tag_ids, tags, ent), set(group['member-with']).add(name)))
 
-                if not missing:
-                    asm.append(ent)
+                if missing_mandatory_data:
+                    continue
+
+                asm.append(ent)
 
             data.append(asm)
 

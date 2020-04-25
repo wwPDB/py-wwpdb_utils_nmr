@@ -107,8 +107,13 @@ class NmrDpUtility(object):
         self.__check_mandatory_tag = False
         # whether to detect consistency of author sequence (nmr-star specific)
         self.__check_auth_seq = False
-        # whether to detect empty row in a loop
-        self.__check_empty_loop = False
+
+        # whether to fix format issue (enabled if NMR separated deposition)
+        self.__fix_format_issue = False
+        # whether to exclude missing mandatory data (enabled if NMR separated deposition)
+        self.__excl_missing_data = False
+        # whether to detect empty row in a loop # NEFTranslator.validate_file() already prompts the empty low error
+        #self.__check_empty_loop = False
 
         # default entry_id
         self.__entry_id__ = 'UNNAMED'
@@ -2612,6 +2617,22 @@ class NmrDpUtility(object):
             else:
                 self.__check_mandatory_tag = self.__inputParamDict['check_mandatory_tag'] in self.true_value
 
+        if 'fix_format_issue' in self.__inputParamDict and not self.__inputParamDict['fix_format_issue'] is None:
+            if type(self.__inputParamDict['fix_format_issue']) is bool:
+                self.__fix_format_issue = self.__inputParamDict['fix_format_issue']
+            else:
+                self.__fix_format_issue = self.__inputParamDict['fix_format_issue'] in self.true_value
+        elif not self.__combined_mode:
+            self.__fix_format_issue = True
+
+        if 'excl_missing_data' in self.__inputParamDict and not self.__inputParamDict['excl_missing_data'] is None:
+            if type(self.__inputParamDict['excl_missing_data']) is bool:
+                self.__excl_missing_data = self.__inputParamDict['excl_missing_data']
+            else:
+                self.__excl_missing_data = self.__inputParamDict['excl_missing_data'] in self.true_value
+        elif not self.__combined_mode:
+            self.__excl_missing_data = True
+
         if 'entry_id' in self.__outputParamDict and not self.__outputParamDict['entry_id'] is None:
             self.__entry_id = self.__outputParamDict['entry_id']
 
@@ -2942,151 +2963,7 @@ class NmrDpUtility(object):
 
                 else:
 
-                    _csPath = csPath
-                    tempPaths = []
-
-                    try:
-
-                        next(msg for msg in message['error'] if "Only 'save_NAME' is valid in the body of a NMR-STAR file. Found 'loop_'." in msg)
-                        warn = 'A loop hooks directly into the datablock without saveframe.'
-
-                        if self.__verbose:
-                            self.__lfh.write("+NmrDpUtility.__validateInputSource() ++ Warning  - %s\n" % warn)
-
-                        pass_datablock = False
-
-                        datablock_pattern = re.compile(r'\s*data_\S?\s*')
-
-                        with open(_csPath, 'r') as ifp:
-                            with open(_csPath + '~', 'w') as ofp:
-                                line = ifp.readline()
-                                if datablock_pattern.match(line):
-                                    pass_datablock = True
-                                else:
-                                    ofp.write(line)
-                                while line:
-                                    line = ifp.readline()
-                                    if pass_datablock:
-                                        ofp.write(line)
-                                    elif datablock_pattern.match(line):
-                                        pass_datablock = True
-                                    else:
-                                        ofp.write(line)
-
-                                ofp.close()
-
-                                _csPath = ofp.name
-                                tempPaths.append(_csPath)
-                                ofp.close()
-
-                            ifp.close()
-
-                    except StopIteration:
-                        pass
-
-                    try:
-
-                        msg_template = "The tag prefix was never set! Either the saveframe had no tags, you tried to read a version 2.1 file without setting ALLOW_V2_ENTRIES to True, or there is something else wrong with your file. Saveframe error occured:"
-
-                        msg = next(msg for msg in message['error'] if msg_template in msg)
-                        warn = 'A loop is not in a saveframe with NMR-STAR V3.1 saveframe tags.'
-
-                        if self.__verbose:
-                            self.__lfh.write("+NmrDpUtility.__validateInputSource() ++ Warning  - %s\n" % warn)
-
-                        msg_pattern = re.compile(r'^' + msg_template + r" '(.*)'$")
-                        loop_pattern = re.compile(r'\s*loop_\s*')
-                        lp_category_pattern = re.compile(r'\s*_(.*)\..*\s*')
-
-                        targets = []
-
-                        for msg in message['error']:
-
-                            if not msg_template in msg:
-                                continue
-
-                            try:
-
-                                target = {}
-
-                                g = msg_pattern.search(msg).groups()
-                                sf_framecode = str(g[0])
-
-                                target = {'sf_framecode': sf_framecode}
-
-                                pass_sf_framecode = False
-                                pass_sf_loop = False
-
-                                sf_framecode_pattern = re.compile(r'\s*save_' + sf_framecode + r'\s*')
-
-                                with open(_csPath, 'r') as ifp:
-                                    line = ifp.readline()
-                                    if sf_framecode_pattern.match(line):
-                                        pass_sf_framecode = True
-                                    while line:
-                                        line = ifp.readline()
-                                        if pass_sf_framecode:
-                                            if pass_sf_loop:
-                                                if lp_category_pattern.match(line):
-                                                    target['lp_category'] = '_' + lp_category_pattern.search(line).groups()[0]
-                                                    content_subtype = next((k for k, v in self.lp_categories[file_type].items() if v == target['lp_category']), None)
-                                                    if not content_subtype is None:
-                                                        target['sf_category'] = self.sf_categories[file_type][content_subtype]
-                                                        target['sf_tag_prefix'] = self.sf_tag_prefixes[file_type][content_subtype]
-                                                    break
-                                            elif loop_pattern.match(line):
-                                                pass_sf_loop = True
-                                        elif sf_framecode_pattern.match(line):
-                                            pass_sf_framecode = True
-
-                                    ifp.close()
-
-                                targets.append(target)
-
-                            except AttributeError:
-                                pass
-
-                        for target in targets:
-
-                            sf_framecode = target['sf_framecode']
-
-                            pass_sf_framecode = False
-                            pass_sf_loop = False
-
-                            sf_framecode_pattern = re.compile(r'\s*save_' + sf_framecode + r'\s*')
-
-                            with open(_csPath, 'r') as ifp:
-                                with open(_csPath + '~', 'w') as ofp:
-                                    line = ifp.readline()
-                                    if sf_framecode_pattern.match(line):
-                                        pass_sf_framecode = True
-                                    ofp.write(line)
-                                    while line:
-                                        line = ifp.readline()
-                                        if pass_sf_loop:
-                                            ofp.write(line)
-                                        elif pass_sf_framecode:
-                                            if loop_pattern.match(line):
-                                                pass_sf_loop = True
-                                                if 'sf_category' in target:
-                                                    ofp.write(target['sf_tag_prefix'] + '.' + ('sf_framecode' if file_type == 'nef' else 'Sf_framecode') + '   ' + sf_framecode + '\n')
-                                                    ofp.write(target['sf_tag_prefix'] + '.' + ('sf_category' if file_type == 'nef' else 'Sf_category') + '    ' + target['sf_category'] + '\n')
-                                                ofp.write('#\n')
-                                                ofp.write(line)
-                                        elif sf_framecode_pattern.match(line):
-                                            pass_sf_framecode = True
-                                            ofp.write(line)
-                                        elif not pass_sf_framecode:
-                                            ofp.write(line)
-
-                                    _csPath = ofp.name
-                                    tempPaths.append(_csPath)
-                                    ofp.close()
-
-                                ifp.close()
-
-                    except StopIteration:
-                        pass
+                    _csPath, tempPaths = self.__fixFormatIssueOfInputSource(file_type, csPath, message)
 
                     corrected = False
 
@@ -3117,7 +2994,7 @@ class NmrDpUtility(object):
 
                         else:
 
-                            _is_done, star_data_type, star_data = self.__nefT.read_input_file(ofp.name) # NEFTranslator.validate_file() generates this object internally, but not re-used.
+                            _is_done, star_data_type, star_data = self.__nefT.read_input_file(_csPath) # NEFTranslator.validate_file() generates this object internally, but not re-used.
 
                             self.__star_data_type.append(star_data_type)
                             self.__star_data.append(star_data)
@@ -3220,149 +3097,7 @@ class NmrDpUtility(object):
 
                     else:
 
-                        _mrPath = mrPath
-                        tempPaths = []
-
-                        try:
-
-                            next(msg for msg in message['error'] if "Only 'save_NAME' is valid in the body of a NMR-STAR file. Found 'loop_'." in msg)
-                            warn = 'A loop hooks directly into the datablock without saveframe.'
-
-                            if self.__verbose:
-                                self.__lfh.write("+NmrDpUtility.__validateInputSource() ++ Warning  - %s\n" % warn)
-
-                            pass_datablock = False
-
-                            datablock_pattern = re.compile(r'\s*data_\S?\s*')
-
-                            with open(_mrPath, 'r') as ifp:
-                                with open(_mrPath + '~', 'w') as ofp:
-                                    line = ifp.readline()
-                                    if datablock_pattern.match(line):
-                                        pass_datablock = True
-                                    else:
-                                        ofp.write(line)
-                                    while line:
-                                        line = ifp.readline()
-                                        if pass_datablock:
-                                            ofp.write(line)
-                                        elif datablock_pattern.match(line):
-                                            pass_datablock = True
-                                        else:
-                                            ofp.write(line)
-
-                                    _mrPath = ofp.name
-                                    tempPaths.append(_mrPath)
-                                    ofp.close()
-
-                                ifp.close()
-
-                        except StopIteration:
-                            pass
-
-                        try:
-
-                            msg_template = "The tag prefix was never set! Either the saveframe had no tags, you tried to read a version 2.1 file without setting ALLOW_V2_ENTRIES to True, or there is something else wrong with your file. Saveframe error occured:"
-
-                            msg = next(msg for msg in message['error'] if msg_template in msg)
-                            warn = 'A loop is not in a saveframe with NMR-STAR V3.1 saveframe tags.'
-
-                            if self.__verbose:
-                                self.__lfh.write("+NmrDpUtility.__validateInputSource() ++ Warning  - %s\n" % warn)
-
-                            msg_pattern = re.compile(r'^' + msg_template + r" '(.*)'$")
-                            loop_pattern = re.compile(r'\s*loop_\s*')
-                            lp_category_pattern = re.compile(r'\s*_(.*)\..*\s*')
-
-                            targets = []
-
-                            for msg in message['error']:
-
-                                if not msg_template in msg:
-                                    continue
-
-                                try:
-
-                                    target = {}
-
-                                    g = msg_pattern.search(msg).groups()
-                                    sf_framecode = str(g[0])
-
-                                    target = {'sf_framecode': sf_framecode}
-
-                                    pass_sf_framecode = False
-                                    pass_sf_loop = False
-
-                                    sf_framecode_pattern = re.compile(r'\s*save_' + sf_framecode + r'\s*')
-
-                                    with open(_mrPath, 'r') as ifp:
-                                        line = ifp.readline()
-                                        if sf_framecode_pattern.match(line):
-                                            pass_sf_framecode = True
-                                        while line:
-                                            line = ifp.readline()
-                                            if pass_sf_framecode:
-                                                if pass_sf_loop:
-                                                    if lp_category_pattern.match(line):
-                                                        target['lp_category'] = '_' + lp_category_pattern.search(line).groups()[0]
-                                                        content_subtype = next((k for k, v in self.lp_categories[file_type].items() if v == target['lp_category']), None)
-                                                        if not content_subtype is None:
-                                                            target['sf_category'] = self.sf_categories[file_type][content_subtype]
-                                                            target['sf_tag_prefix'] = self.sf_tag_prefixes[file_type][content_subtype]
-                                                        break
-                                                elif loop_pattern.match(line):
-                                                    pass_sf_loop = True
-                                            elif sf_framecode_pattern.match(line):
-                                                pass_sf_framecode = True
-
-                                        ifp.close()
-
-                                    targets.append(target)
-
-                                except AttributeError:
-                                    pass
-
-                            for target in targets:
-
-                                sf_framecode = target['sf_framecode']
-
-                                pass_sf_framecode = False
-                                pass_sf_loop = False
-
-                                sf_framecode_pattern = re.compile(r'\s*save_' + sf_framecode + r'\s*')
-
-                                with open(_mrPath, 'r') as ifp:
-                                    with open(_mrPath + '~', 'w') as ofp:
-                                        line = ifp.readline()
-                                        if sf_framecode_pattern.match(line):
-                                            pass_sf_framecode = True
-                                        ofp.write(line)
-                                        while line:
-                                            line = ifp.readline()
-                                            if pass_sf_loop:
-                                                ofp.write(line)
-                                            elif pass_sf_framecode:
-                                                if loop_pattern.match(line):
-                                                    pass_sf_loop = True
-                                                    if 'sf_category' in target:
-                                                        ofp.write(target['sf_tag_prefix'] + '.' + ('sf_framecode' if file_type == 'nef' else 'Sf_framecode') + '   ' + sf_framecode + '\n')
-                                                        ofp.write(target['sf_tag_prefix'] + '.' + ('sf_category' if file_type == 'nef' else 'Sf_category') + '    ' + target['sf_category'] + '\n')
-                                                    ofp.write('#\n')
-                                                    ofp.write(line)
-                                            elif sf_framecode_pattern.match(line):
-                                                pass_sf_framecode = True
-                                                ofp.write(line)
-                                            elif not pass_sf_framecode:
-                                                ofp.write(line)
-
-                                        _mrPath = ofp.name
-                                        tempPaths.append(_mrPath)
-                                        ofp.close()
-
-                                    ifp.close()
-
-                        except StopIteration:
-                            pass
+                        _mrPath, tempPaths = self.__fixFormatIssueOfInputSource(file_type, mrPath, message)
 
                         corrected = False
 
@@ -3393,7 +3128,7 @@ class NmrDpUtility(object):
 
                             else:
 
-                                _is_done, star_data_type, star_data = self.__nefT.read_input_file(ofp.name) # NEFTranslator.validate_file() generates this object internally, but not re-used.
+                                _is_done, star_data_type, star_data = self.__nefT.read_input_file(_mrPath) # NEFTranslator.validate_file() generates this object internally, but not re-used.
 
                                 self.__star_data_type.append(star_data_type)
                                 self.__star_data.append(star_data)
@@ -3447,6 +3182,161 @@ class NmrDpUtility(object):
                     file_path_list_len += 1
 
         return is_done
+
+    def __fixFormatIssueOfInputSource(self, file_type, srcPath=None, message=None):
+        """ Fix format issue of NMR data.
+        """
+
+        _srcPath = srcPath
+        tempPaths = []
+
+        if not self.__fix_format_issue:
+            return _srcPath, tempPaths
+
+        try:
+
+            next(msg for msg in message['error'] if "Only 'save_NAME' is valid in the body of a NMR-STAR file. Found 'loop_'." in msg)
+            warn = 'A loop hooks directly into the datablock without saveframe.'
+
+            if self.__verbose:
+                self.__lfh.write("+NmrDpUtility.__fixFormatIssueOfInputSource() ++ Warning  - %s\n" % warn)
+
+            pass_datablock = False
+
+            datablock_pattern = re.compile(r'\s*data_\S?\s*')
+
+            with open(_srcPath, 'r') as ifp:
+                with open(_srcPath + '~', 'w') as ofp:
+                    line = ifp.readline()
+                    if datablock_pattern.match(line):
+                        pass_datablock = True
+                    else:
+                        ofp.write(line)
+                    while line:
+                        line = ifp.readline()
+                        if pass_datablock:
+                            ofp.write(line)
+                        elif datablock_pattern.match(line):
+                            pass_datablock = True
+                        else:
+                            ofp.write(line)
+
+                    ofp.close()
+
+                    _srcPath = ofp.name
+                    tempPaths.append(_srcPath)
+                    ofp.close()
+
+                ifp.close()
+
+        except StopIteration:
+            pass
+
+        try:
+
+            msg_template = "The tag prefix was never set! Either the saveframe had no tags, you tried to read a version 2.1 file without setting ALLOW_V2_ENTRIES to True, or there is something else wrong with your file. Saveframe error occured:"
+
+            msg = next(msg for msg in message['error'] if msg_template in msg)
+            warn = 'A loop is not in a saveframe with NMR-STAR V3.1 saveframe tags.'
+
+            if self.__verbose:
+                self.__lfh.write("+NmrDpUtility.__validateInputSource() ++ Warning  - %s\n" % warn)
+
+            msg_pattern = re.compile(r'^' + msg_template + r" '(.*)'$")
+            loop_pattern = re.compile(r'\s*loop_\s*')
+            lp_category_pattern = re.compile(r'\s*_(.*)\..*\s*')
+
+            targets = []
+
+            for msg in message['error']:
+
+                if not msg_template in msg:
+                    continue
+
+                try:
+
+                    target = {}
+
+                    g = msg_pattern.search(msg).groups()
+                    sf_framecode = str(g[0])
+
+                    target = {'sf_framecode': sf_framecode}
+
+                    pass_sf_framecode = False
+                    pass_sf_loop = False
+
+                    sf_framecode_pattern = re.compile(r'\s*save_' + sf_framecode + r'\s*')
+
+                    with open(_srcPath, 'r') as ifp:
+                        line = ifp.readline()
+                        if sf_framecode_pattern.match(line):
+                            pass_sf_framecode = True
+                        while line:
+                            line = ifp.readline()
+                            if pass_sf_framecode:
+                                if pass_sf_loop:
+                                    if lp_category_pattern.match(line):
+                                        target['lp_category'] = '_' + lp_category_pattern.search(line).groups()[0]
+                                        content_subtype = next((k for k, v in self.lp_categories[file_type].items() if v == target['lp_category']), None)
+                                        if not content_subtype is None:
+                                            target['sf_category'] = self.sf_categories[file_type][content_subtype]
+                                            target['sf_tag_prefix'] = self.sf_tag_prefixes[file_type][content_subtype]
+                                        break
+                                elif loop_pattern.match(line):
+                                    pass_sf_loop = True
+                            elif sf_framecode_pattern.match(line):
+                                pass_sf_framecode = True
+
+                        ifp.close()
+
+                    targets.append(target)
+
+                except AttributeError:
+                    pass
+
+            for target in targets:
+
+                sf_framecode = target['sf_framecode']
+
+                pass_sf_framecode = False
+                pass_sf_loop = False
+
+                sf_framecode_pattern = re.compile(r'\s*save_' + sf_framecode + r'\s*')
+
+                with open(_srcPath, 'r') as ifp:
+                    with open(_srcPath + '~', 'w') as ofp:
+                        line = ifp.readline()
+                        if sf_framecode_pattern.match(line):
+                            pass_sf_framecode = True
+                        ofp.write(line)
+                        while line:
+                            line = ifp.readline()
+                            if pass_sf_loop:
+                                ofp.write(line)
+                            elif pass_sf_framecode:
+                                if loop_pattern.match(line):
+                                    pass_sf_loop = True
+                                    if 'sf_category' in target:
+                                        ofp.write(target['sf_tag_prefix'] + '.' + ('sf_framecode' if file_type == 'nef' else 'Sf_framecode') + '   ' + sf_framecode + '\n')
+                                        ofp.write(target['sf_tag_prefix'] + '.' + ('sf_category' if file_type == 'nef' else 'Sf_category') + '    ' + target['sf_category'] + '\n')
+                                    ofp.write('#\n')
+                                    ofp.write(line)
+                            elif sf_framecode_pattern.match(line):
+                                pass_sf_framecode = True
+                                ofp.write(line)
+                            elif not pass_sf_framecode:
+                                ofp.write(line)
+
+                        _srcPath = ofp.name
+                        tempPaths.append(_srcPath)
+                        ofp.close()
+
+                    ifp.close()
+
+        except StopIteration:
+            pass
+
+        return _srcPath, tempPaths
 
     def __getFirstTagValue(self, data=None, tag=None):
         """ Return the first value of a given tag from PyNMRSTAR data.
@@ -5454,9 +5344,13 @@ class NmrDpUtility(object):
         elif atom_id.startswith('QQ'):
             return self.__nefT.get_star_atom(comp_id, 'H' + atom_id[2:] + '%', leave_unmatched=leave_unmatched)
         elif atom_id == 'QR':
-            atom_list, ambiguity_code, details = self.__nefT.get_star_atom(comp_id, 'HD%', leave_unmatched=leave_unmatched)
-            atom_list_2 = self.__nefT.get_star_atom(comp_id, 'HE%', leave_unmatched=leave_unmatched)[0]
-            atom_list.extend(atom_list_2)
+            qr_atoms = set([atom_id[:-1] + '%' for atom_id in self.__csStat.getAromaticAtoms(comp_id) if atom_id[0] == 'H' and self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id) == 3])
+            if len(qr_atoms) == 0:
+                return [], None, None
+            atom_list = []
+            for qr_atom in qr_atoms:
+                _atom_list, ambiguity_code, details = self.__nefT.get_star_atom(comp_id, qr_atom, leave_unmatched=leave_unmatched)
+                atom_list.extend(_atom_list)
             return atom_list, ambiguity_code, details
         elif atom_id.startswith('Q') or atom_id.startswith('M'):
             return self.__nefT.get_star_atom(comp_id, 'H' + atom_id[1:] + '%', leave_unmatched=leave_unmatched)
@@ -6499,8 +6393,8 @@ class NmrDpUtility(object):
         try:
 
             lp_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, allowed_tags, disallowed_tags,
-                                             inc_idx_test=True, enforce_non_zero=True, enforce_sign=True, enforce_enum=True,
-                                             exc_missing=(not self.__combined_mode))[0]
+                                             test_on_index=True, enforce_non_zero=True, enforce_sign=True, enforce_enum=True,
+                                             excl_missing_data=self.__excl_missing_data)[0]
 
             self.__lp_data[content_subtype].append({'file_name': file_name, 'sf_framecode': sf_framecode, 'data': lp_data})
 
@@ -6604,7 +6498,7 @@ class NmrDpUtility(object):
             try:
 
                 lp_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, allowed_tags, disallowed_tags,
-                                                 exc_missing=(not self.__combined_mode))[0]
+                                                 excl_missing_data=self.__excl_missing_data)[0]
 
                 self.__lp_data[content_subtype].append({'file_name': file_name, 'sf_framecode': sf_framecode, 'data': lp_data})
 
@@ -6618,7 +6512,7 @@ class NmrDpUtility(object):
 
             if self.__verbose:
                 self.__lfh.write("+NmrDpUtility.__testDataConsistencyInLoop() ++ Error  - %s" % str(e))
-
+        """
         if (not lp_data is None) and len(lp_data) == 0 and self.__check_empty_loop:
 
             warn = "Unexpectedly, a loop has no rows."
@@ -6628,7 +6522,7 @@ class NmrDpUtility(object):
 
             if self.__verbose:
                 self.__lfh.write("+NmrDpUtility.__testDataConsistencyInLoop() ++ Warning  - %s\n" % warn)
-
+        """
     def __detectConflictDataInLoop(self):
         """ Detect redundant/inconsistent data of interesting loops.
         """
@@ -6950,8 +6844,8 @@ class NmrDpUtility(object):
                             try:
 
                                 aux_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, allowed_tags, None,
-                                                                  inc_idx_test=True, enforce_non_zero=True, enforce_sign=True, enforce_enum=True,
-                                                                  exc_missing=(not self.__combined_mode))[0]
+                                                                  test_on_index=True, enforce_non_zero=True, enforce_sign=True, enforce_enum=True,
+                                                                  excl_missing_data=self.__excl_missing_data)[0]
 
                                 self.__aux_data[content_subtype].append({'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'data': aux_data})
 
@@ -7061,7 +6955,7 @@ class NmrDpUtility(object):
                                                 del _loop.data[l]
 
                                     aux_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, allowed_tags, None,
-                                                                      exc_missing=(not self.__combined_mode))[0]
+                                                                      excl_missing_data=self.__excl_missing_data)[0]
 
                                     self.__aux_data[content_subtype].append({'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'data': aux_data})
 
@@ -7567,7 +7461,7 @@ class NmrDpUtility(object):
 
                 try:
                     lp_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, None, None,
-                                                     exc_missing=(not self.__combined_mode))[0]
+                                                     excl_missing_data=self.__excl_missing_data)[0]
                 except:
                     return False
 
@@ -15156,7 +15050,7 @@ class NmrDpUtility(object):
 
             try:
                 lp_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, None, None,
-                                                 exc_missing=(not self.__combined_mode))[0]
+                                                 excl_missing_data=self.__excl_missing_data)[0]
             except:
                 return False
 
@@ -15872,7 +15766,7 @@ class NmrDpUtility(object):
             if orig_lp_data is None:
                 try:
                     orig_lp_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, None, None,
-                                                          exc_missing=(not self.__combined_mode))[0]
+                                                          excl_missing_data=self.__excl_missing_data)[0]
                 except:
                     pass
 
@@ -16900,7 +16794,7 @@ class NmrDpUtility(object):
                 try:
 
                     lp_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, None, None,
-                                                     exc_missing=(not self.__combined_mode))[0]
+                                                     excl_missing_data=self.__excl_missing_data)[0]
 
                     self.__lp_data[content_subtype].append({'file_name': file_name, 'sf_framecode': sf_framecode, 'data': lp_data})
 
@@ -17291,7 +17185,7 @@ class NmrDpUtility(object):
                 try:
 
                     lp_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, None, None,
-                                                     exc_missing=(not self.__combined_mode))[0]
+                                                     excl_missing_data=self.__excl_missing_data)[0]
 
                     self.__lp_data[content_subtype].append({'file_name': file_name, 'sf_framecode': sf_framecode, 'data': lp_data})
 
@@ -18305,7 +18199,7 @@ class NmrDpUtility(object):
                     try:
 
                         lp_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, None, None,
-                                                         exc_missing=(not self.__combined_mode))[0]
+                                                         excl_missing_data=self.__excl_missing_data)[0]
 
                         self.__lp_data[content_subtype].append({'file_name': file_name, 'sf_framecode': w['sf_framecode'], 'data': lp_data})
 
@@ -18945,7 +18839,7 @@ class NmrDpUtility(object):
                                                 try:
 
                                                     lp_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, None, None,
-                                                                                     exc_missing=(not self.__combined_mode))[0]
+                                                                                     excl_missing_data=self.__excl_missing_data)[0]
 
                                                     self.__lp_data[content_subtype].append({'file_name': file_name, 'sf_framecode': w['sf_framecode'], 'data': lp_data})
 
@@ -19009,7 +18903,7 @@ class NmrDpUtility(object):
                                                 try:
 
                                                     lp_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, None, None,
-                                                                                     exc_missing=(not self.__combined_mode))[0]
+                                                                                     excl_missing_data=self.__excl_missing_data)[0]
 
                                                     self.__lp_data[content_subtype].append({'file_name': file_name, 'sf_framecode': w['sf_framecode'], 'data': lp_data})
 
@@ -19591,7 +19485,7 @@ class NmrDpUtility(object):
                     try:
 
                         lp_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, None, None,
-                                                         exc_missing=(not self.__combined_mode))[0]
+                                                         excl_missing_data=self.__excl_missing_data)[0]
 
                         self.__lp_data[content_subtype].append({'file_name': file_name, 'sf_framecode': sf_framecode, 'data': lp_data})
 
@@ -20754,7 +20648,7 @@ class NmrDpUtility(object):
                 try:
 
                     lp_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, None, None,
-                                                     exc_missing=(not self.__combined_mode))[0]
+                                                     excl_missing_data=self.__excl_missing_data)[0]
 
                     self.__lp_data[content_subtype].append({'file_name': file_name, 'sf_framecode': sf_framecode, 'data': lp_data})
 
@@ -20970,7 +20864,7 @@ class NmrDpUtility(object):
                 try:
 
                     lp_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, None, None,
-                                                     exc_missing=(not self.__combined_mode))[0]
+                                                     excl_missing_data=self.__excl_missing_data)[0]
 
                     self.__lp_data[content_subtype].append({'file_name': file_name, 'sf_framecode': sf_framecode, 'data': lp_data})
 

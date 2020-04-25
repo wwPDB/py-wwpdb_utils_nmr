@@ -53,7 +53,7 @@
 # 24-Apr-2020  M. Yokochi - separate format_issue error and missing_mandatory_content error (DAOTHER-5611)
 # 24-Apr-2020  M. Yokochi - support 'QR' pseudo atom name (DAOTHER-5611)
 # 24-Apr-2020  M. Yokochi - allow mandatory value is missing in NMR separated deposition (DAOTHER-5611)
-# 25-Apr-2020  M. Yokochi - implement automatic format correction for 6PSI entry (DAOTHE-5611)
+# 25-Apr-2020  M. Yokochi - implement automatic format correction for 6PQF, 6PSI entry (DAOTHE-5611)
 # 25-Apr-2020  M. Yokochi - add 'entity' content subtype (DAOTHER-5611)
 ##
 """ Wrapper class for data processing for NMR data.
@@ -3239,6 +3239,34 @@ class NmrDpUtility(object):
 
         try:
 
+            next(msg for msg in message['error'] if "Invalid file. NMR-STAR files must start with 'data_'. Did you accidentally select the wrong file?" in msg)
+            warn = 'Saveframes without the datablock.'
+
+            if self.__verbose:
+                self.__lfh.write("+NmrDpUtility.__fixFormatIssueOfInputSource() ++ Warning  - %s\n" % warn)
+
+            with open(_srcPath, 'r') as ifp:
+                with open(_srcPath + '~', 'w') as ofp:
+                    ofp.write('data_' + os.path.basename(srcPath) + '\n\n')
+                    line = ifp.readline()
+                    ofp.write(line)
+                    while line:
+                        line = ifp.readline()
+                        ofp.write(line)
+
+                    ofp.close()
+
+                    _srcPath = ofp.name
+                    tempPaths.append(_srcPath)
+                    ofp.close()
+
+                ifp.close()
+
+        except StopIteration:
+            pass
+
+        try:
+
             next(msg for msg in message['error'] if "Only 'save_NAME' is valid in the body of a NMR-STAR file. Found 'loop_'." in msg)
             warn = 'A loop hooks directly into the datablock without saveframe.'
 
@@ -5300,8 +5328,51 @@ class NmrDpUtility(object):
 
                             seq_align_set.append(seq_align)
 
+                            if not self.__combined_mode and input_source_dic['non_standard_residue'] is None: # no polimer sequence
+                                has_non_std_comp_id = False
+                                for j in range(len(ref_code)):
+                                    if ref_code[j] == 'X' and test_code[j] == 'X':
+                                        has_non_std_comp_id = True
+                                        break
+
+                                if not has_non_std_comp_id:
+                                    continue
+
+                                asm = []
+
+                                for _s in polymer_sequence:
+
+                                    ent = {'chain_id': _s['chain_id'], 'seq_id': [], 'comp_id': [], 'chem_comp_name': [], 'exptl_data': []}
+
+                                    for _seq_id, _comp_id in zip(_s['seq_id'], _s['comp_id']):
+                                       if self.__get1LetterCode(_comp_id) == 'X':
+
+                                            ent['seq_id'].append(_seq_id)
+                                            ent['comp_id'].append(_comp_id)
+
+                                            self.__updateChemCompDict(_comp_id)
+
+                                            if self.__last_comp_id_test: # matches with comp_id in CCD
+                                                cc_name = self.__last_chem_comp_dict['_chem_comp.name']
+                                                cc_rel_status = self.__last_chem_comp_dict['_chem_comp.pdbx_release_status']
+                                                if cc_rel_status == 'REL':
+                                                    ent['chem_comp_name'].append(cc_name)
+                                                else:
+                                                    ent['chem_comp_name'].append('(Not available due to CCD status code %s)' % cc_rel_status)
+
+                                            else:
+                                                ent['chem_comp_name'].append(None)
+
+                                            ent['exptl_data'].append({'coordinate': False})
+
+                                    asm.append(ent)
+
+                                input_source.setItemValue('non_standard_residue', asm)
+
                             for j in range(len(ref_code)):
                                 if ref_code[j] == 'X' and test_code[j] == 'X':
+                                    if input_source_dic['non_standard_residue'] is None: # no polimer sequence
+                                        print ('ENTER')
                                     input_source.updateNonStandardResidueByExptlData(chain_id, s1['seq_id'][j], content_subtype)
 
                 if len(seq_align_set) > 0:

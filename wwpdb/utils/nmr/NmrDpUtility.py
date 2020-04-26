@@ -3315,7 +3315,7 @@ class NmrDpUtility(object):
         try:
 
             next(msg for msg in message['error'] if "Only 'save_NAME' is valid in the body of a NMR-STAR file. Found 'loop_'." in msg)
-            warn = 'Instead of the datablock, a saveframe must hook the loop.'
+            warn = 'A saveframe, instead of the datablock, must hook the loop.'
 
             self.report.warning.appendDescription('corrected_format_issue', {'file_name': file_name, 'description': warn})
             self.report.setWarning()
@@ -3351,7 +3351,7 @@ class NmrDpUtility(object):
             msg_template = "The tag prefix was never set! Either the saveframe had no tags, you tried to read a version 2.1 file without setting ALLOW_V2_ENTRIES to True, or there is something else wrong with your file. Saveframe error occured:"
 
             msg = next(msg for msg in message['error'] if msg_template in msg)
-            warn = 'The saveframe has no tags or NMR-STAR V2.1 tags.'
+            warn = 'The saveframe must have NMR-STAR V3.1 tags.'
 
             self.report.warning.appendDescription('corrected_format_issue', {'file_name': file_name, 'description': warn})
             self.report.setWarning()
@@ -3447,7 +3447,7 @@ class NmrDpUtility(object):
             msg_template = "You attempted to parse one loop but the source you provided had more than one loop. Please either parse all loops as a saveframe or only parse one loop. Loops detected:"
 
             msg = next(msg for msg in message['error'] if msg_template in msg)
-            warn = 'Instead of the datablock, saveframe(s) must hook these multiple loops.'
+            warn = 'Saveframe(s), instead of the datablock, must hook more than one loops.'
 
             self.report.warning.appendDescription('corrected_format_issue', {'file_name': file_name, 'description': warn})
             self.report.setWarning()
@@ -5710,7 +5710,7 @@ class NmrDpUtility(object):
         elif atom_id.startswith('QQ'):
             return self.__nefT.get_star_atom(comp_id, 'H' + atom_id[2:] + '%', leave_unmatched=leave_unmatched)
         elif atom_id.startswith('QR'):
-            qr_atoms = set([atom_id[:-1] + '%' for atom_id in self.__csStat.getAromaticAtoms(comp_id) if atom_id[0] == 'H' and self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id) == 3])
+            qr_atoms = sorted(set([atom_id[:-1] + '%' for atom_id in self.__csStat.getAromaticAtoms(comp_id) if atom_id[0] == 'H' and self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id) == 3]))
             if len(qr_atoms) == 0:
                 return [], None, None
             atom_list = []

@@ -26,8 +26,8 @@ class TestNmrDpUtility(unittest.TestCase):
                                    '6QF8': 'model-upload.pdb',
                                    '6QWR': 'model-upload.pdb',
                                    '6TPH': 'model-upload.cif'
-                           }
-        self.mode_file = {entry_id: entry_id.lower() + '.cif' for entry_id in self.entries}
+                                   }
+        self.model_file = {entry_id: entry_id.lower() + '.cif' for entry_id in self.entries}
         self.nmr_db_util = NmrDpUtility()
         pass
 
@@ -37,7 +37,7 @@ class TestNmrDpUtility(unittest.TestCase):
     def __test_nmr_cs_str_consistency(self, entry_id):
         entry_dir_path = self.data_dir_path + entry_id + '/'
         self.nmr_db_util.addInput(name='chem_shift_file_path_list', value=[entry_dir_path + cs_file for cs_file in self.cs_file[entry_id]], type='file_list')
-        self.nmr_db_util.addInput(name='coordinate_file_path', value=entry_dir_path + self.mode_file[entry_id], type='file')
+        self.nmr_db_util.addInput(name='coordinate_file_path', value=entry_dir_path + self.model_file[entry_id], type='file')
         self.nmr_db_util.addInput(name='nonblk_anomalous_cs', value=True, type='param')
         self.nmr_db_util.addInput(name='nonblk_bad_nterm', value=True, type='param')
         self.nmr_db_util.addInput(name='resolve_conflict', value=True, type='param')

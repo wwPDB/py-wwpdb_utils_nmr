@@ -1148,7 +1148,7 @@ class NEFTranslator(object):
                 seq_data = loop.get_data_by_tag(tags)
                 for i in seq_data:
                     if i[2] in self.empty_value:
-                        i[2] = 1
+                        i[2] = '1'
             elif set(tags_) & set(loop.tags) == set(tags_): # No Entity_assembly_ID tag case
                 seq_data = loop.get_data_by_tag(tags_)
                 for i in seq_data:

@@ -56,6 +56,7 @@
 # 25-Apr-2020  M. Yokochi - implement automatic format correction for 6NZN, 6PQF, 6PSI entry (DAOTHE-5611)
 # 25-Apr-2020  M. Yokochi - add 'entity' content subtype (DAOTHER-5611)
 # 25-Apr-2020  M. Yokochi - add 'corrected_format_issue' warning type (DAOTHER-5611)
+# 27-Apr-2020  M. Yokochi - add 'auth_atom_nomenclature_mismatch' warning type (DAOTHER-5611)
 ##
 """ Wrapper class for data processing for NMR data.
     @author: Masashi Yokochi
@@ -5231,7 +5232,7 @@ class NmrDpUtility(object):
                 dat = loop.get_data_by_tag(tags)
                 for i in dat:
                     if i[2] in self.empty_value:
-                        i[2] = 1
+                        i[2] = '1'
             elif set(tags_) & set(loop.tags) == set(tags_): # No Entity_ID tag case
                 dat = loop.get_data_by_tag(tags_)
                 for i in dat:
@@ -5783,7 +5784,7 @@ class NmrDpUtility(object):
 
                                 warn = "GLY:HA1/HA2 in the NMR data should be GLY:HA2/HA3 according to the IUPAC atom nomenclature, respectively."
 
-                                self.report.warning.appendDescription('atom_nomenclature_mismatch', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
+                                self.report.warning.appendDescription('auth_atom_nomenclature_mismatch', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
                                 self.report.setWarning()
 
                                 if self.__verbose:
@@ -5862,7 +5863,7 @@ class NmrDpUtility(object):
 
                                     warn = "Unmatched Auth_atom_ID %s (Auth_comp_ID %s)." % (auth_atom_id, comp_id)
 
-                                    self.report.warning.appendDescription('atom_nomenclature_mismatch', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
+                                    self.report.warning.appendDescription('auth_atom_nomenclature_mismatch', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
                                     self.report.setWarning()
 
                                     if self.__verbose:
@@ -5879,7 +5880,7 @@ class NmrDpUtility(object):
 
                                     warn = "Unmatched Auth_atom_ID %s (Auth_comp_ID %s)." % (auth_atom_id, comp_id)
 
-                                    self.report.warning.appendDescription('atom_nomenclature_mismatch', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
+                                    self.report.warning.appendDescription('auth_atom_nomenclature_mismatch', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
                                     self.report.setWarning()
 
                                     if self.__verbose:
@@ -5902,7 +5903,7 @@ class NmrDpUtility(object):
 
                                     warn = "Unmatched Auth_atom_ID %s (Auth_comp_ID %s, non-standard residue)." % ((set(auth_atom_ids) | set(atom_ids)) - set(atom_ids), comp_id)
 
-                                    self.report.warning.appendDescription('atom_nomenclature_mismatch', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
+                                    self.report.warning.appendDescription('auth_atom_nomenclature_mismatch', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
                                     self.report.setWarning()
 
                                     if self.__verbose:
@@ -5914,7 +5915,7 @@ class NmrDpUtility(object):
 
                                     warn = "Unmatched Auth_atom_ID %s (Auth_comp_ID %s, non-standard residue)." % (auth_atom_ids, comp_id)
 
-                                    self.report.warning.appendDescription('atom_nomenclature_mismatch', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
+                                    self.report.warning.appendDescription('auth_atom_nomenclature_mismatch', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
                                     self.report.setWarning()
 
                                     if self.__verbose:
@@ -6249,6 +6250,7 @@ class NmrDpUtility(object):
                         self.__lfh.write("+NmrDpUtility.__validateAtomTypeOfCSLoop() ++ Error  - %s\n" % err)
 
                 else:
+
                     for isotope_num in isotope_nums:
                         if not isotope_num in self.atom_isotopes[atom_type]:
 
@@ -14114,7 +14116,7 @@ class NmrDpUtility(object):
                 poly_seq = input_source_dic['polymer_sequence']
 
                 if poly_seq is None:
-
+                    """
                     err = "Polymer sequence does not exist, __extractCoordPolymerSequence() should be invoked."
 
                     self.report.error.appendDescription('internal_error', "+NmrDpUtility.__extractCoordNonPolymerScheme() ++ Error  - %s" % err)
@@ -14122,7 +14124,7 @@ class NmrDpUtility(object):
 
                     if self.__verbose:
                         self.__lfh.write("+NmrDpUtility.__extractCoordNonPolymerScheme() ++ Error  - %s" % err)
-
+                    """
                     return False
 
                 for np in non_poly:
@@ -14779,6 +14781,27 @@ class NmrDpUtility(object):
                             else:
                                 break
 
+                        if not self.__combined_mode:
+
+                            _conflicts = 0
+
+                            for i in range(length):
+                                myPr = myAlign[i]
+                                if myPr[0] == myPr[1]:
+                                    continue
+
+                                cif_comp_id = myPr[0].encode()
+                                nmr_comp_id = myPr[1].encode()
+
+                                if nmr_comp_id == '.' and cif_comp_id != '.':
+                                    pass
+
+                                elif nmr_comp_id != cif_comp_id and aligned[i]:
+                                    _conflicts += 1
+
+                            if _conflicts > chain_assign['unmapped']:
+                                continue
+
                         unmapped = []
                         conflict = []
                         offset_1 = 0
@@ -15061,6 +15084,27 @@ class NmrDpUtility(object):
                                 if myPr[1].encode() == '.':
                                     if (not seq_id1[i] is None) and ((i > 0 and not seq_id1[i - 1] is None and seq_id1[i - 1] + 1 == seq_id1[i]) or (i + 1 < len(seq_id1) and not seq_id1[i + 1] is None and seq_id1[i + 1] - 1 == seq_id1[i])):
                                         aligned[i] = False
+
+                        if not self.__combined_mode:
+
+                            _conflicts = 0
+
+                            for i in range(len(myAlign)):
+                                myPr = myAlign[i]
+                                if myPr[0] == myPr[1]:
+                                    continue
+
+                                nmr_comp_id = myPr[0].encode()
+                                cif_comp_id = myPr[1].encode()
+
+                                if cif_comp_id == '.' and nmr_comp_id != '.':
+                                    pass
+
+                                elif cif_comp_id != nmr_comp_id and aligned[i]:
+                                    _conflicts += 1
+
+                            if _conflicts > chain_assign['unmapped']:
+                                continue
 
                         unmapped = []
                         conflict = []
@@ -15599,7 +15643,7 @@ class NmrDpUtility(object):
                         else:
                             err += 'because sequence (chain_id %s) starts with Proline residue.' % ref_chain_id
 
-                        self.report.warning.appendDescription('atom_nomenclature_mismatch', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
+                        self.report.warning.appendDescription('auth_atom_nomenclature_mismatch', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
                         self.report.setWarning()
 
                         if self.__verbose:
@@ -15617,11 +15661,23 @@ class NmrDpUtility(object):
 
                     elif ca['conflict'] == 0: # no conflict in sequenc alignment
 
-                        self.report.error.appendDescription('invalid_atom_nomenclature', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
-                        self.report.setError()
+                        one_letter_code = self.__get1LetterCode(comp_id)
 
-                        if self.__verbose:
-                            self.__lfh.write("+NmrDpUtility.__testCoordAtomIdConsistency() ++ Error  - %s\n" % err)
+                        if one_letter_code != 'X':
+
+                            self.report.error.appendDescription('invalid_atom_nomenclature', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
+                            self.report.setError()
+
+                            if self.__verbose:
+                                self.__lfh.write("+NmrDpUtility.__testCoordAtomIdConsistency() ++ Error  - %s\n" % err)
+
+                        else:
+
+                            self.report.warning.appendDescription('atom_nomenclature_mismatch', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
+                            self.report.setWarning()
+
+                            if self.__verbose:
+                                self.__lfh.write("+NmrDpUtility.__testCoordAtomIdConsistency() ++ Warning  - %s\n" % err)
 
         return add_details
 

@@ -2817,7 +2817,7 @@ class NEFTranslator(object):
             for t in tag_items:
                 if t['name'] == name:
                     type = t['type']
-                    if val in self.empty_value and ('enum' in type or (not 'default-from' in t and not 'default' in t)):
+                    if val in self.empty_value and not 'enum' in type and not 'default-from' in t and not 'default' in t:
                        ent[name] = None
                     elif type == 'bool':
                         try:

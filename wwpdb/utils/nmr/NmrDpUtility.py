@@ -58,7 +58,9 @@
 # 25-Apr-2020  M. Yokochi - add 'entity' content subtype (DAOTHER-5611)
 # 25-Apr-2020  M. Yokochi - add 'corrected_format_issue' warning type (DAOTHER-5611)
 # 27-Apr-2020  M. Yokochi - add 'auth_atom_nomenclature_mismatch' warning type (DAOTHER-5611)
+# 27-Apr-2020  M. Yokochi - implement automatic recursive format corrections (DAOTHER-5602)
 ##
+from pip._vendor.html5lib.treebuilders.etree import tag_regexp
 """ Wrapper class for data processing for NMR data.
     @author: Masashi Yokochi
 """
@@ -114,7 +116,7 @@ class NmrDpUtility(object):
         # whether to detect consistency of author sequence (nmr-star specific)
         self.__check_auth_seq = False
 
-        # whether to fix format issue (enabled if NMR separated deposition)
+        # whether to fix format issue (enabled if NMR separated deposition or release mode)
         self.__fix_format_issue = False
         # whether to exclude missing mandatory data (enabled if NMR separated deposition)
         self.__excl_missing_data = False
@@ -2668,7 +2670,7 @@ class NmrDpUtility(object):
                 self.__fix_format_issue = self.__inputParamDict['fix_format_issue']
             else:
                 self.__fix_format_issue = self.__inputParamDict['fix_format_issue'] in self.true_value
-        elif not self.__combined_mode:
+        elif not self.__combined_mode or self.__release_mode:
             self.__fix_format_issue = True
 
         if 'excl_missing_data' in self.__inputParamDict and not self.__inputParamDict['excl_missing_data'] is None:
@@ -2938,35 +2940,7 @@ class NmrDpUtility(object):
                     self.__rescueImmatureStr(0)
 
             else:
-
-                missing_loop = True
-
-                err = "%s is not compliant with the %s dictionary." % (file_name, self.readable_file_type[file_type])
-
-                if len(message['error']) > 0:
-                    try:
-                        next(err_message for err_message in message['error'] if 'The mandatory loop' in err_message)
-
-                        err = ''
-                        for err_message in message['error']:
-                            if not 'No such file or directory' in err_message:
-                                err += re.sub('not in list', 'unknown item.', err_message) + ' '
-                        err = err[:-1]
-
-                    except StopIteration:
-                        missing_loop = False
-
-                        for err_message in message['error']:
-                            if not 'No such file or directory' in err_message:
-                                err += ' ' + re.sub('not in list', 'unknown item.', err_message)
-
-                self.report.error.appendDescription('missing_mandatory_content' if missing_loop else 'format_issue', {'file_name': file_name, 'description': err})
-                self.report.setError()
-
-                if self.__verbose:
-                    self.__lfh.write("+NmrDpUtility.__validateInputSource() ++ Error  - %s\n" % err)
-
-                is_done = False
+                is_done = self.__fixFormatIssueOfInputSource(0, file_name, file_type, srcPath, 'A', None, message)
 
             if not srcPath_ is None:
                 try:
@@ -3031,89 +3005,8 @@ class NmrDpUtility(object):
                         if not _is_done:
                             is_done = False
 
-                else:
-
-                    _csPath, tempPaths = self.__fixFormatIssueOfInputSource(file_name, file_type, csPath, message)
-
-                    corrected = False
-
-                    is_valid, json_dumps = self.__nefT.validate_file(_csPath, 'S') # 'A' for NMR unified data, 'S' for assigned chemical shifts, 'R' for restraints.
-
-                    message = json.loads(json_dumps)
-
-                    _file_type = message['file_type'] # nef/nmr-star/unknown
-
-                    if is_valid:
-
-                        if _file_type != file_type:
-
-                            err = "%s was selected as %s file, but recognized as %s file." % (file_name, self.readable_file_type[file_type], self.readable_file_type[_file_type])
-
-                            if len(message['error']) > 0:
-                                for err_message in message['error']:
-                                    if not 'No such file or directory' in err_message:
-                                        err += ' ' + re.sub('not in list', 'unknown item.', err_message)
-
-                            self.report.error.appendDescription('format_issue', {'file_name': file_name, 'description': err})
-                            self.report.setError()
-
-                            if self.__verbose:
-                                self.__lfh.write("+NmrDpUtility.__validateInputSource() ++ Error  - %s\n" % err)
-
-                            is_done = False
-
-                        else:
-
-                            _is_done, star_data_type, star_data = self.__nefT.read_input_file(_csPath) # NEFTranslator.validate_file() generates this object internally, but not re-used.
-
-                            self.__star_data_type.append(star_data_type)
-                            self.__star_data.append(star_data)
-
-                            self.__rescueFormerNef(csListId)
-                            self.__rescueImmatureStr(csListId)
-
-                            if not _is_done:
-                                is_done = False
-                            else:
-                                corrected = True
-
-                    try:
-                        for tempPath in tempPaths:
-                            if os.path.exists(tempPath):
-                                os.remove(tempPath)
-                    except:
-                        pass
-
-                    if not corrected:
-
-                        missing_loop = True
-
-                        err = "%s is not compliant with the %s dictionary." % (file_name, self.readable_file_type[file_type])
-
-                        if len(message['error']) > 0:
-                            try:
-                                next(err_message for err_message in message['error'] if 'The mandatory loop' in err_message)
-
-                                err = ''
-                                for err_message in message['error']:
-                                    if not 'No such file or directory' in err_message:
-                                        err += re.sub('not in list', 'unknown item.', err_message) + ' '
-                                err = err[:-1]
-
-                            except StopIteration:
-                                missing_loop = False
-
-                                for err_message in message['error']:
-                                    if not 'No such file or directory' in err_message:
-                                        err += ' ' + re.sub('not in list', 'unknown item.', err_message)
-
-                        self.report.error.appendDescription('missing_mandatory_content' if missing_loop else 'format_issue', {'file_name': file_name, 'description': err})
-                        self.report.setError()
-
-                        if self.__verbose:
-                            self.__lfh.write("+NmrDpUtility.__validateInputSource() ++ Error  - %s\n" % err)
-
-                        is_done = False
+                elif not self.__fixFormatIssueOfInputSource(csListId, file_name, file_type, csPath, 'S', None, message):
+                    is_done = False
 
                 if not csPath_ is None:
                     try:
@@ -3180,89 +3073,8 @@ class NmrDpUtility(object):
                             if not _is_done:
                                 is_done = False
 
-                    else:
-
-                        _mrPath, tempPaths = self.__fixFormatIssueOfInputSource(file_name, file_type, mrPath, message)
-
-                        corrected = False
-
-                        is_valid, json_dumps = self.__nefT.validate_file(_mrPath, 'R') # 'A' for NMR unified data, 'S' for assigned chemical shifts, 'R' for restraints.
-
-                        message = json.loads(json_dumps)
-
-                        _file_type = message['file_type'] # nef/nmr-star/unknown
-
-                        if is_valid:
-
-                            if _file_type != file_type:
-
-                                err = "%s was selected as %s file, but recognized as %s file." % (file_name, self.readable_file_type[file_type], self.readable_file_type[_file_type])
-
-                                if len(message['error']) > 0:
-                                    for err_message in message['error']:
-                                        if not 'No such file or directory' in err_message:
-                                            err += ' ' + re.sub('not in list', 'unknown item.', err_message)
-
-                                self.report.error.appendDescription('format_issue', {'file_name': file_name, 'description': err})
-                                self.report.setError()
-
-                                if self.__verbose:
-                                    self.__lfh.write("+NmrDpUtility.__validateInputSource() ++ Error  - %s\n" % err)
-
-                                is_done = False
-
-                            else:
-
-                                _is_done, star_data_type, star_data = self.__nefT.read_input_file(_mrPath) # NEFTranslator.validate_file() generates this object internally, but not re-used.
-
-                                self.__star_data_type.append(star_data_type)
-                                self.__star_data.append(star_data)
-
-                                self.__rescueFormerNef(file_path_list_len)
-                                self.__rescueImmatureStr(file_path_list_len)
-
-                                if not _is_done:
-                                    is_done = False
-                                else:
-                                    corrected = True
-
-                        try:
-                            for tempPath in tempPaths:
-                                if os.path.exists(tempPath):
-                                    os.remove(tempPath)
-                        except:
-                            pass
-
-                        if not corrected:
-
-                            missing_loop = True
-
-                            err = "%s is not compliant with the %s dictionary." % (file_name, self.readable_file_type[file_type])
-
-                            if len(message['error']) > 0:
-                                try:
-                                    next(err_message for err_message in message['error'] if 'The mandatory loop' in err_message)
-
-                                    err = ''
-                                    for err_message in message['error']:
-                                        if not 'No such file or directory' in err_message:
-                                            err += re.sub('not in list', 'unknown item.', err_message) + ' '
-                                    err = err[:-1]
-
-                                except StopIteration:
-                                    missing_loop = False
-
-                                    for err_message in message['error']:
-                                        if not 'No such file or directory' in err_message:
-                                            err += ' ' + re.sub('not in list', 'unknown item.', err_message)
-
-                            self.report.error.appendDescription('missing_mandatory_content' if missing_loop else 'format_issue', {'file_name': file_name, 'description': err})
-                            self.report.setError()
-
-                            if self.__verbose:
-                                self.__lfh.write("+NmrDpUtility.__validateInputSource() ++ Error  - %s\n" % err)
-
-                            is_done = False
+                    elif not self.__fixFormatIssueOfInputSource(file_path_list_len, file_name, file_type, mrPath, 'R', None, message):
+                        is_done = False
 
                     file_path_list_len += 1
 
@@ -3274,20 +3086,26 @@ class NmrDpUtility(object):
 
         return is_done
 
-    def __fixFormatIssueOfInputSource(self, file_name, file_type, srcPath=None, message=None):
+    def __fixFormatIssueOfInputSource(self, file_list_id, file_name, file_type, srcPath=None, fileSubType='S', tempPaths=None, message=None):
         """ Fix format issue of NMR data.
         """
 
-        _srcPath = srcPath
-        tempPaths = []
-
         if not self.__fix_format_issue:
-            return _srcPath, tempPaths
+            return False
 
-        datablock_pattern = re.compile(r'\s*data_\S?\s*')
+        _srcPath = srcPath
+        if tempPaths is None:
+            tempPaths = []
+
+        len_temp_paths = len(tempPaths)
+
+        datablock_pattern = re.compile(r'\s*data_\S*\s*')
+        sf_anonymous_pattern = re.compile(r'\s*save_\S*\s*')
+        save_pattern = re.compile(r'\s*save_\s*')
         loop_pattern = re.compile(r'\s*loop_\s*')
         stop_pattern = re.compile(r'\s*stop_\s*')
-        lp_category_pattern = re.compile(r'\s*_(.*)\..*\s*')
+        category_pattern = re.compile(r'\s*_(\S*)\..*\s*')
+        tagvalue_pattern = re.compile(r'\s*_(\S*)\.(\S*)\s+(.*)\s*')
 
         try:
 
@@ -3356,7 +3174,7 @@ class NmrDpUtility(object):
             msg_template = "The tag prefix was never set! Either the saveframe had no tags, you tried to read a version 2.1 file without setting ALLOW_V2_ENTRIES to True, or there is something else wrong with your file. Saveframe error occured:"
 
             msg = next(msg for msg in message['error'] if msg_template in msg)
-            warn = 'The saveframe must have NMR-STAR V3.1 tags.'
+            warn = 'The saveframe must have NMR-STAR V3.1 tags. Saveframe error occured:%s' % (msg[len(msg_template):])
 
             self.report.warning.appendDescription('corrected_format_issue', {'file_name': file_name, 'description': warn})
             self.report.setWarning()
@@ -3391,8 +3209,8 @@ class NmrDpUtility(object):
                         for line in ifp:
                             if pass_sf_framecode:
                                 if pass_sf_loop:
-                                    if lp_category_pattern.match(line):
-                                        target['lp_category'] = '_' + lp_category_pattern.search(line).groups()[0]
+                                    if category_pattern.match(line):
+                                        target['lp_category'] = '_' + category_pattern.search(line).groups()[0]
                                         content_subtype = next((k for k, v in self.lp_categories[file_type].items() if v == target['lp_category']), None)
                                         if not content_subtype is None:
                                             target['sf_category'] = self.sf_categories[file_type][content_subtype]
@@ -3452,7 +3270,7 @@ class NmrDpUtility(object):
             msg_template = "You attempted to parse one loop but the source you provided had more than one loop. Please either parse all loops as a saveframe or only parse one loop. Loops detected:"
 
             msg = next(msg for msg in message['error'] if msg_template in msg)
-            warn = 'Saveframe(s), instead of the datablock, must hook more than one loops.'
+            warn = 'Saveframe(s), instead of the datablock, must hook more than one loops. Loops detected:%s' % (msg[len(msg_template):])
 
             self.report.warning.appendDescription('corrected_format_issue', {'file_name': file_name, 'description': warn})
             self.report.setWarning()
@@ -3488,8 +3306,8 @@ class NmrDpUtility(object):
                         with open(_srcPath, 'r') as ifp:
                             for line in ifp:
                                 if pass_loop:
-                                    if lp_category_pattern.match(line):
-                                        _lp_category = '_' + lp_category_pattern.search(line).groups()[0]
+                                    if category_pattern.match(line):
+                                        _lp_category = '_' + category_pattern.search(line).groups()[0]
                                         if lp_category == _lp_category:
                                             target['loop_location'] = _i
                                             content_subtype = next((k for k, v in self.lp_categories[file_type].items() if v == target['lp_category']), None)
@@ -3554,7 +3372,276 @@ class NmrDpUtility(object):
         except StopIteration:
             pass
 
-        return _srcPath, tempPaths
+        try:
+
+            msg_template = "One saveframe cannot have tags with different categories (or tags that don't match the set category)!"
+
+            msg = next(msg for msg in message['error'] if msg_template in msg)
+            warn = msg
+
+            _msg_template = "One saveframe cannot have tags with different categories \(or tags that don't match the set category\)!"
+
+            msg_pattern = re.compile(r'^' + _msg_template + r" '(.*)' vs '(.*)'.$")
+
+            targets = []
+
+            for msg in message['error']:
+
+                if not msg_template in msg:
+                    continue
+
+                try:
+
+                    target = {}
+
+                    g = msg_pattern.search(msg).groups()
+
+                    try:
+                        category_1 = str(g[0])
+                        category_2 = str(g[1])
+                    except IndexError:
+                        continue
+
+                    target = {'category_1': category_1, 'category_2': category_2}
+
+                    pass_sf_framecode = False
+                    pass_category_1 = False
+                    pass_category_2 = False
+                    pass_sf_loop = False
+
+                    i = 1
+
+                    with open(_srcPath, 'r') as ifp:
+                        for line in ifp:
+                            if pass_sf_framecode:
+                                if save_pattern.match(line):
+                                    if 'category_1_begin' in target and 'category_2_begin' in target:
+                                        targets.append(target)
+                                        break
+                                    pass_sf_framecode = False
+                                    pass_category_1 = False
+                                    pass_category_2 = False
+                                    pass_sf_loop = False
+                                elif loop_pattern.match(line):
+                                    pass_sf_loop = True
+                                elif not pass_sf_loop:
+                                    if category_pattern.match(line):
+                                        category = '_' + category_pattern.search(line).groups()[0]
+                                        if category == category_1:
+                                            if not pass_category_1:
+                                                target['category_1_begin'] = i
+                                                content_subtype = next((k for k, v in self.sf_tag_prefixes[file_type].items() if v == category), None)
+                                                if not content_subtype is None:
+                                                    target['content_subtype_1'] = content_subtype
+                                                content_subtype = next((k for k, v in self.lp_categories[file_type].items() if v == category), None)
+                                                if not content_subtype is None:
+                                                    target['content_subtype_1'] = content_subtype
+                                            pass_category_1 = True
+                                            target['category_1_end'] = i
+                                        elif category == category_2 and pass_category_1:
+                                            if not pass_category_2:
+                                                target['category_2_begin'] = i
+                                                content_subtype = next((k for k, v in self.sf_tag_prefixes[file_type].items() if v == category), None)
+                                                if not content_subtype is None:
+                                                    target['category_type_2'] = 'saveframe'
+                                                    target['content_subtype_2'] = content_subtype
+                                                    target['sf_tag_prefix_2'] = self.sf_tag_prefixes[file_type][content_subtype]
+                                                    target['sf_category_2'] = self.sf_categories[file_type][content_subtype]
+                                                    target['sf_framecode_2'] = target['sf_category_2'] + '_1'
+                                                content_subtype = next((k for k, v in self.lp_categories[file_type].items() if v == category), None)
+                                                if not content_subtype is None:
+                                                    target['category_type_2'] = 'loop'
+                                                    target['content_subtype_2'] = content_subtype
+                                                    target['sf_tag_prefix_2'] = self.sf_tag_prefixes[file_type][content_subtype]
+                                                    target['sf_category_2'] = self.sf_categories[file_type][content_subtype]
+                                                    target['sf_framecode_2'] = target['sf_category_2'] + '_1'
+                                                if not 'category_type_2' in target:
+                                                    content_subtype = target['content_subtype_1']
+                                                    target['category_type_2'] = 'loop'
+                                                    target['content_subtype_2'] = content_subtype
+                                            pass_category_2 = True
+                                            target['category_2_end'] = i
+                                elif loop_pattern.match(line):
+                                    pass_sf_loop = True
+                            elif sf_anonymous_pattern.match(line):
+                                pass_sf_framecode = True
+                                pass_category_1 = False
+                                pass_category_2 = False
+                                pass_sf_loop = False
+
+                            i += 1
+
+                        ifp.close()
+
+                except AttributeError:
+                    pass
+
+            if len(targets) > 0:
+
+                self.report.warning.appendDescription('corrected_format_issue', {'file_name': file_name, 'description': warn})
+                self.report.setWarning()
+
+                if self.__verbose:
+                    self.__lfh.write("+NmrDpUtility.__validateInputSource() ++ Warning  - %s\n" % warn)
+
+                target_category_begins = [target['category_2_begin'] for target in targets]
+                target_category_ends = [target['category_2_end'] for target in targets]
+
+                loop_category_locations = []
+                for target in targets:
+                    _range = list(range(target['category_2_begin'], target['category_2_end'] + 1))
+                    if target['category_type_2'] == 'loop':
+                        loop_category_locations.extend(_range)
+
+                i = 1
+
+                with open(_srcPath, 'r') as ifp:
+                    with open(_srcPath + '~', 'w') as ofp:
+                        for line in ifp:
+                            if i in target_category_begins:
+                                target = next(target for target in targets if target['category_2_begin'] == i)
+                                if target['content_subtype_1'] != target['content_subtype_2']:
+                                    ofp.write('save_\n')
+                                    if target['category_type_2'] == 'saveframe':
+                                        ofp.write('save_' + target['sf_framecode_2'] + '\n')
+                                    else:
+                                        ofp.write('save_' + target['sf_framecode_2'] + '\n')
+                                        ofp.write(target['sf_tag_prefix_2'] + '.' + ('sf_framecode' if file_type == 'nef' else 'Sf_framecode') + '   ' + target['sf_framecode_2'] + '\n')
+                                        ofp.write(target['sf_tag_prefix_2'] + '.' + ('sf_category' if file_type == 'nef' else 'Sf_category') + '    ' + target['category_2'] + '\n')
+                                        ofp.write('loop_\n')
+                                        lp_tags = ''
+                                        lp_values = ''
+                                elif target['category_type_2'] == 'loop':
+                                    ofp.write('loop_\n')
+                                    lp_tags = ''
+                                    lp_values = ''
+                            if not i in loop_category_locations:
+                                ofp.write(line)
+                            else:
+                                g = tagvalue_pattern.search(line).groups()
+                                try:
+                                    lp_tags += '_%s.%s\n' % (g[0], g[1])
+                                    lp_values += ' ' + g[2].strip(' ') + ' '
+                                except IndexError:
+                                    continue
+                            if i in target_category_ends:
+                                target = next(target for target in targets if target['category_2_end'] == i)
+                                if target['content_subtype_1'] != target['content_subtype_2']:
+                                    if target['category_type_2'] == 'saveframe':
+                                        pass
+                                    else:
+                                        ofp.write(lp_tags)
+                                        ofp.write(lp_values.rstrip(' ') + '\n')
+                                        ofp.write('stop_\n')
+                                elif target['category_type_2'] == 'loop':
+                                    ofp.write(lp_tags)
+                                    ofp.write(lp_values.rstrip(' ') + '\n')
+                                    ofp.write('stop_\n')
+                            i += 1
+
+                        _srcPath = ofp.name
+                        tempPaths.append(_srcPath)
+                        ofp.close()
+
+                    ifp.close()
+
+        except StopIteration:
+            pass
+
+        if len(tempPaths) > len_temp_paths:
+
+            is_valid, json_dumps = self.__nefT.validate_file(_srcPath, fileSubType)
+
+            _message = json.loads(json_dumps)
+
+            if not is_valid:
+
+                retry = len(message['error']) != len(_message['error'])
+
+                if not retry:
+
+                    for msg, _msg in zip(message['error'], _message['error']):
+                        if msg != _msg:
+                            retry = True
+                            break
+
+                if retry:
+                    return self.__fixFormatIssueOfInputSource(file_list_id, file_name, file_type, _srcPath, fileSubType, tempPaths, _message)
+
+        is_done = True
+
+        is_valid, json_dumps = self.__nefT.validate_file(_srcPath, fileSubType)
+
+        message = json.loads(json_dumps)
+
+        _file_type = message['file_type'] # nef/nmr-star/unknown
+
+        if is_valid:
+
+            if _file_type != file_type:
+
+                err = "%s was selected as %s file, but recognized as %s file." % (file_name, self.readable_file_type[file_type], self.readable_file_type[_file_type])
+
+                if len(message['error']) > 0:
+                    for err_message in message['error']:
+                        if not 'No such file or directory' in err_message:
+                            err += ' ' + re.sub('not in list', 'unknown item.', err_message)
+
+                self.report.error.appendDescription('format_issue', {'file_name': file_name, 'description': err})
+                self.report.setError()
+
+                if self.__verbose:
+                    self.__lfh.write("+NmrDpUtility.__fixFormatIssueOfInputSource() ++ Error  - %s\n" % err)
+
+            else:
+
+                is_done, star_data_type, star_data = self.__nefT.read_input_file(_srcPath) # NEFTranslator.validate_file() generates this object internally, but not re-used.
+
+                self.__star_data_type.append(star_data_type)
+                self.__star_data.append(star_data)
+
+                self.__rescueFormerNef(file_list_id)
+                self.__rescueImmatureStr(file_list_id)
+
+        else:
+
+            missing_loop = True
+
+            err = "%s is not compliant with the %s dictionary." % (file_name, self.readable_file_type[file_type])
+
+            if len(message['error']) > 0:
+                try:
+                    next(err_message for err_message in message['error'] if 'The mandatory loop' in err_message)
+
+                    err = ''
+                    for err_message in message['error']:
+                        if not 'No such file or directory' in err_message:
+                            err += re.sub('not in list', 'unknown item.', err_message) + ' '
+                    err = err[:-1]
+
+                except StopIteration:
+                    missing_loop = False
+
+                    for err_message in message['error']:
+                        if not 'No such file or directory' in err_message:
+                            err += ' ' + re.sub('not in list', 'unknown item.', err_message)
+
+            self.report.error.appendDescription('missing_mandatory_content' if missing_loop else 'format_issue', {'file_name': file_name, 'description': err})
+            self.report.setError()
+
+            if self.__verbose:
+                self.__lfh.write("+NmrDpUtility.__fixFormatIssueOfInputSource() ++ Error  - %s\n" % err)
+
+            is_done = False
+
+        try:
+            for tempPath in tempPaths:
+                if os.path.exists(tempPath):
+                    os.remove(tempPath)
+        except:
+            pass
+
+        return is_done
 
     def __detectBOM(self, in_file, default='utf-8'):
         """ Detect BOM of input file.
@@ -8636,7 +8723,7 @@ class NmrDpUtility(object):
                                 loop.data[lp_data.index(j)][loop.tags.index(ambig_code_name)] = ambig_code
 
                                 warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_id) + "] %s '%s' indicates %s. However, %s %s of %s %s is inconsistent." %\
-                                       (ambig_code_name, ambig_code, ambig_code_desc, ambig_code_name, ambig_code2, atom_id_name, atom_id2)
+                                       (ambig_code_name, ambig_code, ambig_code_desc, ambig_code_name, ambig_code2, atom_id_name, _atom_id2)
 
                                 self.report.warning.appendDescription('ambiguity_code_mismatch', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
                                 self.report.setWarning()
@@ -8648,7 +8735,7 @@ class NmrDpUtility(object):
                             pass
                             """
                             warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_id) + "] %s '%s' indicates %s. However, row of %s %s of the same residue was not found." %\
-                                   (ambig_code_name, ambig_code, ambig_code_desc, atom_id_name, atom_id2)
+                                   (ambig_code_name, ambig_code, ambig_code_desc, atom_id_name, _atom_id2)
 
                             self.report.warning.appendDescription('bad_ambiguity_code', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
                             self.report.setWarning()

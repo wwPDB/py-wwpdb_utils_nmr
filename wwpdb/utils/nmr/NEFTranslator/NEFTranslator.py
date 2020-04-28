@@ -36,6 +36,7 @@
 # 25-Apr-2020  M. Yokochi - add 'excl_missing_data' option of check_data() for NMR separated deposition (v2.2.7, DAOTHER-5611)
 # 25-Apr-2020  M. Yokochi - fill default value if Entity_assembly_ID is blank (v2.2.8, DAOTHER-5611)
 # 28-Apr-2020  M. Yokochi - do not throw ValueError for 'range-float' data type (v2.2.9, DAOTHER-5611)
+# 28-Apr-2020  M. Yokochi - extract sequence from CS/MR loop with gap (v2.2.10, DAOTHER-5611)
 ##
 import sys
 import os
@@ -54,7 +55,7 @@ from wwpdb.utils.nmr.io.ChemCompIo import ChemCompReader
 from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
 from wwpdb.utils.nmr.NmrDpReport import NmrDpReport
 
-__version__ = 'v2.2.9'
+__version__ = 'v2.2.10'
 
 class NEFTranslator(object):
     """ Bi-directional translator between NEF and NMR-STAR
@@ -996,7 +997,7 @@ class NEFTranslator(object):
         return is_ok, json.dumps({'info': info, 'warning': warning, 'error': error, 'file_type': data['file_type'], 'data': seq})
 
     def get_nef_seq(self, star_data, lp_category='nef_chemical_shift', seq_id='sequence_code', comp_id='residue_name',
-                    chain_id='chain_code', allow_empty=False):
+                    chain_id='chain_code', allow_empty=False, allow_gap=False):
         """ Extract sequence from any given loops in an NEF file.
             @change: re-written by Masashi Yokochi
             @return: list of sequence information for each loop
@@ -1101,8 +1102,27 @@ class NEFTranslator(object):
                     ent = {} # entity
 
                     ent['chain_id'] = c
-                    ent['seq_id'] = seq_dict[c]
-                    ent['comp_id'] = cmp_dict[c]
+
+                    if allow_gap:
+                        ent['seq_id'] = []
+                        ent['comp_id'] = []
+
+                        _seq_id_ = None
+
+                        for _seq_id, _comp_id in zip(seq_dict[c], cmp_dict[c]):
+
+                            if not _seq_id_ is None and _seq_id_ + 1 != _seq_id and _seq_id_ + 20 > _seq_id:
+                                for s in range(_seq_id_ + 1, _seq_id):
+                                    ent['seq_id'].append(s)
+                                    ent['comp_id'].append('.')
+                            ent['seq_id'].append(_seq_id)
+                            ent['comp_id'].append(_comp_id)
+
+                            _seq_id_ = _seq_id
+
+                    else:
+                        ent['seq_id'] = seq_dict[c]
+                        ent['comp_id'] = cmp_dict[c]
 
                     asm.append(ent)
 
@@ -1118,7 +1138,7 @@ class NEFTranslator(object):
         return data
 
     def get_star_seq(self, star_data, lp_category='Atom_chem_shift', seq_id='Comp_index_ID', comp_id='Comp_ID',
-                     chain_id='Entity_assembly_ID', allow_empty=False):
+                     chain_id='Entity_assembly_ID', allow_empty=False, allow_gap=False):
         """ Extract sequence from any given loops in an NMR-STAR file.
             @change: re-written by Masashi Yokochi
             @return: list of sequence information for each loop
@@ -1235,8 +1255,27 @@ class NEFTranslator(object):
                     ent = {} # entity
 
                     ent['chain_id'] = c
-                    ent['seq_id'] = seq_dict[c]
-                    ent['comp_id'] = cmp_dict[c]
+
+                    if allow_gap:
+                        ent['seq_id'] = []
+                        ent['comp_id'] = []
+
+                        _seq_id_ = None
+
+                        for _seq_id, _comp_id in zip(seq_dict[c], cmp_dict[c]):
+
+                            if not _seq_id_ is None and _seq_id_ + 1 != _seq_id and _seq_id_ + 20 > _seq_id:
+                                for s in range(_seq_id_ + 1, _seq_id):
+                                    ent['seq_id'].append(s)
+                                    ent['comp_id'].append('.')
+                            ent['seq_id'].append(_seq_id)
+                            ent['comp_id'].append(_comp_id)
+
+                            _seq_id_ = _seq_id
+
+                    else:
+                        ent['seq_id'] = seq_dict[c]
+                        ent['comp_id'] = cmp_dict[c]
 
                     asm.append(ent)
 
@@ -1836,7 +1875,7 @@ class NEFTranslator(object):
         return self.check_data(star_data, lp_category, key_items, data_items)
 
     def check_data(self, star_data, lp_category, key_items, data_items, allowed_tags=None, disallowed_tags=None,
-                   test_on_index=False, enforce_non_zero=False, enforce_sign=False, enforce_enum=False,
+                   test_on_index=False, enforce_non_zero=False, enforce_sign=False, enforce_range=False, enforce_enum=False,
                    excl_missing_data=False):
         """ Extract data with sanity check from any given loops in an NEF/NMR-STAR file.
             @author: Masashi Yokochi
@@ -2259,16 +2298,25 @@ class NEFTranslator(object):
                                 if excl_missing_data:
                                     missing_mandatory_data = True
                                     continue
+                                elif not enforce_range:
+                                    ent[name] = None
+                                    continue
                                 else:
                                     user_warn_msg += "[Range value error] %s%s '%s' must be %s.\n" % (self.__idx_msg(idx_tag_ids, tags, ent), name, val, self.readable_item_type[type])
                             if ('min_exclusive' in _range and _range['min_exclusive'] == 0.0 and ent[name] <= 0.0) or ('min_inclusive' in _range and _range['min_inclusive'] == 0.0 and ent[name] < 0):
                                 if ent[name] < 0.0:
                                     if ('max_inclusive' in _range and abs(ent[name]) > _range['max_inclusive']) or ('max_exclusive' in _range and abs(ent[name]) >= _range['max_exclusive']) or ('enforce-sign' in k and k['enforce-sign']):
-                                        raise ValueError("%s%s '%s' must be within range %s." % (self.__idx_msg(idx_tag_ids, tags, ent), name, val, _range))
+                                        if not enforce_range:
+                                            ent[name] = None
+                                        else:
+                                            user_warn_msg += "[Range value error] %s%s '%s' must be within range %s." % (self.__idx_msg(idx_tag_ids, tags, ent), name, val, _range)
                                     elif enforce_sign:
                                         user_warn_msg += "[Negative value error] %s%s '%s' should not have negative value for %s, %s.\n" % (self.__idx_msg(idx_tag_ids, tags, ent), name, val, self.readable_item_type[type], _range)
                                 elif ent[name] == 0.0 and 'enforce-non-zero' in k and k['enforce-non-zero']:
-                                    raise ValueError("%s%s '%s' must be within range %s." % (self.__idx_msg(idx_tag_ids, tags, ent), name, val, _range))
+                                    if not enforce_range:
+                                        ent[name] = None
+                                    else:
+                                        user_warn_msg += "[Range value error] %s%s '%s' must be within range %s." % (self.__idx_msg(idx_tag_ids, tags, ent), name, val, _range)
                                 elif ent[name] == 0.0 and enforce_non_zero:
                                     if 'void-zero' in k:
                                         if self.replace_zero_by_null_in_case:
@@ -2281,8 +2329,10 @@ class NEFTranslator(object):
                                     if self.replace_zero_by_null_in_case:
                                         loop.data[l][loop.tags.index(name)] = None
                                     ent[name] = None
+                                elif not enforce_range:
+                                    ent[name] = None
                                 else:
-                                    raise ValueError("%s%s '%s' must be within range %s." % (self.__idx_msg(idx_tag_ids, tags, ent), name, val, _range))
+                                    user_warn_msg += "[Range value error] %s%s '%s' must be within range %s." % (self.__idx_msg(idx_tag_ids, tags, ent), name, val, _range)
                         elif type == 'enum':
                             try:
                                 enum = k['enum']
@@ -2436,16 +2486,25 @@ class NEFTranslator(object):
                                         if excl_missing_data:
                                             ent[name] = None
                                             continue
+                                        elif not enforce_range:
+                                            ent[name] = None
+                                            continue
                                         else:
                                             user_warn_msg += "[Range value error] %s%s '%s' must be %s.\n" % (self.__idx_msg(idx_tag_ids, tags, ent), name, val, self.readable_item_type[type])
                                     if ('min_exclusive' in _range and _range['min_exclusive'] == 0.0 and ent[name] <= 0.0) or ('min_inclusive' in _range and _range['min_inclusive'] == 0.0 and ent[name] < 0):
                                         if ent[name] < 0.0:
                                             if ('max_inclusive' in _range and abs(ent[name]) > _range['max_inclusive']) or ('max_exclusive' in _range and abs(ent[name]) >= _range['max_exclusive']) or ('enforce-sign' in d and d['enforce-sign']):
-                                                raise ValueError("%s%s '%s' must be within range %s." % (self.__idx_msg(idx_tag_ids, tags, ent), name, val, _range))
+                                                if not enforce_range:
+                                                    ent[name] = None
+                                                else:
+                                                    user_warn_msg += "[Range value error] %s%s '%s' must be within range %s." % (self.__idx_msg(idx_tag_ids, tags, ent), name, val, _range)
                                             elif enforce_sign:
                                                 user_warn_msg += "[Negative value error] %s%s '%s' should not have negative value for %s, %s.\n" % (self.__idx_msg(idx_tag_ids, tags, ent), name, val, self.readable_item_type[type], _range)
                                         elif ent[name] == 0.0 and 'enforce-non-zero' in d and d['enforce-non-zero']:
-                                            raise ValueError("%s%s '%s' must be within range %s." % (self.__idx_msg(idx_tag_ids, tags, ent), name, val, _range))
+                                            if not enforce_range:
+                                                ent[name] = None
+                                            else:
+                                                user_warn_msg += "[Range value error] %s%s '%s' must be within range %s." % (self.__idx_msg(idx_tag_ids, tags, ent), name, val, _range)
                                         elif ent[name] == 0.0 and enforce_non_zero:
                                             if 'void-zero' in d:
                                                 if self.replace_zero_by_null_in_case:
@@ -2458,8 +2517,10 @@ class NEFTranslator(object):
                                             if self.replace_zero_by_null_in_case:
                                                 loop.data[l][loop.tags.index(name)] = None
                                             ent[name] = None
+                                        elif not enforce_range:
+                                            ent[name] = None
                                         else:
-                                            raise ValueError("%s%s '%s' must be within range %s." % (self.__idx_msg(idx_tag_ids, tags, ent), name, val, _range))
+                                            user_warn_msg += "[Range value error] %s%s '%s' must be within range %s." % (self.__idx_msg(idx_tag_ids, tags, ent), name, val, _range)
                                 elif type == 'enum':
                                     try:
                                         enum = d['enum']
@@ -2734,7 +2795,8 @@ class NEFTranslator(object):
 
         return data
 
-    def check_sf_tag(self, star_data, file_type, category, tag_items, allowed_tags=None, enforce_non_zero=False, enforce_sign=False, enforce_enum=False):
+    def check_sf_tag(self, star_data, file_type, category, tag_items, allowed_tags=None,
+                     enforce_non_zero=False, enforce_sign=False, enforce_range=False, enforce_enum=False):
         """ Extract saveframe tags with sanity check.
             @author: Masashi Yokochi
             @return: list of extracted saveframe tags
@@ -2880,15 +2942,25 @@ class NEFTranslator(object):
                         except KeyError:
                             raise Error('Range of tag item %s is not defined.' % name)
                         except:
-                            user_warn_msg += "[Range value error] %s '%s' must be %s.\n" % (name, val, self.readable_item_type[type])
+                            if not enforce_range:
+                                ent[name] = None
+                                continue
+                            else:
+                                user_warn_msg += "[Range value error] %s '%s' must be %s.\n" % (name, val, self.readable_item_type[type])
                         if ('min_exclusive' in _range and _range['min_exclusive'] == 0.0 and ent[name] <= 0.0) or ('min_inclusive' in _range and _range['min_inclusive'] == 0.0 and ent[name] < 0):
                             if ent[name] < 0.0:
                                 if ('max_inclusive' in _range and abs(ent[name]) > _range['max_inclusive']) or ('max_exclusive' in _range and abs(ent[name]) >= _range['max_exclusive']) or ('enforce-sign' in t and t['enforce-sign']):
-                                    raise ValueError("%s%s '%s' must be within range %s." % (self.__idx_msg(idx_tag_ids, tags, ent), name, val, _range))
+                                    if not enforce_range:
+                                        ent[name] = None
+                                    else:
+                                        user_warn_msg += "[Range value error] %s '%s' must be within range %s." % (name, val, _range)
                                 elif enforce_sign:
-                                    user_warn_msg += "[Negative value error] %s%s '%s' should not have negative value for %s, %s.\n" % (self.__idx_msg(idx_tag_ids, tags, ent), name, val, self.readable_item_type[type], _range)
+                                    user_warn_msg += "[Negative value error] %s '%s' should not have negative value for %s, %s.\n" % (name, val, self.readable_item_type[type], _range)
                             elif ent[name] == 0.0 and 'enforce-non-zero' in t and t['enforce-non-zero']:
-                                raise ValueError("%s '%s' must be within range %s." % (name, val, _range))
+                                if not enforce_range:
+                                    ent[name] = None
+                                else:
+                                    user_warn_msg += "[Range value error] %s '%s' must be within range %s." % (name, val, _range)
                             elif ent[name] == 0.0 and enforce_non_zero:
                                 if 'void-zero' in t:
                                     if self.replace_zero_by_null_in_case:
@@ -2901,8 +2973,10 @@ class NEFTranslator(object):
                                 if self.replace_zero_by_null_in_case:
                                     star_data.tags[sf_tags.keys().index(name)][1] = None
                                 ent[name] = None
+                            elif not enforce_range:
+                                ent[name] = None
                             else:
-                                raise ValueError("%s '%s' must be within range %s." % (name, val, _range))
+                                user_warn_msg += "[Range value error] %s '%s' must be within range %s." % (name, val, _range)
                     elif type == 'enum':
                         if val in self.empty_value:
                             val = '?' # '.' raises internal error in NmrDpUtility

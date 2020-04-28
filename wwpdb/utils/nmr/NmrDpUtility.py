@@ -61,6 +61,7 @@
 # 27-Apr-2020  M. Yokochi - implement recursive format corrections (DAOTHER-5602)
 # 28-Apr-2020  M. Yokochi - copy the normalized CS/MR files if output file path list is set (DAOTHER-5611)
 # 28-Apr-2020  M. Yokochi - catch 'range-float' error as 'unusual data' warning (DAOTHER-5611)
+# 28-Apr-2020  M. Yokochi - extract sequence from CS/MR loop with gap (DAOTHER-5611)
 ##
 """ Wrapper class for data processing for NMR data.
     @author: Masashi Yokochi
@@ -4450,9 +4451,11 @@ class NmrDpUtility(object):
         file_type = input_source_dic['file_type']
 
         if file_type == 'nef':
-            return self.__nefT.get_nef_seq(sf_data, lp_category=self.lp_categories[file_type][content_subtype], allow_empty=(content_subtype == 'spectral_peak'))
+            return self.__nefT.get_nef_seq(sf_data, lp_category=self.lp_categories[file_type][content_subtype],
+                                           allow_empty=(content_subtype == 'spectral_peak'), allow_gap=(not content_subtype in ['poly_seq', 'entity']))
         else:
-            return self.__nefT.get_star_seq(sf_data, lp_category=self.lp_categories[file_type][content_subtype], allow_empty=(content_subtype == 'spectral_peak'))
+            return self.__nefT.get_star_seq(sf_data, lp_category=self.lp_categories[file_type][content_subtype],
+                                            allow_empty=(content_subtype == 'spectral_peak'), allow_gap=(not content_subtype in ['poly_seq', 'entity']))
 
     def __extractPolymerSequence(self):
         """ Extract reference polymer sequence.
@@ -5017,7 +5020,7 @@ class NmrDpUtility(object):
                                         else:
                                             i = s1['seq_id'].index(seq_id)
 
-                                            if comp_id != s1['comp_id'][i]:
+                                            if not comp_id in self.empty_value and not s1['comp_id'][i] in self.empty_value and comp_id != s1['comp_id'][i]:
 
                                                 err = "Invalid comp_id %s vs %s (seq_id %s, chain_id %s) in a loop %s." % (comp_id, s1['comp_id'][i], seq_id, chain_id, lp_category2)
 
@@ -5056,7 +5059,7 @@ class NmrDpUtility(object):
                                         if seq_id in s1['seq_id']:
                                             i = s1['seq_id'].index(seq_id)
 
-                                            if comp_id != s1['comp_id'][i]:
+                                            if not comp_id in self.empty_value and not s1['comp_id'][i] in self.empty_value and comp_id != s1['comp_id'][i]:
 
                                                 err = "Unmatched comp_id %s vs %s (seq_id %s, chain_id %s) exists against '%s' saveframe." % (comp_id, s1['comp_id'][i], seq_id, chain_id, sf_framecode1)
 
@@ -5081,7 +5084,7 @@ class NmrDpUtility(object):
                                         if seq_id in s2['seq_id']:
                                             j = s2['seq_id'].index(seq_id)
 
-                                            if comp_id != s2['comp_id'][j]:
+                                            if not comp_id in self.empty_value and not s2['comp_id'][j] in self.empty_value and comp_id != s2['comp_id'][j]:
 
                                                 err = "Unmatched comp_id %s vs %s (seq_id %s, chain_id %s) exists against '%s' saveframe." % (comp_id, s2['comp_id'][j], seq_id, chain_id, sf_framecode2)
 
@@ -5146,8 +5149,17 @@ class NmrDpUtility(object):
         for chain_id in sorted(common_poly_seq.keys()):
 
             if len(common_poly_seq[chain_id]) > 0:
-                sorted_poly_seq = sorted(common_poly_seq[chain_id])
-                asm.append({'chain_id': chain_id, 'seq_id': [int(i.split(' ')[0]) for i in sorted_poly_seq], 'comp_id': [i.split(' ')[1] for i in sorted_poly_seq]})
+                seq_id_list = sorted(set([int(i.split(' ')[0]) for i in common_poly_seq[chain_id]]))
+                comp_id_list = []
+
+                for seq_id in seq_id_list:
+                    _comp_id = [i.split(' ')[1] for i in common_poly_seq[chain_id] if int(i.split(' ')[0]) == seq_id]
+                    if len(_comp_id) == 1:
+                        comp_id_list.append(_comp_id[0])
+                    else:
+                        comp_id_list.append(next(comp_id for comp_id in comp_ids if not comp_id in self.empty_value))
+
+                asm.append({'chain_id': chain_id, 'seq_id': seq_id_list, 'comp_id': comp_id_list})
 
         if len(asm) > 0:
 
@@ -6856,7 +6868,7 @@ class NmrDpUtility(object):
         try:
 
             lp_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, allowed_tags, disallowed_tags,
-                                             test_on_index=True, enforce_non_zero=True, enforce_sign=True, enforce_enum=True,
+                                             test_on_index=True, enforce_non_zero=True, enforce_sign=True, enforce_range=True, enforce_enum=True,
                                              excl_missing_data=self.__excl_missing_data)[0]
 
             self.__lp_data[content_subtype].append({'file_name': file_name, 'sf_framecode': sf_framecode, 'data': lp_data})
@@ -6905,7 +6917,7 @@ class NmrDpUtility(object):
                 enum = warn.startswith('[Enumeration error] ')
                 mult = warn.startswith('[Multiple data] ')
 
-                if zero or nega or enum or mult:
+                if zero or nega or range or enum or mult:
 
                     if zero:
                         warn = warn[19:]
@@ -6927,7 +6939,7 @@ class NmrDpUtility(object):
                         err = warn[16:]
                         item = 'multiple_data'
 
-                    if zero or nega or enum or self.__resolve_conflict:
+                    if zero or nega or rang or enum or self.__resolve_conflict:
 
                         self.report.warning.appendDescription(item, {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
                         self.report.setWarning()
@@ -7314,7 +7326,7 @@ class NmrDpUtility(object):
                             try:
 
                                 aux_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, allowed_tags, None,
-                                                                  test_on_index=True, enforce_non_zero=True, enforce_sign=True, enforce_enum=True,
+                                                                  test_on_index=True, enforce_non_zero=True, enforce_sign=True, enforce_range=True, enforce_enum=True,
                                                                   excl_missing_data=self.__excl_missing_data)[0]
 
                                 self.__aux_data[content_subtype].append({'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'data': aux_data})
@@ -7369,7 +7381,7 @@ class NmrDpUtility(object):
                                     enum = warn.startswith('[Enumeration error] ')
                                     mult = warn.startswith('[Multiple data] ')
 
-                                    if zero or nega or enum or mult:
+                                    if zero or nega or rang or enum or mult:
 
                                         if zero:
                                             warn = warn[19:]
@@ -7391,7 +7403,7 @@ class NmrDpUtility(object):
                                             err = warn[16:]
                                             item = 'multiple_data'
 
-                                        if zero or nega or enum or self.__resolve_conflict:
+                                        if zero or nega or rang or enum or self.__resolve_conflict:
 
                                             self.report.warning.appendDescription(item, {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
                                             self.report.setWarning()
@@ -7654,7 +7666,7 @@ class NmrDpUtility(object):
                                     sf_tag_item['mandatory'] = False
 
                         sf_tag_data = self.__nefT.check_sf_tag(sf_data, file_type, sf_category, sf_tag_items, self.sf_allowed_tags[file_type][content_subtype],
-                                                               enforce_non_zero=True, enforce_sign=True, enforce_enum=True)
+                                                               enforce_non_zero=True, enforce_sign=True, enforce_range=True, enforce_enum=True)
 
                         self.__testParentChildRelation(file_name, file_type, content_subtype, parent_keys, list_id, sf_framecode, sf_tag_data)
 
@@ -7692,7 +7704,7 @@ class NmrDpUtility(object):
 
                             ignorable = False
 
-                            if zero or nega or enum:
+                            if zero or nega or rang or enum:
 
                                 if zero:
                                     warn = warn[19:]
@@ -7720,7 +7732,7 @@ class NmrDpUtility(object):
                                             if not self.__nefT.is_mandatory_tag('_' + sf_category + '.' + g[0], file_type):
                                                 ignorable = True # author provides the meta data through DepUI after upload
 
-                                self.report.warning.appendDescription('unusual_data' if zero else ('unusual_data' if nega else ('enum_mismatch_ignorable' if ignorable else 'enum_mismatch')), {'file_name': file_name, 'sf_framecode': sf_framecode, 'description': warn})
+                                self.report.warning.appendDescription('unusual_data' if zero else ('unusual_data' if nega else ('unusual_data' if rang else ('enum_mismatch_ignorable' if ignorable else 'enum_mismatch'))), {'file_name': file_name, 'sf_framecode': sf_framecode, 'description': warn})
                                 self.report.setWarning()
 
                                 if self.__verbose:
@@ -7739,7 +7751,7 @@ class NmrDpUtility(object):
                         try:
 
                             sf_tag_data = self.__nefT.check_sf_tag(sf_data, file_type, sf_category, sf_tag_items, self.sf_allowed_tags[file_type][content_subtype],
-                                                                   enfoce_non_zero=False, enforce_sign=False, enforce_enum=False)
+                                                                   enfoce_non_zero=False, enforce_sign=False, enforce_range=False, enforce_enum=False)
 
                             self.__testParentChildRelation(file_name, file_type, content_subtype, parent_keys, list_id, sf_framecode, sf_tag_data)
 

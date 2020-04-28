@@ -6918,7 +6918,7 @@ class NmrDpUtility(object):
         try:
 
             lp_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, allowed_tags, disallowed_tags,
-                                             test_on_index=True, enforce_non_zero=True, enforce_sign=True, enforce_enum=True,
+                                             test_on_index=True, enforce_non_zero=True, enforce_sign=True, enforce_range=True, enforce_enum=True,
                                              excl_missing_data=self.__excl_missing_data)[0]
 
             self.__lp_data[content_subtype].append({'file_name': file_name, 'sf_framecode': sf_framecode, 'data': lp_data})
@@ -7376,7 +7376,7 @@ class NmrDpUtility(object):
                             try:
 
                                 aux_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, allowed_tags, None,
-                                                                  test_on_index=True, enforce_non_zero=True, enforce_sign=True, enforce_enum=True,
+                                                                  test_on_index=True, enforce_non_zero=True, enforce_sign=True, enforce_range=True, enforce_enum=True,
                                                                   excl_missing_data=self.__excl_missing_data)[0]
 
                                 self.__aux_data[content_subtype].append({'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'data': aux_data})
@@ -7716,7 +7716,7 @@ class NmrDpUtility(object):
                                     sf_tag_item['mandatory'] = False
 
                         sf_tag_data = self.__nefT.check_sf_tag(sf_data, file_type, sf_category, sf_tag_items, self.sf_allowed_tags[file_type][content_subtype],
-                                                               enforce_non_zero=True, enforce_sign=True, enforce_enum=True)
+                                                               enforce_non_zero=True, enforce_sign=True, enforce_range=True, enforce_enum=True)
 
                         self.__testParentChildRelation(file_name, file_type, content_subtype, parent_keys, list_id, sf_framecode, sf_tag_data)
 
@@ -7804,7 +7804,7 @@ class NmrDpUtility(object):
                         try:
 
                             sf_tag_data = self.__nefT.check_sf_tag(sf_data, file_type, sf_category, sf_tag_items, self.sf_allowed_tags[file_type][content_subtype],
-                                                                   enfoce_non_zero=False, enforce_sign=False, enforce_enum=False)
+                                                                   enfoce_non_zero=False, enforce_sign=False, enforce_range=False, enforce_enum=False)
 
                             self.__testParentChildRelation(file_name, file_type, content_subtype, parent_keys, list_id, sf_framecode, sf_tag_data)
 

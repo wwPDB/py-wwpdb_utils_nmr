@@ -2940,7 +2940,7 @@ class NmrDpUtility(object):
                     self.__rescueImmatureStr(0)
 
             else:
-                is_done = self.__fixFormatIssueOfInputSource(0, file_name, file_type, srcPath, 'A', None, message)
+                is_done = self.__fixFormatIssueOfInputSource(0, file_name, file_type, srcPath, 'A', message)
 
             if not srcPath_ is None:
                 try:
@@ -3005,7 +3005,7 @@ class NmrDpUtility(object):
                         if not _is_done:
                             is_done = False
 
-                elif not self.__fixFormatIssueOfInputSource(csListId, file_name, file_type, csPath, 'S', None, message):
+                elif not self.__fixFormatIssueOfInputSource(csListId, file_name, file_type, csPath, 'S', message):
                     is_done = False
 
                 if not csPath_ is None:
@@ -3073,7 +3073,7 @@ class NmrDpUtility(object):
                             if not _is_done:
                                 is_done = False
 
-                    elif not self.__fixFormatIssueOfInputSource(file_path_list_len, file_name, file_type, mrPath, 'R', None, message):
+                    elif not self.__fixFormatIssueOfInputSource(file_path_list_len, file_name, file_type, mrPath, 'R', message):
                         is_done = False
 
                     file_path_list_len += 1
@@ -3086,11 +3086,11 @@ class NmrDpUtility(object):
 
         return is_done
 
-    def __fixFormatIssueOfInputSource(self, file_list_id, file_name, file_type, srcPath=None, fileSubType='S', tempPaths=None, message=None):
+    def __fixFormatIssueOfInputSource(self, file_list_id, file_name, file_type, srcPath=None, fileSubType='S', message=None, tempPaths=None):
         """ Fix format issue of NMR data.
         """
 
-        if not self.__fix_format_issue:
+        if not self.__fix_format_issue or srcPath is None or not fileSubType in ['A', 'S', 'R'] or message is None:
             return False
 
         _srcPath = srcPath
@@ -3107,9 +3107,7 @@ class NmrDpUtility(object):
         category_pattern = re.compile(r'\s*_(\S*)\..*\s*')
         tagvalue_pattern = re.compile(r'\s*_(\S*)\.(\S*)\s+(.*)\s*')
 
-        try:
-
-            next(msg for msg in message['error'] if "Invalid file. NMR-STAR files must start with 'data_'. Did you accidentally select the wrong file?" in msg)
+        if any(msg for msg in message['error'] if "Invalid file. NMR-STAR files must start with 'data_'. Did you accidentally select the wrong file?" in msg):
             warn = 'The datablock must hook saveframe(s).'
 
             self.report.warning.appendDescription('corrected_format_issue', {'file_name': file_name, 'description': warn})
@@ -3132,12 +3130,7 @@ class NmrDpUtility(object):
 
                 ifp.close()
 
-        except StopIteration:
-            pass
-
-        try:
-
-            next(msg for msg in message['error'] if "Only 'save_NAME' is valid in the body of a NMR-STAR file. Found 'loop_'." in msg)
+        if any(msg for msg in message['error'] if "Only 'save_NAME' is valid in the body of a NMR-STAR file. Found 'loop_'." in msg):
             warn = 'A saveframe, instead of the datablock, must hook the loop.'
 
             self.report.warning.appendDescription('corrected_format_issue', {'file_name': file_name, 'description': warn})
@@ -3165,9 +3158,6 @@ class NmrDpUtility(object):
                     ofp.close()
 
                 ifp.close()
-
-        except StopIteration:
-            pass
 
         try:
 
@@ -3566,7 +3556,7 @@ class NmrDpUtility(object):
                             break
 
                 if retry:
-                    return self.__fixFormatIssueOfInputSource(file_list_id, file_name, file_type, _srcPath, fileSubType, tempPaths, _message)
+                    return self.__fixFormatIssueOfInputSource(file_list_id, file_name, file_type, _srcPath, fileSubType, _message, tempPaths)
 
         is_done = True
 
@@ -3610,8 +3600,8 @@ class NmrDpUtility(object):
             err = "%s is not compliant with the %s dictionary." % (file_name, self.readable_file_type[file_type])
 
             if len(message['error']) > 0:
-                try:
-                    next(err_message for err_message in message['error'] if 'The mandatory loop' in err_message)
+
+                if any(err_message for err_message in message['error'] if 'The mandatory loop' in err_message):
 
                     err = ''
                     for err_message in message['error']:
@@ -3619,7 +3609,7 @@ class NmrDpUtility(object):
                             err += re.sub('not in list', 'unknown item.', err_message) + ' '
                     err = err[:-1]
 
-                except StopIteration:
+                else:
                     missing_loop = False
 
                     for err_message in message['error']:
@@ -3660,7 +3650,7 @@ class NmrDpUtility(object):
         return default
 
     def __convertCodec(self, in_file, out_file, in_codec='utf-8', out_codec='utf-8'):
-        """ Convert codec of input file to UTF-8.
+        """ Convert codec of input file.
         """
 
         with open(in_file, 'rb') as ifp:
@@ -3865,11 +3855,8 @@ class NmrDpUtility(object):
 
             elif content_subtype == 'chem_shift':
 
-                try:
-                    next(tag for tag in sf_data.tags if tag[0] == 'atom_chemical_shift_units')
+                if any(tag for tag in sf_data.tags if tag[0] == 'atom_chemical_shift_units'):
                     sf_data.delete_tag('atom_chemical_shift_units')
-                except StopIteration:
-                    pass
 
                 try:
                     tag_pos = next(loop.tags.index(tag) for tag in loop.tags if tag == 'residue_type')
@@ -4317,7 +4304,7 @@ class NmrDpUtility(object):
                             self.__lfh.write("+NmrDpUtility.__detectContentSubType() ++ Warning  - %s\n" % warn)
 
                     else:
-                        err = "The mandatory saveframe having category '%s' is missing. Please re-upload the file." % sf_category
+                        err = "The mandatory saveframe having category '%s' is missing. Please re-upload the data file." % sf_category
 
                         self.report.error.appendDescription('missing_mandatory_content', {'file_name': file_name, 'description': err})
                         self.report.setError()
@@ -7663,12 +7650,9 @@ class NmrDpUtility(object):
 
                                     if not self._sf_tag_items[file_type][content_subtype] is None:
 
-                                        try:
-                                            next(i for i in self._sf_tag_items[file_type][content_subtype] if i == g[0])
+                                        if any(i for i in self._sf_tag_items[file_type][content_subtype] if i == g[0]):
                                             if not self.__nefT.is_mandatory_tag('_' + sf_category + '.' + g[0], file_type):
                                                 ignorable = True # author provides the meta data through DepUI after upload
-                                        except StopIteration:
-                                            pass
 
                                 self.report.warning.appendDescription('unusual_data' if zero else ('unusual_data' if nega else ('enum_mismatch_ignorable' if ignorable else 'enum_mismatch')), {'file_name': file_name, 'sf_framecode': sf_framecode, 'description': warn})
                                 self.report.setWarning()
@@ -9450,11 +9434,9 @@ class NmrDpUtility(object):
 
                         if self.__last_comp_id_test: # matches with comp_id in CCD
 
-                            try:
-                                next(b for b in self.__last_chem_comp_bonds if\
-                                     ((b[self.__ccb_atom_id_1] == atom_id_1 and b[self.__ccb_atom_id_2] == atom_id_2) or\
-                                      (b[self.__ccb_atom_id_1] == atom_id_2 and b[self.__ccb_atom_id_2] == atom_id_1)))
-                            except StopIteration:
+                            if not any(b for b in self.__last_chem_comp_bonds if\
+                                       ((b[self.__ccb_atom_id_1] == atom_id_1 and b[self.__ccb_atom_id_2] == atom_id_2) or\
+                                       (b[self.__ccb_atom_id_1] == atom_id_2 and b[self.__ccb_atom_id_2] == atom_id_1))):
 
                                 if self.__nefT.validate_comp_atom(comp_id_1, atom_id_1) and self.__nefT.validate_comp_atom(comp_id_2, atom_id_2):
 
@@ -10704,19 +10686,13 @@ class NmrDpUtility(object):
 
                             cys['in_disulfide_bond'] = False
                             if not input_source_dic['disulfide_bond'] is None:
-                                try:
-                                    next(b for b in input_source_dic['disulfide_bond'] if (b['chain_id_1'] == chain_id and b['seq_id_1'] == seq_id) or (b['chain_id_2'] == chain_id and b['seq_id_2'] == seq_id))
+                                if any(b for b in input_source_dic['disulfide_bond'] if (b['chain_id_1'] == chain_id and b['seq_id_1'] == seq_id) or (b['chain_id_2'] == chain_id and b['seq_id_2'] == seq_id)):
                                     cys['in_disulfide_bond'] = True
-                                except StopIteration:
-                                    pass
 
                             cys['in_other_bond'] = False
                             if not input_source_dic['other_bond'] is None:
-                                try:
-                                    next(b for b in input_source_dic['other_bond'] if (b['chain_id_1'] == chain_id and b['seq_id_1'] == seq_id) or (b['chain_id_2'] == chain_id and b['seq_id_2'] == seq_id))
+                                if any(b for b in input_source_dic['other_bond'] if (b['chain_id_1'] == chain_id and b['seq_id_1'] == seq_id) or (b['chain_id_2'] == chain_id and b['seq_id_2'] == seq_id)):
                                     cys['in_other_bond'] = True
-                                except StopIteration:
-                                    pass
 
                             cys_redox_state.append(cys)
 
@@ -14942,7 +14918,7 @@ class NmrDpUtility(object):
                                 if nmr_comp_id == '.':
                                     nmr_seq_code += ', insersion error'
 
-                                err = "Sequence alignment error between the coordinate (%s) and the NMR data (%s)." %\
+                                err = "Sequence alignment error between the coordinate (%s) and the NMR data (%s). Please verify the two sequences and re-upload the correct file." %\
                                       (cif_seq_code, nmr_seq_code)
 
                                 self.report.error.appendDescription('sequence_mismatch', {'file_name': cif_file_name, 'description': err})
@@ -15050,29 +15026,28 @@ class NmrDpUtility(object):
                 if len(chain_assign_set) > 0 and fileListId == 0:
 
                     if len(cif_polymer_sequence) > 1:
-                        try:
-                            next(s for s in cif_polymer_sequence if 'identical_chain_id' in s)
+
+                        if any(s for s in cif_polymer_sequence if 'identical_chain_id' in s):
 
                             for chain_assign in chain_assign_set:
+
                                 if chain_assign['conflict'] > 0:
                                     continue
+
                                 chain_id = chain_assign['ref_chain_id']
+
                                 try:
                                     identity = next(s['identical_chain_id'] for s in cif_polymer_sequence if s['chain_id'] == chain_id and 'identical_chain_id' in s)
+
                                     for _chain_id in identity:
-                                        try:
-                                            next(_chain_assign for _chain_assign in chain_assign_set if _chain_assign['ref_chain_id'] == _chain_id)
-                                        except StopIteration:
+
+                                        if not any(_chain_assign for _chain_assign in chain_assign_set if _chain_assign['ref_chain_id'] == _chain_id):
                                             _chain_assign = copy.copy(chain_assign)
                                             _chain_assign['ref_chain_id'] = _chain_id
                                             chain_assign_set.append(_chain_assign)
-                                            pass
 
                                 except StopIteration:
                                     pass
-
-                        except StopIteration:
-                            pass
 
                     self.report.chain_assignment.setItemValue('model_poly_seq_vs_nmr_poly_seq', chain_assign_set)
 
@@ -15248,7 +15223,7 @@ class NmrDpUtility(object):
                                 if nmr_comp_id == '.':
                                     nmr_seq_code += ', insersion error'
 
-                                err = "Sequence alignment error between the NMR data (%s) and the coordinate (%s)." %\
+                                err = "Sequence alignment error between the NMR data (%s) and the coordinate (%s). Please verify the two sequences and re-upload the correct file." %\
                                       (nmr_seq_code, cif_seq_code)
 
                                 self.report.error.appendDescription('sequence_mismatch', {'file_name': nmr_file_name, 'description': err})
@@ -15355,29 +15330,28 @@ class NmrDpUtility(object):
                 if len(chain_assign_set) > 0 and fileListId == 0:
 
                     if len(cif_polymer_sequence) > 1:
-                        try:
-                            next(s for s in cif_polymer_sequence if 'identical_chain_id' in s)
+
+                        if any(s for s in cif_polymer_sequence if 'identical_chain_id' in s):
 
                             for chain_assign in chain_assign_set:
+
                                 if chain_assign['conflict'] > 0:
                                     continue
+
                                 chain_id = chain_assign['test_chain_id']
+
                                 try:
                                     identity = next(s['identical_chain_id'] for s in cif_polymer_sequence if s['chain_id'] == chain_id and 'identical_chain_id' in s)
+
                                     for _chain_id in identity:
-                                        try:
-                                            next(_chain_assign for _chain_assign in chain_assign_set if _chain_assign['test_chain_id'] == _chain_id)
-                                        except StopIteration:
+
+                                        if not any(_chain_assign for _chain_assign in chain_assign_set if _chain_assign['test_chain_id'] == _chain_id):
                                             _chain_assign = copy.copy(chain_assign)
                                             _chain_assign['test_chain_id'] = _chain_id
                                             chain_assign_set.append(_chain_assign)
-                                            pass
 
                                 except StopIteration:
                                     pass
-
-                        except StopIteration:
-                            pass
 
                     self.report.chain_assignment.setItemValue('nmr_poly_seq_vs_model_poly_seq', chain_assign_set)
 

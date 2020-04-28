@@ -186,22 +186,19 @@ class BMRBChemShiftStat:
         if comp_id in self.__std_comp_ids:
             return True
 
-        try:
+        self.loadOtherStatFromCsvFiles()
 
-            self.loadOtherStatFromCsvFiles()
-
-            if not comp_id in self.__all_comp_ids:
-                return False
-
-            if primary:
-                next(i for i in self.others if i['comp_id'] == comp_id and i['primary'])
-            else:
-                next(i for i in self.others if i['comp_id'] == comp_id and 'secondary' in i and i['secondary'])
-
-            return True
-
-        except StopIteration:
+        if not comp_id in self.__all_comp_ids:
             return False
+
+        if primary:
+            if any(i for i in self.others if i['comp_id'] == comp_id and i['primary']):
+                return True
+        else:
+            if any(i for i in self.others if i['comp_id'] == comp_id and 'secondary' in i and i['secondary']):
+                return True
+
+        return False
 
     def get(self, comp_id, diamagnetic=True):
         """ Return BMRB chemical shift statistics for a given comp_id.
@@ -677,10 +674,10 @@ class BMRBChemShiftStat:
         """ Check atom nomenclature.
         """
 
-        try:
-            next(a[self.__cca_atom_id] for a in self.__last_chem_comp_atoms if a[self.__cca_atom_id] == atom_id and a[self.__cca_leaving_atom_flag] != 'Y')
+        if any(a[self.__cca_atom_id] for a in self.__last_chem_comp_atoms if a[self.__cca_atom_id] == atom_id and a[self.__cca_leaving_atom_flag] != 'Y'):
             return True
-        except StopIteration:
+
+        else:
             if self.__verbose:
                 self.__lfh.write("+BMRBChemShiftStat.__checkAtomNomenclature() ++ Error  - Invalid atom nomenclature %s, comp_id %s\n" % (atom_id, self.__last_comp_id))
             return False
@@ -711,11 +708,8 @@ class BMRBChemShiftStat:
 
                         for i in h_list:
                             atom_id = i['atom_id']
-                            try:
-                                next(b for b in self.__last_chem_comp_bonds if b[self.__ccb_atom_id_1] == k and b[self.__ccb_atom_id_2] == atom_id)
+                            if any(b for b in self.__last_chem_comp_bonds if b[self.__ccb_atom_id_1] == k and b[self.__ccb_atom_id_2] == atom_id):
                                 i['desc'] = 'methyl'
-                            except StopIteration:
-                                pass
 
             else:
                 h_1 = [i['atom_id'][:-1] for i in h_list if i['atom_id'].endswith('1')]
@@ -755,11 +749,8 @@ class BMRBChemShiftStat:
                 for aro in aro_list:
                     for i in h_list:
                         atom_id = i['atom_id']
-                        try:
-                            next(b for b in self.__last_chem_comp_bonds if b[self.__ccb_atom_id_1] == aro and b[self.__ccb_atom_id_2] == atom_id)
+                        if any(b for b in self.__last_chem_comp_bonds if b[self.__ccb_atom_id_1] == aro and b[self.__ccb_atom_id_2] == atom_id):
                             i['desc'] = 'aroma'
-                        except StopIteration:
-                            pass
 
                 leaving_atom_list = [a[self.__cca_atom_id] for a in self.__last_chem_comp_atoms if a[self.__cca_leaving_atom_flag] == 'Y']
 
@@ -771,11 +762,8 @@ class BMRBChemShiftStat:
                     if v == 2:
                         for i in h_list:
                             atom_id = i['atom_id']
-                            try:
-                                next(b for b in self.__last_chem_comp_bonds if b[self.__ccb_atom_id_1] == k and b[self.__ccb_atom_id_2] == atom_id)
+                            if any(b for b in self.__last_chem_comp_bonds if b[self.__ccb_atom_id_1] == k and b[self.__ccb_atom_id_2] == atom_id):
                                 i['desc'] = 'geminal'
-                            except StopIteration:
-                                pass
 
                 h_list = [i for i in _list if i['atom_id'].startswith('H') and i['desc'] == 'aroma']
 
@@ -815,16 +803,9 @@ class BMRBChemShiftStat:
                                     for hvy_2 in hvy_set_2:
                                         if in_ring:
                                             break
-                                        try:
-                                            next(b for b in self.__last_chem_comp_bonds if b[self.__ccb_aromatic_flag] == 'Y' and b[self.__ccb_atom_id_1] == hvy_1 and b[self.__ccb_atom_id_2] == hvy_2)
+                                        if any(b for b in self.__last_chem_comp_bonds if b[self.__ccb_aromatic_flag] == 'Y' and b[self.__ccb_atom_id_1] == hvy_1 and b[self.__ccb_atom_id_2] == hvy_2) or\
+                                           any(b for b in self.__last_chem_comp_bonds if b[self.__ccb_aromatic_flag] == 'Y' and b[self.__ccb_atom_id_1] == hvy_2 and b[self.__ccb_atom_id_2] == hvy_1):
                                             in_ring = True
-                                        except StopIteration:
-                                            pass
-                                        try:
-                                            next(b for b in self.__last_chem_comp_bonds if b[self.__ccb_aromatic_flag] == 'Y' and b[self.__ccb_atom_id_1] == hvy_2 and b[self.__ccb_atom_id_2] == hvy_1)
-                                            in_ring = True
-                                        except StopIteration:
-                                            pass
                                 if in_ring:
                                     hvy_c_set_in_ring.add(hvy_c_1)
                                     hvy_c_set_in_ring.add(hvy_c_2)
@@ -872,9 +853,7 @@ class BMRBChemShiftStat:
                         atom_id = i['atom_id']
                         if atom_id == h + '1' or atom_id == h + '2':
                             atom_id = 'N' + i['atom_id'][1:]
-                            try:
-                                next(n for n in n_list if n['atom_id'] == atom_id)
-                            except StopIteration:
+                            if not any(n for n in n_list if n['atom_id'] == atom_id):
                                 i['desc'] = 'aroma' if h in cn_common and i['avg'] > 5.0 else 'geminal'
 
                 h_common = set(h_2) & set(h_3) - set(h_1)
@@ -885,9 +864,7 @@ class BMRBChemShiftStat:
                         atom_id = i['atom_id']
                         if atom_id == h + '2' or atom_id == h + '3':
                             atom_id = 'N' + i['atom_id'][1:]
-                            try:
-                                next(n for n in n_list if n['atom_id'] == atom_id)
-                            except StopIteration:
+                            if not any(n for n in n_list if n['atom_id'] == atom_id):
                                 i['desc'] = 'aroma' if h in cn_common and i['avg'] > 5.0 else 'geminal'
 
                 h_list = [i for i in _list if i['atom_id'].startswith('H') and i['desc'] == 'isolated']
@@ -895,11 +872,8 @@ class BMRBChemShiftStat:
                 for h in h_list:
                     if h['avg'] > 5.0:
                         atom_id = 'C' + h['atom_id'][1:]
-                        try:
-                            next(c for c in c_list if c['atom_id'] == atom_id and c['avg'] > 95.0 and c['avg'] < 170.0)
+                        if any(c for c in c_list if c['atom_id'] == atom_id and c['avg'] > 95.0 and c['avg'] < 170.0):
                             h['desc'] = 'aroma'
-                        except StopIteration:
-                            pass
 
                 h_list = [i for i in _list if i['atom_id'].startswith('H') and i['desc'] == 'isolated']
 
@@ -916,9 +890,7 @@ class BMRBChemShiftStat:
                         atom_id = i['atom_id']
                         if atom_id == h + "'" or atom_id == h + "''":
                             atom_id = 'N' + i['atom_id'][1:]
-                            try:
-                                next(n for n in n_list if n['atom_id'] == atom_id)
-                            except StopIteration:
+                            if not any(n for n in n_list if n['atom_id'] == atom_id):
                                 i['desc'] = 'geminal'
 
                 h_list = [i for i in _list if i['atom_id'].startswith('H') and i['desc'] == 'aroma']

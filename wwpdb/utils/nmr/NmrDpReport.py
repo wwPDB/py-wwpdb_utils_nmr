@@ -1309,14 +1309,9 @@ class NmrDpReport:
 
                 for _c in _value_list:
 
-                    if value_list is None:
+                    if value_list is None or\
+                       not any(c for c in value_list if c['sf_framecode'] == _c['sf_framecode'] and c['description'] == _c['description']):
                         list.append(_c)
-
-                    else:
-                        try:
-                            next(c for c in value_list if c['sf_framecode'] == _c['sf_framecode'] and c['description'] == _c['description'])
-                        except StopIteration:
-                            list.append(_c)
 
                 for c in list:
                     self.error.appendDescription(item, c)
@@ -1359,14 +1354,8 @@ class NmrDpReport:
 
                 for _c in _value_list:
 
-                    if value_list is None:
+                    if value_list is None or not any(c for c in value_list if c['sf_framecode'] == _c['sf_framecode'] and c['description'] == _c['description']):
                         list.append(_c)
-
-                    else:
-                        try:
-                            next(c for c in value_list if c['sf_framecode'] == _c['sf_framecode'] and c['description'] == _c['description'])
-                        except StopIteration:
-                            list.append(_c)
 
                 for c in list:
                     self.corrected_warning.appendDescription(item, c)
@@ -1584,11 +1573,8 @@ class NmrDpReportError:
             if item in ['total', 'internal_error'] or self.__contents[item] is None:
                 continue
 
-            try:
-                next(c for c in self.__contents[item] if c['file_name'] == file_name and 'sf_framecode' in c and c['sf_framecode'] == sf_framecode)
+            if any(c for c in self.__contents[item] if c['file_name'] == file_name and 'sf_framecode' in c and c['sf_framecode'] == sf_framecode):
                 return True
-            except StopIteration:
-                pass
 
         return False
 
@@ -1770,11 +1756,8 @@ class NmrDpReportWarning:
             if item in ['total', 'enum_mismatch_ignorable'] or self.__contents[item] is None:
                 continue
 
-            try:
-                next(c for c in self.__contents[item] if c['file_name'] == file_name and 'sf_framecode' in c and c['sf_framecode'] == sf_framecode)
+            if any(c for c in self.__contents[item] if c['file_name'] == file_name and 'sf_framecode' in c and c['sf_framecode'] == sf_framecode):
                 return True
-            except StopIteration:
-                pass
 
         return False
 

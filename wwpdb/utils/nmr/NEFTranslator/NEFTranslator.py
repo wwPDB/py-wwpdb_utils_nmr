@@ -35,6 +35,7 @@
 # 24-Apr-2020  M. Yokochi - revise error message in validate_file() (v2.2.6, DAOTHER-5611)
 # 25-Apr-2020  M. Yokochi - add 'excl_missing_data' option of check_data() for NMR separated deposition (v2.2.7, DAOTHER-5611)
 # 25-Apr-2020  M. Yokochi - fill default value if Entity_assembly_ID is blank (v2.2.8, DAOTHER-5611)
+# 28-Apr-2020  M. Yokochi - do not throw ValueError for 'range-float' data type (v2.2.9, DAOTHER-5611)
 ##
 import sys
 import os
@@ -53,7 +54,7 @@ from wwpdb.utils.nmr.io.ChemCompIo import ChemCompReader
 from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
 from wwpdb.utils.nmr.NmrDpReport import NmrDpReport
 
-__version__ = 'v2.2.8'
+__version__ = 'v2.2.9'
 
 class NEFTranslator(object):
     """ Bi-directional translator between NEF and NMR-STAR
@@ -2259,7 +2260,7 @@ class NEFTranslator(object):
                                     missing_mandatory_data = True
                                     continue
                                 else:
-                                    raise ValueError("%s%s '%s' must be %s." % (self.__idx_msg(idx_tag_ids, tags, ent), name, val, self.readable_item_type[type]))
+                                    user_warn_msg += "[Range value error] %s%s '%s' must be %s.\n" % (self.__idx_msg(idx_tag_ids, tags, ent), name, val, self.readable_item_type[type])
                             if ('min_exclusive' in _range and _range['min_exclusive'] == 0.0 and ent[name] <= 0.0) or ('min_inclusive' in _range and _range['min_inclusive'] == 0.0 and ent[name] < 0):
                                 if ent[name] < 0.0:
                                     if ('max_inclusive' in _range and abs(ent[name]) > _range['max_inclusive']) or ('max_exclusive' in _range and abs(ent[name]) >= _range['max_exclusive']) or ('enforce-sign' in k and k['enforce-sign']):
@@ -2436,7 +2437,7 @@ class NEFTranslator(object):
                                             ent[name] = None
                                             continue
                                         else:
-                                            raise ValueError("%s%s '%s' must be %s." % (self.__idx_msg(idx_tag_ids, tags, ent), name, val, self.readable_item_type[type]))
+                                            user_warn_msg += "[Range value error] %s%s '%s' must be %s.\n" % (self.__idx_msg(idx_tag_ids, tags, ent), name, val, self.readable_item_type[type])
                                     if ('min_exclusive' in _range and _range['min_exclusive'] == 0.0 and ent[name] <= 0.0) or ('min_inclusive' in _range and _range['min_inclusive'] == 0.0 and ent[name] < 0):
                                         if ent[name] < 0.0:
                                             if ('max_inclusive' in _range and abs(ent[name]) > _range['max_inclusive']) or ('max_exclusive' in _range and abs(ent[name]) >= _range['max_exclusive']) or ('enforce-sign' in d and d['enforce-sign']):
@@ -2879,7 +2880,7 @@ class NEFTranslator(object):
                         except KeyError:
                             raise Error('Range of tag item %s is not defined.' % name)
                         except:
-                            raise ValueError("%s '%s' must be %s." % (name, val, self.readable_item_type[type]))
+                            user_warn_msg += "[Range value error] %s '%s' must be %s.\n" % (name, val, self.readable_item_type[type])
                         if ('min_exclusive' in _range and _range['min_exclusive'] == 0.0 and ent[name] <= 0.0) or ('min_inclusive' in _range and _range['min_inclusive'] == 0.0 and ent[name] < 0):
                             if ent[name] < 0.0:
                                 if ('max_inclusive' in _range and abs(ent[name]) > _range['max_inclusive']) or ('max_exclusive' in _range and abs(ent[name]) >= _range['max_exclusive']) or ('enforce-sign' in t and t['enforce-sign']):

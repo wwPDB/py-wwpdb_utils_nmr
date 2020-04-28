@@ -58,9 +58,10 @@
 # 25-Apr-2020  M. Yokochi - add 'entity' content subtype (DAOTHER-5611)
 # 25-Apr-2020  M. Yokochi - add 'corrected_format_issue' warning type (DAOTHER-5611)
 # 27-Apr-2020  M. Yokochi - add 'auth_atom_nomenclature_mismatch' warning type (DAOTHER-5611)
-# 27-Apr-2020  M. Yokochi - implement automatic recursive format corrections (DAOTHER-5602)
+# 27-Apr-2020  M. Yokochi - implement recursive format corrections (DAOTHER-5602)
+# 28-Apr-2020  M. Yokochi - copy the normalized CS/MR files if output file path list is set (DAOTHER-5611)
+# 28-Apr-2020  M. Yokochi - catch 'range-float' error as 'unusual data' warning (DAOTHER-5611)
 ##
-from pip._vendor.html5lib.treebuilders.etree import tag_regexp
 """ Wrapper class for data processing for NMR data.
     @author: Masashi Yokochi
 """
@@ -76,6 +77,7 @@ import collections
 import re
 import math
 import codecs
+import shutil
 
 from munkres import Munkres
 
@@ -260,7 +262,9 @@ class NmrDpUtility(object):
         self.__procTasksDict = {'consistency-check': __checkTasks,
                                 'deposit': __depositTasks,
                                 'nmr-nef2str-deposit': __nef2strTasks,
-                                'nmr-str2nef-release': __str2nefTasks
+                                'nmr-str2nef-release': __str2nefTasks,
+                                'nmr-cs-nef-consistency-check': [self.__depositLegacyNmrData],
+                                'nmr-cs-str-consistency-check': [self.__depositLegacyNmrData]
                                 }
 
         # data processing report
@@ -406,8 +410,8 @@ class NmrDpUtility(object):
                               }
 
         # allowed chem shift range
-        self.chem_shift_range = {'min_exclusive': -500.0, 'max_exclusive': 500.0}
-        self.chem_shift_error = {'min_inclusive': 0.0, 'max_inclusive': 5.0}
+        self.chem_shift_range = {'min_exclusive': -300.0, 'max_exclusive': 300.0}
+        self.chem_shift_error = {'min_inclusive': 0.0, 'max_inclusive': 3.0}
 
         # allowed distance range
         self.dist_restraint_range = {'min_inclusive': 1.0, 'max_inclusive': 50.0}
@@ -2596,6 +2600,8 @@ class NmrDpUtility(object):
                 self.__outputParamDict[name] = value
             elif type == 'file':
                 self.__outputParamDict[name] = os.path.abspath(value)
+            elif type == 'file_list':
+                self.__outputParamDict[name] = [os.path.abspath(f) for f in value]
             else:
                 logging.error("+NmrDpUtility.addOutput() ++ Error  - Unknown output type %s." % type)
                 raise ValueError("+NmrDpUtility.addOutput() ++ Error  - Unknown output type %s." % type)
@@ -2624,13 +2630,20 @@ class NmrDpUtility(object):
                 logging.error("+NmrDpUtility.op() ++ Error  - No input provided for workflow operation %s." % op)
                 raise ValueError("+NmrDpUtility.op() ++ Error  - No input provided for workflow operation %s." % op)
         else:
-            if not 'chem_shift_file_path_list' in self.__inputParamDict:
+            cs_file_path_list = 'chem_shift_file_path_list'
+
+            if not cs_file_path_list in self.__inputParamDict:
                 logging.error("+NmrDpUtility.op() ++ Error  - No input provided for workflow operation %s." % op)
                 raise ValueError("+NmrDpUtility.op() ++ Error  - No input provided for workflow operation %s." % op)
-            self.__cs_file_path_list_len = len(self.__inputParamDict['chem_shift_file_path_list'])
+
+            self.__cs_file_path_list_len = len(self.__inputParamDict[cs_file_path_list])
+
             self.__file_path_list_len = self.__cs_file_path_list_len
-            if 'restraint_file_path_list' in self.__inputParamDict:
-                self.__file_path_list_len += len(self.__inputParamDict['restraint_file_path_list'])
+
+            mr_file_path_list = 'restraint_file_path_list'
+
+            if mr_file_path_list in self.__inputParamDict:
+                self.__file_path_list_len += len(self.__inputParamDict[mr_file_path_list])
 
         self.__release_mode = 'release' in op
 
@@ -2785,7 +2798,9 @@ class NmrDpUtility(object):
 
         else:
 
-            for csListId, csPath in enumerate(self.__inputParamDict['chem_shift_file_path_list']):
+            cs_file_path_list = 'chem_shift_file_path_list'
+
+            for csListId, csPath in enumerate(self.__inputParamDict[cs_file_path_list]):
 
                 if csListId > 0:
                     self.report.appendInputSource()
@@ -2798,11 +2813,13 @@ class NmrDpUtility(object):
                 input_source.setItemValue('file_type', file_type)
                 input_source.setItemValue('content_type', 'nmr-chemical-shifts')
 
-            if 'restraint_file_path_list' in self.__inputParamDict:
+            mr_file_path_list = 'restraint_file_path_list'
+
+            if mr_file_path_list in self.__inputParamDict:
 
                 file_path_list_len = self.__cs_file_path_list_len
 
-                for mrPath in self.__inputParamDict['restraint_file_path_list']:
+                for mrPath in self.__inputParamDict[mr_file_path_list]:
 
                     self.report.appendInputSource()
 
@@ -2950,7 +2967,9 @@ class NmrDpUtility(object):
 
         else:
 
-            for csListId, csPath in enumerate(self.__inputParamDict['chem_shift_file_path_list']):
+            cs_file_path_list = 'chem_shift_file_path_list'
+
+            for csListId, csPath in enumerate(self.__inputParamDict[cs_file_path_list]):
 
                 codec = self.__detectBOM(csPath, 'utf-8')
 
@@ -2972,6 +2991,12 @@ class NmrDpUtility(object):
 
                 file_name = input_source_dic['file_name']
                 file_type = input_source_dic['file_type']
+
+                if cs_file_path_list in self.__outputParamDict:
+                    if csListId < len(self.__outputParamDict[cs_file_path_list]):
+                        dstPath = self.__outputParamDict[cs_file_path_list][csListId]
+                        if not dstPath is None and not dstPath in self.__inputParamDict[cs_file_path_list]:
+                            shutil.copyfile(csPath, dstPath)
 
                 if is_valid:
 
@@ -3014,11 +3039,13 @@ class NmrDpUtility(object):
                     except:
                         pass
 
-            if 'restraint_file_path_list' in self.__inputParamDict:
+            mr_file_path_list = 'restraint_file_path_list'
+
+            if mr_file_path_list in self.__inputParamDict:
 
                 file_path_list_len = self.__cs_file_path_list_len
 
-                for mrPath in self.__inputParamDict['restraint_file_path_list']:
+                for mrPath in self.__inputParamDict[mr_file_path_list]:
 
                     codec = self.__detectBOM(mrPath, 'utf-8')
 
@@ -3040,6 +3067,12 @@ class NmrDpUtility(object):
 
                     file_name = input_source_dic['file_name']
                     file_type = input_source_dic['file_type']
+
+                    if mr_file_path_list in self.__outputParamDict:
+                        if file_path_list_len - __cs_file_path_list_len < len(self.__outputParamDict[mr_file_path_list]):
+                            dstPath = self.__outputParamDict[mr_file_path_list][file_path_list_len - __cs_file_path_list_len]
+                            if not dstPath is None and not dstPath in self.__inputParamDict[mr_file_path_list]:
+                                shutil.copyfile(mrPath, dstPath)
 
                     if is_valid:
 
@@ -3565,6 +3598,28 @@ class NmrDpUtility(object):
         message = json.loads(json_dumps)
 
         _file_type = message['file_type'] # nef/nmr-star/unknown
+
+        if not self.__combined_mode:
+
+            if file_list_id < self.__cs_file_path_list_len:
+
+                cs_file_path_list = 'chem_shift_file_path_list'
+
+                if cs_file_path_list in self.__outputParamDict:
+                    if file_list_id < len(self.__outputParamDict[cs_file_path_list]):
+                        dstPath = self.__outputParamDict[cs_file_path_list][file_list_id]
+                        if not dstPath is None and not dstPath in self.__inputParamDict[cs_file_path_list]:
+                            shutil.copyfile(_srcPath, dstPath)
+
+            else:
+
+                mr_file_path_list = 'restraint_file_path_list'
+
+                if mr_file_path_list in self.__outputParamDict:
+                    if file_path_list_len - __cs_file_path_list_len < len(self.__outputParamDict[mr_file_path_list]):
+                        dstPath = self.__outputParamDict[mr_file_path_list][file_path_list_len - __cs_file_path_list_len]
+                        if not dstPath is None and not dstPath in self.__inputParamDict[mr_file_path_list]:
+                            shutil.copyfile(_srcPath, dstPath)
 
         if is_valid:
 
@@ -6846,6 +6901,7 @@ class NmrDpUtility(object):
 
                 zero = warn.startswith('[Zero value error] ')
                 nega = warn.startswith('[Negative value error] ')
+                rang = wanr.startswith('[Range value error] ')
                 enum = warn.startswith('[Enumeration error] ')
                 mult = warn.startswith('[Multiple data] ')
 
@@ -6856,6 +6912,9 @@ class NmrDpUtility(object):
                         item = 'unusual_data'
                     elif nega:
                         warn = warn[23:]
+                        item = 'unusual_data'
+                    elif rang:
+                        warn = warn[20:]
                         item = 'unusual_data'
                     elif enum:
                         warn = warn[20:]
@@ -7306,6 +7365,7 @@ class NmrDpUtility(object):
 
                                     zero = warn.startswith('[Zero value error] ')
                                     nega = warn.startswith('[Negative value error] ')
+                                    rang = wanr.startswith('[Range value error] ')
                                     enum = warn.startswith('[Enumeration error] ')
                                     mult = warn.startswith('[Multiple data] ')
 
@@ -7316,6 +7376,9 @@ class NmrDpUtility(object):
                                             item = 'unusual_data'
                                         elif nega:
                                             warn = warn[23:]
+                                            item = 'unusual_data'
+                                        elif rang:
+                                            warn = warn[20:]
                                             item = 'unusual_data'
                                         elif enum:
                                             warn = warn[20:]
@@ -7624,6 +7687,7 @@ class NmrDpUtility(object):
 
                             zero = warn.startswith('[Zero value error] ')
                             nega = warn.startswith('[Negative value error] ')
+                            rang = wanr.startswith('[Range value error] ')
                             enum = warn.startswith('[Enumeration error] ')
 
                             ignorable = False
@@ -7634,6 +7698,8 @@ class NmrDpUtility(object):
                                     warn = warn[19:]
                                 elif nega:
                                     warn = warn[23:]
+                                elif rang:
+                                    warn = warn[20:]
                                 else: # enum
                                     warn = warn[20:]
 
@@ -21394,6 +21460,75 @@ class NmrDpUtility(object):
             return True
 
         self.__star_data[0].write_to_file(self.__dstPath)
+
+        return not self.report.isError()
+
+    def __depositLegacyNmrData(self):
+        """ Deposit next NMR legacy data files.
+        """
+
+        if self.__combined_mode:
+            return False
+
+        cs_file_path_list = 'chem_shift_file_path_list'
+
+        if cs_file_path_list in self.__outputParamDict:
+
+            for fileListId, dstPath in enumerate(self.__outputParamDict[cs_file_path_list]):
+
+                if dstPath is None:
+
+                    err = "Not found destination file path."
+
+                    self.report.error.appendDescription('internal_error', "+NmrDpUtility.__depositLegacyNmrData() ++ Error  - %s" % err)
+                    self.report.setError()
+
+                    if self.__verbose:
+                        self.__lfh.write("+NmrDpUtility.__depositLegacyNmrData() ++ Error  - %s\n" % err)
+
+                    return False
+
+                if fileListId >= len(self.__star_data) or self.__star_data[fileListId] is None:
+                    return False
+
+                if self.__star_data_type[fileListId] == 'Loop': # copied already
+                    continue
+
+                if dstPath in self.__inputParamDict[cs_file_path_list]:
+                    return False
+
+                self.__star_data[fileListId].write_to_file(dstPath)
+
+            mr_file_path_list = 'restraint_file_path_list'
+
+            if mr_file_path_list in self.__outputParamDict:
+
+                for dstPath in self.__outputParamDict[mr_file_path_list]:
+
+                    if dstPath is None:
+
+                        err = "Not found destination file path."
+
+                        self.report.error.appendDescription('internal_error', "+NmrDpUtility.__depositLegacyNmrData() ++ Error  - %s" % err)
+                        self.report.setError()
+
+                        if self.__verbose:
+                            self.__lfh.write("+NmrDpUtility.__depositLegacyNmrData() ++ Error  - %s\n" % err)
+
+                        return False
+
+                    if fileListId >= len(self.__star_data) or self.__star_data[fileListId] is None:
+                        return False
+
+                    if self.__star_data_type[fileListId] == 'Loop': # copied already
+                        continue
+
+                    if dstPath in self.__inputParamDict[mr_file_path_list]:
+                        return False
+
+                    self.__star_data[fileListId].write_to_file(dstPath)
+
+                    fileListId += 1
 
         return not self.report.isError()
 

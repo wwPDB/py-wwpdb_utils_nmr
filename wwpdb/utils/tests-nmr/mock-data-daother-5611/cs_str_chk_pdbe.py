@@ -19,6 +19,7 @@ class TestNmrDpUtility(unittest.TestCase):
         self.data_dir_path = os.path.join(here, '5611_NMR-FILES/')
         self.entries = ['6QEB', '6QES', '6QET', '6QEU', '6QF8', '6QWR', '6TPH']
         self.cs_file = {entry_id: ['shifts-upload.str'] for entry_id in self.entries}
+        self.cs_file_2 = {entry_id: ['shifts-upload.str.V2'] for entry_id in self.entries}
         self.orignal_model_file = {'6QEB': 'model-upload.cif',
                                    '6QES': 'model-upload.pdb',
                                    '6QET': 'model-upload.pdb',
@@ -37,6 +38,7 @@ class TestNmrDpUtility(unittest.TestCase):
     def __test_nmr_cs_str_consistency(self, entry_id):
         entry_dir_path = self.data_dir_path + entry_id + '/'
         self.nmr_db_util.addInput(name='chem_shift_file_path_list', value=[entry_dir_path + cs_file for cs_file in self.cs_file[entry_id]], type='file_list')
+        self.nmr_db_util.addOutput(name='chem_shift_file_path_list', value=[entry_dir_path + cs_file for cs_file in self.cs_file_2[entry_id]], type='file_list')
         self.nmr_db_util.addInput(name='coordinate_file_path', value=entry_dir_path + self.model_file[entry_id], type='file')
         self.nmr_db_util.addInput(name='nonblk_anomalous_cs', value=True, type='param')
         self.nmr_db_util.addInput(name='nonblk_bad_nterm', value=True, type='param')

@@ -20,14 +20,14 @@ class TestNmrDpUtility(unittest.TestCase):
         self.entries = ['6QEB', '6QES', '6QET', '6QEU', '6QF8', '6QWR', '6TPH']
         self.cs_file = {entry_id: ['shifts-upload.str'] for entry_id in self.entries}
         self.cs_file_2 = {entry_id: ['shifts-upload.str.V2'] for entry_id in self.entries}
-        self.orignal_model_file = {'6QEB': 'model-upload.cif',
-                                   '6QES': 'model-upload.pdb',
-                                   '6QET': 'model-upload.pdb',
-                                   '6QEU': 'model-upload.pdb',
-                                   '6QF8': 'model-upload.pdb',
-                                   '6QWR': 'model-upload.pdb',
-                                   '6TPH': 'model-upload.cif'
-                                   }
+        self.original_model_file = {'6QEB': 'model-upload.cif',
+                                    '6QES': 'model-upload.pdb',
+                                    '6QET': 'model-upload.pdb',
+                                    '6QEU': 'model-upload.pdb',
+                                    '6QF8': 'model-upload.pdb',
+                                    '6QWR': 'model-upload.pdb',
+                                    '6TPH': 'model-upload.cif'
+                                    }
         self.model_file = {entry_id: entry_id.lower() + '.cif' for entry_id in self.entries}
         self.nmr_db_util = NmrDpUtility()
         pass

@@ -60,6 +60,7 @@
 # 27-Apr-2020  M. Yokochi - implement recursive format corrections (DAOTHER-5602)
 # 28-Apr-2020  M. Yokochi - copy the normalized CS/MR files if output file path list is set (DAOTHER-5611)
 # 28-Apr-2020  M. Yokochi - catch 'range-float' error as 'unusual data' warning (DAOTHER-5611)
+# 28-Apr-2020  M. Yokochi - extract sequence from CS/MR loop with gap (DAOTHER-5611)
 ##
 """ Wrapper class for data processing for NMR data.
     @author: Masashi Yokochi
@@ -4459,9 +4460,11 @@ class NmrDpUtility(object):
         file_type = input_source_dic['file_type']
 
         if file_type == 'nef':
-            return self.__nefT.get_nef_seq(sf_data, lp_category=self.lp_categories[file_type][content_subtype], allow_empty=(content_subtype == 'spectral_peak'))
+            return self.__nefT.get_nef_seq(sf_data, lp_category=self.lp_categories[file_type][content_subtype],
+                                           allow_empty=(content_subtype == 'spectral_peak'), allow_gap=(not content_subtype in ['poly_seq', 'entity']))
         else:
-            return self.__nefT.get_star_seq(sf_data, lp_category=self.lp_categories[file_type][content_subtype], allow_empty=(content_subtype == 'spectral_peak'))
+            return self.__nefT.get_star_seq(sf_data, lp_category=self.lp_categories[file_type][content_subtype],
+                                            allow_empty=(content_subtype == 'spectral_peak'), allow_gap=(not content_subtype in ['poly_seq', 'entity']))
 
     def __extractPolymerSequence(self):
         """ Extract reference polymer sequence.

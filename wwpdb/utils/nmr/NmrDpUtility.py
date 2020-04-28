@@ -6951,7 +6951,7 @@ class NmrDpUtility(object):
 
                 zero = warn.startswith('[Zero value error] ')
                 nega = warn.startswith('[Negative value error] ')
-                rang = wanr.startswith('[Range value error] ')
+                rang = warn.startswith('[Range value error] ')
                 enum = warn.startswith('[Enumeration error] ')
                 mult = warn.startswith('[Multiple data] ')
 
@@ -7415,7 +7415,7 @@ class NmrDpUtility(object):
 
                                     zero = warn.startswith('[Zero value error] ')
                                     nega = warn.startswith('[Negative value error] ')
-                                    rang = wanr.startswith('[Range value error] ')
+                                    rang = warn.startswith('[Range value error] ')
                                     enum = warn.startswith('[Enumeration error] ')
                                     mult = warn.startswith('[Multiple data] ')
 
@@ -7737,7 +7737,7 @@ class NmrDpUtility(object):
 
                             zero = warn.startswith('[Zero value error] ')
                             nega = warn.startswith('[Negative value error] ')
-                            rang = wanr.startswith('[Range value error] ')
+                            rang = warn.startswith('[Range value error] ')
                             enum = warn.startswith('[Enumeration error] ')
 
                             ignorable = False

@@ -5054,7 +5054,7 @@ class NmrDpUtility(object):
                                         else:
                                             i = s1['seq_id'].index(seq_id)
 
-                                            if comp_id != s1['comp_id'][i]:
+                                            if not comp_id in self.empty_value and not s1['comp_id'][i] in self.empty_value and comp_id != s1['comp_id'][i]:
 
                                                 err = "Invalid comp_id %s vs %s (seq_id %s, chain_id %s) in a loop %s." % (comp_id, s1['comp_id'][i], seq_id, chain_id, lp_category2)
 
@@ -5100,7 +5100,7 @@ class NmrDpUtility(object):
                                         if seq_id in s1['seq_id']:
                                             i = s1['seq_id'].index(seq_id)
 
-                                            if comp_id != s1['comp_id'][i]:
+                                            if not comp_id in self.empty_value and not s1['comp_id'][i] in self.empty_value and comp_id != s1['comp_id'][i]:
 
                                                 err = "Unmatched comp_id %s vs %s (seq_id %s, chain_id %s) exists against '%s' saveframe." % (comp_id, s1['comp_id'][i], seq_id, chain_id, sf_framecode1)
 
@@ -5127,7 +5127,7 @@ class NmrDpUtility(object):
                                         if seq_id in s2['seq_id']:
                                             j = s2['seq_id'].index(seq_id)
 
-                                            if comp_id != s2['comp_id'][j]:
+                                            if not comp_id in self.empty_value and not s2['comp_id'][j] in self.empty_value and comp_id != s2['comp_id'][j]:
 
                                                 err = "Unmatched comp_id %s vs %s (seq_id %s, chain_id %s) exists against '%s' saveframe." % (comp_id, s2['comp_id'][j], seq_id, chain_id, sf_framecode2)
 
@@ -5197,8 +5197,17 @@ class NmrDpUtility(object):
         for chain_id in sorted(common_poly_seq.keys()):
 
             if len(common_poly_seq[chain_id]) > 0:
-                sorted_poly_seq = sorted(common_poly_seq[chain_id])
-                asm.append({'chain_id': chain_id, 'seq_id': [int(i.split(' ')[0]) for i in sorted_poly_seq], 'comp_id': [i.split(' ')[1] for i in sorted_poly_seq]})
+                seq_id_list = sorted(set([int(i.split(' ')[0]) for i in common_poly_seq[chain_id]]))
+                comp_id_list = []
+
+                for seq_id in seq_id_list:
+                    _comp_id = [i.split(' ')[1] for i in common_poly_seq[chain_id] if int(i.split(' ')[0]) == seq_id]
+                    if len(_comp_id) == 1:
+                        comp_id_list.append(_comp_id[0])
+                    else:
+                        comp_id_list.append(next(comp_id for comp_id in comp_ids if not comp_id in self.empty_value))
+
+                asm.append({'chain_id': chain_id, 'seq_id': seq_id_list, 'comp_id': comp_id_list})
 
         if len(asm) > 0:
 

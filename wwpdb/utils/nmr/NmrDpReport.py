@@ -30,6 +30,7 @@
 # 25-Apr-2020  M. Yokochi - add 'corrected_format_issue' warning type (DAOTHER-5611)
 # 27-Apr-2020  M. Yokochi - add 'auth_atom_nomenclature_mismatch' warning type (DAOTHER-5611)
 # 28-Apr-2020  M. Yokochi - prevent system clash due to 'number_of_assignments' (DAOTHER-5611)
+# 28-Apr-2020  M. Yokochi - Fix 'NOE? (To be decided)' to be 'NOE' (DAOTHER-5626)
 ##
 """ Wrapper class for data processing report of NMR data.
     @author: Masashi Yokochi
@@ -272,7 +273,7 @@ class NmrDpReport:
                         noe_like += v
             if noe_like > 0:
                 if noe_exp_type.lower() == 'unknown':
-                    noe_exp_type = 'NOE? (To be decided)'
+                    noe_exp_type = 'NOE' #? (To be decided)'
                 else:
                     _noe_exp_type = noe_exp_type.lower()
                     if _noe_exp_type in ('csp', 'chemical shift perturbation', 'shift_perturbation'):
@@ -452,7 +453,7 @@ class NmrDpReport:
                             noe_like += v
                 if noe_like > 0:
                     if noe_exp_type.lower() == 'unknown':
-                        noe_exp_type = 'NOE? (To be decided)'
+                        noe_exp_type = 'NOE' #? (To be decided)'
                     else:
                         _noe_exp_type = noe_exp_type.lower()
                         if _noe_exp_type in ('csp', 'chemical shift perturbation', 'shift_perturbation'):

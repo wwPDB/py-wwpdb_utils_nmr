@@ -6967,7 +6967,7 @@ class NmrDpUtility(object):
                 enum = warn.startswith('[Enumeration error] ')
                 mult = warn.startswith('[Multiple data] ')
 
-                if zero or nega or enum or mult:
+                if zero or nega or range or enum or mult:
 
                     if zero:
                         warn = warn[19:]
@@ -6989,7 +6989,7 @@ class NmrDpUtility(object):
                         err = warn[16:]
                         item = 'multiple_data'
 
-                    if zero or nega or enum or self.__resolve_conflict:
+                    if zero or nega or rang or enum or self.__resolve_conflict:
 
                         self.report.warning.appendDescription(item, {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
                         self.report.setWarning()
@@ -7431,7 +7431,7 @@ class NmrDpUtility(object):
                                     enum = warn.startswith('[Enumeration error] ')
                                     mult = warn.startswith('[Multiple data] ')
 
-                                    if zero or nega or enum or mult:
+                                    if zero or nega or rang or enum or mult:
 
                                         if zero:
                                             warn = warn[19:]
@@ -7453,7 +7453,7 @@ class NmrDpUtility(object):
                                             err = warn[16:]
                                             item = 'multiple_data'
 
-                                        if zero or nega or enum or self.__resolve_conflict:
+                                        if zero or nega or rang or enum or self.__resolve_conflict:
 
                                             self.report.warning.appendDescription(item, {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
                                             self.report.setWarning()
@@ -7754,7 +7754,7 @@ class NmrDpUtility(object):
 
                             ignorable = False
 
-                            if zero or nega or enum:
+                            if zero or nega or rang or enum:
 
                                 if zero:
                                     warn = warn[19:]
@@ -7785,7 +7785,7 @@ class NmrDpUtility(object):
                                         except StopIteration:
                                             pass
 
-                                self.report.warning.appendDescription('unusual_data' if zero else ('unusual_data' if nega else ('enum_mismatch_ignorable' if ignorable else 'enum_mismatch')), {'file_name': file_name, 'sf_framecode': sf_framecode, 'description': warn})
+                                self.report.warning.appendDescription('unusual_data' if zero else ('unusual_data' if nega else ('unusual_data' if rang else ('enum_mismatch_ignorable' if ignorable else 'enum_mismatch'))), {'file_name': file_name, 'sf_framecode': sf_framecode, 'description': warn})
                                 self.report.setWarning()
 
                                 if self.__verbose:

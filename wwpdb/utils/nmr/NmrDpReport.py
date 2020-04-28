@@ -26,6 +26,7 @@
 # 25-Apr-2020  M. Yokochi - add 'entity' content subtype (DAOTHER-5611)
 # 25-Apr-2020  M. Yokochi - add 'corrected_format_issue' warning type (DAOTHER-5611)
 # 27-Apr-2020  M. Yokochi - add 'auth_atom_nomenclature_mismatch' warning type (DAOTHER-5611)
+# 28-Apr-2020  M. Yokochi - prevent system clash due to 'number_of_assignments' (DAOTHER-5611)
 ##
 """ Wrapper class for data processing report of NMR data.
     @author: Masashi Yokochi
@@ -654,12 +655,13 @@ class NmrDpReport:
         pat = re.compile(r'^(\d+)(\D)$')
 
         for stat in self.getNmrStatsOfExptlData(content_subtype):
-            for k in stat['number_of_assignments'].keys():
-                try:
-                    g = pat.search(k.split('_')[0].upper()).groups()
-                    isotopes[g[0]] = g[1]
-                except AttributeError:
-                    pass
+            if 'number_of_assignments' in stat:
+                for k in stat['number_of_assignments'].keys():
+                    try:
+                        g = pat.search(k.split('_')[0].upper()).groups()
+                        isotopes[g[0]] = g[1]
+                    except AttributeError:
+                        pass
 
         return None if len(isotopes) == 0 else isotopes
 
@@ -691,12 +693,13 @@ class NmrDpReport:
                 continue
 
             for stat in stats:
-                for k in stat['number_of_assignments'].keys():
-                    try:
-                        g = pat.search(k.split('_')[0].upper()).groups()
-                        isotopes[g[0]] = g[1]
-                    except AttributeError:
-                        pass
+                if 'number_of_assignments' in stat:
+                    for k in stat['number_of_assignments'].keys():
+                        try:
+                            g = pat.search(k.split('_')[0].upper()).groups()
+                            isotopes[g[0]] = g[1]
+                        except AttributeError:
+                            pass
 
         return None if len(isotopes) == 0 else isotopes
 

@@ -59,6 +59,7 @@
 # 27-Apr-2020  M. Yokochi - add 'auth_atom_nomenclature_mismatch' warning type (DAOTHER-5611)
 # 27-Apr-2020  M. Yokochi - implement recursive format corrections (DAOTHER-5602)
 # 28-Apr-2020  M. Yokochi - copy the normalized CS/MR files if output file path list is set (DAOTHER-5611)
+# 28-Apr-2020  M. Yokochi - catch 'range-float' error as 'unusual data' warning (DAOTHER-5611)
 ##
 """ Wrapper class for data processing for NMR data.
     @author: Masashi Yokochi
@@ -408,8 +409,8 @@ class NmrDpUtility(object):
                               }
 
         # allowed chem shift range
-        self.chem_shift_range = {'min_exclusive': -500.0, 'max_exclusive': 500.0}
-        self.chem_shift_error = {'min_inclusive': 0.0, 'max_inclusive': 5.0}
+        self.chem_shift_range = {'min_exclusive': -300.0, 'max_exclusive': 300.0}
+        self.chem_shift_error = {'min_inclusive': 0.0, 'max_inclusive': 3.0}
 
         # allowed distance range
         self.dist_restraint_range = {'min_inclusive': 1.0, 'max_inclusive': 50.0}
@@ -6950,6 +6951,7 @@ class NmrDpUtility(object):
 
                 zero = warn.startswith('[Zero value error] ')
                 nega = warn.startswith('[Negative value error] ')
+                rang = wanr.startswith('[Range value error] ')
                 enum = warn.startswith('[Enumeration error] ')
                 mult = warn.startswith('[Multiple data] ')
 
@@ -6960,6 +6962,9 @@ class NmrDpUtility(object):
                         item = 'unusual_data'
                     elif nega:
                         warn = warn[23:]
+                        item = 'unusual_data'
+                    elif rang:
+                        warn = warn[20:]
                         item = 'unusual_data'
                     elif enum:
                         warn = warn[20:]
@@ -7410,6 +7415,7 @@ class NmrDpUtility(object):
 
                                     zero = warn.startswith('[Zero value error] ')
                                     nega = warn.startswith('[Negative value error] ')
+                                    rang = wanr.startswith('[Range value error] ')
                                     enum = warn.startswith('[Enumeration error] ')
                                     mult = warn.startswith('[Multiple data] ')
 
@@ -7420,6 +7426,9 @@ class NmrDpUtility(object):
                                             item = 'unusual_data'
                                         elif nega:
                                             warn = warn[23:]
+                                            item = 'unusual_data'
+                                        elif rang:
+                                            warn = warn[20:]
                                             item = 'unusual_data'
                                         elif enum:
                                             warn = warn[20:]
@@ -7728,6 +7737,7 @@ class NmrDpUtility(object):
 
                             zero = warn.startswith('[Zero value error] ')
                             nega = warn.startswith('[Negative value error] ')
+                            rang = wanr.startswith('[Range value error] ')
                             enum = warn.startswith('[Enumeration error] ')
 
                             ignorable = False
@@ -7738,6 +7748,8 @@ class NmrDpUtility(object):
                                     warn = warn[19:]
                                 elif nega:
                                     warn = warn[23:]
+                                elif rang:
+                                    warn = warn[20:]
                                 else: # enum
                                     warn = warn[20:]
 

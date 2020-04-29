@@ -37,6 +37,7 @@
 # 25-Apr-2020  M. Yokochi - fill default value if Entity_assembly_ID is blank (v2.2.8, DAOTHER-5611)
 # 28-Apr-2020  M. Yokochi - do not throw ValueError for 'range-float' data type (v2.2.9, DAOTHER-5611)
 # 28-Apr-2020  M. Yokochi - extract sequence from CS/MR loop with gap (v2.2.10, DAOTHER-5611)
+# 29-Apr-2020  M. Yokochi - support diagnostic message of PyNMRSTAR v2.6.5.1 or later (v2.2.11, DAOTHER-5611)
 ##
 import sys
 import os
@@ -49,13 +50,14 @@ import datetime
 import pynmrstar
 
 from pytz import utc
+from packaging import version
 
 from wwpdb.utils.config.ConfigInfo import ConfigInfo, getSiteId
 from wwpdb.utils.nmr.io.ChemCompIo import ChemCompReader
 from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
 from wwpdb.utils.nmr.NmrDpReport import NmrDpReport
 
-__version__ = 'v2.2.10'
+__version__ = '2.2.11'
 
 class NEFTranslator(object):
     """ Bi-directional translator between NEF and NMR-STAR
@@ -578,7 +580,9 @@ class NEFTranslator(object):
 
                     is_ok = False
 
-                    if not 'internaluseyoushouldntseethis_frame' in str(e3):
+                    if version.parse(pynmrstar.__version__) >= version.parse("2.6.5.1"):
+                        msg = str(e1)
+                    elif not 'internaluseyoushouldntseethis_frame' in str(e3):
                         msg = str(e3)
                     else:
                         msg = str(e1) # '%s contains no valid saveframe or loop. PyNMRSTAR ++ Error  - %s' % (os.path.basename(in_file), str(e))

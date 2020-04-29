@@ -63,8 +63,9 @@
 # 28-Apr-2020  M. Yokochi - extract sequence from CS/MR loop with gap (DAOTHER-5611)
 # 29-Apr-2020  M. Yokochi - support diagnostic message of PyNMRSTAR v2.6.5.1 or later (DAOTHER-5611)
 # 29-Apr-2020  M. Yokochi - implement more automatic format corrections with PyNMRSTAR v2.6.5.1 (DAOTHER-5611)
-# 29-Apr-2020  M. Yokochi - Fix different CS warning between NEF and NMR-STAR (DAOTHER-5621)
-# 29-Apr-2020  M. Yokochi - Add 'number_of_constraint_sets' of experiment data in report (DAOTHER-5622)
+# 29-Apr-2020  M. Yokochi - fix different CS warning between NEF and NMR-STAR (DAOTHER-5621)
+# 29-Apr-2020  M. Yokochi - add 'number_of_constraint_sets' of experiment data in report (DAOTHER-5622)
+# 29-Apr-2020  M. Yokochi - sort 'conflicted_data' and 'inconsistent_data' warning items (DAOTHER-5622)
 ##
 """ Wrapper class for data processing for NMR data.
     @author: Masashi Yokochi
@@ -2768,6 +2769,8 @@ class NmrDpUtility(object):
                 self.report.setCorrectedWarning(self.report_prev)
 
         self.report.warning.sortChemicalShiftValidation()
+        self.report.warning.sortBySigma('conflicted_data')
+        self.report.warning.sortBySigma('inconsistent_data')
 
         if self.__logPath is None:
             return False
@@ -7500,7 +7503,7 @@ class NmrDpUtility(object):
                                 id_tag, lp_data[row_id_1][id_tag], lp_data[row_id_2][id_tag])
                         warn += 'Found conflict on restraints (%s) for the same %s (%s).' % (discrepancy[:-2], data_unit_name, msg)
 
-                        self.report.warning.appendDescription('conflicted_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
+                        self.report.warning.appendDescription('conflicted_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn, 'sigma': float('{:.2f}'.format(r / max_inclusive))})
                         self.report.setWarning()
 
                         if self.__verbose:
@@ -7516,7 +7519,7 @@ class NmrDpUtility(object):
                                 id_tag, lp_data[row_id_1][id_tag], lp_data[row_id_2][id_tag])
                         warn += 'Found discrepancy in restraints (%s) for the same %s (%s).' % (discrepancy[:-2], data_unit_name, msg)
 
-                        self.report.warning.appendDescription('inconsistent_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
+                        self.report.warning.appendDescription('inconsistent_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn, 'sigma': float('{:.2f}'.format(r / max_inclusive))})
                         self.report.setWarning()
 
                         if self.__verbose:

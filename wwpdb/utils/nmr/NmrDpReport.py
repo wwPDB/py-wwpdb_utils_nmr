@@ -27,7 +27,8 @@
 # 25-Apr-2020  M. Yokochi - add 'corrected_format_issue' warning type (DAOTHER-5611)
 # 27-Apr-2020  M. Yokochi - add 'auth_atom_nomenclature_mismatch' warning type (DAOTHER-5611)
 # 28-Apr-2020  M. Yokochi - prevent system clash due to 'number_of_assignments' (DAOTHER-5611)
-# 28-Apr-2020  M. Yokochi - Fix 'NOE? (To be decided)' to be 'NOE' (DAOTHER-5626)
+# 28-Apr-2020  M. Yokochi - fix 'NOE? (To be decided)' to be 'NOE' (DAOTHER-5626)
+# 29-Apr-2020  M. Yokochi - sort 'conflicted_data' and 'inconsistent_data' items (DAOTHER-5622)
 ##
 """ Wrapper class for data processing report of NMR data.
     @author: Masashi Yokochi
@@ -1360,7 +1361,7 @@ class NmrDpReportInputSource:
         self.content_types = ('model', 'nmr-data-nef', 'nmr-data-str', 'nmr-chemical-shifts', 'nmr-restraints')
         self.content_subtypes = ('coordinate', 'non_poly', 'entry_info', 'poly_seq', 'entity', 'chem_shift', 'chem_shift_ref', 'dist_restraint', 'dihed_restraint', 'rdc_restraint', 'spectral_peak')
 
-        self.__contents = {item:None for item in self.items}
+        self.__contents = {item: None for item in self.items}
 
     def setItemValue(self, item, value):
 
@@ -1429,7 +1430,7 @@ class NmrDpReportSequenceAlignment:
     def __init__(self):
         self.items = ('model_poly_seq_vs_coordinate', 'model_poly_seq_vs_nmr_poly_seq', 'nmr_poly_seq_vs_model_poly_seq', 'nmr_poly_seq_vs_chem_shift', 'nmr_poly_seq_vs_dist_restraint', 'nmr_poly_seq_vs_dihed_restraint', 'nmr_poly_seq_vs_rdc_restraint', 'nmr_poly_seq_vs_spectral_peak')
 
-        self.__contents = {item:None for item in self.items}
+        self.__contents = {item: None for item in self.items}
 
     def setItemValue(self, item, value):
 
@@ -1453,7 +1454,7 @@ class NmrDpReportChainAssignment:
     def __init__(self):
         self.items = ('model_poly_seq_vs_nmr_poly_seq', 'nmr_poly_seq_vs_model_poly_seq')
 
-        self.__contents = {item:None for item in self.items}
+        self.__contents = {item: None for item in self.items}
 
     def setItemValue(self, item, value):
 
@@ -1479,7 +1480,7 @@ class NmrDpReportError:
                       'invalid_data', 'invalid_atom_nomenclature', 'invalid_atom_type', 'invalid_isotope_number', 'invalid_ambiguity_code',
                       'multiple_data', 'missing_data', 'duplicated_index', 'anomalous_data')
 
-        self.__contents = {item:None for item in self.items}
+        self.__contents = {item: None for item in self.items}
 
         self.__contents['total'] = 0
 
@@ -1664,7 +1665,7 @@ class NmrDpReportWarning:
                       'anomalous_data', 'unusual_data', 'remarkable_data', 'insufficient_data',
                       'conflicted_data', 'inconsistent_data', 'redundant_data')
 
-        self.__contents = {item:None for item in self.items}
+        self.__contents = {item: None for item in self.items}
 
         self.__contents['total'] = 0
 
@@ -1907,3 +1908,20 @@ class NmrDpReportWarning:
                     del c['description_alt']
                 del c['sigma']
                 self.__contents[item].append(c)
+
+    def sortBySigma(self, item):
+        """ Sort warning about sigma.
+        """
+
+        if self.__contents is None:
+            return
+
+        if not item in self.__contents or len(self.__contents[item]) < 2:
+            return
+
+        d = copy.copy(self.__contents[item])
+
+        self.__contents[item] = []
+
+        for c in sorted(d, key=lambda i: i['sigma'], reverse=True):
+            self.__contents[item].append(c)

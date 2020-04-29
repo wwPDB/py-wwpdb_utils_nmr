@@ -33,8 +33,18 @@ class TestNmrDpUtility(unittest.TestCase):
                              'sf-double-error': ['2la6-cs-sf-double-error.str'],
                              'loop-double-error': ['2la6-cs-loop-double-error.str'],
                              'loop-double': ['2la6-cs-loop.str', '2la6-cs-loop-2.str'],
-                             'no-cs-row': ['2la6-no-cs-row.str'],
-                             'no-cs-loop': ['2la6-no-cs-loop.str'],
+                             'no-cs-row-error': ['2la6-no-cs-row.str'],
+                             'no-cs-loop-error': ['2la6-no-cs-loop.str'],
+                             'loop-less-error': ['2la6-cs-loop-less.str'],
+                             'stop-less-error': ['2la6-cs-stop-less.str'],
+                             'loop-with-name-error': ['2la6-cs-loop-with-name.str'],
+                             'loop-stop-less-error': ['2la6-cs-loop-stop-less.str'],
+                             'data-save-less-error': ['2la6-cs-data-save-less.str'],
+                             'data-stop-less-error': ['2la6-cs-data-stop-less.str'],
+                             'data-stop-save-less-error': ['2la6-cs-data-stop-save-less.str'],
+                             'data-without-name-error': ['2la6-cs-data-without-name.str'],
+                             'data-invalid-stop-error': ['2la6-cs-data-invalid-stop.str'],
+                             'data-invalid-save-error': ['2la6-cs-data-invalid-save.str'],
                              'daother-5213': ['bmr36129.str'],
                              'daother-2737': ['rcsb103272-shifts-original.apofepbstar3.str'],
                              'daother-3343': ['D_1200009291_cs.str'],
@@ -52,8 +62,18 @@ class TestNmrDpUtility(unittest.TestCase):
                                 'sf-double-error': '2la6.cif',
                                 'loop-double-error': '2la6.cif',
                                 'loop-double': '2la6.cif',
-                                'no-cs-row': '2la6.cif',
-                                'no-cs-loop': '2la6.cif',
+                                'no-cs-row-error': '2la6.cif',
+                                'no-cs-loop-error': '2la6.cif',
+                                'loop-less-error': '2la6.cif',
+                                'stop-less-error': '2la6.cif',
+                                'loop-stop-less-error': '2la6.cif',
+                                'loop-with-name-error': '2la6.cif',
+                                'data-save-less-error': '2la6.cif',
+                                'data-stop-less-error': '2la6.cif',
+                                'data-stop-save-less-error': '2la6.cif',
+                                'data-without-name-error': '2la6.cif',
+                                'data-invalid-stop-error': '2la6.cif',
+                                'data-invalid-save-error': '2la6.cif',
                                 'daother-5213': 'pdb_extract_10300.cif',
                                 'daother-2737': 'rcsb103272.cif',
                                 'daother-3343': 'D_1200009291_model_P1.cif.V6',
@@ -118,11 +138,41 @@ class TestNmrDpUtility(unittest.TestCase):
     def test_nmr_cs_str_consistency_check_loop_double(self):
         self.__test_nmr_cs_str_consistency('loop-double')
 
-    def test_nmr_cs_str_consistency_check_no_cs_row(self):
-        self.__test_nmr_cs_str_consistency('no-cs-row')
+    def test_nmr_cs_str_consistency_check_no_cs_row_error(self):
+        self.__test_nmr_cs_str_consistency('no-cs-row-error')
 
-    def test_nmr_cs_str_consistency_check_no_cs_loop(self):
-        self.__test_nmr_cs_str_consistency('no-cs-loop')
+    def test_nmr_cs_str_consistency_check_no_cs_loop_error(self):
+        self.__test_nmr_cs_str_consistency('no-cs-loop-error')
+
+    def test_nmr_cs_str_consistency_check_loop_less_error(self):
+        self.__test_nmr_cs_str_consistency('loop-less-error')
+
+    def test_nmr_cs_str_consistency_check_stop_less_error(self):
+        self.__test_nmr_cs_str_consistency('stop-less-error')
+
+    def test_nmr_cs_str_consistency_check_loop_stop_less_error(self):
+        self.__test_nmr_cs_str_consistency('loop-stop-less-error')
+
+    def test_nmr_cs_str_consistency_check_loop_with_name_error(self):
+        self.__test_nmr_cs_str_consistency('loop-with-name-error')
+
+    def test_nmr_cs_str_consistency_check_data_save_less_error(self):
+        self.__test_nmr_cs_str_consistency('data-save-less-error')
+
+    def test_nmr_cs_str_consistency_check_data_stop_less_error(self):
+        self.__test_nmr_cs_str_consistency('data-stop-less-error')
+
+    def test_nmr_cs_str_consistency_check_data_stop_save_less_error(self):
+        self.__test_nmr_cs_str_consistency('data-stop-save-less-error')
+
+    def test_nmr_cs_str_consistency_check_data_without_name_error(self):
+        self.__test_nmr_cs_str_consistency('data-without-name-error')
+
+    def test_nmr_cs_str_consistency_check_data_invalid_stop_error(self):
+        self.__test_nmr_cs_str_consistency('data-invalid-stop-error')
+
+    def test_nmr_cs_str_consistency_check_data_invalid_save_error(self):
+        self.__test_nmr_cs_str_consistency('data-invalid-save-error')
 
     def test_nmr_cs_str_consistency_check_daother_5213(self):
         self.__test_nmr_cs_str_consistency('daother-5213')

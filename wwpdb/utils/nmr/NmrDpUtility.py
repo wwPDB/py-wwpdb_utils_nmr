@@ -61,6 +61,8 @@
 # 28-Apr-2020  M. Yokochi - copy the normalized CS/MR files if output file path list is set (DAOTHER-5611)
 # 28-Apr-2020  M. Yokochi - catch 'range-float' error as 'unusual data' warning (DAOTHER-5611)
 # 28-Apr-2020  M. Yokochi - extract sequence from CS/MR loop with gap (DAOTHER-5611)
+# 29-Apr-2020  M. Yokochi - support diagnostic message of PyNMRSTAR v2.6.5.1 or later (DAOTHER-5611)
+# 29-Apr-2020  M. Yokochi - implement more automatic format corrections with PyNMRSTAR v2.6.5.1 (DAOTHER-5611)
 ##
 """ Wrapper class for data processing for NMR data.
     @author: Masashi Yokochi
@@ -3136,6 +3138,238 @@ class NmrDpUtility(object):
         stop_pattern = re.compile(r'\s*stop_\s*')
         category_pattern = re.compile(r'\s*_(\S*)\..*\s*')
         tagvalue_pattern = re.compile(r'\s*_(\S*)\.(\S*)\s+(.*)\s*')
+
+        try:
+
+            msg_template = "Saveframe improperly terminated at end of file."
+
+            msg = next(msg for msg in message['error'] if msg_template in msg)
+            warn = msg_template
+
+            self.report.warning.appendDescription('corrected_format_issue', {'file_name': file_name, 'description': warn})
+            self.report.setWarning()
+
+            if self.__verbose:
+                self.__lfh.write("+NmrDpUtility.__validateInputSource() ++ Warning  - %s\n" % warn)
+
+            with open(_srcPath, 'r') as ifp:
+                with open(_srcPath + '~', 'w') as ofp:
+                    for line in ifp:
+                        ofp.write(line)
+
+                    ofp.write('save_\n')
+
+                    ofp.close()
+
+                    _srcPath = ofp.name
+                    tempPaths.append(_srcPath)
+                    ofp.close()
+
+                ifp.close()
+
+        except StopIteration:
+            pass
+
+        try:
+
+            msg_template = "Loop improperly terminated at end of file."
+            msg = next(msg for msg in message['error'] if msg_template in msg)
+            warn = msg_template
+
+            self.report.warning.appendDescription('corrected_format_issue', {'file_name': file_name, 'description': warn})
+            self.report.setWarning()
+
+            if self.__verbose:
+                self.__lfh.write("+NmrDpUtility.__validateInputSource() ++ Warning  - %s\n" % warn)
+
+            with open(_srcPath, 'r') as ifp:
+                with open(_srcPath + '~', 'w') as ofp:
+                    for line in ifp:
+                        ofp.write(line)
+
+                    ofp.write('save_\n')
+
+                    ofp.close()
+
+                    _srcPath = ofp.name
+                    tempPaths.append(_srcPath)
+                    ofp.close()
+
+                ifp.close()
+
+        except StopIteration:
+            pass
+
+        try:
+
+            msg_template = "Cannot use keywords as data values unless quoted or semi-colon delineated. Perhaps this is a loop that wasn't properly terminated? Illegal value:"
+            msg = next(msg for msg in message['error'] if msg_template in msg)
+            warn = 'Loops must properly terminated.'
+
+            self.report.warning.appendDescription('corrected_format_issue', {'file_name': file_name, 'description': warn})
+            self.report.setWarning()
+
+            if self.__verbose:
+                self.__lfh.write("+NmrDpUtility.__validateInputSource() ++ Warning  - %s\n" % warn)
+
+            _msg_template = r"Cannot use keywords as data values unless quoted or semi-colon delineated. Perhaps this is a loop that wasn't properly terminated\? Illegal value:"
+
+            msg_pattern = re.compile(r'^.*' + _msg_template + r".*, (\d+).*$")
+
+            try:
+
+                g = msg_pattern.search(msg).groups()
+
+                line_num = int(g[0])
+
+                i = 1
+
+                with open(_srcPath, 'r') as ifp:
+                    with open(_srcPath + '~', 'w') as ofp:
+                        for line in ifp:
+                            if i == line_num:
+                                ofp.write('stop_\n')
+                            ofp.write(line)
+                            i += 1
+
+                    _srcPath = ofp.name
+                    tempPaths.append(_srcPath)
+                    ofp.close()
+
+                ifp.close()
+
+            except AttributeError:
+                pass
+
+        except StopIteration:
+            pass
+
+        try:
+
+            msg_template = "Cannot have a tag value start with an underscore unless the entire value is quoted. You may be missing a data value on the previous line. Illegal value:"
+            msg = next(msg for msg in message['error'] if msg_template in msg)
+            warn = "Loops must start with the 'loop_' keyword."
+
+            self.report.warning.appendDescription('corrected_format_issue', {'file_name': file_name, 'description': warn})
+            self.report.setWarning()
+
+            if self.__verbose:
+                self.__lfh.write("+NmrDpUtility.__validateInputSource() ++ Warning  - %s\n" % warn)
+
+            msg_pattern = re.compile(r'^.*' + msg_template + r".*, (\d+).*$")
+
+            try:
+
+                g = msg_pattern.search(msg).groups()
+
+                line_num = int(g[0])
+
+                i = 1
+
+                with open(_srcPath, 'r') as ifp:
+                    with open(_srcPath + '~', 'w') as ofp:
+                        for line in ifp:
+                            if i == line_num - 1:
+                                ofp.write('loop_\n')
+                            ofp.write(line)
+                            i += 1
+
+                    _srcPath = ofp.name
+                    tempPaths.append(_srcPath)
+                    ofp.close()
+
+                ifp.close()
+
+            except AttributeError:
+                pass
+
+        except StopIteration:
+            pass
+
+        try:
+
+            msg_template = "Only 'save_NAME' is valid in the body of a NMR-STAR file. Found"
+            msg = next(msg for msg in message['error'] if msg_template in msg)
+            warn = "Loops must start with the 'loop_' keyword."
+
+            self.report.warning.appendDescription('corrected_format_issue', {'file_name': file_name, 'description': warn})
+            self.report.setWarning()
+
+            if self.__verbose:
+                self.__lfh.write("+NmrDpUtility.__validateInputSource() ++ Warning  - %s\n" % warn)
+
+            msg_pattern = re.compile(r'^.*' + msg_template + r" '(.*)'.*$")
+
+            try:
+
+                g = msg_pattern.search(msg).groups()
+
+                tag_name = g[0]
+
+                tag_name_pattern = re.compile(r'\s*' + tag_name + '\s*')
+
+                with open(_srcPath, 'r') as ifp:
+                    with open(_srcPath + '~', 'w') as ofp:
+                        for line in ifp:
+                            if tag_name_pattern.match(line) is None:
+                                ofp.write(line)
+                            else:
+                                ofp.write('loop_\n')
+
+                    _srcPath = ofp.name
+                    tempPaths.append(_srcPath)
+                    ofp.close()
+
+                ifp.close()
+
+            except AttributeError:
+                pass
+
+        except StopIteration:
+            pass
+
+        try:
+
+            msg_template = "'save_' must be followed by saveframe name. You have a 'save_' tag which is illegal without a specified saveframe name."
+            msg = next(msg for msg in message['error'] if msg_template in msg)
+            warn = "The saveframe must have a specified saveframe name."
+
+            self.report.warning.appendDescription('corrected_format_issue', {'file_name': file_name, 'description': warn})
+            self.report.setWarning()
+
+            if self.__verbose:
+                self.__lfh.write("+NmrDpUtility.__validateInputSource() ++ Warning  - %s\n" % warn)
+
+            msg_pattern = re.compile(r'^.*' + msg_template + r".*, (\d+).*$")
+
+            try:
+
+                g = msg_pattern.search(msg).groups()
+
+                line_num = int(g[0])
+
+                i = 1
+
+                with open(_srcPath, 'r') as ifp:
+                    with open(_srcPath + '~', 'w') as ofp:
+                        for line in ifp:
+                            if i != line_num:
+                                ofp.write(line)
+                            else:
+                                ofp.write('save_%s\n' % os.path.basename(srcPath))
+                            i += 1
+
+                    _srcPath = ofp.name
+                    tempPaths.append(_srcPath)
+                    ofp.close()
+
+                ifp.close()
+
+            except AttributeError:
+                pass
+
+        except StopIteration:
+            pass
 
         try:
 

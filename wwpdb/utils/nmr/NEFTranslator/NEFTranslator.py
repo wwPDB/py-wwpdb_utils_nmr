@@ -581,11 +581,15 @@ class NEFTranslator(object):
                     is_ok = False
 
                     if version.parse(pynmrstar.__version__) >= version.parse("2.6.5.1"):
-                        msg = str(e1)
-                    elif not 'internaluseyoushouldntseethis_frame' in str(e3):
-                        msg = str(e3)
+                        if not "Invalid loop. Loops must start with the 'loop_' keyword." in str(e3):
+                            msg = str(e3)
+                        else:
+                            msg = str(e1)
                     else:
-                        msg = str(e1) # '%s contains no valid saveframe or loop. PyNMRSTAR ++ Error  - %s' % (os.path.basename(in_file), str(e))
+                        if not 'internaluseyoushouldntseethis_frame' in str(e3):
+                            msg = str(e3)
+                        else:
+                            msg = str(e1) # '%s contains no valid saveframe or loop. PyNMRSTAR ++ Error  - %s' % (os.path.basename(in_file), str(e))
 
         except Exception as e:
             is_ok = False

@@ -64,6 +64,7 @@
 # 29-Apr-2020  M. Yokochi - support diagnostic message of PyNMRSTAR v2.6.5.1 or later (DAOTHER-5611)
 # 29-Apr-2020  M. Yokochi - implement more automatic format corrections with PyNMRSTAR v2.6.5.1 (DAOTHER-5611)
 # 29-Apr-2020  M. Yokochi - Fix different CS warning between NEF and NMR-STAR (DAOTHER-5621)
+# 29-Apr-2020  M. Yokochi - Add 'number_of_constraint_sets' of experiment data in report (DAOTHER-5622)
 ##
 """ Wrapper class for data processing for NMR data.
     @author: Masashi Yokochi
@@ -11339,6 +11340,7 @@ class NmrDpUtility(object):
         lower_linear_limit_name = item_names['lower_linear_limit']
         upper_linear_limit_name = item_names['upper_linear_limit']
         weight_name = self.weight_tags[file_type]['dist_restraint']
+        id_tag = self.consist_id_tags[file_type]['dist_restraint']
 
         try:
 
@@ -11351,6 +11353,7 @@ class NmrDpUtility(object):
             redu_count = {}
             weights = {}
             potential_types = {}
+            set_id = set()
 
             count_per_residue = []
             count_on_map = []
@@ -11384,6 +11387,7 @@ class NmrDpUtility(object):
                 atom_id_1 = i[atom_id_1_name]
                 atom_id_2 = i[atom_id_2_name]
                 weight = None if not weight_name in i else i[weight_name]
+                set_id.add(i[id_tag])
 
                 target_value = i[target_value_name] if target_value_name in i else None
 
@@ -11652,6 +11656,7 @@ class NmrDpUtility(object):
                 return
 
             ent['number_of_constraints'] = count
+            ent['number_of_constraint_sets'] = len(set_id)
             if len(comb_count) > 0:
                 ent['number_of_combined_constraints'] = comb_count
             if len(inco_count) > 0:
@@ -12455,6 +12460,7 @@ class NmrDpUtility(object):
         atom_id_4_name = dh_item_names['atom_id_4']
         angle_type_name = dh_item_names['angle_type']
         weight_name = self.weight_tags[file_type]['dihed_restraint']
+        id_tag = self.consist_id_tags[file_type]['dihed_restraint']
 
         try:
 
@@ -12465,6 +12471,7 @@ class NmrDpUtility(object):
             polymer_types = {}
             weights = {}
             potential_types = {}
+            set_id = set()
 
             phi_list = []
             psi_list = []
@@ -12554,6 +12561,7 @@ class NmrDpUtility(object):
                 atom_id_4 = i[atom_id_4_name]
                 data_type = i[angle_type_name]
                 weight = None if not weight_name in i else i[weight_name]
+                set_id.add(i[id_tag])
 
                 data_type, seq_id_common, comp_id_common =\
                 self.__getTypeOfDihedralRestraint(data_type,
@@ -12730,6 +12738,7 @@ class NmrDpUtility(object):
 
             if len(count) > 0:
                 ent['number_of_constraints'] = count
+                ent['number_of_constraint_sets'] = len(set_id)
                 if len(comb_count) > 0:
                     ent['number_of_combined_constraints'] = comb_count
                 if len(inco_count) > 0:
@@ -13350,6 +13359,7 @@ class NmrDpUtility(object):
             atom_id_1_name = item_names['atom_id_1']
             atom_id_2_name = item_names['atom_id_2']
             weight_name = self.weight_tags[file_type]['rdc_restraint']
+            id_tag = self.consist_id_tags[file_type]['rdc_restraint']
 
             count = {}
             comb_count = {}
@@ -13357,6 +13367,7 @@ class NmrDpUtility(object):
             redu_count = {}
             weights = {}
             potential_types = {}
+            set_id = set()
 
             value_per_residue = []
 
@@ -13377,6 +13388,7 @@ class NmrDpUtility(object):
                 atom_id_1 = i[atom_id_1_name]
                 atom_id_2 = i[atom_id_2_name]
                 weight = None if not weight_name in i else i[weight_name]
+                set_id.add(i[id_tag])
 
                 data_type = self.__getTypeOfRdcRestraint(atom_id_1, atom_id_2)
 
@@ -13490,6 +13502,7 @@ class NmrDpUtility(object):
                 return
 
             ent['number_of_constraints'] = count
+            ent['number_of_constraint_sets'] = len(set_id)
             if len(comb_count) > 0:
                 ent['number_of_combined_constraints'] = comb_count
             if len(inco_count) > 0:

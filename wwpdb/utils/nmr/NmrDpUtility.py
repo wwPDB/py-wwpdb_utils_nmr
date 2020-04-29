@@ -63,6 +63,7 @@
 # 28-Apr-2020  M. Yokochi - extract sequence from CS/MR loop with gap (DAOTHER-5611)
 # 29-Apr-2020  M. Yokochi - support diagnostic message of PyNMRSTAR v2.6.5.1 or later (DAOTHER-5611)
 # 29-Apr-2020  M. Yokochi - implement more automatic format corrections with PyNMRSTAR v2.6.5.1 (DAOTHER-5611)
+# 29-Apr-2020  M. Yokochi - Fix different CS warning between NEF and NMR-STAR (DAOTHER-5621)
 ##
 """ Wrapper class for data processing for NMR data.
     @author: Masashi Yokochi
@@ -18229,10 +18230,12 @@ class NmrDpUtility(object):
 
         return {'x': a['x'] - b['x'], 'y': a['y'] - b['y'], 'z': a['z'] - b['z']}
 
-    def __getNearestAromaticRing(self, nmr_chain_id, nmr_seq_id, nmr_atom_id, cutoff):
+    def __getNearestAromaticRing(self, _nmr_chain_id, nmr_seq_id, nmr_atom_id, cutoff):
         """ Return the nearest aromatic ring around a given atom.
             @return: the nearest aromatic ring
         """
+
+        nmr_chain_id = str(_nmr_chain_id)
 
         s = self.report.getModelPolymerSequenceWithNmrChainId(nmr_chain_id)
 
@@ -18555,13 +18558,15 @@ class NmrDpUtility(object):
 
         return None
 
-    def __getNearestParamagneticAtom(self, nmr_chain_id, nmr_seq_id, nmr_atom_id, cutoff):
+    def __getNearestParamagneticAtom(self, _nmr_chain_id, nmr_seq_id, nmr_atom_id, cutoff):
         """ Return the nearest paramagnetic atom around a given atom.
             @return: the nearest paramagnetic atom
         """
 
         if self.report.isDiamagnetic():
             return None
+
+        nmr_chain_id = str(_nmr_chain_id)
 
         s = self.report.getModelPolymerSequenceWithNmrChainId(nmr_chain_id)
 

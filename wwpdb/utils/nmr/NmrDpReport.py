@@ -1916,7 +1916,7 @@ class NmrDpReportWarning:
         if self.__contents is None:
             return
 
-        if not item in self.__contents or len(self.__contents[item]) < 2:
+        if not item in self.__contents or self.__contents[item] is None or len(self.__contents[item]) < 2:
             return
 
         d = copy.copy(self.__contents[item])

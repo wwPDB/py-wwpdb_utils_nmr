@@ -8889,7 +8889,7 @@ class NmrDpUtility(object):
                                                 loop.data[l][details_col] += ('' if '\n' in _details else '\n') + details
                                             add_details = True
 
-                            elif sigma > 5.0:
+                            elif sigma > 5.0: # Set 5.0 to be consistent with validation report
 
                                 na = self.__getNearestAromaticRing(chain_id, seq_id, atom_id_, self.cutoff_aromatic)
                                 pa = self.__getNearestParamagneticAtom(chain_id, seq_id, atom_id_, self.cutoff_paramagnetic)
@@ -8946,7 +8946,7 @@ class NmrDpUtility(object):
 
                                         if self.__verbose:
                                             self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ Warning  - %s\n" % warn)
-
+                                """ Can skip this to be consistent with validation report
                             elif sigma > 5.0:
 
                                 na = self.__getNearestAromaticRing(chain_id, seq_id, atom_id_, self.cutoff_aromatic)
@@ -8991,7 +8991,7 @@ class NmrDpUtility(object):
 
                                     if self.__verbose:
                                         self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ Warning  - %s\n" % warn)
-
+                                """
                             elif not cs_stat['primary'] and cs_stat['norm_freq'] < 0.03:
 
                                 warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] %s %s is remarkable assignment. Appearance rate of %s in %s is %s %% according to BMRB.' %\

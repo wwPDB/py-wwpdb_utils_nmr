@@ -100,7 +100,7 @@ class TestNmrDpUtility(unittest.TestCase):
 
         if not report['error'] is None:
             self.assertEqual(report['error']['internal_error'], None)
-    """
+
     def test_nmr_str_consistency_check_2k2e(self):
         self.__test_nmr_str_consistency('2k2e')
 
@@ -145,7 +145,7 @@ class TestNmrDpUtility(unittest.TestCase):
 
     def test_nmr_str_consistency_check_2loy(self):
         self.__test_nmr_str_consistency('2loy')
-    """
+
     def test_nmr_str_consistency_check_1pqx(self):
         self.__test_nmr_str_consistency('1pqx')
 

@@ -66,6 +66,7 @@
 # 29-Apr-2020  M. Yokochi - fix different CS warning between NEF and NMR-STAR (DAOTHER-5621)
 # 29-Apr-2020  M. Yokochi - add 'number_of_constraint_sets' of experiment data in report (DAOTHER-5622)
 # 29-Apr-2020  M. Yokochi - sort 'conflicted_data' and 'inconsistent_data' warning items (DAOTHER-5622)
+# 30-Apr-2020  M. Yokochi - allow NMR conventional atom naming scheme in NMR-STAR V3.2 (DAOTHER-5634)
 ##
 """ Wrapper class for data processing for NMR data.
     @author: Masashi Yokochi
@@ -6085,11 +6086,11 @@ class NmrDpUtility(object):
         """ Return a representative atom ID in IUPAC atom nomenclature for a given atom_id.
         """
 
-        _atom_id = self.__getAtomLIdList(file_type, comp_id, atom_id)
+        _atom_id = self.__getAtomIdList(file_type, comp_id, atom_id)
 
         return atom_id if len(_atom_id) == 0 else _atom_id[0]
 
-    def __getAtomLIdList(self, file_type, comp_id, atom_id):
+    def __getAtomIdList(self, file_type, comp_id, atom_id):
         """ Return atom ID list in IUPAC atom nomenclature for a given atom_id.
         """
 
@@ -6165,10 +6166,10 @@ class NmrDpUtility(object):
 
                         atom_id_ = atom_id
 
-                        if not self.__combined_mode and ((atom_id == 'HN' and self.__csStat.getTypeOfCompId(comp_id)[0]) or
-                                                         atom_id.startswith('Q') or
-                                                         atom_id.startswith('M') or
-                                                         self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id) == 0):
+                        if (atom_id == 'HN' and self.__csStat.getTypeOfCompId(comp_id)[0]) or\
+                           atom_id.startswith('Q') or\
+                           atom_id.startswith('M') or\
+                           self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id) == 0:
                             atom_id_ = self.__getRepresentativeAtomId(file_type, comp_id, atom_id)
 
                         if not self.__nefT.validate_comp_atom(comp_id, atom_id_):
@@ -6818,9 +6819,9 @@ class NmrDpUtility(object):
                         _atom_id = atom_id
 
                         if (atom_id == 'HN' and self.__csStat.getTypeOfCompId(comp_id)[0]) or\
-                            atom_id.startswith('Q') or\
-                            atom_id.startswith('M') or\
-                            self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id) == 0:
+                           atom_id.startswith('Q') or\
+                           atom_id.startswith('M') or\
+                           self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id) == 0:
                             _atom_id = self.__getRepresentativeAtomId(file_type, comp_id, atom_id)
 
                         allowed_ambig_code = self.__csStat.getMaxAmbigCodeWoSetId(comp_id, _atom_id)
@@ -8258,10 +8259,10 @@ class NmrDpUtility(object):
                 atom_id = i[atom_id_name]
                 value = i[value_name]
 
-                if file_type == 'nef' or (not self.__combined_mode and ((atom_id == 'HN' and self.__csStat.getTypeOfCompId(comp_id)[0]) or
-                                                                        atom_id.startswith('Q') or
-                                                                        atom_id.startswith('M') or
-                                                                        self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id) == 0)):
+                if file_type == 'nef' or ((atom_id == 'HN' and self.__csStat.getTypeOfCompId(comp_id)[0]) or
+                                          atom_id.startswith('Q') or
+                                          atom_id.startswith('M') or
+                                          self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id) == 0):
                     (_atom_id, ambig_code, details) = self.__getAtomIdListWithAmbigCode(file_type, comp_id, atom_id)
 
                     if len(_atom_id) == 0:
@@ -9155,9 +9156,9 @@ class NmrDpUtility(object):
                                         _atom_id2 = atom_id2
 
                                         if (atom_id2 == 'HN' and self.__csStat.getTypeOfCompId(comp_id2)[0]) or\
-                                            atom_id2.startswith('Q') or\
-                                            atom_id2.startswith('M') or\
-                                            self.__csStat.getMaxAmbigCodeWoSetId(comp_id2, atom_id2) == 0:
+                                           atom_id2.startswith('Q') or\
+                                           atom_id2.startswith('M') or\
+                                           self.__csStat.getMaxAmbigCodeWoSetId(comp_id2, atom_id2) == 0:
                                             _atom_id2 = self.__getRepresentativeAtomId(file_type, comp_id2, atom_id2)
 
                                         if (chain_id2 != chain_id or seq_id2 != seq_id or comp_id2 != comp_id) and _atom_id < _atom_id2:
@@ -9184,9 +9185,9 @@ class NmrDpUtility(object):
                                         _atom_id2 = atom_id2
 
                                         if (atom_id2 == 'HN' and self.__csStat.getTypeOfCompId(comp_id2)[0]) or\
-                                            atom_id2.startswith('Q') or\
-                                            atom_id2.startswith('M') or\
-                                            self.__csStat.getMaxAmbigCodeWoSetId(comp_id2, atom_id2) == 0:
+                                           atom_id2.startswith('Q') or\
+                                           atom_id2.startswith('M') or\
+                                           self.__csStat.getMaxAmbigCodeWoSetId(comp_id2, atom_id2) == 0:
                                             _atom_id2 = self.__getRepresentativeAtomId(file_type, comp_id2, atom_id2)
 
                                         if ((chain_id2 != chain_id and chain_id < chain_id2) or (seq_id2 == seq_id and _atom_id < _atom_id2)):
@@ -9214,9 +9215,9 @@ class NmrDpUtility(object):
                                         _atom_id2 = atom_id2
 
                                         if (atom_id2 == 'HN' and self.__csStat.getTypeOfCompId(comp_id2)[0]) or\
-                                            atom_id2.startswith('Q') or\
-                                            atom_id2.startswith('M') or\
-                                            self.__csStat.getMaxAmbigCodeWoSetId(comp_id2, atom_id2) == 0:
+                                           atom_id2.startswith('Q') or\
+                                           atom_id2.startswith('M') or\
+                                           self.__csStat.getMaxAmbigCodeWoSetId(comp_id2, atom_id2) == 0:
                                             _atom_id2 = self.__getRepresentativeAtomId(file_type, comp_id2, atom_id2)
 
                                         if chain_id2 == chain_id and (seq_id < seq_id2 or (seq_id == seq_id2 and _atom_id < _atom_id2)):
@@ -9241,9 +9242,9 @@ class NmrDpUtility(object):
                                     _atom_id2 = atom_id2
 
                                     if (atom_id2 == 'HN' and self.__csStat.getTypeOfCompId(comp_id2)[0]) or\
-                                        atom_id2.startswith('Q') or\
-                                        atom_id2.startswith('M') or\
-                                        self.__csStat.getMaxAmbigCodeWoSetId(comp_id2, atom_id2) == 0:
+                                       atom_id2.startswith('Q') or\
+                                       atom_id2.startswith('M') or\
+                                       self.__csStat.getMaxAmbigCodeWoSetId(comp_id2, atom_id2) == 0:
                                         _atom_id2 = self.__getRepresentativeAtomId(file_type, comp_id2, atom_id2)
 
                                     if _atom_id[0] != _atom_id2[0] and _atom_id < _atom_id2:
@@ -10326,11 +10327,11 @@ class NmrDpUtility(object):
                                     atom_id = j[atom_id_name]
                                     data_type = str(j[iso_number]) + j[atom_type]
 
-                                    if file_type == 'nef' or (not self.__combined_mode and ((atom_id == 'HN' and self.__csStat.getTypeOfCompId(comp_id)[0]) or
-                                                                                            atom_id.startswith('Q') or
-                                                                                            atom_id.startswith('M') or
-                                                                                            self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id) == 0)):
-                                        atom_ids = self.__getAtomLIdList(file_type, comp_id, atom_id)
+                                    if file_type == 'nef' or ((atom_id == 'HN' and self.__csStat.getTypeOfCompId(comp_id)[0]) or
+                                                              atom_id.startswith('Q') or
+                                                              atom_id.startswith('M') or
+                                                              self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id) == 0):
+                                        atom_ids = self.__getAtomIdList(file_type, comp_id, atom_id)
 
                                         if len(atom_ids) == 0:
                                             continue
@@ -10462,11 +10463,11 @@ class NmrDpUtility(object):
                                     atom_id = j[atom_id_name]
                                     data_type = str(j[iso_number]) + j[atom_type]
 
-                                    if file_type == 'nef' or (not self.__combined_mode and ((atom_id == 'HN' and self.__csStat.getTypeOfCompId(comp_id)[0]) or
-                                                                                            atom_id.startswith('Q') or
-                                                                                            atom_id.startswith('M') or
-                                                                                            self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id) == 0)):
-                                        atom_ids = self.__getAtomLIdList(file_type, comp_id, atom_id)
+                                    if file_type == 'nef' or ((atom_id == 'HN' and self.__csStat.getTypeOfCompId(comp_id)[0]) or
+                                                              atom_id.startswith('Q') or
+                                                              atom_id.startswith('M') or
+                                                              self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id) == 0):
+                                        atom_ids = self.__getAtomIdList(file_type, comp_id, atom_id)
 
                                         if len(atom_ids) == 0:
                                             continue
@@ -10585,11 +10586,11 @@ class NmrDpUtility(object):
                                     atom_id = j[atom_id_name]
                                     data_type = str(j[iso_number]) + j[atom_type]
 
-                                    if file_type == 'nef' or (not self.__combined_mode and ((atom_id == 'HN' and self.__csStat.getTypeOfCompId(comp_id)[0]) or
-                                                                                            atom_id.startswith('Q') or
-                                                                                            atom_id.startswith('M') or
-                                                                                            self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id) == 0)):
-                                        atom_ids = self.__getAtomLIdList(file_type, comp_id, atom_id)
+                                    if file_type == 'nef' or ((atom_id == 'HN' and self.__csStat.getTypeOfCompId(comp_id)[0]) or
+                                                              atom_id.startswith('Q') or
+                                                              atom_id.startswith('M') or
+                                                              self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id) == 0):
+                                        atom_ids = self.__getAtomIdList(file_type, comp_id, atom_id)
 
                                         if len(atom_ids) == 0:
                                             continue
@@ -10697,11 +10698,11 @@ class NmrDpUtility(object):
                                     atom_id = j[atom_id_name]
                                     data_type = str(j[iso_number]) + j[atom_type]
 
-                                    if file_type == 'nef' or (not self.__combined_mode and ((atom_id == 'HN' and self.__csStat.getTypeOfCompId(comp_id)[0]) or
-                                                                                            atom_id.startswith('Q') or
-                                                                                            atom_id.startswith('M') or
-                                                                                            self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id) == 0)):
-                                        atom_ids = self.__getAtomLIdList(file_type, comp_id, atom_id)
+                                    if file_type == 'nef' or ((atom_id == 'HN' and self.__csStat.getTypeOfCompId(comp_id)[0]) or
+                                                              atom_id.startswith('Q') or
+                                                              atom_id.startswith('M') or
+                                                              self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id) == 0):
+                                        atom_ids = self.__getAtomIdList(file_type, comp_id, atom_id)
 
                                         if len(atom_ids) == 0:
                                             continue
@@ -10801,11 +10802,11 @@ class NmrDpUtility(object):
                                     atom_id = j[atom_id_name]
                                     data_type = str(j[iso_number]) + j[atom_type]
 
-                                    if file_type == 'nef' or (not self.__combined_mode and ((atom_id == 'HN' and self.__csStat.getTypeOfCompId(comp_id)[0]) or
-                                                                                            atom_id.startswith('Q') or
-                                                                                            atom_id.startswith('M') or
-                                                                                            self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id) == 0)):
-                                        atom_ids = self.__getAtomLIdList(file_type, comp_id, atom_id)
+                                    if file_type == 'nef' or ((atom_id == 'HN' and self.__csStat.getTypeOfCompId(comp_id)[0]) or
+                                                              atom_id.startswith('Q') or
+                                                              atom_id.startswith('M') or
+                                                              self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id) == 0):
+                                        atom_ids = self.__getAtomIdList(file_type, comp_id, atom_id)
 
                                         if len(atom_ids) == 0:
                                             continue
@@ -10869,10 +10870,10 @@ class NmrDpUtility(object):
                 atom_id = i[atom_id_name]
                 value = i[value_name]
 
-                if file_type == 'nef' or (not self.__combined_mode and ((atom_id == 'HN' and self.__csStat.getTypeOfCompId(comp_id)[0]) or
-                                                                        atom_id.startswith('Q') or
-                                                                        atom_id.startswith('M') or
-                                                                        self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id) == 0)):
+                if file_type == 'nef' or ((atom_id == 'HN' and self.__csStat.getTypeOfCompId(comp_id)[0]) or
+                                          atom_id.startswith('Q') or
+                                          atom_id.startswith('M') or
+                                          self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id) == 0):
                     (_atom_id, ambig_code, details) = self.__getAtomIdListWithAmbigCode(file_type, comp_id, atom_id)
 
                     if len(_atom_id) == 0:
@@ -12361,16 +12362,16 @@ class NmrDpUtility(object):
             data_type = 'intra-residue_constraints'
         elif range_of_seq < 5:
 
-            if file_type == 'nef' or (not self.__combined_mode and ((atom_id_1 == 'HN' and self.__csStat.getTypeOfCompId(comp_id_1)[0]) or
-                                                                    atom_id_1.startswith('Q') or
-                                                                    atom_id_1.startswith('M') or
-                                                                    self.__csStat.getMaxAmbigCodeWoSetId(comp_id_1, atom_id_1) == 0 or
-                                                                    (atom_id_2 == 'HN' and self.__csStat.getTypeOfCompId(comp_id_2)[0]) or
-                                                                    atom_id_2.startswith('Q') or
-                                                                    atom_id_2.startswith('M') or
-                                                                    self.__csStat.getMaxAmbigCodeWoSetId(comp_id_2, atom_id_2) == 0)):
-                _atom_id_1 = self.__getAtomLIdList(file_type, comp_id_1, atom_id_1)
-                _atom_id_2 = self.__getAtomLIdList(file_type, comp_id_2, atom_id_2)
+            if file_type == 'nef' or ((atom_id_1 == 'HN' and self.__csStat.getTypeOfCompId(comp_id_1)[0]) or
+                                      atom_id_1.startswith('Q') or
+                                      atom_id_1.startswith('M') or
+                                      self.__csStat.getMaxAmbigCodeWoSetId(comp_id_1, atom_id_1) == 0 or
+                                      (atom_id_2 == 'HN' and self.__csStat.getTypeOfCompId(comp_id_2)[0]) or
+                                      atom_id_2.startswith('Q') or
+                                      atom_id_2.startswith('M') or
+                                      self.__csStat.getMaxAmbigCodeWoSetId(comp_id_2, atom_id_2) == 0):
+                _atom_id_1 = self.__getAtomIdList(file_type, comp_id_1, atom_id_1)
+                _atom_id_2 = self.__getAtomIdList(file_type, comp_id_2, atom_id_2)
 
                 if len(_atom_id_1) > 0 and len(_atom_id_2) > 0:
                     is_sc_atom_1 = _atom_id_1[0] in self.__csStat.getSideChainAtoms(comp_id_1)
@@ -16006,10 +16007,10 @@ class NmrDpUtility(object):
                 if cif_comp_id is None:
                     continue
 
-                if file_type == 'nef' or (not self.__combined_mode and ((atom_id == 'HN' and self.__csStat.getTypeOfCompId(comp_id)[0]) or
-                                                                        atom_id.startswith('Q') or
-                                                                        atom_id.startswith('M') or
-                                                                        self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id) == 0)):
+                if file_type == 'nef' or ((atom_id == 'HN' and self.__csStat.getTypeOfCompId(comp_id)[0]) or
+                                          atom_id.startswith('Q') or
+                                          atom_id.startswith('M') or
+                                          self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id) == 0):
                     (_atom_id, ambig_code, details) = self.__getAtomIdListWithAmbigCode(file_type, comp_id, atom_id)
 
                     if len(_atom_id) == 0:

@@ -62,6 +62,12 @@
 # 28-Apr-2020  M. Yokochi - copy the normalized CS/MR files if output file path list is set (DAOTHER-5611)
 # 28-Apr-2020  M. Yokochi - catch 'range-float' error as 'unusual data' warning (DAOTHER-5611)
 # 28-Apr-2020  M. Yokochi - extract sequence from CS/MR loop with gap (DAOTHER-5611)
+# 29-Apr-2020  M. Yokochi - support diagnostic message of PyNMRSTAR v2.6.5.1 or later (DAOTHER-5611)
+# 29-Apr-2020  M. Yokochi - implement more automatic format corrections with PyNMRSTAR v2.6.5.1 (DAOTHER-5611)
+# 29-Apr-2020  M. Yokochi - fix different CS warning between NEF and NMR-STAR (DAOTHER-5621)
+# 29-Apr-2020  M. Yokochi - add 'number_of_constraint_sets' of experiment data in report (DAOTHER-5622)
+# 29-Apr-2020  M. Yokochi - sort 'conflicted_data' and 'inconsistent_data' warning items (DAOTHER-5622)
+# 30-Apr-2020  M. Yokochi - allow NMR conventional atom naming scheme in NMR-STAR V3.2 (DAOTHER-5634)
 ##
 """ Wrapper class for data processing for NMR data.
     @author: Masashi Yokochi
@@ -2768,6 +2774,8 @@ class NmrDpUtility(object):
                 self.report.setCorrectedWarning(self.report_prev)
 
         self.report.warning.sortChemicalShiftValidation()
+        self.report.warning.sortBySigma('conflicted_data')
+        self.report.warning.sortBySigma('inconsistent_data')
 
         if self.__logPath is None:
             return False
@@ -3141,7 +3149,61 @@ class NmrDpUtility(object):
         category_pattern = re.compile(r'\s*_(\S*)\..*\s*')
         tagvalue_pattern = re.compile(r'\s*_(\S*)\.(\S*)\s+(.*)\s*')
 
-        if any(msg for msg in message['error'] if "Invalid file. NMR-STAR files must start with 'data_'. Did you accidentally select the wrong file?" in msg):
+        msg_template = "Saveframe improperly terminated at end of file."
+
+        if any(msg for msg in message['error'] if msg_template in msg):
+            warn = msg_template
+
+            self.report.warning.appendDescription('corrected_format_issue', {'file_name': file_name, 'description': warn})
+            self.report.setWarning()
+
+            if self.__verbose:
+                self.__lfh.write("+NmrDpUtility.__validateInputSource() ++ Warning  - %s\n" % warn)
+
+            with open(_srcPath, 'r') as ifp:
+                with open(_srcPath + '~', 'w') as ofp:
+                    for line in ifp:
+                        ofp.write(line)
+
+                    ofp.write('save_\n')
+
+                    ofp.close()
+
+                    _srcPath = ofp.name
+                    tempPaths.append(_srcPath)
+                    ofp.close()
+
+                ifp.close()
+
+        msg_template = "Loop improperly terminated at end of file."
+
+        if any(msg for msg in message['error'] if msg_template in msg):
+            warn = msg_template
+
+            self.report.warning.appendDescription('corrected_format_issue', {'file_name': file_name, 'description': warn})
+            self.report.setWarning()
+
+            if self.__verbose:
+                self.__lfh.write("+NmrDpUtility.__validateInputSource() ++ Warning  - %s\n" % warn)
+
+            with open(_srcPath, 'r') as ifp:
+                with open(_srcPath + '~', 'w') as ofp:
+                    for line in ifp:
+                        ofp.write(line)
+
+                    ofp.write('save_\n')
+
+                    ofp.close()
+
+                    _srcPath = ofp.name
+                    tempPaths.append(_srcPath)
+                    ofp.close()
+
+                ifp.close()
+
+        msg_template = "Invalid file. NMR-STAR files must start with 'data_'. Did you accidentally select the wrong file?"
+
+        if any(msg for msg in message['error'] if msg_template in msg):
             warn = 'The datablock must hook saveframe(s).'
 
             self.report.warning.appendDescription('corrected_format_issue', {'file_name': file_name, 'description': warn})
@@ -3164,7 +3226,9 @@ class NmrDpUtility(object):
 
                 ifp.close()
 
-        if any(msg for msg in message['error'] if "Only 'save_NAME' is valid in the body of a NMR-STAR file. Found 'loop_'." in msg):
+        msg_template = "Only 'save_NAME' is valid in the body of a NMR-STAR file. Found 'loop_'."
+
+        if any(msg for msg in message['error'] if msg_template in msg):
             warn = 'A saveframe, instead of the datablock, must hook the loop.'
 
             self.report.warning.appendDescription('corrected_format_issue', {'file_name': file_name, 'description': warn})
@@ -3193,9 +3257,184 @@ class NmrDpUtility(object):
 
                 ifp.close()
 
+        msg_template = "Cannot use keywords as data values unless quoted or semi-colon delineated. Perhaps this is a loop that wasn't properly terminated? Illegal value:"
+
         try:
 
-            msg_template = "The tag prefix was never set! Either the saveframe had no tags, you tried to read a version 2.1 file without setting ALLOW_V2_ENTRIES to True, or there is something else wrong with your file. Saveframe error occured:"
+            msg = next(msg for msg in message['error'] if msg_template in msg)
+            warn = 'Loops must properly terminated.'
+
+            self.report.warning.appendDescription('corrected_format_issue', {'file_name': file_name, 'description': warn})
+            self.report.setWarning()
+
+            if self.__verbose:
+                self.__lfh.write("+NmrDpUtility.__validateInputSource() ++ Warning  - %s\n" % warn)
+
+            _msg_template = r"Cannot use keywords as data values unless quoted or semi-colon delineated. Perhaps this is a loop that wasn't properly terminated\? Illegal value:"
+
+            msg_pattern = re.compile(r'^.*' + _msg_template + r".*, (\d+).*$")
+
+            try:
+
+                g = msg_pattern.search(msg).groups()
+
+                line_num = int(g[0])
+
+                i = 1
+
+                with open(_srcPath, 'r') as ifp:
+                    with open(_srcPath + '~', 'w') as ofp:
+                        for line in ifp:
+                            if i == line_num:
+                                ofp.write('stop_\n')
+                            ofp.write(line)
+                            i += 1
+
+                    _srcPath = ofp.name
+                    tempPaths.append(_srcPath)
+                    ofp.close()
+
+                ifp.close()
+
+            except AttributeError:
+                pass
+
+        except StopIteration:
+            pass
+
+        msg_template = "Cannot have a tag value start with an underscore unless the entire value is quoted. You may be missing a data value on the previous line. Illegal value:"
+
+        try:
+
+            msg = next(msg for msg in message['error'] if msg_template in msg)
+            warn = "Loops must start with the 'loop_' keyword."
+
+            self.report.warning.appendDescription('corrected_format_issue', {'file_name': file_name, 'description': warn})
+            self.report.setWarning()
+
+            if self.__verbose:
+                self.__lfh.write("+NmrDpUtility.__validateInputSource() ++ Warning  - %s\n" % warn)
+
+            msg_pattern = re.compile(r'^.*' + msg_template + r".*, (\d+).*$")
+
+            try:
+
+                g = msg_pattern.search(msg).groups()
+
+                line_num = int(g[0])
+
+                i = 1
+
+                with open(_srcPath, 'r') as ifp:
+                    with open(_srcPath + '~', 'w') as ofp:
+                        for line in ifp:
+                            if i == line_num - 1:
+                                ofp.write('loop_\n')
+                            ofp.write(line)
+                            i += 1
+
+                    _srcPath = ofp.name
+                    tempPaths.append(_srcPath)
+                    ofp.close()
+
+                ifp.close()
+
+            except AttributeError:
+                pass
+
+        except StopIteration:
+            pass
+
+        msg_template = "Only 'save_NAME' is valid in the body of a NMR-STAR file. Found"
+
+        try:
+
+            msg = next(msg for msg in message['error'] if msg_template in msg)
+            warn = "Loops must start with the 'loop_' keyword."
+
+            self.report.warning.appendDescription('corrected_format_issue', {'file_name': file_name, 'description': warn})
+            self.report.setWarning()
+
+            if self.__verbose:
+                self.__lfh.write("+NmrDpUtility.__validateInputSource() ++ Warning  - %s\n" % warn)
+
+            msg_pattern = re.compile(r'^.*' + msg_template + r" '(.*)'.*$")
+
+            try:
+
+                g = msg_pattern.search(msg).groups()
+
+                tag_name = g[0]
+
+                tag_name_pattern = re.compile(r'\s*' + tag_name + '\s*')
+
+                with open(_srcPath, 'r') as ifp:
+                    with open(_srcPath + '~', 'w') as ofp:
+                        for line in ifp:
+                            if tag_name_pattern.match(line) is None:
+                                ofp.write(line)
+                            else:
+                                ofp.write('loop_\n')
+
+                    _srcPath = ofp.name
+                    tempPaths.append(_srcPath)
+                    ofp.close()
+
+                ifp.close()
+
+            except AttributeError:
+                pass
+
+        except StopIteration:
+            pass
+
+        msg_template = "'save_' must be followed by saveframe name. You have a 'save_' tag which is illegal without a specified saveframe name."
+
+        try:
+
+            msg = next(msg for msg in message['error'] if msg_template in msg)
+            warn = "The saveframe must have a specified saveframe name."
+
+            self.report.warning.appendDescription('corrected_format_issue', {'file_name': file_name, 'description': warn})
+            self.report.setWarning()
+
+            if self.__verbose:
+                self.__lfh.write("+NmrDpUtility.__validateInputSource() ++ Warning  - %s\n" % warn)
+
+            msg_pattern = re.compile(r'^.*' + msg_template + r".*, (\d+).*$")
+
+            try:
+
+                g = msg_pattern.search(msg).groups()
+
+                line_num = int(g[0])
+
+                i = 1
+
+                with open(_srcPath, 'r') as ifp:
+                    with open(_srcPath + '~', 'w') as ofp:
+                        for line in ifp:
+                            if i != line_num:
+                                ofp.write(line)
+                            else:
+                                ofp.write('save_%s\n' % os.path.basename(srcPath))
+                            i += 1
+
+                    _srcPath = ofp.name
+                    tempPaths.append(_srcPath)
+                    ofp.close()
+
+                ifp.close()
+
+            except AttributeError:
+                pass
+
+        except StopIteration:
+            pass
+
+        msg_template = "The tag prefix was never set! Either the saveframe had no tags, you tried to read a version 2.1 file without setting ALLOW_V2_ENTRIES to True, or there is something else wrong with your file. Saveframe error occured:"
+
+        try:
 
             msg = next(msg for msg in message['error'] if msg_template in msg)
             warn = 'The saveframe must have NMR-STAR V3.1 tags. Saveframe error occured:%s' % (msg[len(msg_template):])
@@ -3289,9 +3528,9 @@ class NmrDpUtility(object):
         except StopIteration:
             pass
 
-        try:
+        msg_template = "You attempted to parse one loop but the source you provided had more than one loop. Please either parse all loops as a saveframe or only parse one loop. Loops detected:"
 
-            msg_template = "You attempted to parse one loop but the source you provided had more than one loop. Please either parse all loops as a saveframe or only parse one loop. Loops detected:"
+        try:
 
             msg = next(msg for msg in message['error'] if msg_template in msg)
             warn = 'Saveframe(s), instead of the datablock, must hook more than one loops. Loops detected:%s' % (msg[len(msg_template):])
@@ -3396,9 +3635,9 @@ class NmrDpUtility(object):
         except StopIteration:
             pass
 
-        try:
+        msg_template = "One saveframe cannot have tags with different categories (or tags that don't match the set category)!"
 
-            msg_template = "One saveframe cannot have tags with different categories (or tags that don't match the set category)!"
+        try:
 
             msg = next(msg for msg in message['error'] if msg_template in msg)
             warn = msg
@@ -5796,11 +6035,11 @@ class NmrDpUtility(object):
         """ Return a representative atom ID in IUPAC atom nomenclature for a given atom_id.
         """
 
-        _atom_id = self.__getAtomLIdList(file_type, comp_id, atom_id)
+        _atom_id = self.__getAtomIdList(file_type, comp_id, atom_id)
 
         return atom_id if len(_atom_id) == 0 else _atom_id[0]
 
-    def __getAtomLIdList(self, file_type, comp_id, atom_id):
+    def __getAtomIdList(self, file_type, comp_id, atom_id):
         """ Return atom ID list in IUPAC atom nomenclature for a given atom_id.
         """
 
@@ -5876,10 +6115,10 @@ class NmrDpUtility(object):
 
                         atom_id_ = atom_id
 
-                        if not self.__combined_mode and ((atom_id == 'HN' and self.__csStat.getTypeOfCompId(comp_id)[0]) or
-                                                         atom_id.startswith('Q') or
-                                                         atom_id.startswith('M') or
-                                                         self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id) == 0):
+                        if (atom_id == 'HN' and self.__csStat.getTypeOfCompId(comp_id)[0]) or\
+                           atom_id.startswith('Q') or\
+                           atom_id.startswith('M') or\
+                           self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id) == 0:
                             atom_id_ = self.__getRepresentativeAtomId(file_type, comp_id, atom_id)
 
                         if not self.__nefT.validate_comp_atom(comp_id, atom_id_):
@@ -6529,9 +6768,9 @@ class NmrDpUtility(object):
                         _atom_id = atom_id
 
                         if (atom_id == 'HN' and self.__csStat.getTypeOfCompId(comp_id)[0]) or\
-                            atom_id.startswith('Q') or\
-                            atom_id.startswith('M') or\
-                            self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id) == 0:
+                           atom_id.startswith('Q') or\
+                           atom_id.startswith('M') or\
+                           self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id) == 0:
                             _atom_id = self.__getRepresentativeAtomId(file_type, comp_id, atom_id)
 
                         allowed_ambig_code = self.__csStat.getMaxAmbigCodeWoSetId(comp_id, _atom_id)
@@ -7214,7 +7453,7 @@ class NmrDpUtility(object):
                                 id_tag, lp_data[row_id_1][id_tag], lp_data[row_id_2][id_tag])
                         warn += 'Found conflict on restraints (%s) for the same %s (%s).' % (discrepancy[:-2], data_unit_name, msg)
 
-                        self.report.warning.appendDescription('conflicted_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
+                        self.report.warning.appendDescription('conflicted_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn, 'sigma': float('{:.2f}'.format(r / max_inclusive))})
                         self.report.setWarning()
 
                         if self.__verbose:
@@ -7230,7 +7469,7 @@ class NmrDpUtility(object):
                                 id_tag, lp_data[row_id_1][id_tag], lp_data[row_id_2][id_tag])
                         warn += 'Found discrepancy in restraints (%s) for the same %s (%s).' % (discrepancy[:-2], data_unit_name, msg)
 
-                        self.report.warning.appendDescription('inconsistent_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
+                        self.report.warning.appendDescription('inconsistent_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn, 'sigma': float('{:.2f}'.format(r / max_inclusive))})
                         self.report.setWarning()
 
                         if self.__verbose:
@@ -7966,10 +8205,10 @@ class NmrDpUtility(object):
                 atom_id = i[atom_id_name]
                 value = i[value_name]
 
-                if file_type == 'nef' or (not self.__combined_mode and ((atom_id == 'HN' and self.__csStat.getTypeOfCompId(comp_id)[0]) or
-                                                                        atom_id.startswith('Q') or
-                                                                        atom_id.startswith('M') or
-                                                                        self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id) == 0)):
+                if file_type == 'nef' or ((atom_id == 'HN' and self.__csStat.getTypeOfCompId(comp_id)[0]) or
+                                          atom_id.startswith('Q') or
+                                          atom_id.startswith('M') or
+                                          self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id) == 0):
                     (_atom_id, ambig_code, details) = self.__getAtomIdListWithAmbigCode(file_type, comp_id, atom_id)
 
                     if len(_atom_id) == 0:
@@ -8601,7 +8840,7 @@ class NmrDpUtility(object):
                                                 loop.data[l][details_col] += ('' if '\n' in _details else '\n') + details
                                             add_details = True
 
-                            elif sigma > 5.0:
+                            elif sigma > 5.0: # Set 5.0 to be consistent with validation report
 
                                 na = self.__getNearestAromaticRing(chain_id, seq_id, atom_id_, self.cutoff_aromatic)
                                 pa = self.__getNearestParamagneticAtom(chain_id, seq_id, atom_id_, self.cutoff_paramagnetic)
@@ -8658,7 +8897,7 @@ class NmrDpUtility(object):
 
                                         if self.__verbose:
                                             self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ Warning  - %s\n" % warn)
-
+                                """ Can skip this to be consistent with validation report
                             elif sigma > 5.0:
 
                                 na = self.__getNearestAromaticRing(chain_id, seq_id, atom_id_, self.cutoff_aromatic)
@@ -8703,7 +8942,7 @@ class NmrDpUtility(object):
 
                                     if self.__verbose:
                                         self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ Warning  - %s\n" % warn)
-
+                                """
                             elif not cs_stat['primary'] and cs_stat['norm_freq'] < 0.03:
 
                                 warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] %s %s is remarkable assignment. Appearance rate of %s in %s is %s %% according to BMRB.' %\
@@ -8863,9 +9102,9 @@ class NmrDpUtility(object):
                                         _atom_id2 = atom_id2
 
                                         if (atom_id2 == 'HN' and self.__csStat.getTypeOfCompId(comp_id2)[0]) or\
-                                            atom_id2.startswith('Q') or\
-                                            atom_id2.startswith('M') or\
-                                            self.__csStat.getMaxAmbigCodeWoSetId(comp_id2, atom_id2) == 0:
+                                           atom_id2.startswith('Q') or\
+                                           atom_id2.startswith('M') or\
+                                           self.__csStat.getMaxAmbigCodeWoSetId(comp_id2, atom_id2) == 0:
                                             _atom_id2 = self.__getRepresentativeAtomId(file_type, comp_id2, atom_id2)
 
                                         if (chain_id2 != chain_id or seq_id2 != seq_id or comp_id2 != comp_id) and _atom_id < _atom_id2:
@@ -8892,9 +9131,9 @@ class NmrDpUtility(object):
                                         _atom_id2 = atom_id2
 
                                         if (atom_id2 == 'HN' and self.__csStat.getTypeOfCompId(comp_id2)[0]) or\
-                                            atom_id2.startswith('Q') or\
-                                            atom_id2.startswith('M') or\
-                                            self.__csStat.getMaxAmbigCodeWoSetId(comp_id2, atom_id2) == 0:
+                                           atom_id2.startswith('Q') or\
+                                           atom_id2.startswith('M') or\
+                                           self.__csStat.getMaxAmbigCodeWoSetId(comp_id2, atom_id2) == 0:
                                             _atom_id2 = self.__getRepresentativeAtomId(file_type, comp_id2, atom_id2)
 
                                         if ((chain_id2 != chain_id and chain_id < chain_id2) or (seq_id2 == seq_id and _atom_id < _atom_id2)):
@@ -8922,9 +9161,9 @@ class NmrDpUtility(object):
                                         _atom_id2 = atom_id2
 
                                         if (atom_id2 == 'HN' and self.__csStat.getTypeOfCompId(comp_id2)[0]) or\
-                                            atom_id2.startswith('Q') or\
-                                            atom_id2.startswith('M') or\
-                                            self.__csStat.getMaxAmbigCodeWoSetId(comp_id2, atom_id2) == 0:
+                                           atom_id2.startswith('Q') or\
+                                           atom_id2.startswith('M') or\
+                                           self.__csStat.getMaxAmbigCodeWoSetId(comp_id2, atom_id2) == 0:
                                             _atom_id2 = self.__getRepresentativeAtomId(file_type, comp_id2, atom_id2)
 
                                         if chain_id2 == chain_id and (seq_id < seq_id2 or (seq_id == seq_id2 and _atom_id < _atom_id2)):
@@ -8949,9 +9188,9 @@ class NmrDpUtility(object):
                                     _atom_id2 = atom_id2
 
                                     if (atom_id2 == 'HN' and self.__csStat.getTypeOfCompId(comp_id2)[0]) or\
-                                        atom_id2.startswith('Q') or\
-                                        atom_id2.startswith('M') or\
-                                        self.__csStat.getMaxAmbigCodeWoSetId(comp_id2, atom_id2) == 0:
+                                       atom_id2.startswith('Q') or\
+                                       atom_id2.startswith('M') or\
+                                       self.__csStat.getMaxAmbigCodeWoSetId(comp_id2, atom_id2) == 0:
                                         _atom_id2 = self.__getRepresentativeAtomId(file_type, comp_id2, atom_id2)
 
                                     if _atom_id[0] != _atom_id2[0] and _atom_id < _atom_id2:
@@ -10030,11 +10269,11 @@ class NmrDpUtility(object):
                                     atom_id = j[atom_id_name]
                                     data_type = str(j[iso_number]) + j[atom_type]
 
-                                    if file_type == 'nef' or (not self.__combined_mode and ((atom_id == 'HN' and self.__csStat.getTypeOfCompId(comp_id)[0]) or
-                                                                                            atom_id.startswith('Q') or
-                                                                                            atom_id.startswith('M') or
-                                                                                            self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id) == 0)):
-                                        atom_ids = self.__getAtomLIdList(file_type, comp_id, atom_id)
+                                    if file_type == 'nef' or ((atom_id == 'HN' and self.__csStat.getTypeOfCompId(comp_id)[0]) or
+                                                              atom_id.startswith('Q') or
+                                                              atom_id.startswith('M') or
+                                                              self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id) == 0):
+                                        atom_ids = self.__getAtomIdList(file_type, comp_id, atom_id)
 
                                         if len(atom_ids) == 0:
                                             continue
@@ -10164,11 +10403,11 @@ class NmrDpUtility(object):
                                     atom_id = j[atom_id_name]
                                     data_type = str(j[iso_number]) + j[atom_type]
 
-                                    if file_type == 'nef' or (not self.__combined_mode and ((atom_id == 'HN' and self.__csStat.getTypeOfCompId(comp_id)[0]) or
-                                                                                            atom_id.startswith('Q') or
-                                                                                            atom_id.startswith('M') or
-                                                                                            self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id) == 0)):
-                                        atom_ids = self.__getAtomLIdList(file_type, comp_id, atom_id)
+                                    if file_type == 'nef' or ((atom_id == 'HN' and self.__csStat.getTypeOfCompId(comp_id)[0]) or
+                                                              atom_id.startswith('Q') or
+                                                              atom_id.startswith('M') or
+                                                              self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id) == 0):
+                                        atom_ids = self.__getAtomIdList(file_type, comp_id, atom_id)
 
                                         if len(atom_ids) == 0:
                                             continue
@@ -10285,11 +10524,11 @@ class NmrDpUtility(object):
                                     atom_id = j[atom_id_name]
                                     data_type = str(j[iso_number]) + j[atom_type]
 
-                                    if file_type == 'nef' or (not self.__combined_mode and ((atom_id == 'HN' and self.__csStat.getTypeOfCompId(comp_id)[0]) or
-                                                                                            atom_id.startswith('Q') or
-                                                                                            atom_id.startswith('M') or
-                                                                                            self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id) == 0)):
-                                        atom_ids = self.__getAtomLIdList(file_type, comp_id, atom_id)
+                                    if file_type == 'nef' or ((atom_id == 'HN' and self.__csStat.getTypeOfCompId(comp_id)[0]) or
+                                                              atom_id.startswith('Q') or
+                                                              atom_id.startswith('M') or
+                                                              self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id) == 0):
+                                        atom_ids = self.__getAtomIdList(file_type, comp_id, atom_id)
 
                                         if len(atom_ids) == 0:
                                             continue
@@ -10395,11 +10634,11 @@ class NmrDpUtility(object):
                                     atom_id = j[atom_id_name]
                                     data_type = str(j[iso_number]) + j[atom_type]
 
-                                    if file_type == 'nef' or (not self.__combined_mode and ((atom_id == 'HN' and self.__csStat.getTypeOfCompId(comp_id)[0]) or
-                                                                                            atom_id.startswith('Q') or
-                                                                                            atom_id.startswith('M') or
-                                                                                            self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id) == 0)):
-                                        atom_ids = self.__getAtomLIdList(file_type, comp_id, atom_id)
+                                    if file_type == 'nef' or ((atom_id == 'HN' and self.__csStat.getTypeOfCompId(comp_id)[0]) or
+                                                              atom_id.startswith('Q') or
+                                                              atom_id.startswith('M') or
+                                                              self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id) == 0):
+                                        atom_ids = self.__getAtomIdList(file_type, comp_id, atom_id)
 
                                         if len(atom_ids) == 0:
                                             continue
@@ -10497,11 +10736,11 @@ class NmrDpUtility(object):
                                     atom_id = j[atom_id_name]
                                     data_type = str(j[iso_number]) + j[atom_type]
 
-                                    if file_type == 'nef' or (not self.__combined_mode and ((atom_id == 'HN' and self.__csStat.getTypeOfCompId(comp_id)[0]) or
-                                                                                            atom_id.startswith('Q') or
-                                                                                            atom_id.startswith('M') or
-                                                                                            self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id) == 0)):
-                                        atom_ids = self.__getAtomLIdList(file_type, comp_id, atom_id)
+                                    if file_type == 'nef' or ((atom_id == 'HN' and self.__csStat.getTypeOfCompId(comp_id)[0]) or
+                                                              atom_id.startswith('Q') or
+                                                              atom_id.startswith('M') or
+                                                              self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id) == 0):
+                                        atom_ids = self.__getAtomIdList(file_type, comp_id, atom_id)
 
                                         if len(atom_ids) == 0:
                                             continue
@@ -10565,10 +10804,10 @@ class NmrDpUtility(object):
                 atom_id = i[atom_id_name]
                 value = i[value_name]
 
-                if file_type == 'nef' or (not self.__combined_mode and ((atom_id == 'HN' and self.__csStat.getTypeOfCompId(comp_id)[0]) or
-                                                                        atom_id.startswith('Q') or
-                                                                        atom_id.startswith('M') or
-                                                                        self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id) == 0)):
+                if file_type == 'nef' or ((atom_id == 'HN' and self.__csStat.getTypeOfCompId(comp_id)[0]) or
+                                          atom_id.startswith('Q') or
+                                          atom_id.startswith('M') or
+                                          self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id) == 0):
                     (_atom_id, ambig_code, details) = self.__getAtomIdListWithAmbigCode(file_type, comp_id, atom_id)
 
                     if len(_atom_id) == 0:
@@ -11027,6 +11266,7 @@ class NmrDpUtility(object):
         lower_linear_limit_name = item_names['lower_linear_limit']
         upper_linear_limit_name = item_names['upper_linear_limit']
         weight_name = self.weight_tags[file_type]['dist_restraint']
+        id_tag = self.consist_id_tags[file_type]['dist_restraint']
 
         try:
 
@@ -11039,6 +11279,7 @@ class NmrDpUtility(object):
             redu_count = {}
             weights = {}
             potential_types = {}
+            set_id = set()
 
             count_per_residue = []
             count_on_map = []
@@ -11072,6 +11313,7 @@ class NmrDpUtility(object):
                 atom_id_1 = i[atom_id_1_name]
                 atom_id_2 = i[atom_id_2_name]
                 weight = None if not weight_name in i else i[weight_name]
+                set_id.add(i[id_tag])
 
                 target_value = i[target_value_name] if target_value_name in i else None
 
@@ -11340,6 +11582,7 @@ class NmrDpUtility(object):
                 return
 
             ent['number_of_constraints'] = count
+            ent['number_of_constraint_sets'] = len(set_id)
             if len(comb_count) > 0:
                 ent['number_of_combined_constraints'] = comb_count
             if len(inco_count) > 0:
@@ -12041,16 +12284,16 @@ class NmrDpUtility(object):
             data_type = 'intra-residue_constraints'
         elif range_of_seq < 5:
 
-            if file_type == 'nef' or (not self.__combined_mode and ((atom_id_1 == 'HN' and self.__csStat.getTypeOfCompId(comp_id_1)[0]) or
-                                                                    atom_id_1.startswith('Q') or
-                                                                    atom_id_1.startswith('M') or
-                                                                    self.__csStat.getMaxAmbigCodeWoSetId(comp_id_1, atom_id_1) == 0 or
-                                                                    (atom_id_2 == 'HN' and self.__csStat.getTypeOfCompId(comp_id_2)[0]) or
-                                                                    atom_id_2.startswith('Q') or
-                                                                    atom_id_2.startswith('M') or
-                                                                    self.__csStat.getMaxAmbigCodeWoSetId(comp_id_2, atom_id_2) == 0)):
-                _atom_id_1 = self.__getAtomLIdList(file_type, comp_id_1, atom_id_1)
-                _atom_id_2 = self.__getAtomLIdList(file_type, comp_id_2, atom_id_2)
+            if file_type == 'nef' or ((atom_id_1 == 'HN' and self.__csStat.getTypeOfCompId(comp_id_1)[0]) or
+                                      atom_id_1.startswith('Q') or
+                                      atom_id_1.startswith('M') or
+                                      self.__csStat.getMaxAmbigCodeWoSetId(comp_id_1, atom_id_1) == 0 or
+                                      (atom_id_2 == 'HN' and self.__csStat.getTypeOfCompId(comp_id_2)[0]) or
+                                      atom_id_2.startswith('Q') or
+                                      atom_id_2.startswith('M') or
+                                      self.__csStat.getMaxAmbigCodeWoSetId(comp_id_2, atom_id_2) == 0):
+                _atom_id_1 = self.__getAtomIdList(file_type, comp_id_1, atom_id_1)
+                _atom_id_2 = self.__getAtomIdList(file_type, comp_id_2, atom_id_2)
 
                 if len(_atom_id_1) > 0 and len(_atom_id_2) > 0:
                     is_sc_atom_1 = _atom_id_1[0] in self.__csStat.getSideChainAtoms(comp_id_1)
@@ -12143,6 +12386,7 @@ class NmrDpUtility(object):
         atom_id_4_name = dh_item_names['atom_id_4']
         angle_type_name = dh_item_names['angle_type']
         weight_name = self.weight_tags[file_type]['dihed_restraint']
+        id_tag = self.consist_id_tags[file_type]['dihed_restraint']
 
         try:
 
@@ -12153,6 +12397,7 @@ class NmrDpUtility(object):
             polymer_types = {}
             weights = {}
             potential_types = {}
+            set_id = set()
 
             phi_list = []
             psi_list = []
@@ -12242,6 +12487,7 @@ class NmrDpUtility(object):
                 atom_id_4 = i[atom_id_4_name]
                 data_type = i[angle_type_name]
                 weight = None if not weight_name in i else i[weight_name]
+                set_id.add(i[id_tag])
 
                 data_type, seq_id_common, comp_id_common =\
                 self.__getTypeOfDihedralRestraint(data_type,
@@ -12418,6 +12664,7 @@ class NmrDpUtility(object):
 
             if len(count) > 0:
                 ent['number_of_constraints'] = count
+                ent['number_of_constraint_sets'] = len(set_id)
                 if len(comb_count) > 0:
                     ent['number_of_combined_constraints'] = comb_count
                 if len(inco_count) > 0:
@@ -13038,6 +13285,7 @@ class NmrDpUtility(object):
             atom_id_1_name = item_names['atom_id_1']
             atom_id_2_name = item_names['atom_id_2']
             weight_name = self.weight_tags[file_type]['rdc_restraint']
+            id_tag = self.consist_id_tags[file_type]['rdc_restraint']
 
             count = {}
             comb_count = {}
@@ -13045,6 +13293,7 @@ class NmrDpUtility(object):
             redu_count = {}
             weights = {}
             potential_types = {}
+            set_id = set()
 
             value_per_residue = []
 
@@ -13065,6 +13314,7 @@ class NmrDpUtility(object):
                 atom_id_1 = i[atom_id_1_name]
                 atom_id_2 = i[atom_id_2_name]
                 weight = None if not weight_name in i else i[weight_name]
+                set_id.add(i[id_tag])
 
                 data_type = self.__getTypeOfRdcRestraint(atom_id_1, atom_id_2)
 
@@ -13178,6 +13428,7 @@ class NmrDpUtility(object):
                 return
 
             ent['number_of_constraints'] = count
+            ent['number_of_constraint_sets'] = len(set_id)
             if len(comb_count) > 0:
                 ent['number_of_combined_constraints'] = comb_count
             if len(inco_count) > 0:
@@ -15736,10 +15987,10 @@ class NmrDpUtility(object):
                 if cif_comp_id is None:
                     continue
 
-                if file_type == 'nef' or (not self.__combined_mode and ((atom_id == 'HN' and self.__csStat.getTypeOfCompId(comp_id)[0]) or
-                                                                        atom_id.startswith('Q') or
-                                                                        atom_id.startswith('M') or
-                                                                        self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id) == 0)):
+                if file_type == 'nef' or ((atom_id == 'HN' and self.__csStat.getTypeOfCompId(comp_id)[0]) or
+                                          atom_id.startswith('Q') or
+                                          atom_id.startswith('M') or
+                                          self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id) == 0):
                     (_atom_id, ambig_code, details) = self.__getAtomIdListWithAmbigCode(file_type, comp_id, atom_id)
 
                     if len(_atom_id) == 0:
@@ -17930,10 +18181,12 @@ class NmrDpUtility(object):
 
         return {'x': a['x'] - b['x'], 'y': a['y'] - b['y'], 'z': a['z'] - b['z']}
 
-    def __getNearestAromaticRing(self, nmr_chain_id, nmr_seq_id, nmr_atom_id, cutoff):
+    def __getNearestAromaticRing(self, _nmr_chain_id, nmr_seq_id, nmr_atom_id, cutoff):
         """ Return the nearest aromatic ring around a given atom.
             @return: the nearest aromatic ring
         """
+
+        nmr_chain_id = str(_nmr_chain_id)
 
         s = self.report.getModelPolymerSequenceWithNmrChainId(nmr_chain_id)
 
@@ -18244,13 +18497,15 @@ class NmrDpUtility(object):
 
         return None
 
-    def __getNearestParamagneticAtom(self, nmr_chain_id, nmr_seq_id, nmr_atom_id, cutoff):
+    def __getNearestParamagneticAtom(self, _nmr_chain_id, nmr_seq_id, nmr_atom_id, cutoff):
         """ Return the nearest paramagnetic atom around a given atom.
             @return: the nearest paramagnetic atom
         """
 
         if self.report.isDiamagnetic():
             return None
+
+        nmr_chain_id = str(_nmr_chain_id)
 
         s = self.report.getModelPolymerSequenceWithNmrChainId(nmr_chain_id)
 

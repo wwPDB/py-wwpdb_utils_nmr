@@ -37,6 +37,8 @@
 # 25-Apr-2020  M. Yokochi - fill default value if Entity_assembly_ID is blank (v2.2.8, DAOTHER-5611)
 # 28-Apr-2020  M. Yokochi - do not throw ValueError for 'range-float' data type (v2.2.9, DAOTHER-5611)
 # 28-Apr-2020  M. Yokochi - extract sequence from CS/MR loop with gap (v2.2.10, DAOTHER-5611)
+# 29-Apr-2020  M. Yokochi - support diagnostic message of PyNMRSTAR v2.6.5.1 or later (v2.2.11, DAOTHER-5611)
+# 30-Apr-2020  M. Yokochi - fix pseudo atom mapping in ligand (v2.2.12, DAOTHER-5611)
 ##
 import sys
 import os
@@ -49,13 +51,14 @@ import datetime
 import pynmrstar
 
 from pytz import utc
+from packaging import version
 
 from wwpdb.utils.config.ConfigInfo import ConfigInfo, getSiteId
 from wwpdb.utils.nmr.io.ChemCompIo import ChemCompReader
 from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
 from wwpdb.utils.nmr.NmrDpReport import NmrDpReport
 
-__version__ = 'v2.2.10'
+__version__ = '2.2.12'
 
 class NEFTranslator(object):
     """ Bi-directional translator between NEF and NMR-STAR
@@ -578,10 +581,16 @@ class NEFTranslator(object):
 
                     is_ok = False
 
-                    if not 'internaluseyoushouldntseethis_frame' in str(e3):
-                        msg = str(e3)
+                    if version.parse(pynmrstar.__version__) >= version.parse("2.6.5.1"):
+                        if not "Invalid loop. Loops must start with the 'loop_' keyword." in str(e3):
+                            msg = str(e3)
+                        else:
+                            msg = str(e1)
                     else:
-                        msg = str(e1) # '%s contains no valid saveframe or loop. PyNMRSTAR ++ Error  - %s' % (os.path.basename(in_file), str(e))
+                        if not 'internaluseyoushouldntseethis_frame' in str(e3):
+                            msg = str(e3)
+                        else:
+                            msg = str(e1) # '%s contains no valid saveframe or loop. PyNMRSTAR ++ Error  - %s' % (os.path.basename(in_file), str(e))
 
         except Exception as e:
             is_ok = False
@@ -3276,6 +3285,8 @@ class NEFTranslator(object):
         if comp_id in self.empty_value:
             return [], None, None
 
+        comp_code = self.get_one_letter_code(comp_id)
+
         atom_list = []
         ambiguity_code = 1
 
@@ -3331,7 +3342,10 @@ class NEFTranslator(object):
                 wc_code = ref_atom[4]
 
                 if wc_code == '%':
-                    pattern = re.compile(r'%s\d+' % atom_type)
+                    if comp_code == 'X':
+                        pattern = re.compile(r'%s\d$' % atom_type)
+                    else:
+                        pattern = re.compile(r'%s\d+' % atom_type)
                 elif wc_code == '*':
                     pattern = re.compile(r'%s\S+' % atom_type)
                 else:
@@ -3381,13 +3395,13 @@ class NEFTranslator(object):
 
                 methyl_atoms = self.__csStat.getMethylAtoms(comp_id)
 
-                if not nef_atom.endswith('%') and not nef_atom.endswith('*') and nef_atom + '1' in methyl_atoms:
+                if comp_code != 'X' and not nef_atom.endswith('%') and comp_code != 'X' and not nef_atom.endswith('*') and nef_atom + '1' in methyl_atoms:
                     return self.get_star_atom(comp_id, nef_atom + '%', ('%s converted to %s%%.' % (nef_atom, nef_atom)) if leave_unmatched else None, leave_unmatched)
 
                 if nef_atom[-1].lower() == 'x' or nef_atom[-1].lower() == 'y' and nef_atom[:-1] + '1' in methyl_atoms:
                     return self.get_star_atom(comp_id, nef_atom[:-1] + '%', ('%s converted to %s%%.' % (nef_atom, nef_atom[:-1])) if leave_unmatched else None, leave_unmatched)
 
-                if (nef_atom[-1] == '%' or nef_atom[-1] == '*') and not (nef_atom[:-1] + '1' in methyl_atoms) and\
+                if ((comp_code != 'X' and nef_atom[-1] == '%') or nef_atom[-1] == '*') and not (nef_atom[:-1] + '1' in methyl_atoms) and\
                     len(nef_atom) > 2 and (nef_atom[-2].lower() == 'x' or nef_atom[-2].lower() == 'y'):
                     return self.get_star_atom(comp_id, nef_atom[:-2] + ('1' if nef_atom[-2].lower() == 'x' else '2') + '%', ('%s converted to %s%%.' % (nef_atom, nef_atom[:-2] + ('1' if nef_atom[-2].lower() == 'x' else '2'))) if leave_unmatched else None, leave_unmatched)
 

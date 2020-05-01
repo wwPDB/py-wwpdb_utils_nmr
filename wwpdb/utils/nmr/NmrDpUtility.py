@@ -6113,16 +6113,15 @@ class NmrDpUtility(object):
 
                     for atom_id in atom_ids:
 
+                        if atom_id == 'HN' and self.__csStat.getTypeOfCompId(comp_id)[0]:
+                            self.__fixAtomNomenclature(comp_id, {'HN': 'H'})
+                            continue
+
                         atom_id_ = atom_id
 
-                        if (atom_id == 'HN' and self.__csStat.getTypeOfCompId(comp_id)[0]) or\
-                           atom_id.startswith('Q') or\
-                           atom_id.startswith('M') or\
-                           self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id) == 0:
+                        if (file_type == 'nef' or not self.__combined_mode) and\
+                           (atom_id.startswith('Q') or atom_id.startswith('M') or self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id) == 0):
                             atom_id_ = self.__getRepresentativeAtomId(file_type, comp_id, atom_id)
-
-                        if atom_id == 'HN' and atom_id_ == 'H' and self.__csStat.getTypeOfCompId(comp_id)[0]:
-                            self.__fixAtomNomenclature(comp_id, {'HN': 'H'})
 
                         if not self.__nefT.validate_comp_atom(comp_id, atom_id_):
 
@@ -8235,12 +8234,10 @@ class NmrDpUtility(object):
                     atom_id_ = atom_id
                     atom_name = atom_id
 
-                one_letter_code = self.__get1LetterCode(comp_id)
-
                 has_cs_stat = False
 
                 # non-standard residue
-                if one_letter_code == 'X':
+                if self.__get1LetterCode(comp_id) == 'X':
 
                     neighbor_comp_ids = set([j[comp_id_name] for j in lp_data if j[chain_id_name] == chain_id and abs(j[seq_id_name] - seq_id) < 3 and j[seq_id_name] != seq_id])
 
@@ -10822,12 +10819,10 @@ class NmrDpUtility(object):
                 else:
                     atom_id_ = atom_id
 
-                one_letter_code = self.__get1LetterCode(comp_id)
-
                 has_cs_stat = False
 
                 # non-standard residue
-                if one_letter_code == 'X':
+                if self.__get1LetterCode(comp_id)== 'X':
 
                     neighbor_comp_ids = set([j[comp_id_name] for j in lp_data if str(j[chain_id_name]) == chain_id and abs(j[seq_id_name] - seq_id) < 3 and j[seq_id_name] != seq_id])
 
@@ -16057,9 +16052,7 @@ class NmrDpUtility(object):
 
                     elif ca['conflict'] == 0: # no conflict in sequenc alignment
 
-                        one_letter_code = self.__get1LetterCode(comp_id)
-
-                        if one_letter_code != 'X':
+                        if self.__get1LetterCode(comp_id) != 'X':
 
                             self.report.error.appendDescription('invalid_atom_nomenclature', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
                             self.report.setError()

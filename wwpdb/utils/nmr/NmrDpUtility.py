@@ -68,6 +68,8 @@
 # 29-Apr-2020  M. Yokochi - add 'number_of_constraint_sets' of experiment data in report (DAOTHER-5622)
 # 29-Apr-2020  M. Yokochi - sort 'conflicted_data' and 'inconsistent_data' warning items (DAOTHER-5622)
 # 01-May-2020  M. Yokochi - allow NMR conventional atom naming scheme in NMR-STAR V3.2 (DAOTHER-5634)
+# 02-May-2020  M. Yokochi - additional support for format issue correction while STAR to NEF conversion (DAOTHER-5577)
+# 02-May-2020  M. Yokochi - re-implement basic mathematical functions using Numpy library
 ##
 """ Wrapper class for data processing for NMR data.
     @author: Masashi Yokochi
@@ -87,6 +89,7 @@ import codecs
 import shutil
 
 from munkres import Munkres
+import numpy as np
 
 from wwpdb.utils.nmr.NEFTranslator.NEFTranslator import NEFTranslator
 from wwpdb.utils.nmr.NmrDpReport import NmrDpReport
@@ -95,6 +98,26 @@ from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
 from wwpdb.utils.config.ConfigInfo import ConfigInfo, getSiteId
 from wwpdb.utils.nmr.io.ChemCompIo import ChemCompReader
 from wwpdb.utils.nmr.CifReader import CifReader
+
+def probability_density(value, mean, stddev):
+    """ Return probability density.
+    """
+
+    stddev2 = stddev ** 2.0
+
+    return math.exp(-((value - mean) ** 2.0) / (2.0 * stddev2)) / math.sqrt(2.0 * math.pi * stddev2)
+
+def to_np_array(a):
+    """ Return Numpy array of a give Cartesian coordinate in {'x': float, 'y': float, 'z': float} format.
+    """
+
+    return np.asarray([a['x'], a['y'], a['z']])
+
+def to_unit_vector(a):
+    """ Return unit vector of a given vector.
+    """
+
+    return a / np.linalg.norm(a)
 
 class NmrDpUtility(object):
     """ Wrapper class for data processing for NMR data.
@@ -153,6 +176,9 @@ class NmrDpUtility(object):
         self.__logPath = None
 
         self.__cifPath = None
+
+        # temporary file path to be removed (release mode).
+        self.__tmpPath = None
 
         # auxiliary input resource.
         self.__inputParamDict = {}
@@ -3128,7 +3154,7 @@ class NmrDpUtility(object):
 
         return is_done
 
-    def __fixFormatIssueOfInputSource(self, file_list_id, file_name, file_type, srcPath=None, fileSubType='S', message=None, tempPaths=None):
+    def __fixFormatIssueOfInputSource(self, file_list_id, file_name, file_type, srcPath=None, fileSubType='S', message=None, tmpPaths=None):
         """ Fix format issue of NMR data.
         """
 
@@ -3136,10 +3162,10 @@ class NmrDpUtility(object):
             return False
 
         _srcPath = srcPath
-        if tempPaths is None:
-            tempPaths = []
+        if tmpPaths is None:
+            tmpPaths = []
 
-        len_temp_paths = len(tempPaths)
+        len_tmp_paths = len(tmpPaths)
 
         datablock_pattern = re.compile(r'\s*data_\S*\s*')
         sf_anonymous_pattern = re.compile(r'\s*save_\S*\s*')
@@ -3170,7 +3196,7 @@ class NmrDpUtility(object):
                     ofp.close()
 
                     _srcPath = ofp.name
-                    tempPaths.append(_srcPath)
+                    tmpPaths.append(_srcPath)
                     ofp.close()
 
                 ifp.close()
@@ -3196,7 +3222,7 @@ class NmrDpUtility(object):
                     ofp.close()
 
                     _srcPath = ofp.name
-                    tempPaths.append(_srcPath)
+                    tmpPaths.append(_srcPath)
                     ofp.close()
 
                 ifp.close()
@@ -3221,7 +3247,7 @@ class NmrDpUtility(object):
                     ofp.close()
 
                     _srcPath = ofp.name
-                    tempPaths.append(_srcPath)
+                    tmpPaths.append(_srcPath)
                     ofp.close()
 
                 ifp.close()
@@ -3252,7 +3278,7 @@ class NmrDpUtility(object):
                     ofp.close()
 
                     _srcPath = ofp.name
-                    tempPaths.append(_srcPath)
+                    tmpPaths.append(_srcPath)
                     ofp.close()
 
                 ifp.close()
@@ -3291,7 +3317,7 @@ class NmrDpUtility(object):
                             i += 1
 
                     _srcPath = ofp.name
-                    tempPaths.append(_srcPath)
+                    tmpPaths.append(_srcPath)
                     ofp.close()
 
                 ifp.close()
@@ -3334,7 +3360,7 @@ class NmrDpUtility(object):
                             i += 1
 
                     _srcPath = ofp.name
-                    tempPaths.append(_srcPath)
+                    tmpPaths.append(_srcPath)
                     ofp.close()
 
                 ifp.close()
@@ -3377,7 +3403,7 @@ class NmrDpUtility(object):
                                 ofp.write('loop_\n')
 
                     _srcPath = ofp.name
-                    tempPaths.append(_srcPath)
+                    tmpPaths.append(_srcPath)
                     ofp.close()
 
                 ifp.close()
@@ -3421,7 +3447,7 @@ class NmrDpUtility(object):
                             i += 1
 
                     _srcPath = ofp.name
-                    tempPaths.append(_srcPath)
+                    tmpPaths.append(_srcPath)
                     ofp.close()
 
                 ifp.close()
@@ -3520,7 +3546,7 @@ class NmrDpUtility(object):
                                 ofp.write(line)
 
                         _srcPath = ofp.name
-                        tempPaths.append(_srcPath)
+                        tmpPaths.append(_srcPath)
                         ofp.close()
 
                     ifp.close()
@@ -3627,7 +3653,7 @@ class NmrDpUtility(object):
                         i += 1
 
                     _srcPath = ofp.name
-                    tempPaths.append(_srcPath)
+                    tmpPaths.append(_srcPath)
                     ofp.close()
 
                 ifp.close()
@@ -3803,7 +3829,7 @@ class NmrDpUtility(object):
                             i += 1
 
                         _srcPath = ofp.name
-                        tempPaths.append(_srcPath)
+                        tmpPaths.append(_srcPath)
                         ofp.close()
 
                     ifp.close()
@@ -3811,7 +3837,7 @@ class NmrDpUtility(object):
         except StopIteration:
             pass
 
-        if len(tempPaths) > len_temp_paths:
+        if len(tmpPaths) > len_tmp_paths:
 
             is_valid, json_dumps = self.__nefT.validate_file(_srcPath, fileSubType)
 
@@ -3829,7 +3855,7 @@ class NmrDpUtility(object):
                             break
 
                 if retry:
-                    return self.__fixFormatIssueOfInputSource(file_list_id, file_name, file_type, _srcPath, fileSubType, _message, tempPaths)
+                    return self.__fixFormatIssueOfInputSource(file_list_id, file_name, file_type, _srcPath, fileSubType, _message, tmpPaths)
 
         is_done = True
 
@@ -3920,9 +3946,18 @@ class NmrDpUtility(object):
             is_done = False
 
         try:
-            for tempPath in tempPaths:
-                if os.path.exists(tempPath):
-                    os.remove(tempPath)
+
+            if self.__release_mode:
+                self.__tmpPath = tmpPaths[-1]
+                self.__srcPath = self.__tmpPath
+                for tmpPath in tmpPaths[:-1]:
+                    if os.path.exists(tmpPath):
+                        os.remove(tmpPath)
+            else:
+                for tmpPath in tmpPaths:
+                    if os.path.exists(tmpPath):
+                        os.remove(tmpPath)
+
         except:
             pass
 
@@ -14439,7 +14474,7 @@ class NmrDpUtility(object):
 
             if self.__verbose:
                 self.__lfh.write("+NmrDpUtility.__extractCoordPolymerSequence() ++ LookupError  - %s" % str(e))
-
+            """
         except ValueError as e:
 
             self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'category': lp_category, 'description': str(e).strip("'")})
@@ -14455,7 +14490,7 @@ class NmrDpUtility(object):
 
             if self.__verbose:
                 self.__lfh.write("+NmrDpUtility.__extractCoordPolymerSequence() ++ Error  - %s" % str(e))
-
+            """
         return False
 
     def __extractCoordNonPolymerScheme(self):
@@ -14573,7 +14608,7 @@ class NmrDpUtility(object):
 
         for content_subtype in self.cif_content_subtypes:
 
-            if content_subtype in ['entry_info', 'poly_seq', 'entity'] or (not self.__hasKeyValue(input_source_dic['content_subtype'], content_subtype)):
+            if content_subtype in ['entry_info', 'poly_seq'] or (not self.__hasKeyValue(input_source_dic['content_subtype'], content_subtype)):
                 continue
 
             poly_seq_list_set[content_subtype] = []
@@ -18019,18 +18054,18 @@ class NmrDpUtility(object):
         red = 1.0
 
         if not ca_chem_shift is None:
-            oxi *= self.__probabilityDensity(ca_chem_shift, oxi_ca['avr'], oxi_ca['std'])
-            red *= self.__probabilityDensity(ca_chem_shift, red_ca['avr'], red_ca['std'])
+            oxi *= probability_density(ca_chem_shift, oxi_ca['avr'], oxi_ca['std'])
+            red *= probability_density(ca_chem_shift, red_ca['avr'], red_ca['std'])
 
         if not cb_chem_shift is None:
             if cb_chem_shift < 32.0:
                 oxi = 0.0
             else:
-                oxi *= self.__probabilityDensity(cb_chem_shift, oxi_cb['avr'], oxi_cb['std'])
+                oxi *= probability_density(cb_chem_shift, oxi_cb['avr'], oxi_cb['std'])
             if cb_chem_shift > 35.0:
                 red = 0.0
             else:
-                red *= self.__probabilityDensity(cb_chem_shift, red_cb['avr'], red_cb['std'])
+                red *= probability_density(cb_chem_shift, red_cb['avr'], red_cb['std'])
 
         sum = oxi + red
 
@@ -18059,27 +18094,27 @@ class NmrDpUtility(object):
             if cb_chem_shift < cis_cb['min'] - cis_cb['std'] or cb_chem_shift > cis_cb['max'] + cis_cb['std']:
                 cis = 0.0
             else:
-                cis *= self.__probabilityDensity(cb_chem_shift, cis_cb['avr'], cis_cb['std'])
+                cis *= probability_density(cb_chem_shift, cis_cb['avr'], cis_cb['std'])
             if cb_chem_shift < trs_cb['min'] - trs_cb['std'] or cb_chem_shift > trs_cb['max'] + trs_cb['std']:
                 trs = 0.0
             else:
-                trs *= self.__probabilityDensity(cb_chem_shift, trs_cb['avr'], trs_cb['std'])
+                trs *= probability_density(cb_chem_shift, trs_cb['avr'], trs_cb['std'])
 
         if not cg_chem_shift is None:
             if cg_chem_shift < cis_cg['min'] - cis_cg['std'] or cg_chem_shift > cis_cg['max'] + cis_cg['std']:
                 cis = 0.0
             else:
-                cis *= self.__probabilityDensity(cg_chem_shift, cis_cg['avr'], cis_cg['std'])
+                cis *= probability_density(cg_chem_shift, cis_cg['avr'], cis_cg['std'])
             if cg_chem_shift < trs_cg['min'] - trs_cg['std'] or cg_chem_shift > trs_cg['max'] + trs_cg['std']:
                 trs = 0.0
             else:
-                trs *= self.__probabilityDensity(cg_chem_shift, trs_cg['avr'], trs_cg['std'])
+                trs *= probability_density(cg_chem_shift, trs_cg['avr'], trs_cg['std'])
 
         if (not cb_chem_shift is None) and (not cg_chem_shift is None):
             delta_shift = cb_chem_shift - cg_chem_shift
 
-            cis *= self.__probabilityDensity(delta_shift, cis_dl['avr'], cis_dl['std'])
-            trs *= self.__probabilityDensity(delta_shift, trs_dl['avr'], trs_dl['std'])
+            cis *= probability_density(delta_shift, cis_dl['avr'], cis_dl['std'])
+            trs *= probability_density(delta_shift, trs_dl['avr'], trs_dl['std'])
 
         sum = cis + trs
 
@@ -18113,24 +18148,24 @@ class NmrDpUtility(object):
         pi = 1.0
 
         if not cg_chem_shift is None:
-            bip *= self.__probabilityDensity(cg_chem_shift, bip_cg['avr'], bip_cg['std'])
-            tau *= self.__probabilityDensity(cg_chem_shift, tau_cg['avr'], tau_cg['std'])
-            pi *= self.__probabilityDensity(cg_chem_shift, pi_cg['avr'], pi_cg['std'])
+            bip *= probability_density(cg_chem_shift, bip_cg['avr'], bip_cg['std'])
+            tau *= probability_density(cg_chem_shift, tau_cg['avr'], tau_cg['std'])
+            pi *= probability_density(cg_chem_shift, pi_cg['avr'], pi_cg['std'])
 
         if not cd2_chem_shift is None:
-            bip *= self.__probabilityDensity(cd2_chem_shift, bip_cd2['avr'], bip_cd2['std'])
-            tau *= self.__probabilityDensity(cd2_chem_shift, tau_cd2['avr'], tau_cd2['std'])
-            pi *= self.__probabilityDensity(cd2_chem_shift, pi_cd2['avr'], pi_cd2['std'])
+            bip *= probability_density(cd2_chem_shift, bip_cd2['avr'], bip_cd2['std'])
+            tau *= probability_density(cd2_chem_shift, tau_cd2['avr'], tau_cd2['std'])
+            pi *= probability_density(cd2_chem_shift, pi_cd2['avr'], pi_cd2['std'])
 
         if not nd1_chem_shift is None:
-            bip *= self.__probabilityDensity(nd1_chem_shift, bip_nd1['avr'], bip_nd1['std'])
-            tau *= self.__probabilityDensity(nd1_chem_shift, tau_nd1['avr'], tau_nd1['std'])
-            pi *= self.__probabilityDensity(nd1_chem_shift, pi_nd1['avr'], pi_nd1['std'])
+            bip *= probability_density(nd1_chem_shift, bip_nd1['avr'], bip_nd1['std'])
+            tau *= probability_density(nd1_chem_shift, tau_nd1['avr'], tau_nd1['std'])
+            pi *= probability_density(nd1_chem_shift, pi_nd1['avr'], pi_nd1['std'])
 
         if not ne2_chem_shift is None:
-            bip *= self.__probabilityDensity(ne2_chem_shift, bip_ne2['avr'], bip_ne2['std'])
-            tau *= self.__probabilityDensity(ne2_chem_shift, tau_ne2['avr'], tau_ne2['std'])
-            pi *= self.__probabilityDensity(ne2_chem_shift, pi_ne2['avr'], pi_ne2['std'])
+            bip *= probability_density(ne2_chem_shift, bip_ne2['avr'], bip_ne2['std'])
+            tau *= probability_density(ne2_chem_shift, tau_ne2['avr'], tau_ne2['std'])
+            pi *= probability_density(ne2_chem_shift, pi_ne2['avr'], pi_ne2['std'])
 
         sum = bip + tau + pi
 
@@ -18138,40 +18173,6 @@ class NmrDpUtility(object):
             return 0.0, 0.0, 0.0
 
         return bip / sum, tau / sum, pi / sum
-
-    def __probabilityDensity(self, value, mean, stddev):
-        """ Return probability density.
-        """
-
-        stddev2 = stddev ** 2.0
-
-        return math.exp(-((value - mean) ** 2.0) / (2.0 * stddev2)) / math.sqrt(2.0 * math.pi * stddev2)
-
-    def __product(self, a, b):
-        """ Return product of given two vectors.
-        """
-
-        return a['x'] * b['x'] + a['y'] * b['y'] + a['z'] * b['z']
-
-    def __crossProduct(self, a, b):
-        """ Return cross product of given two vectors.
-        """
-
-        return {'x': a['y'] * b['z'] - a['z'] * b['y'], 'y': a['z'] * b['x'] - a['x'] * b['z'], 'z': a['x'] * b['y'] - a['y'] * b['x']}
-
-    def __norm(self, a):
-        """ Return norm of a given vector.
-        """
-
-        len = math.sqrt(a['x'] ** 2.0 + a['y'] ** 2.0 + a['z'] ** 2.0)
-
-        return {'x': a['x'] / len, 'y': a['y'] / len, 'z': a['z'] / len}
-
-    def __vector(self, a, b):
-        """ Return vector from given two points.
-        """
-
-        return {'x': a['x'] - b['x'], 'y': a['y'] - b['y'], 'z': a['z'] - b['z']}
 
     def __getNearestAromaticRing(self, _nmr_chain_id, nmr_seq_id, nmr_atom_id, cutoff):
         """ Return the nearest aromatic ring around a given atom.
@@ -18238,7 +18239,7 @@ class NmrDpUtility(object):
                 """
                 return None
 
-            o = _origin[0]
+            o = to_np_array(_origin[0])
 
             try:
 
@@ -18252,9 +18253,9 @@ class NmrDpUtility(object):
                                                    {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'},
                                                    {'name': 'type_symbol', 'type': 'str'}
                                                    ],
-                                                  [{'name': 'Cartn_x', 'type': 'range-float', 'range': {'min_exclusive': (o['x'] - cutoff), 'max_exclusive': (o['x'] + cutoff)}},
-                                                   {'name': 'Cartn_y', 'type': 'range-float', 'range': {'min_exclusive': (o['y'] - cutoff), 'max_exclusive': (o['y'] + cutoff)}},
-                                                   {'name': 'Cartn_z', 'type': 'range-float', 'range': {'min_exclusive': (o['z'] - cutoff), 'max_exclusive': (o['z'] + cutoff)}},
+                                                  [{'name': 'Cartn_x', 'type': 'range-float', 'range': {'min_exclusive': (o[0] - cutoff), 'max_exclusive': (o[0] + cutoff)}},
+                                                   {'name': 'Cartn_y', 'type': 'range-float', 'range': {'min_exclusive': (o[1] - cutoff), 'max_exclusive': (o[1] + cutoff)}},
+                                                   {'name': 'Cartn_z', 'type': 'range-float', 'range': {'min_exclusive': (o[2] - cutoff), 'max_exclusive': (o[2] + cutoff)}},
                                                    {'name': model_num_name, 'type': 'int', 'value': 1}])
 
             except Exception as e:
@@ -18270,9 +18271,7 @@ class NmrDpUtility(object):
             if len(_neighbor) == 0:
                 return None
 
-            cutoff2 = cutoff ** 2.0
-
-            neighbor = [n for n in _neighbor if n['seq_id'] != cif_seq_id and n['type_symbol'] != 'H' and (n['x'] - o['x']) ** 2.0 + (n['y'] - o['y']) ** 2.0 + (n['z'] - o['z']) ** 2.0 < cutoff2 and
+            neighbor = [n for n in _neighbor if n['seq_id'] != cif_seq_id and n['type_symbol'] != 'H' and np.linalg.norm(to_np_array(n) - o) < cutoff and
                         n['atom_id'] in self.__csStat.getAromaticAtoms(n['comp_id'])]
 
             if len(neighbor) == 0:
@@ -18301,7 +18300,7 @@ class NmrDpUtility(object):
                     _nmr_seq_id = next((test_seq_id for ref_seq_id, test_seq_id in zip(result['ref_seq_id'], result['test_seq_id']) if ref_seq_id == n['seq_id']), None)
 
                     atom_list.append({'chain_id': _nmr_chain_id, 'seq_id': _nmr_seq_id, 'cif_chain_id': _cif_chain_id, 'cif_seq_id': n['seq_id'], 'comp_id': n['comp_id'], 'atom_id': n['atom_id'],
-                                      'distance': (n['x'] - o['x']) ** 2.0 + (n['y'] - o['y']) ** 2.0 + (n['z'] - o['z']) ** 2.0})
+                                      'distance': np.linalg.norm(to_np_array(n) - o)})
 
             na = sorted(atom_list, key = lambda a: a['distance'])[0]
 
@@ -18445,7 +18444,7 @@ class NmrDpUtility(object):
 
             for model_id in model_ids:
 
-                center = {'x': 0.0, 'y': 0.0, 'z': 0.0}
+                rc = np.array([0.0] * 3)
 
                 total = 0
 
@@ -18453,30 +18452,28 @@ class NmrDpUtility(object):
 
                     if a['model_id'] == model_id:
 
-                        if a['atom_id'] == na_atom_id:
-                            distance += math.sqrt((a['x'] - o['x']) ** 2.0 + (a['y'] - o['y']) ** 2.0 + (a['z'] - o['z']) ** 2.0)
+                        _a = to_np_array(a)
 
-                        center['x'] += a['x']
-                        center['y'] += a['y']
-                        center['z'] += a['z']
+                        if a['atom_id'] == na_atom_id:
+                            distance += np.linalg.norm(_a - o)
+
+                        rc = np.add(rc, _a)
 
                         total += 1
 
                 if total == len(ring_atoms):
 
-                    center['x'] /= total
-                    center['y'] /= total
-                    center['z'] /= total
+                    rc = rc / total
 
-                    ring_distance += math.sqrt((center['x'] - o['x']) ** 2.0 + (center['y'] - o['y']) ** 2.0 + (center['z'] - o['z']) ** 2.0)
+                    ring_distance += np.linalg.norm(rc - o)
 
-                    na_ = next(na_ for na_ in _na if na_['atom_id'] == ring_atoms[0])
-                    na__ = next(na__ for na__ in _na if na__['atom_id'] == ring_atoms[1])
-                    na___ = next(na___ for na___ in _na if na___['atom_id'] == ring_atoms[-1])
+                    na_ = next(to_np_array(na_) for na_ in _na if na_['atom_id'] == ring_atoms[0])
+                    na__ = next(to_np_array(na__) for na__ in _na if na__['atom_id'] == ring_atoms[1])
+                    na___ = next(to_np_array(na___) for na___ in _na if na___['atom_id'] == ring_atoms[-1])
 
-                    ring_vector = self.__crossProduct(self.__vector(na__, na_), self.__vector(na___, na_))
+                    ring_vector = np.cross(na__ - na_, na___ - na_)
 
-                    ring_angle += math.acos(abs(self.__product(self.__norm(self.__vector(o, center)), self.__norm(ring_vector))))
+                    ring_angle += math.acos(abs(np.dot(to_unit_vector(o - rc), to_unit_vector(ring_vector))))
 
                     len_model_ids += 1
 
@@ -18557,7 +18554,7 @@ class NmrDpUtility(object):
                 """
                 return None
 
-            o = _origin[0]
+            o = to_np_array(_origin[0])
 
             try:
 
@@ -18571,9 +18568,9 @@ class NmrDpUtility(object):
                                                    {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'},
                                                    {'name': 'type_symbol', 'type': 'str'}
                                                    ],
-                                                  [{'name': 'Cartn_x', 'type': 'range-float', 'range': {'min_exclusive': (o['x'] - cutoff), 'max_exclusive': (o['x'] + cutoff)}},
-                                                   {'name': 'Cartn_y', 'type': 'range-float', 'range': {'min_exclusive': (o['y'] - cutoff), 'max_exclusive': (o['y'] + cutoff)}},
-                                                   {'name': 'Cartn_z', 'type': 'range-float', 'range': {'min_exclusive': (o['z'] - cutoff), 'max_exclusive': (o['z'] + cutoff)}},
+                                                  [{'name': 'Cartn_x', 'type': 'range-float', 'range': {'min_exclusive': (o[0] - cutoff), 'max_exclusive': (o[0] + cutoff)}},
+                                                   {'name': 'Cartn_y', 'type': 'range-float', 'range': {'min_exclusive': (o[1] - cutoff), 'max_exclusive': (o[1] + cutoff)}},
+                                                   {'name': 'Cartn_z', 'type': 'range-float', 'range': {'min_exclusive': (o[2] - cutoff), 'max_exclusive': (o[2] + cutoff)}},
                                                    {'name': model_num_name, 'type': 'int', 'value': 1}])
 
             except Exception as e:
@@ -18589,9 +18586,7 @@ class NmrDpUtility(object):
             if len(_neighbor) == 0:
                 return None
 
-            cutoff2 = cutoff ** 2.0
-
-            neighbor = [n for n in _neighbor if n['seq_id'] != cif_seq_id and (n['x'] - o['x']) ** 2.0 + (n['y'] - o['y']) ** 2.0 + (n['z'] - o['z']) ** 2.0 < cutoff2 and
+            neighbor = [n for n in _neighbor if n['seq_id'] != cif_seq_id and np.linalg.norm(to_np_array(n) - o) < cutoff and
                         n['type_symbol'] in self.paramag_elems]
 
             if len(neighbor) == 0:
@@ -18601,21 +18596,21 @@ class NmrDpUtility(object):
 
             for n in neighbor:
                 atom_list.append({'chain_id': n['chain_id'], 'seq_id': n['seq_id'], 'comp_id': n['comp_id'], 'atom_id': n['atom_id'],
-                                  'distance': (n['x'] - o['x']) ** 2.0 + (n['y'] - o['y']) ** 2.0 + (n['z'] - o['z']) ** 2.0})
+                                  'distance': np.linalg.norm(to_np_array(n) - o)})
 
-            np = sorted(atom_list, key = lambda a: a['distance'])[0]
+            p = sorted(atom_list, key = lambda a: a['distance'])[0]
 
             try:
 
-                _np = self.__cR.getDictListWithFilter('atom_site',
+                _p = self.__cR.getDictListWithFilter('atom_site',
                                                   [{'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
                                                    {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
                                                    {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'}
                                                    ],
-                                                  [{'name': 'label_asym_id', 'type': 'str', 'value': np['chain_id']},
-                                                   {'name': 'auth_seq_id', 'type': 'int', 'value': np['seq_id']}, # non-polymer
-                                                   {'name': 'label_comp_id', 'type': 'str', 'value': np['comp_id']},
-                                                   {'name': 'label_atom_id', 'type': 'str', 'value': np['atom_id']},
+                                                  [{'name': 'label_asym_id', 'type': 'str', 'value': p['chain_id']},
+                                                   {'name': 'auth_seq_id', 'type': 'int', 'value': p['seq_id']}, # non-polymer
+                                                   {'name': 'label_comp_id', 'type': 'str', 'value': p['comp_id']},
+                                                   {'name': 'label_atom_id', 'type': 'str', 'value': p['atom_id']},
                                                    ])
 
             except Exception as e:
@@ -18628,17 +18623,17 @@ class NmrDpUtility(object):
 
                 return None
 
-            if len(_np) == 0:
+            if len(_p) == 0:
                 return None
 
             distance = 0.0
 
-            for n in _np:
-                distance += math.sqrt((n['x'] - o['x']) ** 2.0 + (n['y'] - o['y']) ** 2.0 + (n['z'] - o['z']) ** 2.0)
+            for __p in _p:
+                distance += np.linalg.norm(to_np_array(__p) - o)
 
-            np['distance'] = float('{:.1f}'.format(distance / len(_np)))
+            p['distance'] = float('{:.1f}'.format(distance / len(_p)))
 
-            return np
+            return p
 
         return None
 
@@ -21828,6 +21823,10 @@ class NmrDpUtility(object):
 
                 is_valid, json_dumps = self.__nefT.nef_to_nmrstar(self.__dstPath, out_file_path, report=self.report)
 
+                if self.__release_mode and not self.__tmpPath is None:
+                    os.remove(self.__tmpPath)
+                    self.__tmpPath = None
+
             except Exception as e:
 
                 err = "%s is not compliant with the %s dictionary." % (file_name, self.readable_file_type[file_type])
@@ -21935,6 +21934,10 @@ class NmrDpUtility(object):
             try:
 
                 is_valid, json_dumps = self.__nefT.nmrstar_to_nef(self.__dstPath, out_file_path, report=self.report)
+
+                if self.__release_mode and not self.__tmpPath is None:
+                    os.remove(self.__tmpPath)
+                    self.__tmpPath = None
 
             except Exception as e:
 

@@ -26,6 +26,12 @@ import numpy as np
 
 import random
 
+def to_np_array(a):
+    """ Return Numpy array of a give Cartesian coordinate in {'x': float, 'y': float, 'z': float} format.
+    """
+
+    return np.asarray([a['x'], a['y'], a['z']])
+
 def M(axis, theta):
     """ Return the rotation matrix associated with counterclockwise rotation about the given axis by theta radians.
     """
@@ -228,103 +234,99 @@ class CifReader(object):
             compDict = {}
             seqDict = {}
 
-            try:
-                chain_id_col = altDict['chain_id']
-                seq_id_col = altDict['seq_id']
-                comp_id_col = altDict['comp_id']
+            chain_id_col = altDict['chain_id']
+            seq_id_col = altDict['seq_id']
+            comp_id_col = altDict['comp_id']
 
-                chains = sorted(set([row[chain_id_col] for row in rowList]))
-                sortedSeq = sorted(set(['{} {:04d} {}'.format(row[chain_id_col], int(row[seq_id_col]), row[comp_id_col]) for row in rowList]))
+            chains = sorted(set([row[chain_id_col] for row in rowList]))
+            sortedSeq = sorted(set(['{} {:04d} {}'.format(row[chain_id_col], int(row[seq_id_col]), row[comp_id_col]) for row in rowList]))
 
-                keyDict = {'{} {:04d}'.format(row[chain_id_col], int(row[seq_id_col])):row[comp_id_col] for row in rowList}
+            keyDict = {'{} {:04d}'.format(row[chain_id_col], int(row[seq_id_col])):row[comp_id_col] for row in rowList}
 
-                for row in rowList:
-                    key = '{} {:04d}'.format(row[chain_id_col], int(row[seq_id_col]))
-                    if keyDict[key] != row[comp_id_col]:
-                        raise KeyError("Sequence must be unique. %s %s, %s %s, %s %s vs %s." %\
-                                       (itNameList[chain_id_col], row[chain_id_col],
-                                        itNameList[seq_id_col], row[seq_id_col],
-                                        itNameList[comp_id_col], row[comp_id_col], keyDict[key]))
+            for row in rowList:
+                key = '{} {:04d}'.format(row[chain_id_col], int(row[seq_id_col]))
+                if keyDict[key] != row[comp_id_col]:
+                    raise KeyError("Sequence must be unique. %s %s, %s %s, %s %s vs %s." %\
+                                   (itNameList[chain_id_col], row[chain_id_col],
+                                    itNameList[seq_id_col], row[seq_id_col],
+                                    itNameList[comp_id_col], row[comp_id_col], keyDict[key]))
+
+            if len(chains) > 1:
+                for c in chains:
+                    compDict[c] = [s.split(' ')[-1] for s in sortedSeq if s.split(' ')[0] == c]
+                    seqDict[c] = [int(s.split(' ')[1]) for s in sortedSeq if s.split(' ')[0] == c]
+            else:
+                compDict[list(chains)[0]] = [s.split(' ')[-1] for s in sortedSeq]
+                seqDict[list(chains)[0]] = [int(s.split(' ')[1]) for s in sortedSeq]
+
+            asm = [] # assembly of a loop
+
+            for c in chains:
+                ent = {} # entity
+
+                ent['chain_id'] = c
+                ent['seq_id'] = seqDict[c]
+                ent['comp_id'] = compDict[c]
+
+                if withStructConf:
+                    ent['struct_conf'] = self.__extractStructConf(c, seqDict[c], alias)
+
+                entity_poly = self.getDictList('entity_poly')
+
+                type = next((e['type'] for e in entity_poly if c in e['pdbx_strand_id'].split(',')), None)
+
+                if not type is None:
+                    ent['type'] = type
+
+                    if total_models > 1:
+
+                        randomM = None
+                        if self.__random_rotaion_test:
+                            randomM = {}
+                            for model_id in range(1, total_models + 1):
+                                axis = [random.uniform(-1.0, 1.0), random.uniform(-1.0, 1.0), random.uniform(-1.0, 1.0)]
+                                theta = random.uniform(-np.pi, np.pi)
+                                randomM[model_id] = M(axis, theta)
+
+                        if 'polypeptide' in type:
+
+                            ca_atom_sites = self.getDictListWithFilter('atom_site',
+                                            [{'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
+                                             {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
+                                             {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'},
+                                             {'name': 'label_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
+                                             {'name': 'ndb_model' if alias else 'pdbx_PDB_model_num', 'type': 'int', 'alt_name': 'model_id'}
+                                             ],
+                                            [{'name': 'label_asym_id', 'type': 'str', 'value': c},
+                                             {'name': 'label_atom_id', 'type': 'str', 'value': 'CA'}])
+
+                            ent['ca_rmsd'] = self.__calculateRMSD(c, seqDict[c], alias, total_models, ca_atom_sites, randomM)
+
+                        elif 'ribonucleotide' in type:
+
+                            p_atom_sites = self.getDictListWithFilter('atom_site',
+                                            [{'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
+                                             {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
+                                             {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'},
+                                             {'name': 'label_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
+                                             {'name': 'ndb_model' if alias else 'pdbx_PDB_model_num', 'type': 'int', 'alt_name': 'model_id'}
+                                             ],
+                                            [{'name': 'label_asym_id', 'type': 'str', 'value': c},
+                                             {'name': 'label_atom_id', 'type': 'str', 'value': 'P'}])
+
+                            ent['p_rmsd'] = self.__calculateRMSD(c, seqDict[c], alias, total_models, p_atom_sites, randomM)
 
                 if len(chains) > 1:
-                    for c in chains:
-                        compDict[c] = [s.split(' ')[-1] for s in sortedSeq if s.split(' ')[0] == c]
-                        seqDict[c] = [int(s.split(' ')[1]) for s in sortedSeq if s.split(' ')[0] == c]
-                else:
-                    compDict[list(chains)[0]] = [s.split(' ')[-1] for s in sortedSeq]
-                    seqDict[list(chains)[0]] = [int(s.split(' ')[1]) for s in sortedSeq]
+                    identity = []
+                    for _c in chains:
+                        if _c == c:
+                            continue
+                        if compDict[_c] == compDict[c]:
+                            identity.append(_c)
+                    if len(identity) > 0:
+                        ent['identical_chain_id'] = identity
 
-                asm = [] # assembly of a loop
-
-                for c in chains:
-                    ent = {} # entity
-
-                    ent['chain_id'] = c
-                    ent['seq_id'] = seqDict[c]
-                    ent['comp_id'] = compDict[c]
-
-                    if withStructConf:
-                        ent['struct_conf'] = self.__extractStructConf(c, seqDict[c], alias)
-
-                    entity_poly = self.getDictList('entity_poly')
-
-                    type = next((e['type'] for e in entity_poly if c in e['pdbx_strand_id'].split(',')), None)
-
-                    if not type is None:
-                        ent['type'] = type
-
-                        if total_models > 1:
-
-                            randomM = None
-                            if self.__random_rotaion_test:
-                                randomM = {}
-                                for model_id in range(1, total_models + 1):
-                                    axis = [random.uniform(-1.0, 1.0), random.uniform(-1.0, 1.0), random.uniform(-1.0, 1.0)]
-                                    theta = random.uniform(-np.pi, np.pi)
-                                    randomM[model_id] = M(axis, theta)
-
-                            if 'polypeptide' in type:
-
-                                ca_atom_sites = self.getDictListWithFilter('atom_site',
-                                                [{'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
-                                                 {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
-                                                 {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'},
-                                                 {'name': 'label_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
-                                                 {'name': 'ndb_model' if alias else 'pdbx_PDB_model_num', 'type': 'int', 'alt_name': 'model_id'}
-                                                 ],
-                                                [{'name': 'label_asym_id', 'type': 'str', 'value': c},
-                                                 {'name': 'label_atom_id', 'type': 'str', 'value': 'CA'}])
-
-                                ent['ca_rmsd'] = self.__calculateRMSD(c, seqDict[c], alias, total_models, ca_atom_sites, randomM)
-
-                            elif 'ribonucleotide' in type:
-
-                                p_atom_sites = self.getDictListWithFilter('atom_site',
-                                                [{'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
-                                                 {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
-                                                 {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'},
-                                                 {'name': 'label_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
-                                                 {'name': 'ndb_model' if alias else 'pdbx_PDB_model_num', 'type': 'int', 'alt_name': 'model_id'}
-                                                 ],
-                                                [{'name': 'label_asym_id', 'type': 'str', 'value': c},
-                                                 {'name': 'label_atom_id', 'type': 'str', 'value': 'P'}])
-
-                                ent['p_rmsd'] = self.__calculateRMSD(c, seqDict[c], alias, total_models, p_atom_sites, randomM)
-
-                    if len(chains) > 1:
-                        identity = []
-                        for _c in chains:
-                            if _c == c:
-                                continue
-                            if compDict[_c] == compDict[c]:
-                                identity.append(_c)
-                        if len(identity) > 0:
-                            ent['identical_chain_id'] = identity
-
-                    asm.append(ent)
-
-            except ValueError:
-                raise ValueError("%s must be int." % itNameList[seq_id_col])
+                asm.append(ent)
 
         return asm
 
@@ -387,15 +389,16 @@ class CifReader(object):
                     if len(_atom_site) == total_models:
                         try:
                             ref_atom = next(ref_atom for ref_atom in _atom_site if ref_atom['model_id'] == ref_model_id)
-                            ref_v = [ref_atom['x'], ref_atom['y'], ref_atom['z']]
+                            ref_v = to_np_array(ref_atom)
                             if self.__random_rotaion_test:
                                 ref_v = np.dot(randomM[ref_model_id], ref_v)
                             rmsd2 = 0.0
                             for atom in [atom for atom in _atom_site if atom['model_id'] != ref_model_id]:
-                                v = [atom['x'], atom['y'], atom['z']]
+                                v = to_np_array(atom)
                                 if self.__random_rotaion_test:
                                     v = np.dot(randomM[atom['model_id']], v)
-                                rmsd2 += (v[0] - ref_v[0]) ** 2 + (v[1] - ref_v[1]) ** 2 + (v[2] - ref_v[2]) ** 2
+                                d = v - ref_v
+                                rmsd2 += np.dot(d, d)
                         except StopIteration:
                             continue
 

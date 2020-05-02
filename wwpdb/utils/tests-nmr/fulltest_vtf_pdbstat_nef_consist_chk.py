@@ -74,7 +74,15 @@ class TestNmrDpUtility(unittest.TestCase):
         if not report['error'] is None:
             self.assertEqual(report['error']['internal_error'], None)
 
-        print('%s: %s' % (entry_id, report['information']['status']))
+        if report['error'] is None:
+            print('%s: %s' % (entry_id, report['information']['status']))
+        elif not report['error']['format_issue'] is None:
+            print('%s: %s\n format_issue: %s' % (entry_id, report['information']['status'], report['error']['format_issue'][0]['description']))
+        elif not report['error']['missing_mandatory_content'] is None:
+            print('%s: %s\n missing_mandatory_content: %s' % (entry_id, report['information']['status'], report['error']['missing_mandatory_content'][0]['description']))
+        else:
+            error_type = {str(k): len(v) for k, v in report['error'].items() if not v is None and str(k) != 'total'}
+            print('%s: %s, %s' % (entry_id.lower(), report['information']['status'], error_type))
 
     def __test_nmr_nef2str_deposit(self, entry_id):
         if not os.access(self.data_dir_path + entry_id + '-nef-consistency-log.json', os.F_OK):
@@ -99,8 +107,15 @@ class TestNmrDpUtility(unittest.TestCase):
         with open(self.data_dir_path + entry_id + '-nef2str-str-deposit-log.json', 'r') as file:
             report = json.loads(file.read())
 
-        if not report['error'] is None:
-            self.assertEqual(report['error']['internal_error'], None)
+        if report['error'] is None:
+            print('%s: %s' % (entry_id, report['information']['status']))
+        elif not report['error']['format_issue'] is None:
+            print('%s: %s\n format_issue: %s' % (entry_id, report['information']['status'], report['error']['format_issue'][0]['description']))
+        elif not report['error']['missing_mandatory_content'] is None:
+            print('%s: %s\n missing_mandatory_content: %s' % (entry_id, report['information']['status'], report['error']['missing_mandatory_content'][0]['description']))
+        else:
+            error_type = {str(k): len(v) for k, v in report['error'].items() if not v is None and str(k) != 'total'}
+            print('%s: %s, %s' % (entry_id.lower(), report['information']['status'], error_type))
 
     def test_nmr_nef_consistency_check_2k2e(self):
         self.__test_nmr_nef_consistency('2k2e')

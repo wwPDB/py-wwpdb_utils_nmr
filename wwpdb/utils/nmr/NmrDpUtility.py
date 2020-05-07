@@ -3858,7 +3858,7 @@ class NmrDpUtility(object):
                             retry = True
                             break
 
-                if retry and len_temp_paths < 10:
+                if retry and len_tmp_paths < 10:
                     return self.__fixFormatIssueOfInputSource(file_list_id, file_name, file_type, _srcPath, fileSubType, _message, tmpPaths)
 
         is_done = True

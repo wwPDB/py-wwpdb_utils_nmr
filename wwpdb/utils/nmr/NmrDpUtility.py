@@ -67,6 +67,9 @@
 # 29-Apr-2020  M. Yokochi - add 'number_of_constraint_sets' of experiment data in report (DAOTHER-5622)
 # 29-Apr-2020  M. Yokochi - sort 'conflicted_data' and 'inconsistent_data' warning items (DAOTHER-5622)
 # 30-Apr-2020  M. Yokochi - allow NMR conventional atom naming scheme in NMR-STAR V3.2 (DAOTHER-5634)
+# 07-May-2020  M. Yokochi - revise warning type (from 'insuffcient_data' to 'encouragement') if total number of models is less than 8 (DAOTHER-5650)
+# 07-May-2020  M. Yokochi - add preventive code for infinite loop while format issue correction
+# 07-May-2020  M. Yokochi - withdraw 'missing_mandatory_content' warning for the coordinate file (DAOTHER-5654)
 ##
 """ Wrapper class for data processing for NMR data.
     @author: Masashi Yokochi
@@ -14331,9 +14334,9 @@ class NmrDpUtility(object):
                 return False
 
             elif total_model < 8:
-                warn = "Coordinate file %s has %s models. Minimized average structure and a sufficient number of models associated with its ensemble should be deposited." % (file_name, total_model)
+                warn = "Coordinate file %s has %s models. A sufficient number of models associated with its ensemble should be deposited." % (file_name, total_model)
 
-                self.report.warning.appendDescription('insufficient_data', {'file_name': file_name, 'description': warn})
+                self.report.warning.appendDescription('encouragement', {'file_name': file_name, 'description': warn})
                 self.report.setWarning()
 
                 if self.__verbose:

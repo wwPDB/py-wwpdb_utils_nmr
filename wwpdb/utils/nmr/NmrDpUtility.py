@@ -67,9 +67,13 @@
 # 29-Apr-2020  M. Yokochi - fix different CS warning between NEF and NMR-STAR (DAOTHER-5621)
 # 29-Apr-2020  M. Yokochi - add 'number_of_constraint_sets' of experiment data in report (DAOTHER-5622)
 # 29-Apr-2020  M. Yokochi - sort 'conflicted_data' and 'inconsistent_data' warning items (DAOTHER-5622)
+# 30-Apr-2020  M. Yokochi - allow NMR conventional atom naming scheme in NMR-STAR V3.2 (DAOTHER-5634)
 # 01-May-2020  M. Yokochi - allow NMR conventional atom naming scheme in NMR-STAR V3.2 (DAOTHER-5634)
 # 02-May-2020  M. Yokochi - additional support for format issue correction while STAR to NEF conversion (DAOTHER-5577)
 # 02-May-2020  M. Yokochi - re-implement basic mathematical functions using Numpy library
+# 07-May-2020  M. Yokochi - revise warning type (from 'insuffcient_data' to 'encouragement') if total number of models is less than 8 (DAOTHER-5650)
+# 07-May-2020  M. Yokochi - add preventive code for infinite loop while format issue correction
+# 07-May-2020  M. Yokochi - withdraw 'missing_mandatory_content' warning for the coordinate file (DAOTHER-5654)
 ##
 """ Wrapper class for data processing for NMR data.
     @author: Masashi Yokochi
@@ -6310,7 +6314,6 @@ class NmrDpUtility(object):
                     if self.__verbose:
                         self.__lfh.write("+NmrDpUtility.__extractPolymerSequence() ++ LookupError  - %s" % str(e))
                     """
-
                 except ValueError as e:
 
                     self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': str(e).strip("'")})
@@ -14279,9 +14282,9 @@ class NmrDpUtility(object):
                 return False
 
             elif self.__total_models < 8:
-                warn = "Coordinate file %s has %s models. Minimized average structure and a sufficient number of models associated with its ensemble should be deposited." % (file_name, self.__total_models)
+                warn = "Coordinate file %s has %s models. A sufficient number of models associated with its ensemble should be deposited." % (file_name, total_model)
 
-                self.report.warning.appendDescription('insufficient_data', {'file_name': file_name, 'description': warn})
+                self.report.warning.appendDescription('encouragement', {'file_name': file_name, 'description': warn})
                 self.report.setWarning()
 
                 if self.__verbose:
@@ -14347,15 +14350,16 @@ class NmrDpUtility(object):
                     lp_counts[content_subtype] = 1
 
                 else:
-
-                    err = "Category %s is mandatory." % self.lp_categories[file_type][content_subtype]
+                    pass
+                    """
+                    err = "Category %s is mandatory." % lp_category
 
                     self.report.error.appendDescription('missing_mandatory_content', {'file_name': file_name, 'description': err})
                     self.report.setError()
 
                     if self.__verbose:
                         self.__lfh.write("+NmrDpUtility.__detectCoordContentSubType() ++ Error  - %s\n" % err)
-
+                    """
             elif self.__cR.hasCategory(self.lp_categories[file_type][content_subtype + '_alias']):
                 lp_counts[content_subtype] = 1
 

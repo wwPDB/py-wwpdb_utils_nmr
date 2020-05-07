@@ -6324,7 +6324,6 @@ class NmrDpUtility(object):
                     if self.__verbose:
                         self.__lfh.write("+NmrDpUtility.__extractPolymerSequence() ++ LookupError  - %s" % str(e))
                     """
-
                 except ValueError as e:
 
                     self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': str(e).strip("'")})
@@ -14400,15 +14399,16 @@ class NmrDpUtility(object):
                     lp_counts[content_subtype] = 1
 
                 else:
-
-                    err = "Category %s is mandatory." % self.lp_categories[file_type][content_subtype]
+                    pass
+                    """
+                    err = "Category %s is mandatory." % lp_category
 
                     self.report.error.appendDescription('missing_mandatory_content', {'file_name': file_name, 'description': err})
                     self.report.setError()
 
                     if self.__verbose:
                         self.__lfh.write("+NmrDpUtility.__detectCoordContentSubType() ++ Error  - %s\n" % err)
-
+                    """
             elif self.__cR.hasCategory(self.lp_categories[file_type][content_subtype + '_alias']):
                 lp_counts[content_subtype] = 1
 

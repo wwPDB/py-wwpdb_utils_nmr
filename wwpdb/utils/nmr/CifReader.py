@@ -69,7 +69,6 @@ class CifReader(object):
         # allowed item types
         self.itemTypes = ('str', 'bool', 'int', 'float', 'range-float', 'enum')
 
-<<<<<<< HEAD
         # whether to hold RMSD calculation details
         self.__hold_rmsd_calculation = False
 
@@ -79,12 +78,8 @@ class CifReader(object):
         if self.__random_rotaion_test:
             self.__lfh.write("+WARNING- CifReader.__init__() Enabled random rotation test\n")
 
-    def setFilePath(self, filePath):
-        """ Set file path and test readability.
-=======
     def parse(self, filePath):
         """ Set file path and parse CIF file, and set internal active data block if possible.
->>>>>>> develop
             @return: True for success or False otherwise.
         """
 
@@ -113,7 +108,6 @@ class CifReader(object):
         if not self.__dBlock is None:
             return True
 
-        try:
             block = self.__getDataBlock()
             return self.__setDataBlock(block)
         except:

@@ -108,6 +108,7 @@ class CifReader(object):
         if not self.__dBlock is None:
             return True
 
+        try:
             block = self.__getDataBlock()
             return self.__setDataBlock(block)
         except:

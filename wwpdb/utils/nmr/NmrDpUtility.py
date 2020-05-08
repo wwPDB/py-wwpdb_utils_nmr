@@ -69,7 +69,7 @@
 # 30-Apr-2020  M. Yokochi - allow NMR conventional atom naming scheme in NMR-STAR V3.2 (DAOTHER-5634)
 # 07-May-2020  M. Yokochi - revise warning type (from 'insuffcient_data' to 'encouragement') if total number of models is less than 8 (DAOTHER-5650)
 # 07-May-2020  M. Yokochi - add preventive code for infinite loop while format issue correction
-# 07-May-2020  M. Yokochi - withdraw 'missing_mandatory_content' warning for the coordinate file (DAOTHER-5654)
+# 08-May-2020  M. Yokochi - sync update with wwpdb.utils.nmr.CifReader (DAOTHER-5654)
 ##
 """ Wrapper class for data processing for NMR data.
     @author: Masashi Yokochi
@@ -2852,38 +2852,32 @@ class NmrDpUtility(object):
         """ Test diamagnetism of molecular assembly.
         """
 
-        if self.__cifPath is None:
-            self.__setCoordFilePath()
-
-        if self.__cifPath is None:
+        if not self.__parseCoordFilePath():
             return
 
-            try:
+        try:
 
-                if not self.__cR.parse():
-                    return
+            chem_comp = self.__cR.getDictList('chem_comp')
 
-                chem_comp = self.__cR.getDictList('chem_comp')
+            non_std_comp_ids = [i['id'] for i in chem_comp if i['mon_nstd_flag'] != 'y']
 
-                non_std_comp_ids = [i['id'] for i in chem_comp if i['mon_nstd_flag'] != 'y']
+            if len(non_std_comp_ids) == 0:
+                return
 
-                if len(non_std_comp_ids) == 0:
-                    return
+            for comp_id in non_std_comp_ids:
 
-                for comp_id in non_std_comp_ids:
+                self.__updateChemCompDict(comp_id)
 
-                    self.__updateChemCompDict(comp_id)
+                if self.__last_comp_id_test: # matches with comp_id in CCD
+                    ref_elems = set([a[self.__cca_type_symbol] for a in self.__last_chem_comp_atoms if a[self.__cca_leaving_atom_flag] != 'Y'])
 
-                    if self.__last_comp_id_test: # matches with comp_id in CCD
-                        ref_elems = set([a[self.__cca_type_symbol] for a in self.__last_chem_comp_atoms if a[self.__cca_leaving_atom_flag] != 'Y'])
+                    for elem in ref_elems:
+                        if elem in self.paramag_elems or elem in self.ferromag_elems:
+                            self.report.setDiamagnetic(False)
+                            break
 
-                        for elem in ref_elems:
-                            if elem in self.paramag_elems or elem in self.ferromag_elems:
-                                self.report.setDiamagnetic(False)
-                                break
-
-            except:
-                pass
+        except:
+            pass
 
     def __updateChemCompDict(self, comp_id):
         """ Update CCD information for a given comp_id.
@@ -14228,10 +14222,7 @@ class NmrDpUtility(object):
 
         file_type = 'pdbx'
 
-        if self.__cifPath is None:
-            self.__setCoordFilePath()
-
-        if self.__cifPath is None:
+        if not self.__parseCoordFilePath():
 
             if 'coordinate_file_path' in self.__inputParamDict:
 
@@ -14243,8 +14234,6 @@ class NmrDpUtility(object):
                 if self.__verbose:
                     self.__lfh.write("+NmrDpUtility.__parseCoordinate() ++ Error  - %s\n" % err)
 
-                return False
-
             else:
 
                 err = "%s formatted coordinate file is mandatory." % self.readable_file_type[file_type]
@@ -14255,13 +14244,13 @@ class NmrDpUtility(object):
                 if self.__verbose:
                     self.__lfh.write("+NmrDpUtility.__parseCoordinate() ++ Error  - %s\n" % err)
 
-                return False
+            return False
 
         file_name = os.path.basename(self.__cifPath)
 
         try:
 
-            if not self.__cR.parse():
+            if self.__cifPath is None:
 
                 err = "%s is invalid '%s' file." % (file_name, self.readable_file_type[file_type])
 
@@ -14347,9 +14336,12 @@ class NmrDpUtility(object):
         except:
             return False
 
-    def __setCoordFilePath(self):
-        """ Set effective coordinate file path.
+    def __parseCoordFilePath(self):
+        """ Parse effective coordinate file path.
         """
+
+        if not self.__cifPath is None:
+            return True
 
         if 'coordinate_file_path' in self.__inputParamDict:
 
@@ -14357,19 +14349,25 @@ class NmrDpUtility(object):
 
             try:
 
-                if self.__cR.setFilePath(fPath):
-                    self.__cifPath = fPath
+                self.__cifPath = fPath
+
+                if self.__cR.parse(fPath):
+                    return True
 
                 # try deposit storage if possible
                 elif 'proc_coord_file_path' in self.__inputParamDict:
 
                     fPath = self.__inputParamDict['proc_coord_file_path']
 
-                    if self.__cR.setFilePath(fPath):
-                        self.__cifPath = fPath
+                    self.__cifPath = fPath
+
+                    if self.__cR.parse(fPath):
+                        return True
 
             except:
                 pass
+
+        return False
 
     def __detectCoordContentSubType(self):
         """ Detect content subtypes of coordinate file.
@@ -14402,8 +14400,7 @@ class NmrDpUtility(object):
                     lp_counts[content_subtype] = 1
 
                 else:
-                    pass
-                    """
+
                     err = "Category %s is mandatory." % lp_category
 
                     self.report.error.appendDescription('missing_mandatory_content', {'file_name': file_name, 'description': err})
@@ -14411,7 +14408,7 @@ class NmrDpUtility(object):
 
                     if self.__verbose:
                         self.__lfh.write("+NmrDpUtility.__detectCoordContentSubType() ++ Error  - %s\n" % err)
-                    """
+
             elif self.__cR.hasCategory(self.lp_categories[file_type][content_subtype + '_alias']):
                 lp_counts[content_subtype] = 1
 

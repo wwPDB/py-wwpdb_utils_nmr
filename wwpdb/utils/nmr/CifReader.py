@@ -13,6 +13,7 @@
 # 28-Jan-2020   my  - Add 'withStructConf' option of getPolymerSequence
 # 19-Mar-2020   my  - Add hasItem()
 # 24-Mar-2020   my  - add 'identical_chain_id' in results of getPolymerSequence()
+# 08-May-2020   my  - make sure parse() is run only once (DAOTHER-5654)
 ##
 """ A collection of classes for parsing CIF files.
 """
@@ -41,27 +42,35 @@ class CifReader(object):
         # allowed item types
         self.itemTypes = ('str', 'bool', 'int', 'float', 'range-float', 'enum')
 
-    def setFilePath(self, filePath):
-        """ Set file path and test readability.
+    def parse(self, filePath):
+        """ Set file path and parse CIF file, and set internal active data block if possible.
             @return: True for success or False otherwise.
         """
 
+        if not self.__dBlock is None and self.__filePath == filePath:
+            return True
+
+        self.__dBlock = None
+        self.__filePath = filePath
+
         try:
-            self.__filePath = filePath
-            if (not os.access(self.__filePath, os.R_OK)):
-                if (self.__verbose):
+            if not os.access(self.__filePath, os.R_OK):
+                if self.__verbose:
                     self.__lfh.write("+ERROR- CifReader.setFilePath() Missing file %s\n" % self.__filePath)
                 return False
-            return True
+            return self.__parse()
         except:
-            if (self.__verbose):
+            if self.__verbose:
                 self.__lfh.write("+ERROR- CifReader.setFilePath() Missing file %s\n" % self.__filePath)
             return False
 
-    def parse(self):
+    def __parse(self):
         """ Parse CIF file and set internal active data block.
             @return: True for success or False otherwise.
         """
+
+        if not self.__dBlock is None:
+            return True
 
         try:
             block = self.__getDataBlock()
@@ -82,11 +91,11 @@ class CifReader(object):
             pRd.read(myBlockList)
             if not blockId is None:
                 for block in myBlockList:
-                    if (block.getType() == 'data' and block.getName() == blockId):
+                    if block.getType() == 'data' and block.getName() == blockId:
                         return block
             else:
                 for block in myBlockList:
-                    if (block.getType() == 'data'):
+                    if block.getType() == 'data':
                         return block
 
             return None
@@ -97,6 +106,7 @@ class CifReader(object):
         """
 
         ok = False
+
         try:
             if dataBlock.getType() == 'data':
                 self.__dBlock = dataBlock
@@ -112,11 +122,17 @@ class CifReader(object):
         """ Return whether a give category exists.
         """
 
+        if self.__dBlock is None:
+            return False
+
         return catName in self.__dBlock.getObjNameList()
 
     def hasItem(self, catName, itName):
         """ Return whether a given item exists in a category.
         """
+
+        if self.__dBlock is None:
+            return False
 
         # get category object
         catObj = self.__dBlock.getObj(catName)
@@ -133,6 +149,10 @@ class CifReader(object):
         """
 
         dList = []
+
+        if self.__dBlock is None:
+            return dList
+
         # get category object
         catObj = self.__dBlock.getObj(catName)
 
@@ -165,6 +185,9 @@ class CifReader(object):
         len_key = len(keyItems)
 
         asm = [] # assembly of a loop
+
+        if self.__dBlock is None:
+            return asm
 
         # get category object
         catObj = self.__dBlock.getObj(catName)
@@ -310,6 +333,9 @@ class CifReader(object):
 
         dList = []
 
+        if self.__dBlock is None:
+            return dList
+
         # get category object
         catObj = self.__dBlock.getObj(catName)
 
@@ -325,13 +351,13 @@ class CifReader(object):
             for idxIt, itName in enumerate(itNameList):
                 if itName in dataNames:
                     colDict[itName] = idxIt
-                if (not filterItems is None) and itName in filterNames:
+                if not filterItems is None and itName in filterNames:
                     fcolDict[itName] = idxIt
 
             if set(dataNames) & set(itNameList) != set(dataNames):
                 raise LookupError("Missing one of data items %s." % dataNames)
 
-            if (not filterItems is None) and set(filterNames) & set(itNameList) != set(filterNames):
+            if not filterItems is None and set(filterNames) & set(itNameList) != set(filterNames):
                 raise LookupError("Missing one of filter items %s." % filterNames)
 
             # get row list

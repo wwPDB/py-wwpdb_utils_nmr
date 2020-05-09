@@ -6162,12 +6162,14 @@ class NmrDpUtility(object):
 
                     for atom_id in atom_ids:
 
+                        if atom_id == 'HN' and self.__csStat.getTypeOfCompId(comp_id)[0]:
+                            self.__fixAtomNomenclature(comp_id, {'HN': 'H'})
+                            continue
+
                         atom_id_ = atom_id
 
-                        if (atom_id == 'HN' and self.__csStat.getTypeOfCompId(comp_id)[0]) or\
-                           atom_id.startswith('Q') or\
-                           atom_id.startswith('M') or\
-                           self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id) == 0:
+                        if (file_type == 'nef' or not self.__combined_mode) and\
+                           (atom_id.startswith('Q') or atom_id.startswith('M') or self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id) == 0):
                             atom_id_ = self.__getRepresentativeAtomId(file_type, comp_id, atom_id)
 
                         if not self.__nefT.validate_comp_atom(comp_id, atom_id_):
@@ -6182,7 +6184,7 @@ class NmrDpUtility(object):
                                 if self.__verbose:
                                     self.__lfh.write("+NmrDpUtility.__validateAtomNomenclature() ++ Warning  - %s\n" % warn)
 
-                                self.__fixGlycineAtomNomenclature()
+                                self.__fixAtomNomenclature('GLY', {'HA1': 'HA2', 'HA2': 'HA3'})
 
                             else:
 
@@ -6426,8 +6428,8 @@ class NmrDpUtility(object):
             if self.__verbose:
                 self.__lfh.write("+NmrDpUtility.__validateAtomNomenclature() ++ Error  - %s" % str(e))
 
-    def __fixGlycineAtomNomenclature(self):
-        """ Fix Glycine atom nomenclature, which converts GLY:HA1/HA2 to GLY:HA2/HA3, respectively.
+    def __fixAtomNomenclature(self, comp_id, atom_id_conv_dict):
+        """ Fix atom nomenclature.
         """
 
         for fileListId in range(self.__file_path_list_len):
@@ -6454,14 +6456,14 @@ class NmrDpUtility(object):
                     sf_data = self.__star_data[fileListId]
                     sf_framecode = ''
 
-                    self.__fixGlycineAtomNomenclature__(fileListId, file_name, file_type, content_subtype, sf_data, sf_framecode, lp_category)
+                    self.__fixAtomNomenclature__(fileListId, file_name, file_type, content_subtype, sf_data, sf_framecode, lp_category, comp_id, atom_id_conv_dict)
 
                 elif self.__star_data_type[fileListId] == 'Saveframe':
 
                     sf_data = self.__star_data[fileListId]
                     sf_framecode = self.__getFirstTagValue(sf_data, 'sf_framecode')
 
-                    self.__fixGlycineAtomNomenclature__(fileListId, file_name, file_type, content_subtype, sf_data, sf_framecode, lp_category)
+                    self.__fixAtomNomenclature__(fileListId, file_name, file_type, content_subtype, sf_data, sf_framecode, lp_category, comp_id, atom_id_conv_dict)
 
                 else:
 
@@ -6469,10 +6471,10 @@ class NmrDpUtility(object):
 
                         sf_framecode = self.__getFirstTagValue(sf_data, 'sf_framecode')
 
-                        self.__fixGlycineAtomNomenclature__(fileListId, file_name, file_type, content_subtype, sf_data, sf_framecode, lp_category)
+                        self.__fixAtomNomenclature__(fileListId, file_name, file_type, content_subtype, sf_data, sf_framecode, lp_category, comp_id, atom_id_conv_dict)
 
-    def __fixGlycineAtomNomenclature__(self, file_list_id, file_name, file_type, content_subtype, sf_data, sf_framecode, lp_category):
-        """ Fix Glycine atom nomenclature, which converts GLY:HA1/HA2 to GLY:HA2/HA3, respectively.
+    def __fixAtomNomenclature__(self, file_list_id, file_name, file_type, content_subtype, sf_data, sf_framecode, lp_category, comp_id, atom_id_conv_dict):
+        """ Fix atom nomenclature.
         """
 
         comp_id_name = 'residue_name' if file_type == 'nef' else 'Comp_ID'
@@ -6513,17 +6515,15 @@ class NmrDpUtility(object):
 
             for row in loop:
 
-                comp_id = row[comp_id_col].upper()
+                _comp_id = row[comp_id_col].upper()
 
-                if comp_id != 'GLY':
+                if _comp_id != comp_id:
                     continue
 
                 atom_id = row[atom_id_col]
 
-                if atom_id == 'HA1':
-                    row[atom_id_col] = 'HA2'
-                elif atom_id == 'HA2':
-                    row[atom_id_col] = 'HA3'
+                if atom_id in atom_id_conv_dict:
+                    row[atom_id_col] = atom_id_conv_dict[atom_id]
 
         else:
 
@@ -6540,17 +6540,15 @@ class NmrDpUtility(object):
 
                 for row in loop:
 
-                    comp_id = row[comp_id_col].upper()
+                    _comp_id = row[comp_id_col].upper()
 
-                    if comp_id != 'GLY':
+                    if _comp_id != comp_id:
                         continue
 
                     atom_id = row[atom_id_col]
 
-                    if atom_id == 'HA1':
-                        row[atom_id_col] = 'HA2'
-                    elif atom_id == 'HA2':
-                        row[atom_id_col] = 'HA3'
+                    if atom_id in atom_id_conv_dict:
+                        row[atom_id_col] = atom_id_conv_dict[atom_id]
 
     def __validateAtomTypeOfCSLoop(self):
         """ Validate atom type, isotope number on assigned chemical shifts.

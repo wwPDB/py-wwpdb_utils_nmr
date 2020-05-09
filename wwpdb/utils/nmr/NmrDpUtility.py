@@ -74,6 +74,7 @@
 # 07-May-2020  M. Yokochi - revise warning type (from 'insuffcient_data' to 'encouragement') if total number of models is less than 8 (DAOTHER-5650)
 # 07-May-2020  M. Yokochi - add preventive code for infinite loop while format issue correction
 # 08-May-2020  M. Yokochi - sync update with wwpdb.utils.nmr.CifReader (DAOTHER-5654)
+# 09-May-2020  M. Yokochi - add support for submitted coordinate file (allow missing of pdbx_poly_seq_scheme) (DAOTHER-5654)
 ##
 """ Wrapper class for data processing for NMR data.
     @author: Masashi Yokochi
@@ -1878,7 +1879,7 @@ class NmrDpUtility(object):
                                                           'enum-alt': self.alt_potential_type},
                                                          {'name': 'restraint_origin', 'type': 'enum', 'mandatory': False,
                                                           'enum': ('jcoupling', 'chemical_shift', 'unknown'),
-                                                          'num-alt': self.dihed_alt_constraint_type['nef']}
+                                                          'enum-alt': self.dihed_alt_constraint_type['nef']}
                                                          ],
                                      'rdc_restraint': [{'name': 'sf_category', 'type': 'str', 'mandatory': True},
                                                        {'name': 'sf_framecode', 'type': 'str', 'mandatory': True},
@@ -1941,7 +1942,7 @@ class NmrDpUtility(object):
                                                              {'name': 'Sf_framecode', 'type': 'str', 'mandatory': True},
                                                              {'name': 'Constraint_type', 'type': 'enum', 'mandatory': False,
                                                               'enum': ('NOE', 'NOE build-up', 'NOE not seen', 'ROE', 'ROE build-up', 'hydrogen bond', 'disulfide bond', 'paramagnetic relaxation', 'symmetry', 'general distance', 'mutation', 'chemical shift perturbation', 'unknown'),
-                                                              'num-alt': self.dist_alt_constraint_type['nmr-star']},
+                                                              'enum-alt': self.dist_alt_constraint_type['nmr-star']},
                                                              {'name': 'Potential_type', 'type': 'enum', 'mandatory': False,
                                                               'enum': ('log-harmonic', 'parabolic', 'square-well-parabolic', 'square-well-parabolic-linear', 'upper-bound-parabolic', 'lower-bound-parabolic', 'upper-bound-parabolic-linear', 'lower-bound-parabolic-linear', 'undefined', 'unknown'),
                                                               'enum-alt': self.alt_potential_type}
@@ -14348,7 +14349,8 @@ class NmrDpUtility(object):
                     lp_counts[content_subtype] = 1
 
                 else:
-
+                    pass # DAOTHER-5654
+                    """
                     err = "Category %s is mandatory." % lp_category
 
                     self.report.error.appendDescription('missing_mandatory_content', {'file_name': file_name, 'description': err})
@@ -14356,7 +14358,7 @@ class NmrDpUtility(object):
 
                     if self.__verbose:
                         self.__lfh.write("+NmrDpUtility.__detectCoordContentSubType() ++ Error  - %s\n" % err)
-
+                    """
             elif self.__cR.hasCategory(self.lp_categories[file_type][content_subtype + '_alias']):
                 lp_counts[content_subtype] = 1
 

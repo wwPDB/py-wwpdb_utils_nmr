@@ -114,7 +114,15 @@ class TestNmrDpUtility(unittest.TestCase):
         if not report['error'] is None:
             self.assertEqual(report['error']['internal_error'], None)
 
-        print('%s: %s' % (entry_id, report['information']['status']))
+        if report['error'] is None:
+            print('%s: %s' % (entry_id, report['information']['status']))
+        elif not report['error']['format_issue'] is None:
+            print('%s: %s\n format_issue: %s' % (entry_id, report['information']['status'], report['error']['format_issue'][0]['description']))
+        elif not report['error']['missing_mandatory_content'] is None:
+            print('%s: %s\n missing_mandatory_content: %s' % (entry_id, report['information']['status'], report['error']['missing_mandatory_content'][0]['description']))
+        else:
+            error_type = {str(k): len(v) for k, v in report['error'].items() if not v is None and str(k) != 'total'}
+            print('%s: %s, %s' % (entry_id, report['information']['status'], error_type))
 
     def test_nmr_str2nef_release_1pqx(self):
         self.__test_nmr_str2nef_release('1pqx')

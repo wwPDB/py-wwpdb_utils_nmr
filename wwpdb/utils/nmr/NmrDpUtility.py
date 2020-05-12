@@ -75,6 +75,7 @@
 # 07-May-2020  M. Yokochi - add preventive code for infinite loop while format issue correction
 # 08-May-2020  M. Yokochi - sync update with wwpdb.utils.nmr.CifReader (DAOTHER-5654)
 # 09-May-2020  M. Yokochi - add support for submitted coordinate file (allow missing of pdbx_poly_seq_scheme) (DAOTHER-5654)
+# 12-May-2020  M. Yokochi - fix diselenide bond detection
 ##
 """ Wrapper class for data processing for NMR data.
     @author: Masashi Yokochi
@@ -8536,7 +8537,7 @@ class NmrDpUtility(object):
 
                                 elif not cs_stat['primary'] and cs_stat['norm_freq'] < 0.03:
 
-                                    warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] %s %s is remarkable assignment. Appearance rate of %s in %s is %s %% according to BMRB.' %\
+                                    warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] %s %s is remarkable assignment. Occurrence of %s in %s is %s %% according to BMRB.' %\
                                            (value_name, value, atom_id, comp_id, cs_stat['norm_freq'] * 100.0)
 
                                     self.report.warning.appendDescription('remarkable_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
@@ -8974,7 +8975,7 @@ class NmrDpUtility(object):
                                 """
                             elif not cs_stat['primary'] and cs_stat['norm_freq'] < 0.03:
 
-                                warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] %s %s is remarkable assignment. Appearance rate of %s in %s is %s %% according to BMRB.' %\
+                                warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] %s %s is remarkable assignment. Occurrence of %s in %s is %s %% according to BMRB.' %\
                                        (value_name, value, atom_id, comp_id, cs_stat['norm_freq'] * 100.0)
 
                                 self.report.warning.appendDescription('remarkable_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
@@ -11383,7 +11384,7 @@ class NmrDpUtility(object):
                 data_type = self.__getTypeOfDistanceRestraint(file_type, lp_data, l, target_value, upper_limit_value, lower_limit_value,
                                                               chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2)
 
-                if 'hydrogen_bonds' in data_type and 'too close!' in data_type:
+                if 'hydrogen_bonds' in data_type and ('too close!' in data_type or 'too far!' in data_type):
 
                     values = ''
                     if target_value_name in i and not i[target_value_name] is None:
@@ -11397,8 +11398,8 @@ class NmrDpUtility(object):
                     if upper_linear_limit_name in i and not i[upper_linear_limit_name] is None:
                         values += '%s %s, ' % (upper_linear_limit_name, i[upper_linear_limit_name])
 
-                    warn = "Hydrogen bond constraint (%s:%s:%s:%s, %s:%s:%s:%s) is too close (%s)." %\
-                           (chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2, values[:-2])
+                    warn = "Hydrogen bond constraint (%s:%s:%s:%s, %s:%s:%s:%s) is too %s (%s)." %\
+                           (chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2, 'close' if 'close' in data_type else 'far', values[:-2])
 
                     self.report.warning.appendDescription('unusual_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'description': warn})
                     self.report.setWarning()
@@ -11406,7 +11407,7 @@ class NmrDpUtility(object):
                     if self.__verbose:
                         self.__lfh.write("+NmrDpUtility.__calculateStatsOfDistanceRestraint() ++ Warning  - %s\n" % warn)
 
-                elif 'disulfide_bonds' in data_type and 'too close!' in data_type:
+                elif 'disulfide_bonds' in data_type and ('too close!' in data_type or 'too far!' in data_type):
 
                     values = ''
                     if target_value_name in i and not i[target_value_name] is None:
@@ -11420,8 +11421,8 @@ class NmrDpUtility(object):
                     if upper_linear_limit_name in i and not i[upper_linear_limit_name] is None:
                         values += '%s %s, ' % (upper_linear_limit_name, i[upper_linear_limit_name])
 
-                    warn = "Disulfide bond constraint (%s:%s:%s:%s, %s:%s:%s:%s) is too close (%s)." %\
-                           (chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2, values[:-2])
+                    warn = "Disulfide bond constraint (%s:%s:%s:%s, %s:%s:%s:%s) is too %s (%s)." %\
+                           (chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2, 'close' if 'close' in data_type else 'far', values[:-2])
 
                     self.report.warning.appendDescription('unusual_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'description': warn})
                     self.report.setWarning()
@@ -11429,7 +11430,7 @@ class NmrDpUtility(object):
                     if self.__verbose:
                         self.__lfh.write("+NmrDpUtility.__calculateStatsOfDistanceRestraint() ++ Warning  - %s\n" % warn)
 
-                elif 'diselenide_bonds' in data_type and 'too close!' in data_type:
+                elif 'diselenide_bonds' in data_type and ('too close!' in data_type or 'too far!' in data_type):
 
                     values = ''
                     if target_value_name in i and not i[target_value_name] is None:
@@ -11443,8 +11444,8 @@ class NmrDpUtility(object):
                     if upper_linear_limit_name in i and not i[upper_linear_limit_name] is None:
                         values += '%s %s, ' % (upper_linear_limit_name, i[upper_linear_limit_name])
 
-                    warn = "Diselenide bond constraint (%s:%s:%s:%s, %s:%s:%s:%s) is too close (%s)." %\
-                           (chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2, values[:-2])
+                    warn = "Diselenide bond constraint (%s:%s:%s:%s, %s:%s:%s:%s) is too %s (%s)." %\
+                           (chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2, 'close' if 'close' in data_type else 'far', values[:-2])
 
                     self.report.warning.appendDescription('unusual_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'description': warn})
                     self.report.setWarning()
@@ -11452,7 +11453,7 @@ class NmrDpUtility(object):
                     if self.__verbose:
                         self.__lfh.write("+NmrDpUtility.__calculateStatsOfDistanceRestraint() ++ Warning  - %s\n" % warn)
 
-                elif 'other_bonds' in data_type and 'too close!' in data_type:
+                elif 'other_bonds' in data_type and ('too close!' in data_type or 'too far!' in data_type):
 
                     values = ''
                     if target_value_name in i and not i[target_value_name] is None:
@@ -11466,8 +11467,8 @@ class NmrDpUtility(object):
                     if upper_linear_limit_name in i and not i[upper_linear_limit_name] is None:
                         values += '%s %s, ' % (upper_linear_limit_name, i[upper_linear_limit_name])
 
-                    warn = "Other bond constraint (%s:%s:%s:%s, %s:%s:%s:%s) is too close (%s)." %\
-                           (chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2, values[:-2])
+                    warn = "Other bond constraint (%s:%s:%s:%s, %s:%s:%s:%s) is too %s (%s)." %\
+                           (chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2, 'close' if 'close' in data_type else 'far', values[:-2])
 
                     self.report.warning.appendDescription('unusual_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'description': warn})
                     self.report.setWarning()
@@ -12105,10 +12106,13 @@ class NmrDpUtility(object):
             if (atom_id_1_ == 'F' and atom_id_2_ == 'H') or (atom_id_2_ == 'F' and atom_id_1_ == 'H'):
 
                 if target_value >= 1.2 and target_value <= 1.5:
-                    hydrogen_bond_type = 'F...H-F'
+                    hydrogen_bond_type = 'F...H-x'
                     hydrogen_bond = True
                 elif target_value < 1.2:
-                    hydrogen_bond_type = 'F...H-F (too close!)'
+                    hydrogen_bond_type = 'F...H-x (too close!)'
+                    hydrogen_bond = True
+                elif target_value <= 2.0:
+                    hydrogen_bond_type = 'F...H-x (too far!)'
                     hydrogen_bond = True
 
             elif (atom_id_1_ == 'F' and atom_id_2_ == 'F') or (atom_id_2_ == 'F' and atom_id_1_ == 'F'):
@@ -12119,6 +12123,9 @@ class NmrDpUtility(object):
                 elif target_value < 2.2:
                     hydrogen_bond_type = 'F...h-F (too close!)'
                     hydrogen_bond = True
+                elif target_value <= 4.0:
+                    hydrogen_bond_type = 'F...h-F (too far!)'
+                    hydrogen_bond = True
 
             elif (atom_id_1_ == 'O' and atom_id_2_ == 'H') or (atom_id_2_ == 'O' and atom_id_1_ == 'H'):
 
@@ -12127,6 +12134,9 @@ class NmrDpUtility(object):
                     hydrogen_bond = True
                 elif target_value < 1.5:
                     hydrogen_bond_type = 'O...H-x (too close!)'
+                    hydrogen_bond = True
+                elif target_value <= 3.4:
+                    hydrogen_bond_type = 'O...H-x (too far!)'
                     hydrogen_bond = True
 
             elif (atom_id_1_ == 'O' and atom_id_2_ == 'N') or (atom_id_2_ == 'O' and atom_id_1_ == 'N'):
@@ -12137,6 +12147,9 @@ class NmrDpUtility(object):
                 elif target_value < 2.5:
                     hydrogen_bond_type = 'O...h-N (too close!)'
                     hydrogen_bond = True
+                elif target_value <= 5.4:
+                    hydrogen_bond_type = 'O...h-N (too far!)'
+                    hydrogen_bond = True
 
             elif (atom_id_1_ == 'O' and atom_id_2_ == 'O') or (atom_id_2_ == 'O' and atom_id_1_ == 'O'):
 
@@ -12145,6 +12158,9 @@ class NmrDpUtility(object):
                     hydrogen_bond = True
                 elif target_value < 2.5:
                     hydrogen_bond_type = 'O...h-O (too close!)'
+                    hydrogen_bond = True
+                elif target_value <= 5.4:
+                    hydrogen_bond_type = 'O...h-O (too far!)'
                     hydrogen_bond = True
 
             elif (atom_id_1_ == 'N' and atom_id_2_ == 'H') or (atom_id_2_ == 'N' and atom_id_1_ == 'H'):
@@ -12155,6 +12171,9 @@ class NmrDpUtility(object):
                 elif target_value < 1.5:
                     hydrogen_bond_type = 'N...H-x (too close!)'
                     hydrogen_bond = True
+                elif target_value <= 3.4:
+                    hydrogen_bond_type = 'N...H-x (too far!)'
+                    hydrogen_bond = True
 
             elif (atom_id_1_ == 'N' and atom_id_2_ == 'N') or (atom_id_2_ == 'N' and atom_id_1_ == 'N'):
 
@@ -12164,8 +12183,12 @@ class NmrDpUtility(object):
                 elif target_value < 2.5:
                     hydrogen_bond_type = 'N...h_N (too close!)'
                     hydrogen_bond = True
+                elif target_value <= 5.4:
+                    hydrogen_bond_type = 'N...h_N (too far!)'
+                    hydrogen_bond = True
 
-            elif atom_id_1_ == 'S' and atom_id_2_ == 'S':
+            elif atom_id_1_ == 'S' and atom_id_2_ == 'S' and\
+                 not atom_id_1.startswith('SE') and not atom_id_2.startswith('SE'):
 
                 if target_value >= 1.9 and target_value <= 2.3:
                     disulfide_bond_type = 'S...S'
@@ -12173,8 +12196,11 @@ class NmrDpUtility(object):
                 elif target_value < 1.9:
                     disulfide_bond_type = 'S...S (too close!)'
                     disulfide_bond = True
+                elif target_value <= 3.6:
+                    disulfide_bond_type = 'S...S (too far!)'
+                    disulfide_bond = True
 
-            elif atom_id_1_ == 'SE' and atom_id_2_ == 'SE':
+            elif atom_id_1.startswith('SE') and atom_id_2.startswith('SE'):
 
                 if target_value >= 2.1 and target_value <= 2.6:
                     diselenide_bond_type = 'Se...Se'
@@ -12182,10 +12208,13 @@ class NmrDpUtility(object):
                 elif target_value < 2.1:
                     diselenide_bond_type = 'Se...Se (too close!)'
                     diselenide_bond = True
+                elif target_value <= 4.2:
+                    diselenide_bond_type = 'Se...Se (too far!)'
+                    diselenide_bond = True
 
-            elif (atom_id_1_ == 'N' and not atom_id_2_ in self.non_metal_elems) or (atom_id_2_ == 'N' and not atom_id_1_ in self.non_metal_elems):
+            elif (atom_id_1_ == 'N' and not self.__isNonMetalElement(atom_id_2)) or (atom_id_2_ == 'N' and not self.__isNoneMetalElement(atom_id_1)):
 
-                metal = atom_id_2_ if atom_id_1_ in self.non_metal_elems else atom_id_1_
+                metal = atom_id_2 if self.__isNonMetalElement(atom_id_1) else atom_id_1
                 metal = metal.title()
 
                 if target_value >= 1.9 and target_value <= 2.1:
@@ -12194,10 +12223,13 @@ class NmrDpUtility(object):
                 elif target_value < 1.9:
                     other_bond_type = 'N...' + metal + ' (too close!)'
                     other_bond = True
+                elif target_value <= 3.2:
+                    other_bond_type = 'N...' + metal + ' (too far!)'
+                    other_bond = True
 
-            elif (atom_id_1_ == 'O' and not atom_id_2_ in self.non_metal_elems) or (atom_id_2_ == 'O' and not atom_id_1_ in self.non_metal_elems):
+            elif (atom_id_1_ == 'O' and not self.__isNonMetalElement(atom_id_2)) or (atom_id_2_ == 'O' and not self.__isNonMetalElement(atom_id_1)):
 
-                metal = atom_id_2_ if atom_id_1_ in self.non_metal_elems else atom_id_1_
+                metal = atom_id_2 if self.__isNonMetalElement(atom_id_1) else atom_id_1
                 metal = metal.title()
 
                 if target_value >= 2.0 and target_value <= 2.2:
@@ -12206,10 +12238,13 @@ class NmrDpUtility(object):
                 elif target_value < 2.0:
                     other_bond_type = 'O...' + metal + ' (too close!)'
                     other_bond = True
+                elif target_value <= 3.4:
+                    other_bond_type = 'O...' + metal + ' (too far!)'
+                    other_bond = True
 
-            elif (atom_id_1_ == 'P' and not atom_id_2_ in self.non_metal_elems) or (atom_id_2_ == 'P' and not atom_id_1_ in self.non_metal_elems):
+            elif (atom_id_1_ == 'P' and not self.__isNonMetalElement(atom_id_2)) or (atom_id_2_ == 'P' and not self.__isNonMetalElement(atom_id_1)):
 
-                metal = atom_id_2_ if atom_id_1_ in self.non_metal_elems else atom_id_1_
+                metal = atom_id_2 if self.__isNonMetalElement(atom_id_1) else atom_id_1
                 metal = metal.title()
 
                 if target_value >= 2.1 and target_value <= 2.5:
@@ -12218,10 +12253,14 @@ class NmrDpUtility(object):
                 elif target_value < 2.1:
                     other_bond_type = 'P...' + metal + ' (too close!)'
                     other_bond = True
+                elif target_value <= 4.0:
+                    other_bond_type = 'P...' + metal + ' (too far!)'
+                    other_bond = True
 
-            elif (atom_id_1_ == 'S' and not atom_id_2_ in self.non_metal_elems) or (atom_id_2_ == 'S' and not atom_id_1_ in self.non_metal_elems):
+            elif (atom_id_1_ == 'S' and not atom_id_1.startswith('SE') and not self.__isNonMetalElement(atom_id_2)) or\
+                 (atom_id_2_ == 'S' and not atom_id_2.startswith('SE') and not self.__isNonMetalElement(atom_id_1)):
 
-                metal = atom_id_2_ if atom_id_1_ in self.non_metal_elems else atom_id_1_
+                metal = atom_id_2 if self.__isNonMetalElement(atom_id_1) else atom_id_1
                 metal = metal.title()
 
                 if target_value >= 2.2 and target_value <= 2.6:
@@ -12230,10 +12269,14 @@ class NmrDpUtility(object):
                 elif target_value < 2.2:
                     other_bond_type = 'S...' + metal + ' (too close!)'
                     other_bond = True
+                elif target_value <= 4.2:
+                    other_bond_type = 'S...' + metal + ' (too far!)'
+                    other_bond = True
 
-            elif (atom_id_1_ == 'SE' and not atom_id_2_ in self.non_metal_elems) or (atom_id_2_ == 'SE' and not atom_id_1_ in self.non_metal_elems):
+            elif (atom_id_1.startswith('SE') and not self.__isNonMetalElement(atom_id_2)) or\
+                 (atom_id_2.startswith('SE') and not self.__isNonMetalElement(atom_id_1)):
 
-                metal = atom_id_2_ if atom_id_1_ in self.non_metal_elems else atom_id_1_
+                metal = atom_id_2 if self.__isNonMetalElement(atom_id_1) else atom_id_1
                 metal = metal.title()
 
                 if target_value >= 2.3 and target_value <= 2.7:
@@ -12241,6 +12284,9 @@ class NmrDpUtility(object):
                     other_bond = True
                 elif target_value < 2.3:
                     other_bond_type = 'Se...' + metal + ' (too close!)'
+                    other_bond = True
+                elif target_value <= 4.4:
+                    other_bond_type = 'Se...' + metal + ' (too far!)'
                     other_bond = True
 
             else:
@@ -12375,6 +12421,17 @@ class NmrDpUtility(object):
             data_type = 'long_range_constraints'
 
         return data_type
+
+    def __isNonMetalElement(self, atom_id):
+        """ Return whether a given atom_id is non metal element.
+            @return: True for non metal element, False otherwise
+        """
+
+        for elem in self.non_metal_elems:
+            if atom_id.startswith(elem):
+                return True
+
+        return False
 
     def __calculateStatsOfDihedralRestraint(self, file_list_id, lp_data, conflict_id_set, inconsistent, redundant, ent):
         """ Calculate statistics of dihedral angle restraints.

@@ -33,7 +33,7 @@ class NmrStarToCif(object):
         self.empty_value = (None, '', '.', '?')
 
     def clean(self, cifPath=None, originalCsFileNameList=None, originalMrFileNameList=None):
-        """Clean CIF formatted NMR data for NMR legacy deposition
+        """ Clean up CIF formatted NMR data for NMR legacy deposition
         """
 
         if cifPath is None:

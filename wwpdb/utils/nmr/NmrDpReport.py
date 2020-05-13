@@ -130,15 +130,15 @@ class NmrDpReport:
     def hasCyclicPolymer(self):
         return self.__report['information']['cyclic_polymer']
 
-    def getInputSource(self, id):
-        """ Return input source of a given index.
+    def getInputSourceDict(self, id):
+        """ Return input source dictionary of a given index.
             @return: input source of a given index, None otherwise
         """
 
         if id < 0 or id >= len(self.input_sources):
             return None
 
-        return self.input_sources[id]
+        return self.input_sources[id].get()
 
     def getInputSourceIdOfNmrData(self):
         """ Return input_source_id of NMR data file.
@@ -169,28 +169,24 @@ class NmrDpReport:
 
         return -1
 
+    def getDictValue(self, dict=None, key=None):
+        """ Return value of a given dictionary for a key.
+            @return: value for a key, None otherwise
+        """
+
+        if dict is None or key is None:
+            return None
+
+        if not key in dict:
+            return None
+
+        return dict[key]
+
     def getNmrContentSubTypes(self):
         """ Return effective NMR content subtypes.
         """
 
-        id = self.getInputSourceIdOfNmrData()
-
-        if id < 0:
-            return None
-
-        nmr_input_source = self.getInputSource(id)
-
-        if nmr_input_source is None:
-            return None
-
-        nmr_input_source_dic = nmr_input_source.get()
-
-        key = 'content_subtype'
-
-        if not key in nmr_input_source_dic:
-            return None
-
-        content_subtype = nmr_input_source_dic[key]
+        content_subtype = self.getDictValue(self.getInputSourceDict(self.getInputSourceIdOfNmrData()), 'content_subtype')
 
         if content_subtype is None:
             return None
@@ -201,19 +197,7 @@ class NmrDpReport:
         """ Return effective NMR content subtypes.
         """
 
-        nmr_input_source = self.getInputSource(id)
-
-        if nmr_input_source is None:
-            return None
-
-        nmr_input_source_dic = nmr_input_source.get()
-
-        key = 'content_subtype'
-
-        if not key in nmr_input_source_dic:
-            return None
-
-        content_subtype = nmr_input_source_dic[key]
+        content_subtype = self.getDictValue(self.getInputSourceDict(id), 'content_subtype')
 
         if content_subtype is None:
             return None
@@ -224,58 +208,13 @@ class NmrDpReport:
         """ Return stats of experimental data of a given content subtype.
         """
 
-        id = self.getInputSourceIdOfNmrData()
-
-        if id < 0:
-            return None
-
-        nmr_input_source = self.getInputSource(id)
-
-        if nmr_input_source is None:
-            return None
-
-        nmr_input_source_dic = nmr_input_source.get()
-
-        key = 'stats_of_exptl_data'
-
-        if not key in nmr_input_source_dic:
-            return None
-
-        stats_of_exptl_data = nmr_input_source_dic[key]
-
-        if stats_of_exptl_data is None:
-            return None
-
-        if not content_subtype in stats_of_exptl_data:
-            return None
-
-        return stats_of_exptl_data[content_subtype]
+        return self.getDictValue(self.getDictValue(self.getInputSourceDict(self.getInputSourceIdOfNmrData()), 'stats_of_exptl_data'), content_subtype)
 
     def __getNmrLegacyStatsOfExptlData(self, id, content_subtype):
         """ Return stats of experimental data of a given content subtype.
         """
 
-        nmr_input_source = self.getInputSource(id)
-
-        if nmr_input_source is None:
-            return None
-
-        nmr_input_source_dic = nmr_input_source.get()
-
-        key = 'stats_of_exptl_data'
-
-        if not key in nmr_input_source_dic:
-            return None
-
-        stats_of_exptl_data = nmr_input_source_dic[key]
-
-        if stats_of_exptl_data is None:
-            return None
-
-        if not content_subtype in stats_of_exptl_data:
-            return None
-
-        return stats_of_exptl_data[content_subtype]
+        return self.getDictValue(self.getDictValue(self.getInputSourceDict(id), 'stats_of_exptl_data'), content_subtype)
 
     def getNmrRestraints(self):
         """ Return stats of NMR restraints.
@@ -290,12 +229,10 @@ class NmrDpReport:
 
         id = self.getInputSourceIdOfNmrData()
 
-        nmr_input_source = self.getInputSource(id)
+        nmr_input_source_dic = self.getInputSourceDict(id)
 
-        if nmr_input_source is None:
+        if nmr_input_source_dic is None:
             return None
-
-        nmr_input_source_dic = nmr_input_soutce.get()
 
         file_name = nmr_input_source_dic['file_name']
         file_type = 'NEF' if nmr_input_source_dic['file_type'] == 'nef' else 'NMR-STAR'
@@ -468,12 +405,10 @@ class NmrDpReport:
             if content_subtypes is None:
                 continue
 
-            nmr_input_source = self.getInputSource(id)
+            nmr_input_source_dic = self.getInputSourceDict(id)
 
-            if nmr_input_source is None:
+            if nmr_input_source_dic is None:
                 continue
-
-            nmr_input_source_dic = nmr_input_source.get()
 
             file_name = nmr_input_source_dic['file_name']
             file_type = 'NEF' if nmr_input_source_dic['file_type'] == 'nef' else 'NMR-STAR'
@@ -868,19 +803,7 @@ class NmrDpReport:
                 return None
             id = ids[0]
 
-        nmr_input_source = self.getInputSource(id)
-
-        if nmr_input_source is None:
-            return None
-
-        nmr_input_source_dic = nmr_input_source.get()
-
-        key = 'polymer_sequence'
-
-        if not key in nmr_input_source_dic:
-            return None
-
-        nmr_polymer_sequence = nmr_input_source_dic[key]
+        nmr_polymer_sequence = self.getDictValue(self.getInputSourceDict(id), 'polymer_sequence')
 
         if nmr_polymer_sequence is None:
             return None
@@ -891,24 +814,7 @@ class NmrDpReport:
         """ Retrieve model polymer sequence having a given chain_id.
         """
 
-        id = self.getInputSourceIdOfCoord()
-
-        if id < 0:
-            return None
-
-        cif_input_source = self.getInputSource(id)
-
-        if cif_input_source is None:
-            return None
-
-        cif_input_source_dic = cif_input_source.get()
-
-        key = 'polymer_sequence'
-
-        if not key in cif_input_source_dic:
-            return None
-
-        cif_polymer_sequence = cif_input_source_dic[key]
+        cif_polymer_sequence = self.getDictValue(self.getInputSourceDict(self.getInputSourceIdOfCoord()), 'polymer_sequence')
 
         if cif_polymer_sequence is None:
             return None
@@ -927,19 +833,7 @@ class NmrDpReport:
                 return None
             id = ids[0]
 
-        nmr_input_source = self.getInputSource(id)
-
-        if nmr_input_source is None:
-            return None
-
-        nmr_input_source_dic = nmr_input_source.get()
-
-        key = 'polymer_sequence'
-
-        if not key in nmr_input_source_dic:
-            return None
-
-        nmr_polymer_sequence = nmr_input_source_dic[key]
+        nmr_polymer_sequence = self.getDictValue(self.getInputSourceDict(id), 'polymer_sequence')
 
         if nmr_polymer_sequence is None:
             return None
@@ -967,24 +861,7 @@ class NmrDpReport:
         """ Retrieve model polymer sequence (1-letter code) having a given chain_id.
         """
 
-        id = self.getInputSourceIdOfCoord()
-
-        if id < 0:
-            return None
-
-        cif_input_source = self.getInputSource(id)
-
-        if cif_input_source is None:
-            return None
-
-        cif_input_source_dic = cif_input_source.get()
-
-        key = 'polymer_sequence'
-
-        if not key in cif_input_source_dic:
-            return None
-
-        cif_polymer_sequence = cif_input_source_dic[key]
+        cif_polymer_sequence = self.getDictValue(self.getInputSourceDict(self.getInputSourceIdOfCoord()), 'polymer_sequence')
 
         if cif_polymer_sequence is None:
             return None

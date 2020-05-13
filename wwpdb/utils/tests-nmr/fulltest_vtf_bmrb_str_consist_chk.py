@@ -114,7 +114,7 @@ class TestNmrDpUtility(unittest.TestCase):
             print('%s: %s\n missing_mandatory_content: %s' % (entry_id, report['information']['status'], report['error']['missing_mandatory_content'][0]['description']))
         else:
             error_type = {str(k): len(v) for k, v in report['error'].items() if not v is None and str(k) != 'total'}
-            print('%s: %s, %s' % (entry_id.lower(), report['information']['status'], error_type))
+            print('%s: %s, %s' % (entry_id, report['information']['status'], error_type))
 
     def test_nmr_str_consistency_check_2k2e(self):
         self.__test_nmr_str_consistency('2k2e')

@@ -47,7 +47,7 @@ class TestNmrDpUtility(unittest.TestCase):
             print('%s: %s\n missing_mandatory_content: %s' % (entry_id, report['information']['status'], report['error']['missing_mandatory_content'][0]['description']))
         else:
             error_type = {str(k): len(v) for k, v in report['error'].items() if not v is None and str(k) != 'total'}
-            print('%s: %s, %s' % (entry_id.lower(), report['information']['status'], error_type))
+            print('%s: %s, %s' % (entry_id, report['information']['status'], error_type))
 
     def __test_nmr_nef2str_deposit(self, entry_id):
         if not os.access(self.data_dir_path + entry_id + '-nef-consistency-log.json', os.F_OK):
@@ -80,7 +80,7 @@ class TestNmrDpUtility(unittest.TestCase):
             print('%s: %s\n missing_mandatory_content: %s' % (entry_id, report['information']['status'], report['error']['missing_mandatory_content'][0]['description']))
         else:
             error_type = {str(k): len(v) for k, v in report['error'].items() if not v is None and str(k) != 'total'}
-            print('%s: %s, %s' % (entry_id.lower(), report['information']['status'], error_type))
+            print('%s: %s, %s' % (entry_id, report['information']['status'], error_type))
 
     def __test_nmr_str_consistency(self, entry_id):
         if not os.access(self.data_dir_path + entry_id + '-nef2str.str', os.F_OK):
@@ -107,7 +107,7 @@ class TestNmrDpUtility(unittest.TestCase):
             print('%s: %s\n missing_mandatory_content: %s' % (entry_id, report['information']['status'], report['error']['missing_mandatory_content'][0]['description']))
         else:
             error_type = {str(k): len(v) for k, v in report['error'].items() if not v is None and str(k) != 'total'}
-            print('%s: %s, %s' % (entry_id.lower(), report['information']['status'], error_type))
+            print('%s: %s, %s' % (entry_id, report['information']['status'], error_type))
 
     def __test_nmr_str2nef_release(self, entry_id):
         if not os.access(self.data_dir_path + entry_id + '-str2nef-consistency-log.json', os.F_OK):

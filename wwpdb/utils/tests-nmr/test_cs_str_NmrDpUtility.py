@@ -120,7 +120,8 @@ class TestNmrDpUtility(unittest.TestCase):
         elif not report['error']['missing_mandatory_content'] is None:
             print('%s: %s\n missing_mandatory_content: %s' % (cs_type, report['information']['status'], report['error']['missing_mandatory_content'][0]['description']))
         else:
-            print('%s: %s' % (cs_type, report['information']['status']))
+            error_type = {str(k): len(v) for k, v in report['error'].items() if not v is None and str(k) != 'total'}
+            print('%s: %s, %s' % (cs_type, report['information']['status'], error_type))
 
     def test_nmr_cs_str_consistency_check_data(self):
         self.__test_nmr_cs_str_consistency('data')

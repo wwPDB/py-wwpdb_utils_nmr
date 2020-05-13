@@ -103,7 +103,7 @@ class TestNmrDpUtility(unittest.TestCase):
         self.utility.addInput(name='resolve_conflict', value=True, type='param')
         self.utility.addInput(name='check_mandatory_tag', value=False, type='param')
         self.utility.setLog(self.data_dir_path + cs_type + '-cs-str-consistency-log.json')
-        self.utility.setVerbose(True)
+        self.utility.setVerbose(False)
 
         self.utility.op('nmr-cs-str-consistency-check')
 

@@ -11,6 +11,7 @@
 # 23-Apr-2020  M. Yokochi - add a unit test for DAOTHER-5603
 # 23-Apr-2020  M. Yokochi - add a unit test for DAOTHER-5609
 # 23-Apr-2020  M. Yokochi - add a unit test for DAOTHER-5610
+# 13-May-2020  M. Yokochi - add a unit test for DAOTHER-5673
 #
 import unittest
 import os
@@ -54,7 +55,8 @@ class TestNmrDpUtility(unittest.TestCase):
                              'daother-5602': ['NMR-6v88_cs.str'], #['NMR-6v88_cs_rev.str'],
                              'daother-5603': ['D_1000245188_cs-upload_P1.str.V1'],
                              'daother-5609': ['D_1000248498_cs-upload_P1.str.V1'],
-                             'daother-5610': ['6jpp_cs.str'] #['6jpp_mod_cs.str']
+                             'daother-5610': ['6jpp_cs.str'], #['6jpp_mod_cs.str'],
+                             'daother-5673': ['D_1000249191_cs-upload_P1.str.V2']
                              }
         self.model_file_path = {'data': '2la6.cif',
                                 'sf': '2la6.cif',
@@ -84,7 +86,8 @@ class TestNmrDpUtility(unittest.TestCase):
                                 'daother-5602': 'NMR-6v88.cif',
                                 'daother-5603': 'D_1000245188_model-upload_P1.cif.V1',
                                 'daother-5609': 'D_1000248498_model-upload_P1.cif.V1',
-                                'daother-5610': '6jpp.cif'
+                                'daother-5610': '6jpp.cif',
+                                'daother-5673': 'D_1000249191_model-upload_P1.cif.V1'
                                 }
         self.utility = NmrDpUtility()
         pass
@@ -100,7 +103,7 @@ class TestNmrDpUtility(unittest.TestCase):
         self.utility.addInput(name='resolve_conflict', value=True, type='param')
         self.utility.addInput(name='check_mandatory_tag', value=False, type='param')
         self.utility.setLog(self.data_dir_path + cs_type + '-cs-str-consistency-log.json')
-        self.utility.setVerbose(False)
+        self.utility.setVerbose(True)
 
         self.utility.op('nmr-cs-str-consistency-check')
 
@@ -205,6 +208,9 @@ class TestNmrDpUtility(unittest.TestCase):
 
     def test_nmr_cs_str_consistency_check_daother_5610(self):
         self.__test_nmr_cs_str_consistency('daother-5610')
+
+    def test_nmr_cs_str_consistency_check_daother_5673(self):
+        self.__test_nmr_cs_str_consistency('daother-5673')
 
 if __name__ == '__main__':
     unittest.main()

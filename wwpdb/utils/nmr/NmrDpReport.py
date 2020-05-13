@@ -29,6 +29,7 @@
 # 28-Apr-2020  M. Yokochi - prevent system clash due to 'number_of_assignments' (DAOTHER-5611)
 # 28-Apr-2020  M. Yokochi - fix 'NOE? (To be decided)' to be 'NOE' (DAOTHER-5626)
 # 29-Apr-2020  M. Yokochi - sort 'conflicted_data' and 'inconsistent_data' items (DAOTHER-5622)
+# 13-May-2020  M. Yokochi - avoid system crash when format issue occurs (DAOTHER-5673)
 ##
 """ Wrapper class for data processing report of NMR data.
     @author: Masashi Yokochi
@@ -174,20 +175,47 @@ class NmrDpReport:
         if id < 0:
             return None
 
-        nmr_input_source_dic = self.input_sources[id].get()
+        nmr_input_source = self.getInputSource(id)
 
-        return {k: v for k, v in nmr_input_source_dic['content_subtype'].items() if v > 0}
+        if nmr_input_source is None:
+            return None
+
+        nmr_input_source_dic = nmr_input_source.get()
+
+        key = 'content_subtype'
+
+        if not key in nmr_input_source_dic:
+            return None
+
+        content_subtype = nmr_input_source_dic[key]
+
+        if content_subtype is None:
+            return None
+
+        return {k: v for k, v in content_subtype.items() if v > 0}
 
     def __getNmrLegacyContentSubTypes(self, id):
         """ Return effective NMR content subtypes.
         """
 
-        if id < 0:
+        nmr_input_source = self.getInputSource(id)
+
+        if nmr_input_source is None:
             return None
 
-        nmr_input_source_dic = self.input_sources[id].get()
+        nmr_input_source_dic = nmr_input_source.get()
 
-        return {k: v for k, v in nmr_input_source_dic['content_subtype'].items() if v > 0}
+        key = 'content_subtype'
+
+        if not key in nmr_input_source_dic:
+            return None
+
+        content_subtype = nmr_input_source_dic[key]
+
+        if content_subtype is None:
+            return None
+
+        return {k: v for k, v in content_subtype.items() if v > 0}
 
     def getNmrStatsOfExptlData(self, content_subtype):
         """ Return stats of experimental data of a given content subtype.
@@ -198,32 +226,53 @@ class NmrDpReport:
         if id < 0:
             return None
 
-        nmr_input_source_dic = self.input_sources[id].get()
+        nmr_input_source = self.getInputSource(id)
 
-        if not 'stats_of_exptl_data' in nmr_input_source_dic:
+        if nmr_input_source is None:
             return None
 
-        if not content_subtype in nmr_input_source_dic['stats_of_exptl_data']:
+        nmr_input_source_dic = nmr_input_source.get()
+
+        key = 'stats_of_exptl_data'
+
+        if not key in nmr_input_source_dic:
             return None
 
-        return nmr_input_source_dic['stats_of_exptl_data'][content_subtype]
+        stats_of_exptl_data = nmr_input_source_dic[key]
+
+        if stats_of_exptl_data is None:
+            return None
+
+        if not content_subtype in stats_of_exptl_data:
+            return None
+
+        return stats_of_exptl_data[content_subtype]
 
     def __getNmrLegacyStatsOfExptlData(self, id, content_subtype):
         """ Return stats of experimental data of a given content subtype.
         """
 
-        if id < 0:
+        nmr_input_source = self.getInputSource(id)
+
+        if nmr_input_source is None:
             return None
 
-        nmr_input_source_dic = self.input_sources[id].get()
+        nmr_input_source_dic = nmr_input_source.get()
 
-        if not 'stats_of_exptl_data' in nmr_input_source_dic:
+        key = 'stats_of_exptl_data'
+
+        if not key in nmr_input_source_dic:
             return None
 
-        if not content_subtype in nmr_input_source_dic['stats_of_exptl_data']:
+        stats_of_exptl_data = nmr_input_source_dic[key]
+
+        if stats_of_exptl_data is None:
             return None
 
-        return nmr_input_source_dic['stats_of_exptl_data'][content_subtype]
+        if not content_subtype in stats_of_exptl_data:
+            return None
+
+        return stats_of_exptl_data[content_subtype]
 
     def getNmrRestraints(self):
         """ Return stats of NMR restraints.
@@ -238,7 +287,12 @@ class NmrDpReport:
 
         id = self.getInputSourceIdOfNmrData()
 
-        nmr_input_source_dic = self.input_sources[id].get()
+        nmr_input_source = self.getInputSource(id)
+
+        if nmr_input_source is None:
+            return None
+
+        nmr_input_source_dic = nmr_input_soutce.get()
 
         file_name = nmr_input_source_dic['file_name']
         file_type = 'NEF' if nmr_input_source_dic['file_type'] == 'nef' else 'NMR-STAR'
@@ -411,7 +465,12 @@ class NmrDpReport:
             if content_subtypes is None:
                 continue
 
-            nmr_input_source_dic = self.input_sources[id].get()
+            nmr_input_source = self.getInputSource(id)
+
+            if nmr_input_source is None:
+                continue
+
+            nmr_input_source_dic = nmr_input_source.get()
 
             file_name = nmr_input_source_dic['file_name']
             file_type = 'NEF' if nmr_input_source_dic['file_type'] == 'nef' else 'NMR-STAR'
@@ -806,9 +865,22 @@ class NmrDpReport:
                 return None
             id = ids[0]
 
-        nmr_input_source_dic = self.input_sources[id].get()
+        nmr_input_source = self.getInputSource(id)
 
-        nmr_polymer_sequence = nmr_input_source_dic['polymer_sequence']
+        if nmr_input_source is None:
+            return None
+
+        nmr_input_source_dic = nmr_input_source.get()
+
+        key = 'polymer_sequence'
+
+        if not key in nmr_input_source_dic:
+            return None
+
+        nmr_polymer_sequence = nmr_input_source_dic[key]
+
+        if nmr_polymer_sequence is None:
+            return None
 
         return next((ps for ps in nmr_polymer_sequence if ps['chain_id'] == chain_id), None)
 
@@ -821,9 +893,22 @@ class NmrDpReport:
         if id < 0:
             return None
 
-        cif_input_source_dic = self.input_sources[id].get()
+        cif_input_source = self.getInputSource(id)
 
-        cif_polymer_sequence = cif_input_source_dic['polymer_sequence']
+        if cif_input_source is None:
+            return None
+
+        cif_input_source_dic = cif_input_source.get()
+
+        key = 'polymer_sequence'
+
+        if not key in cif_input_source_dic:
+            return None
+
+        cif_polymer_sequence = cif_input_source_dic[key]
+
+        if cif_polymer_sequence is None:
+            return None
 
         return next((ps for ps in cif_polymer_sequence if ps['chain_id'] == chain_id), None)
 
@@ -839,9 +924,22 @@ class NmrDpReport:
                 return None
             id = ids[0]
 
-        nmr_input_source_dic = self.input_sources[id].get()
+        nmr_input_source = self.getInputSource(id)
 
-        nmr_polymer_sequence = nmr_input_source_dic['polymer_sequence']
+        if nmr_input_source is None:
+            return None
+
+        nmr_input_source_dic = nmr_input_source.get()
+
+        key = 'polymer_sequence'
+
+        if not key in nmr_input_source_dic:
+            return None
+
+        nmr_polymer_sequence = nmr_input_source_dic[key]
+
+        if nmr_polymer_sequence is None:
+            return None
 
         ps = next((ps for ps in nmr_polymer_sequence if ps['chain_id'] == chain_id), None)
 
@@ -871,9 +969,22 @@ class NmrDpReport:
         if id < 0:
             return None
 
-        cif_input_source_dic = self.input_sources[id].get()
+        cif_input_source = self.getInputSource(id)
 
-        cif_polymer_sequence = cif_input_source_dic['polymer_sequence']
+        if cif_input_source is None:
+            return None
+
+        cif_input_source_dic = cif_input_source.get()
+
+        key = 'polymer_sequence'
+
+        if not key in cif_input_source_dic:
+            return None
+
+        cif_polymer_sequence = cif_input_source_dic[key]
+
+        if cif_polymer_sequence is None:
+            return None
 
         ps = next((ps for ps in cif_polymer_sequence if ps['chain_id'] == chain_id), None)
 

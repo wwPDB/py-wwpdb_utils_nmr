@@ -56,7 +56,7 @@ class TestNmrDpUtility(unittest.TestCase):
                              'daother-5603': ['D_1000245188_cs-upload_P1.str.V1'],
                              'daother-5609': ['D_1000248498_cs-upload_P1.str.V1'],
                              'daother-5610': ['6jpp_cs.str'], #['6jpp_mod_cs.str'],
-                             'daother-5673': ['D_1000249191_cs-upload_P1.str.V2']
+                             'daother-5673': ['D_1000249191_cs-upload_P1.str.V1']
                              }
         self.model_file_path = {'data': '2la6.cif',
                                 'sf': '2la6.cif',

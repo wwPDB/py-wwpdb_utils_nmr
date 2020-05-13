@@ -3239,10 +3239,28 @@ class NmrDpUtility(object):
                 self.__lfh.write("+NmrDpUtility.__fixFormatIssueOfInputSource() ++ Warning  - %s\n" % warn)
 
             with open(_srcPath, 'r') as ifp:
+                lines = ifp.read().splitlines()
+                total = len(lines)
+
+                j = total - 1
+
+                while total - j < 10:
+                    if save_pattern.match(lines[j]) or stop_pattern.match(lines[j]):
+                        break
+                    j -= 1
+
+                ifp.close()
+
+            j += 1
+            i = 1
+
+            with open(_srcPath, 'r') as ifp:
                 with open(_srcPath + '~', 'w') as ofp:
                     ofp.write('data_' + os.path.basename(srcPath) + '\n\n')
                     for line in ifp:
-                        ofp.write(line)
+                        if i <= j:
+                            ofp.write(line)
+                        i += 1
 
                     ofp.close()
 

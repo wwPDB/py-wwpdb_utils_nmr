@@ -39,6 +39,7 @@
 # 28-Apr-2020  M. Yokochi - extract sequence from CS/MR loop with gap (v2.2.10, DAOTHER-5611)
 # 29-Apr-2020  M. Yokochi - support diagnostic message of PyNMRSTAR v2.6.5.1 or later (v2.2.11, DAOTHER-5611)
 # 30-Apr-2020  M. Yokochi - fix pseudo atom mapping in ligand (v2.2.12, DAOTHER-5611)
+# 14-May-2020  M. Yokochi - revise error message for missing mandatory content (v2.2.13, DAOTHER-5681 and 5682)
 ##
 import sys
 import os
@@ -58,7 +59,7 @@ from wwpdb.utils.nmr.io.ChemCompIo import ChemCompReader
 from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
 from wwpdb.utils.nmr.NmrDpReport import NmrDpReport
 
-__version__ = '2.2.12'
+__version__ = '2.2.13'
 
 class NEFTranslator(object):
     """ Bi-directional translator between NEF and NMR-STAR
@@ -769,8 +770,8 @@ class NEFTranslator(object):
 
         file_type = 'unknown'
 
-        err_template_for_missing_mandatory_loop = "The mandatory loop '%s' is missing. Please re-upload the file."
-        err_template_for_empty_mandatory_loop = "The mandatory loop '%s' is empty. Please re-upload the file."
+        err_template_for_missing_mandatory_loop = "The mandatory loop '%s' is missing. Deposition of %s is mandatory. Please re-upload the %s file."
+        err_template_for_empty_mandatory_loop = "The mandatory loop '%s' is empty. Deposition of %s is mandatory. Please re-upload the %s file."
 
         try:
 
@@ -811,35 +812,38 @@ class NEFTranslator(object):
                     if file_subtype == 'A':
 
                         for lp_info in minimal_info_nef_a:
+                            content_subtype = 'assigned chemical shifts' if 'shift' in lp_info else 'distance restraints'
                             if lp_info not in lp_list:
                                 is_valid = False
-                                error.append(err_template_for_missing_mandatory_loop % lp_info)
+                                error.append(err_template_for_missing_mandatory_loop % (lp_info, content_subtype, file_type.upper()))
                             else:
                                 if self.is_empty_loop(star_data, lp_info, data_type):
                                     is_valid = False
-                                    error.append(err_template_for_empty_mandatory_loop % lp_info)
+                                    error.append(err_template_for_empty_mandatory_loop % (lp_info, content_subtype, file_type.upper()))
 
                     elif file_subtype == 'S':
+                        content_subtype = 'assigned chemical shifts'
 
                         for lp_info in minimal_info_nef_s:
                             if lp_info not in lp_list:
                                 is_valid = False
-                                error.append(err_template_for_missing_mandatory_loop % lp_info)
+                                error.append(err_template_for_missing_mandatory_loop % (lp_info, content_subtype, file_type.upper()))
                             else:
                                 if self.is_empty_loop(star_data, lp_info, data_type):
                                     is_valid = False
-                                    error.append(err_template_for_empty_mandatory_loop % lp_info)
+                                    error.append(err_template_for_empty_mandatory_loop % (lp_info, content_subtype, file_type.upper()))
 
                     elif file_subtype == 'R':
+                        content_subtype = 'distance restraints'
 
                         for lp_info in minimal_info_nef_r:
                             if lp_info not in lp_list:
                                 is_valid = False
-                                error.append(err_template_for_missing_mandatory_loop % lp_info)
+                                error.append(err_template_for_missing_mandatory_loop % (lp_info, content_subtype, file_type.upper()))
                             else:
                                 if self.is_empty_loop(star_data, lp_info, data_type):
                                     is_valid = False
-                                    error.append(err_template_for_empty_mandatory_loop % lp_info)
+                                    error.append(err_template_for_empty_mandatory_loop % (lp_info, content_subtype, file_type.upper()))
 
                     else:
                         is_valid = False
@@ -849,35 +853,38 @@ class NEFTranslator(object):
                     if file_subtype == 'A':
 
                         for lp_info in minimal_info_star_a:
+                            content_subtype = 'assigned chemical shifts' if 'shift' in lp_info else 'distance restraints'
                             if lp_info not in lp_list:
                                 is_valid = False
-                                error.append(err_template_for_missing_mandatory_loop % lp_info)
+                                error.append(err_template_for_missing_mandatory_loop % (lp_info, content_subtype, file_type.upper()))
                             else:
                                 if self.is_empty_loop(star_data, lp_info, data_type):
                                     is_valid = False
-                                    error.append(err_template_for_empty_mandatory_loop % lp_info)
+                                    error.append(err_template_for_empty_mandatory_loop % (lp_info, content_subtype, file_type.upper()))
 
                     elif file_subtype == 'S':
+                        content_subtype = 'assigned chemical shifts'
 
                         for lp_info in minimal_info_star_s:
                             if lp_info not in lp_list:
                                 is_valid = False
-                                error.append(err_template_for_missing_mandatory_loop % lp_info)
+                                error.append(err_template_for_missing_mandatory_loop % (lp_info, content_subtype, file_type.upper()))
                             else:
                                 if self.is_empty_loop(star_data, lp_info, data_type):
                                     is_valid = False
-                                    error.append(err_template_for_empty_mandatory_loop % lp_info)
+                                    error.append(err_template_for_empty_mandatory_loop % (lp_info, content_subtype, file_type.upper()))
 
                     elif file_subtype == 'R':
+                        content_subtype = 'distance restraints'
 
                         for lp_info in minimal_info_star_r:
                             if lp_info not in lp_list:
                                 is_valid = False
-                                error.append(err_template_for_missing_mandatory_loop % lp_info)
+                                error.append(err_template_for_missing_mandatory_loop % (lp_info, content_subtype, file_type.upper()))
                             else:
                                 if self.is_empty_loop(star_data, lp_info, data_type):
                                     is_valid = False
-                                    error.append(err_template_for_empty_mandatory_loop % lp_info)
+                                    error.append(err_template_for_empty_mandatory_loop % (lp_info, content_subtype, file_type.upper()))
 
                     else:
                         is_valid = False
@@ -2998,11 +3005,11 @@ class NEFTranslator(object):
                                     itName = '_' + category + '.' + t['name']
                                     if val == '?' and enforce_enum:
                                         if self.is_mandatory_tag(itName, file_type):
-                                            user_warn_msg += "[Enumeration error] The mandatory type %s '%s' is missing and the type must be one of %s. '%s' will be given unless you would like to fix the type and re-upload the file.\n" % (itName, val, enum, t['enum-alt'][val])
+                                            user_warn_msg += "[Enumeration error] The mandatory type %s '%s' is missing and the type must be one of %s. '%s' will be given unless you would like to fix the type and re-upload the %s file.\n" % (itName, val, enum, t['enum-alt'][val], file_type.upper())
                                             val = t['enum-alt'][val]
                                             star_data.tags[itCol][1] = val
                                         else:
-                                            user_warn_msg += "[Enumeration error] %s '%s' should be one of %s. The type may be filled with either 'unknown' or estimated value unless you would like to fix the type and re-upload the file.\n" % (name, val, enum)
+                                            user_warn_msg += "[Enumeration error] %s '%s' should be one of %s. The type may be filled with either 'unknown' or estimated value unless you would like to fix the type and re-upload the %s file.\n" % (name, val, enum, file_type.upper())
                                     else:
                                         val = t['enum-alt'][val]
                                         star_data.tags[itCol][1] = val

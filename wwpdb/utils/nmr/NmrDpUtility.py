@@ -76,6 +76,7 @@
 # 08-May-2020  M. Yokochi - sync update with wwpdb.utils.nmr.CifReader (DAOTHER-5654)
 # 09-May-2020  M. Yokochi - add support for submitted coordinate file (allow missing of pdbx_poly_seq_scheme) (DAOTHER-5654)
 # 12-May-2020  M. Yokochi - fix diselenide bond detection
+# 14-May-2020  M. Yokochi - fix error detection for missing mandatory content (DAOTHER-5681 and 5682)
 ##
 """ Wrapper class for data processing for NMR data.
     @author: Masashi Yokochi
@@ -1565,7 +1566,7 @@ class NmrDpUtility(object):
                                               }
 
         # error template for missing mandatory loop tag
-        self.__err_template_for_missing_mandatory_lp_tag = "The mandatory loop tag '%s' is missing. Please verify the value and re-upload the data file."
+        self.__err_template_for_missing_mandatory_lp_tag = "The mandatory loop tag '%s' is missing. Please verify the value and re-upload the %s file."
 
         # saveframe tag prefixes (saveframe holder categories)
         self.sf_tag_prefixes = {'nef': {'entry_info': '_nef_nmr_meta_data',
@@ -2047,7 +2048,7 @@ class NmrDpUtility(object):
                                 }
 
         # warning template for missing mandatory saveframe tag
-        self.__warn_template_for_missing_mandatory_sf_tag = "The mandatory saveframe tag '%s' is missing. Please verify the value and re-upload the data file."
+        self.__warn_template_for_missing_mandatory_sf_tag = "The mandatory saveframe tag '%s' is missing. Please verify the value and re-upload the %s file."
 
         # auxiliary loop categories
         self.aux_lp_categories = {'nef': {'entry_info': [],
@@ -3159,6 +3160,36 @@ class NmrDpUtility(object):
         """
 
         if not self.__fix_format_issue or srcPath is None or not fileSubType in ['A', 'S', 'R'] or message is None:
+
+            if not message is None:
+
+                missing_loop = True
+
+                err = "%s is not compliant with the %s dictionary." % (file_name, self.readable_file_type[file_type])
+
+                if len(message['error']) > 0:
+
+                    if any(err_message for err_message in message['error'] if 'The mandatory loop' in err_message):
+
+                        err = ''
+                        for err_message in message['error']:
+                            if not 'No such file or directory' in err_message:
+                                err += re.sub('not in list', 'unknown item.', err_message) + ' '
+                        err = err[:-1]
+
+                    else:
+                        missing_loop = False
+
+                        for err_message in message['error']:
+                            if not 'No such file or directory' in err_message:
+                                err += ' ' + re.sub('not in list', 'unknown item.', err_message)
+
+                self.report.error.appendDescription('missing_mandatory_content' if missing_loop else 'format_issue', {'file_name': file_name, 'description': err})
+                self.report.setError()
+
+                if self.__verbose:
+                    self.__lfh.write("+NmrDpUtility.__fixFormatIssueOfInputSource() ++ Error  - %s\n" % err)
+
             return False
 
         _srcPath = srcPath
@@ -4187,7 +4218,7 @@ class NmrDpUtility(object):
                 if not 'index' in loop.tags:
 
                     lp_tag = lp_category + '.index'
-                    err = self.__err_template_for_missing_mandatory_lp_tag % lp_tag
+                    err = self.__err_template_for_missing_mandatory_lp_tag % (lp_tag, file_type.upper())
 
                     if self.__check_mandatory_tag and self.__nefT.is_mandatory_tag(lp_tag, file_type):
                         self.report.error.appendDescription('missing_mandatory_item', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
@@ -4215,7 +4246,7 @@ class NmrDpUtility(object):
                 if not 'element' in loop.tags:
 
                     lp_tag = lp_category + '.element'
-                    err = self.__err_template_for_missing_mandatory_lp_tag % lp_tag
+                    err = self.__err_template_for_missing_mandatory_lp_tag % (lp_tag, file_type.upper())
 
                     if self.__check_mandatory_tag and self.__nefT.is_mandatory_tag(lp_tag, file_type):
                         self.report.error.appendDescription('missing_mandatory_item', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
@@ -4253,7 +4284,7 @@ class NmrDpUtility(object):
                 if not 'isotope_number' in loop.tags:
 
                     lp_tag = lp_category + '.isotope_number'
-                    err = self.__err_template_for_missing_mandatory_lp_tag % lp_tag
+                    err = self.__err_template_for_missing_mandatory_lp_tag % (lp_tag, file_type.upper())
 
                     if self.__check_mandatory_tag and self.__nefT.is_mandatory_tag(lp_tag, file_type):
                         self.report.error.appendDescription('missing_mandatory_item', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
@@ -4293,7 +4324,7 @@ class NmrDpUtility(object):
                 if not 'name' in loop.tags:
 
                     lp_tag = lp_category + '.name'
-                    err = self.__err_template_for_missing_mandatory_lp_tag % lp_tag
+                    err = self.__err_template_for_missing_mandatory_lp_tag % (lp_tag, file_type.upper())
 
                     if self.__check_mandatory_tag and self.__nefT.is_mandatory_tag(lp_tag, file_type):
                         self.report.error.appendDescription('missing_mandatory_item', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
@@ -4487,7 +4518,7 @@ class NmrDpUtility(object):
                 if not 'Atom_type' in loop.tags:
 
                     lp_tag = lp_category + '.Atom_type'
-                    err = self.__err_template_for_missing_mandatory_lp_tag % lp_tag
+                    err = self.__err_template_for_missing_mandatory_lp_tag % (lp_tag, file_type.upper())
 
                     if self.__check_mandatory_tag and self.__nefT.is_mandatory_tag(lp_tag, file_type):
                         self.report.error.appendDescription('missing_mandatory_item', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
@@ -4525,7 +4556,7 @@ class NmrDpUtility(object):
                 if not 'Atom_isotope_number' in loop.tags:
 
                     lp_tag = lp_category + '.Atom_isotope_number'
-                    err = self.__err_template_for_missing_mandatory_lp_tag % lp_tag
+                    err = self.__err_template_for_missing_mandatory_lp_tag % (lp_tag, file_type.upper())
 
                     if self.__check_mandatory_tag and self.__nefT.is_mandatory_tag(lp_tag, file_type):
                         self.report.error.appendDescription('missing_mandatory_item', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
@@ -4565,7 +4596,7 @@ class NmrDpUtility(object):
                 if not 'Torsion_angle_name' in loop.tags:
 
                     lp_tag = lp_category + '.Torsion_angle_name'
-                    err = self.__err_template_for_missing_mandatory_lp_tag % lp_tag
+                    err = self.__err_template_for_missing_mandatory_lp_tag % (lp_tag, file_type.upper())
 
                     if self.__check_mandatory_tag and self.__nefT.is_mandatory_tag(lp_tag, file_type):
                         self.report.error.appendDescription('missing_mandatory_item', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
@@ -4631,10 +4662,6 @@ class NmrDpUtility(object):
                 if lp_category in self.lp_categories[file_type].values():
                     lp_counts[[k for k, v in self.lp_categories[file_type].items() if v == lp_category][0]] += 1
 
-            content_subtypes = {k: lp_counts[k] for k in lp_counts if lp_counts[k] > 0}
-
-            input_source.setItemValue('content_subtype', content_subtypes)
-
             content_subtype = 'poly_seq'
 
             if lp_counts[content_subtype] == 0:
@@ -4652,7 +4679,7 @@ class NmrDpUtility(object):
                             self.__lfh.write("+NmrDpUtility.__detectContentSubType() ++ Warning  - %s\n" % warn)
 
                     else:
-                        err = "The mandatory saveframe having category '%s' is missing. Please re-upload the data file." % sf_category
+                        err = "The mandatory saveframe having category '%s' is missing. Please re-upload the %s file." % (sf_category, file_type.upper())
 
                         self.report.error.appendDescription('missing_mandatory_content', {'file_name': file_name, 'description': err})
                         self.report.setError()
@@ -4730,6 +4757,10 @@ class NmrDpUtility(object):
 
                 if self.__verbose:
                     self.__lfh.write("+NmrDpUtility.__detectContentSubType() ++ Warning  - %s\n" % warn)
+
+            content_subtypes = {k: lp_counts[k] for k in lp_counts if lp_counts[k] > 0}
+
+            input_source.setItemValue('content_subtype', content_subtypes)
 
         return not self.report.isError()
 
@@ -15424,7 +15455,7 @@ class NmrDpUtility(object):
                                 if nmr_comp_id == '.':
                                     nmr_seq_code += ', insersion error'
 
-                                err = "Sequence alignment error between the coordinate (%s) and the NMR data (%s). Please verify the two sequences and re-upload the correct file." %\
+                                err = "Sequence alignment error between the coordinate (%s) and the NMR data (%s). Please verify the two sequences and re-upload the correct file(s)." %\
                                       (cif_seq_code, nmr_seq_code)
 
                                 self.report.error.appendDescription('sequence_mismatch', {'file_name': cif_file_name, 'description': err})
@@ -15729,7 +15760,7 @@ class NmrDpUtility(object):
                                 if nmr_comp_id == '.':
                                     nmr_seq_code += ', insersion error'
 
-                                err = "Sequence alignment error between the NMR data (%s) and the coordinate (%s). Please verify the two sequences and re-upload the correct file." %\
+                                err = "Sequence alignment error between the NMR data (%s) and the coordinate (%s). Please verify the two sequences and re-upload the correct file(s)." %\
                                       (nmr_seq_code, cif_seq_code)
 
                                 self.report.error.appendDescription('sequence_mismatch', {'file_name': nmr_file_name, 'description': err})
@@ -16487,7 +16518,7 @@ class NmrDpUtility(object):
                         continue
 
                     lp_tag = lp_category + '.' + index_tag
-                    err = self.__err_template_for_missing_mandatory_lp_tag % lp_tag
+                    err = self.__err_template_for_missing_mandatory_lp_tag % (lp_tag, file_type.upper())
 
                     if self.__check_mandatory_tag and self.__nefT.is_mandatory_tag(lp_tag, file_type):
 
@@ -18944,7 +18975,7 @@ class NmrDpUtility(object):
                         continue
 
                     lp_tag = lp_category + '.' + weight_tag
-                    err = self.__err_template_for_missing_mandatory_lp_tag % lp_tag
+                    err = self.__err_template_for_missing_mandatory_lp_tag % (lp_tag, file_type.upper())
 
                     if self.__check_mandatory_tag and self.__nefT.is_mandatory_tag(lp_tag, file_type):
 
@@ -19043,7 +19074,7 @@ class NmrDpUtility(object):
                             continue
 
                         sf_tag = '_' + sf_category + '.' + tag_item
-                        warn = self.__warn_template_for_missing_mandatory_sf_tag % sf_tag
+                        warn = self.__warn_template_for_missing_mandatory_sf_tag % (sf_tag, file_type.upper())
 
                         if self.__check_mandatory_tag and self.__nefT.is_mandatory_tag(sf_tag, file_type):
 
@@ -21336,7 +21367,7 @@ class NmrDpUtility(object):
                         else:
 
                             sf_tag = '_' + sf_category + '.ID'
-                            warn = self.__warn_template_for_missing_mandatory_sf_tag % sf_tag
+                            warn = self.__warn_template_for_missing_mandatory_sf_tag % (sf_tag, file_type.upper())
 
                             if self.__check_mandatory_tag and self.__nefT.is_mandatory_tag(sf_tag, file_type):
 
@@ -21700,7 +21731,7 @@ class NmrDpUtility(object):
             else:
 
                 lp_tag = lp_category + '.ID'
-                err = self.__err_template_for_missing_mandatory_lp_tag % lp_tag
+                err = self.__err_template_for_missing_mandatory_lp_tag % (lp_tag, file_type.upper())
 
                 if self.__check_mandatory_tag and self.__nefT.is_mandatory_tag(lp_tag, file_type):
 

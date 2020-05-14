@@ -7,6 +7,7 @@
 # 28-Nov-2019  M. Yokochi - add unit test for NEF-Xplor-NIH-20191016-remediated.nef
 # 26-Feb-2020  M. Yokochi - add unit test for CCPN_2mtv_docr.nef (DAOTHER-4785)
 # 24-Mar-2020  M. Yokochi - add unit test for chemical shift reference (DAOTHER-1682)
+# 14-May-2020  M. Yokochi - add unit tests for missing mandatory content (DAOTHER-5681 and 5682)
 #
 import unittest
 import os
@@ -129,6 +130,36 @@ class TestNmrDpUtility(unittest.TestCase):
         self.utility.addInput(name='resolve_conflict', value=True, type='param')
         self.utility.addInput(name='check_mandatory_tag', value=True, type='param')
         self.utility.setLog(self.data_dir_path + 'ccpn_2mtv_docr-nef-consistency-log.json')
+
+        self.utility.op('nmr-nef-consistency-check')
+
+    def test_nmr_nef_consistency_check_daother_5681(self):
+        self.utility.setSource(self.data_dir_path + '2k2e.nef-withoutrestraints')
+        self.utility.addInput(name='coordinate_file_path', value=self.data_dir_path + '2k2e.cif', type='file')
+        self.utility.addInput(name='resolve_conflict', value=True, type='param')
+        self.utility.addInput(name='check_mandatory_tag', value=True, type='param')
+        self.utility.setLog(self.data_dir_path + '2k2e.nef-withoutrestraints-consistency-log.json')
+        self.utility.setVerbose(False)
+
+        self.utility.op('nmr-nef-consistency-check')
+
+    def test_nmr_nef_consistency_check_daother_5682(self):
+        self.utility.setSource(self.data_dir_path + '2k2e.nef-withoutchemicalshifts')
+        self.utility.addInput(name='coordinate_file_path', value=self.data_dir_path + '2k2e.cif', type='file')
+        self.utility.addInput(name='resolve_conflict', value=True, type='param')
+        self.utility.addInput(name='check_mandatory_tag', value=True, type='param')
+        self.utility.setLog(self.data_dir_path + '2k2e.nef-withoutchemicalshifts-consistency-log.json')
+        self.utility.setVerbose(False)
+
+        self.utility.op('nmr-nef-consistency-check')
+
+    def test_nmr_nef_consistency_check_daother_5682_modified(self):
+        self.utility.setSource(self.data_dir_path + '2k2e.nef-withoutchemicalshifts-modified')
+        self.utility.addInput(name='coordinate_file_path', value=self.data_dir_path + '2k2e.cif', type='file')
+        self.utility.addInput(name='resolve_conflict', value=True, type='param')
+        self.utility.addInput(name='check_mandatory_tag', value=True, type='param')
+        self.utility.setLog(self.data_dir_path + '2k2e.nef-withoutchemicalshifts-modified-consistency-log.json')
+        self.utility.setVerbose(False)
 
         self.utility.op('nmr-nef-consistency-check')
 

@@ -1,0 +1,1 @@
+../NMR-VTF/PDBStat_NEW/2k2e/2k2e.cif

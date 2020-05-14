@@ -77,6 +77,7 @@
 # 09-May-2020  M. Yokochi - add support for submitted coordinate file (allow missing of pdbx_poly_seq_scheme) (DAOTHER-5654)
 # 12-May-2020  M. Yokochi - fix diselenide bond detection
 # 14-May-2020  M. Yokochi - fix error detection for missing mandatory content (DAOTHER-5681 and 5682)
+# 15-May-2020  M. Yokochi - add 'content_mismatch' error for NMR legacy deposition (DAOTHER-5687)
 ##
 """ Wrapper class for data processing for NMR data.
     @author: Masashi Yokochi
@@ -4635,6 +4636,7 @@ class NmrDpUtility(object):
 
             file_name = input_source_dic['file_name']
             file_type = input_source_dic['file_type']
+            content_type = input_source_dic['content_type']
 
             self.__sf_category_list, self.__lp_category_list = self.__nefT.get_data_content(self.__star_data[fileListId], self.__star_data_type[fileListId])
 
@@ -4666,11 +4668,12 @@ class NmrDpUtility(object):
 
             if lp_counts[content_subtype] == 0:
 
+                sf_category = self.sf_categories[file_type][content_subtype]
+
                 if not self.__has_star_entity and self.__combined_mode:
-                    sf_category = self.sf_categories[file_type][content_subtype]
 
                     if self.__resolve_conflict:
-                        warn = "There should be a saveframe with a category %s in the NMR data." % sf_category
+                        warn = "A saveframe with a category %s is missing in the NMR data." % sf_category
 
                         self.report.warning.appendDescription('missing_saveframe', {'file_name': file_name, 'description': warn})
                         self.report.setWarning()
@@ -4679,7 +4682,7 @@ class NmrDpUtility(object):
                             self.__lfh.write("+NmrDpUtility.__detectContentSubType() ++ Warning  - %s\n" % warn)
 
                     else:
-                        err = "The mandatory saveframe having category '%s' is missing. Please re-upload the %s file." % (sf_category, file_type.upper())
+                        err = "A saveframe with a category '%s' is missing. Please re-upload the %s file." % (sf_category, file_type.upper())
 
                         self.report.error.appendDescription('missing_mandatory_content', {'file_name': file_name, 'description': err})
                         self.report.setError()
@@ -4687,11 +4690,8 @@ class NmrDpUtility(object):
                         if self.__verbose:
                             self.__lfh.write("+NmrDpUtility.__detectContentSubType() ++ Error  - %s\n" % err)
 
-                elif lp_counts['chem_shift'] == 0 and lp_counts['dist_restraint']:
-
-                    sf_category = self.sf_categories[file_type][content_subtype]
-
-                    err = "There must be a mandatory saveframe with a category %s in the NMR data." % sf_category;
+                elif lp_counts['chem_shift'] == 0 and lp_counts['dist_restraint'] > 0:
+                    err = "A saveframe with a category '%s' is missing. Please re-upload the %s file." % (sf_category, file_type.upper())
 
                     self.report.error.appendDescription('missing_mandatory_content', {'file_name': file_name, 'description': err})
                     self.report.setError()
@@ -4713,15 +4713,24 @@ class NmrDpUtility(object):
 
             content_subtype = 'chem_shift'
 
-            if lp_counts[content_subtype] == 0:
+            if lp_counts[content_subtype] == 0 and self.__combined_mode:
 
                 sf_category = self.sf_categories[file_type][content_subtype]
                 lp_category = self.lp_categories[file_type][content_subtype]
 
-                #err = "Assigned chemical shifts are mandatory for PDB/BMRB deposition. Saveframe category %s and loop category %s were not found." % (sf_category, lp_category)
-                err = "There must be a mandatory saveframe with a category %s in the NMR data." % sf_category;
+                err = "The mandatory saveframe with a category '%s' is missing, Deposition of assigned chemical shifts is mandatory. Please re-upload the %s file." % (sf_category, file_type.upper());
 
                 self.report.error.appendDescription('missing_mandatory_content', {'file_name': file_name, 'description': err})
+                self.report.setError()
+
+                if self.__verbose:
+                    self.__lfh.write("+NmrDpUtility.__detectContentSubType() ++ Error  - %s\n" % err)
+
+            if lp_counts[content_subtype] > 0 and content_type == 'nmr-restraints':
+
+                err = "The NMR restraint file contains assigned chemical shifts. Please re-upload the %s file as a NMR combined data." % file_type.upper();
+
+                self.report.error.appendDescription('content_mismatch', {'file_name': file_name, 'description': err})
                 self.report.setError()
 
                 if self.__verbose:
@@ -4734,10 +4743,19 @@ class NmrDpUtility(object):
                 sf_category = self.sf_categories[file_type][content_subtype]
                 lp_category = self.lp_categories[file_type][content_subtype]
 
-                #err = "Distance restraints are mandatory for PDB/BMRB deposition. Saveframe category %s and loop category %s were not found." % (sf_category, lp_categor)
-                err = "There must be a mandatory saveframe with a category %s in the NMR data." % sf_category;
+                err = "The mandatory saveframe with a category '%s' is missing, Deposition of distance restraints is mandatory. Please re-upload the %s file." % (sf_category, file_type.upper());
 
                 self.report.error.appendDescription('missing_mandatory_content', {'file_name': file_name, 'description': err})
+                self.report.setError()
+
+                if self.__verbose:
+                    self.__lfh.write("+NmrDpUtility.__detectContentSubType() ++ Error  - %s\n" % err)
+
+            if (lp_counts['dist_restraint'] > 0 or lp_counts['dihed_restraint'] or lp_counts['rdc_restraint']) and content_type == 'nmr-chemical-shifts':
+
+                err = "The assigned chemical shift file contains NMR restraints. Please re-upload the %s file as a NMR combined data." % file_type.upper();
+
+                self.report.error.appendDescription('content_mismatch', {'file_name': file_name, 'description': err})
                 self.report.setError()
 
                 if self.__verbose:
@@ -4757,6 +4775,16 @@ class NmrDpUtility(object):
 
                 if self.__verbose:
                     self.__lfh.write("+NmrDpUtility.__detectContentSubType() ++ Warning  - %s\n" % warn)
+
+            if lp_counts[content_subtype] > 0 and content_type == 'nmr-chemical-shifts':
+
+                err = "The assigned chemical shift file contains spectral peak lists. Please re-upload the %s file as a NMR combined data." % file_type.upper();
+
+                self.report.error.appendDescription('content_mismatch', {'file_name': file_name, 'description': err})
+                self.report.setError()
+
+                if self.__verbose:
+                    self.__lfh.write("+NmrDpUtility.__detectContentSubType() ++ Error  - %s\n" % err)
 
             content_subtypes = {k: lp_counts[k] for k in lp_counts if lp_counts[k] > 0}
 

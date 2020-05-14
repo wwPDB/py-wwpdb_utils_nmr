@@ -33,6 +33,7 @@
 # 28-Apr-2020  M. Yokochi - fix 'NOE? (To be decided)' to be 'NOE' (DAOTHER-5626)
 # 29-Apr-2020  M. Yokochi - sort 'conflicted_data' and 'inconsistent_data' items (DAOTHER-5622)
 # 13-May-2020  M. Yokochi - avoid system crash when format issue occurs (DAOTHER-5673)
+# 15-May-2020  M. Yokochi - add 'content_mismatch' error for NMR legacy deposition (DAOTHER-5687)
 ##
 """ Wrapper class for data processing report of NMR data.
     @author: Masashi Yokochi
@@ -1487,7 +1488,8 @@ class NmrDpReportError:
     """
 
     def __init__(self):
-        self.items = ('internal_error', 'format_issue', 'missing_mandatory_content', 'missing_mandatory_item', 'sequence_mismatch',
+        self.items = ('internal_error', 'format_issue', 'missing_mandatory_content', 'missing_mandatory_item',
+                      'content_mismatch', 'sequence_mismatch',
                       'invalid_data', 'invalid_atom_nomenclature', 'invalid_atom_type', 'invalid_isotope_number', 'invalid_ambiguity_code',
                       'multiple_data', 'missing_data', 'duplicated_index', 'anomalous_data')
 

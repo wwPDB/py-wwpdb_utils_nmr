@@ -7616,7 +7616,7 @@ class NmrDpUtility(object):
 
         for fileListId in range(self.__file_path_list_len):
 
-            if self.__star_data_type[fileListId] == 'Loop':
+            if fileListId >= len(self.__star_data_type) or self.__star_data_type[fileListId] != 'Entry':
                 continue
 
             input_source = self.report.input_sources[fileListId]
@@ -9370,7 +9370,7 @@ class NmrDpUtility(object):
 
         for fileListId in range(self.__file_path_list_len):
 
-            if self.__star_data_type[fileListId] == 'Loop':
+            if fileListId >= len(self.__star_data_type) or self.__star_data_type[fileListId] != 'Entry':
                 continue
 
             input_source = self.report.input_sources[fileListId]

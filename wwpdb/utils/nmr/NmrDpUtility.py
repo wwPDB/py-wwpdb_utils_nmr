@@ -7581,8 +7581,8 @@ class NmrDpUtility(object):
         """ Perform consistency test on data of auxiliary loops.
         """
 
-        if not self.__combined_mode:
-            return True
+        #if not self.__combined_mode:
+        #    return True
 
         __errors = self.report.getTotalErrors()
 
@@ -9332,8 +9332,8 @@ class NmrDpUtility(object):
         """ Perform consistency test on peak position and assignment of spectral peaks.
         """
 
-        if not self.__combined_mode:
-            return False
+        #if not self.__combined_mode:
+        #    return False
 
         __errors = self.report.getTotalErrors()
 

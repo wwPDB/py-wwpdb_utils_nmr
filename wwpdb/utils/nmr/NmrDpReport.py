@@ -884,17 +884,12 @@ class NmrDpReport:
         """ Retrieve NMR polymer sequence corresponding to a given coordinate chain_id.
         """
 
-        chain_assign_dic = self.chain_assignment.get()
+        chain_assigns = self.getDictValue(self.chain_assignment.get(), 'model_poly_seq_vs_nmr_poly_seq')
 
-        key = 'model_poly_seq_vs_nmr_poly_seq'
-
-        if not key in chain_assign_dic:
+        if chain_assigns is None:
             return None
 
-        if chain_assign_dic[key] is None:
-            return None
-
-        for chain_assign in chain_assign_dic[key]:
+        for chain_assign in chain_assigns:
 
             if chain_assign['ref_chain_id'] == cif_chain_id:
                 return self.getNmrPolymerSequenceOf(chain_assign['test_chain_id'])
@@ -905,17 +900,14 @@ class NmrDpReport:
         """ Retrieve sequence alignment (nmr vs model) of a given NMR chain_id.
         """
 
-        chain_assign_dic = self.chain_assignment.get()
-
         key = 'nmr_poly_seq_vs_model_poly_seq'
 
-        if not key in chain_assign_dic:
+        chain_assigns = self.getDictValue(self.chain_assignment.get(), key)
+
+        if chain_assigns is None:
             return None
 
-        if chain_assign_dic[key] is None:
-            return None
-
-        for chain_assign in chain_assign_dic[key]:
+        for chain_assign in chain_assigns:
 
             if chain_assign['ref_chain_id'] == nmr_chain_id:
 
@@ -924,15 +916,12 @@ class NmrDpReport:
 
                 cif_chain_id = chain_assign['test_chain_id']
 
-                sequence_align_dic = self.sequence_alignment.get()
+                sequence_aligns = self.getDictValue(self.sequence_alignment.get(), key)
 
-                if not key in sequence_align_dic:
+                if sequence_aligns is None:
                     return None
 
-                if sequence_align_dic[key] is None:
-                    return None
-
-                for sequence_align in sequence_align_dic[key]:
+                for sequence_align in sequence_aligns:
 
                     if sequence_align['ref_chain_id'] == nmr_chain_id and sequence_align['test_chain_id'] == cif_chain_id:
 
@@ -947,17 +936,14 @@ class NmrDpReport:
         """ Retrieve sequence alignment (model vs nmr) of a given coordinate chain_id.
         """
 
-        chain_assign_dic = self.chain_assignment.get()
-
         key = 'model_poly_seq_vs_nmr_poly_seq'
 
-        if not key in chain_assign_dic:
+        chain_assigns = self.getDictValue(self.chain_assignment.get(), key)
+
+        if chain_assigns is None:
             return None
 
-        if chain_assign_dic[key] is None:
-            return None
-
-        for chain_assign in chain_assign_dic[key]:
+        for chain_assign in chain_assigns:
 
             if chain_assign['ref_chain_id'] == cif_chain_id:
 
@@ -966,15 +952,12 @@ class NmrDpReport:
 
                 nmr_chain_id = chain_assign['test_chain_id']
 
-                sequence_align_dic = self.sequence_alignment.get()
+                sequence_aligns = self.getDictValue(self.sequence_alignment.get(), key)
 
-                if not key in sequence_align_dic:
+                if sequence_aligns is None:
                     return None
 
-                if sequence_align_dic[key] is None:
-                    return None
-
-                for sequence_align in sequence_align_dic[key]:
+                for sequence_align in sequence_aligns:
 
                     if sequence_align['ref_chain_id'] == cif_chain_id and sequence_align['test_chain_id'] == nmr_chain_id:
 
@@ -989,17 +972,12 @@ class NmrDpReport:
         """ Retrieve coordinate polymer sequence corresponding to a given NMR chain_id.
         """
 
-        chain_assign_dic = self.chain_assignment.get()
+        chain_assigns = self.getDictValue(self.chain_assignment.get(), 'nmr_poly_seq_vs_model_poly_seq')
 
-        key = 'nmr_poly_seq_vs_model_poly_seq'
-
-        if not key in chain_assign_dic:
+        if chain_assigns is None:
             return None
 
-        if chain_assign_dic[key] is None:
-            return None
-
-        for chain_assign in chain_assign_dic[key]:
+        for chain_assign in chain_assigns:
 
             if chain_assign['ref_chain_id'] == nmr_chain_id:
                 return self.getModelPolymerSequenceOf(chain_assign['test_chain_id'])
@@ -1015,21 +993,18 @@ class NmrDpReport:
 
         chain_assign_dic = self.chain_assignment.get()
 
-        key = 'model_poly_seq_vs_nmr_poly_seq'
+        chain_assigns = self.getDictValue(chain_assign_dic, 'model_poly_seq_vs_nmr_poly_seq')
 
-        if not key in chain_assign_dic:
-            return None
-
-        if chain_assign_dic[key] is None:
+        if chain_assigns is None:
             return None
 
         if not fullSeqeucne:
 
-            _key = 'nmr_poly_seq_vs_model_poly_seq'
+            _chain_assigns = self.getDictValue(chain_assign_dic, 'nmr_poly_seq_vs_model_poly_seq')
 
-            if _key in chain_assign_dic and not chain_assign_dic[_key] is None:
+            if not _chain_assigns is None:
 
-                for _chain_assign in chain_assign_dic[_key]:
+                for _chain_assign in _chain_assigns:
 
                     if _chain_assign['test_chain_id'] == cif_chain_id:
 
@@ -1040,7 +1015,7 @@ class NmrDpReport:
 
                         break
 
-        for chain_assign in chain_assign_dic[key]:
+        for chain_assign in chain_assigns:
 
             if chain_assign['ref_chain_id'] == cif_chain_id:
                 return self.getNmrSeq1LetterCodeOf(chain_assign['test_chain_id'], fullSequence=fullSeqeucne, unmappedSeqId=unmappedSeqId)
@@ -1051,17 +1026,12 @@ class NmrDpReport:
         """ Retrieve coordinate polymer sequence (1-letter code) corresponding to a given NMR chain_id.
         """
 
-        chain_assign_dic = self.chain_assignment.get()
+        chain_assigns = self.getDictValue(self.chain_assignment.get(), 'nmr_poly_seq_vs_model_poly_seq')
 
-        key = 'nmr_poly_seq_vs_model_poly_seq'
-
-        if not key in chain_assign_dic:
+        if chain_assigns is None:
             return None
 
-        if chain_assign_dic[key] is None:
-            return None
-
-        for chain_assign in chain_assign_dic[key]:
+        for chain_assign in chain_assigns:
 
             if chain_assign['ref_chain_id'] == nmr_chain_id:
                 return self.getModelSeq1LetterCodeOf(chain_assign['test_chain_id'])

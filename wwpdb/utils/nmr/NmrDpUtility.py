@@ -4728,7 +4728,7 @@ class NmrDpUtility(object):
 
             if lp_counts[content_subtype] > 0 and content_type == 'nmr-restraints':
 
-                err = "The NMR restraint file contains assigned chemical shifts. Please re-upload the %s file as a NMR combined data." % file_type.upper();
+                err = "The NMR restraint file includes assigned chemical shifts. Please re-upload the %s file as an NMR combined data file." % file_type.upper();
 
                 self.report.error.appendDescription('content_mismatch', {'file_name': file_name, 'description': err})
                 self.report.setError()
@@ -4753,7 +4753,7 @@ class NmrDpUtility(object):
 
             if (lp_counts['dist_restraint'] > 0 or lp_counts['dihed_restraint'] or lp_counts['rdc_restraint']) and content_type == 'nmr-chemical-shifts':
 
-                err = "The assigned chemical shift file contains NMR restraints. Please re-upload the %s file as a NMR combined data." % file_type.upper();
+                err = "The assigned chemical shift file includes NMR restraints. Please re-upload the %s file as an NMR combined data file." % file_type.upper();
 
                 self.report.error.appendDescription('content_mismatch', {'file_name': file_name, 'description': err})
                 self.report.setError()
@@ -4778,7 +4778,7 @@ class NmrDpUtility(object):
 
             if lp_counts[content_subtype] > 0 and content_type == 'nmr-chemical-shifts':
 
-                err = "The assigned chemical shift file contains spectral peak lists. Please re-upload the %s file as a NMR combined data." % file_type.upper();
+                err = "The assigned chemical shift file includes spectral peak lists. Please re-upload the %s file as an NMR combined data file." % file_type.upper();
 
                 self.report.error.appendDescription('content_mismatch', {'file_name': file_name, 'description': err})
                 self.report.setError()

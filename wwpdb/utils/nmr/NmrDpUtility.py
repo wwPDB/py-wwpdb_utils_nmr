@@ -78,6 +78,7 @@
 # 12-May-2020  M. Yokochi - fix diselenide bond detection
 # 14-May-2020  M. Yokochi - fix error detection for missing mandatory content (DAOTHER-5681 and 5682)
 # 15-May-2020  M. Yokochi - add 'content_mismatch' error for NMR legacy deposition (DAOTHER-5687)
+# 15-May-2020  M. Yokochi - revise encouragement message if total number of models is less than 5 (DAOTHER-5650)
 ##
 """ Wrapper class for data processing for NMR data.
     @author: Masashi Yokochi
@@ -14411,8 +14412,8 @@ class NmrDpUtility(object):
 
                 return False
 
-            elif self.__total_models < 8:
-                warn = "Coordinate file %s has %s models. A sufficient number of models associated with its ensemble should be deposited." % (file_name, total_model)
+            elif self.__total_models < 5:
+                warn = "Coordinate file %s has %s models. We encourage you to deposit a sufficient number of models in the ensemble." % (file_name, total_model)
 
                 self.report.warning.appendDescription('encouragement', {'file_name': file_name, 'description': warn})
                 self.report.setWarning()

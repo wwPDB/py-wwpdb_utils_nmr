@@ -7616,6 +7616,9 @@ class NmrDpUtility(object):
 
         for fileListId in range(self.__file_path_list_len):
 
+            if self.__star_data_type[fileListId] == 'Loop':
+                continue
+
             input_source = self.report.input_sources[fileListId]
             input_source_dic = input_source.get()
 
@@ -9366,6 +9369,9 @@ class NmrDpUtility(object):
         __errors = self.report.getTotalErrors()
 
         for fileListId in range(self.__file_path_list_len):
+
+            if self.__star_data_type[fileListId] == 'Loop':
+                continue
 
             input_source = self.report.input_sources[fileListId]
             input_source_dic = input_source.get()

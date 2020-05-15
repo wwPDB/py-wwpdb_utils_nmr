@@ -33,6 +33,7 @@
 # 28-Apr-2020  M. Yokochi - fix 'NOE? (To be decided)' to be 'NOE' (DAOTHER-5626)
 # 29-Apr-2020  M. Yokochi - sort 'conflicted_data' and 'inconsistent_data' items (DAOTHER-5622)
 # 13-May-2020  M. Yokochi - avoid system crash when format issue occurs (DAOTHER-5673)
+# 15-May-2020  M. Yokochi - ignore 'disordered_index' warning (DAOTHER-5485)
 ##
 """ Wrapper class for data processing report of NMR data.
     @author: Masashi Yokochi
@@ -1292,7 +1293,7 @@ class NmrDpReport:
 
         if not self.__immutable:
 
-            ignorable_warning_types = ['auth_atom_nomenclature_mismatch', 'ccd_mismatch', 'enum_mismatch_ignorable', 'skipped_saveframe_category', 'skipped_loop_category',
+            ignorable_warning_types = ['auth_atom_nomenclature_mismatch', 'ccd_mismatch', 'disordered_index', 'enum_mismatch_ignorable', 'skipped_saveframe_category', 'skipped_loop_category',
                                        'anomalous_chemical_shift', 'unusual_chemical_shift',
                                        'anomalous_data', 'unusual_data', 'remarkable_data', 'insufficient_data', 'conflicted_data', 'inconsistent_data',
                                        'total']

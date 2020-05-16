@@ -79,6 +79,7 @@
 # 14-May-2020  M. Yokochi - fix error detection for missing mandatory content (DAOTHER-5681 and 5682)
 # 15-May-2020  M. Yokochi - add 'content_mismatch' error for NMR legacy deposition (DAOTHER-5687)
 # 15-May-2020  M. Yokochi - revise encouragement message if total number of models is less than 5 (DAOTHER-5650)
+# 16-May-2020  M. Yokochi - block NEF file upload in NMR legacy deposition (DAOTHER-5687)
 ##
 """ Wrapper class for data processing for NMR data.
     @author: Masashi Yokochi
@@ -106,7 +107,7 @@ from wwpdb.utils.align.alignlib import PairwiseAlign
 from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
 from wwpdb.utils.config.ConfigInfo import ConfigInfo, getSiteId
 from wwpdb.utils.nmr.io.ChemCompIo import ChemCompReader
-from wwpdb.utils.nmr.CifReader import CifReader
+from wwpdb.utils.nmr.io.CifReader import CifReader
 
 def probability_density(value, mean, stddev):
     """ Return probability density.
@@ -117,7 +118,7 @@ def probability_density(value, mean, stddev):
     return math.exp(-((value - mean) ** 2.0) / (2.0 * stddev2)) / math.sqrt(2.0 * math.pi * stddev2)
 
 def to_np_array(a):
-    """ Return Numpy array of a give Cartesian coordinate in {'x': float, 'y': float, 'z': float} format.
+    """ Return Numpy array of a given Cartesian coordinate in {'x': float, 'y': float, 'z': float} format.
     """
 
     return np.asarray([a['x'], a['y'], a['z']])
@@ -2851,7 +2852,7 @@ class NmrDpUtility(object):
 
                 input_source = self.report.input_sources[csListId]
 
-                file_type = 'nef' if 'nef' in self.__op else 'nmr-star'
+                file_type = 'nmr-star' # 'nef' in self.__op else 'nmr-star' # DAOTHER-5673
 
                 input_source.setItemValue('file_name', os.path.basename(csPath))
                 input_source.setItemValue('file_type', file_type)
@@ -2869,7 +2870,7 @@ class NmrDpUtility(object):
 
                     input_source = self.report.input_sources[file_path_list_len]
 
-                    file_type = 'nef' if 'nef' in self.__op else 'nmr-star'
+                    file_type = 'nmr-star' # 'nef' if 'nef' in self.__op else 'nmr-star' # DAOTHER-5673
 
                     input_source.setItemValue('file_name', os.path.basename(mrPath))
                     input_source.setItemValue('file_type', file_type)
@@ -3047,7 +3048,10 @@ class NmrDpUtility(object):
                                 if not 'No such file or directory' in err_message:
                                     err += ' ' + re.sub('not in list', 'unknown item.', err_message)
 
-                        self.report.error.appendDescription('format_issue', {'file_name': file_name, 'description': err})
+                        if _file_type == 'nef': # DAOTHER-5673
+                            err += " Please re-upload the %s file as an NMR combined data file." % _file_type.upper();
+
+                        self.report.error.appendDescription('content_mismatch' if _file_type == 'nef' else 'format_issue', {'file_name': file_name, 'description': err})
                         self.report.setError()
 
                         if self.__verbose:
@@ -3123,7 +3127,10 @@ class NmrDpUtility(object):
                                     if not 'No such file or directory' in err_message:
                                         err += ' ' + re.sub('not in list', 'unknown item.', err_message)
 
-                            self.report.error.appendDescription('format_issue', {'file_name': file_name, 'description': err})
+                            if _file_type == 'nef': # DAOTHER-5673
+                                err += " Please re-upload the %s file as an NMR combined data file." % _file_type.upper();
+
+                            self.report.error.appendDescription('content_mismatch' if _file_type == 'nef' else 'format_issue', {'file_name': file_name, 'description': err})
                             self.report.setError()
 
                             if self.__verbose:
@@ -3200,8 +3207,8 @@ class NmrDpUtility(object):
 
         len_tmp_paths = len(tmpPaths)
 
-        datablock_pattern = re.compile(r'\s*data_\S*\s*')
-        sf_anonymous_pattern = re.compile(r'\s*save_\S*\s*')
+        datablock_pattern = re.compile(r'\s*data_\S+\s*')
+        sf_anonymous_pattern = re.compile(r'\s*save_\S+\s*')
         save_pattern = re.compile(r'\s*save_\s*')
         loop_pattern = re.compile(r'\s*loop_\s*')
         stop_pattern = re.compile(r'\s*stop_\s*')

@@ -28,7 +28,7 @@ import numpy as np
 import random
 
 def to_np_array(a):
-    """ Return Numpy array of a give Cartesian coordinate in {'x': float, 'y': float, 'z': float} format.
+    """ Return Numpy array of a given Cartesian coordinate in {'x': float, 'y': float, 'z': float} format.
     """
 
     return np.asarray([a['x'], a['y'], a['z']])
@@ -155,7 +155,7 @@ class CifReader(object):
         return ok
 
     def hasCategory(self, catName):
-        """ Return whether a give category exists.
+        """ Return whether a given category exists.
         """
 
         if self.__dBlock is None:

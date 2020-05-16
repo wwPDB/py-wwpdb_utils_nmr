@@ -2970,14 +2970,14 @@ class NmrDpUtility(object):
 
                 if _file_type != file_type:
 
-                    err = "%s was selected as %s file, but recognized as %s file." % (file_name, self.readable_file_type[file_type], self.readable_file_type[_file_type])
+                    err = "%s was selected as %s file, but recognized as %s file. Please re-upload the file." % (file_name, self.readable_file_type[file_type], self.readable_file_type[_file_type])
 
                     if len(message['error']) > 0:
                         for err_message in message['error']:
                             if not 'No such file or directory' in err_message:
                                 err += ' ' + re.sub('not in list', 'unknown item.', err_message)
 
-                    self.report.error.appendDescription('format_issue', {'file_name': file_name, 'description': err})
+                    self.report.error.appendDescription('content_mismatch', {'file_name': file_name, 'description': err})
                     self.report.setError()
 
                     if self.__verbose:
@@ -3043,15 +3043,17 @@ class NmrDpUtility(object):
 
                         err = "%s was selected as %s file, but recognized as %s file." % (file_name, self.readable_file_type[file_type], self.readable_file_type[_file_type])
 
+                        if _file_type == 'nef': # DAOTHER-5673
+                            err += " Please re-upload the NEF file as an NMR combined data file."
+                        else:
+                            err += " Please re-upload the file."
+
                         if len(message['error']) > 0:
                             for err_message in message['error']:
                                 if not 'No such file or directory' in err_message:
                                     err += ' ' + re.sub('not in list', 'unknown item.', err_message)
 
-                        if _file_type == 'nef': # DAOTHER-5673
-                            err += " Please re-upload the %s file as an NMR combined data file." % _file_type.upper();
-
-                        self.report.error.appendDescription('content_mismatch' if _file_type == 'nef' else 'format_issue', {'file_name': file_name, 'description': err})
+                        self.report.error.appendDescription('content_mismatch', {'file_name': file_name, 'description': err})
                         self.report.setError()
 
                         if self.__verbose:
@@ -3122,15 +3124,17 @@ class NmrDpUtility(object):
 
                             err = "%s was selected as %s file, but recognized as %s file." % (file_name, self.readable_file_type[file_type], self.readable_file_type[_file_type])
 
+                            if _file_type == 'nef': # DAOTHER-5673
+                                err += " Please re-upload the NEF file as an NMR combined data file."
+                            else:
+                                err += " Please re-upload the file."
+
                             if len(message['error']) > 0:
                                 for err_message in message['error']:
                                     if not 'No such file or directory' in err_message:
                                         err += ' ' + re.sub('not in list', 'unknown item.', err_message)
 
-                            if _file_type == 'nef': # DAOTHER-5673
-                                err += " Please re-upload the %s file as an NMR combined data file." % _file_type.upper();
-
-                            self.report.error.appendDescription('content_mismatch' if _file_type == 'nef' else 'format_issue', {'file_name': file_name, 'description': err})
+                            self.report.error.appendDescription('content_mismatch', {'file_name': file_name, 'description': err})
                             self.report.setError()
 
                             if self.__verbose:
@@ -3949,14 +3953,14 @@ class NmrDpUtility(object):
 
             if _file_type != file_type:
 
-                err = "%s was selected as %s file, but recognized as %s file." % (file_name, self.readable_file_type[file_type], self.readable_file_type[_file_type])
+                err = "%s was selected as %s file, but recognized as %s file. Please re-upload the file." % (file_name, self.readable_file_type[file_type], self.readable_file_type[_file_type])
 
                 if len(message['error']) > 0:
                     for err_message in message['error']:
                         if not 'No such file or directory' in err_message:
                             err += ' ' + re.sub('not in list', 'unknown item.', err_message)
 
-                self.report.error.appendDescription('format_issue', {'file_name': file_name, 'description': err})
+                self.report.error.appendDescription('content_mismatch', {'file_name': file_name, 'description': err})
                 self.report.setError()
 
                 if self.__verbose:
@@ -4726,7 +4730,7 @@ class NmrDpUtility(object):
                 sf_category = self.sf_categories[file_type][content_subtype]
                 lp_category = self.lp_categories[file_type][content_subtype]
 
-                err = "The mandatory saveframe with a category '%s' is missing, Deposition of assigned chemical shifts is mandatory. Please re-upload the %s file." % (sf_category, file_type.upper());
+                err = "The mandatory saveframe with a category '%s' is missing, Deposition of assigned chemical shifts is mandatory. Please re-upload the %s file." % (sf_category, file_type.upper())
 
                 self.report.error.appendDescription('missing_mandatory_content', {'file_name': file_name, 'description': err})
                 self.report.setError()
@@ -4736,7 +4740,7 @@ class NmrDpUtility(object):
 
             if lp_counts[content_subtype] > 0 and content_type == 'nmr-restraints':
 
-                err = "The NMR restraint file includes assigned chemical shifts. Please re-upload the %s file as an NMR combined data file." % file_type.upper();
+                err = "The NMR restraint file includes assigned chemical shifts. Please re-upload the %s file as an NMR combined data file." % file_type.upper()
 
                 self.report.error.appendDescription('content_mismatch', {'file_name': file_name, 'description': err})
                 self.report.setError()
@@ -4751,7 +4755,7 @@ class NmrDpUtility(object):
                 sf_category = self.sf_categories[file_type][content_subtype]
                 lp_category = self.lp_categories[file_type][content_subtype]
 
-                err = "The mandatory saveframe with a category '%s' is missing, Deposition of distance restraints is mandatory. Please re-upload the %s file." % (sf_category, file_type.upper());
+                err = "The mandatory saveframe with a category '%s' is missing, Deposition of distance restraints is mandatory. Please re-upload the %s file." % (sf_category, file_type.upper())
 
                 self.report.error.appendDescription('missing_mandatory_content', {'file_name': file_name, 'description': err})
                 self.report.setError()
@@ -4761,7 +4765,7 @@ class NmrDpUtility(object):
 
             if (lp_counts['dist_restraint'] > 0 or lp_counts['dihed_restraint'] or lp_counts['rdc_restraint']) and content_type == 'nmr-chemical-shifts':
 
-                err = "The assigned chemical shift file includes NMR restraints. Please re-upload the %s file as an NMR combined data file." % file_type.upper();
+                err = "The assigned chemical shift file includes NMR restraints. Please re-upload the %s file as an NMR combined data file." % file_type.upper()
 
                 self.report.error.appendDescription('content_mismatch', {'file_name': file_name, 'description': err})
                 self.report.setError()
@@ -4786,7 +4790,7 @@ class NmrDpUtility(object):
 
             if lp_counts[content_subtype] > 0 and content_type == 'nmr-chemical-shifts':
 
-                err = "The assigned chemical shift file includes spectral peak lists. Please re-upload the %s file as an NMR combined data file." % file_type.upper();
+                err = "The assigned chemical shift file includes spectral peak lists. Please re-upload the %s file as an NMR combined data file." % file_type.upper()
 
                 self.report.error.appendDescription('content_mismatch', {'file_name': file_name, 'description': err})
                 self.report.setError()

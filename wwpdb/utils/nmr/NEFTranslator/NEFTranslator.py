@@ -4103,7 +4103,7 @@ class NEFTranslator(object):
             star_original_comp_id = star_tags.index('_Atom_chem_shift.Original_PDB_residue_name')
             star_original_atom_id = star_tags.index('_Atom_chem_shift.Original_PDB_atom_name')
 
-        index = 1;
+        index = 1
 
         for nef_chain in self.authChainId:
 
@@ -4162,7 +4162,7 @@ class NEFTranslator(object):
                                     out[star_tags.index(data_tag)] = data
 
                         if star_id_index >= 0:
-                            out[star_id_index] = index;
+                            out[star_id_index] = index
 
                         out[star_ambig_code_index] = ambiguity_code
                         out[star_ambig_set_id_index] = None

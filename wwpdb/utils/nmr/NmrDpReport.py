@@ -330,7 +330,7 @@ class NmrDpReport:
         content_subtype = 'dihed_restraint'
 
         if content_subtype in content_subtypes:
-            proteins = 0;
+            proteins = 0
             nucleic_acids = 0
             carbohydrates = 0
             others = 0
@@ -519,7 +519,7 @@ class NmrDpReport:
                 if stats is None:
                     continue
 
-                proteins = 0;
+                proteins = 0
                 nucleic_acids = 0
                 carbohydrates = 0
                 others = 0

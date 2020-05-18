@@ -12224,61 +12224,61 @@ class NmrDpUtility(object):
 
             elif (atom_id_1_ == 'O' and atom_id_2_ == 'H') or (atom_id_2_ == 'O' and atom_id_1_ == 'H'):
 
-                if target_value >= 1.5 and target_value <= 2.2:
+                if target_value >= 1.5 and target_value <= 2.3:
                     hydrogen_bond_type = 'O...H-x'
                     hydrogen_bond = True
                 elif target_value < 1.5:
                     hydrogen_bond_type = 'O...H-x (too close!)'
                     hydrogen_bond = True
-                elif target_value <= 3.4:
+                elif target_value <= 3.6:
                     hydrogen_bond_type = 'O...H-x (too far!)'
                     hydrogen_bond = True
 
             elif (atom_id_1_ == 'O' and atom_id_2_ == 'N') or (atom_id_2_ == 'O' and atom_id_1_ == 'N'):
 
-                if target_value >= 2.5 and target_value <= 3.2:
+                if target_value >= 2.5 and target_value <= 3.3:
                     hydrogen_bond_type = 'O...h-N'
                     hydrogen_bond = True
                 elif target_value < 2.5:
                     hydrogen_bond_type = 'O...h-N (too close!)'
                     hydrogen_bond = True
-                elif target_value <= 5.4:
+                elif target_value <= 5.6:
                     hydrogen_bond_type = 'O...h-N (too far!)'
                     hydrogen_bond = True
 
             elif (atom_id_1_ == 'O' and atom_id_2_ == 'O') or (atom_id_2_ == 'O' and atom_id_1_ == 'O'):
 
-                if target_value >= 2.5 and target_value <= 3.2:
+                if target_value >= 2.5 and target_value <= 3.3:
                     hydrogen_bond_type = 'O...h-O'
                     hydrogen_bond = True
                 elif target_value < 2.5:
                     hydrogen_bond_type = 'O...h-O (too close!)'
                     hydrogen_bond = True
-                elif target_value <= 5.4:
+                elif target_value <= 5.6:
                     hydrogen_bond_type = 'O...h-O (too far!)'
                     hydrogen_bond = True
 
             elif (atom_id_1_ == 'N' and atom_id_2_ == 'H') or (atom_id_2_ == 'N' and atom_id_1_ == 'H'):
 
-                if target_value >= 1.5 and target_value <= 2.2:
+                if target_value >= 1.5 and target_value <= 2.3:
                     hydrogen_bond_type = 'N...H-x'
                     hydrogen_bond = True
                 elif target_value < 1.5:
                     hydrogen_bond_type = 'N...H-x (too close!)'
                     hydrogen_bond = True
-                elif target_value <= 3.4:
+                elif target_value <= 3.6:
                     hydrogen_bond_type = 'N...H-x (too far!)'
                     hydrogen_bond = True
 
             elif (atom_id_1_ == 'N' and atom_id_2_ == 'N') or (atom_id_2_ == 'N' and atom_id_1_ == 'N'):
 
-                if target_value >= 2.5 and target_value <= 3.2:
+                if target_value >= 2.5 and target_value <= 3.3:
                     hydrogen_bond_type = 'N...h_N'
                     hydrogen_bond = True
                 elif target_value < 2.5:
                     hydrogen_bond_type = 'N...h_N (too close!)'
                     hydrogen_bond = True
-                elif target_value <= 5.4:
+                elif target_value <= 5.6:
                     hydrogen_bond_type = 'N...h_N (too far!)'
                     hydrogen_bond = True
 
@@ -20096,27 +20096,27 @@ class NmrDpUtility(object):
 
                 elif (atom_id_1_ == 'O' and atom_id_2_ == 'H') or (atom_id_2_ == 'O' and atom_id_1_ == 'H'):
 
-                    if target_value < 1.5 or target_value > 2.2:
+                    if target_value < 1.5 or target_value > 2.3:
                         return False
 
                 elif (atom_id_1_ == 'O' and atom_id_2_ == 'N') or (atom_id_2_ == 'O' and atom_id_1_ == 'N'):
 
-                    if target_value < 2.5 or target_value > 3.2:
+                    if target_value < 2.5 or target_value > 3.3:
                         return False
 
                 elif (atom_id_1_ == 'O' and atom_id_2_ == 'O') or (atom_id_2_ == 'O' and atom_id_1_ == 'O'):
 
-                    if target_value < 2.5 or target_value > 3.2:
+                    if target_value < 2.5 or target_value > 3.3:
                         return False
 
                 elif (atom_id_1_ == 'N' and atom_id_2_ == 'H') or (atom_id_2_ == 'N' and atom_id_1_ == 'H'):
 
-                    if target_value < 1.5 or target_value > 2.2:
+                    if target_value < 1.5 or target_value > 2.3:
                         return False
 
                 elif (atom_id_1_ == 'N' and atom_id_2_ == 'N') or (atom_id_2_ == 'N' and atom_id_1_ == 'N'):
 
-                    if target_value < 2.5 or target_value > 3.2:
+                    if target_value < 2.5 or target_value > 3.3:
                         return False
 
                 else:

@@ -4240,8 +4240,8 @@ class NmrDpUtility(object):
                         if self.__verbose:
                             self.__lfh.write("+NmrDpUtility.__rescueFormerNef() ++ LookupError  - %s" % err)
 
-                    for l, i in enumerate(loop):
-                        i.append(l + 1)
+                    for l, i in enumerate(loop, start=1):
+                        i.append(l)
 
                     loop.add_tag(lp_category + '.index')
 
@@ -16582,8 +16582,8 @@ class NmrDpUtility(object):
                     for tag in loop.tags:
                         new_loop.add_tag(lp_category + '.' + tag)
 
-                    for l, i in enumerate(loop.data):
-                        new_loop.add_data([str(l + 1)] + i)
+                    for l, i in enumerate(loop.data, start=1):
+                        new_loop.add_data([str(l)] + i)
 
                     del sf_data[loop]
 
@@ -21749,12 +21749,12 @@ class NmrDpUtility(object):
 
                 if len(ambig_set_ids) > 0:
 
-                    for l, ambig_set_id in enumerate(ambig_set_ids):
+                    for l, ambig_set_id in enumerate(ambig_set_ids, start=1):
 
                         if ambig_set_id in ambig_set_id_dic:
                             continue
 
-                        ambig_set_id_dic[ambig_set_id] = str(l + 1)
+                        ambig_set_id_dic[ambig_set_id] = str(l)
 
             disordered_ambig_set_id = False
 
@@ -21795,8 +21795,8 @@ class NmrDpUtility(object):
                 for tag in loop.tags:
                     new_loop.add_tag(lp_category + '.' + tag)
 
-                for l, i in enumerate(loop):
-                    new_loop.add_data([str(l + 1)] + i)
+                for l, i in enumerate(loop, start=1):
+                    new_loop.add_data([str(l)] + i)
 
                 del sf_data[loop]
 
@@ -21894,7 +21894,7 @@ class NmrDpUtility(object):
                     if self.__insert_entry_id_to_loops:
                         _loop.add_tag(aux_lp_cateogry + '.Entry_ID')
 
-                    for l, i in enumerate(lp_data):
+                    for l, i in enumerate(lp_data, start=1):
 
                         if ambig_set_id_name in i and not i[ambig_set_id_name] in self.empty_value:
 
@@ -21902,7 +21902,7 @@ class NmrDpUtility(object):
 
                             row.append(i[ambig_set_id_name])
                             row.append(i['Assigned_chem_shift_list_ID'])
-                            row.append(l + 1)
+                            row.append(l)
 
                             if self.__insert_entry_id_to_loops:
                                 row.append(self.__entry_id)

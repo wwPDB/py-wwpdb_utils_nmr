@@ -1,4 +1,4 @@
-#
+##
 # File: NmrStarToCif.py
 # Date: 03-Apr-2020
 #

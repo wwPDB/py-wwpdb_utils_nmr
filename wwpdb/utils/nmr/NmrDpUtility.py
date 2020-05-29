@@ -1,4 +1,4 @@
-#
+##
 # File: NmrDpUtility.py
 # Date: 26-Sep-2019
 #
@@ -485,6 +485,9 @@ class NmrDpUtility(object):
         self.vicinity_aromatic = 4.0
         # criterion for paramagnetic atom in the vicinity
         self.vicinity_paramagnetic = 8.0
+
+        # criterion for detection of not superimposed models
+        self.cutoff_rmsd = 3.5
 
         # magic angle in degrees
         self.magic_angle = 54.7356
@@ -14581,7 +14584,7 @@ class NmrDpUtility(object):
                         for r in rmsd:
                             model_id = r['model_id']
 
-                            if 'rmsd_in_well_defined_region' in r and r['rmsd_in_well_defined_region'] > 4.0:
+                            if 'rmsd_in_well_defined_region' in r and r['rmsd_in_well_defined_region'] > self.cutoff_rmsd:
                                 if not chain_id in not_superimposed_models:
                                     not_superimposed_models[chain_id] = [{'model_id': model_id, 'rmsd': r['rmsd_in_well_defined_region']}]
                                 else:

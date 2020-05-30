@@ -14431,8 +14431,9 @@ class NmrDpUtility(object):
 
             elif self.__total_models < 5:
                 warn = "Coordinate file %s has %s models. We encourage you to deposit a sufficient number of models in the ensemble." % (file_name, self.__total_models)
+
                 self.report.warning.appendDescription('encouragement', {'file_name': file_name, 'description': warn})
-                self.report.setWaring()
+                self.report.setWarning()
 
                 if self.__verbose:
                     self.__lfh.write("+NmrDpUtility.__parseCoordinate() ++ Warning  - %s\n" % warn)

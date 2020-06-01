@@ -81,6 +81,7 @@
 # 15-May-2020  M. Yokochi - revise encouragement message if total number of models is less than 5 (DAOTHER-5650)
 # 16-May-2020  M. Yokochi - block NEF file upload in NMR legacy deposition (DAOTHER-5687)
 # 30-May-2020  M. Yokochi - refer to atom_site to get total number of models (DAOTHER-5650)
+# 01-Jun-2020  M. Yokochi - let RMSD cutoff value configurable (DAOTHER-4060)
 ##
 """ Wrapper class for data processing for NMR data.
     @author: Masashi Yokochi
@@ -2742,6 +2743,18 @@ class NmrDpUtility(object):
                 self.__excl_missing_data = self.__inputParamDict['excl_missing_data'] in self.true_value
         elif not self.__combined_mode:
             self.__excl_missing_data = True
+
+        if 'rely_on_pdbx_nmr_ens' in self.__inputParamDict and not self.__inputParamDict['rely_on_pdbx_nmr_ens'] is None:
+            if type(self.__inputParamDict['rely_on_pdbx_nmr_ens']) is bool:
+                self.__rely_on_pdbx_nmr_ens = self.__inputParamDict['rely_on_pdbx_nmr_ens']
+            else:
+                self.__rely_on_pdbx_nmr_ens = self.__inputParamDict['rely_on_pdbx_nmr_ens'] in self.true_value
+        elif self.__release_mode:
+            self.__rely_on_pdbx_nmr_ens = True
+
+        if 'cutoff_rmsd' in self.__inputParamDict and not self.__inputParamDict['cutoff_rmsd'] is None:
+            if type(self.__inputParamDict['cutoff_rmsd']) is float:
+                self.cutoff_rmsd = self.__inputParamDict['cutoff_rmsd']
 
         if 'entry_id' in self.__outputParamDict and not self.__outputParamDict['entry_id'] is None:
             self.__entry_id = self.__outputParamDict['entry_id']

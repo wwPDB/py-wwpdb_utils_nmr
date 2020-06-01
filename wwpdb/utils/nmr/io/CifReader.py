@@ -74,9 +74,11 @@ class CifReader(object):
 
         # random rotation test for detection of non-superimposed models (DAOTHER-4060)
         self.__random_rotaion_test = False
+        self.__single_model_rotation_test = True
 
         if self.__random_rotaion_test:
             self.__lfh.write("+WARNING- CifReader.__init__() Enabled random rotation test\n")
+            self.__lfh.write("+WARNING- CifReader.__init__() Single model rotation test: %s\n" % self.__single_model_rotation_test)
 
     def parse(self, filePath):
         """ Set file path and parse CIF file, and set internal active data block if possible.
@@ -308,7 +310,10 @@ class CifReader(object):
                             randomM = {}
                             for model_id in range(1, total_models + 1):
                                 axis = [random.uniform(-1.0, 1.0), random.uniform(-1.0, 1.0), random.uniform(-1.0, 1.0)]
-                                theta = random.uniform(-np.pi, np.pi)
+                                if self.__single_model_rotation_test:
+                                    theta = 0.0 if model_id > 1 else np.pi / 4.0
+                                else:
+                                    theta = random.uniform(-np.pi, np.pi)
                                 randomM[model_id] = M(axis, theta)
 
                         if 'polypeptide' in type:
@@ -476,9 +481,9 @@ class CifReader(object):
             if mean_rmsd - _mean_rmsd > 0.2 or stddev_rmsd - _stddev_rmsd > 0.2:
                 self.__calculateFilteredRMSD(_ret, _mean_rmsd, _stddev_rmsd, item)
             elif len(item['filtered_stddev_rmsd']) > 2:
-               model = np.polyfit(item['filtered_stddev_rmsd'], item['filtered_mean_rmsd'], 2)
-               for y in [1.0]:
-                   item['rmsd_in_well_defined_region'] = float('{:.2f}'.format(model[2] + model[1] * y + model[0] * (y ** 2)))
+                model = np.polyfit(item['filtered_stddev_rmsd'], item['filtered_mean_rmsd'], 2)
+                for y in [1.0]:
+                    item['rmsd_in_well_defined_region'] = float('{:.2f}'.format(model[2] + model[1] * y + model[0] * (y ** 2)))
 
     def getDictListWithFilter(self, catName, dataItems, filterItems=None):
         """ Return a list of dictionaries of a given category with filter.

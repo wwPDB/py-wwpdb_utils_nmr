@@ -14432,7 +14432,7 @@ class NmrDpUtility(object):
                             self.__lfh.write("+NmrDpUtility.__parseCoordinate() ++ Error  - %s" % str(e))
 
             if self.__total_models < 2:
-                err = "Coordinate file %s has %s model. Deposition of minimized average structure must be accompanied with ensemble and must be homogeneous with the ensemble." % (file_name, 'no' if self.__total_models == 0 else ('only one' if self.__total_models == 1 else self.__total_models))
+                err = "Coordinate file has %s model. Deposition of minimized average structure must be accompanied with ensemble and must be homogeneous with the ensemble." % ('no' if self.__total_models == 0 else ('only one' if self.__total_models == 1 else self.__total_models))
 
                 self.report.error.appendDescription('missing_mandatory_content', {'file_name': file_name, 'description': err})
                 self.report.setError()
@@ -14443,7 +14443,7 @@ class NmrDpUtility(object):
                 return False
 
             elif self.__total_models < 5:
-                warn = "Coordinate file %s has %s models. We encourage you to deposit a sufficient number of models in the ensemble." % (file_name, self.__total_models)
+                warn = "Coordinate file has %s models. We encourage you to deposit a sufficient number of models in the ensemble." % (self.__total_models)
 
                 self.report.warning.appendDescription('encouragement', {'file_name': file_name, 'description': warn})
                 self.report.setWarning()

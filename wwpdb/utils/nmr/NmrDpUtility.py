@@ -82,6 +82,7 @@
 # 16-May-2020  M. Yokochi - block NEF file upload in NMR legacy deposition (DAOTHER-5687)
 # 30-May-2020  M. Yokochi - refer to atom_site to get total number of models (DAOTHER-5650)
 # 01-Jun-2020  M. Yokochi - let RMSD cutoff value configurable (DAOTHER-4060)
+# 05-Jun-2020  M. Yokochi - make compatible with wwpdb.utils.align.alignlib using Python 3 (DAOTHER-5766)
 ##
 """ Wrapper class for data processing for NMR data.
     @author: Masashi Yokochi
@@ -4051,10 +4052,10 @@ class NmrDpUtility(object):
         with open(in_file, 'rb') as f:
             raw = f.read(4)
 
-        for enc,boms in \
-                ('utf-8-sig',(codecs.BOM_UTF8)),\
-                ('utf-16',(codecs.BOM_UTF16_LE,codecs.BOM_UTF16_BE)),\
-                ('utf-32',(codecs.BOM_UTF32_LE,codecs.BOM_UTF32_BE)):
+        for enc, boms in \
+                ('utf-8-sig', (codecs.BOM_UTF8,)),\
+                ('utf-16', (codecs.BOM_UTF16_LE, codecs.BOM_UTF16_BE)),\
+                ('utf-32', (codecs.BOM_UTF32_LE, codecs.BOM_UTF32_BE)):
             if any(raw.startswith(bom) for bom in boms):
                 return enc
 
@@ -5929,9 +5930,11 @@ class NmrDpUtility(object):
                             conflict = 0
                             for i in range(length):
                                 myPr = myAlign[i]
-                                if myPr[0].encode() == '.' or myPr[1].encode() == '.':
+                                myPr0 = str(myPr[0])
+                                myPr1 = str(myPr[1])
+                                if myPr0 == '.' or myPr1 == '.':
                                     unmapped += 1
-                                elif myPr[0] != myPr[1]:
+                                elif myPr0 != myPr1:
                                     conflict += 1
 
                             if length == unmapped + conflict:
@@ -6018,7 +6021,7 @@ class NmrDpUtility(object):
                 j = s2['seq_id'].index(i)
                 comp_ids.append(s2['comp_id'][j])
             else:
-                comp_ids.append('.') # blank comp id
+                comp_ids.append('.')
 
         return {'chain_id': s2['chain_id'], 'seq_id': seq_ids, 'comp_id': comp_ids}
 
@@ -6026,7 +6029,7 @@ class NmrDpUtility(object):
         """ Fill blanked comp ID in s2 against s1 with offset.
         """
 
-        seq_ids = range(s2['seq_id'][0] - offset, s2['seq_id'][-1] + 1)
+        seq_ids = list(range(s2['seq_id'][0] - offset, s2['seq_id'][-1] + 1))
         comp_ids = []
 
         for i in seq_ids:
@@ -6034,7 +6037,7 @@ class NmrDpUtility(object):
                 j = s2['seq_id'].index(i)
                 comp_ids.append(s2['comp_id'][j])
             else:
-                comp_ids.append('.') # blank comp id
+                comp_ids.append('.')
 
         return {'chain_id': s2['chain_id'], 'seq_id': seq_ids, 'comp_id': comp_ids}
 
@@ -7931,8 +7934,8 @@ class NmrDpUtility(object):
                             min_point = last_point - (sp_width if abs else 0.0)
                             max_point = first_point + (sp_width if abs else 0.0)
 
-                        min_points.append(min_point)
-                        max_points.append(max_point)
+                        min_points.append(float('{:.7f}'.format(min_point)))
+                        max_points.append(float('{:.7f}'.format(max_point)))
 
                         break
 
@@ -9087,7 +9090,7 @@ class NmrDpUtility(object):
                             elif not cs_stat['primary'] and cs_stat['norm_freq'] < 0.03:
 
                                 warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] %s %s is remarkable assignment. Occurrence of %s in %s is %s %% according to BMRB.' %\
-                                       (value_name, value, atom_id, comp_id, cs_stat['norm_freq'] * 100.0)
+                                       (value_name, value, atom_id, comp_id, '{:.1f}'.format(cs_stat['norm_freq'] * 100.0))
 
                                 self.report.warning.appendDescription('remarkable_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
                                 self.report.setWarning()
@@ -14421,7 +14424,7 @@ class NmrDpUtility(object):
                                                                  ])
 
                         if len(coord) > 0:
-                            self.__total_models = max([c['model_id'] for c in coord])
+                            self.__total_models = len(set([c['model_id'] for c in coord]))
 
                     except Exception as e:
 
@@ -15059,9 +15062,11 @@ class NmrDpUtility(object):
                             conflict = 0
                             for i in range(length):
                                 myPr = myAlign[i]
-                                if myPr[0].encode() == '.' or myPr[1].encode() == '.':
+                                myPr0 = str(myPr[0])
+                                myPr1 = str(myPr[1])
+                                if myPr0 == '.' or myPr1 == '.':
                                     unmapped += 1
-                                elif myPr[0] != myPr[1]:
+                                elif myPr0 != myPr1:
                                     conflict += 1
 
                             if length == unmapped + conflict:
@@ -15137,10 +15142,12 @@ class NmrDpUtility(object):
 
                 for i in range(length):
                     myPr = myAlign[i]
-                    if myPr[0].encode() == '.' or myPr[1].encode() == '.':
+                    myPr0 = str(myPr[0])
+                    myPr1 = str(myPr[1])
+                    if myPr0 == '.' or myPr1 == '.':
                         aligned[i] = False
                         pass
-                    elif myPr[0] != myPr[1]:
+                    elif myPr0 != myPr1:
                         pass
                     else:
                         break
@@ -15153,14 +15160,16 @@ class NmrDpUtility(object):
                 conflict = 0
                 for i in range(length):
                     myPr = myAlign[i]
-                    if myPr[0].encode() == '.' or myPr[1].encode() == '.':
+                    myPr0 = str(myPr[0])
+                    myPr1 = str(myPr[1])
+                    if myPr0 == '.' or myPr1 == '.':
                         if not_aligned and not aligned[i]:
-                            if myPr[0].encode() == '.' and myPr[1].encode() != '.':
+                            if myPr0 == '.' and myPr1 != '.':
                                 offset_1 += 1
-                            if myPr[0].encode() != '.' and myPr[1].encode() == '.':
+                            if myPr0 != '.' and myPr1 == '.':
                                 offset_2 += 1
                         unmapped += 1
-                    elif myPr[0] != myPr[1]:
+                    elif myPr0 != myPr1:
                         conflict += 1
                     else:
                         not_aligned = False
@@ -15219,10 +15228,12 @@ class NmrDpUtility(object):
 
                 for i in range(length):
                     myPr = myAlign[i]
-                    if myPr[0].encode() == '.' or myPr[1].encode() == '.':
+                    myPr0 = str(myPr[0])
+                    myPr1 = str(myPr[1])
+                    if myPr0 == '.' or myPr1 == '.':
                         aligned[i] = False
                         pass
-                    elif myPr[0] != myPr[1]:
+                    elif myPr0 != myPr1:
                         pass
                     else:
                         break
@@ -15235,14 +15246,16 @@ class NmrDpUtility(object):
                 conflict = 0
                 for i in range(length):
                     myPr = myAlign[i]
-                    if myPr[0].encode() == '.' or myPr[1].encode() == '.':
+                    myPr0 = str(myPr[0])
+                    myPr1 = str(myPr[1])
+                    if myPr0 == '.' or myPr1 == '.':
                         if not_aligned and not aligned[i]:
-                            if myPr[0].encode() == '.' and myPr[1].encode() != '.':
+                            if myPr0 == '.' and myPr1 != '.':
                                 offset_1 += 1
-                            if myPr[0].encode() != '.' and myPr[1].encode() == '.':
+                            if myPr0 != '.' and myPr1 == '.':
                                 offset_2 += 1
                         unmapped += 1
-                    elif myPr[0] != myPr[1]:
+                    elif myPr0 != myPr1:
                         conflict += 1
                     else:
                         not_aligned = False
@@ -15424,8 +15437,7 @@ class NmrDpUtility(object):
 
                         j = 0
                         for i in range(length):
-                            myPr = myAlign[i]
-                            if myPr[0].encode() != '.':
+                            if str(myAlign[i][0]) != '.':
                                 seq_id1.append(s1['seq_id'][j])
                                 j += 1
                             else:
@@ -15433,8 +15445,7 @@ class NmrDpUtility(object):
 
                         j = 0
                         for i in range(length):
-                            myPr = myAlign[i]
-                            if myPr[1].encode() != '.':
+                            if str(myAlign[i][1]) != '.':
                                 seq_id2.append(s2['seq_id'][j])
                                 j += 1
                             else:
@@ -15442,20 +15453,24 @@ class NmrDpUtility(object):
 
                         for i in range(length):
                             myPr = myAlign[i]
-                            if myPr[0].encode() == '.' or myPr[1].encode() == '.':
+                            myPr0 = str(myPr[0])
+                            myPr1 = str(myPr[1])
+                            if myPr0 == '.' or myPr1 == '.':
                                 aligned[i] = False
                                 pass
-                            elif myPr[0] != myPr[1]:
+                            elif myPr0 != myPr1:
                                 pass
                             else:
                                 break
 
                         for i in reversed(range(length)):
                             myPr = myAlign[i]
-                            if myPr[0].encode() == '.' or myPr[1].encode() == '.':
+                            myPr0 = str(myPr[0])
+                            myPr1 = str(myPr[1])
+                            if myPr0 == '.' or myPr1 == '.':
                                 aligned[i] = False
                                 pass
-                            elif myPr[0] != myPr[1]:
+                            elif myPr0 != myPr1:
                                 pass
                             else:
                                 break
@@ -15469,8 +15484,8 @@ class NmrDpUtility(object):
                                 if myPr[0] == myPr[1]:
                                     continue
 
-                                cif_comp_id = myPr[0].encode()
-                                nmr_comp_id = myPr[1].encode()
+                                cif_comp_id = str(myPr[0])
+                                nmr_comp_id = str(myPr[1])
 
                                 if nmr_comp_id == '.' and cif_comp_id != '.':
                                     pass
@@ -15491,8 +15506,8 @@ class NmrDpUtility(object):
                             if myPr[0] == myPr[1]:
                                 continue
 
-                            cif_comp_id = myPr[0].encode()
-                            nmr_comp_id = myPr[1].encode()
+                            cif_comp_id = str(myPr[0])
+                            nmr_comp_id = str(myPr[1])
 
                             if nmr_comp_id == '.' and cif_comp_id != '.':
 
@@ -15717,8 +15732,7 @@ class NmrDpUtility(object):
 
                         j = 0
                         for i in range(length):
-                            myPr = myAlign[i]
-                            if myPr[0].encode() != '.':
+                            if str(myAlign[i][0]) != '.':
                                 seq_id1.append(s1['seq_id'][j])
                                 j += 1
                             else:
@@ -15726,8 +15740,7 @@ class NmrDpUtility(object):
 
                         j = 0
                         for i in range(length):
-                            myPr = myAlign[i]
-                            if myPr[1].encode() != '.':
+                            if str(myAlign[i][1]) != '.':
                                 seq_id2.append(s2['seq_id'][j])
                                 j += 1
                             else:
@@ -15735,20 +15748,24 @@ class NmrDpUtility(object):
 
                         for i in range(length):
                             myPr = myAlign[i]
-                            if myPr[0].encode() == '.' or myPr[1].encode() == '.':
+                            myPr0 = str(myPr[0])
+                            myPr1 = str(myPr[1])
+                            if myPr0 == '.' or myPr1 == '.':
                                 aligned[i] = False
                                 pass
-                            elif myPr[0] != myPr[1]:
+                            elif myPr0 != myPr1:
                                 pass
                             else:
                                 break
 
                         for i in reversed(range(length)):
                             myPr = myAlign[i]
-                            if myPr[0].encode() == '.' or myPr[1].encode() == '.':
+                            myPr0 = str(myPr[0])
+                            myPr1 = str(myPr[1])
+                            if myPr0 == '.' or myPr1 == '.':
                                 aligned[i] = False
                                 pass
-                            elif myPr[0] != myPr[1]:
+                            elif myPr0 != myPr1:
                                 pass
                             else:
                                 break
@@ -15756,10 +15773,10 @@ class NmrDpUtility(object):
                         for i in range(length):
                             myPr = myAlign[i]
                             if aligned[i]:
-                                if myPr[0].encode() == '.':
+                                if str(myPr[0]) == '.':
                                     if (not seq_id2[i] is None) and ((i > 0 and not seq_id2[i - 1] is None and seq_id2[i - 1] + 1 == seq_id2[i]) or (i + 1 < len(seq_id2) and not seq_id2[i + 1] is None and seq_id2[i + 1] - 1 == seq_id2[i])):
                                         aligned[i] = False
-                                if myPr[1].encode() == '.':
+                                if str(myPr[1]) == '.':
                                     if (not seq_id1[i] is None) and ((i > 0 and not seq_id1[i - 1] is None and seq_id1[i - 1] + 1 == seq_id1[i]) or (i + 1 < len(seq_id1) and not seq_id1[i + 1] is None and seq_id1[i + 1] - 1 == seq_id1[i])):
                                         aligned[i] = False
 
@@ -15772,8 +15789,8 @@ class NmrDpUtility(object):
                                 if myPr[0] == myPr[1]:
                                     continue
 
-                                nmr_comp_id = myPr[0].encode()
-                                cif_comp_id = myPr[1].encode()
+                                nmr_comp_id = str(myPr[0])
+                                cif_comp_id = str(myPr[1])
 
                                 if cif_comp_id == '.' and nmr_comp_id != '.':
                                     pass
@@ -15794,8 +15811,8 @@ class NmrDpUtility(object):
                             if myPr[0] == myPr[1]:
                                 continue
 
-                            nmr_comp_id = myPr[0].encode()
-                            cif_comp_id = myPr[1].encode()
+                            nmr_comp_id = str(myPr[0])
+                            cif_comp_id = str(myPr[1])
 
                             if cif_comp_id == '.' and nmr_comp_id != '.':
 

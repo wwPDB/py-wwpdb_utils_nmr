@@ -82,7 +82,8 @@
 # 16-May-2020  M. Yokochi - block NEF file upload in NMR legacy deposition (DAOTHER-5687)
 # 30-May-2020  M. Yokochi - refer to atom_site to get total number of models (DAOTHER-5650)
 # 01-Jun-2020  M. Yokochi - let RMSD cutoff value configurable (DAOTHER-4060)
-# 05-Jun-2020  M. Yokochi - make compatible with wwpdb.utils.align.alignlib using Python 3 (DAOTHER-5766)
+# 05-Jun-2020  M. Yokochi - be compatible with wwpdb.utils.align.alignlib using Python 3 (DAOTHER-5766)
+# 06-Jun-2020  M. Yokochi - be compatible with pynmrstar v3 (DAOTHER-5765)
 ##
 """ Wrapper class for data processing for NMR data.
     @author: Masashi Yokochi
@@ -91,7 +92,6 @@ import sys
 import os
 import os.path
 import pynmrstar
-import logging
 import json
 import itertools
 import copy
@@ -101,6 +101,7 @@ import math
 import codecs
 import shutil
 
+from packaging import version
 from munkres import Munkres
 import numpy as np
 
@@ -111,6 +112,164 @@ from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
 from wwpdb.utils.config.ConfigInfo import ConfigInfo, getSiteId
 from wwpdb.utils.nmr.io.ChemCompIo import ChemCompReader
 from wwpdb.utils.nmr.io.CifReader import CifReader
+
+__pynmrstar_v3__ = version.parse(pynmrstar.__version__) >= version.parse("3.0.0")
+
+def detect_bom(in_file, default='utf-8'):
+    """ Detect BOM of input file.
+    """
+
+    with open(in_file, 'rb') as f:
+        raw = f.read(4)
+
+    for enc, boms in \
+            ('utf-8-sig', (codecs.BOM_UTF8,)),\
+            ('utf-16', (codecs.BOM_UTF16_LE, codecs.BOM_UTF16_BE)),\
+            ('utf-32', (codecs.BOM_UTF32_LE, codecs.BOM_UTF32_BE)):
+        if any(raw.startswith(bom) for bom in boms):
+            return enc
+
+    return default
+
+def convert_codec(in_file, out_file, in_codec='utf-8', out_codec='utf-8'):
+    """ Convert codec of input file.
+    """
+
+    with open(in_file, 'rb') as ifp:
+        with open(out_file, 'w+b') as ofp:
+            contents = ifp.read()
+            ofp.write(contents.decode(in_codec).encode(out_codec))
+
+            ofp.close()
+
+        ifp.close()
+
+def has_key_value(dict=None, key=None):
+    """ Return whether a given dictionary has effective value for a key.
+        @return: True if dict[key] has effective value, False otherwise
+    """
+
+    if dict is None or key is None:
+        return False
+
+    if key in dict:
+        return not dict[key] is None
+
+    return False
+
+def get_tag(data, tag):
+    """ Return the selected tag by row as a list of lists.
+    """
+
+    return data.get_tag(tag) if __pynmrstar_v3__ else data.get_data_by_tag(tag)
+
+def get_first_tag(data=None, tag=None):
+    """ Return the first value of a given tag.
+        @return: The first tag value, empty string otherwise.
+    """
+
+    if data is None or tag is None:
+        return ''
+
+    array = get_tag(data, tag)
+
+    if len(array) == 0:
+        return ''
+
+    return array[0]
+
+def fill_blank_comp_id(s1, s2):
+    """ Fill blanked comp ID in s2 against s1.
+    """
+
+    seq_ids = sorted(set(s1['seq_id']) | set(s2['seq_id']))
+    comp_ids = []
+
+    for i in seq_ids:
+        if i in s2['seq_id']:
+            j = s2['seq_id'].index(i)
+            comp_ids.append(s2['comp_id'][j])
+        else:
+            comp_ids.append('.')
+
+    return {'chain_id': s2['chain_id'], 'seq_id': seq_ids, 'comp_id': comp_ids}
+
+def fill_blank_comp_id_with_offset(s1, s2, offset):
+    """ Fill blanked comp ID in s2 against s1 with offset.
+    """
+
+    seq_ids = list(range(s2['seq_id'][0] - offset, s2['seq_id'][-1] + 1))
+    comp_ids = []
+
+    for i in seq_ids:
+        if i in s2['seq_id']:
+            j = s2['seq_id'].index(i)
+            comp_ids.append(s2['comp_id'][j])
+        else:
+            comp_ids.append('.')
+
+    return {'chain_id': s2['chain_id'], 'seq_id': seq_ids, 'comp_id': comp_ids}
+
+def get_middle_code(ref_seq, test_seq):
+    """ Return array of middle code of sequence alignment.
+    """
+
+    array = ''
+
+    for i in range(len(ref_seq)):
+        if i < len(test_seq):
+            array += '|' if ref_seq[i] == test_seq[i] else ' '
+        else:
+            array += ' '
+
+    return array
+
+def get_gauge_code(seq_id):
+    """ Return gauge code for seq ID.
+    """
+
+    sid_len = len(seq_id)
+    code_len = 0
+
+    chars = []
+
+    for sid in seq_id:
+
+        if sid >= 0 and sid % 10 == 0 and code_len == 0:
+
+            code = str(sid)
+            code_len = len(code)
+
+            for j in range(code_len):
+                chars.append(code[j])
+
+        if code_len > 0:
+            code_len -= 1
+        else:
+            chars.append('-')
+
+    for t in range(sid_len // 10):
+        offset = (t + 1) * 10 - 1
+
+        code = ''
+
+        p = offset
+        while p < len(chars) and chars[p] != '-':
+            code += chars[p]
+            chars[p] = '-'
+            p += 1
+
+        code_len = len(code)
+
+        offset -= code_len - 1
+
+        if offset >= 0:
+            for j in range(code_len):
+                chars[offset + j] = code[j]
+
+    array = ''.join(chars)
+
+    return array[:sid_len]
 
 def probability_density(value, mean, stddev):
     """ Return probability density.
@@ -323,16 +482,12 @@ class NmrDpUtility(object):
         self.__nefT = NEFTranslator()
 
         if self.__nefT is None:
-
-            logging.error("+NmrDpUtility.__init__() ++ Error  - NEFTranslator is not available.")
             raise IOError("+NmrDpUtility.__init__() ++ Error  - NEFTranslator is not available.")
 
         # BMRB chemical shift statistics
         self.__csStat = BMRBChemShiftStat()
 
         if not self.__csStat.isOk():
-
-            logging.error("+NmrDpUtility.__init__() ++ Error  - BMRBChemShiftStat is not available.")
             raise IOError("+NmrDpUtility.__init__() ++ Error  - BMRBChemShiftStat is not available.")
 
         # PyNMRSTAR data
@@ -2597,7 +2752,6 @@ class NmrDpUtility(object):
             self.__srcPath = os.path.abspath(fPath)
 
         else:
-            logging.error("+NmrDpUtility.setSource() ++ Error  - Could not access to file path %s." % fPath)
             raise IOError("+NmrDpUtility.setSource() ++ Error  - Could not access to file path %s." % fPath)
 
     def setDestination(self, fPath):
@@ -2627,7 +2781,6 @@ class NmrDpUtility(object):
             elif type == 'file_list':
                 self.__inputParamDict[name] = [os.path.abspath(f) for f in value]
             else:
-                logging.error("+NmrDpUtility.addInput() ++ Error  - Unknown input type %s." % type)
                 raise ValueError("+NmrDpUtility.addInput() ++ Error  - Unknown input type %s." % type)
 
                 return False
@@ -2635,8 +2788,6 @@ class NmrDpUtility(object):
             return True
 
         except Exception as e:
-
-            logging.error("+NmrDpUtility.addInput() ++ Error  - %s" % str(e))
             raise ValueError("+NmrDpUtility.addInput() ++ Error  - %s" % str(e))
 
             return False
@@ -2654,7 +2805,6 @@ class NmrDpUtility(object):
             elif type == 'file_list':
                 self.__outputParamDict[name] = [os.path.abspath(f) for f in value]
             else:
-                logging.error("+NmrDpUtility.addOutput() ++ Error  - Unknown output type %s." % type)
                 raise ValueError("+NmrDpUtility.addOutput() ++ Error  - Unknown output type %s." % type)
 
                 return False
@@ -2662,8 +2812,6 @@ class NmrDpUtility(object):
             return True
 
         except Exception as e:
-
-            logging.error("+NmrDpUtility.addOutput() ++ Error  - %s" % str(e))
             raise ValueError("+NmrDpUtility.addOutput() ++ Error  - %s" % str(e))
 
             return False
@@ -2678,13 +2826,11 @@ class NmrDpUtility(object):
 
         if self.__combined_mode:
             if self.__srcPath is None:
-                logging.error("+NmrDpUtility.op() ++ Error  - No input provided for workflow operation %s." % op)
                 raise ValueError("+NmrDpUtility.op() ++ Error  - No input provided for workflow operation %s." % op)
         else:
             cs_file_path_list = 'chem_shift_file_path_list'
 
             if not cs_file_path_list in self.__inputParamDict:
-                logging.error("+NmrDpUtility.op() ++ Error  - No input provided for workflow operation %s." % op)
                 raise ValueError("+NmrDpUtility.op() ++ Error  - No input provided for workflow operation %s." % op)
 
             self.__cs_file_path_list_len = len(self.__inputParamDict[cs_file_path_list])
@@ -2702,7 +2848,6 @@ class NmrDpUtility(object):
             self.__lfh.write("+NmrDpUtility.op() starting op %s\n" % op)
 
         if not op in self.__workFlowOps:
-            logging.error("+NmrDpUtility.op() ++ Error  - Unknown workflow operation %s." % op)
             raise KeyError("+NmrDpUtility.op() ++ Error  - Unknown workflow operation %s." % op)
 
         if 'nonblk_anomalous_cs' in self.__inputParamDict and not self.__inputParamDict['nonblk_anomalous_cs'] is None:
@@ -2965,13 +3110,13 @@ class NmrDpUtility(object):
 
         if self.__combined_mode:
 
-            codec = self.__detectBOM(srcPath, 'utf-8')
+            codec = detect_bom(srcPath, 'utf-8')
 
             srcPath_ = None
 
             if codec != 'utf-8':
                 srcPath_ = srcPath + '~'
-                self.__convertCodec(srcPath, srcPath_, codec, 'utf-8')
+                convert_codec(srcPath, srcPath_, codec, 'utf-8')
                 srcPath = srcPath_
 
             is_valid, json_dumps = self.__nefT.validate_file(srcPath, 'A') # 'A' for NMR unified data, 'S' for assigned chemical shifts, 'R' for restraints.
@@ -3030,13 +3175,13 @@ class NmrDpUtility(object):
 
             for csListId, csPath in enumerate(self.__inputParamDict[cs_file_path_list]):
 
-                codec = self.__detectBOM(csPath, 'utf-8')
+                codec = detect_bom(csPath, 'utf-8')
 
                 csPath_ = None
 
                 if codec != 'utf-8':
                     csPath_ = csPath + '~'
-                    self.__convertCodec(csPath, csPath_, codec, 'utf-8')
+                    convert_codec(csPath, csPath_, codec, 'utf-8')
                     csPath = csPath_
 
                 is_valid, json_dumps = self.__nefT.validate_file(csPath, 'S') # 'A' for NMR unified data, 'S' for assigned chemical shifts, 'R' for restraints.
@@ -3111,13 +3256,13 @@ class NmrDpUtility(object):
 
                 for mrPath in self.__inputParamDict[mr_file_path_list]:
 
-                    codec = self.__detectBOM(mrPath, 'utf-8')
+                    codec = detect_bom(mrPath, 'utf-8')
 
                     mrPath_ = None
 
                     if codec != 'utf-8':
                         mrPath_ = mrPath + '~'
-                        self.__convertCodec(mrPath, mrPath_, codec, 'utf-8')
+                        convert_codec(mrPath, mrPath_, codec, 'utf-8')
                         mrPath = mrPath_
 
                     is_valid, json_dumps = self.__nefT.validate_file(mrPath, 'R') # 'A' for NMR unified data, 'S' for assigned chemical shifts, 'R' for restraints.
@@ -3378,9 +3523,12 @@ class NmrDpUtility(object):
             if self.__verbose:
                 self.__lfh.write("+NmrDpUtility.__validateInputSource() ++ Warning  - %s\n" % warn)
 
-            _msg_template = r"Cannot use keywords as data values unless quoted or semi-colon delineated. Perhaps this is a loop that wasn't properly terminated\? Illegal value:"
+            _msg_template = "Cannot use keywords as data values unless quoted or semi-colon delineated. Perhaps this is a loop that wasn't properly terminated\? Illegal value:"
 
-            msg_pattern = re.compile(r'^.*' + _msg_template + r".*, (\d+).*$")
+            if __pynmrstar_v3__:
+                msg_pattern = re.compile(r'^.*' + _msg_template + r".*on line (\d+).*$")
+            else:
+                msg_pattern = re.compile(r'^.*' + _msg_template + r".*, (\d+).*$")
 
             try:
 
@@ -3423,7 +3571,10 @@ class NmrDpUtility(object):
             if self.__verbose:
                 self.__lfh.write("+NmrDpUtility.__validateInputSource() ++ Warning  - %s\n" % warn)
 
-            msg_pattern = re.compile(r'^.*' + msg_template + r".*, (\d+).*$")
+            if __pynmrstar_v3__:
+                msg_pattern = re.compile(r'^.*' + msg_template + r".*on line (\d+).*$")
+            else:
+                msg_pattern = re.compile(r'^.*' + msg_template + r".*, (\d+).*$")
 
             try:
 
@@ -3509,7 +3660,10 @@ class NmrDpUtility(object):
             if self.__verbose:
                 self.__lfh.write("+NmrDpUtility.__validateInputSource() ++ Warning  - %s\n" % warn)
 
-            msg_pattern = re.compile(r'^.*' + msg_template + r".*, (\d+).*$")
+            if __pynmrstar_v3__:
+                msg_pattern = re.compile(r'^.*' + msg_template + r".*on line (\d+).*$")
+            else:
+                msg_pattern = re.compile(r'^.*' + msg_template + r".*, (\d+).*$")
 
             try:
 
@@ -3540,7 +3694,10 @@ class NmrDpUtility(object):
         except StopIteration:
             pass
 
-        msg_template = "The tag prefix was never set! Either the saveframe had no tags, you tried to read a version 2.1 file without setting ALLOW_V2_ENTRIES to True, or there is something else wrong with your file. Saveframe error occured:"
+        if __pynmrstar_v3__:
+            msg_template = "The tag prefix was never set! Either the saveframe had no tags, you tried to read a version 2.1 file, or there is something else wrong with your file. Saveframe error occurred within:"
+        else:
+            msg_template = "The tag prefix was never set! Either the saveframe had no tags, you tried to read a version 2.1 file without setting ALLOW_V2_ENTRIES to True, or there is something else wrong with your file. Saveframe error occured:"
 
         try:
 
@@ -4045,50 +4202,6 @@ class NmrDpUtility(object):
 
         return is_done
 
-    def __detectBOM(self, in_file, default='utf-8'):
-        """ Detect BOM of input file.
-        """
-
-        with open(in_file, 'rb') as f:
-            raw = f.read(4)
-
-        for enc, boms in \
-                ('utf-8-sig', (codecs.BOM_UTF8,)),\
-                ('utf-16', (codecs.BOM_UTF16_LE, codecs.BOM_UTF16_BE)),\
-                ('utf-32', (codecs.BOM_UTF32_LE, codecs.BOM_UTF32_BE)):
-            if any(raw.startswith(bom) for bom in boms):
-                return enc
-
-        return default
-
-    def __convertCodec(self, in_file, out_file, in_codec='utf-8', out_codec='utf-8'):
-        """ Convert codec of input file.
-        """
-
-        with open(in_file, 'rb') as ifp:
-            with open(out_file, 'w+b') as ofp:
-                contents = ifp.read()
-                ofp.write(contents.decode(in_codec).encode(out_codec))
-
-                ofp.close()
-
-            ifp.close()
-
-    def __getFirstTagValue(self, data=None, tag=None):
-        """ Return the first value of a given tag from PyNMRSTAR data.
-            @return: The first tag value, empty string otherwise.
-        """
-
-        if data is None or tag is None:
-            return ''
-
-        array = data.get_tag(tag)
-
-        if len(array) == 0:
-            return ''
-
-        return array[0]
-
     def __rescueFormerNef(self, file_list_id):
         """ Rescue former NEF version prior to 1.0.
         """
@@ -4113,7 +4226,7 @@ class NmrDpUtility(object):
 
                 for sf_data in self.__star_data[file_list_id].get_saveframes_by_category(sf_category):
 
-                    sf_framecode = self.__getFirstTagValue(sf_data, 'sf_framecode')
+                    sf_framecode = get_first_tag(sf_data, 'sf_framecode')
 
                     try:
                         self.__star_data[file_list_id].get_saveframe_by_name(sf_framecode)
@@ -4156,7 +4269,7 @@ class NmrDpUtility(object):
 
             for sf_data in self.__star_data[file_list_id].get_saveframes_by_category(sf_category):
 
-                version = sf_data.get_tag('format_version')[0]
+                version = get_tag(sf_data, 'format_version')[0]
 
                 if not version.startswith('0.'):
                     sf_data.format_version = '1.0'
@@ -4199,7 +4312,7 @@ class NmrDpUtility(object):
                     continue
 
                 sf_data = self.__star_data[file_list_id]
-                sf_framecode = self.__getFirstTagValue(sf_data, 'sf_framecode')
+                sf_framecode = get_first_tag(sf_data, 'sf_framecode')
 
                 self.__rescueFormerNef__(file_name, file_type, content_subtype, sf_data, sf_framecode, sf_category, lp_category)
 
@@ -4207,7 +4320,7 @@ class NmrDpUtility(object):
 
                 for sf_data in self.__star_data[file_list_id].get_saveframes_by_category(sf_category):
 
-                    sf_framecode = self.__getFirstTagValue(sf_data, 'sf_framecode')
+                    sf_framecode = get_first_tag(sf_data, 'sf_framecode')
 
                     self.__rescueFormerNef__(file_name, file_type, content_subtype, sf_data, sf_framecode, sf_category, lp_category)
 
@@ -4395,7 +4508,7 @@ class NmrDpUtility(object):
 
                 try:
 
-                    _num_dim = sf_data.get_tag(self.num_dim_items[file_type])[0]
+                    _num_dim = get_tag(sf_data, self.num_dim_items[file_type])[0]
                     num_dim = int(_num_dim)
 
                     if not num_dim in range(1, self.lim_num_dim):
@@ -4446,7 +4559,7 @@ class NmrDpUtility(object):
 
                 for sf_data in self.__star_data[file_list_id].get_saveframes_by_category(sf_category):
 
-                    sf_framecode = self.__getFirstTagValue(sf_data, 'sf_framecode')
+                    sf_framecode = get_first_tag(sf_data, 'sf_framecode')
 
                     try:
                         self.__star_data[file_list_id].get_saveframe_by_name(sf_framecode)
@@ -4519,7 +4632,7 @@ class NmrDpUtility(object):
                     continue
 
                 sf_data = self.__star_data[file_list_id]
-                sf_framecode = self.__getFirstTagValue(sf_data, 'sf_framecode')
+                sf_framecode = get_first_tag(sf_data, 'sf_framecode')
 
                 self.__rescueImmatureStr__(file_name, file_type, content_subtype, sf_data, sf_framecode, lp_category)
 
@@ -4527,7 +4640,7 @@ class NmrDpUtility(object):
 
                 for sf_data in self.__star_data[file_list_id].get_saveframes_by_category(sf_category):
 
-                    sf_framecode = self.__getFirstTagValue(sf_data, 'sf_framecode')
+                    sf_framecode = get_first_tag(sf_data, 'sf_framecode')
 
                     self.__rescueImmatureStr__(file_name, file_type, content_subtype, sf_data, sf_framecode, lp_category)
 
@@ -4871,7 +4984,7 @@ class NmrDpUtility(object):
 
             for sf_data in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
 
-                sf_framecode = self.__getFirstTagValue(sf_data, 'sf_framecode')
+                sf_framecode = get_first_tag(sf_data, 'sf_framecode')
 
                 try:
 
@@ -5071,7 +5184,7 @@ class NmrDpUtility(object):
 
             for content_subtype in self.nmr_content_subtypes:
 
-                if content_subtype in ['entry_info', 'poly_seq', 'entity'] or (not self.__hasKeyValue(input_source_dic['content_subtype'], content_subtype)):
+                if content_subtype in ['entry_info', 'poly_seq', 'entity'] or (not has_key_value(input_source_dic['content_subtype'], content_subtype)):
                     continue
 
                 poly_seq_list_set[content_subtype] = []
@@ -5093,7 +5206,7 @@ class NmrDpUtility(object):
                 elif self.__star_data_type[fileListId] == 'Saveframe':
 
                     sf_data = self.__star_data[fileListId]
-                    sf_framecode = self.__getFirstTagValue(sf_data, 'sf_framecode')
+                    sf_framecode = get_first_tag(sf_data, 'sf_framecode')
 
                     has_poly_seq |= self.__extractPolymerSequenceInLoop__(fileListId, file_name, file_type, content_subtype, sf_data, list_id, sf_framecode, lp_category, poly_seq_list_set)
 
@@ -5101,7 +5214,7 @@ class NmrDpUtility(object):
 
                     for sf_data in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
 
-                        sf_framecode = self.__getFirstTagValue(sf_data, 'sf_framecode')
+                        sf_framecode = get_first_tag(sf_data, 'sf_framecode')
 
                         has_poly_seq |= self.__extractPolymerSequenceInLoop__(fileListId, file_name, file_type, content_subtype, sf_data, list_id, sf_framecode, lp_category, poly_seq_list_set)
 
@@ -5298,19 +5411,6 @@ class NmrDpUtility(object):
 
         return has_poly_seq
 
-    def __hasKeyValue(self, dict=None, key=None):
-        """ Return whether a given dictionary has effective value for a key.
-            @return: True if dict[key] has effective value, False otherwise
-        """
-
-        if dict is None or key is None:
-            return False
-
-        if key in dict:
-            return not dict[key] is None
-
-        return False
-
     def __testSequenceConsistency(self):
         """ Perform sequence consistency test among extracted polymer sequences.
         """
@@ -5326,8 +5426,8 @@ class NmrDpUtility(object):
             file_name = input_source_dic['file_name']
             file_type = input_source_dic['file_type']
 
-            has_poly_seq = self.__hasKeyValue(input_source_dic, 'polymer_sequence')
-            has_poly_seq_in_loop = self.__hasKeyValue(input_source_dic, 'polymer_sequence_in_loop')
+            has_poly_seq = has_key_value(input_source_dic, 'polymer_sequence')
+            has_poly_seq_in_loop = has_key_value(input_source_dic, 'polymer_sequence_in_loop')
 
             if (not has_poly_seq) and (not has_poly_seq_in_loop):
                 continue
@@ -5493,8 +5593,8 @@ class NmrDpUtility(object):
             input_source = self.report.input_sources[fileListId]
             input_source_dic = input_source.get()
 
-            has_poly_seq = self.__hasKeyValue(input_source_dic, 'polymer_sequence')
-            has_poly_seq_in_loop = self.__hasKeyValue(input_source_dic, 'polymer_sequence_in_loop')
+            has_poly_seq = has_key_value(input_source_dic, 'polymer_sequence')
+            has_poly_seq_in_loop = has_key_value(input_source_dic, 'polymer_sequence_in_loop')
 
             # pass if poly_seq exists
             if has_poly_seq or (not has_poly_seq_in_loop):
@@ -5551,8 +5651,8 @@ class NmrDpUtility(object):
                 input_source = self.report.input_sources[fileListId]
                 input_source_dic = input_source.get()
 
-                has_poly_seq = self.__hasKeyValue(input_source_dic, 'polymer_sequence')
-                has_poly_seq_in_loop = self.__hasKeyValue(input_source_dic, 'polymer_sequence_in_loop')
+                has_poly_seq = has_key_value(input_source_dic, 'polymer_sequence')
+                has_poly_seq_in_loop = has_key_value(input_source_dic, 'polymer_sequence_in_loop')
 
                 # pass if poly_seq exists
                 if has_poly_seq or (not has_poly_seq_in_loop):
@@ -5592,7 +5692,7 @@ class NmrDpUtility(object):
             if set(tags) & set(loop.tags) != set(tags):
                 return False
 
-            dat = loop.get_data_by_tag(tags)
+            dat = get_tag(loop, tags)
 
             asm = [] # molecular assembly of a loop
 
@@ -5640,7 +5740,7 @@ class NmrDpUtility(object):
                 if set(_tags) & set(_loop.tags) != set(_tags):
                     return False
 
-                _dat = _loop.get_data_by_tag(_tags)
+                _dat = get_tag(_loop, _tags)
 
                 seq = set()
 
@@ -5718,12 +5818,12 @@ class NmrDpUtility(object):
             dat = []
 
             if set(tags) & set(loop.tags) == set(tags):
-                dat = loop.get_data_by_tag(tags)
+                dat = get_tag(loop, tags)
                 for i in dat:
                     if i[2] in self.empty_value:
                         i[2] = '1'
             elif set(tags_) & set(loop.tags) == set(tags_): # No Entity_ID tag case
-                dat = loop.get_data_by_tag(tags_)
+                dat = get_tag(loop, tags_)
                 for i in dat:
                     i.append('1')
 
@@ -5771,7 +5871,7 @@ class NmrDpUtility(object):
 
             content_subtype = 'poly_seq'
 
-            has_poly_seq = self.__hasKeyValue(input_source_dic, 'polymer_sequence')
+            has_poly_seq = has_key_value(input_source_dic, 'polymer_sequence')
 
             if not has_poly_seq:
                 continue
@@ -5789,7 +5889,7 @@ class NmrDpUtility(object):
             elif self.__star_data_type[fileListId] == 'Saveframe':
 
                 sf_data = self.__star_data[fileListId]
-                sf_framecode = self.__getFirstTagValue(sf_data, 'sf_framecode')
+                sf_framecode = get_first_tag(sf_data, 'sf_framecode')
 
                 self.__extractNonStandardResidue__(file_name, sf_data, sf_framecode, lp_category, input_source)
 
@@ -5797,7 +5897,7 @@ class NmrDpUtility(object):
 
                 for sf_data in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
 
-                    sf_framecode = self.__getFirstTagValue(sf_data, 'sf_framecode')
+                    sf_framecode = get_first_tag(sf_data, 'sf_framecode')
 
                     self.__extractNonStandardResidue__(file_name, sf_data, sf_framecode, lp_category, input_source)
 
@@ -5870,8 +5970,8 @@ class NmrDpUtility(object):
             input_source = self.report.input_sources[fileListId]
             input_source_dic = input_source.get()
 
-            has_poly_seq = self.__hasKeyValue(input_source_dic, 'polymer_sequence')
-            has_poly_seq_in_loop = self.__hasKeyValue(input_source_dic, 'polymer_sequence_in_loop')
+            has_poly_seq = has_key_value(input_source_dic, 'polymer_sequence')
+            has_poly_seq_in_loop = has_key_value(input_source_dic, 'polymer_sequence_in_loop')
 
             if not has_poly_seq:
                 """
@@ -5913,7 +6013,7 @@ class NmrDpUtility(object):
                             if chain_id != s2['chain_id']:
                                 continue
 
-                            _s2 = self.__fillBlankedCompId(s1, s2)
+                            _s2 = fill_blank_comp_id(s1, s2)
 
                             self.__pA.setReferenceSequence(s1['comp_id'], 'REF' + _chain_id)
                             self.__pA.addTestSequence(_s2['comp_id'], _chain_id)
@@ -5944,9 +6044,9 @@ class NmrDpUtility(object):
 
                             ref_code = self.__get1LetterCodeSequence(s1['comp_id'])
                             test_code = self.__get1LetterCodeSequence(_s2['comp_id'])
-                            mid_code = self.__getMiddleCode(ref_code, test_code)
-                            ref_gauge_code = self.__getGaugeCode(s1['seq_id'])
-                            test_gauge_code = self.__getGaugeCode(_s2['seq_id'])
+                            mid_code = get_middle_code(ref_code, test_code)
+                            ref_gauge_code = get_gauge_code(s1['seq_id'])
+                            test_gauge_code = get_gauge_code(_s2['seq_id'])
 
                             matched = mid_code.count('|')
 
@@ -6009,38 +6109,6 @@ class NmrDpUtility(object):
 
         return is_done
 
-    def __fillBlankedCompId(self, s1, s2):
-        """ Fill blanked comp ID in s2 against s1.
-        """
-
-        seq_ids = sorted(set(s1['seq_id']) | set(s2['seq_id']))
-        comp_ids = []
-
-        for i in seq_ids:
-            if i in s2['seq_id']:
-                j = s2['seq_id'].index(i)
-                comp_ids.append(s2['comp_id'][j])
-            else:
-                comp_ids.append('.')
-
-        return {'chain_id': s2['chain_id'], 'seq_id': seq_ids, 'comp_id': comp_ids}
-
-    def __fillBlankedCompIdWithOffset(self, s1, s2, offset):
-        """ Fill blanked comp ID in s2 against s1 with offset.
-        """
-
-        seq_ids = list(range(s2['seq_id'][0] - offset, s2['seq_id'][-1] + 1))
-        comp_ids = []
-
-        for i in seq_ids:
-            if i in s2['seq_id']:
-                j = s2['seq_id'].index(i)
-                comp_ids.append(s2['comp_id'][j])
-            else:
-                comp_ids.append('.')
-
-        return {'chain_id': s2['chain_id'], 'seq_id': seq_ids, 'comp_id': comp_ids}
-
     def __get1LetterCode(self, comp_id):
         """ Convert comp ID to 1-letter code.
         """
@@ -6065,67 +6133,6 @@ class NmrDpUtility(object):
 
         return array
 
-    def __getMiddleCode(self, ref_seq, test_seq):
-        """ Return array of middle code of sequence alignment.
-        """
-
-        array = ''
-
-        for i in range(len(ref_seq)):
-            if i < len(test_seq):
-                array += '|' if ref_seq[i] == test_seq[i] else ' '
-            else:
-                array += ' '
-
-        return array
-
-    def __getGaugeCode(self, seq_id):
-        """ Return gauge code for seq ID.
-        """
-
-        sid_len = len(seq_id)
-        code_len = 0
-
-        chars = []
-
-        for sid in seq_id:
-
-            if sid >= 0 and sid % 10 == 0 and code_len == 0:
-
-                code = str(sid)
-                code_len = len(code)
-
-                for j in range(code_len):
-                    chars.append(code[j])
-
-            if code_len > 0:
-                code_len -= 1
-            else:
-                chars.append('-')
-
-        for t in range(sid_len // 10):
-            offset = (t + 1) * 10 - 1
-
-            code = ''
-
-            p = offset
-            while p < len(chars) and chars[p] != '-':
-                code += chars[p]
-                chars[p] = '-'
-                p += 1
-
-            code_len = len(code)
-
-            offset -= code_len - 1
-
-            if offset >= 0:
-                for j in range(code_len):
-                    chars[offset + j] = code[j]
-
-        array = ''.join(chars)
-
-        return array[:sid_len]
-
     def __validateAtomNomenclature(self):
         """ Validate atom nomenclature using NEFTranslator and CCD.
         """
@@ -6141,7 +6148,7 @@ class NmrDpUtility(object):
             file_name = input_source_dic['file_name']
             file_type = input_source_dic['file_type']
 
-            has_poly_seq_in_loop = self.__hasKeyValue(input_source_dic, 'polymer_sequence_in_loop')
+            has_poly_seq_in_loop = has_key_value(input_source_dic, 'polymer_sequence_in_loop')
 
             if not has_poly_seq_in_loop:
                 continue
@@ -6163,7 +6170,7 @@ class NmrDpUtility(object):
                 elif self.__star_data_type[fileListId] == 'Saveframe':
 
                     sf_data = self.__star_data[fileListId]
-                    sf_framecode = self.__getFirstTagValue(sf_data, 'sf_framecode')
+                    sf_framecode = get_first_tag(sf_data, 'sf_framecode')
 
                     self.__validateAtomNomenclature__(file_name, file_type, content_subtype, sf_data, sf_framecode, lp_category)
 
@@ -6171,7 +6178,7 @@ class NmrDpUtility(object):
 
                     for sf_data in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
 
-                        sf_framecode = self.__getFirstTagValue(sf_data, 'sf_framecode')
+                        sf_framecode = get_first_tag(sf_data, 'sf_framecode')
 
                         self.__validateAtomNomenclature__(file_name, file_type, content_subtype, sf_data, sf_framecode, lp_category)
 
@@ -6558,7 +6565,7 @@ class NmrDpUtility(object):
                 elif self.__star_data_type[fileListId] == 'Saveframe':
 
                     sf_data = self.__star_data[fileListId]
-                    sf_framecode = self.__getFirstTagValue(sf_data, 'sf_framecode')
+                    sf_framecode = get_first_tag(sf_data, 'sf_framecode')
 
                     self.__fixAtomNomenclature__(fileListId, file_name, file_type, content_subtype, sf_data, sf_framecode, lp_category, comp_id, atom_id_conv_dict)
 
@@ -6566,7 +6573,7 @@ class NmrDpUtility(object):
 
                     for sf_data in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
 
-                        sf_framecode = self.__getFirstTagValue(sf_data, 'sf_framecode')
+                        sf_framecode = get_first_tag(sf_data, 'sf_framecode')
 
                         self.__fixAtomNomenclature__(fileListId, file_name, file_type, content_subtype, sf_data, sf_framecode, lp_category, comp_id, atom_id_conv_dict)
 
@@ -6589,7 +6596,7 @@ class NmrDpUtility(object):
 
             try:
 
-                _num_dim = sf_data.get_tag(self.num_dim_items[file_type])[0]
+                _num_dim = get_tag(sf_data, self.num_dim_items[file_type])[0]
                 num_dim = int(_num_dim)
 
                 if not num_dim in range(1, self.lim_num_dim):
@@ -6692,7 +6699,7 @@ class NmrDpUtility(object):
             elif self.__star_data_type[fileListId] == 'Saveframe':
 
                 sf_data = self.__star_data[fileListId]
-                sf_framecode = self.__getFirstTagValue(sf_data, 'sf_framecode')
+                sf_framecode = get_first_tag(sf_data, 'sf_framecode')
 
                 self.__validateAtomTypeOfCSLoop__(file_name, file_type, sf_data, sf_framecode, lp_category)
 
@@ -6700,7 +6707,7 @@ class NmrDpUtility(object):
 
                 for sf_data in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
 
-                    sf_framecode = self.__getFirstTagValue(sf_data, 'sf_framecode')
+                    sf_framecode = get_first_tag(sf_data, 'sf_framecode')
 
                     self.__validateAtomTypeOfCSLoop__(file_name, file_type, sf_data, sf_framecode, lp_category)
 
@@ -6868,7 +6875,7 @@ class NmrDpUtility(object):
             elif self.__star_data_type[fileListId] == 'Saveframe':
 
                 sf_data = self.__star_data[fileListId]
-                sf_framecode = self.__getFirstTagValue(sf_data, 'sf_framecode')
+                sf_framecode = get_first_tag(sf_data, 'sf_framecode')
 
                 self.__validateAmbigCodeOfCSLoop__(file_name, file_type, sf_data, sf_framecode, lp_category)
 
@@ -6876,7 +6883,7 @@ class NmrDpUtility(object):
 
                 for sf_data in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
 
-                    sf_framecode = self.__getFirstTagValue(sf_data, 'sf_framecode')
+                    sf_framecode = get_first_tag(sf_data, 'sf_framecode')
 
                     self.__validateAmbigCodeOfCSLoop__(file_name, file_type, sf_data, sf_framecode, lp_category)
 
@@ -6952,11 +6959,13 @@ class NmrDpUtility(object):
 
         except LookupError as e:
 
-            self.report.error.appendDescription('missing_mandatory_item', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': str(e).strip("'")})
-            self.report.setError()
+            if not __pynmrstar_v3__:
 
-            if self.__verbose:
-                self.__lfh.write("+NmrDpUtility.__testAmbigCodeOfCSLoop() ++ LookupError  - %s" % str(e))
+                self.report.error.appendDescription('missing_mandatory_item', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': str(e).strip("'")})
+                self.report.setError()
+
+                if self.__verbose:
+                    self.__lfh.write("+NmrDpUtility.__testAmbigCodeOfCSLoop() ++ LookupError  - %s" % str(e))
 
         except ValueError as e:
 
@@ -7047,7 +7056,7 @@ class NmrDpUtility(object):
                 elif self.__star_data_type[fileListId] == 'Saveframe':
 
                     sf_data = self.__star_data[fileListId]
-                    sf_framecode = self.__getFirstTagValue(sf_data, 'sf_framecode')
+                    sf_framecode = get_first_tag(sf_data, 'sf_framecode')
 
                     self.__testIndexConsistency__(file_name, sf_data, sf_framecode, lp_category, index_tag)
 
@@ -7055,7 +7064,7 @@ class NmrDpUtility(object):
 
                     for sf_data in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
 
-                        sf_framecode = self.__getFirstTagValue(sf_data, 'sf_framecode')
+                        sf_framecode = get_first_tag(sf_data, 'sf_framecode')
 
                         self.__testIndexConsistency__(file_name, sf_data, sf_framecode, lp_category, index_tag)
 
@@ -7178,7 +7187,7 @@ class NmrDpUtility(object):
                 elif self.__star_data_type[fileListId] == 'Saveframe':
 
                     sf_data = self.__star_data[fileListId]
-                    sf_framecode = self.__getFirstTagValue(sf_data, 'sf_framecode')
+                    sf_framecode = get_first_tag(sf_data, 'sf_framecode')
 
                     self.__testDataConsistencyInLoop__(fileListId, file_name, file_type, content_subtype, sf_data, sf_framecode, lp_category)
 
@@ -7186,7 +7195,7 @@ class NmrDpUtility(object):
 
                     for sf_data in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
 
-                        sf_framecode = self.__getFirstTagValue(sf_data, 'sf_framecode')
+                        sf_framecode = get_first_tag(sf_data, 'sf_framecode')
 
                         self.__testDataConsistencyInLoop__(fileListId, file_name, file_type, content_subtype, sf_data, sf_framecode, lp_category)
 
@@ -7203,7 +7212,7 @@ class NmrDpUtility(object):
 
             try:
 
-                _num_dim = sf_data.get_tag(self.num_dim_items[file_type])[0]
+                _num_dim = get_tag(sf_data, self.num_dim_items[file_type])[0]
                 num_dim = int(_num_dim)
 
                 if not num_dim in range(1, self.lim_num_dim):
@@ -7418,7 +7427,7 @@ class NmrDpUtility(object):
                     elif self.__star_data_type[fileListId] == 'Saveframe':
 
                         sf_data = self.__star_data[fileListId]
-                        sf_framecode = self.__getFirstTagValue(sf_data, 'sf_framecode')
+                        sf_framecode = get_first_tag(sf_data, 'sf_framecode')
 
                         self.__detectConflictDataInLoop__(file_name, file_type, content_subtype, sf_data, sf_framecode, lp_category)
 
@@ -7426,7 +7435,7 @@ class NmrDpUtility(object):
 
                         for sf_data in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
 
-                            sf_framecode = self.__getFirstTagValue(sf_data, 'sf_framecode')
+                            sf_framecode = get_first_tag(sf_data, 'sf_framecode')
 
                             self.__detectConflictDataInLoop__(file_name, file_type, content_subtype, sf_data, sf_framecode, lp_category)
 
@@ -7672,13 +7681,13 @@ class NmrDpUtility(object):
 
                 for sf_data in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
 
-                    sf_framecode = self.__getFirstTagValue(sf_data, 'sf_framecode')
+                    sf_framecode = get_first_tag(sf_data, 'sf_framecode')
 
                     if content_subtype == 'spectral_peak':
 
                         try:
 
-                            _num_dim = sf_data.get_tag(self.num_dim_items[file_type])[0]
+                            _num_dim = get_tag(sf_data, self.num_dim_items[file_type])[0]
                             num_dim = int(_num_dim)
 
                             if not num_dim in range(1, self.lim_num_dim):
@@ -8027,7 +8036,7 @@ class NmrDpUtility(object):
 
                 for sf_data in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
 
-                    sf_framecode = self.__getFirstTagValue(sf_data, 'sf_framecode')
+                    sf_framecode = get_first_tag(sf_data, 'sf_framecode')
 
                     if self.__combined_mode and sf_data.tag_prefix != self.sf_tag_prefixes[file_type][content_subtype]:
 
@@ -8284,7 +8293,7 @@ class NmrDpUtility(object):
             elif self.__star_data_type[fileListId] == 'Saveframe':
 
                 sf_data = self.__star_data[fileListId]
-                sf_framecode = self.__getFirstTagValue(sf_data, 'sf_framecode')
+                sf_framecode = get_first_tag(sf_data, 'sf_framecode')
 
                 add_details |= self.__validateCSValue__(fileListId, file_name, file_type, content_subtype, sf_data, sf_framecode, lp_category)
 
@@ -8292,7 +8301,7 @@ class NmrDpUtility(object):
 
                 for sf_data in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
 
-                    sf_framecode = self.__getFirstTagValue(sf_data, 'sf_framecode')
+                    sf_framecode = get_first_tag(sf_data, 'sf_framecode')
 
                     add_details |= self.__validateCSValue__(fileListId, file_name, file_type, content_subtype, sf_data, sf_framecode, lp_category)
 
@@ -9436,8 +9445,8 @@ class NmrDpUtility(object):
 
             for sf_data in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
 
-                sf_framecode = self.__getFirstTagValue(sf_data, 'sf_framecode')
-                cs_list = sf_data.get_tag(self.cs_list_sf_tag_name[file_type])[0]
+                sf_framecode = get_first_tag(sf_data, 'sf_framecode')
+                cs_list = get_tag(sf_data, self.cs_list_sf_tag_name[file_type])[0]
 
                 try:
 
@@ -9457,7 +9466,7 @@ class NmrDpUtility(object):
 
                 try:
 
-                    _num_dim = sf_data.get_tag(self.num_dim_items[file_type])[0]
+                    _num_dim = get_tag(sf_data, self.num_dim_items[file_type])[0]
                     num_dim = int(_num_dim)
 
                     if not num_dim in range(1, self.lim_num_dim):
@@ -9585,6 +9594,10 @@ class NmrDpUtility(object):
 
                         for i in lp_data:
                             for d in range(num_dim):
+
+                                if __pynmrstar_v3__ and not (chain_id_names[d] in i and seq_id_names[d] in i and comp_id_names[d] in i and atom_id_names[d] in i):
+                                    continue
+
                                 chain_id = i[chain_id_names[d]]
                                 if chain_id in self.empty_value:
                                     continue
@@ -9776,7 +9789,7 @@ class NmrDpUtility(object):
             elif self.__star_data_type[fileListId] == 'Saveframe':
 
                 sf_data = self.__star_data[fileListId]
-                sf_framecode = self.__getFirstTagValue(sf_data, 'sf_framecode')
+                sf_framecode = get_first_tag(sf_data, 'sf_framecode')
 
                 self.__testRDCVector__(file_name, file_type, content_subtype, sf_data, sf_framecode, lp_category)
 
@@ -9784,7 +9797,7 @@ class NmrDpUtility(object):
 
                 for sf_data in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
 
-                    sf_framecode = self.__getFirstTagValue(sf_data, 'sf_framecode')
+                    sf_framecode = get_first_tag(sf_data, 'sf_framecode')
 
                     self.__testRDCVector__(file_name, file_type, content_subtype, sf_data, sf_framecode, lp_category)
 
@@ -10003,7 +10016,7 @@ class NmrDpUtility(object):
                 elif self.__star_data_type[fileListId] == 'Saveframe':
 
                     sf_data = self.__star_data[fileListId]
-                    sf_framecode = self.__getFirstTagValue(sf_data, 'sf_framecode')
+                    sf_framecode = get_first_tag(sf_data, 'sf_framecode')
 
                     self.__calculateStatsOfExptlData__(fileListId, file_name, file_type, content_subtype, sf_data, list_id, sf_framecode, lp_category, seq_align_dic, asm)
 
@@ -10011,7 +10024,7 @@ class NmrDpUtility(object):
 
                     for sf_data in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
 
-                        sf_framecode = self.__getFirstTagValue(sf_data, 'sf_framecode')
+                        sf_framecode = get_first_tag(sf_data, 'sf_framecode')
 
                         self.__calculateStatsOfExptlData__(fileListId, file_name, file_type, content_subtype, sf_data, list_id, sf_framecode, lp_category, seq_align_dic, asm)
 
@@ -10032,7 +10045,7 @@ class NmrDpUtility(object):
 
         _list_id = list_id
         if file_type == 'nmr-star' and self.__combined_mode:
-            val = sf_data.get_tag('ID')
+            val = get_tag(sf_data, 'ID')
             if len(val) > 0:
                 _list_id = int(val[0])
 
@@ -10043,7 +10056,7 @@ class NmrDpUtility(object):
 
         if content_subtype == 'dist_restraint' or content_subtype == 'dihed_restraint' or content_subtype == 'rdc_restraint':
 
-            type = sf_data.get_tag('restraint_origin' if file_type == 'nef' else 'Constraint_type')
+            type = get_tag(sf_data, 'restraint_origin' if file_type == 'nef' else 'Constraint_type')
             if len(type) > 0 and not type[0] in self.empty_value:
                 ent['exp_type'] = type[0]
             else:
@@ -10051,7 +10064,7 @@ class NmrDpUtility(object):
 
         elif content_subtype == 'spectral_peak':
 
-            type = sf_data.get_tag('experiment_type' if file_type == 'nef' else 'Experiment_type')
+            type = get_tag(sf_data, 'experiment_type' if file_type == 'nef' else 'Experiment_type')
             if len(type) > 0 and not type[0] in self.empty_value:
                 ent['exp_type'] = type[0]
             else:
@@ -10237,7 +10250,7 @@ class NmrDpUtility(object):
 
                     try:
 
-                        _num_dim = sf_data.get_tag(self.num_dim_items[file_type])[0]
+                        _num_dim = get_tag(sf_data, self.num_dim_items[file_type])[0]
                         num_dim = int(_num_dim)
 
                         if not num_dim in range(1, self.lim_num_dim):
@@ -14247,14 +14260,19 @@ class NmrDpUtility(object):
                 has_assignment = True
 
                 for j in range(num_dim):
-                    chain_id = str(i[chain_id_names[j]])
-                    seq_id = i[seq_id_names[j]]
-                    comp_id = i[comp_id_names[j]]
-                    atom_id = i[atom_id_names[j]]
 
-                    if chain_id in self.empty_value or seq_id in self.empty_value or comp_id in self.empty_value or atom_id in self.empty_value:
-                        has_assignment = False
-                        break
+                    if __pynmrstar_v3__ and not (chain_id_names[j] in i and seq_id_names[j] in i and comp_id_names[j] in i and atom_id_names[j] in i):
+                        pass
+
+                    else:
+                        chain_id = str(i[chain_id_names[j]])
+                        seq_id = i[seq_id_names[j]]
+                        comp_id = i[comp_id_names[j]]
+                        atom_id = i[atom_id_names[j]]
+
+                        if chain_id in self.empty_value or seq_id in self.empty_value or comp_id in self.empty_value or atom_id in self.empty_value:
+                            has_assignment = False
+                            break
 
                 if has_assignment:
                     count['assigned_spectral_peaks'] += 1
@@ -14292,7 +14310,7 @@ class NmrDpUtility(object):
 
         seq_align_dic = self.report.sequence_alignment.get()
 
-        if not self.__hasKeyValue(seq_align_dic, 'nmr_poly_seq_vs_model_poly_seq'):
+        if not has_key_value(seq_align_dic, 'nmr_poly_seq_vs_model_poly_seq'):
             return nmr_struct_conf
 
         result = next((seq_align for seq_align in seq_align_dic['nmr_poly_seq_vs_model_poly_seq'] if seq_align['ref_chain_id'] == nmr_chain_id and seq_align['test_chain_id'] == cif_chain_id), None)
@@ -14785,7 +14803,7 @@ class NmrDpUtility(object):
 
         for content_subtype in self.cif_content_subtypes:
 
-            if content_subtype in ['entry_info', 'poly_seq'] or (not self.__hasKeyValue(input_source_dic['content_subtype'], content_subtype)):
+            if content_subtype in ['entry_info', 'poly_seq'] or (not has_key_value(input_source_dic['content_subtype'], content_subtype)):
                 continue
 
             poly_seq_list_set[content_subtype] = []
@@ -14880,8 +14898,8 @@ class NmrDpUtility(object):
         input_source = self.report.input_sources[id]
         input_source_dic = input_source.get()
 
-        has_poly_seq = self.__hasKeyValue(input_source_dic, 'polymer_sequence')
-        has_poly_seq_in_loop = self.__hasKeyValue(input_source_dic, 'polymer_sequence_in_loop')
+        has_poly_seq = has_key_value(input_source_dic, 'polymer_sequence')
+        has_poly_seq_in_loop = has_key_value(input_source_dic, 'polymer_sequence_in_loop')
 
         # pass if poly_seq exists
         if has_poly_seq or (not has_poly_seq_in_loop):
@@ -14948,7 +14966,7 @@ class NmrDpUtility(object):
         file_name = input_source_dic['file_name']
         file_type = input_source_dic['file_type']
 
-        has_poly_seq = self.__hasKeyValue(input_source_dic, 'polymer_sequence')
+        has_poly_seq = has_key_value(input_source_dic, 'polymer_sequence')
 
         if not has_poly_seq:
             return True
@@ -15008,8 +15026,8 @@ class NmrDpUtility(object):
         input_source = self.report.input_sources[id]
         input_source_dic = input_source.get()
 
-        has_poly_seq = self.__hasKeyValue(input_source_dic, 'polymer_sequence')
-        has_poly_seq_in_loop = self.__hasKeyValue(input_source_dic, 'polymer_sequence_in_loop')
+        has_poly_seq = has_key_value(input_source_dic, 'polymer_sequence')
+        has_poly_seq_in_loop = has_key_value(input_source_dic, 'polymer_sequence_in_loop')
 
         if not has_poly_seq:
             return False
@@ -15045,7 +15063,7 @@ class NmrDpUtility(object):
                             if chain_id != s2['chain_id']:
                                 continue
 
-                            _s2 = self.__fillBlankedCompId(s1, s2)
+                            _s2 = fill_blank_comp_id(s1, s2)
 
                             self.__pA.setReferenceSequence(s1['comp_id'], 'REF' + _chain_id)
                             self.__pA.addTestSequence(_s2['comp_id'], _chain_id)
@@ -15076,9 +15094,9 @@ class NmrDpUtility(object):
 
                             ref_code = self.__get1LetterCodeSequence(s1['comp_id'])
                             test_code = self.__get1LetterCodeSequence(_s2['comp_id'])
-                            mid_code = self.__getMiddleCode(ref_code, test_code)
-                            ref_gauge_code = self.__getGaugeCode(s1['seq_id'])
-                            test_gauge_code = self.__getGaugeCode(_s2['seq_id'])
+                            mid_code = get_middle_code(ref_code, test_code)
+                            ref_gauge_code = get_gauge_code(s1['seq_id'])
+                            test_gauge_code = get_gauge_code(_s2['seq_id'])
 
                             matched = mid_code.count('|')
 
@@ -15098,7 +15116,7 @@ class NmrDpUtility(object):
         nmr_input_source = self.report.input_sources[0]
         nmr_input_source_dic = nmr_input_source.get()
 
-        has_nmr_poly_seq = self.__hasKeyValue(nmr_input_source_dic, 'polymer_sequence')
+        has_nmr_poly_seq = has_key_value(nmr_input_source_dic, 'polymer_sequence')
 
         if not has_nmr_poly_seq:
             """ this will raise internal error if upload NEF file for nmr-str2str-deposit op for NMR-STAR file for nmr-nef2str-deposit
@@ -15177,16 +15195,16 @@ class NmrDpUtility(object):
                 if length == unmapped + conflict:
                     continue
 
-                _s1 = s1 if offset_1 == 0 else self.__fillBlankedCompIdWithOffset(s2, s1, offset_1)
-                _s2 = s2 if offset_2 == 0 else self.__fillBlankedCompIdWithOffset(s1, s2, offset_2)
+                _s1 = s1 if offset_1 == 0 else fill_blank_comp_id_with_offset(s2, s1, offset_1)
+                _s2 = s2 if offset_2 == 0 else fill_blank_comp_id_with_offset(s1, s2, offset_2)
 
                 ref_length = len(s1['seq_id'])
 
                 ref_code = self.__get1LetterCodeSequence(_s1['comp_id'])
                 test_code = self.__get1LetterCodeSequence(_s2['comp_id'])
-                mid_code = self.__getMiddleCode(ref_code, test_code)
-                ref_gauge_code = self.__getGaugeCode(_s1['seq_id'])
-                test_gauge_code = self.__getGaugeCode(_s2['seq_id'])
+                mid_code = get_middle_code(ref_code, test_code)
+                ref_gauge_code = get_gauge_code(_s1['seq_id'])
+                test_gauge_code = get_gauge_code(_s2['seq_id'])
 
                 matched = mid_code.count('|')
 
@@ -15263,16 +15281,16 @@ class NmrDpUtility(object):
                 if length == unmapped + conflict:
                     continue
 
-                _s1 = s1 if offset_1 == 0 else self.__fillBlankedCompIdWithOffset(s2, s1, offset_1)
-                _s2 = s2 if offset_2 == 0 else self.__fillBlankedCompIdWithOffset(s1, s2, offset_2)
+                _s1 = s1 if offset_1 == 0 else fill_blank_comp_id_with_offset(s2, s1, offset_1)
+                _s2 = s2 if offset_2 == 0 else fill_blank_comp_id_with_offset(s1, s2, offset_2)
 
                 ref_length = len(s1['seq_id'])
 
                 ref_code = self.__get1LetterCodeSequence(_s1['comp_id'])
                 test_code = self.__get1LetterCodeSequence(_s2['comp_id'])
-                mid_code = self.__getMiddleCode(ref_code, test_code)
-                ref_gauge_code = self.__getGaugeCode(_s1['seq_id'])
-                test_gauge_code = self.__getGaugeCode(_s2['seq_id'])
+                mid_code = get_middle_code(ref_code, test_code)
+                ref_gauge_code = get_gauge_code(_s1['seq_id'])
+                test_gauge_code = get_gauge_code(_s2['seq_id'])
 
                 matched = mid_code.count('|')
 
@@ -15302,7 +15320,7 @@ class NmrDpUtility(object):
 
         cif_file_name = cif_input_source_dic['file_name']
 
-        has_cif_poly_seq = self.__hasKeyValue(cif_input_source_dic, 'polymer_sequence')
+        has_cif_poly_seq = has_key_value(cif_input_source_dic, 'polymer_sequence')
 
         if not has_cif_poly_seq:
             return False
@@ -15316,7 +15334,7 @@ class NmrDpUtility(object):
 
             nmr_file_name = nmr_input_source_dic['file_name']
 
-            has_nmr_poly_seq = self.__hasKeyValue(nmr_input_source_dic, 'polymer_sequence')
+            has_nmr_poly_seq = has_key_value(nmr_input_source_dic, 'polymer_sequence')
 
             if not has_nmr_poly_seq:
                 """ this will raise internal error if upload NEF file for nmr-str2str-deposit op for NMR-STAR file for nmr-nef2str-deposit
@@ -15332,7 +15350,7 @@ class NmrDpUtility(object):
 
             seq_align_dic = self.report.sequence_alignment.get()
 
-            if self.__hasKeyValue(seq_align_dic, 'model_poly_seq_vs_nmr_poly_seq') and self.__hasKeyValue(seq_align_dic, 'nmr_poly_seq_vs_model_poly_seq'):
+            if has_key_value(seq_align_dic, 'model_poly_seq_vs_nmr_poly_seq') and has_key_value(seq_align_dic, 'nmr_poly_seq_vs_model_poly_seq'):
 
                 cif_polymer_sequence = cif_input_source_dic['polymer_sequence']
                 nmr_polymer_sequence = nmr_input_source_dic['polymer_sequence']
@@ -15578,14 +15596,14 @@ class NmrDpUtility(object):
 
                                     result['ref_code'] = ref_code
                                     result['ref_gauge_code'] = ref_gauge_code
-                                    result['mid_code'] = self.__getMiddleCode(ref_code, test_code)
+                                    result['mid_code'] = get_middle_code(ref_code, test_code)
 
                                     _test_code = _test_code[0:p] + '-' + _test_code[p:]
                                     _test_gauge_code = _test_gauge_code[0:p] + ' ' + _test_gauge_code[p:]
 
                                     _result['test_code'] = _test_code
                                     _result['test_gauge_code'] = _test_gauge_code
-                                    _result['mid_code'] = self.__getMiddleCode(_ref_code, _test_code)
+                                    _result['mid_code'] = get_middle_code(_ref_code, _test_code)
 
                                     offset_1 += 1
 
@@ -15613,14 +15631,14 @@ class NmrDpUtility(object):
 
                                     result['test_code'] = test_code
                                     result['test_gauge_code'] = test_gauge_code
-                                    result['mid_code'] = self.__getMiddleCode(ref_code, test_code)
+                                    result['mid_code'] = get_middle_code(ref_code, test_code)
 
                                     _ref_code = _ref_code[0:p] + '-' + _ref_code[p:]
                                     _ref_gauge_code = _ref_gauge_code[0:p] + ' ' + _ref_gauge_code[p:]
 
                                     _result['ref_code'] = _ref_code
                                     _result['ref_gauge_code'] = _ref_gauge_code
-                                    _result['mid_code'] = self.__getMiddleCode(_ref_code, _test_code)
+                                    _result['mid_code'] = get_middle_code(_ref_code, _test_code)
 
                                     offset_2 += 1
 
@@ -15885,14 +15903,14 @@ class NmrDpUtility(object):
 
                                     result['ref_code'] = ref_code
                                     result['ref_gauge_code'] = ref_gauge_code
-                                    result['mid_code'] = self.__getMiddleCode(ref_code, test_code)
+                                    result['mid_code'] = get_middle_code(ref_code, test_code)
 
                                     _test_code = _test_code[0:p] + '-' + _test_code[p:]
                                     _test_gauge_code = _test_gauge_code[0:p] + ' ' + _test_gauge_code[p:]
 
                                     _result['test_code'] = _test_code
                                     _result['test_gauge_code'] = _test_gauge_code
-                                    _result['mid_code'] = self.__getMiddleCode(_ref_code, _test_code)
+                                    _result['mid_code'] = get_middle_code(_ref_code, _test_code)
 
                                     offset_1 += 1
 
@@ -15919,14 +15937,14 @@ class NmrDpUtility(object):
 
                                     result['test_code'] = test_code
                                     result['test_gauge_code'] = test_gauge_code
-                                    result['mid_code'] = self.__getMiddleCode(ref_code, test_code)
+                                    result['mid_code'] = get_middle_code(ref_code, test_code)
 
                                     _ref_code = _ref_code[0:p] + '-' + _ref_code[p:]
                                     _ref_gauge_code = _ref_gauge_code[0:p] + ' ' + _ref_gauge_code[p:]
 
                                     _result['ref_code'] = _ref_code
                                     _result['ref_gauge_code'] = _ref_gauge_code
-                                    _result['mid_code'] = self.__getMiddleCode(_ref_code, _test_code)
+                                    _result['mid_code'] = get_middle_code(_ref_code, _test_code)
 
                                     offset_2 += 1
 
@@ -16027,10 +16045,10 @@ class NmrDpUtility(object):
 
                 continue
 
-            if not self.__hasKeyValue(seq_align_dic, 'nmr_poly_seq_vs_model_poly_seq'):
+            if not has_key_value(seq_align_dic, 'nmr_poly_seq_vs_model_poly_seq'):
                 continue
 
-            if not self.__hasKeyValue(chain_assign_dic, 'nmr_poly_seq_vs_model_poly_seq'):
+            if not has_key_value(chain_assign_dic, 'nmr_poly_seq_vs_model_poly_seq'):
                 continue
 
             nmr2ca = {}
@@ -16093,7 +16111,7 @@ class NmrDpUtility(object):
                 elif self.__star_data_type[fileListId] == 'Saveframe':
 
                     sf_data = self.__star_data[fileListId]
-                    sf_framecode = self.__getFirstTagValue(sf_data, 'sf_framecode')
+                    sf_framecode = get_first_tag(sf_data, 'sf_framecode')
 
                     add_details |= self.__testCoordAtomIdConsistency__(fileListId, file_name, file_type, content_subtype, sf_data, list_id, sf_framecode, lp_category, cif_polymer_sequence, seq_align_dic, nmr2ca, ref_chain_id, coord)
 
@@ -16101,7 +16119,7 @@ class NmrDpUtility(object):
 
                     for sf_data in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
 
-                        sf_framecode = self.__getFirstTagValue(sf_data, 'sf_framecode')
+                        sf_framecode = get_first_tag(sf_data, 'sf_framecode')
 
                         add_details |= self.__testCoordAtomIdConsistency__(fileListId, file_name, file_type, content_subtype, sf_data, list_id, sf_framecode, lp_category, cif_polymer_sequence, seq_align_dic, nmr2ca, ref_chain_id, coord)
 
@@ -16129,7 +16147,7 @@ class NmrDpUtility(object):
 
                 try:
 
-                    _num_dim = sf_data.get_tag(self.num_dim_items[file_type])[0]
+                    _num_dim = get_tag(sf_data, self.num_dim_items[file_type])[0]
                     num_dim = int(_num_dim)
 
                     if not num_dim in range(1, self.lim_num_dim):
@@ -16206,7 +16224,7 @@ class NmrDpUtility(object):
 
                 try:
 
-                    _num_dim = sf_data.get_tag(self.num_dim_items[file_type])[0]
+                    _num_dim = get_tag(sf_data, self.num_dim_items[file_type])[0]
                     num_dim = int(_num_dim)
 
                     if not num_dim in range(1, self.lim_num_dim):
@@ -16405,10 +16423,8 @@ class NmrDpUtility(object):
 
                     return True
 
-                logging.error("+NmrDpUtility.__retrieveDpReport() ++ Error  - Could not find any content in file path %s." % fPath)
                 raise IOError("+NmrDpUtility.__retrieveDpReport() ++ Error  - Could not find any content in file path %s." % fPath)
 
-            logging.error("+NmrDpUtility.__retrieveDpReport() ++ Error  - Could not access to file path %s." % fPath)
             raise IOError("+NmrDpUtility.__retrieveDpReport() ++ Error  - Could not access to file path %s." % fPath)
 
         else:
@@ -16418,7 +16434,6 @@ class NmrDpUtility(object):
 
         return False
 
-        #logging.error("+NmrDpUtility.__retrieveDpReport() ++ Error  - Could not find 'report_file_path' input parameter.")
         #raise KeyError("+NmrDpUtility.__retrieveDpReport() ++ Error  - Could not find 'report_file_path' input parameter.")
 
     def __resolveConflictsInLoop(self):
@@ -16453,7 +16468,7 @@ class NmrDpUtility(object):
 
                     try:
 
-                        _num_dim = sf_data.get_tag(self.num_dim_items[file_type])[0]
+                        _num_dim = get_tag(sf_data, self.num_dim_items[file_type])[0]
                         num_dim = int(_num_dim)
 
                         if not num_dim in range(1, self.lim_num_dim):
@@ -16523,7 +16538,7 @@ class NmrDpUtility(object):
 
                     try:
 
-                        _num_dim = sf_data.get_tag(self.num_dim_items[file_type])[0]
+                        _num_dim = get_tag(sf_data, self.num_dim_items[file_type])[0]
                         num_dim = int(_num_dim)
 
                         if not num_dim in range(1, self.lim_num_dim):
@@ -16592,7 +16607,7 @@ class NmrDpUtility(object):
 
                 for sf_data in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
 
-                    sf_framecode = self.__getFirstTagValue(sf_data, 'sf_framecode')
+                    sf_framecode = get_first_tag(sf_data, 'sf_framecode')
 
                     loop = sf_data.get_loop_by_category(lp_category)
 
@@ -16843,7 +16858,7 @@ class NmrDpUtility(object):
         file_name = input_source_dic['file_name']
         file_type = input_source_dic['file_type']
 
-        has_poly_seq = self.__hasKeyValue(input_source_dic, 'polymer_sequence')
+        has_poly_seq = has_key_value(input_source_dic, 'polymer_sequence')
 
         if not has_poly_seq:
             """
@@ -16881,7 +16896,7 @@ class NmrDpUtility(object):
 
         for sf_data in self.__star_data[0].get_saveframes_by_category(sf_category):
 
-            sf_framecode = self.__getFirstTagValue(sf_data, 'sf_framecode')
+            sf_framecode = get_first_tag(sf_data, 'sf_framecode')
 
             orig_lp_data = next((l['data'] for l in self.__lp_data[content_subtype] if l['file_name'] == file_name and l['sf_framecode'] == sf_framecode), None)
 
@@ -17187,7 +17202,7 @@ class NmrDpUtility(object):
                 if not polymer_sequence is None:
                     norm_star_data.add_saveframe(poly_seq_sf_data)
 
-            elif self.__hasKeyValue(input_source_dic['content_subtype'], content_subtype):
+            elif has_key_value(input_source_dic['content_subtype'], content_subtype):
 
                 sf_list = self.__star_data[0].get_saveframes_by_category(sf_category)
 
@@ -17222,7 +17237,7 @@ class NmrDpUtility(object):
         if file_type == 'nef':
             return True
 
-        has_poly_seq = self.__hasKeyValue(input_source_dic, 'polymer_sequence')
+        has_poly_seq = has_key_value(input_source_dic, 'polymer_sequence')
 
         if not has_poly_seq:
             """
@@ -17253,7 +17268,7 @@ class NmrDpUtility(object):
             """
             return False
 
-        if not self.__hasKeyValue(chain_assign_dic, 'nmr_poly_seq_vs_model_poly_seq'):
+        if not has_key_value(chain_assign_dic, 'nmr_poly_seq_vs_model_poly_seq'):
             return False
 
         if input_source_dic['content_subtype'] is None:
@@ -17445,7 +17460,7 @@ class NmrDpUtility(object):
 
         seq_align_dic = self.report.sequence_alignment.get()
 
-        if not self.__hasKeyValue(seq_align_dic, 'nmr_poly_seq_vs_model_poly_seq'):
+        if not has_key_value(seq_align_dic, 'nmr_poly_seq_vs_model_poly_seq'):
             return False
 
         result = next((seq_align for seq_align in seq_align_dic['nmr_poly_seq_vs_model_poly_seq'] if seq_align['ref_chain_id'] == nmr_chain_id and seq_align['test_chain_id'] == cif_chain_id), None)
@@ -17500,7 +17515,7 @@ class NmrDpUtility(object):
 
         seq_align_dic = self.report.sequence_alignment.get()
 
-        if not self.__hasKeyValue(seq_align_dic, 'nmr_poly_seq_vs_model_poly_seq'):
+        if not has_key_value(seq_align_dic, 'nmr_poly_seq_vs_model_poly_seq'):
             return 'unknown'
 
         result = next((seq_align for seq_align in seq_align_dic['nmr_poly_seq_vs_model_poly_seq'] if seq_align['ref_chain_id'] == nmr_chain_id and seq_align['test_chain_id'] == cif_chain_id), None)
@@ -17580,7 +17595,7 @@ class NmrDpUtility(object):
 
             return False
 
-        if not self.__hasKeyValue(chain_assign_dic, 'model_poly_seq_vs_nmr_poly_seq'):
+        if not has_key_value(chain_assign_dic, 'model_poly_seq_vs_nmr_poly_seq'):
             return False
 
         try:
@@ -17661,7 +17676,7 @@ class NmrDpUtility(object):
 
             content_subtype = 'chem_shift'
 
-            if not self.__hasKeyValue(input_source_dic['content_subtype'], content_subtype):
+            if not has_key_value(input_source_dic['content_subtype'], content_subtype):
 
                 err = "Assigned chemical shift loop does not exist in '%s' file." % file_name
 
@@ -17673,7 +17688,7 @@ class NmrDpUtility(object):
 
                 continue
 
-            if not self.__hasKeyValue(seq_align_dic, 'model_poly_seq_vs_nmr_poly_seq'):
+            if not has_key_value(seq_align_dic, 'model_poly_seq_vs_nmr_poly_seq'):
                 continue
 
             sf_category = self.sf_categories[file_type][content_subtype]
@@ -17756,7 +17771,7 @@ class NmrDpUtility(object):
                 elif self.__star_data_type[fileListId] == 'Saveframe':
 
                     sf_data = self.__star_data[fileListId]
-                    sf_framecode = self.__getFirstTagValue(sf_data, 'sf_framecode')
+                    sf_framecode = get_first_tag(sf_data, 'sf_framecode')
 
                     ca_chem_shift_1, cb_chem_shift_1, ca_chem_shift_2, cb_chem_shift_2 = self.__mapCoordDisulfideBond2Nmr__(file_name, file_type, content_subtype, sf_data, sf_framecode, lp_category,
                                                                                                                             nmr_chain_id_1, nmr_seq_id_1, nmr_comp_id_1, nmr_chain_id_2, nmr_seq_id_2, nmr_comp_id_2)
@@ -17764,7 +17779,7 @@ class NmrDpUtility(object):
 
                     for sf_data in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
 
-                        sf_framecode = self.__getFirstTagValue(sf_data, 'sf_framecode')
+                        sf_framecode = get_first_tag(sf_data, 'sf_framecode')
 
                         ca_chem_shift_1, cb_chem_shift_1, ca_chem_shift_2, cb_chem_shift_2 = self.__mapCoordDisulfideBond2Nmr__(file_name, file_type, content_subtype, sf_data, sf_framecode, lp_category,
                                                                                                                                 nmr_chain_id_1, nmr_seq_id_1, nmr_comp_id_1, nmr_chain_id_2, nmr_seq_id_2, nmr_comp_id_2)
@@ -17952,7 +17967,7 @@ class NmrDpUtility(object):
 
             return False
 
-        if not self.__hasKeyValue(chain_assign_dic, 'model_poly_seq_vs_nmr_poly_seq'):
+        if not has_key_value(chain_assign_dic, 'model_poly_seq_vs_nmr_poly_seq'):
             return False
 
         try:
@@ -18033,7 +18048,7 @@ class NmrDpUtility(object):
 
             content_subtype = 'chem_shift'
 
-            if not self.__hasKeyValue(input_source_dic['content_subtype'], content_subtype):
+            if not has_key_value(input_source_dic['content_subtype'], content_subtype):
 
                 err = "Assigned chemical shift loop does not exist in '%s' file." % file_name
 
@@ -18045,7 +18060,7 @@ class NmrDpUtility(object):
 
                 continue
 
-            if not self.__hasKeyValue(seq_align_dic, 'model_poly_seq_vs_nmr_poly_seq'):
+            if not has_key_value(seq_align_dic, 'model_poly_seq_vs_nmr_poly_seq'):
                 continue
 
             sf_category = self.sf_categories[file_type][content_subtype]
@@ -18128,7 +18143,7 @@ class NmrDpUtility(object):
                 elif self.__star_data_type[fileListId] == 'Saveframe':
 
                     sf_data = self.__star_data[fileListId]
-                    sf_framecode = self.__getFirstTagValue(sf_data, 'sf_framecode')
+                    sf_framecode = get_first_tag(sf_data, 'sf_framecode')
 
                     ca_chem_shift_1, cb_chem_shift_1, ca_chem_shift_2, cb_chem_shift_2 = self.__mapCoordOtherBond2Nmr__(file_name, file_type, content_subtype, sf_data, sf_framecode, lp_category,
                                                                                                                         nmr_chain_id_1, nmr_seq_id_1, nmr_comp_id_1, nmr_chain_id_2, nmr_seq_id_2, nmr_comp_id_2)
@@ -18137,7 +18152,7 @@ class NmrDpUtility(object):
 
                     for sf_data in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
 
-                        sf_framecode = self.__getFirstTagValue(sf_data, 'sf_framecode')
+                        sf_framecode = get_first_tag(sf_data, 'sf_framecode')
 
                         ca_chem_shift_1, cb_chem_shift_1, ca_chem_shift_2, cb_chem_shift_2 = self.__mapCoordOtherBond2Nmr__(file_name, file_type, content_subtype, sf_data, sf_framecode, lp_category,
                                                                                                                             nmr_chain_id_1, nmr_seq_id_1, nmr_comp_id_1, nmr_chain_id_2, nmr_seq_id_2, nmr_comp_id_2)
@@ -18451,7 +18466,7 @@ class NmrDpUtility(object):
 
         seq_align_dic = self.report.sequence_alignment.get()
 
-        if not self.__hasKeyValue(seq_align_dic, 'nmr_poly_seq_vs_model_poly_seq'):
+        if not has_key_value(seq_align_dic, 'nmr_poly_seq_vs_model_poly_seq'):
             return None
 
         result = next((seq_align for seq_align in seq_align_dic['nmr_poly_seq_vs_model_poly_seq'] if seq_align['ref_chain_id'] == nmr_chain_id and seq_align['test_chain_id'] == cif_chain_id), None)
@@ -18538,7 +18553,7 @@ class NmrDpUtility(object):
             if len(neighbor) == 0:
                 return None
 
-            if not self.__hasKeyValue(seq_align_dic, 'model_poly_seq_vs_nmr_poly_seq'):
+            if not has_key_value(seq_align_dic, 'model_poly_seq_vs_nmr_poly_seq'):
                 return None
 
             atom_list = []
@@ -18766,7 +18781,7 @@ class NmrDpUtility(object):
 
         seq_align_dic = self.report.sequence_alignment.get()
 
-        if not self.__hasKeyValue(seq_align_dic, 'nmr_poly_seq_vs_model_poly_seq'):
+        if not has_key_value(seq_align_dic, 'nmr_poly_seq_vs_model_poly_seq'):
             return None
 
         result = next((seq_align for seq_align in seq_align_dic['nmr_poly_seq_vs_model_poly_seq'] if seq_align['ref_chain_id'] == nmr_chain_id and seq_align['test_chain_id'] == cif_chain_id), None)
@@ -18917,7 +18932,7 @@ class NmrDpUtility(object):
 
             content_subtype = 'chem_shift'
 
-            if not self.__hasKeyValue(input_source_dic['content_subtype'], content_subtype):
+            if not has_key_value(input_source_dic['content_subtype'], content_subtype):
                 continue
 
             sf_category = self.sf_categories[file_type][content_subtype]
@@ -19049,7 +19064,7 @@ class NmrDpUtility(object):
 
                 for sf_data in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
 
-                    sf_framecode = self.__getFirstTagValue(sf_data, 'sf_framecode')
+                    sf_framecode = get_first_tag(sf_data, 'sf_framecode')
 
                     loop = sf_data.get_loop_by_category(lp_category)
 
@@ -19091,7 +19106,7 @@ class NmrDpUtility(object):
 
             content_subtype = 'dihed_restraint'
 
-            if not self.__hasKeyValue(input_source_dic['content_subtype'], content_subtype):
+            if not has_key_value(input_source_dic['content_subtype'], content_subtype):
                 continue
 
             sf_category = self.sf_categories[file_type][content_subtype]
@@ -19146,7 +19161,7 @@ class NmrDpUtility(object):
 
                 for sf_data in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
 
-                    sf_framecode = self.__getFirstTagValue(sf_data, 'sf_framecode')
+                    sf_framecode = get_first_tag(sf_data, 'sf_framecode')
 
                     tagNames = [t[0] for t in sf_data.tags]
 
@@ -19188,7 +19203,7 @@ class NmrDpUtility(object):
 
             content_subtype = 'dihed_restraint'
 
-            if not self.__hasKeyValue(input_source_dic['content_subtype'], content_subtype):
+            if not has_key_value(input_source_dic['content_subtype'], content_subtype):
                 continue
 
             item_names = self.item_names_in_dh_loop[file_type]
@@ -19213,7 +19228,7 @@ class NmrDpUtility(object):
 
             for sf_data in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
 
-                sf_framecode = self.__getFirstTagValue(sf_data, 'sf_framecode')
+                sf_framecode = get_first_tag(sf_data, 'sf_framecode')
 
                 lp_data = next((l['data'] for l in self.__lp_data[content_subtype] if l['file_name'] == file_name and l['sf_framecode'] == sf_framecode), None)
 
@@ -19846,7 +19861,7 @@ class NmrDpUtility(object):
                                 # specific remediation follows
                                 else:
 
-                                    sf_category = sf_data.get_tag('sf_category')[0]
+                                    sf_category = get_tag(sf_data, 'sf_category')[0]
 
                                     try:
 
@@ -20474,7 +20489,7 @@ class NmrDpUtility(object):
 
             content_subtype = 'chem_shift'
 
-            if not self.__hasKeyValue(input_source_dic['content_subtype'], content_subtype):
+            if not has_key_value(input_source_dic['content_subtype'], content_subtype):
 
                 err = "Assigned chemical shift loop does not exist in '%s' file." % file_name
 
@@ -20499,7 +20514,7 @@ class NmrDpUtility(object):
 
             for sf_data in self.__star_data[0].get_saveframes_by_category(sf_category):
 
-                sf_framecode = self.__getFirstTagValue(sf_data, 'sf_framecode')
+                sf_framecode = get_first_tag(sf_data, 'sf_framecode')
 
                 if self.report.error.exists(file_name, sf_framecode):
                     continue
@@ -21053,7 +21068,7 @@ class NmrDpUtility(object):
 
                     try:
 
-                        _num_dim = sf_data.get_tag(self.num_dim_items[file_type])[0]
+                        _num_dim = get_tag(sf_data, self.num_dim_items[file_type])[0]
                         num_dim = int(_num_dim)
 
                         if not num_dim in range(1, self.lim_num_dim):
@@ -21177,7 +21192,7 @@ class NmrDpUtility(object):
 
                     try:
 
-                        _num_dim = sf_data.get_tag(self.num_dim_items[file_type])[0]
+                        _num_dim = get_tag(sf_data, self.num_dim_items[file_type])[0]
                         num_dim = int(_num_dim)
 
                         if not num_dim in range(1, self.lim_num_dim):
@@ -21303,7 +21318,7 @@ class NmrDpUtility(object):
 
             for sf_data in self.__star_data[0].get_saveframes_by_category(sf_category):
 
-                sf_framecode = self.__getFirstTagValue(sf_data, 'sf_framecode')
+                sf_framecode = get_first_tag(sf_data, 'sf_framecode')
 
                 for loop in sf_data.loops:
 
@@ -21412,7 +21427,7 @@ class NmrDpUtility(object):
 
                 for sf_data in self.__star_data[0].get_saveframes_by_category(sf_category):
 
-                    sf_framecode = self.__getFirstTagValue(sf_data, 'sf_framecode')
+                    sf_framecode = get_first_tag(sf_data, 'sf_framecode')
 
                     warn_desc = self.report.warning.getDescription('duplicated_index', file_name, sf_framecode)
 
@@ -21440,7 +21455,7 @@ class NmrDpUtility(object):
 
                         list_id = collections.Counter(list_ids).most_common()[0][0]
 
-                        if len(sf_data.get_tag('ID')) > 0:
+                        if len(get_tag(sf_data, 'ID')) > 0:
                             tagNames = [t[0] for t in sf_data.tags]
                             itCol = tagNames.index('ID')
 
@@ -21516,7 +21531,7 @@ class NmrDpUtility(object):
 
                     if entryIdTag in self.sf_allowed_tags[file_type][content_subtype]:
 
-                        if len(sf_data.get_tag(entryIdTag)) == 0:
+                        if len(get_tag(sf_data, entryIdTag)) == 0:
                                 sf_data.add_tag(entryIdTag, self.__entry_id)
 
                         else:
@@ -21586,7 +21601,7 @@ class NmrDpUtility(object):
 
                 entryIdTag = 'ID' if sf_category == 'entry_information' else 'Entry_ID'
 
-                if len(sf_data.get_tag(entryIdTag)) == 0:
+                if len(get_tag(sf_data, entryIdTag)) == 0:
                         sf_data.add_tag(entryIdTag, self.__entry_id)
 
                 else:
@@ -21665,7 +21680,7 @@ class NmrDpUtility(object):
 
         for sf_data in self.__star_data[0].get_saveframes_by_category(sf_category):
 
-            sf_framecode = self.__getFirstTagValue(sf_data, 'sf_framecode')
+            sf_framecode = get_first_tag(sf_data, 'sf_framecode')
 
             if self.report.error.exists(file_name, sf_framecode):
                 continue
@@ -21759,7 +21774,7 @@ class NmrDpUtility(object):
 
         for sf_data in self.__star_data[0].get_saveframes_by_category(sf_category):
 
-            sf_framecode = self.__getFirstTagValue(sf_data, 'sf_framecode')
+            sf_framecode = get_first_tag(sf_data, 'sf_framecode')
 
             if self.report.error.exists(file_name, sf_framecode):
                 continue
@@ -21768,7 +21783,10 @@ class NmrDpUtility(object):
 
             ambig_set_id_name = 'Ambiguity_set_ID'
 
-            ambig_set_id_col = loop.tags.index(ambig_set_id_name)
+            try:
+                ambig_set_id_col = loop.tags.index(ambig_set_id_name)
+            except ValueError:
+                continue
 
             ambig_set_id_dic = {}
 
@@ -21881,7 +21899,7 @@ class NmrDpUtility(object):
 
         for sf_data in self.__star_data[0].get_saveframes_by_category(sf_category):
 
-            sf_framecode = self.__getFirstTagValue(sf_data, 'sf_framecode')
+            sf_framecode = get_first_tag(sf_data, 'sf_framecode')
 
             if self.report.error.exists(file_name, sf_framecode):
                 continue
@@ -21974,7 +21992,10 @@ class NmrDpUtility(object):
         if self.__dstPath == self.__srcPath and self.__release_mode:
             return True
 
-        self.__star_data[0].write_to_file(self.__dstPath)
+        if __pynmrstar_v3__:
+            self.__star_data[0].write_to_file(self.__dstPath, skip_empty_tags=False)
+        else:
+            self.__star_data[0].write_to_file(self.__dstPath)
 
         return not self.report.isError()
 
@@ -22012,7 +22033,10 @@ class NmrDpUtility(object):
                 if dstPath in self.__inputParamDict[cs_file_path_list]:
                     return False
 
-                self.__star_data[fileListId].write_to_file(dstPath)
+                if __pynmrstar_v3__:
+                    self.__star_data[fileListId].write_to_file(dstPath, skip_empty_tags=False)
+                else:
+                    self.__star_data[fileListId].write_to_file(dstPath)
 
             mr_file_path_list = 'restraint_file_path_list'
 
@@ -22041,7 +22065,10 @@ class NmrDpUtility(object):
                     if dstPath in self.__inputParamDict[mr_file_path_list]:
                         return False
 
-                    self.__star_data[fileListId].write_to_file(dstPath)
+                    if __pynmrstar_v3__:
+                        self.__star_data[fileListId].write_to_file(dstPath, skip_empty_tags=False)
+                    else:
+                        self.__star_data[fileListId].write_to_file(dstPath)
 
                     fileListId += 1
 
@@ -22070,7 +22097,6 @@ class NmrDpUtility(object):
         input_source_dic = input_source.get()
 
         if self.__dstPath is None:
-            logging.error("+NmrDpUtility.__translateNef2Str() ++ Error  - Could not find destination path as input NEF file for NEFTranslator.")
             raise KeyError("+NmrDpUtility.__translateNef2Str() ++ Error  - Could not find destination path as input NEF file for NEFTranslator.")
 
         file_name = os.path.basename(self.__dstPath)
@@ -22132,7 +22158,6 @@ class NmrDpUtility(object):
                 return False
 
         else:
-            logging.error("+NmrDpUtility.__translateNef2Str() ++ Error  - Could not find 'nmr-star_file_path' output parameter.")
             raise KeyError("+NmrDpUtility.__translateNef2Str() ++ Error  - Could not find 'nmr-star_file_path' output parameter.")
 
         return False
@@ -22166,7 +22191,6 @@ class NmrDpUtility(object):
             return True
 
         except:
-            logging.error("+NmrDpUtility.__initReousrceForNef2Str() ++ Error  - Could not find 'nmr-star_file_path' or 'report_file_path' output parameter.")
             raise KeyError("+NmrDpUtility.__initReousrceForNef2Str() ++ Error  - Could not find 'nmr-star_file_path' or 'report_file_path' output parameter.")
 
         return False
@@ -22182,7 +22206,6 @@ class NmrDpUtility(object):
         input_source_dic = input_source.get()
 
         if self.__dstPath is None:
-            logging.error("+NmrDpUtility.__translateStr2Nef() ++ Error  - Could not find destination path as input NMR-STAR file for NEFTranslator.")
             raise KeyError("+NmrDpUtility.__translateStr2Nef() ++ Error  - Could not find destination path as input NMR-STAR file for NEFTranslator.")
 
         file_name = os.path.basename(self.__dstPath)
@@ -22244,7 +22267,6 @@ class NmrDpUtility(object):
                 return False
 
         else:
-            logging.error("+NmrDpUtility.__translateStr2Nef() ++ Error  - Could not find 'nef_file_path' output parameter.")
             raise KeyError("+NmrDpUtility.__translateStr2Nef() ++ Error  - Could not find 'nef_file_path' output parameter.")
 
         return False
@@ -22278,7 +22300,6 @@ class NmrDpUtility(object):
             return True
 
         except:
-            logging.error("+NmrDpUtility.__initReousrceForStr2Nef() ++ Error  - Could not find 'nef_file_path' or 'report_file_path' output parameter.")
             raise KeyError("+NmrDpUtility.__initReousrceForStr2Nef() ++ Error  - Could not find 'nef_file_path' or 'report_file_path' output parameter.")
 
         return False

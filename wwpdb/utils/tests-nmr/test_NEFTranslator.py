@@ -99,7 +99,7 @@ class TestNEFTranslator(unittest.TestCase):
         self.assertEqual(read_out[1], 'Loop')
         read_out = self.neft.read_input_file(self.data_dir_path + 'nonsense.nef')
         self.assertEqual(read_out[0], False)
-        self.assertEqual(read_out[1], '("Invalid file. NMR-STAR files must start with \'data_\'. Did you accidentally select the wrong file?", 2)')
+        self.assertEqual(read_out[1], 'Invalid file. NMR-STAR files must start with \'data_\'. Did you accidentally select the wrong file? on line 2')
 
     def test_load_csv_data(self):
         self.assertTrue(len(self.neft.tagMap) > 0, "Can't read NEF-NMRSTAR_equivalence.csv or its empty")

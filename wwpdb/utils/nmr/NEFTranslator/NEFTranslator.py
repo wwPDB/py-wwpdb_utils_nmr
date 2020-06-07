@@ -77,7 +77,6 @@ class NEFTranslator(object):
     """
 
     def __init__(self):
-        # directory
         self.lib_dir = os.path.dirname(__file__) + '/lib/'
 
         (isOk, msg, self.tagMap) = self.__load_csv_data(self.lib_dir + 'NEF_NMRSTAR_equivalence.csv', transpose=True)
@@ -5359,7 +5358,7 @@ class NEFTranslator(object):
                 star_data.add_saveframe(sf)
 
             if is_done:
-                star_data.normalize()
+                #star_data.normalize() # do not invoke normalize() to preserve author provided Peak_row_format.ID using pynmrstar v3 library
 
                 if __pynmrstar_v3__:
                     star_data.write_to_file(star_file, skip_empty_tags=False)

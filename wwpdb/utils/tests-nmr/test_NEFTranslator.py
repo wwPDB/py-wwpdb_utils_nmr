@@ -617,7 +617,7 @@ class TestNEFTranslator(unittest.TestCase):
                     ['A', 493, 'ILE', 'HG2%', '0.859', '0.02', 'H', '1', 1, 122, 'ILE', 'HG23', 1, None, None, None]]
         self.assertEqual(self.neft.nef2star_cs_row(input_tags, output_tags, data), data_out)
 
-    def test_get_seq_identifier_tags(self):
+    def test_get_seq_ident_tags(self):
         inputtags = ['_nef_dihedral_restraint.index', '_nef_dihedral_restraint.restraint_id',
                      '_nef_dihedral_restraint.restraint_combination_id', '_nef_dihedral_restraint.chain_code_1',
                      '_nef_dihedral_restraint.sequence_code_1', '_nef_dihedral_restraint.residue_name_1',
@@ -636,7 +636,7 @@ class TestNEFTranslator(unittest.TestCase):
                    {'seq_tag': '_nef_dihedral_restraint.sequence_code_2', 'chain_tag': '_nef_dihedral_restraint.chain_code_2'},
                    {'seq_tag': '_nef_dihedral_restraint.sequence_code_3', 'chain_tag': '_nef_dihedral_restraint.chain_code_3'},
                    {'seq_tag': '_nef_dihedral_restraint.sequence_code_4', 'chain_tag': '_nef_dihedral_restraint.chain_code_4'}]
-        self.assertEqual(self.neft.get_seq_identifier_tags(inputtags, 'nef'), outtags)
+        self.assertEqual(self.neft.get_seq_ident_tags(inputtags, 'nef'), outtags)
 
     def test_nef2star_row(self):
         intag = ['_nef_dihedral_restraint.index', '_nef_dihedral_restraint.restraint_id',

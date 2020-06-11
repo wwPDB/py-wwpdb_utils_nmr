@@ -35,6 +35,7 @@
 # 13-May-2020  M. Yokochi - avoid system crash when format issue occurs (DAOTHER-5673)
 # 15-May-2020  M. Yokochi - ignore 'disordered_index' warning (DAOTHER-5485)
 # 15-May-2020  M. Yokochi - add 'content_mismatch' error for NMR legacy deposition (DAOTHER-5687)
+# 11-Jun-2020  M. Yokochi - performance improvement by reusing calculated statistics
 ##
 """ Wrapper class for data processing report of NMR data.
     @author: Masashi Yokochi
@@ -195,7 +196,7 @@ class NmrDpReport:
 
         return {k: v for k, v in content_subtype.items() if v > 0}
 
-    def __getNmrLegacyContentSubTypes(self, id):
+    def getNmrLegacyContentSubTypes(self, id):
         """ Return effective NMR content subtypes.
         """
 
@@ -212,7 +213,7 @@ class NmrDpReport:
 
         return self.getDictValue(self.getDictValue(self.getInputSourceDict(self.getInputSourceIdOfNmrData()), 'stats_of_exptl_data'), content_subtype)
 
-    def __getNmrLegacyStatsOfExptlData(self, id, content_subtype):
+    def getNmrLegacyStatsOfExptlData(self, id, content_subtype):
         """ Return stats of experimental data of a given content subtype.
         """
 
@@ -402,7 +403,7 @@ class NmrDpReport:
 
         for id in list_id:
 
-            content_subtypes = self.__getNmrLegacyContentSubTypes(id)
+            content_subtypes = self.getNmrLegacyContentSubTypes(id)
 
             if content_subtypes is None:
                 continue
@@ -419,7 +420,7 @@ class NmrDpReport:
 
             if content_subtype in content_subtypes:
 
-                stats = self.__getNmrLegacyStatsOfExptlData(id, content_subtype)
+                stats = self.getNmrLegacyStatsOfExptlData(id, content_subtype)
 
                 if stats is None:
                     continue
@@ -514,7 +515,7 @@ class NmrDpReport:
 
             if content_subtype in content_subtypes:
 
-                stats = self.__getNmrLegacyStatsOfExptlData(id, content_subtype)
+                stats = self.getNmrLegacyStatsOfExptlData(id, content_subtype)
 
                 if stats is None:
                     continue
@@ -567,7 +568,7 @@ class NmrDpReport:
 
             if content_subtype in content_subtypes:
 
-                stats = self.__getNmrLegacyStatsOfExptlData(id, content_subtype)
+                stats = self.getNmrLegacyStatsOfExptlData(id, content_subtype)
 
                 if stats is None:
                     continue
@@ -622,12 +623,12 @@ class NmrDpReport:
 
         for id in list_id:
 
-            content_subtypes = self.__getNmrLegacyContentSubTypes(id)
+            content_subtypes = self.getNmrLegacyContentSubTypes(id)
 
             if content_subtypes is None:
                 continue
 
-            stats = self.__getNmrLegacyStatsOfExptlData(id, content_subtype)
+            stats = self.getNmrLegacyStatsOfExptlData(id, content_subtype)
 
             if stats is None:
                 continue
@@ -683,12 +684,12 @@ class NmrDpReport:
 
         for id in list_id:
 
-            content_subtypes = self.__getNmrLegacyContentSubTypes(id)
+            content_subtypes = self.getNmrLegacyContentSubTypes(id)
 
             if content_subtypes is None:
                 continue
 
-            stats = self.__getNmrLegacyStatsOfExptlData(id, content_subtype)
+            stats = self.getNmrLegacyStatsOfExptlData(id, content_subtype)
 
             if stats is None:
                 continue
@@ -759,12 +760,12 @@ class NmrDpReport:
 
         for id in list_id:
 
-            content_subtypes = self.__getNmrLegacyContentSubTypes(id)
+            content_subtypes = self.getNmrLegacyContentSubTypes(id)
 
             if content_subtypes is None:
                 continue
 
-            stats = self.__getNmrLegacyStatsOfExptlData(id, content_subtype)
+            stats = self.getNmrLegacyStatsOfExptlData(id, content_subtype)
 
             if stats is None:
                 continue

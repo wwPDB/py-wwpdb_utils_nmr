@@ -84,6 +84,7 @@
 # 01-Jun-2020  M. Yokochi - let RMSD cutoff value configurable (DAOTHER-4060)
 # 05-Jun-2020  M. Yokochi - be compatible with wwpdb.utils.align.alignlib using Python 3 (DAOTHER-5766)
 # 06-Jun-2020  M. Yokochi - be compatible with pynmrstar v3 (DAOTHER-5765)
+# 11-Jun-2020  M. Yokochi - performance improvement by reusing calculated statistics
 ##
 """ Wrapper class for data processing for NMR data.
     @author: Masashi Yokochi
@@ -100,6 +101,7 @@ import re
 import math
 import codecs
 import shutil
+#import time
 
 from packaging import version
 from munkres import Munkres
@@ -278,6 +280,141 @@ def probability_density(value, mean, stddev):
     stddev2 = stddev ** 2.0
 
     return math.exp(-((value - mean) ** 2.0) / (2.0 * stddev2)) / math.sqrt(2.0 * math.pi * stddev2)
+
+def predict_redox_state_of_cystein(ca_chem_shift, cb_chem_shift):
+    """ Return prediction of redox state of Cystein using assigned CA, CB chemical shifts.
+        @return: probability of oxidized state, probability of reduced state
+    """
+
+    oxi_ca = {'avr': 55.5, 'std': 2.5}
+    oxi_cb = {'avr': 40.7, 'std': 3.8}
+
+    red_ca = {'avr': 59.3, 'std': 3.2}
+    red_cb = {'avr': 28.3, 'std': 2.2}
+
+    oxi = 1.0
+    red = 1.0
+
+    if not ca_chem_shift is None:
+        oxi *= probability_density(ca_chem_shift, oxi_ca['avr'], oxi_ca['std'])
+        red *= probability_density(ca_chem_shift, red_ca['avr'], red_ca['std'])
+
+    if not cb_chem_shift is None:
+        if cb_chem_shift < 32.0:
+            oxi = 0.0
+        else:
+            oxi *= probability_density(cb_chem_shift, oxi_cb['avr'], oxi_cb['std'])
+        if cb_chem_shift > 35.0:
+            red = 0.0
+        else:
+            red *= probability_density(cb_chem_shift, red_cb['avr'], red_cb['std'])
+
+    sum = oxi + red
+
+    if sum == 0.0 or sum == 2.0:
+        return 0.0, 0.0
+
+    return oxi / sum, red / sum
+
+def predict_cis_trans_peptide_of_proline(cb_chem_shift, cg_chem_shift):
+    """ Return prediction of cis-trans peptide bond of Proline using assigned CB, CG chemical shifts.
+        @return: probability of cis-peptide bond, probability of trans-peptide bond
+    """
+
+    cis_cb = {'avr': 34.16, 'std': 1.15, 'max': 36.23, 'min': 30.74}
+    cis_cg = {'avr': 24.52, 'std': 1.09, 'max': 27.01, 'min': 22.10}
+    cis_dl = {'avr': 9.64, 'std': 1.27}
+
+    trs_cb = {'avr': 31.75, 'std': 0.98, 'max': 35.83, 'min': 26.30}
+    trs_cg = {'avr': 27.26, 'std': 1.05, 'max': 33.39, 'min': 19.31}
+    trs_dl = {'avr': 4.51, 'std': 1.17}
+
+    cis = 1.0
+    trs = 1.0
+
+    if not cb_chem_shift is None:
+        if cb_chem_shift < cis_cb['min'] - cis_cb['std'] or cb_chem_shift > cis_cb['max'] + cis_cb['std']:
+            cis = 0.0
+        else:
+            cis *= probability_density(cb_chem_shift, cis_cb['avr'], cis_cb['std'])
+        if cb_chem_shift < trs_cb['min'] - trs_cb['std'] or cb_chem_shift > trs_cb['max'] + trs_cb['std']:
+            trs = 0.0
+        else:
+            trs *= probability_density(cb_chem_shift, trs_cb['avr'], trs_cb['std'])
+
+    if not cg_chem_shift is None:
+        if cg_chem_shift < cis_cg['min'] - cis_cg['std'] or cg_chem_shift > cis_cg['max'] + cis_cg['std']:
+            cis = 0.0
+        else:
+            cis *= probability_density(cg_chem_shift, cis_cg['avr'], cis_cg['std'])
+        if cg_chem_shift < trs_cg['min'] - trs_cg['std'] or cg_chem_shift > trs_cg['max'] + trs_cg['std']:
+            trs = 0.0
+        else:
+            trs *= probability_density(cg_chem_shift, trs_cg['avr'], trs_cg['std'])
+
+    if (not cb_chem_shift is None) and (not cg_chem_shift is None):
+        delta_shift = cb_chem_shift - cg_chem_shift
+
+        cis *= probability_density(delta_shift, cis_dl['avr'], cis_dl['std'])
+        trs *= probability_density(delta_shift, trs_dl['avr'], trs_dl['std'])
+
+    sum = cis + trs
+
+    if sum == 0.0 or sum == 2.0:
+        return 0.0, 0.0
+
+    return cis / sum, trs / sum
+
+def predict_tautomer_state_of_histidine(cg_chem_shift, cd2_chem_shift, nd1_chem_shift, ne2_chem_shift):
+    """ Return prediction of tautomeric state of Histidine using assigned CG, CD2, ND1, and NE2 chemical shifts.
+        @return: probability of biprotonated, probability of tau tautomer, probability of pi tautomer
+    """
+
+    bip_cg = {'avr': 131.2, 'std': 0.7}
+    bip_cd2 = {'avr': 120.6, 'std': 1.3}
+    bip_nd1 = {'avr': 190.0, 'std': 1.9}
+    bip_ne2 = {'avr': 176.3, 'std': 1.9}
+
+    tau_cg = {'avr': 135.7, 'std': 2.2}
+    tau_cd2 = {'avr': 116.9, 'std': 2.1}
+    tau_nd1 = {'avr': 249.4, 'std': 1.9}
+    tau_ne2 = {'avr': 171.1, 'std': 1.9}
+
+    pi_cg = {'avr': 125.7, 'std': 2.2}
+    pi_cd2 = {'avr': 125.6, 'std': 2.1}
+    pi_nd1 = {'avr': 171.8, 'std': 1.9}
+    pi_ne2 = {'avr': 248.2, 'std': 1.9}
+
+    bip = 1.0
+    tau = 1.0
+    pi = 1.0
+
+    if not cg_chem_shift is None:
+        bip *= probability_density(cg_chem_shift, bip_cg['avr'], bip_cg['std'])
+        tau *= probability_density(cg_chem_shift, tau_cg['avr'], tau_cg['std'])
+        pi *= probability_density(cg_chem_shift, pi_cg['avr'], pi_cg['std'])
+
+    if not cd2_chem_shift is None:
+        bip *= probability_density(cd2_chem_shift, bip_cd2['avr'], bip_cd2['std'])
+        tau *= probability_density(cd2_chem_shift, tau_cd2['avr'], tau_cd2['std'])
+        pi *= probability_density(cd2_chem_shift, pi_cd2['avr'], pi_cd2['std'])
+
+    if not nd1_chem_shift is None:
+        bip *= probability_density(nd1_chem_shift, bip_nd1['avr'], bip_nd1['std'])
+        tau *= probability_density(nd1_chem_shift, tau_nd1['avr'], tau_nd1['std'])
+        pi *= probability_density(nd1_chem_shift, pi_nd1['avr'], pi_nd1['std'])
+
+    if not ne2_chem_shift is None:
+        bip *= probability_density(ne2_chem_shift, bip_ne2['avr'], bip_ne2['std'])
+        tau *= probability_density(ne2_chem_shift, tau_ne2['avr'], tau_ne2['std'])
+        pi *= probability_density(ne2_chem_shift, pi_ne2['avr'], pi_ne2['std'])
+
+    sum = bip + tau + pi
+
+    if sum == 0.0 or sum == 3.0:
+        return 0.0, 0.0, 0.0
+
+    return bip / sum, tau / sum, pi / sum
 
 def to_np_array(a):
     """ Return Numpy array of a given Cartesian coordinate in {'x': float, 'y': float, 'z': float} format.
@@ -2669,6 +2806,8 @@ class NmrDpUtility(object):
         self.__ccR = ChemCompReader(self.__verbose, self.__lfh)
         self.__ccR.setCachePath(self.__ccCvsPath)
 
+        # representative model id
+        self.__representative_model_id = 1
         # total number of models
         self.__total_models = 0
 
@@ -2932,9 +3071,16 @@ class NmrDpUtility(object):
                 if self.__verbose:
                     self.__lfh.write("+NmrDpUtility.op() starting op %s - task %s\n" % (op, task.__name__))
 
+                #start_time = time.time()
+
                 if not task():
                     pass
-
+                """
+                if self.__verbose:
+                    end_time = time.time()
+                    if end_time - start_time > 1.0:
+                        self.__lfh.write(" finished %s sec\n" % ('{:.1f}'.format(end_time - start_time)))
+                """
         elif op.endswith('deposit') or op.endswith('release'):
 
             for task in self.__procTasksDict['deposit']:
@@ -2942,9 +3088,16 @@ class NmrDpUtility(object):
                 if self.__verbose:
                     self.__lfh.write("+NmrDpUtility.op() starting op %s - task %s\n" % (op, task.__name__))
 
+                #start_time = time.time()
+
                 if not task():
                     pass
-
+                """
+                if self.__verbose:
+                    end_time = time.time()
+                    if end_time - start_time > 1.0:
+                        self.__lfh.write(" finished %s sec\n" % ('{:.1f}'.format(end_time - start_time)))
+                """
         # run workflow operation specific tasks
         if op in self.__procTasksDict:
 
@@ -2953,10 +3106,17 @@ class NmrDpUtility(object):
                 if self.__verbose:
                     self.__lfh.write("+NmrDpUtility.op() starting op %s - task %s\n" % (op, task.__name__))
 
+                #start_time = time.time()
+
                 if not task():
                     if task == self.__translateNef2Str or task == self.__translateStr2Nef:
                         break
-
+                """
+                if self.__verbose:
+                    end_time = time.time()
+                    if end_time - start_time > 1.0:
+                        self.__lfh.write(" finished %s sec\n" % ('{:.1f}'.format(end_time - start_time)))
+                """
         self.__dumpDpReport()
 
         return not self.report.isError()
@@ -9999,6 +10159,10 @@ class NmrDpUtility(object):
                 if content_subtype in ['entry_info', 'poly_seq', 'entity']:
                     continue
 
+                if not self.report_prev is None:
+                    stats[content_subtype] = self.report_prev.getNmrLegacyStatsOfExptlData(fileListId, content_subtype)
+                    continue
+
                 sf_category = self.sf_categories[file_type][content_subtype]
                 lp_category = self.lp_categories[file_type][content_subtype]
 
@@ -10034,6 +10198,8 @@ class NmrDpUtility(object):
                     stats[content_subtype] = asm
 
             input_source.setItemValue('stats_of_exptl_data', stats)
+
+        self.report_prev = None
 
         return self.report.getTotalErrors() == __errors
 
@@ -11151,7 +11317,7 @@ class NmrDpUtility(object):
                                 cys['redox_state_pred'] = 'unknown'
 
                             if cys['redox_state_pred'] == 'ambiguous':
-                                oxi, red = self.__predictRedoxStateOfCystein(ca_chem_shift, cb_chem_shift)
+                                oxi, red = predict_redox_state_of_cystein(ca_chem_shift, cb_chem_shift)
                                 if oxi < 0.001:
                                     cys['redox_state_pred'] = 'reduced'
                                 elif red < 0.001:
@@ -11235,7 +11401,7 @@ class NmrDpUtility(object):
                                 pro['cis_trans_pred'] = 'unknown'
 
                             if pro['cis_trans_pred'] == 'ambiguous':
-                                cis, trs = self.__predictCisTransPeptideOfProline(cb_chem_shift, cg_chem_shift)
+                                cis, trs = predict_cis_trans_peptide_of_proline(cb_chem_shift, cg_chem_shift)
                                 if cis < 0.001:
                                     pro['cis_trans_pred'] = 'trans'
                                 elif trs < 0.001:
@@ -11336,7 +11502,7 @@ class NmrDpUtility(object):
                             his['ne2_chem_shift'] = ne2_chem_shift
 
                             if (not cg_chem_shift is None) or (not cd2_chem_shift is None) or (not nd1_chem_shift is None) or (not ne2_chem_shift is None):
-                                bip, tau, pi = self.__predictTautomerOfHistidine(cg_chem_shift, cd2_chem_shift, nd1_chem_shift, ne2_chem_shift)
+                                bip, tau, pi = predict_tautomer_state_of_histidine(cg_chem_shift, cd2_chem_shift, nd1_chem_shift, ne2_chem_shift)
                                 if tau < 0.001 and pi < 0.001:
                                     his['tautomeric_state_pred'] = 'biprotonated'
                                 elif bip < 0.001 and pi < 0.001:
@@ -14442,7 +14608,11 @@ class NmrDpUtility(object):
                                                                  ])
 
                         if len(coord) > 0:
-                            self.__total_models = len(set([c['model_id'] for c in coord]))
+
+                            model_ids = set([c['model_id'] for c in coord])
+
+                            self.__representative_model_id = min(model_ids)
+                            self.__total_models = len(model_ids)
 
                     except Exception as e:
 
@@ -16073,7 +16243,7 @@ class NmrDpUtility(object):
                                                          {'name': 'label_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
                                                          {'name': 'label_atom_id', 'type': 'str', 'alt_name': 'atom_id'}
                                                          ],
-                                                        [{'name': model_num_name, 'type': 'int', 'value': 1}
+                                                        [{'name': model_num_name, 'type': 'int', 'value': self.__representative_model_id}
                                                          ])
 
             except Exception as e:
@@ -17416,7 +17586,7 @@ class NmrDpUtility(object):
                 close_contact = self.__cR.getDictListWithFilter('pdbx_validate_close_contact',
                                                                 [{'name': 'dist', 'type': 'float'}
                                                                  ],
-                                                                [{'name': 'PDB_model_num', 'type': 'int', 'value': 1},
+                                                                [{'name': 'PDB_model_num', 'type': 'int', 'value': self.__representative_model_id},
                                                                  {'name': 'auth_asym_id_1', 'type': 'str', 'value': cif_chain_id},
                                                                  {'name': 'auth_seq_id_1', 'type': 'int', 'value': beg_cif_seq_id},
                                                                  {'name': 'auth_atom_id_1', 'type': 'str', 'value': 'N'},
@@ -17538,7 +17708,7 @@ class NmrDpUtility(object):
                                                  {'name': 'label_seq_id', 'type': 'int', 'value': cif_seq_id},
                                                  {'name': 'label_comp_id', 'type': 'str', 'value': 'HIS'},
                                                  {'name': 'type_symbol', 'type': 'str', 'value': 'H'},
-                                                 {'name': model_num_name, 'type': 'int', 'value': 1}])
+                                                 {'name': model_num_name, 'type': 'int', 'value': self.__representative_model_id}])
 
             except Exception as e:
 
@@ -17829,11 +17999,11 @@ class NmrDpUtility(object):
                     disulf['redox_state_pred_2'] = 'unknown'
 
                 if disulf['redox_state_pred_1'] == 'ambiguous' and ((not ca_chem_shift_1 is None) or (not cb_chem_shift_1 is None)):
-                    oxi, red = self.__predictRedoxStateOfCystein(ca_chem_shift_1, cb_chem_shift_1)
+                    oxi, red = predict_redox_state_of_cystein(ca_chem_shift_1, cb_chem_shift_1)
                     disulf['redox_state_pred_1'] = 'oxidized %s (%%), reduced %s (%%)' % ('{:.1f}'.format(oxi * 100.0), '{:.1f}'.format(red * 100.0))
 
                 if disulf['redox_state_pred_2'] == 'ambiguous' and ((not ca_chem_shift_2 is None) or (not cb_chem_shift_2 is None)):
-                    oxi, red = self.__predictRedoxStateOfCystein(ca_chem_shift_2, cb_chem_shift_2)
+                    oxi, red = predict_redox_state_of_cystein(ca_chem_shift_2, cb_chem_shift_2)
                     disulf['redox_state_pred_2'] = 'oxidized %s (%%), reduced %s (%%)' % ('{:.1f}'.format(oxi * 100.0), '{:.1f}'.format(red * 100.0))
 
                 if disulf['redox_state_pred_1'] != 'oxidized' and disulf['redox_state_pred_1'] != 'unknown':
@@ -18202,11 +18372,11 @@ class NmrDpUtility(object):
                     other['redox_state_pred_2'] = 'unknown'
 
                 if other['redox_state_pred_1'] == 'ambiguous' and ((not ca_chem_shift_1 is None) or (not cb_chem_shift_1 is None)):
-                    oxi, red = self.__predictRedoxStateOfCystein(ca_chem_shift_1, cb_chem_shift_1)
+                    oxi, red = predict_redox_state_of_cystein(ca_chem_shift_1, cb_chem_shift_1)
                     other['redox_state_pred_1'] = 'oxidized %s (%%), reduced %s (%%)' % ('{:.1f}'.format(oxi * 100.0), '{:.1f}'.format(red * 100.0))
 
                 if other['redox_state_pred_2'] == 'ambiguous' and ((not ca_chem_shift_2 is None) or (not cb_chem_shift_2 is None)):
-                    oxi, red = self.__predictRedoxStateOfCystein(ca_chem_shift_2, cb_chem_shift_2)
+                    oxi, red = predict_redox_state_of_cystein(ca_chem_shift_2, cb_chem_shift_2)
                     other['redox_state_pred_2'] = 'oxidized %s (%%), reduced %s (%%)' % ('{:.1f}'.format(oxi * 100.0), '{:.1f}'.format(red * 100.0))
 
                 if other['redox_state_pred_1'] != 'oxidized' and other['redox_state_pred_1'] != 'unknown':
@@ -18315,141 +18485,6 @@ class NmrDpUtility(object):
 
         return ca_chem_shift_1, cb_chem_shift_1, ca_chem_shift_2, cb_chem_shift_2
 
-    def __predictRedoxStateOfCystein(self, ca_chem_shift, cb_chem_shift):
-        """ Return prediction of redox state of Cystein using assigned CA, CB chemical shifts.
-            @return: probability of oxidized state, probability of reduced state
-        """
-
-        oxi_ca = {'avr': 55.5, 'std': 2.5}
-        oxi_cb = {'avr': 40.7, 'std': 3.8}
-
-        red_ca = {'avr': 59.3, 'std': 3.2}
-        red_cb = {'avr': 28.3, 'std': 2.2}
-
-        oxi = 1.0
-        red = 1.0
-
-        if not ca_chem_shift is None:
-            oxi *= probability_density(ca_chem_shift, oxi_ca['avr'], oxi_ca['std'])
-            red *= probability_density(ca_chem_shift, red_ca['avr'], red_ca['std'])
-
-        if not cb_chem_shift is None:
-            if cb_chem_shift < 32.0:
-                oxi = 0.0
-            else:
-                oxi *= probability_density(cb_chem_shift, oxi_cb['avr'], oxi_cb['std'])
-            if cb_chem_shift > 35.0:
-                red = 0.0
-            else:
-                red *= probability_density(cb_chem_shift, red_cb['avr'], red_cb['std'])
-
-        sum = oxi + red
-
-        if sum == 0.0 or sum == 2.0:
-            return 0.0, 0.0
-
-        return oxi / sum, red / sum
-
-    def __predictCisTransPeptideOfProline(self, cb_chem_shift, cg_chem_shift):
-        """ Return prediction of cis-trans peptide bond of Proline using assigned CB, CG chemical shifts.
-            @return: probability of cis-peptide bond, probability of trans-peptide bond
-        """
-
-        cis_cb = {'avr': 34.16, 'std': 1.15, 'max': 36.23, 'min': 30.74}
-        cis_cg = {'avr': 24.52, 'std': 1.09, 'max': 27.01, 'min': 22.10}
-        cis_dl = {'avr': 9.64, 'std': 1.27}
-
-        trs_cb = {'avr': 31.75, 'std': 0.98, 'max': 35.83, 'min': 26.30}
-        trs_cg = {'avr': 27.26, 'std': 1.05, 'max': 33.39, 'min': 19.31}
-        trs_dl = {'avr': 4.51, 'std': 1.17}
-
-        cis = 1.0
-        trs = 1.0
-
-        if not cb_chem_shift is None:
-            if cb_chem_shift < cis_cb['min'] - cis_cb['std'] or cb_chem_shift > cis_cb['max'] + cis_cb['std']:
-                cis = 0.0
-            else:
-                cis *= probability_density(cb_chem_shift, cis_cb['avr'], cis_cb['std'])
-            if cb_chem_shift < trs_cb['min'] - trs_cb['std'] or cb_chem_shift > trs_cb['max'] + trs_cb['std']:
-                trs = 0.0
-            else:
-                trs *= probability_density(cb_chem_shift, trs_cb['avr'], trs_cb['std'])
-
-        if not cg_chem_shift is None:
-            if cg_chem_shift < cis_cg['min'] - cis_cg['std'] or cg_chem_shift > cis_cg['max'] + cis_cg['std']:
-                cis = 0.0
-            else:
-                cis *= probability_density(cg_chem_shift, cis_cg['avr'], cis_cg['std'])
-            if cg_chem_shift < trs_cg['min'] - trs_cg['std'] or cg_chem_shift > trs_cg['max'] + trs_cg['std']:
-                trs = 0.0
-            else:
-                trs *= probability_density(cg_chem_shift, trs_cg['avr'], trs_cg['std'])
-
-        if (not cb_chem_shift is None) and (not cg_chem_shift is None):
-            delta_shift = cb_chem_shift - cg_chem_shift
-
-            cis *= probability_density(delta_shift, cis_dl['avr'], cis_dl['std'])
-            trs *= probability_density(delta_shift, trs_dl['avr'], trs_dl['std'])
-
-        sum = cis + trs
-
-        if sum == 0.0 or sum == 2.0:
-            return 0.0, 0.0
-
-        return cis / sum, trs / sum
-
-    def __predictTautomerOfHistidine(self, cg_chem_shift, cd2_chem_shift, nd1_chem_shift, ne2_chem_shift):
-        """ Return prediction of tautomeric state of Histidine using assigned CG, CD2, ND1, and NE2 chemical shifts.
-            @return: probability of biprotonated, probability of tau tautomer, probability of pi tautomer
-        """
-
-        bip_cg = {'avr': 131.2, 'std': 0.7}
-        bip_cd2 = {'avr': 120.6, 'std': 1.3}
-        bip_nd1 = {'avr': 190.0, 'std': 1.9}
-        bip_ne2 = {'avr': 176.3, 'std': 1.9}
-
-        tau_cg = {'avr': 135.7, 'std': 2.2}
-        tau_cd2 = {'avr': 116.9, 'std': 2.1}
-        tau_nd1 = {'avr': 249.4, 'std': 1.9}
-        tau_ne2 = {'avr': 171.1, 'std': 1.9}
-
-        pi_cg = {'avr': 125.7, 'std': 2.2}
-        pi_cd2 = {'avr': 125.6, 'std': 2.1}
-        pi_nd1 = {'avr': 171.8, 'std': 1.9}
-        pi_ne2 = {'avr': 248.2, 'std': 1.9}
-
-        bip = 1.0
-        tau = 1.0
-        pi = 1.0
-
-        if not cg_chem_shift is None:
-            bip *= probability_density(cg_chem_shift, bip_cg['avr'], bip_cg['std'])
-            tau *= probability_density(cg_chem_shift, tau_cg['avr'], tau_cg['std'])
-            pi *= probability_density(cg_chem_shift, pi_cg['avr'], pi_cg['std'])
-
-        if not cd2_chem_shift is None:
-            bip *= probability_density(cd2_chem_shift, bip_cd2['avr'], bip_cd2['std'])
-            tau *= probability_density(cd2_chem_shift, tau_cd2['avr'], tau_cd2['std'])
-            pi *= probability_density(cd2_chem_shift, pi_cd2['avr'], pi_cd2['std'])
-
-        if not nd1_chem_shift is None:
-            bip *= probability_density(nd1_chem_shift, bip_nd1['avr'], bip_nd1['std'])
-            tau *= probability_density(nd1_chem_shift, tau_nd1['avr'], tau_nd1['std'])
-            pi *= probability_density(nd1_chem_shift, pi_nd1['avr'], pi_nd1['std'])
-
-        if not ne2_chem_shift is None:
-            bip *= probability_density(ne2_chem_shift, bip_ne2['avr'], bip_ne2['std'])
-            tau *= probability_density(ne2_chem_shift, tau_ne2['avr'], tau_ne2['std'])
-            pi *= probability_density(ne2_chem_shift, pi_ne2['avr'], pi_ne2['std'])
-
-        sum = bip + tau + pi
-
-        if sum == 0.0 or sum == 3.0:
-            return 0.0, 0.0, 0.0
-
-        return bip / sum, tau / sum, pi / sum
-
     def __getNearestAromaticRing(self, _nmr_chain_id, nmr_seq_id, nmr_atom_id, cutoff):
         """ Return the nearest aromatic ring around a given atom.
             @return: the nearest aromatic ring
@@ -18490,7 +18525,7 @@ class NmrDpUtility(object):
                                                 [{'name': 'label_asym_id', 'type': 'str', 'value': cif_chain_id},
                                                  {'name': 'label_seq_id', 'type': 'int', 'value': cif_seq_id},
                                                  {'name': 'label_atom_id', 'type': 'str', 'value': nmr_atom_id},
-                                                 {'name': model_num_name, 'type': 'int', 'value': 1}])
+                                                 {'name': model_num_name, 'type': 'int', 'value': self.__representative_model_id}])
 
             except Exception as e:
 
@@ -18532,7 +18567,7 @@ class NmrDpUtility(object):
                                                   [{'name': 'Cartn_x', 'type': 'range-float', 'range': {'min_exclusive': (o[0] - cutoff), 'max_exclusive': (o[0] + cutoff)}},
                                                    {'name': 'Cartn_y', 'type': 'range-float', 'range': {'min_exclusive': (o[1] - cutoff), 'max_exclusive': (o[1] + cutoff)}},
                                                    {'name': 'Cartn_z', 'type': 'range-float', 'range': {'min_exclusive': (o[2] - cutoff), 'max_exclusive': (o[2] + cutoff)}},
-                                                   {'name': model_num_name, 'type': 'int', 'value': 1}])
+                                                   {'name': model_num_name, 'type': 'int', 'value': self.__representative_model_id}])
 
             except Exception as e:
 
@@ -18805,7 +18840,7 @@ class NmrDpUtility(object):
                                                 [{'name': 'label_asym_id', 'type': 'str', 'value': cif_chain_id},
                                                  {'name': 'label_seq_id', 'type': 'int', 'value': cif_seq_id},
                                                  {'name': 'label_atom_id', 'type': 'str', 'value': nmr_atom_id},
-                                                 {'name': model_num_name, 'type': 'int', 'value': 1}])
+                                                 {'name': model_num_name, 'type': 'int', 'value': self.__representative_model_id}])
 
             except Exception as e:
 
@@ -18847,7 +18882,7 @@ class NmrDpUtility(object):
                                                   [{'name': 'Cartn_x', 'type': 'range-float', 'range': {'min_exclusive': (o[0] - cutoff), 'max_exclusive': (o[0] + cutoff)}},
                                                    {'name': 'Cartn_y', 'type': 'range-float', 'range': {'min_exclusive': (o[1] - cutoff), 'max_exclusive': (o[1] + cutoff)}},
                                                    {'name': 'Cartn_z', 'type': 'range-float', 'range': {'min_exclusive': (o[2] - cutoff), 'max_exclusive': (o[2] + cutoff)}},
-                                                   {'name': model_num_name, 'type': 'int', 'value': 1}])
+                                                   {'name': model_num_name, 'type': 'int', 'value': self.__representative_model_id}])
 
             except Exception as e:
 

@@ -428,6 +428,33 @@ def to_unit_vector(a):
 
     return a / np.linalg.norm(a)
 
+def dihedral_angle(p0, p1, p2, p3):
+    """ Return dihedran angle from a series of four points.
+    """
+
+    b0 = -1.0 * (p1 - p0)
+    b1 = p2 - p1
+    b2 = p3 - p2
+
+    # normalize b1 so that it does not influence magnitude of vector
+    # rejections that come next
+    b1 = to_unit_vector(b1)
+
+    # vector rejections
+    # v = projection of b0 onto plane perpendicular to b1
+    #   = b0 minus component that aligns with b1
+    # w = projection of b2 onto plane perpendicular to b1
+    #   = b2 minus component that aligns with b1
+    v = b0 - np.dot(b0, b1) * b1
+    w = b2 - np.dot(b2, b1) * b1
+
+    # angle between v and w in a plane is the torsion angle
+    # v and w may not be normalized but that's fine since tan is y/x
+    x = np.dot(v, w)
+    y = np.dot(np.cross(b1, v), w)
+
+    return np.degrees(np.arctan2(y, x))
+
 class NmrDpUtility(object):
     """ Wrapper class for data processing for NMR data.
     """
@@ -2816,6 +2843,8 @@ class NmrDpUtility(object):
         self.__coord_atom_id = None
         # tautomer state in model
         self.__coord_tautomer = {}
+        # rotamer state in model
+        self.__coord_rotamer = {}
         # nearest aromatic ring in model
         self.__coord_near_ring = {}
         # nearest paramagnetic atom in model
@@ -11566,6 +11595,39 @@ class NmrDpUtility(object):
                 if len(his_tautomeric_state) > 0:
                     ent['his_tautomeric_state'] = his_tautomeric_state
 
+                # prediction of rotameric state of VAL/LEU/ILE
+
+                ilv_rotameric_state = []
+
+                for sc in ent['sequence_coverage']:
+
+                    chain_id = sc['chain_id']
+
+                    s = next((s for s in polymer_sequence if s['chain_id'] == chain_id), None)
+
+                    if not s is None:
+
+                        for seq_id, comp_id in zip(s['seq_id'], s['comp_id']):
+
+                            if not comp_id in ['VAL', 'LEU', 'ILE']:
+                                continue
+
+                            ilv = {'chain_id': chain_id, 'seq_id': seq_id, 'comp_id': comp_id}
+
+                            #TODO
+
+                            if comp_id == 'VAL':
+                                ilv['rotameric_state'] = self.__getRotamerOfValine(chain_id, seq_id)
+                            elif comp_id == 'LEU':
+                                ilv['rotameric_state'] = self.__getRotamerOfLeucine(chain_id, seq_id)
+                            else:
+                                ilv['rotameric_state'] = self.__getRotamerOfIsoleucine(chain_id, seq_id)
+
+                            ilv_rotameric_state.append(ilv)
+
+                if len(ilv_rotameric_state) > 0:
+                    ent['rotameric_state'] = ilv_rotameric_state
+
         except Exception as e:
 
             self.report.error.appendDescription('internal_error', "+NmrDpUtility.__calculateStatsOfAssignedChemShift() ++ Error  - %s" % str(e))
@@ -14620,11 +14682,10 @@ class NmrDpUtility(object):
                                                                  ])
 
                         if len(model_ids) > 0:
+                            model_ids = set([c['model_id'] for c in model_ids])
 
-                            uniq_model_ids = set([c['model_id'] for c in model_ids])
-
-                            self.__representative_model_id = min(uniq_model_ids)
-                            self.__total_models = len(uniq_model_ids)
+                            self.__representative_model_id = min(model_ids)
+                            self.__total_models = len(model_ids)
 
                     except Exception as e:
 
@@ -17698,7 +17759,7 @@ class NmrDpUtility(object):
         return False
 
     def __getTautomerOfHistidine(self, nmr_chain_id, nmr_seq_id):
-        """ Return tautomeric state of a given histidine based on coordinate annotation.
+        """ Return tautomeric state of a given histidine.
             @return: One of 'biprotonated', 'tau-tautomer', 'pi-tautomer', 'unknown'
         """
 
@@ -17775,6 +17836,357 @@ class NmrDpUtility(object):
 
         self.__coord_tautomer[seq_key] = 'unknown'
         return 'unknown'
+
+    def __getRotamerOfValine(self, nmr_chain_id, nmr_seq_id):
+        """ Return rotameric state distribution of a given valine.
+            @return: One of 'gauche+', 'trans', 'gauche-', 'unknown'
+        """
+
+        none = [{'name': 'chi1', 'unknown': 1.0}]
+
+        s = self.report.getModelPolymerSequenceWithNmrChainId(nmr_chain_id)
+
+        if s is None:
+            return none
+
+        cif_chain_id = s['chain_id']
+
+        seq_align_dic = self.report.sequence_alignment.get()
+
+        if not has_key_value(seq_align_dic, 'nmr_poly_seq_vs_model_poly_seq'):
+            return none
+
+        seq_key = (nmr_chain_id, nmr_seq_id)
+
+        if seq_key in self.__coord_rotamer:
+            return self.__coord_rotamer[seq_key]
+
+        result = next((seq_align for seq_align in seq_align_dic['nmr_poly_seq_vs_model_poly_seq'] if seq_align['ref_chain_id'] == nmr_chain_id and seq_align['test_chain_id'] == cif_chain_id), None)
+
+        if not result is None:
+
+            cif_seq_id = next((test_seq_id for ref_seq_id, ref_code, test_seq_id in zip(result['ref_seq_id'], result['ref_code'], result['test_seq_id']) if ref_seq_id == nmr_seq_id and ref_code == 'V'), None)
+
+            if cif_seq_id is None:
+                self.__coord_rotamer[seq_key] = none
+                return none
+
+            try:
+
+                model_num_name = 'pdbx_PDB_model_num' if self.__cR.hasItem('atom_site', 'pdbx_PDB_model_num') else 'ndb_model'
+
+                atoms = self.__cR.getDictListWithFilter('atom_site',
+                                                [{'name': 'label_atom_id', 'type': 'str', 'alt_name': 'atom_id'},
+                                                 {'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
+                                                 {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
+                                                 {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'},
+                                                 {'name': model_num_name, 'type': 'int', 'alt_name': 'model_id'},
+                                                 ],
+                                                [{'name': 'label_asym_id', 'type': 'str', 'value': cif_chain_id},
+                                                 {'name': 'label_seq_id', 'type': 'int', 'value': cif_seq_id},
+                                                 {'name': 'label_comp_id', 'type': 'str', 'value': 'VAL'}])
+
+            except Exception as e:
+
+                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__getRotamerOfValine() ++ Error  - %s" % str(e))
+                self.report.setError()
+
+                if self.__verbose:
+                    self.__lfh.write("+NmrDpUtility.__getRotamerOfValine() ++ Error  - %s" % str(e))
+
+                return none
+
+            model_ids = set([a['model_id'] for a in atoms])
+            total_models = float(len(model_ids))
+
+            rot1 = {'name': 'chi1', 'gauche-': 0.0, 'trans': 0.0, 'gauche+': 0.0, 'unknown': 0.0}
+
+            for model_id in model_ids:
+                _atoms = [a for a in atoms if a['model_id'] == model_id]
+
+                try:
+                    n = to_np_array(next(a for a in _atoms if a['atom_id'] == 'N'))
+                    ca = to_np_array(next(a for a in _atoms if a['atom_id'] == 'CA'))
+                    cb = to_np_array(next(a for a in _atoms if a['atom_id'] == 'CB'))
+                    cg1 = to_np_array(next(a for a in _atoms if a['atom_id'] == 'CG1'))
+
+                    chi1 = dihedral_angle(n, ca, cb, cg1)
+
+                    if chi1 >= 0.0 and chi1 < 120.0:
+                        rot1['gauche+'] += 1.0
+                    elif chi1 >= -120.0 and chi1 < 0.0:
+                        rot1['gauche-'] += 1.0
+                    else:
+                        rot1['trans'] += 1.0
+                except StopIteration:
+                    rot1['unknown'] += 1.0
+
+            if rot1['unknown'] == total_models:
+                self.__coord_rotamer[seq_key] = none
+                return none
+            else:
+                if rot1['unknown'] == 0.0:
+                    del rot1['unknown']
+
+                for r in rot1.keys():
+                    if r == 'name':
+                        continue
+                    rot1[r] /= total_models
+                    rot1[r] = float('{:.3f}'.format(rot1[r]))
+
+            self.__coord_rotamer[seq_key] = [rot1]
+            return [rot1]
+
+        self.__coord_rotamer[seq_key] = none
+        return none
+
+    def __getRotamerOfLeucine(self, nmr_chain_id, nmr_seq_id):
+        """ Return rotameric state distribution of a given leucine.
+            @return: One of 'gauche+', 'trans', 'gauche-', 'unknown'
+        """
+
+        none = [{'name': 'chi1', 'unknown': 1.0}, {'name': 'chi2', 'unknown': 1.0}]
+
+        s = self.report.getModelPolymerSequenceWithNmrChainId(nmr_chain_id)
+
+        if s is None:
+            return none
+
+        cif_chain_id = s['chain_id']
+
+        seq_align_dic = self.report.sequence_alignment.get()
+
+        if not has_key_value(seq_align_dic, 'nmr_poly_seq_vs_model_poly_seq'):
+            return none
+
+        seq_key = (nmr_chain_id, nmr_seq_id)
+
+        if seq_key in self.__coord_rotamer:
+            return self.__coord_rotamer[seq_key]
+
+        result = next((seq_align for seq_align in seq_align_dic['nmr_poly_seq_vs_model_poly_seq'] if seq_align['ref_chain_id'] == nmr_chain_id and seq_align['test_chain_id'] == cif_chain_id), None)
+
+        if not result is None:
+
+            cif_seq_id = next((test_seq_id for ref_seq_id, ref_code, test_seq_id in zip(result['ref_seq_id'], result['ref_code'], result['test_seq_id']) if ref_seq_id == nmr_seq_id and ref_code == 'L'), None)
+
+            if cif_seq_id is None:
+                self.__coord_rotamer[seq_key] = none
+                return none
+
+            try:
+
+                model_num_name = 'pdbx_PDB_model_num' if self.__cR.hasItem('atom_site', 'pdbx_PDB_model_num') else 'ndb_model'
+
+                atoms = self.__cR.getDictListWithFilter('atom_site',
+                                                [{'name': 'label_atom_id', 'type': 'str', 'alt_name': 'atom_id'},
+                                                 {'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
+                                                 {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
+                                                 {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'},
+                                                 {'name': model_num_name, 'type': 'int', 'alt_name': 'model_id'},
+                                                 ],
+                                                [{'name': 'label_asym_id', 'type': 'str', 'value': cif_chain_id},
+                                                 {'name': 'label_seq_id', 'type': 'int', 'value': cif_seq_id},
+                                                 {'name': 'label_comp_id', 'type': 'str', 'value': 'LEU'}])
+
+            except Exception as e:
+
+                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__getRotamerOfLeucine() ++ Error  - %s" % str(e))
+                self.report.setError()
+
+                if self.__verbose:
+                    self.__lfh.write("+NmrDpUtility.__getRotamerOfLeucine() ++ Error  - %s" % str(e))
+
+                return none
+
+            model_ids = set([a['model_id'] for a in atoms])
+            total_models = float(len(model_ids))
+
+            rot1 = {'name': 'chi1', 'gauche-': 0.0, 'trans': 0.0, 'gauche+': 0.0, 'unknown': 0.0}
+            rot2 = {'name': 'chi2', 'gauche-': 0.0, 'trans': 0.0, 'gauche+': 0.0, 'unknown': 0.0}
+
+            for model_id in model_ids:
+                _atoms = [a for a in atoms if a['model_id'] == model_id]
+
+                try:
+                    n = to_np_array(next(a for a in _atoms if a['atom_id'] == 'N'))
+                    ca = to_np_array(next(a for a in _atoms if a['atom_id'] == 'CA'))
+                    cb = to_np_array(next(a for a in _atoms if a['atom_id'] == 'CB'))
+                    cg = to_np_array(next(a for a in _atoms if a['atom_id'] == 'CG'))
+                    cd1 = to_np_array(next(a for a in _atoms if a['atom_id'] == 'CD1'))
+
+                    chi1 = dihedral_angle(n, ca, cb, cg)
+
+                    if chi1 >= 0.0 and chi1 < 120.0:
+                        rot1['gauche+'] += 1.0
+                    elif chi1 >= -120.0 and chi1 < 0.0:
+                        rot1['gauche-'] += 1.0
+                    else:
+                        rot1['trans'] += 1.0
+
+                    chi2 = dihedral_angle(ca, cb, cg, cd1)
+
+                    if chi2 >= 0.0 and chi2 < 120.0:
+                        rot2['gauche+'] += 1.0
+                    elif chi2 >= -120.0 and chi2 < 0.0:
+                        rot2['gauche-'] += 1.0
+                    else:
+                        rot2['trans'] += 1.0
+
+                except StopIteration:
+                    rot1['unknown'] += 1.0
+                    rot2['unknown'] += 1.0
+
+            if rot1['unknown'] == total_models:
+                self.__coord_rotamer[seq_key] = none
+                return none
+            else:
+                if rot1['unknown'] == 0.0:
+                    del rot1['unknown']
+                if rot2['unknown'] == 0.0:
+                    del rot2['unknown']
+
+                for r in rot1.keys():
+                    if r == 'name':
+                        continue
+                    rot1[r] /= total_models
+                    rot1[r] = float('{:.3f}'.format(rot1[r]))
+
+                for r in rot2.keys():
+                    if r == 'name':
+                        continue
+                    rot2[r] /= total_models
+                    rot2[r] = float('{:.3f}'.format(rot2[r]))
+
+            self.__coord_rotamer[seq_key] = [rot1, rot2]
+            return [rot1, rot2]
+
+        self.__coord_rotamer[seq_key] = none
+        return none
+
+    def __getRotamerOfIsoleucine(self, nmr_chain_id, nmr_seq_id):
+        """ Return rotameric state distribution of a given isoleucine.
+            @return: One of 'gauche+', 'trans', 'gauche-', 'unknown'
+        """
+
+        none = [{'name': 'chi1', 'unknown': 1.0}, {'name': 'chi2', 'unknown': 1.0}]
+
+        s = self.report.getModelPolymerSequenceWithNmrChainId(nmr_chain_id)
+
+        if s is None:
+            return none
+
+        cif_chain_id = s['chain_id']
+
+        seq_align_dic = self.report.sequence_alignment.get()
+
+        if not has_key_value(seq_align_dic, 'nmr_poly_seq_vs_model_poly_seq'):
+            return none
+
+        seq_key = (nmr_chain_id, nmr_seq_id)
+
+        if seq_key in self.__coord_rotamer:
+            return self.__coord_rotamer[seq_key]
+
+        result = next((seq_align for seq_align in seq_align_dic['nmr_poly_seq_vs_model_poly_seq'] if seq_align['ref_chain_id'] == nmr_chain_id and seq_align['test_chain_id'] == cif_chain_id), None)
+
+        if not result is None:
+
+            cif_seq_id = next((test_seq_id for ref_seq_id, ref_code, test_seq_id in zip(result['ref_seq_id'], result['ref_code'], result['test_seq_id']) if ref_seq_id == nmr_seq_id and ref_code == 'I'), None)
+
+            if cif_seq_id is None:
+                self.__coord_rotamer[seq_key] = none
+                return none
+
+            try:
+
+                model_num_name = 'pdbx_PDB_model_num' if self.__cR.hasItem('atom_site', 'pdbx_PDB_model_num') else 'ndb_model'
+
+                atoms = self.__cR.getDictListWithFilter('atom_site',
+                                                [{'name': 'label_atom_id', 'type': 'str', 'alt_name': 'atom_id'},
+                                                 {'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
+                                                 {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
+                                                 {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'},
+                                                 {'name': model_num_name, 'type': 'int', 'alt_name': 'model_id'},
+                                                 ],
+                                                [{'name': 'label_asym_id', 'type': 'str', 'value': cif_chain_id},
+                                                 {'name': 'label_seq_id', 'type': 'int', 'value': cif_seq_id},
+                                                 {'name': 'label_comp_id', 'type': 'str', 'value': 'ILE'}])
+
+            except Exception as e:
+
+                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__getRotamerOfIsoleucine() ++ Error  - %s" % str(e))
+                self.report.setError()
+
+                if self.__verbose:
+                    self.__lfh.write("+NmrDpUtility.__getRotamerOfIsoleucine() ++ Error  - %s" % str(e))
+
+                return none
+
+            model_ids = set([a['model_id'] for a in atoms])
+            total_models = float(len(model_ids))
+
+            rot1 = {'name': 'chi1', 'gauche-': 0.0, 'trans': 0.0, 'gauche+': 0.0, 'unknown': 0.0}
+            rot2 = {'name': 'chi2', 'gauche-': 0.0, 'trans': 0.0, 'gauche+': 0.0, 'unknown': 0.0}
+
+            for model_id in model_ids:
+                _atoms = [a for a in atoms if a['model_id'] == model_id]
+
+                try:
+                    n = to_np_array(next(a for a in _atoms if a['atom_id'] == 'N'))
+                    ca = to_np_array(next(a for a in _atoms if a['atom_id'] == 'CA'))
+                    cb = to_np_array(next(a for a in _atoms if a['atom_id'] == 'CB'))
+                    cg1 = to_np_array(next(a for a in _atoms if a['atom_id'] == 'CG1'))
+                    cd1 = to_np_array(next(a for a in _atoms if a['atom_id'] == 'CD1'))
+
+                    chi1 = dihedral_angle(n, ca, cb, cg1)
+
+                    if chi1 >= 0.0 and chi1 < 120.0:
+                        rot1['gauche+'] += 1.0
+                    elif chi1 >= -120.0 and chi1 < 0.0:
+                        rot1['gauche-'] += 1.0
+                    else:
+                        rot1['trans'] += 1.0
+
+                    chi2 = dihedral_angle(ca, cb, cg1, cd1)
+
+                    if chi2 >= 0.0 and chi2 < 120.0:
+                        rot2['gauche+'] += 1.0
+                    elif chi2 >= -120.0 and chi2 < 0.0:
+                        rot2['gauche-'] += 1.0
+                    else:
+                        rot2['trans'] += 1.0
+
+                except StopIteration:
+                    rot1['unknown'] += 1.0
+                    rot2['unknown'] += 1.0
+
+            if rot1['unknown'] == total_models:
+                self.__coord_rotamer[seq_key] = none
+                return none
+            else:
+                if rot1['unknown'] == 0.0:
+                    del rot1['unknown']
+                if rot2['unknown'] == 0.0:
+                    del rot2['unknown']
+
+                for r in rot1.keys():
+                    if r == 'name':
+                        continue
+                    rot1[r] /= total_models
+                    rot1[r] = float('{:.3f}'.format(rot1[r]))
+
+                for r in rot2.keys():
+                    if r == 'name':
+                        continue
+                    rot2[r] /= total_models
+                    rot2[r] = float('{:.3f}'.format(rot2[r]))
+
+            self.__coord_rotamer[seq_key] = [rot1, rot2]
+            return [rot1, rot2]
+
+        self.__coord_rotamer[seq_key] = none
+        return none
 
     def __extractCoordDisulfideBond(self):
         """ Extract disulfide bond of coordinate file.
@@ -18841,7 +19253,7 @@ class NmrDpUtility(object):
             na['ring_atoms'] = ring_atoms
             na['distance'] = float('{:.1f}'.format(distance / len_model_ids))
             na['ring_distance'] = float('{:.1f}'.format(ring_distance / len_model_ids))
-            na['ring_angle'] = float('{:.1f}'.format(ring_angle / len_model_ids * 180.0 / math.pi))
+            na['ring_angle'] = float('{:.1f}'.format(np.degrees(ring_angle / len_model_ids)))
 
             self.__coord_near_ring[seq_key] = na
             return na
@@ -19447,7 +19859,7 @@ class NmrDpUtility(object):
                                     #   (atom_ids[2] == 'CG' and atom_ids[3] == 'ND1' and comp_id == 'HIS') or\
                                     #   (atom_ids[2] == 'CG' and atom_ids[3] == 'OD1' and comp_id in ['ASN', 'ASP']) or\
                                     #   (atom_ids[2] == 'CG' and atom_ids[3] == 'SD' and comp_id == 'MET') or\
-                                    #   (atom_ids[2] == 'CG1' and atom_ids[3] == 'CD' and comp_id == 'ILE'):
+                                    #   (atom_ids[2] == 'CG1' and atom_ids[3] == 'CD1' and comp_id == 'ILE'):
                                     chi2_index.append(index_id)
 
                                 # chi3

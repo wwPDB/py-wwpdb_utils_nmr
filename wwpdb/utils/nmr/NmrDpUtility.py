@@ -3090,7 +3090,7 @@ class NmrDpUtility(object):
                 if self.__debug:
                     end_time = time.time()
                     if end_time - start_time > 1.0:
-                        self.__lfh.write("op: %s, task: %s, elasped time: %s sec\n" % (op, task.__name__, '{:.1f}'.format(end_time - start_time)))
+                        self.__lfh.write("op: %s, task: %s, elapsed time: %s sec\n" % (op, task.__name__, '{:.1f}'.format(end_time - start_time)))
 
         elif op.endswith('deposit') or op.endswith('release'):
 
@@ -3107,7 +3107,7 @@ class NmrDpUtility(object):
                 if self.__debug:
                     end_time = time.time()
                     if end_time - start_time > 1.0:
-                        self.__lfh.write("op: %s, task: %s, elasped time: %s sec\n" % (op, task.__name__, '{:.1f}'.format(end_time - start_time)))
+                        self.__lfh.write("op: %s, task: %s, elapsed time: %s sec\n" % (op, task.__name__, '{:.1f}'.format(end_time - start_time)))
 
         # run workflow operation specific tasks
         if op in self.__procTasksDict:
@@ -3126,7 +3126,7 @@ class NmrDpUtility(object):
                 if self.__debug:
                     end_time = time.time()
                     if end_time - start_time > 1.0:
-                        self.__lfh.write("op: %s, task: %s, elasped time: %s sec\n" % (op, task.__name__, '{:.1f}'.format(end_time - start_time)))
+                        self.__lfh.write("op: %s, task: %s, elapsed time: %s sec\n" % (op, task.__name__, '{:.1f}'.format(end_time - start_time)))
 
         self.__dumpDpReport()
 

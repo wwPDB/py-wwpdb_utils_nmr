@@ -84,7 +84,7 @@
 # 01-Jun-2020  M. Yokochi - let RMSD cutoff value configurable (DAOTHER-4060)
 # 05-Jun-2020  M. Yokochi - be compatible with wwpdb.utils.align.alignlib using Python 3 (DAOTHER-5766)
 # 06-Jun-2020  M. Yokochi - be compatible with pynmrstar v3 (DAOTHER-5765)
-# 11-Jun-2020  M. Yokochi - performance improvement by reusing calculated statistics
+# 12-Jun-2020  M. Yokochi - overall performance improvement by reusing cached data and code revision
 ##
 """ Wrapper class for data processing for NMR data.
     @author: Masashi Yokochi
@@ -101,7 +101,7 @@ import re
 import math
 import codecs
 import shutil
-#import time
+import time
 
 from packaging import version
 from munkres import Munkres
@@ -434,6 +434,8 @@ class NmrDpUtility(object):
 
     def __init__(self, verbose=False, log=sys.stderr):
         self.__verbose = verbose
+        self.__debug=False
+
         self.__lfh = log
 
         # current workflow operation
@@ -463,8 +465,8 @@ class NmrDpUtility(object):
         self.__excl_missing_data = False
         # whether to detect empty row in a loop # NEFTranslator.validate_file() already prompts the empty low error
         #self.__check_empty_loop = False
-        # whether to rely on pdbx_nmr_ensemble to get total number of models
-        self.__rely_on_pdbx_nmr_ens = False
+        # whether to trust pdbx_nmr_ensemble to get total number of models
+        self.__trust_pdbx_nmr_ens = True
 
         # default entry_id
         self.__entry_id__ = 'UNNAMED'
@@ -2810,6 +2812,14 @@ class NmrDpUtility(object):
         self.__representative_model_id = 1
         # total number of models
         self.__total_models = 0
+        # atom id list in model
+        self.__coord_atom_id = None
+        # tautomer state in model
+        self.__coord_tautomer = {}
+        # nearest aromatic ring in model
+        self.__coord_near_ring = {}
+        # nearest paramagnetic atom in model
+        self.__coord_near_para = {}
 
         self.__last_comp_id = None
         self.__last_comp_id_test = False
@@ -2882,6 +2892,7 @@ class NmrDpUtility(object):
         """
 
         self.__verbose = flag
+        self.__debug = flag
 
     def setSource(self, fPath):
         """ Set primary source file path.
@@ -3029,13 +3040,13 @@ class NmrDpUtility(object):
         elif not self.__combined_mode:
             self.__excl_missing_data = True
 
-        if 'rely_on_pdbx_nmr_ens' in self.__inputParamDict and not self.__inputParamDict['rely_on_pdbx_nmr_ens'] is None:
-            if type(self.__inputParamDict['rely_on_pdbx_nmr_ens']) is bool:
-                self.__rely_on_pdbx_nmr_ens = self.__inputParamDict['rely_on_pdbx_nmr_ens']
+        if 'trust_pdbx_nmr_ens' in self.__inputParamDict and not self.__inputParamDict['trust_pdbx_nmr_ens'] is None:
+            if type(self.__inputParamDict['trust_pdbx_nmr_ens']) is bool:
+                self.__trust_pdbx_nmr_ens = self.__inputParamDict['trust_pdbx_nmr_ens']
             else:
-                self.__rely_on_pdbx_nmr_ens = self.__inputParamDict['rely_on_pdbx_nmr_ens'] in self.true_value
+                self.__trust_pdbx_nmr_ens = self.__inputParamDict['trust_pdbx_nmr_ens'] in self.true_value
         elif self.__release_mode:
-            self.__rely_on_pdbx_nmr_ens = True
+            self.__trust_pdbx_nmr_ens = True
 
         if 'cutoff_rmsd' in self.__inputParamDict and not self.__inputParamDict['cutoff_rmsd'] is None:
             if type(self.__inputParamDict['cutoff_rmsd']) is float:
@@ -3071,16 +3082,16 @@ class NmrDpUtility(object):
                 if self.__verbose:
                     self.__lfh.write("+NmrDpUtility.op() starting op %s - task %s\n" % (op, task.__name__))
 
-                #start_time = time.time()
+                start_time = time.time()
 
                 if not task():
                     pass
-                """
-                if self.__verbose:
+
+                if self.__debug:
                     end_time = time.time()
                     if end_time - start_time > 1.0:
-                        self.__lfh.write(" finished %s sec\n" % ('{:.1f}'.format(end_time - start_time)))
-                """
+                        self.__lfh.write("op: %s, task: %s, elasped time: %s sec\n" % (op, task.__name__, '{:.1f}'.format(end_time - start_time)))
+
         elif op.endswith('deposit') or op.endswith('release'):
 
             for task in self.__procTasksDict['deposit']:
@@ -3088,16 +3099,16 @@ class NmrDpUtility(object):
                 if self.__verbose:
                     self.__lfh.write("+NmrDpUtility.op() starting op %s - task %s\n" % (op, task.__name__))
 
-                #start_time = time.time()
+                start_time = time.time()
 
                 if not task():
                     pass
-                """
-                if self.__verbose:
+
+                if self.__debug:
                     end_time = time.time()
                     if end_time - start_time > 1.0:
-                        self.__lfh.write(" finished %s sec\n" % ('{:.1f}'.format(end_time - start_time)))
-                """
+                        self.__lfh.write("op: %s, task: %s, elasped time: %s sec\n" % (op, task.__name__, '{:.1f}'.format(end_time - start_time)))
+
         # run workflow operation specific tasks
         if op in self.__procTasksDict:
 
@@ -3106,17 +3117,17 @@ class NmrDpUtility(object):
                 if self.__verbose:
                     self.__lfh.write("+NmrDpUtility.op() starting op %s - task %s\n" % (op, task.__name__))
 
-                #start_time = time.time()
+                start_time = time.time()
 
                 if not task():
                     if task == self.__translateNef2Str or task == self.__translateStr2Nef:
                         break
-                """
-                if self.__verbose:
+
+                if self.__debug:
                     end_time = time.time()
                     if end_time - start_time > 1.0:
-                        self.__lfh.write(" finished %s sec\n" % ('{:.1f}'.format(end_time - start_time)))
-                """
+                        self.__lfh.write("op: %s, task: %s, elasped time: %s sec\n" % (op, task.__name__, '{:.1f}'.format(end_time - start_time)))
+
         self.__dumpDpReport()
 
         return not self.report.isError()
@@ -7666,8 +7677,8 @@ class NmrDpUtility(object):
             for i in range(len_id_set - 1):
 
                 for j in range(i + 1, len_id_set):
-                    row_id_1 = id_set[i]
-                    row_id_2 = id_set[j]
+                    row_1 = lp_data[id_set[i]]
+                    row_2 = lp_data[id_set[j]]
 
                     conflict = False
                     inconsist = False
@@ -7677,11 +7688,11 @@ class NmrDpUtility(object):
                     for d in data_items:
                         dname = d['name']
 
-                        if not dname in lp_data[row_id_1]:
+                        if not dname in row_1:
                             continue
 
-                        val_1 = lp_data[row_id_1][dname]
-                        val_2 = lp_data[row_id_2][dname]
+                        val_1 = row_1[dname]
+                        val_2 = row_2[dname]
 
                         if val_1 is None and val_2 is None:
                             continue
@@ -7722,23 +7733,23 @@ class NmrDpUtility(object):
                                     if val_1 > val_2:
                                         r = abs(val_1 - (val_2 + 360.0))
 
-                                chain_id_1 = str(lp_data[row_id_1][chain_id_1_name])
-                                chain_id_2 = str(lp_data[row_id_1][chain_id_2_name])
-                                chain_id_3 = str(lp_data[row_id_1][chain_id_3_name])
-                                chain_id_4 = str(lp_data[row_id_1][chain_id_4_name])
-                                seq_id_1 = lp_data[row_id_1][seq_id_1_name]
-                                seq_id_2 = lp_data[row_id_1][seq_id_2_name]
-                                seq_id_3 = lp_data[row_id_1][seq_id_3_name]
-                                seq_id_4 = lp_data[row_id_1][seq_id_4_name]
-                                comp_id_1 = lp_data[row_id_1][comp_id_1_name]
-                                comp_id_2 = lp_data[row_id_1][comp_id_2_name]
-                                comp_id_3 = lp_data[row_id_1][comp_id_3_name]
-                                comp_id_4 = lp_data[row_id_1][comp_id_4_name]
-                                atom_id_1 = lp_data[row_id_1][atom_id_1_name]
-                                atom_id_2 = lp_data[row_id_1][atom_id_2_name]
-                                atom_id_3 = lp_data[row_id_1][atom_id_3_name]
-                                atom_id_4 = lp_data[row_id_1][atom_id_4_name]
-                                data_type = lp_data[row_id_1][angle_type_name]
+                                chain_id_1 = str(row_1[chain_id_1_name])
+                                chain_id_2 = str(row_1[chain_id_2_name])
+                                chain_id_3 = str(row_1[chain_id_3_name])
+                                chain_id_4 = str(row_1[chain_id_4_name])
+                                seq_id_1 = row_1[seq_id_1_name]
+                                seq_id_2 = row_1[seq_id_2_name]
+                                seq_id_3 = row_1[seq_id_3_name]
+                                seq_id_4 = row_1[seq_id_4_name]
+                                comp_id_1 = row_1[comp_id_1_name]
+                                comp_id_2 = row_1[comp_id_2_name]
+                                comp_id_3 = row_1[comp_id_3_name]
+                                comp_id_4 = row_1[comp_id_4_name]
+                                atom_id_1 = row_1[atom_id_1_name]
+                                atom_id_2 = row_1[atom_id_2_name]
+                                atom_id_3 = row_1[atom_id_3_name]
+                                atom_id_4 = row_1[atom_id_4_name]
+                                data_type = row_1[angle_type_name]
 
                                 data_type = self.__getTypeOfDihedralRestraint(data_type,
                                                                               chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2,
@@ -7757,12 +7768,12 @@ class NmrDpUtility(object):
 
                     if conflict:
 
-                        msg = '' if content_subtype != 'dihed_restraint' else angle_type_name + ' %s, ' % lp_data[row_id_1][angle_type_name]
-                        msg += self.__getResucedAtomNotations(key_items, lp_data[row_id_1])
+                        msg = '' if content_subtype != 'dihed_restraint' else angle_type_name + ' %s, ' % row_1[angle_type_name]
+                        msg += self.__getResucedAtomNotations(key_items, row_1)
 
                         warn = '[Check rows of %s %s vs %s, %s %s vs %s] ' %\
-                               (index_tag, lp_data[row_id_1][index_tag], lp_data[row_id_2][index_tag],
-                                id_tag, lp_data[row_id_1][id_tag], lp_data[row_id_2][id_tag])
+                               (index_tag, row_1[index_tag], row_2[index_tag],
+                                id_tag, row_1[id_tag], row_2[id_tag])
                         warn += 'Found conflict on restraints (%s) for the same %s (%s).' % (discrepancy[:-2], data_unit_name, msg)
 
                         self.report.warning.appendDescription('conflicted_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn, 'sigma': float('{:.2f}'.format(r / max_inclusive))})
@@ -7773,12 +7784,12 @@ class NmrDpUtility(object):
 
                     elif inconsist:
 
-                        msg = '' if content_subtype != 'dihed_restraint' else angle_type_name + ' %s, ' % lp_data[row_id_1][angle_type_name]
-                        msg += self.__getResucedAtomNotations(key_items, lp_data[row_id_1])
+                        msg = '' if content_subtype != 'dihed_restraint' else angle_type_name + ' %s, ' % row_1[angle_type_name]
+                        msg += self.__getResucedAtomNotations(key_items, row_1)
 
                         warn = '[Check rows of %s %s vs %s, %s %s vs %s] ' %\
-                               (index_tag, lp_data[row_id_1][index_tag], lp_data[row_id_2][index_tag],
-                                id_tag, lp_data[row_id_1][id_tag], lp_data[row_id_2][id_tag])
+                               (index_tag, row_1[index_tag], row_2[index_tag],
+                                id_tag, row_1[id_tag], row_2[id_tag])
                         warn += 'Found discrepancy in restraints (%s) for the same %s (%s).' % (discrepancy[:-2], data_unit_name, msg)
 
                         self.report.warning.appendDescription('inconsistent_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn, 'sigma': float('{:.2f}'.format(r / max_inclusive))})
@@ -7789,8 +7800,8 @@ class NmrDpUtility(object):
 
             if redundant:
 
-                msg = '' if content_subtype != 'dihed_restraint' else angle_type_name + ' %s, ' % lp_data[row_id_1][angle_type_name]
-                msg += self.__getResucedAtomNotations(key_items, lp_data[row_id_1])
+                msg = '' if content_subtype != 'dihed_restraint' else angle_type_name + ' %s, ' % row_1[angle_type_name]
+                msg += self.__getResucedAtomNotations(key_items, row_1)
 
                 idx_msg = index_tag + ' '
                 for id in id_set:
@@ -8524,7 +8535,7 @@ class NmrDpUtility(object):
                                           atom_id.startswith('Q') or
                                           atom_id.startswith('M') or
                                           self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id) == 0):
-                    (_atom_id, ambig_code, details) = self.__getAtomIdListWithAmbigCode(file_type, comp_id, atom_id)
+                    _atom_id, ambig_code, details = self.__getAtomIdListWithAmbigCode(file_type, comp_id, atom_id)
 
                     if len(_atom_id) == 0:
                         continue
@@ -11134,7 +11145,7 @@ class NmrDpUtility(object):
                                           atom_id.startswith('Q') or
                                           atom_id.startswith('M') or
                                           self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id) == 0):
-                    (_atom_id, ambig_code, details) = self.__getAtomIdListWithAmbigCode(file_type, comp_id, atom_id)
+                    _atom_id, ambig_code, details = self.__getAtomIdListWithAmbigCode(file_type, comp_id, atom_id)
 
                     if len(_atom_id) == 0:
                         continue
@@ -12056,52 +12067,52 @@ class NmrDpUtility(object):
                     for i in range(len_id_set - 1):
 
                         for j in range(i + 1, len_id_set):
-                            row_id_1 = id_set[i]
-                            row_id_2 = id_set[j]
+                            row_1 = lp_data[id_set[i]]
+                            row_2 = lp_data[id_set[j]]
 
-                            target_value_1 = lp_data[row_id_1][target_value_name] if target_value_name in lp_data[row_id_1] else None
+                            target_value_1 = row_1[target_value_name] if target_value_name in row_1 else None
 
                             if target_value_1 is None:
 
-                                if lower_limit_name in lp_data[row_id_1] and (not lp_data[row_id_1][lower_limit_name] is None) and upper_limit_name in lp_data[row_id_1] and (not lp_data[row_id_1][upper_limit_name] is None):
-                                    target_value_1 = (lp_data[row_id_1][lower_limit_name] + lp_data[row_id_1][upper_limit_name]) / 2.0
+                                if lower_limit_name in row_1 and (not row_1[lower_limit_name] is None) and upper_limit_name in row_1 and (not row_1[upper_limit_name] is None):
+                                    target_value_1 = (row_1[lower_limit_name] + row_1[upper_limit_name]) / 2.0
 
-                                elif lower_linear_limit_name in lp_data[row_id_1] and (not lp_data[row_id_1][lower_linear_limit_name] is None) and upper_linear_limit_name is i and (not lp_data[row_id_1][upper_linear_limit_name] is None):
-                                    target_value_1 = (lp_data[row_id_1][lower_linear_limit_name] + lp_data[row_id_1][upper_linear_limit_name]) / 2.0
+                                elif lower_linear_limit_name in row_1 and (not row_1[lower_linear_limit_name] is None) and upper_linear_limit_name is i and (not row_1[upper_linear_limit_name] is None):
+                                    target_value_1 = (row_1[lower_linear_limit_name] + row_1[upper_linear_limit_name]) / 2.0
 
-                                elif upper_linear_limit_name in lp_data[row_id_1] and (not lp_data[row_id_1][upper_linear_limit_name] is None):
-                                    target_value_1 = lp_data[row_id_1][upper_linear_limit_name]
+                                elif upper_linear_limit_name in row_1 and (not row_1[upper_linear_limit_name] is None):
+                                    target_value_1 = row_1[upper_linear_limit_name]
 
-                                elif upper_limit_name in lp_data[row_id_1] and (not lp_data[row_id_1][upper_limit_name] is None):
-                                    target_value_1 = lp_data[row_id_1][upper_limit_name]
+                                elif upper_limit_name in row_1 and (not row_1[upper_limit_name] is None):
+                                    target_value_1 = row_1[upper_limit_name]
 
-                                elif lower_linear_limit_name in lp_data[row_id_1] and (not lp_data[row_id_1][lower_linear_limit_name] is None):
-                                    target_value_1 = lp_data[row_id_1][lower_linear_limit_name]
+                                elif lower_linear_limit_name in row_1 and (not row_1[lower_linear_limit_name] is None):
+                                    target_value_1 = row_1[lower_linear_limit_name]
 
-                                elif lower_limit_name in lp_data[row_id_1] and (not lp_data[row_id_1][lower_limit_name] is None):
-                                    target_value_1 = lp_data[row_id_1][lower_limit_name]
+                                elif lower_limit_name in row_1 and (not row_1[lower_limit_name] is None):
+                                    target_value_1 = row_1[lower_limit_name]
 
-                            target_value_2 = lp_data[row_id_2][target_value_name] if target_value_name in lp_data[row_id_2] else None
+                            target_value_2 = row_2[target_value_name] if target_value_name in row_2 else None
 
                             if target_value_2 is None:
 
-                                if lower_limit_name in lp_data[row_id_2] and (not lp_data[row_id_2][lower_limit_name] is None) and upper_limit_name in lp_data[row_id_2] and (not lp_data[row_id_2][upper_limit_name] is None):
-                                    target_value_2 = (lp_data[row_id_2][lower_limit_name] + lp_data[row_id_2][upper_limit_name]) / 2.0
+                                if lower_limit_name in row_2 and (not row_2[lower_limit_name] is None) and upper_limit_name in row_2 and (not row_2[upper_limit_name] is None):
+                                    target_value_2 = (row_2[lower_limit_name] + row_2[upper_limit_name]) / 2.0
 
-                                elif lower_linear_limit_name in lp_data[row_id_2] and (not lp_data[row_id_2][lower_linear_limit_name] is None) and upper_linear_limit_name is i and (not lp_data[row_id_2][upper_linear_limit_name] is None):
-                                    target_value_2 = (lp_data[row_id_2][lower_linear_limit_name] + lp_data[row_id_2][upper_linear_limit_name]) / 2.0
+                                elif lower_linear_limit_name in row_2 and (not row_2[lower_linear_limit_name] is None) and upper_linear_limit_name is i and (not row_2[upper_linear_limit_name] is None):
+                                    target_value_2 = (row_2[lower_linear_limit_name] + row_2[upper_linear_limit_name]) / 2.0
 
-                                elif upper_linear_limit_name in lp_data[row_id_2] and (not lp_data[row_id_2][upper_linear_limit_name] is None):
-                                    target_value_2 = lp_data[row_id_2][upper_linear_limit_name]
+                                elif upper_linear_limit_name in row_2 and (not row_2[upper_linear_limit_name] is None):
+                                    target_value_2 = row_2[upper_linear_limit_name]
 
-                                elif upper_limit_name in lp_data[row_id_2] and (not lp_data[row_id_2][upper_limit_name] is None):
-                                    target_value_2 = lp_data[row_id_2][upper_limit_name]
+                                elif upper_limit_name in row_2 and (not row_2[upper_limit_name] is None):
+                                    target_value_2 = row_2[upper_limit_name]
 
-                                elif lower_linear_limit_name in lp_data[row_id_2] and (not lp_data[row_id_2][lower_linear_limit_name] is None):
-                                    target_value_2 = lp_data[row_id_2][lower_linear_limit_name]
+                                elif lower_linear_limit_name in row_2 and (not row_2[lower_linear_limit_name] is None):
+                                    target_value_2 = row_2[lower_linear_limit_name]
 
-                                elif lower_limit_name in lp_data[row_id_2] and (not lp_data[row_id_2][lower_limit_name] is None):
-                                    target_value_2 = lp_data[row_id_2][lower_limit_name]
+                                elif lower_limit_name in row_2 and (not row_2[lower_limit_name] is None):
+                                    target_value_2 = row_2[lower_limit_name]
 
                             if target_value_1 is None or target_value_2 is None:
                                 continue
@@ -12117,18 +12128,18 @@ class NmrDpUtility(object):
                             if discrepancy >= self.r_inconsistent_dist_restraint * 100.0:
                                 ann = {}
                                 ann['level'] = 'conflicted' if discrepancy >= self.r_conflicted_dist_restraint * 100.0 else 'inconsistent'
-                                ann['chain_id_1'] = str(lp_data[row_id_1][chain_id_1_name])
-                                ann['seq_id_1'] = lp_data[row_id_1][seq_id_1_name]
-                                ann['comp_id_1'] = lp_data[row_id_1][comp_id_1_name]
-                                ann['atom_id_1'] = lp_data[row_id_1][atom_id_1_name]
-                                if lp_data[row_id_1][chain_id_1_name] != lp_data[row_id_2][chain_id_2_name]:
-                                    ann['chain_id_2'] = str(lp_data[row_id_2][chain_id_2_name])
-                                    ann['seq_id_2'] = lp_data[row_id_2][seq_id_2_name]
-                                    ann['comp_id_2'] = lp_data[row_id_2][comp_id_2_name]
-                                elif lp_data[row_id_1][seq_id_1_name] != lp_data[row_id_2][seq_id_2_name]:
-                                    ann['seq_id_2'] = lp_data[row_id_2][seq_id_2_name]
-                                    ann['comp_id_2'] = lp_data[row_id_2][comp_id_2_name]
-                                ann['atom_id_2'] = lp_data[row_id_2][atom_id_2_name]
+                                ann['chain_id_1'] = str(row_1[chain_id_1_name])
+                                ann['seq_id_1'] = row_1[seq_id_1_name]
+                                ann['comp_id_1'] = row_1[comp_id_1_name]
+                                ann['atom_id_1'] = row_1[atom_id_1_name]
+                                if row_1[chain_id_1_name] != row_2[chain_id_2_name]:
+                                    ann['chain_id_2'] = str(row_2[chain_id_2_name])
+                                    ann['seq_id_2'] = row_2[seq_id_2_name]
+                                    ann['comp_id_2'] = row_2[comp_id_2_name]
+                                elif row_1[seq_id_1_name] != row_2[seq_id_2_name]:
+                                    ann['seq_id_2'] = row_2[seq_id_2_name]
+                                    ann['comp_id_2'] = row_2[comp_id_2_name]
+                                ann['atom_id_2'] = row_2[atom_id_2_name]
                                 ann['discrepancy'] = float('{:.1f}'.format(discrepancy))
 
                                 dist_ann.append(ann)
@@ -12173,51 +12184,52 @@ class NmrDpUtility(object):
 
                                 for j in range(i + 1, len_id_set):
                                     row_id_1 = id_set[i]
-                                    row_id_2 = id_set[j]
+                                    row_1 = lp_data[row_id_1]
+                                    row_2 = lp_data[id_set[j]]
 
-                                    target_value_1 = lp_data[row_id_1][target_value_name] if target_value_name in lp_data[row_id_1] else None
+                                    target_value_1 = row_1[target_value_name] if target_value_name in row_1 else None
 
                                     if target_value_1 is None:
 
-                                        if lower_limit_name in lp_data[row_id_1] and (not lp_data[row_id_1][lower_limit_name] is None) and upper_limit_name in lp_data[row_id_1] and (not lp_data[row_id_1][upper_limit_name] is None):
-                                            target_value_1 = (lp_data[row_id_1][lower_limit_name] + lp_data[row_id_1][upper_limit_name]) / 2.0
+                                        if lower_limit_name in row_1 and (not row_1[lower_limit_name] is None) and upper_limit_name in row_1 and (not row_1[upper_limit_name] is None):
+                                            target_value_1 = (row_1[lower_limit_name] + row_1[upper_limit_name]) / 2.0
 
-                                        elif lower_linear_limit_name in lp_data[row_id_1] and (not lp_data[row_id_1][lower_linear_limit_name] is None) and upper_linear_limit_name is i and (not lp_data[row_id_1][upper_linear_limit_name] is None):
-                                            target_value_1 = (lp_data[row_id_1][lower_linear_limit_name] + lp_data[row_id_1][upper_linear_limit_name]) / 2.0
+                                        elif lower_linear_limit_name in row_1 and (not row_1[lower_linear_limit_name] is None) and upper_linear_limit_name is i and (not row_1[upper_linear_limit_name] is None):
+                                            target_value_1 = (row_1[lower_linear_limit_name] + row_1[upper_linear_limit_name]) / 2.0
 
-                                        elif upper_linear_limit_name in lp_data[row_id_1] and (not lp_data[row_id_1][upper_linear_limit_name] is None):
-                                            target_value_1 = lp_data[row_id_1][upper_linear_limit_name]
+                                        elif upper_linear_limit_name in row_1 and (not row_1[upper_linear_limit_name] is None):
+                                            target_value_1 = row_1[upper_linear_limit_name]
 
-                                        elif upper_limit_name in lp_data[row_id_1] and (not lp_data[row_id_1][upper_limit_name] is None):
-                                            target_value_1 = lp_data[row_id_1][upper_limit_name]
+                                        elif upper_limit_name in row_1 and (not row_1[upper_limit_name] is None):
+                                            target_value_1 = row_1[upper_limit_name]
 
-                                        elif lower_linear_limit_name in lp_data[row_id_1] and (not lp_data[row_id_1][lower_linear_limit_name] is None):
-                                            target_value_1 = lp_data[row_id_1][lower_linear_limit_name]
+                                        elif lower_linear_limit_name in row_1 and (not row_1[lower_linear_limit_name] is None):
+                                            target_value_1 = row_1[lower_linear_limit_name]
 
-                                        elif lower_limit_name in lp_data[row_id_1] and (not lp_data[row_id_1][lower_limit_name] is None):
-                                            target_value_1 = lp_data[row_id_1][lower_limit_name]
+                                        elif lower_limit_name in row_1 and (not row_1[lower_limit_name] is None):
+                                            target_value_1 = row_1[lower_limit_name]
 
-                                    target_value_2 = lp_data[row_id_2][target_value_name] if target_value_name in lp_data[row_id_2] else None
+                                    target_value_2 = row_2[target_value_name] if target_value_name in row_2 else None
 
                                     if target_value_2 is None:
 
-                                        if lower_limit_name in lp_data[row_id_2] and (not lp_data[row_id_2][lower_limit_name] is None) and upper_limit_name in lp_data[row_id_2] and (not lp_data[row_id_2][upper_limit_name] is None):
-                                            target_value_2 = (lp_data[row_id_2][lower_limit_name] + lp_data[row_id_2][upper_limit_name]) / 2.0
+                                        if lower_limit_name in row_2 and (not row_2[lower_limit_name] is None) and upper_limit_name in row_2 and (not row_2[upper_limit_name] is None):
+                                            target_value_2 = (row_2[lower_limit_name] + row_2[upper_limit_name]) / 2.0
 
-                                        elif lower_linear_limit_name in lp_data[row_id_2] and (not lp_data[row_id_2][lower_linear_limit_name] is None) and upper_linear_limit_name is i and (not lp_data[row_id_2][upper_linear_limit_name] is None):
-                                            target_value_2 = (lp_data[row_id_2][lower_linear_limit_name] + lp_data[row_id_2][upper_linear_limit_name]) / 2.0
+                                        elif lower_linear_limit_name in row_2 and (not row_2[lower_linear_limit_name] is None) and upper_linear_limit_name is i and (not row_2[upper_linear_limit_name] is None):
+                                            target_value_2 = (row_2[lower_linear_limit_name] + row_2[upper_linear_limit_name]) / 2.0
 
-                                        elif upper_linear_limit_name in lp_data[row_id_2] and (not lp_data[row_id_2][upper_linear_limit_name] is None):
-                                            target_value_2 = lp_data[row_id_2][upper_linear_limit_name]
+                                        elif upper_linear_limit_name in row_2 and (not row_2[upper_linear_limit_name] is None):
+                                            target_value_2 = row_2[upper_linear_limit_name]
 
-                                        elif upper_limit_name in lp_data[row_id_2] and (not lp_data[row_id_2][upper_limit_name] is None):
-                                            target_value_2 = lp_data[row_id_2][upper_limit_name]
+                                        elif upper_limit_name in row_2 and (not row_2[upper_limit_name] is None):
+                                            target_value_2 = row_2[upper_limit_name]
 
-                                        elif lower_linear_limit_name in lp_data[row_id_2] and (not lp_data[row_id_2][lower_linear_limit_name] is None):
-                                            target_value_2 = lp_data[row_id_2][lower_linear_limit_name]
+                                        elif lower_linear_limit_name in row_2 and (not row_2[lower_linear_limit_name] is None):
+                                            target_value_2 = row_2[lower_linear_limit_name]
 
-                                        elif lower_limit_name in lp_data[row_id_2] and (not lp_data[row_id_2][lower_limit_name] is None):
-                                            target_value_2 = lp_data[row_id_2][lower_limit_name]
+                                        elif lower_limit_name in row_2 and (not row_2[lower_limit_name] is None):
+                                            target_value_2 = row_2[lower_limit_name]
 
                                     if target_value_1 is None and target_value_2 is None:
                                         continue
@@ -12236,46 +12248,46 @@ class NmrDpUtility(object):
                                     if discrepancy < v or discrepancy >= v + scale:
                                         continue
 
-                                    target_value = lp_data[row_id_1][target_value_name] if target_value_name in lp_data[row_id_1] else None
+                                    target_value = row_1[target_value_name] if target_value_name in row_1 else None
 
                                     upper_limit_value = None
                                     lower_limit_value = None
 
                                     if target_value is None:
 
-                                        if lower_limit_name in lp_data[row_id_1] and (not lp_data[row_id_1][lower_limit_name] is None) and upper_limit_name in lp_data[row_id_1] and (not lp_data[row_id_1][upper_limit_name] is None):
-                                            target_value = (lp_data[row_id_1][lower_limit_name] + lp_data[row_id_1][upper_limit_name]) / 2.0
+                                        if lower_limit_name in row_1 and (not row_1[lower_limit_name] is None) and upper_limit_name in row_1 and (not row_1[upper_limit_name] is None):
+                                            target_value = (row_1[lower_limit_name] + row_1[upper_limit_name]) / 2.0
 
-                                        elif lower_linear_limit_name in lp_data[row_id_1] and (not lp_data[row_id_1][lower_linear_limit_name] is None) and upper_linear_limit_name is i and (not lp_data[row_id_1][upper_linear_limit_name] is None):
-                                            target_value = (lp_data[row_id_1][lower_linear_limit_name] + lp_data[row_id_1][upper_linear_limit_name]) / 2.0
+                                        elif lower_linear_limit_name in row_1 and (not row_1[lower_linear_limit_name] is None) and upper_linear_limit_name is i and (not row_1[upper_linear_limit_name] is None):
+                                            target_value = (row_1[lower_linear_limit_name] + row_1[upper_linear_limit_name]) / 2.0
 
-                                        elif upper_linear_limit_name in lp_data[row_id_1] and (not lp_data[row_id_1][upper_linear_limit_name] is None):
-                                            target_value = lp_data[row_id_1][upper_linear_limit_name]
+                                        elif upper_linear_limit_name in row_1 and (not row_1[upper_linear_limit_name] is None):
+                                            target_value = row_1[upper_linear_limit_name]
                                             upper_limit_value = target_value
 
-                                        elif upper_limit_name in lp_data[row_id_1] and (not lp_data[row_id_1][upper_limit_name] is None):
-                                            target_value = lp_data[row_id_1][upper_limit_name]
+                                        elif upper_limit_name in row_1 and (not row_1[upper_limit_name] is None):
+                                            target_value = row_1[upper_limit_name]
                                             upper_limit_value = target_value
 
-                                        elif lower_linear_limit_name in lp_data[row_id_1] and (not lp_data[row_id_1][lower_linear_limit_name] is None):
-                                            target_value = lp_data[row_id_1][lower_linear_limit_name]
+                                        elif lower_linear_limit_name in row_1 and (not row_1[lower_linear_limit_name] is None):
+                                            target_value = row_1[lower_linear_limit_name]
                                             lower_limit_value = target_value
 
-                                        elif lower_limit_name in lp_data[row_id_1] and (not lp_data[row_id_1][lower_limit_name] is None):
-                                            target_value = lp_data[row_id_1][lower_limit_name]
+                                        elif lower_limit_name in row_1 and (not row_1[lower_limit_name] is None):
+                                            target_value = row_1[lower_limit_name]
                                             lower_limit_value = target_value
 
                                         else:
                                             continue
 
-                                    chain_id_1 = str(lp_data[row_id_1][chain_id_1_name])
-                                    chain_id_2 = str(lp_data[row_id_1][chain_id_2_name])
-                                    seq_id_1 = lp_data[row_id_1][seq_id_1_name]
-                                    seq_id_2 = lp_data[row_id_1][seq_id_2_name]
-                                    comp_id_1 = lp_data[row_id_1][comp_id_1_name]
-                                    comp_id_2 = lp_data[row_id_1][comp_id_2_name]
-                                    atom_id_1 = lp_data[row_id_1][atom_id_1_name]
-                                    atom_id_2 = lp_data[row_id_1][atom_id_2_name]
+                                    chain_id_1 = str(row_1[chain_id_1_name])
+                                    chain_id_2 = str(row_1[chain_id_2_name])
+                                    seq_id_1 = row_1[seq_id_1_name]
+                                    seq_id_2 = row_1[seq_id_2_name]
+                                    comp_id_1 = row_1[comp_id_1_name]
+                                    comp_id_2 = row_1[comp_id_2_name]
+                                    atom_id_1 = row_1[atom_id_1_name]
+                                    atom_id_2 = row_1[atom_id_2_name]
 
                                     data_type = self.__getTypeOfDistanceRestraint(file_type, lp_data, row_id_1, target_value, upper_limit_value, lower_limit_value,
                                                                                   chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2)
@@ -12284,46 +12296,46 @@ class NmrDpUtility(object):
 
                             if v >= 0.0 and v < scale and redundant:
 
-                                target_value = lp_data[row_id_1][target_value_name] if target_value_name in lp_data[row_id_1] else None
+                                target_value = row_1[target_value_name] if target_value_name in row_1 else None
 
                                 upper_limit_value = None
                                 lower_limit_value = None
 
                                 if target_value is None:
 
-                                    if lower_limit_name in lp_data[row_id_1] and (not lp_data[row_id_1][lower_limit_name] is None) and upper_limit_name in lp_data[row_id_1] and (not lp_data[row_id_1][upper_limit_name] is None):
-                                        target_value = (lp_data[row_id_1][lower_limit_name] + lp_data[row_id_1][upper_limit_name]) / 2.0
+                                    if lower_limit_name in row_1 and (not row_1[lower_limit_name] is None) and upper_limit_name in row_1 and (not row_1[upper_limit_name] is None):
+                                        target_value = (row_1[lower_limit_name] + row_1[upper_limit_name]) / 2.0
 
-                                    elif lower_linear_limit_name in lp_data[row_id_1] and (not lp_data[row_id_1][lower_linear_limit_name] is None) and upper_linear_limit_name is i and (not lp_data[row_id_1][upper_linear_limit_name] is None):
-                                        target_value = (lp_data[row_id_1][lower_linear_limit_name] + lp_data[row_id_1][upper_linear_limit_name]) / 2.0
+                                    elif lower_linear_limit_name in row_1 and (not row_1[lower_linear_limit_name] is None) and upper_linear_limit_name is i and (not row_1[upper_linear_limit_name] is None):
+                                        target_value = (row_1[lower_linear_limit_name] + row_1[upper_linear_limit_name]) / 2.0
 
-                                    elif upper_linear_limit_name in lp_data[row_id_1] and (not lp_data[row_id_1][upper_linear_limit_name] is None):
-                                        target_value = lp_data[row_id_1][upper_linear_limit_name]
+                                    elif upper_linear_limit_name in row_1 and (not row_1[upper_linear_limit_name] is None):
+                                        target_value = row_1[upper_linear_limit_name]
                                         upper_limit_value = target_value
 
-                                    elif upper_limit_name in lp_data[row_id_1] and (not lp_data[row_id_1][upper_limit_name] is None):
-                                        target_value = lp_data[row_id_1][upper_limit_name]
+                                    elif upper_limit_name in row_1 and (not row_1[upper_limit_name] is None):
+                                        target_value = row_1[upper_limit_name]
                                         upper_limit_value = target_value
 
-                                    elif lower_linear_limit_name in lp_data[row_id_1] and (not lp_data[row_id_1][lower_linear_limit_name] is None):
-                                        target_value = lp_data[row_id_1][lower_linear_limit_name]
+                                    elif lower_linear_limit_name in row_1 and (not row_1[lower_linear_limit_name] is None):
+                                        target_value = row_1[lower_linear_limit_name]
                                         lower_limit_value = target_value
 
-                                    elif lower_limit_name in lp_data[row_id_1] and (not lp_data[row_id_1][lower_limit_name] is None):
-                                        target_value = lp_data[row_id_1][lower_limit_name]
+                                    elif lower_limit_name in row_1 and (not row_1[lower_limit_name] is None):
+                                        target_value = row_1[lower_limit_name]
                                         lower_limit_value = target_value
 
                                     else:
                                         continue
 
-                                chain_id_1 = str(lp_data[row_id_1][chain_id_1_name])
-                                chain_id_2 = str(lp_data[row_id_1][chain_id_2_name])
-                                seq_id_1 = lp_data[row_id_1][seq_id_1_name]
-                                seq_id_2 = lp_data[row_id_1][seq_id_2_name]
-                                comp_id_1 = lp_data[row_id_1][comp_id_1_name]
-                                comp_id_2 = lp_data[row_id_1][comp_id_2_name]
-                                atom_id_1 = lp_data[row_id_1][atom_id_1_name]
-                                atom_id_2 = lp_data[row_id_1][atom_id_2_name]
+                                chain_id_1 = str(row_1[chain_id_1_name])
+                                chain_id_2 = str(row_1[chain_id_2_name])
+                                seq_id_1 = row_1[seq_id_1_name]
+                                seq_id_2 = row_1[seq_id_2_name]
+                                comp_id_1 = row_1[comp_id_1_name]
+                                comp_id_2 = row_1[comp_id_2_name]
+                                atom_id_1 = row_1[atom_id_1_name]
+                                atom_id_2 = row_1[atom_id_2_name]
 
                                 data_type = self.__getTypeOfDistanceRestraint(file_type, lp_data, row_id_1, target_value, upper_limit_value, lower_limit_value,
                                                                               chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2)
@@ -12585,7 +12597,7 @@ class NmrDpUtility(object):
                     other_bond_type = 'Se...' + metal + ' (too far!)'
                     other_bond = True
 
-            else:
+            elif chain_id_1 != chain_id_2:
 
                 for l, j in enumerate(lp_data):
 
@@ -13159,52 +13171,52 @@ class NmrDpUtility(object):
                     for i in range(len_id_set - 1):
 
                         for j in range(i + 1, len_id_set):
-                            row_id_1 = id_set[i]
-                            row_id_2 = id_set[j]
+                            row_1 = lp_data[id_set[i]]
+                            row_2 = lp_data[id_set[j]]
 
-                            target_value_1 = lp_data[row_id_1][target_value_name] if target_value_name in lp_data[row_id_1] else None
+                            target_value_1 = row_1[target_value_name] if target_value_name in row_1 else None
 
                             if target_value_1 is None:
 
-                                if lower_limit_name in lp_data[row_id_1] and (not lp_data[row_id_1][lower_limit_name] is None) and upper_limit_name in lp_data[row_id_1] and (not lp_data[row_id_1][upper_limit_name] is None):
-                                    target_value_1 = (lp_data[row_id_1][lower_limit_name] + lp_data[row_id_1][upper_limit_name]) / 2.0
+                                if lower_limit_name in row_1 and (not row_1[lower_limit_name] is None) and upper_limit_name in row_1 and (not row_1[upper_limit_name] is None):
+                                    target_value_1 = (row_1[lower_limit_name] + row_1[upper_limit_name]) / 2.0
 
-                                elif lower_linear_limit_name in lp_data[row_id_1] and (not lp_data[row_id_1][lower_linear_limit_name] is None) and upper_linear_limit_name is i and (not lp_data[row_id_1][upper_linear_limit_name] is None):
-                                    target_value_1 = (lp_data[row_id_1][lower_linear_limit_name] + lp_data[row_id_1][upper_linear_limit_name]) / 2.0
+                                elif lower_linear_limit_name in row_1 and (not row_1[lower_linear_limit_name] is None) and upper_linear_limit_name is i and (not row_1[upper_linear_limit_name] is None):
+                                    target_value_1 = (row_1[lower_linear_limit_name] + row_1[upper_linear_limit_name]) / 2.0
 
-                                elif upper_linear_limit_name in lp_data[row_id_1] and (not lp_data[row_id_1][upper_linear_limit_name] is None):
-                                    target_value_1 = lp_data[row_id_1][upper_linear_limit_name]
+                                elif upper_linear_limit_name in row_1 and (not row_1[upper_linear_limit_name] is None):
+                                    target_value_1 = row_1[upper_linear_limit_name]
 
-                                elif upper_limit_name in lp_data[row_id_1] and (not lp_data[row_id_1][upper_limit_name] is None):
-                                    target_value_1 = lp_data[row_id_1][upper_limit_name]
+                                elif upper_limit_name in row_1 and (not row_1[upper_limit_name] is None):
+                                    target_value_1 = row_1[upper_limit_name]
 
-                                elif lower_linear_limit_name in lp_data[row_id_1] and (not lp_data[row_id_1][lower_linear_limit_name] is None):
-                                    target_value_1 = lp_data[row_id_1][lower_linear_limit_name]
+                                elif lower_linear_limit_name in row_1 and (not row_1[lower_linear_limit_name] is None):
+                                    target_value_1 = row_1[lower_linear_limit_name]
 
-                                elif lower_limit_name in lp_data[row_id_1] and (not lp_data[row_id_1][lower_limit_name] is None):
-                                    target_value_1 = lp_data[row_id_1][lower_limit_name]
+                                elif lower_limit_name in row_1 and (not row_1[lower_limit_name] is None):
+                                    target_value_1 = row_1[lower_limit_name]
 
-                            target_value_2 = lp_data[row_id_2][target_value_name] if target_value_name in lp_data[row_id_2] else None
+                            target_value_2 = row_2[target_value_name] if target_value_name in row_2 else None
 
                             if target_value_2 is None:
 
-                                if lower_limit_name in lp_data[row_id_2] and (not lp_data[row_id_2][lower_limit_name] is None) and upper_limit_name in lp_data[row_id_2] and (not lp_data[row_id_2][upper_limit_name] is None):
-                                    target_value_2 = (lp_data[row_id_2][lower_limit_name] + lp_data[row_id_2][upper_limit_name]) / 2.0
+                                if lower_limit_name in row_2 and (not row_2[lower_limit_name] is None) and upper_limit_name in row_2 and (not row_2[upper_limit_name] is None):
+                                    target_value_2 = (row_2[lower_limit_name] + row_2[upper_limit_name]) / 2.0
 
-                                elif lower_linear_limit_name in lp_data[row_id_2] and (not lp_data[row_id_2][lower_linear_limit_name] is None) and upper_linear_limit_name is i and (not lp_data[row_id_2][upper_linear_limit_name] is None):
-                                    target_value_2 = (lp_data[row_id_2][lower_linear_limit_name] + lp_data[row_id_2][upper_linear_limit_name]) / 2.0
+                                elif lower_linear_limit_name in row_2 and (not row_2[lower_linear_limit_name] is None) and upper_linear_limit_name is i and (not row_2[upper_linear_limit_name] is None):
+                                    target_value_2 = (row_2[lower_linear_limit_name] + row_2[upper_linear_limit_name]) / 2.0
 
-                                elif upper_linear_limit_name in lp_data[row_id_2] and (not lp_data[row_id_2][upper_linear_limit_name] is None):
-                                    target_value_2 = lp_data[row_id_2][upper_linear_limit_name]
+                                elif upper_linear_limit_name in row_2 and (not row_2[upper_linear_limit_name] is None):
+                                    target_value_2 = row_2[upper_linear_limit_name]
 
-                                elif upper_limit_name in lp_data[row_id_2] and (not lp_data[row_id_2][upper_limit_name] is None):
-                                    target_value_2 = lp_data[row_id_2][upper_limit_name]
+                                elif upper_limit_name in row_2 and (not row_2[upper_limit_name] is None):
+                                    target_value_2 = row_2[upper_limit_name]
 
-                                elif lower_linear_limit_name in lp_data[row_id_2] and (not lp_data[row_id_2][lower_linear_limit_name] is None):
-                                    target_value_2 = lp_data[row_id_2][lower_linear_limit_name]
+                                elif lower_linear_limit_name in row_2 and (not row_2[lower_linear_limit_name] is None):
+                                    target_value_2 = row_2[lower_linear_limit_name]
 
-                                elif lower_limit_name in lp_data[row_id_2] and (not lp_data[row_id_2][lower_limit_name] is None):
-                                    target_value_2 = lp_data[row_id_2][lower_limit_name]
+                                elif lower_limit_name in row_2 and (not row_2[lower_limit_name] is None):
+                                    target_value_2 = row_2[lower_limit_name]
 
                             if target_value_1 is None or target_value_2 is None:
                                 continue
@@ -13230,23 +13242,23 @@ class NmrDpUtility(object):
                                 if target_value_1 > target_value_2:
                                     discrepancy = abs(target_value_1 - (target_value_2 + 360.0))
 
-                            chain_id_1 = str(lp_data[row_id_1][chain_id_1_name])
-                            chain_id_2 = str(lp_data[row_id_1][chain_id_2_name])
-                            chain_id_3 = str(lp_data[row_id_1][chain_id_3_name])
-                            chain_id_4 = str(lp_data[row_id_1][chain_id_4_name])
-                            seq_id_1 = lp_data[row_id_1][seq_id_1_name]
-                            seq_id_2 = lp_data[row_id_1][seq_id_2_name]
-                            seq_id_3 = lp_data[row_id_1][seq_id_3_name]
-                            seq_id_4 = lp_data[row_id_1][seq_id_4_name]
-                            comp_id_1 = lp_data[row_id_1][comp_id_1_name]
-                            comp_id_2 = lp_data[row_id_1][comp_id_2_name]
-                            comp_id_3 = lp_data[row_id_1][comp_id_3_name]
-                            comp_id_4 = lp_data[row_id_1][comp_id_4_name]
-                            atom_id_1 = lp_data[row_id_1][atom_id_1_name]
-                            atom_id_2 = lp_data[row_id_1][atom_id_2_name]
-                            atom_id_3 = lp_data[row_id_1][atom_id_3_name]
-                            atom_id_4 = lp_data[row_id_1][atom_id_4_name]
-                            data_type = lp_data[row_id_1][angle_type_name]
+                            chain_id_1 = str(row_1[chain_id_1_name])
+                            chain_id_2 = str(row_1[chain_id_2_name])
+                            chain_id_3 = str(row_1[chain_id_3_name])
+                            chain_id_4 = str(row_1[chain_id_4_name])
+                            seq_id_1 = row_1[seq_id_1_name]
+                            seq_id_2 = row_1[seq_id_2_name]
+                            seq_id_3 = row_1[seq_id_3_name]
+                            seq_id_4 = row_1[seq_id_4_name]
+                            comp_id_1 = row_1[comp_id_1_name]
+                            comp_id_2 = row_1[comp_id_2_name]
+                            comp_id_3 = row_1[comp_id_3_name]
+                            comp_id_4 = row_1[comp_id_4_name]
+                            atom_id_1 = row_1[atom_id_1_name]
+                            atom_id_2 = row_1[atom_id_2_name]
+                            atom_id_3 = row_1[atom_id_3_name]
+                            atom_id_4 = row_1[atom_id_4_name]
+                            data_type = row_1[angle_type_name]
 
                             data_type = self.__getTypeOfDihedralRestraint(data_type,
                                                                           chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2,
@@ -13260,13 +13272,13 @@ class NmrDpUtility(object):
                                 if discrepancy > max_inclusive * self.inconsist_over_conflicted:
                                     ann = {}
                                     ann['level'] = 'conflicted' if discrepancy > max_inclusive else 'inconsistent'
-                                    ann['chain_id'] = str(lp_data[row_id_1][chain_id_2_name])
-                                    ann['seq_id'] = lp_data[row_id_1][seq_id_2_name]
-                                    ann['comp_id'] = lp_data[row_id_1][comp_id_2_name]
-                                    ann['atom_id_1'] = lp_data[row_id_1][atom_id_1_name]
-                                    ann['atom_id_2'] = lp_data[row_id_1][atom_id_2_name]
-                                    ann['atom_id_3'] = lp_data[row_id_1][atom_id_3_name]
-                                    ann['atom_id_4'] = lp_data[row_id_1][atom_id_4_name]
+                                    ann['chain_id'] = str(row_1[chain_id_2_name])
+                                    ann['seq_id'] = row_1[seq_id_2_name]
+                                    ann['comp_id'] = row_1[comp_id_2_name]
+                                    ann['atom_id_1'] = row_1[atom_id_1_name]
+                                    ann['atom_id_2'] = row_1[atom_id_2_name]
+                                    ann['atom_id_3'] = row_1[atom_id_3_name]
+                                    ann['atom_id_4'] = row_1[atom_id_4_name]
                                     ann['discrepancy'] = float('{:.1f}'.format(discrepancy))
 
                                     dihed_ann.append(ann)
@@ -13310,52 +13322,52 @@ class NmrDpUtility(object):
                             for i in range(len_id_set - 1):
 
                                 for j in range(i + 1, len_id_set):
-                                    row_id_1 = id_set[i]
-                                    row_id_2 = id_set[j]
+                                    row_1 = lp_data[id_set[i]]
+                                    row_2 = lp_data[id_set[j]]
 
-                                    target_value_1 = lp_data[row_id_1][target_value_name] if target_value_name in lp_data[row_id_1] else None
+                                    target_value_1 = row_1[target_value_name] if target_value_name in row_1 else None
 
                                     if target_value_1 is None:
 
-                                        if lower_limit_name in lp_data[row_id_1] and (not lp_data[row_id_1][lower_limit_name] is None) and upper_limit_name in lp_data[row_id_1] and (not lp_data[row_id_1][upper_limit_name] is None):
-                                            target_value_1 = (lp_data[row_id_1][lower_limit_name] + lp_data[row_id_1][upper_limit_name]) / 2.0
+                                        if lower_limit_name in row_1 and (not row_1[lower_limit_name] is None) and upper_limit_name in row_1 and (not row_1[upper_limit_name] is None):
+                                            target_value_1 = (row_1[lower_limit_name] + row_1[upper_limit_name]) / 2.0
 
-                                        elif lower_linear_limit_name in lp_data[row_id_1] and (not lp_data[row_id_1][lower_linear_limit_name] is None) and upper_linear_limit_name is i and (not lp_data[row_id_1][upper_linear_limit_name] is None):
-                                            target_value_1 = (lp_data[row_id_1][lower_linear_limit_name] + lp_data[row_id_1][upper_linear_limit_name]) / 2.0
+                                        elif lower_linear_limit_name in row_1 and (not row_1[lower_linear_limit_name] is None) and upper_linear_limit_name is i and (not row_1[upper_linear_limit_name] is None):
+                                            target_value_1 = (row_1[lower_linear_limit_name] + row_1[upper_linear_limit_name]) / 2.0
 
-                                        elif upper_linear_limit_name in lp_data[row_id_1] and (not lp_data[row_id_1][upper_linear_limit_name] is None):
-                                            target_value_1 = lp_data[row_id_1][upper_linear_limit_name]
+                                        elif upper_linear_limit_name in row_1 and (not row_1[upper_linear_limit_name] is None):
+                                            target_value_1 = row_1[upper_linear_limit_name]
 
-                                        elif upper_limit_name in lp_data[row_id_1] and (not lp_data[row_id_1][upper_limit_name] is None):
-                                            target_value_1 = lp_data[row_id_1][upper_limit_name]
+                                        elif upper_limit_name in row_1 and (not row_1[upper_limit_name] is None):
+                                            target_value_1 = row_1[upper_limit_name]
 
-                                        elif lower_linear_limit_name in lp_data[row_id_1] and (not lp_data[row_id_1][lower_linear_limit_name] is None):
-                                            target_value_1 = lp_data[row_id_1][lower_linear_limit_name]
+                                        elif lower_linear_limit_name in row_1 and (not row_1[lower_linear_limit_name] is None):
+                                            target_value_1 = row_1[lower_linear_limit_name]
 
-                                        elif lower_limit_name in lp_data[row_id_1] and (not lp_data[row_id_1][lower_limit_name] is None):
-                                            target_value_1 = lp_data[row_id_1][lower_limit_name]
+                                        elif lower_limit_name in row_1 and (not row_1[lower_limit_name] is None):
+                                            target_value_1 = row_1[lower_limit_name]
 
-                                    target_value_2 = lp_data[row_id_2][target_value_name] if target_value_name in lp_data[row_id_2] else None
+                                    target_value_2 = row_2[target_value_name] if target_value_name in row_2 else None
 
                                     if target_value_2 is None:
 
-                                        if lower_limit_name in lp_data[row_id_2] and (not lp_data[row_id_2][lower_limit_name] is None) and upper_limit_name in lp_data[row_id_2] and (not lp_data[row_id_2][upper_limit_name] is None):
-                                            target_value_2 = (lp_data[row_id_2][lower_limit_name] + lp_data[row_id_2][upper_limit_name]) / 2.0
+                                        if lower_limit_name in row_2 and (not row_2[lower_limit_name] is None) and upper_limit_name in row_2 and (not row_2[upper_limit_name] is None):
+                                            target_value_2 = (row_2[lower_limit_name] + row_2[upper_limit_name]) / 2.0
 
-                                        elif lower_linear_limit_name in lp_data[row_id_2] and (not lp_data[row_id_2][lower_linear_limit_name] is None) and upper_linear_limit_name is i and (not lp_data[row_id_2][upper_linear_limit_name] is None):
-                                            target_value_2 = (lp_data[row_id_2][lower_linear_limit_name] + lp_data[row_id_2][upper_linear_limit_name]) / 2.0
+                                        elif lower_linear_limit_name in row_2 and (not row_2[lower_linear_limit_name] is None) and upper_linear_limit_name is i and (not row_2[upper_linear_limit_name] is None):
+                                            target_value_2 = (row_2[lower_linear_limit_name] + row_2[upper_linear_limit_name]) / 2.0
 
-                                        elif upper_linear_limit_name in lp_data[row_id_2] and (not lp_data[row_id_2][upper_linear_limit_name] is None):
-                                            target_value_2 = lp_data[row_id_2][upper_linear_limit_name]
+                                        elif upper_linear_limit_name in row_2 and (not row_2[upper_linear_limit_name] is None):
+                                            target_value_2 = row_2[upper_linear_limit_name]
 
-                                        elif upper_limit_name in lp_data[row_id_2] and (not lp_data[row_id_2][upper_limit_name] is None):
-                                            target_value_2 = lp_data[row_id_2][upper_limit_name]
+                                        elif upper_limit_name in row_2 and (not row_2[upper_limit_name] is None):
+                                            target_value_2 = row_2[upper_limit_name]
 
-                                        elif lower_linear_limit_name in lp_data[row_id_2] and (not lp_data[row_id_2][lower_linear_limit_name] is None):
-                                            target_value_2 = lp_data[row_id_2][lower_linear_limit_name]
+                                        elif lower_linear_limit_name in row_2 and (not row_2[lower_linear_limit_name] is None):
+                                            target_value_2 = row_2[lower_linear_limit_name]
 
-                                        elif lower_limit_name in lp_data[row_id_2] and (not lp_data[row_id_2][lower_limit_name] is None):
-                                            target_value_2 = lp_data[row_id_2][lower_limit_name]
+                                        elif lower_limit_name in row_2 and (not row_2[lower_limit_name] is None):
+                                            target_value_2 = row_2[lower_limit_name]
 
                                     if target_value_1 is None and target_value_2 is None:
                                         continue
@@ -13384,22 +13396,22 @@ class NmrDpUtility(object):
                                     if discrepancy < v or discrepancy >= v + scale:
                                         continue
 
-                                    chain_id_1 = str(lp_data[row_id_1][chain_id_1_name])
-                                    chain_id_2 = str(lp_data[row_id_1][chain_id_2_name])
-                                    chain_id_3 = str(lp_data[row_id_1][chain_id_3_name])
-                                    chain_id_4 = str(lp_data[row_id_1][chain_id_4_name])
-                                    seq_id_1 = lp_data[row_id_1][seq_id_1_name]
-                                    seq_id_2 = lp_data[row_id_1][seq_id_2_name]
-                                    seq_id_3 = lp_data[row_id_1][seq_id_3_name]
-                                    seq_id_4 = lp_data[row_id_1][seq_id_4_name]
-                                    comp_id_1 = lp_data[row_id_1][comp_id_1_name]
-                                    comp_id_2 = lp_data[row_id_1][comp_id_2_name]
-                                    comp_id_3 = lp_data[row_id_1][comp_id_3_name]
-                                    comp_id_4 = lp_data[row_id_1][comp_id_4_name]
-                                    atom_id_1 = lp_data[row_id_1][atom_id_1_name]
-                                    atom_id_2 = lp_data[row_id_1][atom_id_2_name]
-                                    atom_id_3 = lp_data[row_id_1][atom_id_3_name]
-                                    atom_id_4 = lp_data[row_id_1][atom_id_4_name]
+                                    chain_id_1 = str(row_1[chain_id_1_name])
+                                    chain_id_2 = str(row_1[chain_id_2_name])
+                                    chain_id_3 = str(row_1[chain_id_3_name])
+                                    chain_id_4 = str(row_1[chain_id_4_name])
+                                    seq_id_1 = row_1[seq_id_1_name]
+                                    seq_id_2 = row_1[seq_id_2_name]
+                                    seq_id_3 = row_1[seq_id_3_name]
+                                    seq_id_4 = row_1[seq_id_4_name]
+                                    comp_id_1 = row_1[comp_id_1_name]
+                                    comp_id_2 = row_1[comp_id_2_name]
+                                    comp_id_3 = row_1[comp_id_3_name]
+                                    comp_id_4 = row_1[comp_id_4_name]
+                                    atom_id_1 = row_1[atom_id_1_name]
+                                    atom_id_2 = row_1[atom_id_2_name]
+                                    atom_id_3 = row_1[atom_id_3_name]
+                                    atom_id_4 = row_1[atom_id_4_name]
 
                                     data_type = self.__getTypeOfDihedralRestraint(data_type,
                                                                                   chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2,
@@ -13409,22 +13421,22 @@ class NmrDpUtility(object):
 
                             if v >= 0.0 and v < scale and redundant:
 
-                                chain_id_1 = str(lp_data[row_id_1][chain_id_1_name])
-                                chain_id_2 = str(lp_data[row_id_1][chain_id_2_name])
-                                chain_id_3 = str(lp_data[row_id_1][chain_id_3_name])
-                                chain_id_4 = str(lp_data[row_id_1][chain_id_4_name])
-                                seq_id_1 = lp_data[row_id_1][seq_id_1_name]
-                                seq_id_2 = lp_data[row_id_1][seq_id_2_name]
-                                seq_id_3 = lp_data[row_id_1][seq_id_3_name]
-                                seq_id_4 = lp_data[row_id_1][seq_id_4_name]
-                                comp_id_1 = lp_data[row_id_1][comp_id_1_name]
-                                comp_id_2 = lp_data[row_id_1][comp_id_2_name]
-                                comp_id_3 = lp_data[row_id_1][comp_id_3_name]
-                                comp_id_4 = lp_data[row_id_1][comp_id_4_name]
-                                atom_id_1 = lp_data[row_id_1][atom_id_1_name]
-                                atom_id_2 = lp_data[row_id_1][atom_id_2_name]
-                                atom_id_3 = lp_data[row_id_1][atom_id_3_name]
-                                atom_id_4 = lp_data[row_id_1][atom_id_4_name]
+                                chain_id_1 = str(row_1[chain_id_1_name])
+                                chain_id_2 = str(row_1[chain_id_2_name])
+                                chain_id_3 = str(row_1[chain_id_3_name])
+                                chain_id_4 = str(row_1[chain_id_4_name])
+                                seq_id_1 = row_1[seq_id_1_name]
+                                seq_id_2 = row_1[seq_id_2_name]
+                                seq_id_3 = row_1[seq_id_3_name]
+                                seq_id_4 = row_1[seq_id_4_name]
+                                comp_id_1 = row_1[comp_id_1_name]
+                                comp_id_2 = row_1[comp_id_2_name]
+                                comp_id_3 = row_1[comp_id_3_name]
+                                comp_id_4 = row_1[comp_id_4_name]
+                                atom_id_1 = row_1[atom_id_1_name]
+                                atom_id_2 = row_1[atom_id_2_name]
+                                atom_id_3 = row_1[atom_id_3_name]
+                                atom_id_4 = row_1[atom_id_4_name]
 
                                 data_type = self.__getTypeOfDihedralRestraint(data_type,
                                                                               chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2,
@@ -13941,52 +13953,52 @@ class NmrDpUtility(object):
                     for i in range(len_id_set - 1):
 
                         for j in range(i + 1, len_id_set):
-                            row_id_1 = id_set[i]
-                            row_id_2 = id_set[j]
+                            row_1 = lp_data[id_set[i]]
+                            row_2 = lp_data[id_set[j]]
 
-                            target_value_1 = lp_data[row_id_1][target_value_name] if target_value_name in lp_data[row_id_1] else None
+                            target_value_1 = row_1[target_value_name] if target_value_name in row_1 else None
 
                             if target_value_1 is None:
 
-                                if lower_limit_name in lp_data[row_id_1] and (not lp_data[row_id_1][lower_limit_name] is None) and upper_limit_name in lp_data[row_id_1] and (not lp_data[row_id_1][upper_limit_name] is None):
-                                    target_value_1 = (lp_data[row_id_1][lower_limit_name] + lp_data[row_id_1][upper_limit_name]) / 2.0
+                                if lower_limit_name in row_1 and (not row_1[lower_limit_name] is None) and upper_limit_name in row_1 and (not row_1[upper_limit_name] is None):
+                                    target_value_1 = (row_1[lower_limit_name] + row_1[upper_limit_name]) / 2.0
 
-                                elif lower_linear_limit_name in lp_data[row_id_1] and (not lp_data[row_id_1][lower_linear_limit_name] is None) and upper_linear_limit_name is i and (not lp_data[row_id_1][upper_linear_limit_name] is None):
-                                    target_value_1 = (lp_data[row_id_1][lower_linear_limit_name] + lp_data[row_id_1][upper_linear_limit_name]) / 2.0
+                                elif lower_linear_limit_name in row_1 and (not row_1[lower_linear_limit_name] is None) and upper_linear_limit_name is i and (not row_1[upper_linear_limit_name] is None):
+                                    target_value_1 = (row_1[lower_linear_limit_name] + row_1[upper_linear_limit_name]) / 2.0
 
-                                elif upper_linear_limit_name in lp_data[row_id_1] and (not lp_data[row_id_1][upper_linear_limit_name] is None):
-                                    target_value_1 = lp_data[row_id_1][upper_linear_limit_name]
+                                elif upper_linear_limit_name in row_1 and (not row_1[upper_linear_limit_name] is None):
+                                    target_value_1 = row_1[upper_linear_limit_name]
 
-                                elif upper_limit_name in lp_data[row_id_1] and (not lp_data[row_id_1][upper_limit_name] is None):
-                                    target_value_1 = lp_data[row_id_1][upper_limit_name]
+                                elif upper_limit_name in row_1 and (not row_1[upper_limit_name] is None):
+                                    target_value_1 = row_1[upper_limit_name]
 
-                                elif lower_linear_limit_name in lp_data[row_id_1] and (not lp_data[row_id_1][lower_linear_limit_name] is None):
-                                    target_value_1 = lp_data[row_id_1][lower_linear_limit_name]
+                                elif lower_linear_limit_name in row_1 and (not row_1[lower_linear_limit_name] is None):
+                                    target_value_1 = row_1[lower_linear_limit_name]
 
-                                elif lower_limit_name in lp_data[row_id_1] and (not lp_data[row_id_1][lower_limit_name] is None):
-                                    target_value_1 = lp_data[row_id_1][lower_limit_name]
+                                elif lower_limit_name in row_1 and (not row_1[lower_limit_name] is None):
+                                    target_value_1 = row_1[lower_limit_name]
 
-                            target_value_2 = lp_data[row_id_2][target_value_name] if target_value_name in lp_data[row_id_2] else None
+                            target_value_2 = row_2[target_value_name] if target_value_name in row_2 else None
 
                             if target_value_2 is None:
 
-                                if lower_limit_name in lp_data[row_id_2] and (not lp_data[row_id_2][lower_limit_name] is None) and upper_limit_name in lp_data[row_id_2] and (not lp_data[row_id_2][upper_limit_name] is None):
-                                    target_value_2 = (lp_data[row_id_2][lower_limit_name] + lp_data[row_id_2][upper_limit_name]) / 2.0
+                                if lower_limit_name in row_2 and (not row_2[lower_limit_name] is None) and upper_limit_name in row_2 and (not row_2[upper_limit_name] is None):
+                                    target_value_2 = (row_2[lower_limit_name] + row_2[upper_limit_name]) / 2.0
 
-                                elif lower_linear_limit_name in lp_data[row_id_2] and (not lp_data[row_id_2][lower_linear_limit_name] is None) and upper_linear_limit_name is i and (not lp_data[row_id_2][upper_linear_limit_name] is None):
-                                    target_value_2 = (lp_data[row_id_2][lower_linear_limit_name] + lp_data[row_id_2][upper_linear_limit_name]) / 2.0
+                                elif lower_linear_limit_name in row_2 and (not row_2[lower_linear_limit_name] is None) and upper_linear_limit_name is i and (not row_2[upper_linear_limit_name] is None):
+                                    target_value_2 = (row_2[lower_linear_limit_name] + row_2[upper_linear_limit_name]) / 2.0
 
-                                elif upper_linear_limit_name in lp_data[row_id_2] and (not lp_data[row_id_2][upper_linear_limit_name] is None):
-                                    target_value_2 = lp_data[row_id_2][upper_linear_limit_name]
+                                elif upper_linear_limit_name in row_2 and (not row_2[upper_linear_limit_name] is None):
+                                    target_value_2 = row_2[upper_linear_limit_name]
 
-                                elif upper_limit_name in lp_data[row_id_2] and (not lp_data[row_id_2][upper_limit_name] is None):
-                                    target_value_2 = lp_data[row_id_2][upper_limit_name]
+                                elif upper_limit_name in row_2 and (not row_2[upper_limit_name] is None):
+                                    target_value_2 = row_2[upper_limit_name]
 
-                                elif lower_linear_limit_name in lp_data[row_id_2] and (not lp_data[row_id_2][lower_linear_limit_name] is None):
-                                    target_value_2 = lp_data[row_id_2][lower_linear_limit_name]
+                                elif lower_linear_limit_name in row_2 and (not row_2[lower_linear_limit_name] is None):
+                                    target_value_2 = row_2[lower_linear_limit_name]
 
-                                elif lower_limit_name in lp_data[row_id_2] and (not lp_data[row_id_2][lower_limit_name] is None):
-                                    target_value_2 = lp_data[row_id_2][lower_limit_name]
+                                elif lower_limit_name in row_2 and (not row_2[lower_limit_name] is None):
+                                    target_value_2 = row_2[lower_limit_name]
 
                             if target_value_1 is None or target_value_2 is None:
                                 continue
@@ -14002,11 +14014,11 @@ class NmrDpUtility(object):
                             if discrepancy > max_inclusive * self.inconsist_over_conflicted:
                                 ann = {}
                                 ann['level'] = 'conflicted' if discrepancy > max_inclusive else 'inconsistent'
-                                ann['chain_id'] = str(lp_data[row_id_1][chain_id_1_name])
-                                ann['seq_id'] = lp_data[row_id_1][seq_id_1_name]
-                                ann['comp_id'] = lp_data[row_id_1][comp_id_1_name]
-                                ann['atom_id_1'] = lp_data[row_id_1][atom_id_1_name]
-                                ann['atom_id_2'] = lp_data[row_id_1][atom_id_2_name]
+                                ann['chain_id'] = str(row_1[chain_id_1_name])
+                                ann['seq_id'] = row_1[seq_id_1_name]
+                                ann['comp_id'] = row_1[comp_id_1_name]
+                                ann['atom_id_1'] = row_1[atom_id_1_name]
+                                ann['atom_id_2'] = row_1[atom_id_2_name]
                                 ann['discrepancy'] = float('{:.1f}'.format(discrepancy))
 
                                 rdc_ann.append(ann)
@@ -14050,52 +14062,52 @@ class NmrDpUtility(object):
                             for i in range(len_id_set - 1):
 
                                 for j in range(i + 1, len_id_set):
-                                    row_id_1 = id_set[i]
-                                    row_id_2 = id_set[j]
+                                    row_1 = lp_data[id_set[i]]
+                                    row_2 = lp_data[id_set[j]]
 
-                                    target_value_1 = lp_data[row_id_1][target_value_name] if target_value_name in lp_data[row_id_1] else None
+                                    target_value_1 = row_1[target_value_name] if target_value_name in row_1 else None
 
                                     if target_value_1 is None:
 
-                                        if lower_limit_name in lp_data[row_id_1] and (not lp_data[row_id_1][lower_limit_name] is None) and upper_limit_name in lp_data[row_id_1] and (not lp_data[row_id_1][upper_limit_name] is None):
-                                            target_value_1 = (lp_data[row_id_1][lower_limit_name] + lp_data[row_id_1][upper_limit_name]) / 2.0
+                                        if lower_limit_name in row_1 and (not row_1[lower_limit_name] is None) and upper_limit_name in row_1 and (not row_1[upper_limit_name] is None):
+                                            target_value_1 = (row_1[lower_limit_name] + row_1[upper_limit_name]) / 2.0
 
-                                        elif lower_linear_limit_name in lp_data[row_id_1] and (not lp_data[row_id_1][lower_linear_limit_name] is None) and upper_linear_limit_name is i and (not lp_data[row_id_1][upper_linear_limit_name] is None):
-                                            target_value_1 = (lp_data[row_id_1][lower_linear_limit_name] + lp_data[row_id_1][upper_linear_limit_name]) / 2.0
+                                        elif lower_linear_limit_name in row_1 and (not row_1[lower_linear_limit_name] is None) and upper_linear_limit_name is i and (not row_1[upper_linear_limit_name] is None):
+                                            target_value_1 = (row_1[lower_linear_limit_name] + row_1[upper_linear_limit_name]) / 2.0
 
-                                        elif upper_linear_limit_name in lp_data[row_id_1] and (not lp_data[row_id_1][upper_linear_limit_name] is None):
-                                            target_value_1 = lp_data[row_id_1][upper_linear_limit_name]
+                                        elif upper_linear_limit_name in row_1 and (not row_1[upper_linear_limit_name] is None):
+                                            target_value_1 = row_1[upper_linear_limit_name]
 
-                                        elif upper_limit_name in lp_data[row_id_1] and (not lp_data[row_id_1][upper_limit_name] is None):
-                                            target_value_1 = lp_data[row_id_1][upper_limit_name]
+                                        elif upper_limit_name in row_1 and (not row_1[upper_limit_name] is None):
+                                            target_value_1 = row_1[upper_limit_name]
 
-                                        elif lower_linear_limit_name in lp_data[row_id_1] and (not lp_data[row_id_1][lower_linear_limit_name] is None):
-                                            target_value_1 = lp_data[row_id_1][lower_linear_limit_name]
+                                        elif lower_linear_limit_name in row_1 and (not row_1[lower_linear_limit_name] is None):
+                                            target_value_1 = row_1[lower_linear_limit_name]
 
-                                        elif lower_limit_name in lp_data[row_id_1] and (not lp_data[row_id_1][lower_limit_name] is None):
-                                            target_value_1 = lp_data[row_id_1][lower_limit_name]
+                                        elif lower_limit_name in row_1 and (not row_1[lower_limit_name] is None):
+                                            target_value_1 = row_1[lower_limit_name]
 
-                                    target_value_2 = lp_data[row_id_2][target_value_name] if target_value_name in lp_data[row_id_2] else None
+                                    target_value_2 = row_2[target_value_name] if target_value_name in row_2 else None
 
                                     if target_value_2 is None:
 
-                                        if lower_limit_name in lp_data[row_id_2] and (not lp_data[row_id_2][lower_limit_name] is None) and upper_limit_name in lp_data[row_id_2] and (not lp_data[row_id_2][upper_limit_name] is None):
-                                            target_value_2 = (lp_data[row_id_2][lower_limit_name] + lp_data[row_id_2][upper_limit_name]) / 2.0
+                                        if lower_limit_name in row_2 and (not row_2[lower_limit_name] is None) and upper_limit_name in row_2 and (not row_2[upper_limit_name] is None):
+                                            target_value_2 = (row_2[lower_limit_name] + row_2[upper_limit_name]) / 2.0
 
-                                        elif lower_linear_limit_name in lp_data[row_id_2] and (not lp_data[row_id_2][lower_linear_limit_name] is None) and upper_linear_limit_name is i and (not lp_data[row_id_2][upper_linear_limit_name] is None):
-                                            target_value_2 = (lp_data[row_id_2][lower_linear_limit_name] + lp_data[row_id_2][upper_linear_limit_name]) / 2.0
+                                        elif lower_linear_limit_name in row_2 and (not row_2[lower_linear_limit_name] is None) and upper_linear_limit_name is i and (not row_2[upper_linear_limit_name] is None):
+                                            target_value_2 = (row_2[lower_linear_limit_name] + row_2[upper_linear_limit_name]) / 2.0
 
-                                        elif upper_linear_limit_name in lp_data[row_id_2] and (not lp_data[row_id_2][upper_linear_limit_name] is None):
-                                            target_value_2 = lp_data[row_id_2][upper_linear_limit_name]
+                                        elif upper_linear_limit_name in row_2 and (not row_2[upper_linear_limit_name] is None):
+                                            target_value_2 = row_2[upper_linear_limit_name]
 
-                                        elif upper_limit_name in lp_data[row_id_2] and (not lp_data[row_id_2][upper_limit_name] is None):
-                                            target_value_2 = lp_data[row_id_2][upper_limit_name]
+                                        elif upper_limit_name in row_2 and (not row_2[upper_limit_name] is None):
+                                            target_value_2 = row_2[upper_limit_name]
 
-                                        elif lower_linear_limit_name in lp_data[row_id_2] and (not lp_data[row_id_2][lower_linear_limit_name] is None):
-                                            target_value_2 = lp_data[row_id_2][lower_linear_limit_name]
+                                        elif lower_linear_limit_name in row_2 and (not row_2[lower_linear_limit_name] is None):
+                                            target_value_2 = row_2[lower_linear_limit_name]
 
-                                        elif lower_limit_name in lp_data[row_id_2] and (not lp_data[row_id_2][lower_limit_name] is None):
-                                            target_value_2 = lp_data[row_id_2][lower_limit_name]
+                                        elif lower_limit_name in row_2 and (not row_2[lower_limit_name] is None):
+                                            target_value_2 = row_2[lower_limit_name]
 
                                     if target_value_1 is None and target_value_2 is None:
                                         continue
@@ -14114,8 +14126,8 @@ class NmrDpUtility(object):
                                     if discrepancy < v or discrepancy >= v + scale:
                                         continue
 
-                                    atom_id_1 = lp_data[row_id_1][atom_id_1_name]
-                                    atom_id_2 = lp_data[row_id_1][atom_id_2_name]
+                                    atom_id_1 = row_1[atom_id_1_name]
+                                    atom_id_2 = row_1[atom_id_2_name]
 
                                     data_type = self.__getTypeOfRdcRestraint(atom_id_1, atom_id_2)
 
@@ -14123,8 +14135,8 @@ class NmrDpUtility(object):
 
                             if v >= 0.0 and v < scale and redundant:
 
-                                atom_id_1 = lp_data[row_id_1][atom_id_1_name]
-                                atom_id_2 = lp_data[row_id_1][atom_id_2_name]
+                                atom_id_1 = row_1[atom_id_1_name]
+                                atom_id_2 = row_1[atom_id_2_name]
 
                                 data_type = self.__getTypeOfRdcRestraint(atom_id_1, atom_id_2)
 
@@ -14580,17 +14592,17 @@ class NmrDpUtility(object):
 
             ensemble = self.__cR.getDictList('pdbx_nmr_ensemble')
 
-            if self.__rely_on_pdbx_nmr_ens and len(ensemble) > 0 and 'conformers_submitted_total_number' in ensemble[0]:
+            if self.__trust_pdbx_nmr_ens and len(ensemble) > 0 and 'conformers_submitted_total_number' in ensemble[0]:
 
                 try:
                     self.__total_models = int(ensemble[0]['conformers_submitted_total_number'])
                 except ValueError:
                     pass
 
-            if len(ensemble) == 0 or not self.__rely_on_pdbx_nmr_ens:
+            if len(ensemble) == 0 or not self.__trust_pdbx_nmr_ens:
                 ensemble = self.__cR.getDictList('rcsb_nmr_ensemble')
 
-                if self.__rely_on_pdbx_nmr_ens and len(ensemble) > 0 and 'conformers_submitted_total_number' in ensemble[0]:
+                if self.__trust_pdbx_nmr_ens and len(ensemble) > 0 and 'conformers_submitted_total_number' in ensemble[0]:
 
                     try:
                         self.__total_models = int(ensemble[0]['conformers_submitted_total_number'])
@@ -14603,16 +14615,16 @@ class NmrDpUtility(object):
 
                         model_num_name = 'pdbx_PDB_model_num' if self.__cR.hasItem('atom_site', 'pdbx_PDB_model_num') else 'ndb_model'
 
-                        coord = self.__cR.getDictListWithFilter('atom_site',
+                        model_ids = self.__cR.getDictListWithFilter('atom_site',
                                                                 [{'name': model_num_name, 'type': 'int', 'alt_name': 'model_id'}
                                                                  ])
 
-                        if len(coord) > 0:
+                        if len(model_ids) > 0:
 
-                            model_ids = set([c['model_id'] for c in coord])
+                            uniq_model_ids = set([c['model_id'] for c in model_ids])
 
-                            self.__representative_model_id = min(model_ids)
-                            self.__total_models = len(model_ids)
+                            self.__representative_model_id = min(uniq_model_ids)
+                            self.__total_models = len(uniq_model_ids)
 
                     except Exception as e:
 
@@ -16192,6 +16204,42 @@ class NmrDpUtility(object):
 
         __errors = self.report.getTotalErrors()
 
+        if self.__coord_atom_id is None:
+
+            try:
+
+                model_num_name = 'pdbx_PDB_model_num' if self.__cR.hasItem('atom_site', 'pdbx_PDB_model_num') else 'ndb_model'
+
+                coord = self.__cR.getDictListWithFilter('atom_site',
+                                                        [{'name': 'label_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
+                                                         {'name': 'label_seq_id', 'type': 'str', 'alt_name': 'seq_id'},
+                                                         {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'auth_seq_id'}, # non-polymer
+                                                         {'name': 'label_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
+                                                         {'name': 'label_atom_id', 'type': 'str', 'alt_name': 'atom_id'}
+                                                         ],
+                                                        [{'name': model_num_name, 'type': 'int', 'value': self.__representative_model_id}
+                                                         ])
+
+                self.__coord_atom_id = {}
+                chain_ids = set([c['chain_id'] for c in coord])
+                for chain_id in chain_ids:
+                    seq_ids = set((int(c['seq_id']) if not c['seq_id'] is None else c['auth_seq_id']) for c in coord if c['chain_id'] == chain_id)
+                    for seq_id in seq_ids:
+                        seq_key = (chain_id, seq_id)
+                        comp_id = next(c['comp_id'] for c in coord if c['chain_id'] == chain_id and ((not c['seq_id'] is None and int(c['seq_id']) == seq_id) or (c['seq_id'] is None and c['auth_seq_id'] == seq_id)))
+                        atom_ids = [c['atom_id'] for c in coord if c['chain_id'] == chain_id and ((not c['seq_id'] is None and int(c['seq_id']) == seq_id) or (c['seq_id'] is None and c['auth_seq_id'] == seq_id))]
+                        self.__coord_atom_id[seq_key] = {'comp_id': comp_id, 'atom_id': atom_ids}
+
+            except Exception as e:
+
+                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__testCoordAtomIdConsistency() ++ Error  - %s" % str(e))
+                self.report.setError()
+
+                if self.__verbose:
+                    self.__lfh.write("+NmrDpUtility.__testCoordAtomIdConsistency() ++ Error  - %s" % str(e))
+
+                return False
+
         for fileListId in range(self.__file_path_list_len):
 
             nmr_input_source = self.report.input_sources[fileListId]
@@ -16232,30 +16280,6 @@ class NmrDpUtility(object):
 
                 nmr2ca[str(ref_chain_id)] = result
 
-            try:
-
-                model_num_name = 'pdbx_PDB_model_num' if self.__cR.hasItem('atom_site', 'pdbx_PDB_model_num') else 'ndb_model'
-
-                coord = self.__cR.getDictListWithFilter('atom_site',
-                                                        [{'name': 'label_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
-                                                         {'name': 'label_seq_id', 'type': 'str', 'alt_name': 'seq_id'},
-                                                         {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'auth_seq_id'}, # non-polymer
-                                                         {'name': 'label_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
-                                                         {'name': 'label_atom_id', 'type': 'str', 'alt_name': 'atom_id'}
-                                                         ],
-                                                        [{'name': model_num_name, 'type': 'int', 'value': self.__representative_model_id}
-                                                         ])
-
-            except Exception as e:
-
-                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__testCoordAtomIdConsistency() ++ Error  - %s" % str(e))
-                self.report.setError()
-
-                if self.__verbose:
-                    self.__lfh.write("+NmrDpUtility.__testCoordAtomIdConsistency() ++ Error  - %s" % str(e))
-
-                continue
-
             if nmr_input_source_dic['content_subtype'] is None:
                 continue
 
@@ -16276,14 +16300,14 @@ class NmrDpUtility(object):
                     sf_data = self.__star_data[fileListId]
                     sf_framecode = ''
 
-                    add_details |= self.__testCoordAtomIdConsistency__(fileListId, file_name, file_type, content_subtype, sf_data, list_id, sf_framecode, lp_category, cif_polymer_sequence, seq_align_dic, nmr2ca, ref_chain_id, coord)
+                    add_details |= self.__testCoordAtomIdConsistency__(fileListId, file_name, file_type, content_subtype, sf_data, list_id, sf_framecode, lp_category, cif_polymer_sequence, seq_align_dic, nmr2ca, ref_chain_id)
 
                 elif self.__star_data_type[fileListId] == 'Saveframe':
 
                     sf_data = self.__star_data[fileListId]
                     sf_framecode = get_first_sf_tag(sf_data, 'sf_framecode')
 
-                    add_details |= self.__testCoordAtomIdConsistency__(fileListId, file_name, file_type, content_subtype, sf_data, list_id, sf_framecode, lp_category, cif_polymer_sequence, seq_align_dic, nmr2ca, ref_chain_id, coord)
+                    add_details |= self.__testCoordAtomIdConsistency__(fileListId, file_name, file_type, content_subtype, sf_data, list_id, sf_framecode, lp_category, cif_polymer_sequence, seq_align_dic, nmr2ca, ref_chain_id)
 
                 else:
 
@@ -16291,7 +16315,7 @@ class NmrDpUtility(object):
 
                         sf_framecode = get_first_sf_tag(sf_data, 'sf_framecode')
 
-                        add_details |= self.__testCoordAtomIdConsistency__(fileListId, file_name, file_type, content_subtype, sf_data, list_id, sf_framecode, lp_category, cif_polymer_sequence, seq_align_dic, nmr2ca, ref_chain_id, coord)
+                        add_details |= self.__testCoordAtomIdConsistency__(fileListId, file_name, file_type, content_subtype, sf_data, list_id, sf_framecode, lp_category, cif_polymer_sequence, seq_align_dic, nmr2ca, ref_chain_id)
 
                         list_id += 1
 
@@ -16300,7 +16324,7 @@ class NmrDpUtility(object):
 
         return self.report.getTotalErrors() == __errors
 
-    def __testCoordAtomIdConsistency__(self, file_list_id, file_name, file_type, content_subtype, sf_data, list_id, sf_framecode, lp_category, cif_polymer_sequence, seq_align_dic, nmr2ca, ref_chain_id, coord):
+    def __testCoordAtomIdConsistency__(self, file_list_id, file_name, file_type, content_subtype, sf_data, list_id, sf_framecode, lp_category, cif_polymer_sequence, seq_align_dic, nmr2ca, ref_chain_id):
         """ Perform consistency test on atom names of coordinate file.
         """
 
@@ -16469,7 +16493,7 @@ class NmrDpUtility(object):
                                           atom_id.startswith('Q') or
                                           atom_id.startswith('M') or
                                           self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id) == 0):
-                    (_atom_id, ambig_code, details) = self.__getAtomIdListWithAmbigCode(file_type, comp_id, atom_id)
+                    _atom_id, ambig_code, details = self.__getAtomIdListWithAmbigCode(file_type, comp_id, atom_id)
 
                     if len(_atom_id) == 0:
                         continue
@@ -16496,9 +16520,11 @@ class NmrDpUtility(object):
                     atom_id_ = atom_id
                     atom_name = atom_id
 
-                result = next((c for c in coord if c['chain_id'] == cif_chain_id and ((not c['seq_id'] is None and int(c['seq_id']) == cif_seq_id) or (c['seq_id'] is None and c['auth_seq_id'] == cif_seq_id)) and c['comp_id'] == cif_comp_id and c['atom_id'] == atom_id_), None)
+                seq_key = (cif_chain_id, cif_seq_id)
 
-                if result is None:
+                coord_atom_id_ = None if not seq_key in self.__coord_atom_id else self.__coord_atom_id[seq_key]
+
+                if coord_atom_id_ is None or coord_atom_id_['comp_id'] != cif_comp_id or not atom_id_ in coord_atom_id_['atom_id']:
 
                     idx_msg = ''
                     if not index_tag is None:
@@ -17688,6 +17714,11 @@ class NmrDpUtility(object):
         if not has_key_value(seq_align_dic, 'nmr_poly_seq_vs_model_poly_seq'):
             return 'unknown'
 
+        seq_key = (nmr_chain_id, nmr_seq_id)
+
+        if seq_key in self.__coord_tautomer:
+            return self.__coord_tautomer[seq_key]
+
         result = next((seq_align for seq_align in seq_align_dic['nmr_poly_seq_vs_model_poly_seq'] if seq_align['ref_chain_id'] == nmr_chain_id and seq_align['test_chain_id'] == cif_chain_id), None)
 
         if not result is None:
@@ -17695,6 +17726,7 @@ class NmrDpUtility(object):
             cif_seq_id = next((test_seq_id for ref_seq_id, ref_code, test_seq_id in zip(result['ref_seq_id'], result['ref_code'], result['test_seq_id']) if ref_seq_id == nmr_seq_id and ref_code == 'H'), None)
 
             if cif_seq_id is None:
+                self.__coord_tautomer[seq_key] = 'unknown'
                 return 'unknown'
 
             try:
@@ -17732,12 +17764,16 @@ class NmrDpUtility(object):
                         has_he2 = True
 
                 if has_hd1 and has_he2:
+                    self.__coord_tautomer[seq_key] = 'biprotonated'
                     return 'biprotonated'
                 elif has_hd1:
+                    self.__coord_tautomer[seq_key] = 'tau-tautomer'
                     return 'tau-tautomer'
                 elif has_he2:
+                    self.__coord_tautomer[seq_key] = 'pi-tautomer'
                     return 'pi-tautomer'
 
+        self.__coord_tautomer[seq_key] = 'unknown'
         return 'unknown'
 
     def __extractCoordDisulfideBond(self):
@@ -18504,6 +18540,11 @@ class NmrDpUtility(object):
         if not has_key_value(seq_align_dic, 'nmr_poly_seq_vs_model_poly_seq'):
             return None
 
+        seq_key = (_nmr_chain_id, nmr_seq_id, nmr_atom_id)
+
+        if seq_key in self.__coord_near_ring:
+            return self.__coord_near_ring[seq_key]
+
         result = next((seq_align for seq_align in seq_align_dic['nmr_poly_seq_vs_model_poly_seq'] if seq_align['ref_chain_id'] == nmr_chain_id and seq_align['test_chain_id'] == cif_chain_id), None)
 
         if not result is None:
@@ -18511,6 +18552,7 @@ class NmrDpUtility(object):
             cif_seq_id = next((test_seq_id for ref_seq_id, test_seq_id in zip(result['ref_seq_id'], result['test_seq_id']) if ref_seq_id == nmr_seq_id), None)
 
             if cif_seq_id is None:
+                self.__coord_near_ring[seq_key] = None
                 return None
 
             try:
@@ -18548,6 +18590,7 @@ class NmrDpUtility(object):
                 if self.__verbose:
                     self.__lfh.write("+NmrDpUtility.__getNearestAromaticRing() ++ Error  - %s" % err)
                 """
+                self.__coord_near_ring[seq_key] = None
                 return None
 
             o = to_np_array(_origin[0])
@@ -18580,15 +18623,18 @@ class NmrDpUtility(object):
                 return None
 
             if len(_neighbor) == 0:
+                self.__coord_near_ring[seq_key] = None
                 return None
 
             neighbor = [n for n in _neighbor if n['seq_id'] != cif_seq_id and n['type_symbol'] != 'H' and np.linalg.norm(to_np_array(n) - o) < cutoff and
                         n['atom_id'] in self.__csStat.getAromaticAtoms(n['comp_id'])]
 
             if len(neighbor) == 0:
+                self.__coord_near_ring[seq_key] = None
                 return None
 
             if not has_key_value(seq_align_dic, 'model_poly_seq_vs_nmr_poly_seq'):
+                self.__coord_near_ring[seq_key] = None
                 return None
 
             atom_list = []
@@ -18620,6 +18666,7 @@ class NmrDpUtility(object):
             self.__updateChemCompDict(na['comp_id'])
 
             if not self.__last_comp_id_test:
+                self.__coord_near_ring[seq_key] = None
                 return None
 
             # matches with comp_id in CCD
@@ -18671,6 +18718,7 @@ class NmrDpUtility(object):
                         half_ring_traces.append(na_atom_id + ':' + na_ + ':' + na__ + ':' + na___)
 
             if len(half_ring_traces) < 2:
+                self.__coord_near_ring[seq_key] = None
                 return None
 
             len_half_ring_traces = len(half_ring_traces)
@@ -18694,6 +18742,7 @@ class NmrDpUtility(object):
                         ring_traces.append(half_ring_traces[i] + ':' + half_ring_trace_2[1])
 
             if len(ring_traces) == 0:
+                self.__coord_near_ring[seq_key] = None
                 return None
 
             ring_atoms = None
@@ -18743,6 +18792,7 @@ class NmrDpUtility(object):
                 return None
 
             if len(_na) == 0:
+                self.__coord_near_ring[seq_key] = None
                 return None
 
             model_ids = set([a['model_id'] for a in _na])
@@ -18793,8 +18843,10 @@ class NmrDpUtility(object):
             na['ring_distance'] = float('{:.1f}'.format(ring_distance / len_model_ids))
             na['ring_angle'] = float('{:.1f}'.format(ring_angle / len_model_ids * 180.0 / math.pi))
 
+            self.__coord_near_ring[seq_key] = na
             return na
 
+        self.__coord_near_ring[seq_key] = None
         return None
 
     def __getNearestParamagneticAtom(self, _nmr_chain_id, nmr_seq_id, nmr_atom_id, cutoff):
@@ -18819,6 +18871,11 @@ class NmrDpUtility(object):
         if not has_key_value(seq_align_dic, 'nmr_poly_seq_vs_model_poly_seq'):
             return None
 
+        seq_key = (_nmr_chain_id, nmr_seq_id, nmr_atom_id)
+
+        if seq_key in self.__coord_near_para:
+            return self.__coord_near_para[seq_key]
+
         result = next((seq_align for seq_align in seq_align_dic['nmr_poly_seq_vs_model_poly_seq'] if seq_align['ref_chain_id'] == nmr_chain_id and seq_align['test_chain_id'] == cif_chain_id), None)
 
         if not result is None:
@@ -18826,6 +18883,7 @@ class NmrDpUtility(object):
             cif_seq_id = next((test_seq_id for ref_seq_id, test_seq_id in zip(result['ref_seq_id'], result['test_seq_id']) if ref_seq_id == nmr_seq_id), None)
 
             if cif_seq_id is None:
+                self.__coord_near_para[seq_key] = None
                 return None
 
             try:
@@ -18863,6 +18921,7 @@ class NmrDpUtility(object):
                 if self.__verbose:
                     self.__lfh.write("+NmrDpUtility.__getNearestParamagneticAtom() ++ Error  - %s" % err)
                 """
+                self.__coord_near_para[seq_key] = None
                 return None
 
             o = to_np_array(_origin[0])
@@ -18895,12 +18954,14 @@ class NmrDpUtility(object):
                 return None
 
             if len(_neighbor) == 0:
+                self.__coord_near_para[seq_key] = None
                 return None
 
             neighbor = [n for n in _neighbor if n['seq_id'] != cif_seq_id and np.linalg.norm(to_np_array(n) - o) < cutoff and
                         n['type_symbol'] in self.paramag_elems]
 
             if len(neighbor) == 0:
+                self.__coord_near_para[seq_key] = None
                 return None
 
             atom_list = []
@@ -18935,6 +18996,7 @@ class NmrDpUtility(object):
                 return None
 
             if len(_p) == 0:
+                self.__coord_near_para[seq_key] = None
                 return None
 
             distance = 0.0
@@ -18944,8 +19006,10 @@ class NmrDpUtility(object):
 
             p['distance'] = float('{:.1f}'.format(distance / len(_p)))
 
+            self.__coord_near_para[seq_key] = p
             return p
 
+        self.__coord_near_para[seq_key] = None
         return None
 
     def __appendElemAndIsoNumOfNefCSLoop(self):

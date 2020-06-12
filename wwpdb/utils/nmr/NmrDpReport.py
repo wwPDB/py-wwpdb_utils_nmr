@@ -35,7 +35,7 @@
 # 13-May-2020  M. Yokochi - avoid system crash when format issue occurs (DAOTHER-5673)
 # 15-May-2020  M. Yokochi - ignore 'disordered_index' warning (DAOTHER-5485)
 # 15-May-2020  M. Yokochi - add 'content_mismatch' error for NMR legacy deposition (DAOTHER-5687)
-# 11-Jun-2020  M. Yokochi - performance improvement by reusing calculated statistics
+# 12-Jun-2020  M. Yokochi - performance improvement by reusing cached data
 ##
 """ Wrapper class for data processing report of NMR data.
     @author: Masashi Yokochi

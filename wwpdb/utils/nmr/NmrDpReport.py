@@ -1509,9 +1509,11 @@ class NmrDpReportError:
                     value['row_locations'] = locs
                     value['description'] = g[1]
 
-            self.__contents[item].append(value)
+            if not any(v for v in self.__contents[item] if v == value):
 
-            self.__contents['total'] += 1
+                self.__contents[item].append(value)
+
+                self.__contents['total'] += 1
 
         else:
             logging.error('+NmrDpReportError.appendDescription() ++ Error  - Unknown item type %s' % item)
@@ -1692,9 +1694,11 @@ class NmrDpReportWarning:
                     value['row_locations'] = locs
                     value['description'] = g[1]
 
-            self.__contents[item].append(value)
+            if not any(v for v in self.__contents[item] if v == value):
 
-            self.__contents['total'] += 1
+                self.__contents[item].append(value)
+
+                self.__contents['total'] += 1
 
         else:
             logging.error('+NmrDpReportWarning.appendDescription() ++ Error  - Unknown item type %s' % item)

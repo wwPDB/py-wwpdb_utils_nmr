@@ -9356,7 +9356,7 @@ class NmrDpUtility(object):
                                 except StopIteration:
                                     pass
 
-                            else:
+                            elif allowed_ambig_code > 0:
 
                                 err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_id) + "] Invalid %s %r (allowed ambig_code %s) in a loop %s." %\
                                       (ambig_code_name, ambig_code, [1, allowed_ambig_code, 4, 5, 6, 9], lp_category)
@@ -11626,7 +11626,7 @@ class NmrDpUtility(object):
                             ilv_rotameric_state.append(ilv)
 
                 if len(ilv_rotameric_state) > 0:
-                    ent['rotameric_state'] = ilv_rotameric_state
+                    ent['ilv_rotameric_state'] = ilv_rotameric_state
 
         except Exception as e:
 

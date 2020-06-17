@@ -101,7 +101,7 @@ class mmCIFUtil:
                 text = dlist[0][itemName]
         return text
 
-    def UpdateSingleRowValue(self, blockName, catName, itemName, row, value):
+    def UpdateSingleRowValue(self, blockName, catName, itemName, rowIndex, value):
         """Update value in single row
         """
         if blockName not in self.__dataMap:
@@ -112,7 +112,7 @@ class mmCIFUtil:
         if not catObj:
             return
         #
-        catObj.setValue(value, itemName, row)
+        catObj.setValue(value, itemName, rowIndex)
 
     def UpdateMultipleRowsValue(self, blockName, catName, itemName, value):
         """Update value in multiple rows
@@ -126,8 +126,8 @@ class mmCIFUtil:
             return
         #
         rowNo = catObj.getRowCount()
-        for row in range(0, rowNo):
-            catObj.setValue(value, itemName, row)
+        for rowIndex in range(0, rowNo):
+            catObj.setValue(value, itemName, rowIndex)
 
     def AddBlock(self, blockName):
         """Add Data Block

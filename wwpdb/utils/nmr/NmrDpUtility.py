@@ -3902,7 +3902,7 @@ class NmrDpUtility(object):
         try:
 
             msg = next(msg for msg in message['error'] if msg_template in msg)
-            warn = 'The saveframe must have NMR-STAR V3.1 tags. Saveframe error occured:%s' % (msg[len(msg_template):])
+            warn = 'The saveframe must have NMR-STAR V3.1 tags. Saveframe error occured:%s' % (msg[len(msg_template):].replace('<pynmrstar.', '').replace("'>", "'"))
 
             self.report.warning.appendDescription('corrected_format_issue', {'file_name': file_name, 'description': warn})
             self.report.setWarning()
@@ -3998,7 +3998,7 @@ class NmrDpUtility(object):
         try:
 
             msg = next(msg for msg in message['error'] if msg_template in msg)
-            warn = 'Saveframe(s), instead of the datablock, must hook more than one loops. Loops detected:%s' % (msg[len(msg_template):])
+            warn = 'Saveframe(s), instead of the datablock, must hook more than one loops. Loops detected:%s' % (msg[len(msg_template):].replace('<pynmrstar.', '').replace("'>", "'"))
 
             self.report.warning.appendDescription('corrected_format_issue', {'file_name': file_name, 'description': warn})
             self.report.setWarning()

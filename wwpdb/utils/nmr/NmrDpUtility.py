@@ -85,6 +85,7 @@
 # 05-Jun-2020  M. Yokochi - be compatible with wwpdb.utils.align.alignlib using Python 3 (DAOTHER-5766)
 # 06-Jun-2020  M. Yokochi - be compatible with pynmrstar v3 (DAOTHER-5765)
 # 12-Jun-2020  M. Yokochi - overall performance improvement by reusing cached data and code revision
+# 19-Jun-2020  M. Yokochi - do not generate invalid restraints include self atom
 ##
 """ Wrapper class for data processing for NMR data.
     @author: Masashi Yokochi
@@ -16747,6 +16748,16 @@ class NmrDpUtility(object):
                 else:
 
                     key_items = self.key_items[file_type][content_subtype]
+
+                    if content_subtype in ['dist_restraint', 'dihed_restraint', 'rdc_restraint']:
+
+                        conflict_id = self.__nefT.get_conflict_atom_id(sf_data, file_type, lp_category, key_items)[0]
+
+                        if len(conflict_id) > 0:
+                            loop = sf_data.get_loop_by_category(lp_category)
+
+                            for l in conflict_id:
+                                del loop.data[l]
 
                 try:
 

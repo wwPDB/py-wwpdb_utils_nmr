@@ -41,6 +41,7 @@
 # 30-Apr-2020  M. Yokochi - fix pseudo atom mapping in ligand (v2.2.12, DAOTHER-5611)
 # 14-May-2020  M. Yokochi - revise error message for missing mandatory content (v2.2.13, DAOTHER-5681 and 5682)
 # 06-Jun-2020  M. Yokochi - be compatible with pynmrstar v3 (v2.3.0, DAOTHER-5765)
+# 19-Jun-2020  M. Yokochi - do not generate invalid restraints include self atom (v2.3.1)
 ##
 import sys
 import os
@@ -60,7 +61,7 @@ from wwpdb.utils.nmr.io.ChemCompIo import ChemCompReader
 from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
 from wwpdb.utils.nmr.NmrDpReport import NmrDpReport
 
-__version__ = '2.3.0'
+__version__ = '2.3.1'
 
 __pynmrstar_v3__ = version.parse(pynmrstar.__version__) >= version.parse("3.0.0")
 
@@ -2791,6 +2792,68 @@ class NEFTranslator(object):
 
         return data
 
+    def get_conflict_atom_id(self, star_data, file_type, lp_category, key_items):
+        """ Return list of row ID of rows includes self atoms.
+            @author: Masashi Yokochi
+            @return: list of duplicated/conflicted row IDs in reverse order for each loop
+        """
+
+        try:
+            loops = star_data.get_loops_by_category(lp_category)
+        except: # AttributeError:
+            try:
+                loops = [star_data.get_loop_by_category(lp_category)]
+            except: # AttributeError:
+                loops = [star_data]
+
+        data = [] # data of all loops
+
+        key_names = [k['name'] for k in key_items]
+        uppercases = [('uppercase' in k and k['uppercase']) for k in key_items]
+
+        key_len = len(key_items)
+
+        for loop in loops:
+
+            if set(key_names) & set(loop.tags) != set(key_names):
+                missing_tags = list(set(key_names) - set(loop.tags))
+                for k in key_items:
+                    if k['name'] in missing_tags:
+                        if 'default' in k:
+                            for row in loop.data:
+                                row.append(k['default'])
+                            loop.add_tag(k['name'])
+                        else:
+                            raise LookupError("Missing mandatory %s loop tag%s." % (missing_tags, 's' if len(missing_tags) > 1 else ''))
+
+            atom_keys = self.get_atom_keys(loop.get_tag_names(), file_type)
+
+            len_atom_keys = len(atom_keys)
+
+            dup_ids = set()
+
+            for l, i in enumerate(get_lp_tag(loop, key_names)):
+
+                for j in range(0, len_atom_keys - 2):
+                    atom_key_j = atom_keys[j]
+                    chain_id_j = i[key_names.index(atom_key_j['chain_tag'])]
+                    seq_id_j = i[key_names.index(atom_key_j['seq_tag'])]
+                    atom_id_j = i[key_names.index(atom_key_j['atom_tag'])]
+
+                    for k in range(j + 1, len_atom_keys - 1):
+                        atom_key_k = atom_keys[k]
+                        chain_id_k = i[key_names.index(atom_key_k['chain_tag'])]
+                        seq_id_k = i[key_names.index(atom_key_k['seq_tag'])]
+                        atom_id_k = i[key_names.index(atom_key_k['atom_tag'])]
+
+                        if chain_id_j == chain_id_k and seq_id_j == seq_id_k and atom_id_j == atom_id_k:
+                            dup_ids.add(l)
+                            break
+
+            data.append(sorted(list(dup_ids), reverse=True))
+
+        return data
+
     def check_sf_tag(self, star_data, file_type, category, tag_items, allowed_tags=None,
                      enforce_non_zero=False, enforce_sign=False, enforce_range=False, enforce_enum=False):
         """ Extract saveframe tags with sanity check.
@@ -4227,6 +4290,52 @@ class NEFTranslator(object):
 
         return out_tags
 
+    def get_atom_keys(self, in_tags, file_type):
+        """ Return list of keys utilized for atom identification.
+            @change: return list of dictionary
+            @param in_tags: list of tags
+            @param file_type: input file type either 'nef' or 'nmr-star'
+            @return: list of keys utilized for atom identification in given tags
+        """
+
+        out_tags = []
+
+        for j in range(1, 16):
+
+            if file_type == 'nef':
+                chain_tag_suffix = '.chain_code_%s' % j
+            else:
+                chain_tag_suffix = '.Entity_assembly_ID_%s' % j
+
+            try:
+                chain_tag = next(i for i in in_tags if i.endswith(chain_tag_suffix))
+            except StopIteration:
+                break
+
+            if file_type == 'nef':
+                seq_tag_suffix = '.sequence_code_%s' % j
+            else:
+                seq_tag_suffix = '.Comp_index_ID_%s' % j
+
+            try:
+                seq_tag = next(i for i in in_tags if i.endswith(seq_tag_suffix))
+            except StopIteration:
+                break
+
+            if file_type == 'nef':
+                atom_tag_suffix = '.atom_name_%s' % j
+            else:
+                atom_tag_suffix = '.Atom_ID_%s' % j
+
+            try:
+                atom_tag = next(i for i in in_tags if i.endswith(atom_tag_suffix))
+            except StopIteration:
+                break
+
+            out_tags.append({'chain_tag': chain_tag.split('.')[1], 'seq_tag': seq_tag.split('.')[1], 'atom_tag': atom_tag.split('.')[1]})
+
+        return out_tags
+
     def nef2star_dist_row(self, nef_tags, star_tags, loop_data):
         """ Translate rows of data in distance restraint loop from NEF into NMR-STAR.
             @change: rename the original translate_restraint_row() to nef2star_dist_row() by Masashi Yokochi
@@ -4243,7 +4352,9 @@ class NEFTranslator(object):
         nef_comp_index_2 = nef_tags.index('_nef_distance_restraint.residue_name_2')
         nef_atom_index_2 = nef_tags.index('_nef_distance_restraint.atom_name_2')
 
-        for tag in self.get_seq_ident_tags(nef_tags, 'nef'):
+        seq_ident_tags = self.get_seq_ident_tags(nef_tags, 'nef')
+
+        for tag in seq_ident_tags:
             chain_tag = tag['chain_tag']
             seq_tag = tag['seq_tag']
 
@@ -4281,7 +4392,7 @@ class NEFTranslator(object):
                 tag_map = {}
                 self_tag_map = {}
 
-                for tag in self.get_seq_ident_tags(nef_tags, 'nef'):
+                for tag in seq_ident_tags:
                     chain_tag = tag['chain_tag']
                     seq_tag = tag['seq_tag']
 
@@ -4301,6 +4412,8 @@ class NEFTranslator(object):
                         self_tag_map[chain_tag] = nef_chain
                         self_tag_map[seq_tag] = _nef_seq
 
+                intra_residue = i[nef_tags.index(chain_tag_1)] == i[nef_tags.index(chain_tag_2)] and i[nef_tags.index(seq_tag_1)] == i[nef_tags.index(seq_tag_2)]
+
                 atom_list_1, ambiguity_code_1, details_1 = self.get_star_atom(i[nef_comp_index_1], i[nef_atom_index_1])
                 atom_list_2, ambiguity_code_2, details_2 = self.get_star_atom(i[nef_comp_index_2], i[nef_atom_index_2])
 
@@ -4309,6 +4422,9 @@ class NEFTranslator(object):
                 for k in atom_list_1:
 
                     for l in atom_list_2:
+
+                        if intra_residue and l == k:
+                            continue
 
                         buf = [None] * len(star_tags)
 
@@ -4384,16 +4500,19 @@ class NEFTranslator(object):
 
         out_row = []
 
-        for tag in self.get_seq_ident_tags(star_tags, 'nmr-star'):
+        seq_ident_tags = self.get_seq_ident_tags(star_tags, 'nmr-star')
+
+        for tag in seq_ident_tags:
             chain_tag = tag['chain_tag']
             seq_tag = tag['seq_tag']
 
             if chain_tag.endswith('_1'):
                 chain_tag_1 = chain_tag
-                seq_tag_1 = seq_tag
+                #seq_tag_1 = seq_tag
             else:
-                chain_tag_2 = chain_tag
-                seq_tag_2 = seq_tag
+                pass
+                #chain_tag_2 = chain_tag
+                #seq_tag_2 = seq_tag
 
         try:
             index_index = nef_tags.index('_nef_distance_restraint.index')
@@ -4419,7 +4538,7 @@ class NEFTranslator(object):
 
                 tag_map = {}
 
-                for tag in self.get_seq_ident_tags(star_tags, 'nmr-star'):
+                for tag in seq_ident_tags:
                     chain_tag = tag['chain_tag']
                     seq_tag = tag['seq_tag']
 
@@ -4516,7 +4635,9 @@ class NEFTranslator(object):
         nef_comp_index_4 = nef_tags.index('_nef_dihedral_restraint.residue_name_4')
         nef_atom_index_4 = nef_tags.index('_nef_dihedral_restraint.atom_name_4')
 
-        for tag in self.get_seq_ident_tags(nef_tags, 'nef'):
+        seq_ident_tags = self.get_seq_ident_tags(nef_tags, 'nef')
+
+        for tag in seq_ident_tags:
             chain_tag = tag['chain_tag']
             seq_tag = tag['seq_tag']
 
@@ -4560,7 +4681,7 @@ class NEFTranslator(object):
                 tag_map = {}
                 self_tag_map = {}
 
-                for tag in self.get_seq_ident_tags(nef_tags, 'nef'):
+                for tag in seq_ident_tags:
                     chain_tag = tag['chain_tag']
                     seq_tag = tag['seq_tag']
 
@@ -4580,6 +4701,13 @@ class NEFTranslator(object):
                         self_tag_map[chain_tag] = nef_chain
                         self_tag_map[seq_tag] = _nef_seq
 
+                intra_residue_12 = i[nef_tags.index(chain_tag_1)] == i[nef_tags.index(chain_tag_2)] and i[nef_tags.index(seq_tag_1)] == i[nef_tags.index(seq_tag_2)]
+                intra_residue_13 = i[nef_tags.index(chain_tag_1)] == i[nef_tags.index(chain_tag_3)] and i[nef_tags.index(seq_tag_1)] == i[nef_tags.index(seq_tag_3)]
+                intra_residue_14 = i[nef_tags.index(chain_tag_1)] == i[nef_tags.index(chain_tag_4)] and i[nef_tags.index(seq_tag_1)] == i[nef_tags.index(seq_tag_4)]
+                intra_residue_23 = i[nef_tags.index(chain_tag_2)] == i[nef_tags.index(chain_tag_3)] and i[nef_tags.index(seq_tag_2)] == i[nef_tags.index(seq_tag_3)]
+                intra_residue_24 = i[nef_tags.index(chain_tag_2)] == i[nef_tags.index(chain_tag_4)] and i[nef_tags.index(seq_tag_2)] == i[nef_tags.index(seq_tag_4)]
+                intra_residue_34 = i[nef_tags.index(chain_tag_3)] == i[nef_tags.index(chain_tag_4)] and i[nef_tags.index(seq_tag_3)] == i[nef_tags.index(seq_tag_4)]
+
                 atom_list_1, ambiguity_code_1, details_1 = self.get_star_atom(i[nef_comp_index_1], i[nef_atom_index_1])
                 atom_list_2, ambiguity_code_2, details_2 = self.get_star_atom(i[nef_comp_index_2], i[nef_atom_index_2])
                 atom_list_3, ambiguity_code_3, details_3 = self.get_star_atom(i[nef_comp_index_3], i[nef_atom_index_3])
@@ -4589,9 +4717,18 @@ class NEFTranslator(object):
 
                     for l in atom_list_2:
 
+                        if intra_residue_12 and l == k:
+                            continue
+
                         for m in atom_list_3:
 
+                            if (intra_residue_13 and m == k) or (intra_residue_23 and m == l):
+                                continue
+
                             for n in atom_list_4:
+
+                                if (intra_residue_14 and n == k) or (intra_residue_24 and n == l) or (intra_residue_34 and n == m):
+                                    continue
 
                                 buf = [None] * len(star_tags)
 
@@ -4673,7 +4810,9 @@ class NEFTranslator(object):
         nef_comp_index_2 = nef_tags.index('_nef_rdc_restraint.residue_name_2')
         nef_atom_index_2 = nef_tags.index('_nef_rdc_restraint.atom_name_2')
 
-        for tag in self.get_seq_ident_tags(nef_tags, 'nef'):
+        seq_ident_tags = self.get_seq_ident_tags(nef_tags, 'nef')
+
+        for tag in seq_ident_tags:
             chain_tag = tag['chain_tag']
             seq_tag = tag['seq_tag']
 
@@ -4709,7 +4848,7 @@ class NEFTranslator(object):
                 tag_map = {}
                 self_tag_map = {}
 
-                for tag in self.get_seq_ident_tags(nef_tags, 'nef'):
+                for tag in seq_ident_tags:
                     chain_tag = tag['chain_tag']
                     seq_tag = tag['seq_tag']
 
@@ -4729,12 +4868,17 @@ class NEFTranslator(object):
                         self_tag_map[chain_tag] = nef_chain
                         self_tag_map[seq_tag] = _nef_seq
 
+                intra_residue = i[nef_tags.index(chain_tag_1)] == i[nef_tags.index(chain_tag_2)] and i[nef_tags.index(seq_tag_1)] == i[nef_tags.index(seq_tag_2)]
+
                 atom_list_1, ambiguity_code_1, details_1 = self.get_star_atom(i[nef_comp_index_1], i[nef_atom_index_1])
                 atom_list_2, ambiguity_code_2, details_2 = self.get_star_atom(i[nef_comp_index_2], i[nef_atom_index_2])
 
                 for k in atom_list_1:
 
                     for l in atom_list_2:
+
+                        if intra_residue and l == k:
+                            continue
 
                         buf = [None] * len(star_tags)
 

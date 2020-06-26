@@ -6413,6 +6413,9 @@ class NmrDpUtility(object):
                 if content_subtype == 'poly_seq':
                     lp_category = self.aux_lp_categories[file_type][content_subtype][0]
 
+                    if not lp_category in self.__lp_category_list:
+                        continue
+
                 if self.__star_data_type[fileListId] == 'Loop':
 
                     sf_data = self.__star_data[fileListId]
@@ -10752,7 +10755,7 @@ class NmrDpUtility(object):
                     self.__calculateStatsOfSpectralPeak(file_list_id, sf_framecode, num_dim, lp_data, ent)
 
             elif content_subtype == 'poly_seq':
-                self.__calculateStatsOfCovalentBond(file_list_id, sf_framecode, lp_data, ent)
+                self.__calculateStatsOfCovalentBond(file_list_id, sf_framecode, lp_category, lp_data, ent)
 
             elif content_subtype == 'chem_shift_ref':
                 ent['loop'] = lp_data
@@ -12727,7 +12730,7 @@ class NmrDpUtility(object):
             if self.__verbose:
                 self.__lfh.write("+NmrDpUtility.__calculateStatsOfDistanceRestraint() ++ Error  - %s" % str(e))
 
-    def __calculateStatsOfCovalentBond(self, file_list_id, sf_framecode, lp_data, ent):
+    def __calculateStatsOfCovalentBond(self, file_list_id, sf_framecode, lp_category, lp_data, ent):
         """ Calculate statistics of covalent bonds.
         """
 
@@ -12796,7 +12799,7 @@ class NmrDpUtility(object):
                     warn = "Hydrogen bond constraint (%s:%s:%s:%s, %s:%s:%s:%s) is too %s (%s angstromes)." %\
                            (chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2, 'close' if 'close' in data_type else 'far', distance)
 
-                    self.report.warning.appendDescription('unusual_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'description': warn})
+                    self.report.warning.appendDescription('unusual_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
                     self.report.setWarning()
 
                     if self.__verbose:
@@ -12807,7 +12810,7 @@ class NmrDpUtility(object):
                     warn = "Disulfide bond constraint (%s:%s:%s:%s, %s:%s:%s:%s) is too %s (%s angstromes)." %\
                            (chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2, 'close' if 'close' in data_type else 'far', distance)
 
-                    self.report.warning.appendDescription('unusual_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'description': warn})
+                    self.report.warning.appendDescription('unusual_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
                     self.report.setWarning()
 
                     if self.__verbose:
@@ -12818,7 +12821,7 @@ class NmrDpUtility(object):
                     warn = "Diselenide bond constraint (%s:%s:%s:%s, %s:%s:%s:%s) is too %s (%s angstromes)." %\
                            (chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2, 'close' if 'close' in data_type else 'far', distance)
 
-                    self.report.warning.appendDescription('unusual_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'description': warn})
+                    self.report.warning.appendDescription('unusual_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
                     self.report.setWarning()
 
                     if self.__verbose:
@@ -12829,7 +12832,7 @@ class NmrDpUtility(object):
                     warn = "Other bond constraint (%s:%s:%s:%s, %s:%s:%s:%s) is too %s (%s angstromes)." %\
                            (chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2, 'close' if 'close' in data_type else 'far', distance)
 
-                    self.report.warning.appendDescription('unusual_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'description': warn})
+                    self.report.warning.appendDescription('unusual_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
                     self.report.setWarning()
 
                     if self.__verbose:
@@ -12879,7 +12882,7 @@ class NmrDpUtility(object):
             if len(count) == 0:
                 return
 
-            ent['number_of_bonds'] = count
+            ent['number_of_constraints'] = count
             if not polymer_sequence is None:
                 ent['constraints_on_contact_map'] = count_on_map
             if has_inter_chain_constraint:

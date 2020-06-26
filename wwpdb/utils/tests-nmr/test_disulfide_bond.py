@@ -1,6 +1,6 @@
 ##
-# File: test_ulocked_model.py
-# Date:  09-May-2020  M. Yokochi
+# File: test_disulfide_bond.py
+# Date:  25-Jun-2020  M. Yokochi
 #
 # Updates:
 ##
@@ -26,17 +26,17 @@ class TestNmrDpUtility(unittest.TestCase):
         pass
 
     def __test_nmr_nef_consistency(self, entry_id):
-        self.utility.setSource(self.data_dir_path + entry_id + '/' + entry_id + '.nef')
-        self.utility.addInput(name='coordinate_file_path', value=self.data_dir_path + entry_id + '/' + entry_id + '_unlocked.cif', type='file')
+        self.utility.setSource(self.data_dir_path + entry_id + '/' + entry_id + '-disulfide-bond.nef')
+        self.utility.addInput(name='coordinate_file_path', value=self.data_dir_path + entry_id + '/' + entry_id + '.cif', type='file')
         self.utility.addInput(name='nonblk_anomalous_cs', value=True, type='param')
         self.utility.addInput(name='nonblk_bad_nterm', value=True, type='param')
         self.utility.addInput(name='resolve_conflict', value=True, type='param')
         self.utility.addInput(name='check_mandatory_tag', value=True, type='param')
-        self.utility.setLog(self.data_dir_path + entry_id + '-unlocked-nef-consistency-log.json')
+        self.utility.setLog(self.data_dir_path + entry_id + '-disulfide-bond-nef-consistency-log.json')
 
         self.utility.op('nmr-nef-consistency-check')
 
-        with open(self.data_dir_path + entry_id + '-unlocked-nef-consistency-log.json', 'r') as file:
+        with open(self.data_dir_path + entry_id + '-disulfide-bond-nef-consistency-log.json', 'r') as file:
             report = json.loads(file.read())
 
         if not report['error'] is None:
@@ -56,30 +56,33 @@ class TestNmrDpUtility(unittest.TestCase):
         if not os.access(self.data_dir_path + entry_id + '-nef-consistency-log.json', os.F_OK):
             self.__test_nmr_nef_consistency(entry_id)
 
-        self.utility.setSource(self.data_dir_path + entry_id + '/' + entry_id + '.nef')
-        self.utility.addInput(name='coordinate_file_path', value=self.data_dir_path + entry_id + '/' + entry_id + '_unlocked.cif', type='file')
-        self.utility.addInput(name='report_file_path', value=self.data_dir_path + entry_id + '-unlocked-nef-consistency-log.json', type='file')
+        self.utility.setSource(self.data_dir_path + entry_id + '/' + entry_id + '-disulfide-bond.nef')
+        self.utility.addInput(name='coordinate_file_path', value=self.data_dir_path + entry_id + '/' + entry_id + '.cif', type='file')
+        self.utility.addInput(name='report_file_path', value=self.data_dir_path + entry_id + '-disulfide-bond-nef-consistency-log.json', type='file')
         self.utility.addInput(name='nonblk_anomalous_cs', value=True, type='param')
         self.utility.addInput(name='nonblk_bad_nterm', value=True, type='param')
         self.utility.addInput(name='resolve_conflict', value=True, type='param')
         self.utility.addInput(name='check_mandatory_tag', value=True, type='param')
-        self.utility.setLog(self.data_dir_path + entry_id + '-unlocked-nef2str-deposit-log.json')
-        self.utility.setDestination(self.data_dir_path + entry_id + '-next.nef')
-        self.utility.addOutput(name='nmr-star_file_path', value=self.data_dir_path + entry_id + '-nef2str.str', type='file')
-        self.utility.addOutput(name='report_file_path', value=self.data_dir_path + entry_id + '-unlocked-nef2str-str-deposit-log.json', type='file')
+        self.utility.setLog(self.data_dir_path + entry_id + '-disulfide-bond-nef2str-deposit-log.json')
+        self.utility.setDestination(self.data_dir_path + entry_id + '-disulfide-bond-next.nef')
+        self.utility.addOutput(name='nmr-star_file_path', value=self.data_dir_path + entry_id + '-disulfide-bond-nef2str.str', type='file')
+        self.utility.addOutput(name='report_file_path', value=self.data_dir_path + entry_id + '-disulfide-bond-nef2str-str-deposit-log.json', type='file')
         self.utility.addOutput(name='entry_id', value='NEED_ACC_NO', type='param')
         self.utility.setVerbose(False)
 
         self.utility.op('nmr-nef2str-deposit')
 
-        with open(self.data_dir_path + entry_id + '-unlocked-nef2str-str-deposit-log.json', 'r') as file:
+        with open(self.data_dir_path + entry_id + '-disulfide-bond-nef2str-str-deposit-log.json', 'r') as file:
             report = json.loads(file.read())
 
         if not report['error'] is None:
             self.assertEqual(report['error']['internal_error'], None)
 
-    def test_nmr_nef_consistency_check_2loy(self):
-        self.__test_nmr_nef_consistency('2loy')
+    def test_nmr_nef_consistency_check_6nbn(self):
+        self.__test_nmr_nef_consistency('6nbn')
+
+    def test_nmr_nef2str_deposit_6nbn(self):
+        self.__test_nmr_nef2str_deposit('6nbn')
 
 if __name__ == '__main__':
     unittest.main()

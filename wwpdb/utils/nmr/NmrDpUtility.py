@@ -86,6 +86,7 @@
 # 06-Jun-2020  M. Yokochi - be compatible with pynmrstar v3 (DAOTHER-5765)
 # 12-Jun-2020  M. Yokochi - overall performance improvement by reusing cached data and code revision
 # 19-Jun-2020  M. Yokochi - do not generate invalid restraints include self atom
+# 26-Jun-2020  M. Yokochi - add support for covalent bond information (_nef_covalent_links and _Bond categories)
 ##
 """ Wrapper class for data processing for NMR data.
     @author: Masashi Yokochi
@@ -571,6 +572,7 @@ class NmrDpUtility(object):
         # cross validation tasks
         __crossCheckTasks = [self.__assignCoordPolymerSequence,
                              self.__testCoordAtomIdConsistency,
+                             self.__testCovalentBond,
                              self.__validateCSValue,
                              self.__extractCoordDisulfideBond,
                              self.__extractCoordOtherBond,
@@ -815,6 +817,9 @@ class NmrDpUtility(object):
 
         # criterion for detection of not superimposed models
         self.cutoff_rmsd = 3.5
+
+        # criterion for covalent bond length
+        self.cutoff_bond_length = 3.5
 
         # magic angle in degrees
         self.magic_angle = 54.7356
@@ -2385,7 +2390,7 @@ class NmrDpUtility(object):
 
         # auxiliary loop categories
         self.aux_lp_categories = {'nef': {'entry_info': [],
-                                          'poly_seq':  [],
+                                          'poly_seq':  ['_nef_covalent_links'],
                                           'entity': [],
                                           'chem_shift': [],
                                           'chem_shift_ref': [],
@@ -2395,7 +2400,7 @@ class NmrDpUtility(object):
                                           'spectral_peak': ['_nef_spectrum_dimension', '_nef_spectrum_dimension_transfer']
                                           },
                                   'nmr-star': {'entry_info': [],
-                                               'poly_seq':  [],
+                                               'poly_seq':  ['_Bond'],
                                                'entity': [],
                                                'chem_shift': [],
                                                'chem_shift_ref': [],
@@ -2470,7 +2475,17 @@ class NmrDpUtility(object):
 
         # auxiliary loop key items
         self.aux_key_items = {'nef': {'entry_info': None,
-                                      'poly_seq':  None,
+                                      'poly_seq': {
+                                          '_nef_covalent_links': [{'name': 'chain_code_1', 'type': 'str', 'default': 'A'},
+                                                                  {'name': 'sequence_code_1', 'type': 'int'},
+                                                                  {'name': 'residue_name_1', 'type': 'str', 'uppercase': True},
+                                                                  {'name': 'atom_name_1', 'type': 'str'},
+                                                                  {'name': 'chain_code_2', 'type': 'str', 'default': 'A'},
+                                                                  {'name': 'sequence_code_2', 'type': 'int'},
+                                                                  {'name': 'residue_name_2', 'type': 'str', 'uppercase': True},
+                                                                  {'name': 'atom_name_2', 'type': 'str'}
+                                                                  ]
+                                          },
                                       'entity': None,
                                       'chem_shift': None,
                                       'chem_shift_ref': None,
@@ -2486,7 +2501,22 @@ class NmrDpUtility(object):
                                           }
                                       },
                               'nmr-star': {'entry_info': None,
-                                           'poly_seq':  None,
+                                           'poly_seq': {
+                                               '_Bond': [{'name': 'ID', 'type': 'index-int', 'mandatory': True, 'default-from': 'self'},
+                                                         {'name': 'Type', 'type': 'enum', 'mandatory': True, 'default': 'covalent',
+                                                          'enum': ('amide', 'covalent', 'directed', 'disulfide', 'ester', 'ether', 'hydrogen', 'metal coordination' 'peptide', 'thioether', 'oxime', 'thioester', 'phosphoester', 'phosphodiester', 'diselenide', 'na')},
+                                                         {'name': 'Value_order', 'type': 'enum', 'mandatory': True, 'default': 'sing',
+                                                          'enum': ('sing', 'doub', 'trip', 'quad', 'arom', 'poly', 'delo', 'pi', 'directed')},
+                                                         {'name': 'Entity_assembly_ID_1', 'type': 'positive-int', 'default': '1', 'default-from': 'self'},
+                                                         {'name': 'Comp_index_ID_1', 'type': 'int'},
+                                                         {'name': 'Comp_ID_1', 'type': 'str', 'uppercase': True},
+                                                         {'name': 'Atom_ID_1', 'type': 'str'},
+                                                         {'name': 'Entity_assembly_ID_2', 'type': 'positive-int', 'default': '1', 'default-from': 'self'},
+                                                         {'name': 'Comp_index_ID_2', 'type': 'int'},
+                                                         {'name': 'Comp_ID_2', 'type': 'str', 'uppercase': True},
+                                                         {'name': 'Atom_ID_2', 'type': 'str'}
+                                                         ]
+                                               },
                                            'entity': None,
                                            'chem_shift': None,
                                            'chem_shift_ref': None,
@@ -2505,7 +2535,8 @@ class NmrDpUtility(object):
 
         # auxiliary loop data items
         self.aux_data_items = {'nef': {'entry_info': None,
-                                       'poly_seq':  None,
+                                       'poly_seq': {
+                                           '_nef_covalent_links': []},
                                        'entity': None,
                                        'chem_shift': None,
                                        'chem_shift_ref': None,
@@ -2535,7 +2566,16 @@ class NmrDpUtility(object):
                                            }
                                        },
                                   'nmr-star': {'entry_info': None,
-                                               'poly_seq':  None,
+                                               'poly_seq': {
+                                                   '_Bond': [{'name': 'Auth_asym_ID_1', 'type': 'str', 'mandatory': False},
+                                                             {'name': 'Auth_seq_ID_1', 'type': 'int', 'mandatory': False},
+                                                             {'name': 'Auth_comp_ID_1', 'type': 'str', 'mandatory': False},
+                                                             {'name': 'Auth_atom_ID_1', 'type': 'str', 'mandatory': False},
+                                                             {'name': 'Auth_asym_ID_2', 'type': 'str', 'mandatory': False},
+                                                             {'name': 'Auth_seq_ID_2', 'type': 'int', 'mandatory': False},
+                                                             {'name': 'Auth_comp_ID_2', 'type': 'str', 'mandatory': False},
+                                                             {'name': 'Auth_atom_ID_2', 'type': 'str', 'mandatory': False}
+                                                             ]},
                                                'entity': None,
                                                'chem_shift': None,
                                                'chem_shift_ref': None,
@@ -2570,7 +2610,9 @@ class NmrDpUtility(object):
 
         # allowed auxiliary loop tags
         self.aux_allowed_tags = {'nef': {'entry_info': None,
-                                         'poly_seq':  None,
+                                         'poly_seq': {
+                                             '_nef_covalent_links': ["chain_code_1", "sequence_code_1", "residue_name_1", "atom_name_1", "chain_code_2", "sequence_code_2", "residue_name_2", "atom_name_2"]
+                                             },
                                          'entity': None,
                                          'chem_shift': None,
                                          'chem_shift_ref': None,
@@ -2583,7 +2625,9 @@ class NmrDpUtility(object):
                                              }
                                          },
                                  'nmr-star': {'entry_info': None,
-                                              'poly_seq':  None,
+                                              'poly_seq': {
+                                                  '_Bond': ["ID", "Type", "Value_order", "Assembly_atom_ID_1", "Entity_assembly_ID_1", "Entity_assembly_name_1", "Entity_ID_1", "Comp_ID_1", "Comp_index_ID_1", "Seq_ID_1", "Atom_ID_1", "Assembly_atom_ID_2", "Entity_assembly_ID_2", "Entity_assembly_name_2", "Entity_ID_2", "Comp_ID_2", "Comp_index_ID_2", "Seq_ID_2", "Atom_ID_2", "Auth_entity_assembly_ID_1", "Auth_entity_assembly_name_1", "Auth_asym_ID_1", "Auth_seq_ID_1", "Auth_comp_ID_1", "Auth_atom_ID_1", "Auth_entity_assembly_ID_2", "Auth_entity_assembly_name_2", "Auth_asym_ID_2", "Auth_seq_ID_2", "Auth_comp_ID_2", "Auth_atom_ID_2", "Sf_ID", "Entry_ID", "Assembly_ID"]
+                                                  },
                                               'entity': None,
                                               'chem_shift': None,
                                               'chem_shift_ref': None,
@@ -2850,6 +2894,8 @@ class NmrDpUtility(object):
         self.__coord_near_ring = {}
         # nearest paramagnetic atom in model
         self.__coord_near_para = {}
+        # bond length in model
+        self.__coord_bond_length = {}
 
         self.__last_comp_id = None
         self.__last_comp_id_test = False
@@ -4699,7 +4745,7 @@ class NmrDpUtility(object):
                 except StopIteration:
                     pass
 
-            if content_subtype == 'dist_restraint' or content_subtype == 'rdc_restraint':
+            if content_subtype in ['dist_restraint', 'rdc_restraint']:
                 max_dim = 3
 
             elif content_subtype == 'dihed_restraint':
@@ -6356,10 +6402,16 @@ class NmrDpUtility(object):
 
             polymer_sequence_in_loop = input_source_dic['polymer_sequence_in_loop']
 
-            for content_subtype in polymer_sequence_in_loop.keys():
+            content_subtypes = ['poly_seq']
+            content_subtypes.extend(polymer_sequence_in_loop.keys())
+
+            for content_subtype in content_subtypes:
 
                 sf_category = self.sf_categories[file_type][content_subtype]
                 lp_category = self.lp_categories[file_type][content_subtype]
+
+                if content_subtype == 'poly_seq':
+                    lp_category = self.aux_lp_categories[file_type][content_subtype][0]
 
                 if self.__star_data_type[fileListId] == 'Loop':
 
@@ -6511,6 +6563,11 @@ class NmrDpUtility(object):
                         unk_atom_ids = []
 
                         for atom_id in atom_ids:
+
+                            if file_type == 'nef':
+                                _atom_id = self.__nefT.get_star_atom(comp_id, atom_id, leave_unmatched=False)[0]
+                                if len(_atom_id) > 0:
+                                    atom_id = _atom_id[0]
 
                             if not atom_id in ref_atom_ids:
                                 unk_atom_ids.append(atom_id)
@@ -6750,11 +6807,14 @@ class NmrDpUtility(object):
 
             for content_subtype in input_source_dic['content_subtype'].keys():
 
-                if content_subtype == ['entry_info', 'poly_seq', 'entity', 'chem_shift_ref']:
+                if content_subtype == ['entry_info', 'entity', 'chem_shift_ref']:
                     continue
 
                 sf_category = self.sf_categories[file_type][content_subtype]
                 lp_category = self.lp_categories[file_type][content_subtype]
+
+                if content_subtype == 'poly_seq':
+                    lp_category = self.aux_lp_categories[file_type][content_subtype][0]
 
                 if self.__star_data_type[fileListId] == 'Loop':
 
@@ -6787,7 +6847,7 @@ class NmrDpUtility(object):
 
         max_dim = 2
 
-        if content_subtype == 'dist_restraint' or content_subtype == 'rdc_restraint':
+        if content_subtype in ['poly_seq', 'dist_restraint', 'rdc_restraint']:
             max_dim = 3
 
         elif content_subtype == 'dihed_restraint':
@@ -7613,7 +7673,7 @@ class NmrDpUtility(object):
 
             for content_subtype in input_source_dic['content_subtype'].keys():
 
-                if content_subtype == 'dist_restraint' or content_subtype == 'dihed_restraint' or content_subtype == 'rdc_restraint':
+                if content_subtype in ['dist_restraint', 'dihed_restraint', 'rdc_restraint']:
 
                     sf_category = self.sf_categories[file_type][content_subtype]
                     lp_category = self.lp_categories[file_type][content_subtype]
@@ -10145,6 +10205,222 @@ class NmrDpUtility(object):
             if self.__verbose:
                 self.__lfh.write("+NmrDpUtility.__testRDCVector() ++ Error  - %s" % str(e))
 
+    def __testCovalentBond(self):
+        """ Perform consistency test on covalent bonds.
+        """
+
+        __errors = self.report.getTotalErrors()
+
+        for fileListId in range(self.__file_path_list_len):
+
+            input_source = self.report.input_sources[fileListId]
+            input_source_dic = input_source.get()
+
+            file_name = input_source_dic['file_name']
+            file_type = input_source_dic['file_type']
+
+            if input_source_dic['content_subtype'] is None:
+                continue
+
+            content_subtype = 'poly_seq'
+
+            if not content_subtype in input_source_dic['content_subtype'].keys():
+                continue
+
+            sf_category = self.sf_categories[file_type][content_subtype]
+            lp_category = self.aux_lp_categories[file_type][content_subtype][0]
+
+            if self.__star_data_type[fileListId] == 'Loop':
+
+                sf_data = self.__star_data[fileListId]
+                sf_framecode = ''
+
+                self.__testCovalentBond__(file_name, file_type, content_subtype, sf_data, sf_framecode, lp_category)
+
+            elif self.__star_data_type[fileListId] == 'Saveframe':
+
+                sf_data = self.__star_data[fileListId]
+                sf_framecode = get_first_sf_tag(sf_data, 'sf_framecode')
+
+                self.__testCovalentBond__(file_name, file_type, content_subtype, sf_data, sf_framecode, lp_category)
+
+            else:
+
+                for sf_data in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
+
+                    sf_framecode = get_first_sf_tag(sf_data, 'sf_framecode')
+
+                    self.__testCovalentBond__(file_name, file_type, content_subtype, sf_data, sf_framecode, lp_category)
+
+        return self.report.getTotalErrors() == __errors
+
+    def __testCovalentBond__(self, file_name, file_type, content_subtype, sf_data, sf_framecode, lp_category):
+        """ Perform consistency test on covalent bonds.
+        """
+
+        item_names = self.item_names_in_rdc_loop[file_type]
+        chain_id_1_name = item_names['chain_id_1']
+        chain_id_2_name = item_names['chain_id_2']
+        seq_id_1_name = item_names['seq_id_1']
+        seq_id_2_name = item_names['seq_id_2']
+        comp_id_1_name = item_names['comp_id_1']
+        comp_id_2_name = item_names['comp_id_2']
+        atom_id_1_name = item_names['atom_id_1']
+        atom_id_2_name = item_names['atom_id_2']
+
+        try:
+
+            aux_data = next((l['data'] for l in self.__aux_data[content_subtype] if l['file_name'] == file_name and l['sf_framecode'] == sf_framecode and l['category'] == lp_category), None)
+
+            if not aux_data is None:
+
+                for l, i in enumerate(aux_data):
+                    chain_id_1 = i[chain_id_1_name]
+                    seq_id_1 = i[seq_id_1_name]
+                    comp_id_1 = i[comp_id_1_name]
+                    atom_id_1 = i[atom_id_1_name]
+                    chain_id_2 = i[chain_id_2_name]
+                    seq_id_2 = i[seq_id_2_name]
+                    comp_id_2 = i[comp_id_2_name]
+                    atom_id_2 = i[atom_id_2_name]
+
+                    bond = self.__getBondLength(chain_id_1, seq_id_1, atom_id_1, chain_id_2, seq_id_2, atom_id_2)
+
+                    if bond is None:
+                        continue
+
+                    broken_bond = [b for b in bond if b['distance'] > self.cutoff_bond_length]
+
+                    if len(broken_bond) == 0:
+                        continue
+
+                    length_list = ''
+                    for bb in broken_bond:
+                        length_list += '%s (model_id %s), ' % (bb['distance'], bb['model_id'])
+
+                    warn = "Covalent bond (%s - %s) is out of acceptable range, %s angstromes." %\
+                          (self.__getReducedAtomNotation(chain_id_1_name, chain_id_1, seq_id_1_name, seq_id_1, comp_id_1_name, comp_id_1, atom_id_1_name, atom_id_1),
+                           self.__getReducedAtomNotation(chain_id_2_name, chain_id_2, seq_id_2_name, seq_id_2, comp_id_2_name, comp_id_2, atom_id_2_name, atom_id_2),
+                           length_list[:-2])
+
+                    self.report.warning.appendDescription('anomalous_bond_length', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
+                    self.report.setWarning()
+
+                    if self.__verbose:
+                        self.__lfh.write("+NmrDpUtility.__testCovalentBond() ++ Warning  - %s\n" % warn)
+
+        except Exception as e:
+
+            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__testCovalentBond() ++ Error  - %s" % str(e))
+            self.report.setError()
+
+            if self.__verbose:
+                self.__lfh.write("+NmrDpUtility.__testCovalentBond() ++ Error  - %s" % str(e))
+
+    def __getBondLength(self, _nmr_chain_id_1, nmr_seq_id_1, nmr_atom_id_1, _nmr_chain_id_2, nmr_seq_id_2, nmr_atom_id_2):
+        """ Return the bond length of given two atoms.
+            @return: the bond length
+        """
+
+        intra_chain = _nmr_chain_id_1 == _nmr_chain_id_2
+
+        nmr_chain_id_1 = str(_nmr_chain_id_1)
+        nmr_chain_id_2 = str(_nmr_chain_id_2)
+
+        s_1 = self.report.getModelPolymerSequenceWithNmrChainId(nmr_chain_id_1)
+
+        if s_1 is None:
+            return None
+
+        s_2 = s_1 if intra_chain else self.report.getModelPolymerSequenceWithNmrChainId(nmr_chain_id_2)
+
+        if s_2 is None:
+            return None
+
+        cif_chain_id_1 = s_1['chain_id']
+        cif_chain_id_2 = cif_chain_id_1 if intra_chain else s_2['chain_id']
+
+        seq_align_dic = self.report.sequence_alignment.get()
+
+        if not has_key_value(seq_align_dic, 'nmr_poly_seq_vs_model_poly_seq'):
+            return None
+
+        seq_key = (_nmr_chain_id_1, nmr_seq_id_1, nmr_atom_id_1, _nmr_chain_id_2, nmr_seq_id_2, nmr_atom_id_2)
+
+        if seq_key in self.__coord_bond_length:
+            return self.__coord_bond_length[seq_key]
+
+        result_1 = next((seq_align for seq_align in seq_align_dic['nmr_poly_seq_vs_model_poly_seq'] if seq_align['ref_chain_id'] == nmr_chain_id_1 and seq_align['test_chain_id'] == cif_chain_id_1), None)
+        result_2 = result_1 if intra_chain else next((seq_align for seq_align in seq_align_dic['nmr_poly_seq_vs_model_poly_seq'] if seq_align['ref_chain_id'] == nmr_chain_id_2 and seq_align['test_chain_id'] == cif_chain_id_2), None)
+
+        if not result_1 is None and not result_2 is None:
+
+            cif_seq_id_1 = next((test_seq_id for ref_seq_id, test_seq_id in zip(result_1['ref_seq_id'], result_1['test_seq_id']) if ref_seq_id == nmr_seq_id_1), None)
+
+            if cif_seq_id_1 is None:
+                self.__coord_bond_length[seq_key] = None
+                return None
+
+            cif_seq_id_2 = next((test_seq_id for ref_seq_id, test_seq_id in zip(result_2['ref_seq_id'], result_2['test_seq_id']) if ref_seq_id == nmr_seq_id_2), None)
+
+            if cif_seq_id_2 is None:
+                self.__coord_bond_length[seq_key] = None
+                return None
+
+            try:
+
+                model_num_name = 'pdbx_PDB_model_num' if self.__cR.hasItem('atom_site', 'pdbx_PDB_model_num') else 'ndb_model'
+
+                atom_site_1 = self.__cR.getDictListWithFilter('atom_site',
+                                                [{'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
+                                                 {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
+                                                 {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'},
+                                                 {'name': model_num_name, 'type': 'int', 'alt_name': 'model_id'}
+                                                 ],
+                                                [{'name': 'label_asym_id', 'type': 'str', 'value': cif_chain_id_1},
+                                                 {'name': 'label_seq_id', 'type': 'int', 'value': cif_seq_id_1},
+                                                 {'name': 'label_atom_id', 'type': 'str', 'value': nmr_atom_id_1}])
+
+                atom_site_2 = self.__cR.getDictListWithFilter('atom_site',
+                                                [{'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
+                                                 {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
+                                                 {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'},
+                                                 {'name': model_num_name, 'type': 'int', 'alt_name': 'model_id'}
+                                                 ],
+                                                [{'name': 'label_asym_id', 'type': 'str', 'value': cif_chain_id_2},
+                                                 {'name': 'label_seq_id', 'type': 'int', 'value': cif_seq_id_2},
+                                                 {'name': 'label_atom_id', 'type': 'str', 'value': nmr_atom_id_2}])
+
+            except Exception as e:
+
+                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__getBondLength() ++ Error  - %s" % str(e))
+                self.report.setError()
+
+                if self.__verbose:
+                    self.__lfh.write("+NmrDpUtility.__getBondLength() ++ Error  - %s" % str(e))
+
+                return None
+
+            model_ids = set(a['model_id'] for a in atom_site_1) | set(a['model_id'] for a in atom_site_2)
+
+            bond = []
+
+            for model_id in model_ids:
+                a_1 = next((a for a in atom_site_1 if a['model_id'] == model_id), None)
+                a_2 = next((a for a in atom_site_2 if a['model_id'] == model_id), None)
+
+                if a_1 is None or a_2 is None:
+                    continue
+
+                bond.append({'model_id': model_id, 'distance': float('{:.3f}'.format(np.linalg.norm(to_np_array(a_1) - to_np_array(a_2))))})
+
+            if len(bond) > 0:
+                self.__coord_bond_length[seq_key] = bond
+                return bond
+
+        self.__coord_bond_length[seq_key] = None
+        return None
+
     def __getReducedAtomNotation(self, chain_id_name, chain_id, seq_id_name, seq_id, comp_id_name, comp_id, atom_id_name, atom_id):
         """ Return reduced form of atom notation.
         """
@@ -10197,7 +10473,7 @@ class NmrDpUtility(object):
 
             for content_subtype in input_source_dic['content_subtype'].keys():
 
-                if content_subtype in ['entry_info', 'poly_seq', 'entity']:
+                if content_subtype in ['entry_info', 'entity']:
                     continue
 
                 if not self.report_prev is None:
@@ -10206,6 +10482,9 @@ class NmrDpUtility(object):
 
                 sf_category = self.sf_categories[file_type][content_subtype]
                 lp_category = self.lp_categories[file_type][content_subtype]
+
+                if content_subtype == 'poly_seq':
+                    lp_category = self.aux_lp_categories[file_type][content_subtype][0]
 
                 asm = []
 
@@ -10256,12 +10535,16 @@ class NmrDpUtility(object):
             if len(val) > 0:
                 _list_id = int(val[0])
 
-        lp_data = next((l['data'] for l in self.__lp_data[content_subtype] if l['file_name'] == file_name and l['sf_framecode'] == sf_framecode), None)
+        if content_subtype != 'poly_seq':
+            lp_data = next((l['data'] for l in self.__lp_data[content_subtype] if l['file_name'] == file_name and l['sf_framecode'] == sf_framecode), None)
+        else:
+            lp_data = next((l['data'] for l in self.__aux_data[content_subtype] if l['file_name'] == file_name and l['sf_framecode'] == sf_framecode and l['category'] == lp_category), None)
+
         sf_tag_data = next((t['data'] for t in self.__sf_tag_data[content_subtype] if t['file_name'] == file_name and t['sf_framecode'] == sf_framecode), None)
 
         ent = {'list_id': _list_id, 'sf_framecode': sf_framecode, 'number_of_rows': 0 if lp_data is None else len(lp_data)}
 
-        if content_subtype == 'dist_restraint' or content_subtype == 'dihed_restraint' or content_subtype == 'rdc_restraint':
+        if content_subtype in ['dist_restraint', 'dihed_restraint', 'rdc_restraint']:
 
             type = sf_data.get_tag('restraint_origin' if file_type == 'nef' else 'Constraint_type')
             if len(type) > 0 and not type[0] in self.empty_value:
@@ -10279,7 +10562,7 @@ class NmrDpUtility(object):
 
         if not lp_data is None:
 
-            if content_subtype == 'chem_shift' or content_subtype == 'dist_restraint' or content_subtype == 'dihed_restraint' or content_subtype == 'rdc_restraint' or content_subtype == 'spectral_peak':
+            if content_subtype in ['chem_shift', 'dist_restraint', 'dihed_restraint', 'rdc_restraint', 'spectral_peak']:
 
                 sa_name = 'nmr_poly_seq_vs_' + content_subtype
 
@@ -10415,7 +10698,7 @@ class NmrDpUtility(object):
 
                         self.__calculateStatsOfAssignedChemShift(file_list_id, sf_framecode, lp_data, cs_ann, ent)
 
-                    elif content_subtype == 'dist_restraint' or content_subtype == 'dihed_restraint' or content_subtype == 'rdc_restraint':
+                    elif content_subtype in ['dist_restraint', 'dihed_restraint', 'rdc_restraint']:
 
                         conflict_id_set = self.__nefT.get_conflict_id_set(sf_data, lp_category, self.consist_key_items[file_type][content_subtype])[0]
 
@@ -10467,6 +10750,9 @@ class NmrDpUtility(object):
                         return
 
                     self.__calculateStatsOfSpectralPeak(file_list_id, sf_framecode, num_dim, lp_data, ent)
+
+            elif content_subtype == 'poly_seq':
+                self.__calculateStatsOfCovalentBond(file_list_id, sf_framecode, lp_data, ent)
 
             elif content_subtype == 'chem_shift_ref':
                 ent['loop'] = lp_data
@@ -12441,6 +12727,172 @@ class NmrDpUtility(object):
             if self.__verbose:
                 self.__lfh.write("+NmrDpUtility.__calculateStatsOfDistanceRestraint() ++ Error  - %s" % str(e))
 
+    def __calculateStatsOfCovalentBond(self, file_list_id, sf_framecode, lp_data, ent):
+        """ Calculate statistics of covalent bonds.
+        """
+
+        input_source = self.report.input_sources[file_list_id]
+        input_source_dic = input_source.get()
+
+        file_name = input_source_dic['file_name']
+        file_type = input_source_dic['file_type']
+
+        item_names = self.item_names_in_ds_loop[file_type]
+        chain_id_1_name = item_names['chain_id_1']
+        chain_id_2_name = item_names['chain_id_2']
+        seq_id_1_name = item_names['seq_id_1']
+        seq_id_2_name = item_names['seq_id_2']
+        comp_id_1_name = item_names['comp_id_1']
+        comp_id_2_name = item_names['comp_id_2']
+        atom_id_1_name = item_names['atom_id_1']
+        atom_id_2_name = item_names['atom_id_2']
+
+        try:
+
+            count = {}
+
+            count_on_map = []
+            count_on_asym_map = []
+
+            has_inter_chain_constraint = False
+
+            polymer_sequence = input_source_dic['polymer_sequence']
+
+            if not polymer_sequence is None:
+
+                for s in polymer_sequence:
+                    struct_conf = self.__extractCoordStructConf(s['chain_id'], s['seq_id'])
+                    count_on_map.append({'chain_id': s['chain_id'], 'seq_id': s['seq_id'], 'comp_id': s['comp_id'], 'struct_conf': struct_conf})
+
+                if len(polymer_sequence) > 1:
+                    for s, t in itertools.combinations(polymer_sequence, 2):
+                        count_on_asym_map.append({'chain_id_1': s['chain_id'], 'chain_id_2': t['chain_id'], 'seq_id_1': s['seq_id'], 'seq_id_2': t['seq_id'], 'comp_id_1': s['comp_id'], 'comp_id_2': t['comp_id'], 'struct_conf_1': self.__extractCoordStructConf(s['chain_id'], s['seq_id']), 'struct_conf_2': self.__extractCoordStructConf(t['chain_id'], t['seq_id'])})
+
+            for l, i in enumerate(lp_data):
+                chain_id_1 = str(i[chain_id_1_name])
+                chain_id_2 = str(i[chain_id_2_name])
+                seq_id_1 = i[seq_id_1_name]
+                seq_id_2 = i[seq_id_2_name]
+                comp_id_1 = i[comp_id_1_name]
+                comp_id_2 = i[comp_id_2_name]
+                atom_id_1 = i[atom_id_1_name]
+                atom_id_2 = i[atom_id_2_name]
+
+                bond = self.__getBondLength(chain_id_1, seq_id_1, atom_id_1, chain_id_2, seq_id_2, atom_id_2)
+
+                if bond is None:
+                    continue
+
+                distance = next((b['distance'] for b in bond if b['model_id'] == self.__representative_model_id), None)
+
+                if distance is None:
+                    distance = bond[0]['distance']
+
+                data_type = self.__getTypeOfCovalentBond(file_type, lp_data, l, distance,
+                                                         chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2)
+
+                if 'hydrogen_bonds' in data_type and ('too close!' in data_type or 'too far!' in data_type):
+
+                    warn = "Hydrogen bond constraint (%s:%s:%s:%s, %s:%s:%s:%s) is too %s (%s angstromes)." %\
+                           (chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2, 'close' if 'close' in data_type else 'far', distance)
+
+                    self.report.warning.appendDescription('unusual_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'description': warn})
+                    self.report.setWarning()
+
+                    if self.__verbose:
+                        self.__lfh.write("+NmrDpUtility.__calculateStatsOfCovalentBond() ++ Warning  - %s\n" % warn)
+
+                elif 'disulfide_bonds' in data_type and ('too close!' in data_type or 'too far!' in data_type):
+
+                    warn = "Disulfide bond constraint (%s:%s:%s:%s, %s:%s:%s:%s) is too %s (%s angstromes)." %\
+                           (chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2, 'close' if 'close' in data_type else 'far', distance)
+
+                    self.report.warning.appendDescription('unusual_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'description': warn})
+                    self.report.setWarning()
+
+                    if self.__verbose:
+                        self.__lfh.write("+NmrDpUtility.__calculateStatsOfCovalentBond() ++ Warning  - %s\n" % warn)
+
+                elif 'diselenide_bonds' in data_type and ('too close!' in data_type or 'too far!' in data_type):
+
+                    warn = "Diselenide bond constraint (%s:%s:%s:%s, %s:%s:%s:%s) is too %s (%s angstromes)." %\
+                           (chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2, 'close' if 'close' in data_type else 'far', distance)
+
+                    self.report.warning.appendDescription('unusual_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'description': warn})
+                    self.report.setWarning()
+
+                    if self.__verbose:
+                        self.__lfh.write("+NmrDpUtility.__calculateStatsOfCovalentBond() ++ Warning  - %s\n" % warn)
+
+                elif 'other_bonds' in data_type and ('too close!' in data_type or 'too far!' in data_type):
+
+                    warn = "Other bond constraint (%s:%s:%s:%s, %s:%s:%s:%s) is too %s (%s angstromes)." %\
+                           (chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2, 'close' if 'close' in data_type else 'far', distance)
+
+                    self.report.warning.appendDescription('unusual_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'description': warn})
+                    self.report.setWarning()
+
+                    if self.__verbose:
+                        self.__lfh.write("+NmrDpUtility.__calculateStatsOfCovalentBond() ++ Warning  - %s\n" % warn)
+
+                if data_type in count:
+                    count[data_type] += 1
+                else:
+                    count[data_type] = 1
+
+                if not polymer_sequence is None:
+
+                    # count on map
+
+                    if chain_id_1 == chain_id_2:
+
+                        for c in count_on_map:
+                            if not data_type in c:
+                                c[data_type] = []
+                            if c['chain_id'] == chain_id_1:
+                                try:
+                                    b = next(b for b in c[data_type] if b['seq_id_1'] == seq_id_1 and b['seq_id_2'] == seq_id_2)
+                                    b['total'] += 1
+                                except StopIteration:
+                                    c[data_type].append({'seq_id_1': seq_id_1, 'seq_id_2': seq_id_2, 'total': 1})
+
+                    else:
+
+                        for c in count_on_asym_map:
+                            if not data_type in c:
+                                c[data_type] = []
+                            if c['chain_id_1'] == chain_id_1 and c['chain_id_2'] == chain_id_2:
+                                try:
+                                    b = next(b for b in c[data_type] if b['seq_id_1'] == seq_id_1 and b['seq_id_2'] == seq_id_2)
+                                    b['total'] += 1
+                                except StopIteration:
+                                    c[data_type].append({'seq_id_1': seq_id_1, 'seq_id_2': seq_id_2, 'total': 1})
+                            elif c['chain_id_1'] == chain_id_2 and c['chain_id_2'] == chain_id_1:
+                                try:
+                                    b = next(b for b in c[data_type] if b['seq_id_1'] == seq_id_2 and b['seq_id_2'] == seq_id_1)
+                                    b['total'] += 1
+                                except StopIteration:
+                                    c[data_type].append({'seq_id_1': seq_id_2, 'seq_id_2': seq_id_1, 'total': 1})
+                            if not has_inter_chain_constraint and len(c[data_type]) > 0:
+                                has_inter_chain_constraint = True
+
+            if len(count) == 0:
+                return
+
+            ent['number_of_bonds'] = count
+            if not polymer_sequence is None:
+                ent['constraints_on_contact_map'] = count_on_map
+            if has_inter_chain_constraint:
+                ent['constraints_on_asym_contact_map'] = count_on_asym_map
+
+        except Exception as e:
+
+            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__calculateStatsOfCovalentBond() ++ Error  - %s" % str(e))
+            self.report.setError()
+
+            if self.__verbose:
+                self.__lfh.write("+NmrDpUtility.__calculateStatsOfCovalentBond() ++ Error  - %s" % str(e))
+
     def __getTypeOfDistanceRestraint(self, file_type, lp_data, row_id, target_value, upper_limit_value, lower_limit_value,
                                      chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2):
         """ Return type of distance restraint.
@@ -12473,6 +12925,353 @@ class NmrDpUtility(object):
                 target_value -= 0.4
             elif not lower_limit_value is None:
                 target_value += 0.4
+
+            if (atom_id_1_ == 'F' and atom_id_2_ == 'H') or (atom_id_2_ == 'F' and atom_id_1_ == 'H'):
+
+                if target_value >= 1.2 and target_value <= 1.5:
+                    hydrogen_bond_type = 'F...H-x'
+                    hydrogen_bond = True
+                elif target_value < 1.2:
+                    hydrogen_bond_type = 'F...H-x (too close!)'
+                    hydrogen_bond = True
+                elif target_value <= 2.0:
+                    hydrogen_bond_type = 'F...H-x (too far!)'
+                    hydrogen_bond = True
+
+            elif (atom_id_1_ == 'F' and atom_id_2_ == 'F') or (atom_id_2_ == 'F' and atom_id_1_ == 'F'):
+
+                if target_value >= 2.2 and target_value <= 2.5:
+                    hydrogen_bond_type = 'F...h-F'
+                    hydrogen_bond = True
+                elif target_value < 2.2:
+                    hydrogen_bond_type = 'F...h-F (too close!)'
+                    hydrogen_bond = True
+                elif target_value <= 3.0:
+                    hydrogen_bond_type = 'F...h-F (too far!)'
+                    hydrogen_bond = True
+
+            elif (atom_id_1_ == 'O' and atom_id_2_ == 'H') or (atom_id_2_ == 'O' and atom_id_1_ == 'H'):
+
+                if target_value >= 1.5 and target_value <= 2.5:
+                    hydrogen_bond_type = 'O...H-x'
+                    hydrogen_bond = True
+                elif target_value < 1.5:
+                    hydrogen_bond_type = 'O...H-x (too close!)'
+                    hydrogen_bond = True
+                elif target_value <= 4.0:
+                    hydrogen_bond_type = 'O...H-x (too far!)'
+                    hydrogen_bond = True
+
+            elif (atom_id_1_ == 'O' and atom_id_2_ == 'N') or (atom_id_2_ == 'O' and atom_id_1_ == 'N'):
+
+                if target_value >= 2.5 and target_value <= 3.5:
+                    hydrogen_bond_type = 'O...h-N'
+                    hydrogen_bond = True
+                elif target_value < 2.5:
+                    hydrogen_bond_type = 'O...h-N (too close!)'
+                    hydrogen_bond = True
+                elif target_value <= 5.0:
+                    hydrogen_bond_type = 'O...h-N (too far!)'
+                    hydrogen_bond = True
+
+            elif (atom_id_1_ == 'O' and atom_id_2_ == 'O') or (atom_id_2_ == 'O' and atom_id_1_ == 'O'):
+
+                if target_value >= 2.5 and target_value <= 3.5:
+                    hydrogen_bond_type = 'O...h-O'
+                    hydrogen_bond = True
+                elif target_value < 2.5:
+                    hydrogen_bond_type = 'O...h-O (too close!)'
+                    hydrogen_bond = True
+                elif target_value <= 5.0:
+                    hydrogen_bond_type = 'O...h-O (too far!)'
+                    hydrogen_bond = True
+
+            elif (atom_id_1_ == 'N' and atom_id_2_ == 'H') or (atom_id_2_ == 'N' and atom_id_1_ == 'H'):
+
+                if target_value >= 1.5 and target_value <= 2.5:
+                    hydrogen_bond_type = 'N...H-x'
+                    hydrogen_bond = True
+                elif target_value < 1.5:
+                    hydrogen_bond_type = 'N...H-x (too close!)'
+                    hydrogen_bond = True
+                elif target_value <= 4.0:
+                    hydrogen_bond_type = 'N...H-x (too far!)'
+                    hydrogen_bond = True
+
+            elif (atom_id_1_ == 'N' and atom_id_2_ == 'N') or (atom_id_2_ == 'N' and atom_id_1_ == 'N'):
+
+                if target_value >= 2.5 and target_value <= 3.5:
+                    hydrogen_bond_type = 'N...h_N'
+                    hydrogen_bond = True
+                elif target_value < 2.5:
+                    hydrogen_bond_type = 'N...h_N (too close!)'
+                    hydrogen_bond = True
+                elif target_value <= 5.0:
+                    hydrogen_bond_type = 'N...h_N (too far!)'
+                    hydrogen_bond = True
+
+            elif atom_id_1_ == 'S' and atom_id_2_ == 'S' and\
+                 not atom_id_1.startswith('SE') and not atom_id_2.startswith('SE'):
+
+                if target_value >= 1.9 and target_value <= 2.3:
+                    disulfide_bond_type = 'S...S'
+                    disulfide_bond = True
+                elif target_value < 1.9:
+                    disulfide_bond_type = 'S...S (too close!)'
+                    disulfide_bond = True
+                elif target_value <= 3.6:
+                    disulfide_bond_type = 'S...S (too far!)'
+                    disulfide_bond = True
+
+            elif atom_id_1.startswith('SE') and atom_id_2.startswith('SE'):
+
+                if target_value >= 2.1 and target_value <= 2.6:
+                    diselenide_bond_type = 'Se...Se'
+                    diselenide_bond = True
+                elif target_value < 2.1:
+                    diselenide_bond_type = 'Se...Se (too close!)'
+                    diselenide_bond = True
+                elif target_value <= 4.2:
+                    diselenide_bond_type = 'Se...Se (too far!)'
+                    diselenide_bond = True
+
+            elif (atom_id_1_ == 'N' and not self.__isNonMetalElement(atom_id_2)) or (atom_id_2_ == 'N' and not self.__isNoneMetalElement(atom_id_1)):
+
+                metal = atom_id_2 if self.__isNonMetalElement(atom_id_1) else atom_id_1
+                metal = metal.title()
+
+                if target_value >= 1.9 and target_value <= 2.1:
+                    other_bond_type = 'N...' + metal
+                    other_bond = True
+                elif target_value < 1.9:
+                    other_bond_type = 'N...' + metal + ' (too close!)'
+                    other_bond = True
+                elif target_value <= 3.2:
+                    other_bond_type = 'N...' + metal + ' (too far!)'
+                    other_bond = True
+
+            elif (atom_id_1_ == 'O' and not self.__isNonMetalElement(atom_id_2)) or (atom_id_2_ == 'O' and not self.__isNonMetalElement(atom_id_1)):
+
+                metal = atom_id_2 if self.__isNonMetalElement(atom_id_1) else atom_id_1
+                metal = metal.title()
+
+                if target_value >= 2.0 and target_value <= 2.2:
+                    other_bond_type = 'O...' + metal
+                    other_bond = True
+                elif target_value < 2.0:
+                    other_bond_type = 'O...' + metal + ' (too close!)'
+                    other_bond = True
+                elif target_value <= 3.4:
+                    other_bond_type = 'O...' + metal + ' (too far!)'
+                    other_bond = True
+
+            elif (atom_id_1_ == 'P' and not self.__isNonMetalElement(atom_id_2)) or (atom_id_2_ == 'P' and not self.__isNonMetalElement(atom_id_1)):
+
+                metal = atom_id_2 if self.__isNonMetalElement(atom_id_1) else atom_id_1
+                metal = metal.title()
+
+                if target_value >= 2.1 and target_value <= 2.5:
+                    other_bond_type = 'P...' + metal
+                    other_bond = True
+                elif target_value < 2.1:
+                    other_bond_type = 'P...' + metal + ' (too close!)'
+                    other_bond = True
+                elif target_value <= 4.0:
+                    other_bond_type = 'P...' + metal + ' (too far!)'
+                    other_bond = True
+
+            elif (atom_id_1_ == 'S' and not atom_id_1.startswith('SE') and not self.__isNonMetalElement(atom_id_2)) or\
+                 (atom_id_2_ == 'S' and not atom_id_2.startswith('SE') and not self.__isNonMetalElement(atom_id_1)):
+
+                metal = atom_id_2 if self.__isNonMetalElement(atom_id_1) else atom_id_1
+                metal = metal.title()
+
+                if target_value >= 2.2 and target_value <= 2.6:
+                    other_bond_type = 'S...' + metal
+                    other_bond = True
+                elif target_value < 2.2:
+                    other_bond_type = 'S...' + metal + ' (too close!)'
+                    other_bond = True
+                elif target_value <= 4.2:
+                    other_bond_type = 'S...' + metal + ' (too far!)'
+                    other_bond = True
+
+            elif (atom_id_1.startswith('SE') and not self.__isNonMetalElement(atom_id_2)) or\
+                 (atom_id_2.startswith('SE') and not self.__isNonMetalElement(atom_id_1)):
+
+                metal = atom_id_2 if self.__isNonMetalElement(atom_id_1) else atom_id_1
+                metal = metal.title()
+
+                if target_value >= 2.3 and target_value <= 2.7:
+                    other_bond_type = 'Se...' + metal
+                    other_bond = True
+                elif target_value < 2.3:
+                    other_bond_type = 'Se...' + metal + ' (too close!)'
+                    other_bond = True
+                elif target_value <= 4.4:
+                    other_bond_type = 'Se...' + metal + ' (too far!)'
+                    other_bond = True
+
+            elif chain_id_1 != chain_id_2:
+
+                for l, j in enumerate(lp_data):
+
+                    if l == row_id:
+                        continue
+
+                    _chain_id_1 = str(j[chain_id_1_name])
+                    _chain_id_2 = str(j[chain_id_2_name])
+                    _seq_id_1 = j[seq_id_1_name]
+                    _seq_id_2 = j[seq_id_2_name]
+                    _comp_id_1 = j[comp_id_1_name]
+                    _comp_id_2 = j[comp_id_2_name]
+
+                    if _chain_id_1 != _chain_id_2 and _chain_id_1 != chain_id_1 and _chain_id_2 != chain_id_2:
+
+                        if seq_id_1 == _seq_id_1 and comp_id_1 == _comp_id_1 and\
+                           seq_id_2 == _seq_id_2 and comp_id_2 == _comp_id_2:
+                            symmetry = True
+                            break
+
+                        elif seq_id_1 == _seq_id_2 and comp_id_1 == _comp_id_2 and\
+                             seq_id_2 == _seq_id_1 and comp_id_2 == _comp_id_1:
+                            symmetry = True
+                            break
+
+        range_of_seq = abs(seq_id_1 - seq_id_2)
+
+        if hydrogen_bond:
+            if chain_id_1 != chain_id_2:
+                data_type = 'inter-chain_hydrogen_bonds'
+            elif range_of_seq > 5:
+                data_type = 'long_range_hydrogen_bonds'
+            else:
+                data_type = 'hydrogen_bonds'
+            data_type += '_' + hydrogen_bond_type
+        elif disulfide_bond:
+            if chain_id_1 != chain_id_2:
+                data_type = 'inter-chain_disulfide_bonds'
+            elif range_of_seq > 5:
+                data_type = 'long_range_disulfide_bonds'
+            else:
+                data_type = 'disulfide_bonds'
+            data_type += '_' + disulfide_bond_type
+        elif diselenide_bond:
+            if chain_id_1 != chain_id_2:
+                data_type = 'inter-chain_diselenide_bonds'
+            elif range_of_seq > 5:
+                data_type = 'long_range_diselenide_bonds'
+            else:
+                data_type = 'diselenide_bonds'
+            data_type += '_' + diselenide_bond_type
+        elif other_bond:
+            if chain_id_1 != chain_id_2:
+                data_type = 'inter-chain_other_bonds'
+            elif range_of_seq > 5:
+                data_type = 'long_range_other_bonds'
+            else:
+                data_type = 'other_bonds'
+            data_type += '_' + other_bond_type
+        elif symmetry:
+            data_type = 'symmetric_constraints'
+        elif chain_id_1 != chain_id_2:
+            data_type = 'inter-chain_constraints'
+        elif range_of_seq == 0:
+            data_type = 'intra-residue_constraints'
+        elif range_of_seq < 5:
+
+            if file_type == 'nef' or ((atom_id_1 == 'HN' and self.__csStat.getTypeOfCompId(comp_id_1)[0]) or
+                                      atom_id_1.startswith('Q') or
+                                      atom_id_1.startswith('M') or
+                                      self.__csStat.getMaxAmbigCodeWoSetId(comp_id_1, atom_id_1) == 0 or
+                                      (atom_id_2 == 'HN' and self.__csStat.getTypeOfCompId(comp_id_2)[0]) or
+                                      atom_id_2.startswith('Q') or
+                                      atom_id_2.startswith('M') or
+                                      self.__csStat.getMaxAmbigCodeWoSetId(comp_id_2, atom_id_2) == 0):
+                _atom_id_1 = self.__getAtomIdList(file_type, comp_id_1, atom_id_1)
+                _atom_id_2 = self.__getAtomIdList(file_type, comp_id_2, atom_id_2)
+
+                if len(_atom_id_1) > 0 and len(_atom_id_2) > 0:
+                    is_sc_atom_1 = _atom_id_1[0] in self.__csStat.getSideChainAtoms(comp_id_1)
+                    is_sc_atom_2 = _atom_id_2[0] in self.__csStat.getSideChainAtoms(comp_id_2)
+
+                    if is_sc_atom_1:
+                        is_bb_atom_1 = False
+                    else:
+                        is_bb_atom_1 = _atom_id_1[0] in self.__csStat.getBackBoneAtoms(comp_id_1)
+
+                    if is_sc_atom_2:
+                        is_bb_atom_2 = False
+                    else:
+                        is_bb_atom_2 = _atom_id_2[0] in self.__csStat.getBackBoneAtoms(comp_id_2)
+
+                else:
+                    is_bb_atom_1 = False
+                    is_bb_atom_2 = False
+                    is_sc_atom_1 = False
+                    is_sc_atom_2 = False
+
+            else:
+                is_sc_atom_1 = atom_id_1 in self.__csStat.getSideChainAtoms(comp_id_1)
+                is_sc_atom_2 = atom_id_2 in self.__csStat.getSideChainAtoms(comp_id_2)
+
+                if is_sc_atom_1:
+                    is_bb_atom_1 = False
+                else:
+                    is_bb_atom_1 = atom_id_1 in self.__csStat.getBackBoneAtoms(comp_id_1)
+
+                if is_sc_atom_2:
+                    is_bb_atom_2 = False
+                else:
+                    is_bb_atom_2 = atom_id_2 in self.__csStat.getBackBoneAtoms(comp_id_2)
+
+            is_bb_bb = is_bb_atom_1 and is_bb_atom_2
+            is_bb_sc = (is_bb_atom_1 and is_sc_atom_2) or (is_sc_atom_1 and is_bb_atom_2)
+            is_sc_sc = is_sc_atom_1 and is_sc_atom_2
+
+            if range_of_seq == 1:
+                data_type = 'sequential_constraints'
+            else:
+                data_type = 'medium_range_constraints'
+
+            if is_bb_bb:
+                data_type += '_backbone-backbone'
+            elif is_bb_sc:
+                data_type += '_backbone-sidechain'
+            elif is_sc_sc:
+                data_type += '_sidechain-sidechain'
+        else:
+            data_type = 'long_range_constraints'
+
+        return data_type
+
+    def __getTypeOfCovalentBond(self, file_type, lp_data, row_id, target_value,
+                                chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2):
+        """ Return type of covalent bond.
+        """
+
+        item_names = self.item_names_in_ds_loop[file_type]
+        chain_id_1_name = item_names['chain_id_1']
+        chain_id_2_name = item_names['chain_id_2']
+        seq_id_1_name = item_names['seq_id_1']
+        seq_id_2_name = item_names['seq_id_2']
+        comp_id_1_name = item_names['comp_id_1']
+        comp_id_2_name = item_names['comp_id_2']
+
+        hydrogen_bond_type = None
+        hydrogen_bond = False
+        disulfide_bond_type = None
+        disulfide_bond = False
+        diselenide_bond_type = None
+        diselenide_bond = False
+        other_bond_type = None
+        other_bond = False
+        symmetry = False
+
+        if chain_id_1 != chain_id_2 or seq_id_1 != seq_id_2:
+
+            atom_id_1_ = atom_id_1[0]
+            atom_id_2_ = atom_id_2[0]
 
             if (atom_id_1_ == 'F' and atom_id_2_ == 'H') or (atom_id_2_ == 'F' and atom_id_1_ == 'H'):
 
@@ -16349,11 +17148,14 @@ class NmrDpUtility(object):
 
             for content_subtype in nmr_input_source_dic['content_subtype'].keys():
 
-                if content_subtype in ['entry_info', 'poly_seq', 'entity']:
+                if content_subtype in ['entry_info', 'entity']:
                     continue
 
                 sf_category = self.sf_categories[file_type][content_subtype]
                 lp_category = self.lp_categories[file_type][content_subtype]
+
+                if content_subtype == 'poly_seq':
+                    lp_category = self.aux_lp_categories[file_type][content_subtype][0]
 
                 list_id = 1
 
@@ -16392,10 +17194,14 @@ class NmrDpUtility(object):
 
         add_details = False
 
-        index_tag = self.index_tags[file_type][content_subtype]
+        index_tag = self.index_tags[file_type][content_subtype] if content_subtype != 'poly_seq' else None
 
         if file_type == 'nef' or (not self.__nonblk_bad_nterm):
-            lp_data = next((l['data'] for l in self.__lp_data[content_subtype] if l['file_name'] == file_name and l['sf_framecode'] == sf_framecode), None)
+
+            if content_subtype != 'poly_seq':
+                lp_data = next((l['data'] for l in self.__lp_data[content_subtype] if l['file_name'] == file_name and l['sf_framecode'] == sf_framecode), None)
+            else:
+                lp_data = next((l['data'] for l in self.__aux_data[content_subtype] if l['file_name'] == file_name and l['sf_framecode'] == sf_framecode and l['category'] == lp_category), None)
 
         else:
 
@@ -16434,8 +17240,12 @@ class NmrDpUtility(object):
 
             else:
 
-                key_items = self.key_items[file_type][content_subtype]
-                data_items = self.data_items[file_type][content_subtype]
+                if content_subtype != 'poly_seq':
+                    key_items = self.key_items[file_type][content_subtype]
+                    data_items = self.data_items[file_type][content_subtype]
+                else:
+                    key_items = self.aux_key_items[file_type][content_subtype][lp_category]
+                    data_items = self.aux_data_items[file_type][content_subtype][lp_category]
 
             try:
                 lp_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, None, None,
@@ -16458,7 +17268,7 @@ class NmrDpUtility(object):
                     has_seq_align = True
                     break
 
-        if not has_seq_align:
+        if not has_seq_align and content_subtype != 'poly_seq':
             return False
 
         item_names = []
@@ -16470,7 +17280,7 @@ class NmrDpUtility(object):
 
         else:
 
-            if content_subtype == 'dist_restraint' or content_subtype == 'rdc_restraint':
+            if content_subtype in ['poly_seq', 'dist_restraint', 'rdc_restraint']:
                 max_dim = 3
 
             elif content_subtype == 'dihed_restraint':
@@ -17236,6 +18046,9 @@ class NmrDpUtility(object):
                 if loop.category == lp_cat_name:
                     continue
 
+                if file_type == 'nef' or file_type == 'nmr-star' and loop.category != '_Entity_assembly':
+                    continue
+
                 poly_seq_sf_data.add_loop(loop)
 
         tag_names = ['sf_category'] if file_type == 'nef' else ['Sf_category']
@@ -17449,6 +18262,16 @@ class NmrDpUtility(object):
                     row_id += 1
 
             poly_seq_sf_data.add_loop(loop)
+
+            # add the other loops except for _Entity_assembly
+
+            for loop in orig_poly_seq_sf_data.loops:
+
+                if loop.category == lp_cat_name:
+                    continue
+
+                if file_type == 'nef' or file_type == 'nmr-star' and loop.category != '_Entity_assembly':
+                    poly_seq_sf_data.add_loop(loop)
 
             # replace polymer sequence
 

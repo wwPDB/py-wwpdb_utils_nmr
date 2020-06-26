@@ -69,7 +69,7 @@ class TestNmrDpUtility(unittest.TestCase):
         self.__test_nmr_nef_consistency('1pqx')
 
     def test_nmr_str_consistency_check_1pqx(self):
-       self.__test_nmr_str_consistency('1pqx')
+        self.__test_nmr_str_consistency('1pqx')
 
 if __name__ == '__main__':
     unittest.main()

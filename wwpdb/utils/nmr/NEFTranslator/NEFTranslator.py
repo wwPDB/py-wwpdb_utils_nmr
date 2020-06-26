@@ -42,6 +42,7 @@
 # 14-May-2020  M. Yokochi - revise error message for missing mandatory content (v2.2.13, DAOTHER-5681 and 5682)
 # 06-Jun-2020  M. Yokochi - be compatible with pynmrstar v3 (v2.3.0, DAOTHER-5765)
 # 19-Jun-2020  M. Yokochi - do not generate invalid restraints include self atom (v2.3.1)
+# 26-Jun-2020  M. Yokochi - support bidirectional conversion between _nef_covalent_links and _Bond (v2.4.0)
 ##
 import sys
 import os
@@ -61,7 +62,7 @@ from wwpdb.utils.nmr.io.ChemCompIo import ChemCompReader
 from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
 from wwpdb.utils.nmr.NmrDpReport import NmrDpReport
 
-__version__ = '2.3.1'
+__version__ = '2.4.0'
 
 __pynmrstar_v3__ = version.parse(pynmrstar.__version__) >= version.parse("3.0.0")
 
@@ -172,6 +173,15 @@ class NEFTranslator(object):
 
         # NMR-STAR boolean values
         self.star_boolean = ('yes', 'no')
+
+        # paramagnetic elements, except for Oxygen
+        self.paramag_elems = ('LI', 'NA', 'MG', 'AL', 'K', 'CA', 'SC', 'TI', 'V', 'MN', 'RB', 'SR', 'Y', 'ZR', 'NB', 'MO', 'TC', 'RU', 'RH', 'PD', 'SN', 'CS', 'BA', 'LA', 'CE', 'PR', 'ND', 'PM', 'SM', 'EU', 'GD', 'TB', 'DY', 'HO', 'ER', 'TM', 'YB', 'LU', 'HF', 'TA', 'W', 'RE', 'OS', 'IR', 'PT', 'FR', 'RA', 'AC')
+
+        # ferromagnetic elements
+        self.ferromag_elems = ('CR', 'FE', 'CO', 'NI')
+
+        # non-metal elements
+        self.non_metal_elems = ('H', 'C', 'N', 'O', 'P', 'S', 'SE')
 
         # ambiguity codes
         self.bmrb_ambiguity_codes = (1, 2, 3, 4, 5, 6, 9)
@@ -700,7 +710,7 @@ class NEFTranslator(object):
                         tags = star_data.get_tags([_tag[0]])
                         if len(tags[_tag[0]]) == 0 and _tag[0][1:].split('.')[0] in sf_list:
                             missing_sf_tags.append(_tag[0])
-                    except Exception as e: # ValueError:
+                    except: # ValueError:
                         missing_lp_tags.append(_tag[0])
 
         except: # ValueError:
@@ -1980,12 +1990,16 @@ class NEFTranslator(object):
                         else:
                             raise LookupError("Missing mandatory %s loop tag%s." % (missing_tags, 's' if len(missing_tags) > 1 else ''))
 
-            if (len(_mand_data_names) > 0 and set(_mand_data_names) & set(loop.tags) != set(_mand_data_names)):
+            if len(_mand_data_names) > 0 and set(_mand_data_names) & set(loop.tags) != set(_mand_data_names):
                 missing_tags = list(set(_mand_data_names) - set(loop.tags))
                 for d in data_items:
                     if d['name'] in missing_tags:
                         if 'default-from' in d:
-                            if d['name'] == 'element' or d['name'] == 'Atom_type':
+                            if d['type'] == 'index-int':
+                                for l, row in enumerate(loop.data, start=1):
+                                    row.append(l)
+                                loop.add_tag(d['name'])
+                            elif d['name'] == 'element' or d['name'] == 'Atom_type':
                                 from_col = loop.tags.index(d['default-from'])
                                 for row in loop.data:
                                     ref = row[from_col]
@@ -3269,6 +3283,12 @@ class NEFTranslator(object):
         if lp_category == '_nef_sequence':
             out_tag.append('_Chem_comp_assembly.Assembly_ID')
 
+        elif lp_category == '_nef_covalent_links':
+            out_tag.append('_Bond.ID')
+            out_tag.append('_Bond.Type')
+            out_tag.append('_Bond.Value_order')
+            out_tag.append('_Bond.Assembly_ID')
+
         elif lp_category == '_nef_chemical_shift':
             out_tag.append('_Atom_chem_shift.ID')
             out_tag.append('_Atom_chem_shift.Ambiguity_code')
@@ -4075,6 +4095,162 @@ class NEFTranslator(object):
                 self.authSeqMap[(_star_chain, _star_seq)] = (nef_chain, _nef_seq)
                 self.selfSeqMap[(_star_chain, _star_seq)] = (_star_chain if cif_chain is None else cif_chain,
                                                              _star_seq if _cif_seq is None else _cif_seq)
+
+        return out_row
+
+    def nef2star_bond_row(self, nef_tags, star_tags, loop_data):
+        """ Translate rows of data in bond loop from NEF into NMR-STAR.
+            @author: Masashi Yokochi
+            @param nef_tags: list of NEF tags
+            @param star_tags: list of NMR-STAR tags
+            @param loop_data: loop data of NEF
+            @return: rows of NMR-STAR
+        """
+
+        out_row = []
+
+        nef_comp_index_1 = nef_tags.index('_nef_covalent_links.residue_name_1')
+        nef_atom_index_1 = nef_tags.index('_nef_covalent_links.atom_name_1')
+        nef_comp_index_2 = nef_tags.index('_nef_covalent_links.residue_name_2')
+        nef_atom_index_2 = nef_tags.index('_nef_covalent_links.atom_name_2')
+
+        if '_Bond.ID' in star_tags:
+            star_id_index = star_tags.index('_Bond.ID')
+        else:
+            star_id_index = -1
+
+        star_type_index = star_tags.index('_Bond.Type')
+        star_value_order_index = star_tags.index('_Bond.Value_order')
+
+        seq_ident_tags = self.get_seq_ident_tags(nef_tags, 'nef')
+
+        for tag in seq_ident_tags:
+            chain_tag = tag['chain_tag']
+            seq_tag = tag['seq_tag']
+
+            if chain_tag.endswith('_1'):
+                chain_tag_1 = chain_tag
+                seq_tag_1 = seq_tag
+            else:
+                chain_tag_2 = chain_tag
+                seq_tag_2 = seq_tag
+
+        key_indices = [star_tags.index(j) for j in ['_Bond.Entity_assembly_ID_1', '_Bond.Comp_index_ID_1', '_Bond.Atom_ID_1',
+                                                    '_Bond.Entity_assembly_ID_2', '_Bond.Comp_index_ID_2', '_Bond.Atom_ID_2']]
+
+        index = 1
+
+        for i in loop_data:
+
+            buf_row = []
+
+            tag_map = {}
+            self_tag_map = {}
+
+            for tag in seq_ident_tags:
+                chain_tag = tag['chain_tag']
+                seq_tag = tag['seq_tag']
+
+                nef_chain = i[nef_tags.index(chain_tag)]
+                _nef_seq = i[nef_tags.index(seq_tag)]
+                if type(_nef_seq) == str and not _nef_seq in self.empty_value:
+                    _nef_seq = int(_nef_seq)
+
+                seq_key = (nef_chain, _nef_seq)
+
+                try:
+                    tag_map[chain_tag], tag_map[seq_tag] = self.authSeqMap[seq_key]
+                    self_tag_map[chain_tag], self_tag_map[seq_tag] = self.selfSeqMap[seq_key]
+                except KeyError:
+                    tag_map[chain_tag] = nef_chain
+                    tag_map[seq_tag] = _nef_seq
+                    self_tag_map[chain_tag] = nef_chain
+                    self_tag_map[seq_tag] = _nef_seq
+
+            intra_residue = i[nef_tags.index(chain_tag_1)] == i[nef_tags.index(chain_tag_2)] and i[nef_tags.index(seq_tag_1)] == i[nef_tags.index(seq_tag_2)]
+
+            atom_list_1, ambiguity_code_1, details_1 = self.get_star_atom(i[nef_comp_index_1], i[nef_atom_index_1])
+            atom_list_2, ambiguity_code_2, details_2 = self.get_star_atom(i[nef_comp_index_2], i[nef_atom_index_2])
+
+            for k in atom_list_1:
+
+                for l in atom_list_2:
+
+                    if intra_residue and l == k:
+                        continue
+
+                    buf = [None] * len(star_tags)
+
+                    for j in nef_tags:
+
+                        auth_tag, data_tag = self.get_star_tag(j)
+
+                        data = i[nef_tags.index(j)]
+
+                        if 'chain_code' in j or 'sequence_code' in j:
+                            buf[star_tags.index(auth_tag)] = self_tag_map[j]
+                        else:
+                            buf[star_tags.index(auth_tag)] = data
+
+                        if auth_tag != data_tag:
+
+                            data_index = star_tags.index(data_tag)
+
+                            if 'chain_code' in j or 'sequence_code' in j:
+                                buf[data_index] = tag_map[j]
+                            elif j == '_nef_covalent_links.atom_name_1':
+                                buf[data_index] = k
+                            elif j == '_nef_covalent_links.atom_name_2':
+                                buf[data_index] = l
+
+                    # 'amide': (C=O)-N
+                    # 'directed': N-O
+                    # 'disulfide': S-S
+                    # 'ester': (C=O)-O
+                    # 'ether': -O-
+                    # 'hydrogen': (O/N/F)-H-(O/N/F)
+                    # 'metal coordination': (N/O/S)-Metal
+                    # 'peptide': (C=O)-N
+                    # 'thioether': -S-
+                    # 'oxime': >C=N−OH
+                    # 'thioester': -(C=O)-S-
+                    # 'phosphoester': ?
+                    # 'phosphodiester': -(PO4)-
+                    # 'diselenide': Se-Se
+                    buf[star_type_index] = 'covalent'
+                    if k == 'SG' and l == 'SG':
+                        buf[star_type_index] = 'disulfide'
+                    elif k == 'SE' and l == 'SE':
+                        buf[star_type_index] = 'diselenide'
+                    elif (k in self.non_metal_elems and (l in self.paramag_elems or l in self.ferromag_elems)) or\
+                         (l in self.non_metal_elems and (k in self.paramag_elems or k in self.ferromag_elems)):
+                        buf[star_type_index] = 'metal coordination'
+                    elif ((k == 'C' and l == 'N') or (l == 'C' and k == 'N')) and i[nef_tags.index(chain_tag_1)] == i[nef_tags.index(chain_tag_2)] and i[nef_tags.index(seq_tag_1)] != i[nef_tags.index(seq_tag_2)]:
+                        buf[star_type_index] = 'peptide'
+                    buf[star_value_order_index] = 'sing'
+
+                    buf_row.append(buf)
+
+            keys = set()
+
+            for i in buf_row:
+
+                key = ''
+                for j in key_indices:
+                    key += ' ' + str(i[j])
+                key.rstrip()
+
+                if key in keys:
+                    continue
+
+                keys.add(key)
+
+                if star_id_index >= 0:
+                    i[star_id_index] = index
+
+                index += 1
+
+                out_row.append(i)
 
         return out_row
 
@@ -5180,6 +5356,12 @@ class NEFTranslator(object):
                                     d[lp.get_tag_names().index('_Chem_comp_assembly.Assembly_ID')] = asm_id
                                     lp.add_data(d)
 
+                            elif loop.category == '_nef_covalent_links':
+                                rows = self.nef2star_bond_row(loop.get_tag_names(), lp.get_tag_names(), loop.data)
+                                for d in rows:
+                                    d[lp.get_tag_names().index('_Bond.Assembly_ID')] = asm_id
+                                    lp.add_data(d)
+
                             elif loop.category == '_nef_chemical_shift':
                                 rows = self.nef2star_cs_row(loop.get_tag_names(), lp.get_tag_names(), loop.data)
                                 for d in rows:
@@ -5385,6 +5567,12 @@ class NEFTranslator(object):
                             rows = self.nef2star_seq_row(loop.get_tag_names(), lp.get_tag_names(), loop.data, report)
                             for d in rows:
                                 d[lp.get_tag_names().index('_Chem_comp_assembly.Assembly_ID')] = asm_id
+                                lp.add_data(d)
+
+                        elif loop.category == '_nef_covalent_links':
+                            rows = self.nef2star_bond_row(loop.get_tag_names(), lp.get_tag_names(), loop.data)
+                            for d in rows:
+                                d[lp.get_tag_names().index('_Bond.Assembly_ID')] = asm_id
                                 lp.add_data(d)
 
                         elif loop.category == '_nef_chemical_shift':

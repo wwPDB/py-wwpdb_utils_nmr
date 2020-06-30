@@ -18,11 +18,11 @@ class TestNmrDpUtility(unittest.TestCase):
     def setUp(self):
         here = os.path.abspath(os.path.dirname(__file__))
         self.data_dir_path = os.path.join(here, 'mock-data-daother-5896/')
-        self.data_file_path = {'1pqx': {'nef': '1pqx_ccpn_modified.nef',
+        self.data_file_path = {'1pqx': {'nef': '1pqx_ccpn.nef',
                                         'cif': '1pqx.cif'},
-                               'penta_a': {'nef': 'penta__eT_spDi_a_modified.nef',
+                               'penta_a': {'nef': 'penta__eT_spDi_a.nef',
                                            'cif': 'penta_a_modified.cif'},
-                               'penta_b': {'nef': 'penta__eT_spDi_b_modified.nef',
+                               'penta_b': {'nef': 'penta__eT_spDi_b.nef',
                                            'cif': 'penta_b_modified.cif'}
                               }
         self.utility = NmrDpUtility()

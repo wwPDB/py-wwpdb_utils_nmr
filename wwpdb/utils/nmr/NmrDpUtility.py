@@ -87,7 +87,8 @@
 # 12-Jun-2020  M. Yokochi - overall performance improvement by reusing cached data and code revision
 # 19-Jun-2020  M. Yokochi - do not generate invalid restraints include self atom
 # 26-Jun-2020  M. Yokochi - add support for covalent bond information (_nef_covalent_links and _Bond categories)
-# 30-Jun-2020  M. Yokochi - skip third party loops and items gracefully (DAOTHER-5896)
+# 30-Jun-2020  M. Yokochi - ignore third party loops and items gracefully (DAOTHER-5896)
+# 30-Jun-2020  M. Yokochi - prevent pynmrstar's exception due to empty string (DAOTHER-5894)
 ##
 """ Wrapper class for data processing for NMR data.
     @author: Masashi Yokochi
@@ -17934,6 +17935,14 @@ class NmrDpUtility(object):
 
         if not self.__combined_mode:
             return False
+
+        for sf_category in self.__sf_category_list:
+
+            for sf_data in self.__star_data[0].get_saveframes_by_category(sf_category):
+
+                for tag in sf_data.tags:
+                    if type(tag[1]) is str and len(tag[1]) == 0:
+                        tag[1] = '.'
 
         input_source = self.report.input_sources[0]
         input_source_dic = input_source.get()

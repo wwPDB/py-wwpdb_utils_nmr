@@ -87,6 +87,7 @@
 # 12-Jun-2020  M. Yokochi - overall performance improvement by reusing cached data and code revision
 # 19-Jun-2020  M. Yokochi - do not generate invalid restraints include self atom
 # 26-Jun-2020  M. Yokochi - add support for covalent bond information (_nef_covalent_links and _Bond categories)
+# 30-Jun-2020  M. Yokochi - skip third party loops and items gracefully (DAOTHER-5896)
 ##
 """ Wrapper class for data processing for NMR data.
     @author: Masashi Yokochi
@@ -8128,7 +8129,8 @@ class NmrDpUtility(object):
                                 self.__lfh.write("+NmrDpUtility.__testDataConsistencyInAuxLoop() ++ Warning  - %s\n" % warn)
 
                         else:
-
+                            pass # DAOTHER-5896
+                            """
                             err = "%r loop exists unexpectedly." % lp_category
 
                             self.report.error.appendDescription('format_issue', {'file_name': file_name, 'sf_framecode': sf_framecode, 'description': err})
@@ -8136,7 +8138,7 @@ class NmrDpUtility(object):
 
                             if self.__verbose:
                                 self.__lfh.write("+NmrDpUtility.__testDataConsistencyInAuxLoop() ++ Error  - %s\n" % err)
-
+                            """
         return self.report.getTotalErrors() == __errors
 
     def __testDataConsistencyInAuxLoopOfSpectralPeak(self, file_name, file_type, sf_framecode, num_dim, lp_category, aux_data):

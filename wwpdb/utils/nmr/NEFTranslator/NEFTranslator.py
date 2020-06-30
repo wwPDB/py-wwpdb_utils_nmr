@@ -43,6 +43,8 @@
 # 06-Jun-2020  M. Yokochi - be compatible with pynmrstar v3 (v2.3.0, DAOTHER-5765)
 # 19-Jun-2020  M. Yokochi - do not generate invalid restraints include self atom (v2.3.1)
 # 26-Jun-2020  M. Yokochi - support bidirectional conversion between _nef_covalent_links and _Bond (v2.4.0)
+# 30-Jun-2020  M. Yokochi - skip third party loops and items gracefully (v2.5.0, DAOTHER-5896) 
+# 30-Jun-2020  M. Yokochi - support bidirectional conversion between _nef_peak and _Peak_row_format (v2.5.0, DAOTHER-5896)
 ##
 import sys
 import os
@@ -53,6 +55,7 @@ import re
 import csv
 import datetime
 import pynmrstar
+import itertools
 
 #from pytz import utc
 from packaging import version
@@ -62,7 +65,7 @@ from wwpdb.utils.nmr.io.ChemCompIo import ChemCompReader
 from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
 from wwpdb.utils.nmr.NmrDpReport import NmrDpReport
 
-__version__ = '2.4.0'
+__version__ = '2.5.0'
 
 __pynmrstar_v3__ = version.parse(pynmrstar.__version__) >= version.parse("3.0.0")
 
@@ -3238,9 +3241,14 @@ class NEFTranslator(object):
             @return: NMR-STAR's author tag and data tag corresponding to a given NEF tag
         """
 
-        n = self.tagMap[0].index(nef_tag)
+        try:
 
-        return self.tagMap[1][n], self.tagMap[2][n] # author tag, data tag
+            n = self.tagMap[0].index(nef_tag)
+
+            return self.tagMap[1][n], self.tagMap[2][n] # author tag, data tag
+
+        except ValueError:
+            return None, None
 
     def get_nef_tag(self, star_tag):
         """ Return NEF saveframe/loop tags corresponding to NMR-STAR tag.
@@ -3269,6 +3277,9 @@ class NEFTranslator(object):
         for j in nef_loop_tags:
 
             auth_tag, data_tag = self.get_star_tag(j)
+
+            if auth_tag is None:
+                continue
 
             out_tag.append(auth_tag)
 
@@ -3316,6 +3327,7 @@ class NEFTranslator(object):
             out_tag.append('_RDC_constraint.RDC_constraint_list_ID')
 
         elif lp_category == '_nef_peak':
+            out_tag.append('_Peak_row_format.Details')
             out_tag.append('_Peak_row_format.Spectral_peak_list_ID')
 
         elif lp_category == '_nef_spectrum_dimension':
@@ -3971,6 +3983,9 @@ class NEFTranslator(object):
 
                     auth_tag, data_tag = self.get_star_tag(j)
 
+                    if auth_tag is None:
+                        continue
+
                     data = i[nef_tags.index(j)]
 
                     if j == '_nef_sequence.chain_code':
@@ -4069,26 +4084,27 @@ class NEFTranslator(object):
 
                     nef_tag = self.get_nef_tag(j)
 
-                    if not nef_tag is None:
+                    if nef_tag is None:
+                        continue
 
-                        data = i[star_tags.index(j)]
+                    data = i[star_tags.index(j)]
 
-                        data_index = nef_tags.index(nef_tag)
+                    data_index = nef_tags.index(nef_tag)
 
-                        if nef_tag == '_nef_sequence.chain_code':
-                            if cif_chain is None:
-                                out[data_index] = nef_chain
-                            else:
-                                out[data_index] = cif_chain
-                        elif nef_tag == '_nef_sequence.sequence_code':
-                            if _cif_seq is None:
-                                out[data_index] = _nef_seq
-                            else:
-                                out[data_index] = _cif_seq
-                        elif data in self.star_boolean:
-                            out[data_index] = 'true' if data in self.true_value else 'false'
+                    if nef_tag == '_nef_sequence.chain_code':
+                        if cif_chain is None:
+                            out[data_index] = nef_chain
                         else:
-                            out[data_index] = data
+                            out[data_index] = cif_chain
+                    elif nef_tag == '_nef_sequence.sequence_code':
+                        if _cif_seq is None:
+                            out[data_index] = _nef_seq
+                        else:
+                            out[data_index] = _cif_seq
+                    elif data in self.star_boolean:
+                        out[data_index] = 'true' if data in self.true_value else 'false'
+                    else:
+                        out[data_index] = data
 
                 out_row.append(out)
 
@@ -4185,6 +4201,9 @@ class NEFTranslator(object):
 
                         auth_tag, data_tag = self.get_star_tag(j)
 
+                        if auth_tag is None:
+                            continue
+
                         data = i[nef_tags.index(j)]
 
                         if 'chain_code' in j or 'sequence_code' in j:
@@ -4212,7 +4231,7 @@ class NEFTranslator(object):
                     # 'metal coordination': (N/O/S)-Metal
                     # 'peptide': (C=O)-N
                     # 'thioether': -S-
-                    # 'oxime': >C=N−OH
+                    # 'oxime': >C=N-OH
                     # 'thioester': -(C=O)-S-
                     # 'phosphoester': ?
                     # 'phosphodiester': -(PO4)-
@@ -4313,6 +4332,9 @@ class NEFTranslator(object):
 
                             auth_tag, data_tag = self.get_star_tag(j)
 
+                            if auth_tag is None:
+                                continue
+
                             data = i[nef_tags.index(j)]
 
                             if j == '_nef_chemical_shift.chain_code':
@@ -4411,19 +4433,20 @@ class NEFTranslator(object):
 
                         nef_tag = self.get_nef_tag(j)
 
-                        if not nef_tag is None:
+                        if nef_tag is None:
+                            continue
 
-                            data_index = nef_tags.index(nef_tag)
+                        data_index = nef_tags.index(nef_tag)
 
-                            if nef_tag == '_nef_chemical_shift.atom_name':
-                                out[data_index] = atom
-                            elif nef_tag == '_nef_chemical_shift.chain_code':
-                                out[data_index] = cif_chain
-                            elif nef_tag == '_nef_chemical_shift.sequence_code':
-                                out[data_index] = _cif_seq
-                            else:
-                                star_atom = next(k for k, v in atom_id_map.items() if v == atom)
-                                out[data_index] = next(l[star_tags.index(j)] for l in in_row if l[atom_index] == star_atom)
+                        if nef_tag == '_nef_chemical_shift.atom_name':
+                            out[data_index] = atom
+                        elif nef_tag == '_nef_chemical_shift.chain_code':
+                            out[data_index] = cif_chain
+                        elif nef_tag == '_nef_chemical_shift.sequence_code':
+                            out[data_index] = _cif_seq
+                        else:
+                            star_atom = next(k for k, v in atom_id_map.items() if v == atom)
+                            out[data_index] = next(l[star_tags.index(j)] for l in in_row if l[atom_index] == star_atom)
 
                     out_row.append(out)
 
@@ -4608,6 +4631,9 @@ class NEFTranslator(object):
 
                             auth_tag, data_tag = self.get_star_tag(j)
 
+                            if auth_tag is None:
+                                continue
+
                             data = i[nef_tags.index(j)]
 
                             if 'chain_code' in j or 'sequence_code' in j:
@@ -4745,26 +4771,27 @@ class NEFTranslator(object):
 
                     nef_tag = self.get_nef_tag(j)
 
-                    if not nef_tag is None:
+                    if nef_tag is None:
+                        continue
 
-                        data = i[star_tags.index(j)]
+                    data = i[star_tags.index(j)]
 
-                        data_index = nef_tags.index(nef_tag)
+                    data_index = nef_tags.index(nef_tag)
 
-                        if 'chain_code' in nef_tag or 'sequence_code' in nef_tag:
-                            buf[data_index] = tag_map[j]
-                        elif nef_tag == '_nef_distance_restraint.atom_name_1':
-                            try:
-                                buf[data_index] = self.atomIdMap[seq_key_1][data]
-                            except KeyError:
-                                buf[data_index] = data
-                        elif nef_tag == '_nef_distance_restraint.atom_name_2':
-                            try:
-                                buf[data_index] = self.atomIdMap[seq_key_2][data]
-                            except KeyError:
-                                buf[data_index] = data
-                        else:
+                    if 'chain_code' in nef_tag or 'sequence_code' in nef_tag:
+                        buf[data_index] = tag_map[j]
+                    elif nef_tag == '_nef_distance_restraint.atom_name_1':
+                        try:
+                            buf[data_index] = self.atomIdMap[seq_key_1][data]
+                        except KeyError:
                             buf[data_index] = data
+                    elif nef_tag == '_nef_distance_restraint.atom_name_2':
+                        try:
+                            buf[data_index] = self.atomIdMap[seq_key_2][data]
+                        except KeyError:
+                            buf[data_index] = data
+                    else:
+                        buf[data_index] = data
 
                 buf_row.append(buf)
 
@@ -4911,6 +4938,9 @@ class NEFTranslator(object):
                                 for j in nef_tags:
 
                                     auth_tag, data_tag = self.get_star_tag(j)
+
+                                    if auth_tag is None:
+                                        continue
 
                                     data = i[nef_tags.index(j)]
 
@@ -5062,6 +5092,9 @@ class NEFTranslator(object):
 
                             auth_tag, data_tag = self.get_star_tag(j)
 
+                            if auth_tag is None:
+                                continue
+
                             data = i[nef_tags.index(j)]
 
                             if 'chain_code' in j or 'sequence_code' in j:
@@ -5092,6 +5125,331 @@ class NEFTranslator(object):
                                 buf[details_index] = ' '.join(filter(None, [details_1, detail_2]))
                             """
                         buf_row.append(buf)
+
+            keys = set()
+
+            for i in buf_row:
+
+                key = ''
+                for j in key_indices:
+                    key += ' ' + str(i[j])
+                key.rstrip()
+
+                if key in keys:
+                    continue
+
+                keys.add(key)
+
+                if index_index >= 0:
+                    i[index_index] = index
+
+                index += 1
+
+                out_row.append(i)
+
+        return out_row
+
+    def nef2star_peak_row(self, nef_tags, star_tags, loop_data):
+        """ Translate rows of data in spectral peak loop from NEF into NMR-STAR.
+            @param nef_tags: list of NEF tags
+            @param star_tags: list of NMR-STAR tags
+            @param loop_data: loop data of NEF
+            @return: rows of NMR-STAR
+        """
+
+        out_row = []
+
+        nef_comp_indices = []
+        nef_atom_indices = []
+
+        seq_ident_tags = self.get_seq_ident_tags(nef_tags, 'nef')
+
+        num_dim = len(seq_ident_tags)
+
+        for d in range(1, num_dim + 1):
+            nef_comp_indices.append(nef_tags.index('_nef_peak.residue_name_%s' % d))
+            nef_atom_indices.append(nef_tags.index('_nef_peak.atom_name_%s' % d))
+
+        try:
+            index_index = star_tags.index('_Peak_row_format.Index_ID')
+        except ValueError:
+            index_index = -1
+
+        key_indices = [star_tags.index(j) for j in [k for k in star_tags if k.startswith('_Peak_row_format.Entity_assembly_ID') or\
+                                                                            k.startswith('_Peak_row_format.Comp_index_ID') or\
+                                                                            k.startswith('_Peak_row_format.Atom_ID')]]
+
+        id_index = nef_tags.index('_nef_peak.peak_id')
+
+        id_list = sorted(set([int(i[id_index]) for i in loop_data]))
+
+        index = 1
+
+        for id in id_list:
+
+            in_row = [i for i in loop_data if i[id_index] == str(id)]
+
+            buf_row = []
+
+            for i in in_row:
+
+                tag_map = {}
+                self_tag_map = {}
+
+                for tag in seq_ident_tags:
+                    chain_tag = tag['chain_tag']
+                    seq_tag = tag['seq_tag']
+
+                    nef_chain = i[nef_tags.index(chain_tag)]
+                    _nef_seq = i[nef_tags.index(seq_tag)]
+                    if type(_nef_seq) == str and not _nef_seq in self.empty_value:
+                        _nef_seq = int(_nef_seq)
+
+                    seq_key = (nef_chain, _nef_seq)
+
+                    try:
+                        tag_map[chain_tag], tag_map[seq_tag] = self.authSeqMap[seq_key]
+                        self_tag_map[chain_tag], self_tag_map[seq_tag] = self.selfSeqMap[seq_key]
+                    except KeyError:
+                        tag_map[chain_tag] = nef_chain
+                        tag_map[seq_tag] = _nef_seq
+                        self_tag_map[chain_tag] = nef_chain
+                        self_tag_map[seq_tag] = _nef_seq
+
+                details = ''
+                a = []
+
+                for nef_comp_index, nef_atom_index  in zip(nef_comp_indices, nef_atom_indices):
+                    atom_list = self.get_star_atom(i[nef_comp_index], i[nef_atom_index])[0]
+                    len_atom_list = len(atom_list)
+                    if len_atom_list == 0:
+                        atom_list.append('.')
+                    elif len_atom_list > 1:
+                        details += '%s -> %s, ' % (i[nef_atom_index], atom_list)
+                    a.append(atom_list)
+
+                if num_dim == 1:
+
+                    for comb in itertools.product(a[0]):
+                        buf_row.append(self.__nef2star_peak_row(nef_tags, star_tags, tag_map, self_tag_map, i, details, comb))
+
+                elif num_dim == 2:
+
+                    for comb in itertools.product(a[0], a[1]):
+                        buf_row.append(self.__nef2star_peak_row(nef_tags, star_tags, tag_map, self_tag_map, i, details, comb))
+
+                elif num_dim == 3:
+
+                    for comb in itertools.product(a[0], a[1], a[2]):
+                        buf_row.append(self.__nef2star_peak_row(nef_tags, star_tags, tag_map, self_tag_map, i, details, comb))
+
+                elif num_dim == 4:
+
+                    for comb in itertools.product(a[0], a[1], a[2], a[3]):
+                        buf_row.append(self.__nef2star_peak_row(nef_tags, star_tags, tag_map, self_tag_map, i, details, comb))
+
+                elif num_dim == 5:
+
+                    for comb in itertools.product(a[0], a[1], a[2], a[3], a[4]):
+                        buf_row.append(self.__nef2star_peak_row(nef_tags, star_tags, tag_map, self_tag_map, i, details, comb))
+
+                elif num_dim == 6:
+
+                    for comb in itertools.product(a[0], a[1], a[2], a[3], a[4], a[5]):
+                        buf_row.append(self.__nef2star_peak_row(nef_tags, star_tags, tag_map, self_tag_map, i, details, comb))
+
+                elif num_dim == 7:
+
+                    for comb in itertools.product(a[0], a[1], a[2], a[3], a[4], a[5], a[6]):
+                        buf_row.append(self.__nef2star_peak_row(nef_tags, star_tags, tag_map, self_tag_map, i, details, comb))
+
+                elif num_dim == 8:
+
+                    for comb in itertools.product(a[0], a[1], a[2], a[3], a[4], a[5], a[6], a[7]):
+                        buf_row.append(self.__nef2star_peak_row(nef_tags, star_tags, tag_map, self_tag_map, i, details, comb))
+
+                elif num_dim == 9:
+
+                    for comb in itertools.product(a[0], a[1], a[2], a[3], a[4], a[5], a[6], a[7], a[8]):
+                        buf_row.append(self.__nef2star_peak_row(nef_tags, star_tags, tag_map, self_tag_map, i, details, comb))
+
+                elif num_dim == 10:
+
+                    for comb in itertools.product(a[0], a[1], a[2], a[3], a[4], a[5], a[6], a[7], a[8], a[9]):
+                        buf_row.append(self.__nef2star_peak_row(nef_tags, star_tags, tag_map, self_tag_map, i, details, comb))
+
+                elif num_dim == 11:
+
+                    for comb in itertools.product(a[0], a[1], a[2], a[3], a[4], a[5], a[6], a[7], a[8], a[9], a[10]):
+                        buf_row.append(self.__nef2star_peak_row(nef_tags, star_tags, tag_map, self_tag_map, i, details, comb))
+
+                elif num_dim == 12:
+
+                    for comb in itertools.product(a[0], a[1], a[2], a[3], a[4], a[5], a[6], a[7], a[8], a[9], a[10], a[11]):
+                        buf_row.append(self.__nef2star_peak_row(nef_tags, star_tags, tag_map, self_tag_map, i, details, comb))
+
+                elif num_dim == 13:
+
+                    for comb in itertools.product(a[0], a[1], a[2], a[3], a[4], a[5], a[6], a[7], a[8], a[9], a[10], a[11], a[12]):
+                        buf_row.append(self.__nef2star_peak_row(nef_tags, star_tags, tag_map, self_tag_map, i, details, comb))
+
+                elif num_dim == 14:
+
+                    for comb in itertools.product(a[0], a[1], a[2], a[3], a[4], a[5], a[6], a[7], a[8], a[9], a[10], a[11], a[12], a[13]):
+                        buf_row.append(self.__nef2star_peak_row(nef_tags, star_tags, tag_map, self_tag_map, i, details, comb))
+
+                elif num_dim == 15:
+
+                    for comb in itertools.product(a[0], a[1], a[2], a[3], a[4], a[5], a[6], a[7], a[8], a[9], a[10], a[11], a[12], a[13], a[14]):
+                        buf_row.append(self.__nef2star_peak_row(nef_tags, star_tags, tag_map, self_tag_map, i, details, comb))
+
+            keys = set()
+
+            for i in buf_row:
+
+                key = ''
+                for j in key_indices:
+                    key += ' ' + str(i[j])
+                key.rstrip()
+
+                if key in keys:
+                    continue
+
+                keys.add(key)
+
+                if index_index >= 0:
+                    i[index_index] = index
+
+                index += 1
+
+                out_row.append(i)
+
+        return out_row
+
+    def __nef2star_peak_row(self, nef_tags, star_tags, tag_map, self_tag_map, row, details, comb):
+        """ Translate rows of data in spectral peak loop from NEF into NMR-STAR.
+        """
+
+        buf = [None] * len(star_tags)
+
+        for j in nef_tags:
+
+            auth_tag, data_tag = self.get_star_tag(j)
+
+            if auth_tag is None:
+                continue
+
+            data = row[nef_tags.index(j)]
+
+            if 'chain_code' in j or 'sequence_code' in j:
+                buf[star_tags.index(auth_tag)] = self_tag_map[j]
+            else:
+                buf[star_tags.index(auth_tag)] = data
+
+            if auth_tag != data_tag:
+
+                data_index = star_tags.index(data_tag)
+
+                if 'chain_code' in j or 'sequence_code' in j:
+                    buf[data_index] = tag_map[j]
+                elif j.startswith('_nef_peak.atom_name'):
+                    buf[data_index] = comb[int(j[20:]) - 1]
+                else:
+                    buf[data_index] = data
+
+            if len(details) > 0:
+                details_index = star_tags.index('_Peak_row_format.Details')
+
+                buf[details_index] = details[:-2]
+
+        return buf
+
+    def star2nef_peak_row(self, star_tags, nef_tags, loop_data):
+        """ Translate rows of data in spectral peak loop from NMR-STAR into NEF.
+            @author: Masashi Yokochi
+            @param star_tags: list of NMR-STAR tags
+            @param nef_tags: list of NEF tags
+            @param loop_data: loop data of NMR-STAR
+            @return: rows of NEF
+        """
+
+        out_row = []
+
+        seq_ident_tags = self.get_seq_ident_tags(star_tags, 'nmr-star')
+
+        try:
+            index_index = nef_tags.index('_nef_peak.index')
+        except ValueError:
+            index_index = -1
+
+        key_indices = [nef_tags.index(j) for j in [k for k in nef_tags if k.startswith('_nef_peak.chain_code') or\
+                                                                          k.startswith('_nef_peak.sequence_code') or\
+                                                                          k.startswith('_nef_peak.atom_name')]]
+
+        id_index = star_tags.index('_Peak_row_format.ID')
+
+        id_list = sorted(set([int(i[id_index]) for i in loop_data]))
+
+        index = 1
+
+        for id in id_list:
+
+            in_row = [i for i in loop_data if i[id_index] == str(id)]
+
+            buf_row = []
+
+            for i in in_row:
+
+                tag_map = {}
+
+                s = []
+
+                for tag in seq_ident_tags:
+                    chain_tag = tag['chain_tag']
+                    seq_tag = tag['seq_tag']
+
+                    _star_chain = i[star_tags.index(chain_tag)]
+                    if type(_star_chain) == str and not _star_chain in self.empty_value:
+                        _star_chain = int(_star_chain)
+
+                    _star_seq = i[star_tags.index(seq_tag)]
+                    if type(_star_seq) == str and not _star_seq in self.empty_value:
+                        _star_seq = int(_star_seq)
+
+                    seq_key = (_star_chain, _star_seq)
+
+                    try:
+                        tag_map[chain_tag], tag_map[seq_tag] = self.authSeqMap[seq_key]
+                    except KeyError:
+                        tag_map[chain_tag] = _star_chain
+                        tag_map[seq_tag] = _star_seq
+
+                    s.append(seq_key)
+
+                buf = [None] * len(nef_tags)
+
+                for j in star_tags:
+
+                    nef_tag = self.get_nef_tag(j)
+
+                    if nef_tag is None:
+                        continue
+
+                    data = i[star_tags.index(j)]
+
+                    data_index = nef_tags.index(nef_tag)
+
+                    if 'chain_code' in nef_tag or 'sequence_code' in nef_tag:
+                        buf[data_index] = tag_map[j]
+                    elif nef_tag.startswith('_nef_peak.atom_name'):
+                        try:
+                            buf[data_index] = self.atomIdMap[s[int(nef_tag[20:]) - 1]][data]
+                        except KeyError:
+                            buf[data_index] = data
+                    else:
+                        buf[data_index] = data
+
+                buf_row.append(buf)
 
             keys = set()
 
@@ -5158,6 +5516,9 @@ class NEFTranslator(object):
 
                 auth_tag, data_tag = self.get_star_tag(j)
 
+                if auth_tag is None:
+                    continue
+
                 data = in_row[nef_tags.index(j)]
 
                 if 'chain_code' in j or 'sequence_code' in j:
@@ -5220,18 +5581,19 @@ class NEFTranslator(object):
 
             nef_tag = self.get_nef_tag(j)
 
-            if not nef_tag is None:
+            if nef_tag is None:
+                continue
 
-                data = in_row[star_tags.index(j)]
+            data = in_row[star_tags.index(j)]
 
-                data_index = nef_tags.index(nef_tag)
+            data_index = nef_tags.index(nef_tag)
 
-                if 'chain_code' in nef_tag or 'sequence_code' in nef_tag:
-                    out[data_index] = tag_map[j]
-                elif data in self.star_boolean:
-                    out[data_index] = 'true' if data in self.true_value else 'false'
-                else:
-                    out[data_index] = data
+            if 'chain_code' in nef_tag or 'sequence_code' in nef_tag:
+                out[data_index] = tag_map[j]
+            elif data in self.star_boolean:
+                out[data_index] = 'true' if data in self.true_value else 'false'
+            else:
+                out[data_index] = data
 
         out_row.append(out)
 
@@ -5316,107 +5678,114 @@ class NEFTranslator(object):
                         peak_list_id += 1
                         sf.set_tag_prefix('Spectral_peak_list')
 
+                    else:
+                        continue
+
                     for tag in saveframe.tags:
 
                         if tag[0].lower() == 'sf_category':
                             auth_tag, data_tag = self.get_star_tag(saveframe.category)
-                            sf.add_tag('Sf_category', auth_tag)
+                            if not auth_tag is None:
+                                sf.add_tag('Sf_category', auth_tag)
                         elif saveframe.category == 'nef_distance_restraint_list' and tag[0] == 'restraint_origin':
                             nef_tag = '{}.{}'.format(saveframe.tag_prefix, tag[0])
                             auth_tag, data_tag = self.get_star_tag(nef_tag)
-                            sf.add_tag(auth_tag, tag[1] if not tag[1] in self.dist_alt_constraint_type['nmr-star'] else self.dist_alt_constraint_type['nmr-star'][tag[1]])
+                            if not auth_tag is None:
+                                sf.add_tag(auth_tag, tag[1] if not tag[1] in self.dist_alt_constraint_type['nmr-star'] else self.dist_alt_constraint_type['nmr-star'][tag[1]])
                         elif saveframe.category == 'nef_dihedral_restraint_list' and tag[0] == 'restraint_origin':
                             nef_tag = '{}.{}'.format(saveframe.tag_prefix, tag[0])
                             auth_tag, data_tag = self.get_star_tag(nef_tag)
-                            sf.add_tag(auth_tag, tag[1] if not tag[1] in self.dihed_alt_constraint_type['nmr-star'] else self.dihed_alt_constraint_type['nmr-star'][tag[1]])
+                            if not auth_tag is None:
+                                sf.add_tag(auth_tag, tag[1] if not tag[1] in self.dihed_alt_constraint_type['nmr-star'] else self.dihed_alt_constraint_type['nmr-star'][tag[1]])
                         elif saveframe.category == 'nef_rdc_restraint_list' and tag[0] == 'restraint_origin':
                             nef_tag = '{}.{}'.format(saveframe.tag_prefix, tag[0])
                             auth_tag, data_tag = self.get_star_tag(nef_tag)
-                            sf.add_tag(auth_tag, tag[1] if not tag[1] in self.rdc_alt_constraint_type['nmr-star'] else self.rdc_alt_constraint_type['nmr-star'][tag[1]])
+                            if not auth_tag is None:
+                                sf.add_tag(auth_tag, tag[1] if not tag[1] in self.rdc_alt_constraint_type['nmr-star'] else self.rdc_alt_constraint_type['nmr-star'][tag[1]])
                         else:
                             nef_tag = '{}.{}'.format(saveframe.tag_prefix, tag[0])
                             auth_tag, data_tag = self.get_star_tag(nef_tag)
-                            sf.add_tag(auth_tag, tag[1])
+                            if not auth_tag is None:
+                                sf.add_tag(auth_tag, tag[1])
 
                     for loop in saveframe:
 
-                        try:
+                        lp = pynmrstar.Loop.from_scratch()
+                        tags = self.get_star_loop_tags(loop.get_tag_names())
 
-                            lp = pynmrstar.Loop.from_scratch()
-                            tags = self.get_star_loop_tags(loop.get_tag_names())
-                            for tag in tags:
-                                lp.add_tag(tag)
+                        if len(tags) == 0:
+                            continue
 
-                            if loop.category == '_nef_sequence':
-                                if self.authSeqMap is None:
-                                    self.authSeqMap = {}
-                                    self.selfSeqMap = {}
-                                rows = self.nef2star_seq_row(loop.get_tag_names(), lp.get_tag_names(), loop.data, report)
-                                for d in rows:
-                                    d[lp.get_tag_names().index('_Chem_comp_assembly.Assembly_ID')] = asm_id
-                                    lp.add_data(d)
+                        for tag in tags:
+                            lp.add_tag(tag)
 
-                            elif loop.category == '_nef_covalent_links':
-                                rows = self.nef2star_bond_row(loop.get_tag_names(), lp.get_tag_names(), loop.data)
-                                for d in rows:
-                                    d[lp.get_tag_names().index('_Bond.Assembly_ID')] = asm_id
-                                    lp.add_data(d)
+                        if loop.category == '_nef_sequence':
+                            if self.authSeqMap is None:
+                                self.authSeqMap = {}
+                                self.selfSeqMap = {}
+                            rows = self.nef2star_seq_row(loop.get_tag_names(), lp.get_tag_names(), loop.data, report)
+                            for d in rows:
+                                d[lp.get_tag_names().index('_Chem_comp_assembly.Assembly_ID')] = asm_id
+                                lp.add_data(d)
 
-                            elif loop.category == '_nef_chemical_shift':
-                                rows = self.nef2star_cs_row(loop.get_tag_names(), lp.get_tag_names(), loop.data)
-                                for d in rows:
-                                    d[lp.get_tag_names().index('_Atom_chem_shift.Assigned_chem_shift_list_ID')] = cs_list_id
-                                    lp.add_data(d)
+                        elif loop.category == '_nef_covalent_links':
+                            rows = self.nef2star_bond_row(loop.get_tag_names(), lp.get_tag_names(), loop.data)
+                            for d in rows:
+                                d[lp.get_tag_names().index('_Bond.Assembly_ID')] = asm_id
+                                lp.add_data(d)
 
-                            elif loop.category == '_nef_distance_restraint':
-                                rows = self.nef2star_dist_row(loop.get_tag_names(), lp.get_tag_names(), loop.data)
-                                for d in rows:
-                                    d[lp.get_tag_names().index('_Gen_dist_constraint.Gen_dist_constraint_list_ID')] = dist_list_id
-                                    lp.add_data(d)
+                        elif loop.category == '_nef_chemical_shift':
+                            rows = self.nef2star_cs_row(loop.get_tag_names(), lp.get_tag_names(), loop.data)
+                            for d in rows:
+                                d[lp.get_tag_names().index('_Atom_chem_shift.Assigned_chem_shift_list_ID')] = cs_list_id
+                                lp.add_data(d)
 
-                            elif loop.category == '_nef_dihedral_restraint':
-                                rows = self.nef2star_dihed_row(loop.get_tag_names(), lp.get_tag_names(), loop.data)
-                                for d in rows:
-                                    d[lp.get_tag_names().index('_Torsion_angle_constraint.Torsion_angle_constraint_list_ID')] = dihed_list_id
-                                    lp.add_data(d)
+                        elif loop.category == '_nef_distance_restraint':
+                            rows = self.nef2star_dist_row(loop.get_tag_names(), lp.get_tag_names(), loop.data)
+                            for d in rows:
+                                d[lp.get_tag_names().index('_Gen_dist_constraint.Gen_dist_constraint_list_ID')] = dist_list_id
+                                lp.add_data(d)
 
-                            elif loop.category == '_nef_rdc_restraint':
-                                rows = self.nef2star_rdc_row(loop.get_tag_names(), lp.get_tag_names(), loop.data)
-                                for d in rows:
-                                    d[lp.get_tag_names().index('_RDC_constraint.RDC_constraint_list_ID')] = rdc_list_id
-                                    lp.add_data(d)
+                        elif loop.category == '_nef_dihedral_restraint':
+                            rows = self.nef2star_dihed_row(loop.get_tag_names(), lp.get_tag_names(), loop.data)
+                            for d in rows:
+                                d[lp.get_tag_names().index('_Torsion_angle_constraint.Torsion_angle_constraint_list_ID')] = dihed_list_id
+                                lp.add_data(d)
 
-                            else:
+                        elif loop.category == '_nef_rdc_restraint':
+                            rows = self.nef2star_rdc_row(loop.get_tag_names(), lp.get_tag_names(), loop.data)
+                            for d in rows:
+                                d[lp.get_tag_names().index('_RDC_constraint.RDC_constraint_list_ID')] = rdc_list_id
+                                lp.add_data(d)
 
-                                for data in loop.data:
+                        elif loop.category == '_nef_peak':
+                            rows = self.nef2star_peak_row(loop.get_tag_names(), lp.get_tag_names(), loop.data)
+                            for d in rows:
+                                d[lp.get_tag_names().index('_Peak_row_format.Spectral_peak_list_ID')] = peak_list_id
+                                lp.add_data(d)
 
-                                    if loop.category == '_nef_peak':
-                                        rows = self.nef2star_row(loop.get_tag_names(), lp.get_tag_names(), data)
-                                        for d in rows:
-                                            d[lp.get_tag_names().index('_Peak_row_format.Spectral_peak_list_ID')] = peak_list_id
-                                            lp.add_data(d)
+                        else:
 
-                                    elif loop.category == '_nef_spectrum_dimension':
-                                        rows = self.nef2star_row(loop.get_tag_names(), lp.get_tag_names(), data)
-                                        for d in rows:
-                                            d[lp.get_tag_names().index('_Spectral_dim.Spectral_peak_list_ID')] = peak_list_id
-                                            lp.add_data(d)
+                            for data in loop.data:
 
-                                    elif loop.category == '_nef_spectrum_dimension_transfer':
-                                        rows = self.nef2star_row(loop.get_tag_names(), lp.get_tag_names(), data)
-                                        for d in rows:
-                                            d[lp.get_tag_names().index('_Spectral_dim_transfer.Spectral_peak_list_ID', )] = peak_list_id
-                                            lp.add_data(d)
+                                if loop.category == '_nef_spectrum_dimension':
+                                    rows = self.nef2star_row(loop.get_tag_names(), lp.get_tag_names(), data)
+                                    for d in rows:
+                                        d[lp.get_tag_names().index('_Spectral_dim.Spectral_peak_list_ID')] = peak_list_id
+                                        lp.add_data(d)
 
-                                    else:
-                                        rows = self.nef2star_row(loop.get_tag_names(), lp.get_tag_names(), data)
-                                        for d in rows:
-                                            lp.add_data(d)
+                                elif loop.category == '_nef_spectrum_dimension_transfer':
+                                    rows = self.nef2star_row(loop.get_tag_names(), lp.get_tag_names(), data)
+                                    for d in rows:
+                                        d[lp.get_tag_names().index('_Spectral_dim_transfer.Spectral_peak_list_ID', )] = peak_list_id
+                                        lp.add_data(d)
 
-                            sf.add_loop(lp)
+                                else:
+                                    rows = self.nef2star_row(loop.get_tag_names(), lp.get_tag_names(), data)
+                                    for d in rows:
+                                        lp.add_data(d)
 
-                        except ValueError:
-                            pass
+                        sf.add_loop(lp)
 
                     if saveframe.category == 'nef_nmr_meta_data':
                         sf.add_tag('NMR_STAR_version', self.star_version)
@@ -5452,6 +5821,9 @@ class NEFTranslator(object):
 
                     elif saveframe.category == 'nef_nmr_spectrum':
                         sf.add_tag('ID', peak_list_id)
+
+                    else:
+                        continue
 
                     star_data.add_saveframe(sf)
 
@@ -5492,23 +5864,28 @@ class NEFTranslator(object):
 
                         if tag[0].lower() == 'sf_category':
                             auth_tag, data_tag = self.get_star_tag(saveframe.category)
-                            sf.add_tag('Sf_category', auth_tag)
+                            if not auth_tag is None:
+                                sf.add_tag('Sf_category', auth_tag)
                         elif saveframe.category == 'nef_distance_restraint_list' and tag[0] == 'restraint_origin':
                             nef_tag = '{}.{}'.format(saveframe.tag_prefix, tag[0])
                             auth_tag, data_tag = self.get_star_tag(nef_tag)
-                            sf.add_tag(auth_tag, tag[1] if not tag[1] in self.dist_alt_constraint_type['nmr-star'] else self.dist_alt_constraint_type['nmr-star'][tag[1]])
+                            if not auth_tag is None:
+                                sf.add_tag(auth_tag, tag[1] if not tag[1] in self.dist_alt_constraint_type['nmr-star'] else self.dist_alt_constraint_type['nmr-star'][tag[1]])
                         elif saveframe.category == 'nef_dihedral_restraint_list' and tag[0] == 'restraint_origin':
                             nef_tag = '{}.{}'.format(saveframe.tag_prefix, tag[0])
                             auth_tag, data_tag = self.get_star_tag(nef_tag)
-                            sf.add_tag(auth_tag, tag[1] if not tag[1] in self.dihed_alt_constraint_type['nmr-star'] else self.dihed_alt_constraint_type['nmr-star'][tag[1]])
+                            if not auth_tag is None:
+                                sf.add_tag(auth_tag, tag[1] if not tag[1] in self.dihed_alt_constraint_type['nmr-star'] else self.dihed_alt_constraint_type['nmr-star'][tag[1]])
                         elif saveframe.category == 'nef_rdc_restraint_list' and tag[0] == 'restraint_origin':
                             nef_tag = '{}.{}'.format(saveframe.tag_prefix, tag[0])
                             auth_tag, data_tag = self.get_star_tag(nef_tag)
-                            sf.add_tag(auth_tag, tag[1] if not tag[1] in self.rdc_alt_constraint_type['nmr-star'] else self.rdc_alt_constraint_type['nmr-star'][tag[1]])
+                            if not auth_tag is None:
+                                sf.add_tag(auth_tag, tag[1] if not tag[1] in self.rdc_alt_constraint_type['nmr-star'] else self.rdc_alt_constraint_type['nmr-star'][tag[1]])
                         else:
                             nef_tag = '{}.{}'.format(saveframe.tag_prefix, tag[0])
                             auth_tag, data_tag = self.get_star_tag(nef_tag)
-                            sf.add_tag(auth_tag, tag[1])
+                            if not auth_tag is None:
+                                sf.add_tag(auth_tag, tag[1])
 
                 else:
                     sf = pynmrstar.Saveframe.from_scratch(nef_data.category)
@@ -5553,83 +5930,82 @@ class NEFTranslator(object):
 
                 for loop in saveframe:
 
-                    try:
+                    lp = pynmrstar.Loop.from_scratch()
+                    tags = self.get_star_loop_tags(loop.get_tag_names())
 
-                        lp = pynmrstar.Loop.from_scratch()
-                        tags = self.get_star_loop_tags(loop.get_tag_names())
-                        for tag in tags:
-                            lp.add_tag(tag)
+                    if len(tags) == 0:
+                        continue
 
-                        if loop.category == '_nef_sequence':
-                            if self.authSeqMap is None:
-                                self.authSeqMap = {}
-                                self.selfSeqMap = {}
-                            rows = self.nef2star_seq_row(loop.get_tag_names(), lp.get_tag_names(), loop.data, report)
-                            for d in rows:
-                                d[lp.get_tag_names().index('_Chem_comp_assembly.Assembly_ID')] = asm_id
-                                lp.add_data(d)
+                    for tag in tags:
+                        lp.add_tag(tag)
 
-                        elif loop.category == '_nef_covalent_links':
-                            rows = self.nef2star_bond_row(loop.get_tag_names(), lp.get_tag_names(), loop.data)
-                            for d in rows:
-                                d[lp.get_tag_names().index('_Bond.Assembly_ID')] = asm_id
-                                lp.add_data(d)
+                    if loop.category == '_nef_sequence':
+                        if self.authSeqMap is None:
+                            self.authSeqMap = {}
+                            self.selfSeqMap = {}
+                        rows = self.nef2star_seq_row(loop.get_tag_names(), lp.get_tag_names(), loop.data, report)
+                        for d in rows:
+                            d[lp.get_tag_names().index('_Chem_comp_assembly.Assembly_ID')] = asm_id
+                            lp.add_data(d)
 
-                        elif loop.category == '_nef_chemical_shift':
-                            rows = self.nef2star_cs_row(loop.get_tag_names(), lp.get_tag_names(), loop.data)
-                            for d in rows:
-                                d[lp.get_tag_names().index('_Atom_chem_shift.Assigned_chem_shift_list_ID')] = cs_list_id
-                                lp.add_data(d)
+                    elif loop.category == '_nef_covalent_links':
+                        rows = self.nef2star_bond_row(loop.get_tag_names(), lp.get_tag_names(), loop.data)
+                        for d in rows:
+                            d[lp.get_tag_names().index('_Bond.Assembly_ID')] = asm_id
+                            lp.add_data(d)
 
-                        elif loop.category == '_nef_distance_restraint':
-                            rows = self.nef2star_dist_row(loop.get_tag_names(), lp.get_tag_names(), loop.data)
-                            for d in rows:
-                                d[lp.get_tag_names().index('_Gen_dist_constraint.Gen_dist_constraint_list_ID')] = dist_list_id
-                                lp.add_data(d)
+                    elif loop.category == '_nef_chemical_shift':
+                        rows = self.nef2star_cs_row(loop.get_tag_names(), lp.get_tag_names(), loop.data)
+                        for d in rows:
+                            d[lp.get_tag_names().index('_Atom_chem_shift.Assigned_chem_shift_list_ID')] = cs_list_id
+                            lp.add_data(d)
 
-                        elif loop.category == '_nef_dihedral_restraint':
-                            rows = self.nef2star_dihed_row(loop.get_tag_names(), lp.get_tag_names(), loop.data)
-                            for d in rows:
-                                d[lp.get_tag_names().index('_Torsion_angle_constraint.Torsion_angle_constraint_list_ID')] = dihed_list_id
-                                lp.add_data(d)
+                    elif loop.category == '_nef_distance_restraint':
+                        rows = self.nef2star_dist_row(loop.get_tag_names(), lp.get_tag_names(), loop.data)
+                        for d in rows:
+                            d[lp.get_tag_names().index('_Gen_dist_constraint.Gen_dist_constraint_list_ID')] = dist_list_id
+                            lp.add_data(d)
 
-                        elif loop.category == '_nef_rdc_restraint':
-                            rows = self.nef2star_rdc_row(loop.get_tag_names(), lp.get_tag_names(), loop.data)
-                            for d in rows:
-                                d[lp.get_tag_names().index('_RDC_constraint.RDC_constraint_list_ID')] = rdc_list_id
-                                lp.add_data(d)
+                    elif loop.category == '_nef_dihedral_restraint':
+                        rows = self.nef2star_dihed_row(loop.get_tag_names(), lp.get_tag_names(), loop.data)
+                        for d in rows:
+                            d[lp.get_tag_names().index('_Torsion_angle_constraint.Torsion_angle_constraint_list_ID')] = dihed_list_id
+                            lp.add_data(d)
 
-                        else:
+                    elif loop.category == '_nef_rdc_restraint':
+                        rows = self.nef2star_rdc_row(loop.get_tag_names(), lp.get_tag_names(), loop.data)
+                        for d in rows:
+                            d[lp.get_tag_names().index('_RDC_constraint.RDC_constraint_list_ID')] = rdc_list_id
+                            lp.add_data(d)
 
-                            for data in loop.data:
+                    elif loop.category == '_nef_peak':
+                        rows = self.nef2star_peak_row(loop.get_tag_names(), lp.get_tag_names(), loop.data)
+                        for d in rows:
+                            d[lp.get_tag_names().index('_Peak_row_format.Spectral_peak_list_ID')] = peak_list_id
+                            lp.add_data(d)
 
-                                if loop.category == '_nef_peak':
-                                    rows = self.nef2star_row(loop.get_tag_names(), lp.get_tag_names(), data)
-                                    for d in rows:
-                                        d[lp.get_tag_names().index('_Peak_row_format.Spectral_peak_list_ID')] = peak_list_id
-                                        lp.add_data(d)
+                    else:
 
-                                elif loop.category == '_nef_spectrum_dimension':
-                                    rows = self.nef2star_row(loop.get_tag_names(), lp.get_tag_names(), data)
-                                    for d in rows:
-                                        d[lp.get_tag_names().index('_Spectral_dim.Spectral_peak_list_ID')] = peak_list_id
-                                        lp.add_data(d)
+                        for data in loop.data:
 
-                                elif loop.category == '_nef_spectrum_dimension_transfer':
-                                    rows = self.nef2star_row(loop.get_tag_names(), lp.get_tag_names(), data)
-                                    for d in rows:
-                                        d[lp.get_tag_names().index('_Spectral_dim_transfer.Spectral_peak_list_ID', )] = peak_list_id
-                                        lp.add_data(d)
+                            if loop.category == '_nef_spectrum_dimension':
+                                rows = self.nef2star_row(loop.get_tag_names(), lp.get_tag_names(), data)
+                                for d in rows:
+                                    d[lp.get_tag_names().index('_Spectral_dim.Spectral_peak_list_ID')] = peak_list_id
+                                    lp.add_data(d)
 
-                                else:
-                                    rows = self.nef2star_row(loop.get_tag_names(), lp.get_tag_names(), data)
-                                    for d in rows:
-                                        lp.add_data(d)
+                            elif loop.category == '_nef_spectrum_dimension_transfer':
+                                rows = self.nef2star_row(loop.get_tag_names(), lp.get_tag_names(), data)
+                                for d in rows:
+                                    d[lp.get_tag_names().index('_Spectral_dim_transfer.Spectral_peak_list_ID', )] = peak_list_id
+                                    lp.add_data(d)
 
-                        sf.add_loop(lp)
+                            else:
+                                rows = self.nef2star_row(loop.get_tag_names(), lp.get_tag_names(), data)
+                                for d in rows:
+                                    lp.add_data(d)
 
-                    except ValueError:
-                        pass
+                    sf.add_loop(lp)
 
                 if saveframe.category == 'nef_nmr_meta_data':
                     sf.add_tag('NMR_STAR_version', self.star_version)
@@ -5730,9 +6106,14 @@ class NEFTranslator(object):
                 for saveframe in star_data:
                     sf = pynmrstar.Saveframe.from_scratch(saveframe.name)
 
-                    sf.set_tag_prefix(self.get_nef_tag(saveframe.category))
+                    nef_tag = self.get_nef_tag(saveframe.category)
 
-                    sf.add_tag('sf_category', self.get_nef_tag(saveframe.category))
+                    if nef_tag is None:
+                        continue
+
+                    sf.set_tag_prefix(nef_tag)
+
+                    sf.add_tag('sf_category', nef_tag)
                     sf.add_tag('sf_framecode', saveframe.name)
 
                     for tag in saveframe.tags:
@@ -5795,6 +6176,11 @@ class NEFTranslator(object):
                                 for d in rows:
                                     lp.add_data(d)
 
+                            elif loop.category == '_Peak_row_format':
+                                rows = self.star2nef_peak_row(loop.get_tag_names(), lp.get_tag_names(), loop.data)
+                                for d in rows:
+                                    lp.add_data(d)
+
                             else:
                                 for data in loop.data:
 
@@ -5843,40 +6229,44 @@ class NEFTranslator(object):
                     saveframe = star_data
                     sf = pynmrstar.Saveframe.from_scratch(saveframe.name)
 
-                    sf.set_tag_prefix(self.get_nef_tag(saveframe.category))
+                    nef_tag = self.get_nef_tag(saveframe.category)
 
-                    sf.add_tag('sf_category', self.get_nef_tag(saveframe.category))
-                    sf.add_tag('sf_framecode', saveframe.name)
+                    if not nef_tag is None:
 
-                    for tag in saveframe.tags:
-                        tag_name = tag[0].lower()
-                        if tag_name == 'sf_category' or tag_name == 'sf_framecode':
-                            continue
-                        elif saveframe.category == 'entry_information':
-                            if tag_name == 'source_data_format':
-                                sf.add_tag('format_name', self.nef_format_name)
-                            elif tag_name == 'source_data_format_version':
-                                sf.add_tag('format_version', self.nef_version)
+                        sf.set_tag_prefix(nef_tag)
+
+                        sf.add_tag('sf_category', nef_tag)
+                        sf.add_tag('sf_framecode', saveframe.name)
+
+                        for tag in saveframe.tags:
+                            tag_name = tag[0].lower()
+                            if tag_name == 'sf_category' or tag_name == 'sf_framecode':
+                                continue
+                            elif saveframe.category == 'entry_information':
+                                if tag_name == 'source_data_format':
+                                    sf.add_tag('format_name', self.nef_format_name)
+                                elif tag_name == 'source_data_format_version':
+                                    sf.add_tag('format_version', self.nef_version)
+                                else:
+                                    nef_tag = self.get_nef_tag(saveframe.tag_prefix + '.' + tag[0])
+                                    if not nef_tag is None:
+                                        sf.add_tag(nef_tag, tag[1])
+                            elif saveframe.category == 'general_distance_constraints' and tag_name == 'constraint_type':
+                                nef_tag = self.get_nef_tag(saveframe.tag_prefix + '.' + tag[0])
+                                if not nef_tag is None:
+                                    sf.add_tag(nef_tag, tag[1] if not tag[1] in self.dist_alt_constraint_type['nef'] else self.dist_alt_constraint_type['nef'][tag[1]])
+                            elif saveframe.category == 'torsion_angle_constraints' and tag_name == 'constraint_type':
+                                nef_tag = self.get_nef_tag(saveframe.tag_prefix + '.' + tag[0])
+                                if not nef_tag is None:
+                                    sf.add_tag(nef_tag, tag[1] if not tag[1] in self.dihed_alt_constraint_type['nef'] else self.dihed_alt_constraint_type['nef'][tag[1]])
+                            elif saveframe.category == 'RDC_constraints' and tag_name == 'constraint_type':
+                                nef_tag = self.get_nef_tag(saveframe.tag_prefix + '.' + tag[0])
+                                if not nef_tag is None:
+                                    sf.add_tag(nef_tag, tag[1] if not tag[1] in self.rdc_alt_constraint_type['nef'] else self.rdc_alt_constraint_type['nef'][tag[1]])
                             else:
                                 nef_tag = self.get_nef_tag(saveframe.tag_prefix + '.' + tag[0])
                                 if not nef_tag is None:
                                     sf.add_tag(nef_tag, tag[1])
-                        elif saveframe.category == 'general_distance_constraints' and tag_name == 'constraint_type':
-                            nef_tag = self.get_nef_tag(saveframe.tag_prefix + '.' + tag[0])
-                            if not nef_tag is None:
-                                sf.add_tag(nef_tag, tag[1] if not tag[1] in self.dist_alt_constraint_type['nef'] else self.dist_alt_constraint_type['nef'][tag[1]])
-                        elif saveframe.category == 'torsion_angle_constraints' and tag_name == 'constraint_type':
-                            nef_tag = self.get_nef_tag(saveframe.tag_prefix + '.' + tag[0])
-                            if not nef_tag is None:
-                                sf.add_tag(nef_tag, tag[1] if not tag[1] in self.dihed_alt_constraint_type['nef'] else self.dihed_alt_constraint_type['nef'][tag[1]])
-                        elif saveframe.category == 'RDC_constraints' and tag_name == 'constraint_type':
-                            nef_tag = self.get_nef_tag(saveframe.tag_prefix + '.' + tag[0])
-                            if not nef_tag is None:
-                                sf.add_tag(nef_tag, tag[1] if not tag[1] in self.rdc_alt_constraint_type['nef'] else self.rdc_alt_constraint_type['nef'][tag[1]])
-                        else:
-                            nef_tag = self.get_nef_tag(saveframe.tag_prefix + '.' + tag[0])
-                            if not nef_tag is None:
-                                sf.add_tag(nef_tag, tag[1])
 
                 else:
                     sf = pynmrstar.Saveframe.from_scratch(star_data.category)
@@ -5936,6 +6326,11 @@ class NEFTranslator(object):
 
                         elif loop.category == '_Gen_dist_constraint':
                             rows = self.star2nef_dist_row(loop.get_tag_names(), lp.get_tag_names(), loop.data)
+                            for d in rows:
+                                lp.add_data(d)
+
+                        elif loop.category == '_Peak_row_format':
+                            rows = self.star2nef_peak_row(loop.get_tag_names(), lp.get_tag_names(), loop.data)
                             for d in rows:
                                 lp.add_data(d)
 

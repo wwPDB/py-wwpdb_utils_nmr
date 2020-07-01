@@ -17976,16 +17976,24 @@ class NmrDpUtility(object):
             """
             err = "Common polymer sequence does not exist, __extractCommonPolymerSequence() should be invoked."
 
-            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__generatePolySeqIfNot() ++ Error  - %s" % err)
+            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__updatePolymerSequence() ++ Error  - %s" % err)
             self.report.setError()
 
             if self.__verbose:
-                self.__lfh.write("+NmrDpUtility.__generatePolySeqIfNot() ++ Error  - %s\n" % err)
+                self.__lfh.write("+NmrDpUtility.__updatePolymerSequence() ++ Error  - %s\n" % err)
             """
             return False
 
         if self.__srcPath == self.__dstPath:
             return True
+
+        for sf_category in self.__sf_category_list: # DAOTHER-5896
+
+            for sf_data in self.__star_data[0].get_saveframes_by_category(sf_category):
+
+                for tag in sf_data.tags:
+                    if type(tag[1]) is str and len(tag[1]) == 0:
+                        tag[1] = '.'
 
         content_subtype = 'poly_seq'
 
@@ -18368,11 +18376,11 @@ class NmrDpUtility(object):
             """
             err = "Common polymer sequence does not exist, __extractCommonPolymerSequence() should be invoked."
 
-            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__generatePolySeqIfNot() ++ Error  - %s" % err)
+            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__updateAuthSequence() ++ Error  - %s" % err)
             self.report.setError()
 
             if self.__verbose:
-                self.__lfh.write("+NmrDpUtility.__generatePolySeqIfNot() ++ Error  - %s\n" % err)
+                self.__lfh.write("+NmrDpUtility.__updateAuthSequence() ++ Error  - %s\n" % err)
             """
             return False
 
@@ -18385,11 +18393,11 @@ class NmrDpUtility(object):
             """
             err = "Chain assignment does not exist, __assignCoordPolymerSequence() should be invoked."
 
-            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__extractCoordDisulfideBond() ++ Error  - %s" % err)
+            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__updateAuthSequence() ++ Error  - %s" % err)
             self.report.setError()
 
             if self.__verbose:
-                self.__lfh.write("+NmrDpUtility.__extractCoordDisulfideBond() ++ Error  - %s\n" % err)
+                self.__lfh.write("+NmrDpUtility.__updateAuthSequence() ++ Error  - %s\n" % err)
             """
             return False
 

@@ -5034,6 +5034,27 @@ class NmrDpUtility(object):
 
             self.__sf_category_list, self.__lp_category_list = self.__nefT.get_data_content(self.__star_data[fileListId], self.__star_data_type[fileListId])
 
+            tags_with_null_str = []
+
+            for sf_category in self.__sf_category_list: # DAOTHER-5896
+
+                for sf_data in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
+
+                    for tag in sf_data.tags:
+                        if type(tag[1]) is str and len(tag[1]) == 0:
+                            tags_with_null_str.append('_' + sf_category + '.' + tag[0])
+                            tag[1] = '.'
+
+            if len(tags_with_null_str) > 0:
+
+                warn = "Empty strings for %s are not allowed as values. Use a '.' or a '?' if needed." % tags_with_null_str
+
+                self.report.warning.appendDescription('corrected_format_issue', {'file_name': file_name, 'description': warn})
+                self.report.setWarning()
+
+                if self.__verbose:
+                    self.__lfh.write("+NmrDpUtility.__detectContentSubType() ++ Warning  - %s\n" % warn)
+
             for sf_category in self.__sf_category_list:
 
                 if file_type == 'nmr-star' and sf_category == 'entity':
@@ -17942,14 +17963,6 @@ class NmrDpUtility(object):
 
         if not self.__combined_mode:
             return False
-
-        for sf_category in self.__sf_category_list: # DAOTHER-5896
-
-            for sf_data in self.__star_data[0].get_saveframes_by_category(sf_category):
-
-                for tag in sf_data.tags:
-                    if type(tag[1]) is str and len(tag[1]) == 0:
-                        tag[1] = '.'
 
         input_source = self.report.input_sources[0]
         input_source_dic = input_source.get()

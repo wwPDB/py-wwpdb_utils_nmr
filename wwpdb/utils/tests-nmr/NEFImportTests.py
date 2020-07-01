@@ -17,6 +17,5 @@ class ImportTests(unittest.TestCase):
     def testInstantiate(self):
         c = NEFTranslator()
 
-
 if __name__ == '__main__':
     unittest.main()

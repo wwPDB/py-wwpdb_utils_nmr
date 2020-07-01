@@ -37,6 +37,7 @@
 # 15-May-2020  M. Yokochi - add 'content_mismatch' error for NMR legacy deposition (DAOTHER-5687)
 # 12-Jun-2020  M. Yokochi - performance improvement by reusing cached data
 # 25-Jun-2020  M. Yokochi - add 'anomalous_bond_length' warning
+# 01-Jul-2020  M. Yokochi - suppress null error/warning in JSON report
 ##
 """ Wrapper class for data processing report of NMR data.
     @author: Masashi Yokochi
@@ -1252,6 +1253,33 @@ class NmrDpReport:
             logging.warning('+NmrDpReport.inheritFormatIssueErrors() ++ Warning  - No effects on NMR data processing report because the report is immutable')
             raise UserWarning('+NmrDpReport.inheritFormatIssueErrors() ++ Warning  - No effects on NMR data processing report because the report is immutable')
 
+    def inheritCorrectedFormatIssueWarnings(self, prev_report):
+        """ Inherit corrected format issue warnings from the previous report (e.g. nmr-*-consistency-check workflow operation).
+        """
+
+        item = 'corrected_format_issue'
+
+        if not self.__immutable:
+
+            file_name = self.input_sources[self.getInputSourceIdOfNmrData()].get()['file_name']
+            _file_name = prev_report.input_sources[prev_report.getInputSourceIdOfNmrData()].get()['file_name']
+
+            value_list = prev_report.warning.getValueList(item, _file_name)
+
+            if value_list is None:
+                return
+
+            for c in value_list:
+
+                if 'file_name' in c:
+                    c['file_name'] = file_name
+
+                self.warning.appendDescription(item, c)
+
+        else:
+            logging.warning('+NmrDpReport.inheritCorrectedFormatIssueWarnings() ++ Warning  - No effects on NMR data processing report because the report is immutable')
+            raise UserWarning('+NmrDpReport.inheritCorrectedFormatIssueWarnings() ++ Warning  - No effects on NMR data processing report because the report is immutable')
+
     def setCorrectedError(self, prev_report):
         """ Initialize history of corrected errors in the previous report.
         """
@@ -1327,7 +1355,11 @@ class NmrDpReport:
                 for c in list:
                     self.corrected_warning.appendDescription(item, c)
 
-            self.__report['corrected_warning'] = self.corrected_warning.get()
+            if self.corrected_warning.getTotal() > 0:
+                self.__report['corrected_warning'] = self.corrected_warning.get()
+
+            else:
+                self.corrected_warning = None
 
         else:
             logging.warning('+NmrDpReport.setCorrectedWarning() ++ Warning  - No effects on NMR data processing report because the report is immutable')
@@ -1477,7 +1509,7 @@ class NmrDpReportError:
 
         if item in self.items:
 
-            if self.__contents[item] is None:
+            if not item in self.__contents or self.__contents[item] is None:
                 self.__contents[item] = []
 
             if item != 'internal_error' and 'category' in value:
@@ -1521,7 +1553,7 @@ class NmrDpReportError:
             raise KeyError('+NmrDpReportError.appendDescription() ++ Error  - Unknown item type %s' % item)
 
     def get(self):
-        return self.__contents
+        return {k: v for k, v in self.__contents.items() if not v is None}
 
     def put(self, contents):
         self.__contents = contents
@@ -1663,7 +1695,7 @@ class NmrDpReportWarning:
 
         if item in self.items:
 
-            if self.__contents[item] is None:
+            if not item in self.__contents or self.__contents[item] is None:
                 self.__contents[item] = []
 
             if 'category' in value:
@@ -1707,7 +1739,7 @@ class NmrDpReportWarning:
             raise KeyError('+NmrDpReportWarning.appendDescription() ++ Error  - Unknown item type %s' % item)
 
     def get(self):
-        return self.__contents
+        return {k: v for k, v in self.__contents.items() if not v is None}
 
     def put(self, contents):
         self.__contents = contents

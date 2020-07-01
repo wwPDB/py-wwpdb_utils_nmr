@@ -36,7 +36,7 @@ class TestNmrDpUtility(unittest.TestCase):
             report = json.loads(file.read())
 
         if not report['error'] is None:
-            self.assertEqual(report['error']['internal_error'], None)
+            self.assertNotIn('internal_error', report['error'])
 
     def __test_nmr_str2str_deposit(self, entry_id):
         if not os.access(self.data_dir_path + entry_id + '-str-consistency-log.json', os.F_OK):
@@ -59,7 +59,7 @@ class TestNmrDpUtility(unittest.TestCase):
             report = json.loads(file.read())
 
         if not report['error'] is None:
-            self.assertEqual(report['error']['internal_error'], None)
+            self.assertNotIn('internal_error', report['error'])
 
     def test_nmr_str_consistency_check_1nk2(self):
         self.__test_nmr_str_consistency('1nk2')

@@ -44,9 +44,9 @@ class TestNmrDpUtility(unittest.TestCase):
             report = json.loads(file.read())
 
         if not report['error'] is None:
-            self.assertEqual(report['error']['internal_error'], None)
+            self.assertNotIn('internal_error', report['error'])
 
-        self.assertEqual(report['warning']['anomalous_chemical_shift'], None)
+        self.assertNotIn('anomalous_chemical_shift', report['warning'])
 
     def __test_nmr_str_consistency(self, entry_id):
         self.utility.setSource(self.data_dir_path + self.str_data_file_path[entry_id]['str'])
@@ -63,7 +63,7 @@ class TestNmrDpUtility(unittest.TestCase):
             report = json.loads(file.read())
 
         if not report['error'] is None:
-            self.assertEqual(report['error']['internal_error'], None)
+            self.assertNotIn('internal_error', report['error'])
 
     def test_nmr_nef_consistency_check_1pqx(self):
         self.__test_nmr_nef_consistency('1pqx')

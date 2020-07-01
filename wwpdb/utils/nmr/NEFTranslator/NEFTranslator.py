@@ -43,7 +43,7 @@
 # 06-Jun-2020  M. Yokochi - be compatible with pynmrstar v3 (v2.3.0, DAOTHER-5765)
 # 19-Jun-2020  M. Yokochi - do not generate invalid restraints include self atom (v2.3.1)
 # 26-Jun-2020  M. Yokochi - support bidirectional conversion between _nef_covalent_links and _Bond (v2.4.0)
-# 30-Jun-2020  M. Yokochi - skip third party loops and items gracefully (v2.5.0, DAOTHER-5896) 
+# 30-Jun-2020  M. Yokochi - skip third party loops and items gracefully (v2.5.0, DAOTHER-5896)
 # 30-Jun-2020  M. Yokochi - support bidirectional conversion between _nef_peak and _Peak_row_format (v2.5.0, DAOTHER-5896)
 ##
 import sys
@@ -278,6 +278,9 @@ class NEFTranslator(object):
                          'T': 'T',
                          'U': 'U'
                          }
+
+        # limit number of dimensions
+        self.lim_num_dim = 16
 
         # BMRB chemical shift statistics
         self.__csStat = BMRBChemShiftStat()
@@ -1053,7 +1056,7 @@ class NEFTranslator(object):
                         i[2] = 1
             else:
                 _tags_exist = False
-                for i in range(1, 16):
+                for i in range(1, self.lim_num_dim):
                     _tags = [seq_id + '_' + str(i), comp_id + '_' + str(i), chain_id + '_' + str(i)]
                     if set(_tags) & set(loop.tags) == set(_tags):
                         _tags_exist = True
@@ -1199,7 +1202,7 @@ class NEFTranslator(object):
                     i.append('1')
             else:
                 _tags_exist = False
-                for i in range(1, 16):
+                for i in range(1, self.lim_num_dim):
                     _tags = [seq_id + '_' + str(i), comp_id + '_' + str(i), chain_id + '_' + str(i)]
                     _tags_ = [seq_id + '_' + str(i), comp_id + '_' + str(i)]
                     if set(_tags) & set(loop.tags) == set(_tags):
@@ -1351,7 +1354,7 @@ class NEFTranslator(object):
                     i.append('1')
             else:
                 _tags_exist = False
-                for i in range(1, 16):
+                for i in range(1, self.lim_num_dim):
                     _tags = [aseq_id + '_' + str(i), acomp_id + '_' + str(i), asym_id + '_' + str(i), seq_id + '_' + str(i), chain_id + '_' + str(i)]
                     _tags_ = [aseq_id + '_' + str(i), acomp_id + '_' + str(i), asym_id + '_' + str(i), seq_id + '_' + str(i)]
                     if set(_tags) & set(loop.tags) == set(_tags):
@@ -1510,7 +1513,7 @@ class NEFTranslator(object):
                 pair_data = get_lp_tag(loop, tags)
             else:
                 _tags_exist = False
-                for i in range(1, 16):
+                for i in range(1, self.lim_num_dim):
                     _tags = [comp_id + '_' + str(i), atom_id + '_' + str(i)]
                     if set(_tags) & set(loop.tags) == set(_tags):
                         _tags_exist = True
@@ -4463,7 +4466,7 @@ class NEFTranslator(object):
 
         out_tags = []
 
-        for j in range(1, 16):
+        for j in range(1, self.lim_num_dim):
 
             if file_type == 'nef':
                 chain_tag_suffix = '.chain_code_%s' % j
@@ -4499,7 +4502,7 @@ class NEFTranslator(object):
 
         out_tags = []
 
-        for j in range(1, 16):
+        for j in range(1, self.lim_num_dim):
 
             if file_type == 'nef':
                 chain_tag_suffix = '.chain_code_%s' % j

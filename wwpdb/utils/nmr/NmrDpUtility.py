@@ -5041,7 +5041,7 @@ class NmrDpUtility(object):
 
                 if not sf_category is None and not sf_category in self.sf_categories[file_type].values():
 
-                    warn = "Skipped parsing %r saveframe category." % sf_category
+                    warn = "Ignored third party software's saveframe %r." % sf_category
 
                     self.report.warning.appendDescription('skipped_saveframe_category', {'file_name': file_name, 'sf_category': sf_category, 'description': warn})
                     self.report.setWarning()
@@ -8121,7 +8121,7 @@ class NmrDpUtility(object):
 
                         elif lp_category in self.linked_lp_categories[file_type][content_subtype]:
 
-                            warn = "Skipped parsing %r loop in %r saveframe." % (lp_category, sf_framecode)
+                            warn = "Ignored %r loop in %r saveframe." % (lp_category, sf_framecode)
 
                             self.report.warning.appendDescription('skipped_loop_category', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
                             self.report.setWarning()
@@ -8130,7 +8130,14 @@ class NmrDpUtility(object):
                                 self.__lfh.write("+NmrDpUtility.__testDataConsistencyInAuxLoop() ++ Warning  - %s\n" % warn)
 
                         else:
-                            pass # DAOTHER-5896
+
+                            warn = "Ignored third party software's loop %r in %r saveframe." % (lp_category, sf_framecode)
+
+                            self.report.warning.appendDescription('skipped_loop_category', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
+                            self.report.setWarning()
+
+                            if self.__verbose:
+                                self.__lfh.write("+NmrDpUtility.__testDataConsistencyInAuxLoop() ++ Warning  - %s\n" % warn)
                             """
                             err = "%r loop exists unexpectedly." % lp_category
 
@@ -17936,7 +17943,7 @@ class NmrDpUtility(object):
         if not self.__combined_mode:
             return False
 
-        for sf_category in self.__sf_category_list:
+        for sf_category in self.__sf_category_list: # DAOTHER-5896
 
             for sf_data in self.__star_data[0].get_saveframes_by_category(sf_category):
 
@@ -18443,7 +18450,7 @@ class NmrDpUtility(object):
                     self.__updateAuthSequence__(loop, tags)
 
                 else:
-                    for i in range(1, 16):
+                    for i in range(1, self.lim_num_dim):
                         _tags = [t + '_' + str(i) for t in tags]
 
                         if set(_tags) & set(loop.tags) == set(_tags):

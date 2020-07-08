@@ -13,6 +13,7 @@
 # 23-Apr-2020  M. Yokochi - add a unit test for DAOTHER-5610
 # 13-May-2020  M. Yokochi - add a unit test for DAOTHER-5673
 # 15-May-2020  M. Yokochi - add a unit test for DAOTHER-5687
+# 08-Jul-2020  M. Yokochi - add unit tests for DAOTHER-5910 and 5926
 #
 import unittest
 import os
@@ -58,7 +59,9 @@ class TestNmrDpUtility(unittest.TestCase):
                              'daother-5609': ['D_1000248498_cs-upload_P1.str.V1'],
                              'daother-5610': ['6jpp_cs.str'], #['6jpp_mod_cs.str'],
                              'daother-5673': ['D_1000249191_cs-upload_P1.str.V1'],
-                             'daother-5687': ['2la6.str']
+                             'daother-5687': ['2la6.str'],
+                             'daother-5910': ['D_1000225716_cs_P1.cif.V4'],
+                             'daother-5926': ['swallow_NMR-Star_3-1.str']
                              }
         self.model_file_path = {'data': '2la6.cif',
                                 'sf': '2la6.cif',
@@ -90,7 +93,9 @@ class TestNmrDpUtility(unittest.TestCase):
                                 'daother-5609': 'D_1000248498_model-upload_P1.cif.V1',
                                 'daother-5610': '6jpp.cif',
                                 'daother-5673': 'D_1000249191_model-upload_P1.cif.V1',
-                                'daother-5687': '2la6.cif'
+                                'daother-5687': '2la6.cif',
+                                'daother-5910': 'D_1000225716_model_P1.cif.V22',
+                                'daother-5926': 'D_800365_model_P1.cif.V4'
                                 }
         self.utility = NmrDpUtility()
         pass
@@ -218,6 +223,12 @@ class TestNmrDpUtility(unittest.TestCase):
 
     def test_nmr_cs_str_consistency_check_daother_5687(self):
         self.__test_nmr_cs_str_consistency('daother-5687')
+
+    def test_nmr_cs_str_consistency_check_daother_5910(self):
+        self.__test_nmr_cs_str_consistency('daother-5910')
+
+    def test_nmr_cs_str_consistency_check_daother_5926(self):
+        self.__test_nmr_cs_str_consistency('daother-5926')
 
 if __name__ == '__main__':
     unittest.main()

@@ -43,7 +43,7 @@ class TestNmrDpUtility(unittest.TestCase):
             print('%s: %s' % (entry_id, report['information']['status']))
         elif 'format_issue' in report['error']:
             print('%s: %s\n format_issue: %s' % (entry_id, report['information']['status'], report['error']['format_issue'][0]['description']))
-        elif not report['error']['missing_mandatory_content'] is None:
+        elif 'missing_mandatory_content' in report['error']:
             print('%s: %s\n missing_mandatory_content: %s' % (entry_id, report['information']['status'], report['error']['missing_mandatory_content'][0]['description']))
         else:
             error_type = {str(k): len(v) for k, v in report['error'].items() if str(k) != 'total'}
@@ -76,7 +76,7 @@ class TestNmrDpUtility(unittest.TestCase):
             print('%s: %s' % (entry_id, report['information']['status']))
         elif 'format_issue' in report['error']:
             print('%s: %s\n format_issue: %s' % (entry_id, report['information']['status'], report['error']['format_issue'][0]['description']))
-        elif not report['error']['missing_mandatory_content'] is None:
+        elif 'missing_mandatory_content' in report['error']:
             print('%s: %s\n missing_mandatory_content: %s' % (entry_id, report['information']['status'], report['error']['missing_mandatory_content'][0]['description']))
         else:
             error_type = {str(k): len(v) for k, v in report['error'].items() if str(k) != 'total'}

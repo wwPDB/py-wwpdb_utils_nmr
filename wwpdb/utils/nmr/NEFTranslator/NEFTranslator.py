@@ -45,6 +45,7 @@
 # 26-Jun-2020  M. Yokochi - support bidirectional conversion between _nef_covalent_links and _Bond (v2.4.0)
 # 30-Jun-2020  M. Yokochi - skip third party loops and items gracefully (v2.5.0, DAOTHER-5896)
 # 30-Jun-2020  M. Yokochi - support bidirectional conversion between _nef_peak and _Peak_row_format (v2.5.0, DAOTHER-5896)
+# 08-Jul-2020  M. Yokochi - add support for _Gen_dist_constraint.Distance_val, _RDC_constraint.RDC_val, and _RDC_constraint.RDC_val_err (v2.6.0, DAOTHER-5926)
 ##
 import sys
 import os
@@ -65,7 +66,7 @@ from wwpdb.utils.nmr.io.ChemCompIo import ChemCompReader
 from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
 from wwpdb.utils.nmr.NmrDpReport import NmrDpReport
 
-__version__ = '2.5.0'
+__version__ = '2.6.0'
 
 __pynmrstar_v3__ = version.parse(pynmrstar.__version__) >= version.parse("3.0.0")
 
@@ -126,15 +127,20 @@ def get_idx_msg(idx_tag_ids, tags, ent):
         @return: description
     """
 
-    idx_msg = ''
+    try:
 
-    if len(idx_tag_ids) > 0:
-        for _j in idx_tag_ids:
-            idx_msg += tags[_j] + " " + str(ent[tags[_j]]) + ", "
+        idx_msg = ''
 
-        idx_msg = '[Check row of ' + idx_msg[:-2] + '] '
+        if len(idx_tag_ids) > 0:
+            for _j in idx_tag_ids:
+                idx_msg += tags[_j] + " " + str(ent[tags[_j]]) + ", "
 
-    return idx_msg
+            idx_msg = '[Check row of ' + idx_msg[:-2] + '] '
+
+        return idx_msg
+
+    except KeyError:
+        return ''
 
 class NEFTranslator(object):
     """ Bi-directional translator between NEF and NMR-STAR
@@ -1951,25 +1957,26 @@ class NEFTranslator(object):
             for d in data_items:
                 if 'group-mandatory' in d and d['group-mandatory']:
                     group = d['group']
-                    for m in group['member-with']:
-                        if not m in allowed_tags:
-                            raise Error("Member data item %s of %s must exists in allowed tags." % (m, d['name']))
+                    if not group['member-with'] is None:
+                        for m in group['member-with']:
+                            if not m in allowed_tags:
+                                raise ValueError("Member data item %s of %s must exists in allowed tags." % (m, d['name']))
                     if not group['coexist-with'] is None:
                         for c in group['coexist-with']:
                             if not c in allowed_tags:
-                                raise Error("Coexisting data item %s of %s must exists in allowed tags." % (c, d['name']))
+                                raise ValueError("Coexisting data item %s of %s must exists in allowed tags." % (c, d['name']))
                     if 'smaller-than' in group and group['smaller-than']:
                         for s in group['smaller-than']:
                             if not s in allowed_tags:
-                                raise Error("Smaller data item %s of %s must exists in allowed tags." % (s, d['name']))
+                                raise ValueError("Smaller data item %s of %s must exists in allowed tags." % (s, d['name']))
                     if 'larger-than' in group and group['larger-than']:
                         for l in group['larger-than']:
                             if not l in allowed_tags:
-                                raise Error("Larger data item %s of %s must exists in allowed tags." % (l, d['name']))
+                                raise ValueError("Larger data item %s of %s must exists in allowed tags." % (l, d['name']))
                     if 'not-equal-to' in group and group['not-equal-to']:
                         for l in group['not-equal-to']:
                             if not l in allowed_tags:
-                                raise Error("Nonequal data item %s of %s must exists in allowed tags." % (l, d['name']))
+                                raise ValueError("Nonequal data item %s of %s must exists in allowed tags." % (l, d['name']))
 
         for loop in loops:
             tag_data = []
@@ -2040,7 +2047,7 @@ class NEFTranslator(object):
                                     missing_tags = list(set(group['coexist-with']).add(name) - set(loop.tags))
                                     raise LookupError("Missing mandatory %s loop tag%s." % (missing_tags, 's' if len(missing_tags) > 1 else ''))
 
-                    else:
+                    elif not group['member-with'] is None:
                         has_member = False
                         for m in group['member-with']:
                             if m in loop.tags:
@@ -2326,7 +2333,7 @@ class NEFTranslator(object):
                                 _range = k['range']
                                 ent[name] = float(val)
                             except KeyError:
-                                raise Error('Range of key item %s is not defined' % name)
+                                raise ValueError('Range of key item %s is not defined' % name)
                             except:
                                 if excl_missing_data:
                                     missing_mandatory_data = True
@@ -2383,7 +2390,7 @@ class NEFTranslator(object):
                                         user_warn_msg += "[Enumeration error] %s%s '%s' should be one of %s.\n" % (get_idx_msg(idx_tag_ids, tags, ent), name, val, enum)
                                 ent[name] = val
                             except KeyError:
-                                raise Error('Enumeration of key item %s is not defined' % name)
+                                raise ValueError('Enumeration of key item %s is not defined' % name)
                         elif type == 'enum-int':
                             try:
                                 enum = k['enum']
@@ -2394,7 +2401,7 @@ class NEFTranslator(object):
                                         user_warn_msg += "[Enumeration error] %s%s '%s' should be one of %s.\n" % (get_idx_msg(idx_tag_ids, tags, ent), name, val, enum)
                                 ent[name] = int(val)
                             except KeyError:
-                                raise Error('Enumeration of key item %s is not defined' % name)
+                                raise ValueError('Enumeration of key item %s is not defined' % name)
                             except:
                                 if excl_missing_data:
                                     missing_mandatory_data = True
@@ -2514,7 +2521,7 @@ class NEFTranslator(object):
                                         _range = d['range']
                                         ent[name] = float(val)
                                     except KeyError:
-                                        raise Error('Range of data item %s is not defined' % name)
+                                        raise ValueError('Range of data item %s is not defined' % name)
                                     except:
                                         if excl_missing_data:
                                             ent[name] = None
@@ -2571,7 +2578,7 @@ class NEFTranslator(object):
                                                 user_warn_msg += "[Enumeration error] %s%s '%s' should be one of %s.\n" % (get_idx_msg(idx_tag_ids, tags, ent), name, val, enum)
                                         ent[name] = val
                                     except KeyError:
-                                        raise Error('Enumeration of data item %s is not defined' % name)
+                                        raise ValueError('Enumeration of data item %s is not defined' % name)
                                 elif type == 'enum-int':
                                     try:
                                         enum = d['enum']
@@ -2582,7 +2589,7 @@ class NEFTranslator(object):
                                                 user_warn_msg += "[Enumeration error] %s%s '%s' should be one of %s.\n" % (get_idx_msg(idx_tag_ids, tags, ent), name, val, enum)
                                         ent[name] = int(val)
                                     except KeyError:
-                                        raise Error('Enumeration of data item %s is not defined' % name)
+                                        raise ValueError('Enumeration of data item %s is not defined' % name)
                                     except:
                                         if excl_missing_data:
                                             ent[name] = None
@@ -2630,14 +2637,16 @@ class NEFTranslator(object):
                                         if ent[name] == ent[n]:
                                             raise ValueError("%sData item %s '%s' must not be equal to %s '%s'." % (get_idx_msg(idx_tag_ids, tags, ent), name, ent[name], n, ent[n]))
 
-                        else:
+                        elif not group['member-with'] is None:
                             has_member = False
                             for m in group['member-with']:
                                 if m in ent and not ent[m] is None:
                                     has_member = True
                                     break
                             if not has_member:
-                                raise ValueError("%sOne of data items %s must not be empty." % (get_idx_msg(idx_tag_ids, tags, ent), set(group['member-with']).add(name)))
+                                member = set(group['member-with'])
+                                member.add(name)
+                                raise ValueError("%sOne of data items %s must not be empty." % (get_idx_msg(idx_tag_ids, tags, ent), member))
 
                 if missing_mandatory_data:
                     continue
@@ -2900,25 +2909,26 @@ class NEFTranslator(object):
             for t in tag_items:
                 if 'group-mandatory' in t and t['group-mandatory']:
                     group = t['group']
-                    for m in group['member-with']:
-                        if not m in allowed_tags:
-                            raise Error("Member tag item %s of %s must exists in allowed tags." % (m, t['name']))
+                    if not group['member-with'] is None:
+                        for m in group['member-with']:
+                            if not m in allowed_tags:
+                                raise ValueError("Member tag item %s of %s must exists in allowed tags." % (m, t['name']))
                     if not group['coexist-with'] is None:
                         for c in group['coexist-with']:
                             if not c in allowed_tags:
-                                raise Error("Coexisting tag item %s of %s must exists in allowed tags." % (c, t['name']))
+                                raise ValueError("Coexisting tag item %s of %s must exists in allowed tags." % (c, t['name']))
                     if 'smaller-than' in group and group['smaller-than']:
                         for s in group['smaller-than']:
                             if not s in allowed_tags:
-                                raise Error("Smaller tag item %s of %s must exists in allowed tags." % (s, t['name']))
+                                raise ValueError("Smaller tag item %s of %s must exists in allowed tags." % (s, t['name']))
                     if 'larger-than' in group and group['larger-than']:
                         for l in group['larger-than']:
                             if not l in allowed_tags:
-                                raise Error("Larger tag item %s of %s must exists in allowed tags." % (l, t['name']))
+                                raise ValueError("Larger tag item %s of %s must exists in allowed tags." % (l, t['name']))
                     if 'not-equal-to' in group and group['not-equal-to']:
                         for l in group['not-equal-to']:
                             if not l in allowed_tags:
-                                raise Error("Nonequal tag item %s of %s must exists in allowed tags." % (l, t['name']))
+                                raise ValueError("Nonequal tag item %s of %s must exists in allowed tags." % (l, t['name']))
 
         sf_tags = {i[0]:i[1] for i in star_data.tags}
 
@@ -2937,7 +2947,7 @@ class NEFTranslator(object):
                                 missing_tags = list(set(group['coexist-with']).add(name) - set(sf_tags.keys()))
                                 raise LookupError("Missing mandatory %s saveframe tag%s." % (missing_tags, 's' if len(missing_tags) > 1 else ''))
 
-                else:
+                elif not group['member-with'] is None:
                     has_member = False
                     for m in group['member-with']:
                         if m in sf_tags.keys():
@@ -3019,7 +3029,7 @@ class NEFTranslator(object):
                             _range = t['range']
                             ent[name] = float(val)
                         except KeyError:
-                            raise Error('Range of tag item %s is not defined.' % name)
+                            raise ValueError('Range of tag item %s is not defined.' % name)
                         except:
                             if not enforce_range:
                                 ent[name] = None
@@ -3082,7 +3092,7 @@ class NEFTranslator(object):
                                     user_warn_msg += "[Enumeration error] %s '%s' should be one of %s.\n" % (name, val, enum)
                             ent[name] = None if val in self.empty_value else val
                         except KeyError:
-                            raise Error('Enumeration of tag item %s is not defined.' % name)
+                            raise ValueError('Enumeration of tag item %s is not defined.' % name)
                     elif type == 'enum-int':
                         try:
                             enum = t['enum']
@@ -3093,7 +3103,7 @@ class NEFTranslator(object):
                                     user_warn_msg += "[Enumeration error] %s '%s' should be one of %s.\n" % (name, val, enum)
                             ent[name] = int(val)
                         except KeyError:
-                            raise Error('Enumeration of tag item %s is not defined.' % name)
+                            raise ValueError('Enumeration of tag item %s is not defined.' % name)
                         except:
                             raise ValueError("%s '%s' must be %s." % (name, val, self.readable_item_type[type]))
                     else:
@@ -3134,14 +3144,16 @@ class NEFTranslator(object):
                                     if ent[name] == ent[n]:
                                         raise ValueError("Tag item %s '%s' must not be equal to %s '%s'." % (name, ent[name], n, ent[n]))
 
-                    else:
+                    elif not group['member-with'] is None:
                         has_member = False
                         for m in group['member-with']:
                             if m in ent and not ent[m] is None:
                                 has_member = True
                                 break
                         if not has_member:
-                            raise ValueError("One of tag items %s must not be empty." % set(group['member-with']).add(name))
+                            member = set(group['member-with'])
+                            member.add(name)
+                            raise ValueError("One of tag items %s must not be empty." % member)
 
         if len(user_warn_msg) > 0:
             raise UserWarning(user_warn_msg)
@@ -6155,6 +6167,9 @@ class NEFTranslator(object):
 
                             lp = pynmrstar.Loop.from_scratch()
                             tags = self.get_nef_loop_tags(loop.get_tag_names())
+                            tag_set = set(tags)
+                            if len(tags) > len(tag_set):
+                                tags = list(tag_set)
                             for tag in tags:
                                 lp.add_tag(tag)
 
@@ -6308,6 +6323,9 @@ class NEFTranslator(object):
 
                         lp = pynmrstar.Loop.from_scratch()
                         tags = self.get_nef_loop_tags(loop.get_tag_names())
+                        tag_set = set(tags)
+                        if len(tags) > len(tag_set):
+                            tags = list(tag_set)
                         for tag in tags:
                             lp.add_tag(tag)
 

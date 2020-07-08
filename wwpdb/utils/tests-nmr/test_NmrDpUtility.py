@@ -9,6 +9,7 @@
 # 24-Mar-2020  M. Yokochi - add unit test for chemical shift reference (DAOTHER-1682)
 # 14-May-2020  M. Yokochi - add unit tests for missing mandatory content (DAOTHER-5681 and 5682)
 # 30-May-2020  M. Yokochi - add unit test for detection of total number of models (DAOTHER-5650)
+# 08-Jul-2020  M. Yokochi - add unit test for combined NMR-STAR (DAOTHER-5926)
 #
 import unittest
 import os
@@ -178,6 +179,16 @@ class TestNmrDpUtility(unittest.TestCase):
         self.utility.setSource(self.data_dir_path + 'merged_30562_6nox.str')
         self.utility.addInput(name='coordinate_file_path', value=self.data_dir_path + '6nox.cif', type='file')
         self.utility.setLog(self.data_dir_path + 'merged_30562_6nox-str-consistency-log.json')
+
+        self.utility.op('nmr-str-consistency-check')
+
+    def test_nmr_nef_consistency_check_daother_5926(self):
+        self.utility.setSource(self.data_dir_path + 'swallow_NMR-Star_3-1.str')
+        self.utility.addInput(name='coordinate_file_path', value=self.data_dir_path + 'D_800365_model_P1.cif.V4', type='file')
+        self.utility.addInput(name='resolve_conflict', value=True, type='param')
+        self.utility.addInput(name='check_mandatory_tag', value=False, type='param')
+        self.utility.setLog(self.data_dir_path + 'daother-5926-str-consistency-log.json')
+        self.utility.setVerbose(False)
 
         self.utility.op('nmr-str-consistency-check')
 

@@ -2349,14 +2349,14 @@ class NEFTranslator(object):
                                         if not enforce_range:
                                             ent[name] = None
                                         else:
-                                            user_warn_msg += "[Range value error] %s%s '%s' must be within range %s." % (get_idx_msg(idx_tag_ids, tags, ent), name, val, _range)
+                                            user_warn_msg += "[Range value error] %s%s '%s' must be within range %s.\n" % (get_idx_msg(idx_tag_ids, tags, ent), name, val, _range)
                                     elif enforce_sign:
                                         user_warn_msg += "[Negative value error] %s%s '%s' should not have negative value for %s, %s.\n" % (get_idx_msg(idx_tag_ids, tags, ent), name, val, self.readable_item_type[type], _range)
                                 elif ent[name] == 0.0 and 'enforce-non-zero' in k and k['enforce-non-zero']:
                                     if not enforce_range:
                                         ent[name] = None
                                     else:
-                                        user_warn_msg += "[Range value error] %s%s '%s' must be within range %s." % (get_idx_msg(idx_tag_ids, tags, ent), name, val, _range)
+                                        user_warn_msg += "[Range value error] %s%s '%s' must be within range %s.\n" % (get_idx_msg(idx_tag_ids, tags, ent), name, val, _range)
                                 elif ent[name] == 0.0 and enforce_non_zero:
                                     if 'void-zero' in k:
                                         if self.replace_zero_by_null_in_case:
@@ -2372,7 +2372,7 @@ class NEFTranslator(object):
                                 elif not enforce_range:
                                     ent[name] = None
                                 else:
-                                    user_warn_msg += "[Range value error] %s%s '%s' must be within range %s." % (get_idx_msg(idx_tag_ids, tags, ent), name, val, _range)
+                                    user_warn_msg += "[Range value error] %s%s '%s' must be within range %s.\n" % (get_idx_msg(idx_tag_ids, tags, ent), name, val, _range)
                         elif type == 'enum':
                             try:
                                 enum = k['enum']
@@ -2537,14 +2537,14 @@ class NEFTranslator(object):
                                                 if not enforce_range:
                                                     ent[name] = None
                                                 else:
-                                                    user_warn_msg += "[Range value error] %s%s '%s' must be within range %s." % (get_idx_msg(idx_tag_ids, tags, ent), name, val, _range)
+                                                    user_warn_msg += "[Range value error] %s%s '%s' must be within range %s.\n" % (get_idx_msg(idx_tag_ids, tags, ent), name, val, _range)
                                             elif enforce_sign:
                                                 user_warn_msg += "[Negative value error] %s%s '%s' should not have negative value for %s, %s.\n" % (get_idx_msg(idx_tag_ids, tags, ent), name, val, self.readable_item_type[type], _range)
                                         elif ent[name] == 0.0 and 'enforce-non-zero' in d and d['enforce-non-zero']:
                                             if not enforce_range:
                                                 ent[name] = None
                                             else:
-                                                user_warn_msg += "[Range value error] %s%s '%s' must be within range %s." % (get_idx_msg(idx_tag_ids, tags, ent), name, val, _range)
+                                                user_warn_msg += "[Range value error] %s%s '%s' must be within range %s.\n" % (get_idx_msg(idx_tag_ids, tags, ent), name, val, _range)
                                         elif ent[name] == 0.0 and enforce_non_zero:
                                             if 'void-zero' in d:
                                                 if self.replace_zero_by_null_in_case:
@@ -2560,7 +2560,7 @@ class NEFTranslator(object):
                                         elif not enforce_range:
                                             ent[name] = None
                                         else:
-                                            user_warn_msg += "[Range value error] %s%s '%s' must be within range %s." % (get_idx_msg(idx_tag_ids, tags, ent), name, val, _range)
+                                            user_warn_msg += "[Range value error] %s%s '%s' must be within range %s.\n" % (get_idx_msg(idx_tag_ids, tags, ent), name, val, _range)
                                 elif type == 'enum':
                                     try:
                                         enum = d['enum']
@@ -3042,14 +3042,14 @@ class NEFTranslator(object):
                                     if not enforce_range:
                                         ent[name] = None
                                     else:
-                                        user_warn_msg += "[Range value error] %s '%s' must be within range %s." % (name, val, _range)
+                                        user_warn_msg += "[Range value error] %s '%s' must be within range %s.\n" % (name, val, _range)
                                 elif enforce_sign:
                                     user_warn_msg += "[Negative value error] %s '%s' should not have negative value for %s, %s.\n" % (name, val, self.readable_item_type[type], _range)
                             elif ent[name] == 0.0 and 'enforce-non-zero' in t and t['enforce-non-zero']:
                                 if not enforce_range:
                                     ent[name] = None
                                 else:
-                                    user_warn_msg += "[Range value error] %s '%s' must be within range %s." % (name, val, _range)
+                                    user_warn_msg += "[Range value error] %s '%s' must be within range %s.\n" % (name, val, _range)
                             elif ent[name] == 0.0 and enforce_non_zero:
                                 if 'void-zero' in t:
                                     if self.replace_zero_by_null_in_case:
@@ -3065,7 +3065,7 @@ class NEFTranslator(object):
                             elif not enforce_range:
                                 ent[name] = None
                             else:
-                                user_warn_msg += "[Range value error] %s '%s' must be within range %s." % (name, val, _range)
+                                user_warn_msg += "[Range value error] %s '%s' must be within range %s.\n" % (name, val, _range)
                     elif type == 'enum':
                         if val in self.empty_value:
                             val = '?' # '.' raises internal error in NmrDpUtility

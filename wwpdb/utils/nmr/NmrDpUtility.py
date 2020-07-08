@@ -696,7 +696,7 @@ class NmrDpUtility(object):
         self.true_value = ('true', 't', 'yes', 'y', '1')
 
         # NMR content types
-        self.nmr_content_subtypes = ('entry_info', 'poly_seq', 'entity', 'chem_shift', 'chem_shift_ref', 'dist_restraint', 'dihed_restraint', 'rdc_restraint', 'spectral_peak')
+        self.nmr_content_subtypes = ('entry_info', 'poly_seq', 'entity', 'chem_shift', 'chem_shift_ref', 'dist_restraint', 'dihed_restraint', 'rdc_restraint', 'spectral_peak', 'spectral_peak_alt')
 
         # CIF content types
         self.cif_content_subtypes = ('poly_seq', 'non_poly', 'coordinate')
@@ -757,7 +757,8 @@ class NmrDpUtility(object):
                                       'dist_restraint': 'nef_distance_restraint_list',
                                       'dihed_restraint': 'nef_dihedral_restraint_list',
                                       'rdc_restraint': 'nef_rdc_restraint_list',
-                                      'spectral_peak': 'nef_nmr_spectrum'
+                                      'spectral_peak': 'nef_nmr_spectrum',
+                                      'spectral_peak_alt': None
                                       },
                               'nmr-star': {'entry_info': 'entry_information',
                                            'poly_seq': 'assembly',
@@ -768,7 +769,8 @@ class NmrDpUtility(object):
                                            'dist_restraint': 'general_distance_constraints',
                                            'dihed_restraint': 'torsion_angle_constraints',
                                            'rdc_restraint': 'RDC_constraints',
-                                           'spectral_peak': 'spectral_peak_list'
+                                           'spectral_peak': 'spectral_peak_list',
+                                           'spectral_peak_alt': 'spectral_peak_list'
                                            }
                               }
 
@@ -781,7 +783,8 @@ class NmrDpUtility(object):
                                       'dist_restraint': '_nef_distance_restraint',
                                       'dihed_restraint': '_nef_dihedral_restraint',
                                       'rdc_restraint': '_nef_rdc_restraint',
-                                      'spectral_peak': '_nef_peak'
+                                      'spectral_peak': '_nef_peak',
+                                      'spectral_peak_alt': None
                                       },
                               'nmr-star': {'entry_info': '_Software_applied_methods',
                                            'poly_seq': '_Chem_comp_assembly',
@@ -791,7 +794,8 @@ class NmrDpUtility(object):
                                            'dist_restraint': '_Gen_dist_constraint',
                                            'dihed_restraint': '_Torsion_angle_constraint',
                                            'rdc_restraint': '_RDC_constraint',
-                                           'spectral_peak': '_Peak_row_format'
+                                           'spectral_peak': '_Peak_row_format',
+                                           'spectral_peak_alt': '_Peak'
                                            },
                               'pdbx': {'poly_seq': 'pdbx_poly_seq_scheme',
                                        'non_poly': 'pdbx_nonpoly_scheme',
@@ -860,7 +864,8 @@ class NmrDpUtility(object):
                                    'dist_restraint': 'index',
                                    'dihed_restraint': 'index',
                                    'rdc_restraint': 'index',
-                                   'spectral_peak': 'index'
+                                   'spectral_peak': 'index',
+                                   'spectral_peak_alt': None
                                    },
                            'nmr-star': {'entry_info': None,
                                         'poly_seq': None,
@@ -870,7 +875,8 @@ class NmrDpUtility(object):
                                         'dist_restraint': 'Index_ID',
                                         'dihed_restraint': 'Index_ID',
                                         'rdc_restraint': 'Index_ID',
-                                        'spectral_peak': 'Index_ID'
+                                        'spectral_peak': 'Index_ID',
+                                        'spectral_peak_alt': None
                                         },
                            'pdbx': {'poly_seq': None,
                                     'non_poly': None,
@@ -887,7 +893,8 @@ class NmrDpUtility(object):
                                     'dist_restraint': 'weight',
                                     'dihed_restraint': 'weight',
                                     'rdc_restraint': 'weight',
-                                    'spectral_peak': None
+                                    'spectral_peak': None,
+                                    'spectral_peak_alt': None
                                     },
                             'nmr-star': {'entry_info': None,
                                          'poly_seq': None,
@@ -897,7 +904,8 @@ class NmrDpUtility(object):
                                          'dist_restraint': 'Weight',
                                          'dihed_restraint': 'Weight',
                                          'rdc_restraint': 'Weight',
-                                         'spectral_peak': None
+                                         'spectral_peak': None,
+                                         'spectral_peak_alt': None
                                          },
                             'pdbx': {'poly_seq': None,
                                      'non_poly': None,
@@ -914,12 +922,14 @@ class NmrDpUtility(object):
         self.consist_id_tags = {'nef': {'dist_restraint': 'restraint_id',
                                         'dihed_restraint': 'restraint_id',
                                         'rdc_restraint': 'restraint_id',
-                                        'spectral_peak': 'peak_id'
+                                        'spectral_peak': 'peak_id',
+                                        'spectral_peak_alt': None
                                         },
                                 'nmr-star': {'dist_restraint': 'ID',
                                              'dihed_restraint': 'ID',
                                              'rdc_restraint': 'ID',
-                                             'spectral_peak': 'ID'
+                                             'spectral_peak': 'ID',
+                                             'spectral_peak_alt': 'ID'
                                              }
                                 }
 
@@ -973,7 +983,8 @@ class NmrDpUtility(object):
                                                     {'name': 'residue_name_2', 'type': 'str', 'uppercase': True},
                                                     {'name': 'atom_name_2', 'type': 'str'}
                                                     ],
-                                  'spectral_peak': None
+                                  'spectral_peak': None,
+                                  'spectral_peak_alt': None
                                   },
                           'nmr-star': {'poly_seq': [{'name': 'Entity_assembly_ID', 'type': 'positive-int', 'default': '1', 'default-from': 'self'},
                                                     {'name': 'Comp_index_ID', 'type': 'int'},
@@ -1028,7 +1039,10 @@ class NmrDpUtility(object):
                                                          {'name': 'Comp_ID_2', 'type': 'str', 'uppercase': True},
                                                          {'name': 'Atom_ID_2', 'type': 'str'}
                                                          ],
-                                       'spectral_peak': None
+                                       'spectral_peak': None,
+                                       'spectral_peak_alt': [{'name': 'ID', 'type': 'positive-int'},
+                                                             {'name': 'Spectral_peak_list_ID', 'type': 'positive-int', 'default': '1', 'default-from': 'self'}
+                                                            ]
                                        },
                           'pdbx': {'poly_seq': [{'name': 'asym_id', 'type': 'str', 'alt_name': 'chain_id'},
                                                 {'name': 'seq_id', 'type': 'int', 'alt_name': 'seq_id'},
@@ -1095,7 +1109,8 @@ class NmrDpUtility(object):
                                                             {'name': 'residue_name_2', 'type': 'str', 'uppercase': True},
                                                             {'name': 'atom_name_2', 'type': 'str'}
                                                             ],
-                                          'spectral_peak': None
+                                          'spectral_peak': None,
+                                          'spectral_peak_alt': None
                                           },
                                   'nmr-star': {'dist_restraint': [{'name': 'Entity_assembly_ID_1', 'type': 'positive-int', 'default': '1', 'default-from': 'self'},
                                                                   {'name': 'Comp_index_ID_1', 'type': 'int'},
@@ -1133,7 +1148,8 @@ class NmrDpUtility(object):
                                                                  {'name': 'Comp_ID_2', 'type': 'str', 'uppercase': True},
                                                                  {'name': 'Atom_ID_2', 'type': 'str'}
                                                                  ],
-                                               'spectral_peak': None
+                                               'spectral_peak': None,
+                                               'spectral_peak_alt': None
                                                }
                                   }
 
@@ -1308,7 +1324,8 @@ class NmrDpUtility(object):
                                                       'group': {'member-with': ['volume'],
                                                                 'coexist-with': None}},
                                                      {'name': 'height_uncertainty', 'type': 'positive-float', 'mandatory': False, 'void-zero': True}
-                                                     ]
+                                                     ],
+                                   'spectral_peak_alt': None
                                    },
                            'nmr-star': {'poly_seq': [{'name': 'Auth_asym_ID', 'type': 'str', 'mandatory': False},
                                                      {'name': 'Auth_seq_ID', 'type': 'int', 'mandatory': False},
@@ -1565,7 +1582,12 @@ class NmrDpUtility(object):
                                                                      'coexist-with': None}},
                                                           {'name': 'Height_uncertainty', 'type': 'positive-float', 'mandatory': False, 'void-zero': True},
                                                           {'name': 'Spectral_peak_list_ID', 'type': 'pointer-index', 'mandatory': True, 'default': '1'}
-                                                          ]
+                                                          ],
+                                        'spectral_peak_alt': [{'name': 'Index_ID', 'type': 'index-int', 'mandatory': False},
+                                                              {'name': 'ID', 'type': 'positive-int', 'mandatory': True,
+                                                               'enforce-non-zero': True},
+                                                              {'name': 'Spectral_peak_list_ID', 'type': 'pointer-index', 'mandatory': True, 'default': '1'}
+                                                              ]
                                         }
                            }
 
@@ -1669,7 +1691,8 @@ class NmrDpUtility(object):
                                                                         'smaller-than': ['lower_linear_limit', 'lower_limit'],
                                                                         'larger-than': ['upper_limit']}}
                                                              ],
-                                           'spectral_peak': None
+                                           'spectral_peak': None,
+                                           'spectral_peak_alt': None
                                            },
                                    'nmr-star': {'dist_restraint': [{'name': 'Target_val', 'type': 'range-float', 'mandatory': False, 'group-mandatory': True,
                                                                     'range': self.dist_restraint_range,
@@ -1784,7 +1807,8 @@ class NmrDpUtility(object):
                                                                   {'name': 'RDC_val_err', 'type': 'range-float', 'mandatory': False,
                                                                    'range': self.rdc_restraint_error}
                                                                   ],
-                                                'spectral_peak': None
+                                                'spectral_peak': None,
+                                                'spectral_peak_alt': None
                                                 }
                                    }
 
@@ -1885,7 +1909,8 @@ class NmrDpUtility(object):
                                                        'chain_code_9', 'sequence_code_9', 'residue_name_9', 'atom_name_9', 'chain_code_10', 'sequence_code_10', 'residue_name_10', 'atom_name_10',
                                                        'chain_code_11', 'sequence_code_11', 'residue_name_11', 'atom_name_11', 'chain_code_12', 'sequence_code_12', 'residue_name_12', 'atom_name_12',
                                                        'chain_code_13', 'sequence_code_13', 'residue_name_13', 'atom_name_13', 'chain_code_14', 'sequence_code_14', 'residue_name_14', 'atom_name_14',
-                                                       'chain_code_15', 'sequence_code_15', 'residue_name_15', 'atom_name_15']
+                                                       'chain_code_15', 'sequence_code_15', 'residue_name_15', 'atom_name_15'],
+                                     'spectral_peak_alt': None
                                      },
                              'nmr-star': {'entry_info': ['Software_ID', 'Software_label', 'Methods_ID', 'Methods_label', 'Software_name', 'Script_name', 'Script', 'Software_specific_info', 'Sf_ID', 'Entry_ID', 'Software_applied_list_ID'],
                                           'poly_seq': ['Assembly_chem_comp_ID', 'Entity_assembly_ID', 'Entity_ID', 'Comp_index_ID', 'Comp_ID', 'Seq_ID', 'Auth_entity_assembly_ID', 'Auth_asym_ID', 'Auth_seq_ID', 'Auth_comp_ID', 'Auth_variant_ID', 'Sequence_linking', 'Cis_residue', 'NEF_index', 'Sf_ID', 'Entry_ID', 'Assembly_ID'],
@@ -1944,7 +1969,8 @@ class NmrDpUtility(object):
                                                             'Auth_entity_assembly_ID_11', 'Auth_entity_ID_11', 'Auth_asym_ID_11', 'Auth_seq_ID_11', 'Auth_comp_ID_11', 'Auth_atom_ID_11', 'Auth_ambiguity_code_11', 'Auth_ambiguity_set_ID_11', 'Auth_entity_assembly_ID_12', 'Auth_entity_ID_12', 'Auth_asym_ID_12', 'Auth_seq_ID_12', 'Auth_comp_ID_12', 'Auth_atom_ID_12', 'Auth_ambiguity_code_12', 'Auth_ambiguity_set_ID_12',
                                                             'Auth_entity_assembly_ID_13', 'Auth_entity_ID_13', 'Auth_asym_ID_13', 'Auth_seq_ID_13', 'Auth_comp_ID_13', 'Auth_atom_ID_13', 'Auth_ambiguity_code_13', 'Auth_ambiguity_set_ID_13', 'Auth_entity_assembly_ID_14', 'Auth_entity_ID_14', 'Auth_asym_ID_14', 'Auth_seq_ID_14', 'Auth_comp_ID_14', 'Auth_atom_ID_14', 'Auth_ambiguity_code_14', 'Auth_ambiguity_set_ID_14',
                                                             'Auth_entity_assembly_ID_15', 'Auth_entity_ID_15', 'Auth_asym_ID_15', 'Auth_seq_ID_15', 'Auth_comp_ID_15', 'Auth_atom_ID_15', 'Auth_ambiguity_code_15', 'Auth_ambiguity_set_ID_15',
-                                                            'Details', 'Sf_ID', 'Entry_ID', 'Spectral_peak_list_ID']
+                                                            'Details', 'Sf_ID', 'Entry_ID', 'Spectral_peak_list_ID'],
+                                          'spectral_peak_alt': ['Index_ID', 'ID', 'Figure_of_merit', 'Restraint', 'Details', 'Sf_ID', 'Entry_ID', 'Spectral_peak_list_ID']
                                           }
                               }
 
@@ -1965,7 +1991,8 @@ class NmrDpUtility(object):
                                         'dist_restraint': '_nef_distance_restraint_list',
                                         'dihed_restraint': '_nef_dihedral_restraint_list',
                                         'rdc_restraint': '_nef_rdc_restraint_list',
-                                        'spectral_peak': '_nef_nmr_spectrum'
+                                        'spectral_peak': '_nef_nmr_spectrum',
+                                        'spectral_peak_alt': None,
                                         },
                                 'nmr-star': {'entry_info': '_Entry',
                                              'poly_seq': '_Assembly',
@@ -1975,7 +2002,8 @@ class NmrDpUtility(object):
                                              'dist_restraint': '_Gen_dist_constraint_list',
                                              'dihed_restraint': '_Torsion_angle_constraint_list',
                                              'rdc_restraint': '_RDC_constraint_list',
-                                             'spectral_peak': '_Spectral_peak_list'
+                                             'spectral_peak': '_Spectral_peak_list',
+                                             'spectral_peak_alt': '_Spectral_peak_list'
                                              }
                               }
 
@@ -2293,7 +2321,8 @@ class NmrDpUtility(object):
                                                        {'name': 'chemical_shift_list', 'type': 'str', 'mandatory': False},
                                                        {'name': 'experiment_classification', 'type': 'str', 'mandatory': False},
                                                        {'name': 'experiment_type', 'type': 'str', 'mandatory': False}
-                                                       ]
+                                                       ],
+                                     'spectral_peak_alt': None
                                      },
                              'nmr-star': {'entry_info': [{'name': 'Sf_category', 'type': 'str', 'mandatory': True},
                                                          {'name': 'Sf_framecode', 'type': 'str', 'mandatory': True},
@@ -2368,7 +2397,15 @@ class NmrDpUtility(object):
                                                              'enum': set(range(1, self.lim_num_dim)),
                                                              'enforce-enum': True},
                                                             {'name': 'Chemical_shift_list', 'type': 'str', 'mandatory': True}
-                                                            ]
+                                                            ],
+                                          'spectral_peak_alt': [{'name': 'Sf_category', 'type': 'str', 'mandatory': True},
+                                                                {'name': 'Sf_framecode', 'type': 'str', 'mandatory': True},
+                                                                {'name': 'Experiment_class', 'type': 'str', 'mandatory': False},
+                                                                {'name': 'Experiment_type', 'type': 'str', 'mandatory': False},
+                                                                {'name': 'Number_of_spectral_dimensions', 'type': 'enum-int', 'mandatory': True,
+                                                                 'enum': set(range(1, self.lim_num_dim)),
+                                                                 'enforce-enum': True}
+                                                                ]
                                           }
                              }
 
@@ -2381,7 +2418,8 @@ class NmrDpUtility(object):
                                       'dist_restraint': ['restraint_origin', 'potential_type'],
                                       'dihed_restraint': ['restraint_origin', 'potential_type'],
                                       'rdc_restraint': ['restraint_origin', 'potential_type'],
-                                      'spectral_peak': ['experiment_type']
+                                      'spectral_peak': ['experiment_type'],
+                                      'spectral_peak_alt': None
                                      },
                               'nmr-star': {'entry_info': None,
                                            'poly_seq': None,
@@ -2391,7 +2429,8 @@ class NmrDpUtility(object):
                                            'dist_restraint': ['Constraint_type', 'Potential_type'],
                                            'dihed_restraint': ['Constraint_type', 'Potential_type'],
                                            'rdc_restraint': ['Constraint_type', 'Potential_type'],
-                                           'spectral_peak': ['Experiment_type']
+                                           'spectral_peak': ['Experiment_type'],
+                                           'spectral_peak_alt': ['Experiment_type']
                                            }
                               }
 
@@ -2404,7 +2443,8 @@ class NmrDpUtility(object):
                                         'dist_restraint': ['sf_category', 'sf_framecode', 'potential_type', 'restraint_origin'],
                                         'dihed_restraint': ['sf_category', 'sf_framecode', 'potential_type', 'restraint_origin'],
                                         'rdc_restraint': ['sf_category', 'sf_framecode', 'potential_type', 'restraint_origin', 'tensor_magnitude', 'tensor_rhombicity', 'tensor_chain_code', 'tensor_sequence_code', 'tensor_residue_name'],
-                                        'spectral_peak': ['sf_category', 'sf_framecode', 'num_dimensions', 'chemical_shift_list', 'experiment_classification', 'experiment_type']
+                                        'spectral_peak': ['sf_category', 'sf_framecode', 'num_dimensions', 'chemical_shift_list', 'experiment_classification', 'experiment_type'],
+                                        'spectral_peak_alt': None
                                         },
                                 'nmr-star': {'entry_info': ['Sf_category', 'Sf_framecode', 'Sf_ID', 'ID', 'Title', 'Type', 'Version_type', 'Submission_date', 'Accession_date', 'Last_release_date', 'Original_release_date',
                                                             'Origination', 'Format_name', 'NMR_STAR_version', 'Original_NMR_STAR_version', 'Experimental_method', 'Experimental_method_subtype',
@@ -2431,7 +2471,9 @@ class NmrDpUtility(object):
                                                                'Mol_align_tensor_axial_sym_mol', 'Mol_align_tensor_rhombic_mol', 'General_order_param_int_motions',
                                                                'Bond_length_usage_flag', 'Assumed_H_N_bond_length', 'Assumed_H_C_bond_length', 'Assumed_C_N_bond_length', 'Data_file_format', 'Details', 'Text_data_format', 'Text_data'],
                                              'spectral_peak': ['Sf_category', 'Sf_framecode', 'Entry_ID', 'Sf_ID', 'ID', 'Name', 'Data_file_name', 'Sample_ID', 'Sample_label', 'Sample_condition_list_ID', 'Sample_condition_list_label',
-                                                               'Experiment_ID', 'Experiment_name', 'Experiment_class', 'Experiment_type', 'Number_of_spectral_dimensions', 'Chemical_shift_list', 'Assigned_chem_shift_list_ID', 'Assigned_chem_shift_list_label', 'Details', 'Text_data_format', 'Text_data']
+                                                               'Experiment_ID', 'Experiment_name', 'Experiment_class', 'Experiment_type', 'Number_of_spectral_dimensions', 'Chemical_shift_list', 'Assigned_chem_shift_list_ID', 'Assigned_chem_shift_list_label', 'Details', 'Text_data_format', 'Text_data'],
+                                             'spectral_peak_alt': ['Sf_category', 'Sf_framecode', 'Entry_ID', 'Sf_ID', 'ID', 'Name', 'Data_file_name', 'Sample_ID', 'Sample_label', 'Sample_condition_list_ID', 'Sample_condition_list_label',
+                                                                   'Experiment_ID', 'Experiment_name', 'Experiment_class', 'Experiment_type', 'Number_of_spectral_dimensions', 'Chemical_shift_list', 'Assigned_chem_shift_list_ID', 'Assigned_chem_shift_list_label', 'Details', 'Text_data_format', 'Text_data']
                                              }
                                 }
 
@@ -2447,7 +2489,8 @@ class NmrDpUtility(object):
                                           'dist_restraint': [],
                                           'dihed_restraint': [],
                                           'rdc_restraint': [],
-                                          'spectral_peak': ['_nef_spectrum_dimension', '_nef_spectrum_dimension_transfer']
+                                          'spectral_peak': ['_nef_spectrum_dimension', '_nef_spectrum_dimension_transfer'],
+                                          'spectral_peak_alt': []
                                           },
                                   'nmr-star': {'entry_info': [],
                                                'poly_seq':  ['_Bond'],
@@ -2458,7 +2501,8 @@ class NmrDpUtility(object):
                                                'dist_restraint': [],
                                                'dihed_restraint': [],
                                                'rdc_restraint': [],
-                                               'spectral_peak': ['_Spectral_dim', '_Spectral_dim_transfer']
+                                               'spectral_peak': ['_Spectral_dim', '_Spectral_dim_transfer'],
+                                               'spectral_peak_alt': ['_Spectral_dim', '_Spectral_dim_transfer']
                                                }
                                   }
 
@@ -2471,7 +2515,8 @@ class NmrDpUtility(object):
                                              'dist_restraint': ['_nef_distance_restraint'],
                                              'dihed_restraint': ['_nef_dihedral_restraint'],
                                              'rdc_restraint': ['_nef_rdc_restraint'],
-                                             'spectral_peak': ['_nef_spectrum_dimension', '_nef_spectrum_dimension_transfer', '_nef_peak']
+                                             'spectral_peak': ['_nef_spectrum_dimension', '_nef_spectrum_dimension_transfer', '_nef_peak'],
+                                             'spectral_peak_alt': []
                                              },
                                      'nmr-star': {'entry_info': ['_Study_list', '_Entry_experimental_methods', '_Entry_author', '_SG_project', '_Entry_src', '_Struct_keywords', '_Data_set', '_Datum', '_Release', '_Related_entries', '_Matched_entries', '_Auxiliary_files', '_Citation',
                                                                  '_Assembly', '_Assembly_annotation_list', '_Assembly_subsystem', '_Entity', '_Entity_natural_src_list', '_Entity_natural_src', '_Entity_experimental_src_list', '_Chem_comp', '_Chem_comp_atom', '_Sample', '_Sample_condition_list', '_Entity_purity_list', '_Software', '_Method',
@@ -2519,7 +2564,8 @@ class NmrDpUtility(object):
                                                   'dist_restraint': ['_Gen_dist_constraint_expt', '_Gen_dist_constraint_software', '_Gen_dist_constraint_software_param', '_Gen_dist_constraint', '_Gen_dist_constraint_comment_org', '_Gen_dist_constraint_parse_err', '_Gen_dist_constraint_parse_file', '_Gen_dist_constraint_conv_err'],
                                                   'dihed_restraint': ['_Torsion_angle_constraints_expt', '_Torsion_angle_constraint_software', '_Karplus_equation', '_Torsion_angle_constraint', '_TA_constraint_comment_org', '_TA_constraint_parse_err', '_TA_constraint_parse_file', '_TA_constraint_conv_err'],
                                                   'rdc_restraint': ['_RDC_constraint_expt', '_RDC_constraint_software', '_RDC_constraint', '_RDC_constraint_comment_org', '_RDC_constraint_parse_err', '_RDC_constraint_parse_file', '_RDC_constraint_conv_err'],
-                                                  'spectral_peak': ['_Spectral_dim', '_Spectral_dim_transfer', '_Spectral_peak_software', '_Peak', '_Peak_general_char', '_Peak_char', '_Assigned_peak_chem_shift', '_Peak_row_format', '_Spectral_transition', '_Spectral_transition_general_char', '_Spectral_transition_char', '_Assigned_spectral_transition', '_Gen_dist_constraint', '_Dist_constraint_value']
+                                                  'spectral_peak': ['_Spectral_dim', '_Spectral_dim_transfer', '_Spectral_peak_software', '_Peak', '_Peak_general_char', '_Peak_char', '_Assigned_peak_chem_shift', '_Peak_row_format', '_Spectral_transition', '_Spectral_transition_general_char', '_Spectral_transition_char', '_Assigned_spectral_transition', '_Gen_dist_constraint', '_Dist_constraint_value'],
+                                                  'spectral_peak_alt': ['_Spectral_dim', '_Spectral_dim_transfer', '_Spectral_peak_software', '_Peak', '_Peak_general_char', '_Peak_char', '_Assigned_peak_chem_shift', '_Peak_row_format', '_Spectral_transition', '_Spectral_transition_general_char', '_Spectral_transition_char', '_Assigned_spectral_transition', '_Gen_dist_constraint', '_Dist_constraint_value']
                                                   }
                                   }
 
@@ -2548,7 +2594,8 @@ class NmrDpUtility(object):
                                           '_nef_spectrum_dimension_transfer': [{'name': 'dimension_1', 'type': 'positive-int'},
                                                                                {'name': 'dimension_2', 'type': 'positive-int'},
                                                                                ]
-                                          }
+                                          },
+                                      'spectral_peak_alt': None
                                       },
                               'nmr-star': {'entry_info': None,
                                            'poly_seq': {
@@ -2574,6 +2621,13 @@ class NmrDpUtility(object):
                                            'dihed_restraint': None,
                                            'rdc_restraint': None,
                                            'spectral_peak': {
+                                               '_Spectral_dim': [{'name': 'ID', 'type': 'index-int'}
+                                                                 ],
+                                               '_Spectral_dim_transfer': [{'name': 'Spectral_dim_ID_1', 'type': 'positive-int'},
+                                                                          {'name': 'Spectral_dim_ID_2', 'type': 'positive-int'},
+                                                                          ]
+                                               },
+                                           'spectral_peak_alt': {
                                                '_Spectral_dim': [{'name': 'ID', 'type': 'index-int'}
                                                                  ],
                                                '_Spectral_dim_transfer': [{'name': 'Spectral_dim_ID_1', 'type': 'positive-int'},
@@ -2613,7 +2667,8 @@ class NmrDpUtility(object):
                                                                                  'enforce-enum': True},
                                                                                 {'name': 'is_indirect', 'type': 'bool', 'mandatory': False}
                                                                                 ]
-                                           }
+                                           },
+                                       'spectral_peak_alt': None
                                        },
                                   'nmr-star': {'entry_info': None,
                                                'poly_seq': {
@@ -2654,6 +2709,29 @@ class NmrDpUtility(object):
                                                                                'enforce-enum': True},
                                                                               {'name': 'Spectral_peak_list_ID', 'type': 'pointer-index', 'mandatory': True}
                                                                               ]
+                                                   },
+                                               'spectral_peak_alt': {
+                                                   '_Spectral_dim': [{'name': 'Axis_code', 'type': 'str', 'mandatory': True},
+                                                                     {'name': 'Spectrometer_frequency', 'type': 'positive-float', 'mandatory': False,
+                                                                      'enforce-non-zero': True},
+                                                                     {'name': 'Under_sampling_type', 'type': 'enum', 'mandatory': False,
+                                                                      'enum': ('aliased', 'folded', 'not observed')},
+                                                                     {'name': 'Sweep_width', 'type': 'positive-float', 'mandatory': False,
+                                                                      'enforce-non-zero': True},
+                                                                     {'name': 'Sweep_width_units', 'type': 'enum', 'mandatory': True,
+                                                                      'enum': ('ppm', 'Hz'),
+                                                                      'enforce-enum': True},
+                                                                     {'name': 'Value_first_point', 'type': 'float', 'mandatory': False},
+                                                                     {'name': 'Absolute_peak_positions', 'type': 'bool', 'mandatory': False},
+                                                                     {'name': 'Acquisition', 'type': 'bool', 'mandatory': False},
+                                                                     {'name': 'Spectral_peak_list_ID', 'type': 'pointer-index', 'mandatory': True}
+                                                                     ],
+                                                   '_Spectral_dim_transfer': [{'name': 'Indirect', 'type': 'bool', 'mandatory': False},
+                                                                              {'name': 'Type', 'type': 'enum', 'mandatory': True,
+                                                                               'enum': ('onebond', 'jcoupling', 'jmultibond', 'relayed', 'relayed-alternate', 'through-space'),
+                                                                               'enforce-enum': True},
+                                                                              {'name': 'Spectral_peak_list_ID', 'type': 'pointer-index', 'mandatory': True}
+                                                                              ]
                                                    }
                                                }
                                   }
@@ -2672,7 +2750,8 @@ class NmrDpUtility(object):
                                          'spectral_peak': {
                                              '_nef_spectrum_dimension': ['dimension_id', 'axis_unit', 'axis_code', 'spectrometer_frequency', 'spectral_width', 'value_first_point', 'folding', 'absolute_peak_positions', 'is_acquisition'],
                                              '_nef_spectrum_dimension_transfer': ['dimension_1', 'dimension_2', 'transfer_type', 'is_indirect']
-                                             }
+                                             },
+                                         'spectral_peak_alt': None
                                          },
                                  'nmr-star': {'entry_info': None,
                                               'poly_seq': {
@@ -2685,6 +2764,10 @@ class NmrDpUtility(object):
                                               'dihed_restraint': None,
                                               'rdc_restraint': None,
                                               'spectral_peak': {
+                                                  '_Spectral_dim': ['ID', 'Axis_code', 'Spectrometer_frequency', 'Atom_type', 'Atom_isotope_number', 'Spectral_region', 'Magnetization_linkage_ID', 'Under_sampling_type', 'Sweep_width', 'Sweep_width_units', 'Value_first_point', 'Absolute_peak_positions', 'Acquisition', 'Center_frequency_offset', 'Encoding_code', 'Encoded_reduced_dimension_ID', 'Sf_ID', 'Entry_ID', 'Spectral_peak_list_ID'],
+                                                  '_Spectral_dim_transfer': ['Spectral_dim_ID_1', 'Spectral_dim_ID_2', 'Indirect', 'Type', 'Sf_ID', 'Entry_ID', 'Spectral_peak_list_ID']
+                                                  },
+                                              'spectral_peak_alt': {
                                                   '_Spectral_dim': ['ID', 'Axis_code', 'Spectrometer_frequency', 'Atom_type', 'Atom_isotope_number', 'Spectral_region', 'Magnetization_linkage_ID', 'Under_sampling_type', 'Sweep_width', 'Sweep_width_units', 'Value_first_point', 'Absolute_peak_positions', 'Acquisition', 'Center_frequency_offset', 'Encoding_code', 'Encoded_reduced_dimension_ID', 'Sf_ID', 'Entry_ID', 'Spectral_peak_list_ID'],
                                                   '_Spectral_dim_transfer': ['Spectral_dim_ID_1', 'Spectral_dim_ID_2', 'Indirect', 'Type', 'Sf_ID', 'Entry_ID', 'Spectral_peak_list_ID']
                                                   }
@@ -2893,7 +2976,8 @@ class NmrDpUtility(object):
                           'dist_restraint': [],
                           'dihed_restraint': [],
                           'rdc_restraint': [],
-                          'spectral_peak': []
+                          'spectral_peak': [],
+                          'spectral_peak_alt': []
                           }
 
         # auxiliary contents of loops
@@ -2905,7 +2989,8 @@ class NmrDpUtility(object):
                            'dist_restraint': [],
                            'dihed_restraint': [],
                            'rdc_restraint': [],
-                           'spectral_peak': []
+                           'spectral_peak': [],
+                           'spectral_peak_alt': []
                            }
 
         # contents of savefram tags
@@ -2917,7 +3002,8 @@ class NmrDpUtility(object):
                               'dist_restraint': [],
                               'dihed_restraint': [],
                               'rdc_restraint': [],
-                              'spectral_peak': []
+                              'spectral_peak': [],
+                              'spectral_peak_alt': []
                               }
 
         # Pairwise align
@@ -10647,7 +10733,7 @@ class NmrDpUtility(object):
             else:
                 ent['exp_type'] = 'Unknown'
 
-        if content_subtype in ['chem_shift', 'dist_restraint', 'dihed_restraint', 'rdc_restraint', 'spectral_peak']:
+        if content_subtype in ['chem_shift', 'dist_restraint', 'dihed_restraint', 'rdc_restraint', 'spectral_peak', 'spectral_peak_alt']:
 
             sa_name = 'nmr_poly_seq_vs_' + content_subtype
 

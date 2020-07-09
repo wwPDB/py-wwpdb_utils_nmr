@@ -185,8 +185,10 @@ class TestNmrDpUtility(unittest.TestCase):
     def test_nmr_nef_consistency_check_daother_5926(self):
         self.utility.setSource(self.data_dir_path + 'swallow_NMR-Star_3-1.str')
         self.utility.addInput(name='coordinate_file_path', value=self.data_dir_path + 'D_800365_model_P1.cif.V4', type='file')
+        self.utility.addInput(name='nonblk_anomalous_cs', value=True, type='param')
+        self.utility.addInput(name='nonblk_bad_nterm', value=True, type='param')
         self.utility.addInput(name='resolve_conflict', value=True, type='param')
-        self.utility.addInput(name='check_mandatory_tag', value=False, type='param')
+        self.utility.addInput(name='check_mandatory_tag', value=True, type='param')
         self.utility.setLog(self.data_dir_path + 'daother-5926-str-consistency-log.json')
         self.utility.setVerbose(False)
 

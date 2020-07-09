@@ -38,6 +38,7 @@
 # 12-Jun-2020  M. Yokochi - performance improvement by reusing cached data
 # 25-Jun-2020  M. Yokochi - add 'anomalous_bond_length' warning
 # 01-Jul-2020  M. Yokochi - suppress null error/warning in JSON report
+# 09-Jul-2020  M. Yokochi - support spectral_peak_alt content subtype (DAOTHER-5926)
 ##
 """ Wrapper class for data processing report of NMR data.
     @author: Masashi Yokochi
@@ -608,6 +609,12 @@ class NmrDpReport:
             for stat in self.getNmrStatsOfExptlData(content_subtype):
                 spectral_peaks.append({'list_id': stat['list_id'], 'sf_framecode': stat['sf_framecode'], 'number_of_spectral_dimensions': stat['number_of_spectral_dimensions'], 'spectral_dim': stat['spectral_dim']})
 
+        content_subtype = 'spectral_peak_alt'
+
+        if content_subtype in content_subtypes:
+            for stat in self.getNmrStatsOfExptlData(content_subtype):
+                spectral_peaks.append({'list_id': stat['list_id'], 'sf_framecode': stat['sf_framecode'], 'number_of_spectral_dimensions': stat['number_of_spectral_dimensions'], 'spectral_dim': stat['spectral_dim']})
+
         return spectral_peaks
 
     def __getNmrPeaks(self):
@@ -622,6 +629,23 @@ class NmrDpReport:
         spectral_peaks = []
 
         content_subtype = 'spectral_peak'
+
+        for id in list_id:
+
+            content_subtypes = self.getNmrLegacyContentSubTypes(id)
+
+            if content_subtypes is None:
+                continue
+
+            stats = self.getNmrLegacyStatsOfExptlData(id, content_subtype)
+
+            if stats is None:
+                continue
+
+            for stat in stats:
+                spectral_peaks.append({'list_id': stat['list_id'], 'sf_framecode': stat['sf_framecode'], 'number_of_spectral_dimensions': stat['number_of_spectral_dimensions'], 'spectral_dim': stat['spectral_dim']})
+
+        content_subtype = 'spectral_peak_alt'
 
         for id in list_id:
 
@@ -1445,7 +1469,7 @@ class NmrDpReportSequenceAlignment:
     """
 
     def __init__(self):
-        self.items = ('model_poly_seq_vs_coordinate', 'model_poly_seq_vs_nmr_poly_seq', 'nmr_poly_seq_vs_model_poly_seq', 'nmr_poly_seq_vs_chem_shift', 'nmr_poly_seq_vs_dist_restraint', 'nmr_poly_seq_vs_dihed_restraint', 'nmr_poly_seq_vs_rdc_restraint', 'nmr_poly_seq_vs_spectral_peak')
+        self.items = ('model_poly_seq_vs_coordinate', 'model_poly_seq_vs_nmr_poly_seq', 'nmr_poly_seq_vs_model_poly_seq', 'nmr_poly_seq_vs_chem_shift', 'nmr_poly_seq_vs_dist_restraint', 'nmr_poly_seq_vs_dihed_restraint', 'nmr_poly_seq_vs_rdc_restraint', 'nmr_poly_seq_vs_spectral_peak', 'nmr_poly_seq_vs_spectral_peak_alt')
 
         self.__contents = {item: None for item in self.items}
 

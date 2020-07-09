@@ -2124,7 +2124,7 @@ class NEFTranslator(object):
                                             r[loop.tags[_j]] = loop.data[l][_j]
                                         raise ValueError("%s must not be empty. #_of_row %s, data_of_row %s." % (name, l + 1, r))
 
-            if test_on_index:
+            if test_on_index and key_len > 0:
                 keys = set()
 
                 rechk = False

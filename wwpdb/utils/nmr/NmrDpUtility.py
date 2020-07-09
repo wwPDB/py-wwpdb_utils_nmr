@@ -90,6 +90,8 @@
 # 30-Jun-2020  M. Yokochi - ignore third party loops and items gracefully (DAOTHER-5896)
 # 30-Jun-2020  M. Yokochi - prevent pynmrstar's exception due to empty string (DAOTHER-5894)
 # 08-Jul-2020  M. Yokochi - bug fix release for DAOTHER-5926
+# 09-Jul-2020  M. Yokochi - add support for categories in NMR-STAR specific peak list (DAOTHER-5926)
+# 09-Jul-2020  M. Yokochi - adjust arguments of pynmrstar write_to_file() to prevent data losses (v2.6.1, DAOTHER-5926)
 ##
 """ Wrapper class for data processing for NMR data.
     @author: Masashi Yokochi
@@ -564,6 +566,7 @@ class NmrDpUtility(object):
                            self.__testSfTagConsistency,
                            #self.__validateCSValue,
                            self.__testCSValueConsistencyInPkLoop,
+                           self.__testCSValueConsistencyInPkAltLoop,
                            self.__testRDCVector
                            ]
 
@@ -1584,9 +1587,10 @@ class NmrDpUtility(object):
                                                           {'name': 'Spectral_peak_list_ID', 'type': 'pointer-index', 'mandatory': True, 'default': '1'}
                                                           ],
                                         'spectral_peak_alt': [{'name': 'Index_ID', 'type': 'index-int', 'mandatory': False},
-                                                              {'name': 'ID', 'type': 'positive-int', 'mandatory': True,
-                                                               'enforce-non-zero': True},
-                                                              {'name': 'Spectral_peak_list_ID', 'type': 'pointer-index', 'mandatory': True, 'default': '1'}
+                                                              {'name': 'Figure_of_merit', 'type': 'range-float', 'mandatory': False,
+                                                               'range': self.weight_range},
+                                                              {'name': 'Restraint', 'type': 'enum', 'mandatory': False,
+                                                               'enum': ('no', 'yes')}
                                                               ]
                                         }
                            }
@@ -2502,7 +2506,7 @@ class NmrDpUtility(object):
                                                'dihed_restraint': [],
                                                'rdc_restraint': [],
                                                'spectral_peak': ['_Spectral_dim', '_Spectral_dim_transfer'],
-                                               'spectral_peak_alt': ['_Spectral_dim', '_Spectral_dim_transfer']
+                                               'spectral_peak_alt': ['_Spectral_dim', '_Spectral_dim_transfer', '_Peak_general_char', '_Peak_char', '_Assigned_peak_chem_shift']
                                                }
                                   }
 
@@ -2632,7 +2636,10 @@ class NmrDpUtility(object):
                                                                  ],
                                                '_Spectral_dim_transfer': [{'name': 'Spectral_dim_ID_1', 'type': 'positive-int'},
                                                                           {'name': 'Spectral_dim_ID_2', 'type': 'positive-int'},
-                                                                          ]
+                                                                          ],
+                                               '_Peak_general_char': [],
+                                               '_Peak_char': [],
+                                               '_Assigned_peak_chem_shift': []
                                                }
                                            }
                                   }
@@ -2731,7 +2738,53 @@ class NmrDpUtility(object):
                                                                                'enum': ('onebond', 'jcoupling', 'jmultibond', 'relayed', 'relayed-alternate', 'through-space'),
                                                                                'enforce-enum': True},
                                                                               {'name': 'Spectral_peak_list_ID', 'type': 'pointer-index', 'mandatory': True}
-                                                                              ]
+                                                                              ],
+                                                   '_Peak_general_char': [{'name': 'Peak_ID', 'type': 'positive-int', 'mandatory': True},
+                                                                          {'name': 'Intensity_val', 'type': 'float', 'mandatory': True},
+                                                                          {'name': 'Intensity_val_err', 'type': 'positive-float', 'mandatory': False, 'void-zero': True},
+                                                                          {'name': 'Measurement_method', 'type': 'enum', 'mandatory': False,
+                                                                           'enum': ('absolute height', 'height', 'relative height', 'volume', 'number of contours', 'integration')},
+                                                                          {'name': 'Spectral_peak_list_ID', 'type': 'pointer-index', 'mandatory': True}
+                                                                          ],
+                                                   '_Peak_char': [{'name': 'Peak_ID', 'type': 'positive-int', 'mandatory': True},
+                                                                  {'name': 'Spectral_dim_ID',  'type': 'enum-int', 'mandatory': True,
+                                                                   'enum': set(range(1, self.lim_num_dim)),
+                                                                   'enforce-enum': True},
+                                                                  {'name': 'Chem_shift_val', 'type': 'range-float', 'mandatory': True,
+                                                                   'range': self.chem_shift_range},
+                                                                  {'name': 'Chem_shift_val_err', 'type': 'range-float', 'mandatory': False, 'void-zero': True,
+                                                                   'range': self.chem_shift_error},
+                                                                  {'name': 'Line_width_val', 'type': 'positive-float', 'mandatory': False},
+                                                                  {'name': 'Line_width_val_err', 'type': 'positive-float', 'mandatory': False, 'void-zero': True},
+                                                                  {'name': 'Coupling_pattern', 'type': 'enum', 'mandatory': False,
+                                                                   'enum': ('d', 'dd', 'ddd', 'dm', 'dt', 'hxt', 'hpt', 'm', 'q', 'qd', 'qn', 's', 'sxt', 't', 'td', 'LR', '1JCH')},
+                                                                  {'name': 'Spectral_peak_list_ID', 'type': 'pointer-index', 'mandatory': True}
+                                                                  ],
+                                                   '_Assigned_peak_chem_shift': [{'name': 'Peak_ID', 'type': 'positive-int', 'mandatory': True},
+                                                                                 {'name': 'Spectral_dim_ID',  'type': 'enum-int', 'mandatory': True,
+                                                                                  'enum': set(range(1, self.lim_num_dim)),
+                                                                                  'enforce-enum': True},
+                                                                                 {'name': 'Set_ID', 'type': 'positive-int', 'mandatory': False},
+                                                                                 {'name': 'Magnetization_linkage_ID', 'type': 'positive-int', 'mandatory': False},
+                                                                                 {'name': 'Val', 'type': 'range-float', 'mandatory': False,
+                                                                                  'range': self.chem_shift_range},
+                                                                                 {'name': 'Contribution_fractional_val', 'type': 'range-float', 'mandatory': False,
+                                                                                  'range': self.weight_range},
+                                                                                 {'name': 'Figure_of_merit', 'type': 'range-float', 'mandatory': False,
+                                                                                  'range': self.weight_range},
+                                                                                 {'name': 'Assigned_chem_shift_list_ID', 'type': 'pointer-index', 'mandatory': False},
+                                                                                 {'name': 'Entity_assembly_ID', 'type': 'positive-int', 'mandatory': False},
+                                                                                 {'name': 'Comp_index_ID', 'type': 'int', 'mandatory': False},
+                                                                                 {'name': 'Comp_ID', 'type': 'str', 'mandatory': False, 'uppercase': True},
+                                                                                 {'name': 'Atom_ID', 'type': 'str', 'mandatory': False},
+                                                                                 {'name': 'Ambiguity_code', 'type': 'enum-int', 'mandatory': False,
+                                                                                  'enum': self.bmrb_ambiguity_codes},
+                                                                                 {'name': 'Ambiguity_set_ID', 'type': 'positive-int', 'mandatory': False},
+                                                                                 {'name': 'Auth_seq_ID', 'type': 'int', 'mandatory': False},
+                                                                                 {'name': 'Auth_comp_ID', 'type': 'str', 'mandatory': False},
+                                                                                 {'name': 'Auth_atom_ID', 'type': 'str', 'mandatory': False},
+                                                                                 {'name': 'Spectral_peak_list_ID', 'type': 'pointer-index', 'mandatory': True}
+                                                                                 ]
                                                    }
                                                }
                                   }
@@ -2769,7 +2822,10 @@ class NmrDpUtility(object):
                                                   },
                                               'spectral_peak_alt': {
                                                   '_Spectral_dim': ['ID', 'Axis_code', 'Spectrometer_frequency', 'Atom_type', 'Atom_isotope_number', 'Spectral_region', 'Magnetization_linkage_ID', 'Under_sampling_type', 'Sweep_width', 'Sweep_width_units', 'Value_first_point', 'Absolute_peak_positions', 'Acquisition', 'Center_frequency_offset', 'Encoding_code', 'Encoded_reduced_dimension_ID', 'Sf_ID', 'Entry_ID', 'Spectral_peak_list_ID'],
-                                                  '_Spectral_dim_transfer': ['Spectral_dim_ID_1', 'Spectral_dim_ID_2', 'Indirect', 'Type', 'Sf_ID', 'Entry_ID', 'Spectral_peak_list_ID']
+                                                  '_Spectral_dim_transfer': ['Spectral_dim_ID_1', 'Spectral_dim_ID_2', 'Indirect', 'Type', 'Sf_ID', 'Entry_ID', 'Spectral_peak_list_ID'],
+                                                  '_Peak_general_char': ['Peak_ID', 'Intensity_val', 'Intensity_val_err', 'Measurement_method', 'Sf_ID', 'Entry_ID', 'Spectral_peak_list_ID'],
+                                                  '_Peak_char': ['Peak_ID', 'Spectral_dim_ID', 'Chem_shift_val', 'Chem_shift_val_err', 'Line_width_val', 'Line_width_val_err', 'Phase_val', 'Phase_val_err', 'Decay_rate_val', 'Decay_rate_val_err', 'Coupling_pattern', 'Bounding_box_upper_val', 'Bounding_box_lower_val', 'Bounding_box_range_val', 'Details', 'Derivation_method_ID', 'Sf_ID', 'Entry_ID', 'Spectral_peak_list_ID'],
+                                                  '_Assigned_peak_chem_shift': ['Peak_ID', 'Spectral_dim_ID', 'Set_ID', 'Magnetization_linkage_ID', 'Assembly_atom_ID', 'Val', 'Contribution_fractional_val', 'Figure_of_merit', 'Assigned_chem_shift_list_ID', 'Atom_chem_shift_ID', 'Entity_assembly_ID', 'Entity_ID', 'Comp_index_ID', 'Comp_ID', 'Atom_ID', 'Ambiguity_code', 'Ambiguity_set_ID', 'Auth_atom_peak_num', 'Auth_entity_ID', 'Auth_seq_ID', 'Auth_comp_ID', 'Auth_atom_ID', 'Auth_ambiguity_code', 'Auth_ambiguity_set_ID', 'Auth_amb_atom_grp_ID', 'Resonance_ID', 'Details', 'Sf_ID', 'Entry_ID', 'Spectral_peak_list_ID']
                                                   }
                                               }
                                   }
@@ -4998,6 +5054,9 @@ class NmrDpUtility(object):
             sf_category = self.sf_categories[file_type][content_subtype]
             lp_category = self.lp_categories[file_type][content_subtype]
 
+            if content_subtype.startswith('spectral_peak'):
+                lp_category = self.aux_lp_categories[file_type][content_subtype][0] # _Spectral_dim
+
             if sf_category is None or lp_category is None:
                 continue
 
@@ -5041,8 +5100,6 @@ class NmrDpUtility(object):
             loop = sf_data
 
         try:
-
-            index_tag = self.index_tags[file_type][content_subtype]
 
             if content_subtype == 'chem_shift':
 
@@ -5146,6 +5203,82 @@ class NmrDpUtility(object):
                     except ValueError:
                         pass
 
+            elif content_subtype.startswith('spectral_peak'):
+
+                if not 'Atom_type' in loop.tags:
+
+                    lp_tag = lp_category + '.Atom_type'
+                    err = self.__err_template_for_missing_mandatory_lp_tag % (lp_tag, file_type.upper())
+
+                    if self.__check_mandatory_tag and self.__nefT.is_mandatory_tag(lp_tag, file_type):
+                        self.report.error.appendDescription('missing_mandatory_item', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
+                        self.report.setError()
+
+                        if self.__verbose:
+                            self.__lfh.write("+NmrDpUtility.__rescueImmatureStr() ++ LookupError  - %s" % err)
+
+                    try:
+                        axis_code_name_col = loop.tags.index('Axis_code')
+
+                        for row in loop:
+                            atom_type = re.sub(r'[0-9]+', '', row[axis_code_name_col])
+                            row.append(atom_type)
+
+                        loop.add_tag(lp_category + '.Atom_type')
+
+                    except ValueError:
+                        pass
+
+                if not 'Atom_isotope_number' in loop.tags:
+
+                    lp_tag = lp_category + '.Atom_isotope_number'
+                    err = self.__err_template_for_missing_mandatory_lp_tag % (lp_tag, file_type.upper())
+
+                    if self.__check_mandatory_tag and self.__nefT.is_mandatory_tag(lp_tag, file_type):
+                        self.report.error.appendDescription('missing_mandatory_item', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
+                        self.report.setError()
+
+                        if self.__verbose:
+                            self.__lfh.write("+NmrDpUtility.__rescueImmatureStr() ++ LookupError  - %s" % err)
+
+                    try:
+                        axis_code_name_col = loop.tags.index('Axis_code')
+
+                        for row in loop:
+                            atom_type = re.sub(r'[0-9]+', '', row[axis_code_name_col])
+                            row.append(str(self.atom_isotopes[atom_type][0]))
+
+                        loop.add_tag(lp_category + '.Atom_isotope_number')
+
+                    except ValueError:
+                        pass
+
+                if not 'Axis_code' in loop.tags:
+
+                    lp_tag = lp_category + '.Axis_code'
+                    err = self.__err_template_for_missing_mandatory_lp_tag % (lp_tag, file_type.upper())
+
+                    if self.__check_mandatory_tag and self.__nefT.is_mandatory_tag(lp_tag, file_type):
+                        self.report.error.appendDescription('missing_mandatory_item', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
+                        self.report.setError()
+
+                        if self.__verbose:
+                            self.__lfh.write("+NmrDpUtility.__rescueImmatureStr() ++ LookupError  - %s" % err)
+
+                    try:
+                        atom_type_name_col = loop.tags.index('Atom_type')
+                        iso_num_name_col = loop.tags.index('Atom_isotope_number')
+
+                        for row in loop:
+                            atom_type = row[atom_type_name_col]
+                            iso_num = row[iso_num_name_col]
+                            row.append(iso_num + atom_type)
+
+                        loop.add_tag(lp_category + '.Axis_code')
+
+                    except ValueError:
+                        pass
+
         except KeyError:
             pass
 
@@ -5198,7 +5331,10 @@ class NmrDpUtility(object):
 
                 if not sf_category is None and not sf_category in self.sf_categories[file_type].values():
 
-                    warn = "Ignored third party software's saveframe %r." % sf_category
+                    if file_type == 'nef':
+                        warn = "Ignored third party software's saveframe %r." % sf_category
+                    else:
+                        warn = "Ignored saveframe category %r." % sf_category
 
                     self.report.warning.appendDescription('skipped_saveframe_category', {'file_name': file_name, 'sf_category': sf_category, 'description': warn})
                     self.report.setWarning()
@@ -5312,12 +5448,9 @@ class NmrDpUtility(object):
                 if self.__verbose:
                     self.__lfh.write("+NmrDpUtility.__detectContentSubType() ++ Error  - %s\n" % err)
 
-            content_subtype = 'spectral_peak'
+            has_spectral_peak = lp_counts['spectral_peak'] + lp_counts['spectral_peak_alt'] > 0
 
-            if lp_counts[content_subtype] == 0 and self.__combined_mode:
-
-                sf_category = self.sf_categories[file_type][content_subtype]
-                lp_category = self.lp_categories[file_type][content_subtype]
+            if not has_spectral_peak and self.__combined_mode:
 
                 warn = "The wwPDB NMR Validation Task Force strongly encourages the submission of spectral peak lists, in particular those generated from NOESY spectra."
 
@@ -5327,7 +5460,7 @@ class NmrDpUtility(object):
                 if self.__verbose:
                     self.__lfh.write("+NmrDpUtility.__detectContentSubType() ++ Warning  - %s\n" % warn)
 
-            if lp_counts[content_subtype] > 0 and content_type == 'nmr-chemical-shifts':
+            if has_spectral_peak and content_type == 'nmr-chemical-shifts':
 
                 err = "The assigned chemical shift file includes spectral peak lists. Please re-upload the %s file as an NMR combined data file." % file_type.upper()
 
@@ -5356,8 +5489,13 @@ class NmrDpUtility(object):
             return self.__nefT.get_nef_seq(sf_data, lp_category=self.lp_categories[file_type][content_subtype],
                                            allow_empty=(content_subtype == 'spectral_peak'), allow_gap=(not content_subtype in ['poly_seq', 'entity']))
         else:
-            return self.__nefT.get_star_seq(sf_data, lp_category=self.lp_categories[file_type][content_subtype],
-                                            allow_empty=(content_subtype == 'spectral_peak'), allow_gap=(not content_subtype in ['poly_seq', 'entity']))
+
+            if content_subtype == 'spectral_peak_alt':
+                return self.__nefT.get_star_seq(sf_data, lp_category='_Assigned_peak_chem_shift',
+                                            allow_empty=True, allow_gap=True)
+            else:
+                return self.__nefT.get_star_seq(sf_data, lp_category=self.lp_categories[file_type][content_subtype],
+                                                allow_empty=(content_subtype == 'spectral_peak'), allow_gap=(not content_subtype in ['poly_seq', 'entity']))
 
     def __extractPolymerSequence(self):
         """ Extract reference polymer sequence.
@@ -5597,6 +5735,9 @@ class NmrDpUtility(object):
 
                 sf_category = self.sf_categories[file_type][content_subtype]
                 lp_category = self.lp_categories[file_type][content_subtype]
+
+                if file_type == 'nmr-star' and content_subtype == 'spectral_peak_alt':
+                    lp_category = '_Assigned_peak_chem_shift'
 
                 list_id = 1
 
@@ -5862,6 +6003,12 @@ class NmrDpUtility(object):
 
                 lp_category1 = self.lp_categories[file_type][subtype1]
                 lp_category2 = self.lp_categories[file_type][subtype2]
+
+                if file_type == 'nmr-star':
+                    if subtype1 == 'spectral_peak_alt':
+                        lp_category1 = '_Assigned_peak_chem_shift'
+                    if subtype2 == 'spectral_peak_alt':
+                        lp_category2 = '_Assigned_peak_chem_shift'
 
                 # reference polymer sequence exists
                 if has_poly_seq and subtype1 == poly_seq:
@@ -6575,6 +6722,9 @@ class NmrDpUtility(object):
                     if not lp_category in self.__lp_category_list:
                         continue
 
+                if file_type == 'nmr-star' and content_subtype == 'spectral_peak_alt':
+                    lp_category = '_Assigned_peak_chem_shift'
+
                 if self.__star_data_type[fileListId] == 'Loop':
 
                     sf_data = self.__star_data[fileListId]
@@ -6977,6 +7127,9 @@ class NmrDpUtility(object):
 
                 if content_subtype == 'poly_seq':
                     lp_category = self.aux_lp_categories[file_type][content_subtype][0]
+
+                if file_type == 'nmr-star' and content_subtype == 'spectral_peak_alt':
+                    lp_category = '_Assigned_peak_chem_shift'
 
                 if self.__star_data_type[fileListId] == 'Loop':
 
@@ -8264,6 +8417,8 @@ class NmrDpUtility(object):
 
                                     if content_subtype == 'spectral_peak':
                                         self.__testDataConsistencyInAuxLoopOfSpectralPeak(file_name, file_type, sf_framecode, num_dim, lp_category, aux_data)
+                                    if file_type == 'nmr-star' and content_subtype == 'spectral_peak_alt':
+                                        self.__testDataConsistencyInAuxLoopOfSpectralPeakAlt(file_name, file_type, sf_framecode, num_dim, lp_category, aux_data, sf_data)
 
                                 except:
                                     pass
@@ -8288,7 +8443,10 @@ class NmrDpUtility(object):
 
                         else:
 
-                            warn = "Ignored third party software's loop %r in %r saveframe." % (lp_category, sf_framecode)
+                            if file_type == 'nef':
+                                warn = "Ignored third party software's loop %r in %r saveframe." % (lp_category, sf_framecode)
+                            else:
+                                warn = "Ignored %r loop in %r saveframe." % (lp_category, sf_framecode)
 
                             self.report.warning.appendDescription('skipped_loop_category', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
                             self.report.setWarning()
@@ -8342,9 +8500,9 @@ class NmrDpUtility(object):
                             first_point = None if not 'value_first_point' in sp_dim else sp_dim['value_first_point']
                             sp_width = None if not 'spectral_width' in sp_dim else sp_dim['spectral_width']
                             # acq = sp_dim['is_acquisition']
-                            abs = False if 'absolute_peak_position' in sp_dim else sp_dim['absolute_peak_positions']
+                            abs = False if not 'absolute_peak_positions' in sp_dim else sp_dim['absolute_peak_positions']
 
-                            if sp_dim['axis_unit'] == 'Hz' and 'spectrometer_frequency' in sp_dim and not first_point is None and not sp_width is None:
+                            if 'axis_unit' in sp_dim and sp_dim['axis_unit'] == 'Hz' and 'spectrometer_frequency' in sp_dim and not first_point is None and not sp_width is None:
                                 sp_freq = sp_dim['spectrometer_frequency']
                                 first_point /= sp_freq
                                 sp_width /= sp_freq
@@ -8357,9 +8515,9 @@ class NmrDpUtility(object):
                             first_point = None if not 'Value_first_point' in sp_dim else sp_dim['Value_first_point']
                             sp_width = None if not 'Sweep_width' in sp_dim else sp_dim['Sweep_width']
                             # acq = sp_dim['Acquisition']
-                            abs = False if 'Absolute_peak_position' in sp_dim else sp_dim['Absolute_peak_positions']
+                            abs = False if not 'Absolute_peak_positions' in sp_dim else sp_dim['Absolute_peak_positions']
 
-                            if sp_dim['Sweep_width_units'] == 'Hz' and 'Spectrometer_frequency' in sp_dim and not first_point is None and not sp_width is None:
+                            if 'Sweep_width_units' in sp_dim and sp_dim['Sweep_width_units'] == 'Hz' and 'Spectrometer_frequency' in sp_dim and not first_point is None and not sp_width is None:
                                 sp_freq = sp_dim['Spectrometer_frequency']
                                 first_point /= sp_freq
                                 sp_width /= sp_freq
@@ -8433,6 +8591,122 @@ class NmrDpUtility(object):
 
                         if self.__verbose:
                             self.__lfh.write("+NmrDpUtility.__testDataConsistencyInAuxLoopOfSpectralPeak() ++ ValueError  - %s\n" % err)
+
+    def __testDataConsistencyInAuxLoopOfSpectralPeakAlt(self, file_name, file_type, sf_framecode, num_dim, lp_category, aux_data, sf_data):
+        """ Perform consistency test on data of spectral peak loops.
+        """
+
+        content_subtype = 'spectral_peak_alt'
+
+        max_dim = num_dim + 1
+
+        if lp_category == '_Spectral_dim':
+
+            err = "The number of dimension %r and the number of rows %r are not matched." % (num_dim, len(aux_data))
+
+            if len(aux_data) != num_dim:
+                self.report.error.appendDescription('missing_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
+                self.report.setError()
+
+                if self.__verbose:
+                    self.__lfh.write("+NmrDpUtility.__testDataConsistencyInAuxLoopOfSpectralPeakAlt() ++ Error  - %s\n" % err)
+
+            try:
+
+                min_points = []
+                max_points = []
+
+                for i in range(1, max_dim):
+
+                    for sp_dim in aux_data:
+
+                        if sp_dim['ID'] != i:
+                            continue
+
+                        first_point = None if not 'Value_first_point' in sp_dim else sp_dim['Value_first_point']
+                        sp_width = None if not 'Sweep_width' in sp_dim else sp_dim['Sweep_width']
+                        # acq = sp_dim['Acquisition']
+                        abs = False if not 'Absolute_peak_positions' in sp_dim else sp_dim['Absolute_peak_positions']
+
+                        if 'Sweep_width_units' in sp_dim and sp_dim['Sweep_width_units'] == 'Hz' and 'Spectrometer_frequency' in sp_dim and not first_point is None and not sp_width is None:
+                            sp_freq = sp_dim['Spectrometer_frequency']
+                            first_point /= sp_freq
+                            sp_width /= sp_freq
+
+                        min_point = None
+                        max_point = None
+
+                        if not first_point is None and not sp_width is None:
+
+                            last_point = first_point - sp_width
+
+                            min_point = last_point - (sp_width if abs else 0.0)
+                            max_point = first_point + (sp_width if abs else 0.0)
+
+                        min_points.append(float('{:.7f}'.format(min_point)))
+                        max_points.append(float('{:.7f}'.format(max_point)))
+
+                        break
+
+                _pk_char_category = '_Peak_char'
+
+                _pk_char_data = next((l['data'] for l in self.__aux_data[content_subtype] if l['file_name'] == file_name and l['sf_framecode'] == sf_framecode and l['category'] == _pk_char_category), None)
+
+                if _pk_char_data is None:
+
+                    key_items = self.aux_key_items[file_type][content_subtype][_pk_char_category]
+                    data_items = self.aux_data_items[file_type][content_subtype][_pk_char_category]
+                    allowed_tags = self.aux_allowed_tags[file_type][content_subtype][_pk_char_category]
+
+                    _pk_char_data = self.__nefT.check_data(sf_data, _pk_char_category, key_items, data_items, allowed_tags, None,
+                                                           excl_missing_data=self.__excl_missing_data)[0]
+
+                pk_id_name = 'Peak_ID'
+                dim_id_name = 'Spectral_dim_ID'
+                position_name = 'Chem_shift_val'
+
+                if not _pk_char_data is None:
+
+                    for i in _pk_char_data:
+
+                        j = i[dim_id_name] - 1
+
+                        if min_points[j] is None or max_points[j] is None:
+                            continue
+
+                        position = i[position_name]
+
+                        if position < min_points[j] or position > max_points[j]:
+
+                            err = '[Check row of %s %s] %s %s is not within expected range (min_position %s, max_position %s). Please check for reference frequency and spectral width.' % (pk_id_name, i[pk_id_name], position_name, position, min_points[j], max_points[j])
+
+                            self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
+                            self.report.setError()
+
+                            if self.__verbose:
+                                self.__lfh.write("+NmrDpUtility.__testDataConsistencyInAuxLoopOfSpectralPeakAlt() ++ ValueError  - %s\n" % err)
+
+            except Exception as e:
+
+                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__testDataConsistencyInAuxLoopOfSpectralPeakAlt() ++ Error  - %s" % str(e))
+                self.report.setError()
+
+                if self.__verbose:
+                    self.__lfh.write("+NmrDpUtility.__testDataConsistencyInAuxLoopOfSpectralPeakAlt() ++ Error  - %s" % str(e))
+
+        if lp_category == '_Spectral_dim_transfer':
+
+            for i in aux_data:
+                for name in [j['name'] for j in self.aux_key_items[file_type][content_subtype][lp_category]]:
+                    if not i[name] in range(1, max_dim):
+
+                        err = "%s %r must be one of %s." % (name, i[name], range(1, max_dim), lp_category)
+
+                        self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
+                        self.report.setError()
+
+                        if self.__verbose:
+                            self.__lfh.write("+NmrDpUtility.__testDataConsistencyInAuxLoopOfSpectralPeakAlt() ++ ValueError  - %s\n" % err)
 
     def __testSfTagConsistency(self):
         """ Perform consistency test on saveframe tags.
@@ -9921,9 +10195,9 @@ class NmrDpUtility(object):
                                 if sp_dim['dimension_id'] != i:
                                     continue
                                 axis_codes.append(sp_dim['axis_code'])
-                                abs_pk_pos.append(False if 'absolute_peak_poistions' in sp_dim else sp_dim['absolute_peak_positions'])
-                                sp_width = None if not 'spectral_width' in sp_dim else sp_dim['spectral_width']
-                                if sp_dim['axis_unit'] == 'Hz' and 'spectrometer_frequency' in sp_dim and not sp_width is None:
+                                abs_pk_pos.append(False if not 'absolute_peak_poistions' in sp_dim else sp_dim['absolute_peak_positions'])
+                                sp_width = None if not 'spectral_width' in sp_dim or not 'axis_unit' in sp_dim else sp_dim['spectral_width']
+                                if 'axis_unit' in sp_dim and sp_dim['axis_unit'] == 'Hz' and 'spectrometer_frequency' in sp_dim and not sp_width is None:
                                     sp_freq = sp_dim['spectrometer_frequency']
                                     sp_width /= sp_freq
                                 sp_widths.append(sp_width)
@@ -9931,9 +10205,9 @@ class NmrDpUtility(object):
                                 if sp_dim['ID'] != i:
                                     continue
                                 axis_codes.append(sp_dim['Axis_code'])
-                                abs_pk_pos.append(False if 'Absolute_peak_position' in sp_dim else sp_dim['Absolute_peak_positions'])
-                                sp_width = None if not 'Sweep_width' in sp_dim else sp_dim['Sweep_width']
-                                if sp_dim['Sweep_width_units'] == 'Hz' and 'Spectrometer_frequency' in sp_dim and not sp_width is None:
+                                abs_pk_pos.append(False if not 'Absolute_peak_positions' in sp_dim else sp_dim['Absolute_peak_positions'])
+                                sp_width = None if not 'Sweep_width' in sp_dim or not 'Sweep_width_units' in sp_dim else sp_dim['Sweep_width']
+                                if 'Sweep_width_units' in sp_dim and sp_dim['Sweep_width_units'] == 'Hz' and 'Spectrometer_frequency' in sp_dim and not sp_width is None:
                                     sp_freq = sp_dim['Spectrometer_frequency']
                                     sp_width /= sp_freq
                                 sp_widths.append(sp_width)
@@ -10057,14 +10331,14 @@ class NmrDpUtility(object):
                                     value = cs[cs_value_name]
                                     error = cs[cs_error_name]
 
-                                    if error is None or error * 5.0 > max_cs_err:
+                                    if error is None or error < 1.0e-3 or error * 5.0 > max_cs_err:
                                         error = max_cs_err
                                     else:
                                         error *= 5.0
 
                                     if abs(position - value) > error:
 
-                                        if not abs_pk_pos[d] and not sp_width[d] is None:
+                                        if not abs_pk_pos[d] and not sp_widths[d] is None:
                                             if position < value:
                                                 while position < value:
                                                     position += sp_widths[d]
@@ -10182,6 +10456,371 @@ class NmrDpUtility(object):
 
                     if self.__verbose:
                         self.__lfh.write("+NmrDpUtility.__testCSValueConsistencyInPkLoop() ++ Error  - %s" % str(e))
+
+        return self.report.getTotalErrors() == __errors
+
+    def __testCSValueConsistencyInPkAltLoop(self):
+        """ Perform consistency test on peak position and assignment of spectral peaks.
+        """
+
+        #if not self.__combined_mode:
+        #    return False
+
+        __errors = self.report.getTotalErrors()
+
+        for fileListId in range(self.__file_path_list_len):
+
+            if fileListId >= len(self.__star_data_type) or self.__star_data_type[fileListId] != 'Entry':
+                continue
+
+            input_source = self.report.input_sources[fileListId]
+            input_source_dic = input_source.get()
+
+            file_name = input_source_dic['file_name']
+            file_type = input_source_dic['file_type']
+
+            if file_type == 'nef' or input_source_dic['content_subtype'] is None:
+                continue
+
+            content_subtype = 'spectral_peak_alt'
+
+            if not content_subtype in input_source_dic['content_subtype'].keys():
+                continue
+
+            sf_category = self.sf_categories[file_type][content_subtype]
+            lp_category = '_Assigned_peak_chem_shift'
+
+            cs_item_names = self.item_names_in_cs_loop[file_type]
+            cs_chain_id_name = cs_item_names['chain_id']
+            cs_seq_id_name = cs_item_names['seq_id']
+            cs_comp_id_name = cs_item_names['comp_id']
+            cs_atom_id_name = cs_item_names['atom_id']
+            cs_value_name = cs_item_names['value']
+            cs_error_name = cs_item_names['error']
+            cs_atom_type = cs_item_names['atom_type']
+            cs_iso_number = cs_item_names['isotope_number']
+
+            for sf_data in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
+
+                sf_framecode = get_first_sf_tag(sf_data, 'sf_framecode')
+
+                cs_data = None
+
+                try:
+
+                    cs_list = sf_data.get_tag(self.cs_list_sf_tag_name[file_type])[0]
+                    _cs_list_id = sf_data.get_tag('ID')[0]
+
+                    try:
+
+                        cs_data = next(l['data'] for l in self.__lp_data['chem_shift'] if l['file_name'] == file_name and l['sf_framecode'] == cs_list)
+
+                    except StopIteration:
+
+                        err = "Assigned chemical shifts are mandatory. Referred %r saveframe does not exist." % cs_list
+
+                        self.report.error.appendDescription('missing_mandatory_content', {'file_name': file_name, 'sf_framecode': sf_framecode, 'description': err})
+                        self.report.setError()
+
+                        if self.__verbose:
+                            self.__lfh.write("+NmrDpUtility.__testCSValueConsistencyInPkAltLoop() ++ Error  - %s\n" % err)
+
+                            continue
+
+                except:
+                    pass
+
+                if cs_data is None:
+
+                    try:
+
+                        cs = next(l for l in self.__lp_data['chem_shift'] if l['file_name'] == file_name)
+
+                    except StopIteration:
+                        continue
+
+                    cs_data = cs['data']
+                    cs_list = cs['sf_framecode']
+
+                    cs_sf_data = self.__star_data[fileListId].get_saveframe_by_name(cs_list)
+
+                    _cs_list_id = cs_sf_data.get_tag('ID')[0]
+
+                try:
+
+                    _num_dim = sf_data.get_tag(self.num_dim_items[file_type])[0]
+                    num_dim = int(_num_dim)
+
+                    if not num_dim in range(1, self.lim_num_dim):
+                        raise ValueError()
+
+                except ValueError: # raised error already at __testIndexConsistency()
+                    return False
+
+                max_dim = num_dim + 1
+
+                aux_data = next((l['data'] for l in self.__aux_data[content_subtype] if l['file_name'] == file_name and l['sf_framecode'] == sf_framecode and l['category'] == self.aux_lp_categories[file_type][content_subtype][0]), None)
+
+                axis_codes = []
+                abs_pk_pos = []
+                sp_widths = []
+
+                if not aux_data is None:
+                    for i in range(1, max_dim):
+                        for sp_dim in aux_data:
+                            if sp_dim['ID'] != i:
+                                continue
+                            axis_codes.append(sp_dim['Axis_code'])
+                            abs_pk_pos.append(False if not 'Absolute_peak_positions' in sp_dim else sp_dim['Absolute_peak_positions'])
+                            sp_width = None if not 'Sweep_width' in sp_dim or not 'Sweep_width_units' in sp_dim else sp_dim['Sweep_width']
+                            if 'Sweep_width_units' in sp_dim and sp_dim['Sweep_width_units'] == 'Hz' and 'Spectrometer_frequency' in sp_dim and not sp_width is None:
+                                sp_freq = sp_dim['Spectrometer_frequency']
+                                sp_width /= sp_freq
+                            sp_widths.append(sp_width)
+                            break
+                else:
+                    for i in range(num_dim):
+                        abs_pk_pos.append(False)
+
+                aux_data = next((l['data'] for l in self.__aux_data[content_subtype] if l['file_name'] == file_name and l['sf_framecode'] == sf_framecode and l['category'] == self.aux_lp_categories[file_type][content_subtype][1]), None)
+
+                onebond = [[False] * num_dim for i in range(num_dim)]
+                if not aux_data is None:
+                    for sp_dim_trans in aux_data:
+                        if sp_dim_trans['Type'] == 'onebond':
+                            dim_1 = sp_dim_trans['Spectral_dim_ID_1']
+                            dim_2 = sp_dim_trans['Spectral_dim_ID_2']
+                            onebond[dim_1 - 1][dim_2 - 1] = True
+                            onebond[dim_2 - 1][dim_1 - 1] = True
+
+                jcoupling = [[False] * num_dim for i in range(num_dim)]
+                if not aux_data is None:
+                    for sp_dim_trans in aux_data:
+                        if sp_dim_trans['Type'].startswith('j'):
+                            dim_1 = sp_dim_trans['Spectral_dim_ID_1']
+                            dim_2 = sp_dim_trans['Spectral_dim_ID_2']
+                            jcoupling[dim_1 - 1][dim_2 - 1] = True
+                            jcoupling[dim_2 - 1][dim_1 - 1] = True
+
+                relayed = [[False] * num_dim for i in range(num_dim)]
+                if not aux_data is None:
+                    for sp_dim_trans in aux_data:
+                        if sp_dim_trans['Type'].startswith('relayed'):
+                            dim_1 = sp_dim_trans['Spectral_dim_ID_1']
+                            dim_2 = sp_dim_trans['Spectral_dim_ID_2']
+                            relayed[dim_1 - 1][dim_2 - 1] = True
+                            relayed[dim_2 - 1][dim_1 - 1] = True
+
+                pk_id_name = 'Peak_ID'
+                dim_id_name = 'Spectral_dim_ID'
+                set_id_name = 'Set_ID'
+
+                max_cs_err = self.chem_shift_error['max_inclusive']
+
+                try:
+
+                    lp_data = next((l['data'] for l in self.__aux_data[content_subtype] if l['file_name'] == file_name and l['sf_framecode'] == sf_framecode and l['category'] == lp_category), None)
+
+                    if not lp_data is None:
+
+                        for i in lp_data:
+
+                            if __pynmrstar_v3__ and not (cs_chain_id_name in i and cs_seq_id_name in i and cs_comp_id_name in i and cs_atom_id_name in i):
+                                continue
+
+                            chain_id = i[cs_chain_id_name]
+                            if chain_id in self.empty_value:
+                                continue
+
+                            seq_id = i[cs_seq_id_name]
+                            if seq_id in self.empty_value:
+                                continue
+
+                            comp_id = i[cs_comp_id_name]
+                            if comp_id in self.empty_value:
+                                continue
+
+                            atom_id = i[cs_atom_id_name]
+                            if atom_id in self.empty_value:
+                                continue
+
+                            cs_list_id = i['Assigned_chem_shift_list_ID']
+
+                            if cs_list_id != _cs_list_id:
+
+                                for l in self.__lp_data['chem_shift']:
+
+                                    if l['file_name'] == file_name:
+
+                                        cs_data = l['data']
+                                        cs_list = l['sf_framecode']
+
+                                        cs_sf_data = self.__star_data[fileListId].get_saveframe_by_name(cs_list)
+
+                                        _cs_list_id = cs_sf_data.get_tag('ID')[0]
+
+                                        if cs_list_id == _cs_list_id:
+                                            break
+
+                            pk_id = i[pk_id_name]
+                            d = i[dim_id_name] - 1
+                            set_id = i[set_id_name]
+
+                            position = i[cs_value_name]
+
+                            try:
+
+                                cs = next(j for j in cs_data if j[cs_chain_id_name] == chain_id and
+                                                                j[cs_seq_id_name] == seq_id and
+                                                                j[cs_comp_id_name] == comp_id and
+                                                                j[cs_atom_id_name] == atom_id)
+
+                                value = cs[cs_value_name]
+                                error = cs[cs_error_name]
+
+                                if error is None or error < 1.0e-3 or error * 5.0 > max_cs_err:
+                                    error = max_cs_err
+                                else:
+                                    error *= 5.0
+
+                                if abs(position - value) > error:
+
+                                    if not abs_pk_pos[d] and not sp_widths[d] is None:
+                                        if position < value:
+                                            while position < value:
+                                                position += sp_widths[d]
+                                        elif position > value:
+                                            while position > value:
+                                                position -= sp_widths[d]
+
+                                    if abs(position - value) > error:
+
+                                        err = "[Check row of %s %s] Peak position of spectral peak %s %s (%s) in %r saveframe is inconsistent with the assigned chemical shift value %s (difference %s, tolerance %s) in %r saveframe." %\
+                                              (pk_id_name, i[pk_id_name], cs_value_name, position, self.__getReducedAtomNotation(cs_chain_id_name, chain_id, cs_seq_id_name, seq_id, cs_comp_id_name, comp_id, cs_atom_id_name, atom_id), sf_framecode, value, position - value, error, cs_list)
+
+                                        self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
+                                        self.report.setError()
+
+                                        if self.__verbose:
+                                            self.__lfh.write("+NmrDpUtility.__testCSValueConsistencyInPkAltLoop() ++ ValueError  - %s\n" % err)
+
+                                axis_code = str(cs[cs_iso_number]) + cs[cs_atom_type]
+
+                                if axis_code != axis_codes[d]:
+
+                                    err = '[Check row of %s %s] Assignment of spectral peak %s is inconsistent with axis code %s vs %s.' %\
+                                          (pk_id_name, i[pk_id_name], self.__getReducedAtomNotation(cs_chain_id_name, chain_id, cs_seq_id_name, seq_id, cs_comp_id_name, comp_id, cs_atom_id_name, atom_id), axis_code, axis_codes[d])
+
+                                    self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
+                                    self.report.setError()
+
+                                    if self.__verbose:
+                                        self.__lfh.write("+NmrDpUtility.__testCSValueConsistencyInPkAltLoop() ++ ValueError  - %s\n" % err)
+
+                            except StopIteration:
+
+                                err = "[Check row of %s %s] Assignment of spectral peak %s was not found in assigned chemical shifts in %r saveframe." %\
+                                      (pk_id_name, i[pk_id_name], self.__getReducedAtomNotation(cs_chain_id_name, chain_id, cs_seq_id_name, seq_id, cs_comp_id_name, comp_id, cs_atom_id_name, atom_id), cs_list)
+
+                                self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
+                                self.report.setError()
+
+                                if self.__verbose:
+                                    self.__lfh.write("+NmrDpUtility.__testCSValueConsistencyInPkAltLoop() ++ ValueError  - %s\n" % err)
+
+                            if True in onebond[d]:
+                                for d2 in range(num_dim):
+                                    if onebond[d][d2]:
+
+                                        try:
+                                            j = next(j for j in lp_data if j[pk_id_name] == pk_id and j[dim_id_name] - 1 == d2 and j[set_id_name] is set_id)
+                                        except StopIteration:
+                                            continue
+
+                                        chain_id2 = j[cs_chain_id_name]
+                                        seq_id2 = j[cs_seq_id_name]
+                                        comp_id2 = j[cs_comp_id_name]
+                                        atom_id2 = j[cs_atom_id_name]
+
+                                        if not atom_id2 is None:
+                                            diff = len(atom_id) != len(atom_id2)
+                                            _atom_id = '_' + (atom_id[1:-1] if atom_id.startswith('H') and diff else atom_id[1:])
+                                            _atom_id2 = '_' + (atom_id2[1:-1] if atom_id2.startswith('H') and diff else atom_id2[1:])
+
+                                        if chain_id2 in self.empty_value or seq_id2 in self.empty_value or comp_id2 in self.empty_value or atom_id2 in self.empty_value or\
+                                           (d < d2 and (chain_id2 != chain_id or seq_id2 != seq_id or comp_id2 != comp_id or _atom_id2 != _atom_id)):
+
+                                            err = '[Check row of %s %s] Coherence transfer type is onebond. However, assignment of spectral peak is inconsistent with the type, (%s) vs (%s).' %\
+                                                  (pk_id_name, i[pk_id_name], self.__getReducedAtomNotation(chain_id_names[d], chain_id, seq_id_names[d], seq_id, comp_id_names[d], comp_id, atom_id_names[d], atom_id),
+                                                   self.__getReducedAtomNotation(chain_id_names[d2], chain_id2, seq_id_names[d2], seq_id2, comp_id_names[d2], comp_id2, atom_id_names[d2], atom_id2))
+
+                                            self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
+                                            self.report.setError()
+
+                                            if self.__verbose:
+                                                self.__lfh.write("+NmrDpUtility.__testCSValueConsistencyInPkAltLoop() ++ ValueError  - %s\n" % err)
+
+                            if True in jcoupling[d]:
+                                for d2 in range(num_dim):
+                                    if jcoupling[d][d2]:
+
+                                        try:
+                                            j = next(j for j in lp_data if j[pk_id_name] == pk_id and j[dim_id_name] - 1 == d2 and j[set_id_name] is set_id)
+                                        except StopIteration:
+                                            continue
+
+                                        chain_id2 = j[cs_chain_id_name]
+                                        seq_id2 = j[cs_seq_id_name]
+                                        comp_id2 = j[cs_comp_id_name]
+                                        atom_id2 = j[cs_atom_id_name]
+
+                                        if chain_id2 in self.empty_value or seq_id2 in self.empty_value or comp_id2 in self.empty_value or atom_id2 in self.empty_value or\
+                                           (d < d2 and (chain_id2 != chain_id or abs(seq_id2 - seq_id) > 1)):
+
+                                            err = '[Check row of %s %s] Coherence transfer type is jcoupling. However, assignment of spectral peak is inconsistent with the type, (s) vs (%s).' %\
+                                                  (pk_id_name, i[pk_id_name], self.__getReducedAtomNotation(chain_id_names[d], chain_id, seq_id_names[d], seq_id, comp_id_names[d], comp_id, atom_id_names[d], atom_id),
+                                                   self.__getReducedAtomNotation(chain_id_names[d2], chain_id2, seq_id_names[d2], seq_id2, comp_id_names[d2], comp_id2, atom_id_names[d2], atom_id2))
+
+                                            self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
+                                            self.report.setError()
+
+                                            if self.__verbose:
+                                                self.__lfh.write("+NmrDpUtility.__testCSValueConsistencyInPkAltLoop() ++ ValueError  - %s\n" % err)
+
+                            if True in relayed[d]:
+                                for d2 in range(num_dim):
+                                    if relayed[d][d2]:
+
+                                        try:
+                                            j = next(j for j in lp_data if j[pk_id_name] == pk_id and j[dim_id_name] - 1 == d2 and j[set_id_name] is set_id)
+                                        except StopIteration:
+                                            continue
+
+                                        chain_id2 = j[cs_chain_id_name]
+                                        seq_id2 = j[cs_seq_id_name]
+                                        comp_id2 = j[cs_comp_id_name]
+                                        atom_id2 = j[cs_atom_id_name]
+
+                                        if chain_id2 in self.empty_value or seq_id2 in self.empty_value or comp_id2 in self.empty_value or atom_id2 in self.empty_value or\
+                                           (d < d2 and (chain_id2 != chain_id or seq_id2 != seq_id or comp_id2 != comp_id or atom_id[0] != atom_id2[0])):
+
+                                            err = '[Check row of %s %s] Coherence transfer type is relayed. However, assignment of spectral peak is inconsistent with the type, (%s) vs (%s).' %\
+                                                  (pk_id_name, i[pk_id_name], self.__getReducedAtomNotation(chain_id_names[d], chain_id, seq_id_names[d], seq_id, comp_id_names[d], comp_id, atom_id_names[d], atom_id),
+                                                   self.__getReducedAtomNotation(chain_id_names[d2], chain_id2, seq_id_names[d2], seq_id2, comp_id_names[d2], comp_id2, atom_id_names[d2], atom_id2))
+
+                                            self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
+                                            self.report.setError()
+
+                                            if self.__verbose:
+                                                self.__lfh.write("+NmrDpUtility.__testCSValueConsistencyInPkAltLoop() ++ ValueError  - %s\n" % err)
+
+                except Exception as e:
+
+                    self.report.error.appendDescription('internal_error', "+NmrDpUtility.__testCSValueConsistencyInPkAltLoop() ++ Error  - %s" % str(e))
+                    self.report.setError()
+
+                    if self.__verbose:
+                        self.__lfh.write("+NmrDpUtility.__testCSValueConsistencyInPkAltLoop() ++ Error  - %s" % str(e))
 
         return self.report.getTotalErrors() == __errors
 
@@ -10725,7 +11364,7 @@ class NmrDpUtility(object):
             else:
                 ent['exp_type'] = 'Unknown'
 
-        elif content_subtype == 'spectral_peak':
+        elif content_subtype.startswith('spectral_peak'):
 
             type = sf_data.get_tag('experiment_type' if file_type == 'nef' else 'Experiment_type')
             if len(type) > 0 and not type[0] in self.empty_value:
@@ -10907,7 +11546,7 @@ class NmrDpUtility(object):
                     elif content_subtype == 'rdc_restraint':
                         self.__calculateStatsOfRdcRestraint(file_list_id, lp_data, conflict_id_set, inconsistent, redundant, ent)
 
-            if content_subtype == 'spectral_peak':
+            if content_subtype.startswith('spectral_peak'):
 
                 try:
 
@@ -10920,7 +11559,10 @@ class NmrDpUtility(object):
                 except ValueError: # raised error already at __testIndexConsistency()
                     return
 
-                self.__calculateStatsOfSpectralPeak(file_list_id, sf_framecode, num_dim, lp_data, ent)
+                if content_subtype == 'spectral_peak':
+                    self.__calculateStatsOfSpectralPeak(file_list_id, sf_framecode, num_dim, lp_data, ent)
+                elif content_subtype == 'spectral_peak_alt':
+                    self.__calculateStatsOfSpectralPeakAlt(file_list_id, sf_framecode, num_dim, lp_data, ent)
 
         elif content_subtype == 'poly_seq':
             self.__calculateStatsOfCovalentBond(file_list_id, sf_framecode, lp_category, lp_data, ent)
@@ -15302,7 +15944,7 @@ class NmrDpUtility(object):
                             axis_code = sp_dim['axis_code']
                             atom_type = ''.join(j for j in axis_code if not j.isdigit())
                             atom_isotope_number = int(''.join(j for j in axis_code if j.isdigit()))
-                            axis_unit = sp_dim['axis_unit']
+                            axis_unit = 'Hz' if not 'axis_unit' in sp_dim else sp_dim['axis_unit']
                             first_point = None if not 'value_first_point' in sp_dim else sp_dim['value_first_point']
                             sp_width = None if not 'spectral_width' in sp_dim else sp_dim['spectral_width']
                             if 'spectrometer_frequency' in sp_dim:
@@ -15315,7 +15957,7 @@ class NmrDpUtility(object):
                             axis_code = sp_dim['Axis_code']
                             atom_type = ''.join(j for j in axis_code if not j.isdigit())
                             atom_isotope_number = int(''.join(j for j in axis_code if j.isdigit()))
-                            axis_unit = sp_dim['Sweep_width_units']
+                            axis_unit = 'Hz' if not 'Sweep_width_units' in sp_dim else sp_dim['Sweep_width_units']
                             first_point = None if not 'Value_first_point' in sp_dim else sp_dim['Value_first_point']
                             sp_width = None if not 'Sweep_width' in sp_dim else sp_dim['Sweep_width']
                             if 'Spectrometer_frequency' in sp_dim:
@@ -15363,7 +16005,7 @@ class NmrDpUtility(object):
                                     break
 
                         spectral_dim = {'id': i, 'atom_type': atom_type, 'atom_isotope_number': atom_isotope_number,
-                                        'sweep_width': copy.copy(sp_width), 'sweep_width_units': axis_unit, 'center_frequency_offset': float('{:.8f}'.format(center_point)),
+                                        'sweep_width': copy.copy(sp_width), 'sweep_width_units': axis_unit, 'center_frequency_offset': None if center_point is None else float('{:.8f}'.format(center_point)),
                                         'under_sampling_type': under_sampling_type, 'encoding_code': encoding_code, 'encoded_source_dimension_id': encoded_src_dim_id, 'magnetization_linkage_id': mag_link_id}
 
                         if axis_unit == 'Hz' and not sp_freq is None and not first_point is None and not center_point is None and not sp_width is None:
@@ -15397,15 +16039,15 @@ class NmrDpUtility(object):
                                     if _atom_type == 'C':
                                         _center_point = None
                                         if file_type == 'nef':
-                                            _axis_unit = _sp_dim['axis_unit']
+                                            _axis_unit = 'Hz' if not 'axis_unit' in sp_dim else _sp_dim['axis_unit']
                                             _first_point = None if not 'value_first_point' in _sp_dim else _sp_dim['value_first_point']
-                                            _sp_width = None if not 'spectral_width' in _sp_dim else _sp_dim['spectral_width']
+                                            _sp_width = None if not 'spectral_width' in _sp_dim or not 'axis_unit' in _sp_dim else _sp_dim['spectral_width']
                                             if 'spectrometer_frequency' in _sp_dim:
                                                 _sp_freq = _sp_dim['spectrometer_frequency']
                                         else:
-                                            _axis_unit = _sp_dim['Sweep_width_units']
+                                            _axis_unit = 'Hz' if not 'Sweep_width_units' in sp_dim else _sp_dim['Sweep_width_units']
                                             _first_point = None if not 'Value_first_point' in _sp_dim else _sp_dim['Value_first_point']
-                                            _sp_width = None if not 'Sweep_width' in _sp_dim else _sp_dim['Sweep_width']
+                                            _sp_width = None if not 'Sweep_width' in _sp_dim or not 'Sweep_width_units' in _sp_dim else _sp_dim['Sweep_width']
                                             if 'Spectrometer_frequency' in _sp_dim:
                                                 _sp_freq = _sp_dim['Spectrometer_frequency']
                                             if 'Center_frequency_offset' in _sp_dim:
@@ -15477,7 +16119,8 @@ class NmrDpUtility(object):
                 for j in range(num_dim):
 
                     if __pynmrstar_v3__ and not (chain_id_names[j] in i and seq_id_names[j] in i and comp_id_names[j] in i and atom_id_names[j] in i):
-                        pass
+                        has_assignment = False
+                        break
 
                     else:
                         chain_id = str(i[chain_id_names[j]])
@@ -15503,6 +16146,255 @@ class NmrDpUtility(object):
 
             if self.__verbose:
                 self.__lfh.write("+NmrDpUtility.__calculateStatsOfSpectralPeak() ++ Error  - %s" % str(e))
+
+    def __calculateStatsOfSpectralPeakAlt(self, file_list_id, sf_framecode, num_dim, lp_data, ent):
+        """ Calculate statistics of spectral peaks.
+        """
+
+        input_source = self.report.input_sources[file_list_id]
+        input_source_dic = input_source.get()
+
+        file_name = input_source_dic['file_name']
+        file_type = input_source_dic['file_type']
+
+        if file_type == 'nef':
+            return
+
+        content_subtype = 'spectral_peak_alt'
+
+        max_dim = num_dim + 1
+
+        item_names = self.item_names_in_cs_loop[file_type]
+        chain_id_name = item_names['chain_id']
+        seq_id_name = item_names['seq_id']
+        comp_id_name = item_names['comp_id']
+        atom_id_name = item_names['atom_id']
+        value_name = item_names['value']
+
+        try:
+
+            ent['number_of_spectral_dimensions'] = num_dim
+            ent['spectral_dim'] = []
+
+            aux_data = next((l['data'] for l in self.__aux_data[content_subtype] if l['file_name'] == file_name and l['sf_framecode'] == sf_framecode and l['category'] == self.aux_lp_categories[file_type][content_subtype][1]), None)
+
+            mag_link = []
+
+            if not aux_data is None:
+                for sp_dim_trans in aux_data:
+                    if sp_dim_trans['Type'] == 'onebond': # or sp_dim_trans['Type'].startswith('j') or sp_dim_trans['Type'].startswith('relayed'):
+                        dim_1 = sp_dim_trans['Spectral_dim_ID_1']
+                        dim_2 = sp_dim_trans['Spectral_dim_ID_2']
+                        mag_link.append((dim_1, dim_2))
+
+            aux_data = next((l['data'] for l in self.__aux_data[content_subtype] if l['file_name'] == file_name and l['sf_framecode'] == sf_framecode and l['category'] == self.aux_lp_categories[file_type][content_subtype][0]), None)
+
+            if not aux_data is None:
+                for i in range(1, max_dim):
+                    for sp_dim in aux_data:
+                        sp_freq = None
+                        center_point = None
+                        under_sampling_type = None
+                        encoding_code = None
+                        encoded_src_dim_id = None
+                        mag_link_id = None
+                        if sp_dim['ID'] != i:
+                            continue
+                        axis_code = sp_dim['Axis_code']
+                        atom_type = ''.join(j for j in axis_code if not j.isdigit())
+                        atom_isotope_number = int(''.join(j for j in axis_code if j.isdigit()))
+                        axis_unit = 'Hz' if not 'Sweep_width_units' in sp_dim else sp_dim['Sweep_width_units']
+                        first_point = None if not 'Value_first_point' in sp_dim else sp_dim['Value_first_point']
+                        sp_width = None if not 'Sweep_width' in sp_dim else sp_dim['Sweep_width']
+                        if 'Spectrometer_frequency' in sp_dim:
+                            sp_freq = sp_dim['Spectrometer_frequency']
+                        if 'Under_sampling_type' in sp_dim:
+                            under_sampling_type = sp_dim['Under_sampling_type']
+                        if 'Center_frequency_offset' in sp_dim:
+                            center_point = sp_dim['Center_frequency_offset']
+                            if center_point in self.empty_value:
+                                center_point = None
+                        if 'Encoding_code' in sp_dim:
+                            encoding_code = sp_dim['Encoding_code']
+                            if encoding_code in self.empty_value:
+                                encoding_code = None
+                        if 'Encoded_reduced_dimension_ID' in sp_dim:
+                            encoded_src_dim_id = sp_dim['Encoded_reduced_dimension_ID']
+                            if encoded_src_dim_id in self.empty_value:
+                                encoded_src_dim_id = None
+                        if 'Magnetization_linkage_ID' in sp_dim:
+                            mag_link_id = sp_dim['Magnetization_linkage_ID']
+                            if mag_link_id in self.empty_value:
+                                mag_link_id = None
+
+                        if not sp_freq is None and sp_freq in self.empty_value:
+                            sp_freq = None
+
+                        if center_point is None:
+                            center_point = None if first_point is None or sp_width is None else (first_point - sp_width / 2.0)
+
+                        if not under_sampling_type is None and under_sampling_type in self.empty_value:
+                            under_sampling_type = None
+
+                        if not under_sampling_type is None and under_sampling_type in ['circular', 'mirror', 'none']:
+                            if under_sampling_type == 'circular':
+                                under_sampling_type = 'folded'
+                            elif under_sampling_type == 'mirror':
+                                under_sampling_type = 'aliased'
+                            else:
+                                under_sampling_type = 'not observed'
+
+                        if mag_link_id is None:
+                            for pair in mag_link:
+                                if pair[0] == i or pair[1] == i:
+                                    mag_link_id = mag_link.index(pair) + 1
+                                    break
+
+                        spectral_dim = {'id': i, 'atom_type': atom_type, 'atom_isotope_number': atom_isotope_number,
+                                        'sweep_width': copy.copy(sp_width), 'sweep_width_units': axis_unit, 'center_frequency_offset': None if center_point is None else float('{:.8f}'.format(center_point)),
+                                        'under_sampling_type': under_sampling_type, 'encoding_code': encoding_code, 'encoded_source_dimension_id': encoded_src_dim_id, 'magnetization_linkage_id': mag_link_id}
+
+                        if axis_unit == 'Hz' and not sp_freq is None and not first_point is None and not center_point is None and not sp_width is None:
+                            first_point /= sp_freq
+                            center_point /= sp_freq
+                            sp_width /= sp_freq
+
+                        last_point = None if first_point is None or sp_width is None else (first_point - sp_width)
+
+                        if center_point is None or last_point is None:
+                            spectral_region = atom_type
+                        elif atom_type == 'H':
+                            if mag_link_id is None:
+                                spectral_region = 'H'
+                            else:
+                                dim_1, dim_2 = mag_link[mag_link_id - 1]
+                                hvy_dim = dim_1 if i == dim_2 else dim_2
+
+                                for _sp_dim in aux_data:
+                                    if _sp_dim['ID'] != hvy_dim:
+                                        continue
+                                    _axis_code = _sp_dim['Axis_code']
+                                    _atom_type = ''.join(j for j in _axis_code if not j.isdigit())
+
+                                    if _atom_type == 'C':
+                                        _center_point = None
+                                        _axis_unit = 'Hz' if not 'Sweep_width_units' in _sp_dim else _sp_dim['Sweep_width_units']
+                                        _first_point = None if not 'Value_first_point' in _sp_dim else _sp_dim['Value_first_point']
+                                        _sp_width = None if not 'Sweep_width' in _sp_dim or not 'Sweep_width_units' in _sp_dim else _sp_dim['Sweep_width']
+                                        if 'Spectrometer_frequency' in _sp_dim:
+                                            _sp_freq = _sp_dim['Spectrometer_frequency']
+                                        if 'Center_frequency_offset' in _sp_dim:
+                                            _center_point = _sp_dim['Center_frequency_offset']
+                                            if _center_point in self.empty_value:
+                                                _center_point = None
+
+                                        if not _sp_freq is None and _sp_freq in self.empty_value:
+                                            _sp_freq = None
+
+                                        if _center_point is None:
+                                            _center_point = None if _first_point is None or _sp_width is None else (_first_point - _sp_width / 2.0)
+
+                                        if _axis_unit == 'Hz' and not _sp_freq is None and not _first_point is None and not _center_point is None and not _sp_width is None:
+                                            _first_point /= _sp_freq
+                                            _center_point /= _sp_freq
+                                            _sp_width /= _sp_freq
+
+                                        _last_point = None if _first_point is None or _sp_width is None else (_first_point - _sp_width)
+
+                                        if _center_point is None or _last_point is None:
+                                            spectral_region = 'H'
+                                        elif _center_point > 100.0 and _sp_width < 60.0:
+                                            spectral_region = 'H-aromatic'
+                                        elif _center_point < 20.0 and _sp_width < 30.0:
+                                            spectral_region = 'H-methyl'
+                                        elif _center_point < 60.0 and _sp_width < 90.0:
+                                            spectral_region = 'H-aliphatic'
+                                        else:
+                                            spectral_region = 'H'
+
+                                    elif _atom_type == 'N':
+                                        spectral_region = 'HN'
+                                    else:
+                                        spectral_region = 'H'
+                                    break
+                        elif atom_type == 'C':
+                            if mag_link_id is None and center_point > 160.0:
+                                spectral_region = 'CO'
+                            elif center_point > 100.0 and sp_width < 60.0:
+                                spectral_region = 'C-aromatic'
+                            elif center_point < 20.0 and sp_width < 30.0:
+                                spectral_region = 'C-methyl'
+                            elif center_point < 60.0 and sp_width < 90.0:
+                                spectral_region = 'C-aliphatic'
+                            else:
+                                spectral_region = 'C'
+                        else:
+                            spectral_region = atom_type
+
+                        spectral_dim['spectral_region'] = spectral_region
+
+                        ent['spectral_dim'].append(spectral_dim)
+
+                        break
+
+            count = {'assigned_spectral_peaks': 0, 'unassigned_spectral_peaks': 0}
+
+            aux_data = next((l['data'] for l in self.__aux_data[content_subtype] if l['file_name'] == file_name and l['sf_framecode'] == sf_framecode and l['category'] == '_Assigned_peak_chem_shift'), None)
+
+            pk_id_name = 'Peak_ID'
+            dim_id_name = 'Spectral_dim_ID'
+
+            pk_id_set = set()
+
+            for i in lp_data:
+
+                has_assignment = not aux_data is None
+
+                pk_id = i['ID']
+
+                if pk_id in pk_id_set:
+                    continue
+
+                if has_assignment:
+
+                    for j in range(num_dim):
+
+                        try:
+                            k = next(k for k in aux_data if k[pk_id_name] == pk_id and int(k[dim_id_name]) - 1 == j)
+                        except StopIteration:
+                            has_assignment = False
+                            break
+
+                        if __pynmrstar_v3__ and not (chain_id_name in k and seq_id_name in k and comp_id_name in k and atom_id_name in k):
+                            has_assignment = False
+                            break
+
+                        else:
+                            chain_id = str(k[chain_id_name])
+                            seq_id = k[seq_id_name]
+                            comp_id = k[comp_id_name]
+                            atom_id = k[atom_id_name]
+
+                            if chain_id in self.empty_value or seq_id in self.empty_value or comp_id in self.empty_value or atom_id in self.empty_value:
+                                has_assignment = False
+                                break
+
+                pk_id_set.add(pk_id)
+
+                if has_assignment:
+                    count['assigned_spectral_peaks'] += 1
+                else:
+                    count['unassigned_spectral_peaks'] += 1
+
+            ent['number_of_spectral_peaks'] = count
+
+        except Exception as e:
+
+            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__calculateStatsOfSpectralPeakAlt() ++ Error  - %s" % str(e))
+            self.report.setError()
+
+            if self.__verbose:
+                self.__lfh.write("+NmrDpUtility.__calculateStatsOfSpectralPeakAlt() ++ Error  - %s" % str(e))
 
     def __extractCoordStructConf(self, nmr_chain_id, nmr_seq_ids):
         """ Extract conformational annotations of coordinate file.
@@ -23468,21 +24360,21 @@ class NmrDpUtility(object):
 
                 if has_ambig_set_id:
 
-                    aux_lp_cateogry = '_Ambiguous_atom_chem_shift'
+                    aux_lp_category = '_Ambiguous_atom_chem_shift'
 
                     for _loop in sf_data.loops:
 
-                        if _loop.category == aux_lp_cateogry:
+                        if _loop.category == aux_lp_category:
                             del sf_data[_loop]
                             break
 
-                    _loop = pynmrstar.Loop.from_scratch(aux_lp_cateogry)
-                    _loop.add_tag(aux_lp_cateogry + '.Ambiguous_shift_set_ID')
-                    _loop.add_tag(aux_lp_cateogry + '.Assigned_chem_shift_list_ID')
-                    _loop.add_tag(aux_lp_cateogry + '.Atom_chem_shift_ID')
+                    _loop = pynmrstar.Loop.from_scratch(aux_lp_category)
+                    _loop.add_tag(aux_lp_category + '.Ambiguous_shift_set_ID')
+                    _loop.add_tag(aux_lp_category + '.Assigned_chem_shift_list_ID')
+                    _loop.add_tag(aux_lp_category + '.Atom_chem_shift_ID')
 
                     if self.__insert_entry_id_to_loops:
-                        _loop.add_tag(aux_lp_cateogry + '.Entry_ID')
+                        _loop.add_tag(aux_lp_category + '.Entry_ID')
 
                     for l, i in enumerate(lp_data, start=1):
 
@@ -23528,10 +24420,19 @@ class NmrDpUtility(object):
         if self.__dstPath == self.__srcPath and self.__release_mode:
             return True
 
-        if __pynmrstar_v3__:
-            self.__star_data[0].write_to_file(self.__dstPath, skip_empty_tags=False)
+        input_source = self.report.input_sources[0]
+        input_source_dic = input_source.get()
+
+        file_type = input_source_dic['file_type']
+
+        if file_type != 'nmr-star' or not 'spectral_peak_alt' in input_source_dic['content_subtype'].keys():
+            if __pynmrstar_v3__:
+                self.__star_data[0].write_to_file(self.__dstPath, skip_empty_tags=False)
+            else:
+                self.__star_data[0].write_to_file(self.__dstPath)
+
         else:
-            self.__star_data[0].write_to_file(self.__dstPath)
+            shutil.copy(self.__srcPath, self.__dstPath) # prevent data loss in spectral peak list
 
         return not self.report.isError()
 

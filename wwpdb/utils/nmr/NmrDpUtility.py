@@ -16039,13 +16039,13 @@ class NmrDpUtility(object):
                                     if _atom_type == 'C':
                                         _center_point = None
                                         if file_type == 'nef':
-                                            _axis_unit = 'Hz' if not 'axis_unit' in sp_dim else _sp_dim['axis_unit']
+                                            _axis_unit = 'Hz' if not 'axis_unit' in _sp_dim else _sp_dim['axis_unit']
                                             _first_point = None if not 'value_first_point' in _sp_dim else _sp_dim['value_first_point']
                                             _sp_width = None if not 'spectral_width' in _sp_dim or not 'axis_unit' in _sp_dim else _sp_dim['spectral_width']
                                             if 'spectrometer_frequency' in _sp_dim:
                                                 _sp_freq = _sp_dim['spectrometer_frequency']
                                         else:
-                                            _axis_unit = 'Hz' if not 'Sweep_width_units' in sp_dim else _sp_dim['Sweep_width_units']
+                                            _axis_unit = 'Hz' if not 'Sweep_width_units' in _sp_dim else _sp_dim['Sweep_width_units']
                                             _first_point = None if not 'Value_first_point' in _sp_dim else _sp_dim['Value_first_point']
                                             _sp_width = None if not 'Sweep_width' in _sp_dim or not 'Sweep_width_units' in _sp_dim else _sp_dim['Sweep_width']
                                             if 'Spectrometer_frequency' in _sp_dim:

@@ -18626,6 +18626,9 @@ class NmrDpUtility(object):
 
                     key_items = self.key_items[file_type][content_subtype]
 
+                    if len(key_items) == 0:
+                        continue
+
                     if content_subtype in ['dist_restraint', 'dihed_restraint', 'rdc_restraint']:
 
                         conflict_id = self.__nefT.get_conflict_atom_id(sf_data, file_type, lp_category, key_items)[0]
@@ -18703,6 +18706,9 @@ class NmrDpUtility(object):
                     elif lp_category in self.aux_lp_categories[file_type][content_subtype]:
 
                         key_items = self.aux_key_items[file_type][content_subtype][lp_category]
+
+                        if len(key_items) == 0:
+                            continue
 
                         try:
 
@@ -24420,19 +24426,10 @@ class NmrDpUtility(object):
         if self.__dstPath == self.__srcPath and self.__release_mode:
             return True
 
-        input_source = self.report.input_sources[0]
-        input_source_dic = input_source.get()
-
-        file_type = input_source_dic['file_type']
-
-        if file_type != 'nmr-star' or not 'spectral_peak_alt' in input_source_dic['content_subtype'].keys():
-            if __pynmrstar_v3__:
-                self.__star_data[0].write_to_file(self.__dstPath, skip_empty_tags=False)
-            else:
-                self.__star_data[0].write_to_file(self.__dstPath)
-
+        if __pynmrstar_v3__:
+            self.__star_data[0].write_to_file(self.__dstPath, skip_empty_tags=False)
         else:
-            shutil.copy(self.__srcPath, self.__dstPath) # prevent data loss in spectral peak list
+            self.__star_data[0].write_to_file(self.__dstPath)
 
         return not self.report.isError()
 

@@ -182,18 +182,6 @@ class TestNmrDpUtility(unittest.TestCase):
 
         self.utility.op('nmr-str-consistency-check')
 
-    def test_nmr_nef_consistency_check_daother_5926(self):
-        self.utility.setSource(self.data_dir_path + 'swallow_NMR-Star_3-1.str')
-        self.utility.addInput(name='coordinate_file_path', value=self.data_dir_path + 'D_800365_model_P1.cif.V4', type='file')
-        self.utility.addInput(name='nonblk_anomalous_cs', value=True, type='param')
-        self.utility.addInput(name='nonblk_bad_nterm', value=True, type='param')
-        self.utility.addInput(name='resolve_conflict', value=True, type='param')
-        self.utility.addInput(name='check_mandatory_tag', value=True, type='param')
-        self.utility.setLog(self.data_dir_path + 'daother-5926-str-consistency-log.json')
-        self.utility.setVerbose(False)
-
-        self.utility.op('nmr-str-consistency-check')
-
     def test_nmr_nef2str_deposit_str(self):
         self.utility.setSource(self.data_dir_path + '2l9r.nef')
         self.utility.addInput(name='coordinate_file_path', value=self.data_dir_path + '2l9r.cif', type='file')
@@ -394,6 +382,35 @@ class TestNmrDpUtility(unittest.TestCase):
         self.utility.op('nmr-str-consistency-check')
 
         #pynmrstar.Entry.from_file(self.data_dir_path + 'D_800107_nmr-data-str-review_P1.str.V20.rev')
+
+    def test_nmr_str_consistency_check_daother_5926(self):
+        self.utility.setSource(self.data_dir_path + 'swallow_NMR-Star_3-1.str')
+        self.utility.addInput(name='coordinate_file_path', value=self.data_dir_path + 'D_800365_model_P1.cif.V4', type='file')
+        self.utility.addInput(name='nonblk_anomalous_cs', value=True, type='param')
+        self.utility.addInput(name='nonblk_bad_nterm', value=True, type='param')
+        self.utility.addInput(name='resolve_conflict', value=True, type='param')
+        self.utility.addInput(name='check_mandatory_tag', value=True, type='param')
+        self.utility.setLog(self.data_dir_path + 'daother-5926-str-consistency-log.json')
+        self.utility.setVerbose(False)
+
+        self.utility.op('nmr-str-consistency-check')
+
+    def test_nmr_str2str_deposit_daother_5926(self):
+        if not os.access(self.data_dir_path + 'daother-5926-str-consistency-log.json', os.F_OK):
+            self.test_nmr_str_consistency_check_daother_5926()
+
+        self.utility.setSource(self.data_dir_path + 'swallow_NMR-Star_3-1.str')
+        self.utility.addInput(name='coordinate_file_path', value=self.data_dir_path + '6nox.cif', type='file')
+        self.utility.addInput(name='report_file_path', value=self.data_dir_path + 'daother-5926-str-consistency-log.json', type='file')
+        self.utility.addInput(name='nonblk_anomalous_cs', value=True, type='param')
+        self.utility.addInput(name='nonblk_bad_nterm', value=True, type='param')
+        self.utility.addInput(name='resolve_conflict', value=True, type='param')
+        self.utility.addInput(name='check_mandatory_tag', value=True, type='param')
+        self.utility.setLog(self.data_dir_path + 'daother-5926-str2str-deposit-log.json')
+        self.utility.setDestination(self.data_dir_path + 'swallow_NMR-Star_3-1-next.str')
+        self.utility.setVerbose(False)
+
+        self.utility.op('nmr-str2str-deposit')
 
 if __name__ == '__main__':
     unittest.main()

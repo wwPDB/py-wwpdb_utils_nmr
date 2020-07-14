@@ -400,7 +400,7 @@ class TestNmrDpUtility(unittest.TestCase):
             self.test_nmr_str_consistency_check_daother_5926()
 
         self.utility.setSource(self.data_dir_path + 'swallow_NMR-Star_3-1.str')
-        self.utility.addInput(name='coordinate_file_path', value=self.data_dir_path + '6nox.cif', type='file')
+        self.utility.addInput(name='coordinate_file_path', value=self.data_dir_path + 'D_800365_model_P1.cif.V4', type='file')
         self.utility.addInput(name='report_file_path', value=self.data_dir_path + 'daother-5926-str-consistency-log.json', type='file')
         self.utility.addInput(name='nonblk_anomalous_cs', value=True, type='param')
         self.utility.addInput(name='nonblk_bad_nterm', value=True, type='param')

@@ -165,7 +165,7 @@ _Spectral_peak_list.Experiment_class,no
 _Spectral_peak_list.Experiment_type,no
 _Spectral_dim.ID,yes
 _Spectral_dim.Sweep_width_units,yes
-_Spectral_dim.Axis_code,yes
+_Spectral_dim.Axis_code,no
 _Spectral_dim.Spectrometer_frequency,no
 _Spectral_dim.Sweep_width,no
 _Spectral_dim.Value_first_point,no

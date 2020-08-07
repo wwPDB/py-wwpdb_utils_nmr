@@ -584,6 +584,7 @@ class NmrDpUtility(object):
         __crossCheckTasks = [self.__assignCoordPolymerSequence,
                              self.__testCoordAtomIdConsistency,
                              self.__testCovalentBond,
+                             self.__testResidueVariant,
                              self.__validateCSValue,
                              self.__extractCoordDisulfideBond,
                              self.__extractCoordOtherBond,
@@ -2486,7 +2487,7 @@ class NmrDpUtility(object):
 
         # auxiliary loop categories
         self.aux_lp_categories = {'nef': {'entry_info': [],
-                                          'poly_seq':  ['_nef_covalent_links'],
+                                          'poly_seq':  ['_nef_covalent_links', '_nef_sequence'],
                                           'entity': [],
                                           'chem_shift': [],
                                           'chem_shift_ref': [],
@@ -2497,7 +2498,7 @@ class NmrDpUtility(object):
                                           'spectral_peak_alt': []
                                           },
                                   'nmr-star': {'entry_info': [],
-                                               'poly_seq':  ['_Bond'],
+                                               'poly_seq':  ['_Bond', '_Entity_deleted_atom'],
                                                'entity': [],
                                                'chem_shift': [],
                                                'chem_shift_ref': [],
@@ -2584,7 +2585,11 @@ class NmrDpUtility(object):
                                                                   {'name': 'sequence_code_2', 'type': 'int'},
                                                                   {'name': 'residue_name_2', 'type': 'str', 'uppercase': True},
                                                                   {'name': 'atom_name_2', 'type': 'str'}
-                                                                  ]
+                                                                  ],
+                                          '_nef_sequence': [{'name': 'chain_code', 'type': 'str', 'default': 'A'},
+                                                            {'name': 'sequence_code', 'type': 'int'},
+                                                            {'name': 'residue_name', 'type': 'str', 'uppercase': True}
+                                                            ]
                                           },
                                       'entity': None,
                                       'chem_shift': None,
@@ -2616,7 +2621,13 @@ class NmrDpUtility(object):
                                                          {'name': 'Comp_index_ID_2', 'type': 'int'},
                                                          {'name': 'Comp_ID_2', 'type': 'str', 'uppercase': True},
                                                          {'name': 'Atom_ID_2', 'type': 'str'}
-                                                         ]
+                                                         ],
+                                               '_Entity_deleted_atom': [{'name': 'ID', 'type': 'index-int', 'mandatory': True, 'default-from': 'self'},
+                                                                        {'name': 'Entity_assembly_ID', 'type': 'positive-int', 'default': '1', 'default-from': 'self'},
+                                                                        {'name': 'Comp_index_ID', 'type': 'int'},
+                                                                        {'name': 'Comp_ID', 'type': 'str', 'uppercase': True},
+                                                                        {'name': 'Atom_ID', 'type': 'str'}
+                                                                        ]
                                                },
                                            'entity': None,
                                            'chem_shift': None,
@@ -2647,7 +2658,14 @@ class NmrDpUtility(object):
         # auxiliary loop data items
         self.aux_data_items = {'nef': {'entry_info': None,
                                        'poly_seq': {
-                                           '_nef_covalent_links': []},
+                                           '_nef_covalent_links': [],
+                                           '_nef_sequence': [{'name': 'linking', 'type': 'enum', 'mandatory': False,
+                                                              'enum': ('start', 'end', 'middle', 'cyclic', 'break', 'single', 'dummy'),
+                                                              'enforce-enum': True},
+                                                              {'name': 'residue_variant', 'type': 'str', 'mandatory': False},
+                                                              {'name': 'cis_peptide', 'type': 'bool', 'mandatory': False}
+                                                              ]
+                                           },
                                        'entity': None,
                                        'chem_shift': None,
                                        'chem_shift_ref': None,
@@ -2687,7 +2705,13 @@ class NmrDpUtility(object):
                                                              {'name': 'Auth_seq_ID_2', 'type': 'int', 'mandatory': False},
                                                              {'name': 'Auth_comp_ID_2', 'type': 'str', 'mandatory': False},
                                                              {'name': 'Auth_atom_ID_2', 'type': 'str', 'mandatory': False}
-                                                             ]},
+                                                             ],
+                                                   '_Entity_deleted_atom': [{'name': 'Auth_entity_assembly_ID', 'type': 'str', 'mandatory': False},
+                                                                            {'name': 'Auth_seq_ID', 'type': 'int', 'mandatory': False},
+                                                                            {'name': 'Auth_comp_ID', 'type': 'str', 'mandatory': False},
+                                                                            {'name': 'Auth_atom_ID', 'type': 'str', 'mandatory': False}
+                                                                            ]
+                                                   },
                                                'entity': None,
                                                'chem_shift': None,
                                                'chem_shift_ref': None,
@@ -2792,7 +2816,8 @@ class NmrDpUtility(object):
         # allowed auxiliary loop tags
         self.aux_allowed_tags = {'nef': {'entry_info': None,
                                          'poly_seq': {
-                                             '_nef_covalent_links': ["chain_code_1", "sequence_code_1", "residue_name_1", "atom_name_1", "chain_code_2", "sequence_code_2", "residue_name_2", "atom_name_2"]
+                                             '_nef_covalent_links': ['chain_code_1', 'sequence_code_1', 'residue_name_1', 'atom_name_1', 'chain_code_2', 'sequence_code_2', 'residue_name_2', 'atom_name_2'],
+                                             '_nef_sequence': ['index', 'chain_code', 'sequence_code', 'residue_name', 'linking', 'residue_variant', 'cis_peptide']
                                              },
                                          'entity': None,
                                          'chem_shift': None,
@@ -2808,7 +2833,8 @@ class NmrDpUtility(object):
                                          },
                                  'nmr-star': {'entry_info': None,
                                               'poly_seq': {
-                                                  '_Bond': ["ID", "Type", "Value_order", "Assembly_atom_ID_1", "Entity_assembly_ID_1", "Entity_assembly_name_1", "Entity_ID_1", "Comp_ID_1", "Comp_index_ID_1", "Seq_ID_1", "Atom_ID_1", "Assembly_atom_ID_2", "Entity_assembly_ID_2", "Entity_assembly_name_2", "Entity_ID_2", "Comp_ID_2", "Comp_index_ID_2", "Seq_ID_2", "Atom_ID_2", "Auth_entity_assembly_ID_1", "Auth_entity_assembly_name_1", "Auth_asym_ID_1", "Auth_seq_ID_1", "Auth_comp_ID_1", "Auth_atom_ID_1", "Auth_entity_assembly_ID_2", "Auth_entity_assembly_name_2", "Auth_asym_ID_2", "Auth_seq_ID_2", "Auth_comp_ID_2", "Auth_atom_ID_2", "Sf_ID", "Entry_ID", "Assembly_ID"]
+                                                  '_Bond': ['ID', 'Type', 'Value_order', 'Assembly_atom_ID_1', 'Entity_assembly_ID_1', 'Entity_assembly_name_1', 'Entity_ID_1', 'Comp_ID_1', 'Comp_index_ID_1', 'Seq_ID_1', 'Atom_ID_1', 'Assembly_atom_ID_2', 'Entity_assembly_ID_2', 'Entity_assembly_name_2', 'Entity_ID_2', 'Comp_ID_2', 'Comp_index_ID_2', 'Seq_ID_2', 'Atom_ID_2', 'Auth_entity_assembly_ID_1', 'Auth_entity_assembly_name_1', 'Auth_asym_ID_1', 'Auth_seq_ID_1', 'Auth_comp_ID_1', 'Auth_atom_ID_1', 'Auth_entity_assembly_ID_2', 'Auth_entity_assembly_name_2', 'Auth_asym_ID_2', 'Auth_seq_ID_2', 'Auth_comp_ID_2', 'Auth_atom_ID_2', 'Sf_ID', 'Entry_ID', 'Assembly_ID'],
+                                                  '_Entity_deleted_atom': ['ID', 'Entity_atom_list_ID', 'Entity_assembly_ID', 'Entity_ID', 'Comp_ID', 'Comp_index_ID', 'Seq_ID', 'Atom_ID', 'Auth_entity_assembly_ID', 'Auth_seq_ID', 'Auth_comp_ID', 'Auth_atom_ID', 'Sf_ID', 'Entry_ID', 'Assembly_ID']
                                                   },
                                               'entity': None,
                                               'chem_shift': None,
@@ -11229,6 +11255,312 @@ class NmrDpUtility(object):
 
         self.__coord_bond_length[seq_key] = None
         return None
+
+    def __testResidueVariant(self):
+        """ Perform consistency test on residue variants.
+        """
+
+        id = self.report.getInputSourceIdOfCoord()
+
+        if id < 0:
+            return True
+
+        cif_input_source = self.report.input_sources[id]
+        cif_input_source_dic = cif_input_source.get()
+
+        cif_polymer_sequence = cif_input_source_dic['polymer_sequence']
+
+        __errors = self.report.getTotalErrors()
+
+        for fileListId in range(self.__file_path_list_len):
+
+            nmr_input_source = self.report.input_sources[fileListId]
+            nmr_input_source_dic = nmr_input_source.get()
+
+            file_name = nmr_input_source_dic['file_name']
+            file_type = nmr_input_source_dic['file_type']
+
+            if nmr_input_source_dic['content_subtype'] is None:
+                continue
+
+            content_subtype = 'poly_seq'
+
+            if not content_subtype in nmr_input_source_dic['content_subtype'].keys():
+                continue
+
+            sf_category = self.sf_categories[file_type][content_subtype]
+            lp_category = self.aux_lp_categories[file_type][content_subtype][1] # nef: _nef_sequence, nmr-star: _Entity_deleted_atom
+
+            if not lp_category in self.__lp_category_list[fileListId]:
+                continue
+
+            seq_align_dic = self.report.sequence_alignment.get()
+            chain_assign_dic = self.report.chain_assignment.get()
+
+            if not 'nmr_poly_seq_vs_model_poly_seq' in chain_assign_dic:
+
+                err = "Chain assignment does not exist, __assignCoordPolymerSequence() should be invoked."
+
+                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__testCoordResidueVariant() ++ Error  - %s" % err)
+                self.report.setError()
+
+                if self.__verbose:
+                    self.__lfh.write("+NmrDpUtility.__testCoordResidueVariant() ++ Error  - %s\n" % err)
+
+                continue
+
+            if not has_key_value(seq_align_dic, 'nmr_poly_seq_vs_model_poly_seq'):
+                continue
+
+            if not has_key_value(chain_assign_dic, 'nmr_poly_seq_vs_model_poly_seq'):
+                continue
+
+            nmr2ca = {}
+
+            for chain_assign in chain_assign_dic['nmr_poly_seq_vs_model_poly_seq']:
+
+                ref_chain_id = chain_assign['ref_chain_id']
+                test_chain_id = chain_assign['test_chain_id']
+
+                result = next((seq_align for seq_align in seq_align_dic['nmr_poly_seq_vs_model_poly_seq'] if seq_align['ref_chain_id'] == ref_chain_id and seq_align['test_chain_id'] == test_chain_id), None)
+
+                nmr2ca[str(ref_chain_id)] = result
+
+            if self.__star_data_type[fileListId] == 'Loop':
+
+                sf_data = self.__star_data[fileListId]
+                sf_framecode = ''
+
+                self.__testResidueVariant__(file_name, file_type, content_subtype, sf_data, sf_framecode, lp_category, cif_polymer_sequence, seq_align_dic, nmr2ca, ref_chain_id)
+
+            elif self.__star_data_type[fileListId] == 'Saveframe':
+
+                sf_data = self.__star_data[fileListId]
+                sf_framecode = get_first_sf_tag(sf_data, 'sf_framecode')
+
+                self.__testResidueVariant__(file_name, file_type, content_subtype, sf_data, sf_framecode, lp_category, cif_polymer_sequence, seq_align_dic, nmr2ca, ref_chain_id)
+
+            else:
+
+                for sf_data in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
+
+                    sf_framecode = get_first_sf_tag(sf_data, 'sf_framecode')
+
+                    self.__testResidueVariant__(file_name, file_type, content_subtype, sf_data, sf_framecode, lp_category, cif_polymer_sequence, seq_align_dic, nmr2ca, ref_chain_id)
+
+        return self.report.getTotalErrors() == __errors
+
+    def __testResidueVariant__(self, file_name, file_type, content_subtype, sf_data, sf_framecode, lp_category, cif_polymer_sequence, seq_align_dic, nmr2ca, ref_chain_id):
+        """ Perform consistency test on residue variants.
+        """
+
+        item_names = self.item_names_in_cs_loop[file_type]
+        chain_id_name = item_names['chain_id']
+        seq_id_name = item_names['seq_id']
+        comp_id_name = item_names['comp_id']
+        atom_id_name = item_names['atom_id']
+        variant_name = 'residue_variant' if file_type == 'nef' else item_names['atom_id']
+
+        key_items = self.aux_key_items[file_type][content_subtype][lp_category]
+        data_items = self.aux_data_items[file_type][content_subtype][lp_category]
+        allowed_tags = self.aux_allowed_tags[file_type][content_subtype][lp_category]
+
+        try:
+
+            aux_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, allowed_tags, None,
+                                              excl_missing_data=self.__excl_missing_data)[0]
+
+            if not aux_data is None:
+
+                for i in aux_data:
+                    chain_id = i[chain_id_name]
+                    seq_id = i[seq_id_name]
+                    comp_id = i[comp_id_name]
+                    variant = i[variant_name]
+
+                    if not str(chain_id) in nmr2ca:
+                        continue
+
+                    ca = nmr2ca[str(chain_id)]
+
+                    cif_chain_id = ca['test_chain_id']
+
+                    cif_seq_id = next((test_seq_id for ref_seq_id, test_seq_id in zip(ca['ref_seq_id'], ca['test_seq_id']) if ref_seq_id == seq_id), None)
+
+                    if cif_seq_id is None:
+                        continue
+
+                    cif_ps = next(ps for ps in cif_polymer_sequence if ps['chain_id'] == cif_chain_id)
+
+                    cif_comp_id = next((_comp_id for _seq_id, _comp_id in zip(cif_ps['seq_id'], cif_ps['comp_id']) if _seq_id == cif_seq_id), None)
+
+                    if cif_comp_id is None:
+                        continue
+
+                    seq_key = (cif_chain_id, cif_seq_id)
+
+                    coord_atom_id_ = None if not seq_key in self.__coord_atom_id else self.__coord_atom_id[seq_key]
+
+                    self.__updateChemCompDict(comp_id)
+
+                    if file_type == 'nef':
+
+                        if variant in self.empty_value:
+                            continue
+
+                        for _variant in variant.split(','):
+                            _variant_ = _variant.strip(' ')
+
+                            if not _variant_[0] in ('-', '+'):
+
+                                warn = "Residue variant %r should start with either '-' or '+' symbol according to the NEF sepcification." % _variant_
+
+                                self.report.warning.appendDescription('atom_nomenclature_mismatch', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
+                                self.report.setWarning()
+
+                                if self.__verbose:
+                                    self.__lfh.write("+NmrDpUtility.__textResidueVariant() ++ Warning  - %s\n" % warn)
+
+                                continue
+
+                            atom_id = _variant_[1:]
+
+                            if file_type == 'nef' or ((atom_id == 'HN' and self.__csStat.getTypeOfCompId(comp_id)[0]) or
+                                                      atom_id.startswith('Q') or
+                                                      atom_id.startswith('M') or
+                                                      self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id) == 0):
+                                _atom_id, ambig_code, details = self.__getAtomIdListWithAmbigCode(file_type, comp_id, atom_id)
+
+                                if len(_atom_id) == 0:
+                                    continue
+
+                                if len(_atom_id) == 1 and atom_id == _atom_id[0]:
+                                    atom_id_ = atom_id
+                                    atom_name = atom_id
+
+                                    if not details is None:
+                                        atom_name += ', besides that, ' + details.rstrip('.')
+
+                                else:
+                                    atom_name = atom_id + ' (e.g. '
+
+                                    for atom_id_ in _atom_id:
+                                        atom_name += atom_id_ + ' '
+
+                                    atom_name = atom_name.rstrip() + ')'
+
+                                    # representative atom id
+                                    atom_id_ = _atom_id[0]
+
+                            else:
+                                atom_id_ = atom_id
+                                atom_name = atom_id
+
+                            if _variant_[0] == '-':
+
+                                if self.__last_comp_id_test: # matches with comp_id in CCD
+
+                                    if not any(a for a in self.__last_chem_comp_atoms if a[self.__cca_atom_id] == atom_id_):
+
+                                        warn = "Atom (%s), %s %r did not match with chemical component dictionary (CCD)." %\
+                                            (self.__getReducedAtomNotation(chain_id_name, chain_id, seq_id_name, seq_id, comp_id_name, comp_id, atom_id_name, atom_name), variant_name, _variant_)
+
+                                        self.report.warning.appendDescription('atom_nomenclature_mismatch', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
+                                        self.report.setWarning()
+
+                                        if self.__verbose:
+                                            self.__lfh.write("+NmrDpUtility.__textResidueVariant() ++ Warning  - %s\n" % warn)
+
+                                if not coord_atom_id_ is None and coord_atom_id_['comp_id'] == cif_comp_id and atom_id_ in coord_atom_id_['atom_id']:
+
+                                    err = "Atom (%s), %s %r is unexpectedly incorporated in the coordinate." %\
+                                        (self.__getReducedAtomNotation(chain_id_name, chain_id, seq_id_name, seq_id, comp_id_name, comp_id, atom_id_name, atom_name), variant_name, _variant_)
+
+                                    self.report.error.appendDescription('invalid_atom_nomenclature', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
+                                    self.report.setError()
+
+                                    if self.__verbose:
+                                        self.__lfh.write("+NmrDpUtility.__testResidueVariant() ++ Error  - %s\n" % err)
+
+                            else:
+
+                                if not coord_atom_id_ is None and coord_atom_id_['comp_id'] == cif_comp_id and not atom_id_ in coord_atom_id_['atom_id']:
+
+                                    err = "Atom (%s), %s %r is not incorporated in the coordinate." %\
+                                        (self.__getReducedAtomNotation(chain_id_name, chain_id, seq_id_name, seq_id, comp_id_name, comp_id, atom_id_name, atom_name), variant_name, _variant_)
+
+                                    self.report.error.appendDescription('invalid_atom_nomenclature', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
+                                    self.report.setError()
+
+                                    if self.__verbose:
+                                        self.__lfh.write("+NmrDpUtility.__testResidueVariant() ++ Error  - %s\n" % err)
+
+                    else:
+
+                        atom_id = variant
+
+                        if file_type == 'nef' or ((atom_id == 'HN' and self.__csStat.getTypeOfCompId(comp_id)[0]) or
+                                                  atom_id.startswith('Q') or
+                                                  atom_id.startswith('M') or
+                                                  self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id) == 0):
+                            _atom_id, ambig_code, details = self.__getAtomIdListWithAmbigCode(file_type, comp_id, atom_id)
+
+                            if len(_atom_id) == 0:
+                                continue
+
+                            if len(_atom_id) == 1 and atom_id == _atom_id[0]:
+                                atom_id_ = atom_id
+                                atom_name = atom_id
+
+                                if not details is None:
+                                    atom_name += ', besides that, ' + details.rstrip('.')
+
+                            else:
+                                atom_name = atom_id + ' (e.g. '
+
+                                for atom_id_ in _atom_id:
+                                    atom_name += atom_id_ + ' '
+
+                                atom_name = atom_name.rstrip() + ')'
+
+                                # representative atom id
+                                atom_id_ = _atom_id[0]
+
+                        else:
+                            atom_id_ = atom_id
+                            atom_name = atom_id
+
+                            if self.__last_comp_id_test: # matches with comp_id in CCD
+
+                                if not any(a for a in self.__last_chem_comp_atoms if a[self.__cca_atom_id] == atom_id_):
+
+                                    warn = "Atom (%s) did not match with chemical component dictionary (CCD)." %\
+                                        self.__getReducedAtomNotation(chain_id_name, chain_id, seq_id_name, seq_id, comp_id_name, comp_id, atom_id_name, atom_name)
+
+                                    self.report.warning.appendDescription('atom_nomenclature_mismatch', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
+                                    self.report.setWarning()
+
+                                    if self.__verbose:
+                                        self.__lfh.write("+NmrDpUtility.__textResidueVariant() ++ Warning  - %s\n" % warn)
+
+                            if not coord_atom_id_ is None and coord_atom_id_['comp_id'] == cif_comp_id and atom_id_ in coord_atom_id_['atom_id']:
+
+                                err = "Atom (%s) is unexpectedly incorporated in the coordinate." %\
+                                    self.__getReducedAtomNotation(chain_id_name, chain_id, seq_id_name, seq_id, comp_id_name, comp_id, atom_id_name, atom_name)
+
+                                self.report.error.appendDescription('invalid_atom_nomenclature', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
+                                self.report.setError()
+
+                                if self.__verbose:
+                                    self.__lfh.write("+NmrDpUtility.__testResidueVariant() ++ Error  - %s\n" % err)
+
+        except Exception as e:
+
+            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__testResidueVariant() ++ Error  - %s" % str(e))
+            self.report.setError()
+
+            if self.__verbose:
+                self.__lfh.write("+NmrDpUtility.__testResidueVariant() ++ Error  - %s" % str(e))
 
     def __getReducedAtomNotation(self, chain_id_name, chain_id, seq_id_name, seq_id, comp_id_name, comp_id, atom_id_name, atom_id):
         """ Return reduced form of atom notation.

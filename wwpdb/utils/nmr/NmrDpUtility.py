@@ -92,6 +92,7 @@
 # 08-Jul-2020  M. Yokochi - bug fix release for DAOTHER-5926
 # 09-Jul-2020  M. Yokochi - add support for categories in NMR-STAR specific peak list (DAOTHER-5926)
 # 09-Jul-2020  M. Yokochi - adjust arguments of pynmrstar write_to_file() to prevent data losses (v2.6.1, DAOTHER-5926)
+# 17-Aug-2020  M. Yokochi - add support for residue variant (DAOTHER-5906)
 ##
 """ Wrapper class for data processing for NMR data.
     @author: Masashi Yokochi
@@ -19401,41 +19402,35 @@ class NmrDpUtility(object):
             if not orig_lp_data is None:
 
                 if file_type == 'nef':
-                    if 'residue_variant' in orig_lp_data:
-                        result = next((i for i in orig_lp_data if not i['residue_variant'] in self.empty_value), None)
-                        if not result is None:
+                    if 'residue_variant' in orig_lp_data[0]:
+                        if any(i for i in orig_lp_data if not i['residue_variant'] in self.empty_value):
                             has_res_var_dat = True
 
                 else:
-                    if 'Auth_variant_ID' in orig_lp_data:
-                        result = next((i for i in orig_lp_data if not i['Auth_variant_ID'] in self.empty_value), None)
-                        if not result is None:
+                    if 'Auth_variant_ID' in orig_lp_data[0]:
+                        if any(i for i in orig_lp_data if not i['Auth_variant_ID'] in self.empty_value):
                             has_res_var_dat = True
 
-                    if 'Auth_asym_ID' in orig_lp_data:
-                        result = next((i for i in orig_lp_data if not i['Auth_asym_ID'] in self.empty_value), None)
-                        if not result is None:
+                    if 'Auth_asym_ID' in orig_lp_data[0]:
+                        if any(i for i in orig_lp_data if not i['Auth_asym_ID'] in self.empty_value):
                             has_auth_asym_id = True
 
-                    if 'Auth_seq_ID' in orig_lp_data:
-                        result = next((i for i in orig_lp_data if not i['Auth_seq_ID'] in self.empty_value), None)
-                        if not result is None:
+                    if 'Auth_seq_ID' in orig_lp_data[0]:
+                        if any(i for i in orig_lp_data if not i['Auth_seq_ID'] in self.empty_value):
                             has_auth_seq_id = True
 
-                    if 'Auth_comp_ID' in orig_lp_data:
-                        result = next((i for i in orig_lp_data if not i['Auth_comp_ID'] in self.empty_value), None)
-                        if not result is None:
+                    if 'Auth_comp_ID' in orig_lp_data[0]:
+                        if any(i for i in orig_lp_data if not i['Auth_comp_ID'] in self.empty_value):
                             has_auth_comp_id = True
 
-                    if 'NEF_index' in orig_lp_data:
-                        result = next((i for i in orig_lp_data if not i['NEF_index'] in self.empty_value), None)
-                        if not result is None:
+                    if 'NEF_index' in orig_lp_data[0]:
+                        if any(i for i in orig_lp_data if not i['NEF_index'] in self.empty_value):
                             has_nef_index_dat = True
 
-                    if 'Assembly_ID' in orig_lp_data:
+                    if 'Assembly_ID' in orig_lp_data[0]:
                         has_assembly_id = True
 
-                    if 'Entry_ID' in orig_lp_data:
+                    if 'Entry_ID' in orig_lp_data[0]:
                         has_entry_id = True
 
         sf_cat_name = 'nef_molecular_system' if file_type == 'nef' else 'Assembly'

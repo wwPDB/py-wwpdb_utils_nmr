@@ -44,7 +44,7 @@ save_nef_molecular_system
       15        A      15       ARG middle         .           
       16        A      16       THR middle         .           
       17        A      17       GLU middle         .           
-      18        A      18       CYS middle         .           
+      18        A      18       CYS middle         -HG         
       19        A      19       VAL middle         .           
       20        A      20       SER middle         .           
       21        A      21       SER middle         .           
@@ -71,11 +71,11 @@ save_nef_molecular_system
       42        A      42       THR middle         .           
       43        A      43       THR middle         .           
       44        A      44       MET middle         .           
-      45        A      45       CYS middle         .           
+      45        A      45       CYS middle         -HG         
       46        A      46       TYR middle         .           
       47        A      47       ILE middle         .           
       48        A      48       LYS middle         .           
-      49        A      49       CYS middle         .           
+      49        A      49       CYS middle         -HG         
       50        A      50       VAL middle         .           
       51        A      51       PHE middle         .           
       52        A      52       ASN middle         .           
@@ -114,7 +114,7 @@ save_nef_molecular_system
       85        A      85       VAL middle         .           
       86        A      86       LEU middle         .           
       87        A      87       LYS middle         .           
-      88        A      88       CYS middle         .           
+      88        A      88       CYS middle         -HG         
       89        A      89       VAL middle         .           
       90        A      90       ASP middle         .           
       91        A      91       LYS middle         .           
@@ -124,7 +124,7 @@ save_nef_molecular_system
       95        A      95       ASN middle         .           
       96        A      96       ASN middle         .           
       97        A      97       ALA middle         .           
-      98        A      98       CYS middle         .           
+      98        A      98       CYS middle         -HG         
       99        A      99       HIS middle         .           
      100        A     100       TRP middle         .           
      101        A     101       ALA middle         .           
@@ -133,7 +133,7 @@ save_nef_molecular_system
      104        A     104       GLY middle         .           
      105        A     105       PHE middle         .           
      106        A     106       LYS middle         .           
-     107        A     107       CYS middle         .           
+     107        A     107       CYS middle         -HG         
      108        A     108       PHE middle         .           
      109        A     109       GLN middle         .           
      110        A     110       LYS middle         .           

@@ -46,6 +46,7 @@
 # 30-Jun-2020  M. Yokochi - skip third party loops and items gracefully (v2.5.0, DAOTHER-5896)
 # 30-Jun-2020  M. Yokochi - support bidirectional conversion between _nef_peak and _Peak_row_format (v2.5.0, DAOTHER-5896)
 # 08-Jul-2020  M. Yokochi - add support for _Gen_dist_constraint.Distance_val, _RDC_constraint.RDC_val, and _RDC_constraint.RDC_val_err (v2.6.0, DAOTHER-5926)
+# 17-Aug-2020  M. Yokochi - add support for residue variant (v2.7.0, DAOTHER-5906)
 ##
 import sys
 import os
@@ -57,6 +58,7 @@ import csv
 import datetime
 import pynmrstar
 import itertools
+import copy
 
 #from pytz import utc
 from packaging import version
@@ -65,8 +67,10 @@ from wwpdb.utils.config.ConfigInfo import ConfigInfo, getSiteId
 from wwpdb.utils.nmr.io.ChemCompIo import ChemCompReader
 from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
 from wwpdb.utils.nmr.NmrDpReport import NmrDpReport
+from symbol import atom
+from django.contrib.humanize.templatetags.humanize import ordinal
 
-__version__ = '2.6.0'
+__version__ = '2.7.0'
 
 __pynmrstar_v3__ = version.parse(pynmrstar.__version__) >= version.parse("3.0.0")
 
@@ -617,6 +621,8 @@ class NEFTranslator(object):
                                                      'measured': 'RDC'
                                                      }
                                         }
+
+        self.entity_del_atom_row = ['ID', 'Entity_assembly_ID', 'Comp_index_ID', 'Comp_ID', 'Atom_ID', 'Auth_entity_assembly_ID', 'Auth_seq_ID', 'Auth_comp_ID', 'Auth_atom_ID', 'Assembly_ID']
 
     def read_input_file(self, in_file):
         """ Read input NEF/NMR-STAR file.
@@ -3260,10 +3266,10 @@ class NEFTranslator(object):
 
             n = self.tagMap[0].index(nef_tag)
 
-            return self.tagMap[1][n], self.tagMap[2][n] # author tag, data tag
+            return self.tagMap[1][n], self.tagMap[2][n], n # author tag, data tag
 
         except ValueError:
-            return None, None
+            return None, None, None
 
     def get_nef_tag(self, star_tag):
         """ Return NEF saveframe/loop tags corresponding to NMR-STAR tag.
@@ -3275,10 +3281,10 @@ class NEFTranslator(object):
 
             n = self.tagMap[2].index(star_tag) # NEF has no auth tags
 
-            return self.tagMap[0][n]
+            return self.tagMap[0][n], n
 
         except ValueError: # None for NMR-STAR specific tag
-            return None
+            return None, None
 
     def get_star_loop_tags(self, nef_loop_tags):
         """ Return list of NMR-STAR loop tags corresponding to NEF loop tags.
@@ -3286,23 +3292,22 @@ class NEFTranslator(object):
             @return: list of NMR-STAR loop tags corresponding to given NEF loop tags
         """
 
+        out_tag_w_ordinal = {}
         out_tag = []
-        dat_tag = []
 
         for j in nef_loop_tags:
 
-            auth_tag, data_tag = self.get_star_tag(j)
+            auth_tag, data_tag, ordinal = self.get_star_tag(j)
 
             if auth_tag is None:
                 continue
 
-            out_tag.append(auth_tag)
+            out_tag_w_ordinal[data_tag] = ordinal
 
             if auth_tag != data_tag:
-                dat_tag.append(data_tag)
+                out_tag_w_ordinal[auth_tag] = ordinal + 100
 
-        if len(dat_tag) > 0:
-            out_tag += dat_tag
+        out_tag = [t[0] for t in sorted(out_tag_w_ordinal.items(), key=lambda x:x[1])]
 
         lp_category = nef_loop_tags[0].split('.')[0]
 
@@ -3310,23 +3315,24 @@ class NEFTranslator(object):
             out_tag.append('_Chem_comp_assembly.Assembly_ID')
 
         elif lp_category == '_nef_covalent_links':
-            out_tag.append('_Bond.ID')
-            out_tag.append('_Bond.Type')
-            out_tag.append('_Bond.Value_order')
+            out_tag.insert(0, '_Bond.ID')
+            out_tag.insert(1, '_Bond.Type')
+            out_tag.insert(2, '_Bond.Value_order')
             out_tag.append('_Bond.Assembly_ID')
 
         elif lp_category == '_nef_chemical_shift':
-            out_tag.append('_Atom_chem_shift.ID')
-            out_tag.append('_Atom_chem_shift.Ambiguity_code')
-            out_tag.append('_Atom_chem_shift.Ambiguity_set_ID')
-            out_tag.append('_Atom_chem_shift.Details')
-            out_tag.append('_Atom_chem_shift.Assigned_chem_shift_list_ID')
+            out_tag.insert(0, '_Atom_chem_shift.ID')
+            out_tag.insert(9, '_Atom_chem_shift.Ambiguity_code')
+            out_tag.insert(10, '_Atom_chem_shift.Ambiguity_set_ID')
 
             if self.insert_original_pdb_cs_items:
                 out_tag.append('_Atom_chem_shift.Original_PDB_strand_ID')
                 out_tag.append('_Atom_chem_shift.Original_PDB_residue_no')
                 out_tag.append('_Atom_chem_shift.Original_PDB_residue_name')
                 out_tag.append('_Atom_chem_shift.Original_PDB_atom_name')
+
+            out_tag.append('_Atom_chem_shift.Details')
+            out_tag.append('_Atom_chem_shift.Assigned_chem_shift_list_ID')
 
         elif lp_category == '_nef_distance_restraint':
             out_tag.append('_Gen_dist_constraint.Member_logic_code')
@@ -3359,14 +3365,17 @@ class NEFTranslator(object):
             @return: list of NEF loop tags corresponding to given NMR-STAR loop tags
         """
 
+        out_tag_w_ordinal = {}
         out_tag = []
 
         for j in star_loop_tags:
 
-            data_tag = self.get_nef_tag(j)
+            data_tag, ordinal = self.get_nef_tag(j)
 
             if not data_tag is None:
-                out_tag.append(data_tag)
+                out_tag_w_ordinal[data_tag] = ordinal
+
+        out_tag = [t[0] for t in sorted(out_tag_w_ordinal.items(), key=lambda x:x[1])]
 
         return out_tag
 
@@ -3949,13 +3958,15 @@ class NEFTranslator(object):
         	@param star_tags: list of NMR-STAR tags
         	@param loop_data: loop data of NEF
         	@param report: NMR data processing report
-        	@return: rows of NMR-STAR
+        	@return: rows of NMR-STAR, rows of _Entity_deleted_atom loop (residue variants), otherwise None
         """
 
         out_row = []
+        aux_row = []
 
         chain_index = nef_tags.index('_nef_sequence.chain_code')
         seq_index = nef_tags.index('_nef_sequence.sequence_code')
+        comp_index = nef_tags.index('_nef_sequence.residue_name')
 
         for nef_chain in self.authChainId:
 
@@ -3994,9 +4005,11 @@ class NEFTranslator(object):
 
                 out = [None] * len(star_tags)
 
+                variant = None
+
                 for j in nef_tags:
 
-                    auth_tag, data_tag = self.get_star_tag(j)
+                    auth_tag, data_tag, _ = self.get_star_tag(j)
 
                     if auth_tag is None:
                         continue
@@ -4015,6 +4028,8 @@ class NEFTranslator(object):
                             out[star_tags.index(auth_tag)] = str(_cif_seq)
                     else:
                         out[star_tags.index(auth_tag)] = data
+                        if j == '_nef_sequence.residue_variant' and not data in self.empty_value and '-' in data:
+                            variant = data
 
                     if auth_tag != data_tag:
 
@@ -4033,11 +4048,42 @@ class NEFTranslator(object):
 
                 self.authSeqMap[(nef_chain, _nef_seq)] = (_star_chain, _star_seq)
                 self.selfSeqMap[(nef_chain, _nef_seq)] = (nef_chain if cif_chain is None else cif_chain,
-                                                         _nef_seq if _cif_seq is None else _cif_seq)
+                                                          _nef_seq if _cif_seq is None else _cif_seq)
 
-        return out_row
+                if not variant is None:
+                    aux = [None] * len(self.entity_del_atom_row)
+                    for l, aux_tag in enumerate(self.entity_del_atom_row):
+                        if aux_tag == 'Entity_assembly_ID':
+                            aux[l] = _star_chain
+                        elif aux_tag == 'Comp_index_ID':
+                            aux[l] = _star_seq
+                        elif aux_tag == 'Auth_entity_assembly_ID':
+                            aux[l] = nef_chain
+                        elif aux_tag == 'Auth_seq_ID':
+                            aux[l] = _nef_seq
+                        elif aux_tag == 'Comp_ID' or aux_tag == 'Auth_comp_ID':
+                            aux[l] = i[comp_index]
 
-    def star2nef_seq_row(self, star_tags, nef_tags, loop_data, report=None):
+                    for _variant in variant.split(','):
+                        _variant_ = _variant.strip(' ')
+                        if _variant_.startswith('-'):
+                            atom_list = self.get_star_atom(i[comp_index], _variant_[1:])[0]
+                            if len(atom_list) > 0:
+                                for atom in atom_list:
+                                    _aux = copy.copy(aux)
+                                    for l, aux_tag in enumerate(self.entity_del_atom_row):
+                                        if aux_tag == 'ID':
+                                            _aux[l] = len(aux_row) + 1
+                                        elif aux_tag == 'Atom_ID':
+                                            _aux[l] = atom
+                                        elif aux_tag == 'Auth_atom_ID':
+                                            _aux[l] = _variant_[1:]
+
+                                    aux_row.append(_aux)
+
+        return out_row, None if len(aux_row) == 0 else aux_row
+
+    def star2nef_seq_row(self, star_tags, nef_tags, loop_data, report=None, entity_del_atom_loop=None):
         """ Translate rows of data in sequence loop from NMR-STAR into NEF.
             @author: Masashi Yokochi
         	@param star_tags: list of NMR-STAR tags
@@ -4051,6 +4097,13 @@ class NEFTranslator(object):
 
         chain_index = star_tags.index('_Chem_comp_assembly.Entity_assembly_ID')
         seq_index = star_tags.index('_Chem_comp_assembly.Comp_index_ID')
+        comp_index = star_tags.index('_Chem_comp_assembly.Comp_ID')
+
+        if not entity_del_atom_loop is None:
+            aux_tags = entity_del_atom_loop.get_tag_names()
+            aux_chain_index = aux_tags.index('_Entity_deleted_atom.Entity_assembly_ID')
+            aux_seq_index = aux_tags.index('_Entity_deleted_atom.Comp_index_ID')
+            aux_atom_index = aux_tags.index('_Entity_deleted_atom.Atom_ID')
 
         for star_chain in self.authChainId:
 
@@ -4097,7 +4150,7 @@ class NEFTranslator(object):
 
                 for j in star_tags:
 
-                    nef_tag = self.get_nef_tag(j)
+                    nef_tag, _ = self.get_nef_tag(j)
 
                     if nef_tag is None:
                         continue
@@ -4118,6 +4171,21 @@ class NEFTranslator(object):
                             out[data_index] = _cif_seq
                     elif data in self.star_boolean:
                         out[data_index] = 'true' if data in self.true_value else 'false'
+                    elif nef_tag == '_nef_sequence.residue_variant':
+                        if not data in self.empty_value or entity_del_atom_loop is None:
+                            out[data_index] = data
+                        else:
+                            star_atom_list = [{'atom_id': k[aux_atom_index], 'ambig_code': None, 'value': None} for k in entity_del_atom_loop if k[aux_chain_index] == star_chain and k[aux_seq_index] == star_seq]
+                            if len(star_atom_list) == 0:
+                                out[data_index] = data
+                            else:
+                                atom_list = self.get_nef_atom(i[comp_index], star_atom_list)[0]
+                                if len(atom_list) == 0:
+                                    out[data_index] = data
+                                else:
+                                    _atom_list = ['-' + a for a in atom_list]
+                                    out[data_index] = ','.join(_atom_list)
+
                     else:
                         out[data_index] = data
 
@@ -4214,7 +4282,7 @@ class NEFTranslator(object):
 
                     for j in nef_tags:
 
-                        auth_tag, data_tag = self.get_star_tag(j)
+                        auth_tag, data_tag, _ = self.get_star_tag(j)
 
                         if auth_tag is None:
                             continue
@@ -4236,6 +4304,8 @@ class NEFTranslator(object):
                                 buf[data_index] = k
                             elif j == '_nef_covalent_links.atom_name_2':
                                 buf[data_index] = l
+                            else:
+                                buf[data_index] = data
 
                     # 'amide': (C=O)-N
                     # 'directed': N-O
@@ -4345,7 +4415,7 @@ class NEFTranslator(object):
 
                         for j in nef_tags:
 
-                            auth_tag, data_tag = self.get_star_tag(j)
+                            auth_tag, data_tag, _ = self.get_star_tag(j)
 
                             if auth_tag is None:
                                 continue
@@ -4446,7 +4516,7 @@ class NEFTranslator(object):
 
                     for j in star_tags:
 
-                        nef_tag = self.get_nef_tag(j)
+                        nef_tag, _ = self.get_nef_tag(j)
 
                         if nef_tag is None:
                             continue
@@ -4644,7 +4714,7 @@ class NEFTranslator(object):
 
                         for j in nef_tags:
 
-                            auth_tag, data_tag = self.get_star_tag(j)
+                            auth_tag, data_tag, _ = self.get_star_tag(j)
 
                             if auth_tag is None:
                                 continue
@@ -4784,7 +4854,7 @@ class NEFTranslator(object):
 
                 for j in star_tags:
 
-                    nef_tag = self.get_nef_tag(j)
+                    nef_tag, _ = self.get_nef_tag(j)
 
                     if nef_tag is None:
                         continue
@@ -4952,7 +5022,7 @@ class NEFTranslator(object):
 
                                 for j in nef_tags:
 
-                                    auth_tag, data_tag = self.get_star_tag(j)
+                                    auth_tag, data_tag, _ = self.get_star_tag(j)
 
                                     if auth_tag is None:
                                         continue
@@ -5105,7 +5175,7 @@ class NEFTranslator(object):
 
                         for j in nef_tags:
 
-                            auth_tag, data_tag = self.get_star_tag(j)
+                            auth_tag, data_tag, _ = self.get_star_tag(j)
 
                             if auth_tag is None:
                                 continue
@@ -5349,7 +5419,7 @@ class NEFTranslator(object):
 
         for j in nef_tags:
 
-            auth_tag, data_tag = self.get_star_tag(j)
+            auth_tag, data_tag, _ = self.get_star_tag(j)
 
             if auth_tag is None:
                 continue
@@ -5445,7 +5515,7 @@ class NEFTranslator(object):
 
                 for j in star_tags:
 
-                    nef_tag = self.get_nef_tag(j)
+                    nef_tag, _ = self.get_nef_tag(j)
 
                     if nef_tag is None:
                         continue
@@ -5529,7 +5599,7 @@ class NEFTranslator(object):
 
             for j in nef_tags:
 
-                auth_tag, data_tag = self.get_star_tag(j)
+                auth_tag, data_tag, _ = self.get_star_tag(j)
 
                 if auth_tag is None:
                     continue
@@ -5594,7 +5664,7 @@ class NEFTranslator(object):
 
         for j in star_tags:
 
-            nef_tag = self.get_nef_tag(j)
+            nef_tag, _ = self.get_nef_tag(j)
 
             if nef_tag is None:
                 continue
@@ -5699,29 +5769,32 @@ class NEFTranslator(object):
                     for tag in saveframe.tags:
 
                         if tag[0].lower() == 'sf_category':
-                            auth_tag, data_tag = self.get_star_tag(saveframe.category)
+                            auth_tag, data_tag, _ = self.get_star_tag(saveframe.category)
                             if not auth_tag is None:
                                 sf.add_tag('Sf_category', auth_tag)
                         elif saveframe.category == 'nef_distance_restraint_list' and tag[0] == 'restraint_origin':
                             nef_tag = '{}.{}'.format(saveframe.tag_prefix, tag[0])
-                            auth_tag, data_tag = self.get_star_tag(nef_tag)
+                            auth_tag, data_tag, _ = self.get_star_tag(nef_tag)
                             if not auth_tag is None:
                                 sf.add_tag(auth_tag, tag[1] if not tag[1] in self.dist_alt_constraint_type['nmr-star'] else self.dist_alt_constraint_type['nmr-star'][tag[1]])
                         elif saveframe.category == 'nef_dihedral_restraint_list' and tag[0] == 'restraint_origin':
                             nef_tag = '{}.{}'.format(saveframe.tag_prefix, tag[0])
-                            auth_tag, data_tag = self.get_star_tag(nef_tag)
+                            auth_tag, data_tag, _ = self.get_star_tag(nef_tag)
                             if not auth_tag is None:
                                 sf.add_tag(auth_tag, tag[1] if not tag[1] in self.dihed_alt_constraint_type['nmr-star'] else self.dihed_alt_constraint_type['nmr-star'][tag[1]])
                         elif saveframe.category == 'nef_rdc_restraint_list' and tag[0] == 'restraint_origin':
                             nef_tag = '{}.{}'.format(saveframe.tag_prefix, tag[0])
-                            auth_tag, data_tag = self.get_star_tag(nef_tag)
+                            auth_tag, data_tag, _ = self.get_star_tag(nef_tag)
                             if not auth_tag is None:
                                 sf.add_tag(auth_tag, tag[1] if not tag[1] in self.rdc_alt_constraint_type['nmr-star'] else self.rdc_alt_constraint_type['nmr-star'][tag[1]])
                         else:
                             nef_tag = '{}.{}'.format(saveframe.tag_prefix, tag[0])
-                            auth_tag, data_tag = self.get_star_tag(nef_tag)
+                            auth_tag, data_tag, _ = self.get_star_tag(nef_tag)
                             if not auth_tag is None:
                                 sf.add_tag(auth_tag, tag[1])
+
+                    has_covalent_links = any(loop for loop in saveframe if loop.category == '_nef_covalent_links')
+                    aux_rows = None
 
                     for loop in saveframe:
 
@@ -5738,7 +5811,7 @@ class NEFTranslator(object):
                             if self.authSeqMap is None:
                                 self.authSeqMap = {}
                                 self.selfSeqMap = {}
-                            rows = self.nef2star_seq_row(loop.get_tag_names(), lp.get_tag_names(), loop.data, report)
+                            rows, aux_rows = self.nef2star_seq_row(loop.get_tag_names(), lp.get_tag_names(), loop.data, report)
                             for d in rows:
                                 d[lp.get_tag_names().index('_Chem_comp_assembly.Assembly_ID')] = asm_id
                                 lp.add_data(d)
@@ -5801,6 +5874,16 @@ class NEFTranslator(object):
                                         lp.add_data(d)
 
                         sf.add_loop(lp)
+
+                        if not aux_rows is None and ((loop.category == '_nef_sequence' and not has_covalent_links) or\
+                                                     (loop.category == '_nef_covalent_links' and has_covalent_links)):
+                            lp = pynmrstar.Loop.from_scratch()
+                            for _tag in self.entity_del_atom_row:
+                                lp.add_tag('_Entity_deleted_atom.%s' % _tag)
+                            for d in aux_rows:
+                                d[lp.get_tag_names().index('_Entity_deleted_atom.Assembly_ID')] = asm_id
+                                lp.add_data(d)
+                            sf.add_loop(lp)
 
                     if saveframe.category == 'nef_nmr_meta_data':
                         sf.add_tag('NMR_STAR_version', self.star_version)
@@ -5878,27 +5961,27 @@ class NEFTranslator(object):
                     for tag in saveframe.tags:
 
                         if tag[0].lower() == 'sf_category':
-                            auth_tag, data_tag = self.get_star_tag(saveframe.category)
+                            auth_tag, data_tag, _ = self.get_star_tag(saveframe.category)
                             if not auth_tag is None:
                                 sf.add_tag('Sf_category', auth_tag)
                         elif saveframe.category == 'nef_distance_restraint_list' and tag[0] == 'restraint_origin':
                             nef_tag = '{}.{}'.format(saveframe.tag_prefix, tag[0])
-                            auth_tag, data_tag = self.get_star_tag(nef_tag)
+                            auth_tag, data_tag, _ = self.get_star_tag(nef_tag)
                             if not auth_tag is None:
                                 sf.add_tag(auth_tag, tag[1] if not tag[1] in self.dist_alt_constraint_type['nmr-star'] else self.dist_alt_constraint_type['nmr-star'][tag[1]])
                         elif saveframe.category == 'nef_dihedral_restraint_list' and tag[0] == 'restraint_origin':
                             nef_tag = '{}.{}'.format(saveframe.tag_prefix, tag[0])
-                            auth_tag, data_tag = self.get_star_tag(nef_tag)
+                            auth_tag, data_tag, _ = self.get_star_tag(nef_tag)
                             if not auth_tag is None:
                                 sf.add_tag(auth_tag, tag[1] if not tag[1] in self.dihed_alt_constraint_type['nmr-star'] else self.dihed_alt_constraint_type['nmr-star'][tag[1]])
                         elif saveframe.category == 'nef_rdc_restraint_list' and tag[0] == 'restraint_origin':
                             nef_tag = '{}.{}'.format(saveframe.tag_prefix, tag[0])
-                            auth_tag, data_tag = self.get_star_tag(nef_tag)
+                            auth_tag, data_tag, _ = self.get_star_tag(nef_tag)
                             if not auth_tag is None:
                                 sf.add_tag(auth_tag, tag[1] if not tag[1] in self.rdc_alt_constraint_type['nmr-star'] else self.rdc_alt_constraint_type['nmr-star'][tag[1]])
                         else:
                             nef_tag = '{}.{}'.format(saveframe.tag_prefix, tag[0])
-                            auth_tag, data_tag = self.get_star_tag(nef_tag)
+                            auth_tag, data_tag, _ = self.get_star_tag(nef_tag)
                             if not auth_tag is None:
                                 sf.add_tag(auth_tag, tag[1])
 
@@ -5958,7 +6041,7 @@ class NEFTranslator(object):
                         if self.authSeqMap is None:
                             self.authSeqMap = {}
                             self.selfSeqMap = {}
-                        rows = self.nef2star_seq_row(loop.get_tag_names(), lp.get_tag_names(), loop.data, report)
+                        rows, aux_rows = self.nef2star_seq_row(loop.get_tag_names(), lp.get_tag_names(), loop.data, report)
                         for d in rows:
                             d[lp.get_tag_names().index('_Chem_comp_assembly.Assembly_ID')] = asm_id
                             lp.add_data(d)
@@ -6021,6 +6104,15 @@ class NEFTranslator(object):
                                     lp.add_data(d)
 
                     sf.add_loop(lp)
+
+                    if loop.category == '_nef_sequence' and not aux_rows is None:
+                        lp = pynmrstar.Loop.from_scratch()
+                        for _tag in self.entity_del_atom_row:
+                            lp.add_tag('_Entity_deleted_atom.%s' % _tag)
+                        for d in aux_rows:
+                            d[lp.get_tag_names().index('_Entity_deleted_atom.Assembly_ID')] = asm_id
+                            lp.add_data(d)
+                        sf.add_loop(lp)
 
                 if saveframe.category == 'nef_nmr_meta_data':
                     sf.add_tag('NMR_STAR_version', self.star_version)
@@ -6121,7 +6213,7 @@ class NEFTranslator(object):
                 for saveframe in star_data:
                     sf = pynmrstar.Saveframe.from_scratch(saveframe.name)
 
-                    nef_tag = self.get_nef_tag(saveframe.category)
+                    nef_tag, _ = self.get_nef_tag(saveframe.category)
 
                     if nef_tag is None:
                         continue
@@ -6141,25 +6233,27 @@ class NEFTranslator(object):
                             elif tag_name == 'source_data_format_version':
                                 sf.add_tag('format_version', self.nef_version)
                             else:
-                                nef_tag = self.get_nef_tag(saveframe.tag_prefix + '.' + tag[0])
+                                nef_tag, _ = self.get_nef_tag(saveframe.tag_prefix + '.' + tag[0])
                                 if not nef_tag is None:
                                     sf.add_tag(nef_tag, tag[1])
                         elif saveframe.category == 'general_distance_constraints' and tag_name == 'constraint_type':
-                            nef_tag = self.get_nef_tag(saveframe.tag_prefix + '.' + tag[0])
+                            nef_tag, _ = self.get_nef_tag(saveframe.tag_prefix + '.' + tag[0])
                             if not nef_tag is None:
                                 sf.add_tag(nef_tag, tag[1] if not tag[1] in self.dist_alt_constraint_type['nef'] else self.dist_alt_constraint_type['nef'][tag[1]])
                         elif saveframe.category == 'torsion_angle_constraints' and tag_name == 'constraint_type':
-                            nef_tag = self.get_nef_tag(saveframe.tag_prefix + '.' + tag[0])
+                            nef_tag, _ = self.get_nef_tag(saveframe.tag_prefix + '.' + tag[0])
                             if not nef_tag is None:
                                 sf.add_tag(nef_tag, tag[1] if not tag[1] in self.dihed_alt_constraint_type['nef'] else self.dihed_alt_constraint_type['nef'][tag[1]])
                         elif saveframe.category == 'RDC_constraints' and tag_name == 'constraint_type':
-                            nef_tag = self.get_nef_tag(saveframe.tag_prefix + '.' + tag[0])
+                            nef_tag, _ = self.get_nef_tag(saveframe.tag_prefix + '.' + tag[0])
                             if not nef_tag is None:
                                 sf.add_tag(nef_tag, tag[1] if not tag[1] in self.rdc_alt_constraint_type['nef'] else self.rdc_alt_constraint_type['nef'][tag[1]])
                         else:
-                            nef_tag = self.get_nef_tag(saveframe.tag_prefix + '.' + tag[0])
+                            nef_tag, _ = self.get_nef_tag(saveframe.tag_prefix + '.' + tag[0])
                             if not nef_tag is None:
                                 sf.add_tag(nef_tag, tag[1])
+
+                    entity_del_atom_loop = next((loop for loop in saveframe if loop.category == '_Entity_deleted_atom'), None)
 
                     for loop in saveframe:
 
@@ -6177,7 +6271,7 @@ class NEFTranslator(object):
                                 if self.authSeqMap is None:
                                     self.authSeqMap = {}
                                     self.selfSeqMap = {}
-                                rows = self.star2nef_seq_row(loop.get_tag_names(), lp.get_tag_names(), loop.data, report)
+                                rows = self.star2nef_seq_row(loop.get_tag_names(), lp.get_tag_names(), loop.data, report, None if entity_del_atom_loop is None else entity_del_atom_loop)
                                 for d in rows:
                                     lp.add_data(d)
 
@@ -6247,7 +6341,7 @@ class NEFTranslator(object):
                     saveframe = star_data
                     sf = pynmrstar.Saveframe.from_scratch(saveframe.name)
 
-                    nef_tag = self.get_nef_tag(saveframe.category)
+                    nef_tag, _ = self.get_nef_tag(saveframe.category)
 
                     if not nef_tag is None:
 
@@ -6266,23 +6360,23 @@ class NEFTranslator(object):
                                 elif tag_name == 'source_data_format_version':
                                     sf.add_tag('format_version', self.nef_version)
                                 else:
-                                    nef_tag = self.get_nef_tag(saveframe.tag_prefix + '.' + tag[0])
+                                    nef_tag, _ = self.get_nef_tag(saveframe.tag_prefix + '.' + tag[0])
                                     if not nef_tag is None:
                                         sf.add_tag(nef_tag, tag[1])
                             elif saveframe.category == 'general_distance_constraints' and tag_name == 'constraint_type':
-                                nef_tag = self.get_nef_tag(saveframe.tag_prefix + '.' + tag[0])
+                                nef_tag, _ = self.get_nef_tag(saveframe.tag_prefix + '.' + tag[0])
                                 if not nef_tag is None:
                                     sf.add_tag(nef_tag, tag[1] if not tag[1] in self.dist_alt_constraint_type['nef'] else self.dist_alt_constraint_type['nef'][tag[1]])
                             elif saveframe.category == 'torsion_angle_constraints' and tag_name == 'constraint_type':
-                                nef_tag = self.get_nef_tag(saveframe.tag_prefix + '.' + tag[0])
+                                nef_tag, _ = self.get_nef_tag(saveframe.tag_prefix + '.' + tag[0])
                                 if not nef_tag is None:
                                     sf.add_tag(nef_tag, tag[1] if not tag[1] in self.dihed_alt_constraint_type['nef'] else self.dihed_alt_constraint_type['nef'][tag[1]])
                             elif saveframe.category == 'RDC_constraints' and tag_name == 'constraint_type':
-                                nef_tag = self.get_nef_tag(saveframe.tag_prefix + '.' + tag[0])
+                                nef_tag, _ = self.get_nef_tag(saveframe.tag_prefix + '.' + tag[0])
                                 if not nef_tag is None:
                                     sf.add_tag(nef_tag, tag[1] if not tag[1] in self.rdc_alt_constraint_type['nef'] else self.rdc_alt_constraint_type['nef'][tag[1]])
                             else:
-                                nef_tag = self.get_nef_tag(saveframe.tag_prefix + '.' + tag[0])
+                                nef_tag, _ = self.get_nef_tag(saveframe.tag_prefix + '.' + tag[0])
                                 if not nef_tag is None:
                                     sf.add_tag(nef_tag, tag[1])
 
@@ -6317,6 +6411,8 @@ class NEFTranslator(object):
 
                     saveframe = [star_data]
 
+                entity_del_atom_loop = next((loop for loop in saveframe if loop.category == '_Entity_deleted_atom'), None)
+
                 for loop in saveframe:
 
                     try:
@@ -6333,7 +6429,7 @@ class NEFTranslator(object):
                             if self.authSeqMap is None:
                                 self.authSeqMap = {}
                                 self.selfSeqMap = {}
-                            rows = self.star2nef_seq_row(loop.get_tag_names(), lp.get_tag_names(), loop.data, report)
+                            rows = self.star2nef_seq_row(loop.get_tag_names(), lp.get_tag_names(), loop.data, report, None if entity_del_atom_loop is None else entity_del_atom_loop)
                             for d in rows:
                                 lp.add_data(d)
 

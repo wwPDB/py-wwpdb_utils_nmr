@@ -67,8 +67,6 @@ from wwpdb.utils.config.ConfigInfo import ConfigInfo, getSiteId
 from wwpdb.utils.nmr.io.ChemCompIo import ChemCompReader
 from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
 from wwpdb.utils.nmr.NmrDpReport import NmrDpReport
-from symbol import atom
-from django.contrib.humanize.templatetags.humanize import ordinal
 
 __version__ = '2.7.0'
 

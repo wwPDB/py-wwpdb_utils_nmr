@@ -6024,6 +6024,9 @@ class NEFTranslator(object):
 
                     saveframe = [nef_data]
 
+                has_covalent_links = any(loop for loop in saveframe if loop.category == '_nef_covalent_links')
+                aux_rows = None
+
                 for loop in saveframe:
 
                     lp = pynmrstar.Loop.from_scratch()
@@ -6103,7 +6106,8 @@ class NEFTranslator(object):
 
                     sf.add_loop(lp)
 
-                    if loop.category == '_nef_sequence' and not aux_rows is None:
+                    if not aux_rows is None and ((loop.category == '_nef_sequence' and not has_covalent_links) or\
+                                                 (loop.category == '_nef_covalent_links' and has_covalent_links)):
                         lp = pynmrstar.Loop.from_scratch()
                         for _tag in self.entity_del_atom_row:
                             lp.add_tag('_Entity_deleted_atom.%s' % _tag)

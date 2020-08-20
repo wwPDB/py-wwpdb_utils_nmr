@@ -93,6 +93,7 @@
 # 09-Jul-2020  M. Yokochi - add support for categories in NMR-STAR specific peak list (DAOTHER-5926)
 # 09-Jul-2020  M. Yokochi - adjust arguments of pynmrstar write_to_file() to prevent data losses (v2.6.1, DAOTHER-5926)
 # 17-Aug-2020  M. Yokochi - add support for residue variant (DAOTHER-5906)
+# 20-Aug-2020  M. Yokochi - add 'leave_intl_note' output parameter decides whether to leave internal commentary note in processed NMR-STAR file, set False for OneDep environment (DAOTHER-6030)
 ##
 """ Wrapper class for data processing for NMR data.
     @author: Masashi Yokochi
@@ -512,6 +513,8 @@ class NmrDpUtility(object):
 
         # whether to retain original content if possible
         self.__retain_original = True
+        # whether to leave internal commentary note in processed NMR-STAR file
+        self.__leave_intl_note = True
         # whether to use reduced atom notation
         self.__reduced_atom_notation = True
 
@@ -3362,6 +3365,12 @@ class NmrDpUtility(object):
                 self.__retain_original = self.__outputParamDict['retain_original']
             else:
                 self.__retain_original = self.__outputParamDict['retain_original'] in self.true_value
+
+        if 'leave_intl_note' in self.__outputParamDict and not self.__outputParamDict['leave_intl_note'] is None:
+            if type(self.__outputParamDict['leave_intl_note']) is bool:
+                self.__leave_intl_note = self.__outputParamDict['leave_intl_note']
+            else:
+                self.__leave_intl_note = self.__outputParamDict['leave_intl_note'] in self.true_value
 
         if 'reduced_atom_notation' in self.__outputParamDict and not self.__outputParamDict['reduced_atom_notation'] is None:
             if type(self.__outputParamDict['reduced_atom_notation']) is bool:
@@ -9065,7 +9074,7 @@ class NmrDpUtility(object):
 
                 loop = sf_data if self.__star_data_type[file_list_id] == 'Loop' else sf_data.get_loop_by_category(lp_category)
 
-                details_col = loop.tags.index('Details') if 'Details' in loop.tags else -1
+                details_col = loop.tags.index('Details') if 'Details' in loop.tags and self.__leave_intl_note else -1
 
             if file_type == 'nef' or (not self.__nonblk_anomalous_cs):
                 lp_data = next(l['data'] for l in self.__lp_data[content_subtype] if l['file_name'] == file_name and l['sf_framecode'] == sf_framecode)
@@ -18729,7 +18738,7 @@ class NmrDpUtility(object):
 
             loop = sf_data if self.__star_data_type[file_list_id] == 'Loop' else sf_data.get_loop_by_category(lp_category)
 
-            details_col = loop.tags.index('Details') if 'Details' in loop.tags else -1
+            details_col = loop.tags.index('Details') if 'Details' in loop.tags and self.__leave_intl_note else -1
 
         for l, i in enumerate(lp_data):
 

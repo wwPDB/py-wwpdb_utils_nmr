@@ -6278,6 +6278,9 @@ class NmrDpUtility(object):
 
             tags = ['ID', 'Entity_assembly_name', 'Entity_ID']
 
+            if 'Entity_label' in loop.tags:
+                tags.append('Entity_label')
+
             if set(tags) & set(loop.tags) != set(tags):
                 return False
 
@@ -6295,7 +6298,7 @@ class NmrDpUtility(object):
 
                 try:
                     chain_id = int(c[0])
-                    entity_sf = c[1]
+                    entity_sf = c[1] if len(c) < 4 else (c[3][1:] if c[3][0] == '$' else c[3]) # Entity_assemble_name or Entity_label
                     entity_id = int(c[2])
 
                     if chain_id in chain_ids:
@@ -19633,7 +19636,7 @@ class NmrDpUtility(object):
                             row.append('single')
                         elif seq_id == 1:
                             row.append('start')
-                        elif seq_id == length:
+                        elif _seq_id_ == length:
                             row.append('end')
                         elif auth_seq_id - 1 == s['seq_id'][j - 1] and auth_seq_id + 1 == s['seq_id'][j + 1]:
                             row.append('middle')

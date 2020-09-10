@@ -19010,6 +19010,9 @@ class NmrDpUtility(object):
 
             for sf_data in self.__star_data[0].get_saveframes_by_category(sf_category):
 
+                if not any(loop for loop in sf_data.loops if loop.category == lp_category):
+                    continue
+
                 if content_subtype == 'spectral_peak':
 
                     try:
@@ -23915,6 +23918,9 @@ class NmrDpUtility(object):
 
             for sf_data in self.__star_data[0].get_saveframes_by_category(sf_category):
 
+                if not any(loop for loop in sf_data.loops if loop.category == lp_category):
+                    continue
+
                 if content_subtype == 'spectral_peak':
 
                     try:
@@ -24038,6 +24044,9 @@ class NmrDpUtility(object):
             lp_category = self.lp_categories[file_type][content_subtype]
 
             for sf_data in self.__star_data[0].get_saveframes_by_category(sf_category):
+
+                if not any(loop for loop in sf_data.loops if loop.category == lp_category):
+                    continue
 
                 if content_subtype == 'spectral_peak':
 
@@ -24280,6 +24289,9 @@ class NmrDpUtility(object):
 
                     sf_framecode = get_first_sf_tag(sf_data, 'sf_framecode')
 
+                    if not any(loop for loop in sf_data.loops if loop.category == lp_category):
+                        continue
+
                     warn_desc = self.report.warning.getDescription('duplicated_index', file_name, sf_framecode)
 
                     if (not warn_desc is None) and warn_desc.split(' ')[0] == self.sf_tag_prefixes[file_type][content_subtype].lstrip('_') + '.ID':
@@ -24392,6 +24404,9 @@ class NmrDpUtility(object):
                             sf_data.tags[itCol][1] = self.__entry_id
 
                     if self.__insert_entry_id_to_loops:
+
+                        if not any(loop for loop in sf_data.loops if loop.category == lp_category):
+                            continue
 
                         entryIdTag = 'Entry_ID'
 

@@ -1449,6 +1449,9 @@ class NmrDpReportInputSource:
         """ Update specified non_starndard_residue by experimental data.
         """
 
+        if self.__contents['non_standard_residue'] is None:
+            return
+
         try:
 
             c = next(c for c in self.__contents['non_standard_residue'] if c['chain_id'] == chain_id)

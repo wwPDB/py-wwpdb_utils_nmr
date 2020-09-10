@@ -6972,7 +6972,7 @@ class NmrDpUtility(object):
 
                         for elem in ref_elems:
                             if elem in self.paramag_elems or elem in self.ferromag_elems:
-                                self.report.setDiagmagnetic(False)
+                                self.report.setDiamagnetic(False)
                                 break
 
                     else:

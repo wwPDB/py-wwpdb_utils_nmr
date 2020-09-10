@@ -11046,6 +11046,9 @@ class NmrDpUtility(object):
                             pass
 
                         else:
+
+                            idx_msg = "[Check row of %s %s] " % (index_tag, i[index_tag])
+
                             err = "%sInvalid inter-residue RDC vector (%s:%s:%s:%s, %s:%s:%s:%s) in a loop %s." %\
                                   (idx_msg, chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2, lp_category)
 

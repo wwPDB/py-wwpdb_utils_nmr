@@ -94,6 +94,7 @@
 # 09-Jul-2020  M. Yokochi - adjust arguments of pynmrstar write_to_file() to prevent data losses (v2.6.1, DAOTHER-5926)
 # 17-Aug-2020  M. Yokochi - add support for residue variant (DAOTHER-5906)
 # 20-Aug-2020  M. Yokochi - add 'leave_intl_note' output parameter decides whether to leave internal commentary note in processed NMR-STAR file, set False for OneDep environment (DAOTHER-6030)
+# 10-Sep-2020  M. Yokochi - add 'transl_pseudo_name' input parameter that allows to use pseudo atom nomenclature in combined NMR-STAR file, set False by default for OneDep envitonment
 ##
 """ Wrapper class for data processing for NMR data.
     @author: Masashi Yokochi
@@ -494,6 +495,8 @@ class NmrDpUtility(object):
         self.__check_mandatory_tag = False
         # whether to detect consistency of author sequence (nmr-star specific)
         self.__check_auth_seq = False
+        # whether to translate pseudo atom name in combined NMR-STAR file
+        self.__transl_pseudo_name = False
 
         # whether to fix format issue (enabled if NMR separated deposition or release mode)
         self.__fix_format_issue = False
@@ -3097,8 +3100,7 @@ class NmrDpUtility(object):
         self.__pA.setVerbose(self.__verbose)
 
         # CCD accessing utility
-        self.__cI = ConfigInfo(getSiteId())
-        self.__ccCvsPath = self.__cI.get('SITE_CC_CVS_PATH')
+        self.__ccCvsPath = os.path.dirname(__file__) + '/ligand_dict'
 
         self.__ccR = ChemCompReader(self.__verbose, self.__lfh)
         self.__ccR.setCachePath(self.__ccCvsPath)
@@ -3322,6 +3324,18 @@ class NmrDpUtility(object):
                 self.__check_mandatory_tag = self.__inputParamDict['check_mandatory_tag']
             else:
                 self.__check_mandatory_tag = self.__inputParamDict['check_mandatory_tag'] in self.true_value
+
+        if 'check_auth_seq' in self.__inputParamDict and not self.__inputParamDict['check_auth_seq'] is None:
+            if type(self.__inputParamDict['check_auth_seq']) is bool:
+                self.__check_auth_seq = self.__inputParamDict['check_auth_seq']
+            else:
+                self.__check_auth_seq = self.__inputParamDict['check_auth_seq'] in self.true_value
+
+        if 'transl_pseudo_name' in self.__inputParamDict and not self.__inputParamDict['transl_pseudo_name'] is None:
+            if type(self.__inputParamDict['transl_pseudo_name']) is bool:
+                self.__transl_pseudo_name = self.__inputParamDict['transl_pseudo_name']
+            else:
+                self.__transl_pseudo_name = self.__inputParamDict['transl_pseudo_name'] in self.true_value
 
         if 'fix_format_issue' in self.__inputParamDict and not self.__inputParamDict['fix_format_issue'] is None:
             if type(self.__inputParamDict['fix_format_issue']) is bool:
@@ -6876,7 +6890,7 @@ class NmrDpUtility(object):
 
                         atom_id_ = atom_id
 
-                        if (file_type == 'nef' or not self.__combined_mode) and\
+                        if (file_type == 'nef' or not self.__combined_mode or self.__transl_pseudo_name) and\
                            (atom_id.startswith('Q') or atom_id.startswith('M') or self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id) == 0):
                             atom_id_ = self.__getRepresentativeAtomId(file_type, comp_id, atom_id)
 

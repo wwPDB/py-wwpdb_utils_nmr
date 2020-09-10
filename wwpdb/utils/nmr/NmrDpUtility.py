@@ -6346,6 +6346,9 @@ class NmrDpUtility(object):
 
                 content_subtype = 'entity'
 
+                if not any(loop for loop in _sf_data.loops if loop.category == self.lp_categories[file_type][content_subtype]):
+                    return False
+
                 _loop = _sf_data.get_loop_by_category(self.lp_categories[file_type][content_subtype])
 
                 if _loop is None:

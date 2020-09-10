@@ -24842,13 +24842,15 @@ class NmrDpUtility(object):
 
         if self.__dstPath is None:
 
-            err = "Not found destination file path."
+            if not self.__op.endswith('consistency-check'):
 
-            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__depositNmrData() ++ Error  - %s" % err)
-            self.report.setError()
+                err = "Not found destination file path."
 
-            if self.__verbose:
-                self.__lfh.write("+NmrDpUtility.__depositNmrData() ++ Error  - %s\n" % err)
+                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__depositNmrData() ++ Error  - %s" % err)
+                self.report.setError()
+
+                if self.__verbose:
+                    self.__lfh.write("+NmrDpUtility.__depositNmrData() ++ Error  - %s\n" % err)
 
             return False
 

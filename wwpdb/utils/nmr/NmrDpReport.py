@@ -1329,7 +1329,7 @@ class NmrDpReport:
                 for _c in _value_list:
 
                     if value_list is None or\
-                       not any(c for c in value_list if c['sf_framecode'] == _c['sf_framecode'] and c['description'] == _c['description']):
+                       not any(c for c in value_list if 'sf_framecode' in c and 'sf_framecode' in _c and c['sf_framecode'] == _c['sf_framecode'] and c['description'] == _c['description']):
                         list.append(_c)
 
                 for c in list:
@@ -1373,7 +1373,7 @@ class NmrDpReport:
 
                 for _c in _value_list:
 
-                    if value_list is None or not any(c for c in value_list if c['sf_framecode'] == _c['sf_framecode'] and c['description'] == _c['description']):
+                    if value_list is None or not any(c for c in value_list if 'sf_framecode' in c and 'sf_framecode' in _c and c['sf_framecode'] == _c['sf_framecode'] and c['description'] == _c['description']):
                         list.append(_c)
 
                 for c in list:
@@ -1623,7 +1623,7 @@ class NmrDpReportError:
         if item in ['total', 'internal_error'] or self.__contents is None or (not item in self.__contents.keys()) or self.__contents[item] is None:
             return None
 
-        return [c for c in self.__contents[item] if c['file_name'] == file_name and c['sf_framecode'] == sf_framecode and (key is None or key in c['description'])]
+        return [c for c in self.__contents[item] if c['file_name'] == file_name and 'sf_framecode' in c and c['sf_framecode'] == sf_framecode and (key is None or key in c['description'])]
 
     def getUniqueValueList(self, item, file_name):
         """ Return list of error values having unique sf_framecode and description.
@@ -1809,7 +1809,7 @@ class NmrDpReportWarning:
         if item == 'total' or self.__contents is None or (not item in self.__contents.keys()) or self.__contents[item] is None:
             return None
 
-        return [c for c in self.__contents[item] if c['file_name'] == file_name and c['sf_framecode'] == sf_framecode and (key is None or key in c['description'])]
+        return [c for c in self.__contents[item] if c['file_name'] == file_name and 'sf_framecode' in c and c['sf_framecode'] == sf_framecode and (key is None or key in c['description'])]
 
     def getUniqueValueList(self, item, file_name):
         """ Return list of warning values having unique sf_framecode and description.

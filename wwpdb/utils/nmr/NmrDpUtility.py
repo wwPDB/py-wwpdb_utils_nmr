@@ -6295,7 +6295,10 @@ class NmrDpUtility(object):
 
         for sf_data in self.__star_data[file_list_id].get_saveframes_by_category('assembly'):
 
-            loop = sf_data.get_loop_by_category('_Entity_assembly')
+            try:
+                loop = sf_data.get_loop_by_category('_Entity_assembly')
+            except KeyError:
+                return False
 
             if loop is None:
                 return False
@@ -6346,10 +6349,10 @@ class NmrDpUtility(object):
 
                 content_subtype = 'entity'
 
-                if not any(loop for loop in _sf_data.loops if loop.category == self.lp_categories[file_type][content_subtype]):
+                try:
+                    _loop = _sf_data.get_loop_by_category(self.lp_categories[file_type][content_subtype])
+                except KeyError:
                     return False
-
-                _loop = _sf_data.get_loop_by_category(self.lp_categories[file_type][content_subtype])
 
                 if _loop is None:
                     return False
@@ -11806,7 +11809,7 @@ class NmrDpUtility(object):
                         sc['sequence_coverage'] = seq_align['sequence_coverage']
 
                         if seq_align['sequence_coverage'] < self.low_seq_coverage and seq_align['length'] > 1:
-                            if (not 'exp_type' in ent['exp_type']) or (not ent['exp_type'] in ['disulfide bound', 'disulfide_bond', 'paramagnetic relaxation', 'pre', 'symmetry', 'J-couplings', 'jcoupling']):
+                            if (not 'exp_type' in ent) or (not ent['exp_type'] in ['disulfide bound', 'disulfide_bond', 'paramagnetic relaxation', 'pre', 'symmetry', 'J-couplings', 'jcoupling']):
                                 low_seq_coverage += 'coverage %s for chain_id %s, length %s, ' % (seq_align['sequence_coverage'], seq_align['chain_id'], seq_align['length'])
 
                         seq_coverage.append(sc)
@@ -19180,10 +19183,10 @@ class NmrDpUtility(object):
 
                     sf_framecode = get_first_sf_tag(sf_data, 'sf_framecode')
 
-                    if not any(loop for loop in sf_data.loops if loop.category == lp_category):
+                    try:
+                        loop = sf_data.get_loop_by_category(lp_category)
+                    except KeyError:
                         continue
-
-                    loop = sf_data.get_loop_by_category(lp_category)
 
                     if index_tag in loop.tags:
                         continue
@@ -19885,7 +19888,10 @@ class NmrDpUtility(object):
 
         for sf_data in self.__star_data[0].get_saveframes_by_category(sf_category):
 
-            loop = sf_data.get_loop_by_category(lp_category)
+            try:
+                loop = sf_data.get_loop_by_category(lp_category)
+            except KeyError:
+                continue
 
             star_chain_index = loop.tags.index(tags[0])
             star_seq_index = loop.tags.index(tags[1])
@@ -19921,7 +19927,10 @@ class NmrDpUtility(object):
 
             for sf_data in self.__star_data[0].get_saveframes_by_category(sf_category):
 
-                loop = sf_data.get_loop_by_category(lp_category)
+                try:
+                    loop = sf_data.get_loop_by_category(lp_category)
+                except KeyError:
+                    continue
 
                 if set(tags) & set(loop.tags) == set(tags):
                     self.__updateAuthSequence__(loop, tags)
@@ -21794,7 +21803,10 @@ class NmrDpUtility(object):
 
             for sf_data in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
 
-                loop = sf_data.get_loop_by_category(lp_category)
+                try:
+                    loop = sf_data.get_loop_by_category(lp_category)
+                except KeyError:
+                    continue
 
                 has_atom_type = cs_atom_type in loop.tags
                 has_iso_number = cs_iso_number in loop.tags
@@ -21915,10 +21927,10 @@ class NmrDpUtility(object):
 
                     sf_framecode = get_first_sf_tag(sf_data, 'sf_framecode')
 
-                    if not any(loop for loop in sf_data.loops if loop.category == lp_category):
+                    try:
+                        loop = sf_data.get_loop_by_category(lp_category)
+                    except KeyError:
                         continue
-
-                    loop = sf_data.get_loop_by_category(lp_category)
 
                     if weight_tag in loop.tags:
                         continue
@@ -21968,7 +21980,10 @@ class NmrDpUtility(object):
 
             for sf_data in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
 
-                loop = sf_data.get_loop_by_category(lp_category)
+                try:
+                    loop = sf_data.get_loop_by_category(lp_category)
+                except KeyError:
+                    continue
 
                 if angle_type_tag in loop.tags:
                     continue
@@ -22237,7 +22252,10 @@ class NmrDpUtility(object):
                     if len(phi_index) + len(psi_index) + len(omega_index) +\
                        len(chi1_index) + len(chi2_index) + len(chi3_index) + len(chi4_index) + len(chi5_index) > 0:
 
-                        loop = sf_data.get_loop_by_category(lp_category)
+                        try:
+                            loop = sf_data.get_loop_by_category(lp_category)
+                        except KeyError:
+                            continue
 
                         idxCol = loop.tags.index(index_id_name)
                         aglCol = loop.tags.index(angle_type_name)
@@ -24411,12 +24429,12 @@ class NmrDpUtility(object):
 
                     if self.__insert_entry_id_to_loops:
 
-                        if not any(loop for loop in sf_data.loops if loop.category == lp_category):
-                            continue
-
                         entryIdTag = 'Entry_ID'
 
-                        loop = sf_data.get_loop_by_category(lp_category)
+                        try:
+                            loop = sf_data.get_loop_by_category(lp_category)
+                        except KeyError:
+                            continue
 
                         if not loop is None:
 

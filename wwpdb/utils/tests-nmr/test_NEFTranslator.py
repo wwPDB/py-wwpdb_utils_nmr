@@ -587,6 +587,7 @@ class TestNEFTranslator(unittest.TestCase):
         self.assertEqual(self.neft.get_star_atom('TRP', 'CEY'), (['CE3'], 1, None))
         self.assertEqual(self.neft.get_star_atom('LEU', 'HDY%'), (['HD21', 'HD22', 'HD23'], 2, None))
         self.assertEqual(self.neft.get_star_atom('LEU', 'HD1%'), (['HD11', 'HD12', 'HD13'], 1, None))
+        self.assertEqual(self.neft.get_star_atom('DC', 'H4%'), (['H41', 'H42'], 2, None))
 
     def test_nef2star_cs_row(self):
         input_tags = ['_nef_chemical_shift.chain_code', '_nef_chemical_shift.sequence_code',

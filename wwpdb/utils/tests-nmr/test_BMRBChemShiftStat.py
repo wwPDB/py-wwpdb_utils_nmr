@@ -117,6 +117,7 @@ class TestBMRBChemShiftStat(unittest.TestCase):
         self.assertEqual(self.bmrb_cs_stat.getMaxAmbigCodeWoSetId('TYR', 'HE2'), 3)
         self.assertEqual(self.bmrb_cs_stat.getMaxAmbigCodeWoSetId('GLU', 'HB2'), 2)
         self.assertEqual(self.bmrb_cs_stat.getMaxAmbigCodeWoSetId('LYS', 'HZ1'), 1)
+        self.assertEqual(self.bmrb_cs_stat.getMaxAmbigCodeWoSetId('DC', "H5'"), 2)
 
 if __name__ == '__main__':
     unittest.main()

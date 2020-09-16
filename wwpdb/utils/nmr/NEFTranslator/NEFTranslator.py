@@ -47,6 +47,8 @@
 # 30-Jun-2020  M. Yokochi - support bidirectional conversion between _nef_peak and _Peak_row_format (v2.5.0, DAOTHER-5896)
 # 08-Jul-2020  M. Yokochi - add support for _Gen_dist_constraint.Distance_val, _RDC_constraint.RDC_val, and _RDC_constraint.RDC_val_err (v2.6.0, DAOTHER-5926)
 # 17-Aug-2020  M. Yokochi - add support for residue variant (v2.7.0, DAOTHER-5906)
+# 14-Sep-2020  M. Yokochi - do not convert atom name between NEF and NMR-STAR, which ends with ' character (v2.8.0)
+# 14-Sep-2020  M. Yokochi - add support for psuedo atom in NMR-STAR (v2.8.0)
 ##
 import sys
 import os
@@ -3466,7 +3468,7 @@ class NEFTranslator(object):
                 atom_type = ref_atom[5]
                 xy_code = ref_atom[6].lower()
 
-                pattern = re.compile(r'%s\S+' % atom_type)
+                pattern = re.compile(r'%s[^\']+' % atom_type)
 
                 atom_list = [i for i in atoms if re.search(pattern, i)]
 
@@ -3561,23 +3563,49 @@ class NEFTranslator(object):
 
                 if not atom_id in atoms:
 
-                    if leave_unmatched:
-                        atom_list.append(atom_id)
-                        if not self.__last_comp_id_test:
-                            details[atom_id] = 'Unknown non-standard residue %s found.' % comp_id
-                        else:
-                            details[atom_id] = '%s is invalid atom_id in comp_id %s.' % (atom_id, comp_id)
-                        atom_id_map[atom_id] = atom_id
-                    else:
-                        if not self.__last_comp_id_test:
-                            logging.critical('Unknown non-standard residue %s found.' % comp_id)
-                        else:
-                            logging.critical('Invalid atom nomenclature %s found.' % atom_id)
+                    _atom_id = None
 
-                    continue
+                    if atom_id == 'HN' and self.__csStat.getTypeOfCompId(comp_id)[0]:
+                        _atom_id = 'H'
+                    elif atom_id.startswith('QQ'):
+                        _atom_id = 'H' + atom_id[2:] + '%'
+                    elif atom_id.startswith('QR'):
+                        qr_atoms = sorted(set([atom_id[:-1] + '%' for atom_id in self.__csStat.getAromaticAtoms(comp_id) if atom_id[0] == 'H' and self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id) == 3]))
+                        if len(qr_atoms) > 0:
+                            for qr_atom in qr_atoms:
+                                _a = copy.copy(a)
+                                _a['atom_id'] = qr_atom
+                                star_atom_list.append(_a)
+                            star_atom_list.remove(a)
+                            return self.get_nef_atom(comp_id, star_atom_list, details, leave_unmatched)
+                    elif atom_id.startswith('Q') or atom_id.startswith('M'):
+                        _atom_id = 'H' + atom_id[1:] + '%'
+                    elif atom_id + '2' in self.__csStat.getAllAtoms(comp_id):
+                        _atom_id = atom_id + '%'
 
-                if _ambig_code is None:
+                    if _atom_id is None:
+
+                        if leave_unmatched:
+                            atom_list.append(atom_id)
+                            if not self.__last_comp_id_test:
+                                details[atom_id] = 'Unknown non-standard residue %s found.' % comp_id
+                            else:
+                                details[atom_id] = '%s is invalid atom_id in comp_id %s.' % (atom_id, comp_id)
+                            atom_id_map[atom_id] = atom_id
+                        else:
+                            if not self.__last_comp_id_test:
+                                logging.critical('Unknown non-standard residue %s found.' % comp_id)
+                            else:
+                                logging.critical('Invalid atom nomenclature %s found.' % atom_id)
+
+                        continue
+
+                    atom_id = _atom_id
+
+                if _ambig_code in self.empty_value:
                     ambig_code = self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id)
+                    if atom_id.endswith("'"):
+                        ambig_code = 1
                 else:
                     ambig_code = int(_ambig_code)
 
@@ -4785,6 +4813,9 @@ class NEFTranslator(object):
 
         out_row = []
 
+        comp_1_index = star_tags.index('_Gen_dist_constraint.Comp_ID_1')
+        comp_2_index = star_tags.index('_Gen_dist_constraint.Comp_ID_2')
+
         seq_ident_tags = self.get_seq_ident_tags(star_tags, 'nmr-star')
 
         for tag in seq_ident_tags:
@@ -4867,12 +4898,20 @@ class NEFTranslator(object):
                         try:
                             buf[data_index] = self.atomIdMap[seq_key_1][data]
                         except KeyError:
-                            buf[data_index] = data
+                            atom_list = self.get_nef_atom(i[comp_1_index], [{'atom_id': data, 'ambig_code': None, 'value': None}])[0]
+                            if len(atom_list) > 0:
+                                buf[data_index] = atom_list[0]
+                            else:
+                                buf[data_index] = data
                     elif nef_tag == '_nef_distance_restraint.atom_name_2':
                         try:
                             buf[data_index] = self.atomIdMap[seq_key_2][data]
                         except KeyError:
-                            buf[data_index] = data
+                            atom_list = self.get_nef_atom(i[comp_2_index], [{'atom_id': data, 'ambig_code': None, 'value': None}])[0]
+                            if len(atom_list) > 0:
+                                buf[data_index] = atom_list[0]
+                            else:
+                                buf[data_index] = data
                     else:
                         buf[data_index] = data
 
@@ -5458,7 +5497,14 @@ class NEFTranslator(object):
 
         out_row = []
 
+        comp_indices = []
+
         seq_ident_tags = self.get_seq_ident_tags(star_tags, 'nmr-star')
+
+        num_dim = len(seq_ident_tags)
+
+        for d in range(1, num_dim + 1):
+            comp_indices.append(star_tags.index('_Peak_row_format.Comp_ID_%s' % d))
 
         try:
             index_index = nef_tags.index('_nef_peak.index')
@@ -5528,7 +5574,11 @@ class NEFTranslator(object):
                         try:
                             buf[data_index] = self.atomIdMap[s[int(nef_tag[20:]) - 1]][data]
                         except KeyError:
-                            buf[data_index] = data
+                            atom_list = self.get_nef_atom(i[comp_indices[int(nef_tag[20:]) - 1]], [{'atom_id': data, 'ambig_code': None, 'value': None}])[0]
+                            if len(atom_list) > 0:
+                                buf[data_index] = atom_list[0]
+                            else:
+                                buf[data_index] = data
                     else:
                         buf[data_index] = data
 
@@ -6295,7 +6345,7 @@ class NEFTranslator(object):
                                 for d in rows:
                                     lp.add_data(d)
 
-                            else:
+                            elif len(tags) > 0:
                                 for data in loop.data:
 
                                     rows = self.star2nef_row(loop.get_tag_names(), lp.get_tag_names(), data)
@@ -6453,7 +6503,7 @@ class NEFTranslator(object):
                             for d in rows:
                                 lp.add_data(d)
 
-                        else:
+                        elif len(tags) > 0:
                             for data in loop.data:
 
                                 rows = self.star2nef_row(loop.get_tag_names(), lp.get_tag_names(), data)

@@ -94,8 +94,8 @@
 # 09-Jul-2020  M. Yokochi - adjust arguments of pynmrstar write_to_file() to prevent data losses (v2.6.1, DAOTHER-5926)
 # 17-Aug-2020  M. Yokochi - add support for residue variant (DAOTHER-5906)
 # 20-Aug-2020  M. Yokochi - add 'leave_intl_note' output parameter decides whether to leave internal commentary note in processed NMR-STAR file, set False for OneDep environment (DAOTHER-6030)
-# 10-Sep-2020  M. Yokochi - add 'transl_pseudo_name' input parameter that allows to use pseudo atom nomenclature in combined NMR-STAR file, set False by default for OneDep envitonment
-# 10-Sep-2020  M. Yokochi - fix crash in case primary loop category in a saveframe is missing
+# 10-Sep-2020  M. Yokochi - add 'transl_pseudo_name' input parameter decides whether to translate conventional pseudo atom nomenclature in combined NMR-STAR file, set False by default for OneDep environment
+# 16-Sep-2020  M. Yokochi - bug fix release based on internal test using BMRB NMR restraint archive of 6346 entries
 ##
 """ Wrapper class for data processing for NMR data.
     @author: Masashi Yokochi
@@ -496,7 +496,7 @@ class NmrDpUtility(object):
         self.__check_mandatory_tag = False
         # whether to detect consistency of author sequence (nmr-star specific)
         self.__check_auth_seq = False
-        # whether to translate pseudo atom name in combined NMR-STAR file
+        # whether to translate conventional pseudo atom nomenclature in combined NMR-STAR file
         self.__transl_pseudo_name = False
 
         # whether to fix format issue (enabled if NMR separated deposition or release mode)
@@ -555,10 +555,11 @@ class NmrDpUtility(object):
         __nmrCheckTasks = [self.__detectContentSubType,
                            self.__extractPolymerSequence,
                            self.__extractPolymerSequenceInLoop,
-                           self.__testSequenceConsistency,
+                           #self.__testSequenceConsistency,
                            self.__extractCommonPolymerSequence,
                            self.__extractNonStandardResidue,
                            self.__appendPolymerSequenceAlignment,
+                           self.__testSequenceConsistency,
                            self.__validateAtomNomenclature,
                            self.__appendElemAndIsoNumOfNefCSLoop,
                            self.__validateAtomTypeOfCSLoop,
@@ -615,6 +616,7 @@ class NmrDpUtility(object):
                           self.__resolveConflictsInLoop,
                           self.__resolveConflictsInAuxLoop,
                           # resolve minor issues
+                          self.__validateAtomNomenclature,
                           self.__appendIndexTag,
                           self.__appendWeightInLoop,
                           self.__appendDihedAngleType,
@@ -3101,7 +3103,8 @@ class NmrDpUtility(object):
         self.__pA.setVerbose(self.__verbose)
 
         # CCD accessing utility
-        self.__ccCvsPath = os.path.dirname(__file__) + '/ligand_dict'
+        self.__cI = ConfigInfo(getSiteId())
+        self.__ccCvsPath = self.__cI.get('SITE_CC_CVS_PATH')
 
         self.__ccR = ChemCompReader(self.__verbose, self.__lfh)
         self.__ccR.setCachePath(self.__ccCvsPath)
@@ -6074,7 +6077,7 @@ class NmrDpUtility(object):
                 if has_poly_seq and subtype1 == poly_seq:
                     ps1 = polymer_sequence
 
-                    ref_chain_ids = {s1['chain_id'] for s1 in ps1}
+                    ref_chain_ids = {str(s1['chain_id']) for s1 in ps1}
 
                     for ps_in_loop in polymer_sequence_in_loop[subtype2]:
                         ps2 = ps_in_loop['polymer_sequence']
@@ -6590,10 +6593,15 @@ class NmrDpUtility(object):
 
         is_done = True
 
+        update_poly_seq = False
+
         for fileListId in range(self.__file_path_list_len):
 
             input_source = self.report.input_sources[fileListId]
             input_source_dic = input_source.get()
+
+            file_name = input_source_dic['file_name']
+            file_type = input_source_dic['file_type']
 
             has_poly_seq = has_key_value(input_source_dic, 'polymer_sequence')
             has_poly_seq_in_loop = has_key_value(input_source_dic, 'polymer_sequence_in_loop')
@@ -6635,13 +6643,14 @@ class NmrDpUtility(object):
 
                         for s2 in ps2:
 
-                            if chain_id != s2['chain_id']:
+                            if _chain_id != s2['chain_id']:
                                 continue
 
-                            _s2 = fill_blank_comp_id(s1, s2)
+                            #_s2 = fill_blank_comp_id(s1, s2)
 
                             self.__pA.setReferenceSequence(s1['comp_id'], 'REF' + _chain_id)
-                            self.__pA.addTestSequence(_s2['comp_id'], _chain_id)
+                            #self.__pA.addTestSequence(_s2['comp_id'], _chain_id)
+                            self.__pA.addTestSequence(s2['comp_id'], _chain_id)
                             self.__pA.doAlign()
 
                             myAlign = self.__pA.getAlignment(_chain_id)
@@ -6651,6 +6660,48 @@ class NmrDpUtility(object):
                             if length == 0:
                                 continue
 
+                            aligned = [True] * length
+
+                            for i in range(length):
+                                myPr = myAlign[i]
+                                myPr0 = str(myPr[0])
+                                myPr1 = str(myPr[1])
+                                if myPr0 == '.' or myPr1 == '.':
+                                    aligned[i] = False
+                                    pass
+                                elif myPr0 != myPr1:
+                                    pass
+                                else:
+                                    break
+
+                            not_aligned = True
+                            offset_1 = 0
+                            offset_2 = 0
+
+                            unmapped = 0
+                            conflict = 0
+                            for i in range(length):
+                                myPr = myAlign[i]
+                                myPr0 = str(myPr[0])
+                                myPr1 = str(myPr[1])
+                                if myPr0 == '.' or myPr1 == '.':
+                                    if not_aligned and not aligned[i]:
+                                        if myPr0 == '.' and myPr1 != '.':
+                                            offset_1 += 1
+                                        if myPr0 != '.' and myPr1 == '.':
+                                            offset_2 += 1
+                                    unmapped += 1
+                                elif myPr0 != myPr1:
+                                    conflict += 1
+                                else:
+                                    not_aligned = False
+
+                            if length == unmapped + conflict:
+                                continue
+
+                            _s1 = s1 if offset_1 == 0 else fill_blank_comp_id_with_offset(s2, s1, offset_1)
+                            _s2 = s2 if offset_2 == 0 else fill_blank_comp_id_with_offset(s1, s2, offset_2)
+                            """
                             unmapped = 0
                             conflict = 0
                             for i in range(length):
@@ -6664,14 +6715,24 @@ class NmrDpUtility(object):
 
                             if length == unmapped + conflict:
                                 continue
-
+                            """
                             ref_length = len(s1['seq_id'])
 
-                            ref_code = self.__get1LetterCodeSequence(s1['comp_id'])
+                            #ref_code = self.__get1LetterCodeSequence(s1['comp_id'])
+                            ref_code = self.__get1LetterCodeSequence(_s1['comp_id'])
                             test_code = self.__get1LetterCodeSequence(_s2['comp_id'])
                             mid_code = get_middle_code(ref_code, test_code)
-                            ref_gauge_code = get_gauge_code(s1['seq_id'])
+                            #ref_gauge_code = get_gauge_code(s1['seq_id'])
+                            ref_gauge_code = get_gauge_code(_s1['seq_id'])
                             test_gauge_code = get_gauge_code(_s2['seq_id'])
+
+                            if self.__resolve_conflict and any((__s1, __s2) for (__s1, __s2) in zip(_s1['seq_id'], _s2['seq_id']) if __s1 != '.' and __s2 != '.' and __s1 != __s2):
+                                seq_id_conv_dict = {str(__s2): str(__s1) for __s1, __s2 in zip(_s1['seq_id'], _s2['seq_id']) if __s2 != '.'}
+                                self.__fixSeqIdInLoop(fileListId, file_name, file_type, content_subtype, ps_in_loop['sf_framecode'], _chain_id, seq_id_conv_dict)
+                                _s2['seq_id'] = _s1['seq_id']
+                                test_gauge_code = ref_gauge_code
+
+                                update_poly_seq = True
 
                             matched = mid_code.count('|')
 
@@ -6679,7 +6740,7 @@ class NmrDpUtility(object):
                                          'sf_framecode': ps_in_loop['sf_framecode'],
                                          'chain_id': chain_id, 'length': ref_length, 'matched': matched, 'conflict': conflict, 'unmapped': unmapped,
                                          'sequence_coverage': float('{:.3f}'.format(float(length - (unmapped + conflict)) / float(ref_length))),
-                                         'ref_seq_id': s1['seq_id'],
+                                         'ref_seq_id': _s1['seq_id'], 'test_seq_id': _s2['seq_id'],
                                          'ref_gauge_code': ref_gauge_code, 'ref_code': ref_code, 'mid_code': mid_code, 'test_code': test_code, 'test_gauge_code': test_gauge_code}
 
                             seq_align_set.append(seq_align)
@@ -6732,7 +6793,147 @@ class NmrDpUtility(object):
                 if len(seq_align_set) > 0:
                     self.report.sequence_alignment.setItemValue('nmr_poly_seq_vs_' + content_subtype, seq_align_set)
 
+        if update_poly_seq:
+            self.__extractPolymerSequenceInLoop()
+
         return is_done
+
+    def __fixSeqIdInLoop(self, file_list_id, file_name, file_type, content_subtype, sf_framecode, chain_id, seq_id_conv_dict):
+        """ Fix sequence ID of interesting loop.
+        """
+
+        sf_category = self.sf_categories[file_type][content_subtype]
+        lp_category = self.lp_categories[file_type][content_subtype]
+
+        if file_type == 'nmr-star' and content_subtype == 'spectral_peak_alt':
+            lp_category = '_Assigned_peak_chem_shift'
+
+        if self.__star_data_type[file_list_id] == 'Loop':
+
+            sf_data = self.__star_data[file_list_id]
+
+            if sf_framecode == '':
+                self.__fixSeqIdInLoop__(file_list_id, file_name, file_type, content_subtype, sf_data, sf_framecode, lp_category, chain_id, seq_id_conv_dict)
+
+        elif self.__star_data_type[file_list_id] == 'Saveframe':
+
+            sf_data = self.__star_data[file_list_id]
+
+            if get_first_sf_tag(sf_data, 'sf_framecode') == sf_framecode:
+                self.__fixSeqIdInLoop__(file_list_id, file_name, file_type, content_subtype, sf_data, sf_framecode, lp_category, chain_id, seq_id_conv_dict)
+
+        else:
+
+            for sf_data in self.__star_data[file_list_id].get_saveframes_by_category(sf_category):
+
+                if get_first_sf_tag(sf_data, 'sf_framecode') != sf_framecode:
+                    continue
+
+                if not any(loop for loop in sf_data.loops if loop.category == lp_category):
+                    continue
+
+                self.__fixSeqIdInLoop__(file_list_id, file_name, file_type, content_subtype, sf_data, sf_framecode, lp_category, chain_id, seq_id_conv_dict)
+
+    def __fixSeqIdInLoop__(self, file_list_id, file_name, file_type, content_subtype, sf_data, sf_framecode, lp_category, chain_id, seq_id_conv_dict):
+        """ Fix sequence ID of interesting loop.
+        """
+
+        chain_id_name = 'chain_code' if file_type == 'nef' else 'Entity_assembly_ID'
+        seq_id_name = 'sequence_code' if file_type == 'nef' else 'Comp_index_ID'
+        seq_id_alt_name = None if file_type == 'nef' else 'Seq_ID'
+
+        max_dim = 2
+
+        if content_subtype in ['poly_seq', 'dist_restraint', 'rdc_restraint']:
+            max_dim = 3
+
+        elif content_subtype == 'dihed_restraint':
+            max_dim = 5
+
+        elif content_subtype == 'spectral_peak':
+
+            try:
+
+                _num_dim = sf_data.get_tag(self.num_dim_items[file_type])[0]
+                num_dim = int(_num_dim)
+
+                if not num_dim in range(1, self.lim_num_dim):
+                    raise ValueError()
+
+            except ValueError: # raised error already at __testIndexConsistency()
+                return
+
+            max_dim = num_dim + 1
+
+        loop = sf_data if self.__star_data_type[file_list_id] == 'Loop' else sf_data.get_loop_by_category(lp_category)
+
+        if max_dim == 2:
+
+            chain_id_col = loop.tags.index(chain_id_name) if chain_id_name in loop.tags else -1
+            seq_id_col = loop.tags.index(seq_id_name) if seq_id_name in loop.tags else -1
+            seq_id_alt_col = -1
+            if not seq_id_alt_name is None:
+                seq_id_alt_col = loop.tags.index(seq_id_alt_name) if seq_id_alt_name in loop.tags else -1
+
+            if chain_id_col == -1 or seq_id_col == -1:
+                return
+
+            for row in loop:
+
+                _chain_id = str(row[chain_id_col])
+
+                if _chain_id != chain_id:
+                    continue
+
+                seq_id = row[seq_id_col]
+
+                if seq_id in seq_id_conv_dict:
+                    row[seq_id_col] = seq_id_conv_dict[seq_id]
+
+                if seq_id_alt_col == -1:
+                    continue
+
+                seq_id_alt = row[seq_id_alt_col]
+
+                if seq_id_alt in seq_id_conv_dict:
+                    row[seq_id_alt_col] = seq_id_conv_dict[seq_id_alt]
+
+        else:
+
+            for i in range(1, max_dim):
+
+                _chain_id_name = chain_id_name + '_' + str(i)
+                _seq_id_name = seq_id_name + '_' + str(i)
+
+                chain_id_col = loop.tags.index(_chain_id_name) if _chain_id_name in loop.tags else -1
+                seq_id_col = loop.tags.index(_seq_id_name) if _seq_id_name in loop.tags else -1
+                seq_id_alt_col = -1
+                if not seq_id_alt_name is None:
+                    _seq_id_alt_name = seq_id_alt_name + '_' + str(i)
+                    seq_id_alt_col = loop.tags.index(_seq_id_alt_name) if _seq_id_alt_name in loop.tags else -1
+
+                if chain_id_col == -1 or seq_id_col == -1:
+                    continue
+
+                for row in loop:
+
+                    _chain_id = str(row[chain_id_col])
+
+                    if _chain_id != chain_id:
+                        continue
+
+                    seq_id = row[seq_id_col]
+
+                    if seq_id in seq_id_conv_dict:
+                        row[seq_id_col] = seq_id_conv_dict[seq_id]
+
+                    if seq_id_alt_col == -1:
+                        continue
+
+                    seq_id_alt = row[seq_id_alt_col]
+
+                    if seq_id_alt in seq_id_conv_dict:
+                        row[seq_id_alt_col] = seq_id_conv_dict[seq_id_alt]
 
     def __get1LetterCode(self, comp_id):
         """ Convert comp ID to 1-letter code.
@@ -6873,7 +7074,7 @@ class NmrDpUtility(object):
                                                            allow_empty=(content_subtype == 'spectral_peak'))[0]
             else:
                 pairs = self.__nefT.get_star_comp_atom_pair(sf_data, lp_category,
-                                                            allow_empty=(content_subtype == 'spectral_peak'))[0]
+                                                            allow_empty=(content_subtype.startswith('spectral_peak')))[0]
 
             for pair in pairs:
                 comp_id = pair['comp_id']
@@ -6913,14 +7114,26 @@ class NmrDpUtility(object):
                         atom_id_ = atom_id
 
                         if (file_type == 'nef' or not self.__combined_mode or self.__transl_pseudo_name) and\
-                           (atom_id.startswith('Q') or atom_id.startswith('M') or self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id) == 0):
+                           (atom_id.startswith('Q') or atom_id.startswith('M') or atom_id.endswith('%') or atom_id.endswith('*') or self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id) == 0):
                             atom_id_ = self.__getRepresentativeAtomId(file_type, comp_id, atom_id)
+
+                            if file_type == 'nmr-star' and self.__combined_mode and self.__transl_pseudo_name and atom_id != atom_id_:
+
+                                warn = "Conventional psuedo atom %s:%s is translated to %r according to the IUPAC atom nomenclature." % (comp_id, atom_id, atom_id_)
+
+                                self.report.warning.appendDescription('auth_atom_nomenclature_mismatch', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
+                                self.report.setWarning()
+
+                                if self.__verbose:
+                                    self.__lfh.write("+NmrDpUtility.__validateAtomNomenclature() ++ Warning  - %s\n" % warn)
+
+                                self.__fixAtomNomenclature(comp_id, {atom_id: atom_id_})
 
                         if not self.__nefT.validate_comp_atom(comp_id, atom_id_):
 
                             if comp_id == 'GLY' and atom_id_ == 'HA1':
 
-                                warn = "GLY:HA1/HA2 in the NMR data should be GLY:HA2/HA3 according to the IUPAC atom nomenclature, respectively."
+                                warn = "GLY:HA1/HA2 should be GLY:HA2/HA3 according to the IUPAC atom nomenclature, respectively."
 
                                 self.report.warning.appendDescription('auth_atom_nomenclature_mismatch', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
                                 self.report.setWarning()
@@ -7257,7 +7470,7 @@ class NmrDpUtility(object):
                     raise ValueError()
 
             except ValueError: # raised error already at __testIndexConsistency()
-                return False
+                return
 
             max_dim = num_dim + 1
 
@@ -7285,10 +7498,10 @@ class NmrDpUtility(object):
 
         else:
 
-            for i in range(1, max_dim):
+            for j in range(1, max_dim):
 
-                _comp_id_name = comp_id_name + '_' + str(i)
-                _atom_id_name = atom_id_name + '_' + str(i)
+                _comp_id_name = comp_id_name + '_' + str(j)
+                _atom_id_name = atom_id_name + '_' + str(j)
 
                 comp_id_col = loop.tags.index(_comp_id_name) if _comp_id_name in loop.tags else -1
                 atom_id_col = loop.tags.index(_atom_id_name) if _atom_id_name in loop.tags else -1
@@ -8352,7 +8565,7 @@ class NmrDpUtility(object):
 
                     sf_framecode = get_first_sf_tag(sf_data, 'sf_framecode')
 
-                    if content_subtype == 'spectral_peak':
+                    if content_subtype.startswith('spectral_peak'):
 
                         try:
 
@@ -8396,6 +8609,8 @@ class NmrDpUtility(object):
 
                                 if content_subtype == 'spectral_peak':
                                     self.__testDataConsistencyInAuxLoopOfSpectralPeak(file_name, file_type, sf_framecode, num_dim, lp_category, aux_data)
+                                if file_type == 'nmr-star' and content_subtype == 'spectral_peak_alt':
+                                    self.__testDataConsistencyInAuxLoopOfSpectralPeakAlt(file_name, file_type, sf_framecode, num_dim, lp_category, aux_data, sf_data)
 
                             except KeyError as e:
 
@@ -8625,8 +8840,8 @@ class NmrDpUtility(object):
                             min_point = last_point - (sp_width if abs else 0.0)
                             max_point = first_point + (sp_width if abs else 0.0)
 
-                        min_points.append(float('{:.7f}'.format(min_point)))
-                        max_points.append(float('{:.7f}'.format(max_point)))
+                        min_points.append(None if min_point is None else float('{:.7f}'.format(min_point)))
+                        max_points.append(None if max_point is None else float('{:.7f}'.format(max_point)))
 
                         break
 
@@ -8736,8 +8951,8 @@ class NmrDpUtility(object):
                             min_point = last_point - (sp_width if abs else 0.0)
                             max_point = first_point + (sp_width if abs else 0.0)
 
-                        min_points.append(float('{:.7f}'.format(min_point)))
-                        max_points.append(float('{:.7f}'.format(max_point)))
+                        min_points.append(None if min_point is None else float('{:.7f}'.format(min_point)))
+                        max_points.append(None if max_point is None else float('{:.7f}'.format(max_point)))
 
                         break
 
@@ -9161,6 +9376,9 @@ class NmrDpUtility(object):
                 atom_id = i[atom_id_name]
                 value = i[value_name]
 
+                if value in self.empty_value:
+                    continue
+
                 if file_type == 'nef' or ((atom_id == 'HN' and self.__csStat.getTypeOfCompId(comp_id)[0]) or
                                           atom_id.startswith('Q') or
                                           atom_id.startswith('M') or
@@ -9233,10 +9451,23 @@ class NmrDpUtility(object):
 
                                     break
 
-                            if std_value is None:
+                            if std_value is None or std_value <= 0.0:
 
                                 warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] Insufficient chemical shift statistics on comp_id %s, atom_id %s is available to verify %s %s (avg %s).' %\
                                        (comp_id, atom_name, value_name, value, avg_value)
+
+                                self.report.warning.appendDescription('unusual_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
+                                self.report.setWarning()
+
+                                if self.__verbose:
+                                    self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ Warning  - %s\n" % warn)
+
+                                break
+
+                            if avg_value is None:
+
+                                warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] Insufficient chemical shift statistics on comp_id %s, atom_id %s is available to verify %s %s.' %\
+                                       (comp_id, atom_name, value_name, value)
 
                                 self.report.warning.appendDescription('unusual_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
                                 self.report.setWarning()
@@ -9300,7 +9531,7 @@ class NmrDpUtility(object):
                                                 na['chain_id'], na['seq_id'], na['comp_id'], na['ring_atoms'], na['ring_distance'], na['ring_angle'])
 
                                         warn_alt = 'Verify chemical shift value for %s:%s:%s:%s (%s ppm, %.2f sigma) is outside of expected range (%.2f ~ %.2f ppm, avg %s, std %s, min %s, max %s). The nearest aromatic ring (%s:%s:%s:%s) is located at %s angstroms, %s degrees.' %\
-                                               (chain_id, seq_id, comp_id, atom_name, value, sigma, abs_value + 5.0 * std_value, avg_value - 5.0 * std_value, avg_value, std_value, min_value, max_value,
+                                               (chain_id, seq_id, comp_id, atom_name, value, sigma, avg_value + 5.0 * std_value, avg_value - 5.0 * std_value, avg_value, std_value, min_value, max_value,
                                                 na['chain_id'], na['seq_id'], na['comp_id'], na['ring_atoms'], na['ring_distance'], na['ring_angle'])
 
                                         if na['ring_angle'] - self.magic_angle * z_score > 0.0 or self.__nonblk_anomalous_cs:
@@ -9673,10 +9904,23 @@ class NmrDpUtility(object):
 
                                     break
 
-                            if std_value is None:
+                            if std_value is None or std_value <= 0.0:
 
                                 warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] Insufficient chemical shift statistics on comp_id %s, atom_id %s is available to verify %s %s (avg %s).' %\
                                        (comp_id, atom_name, value_name, value, avg_value)
+
+                                self.report.warning.appendDescription('unusual_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
+                                self.report.setWarning()
+
+                                if self.__verbose:
+                                    self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ Warning  - %s\n" % warn)
+
+                                break
+
+                            if avg_value is None:
+
+                                warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] Insufficient chemical shift statistics on comp_id %s, atom_id %s is available to verify %s %s.' %\
+                                       (comp_id, atom_name, value_name, value)
 
                                 self.report.warning.appendDescription('unusual_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
                                 self.report.setWarning()
@@ -10255,14 +10499,21 @@ class NmrDpUtility(object):
 
                 except StopIteration:
 
-                    err = "Assigned chemical shifts are mandatory. Referred %r saveframe does not exist." % cs_list
+                    if not cs_list in self.empty_value:
 
-                    self.report.error.appendDescription('missing_mandatory_content', {'file_name': file_name, 'sf_framecode': sf_framecode, 'description': err})
-                    self.report.setError()
+                        err = "Assigned chemical shifts are mandatory. Referred %r saveframe does not exist." % cs_list
 
-                    if self.__verbose:
-                        self.__lfh.write("+NmrDpUtility.__testCSValueConsistencyInPkLoop() ++ Error  - %s\n" % err)
+                        self.report.error.appendDescription('missing_mandatory_content', {'file_name': file_name, 'sf_framecode': sf_framecode, 'description': err})
+                        self.report.setError()
 
+                        if self.__verbose:
+                            self.__lfh.write("+NmrDpUtility.__testCSValueConsistencyInPkLoop() ++ Error  - %s\n" % err)
+
+                        continue
+
+                    try:
+                        cs_data = next(l['data'] for l in self.__lp_data['chem_shift'] if l['file_name'] == file_name)
+                    except StopIteration:
                         continue
 
                 try:
@@ -10427,6 +10678,9 @@ class NmrDpUtility(object):
                                     value = cs[cs_value_name]
                                     error = cs[cs_error_name]
 
+                                    if value in self.empty_value:
+                                        continue
+
                                     if error is None or error < 1.0e-3 or error * 5.0 > max_cs_err:
                                         error = max_cs_err
                                     else:
@@ -10445,7 +10699,7 @@ class NmrDpUtility(object):
                                         if abs(position - value) > error:
 
                                             err = "[Check row of %s %s] Peak position of spectral peak %s %s (%s) in %r saveframe is inconsistent with the assigned chemical shift value %s (difference %s, tolerance %s) in %r saveframe." %\
-                                                  (index_tag, i[index_tag], position_names[d], position, self.__getReducedAtomNotation(chain_id_names[d], chain_id, seq_id_names[d], seq_id, comp_id_names[d], comp_id, atom_id_names[d], atom_id), sf_framecode, value, position - value, error, cs_list)
+                                                  (index_tag, i[index_tag], position_names[d], position, self.__getReducedAtomNotation(chain_id_names[d], chain_id, seq_id_names[d], seq_id, comp_id_names[d], comp_id, atom_id_names[d], atom_id), sf_framecode, value, float('{:.3f}'.format(position - value)), error, cs_list)
 
                                             self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
                                             self.report.setError()
@@ -10613,13 +10867,15 @@ class NmrDpUtility(object):
 
                     except StopIteration:
 
-                        err = "Assigned chemical shifts are mandatory. Referred %r saveframe does not exist." % cs_list
+                        if not cs_list in self.empty_value:
 
-                        self.report.error.appendDescription('missing_mandatory_content', {'file_name': file_name, 'sf_framecode': sf_framecode, 'description': err})
-                        self.report.setError()
+                            err = "Assigned chemical shifts are mandatory. Referred %r saveframe does not exist." % cs_list
 
-                        if self.__verbose:
-                            self.__lfh.write("+NmrDpUtility.__testCSValueConsistencyInPkAltLoop() ++ Error  - %s\n" % err)
+                            self.report.error.appendDescription('missing_mandatory_content', {'file_name': file_name, 'sf_framecode': sf_framecode, 'description': err})
+                            self.report.setError()
+
+                            if self.__verbose:
+                                self.__lfh.write("+NmrDpUtility.__testCSValueConsistencyInPkAltLoop() ++ Error  - %s\n" % err)
 
                             continue
 
@@ -10677,6 +10933,7 @@ class NmrDpUtility(object):
                 else:
                     for i in range(num_dim):
                         abs_pk_pos.append(False)
+                        sp_widths.append(None)
 
                 aux_data = next((l['data'] for l in self.__aux_data[content_subtype] if l['file_name'] == file_name and l['sf_framecode'] == sf_framecode and l['category'] == self.aux_lp_categories[file_type][content_subtype][1]), None)
 
@@ -10774,6 +11031,9 @@ class NmrDpUtility(object):
                                 value = cs[cs_value_name]
                                 error = cs[cs_error_name]
 
+                                if value in self.empty_value:
+                                    continue
+
                                 if error is None or error < 1.0e-3 or error * 5.0 > max_cs_err:
                                     error = max_cs_err
                                 else:
@@ -10792,7 +11052,7 @@ class NmrDpUtility(object):
                                     if abs(position - value) > error:
 
                                         err = "[Check row of %s %s] Peak position of spectral peak %s %s (%s) in %r saveframe is inconsistent with the assigned chemical shift value %s (difference %s, tolerance %s) in %r saveframe." %\
-                                              (pk_id_name, i[pk_id_name], cs_value_name, position, self.__getReducedAtomNotation(cs_chain_id_name, chain_id, cs_seq_id_name, seq_id, cs_comp_id_name, comp_id, cs_atom_id_name, atom_id), sf_framecode, value, position - value, error, cs_list)
+                                              (pk_id_name, i[pk_id_name], cs_value_name, position, self.__getReducedAtomNotation(cs_chain_id_name, chain_id, cs_seq_id_name, seq_id, cs_comp_id_name, comp_id, cs_atom_id_name, atom_id), sf_framecode, value, float('{:.3f}'.format(position - value)), error, cs_list)
 
                                         self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
                                         self.report.setError()
@@ -10802,7 +11062,7 @@ class NmrDpUtility(object):
 
                                 axis_code = str(cs[cs_iso_number]) + cs[cs_atom_type]
 
-                                if axis_code != axis_codes[d]:
+                                if not aux_data is None and axis_code != axis_codes[d]:
 
                                     err = '[Check row of %s %s] Assignment of spectral peak %s is inconsistent with axis code %s vs %s.' %\
                                           (pk_id_name, i[pk_id_name], self.__getReducedAtomNotation(cs_chain_id_name, chain_id, cs_seq_id_name, seq_id, cs_comp_id_name, comp_id, cs_atom_id_name, atom_id), axis_code, axis_codes[d])
@@ -12687,6 +12947,9 @@ class NmrDpUtility(object):
                 atom_id = i[atom_id_name]
                 value = i[value_name]
 
+                if value in self.empty_value:
+                    continue
+
                 if file_type == 'nef' or ((atom_id == 'HN' and self.__csStat.getTypeOfCompId(comp_id)[0]) or
                                           atom_id.startswith('Q') or
                                           atom_id.startswith('M') or
@@ -12741,7 +13004,7 @@ class NmrDpUtility(object):
 
                             break
 
-                if (not has_cs_stat) or std_value is None:
+                if (not has_cs_stat) or std_value is None or std_value <= 0.0 or avg_value is None:
                     continue
 
                 z_score = (value - avg_value) / std_value
@@ -14267,7 +14530,7 @@ class NmrDpUtility(object):
                     diselenide_bond_type = 'Se...Se (too far!)'
                     diselenide_bond = True
 
-            elif (atom_id_1_ == 'N' and not self.__isNonMetalElement(atom_id_2)) or (atom_id_2_ == 'N' and not self.__isNoneMetalElement(atom_id_1)):
+            elif (atom_id_1_ == 'N' and not self.__isNonMetalElement(atom_id_2)) or (atom_id_2_ == 'N' and not self.__isNonMetalElement(atom_id_1)):
 
                 metal = atom_id_2 if self.__isNonMetalElement(atom_id_1) else atom_id_1
                 metal = metal.title()
@@ -14614,7 +14877,7 @@ class NmrDpUtility(object):
                     diselenide_bond_type = 'Se...Se (too far!)'
                     diselenide_bond = True
 
-            elif (atom_id_1_ == 'N' and not self.__isNonMetalElement(atom_id_2)) or (atom_id_2_ == 'N' and not self.__isNoneMetalElement(atom_id_1)):
+            elif (atom_id_1_ == 'N' and not self.__isNonMetalElement(atom_id_2)) or (atom_id_2_ == 'N' and not self.__isNonMetalElement(atom_id_1)):
 
                 metal = atom_id_2 if self.__isNonMetalElement(atom_id_1) else atom_id_1
                 metal = metal.title()
@@ -16289,7 +16552,7 @@ class NmrDpUtility(object):
         elif iso_number_2 < iso_number_1:
             vector_type = atom_id_2 + '-' + atom_id_1
         else:
-            sorted_atom_ids = sorted(atom_id_1, atom_id_2)
+            sorted_atom_ids = sorted([atom_id_1, atom_id_2])
             vector_type = sorted_atom_ids[0] + '-' + sorted_atom_ids[1]
 
         return vector_type + '_bond_vectors'
@@ -16846,6 +17109,9 @@ class NmrDpUtility(object):
                 cif_seq_id = next((test_seq_id for ref_seq_id, test_seq_id in zip(result['ref_seq_id'], result['test_seq_id']) if ref_seq_id == nmr_seq_id), None)
 
                 if cif_seq_id is None:
+                    continue
+
+                if not cif_seq_id in s['seq_id']:
                     continue
 
                 nmr_struct_conf[nmr_seq_ids.index(nmr_seq_id)] = s['struct_conf'][s['seq_id'].index(cif_seq_id)]
@@ -17587,13 +17853,14 @@ class NmrDpUtility(object):
 
                         for s2 in ps2:
 
-                            if chain_id != s2['chain_id']:
+                            if _chain_id != s2['chain_id']:
                                 continue
 
-                            _s2 = fill_blank_comp_id(s1, s2)
+                            #_s2 = fill_blank_comp_id(s1, s2)
 
                             self.__pA.setReferenceSequence(s1['comp_id'], 'REF' + _chain_id)
-                            self.__pA.addTestSequence(_s2['comp_id'], _chain_id)
+                            #self.__pA.addTestSequence(_s2['comp_id'], _chain_id)
+                            self.__pA.addTestSequence(s2['comp_id'], _chain_id)
                             self.__pA.doAlign()
 
                             myAlign = self.__pA.getAlignment(_chain_id)
@@ -17603,6 +17870,48 @@ class NmrDpUtility(object):
                             if length == 0:
                                 continue
 
+                            aligned = [True] * length
+
+                            for i in range(length):
+                                myPr = myAlign[i]
+                                myPr0 = str(myPr[0])
+                                myPr1 = str(myPr[1])
+                                if myPr0 == '.' or myPr1 == '.':
+                                    aligned[i] = False
+                                    pass
+                                elif myPr0 != myPr1:
+                                    pass
+                                else:
+                                    break
+
+                            not_aligned = True
+                            offset_1 = 0
+                            offset_2 = 0
+
+                            unmapped = 0
+                            conflict = 0
+                            for i in range(length):
+                                myPr = myAlign[i]
+                                myPr0 = str(myPr[0])
+                                myPr1 = str(myPr[1])
+                                if myPr0 == '.' or myPr1 == '.':
+                                    if not_aligned and not aligned[i]:
+                                        if myPr0 == '.' and myPr1 != '.':
+                                            offset_1 += 1
+                                        if myPr0 != '.' and myPr1 == '.':
+                                            offset_2 += 1
+                                    unmapped += 1
+                                elif myPr0 != myPr1:
+                                    conflict += 1
+                                else:
+                                    not_aligned = False
+
+                            if length == unmapped + conflict:
+                                continue
+
+                            _s1 = s1 if offset_1 == 0 else fill_blank_comp_id_with_offset(s2, s1, offset_1)
+                            _s2 = s2 if offset_2 == 0 else fill_blank_comp_id_with_offset(s1, s2, offset_2)
+                            """
                             unmapped = 0
                             conflict = 0
                             for i in range(length):
@@ -17616,13 +17925,15 @@ class NmrDpUtility(object):
 
                             if length == unmapped + conflict:
                                 continue
-
+                            """
                             ref_length = len(s1['seq_id'])
 
-                            ref_code = self.__get1LetterCodeSequence(s1['comp_id'])
+                            #ref_code = self.__get1LetterCodeSequence(s1['comp_id'])
+                            ref_code = self.__get1LetterCodeSequence(_s1['comp_id'])
                             test_code = self.__get1LetterCodeSequence(_s2['comp_id'])
                             mid_code = get_middle_code(ref_code, test_code)
-                            ref_gauge_code = get_gauge_code(s1['seq_id'])
+                            #ref_gauge_code = get_gauge_code(s1['seq_id'])
+                            ref_gauge_code = get_gauge_code(_s1['seq_id'])
                             test_gauge_code = get_gauge_code(_s2['seq_id'])
 
                             matched = mid_code.count('|')
@@ -17630,7 +17941,7 @@ class NmrDpUtility(object):
                             seq_align = {'list_id': ps_in_loop['list_id'],
                                          'chain_id': chain_id, 'length': ref_length, 'matched': matched, 'conflict': conflict, 'unmapped': unmapped,
                                          'sequence_coverage': float('{:.3f}'.format(float(length - (unmapped + conflict)) / float(ref_length))),
-                                         'ref_seq_id': s1['seq_id'],
+                                         'ref_seq_id': _s1['seq_id'], 'test_seq_id': _s2['seq_id'],
                                          'ref_gauge_code': ref_gauge_code, 'ref_code': ref_code, 'mid_code': mid_code, 'test_code': test_code, 'test_gauge_code': test_gauge_code}
 
                             seq_align_set.append(seq_align)
@@ -18826,7 +19137,7 @@ class NmrDpUtility(object):
                 comp_id = i[comp_id_names[j]]
                 atom_id = i[atom_id_names[j]]
 
-                if content_subtype == 'spectral_peak' and (chain_id in self.empty_value or seq_id in self.empty_value or comp_id in self.empty_value or atom_id in self.empty_value):
+                if content_subtype.startswith('spectral_peak') and (chain_id in self.empty_value or seq_id in self.empty_value or comp_id in self.empty_value or atom_id in self.empty_value):
                     continue
 
                 if not str(chain_id) in nmr2ca:
@@ -19105,7 +19416,7 @@ class NmrDpUtility(object):
 
             for sf_data in self.__star_data[0].get_saveframes_by_category(sf_category):
 
-                if content_subtype == 'spectral_peak':
+                if content_subtype.startswith('spectral_peak'):
 
                     try:
 
@@ -21418,6 +21729,9 @@ class NmrDpUtility(object):
                     atom_list.append({'chain_id': _nmr_chain_id, 'seq_id': _nmr_seq_id, 'cif_chain_id': _cif_chain_id, 'cif_seq_id': n['seq_id'], 'comp_id': n['comp_id'], 'atom_id': n['atom_id'],
                                       'distance': np.linalg.norm(to_np_array(n) - o)})
 
+            if len(atom_list) == 0:
+                return None
+
             na = sorted(atom_list, key = lambda a: a['distance'])[0]
 
             na_atom_id = na['atom_id']
@@ -21728,6 +22042,9 @@ class NmrDpUtility(object):
             for n in neighbor:
                 atom_list.append({'chain_id': n['chain_id'], 'seq_id': n['seq_id'], 'comp_id': n['comp_id'], 'atom_id': n['atom_id'],
                                   'distance': np.linalg.norm(to_np_array(n) - o)})
+
+            if len(atom_list) == 0:
+                return None
 
             p = sorted(atom_list, key = lambda a: a['distance'])[0]
 

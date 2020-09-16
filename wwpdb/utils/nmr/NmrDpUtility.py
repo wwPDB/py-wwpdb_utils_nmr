@@ -1375,8 +1375,7 @@ class NmrDpUtility(object):
                                                        {'name': 'Assigned_chem_shift_list_ID', 'type': 'pointer-index', 'mandatory': True, 'default': '1'}
                                                        ],
                                         'chem_shift_ref': [{'name': 'Atom_group', 'type': 'enum', 'mandatory': True,
-                                                            'enum': ('methyl carbon', 'methyl carbons', 'methyl protons', 'methylene protons', 'nitrogen', 'phosphorus'),
-                                                            'enforce-enum': True},
+                                                            'enum': ('methyl carbon', 'methyl carbons', 'methyl protons', 'methylene protons', 'nitrogen', 'phosphorus')},
                                                            {'name': 'Chem_shift_val', 'type': 'float', 'mandatory': True},
                                                            {'name': 'Chem_shift_units', 'type': 'enum', 'mandatory': True,
                                                             'enum': ('ppm', 'Hz'),
@@ -5696,11 +5695,12 @@ class NmrDpUtility(object):
 
                 except KeyError as e:
 
-                    self.report.error.appendDescription('sequence_mismatch', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': str(e).strip("'")})
-                    self.report.setError()
+                    if self.__check_auth_seq:
+                        self.report.error.appendDescription('sequence_mismatch', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': str(e).strip("'")})
+                        self.report.setError()
 
-                    if self.__verbose:
-                        self.__lfh.write("+NmrDpUtility.__extractPolymerSequence() ++ KeyError  - %s" % str(e))
+                        if self.__verbose:
+                            self.__lfh.write("+NmrDpUtility.__extractPolymerSequence() ++ KeyError  - %s" % str(e))
 
                 except LookupError as e:
                     pass
@@ -5735,13 +5735,14 @@ class NmrDpUtility(object):
 
                         if invl:
 
-                            err = warn[15:]
+                            if self.__check_auth_seq:
+                                err = warn[15:]
 
-                            self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
-                            self.report.setError()
+                                self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
+                                self.report.setError()
 
-                            if self.__verbose:
-                                self.__lfh.write("+NmrDpUtility.__extractPolymerSequence() ++ ValueError  - %s" % err)
+                                if self.__verbose:
+                                    self.__lfh.write("+NmrDpUtility.__extractPolymerSequence() ++ ValueError  - %s" % err)
 
                         else:
 

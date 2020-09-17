@@ -5695,12 +5695,11 @@ class NmrDpUtility(object):
 
                 except KeyError as e:
 
-                    if self.__check_auth_seq:
-                        self.report.error.appendDescription('sequence_mismatch', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': str(e).strip("'")})
-                        self.report.setError()
+                    self.report.error.appendDescription('sequence_mismatch', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': str(e).strip("'")})
+                    self.report.setError()
 
-                        if self.__verbose:
-                            self.__lfh.write("+NmrDpUtility.__extractPolymerSequence() ++ KeyError  - %s" % str(e))
+                    if self.__verbose:
+                        self.__lfh.write("+NmrDpUtility.__extractPolymerSequence() ++ KeyError  - %s" % str(e))
 
                 except LookupError as e:
                     pass
@@ -5735,14 +5734,13 @@ class NmrDpUtility(object):
 
                         if invl:
 
-                            if self.__check_auth_seq:
-                                err = warn[15:]
+                            err = warn[15:]
 
-                                self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
-                                self.report.setError()
+                            self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
+                            self.report.setError()
 
-                                if self.__verbose:
-                                    self.__lfh.write("+NmrDpUtility.__extractPolymerSequence() ++ ValueError  - %s" % err)
+                            if self.__verbose:
+                                self.__lfh.write("+NmrDpUtility.__extractPolymerSequence() ++ ValueError  - %s" % err)
 
                         else:
 
@@ -5957,11 +5955,12 @@ class NmrDpUtility(object):
 
         except KeyError as e:
 
-            self.report.error.appendDescription('sequence_mismatch', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': str(e).strip("'")})
-            self.report.setError()
+            if self.__check_auth_seq:
+                self.report.error.appendDescription('sequence_mismatch', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': str(e).strip("'")})
+                self.report.setError()
 
-            if self.__verbose:
-                self.__lfh.write("+NmrDpUtility.__extractPolymerSequenceInLoop() ++ KeyError  - %s" % str(e))
+                if self.__verbose:
+                    self.__lfh.write("+NmrDpUtility.__extractPolymerSequenceInLoop() ++ KeyError  - %s" % str(e))
 
         except LookupError as e:
             pass
@@ -5996,13 +5995,14 @@ class NmrDpUtility(object):
 
                 if invl:
 
-                    err = warn[15:]
+                    if self.__check_auth_seq:
+                        err = warn[15:]
 
-                    self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
-                    self.report.setError()
+                        self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
+                        self.report.setError()
 
-                    if self.__verbose:
-                        self.__lfh.write("+NmrDpUtility.__extractPolymerSequenceInLoop() ++ ValueError  - %s" % err)
+                        if self.__verbose:
+                            self.__lfh.write("+NmrDpUtility.__extractPolymerSequenceInLoop() ++ ValueError  - %s" % err)
 
                 else:
 
@@ -7194,6 +7194,30 @@ class NmrDpUtility(object):
                             if elem in self.paramag_elems or elem in self.ferromag_elems:
                                 self.report.setDiamagnetic(False)
                                 break
+
+                        for atom_id in atom_ids:
+
+                            if atom_id == 'HN' and self.__csStat.getTypeOfCompId(comp_id)[0]:
+                                self.__fixAtomNomenclature(comp_id, {'HN': 'H'})
+                                continue
+
+                            atom_id_ = atom_id
+
+                            if (file_type == 'nef' or not self.__combined_mode or self.__transl_pseudo_name) and\
+                               (atom_id.startswith('Q') or atom_id.startswith('M') or atom_id.endswith('%') or atom_id.endswith('*') or self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id) == 0):
+                                atom_id_ = self.__getRepresentativeAtomId(file_type, comp_id, atom_id)
+
+                                if file_type == 'nmr-star' and self.__combined_mode and self.__transl_pseudo_name and atom_id != atom_id_:
+
+                                    warn = "Conventional psuedo atom %s:%s is translated to %r according to the IUPAC atom nomenclature." % (comp_id, atom_id, atom_id_)
+
+                                    self.report.warning.appendDescription('auth_atom_nomenclature_mismatch', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
+                                    self.report.setWarning()
+
+                                    if self.__verbose:
+                                        self.__lfh.write("+NmrDpUtility.__validateAtomNomenclature() ++ Warning  - %s\n" % warn)
+
+                                    self.__fixAtomNomenclature(comp_id, {atom_id: atom_id_})
 
                     else:
                         pass
@@ -10250,7 +10274,7 @@ class NmrDpUtility(object):
 
                         if not ambig_set_id_name in i:
 
-                            err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_id) + "] %s %s requires %r loop tag." %\
+                            err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_id) + "] %s %r requires %r loop tag." %\
                                   (ambig_code_name, ambig_code, ambig_set_id_name)
 
                             self.report.error.appendDescription('missing_mandatory_item', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
@@ -10265,7 +10289,7 @@ class NmrDpUtility(object):
 
                             if ambig_set_id in self.empty_value:
 
-                                warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_id) + '] %s %s requires %s value.' %\
+                                warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_id) + '] %s %r requires %s value.' %\
                                        (ambig_code_name, ambig_code, ambig_set_id_name)
 
                                 self.report.warning.appendDescription('missing_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
@@ -10280,7 +10304,7 @@ class NmrDpUtility(object):
 
                                 if len(ambig_set) == 0:
 
-                                    err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_id) + '] %s %s requires other rows sharing %s %s.' %\
+                                    err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_id) + '] %s %r requires other rows sharing %s %s.' %\
                                           (ambig_code_name, ambig_code, ambig_set_id_name, ambig_set_id)
 
                                     self.report.error.appendDescription('missing_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})

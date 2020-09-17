@@ -47,8 +47,8 @@
 # 30-Jun-2020  M. Yokochi - support bidirectional conversion between _nef_peak and _Peak_row_format (v2.5.0, DAOTHER-5896)
 # 08-Jul-2020  M. Yokochi - add support for _Gen_dist_constraint.Distance_val, _RDC_constraint.RDC_val, and _RDC_constraint.RDC_val_err (v2.6.0, DAOTHER-5926)
 # 17-Aug-2020  M. Yokochi - add support for residue variant (v2.7.0, DAOTHER-5906)
-# 14-Sep-2020  M. Yokochi - do not convert atom name between NEF and NMR-STAR, which ends with ' character (v2.8.0)
 # 14-Sep-2020  M. Yokochi - add support for psuedo atom in NMR-STAR (v2.8.0)
+# 17-Sep-2020  M. Yokochi - do not convert atom name between NEF and NMR-STAR, which ends with apostrophe (v2.8.0)
 ##
 import sys
 import os
@@ -70,7 +70,7 @@ from wwpdb.utils.nmr.io.ChemCompIo import ChemCompReader
 from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
 from wwpdb.utils.nmr.NmrDpReport import NmrDpReport
 
-__version__ = '2.7.0'
+__version__ = '2.8.0'
 
 __pynmrstar_v3__ = version.parse(pynmrstar.__version__) >= version.parse("3.0.0")
 
@@ -1553,7 +1553,7 @@ class NEFTranslator(object):
             if len(user_warn_msg) > 0:
                 raise UserWarning(user_warn_msg)
 
-            comps = sorted(set([i[0].upper() for i in pair_data]))
+            comps = sorted(set([i[0].upper() for i in pair_data if not i[0] in self.empty_value]))
             sorted_comp_atom = sorted(set(['{} {}'.format(i[0].upper(), i[1]) for i in pair_data]))
 
             for c in comps:
@@ -3755,7 +3755,13 @@ class NEFTranslator(object):
                                 nef_atom_prefix = 'x'
                                 nef_atom_prefix_2 = 'y'
 
-                                if has_geminal_proton:
+                                if atom_id.endswith("'"):
+
+                                    atom_list.append(atom_id)
+                                    details[atom_id] = None
+                                    atom_id_map[atom_id] = atom_id
+
+                                elif has_geminal_proton:
 
                                     geminal_proton_value = next(_a['value'] for _a in star_atom_list if _a['atom_id'] == geminal_h_list[0])
                                     geminal_proton_value_2 = next(_a['value'] for _a in star_atom_list if _a['atom_id'] == geminal_h_list[1])
@@ -4540,6 +4546,9 @@ class NEFTranslator(object):
 
                     out = [None] * len(nef_tags)
 
+                    star_atom = next(k for k, v in atom_id_map.items() if v == atom)
+                    i = next(l for l in in_row if l[atom_index] == star_atom)
+
                     for j in star_tags:
 
                         nef_tag, _ = self.get_nef_tag(j)
@@ -4556,8 +4565,7 @@ class NEFTranslator(object):
                         elif nef_tag == '_nef_chemical_shift.sequence_code':
                             out[data_index] = _cif_seq
                         else:
-                            star_atom = next(k for k, v in atom_id_map.items() if v == atom)
-                            out[data_index] = next(l[star_tags.index(j)] for l in in_row if l[atom_index] == star_atom)
+                            out[data_index] = i[star_tags.index(j)]
 
                     out_row.append(out)
 

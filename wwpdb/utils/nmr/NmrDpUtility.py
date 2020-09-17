@@ -8948,8 +8948,8 @@ class NmrDpUtility(object):
 
             try:
 
-                min_points = []
-                max_points = []
+                min_points = [None] * num_dim
+                max_points = [None] * num_dim
 
                 for i in range(1, max_dim):
 
@@ -8978,8 +8978,8 @@ class NmrDpUtility(object):
                             min_point = last_point - (sp_width if abs else 0.0)
                             max_point = first_point + (sp_width if abs else 0.0)
 
-                        min_points.append(None if min_point is None else float('{:.7f}'.format(min_point)))
-                        max_points.append(None if max_point is None else float('{:.7f}'.format(max_point)))
+                        min_points[i - 1] = None if min_point is None else float('{:.7f}'.format(min_point))
+                        max_points[i - 1] = None if max_point is None else float('{:.7f}'.format(max_point))
 
                         break
 

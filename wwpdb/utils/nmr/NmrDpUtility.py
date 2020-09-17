@@ -11333,7 +11333,7 @@ class NmrDpUtility(object):
                     elif abs(seq_id_1 - seq_id_2) == 1:
 
                         if self.__csStat.getTypeOfCompId(comp_id_1)[0] and self.__csStat.getTypeOfCompId(comp_id_2)[0] and\
-                           ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 == 'N') or (seq_id_1 > seq_id_2 and atom_id_1 == 'N' and atom_id_2 == 'C')):
+                           ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and (atom_id_2 == 'N' or atom_id_2 == 'H')) or (seq_id_1 > seq_id_2 and (atom_id_1 == 'N' or atom_id_1 == 'H') and atom_id_2 == 'C')):
                             pass
 
                         else:

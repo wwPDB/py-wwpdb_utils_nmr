@@ -6728,6 +6728,9 @@ class NmrDpUtility(object):
                             test_gauge_code = get_gauge_code(_s2['seq_id'])
 
                             if self.__resolve_conflict and any((__s1, __s2) for (__s1, __s2) in zip(_s1['seq_id'], _s2['seq_id']) if __s1 != '.' and __s2 != '.' and __s1 != __s2):
+                                if len(_s1['seq_id']) != len(_s2['seq_id']):
+                                  _s1 = fill_blank_comp_id(_s1, _s2)
+                                  _s2 = fill_blank_comp_id(_s2, _s1)
                                 seq_id_conv_dict = {str(__s2): str(__s1) for __s1, __s2 in zip(_s1['seq_id'], _s2['seq_id']) if __s2 != '.'}
                                 self.__fixSeqIdInLoop(fileListId, file_name, file_type, content_subtype, ps_in_loop['sf_framecode'], _chain_id, seq_id_conv_dict)
                                 _s2['seq_id'] = _s1['seq_id']
@@ -7858,7 +7861,6 @@ class NmrDpUtility(object):
         except LookupError as e:
 
             if not self.__resolve_conflict:
-
                 self.report.error.appendDescription('missing_mandatory_item', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': str(e).strip("'")})
                 self.report.setError()
 
@@ -18039,6 +18041,7 @@ class NmrDpUtility(object):
 
                 unmapped = 0
                 conflict = 0
+                _matched = 0
                 for i in range(length):
                     myPr = myAlign[i]
                     myPr0 = str(myPr[0])
@@ -18054,8 +18057,9 @@ class NmrDpUtility(object):
                         conflict += 1
                     else:
                         not_aligned = False
+                        _matched += 1
 
-                if length == unmapped + conflict:
+                if length == unmapped + conflict or _matched < conflict:
                     continue
 
                 _s1 = s1 if offset_1 == 0 else fill_blank_comp_id_with_offset(s2, s1, offset_1)
@@ -18125,6 +18129,7 @@ class NmrDpUtility(object):
 
                 unmapped = 0
                 conflict = 0
+                _matched = 0
                 for i in range(length):
                     myPr = myAlign[i]
                     myPr0 = str(myPr[0])
@@ -18140,8 +18145,9 @@ class NmrDpUtility(object):
                         conflict += 1
                     else:
                         not_aligned = False
+                        _matched += 1
 
-                if length == unmapped + conflict:
+                if length == unmapped + conflict or _matched < conflict:
                     continue
 
                 _s1 = s1 if offset_1 == 0 else fill_blank_comp_id_with_offset(s2, s1, offset_1)

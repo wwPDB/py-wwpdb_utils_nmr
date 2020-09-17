@@ -1954,10 +1954,10 @@ class NEFTranslator(object):
 
         if not allowed_tags is None:
 
-            if (set(key_names) | set(allowed_tags)) != set(allowed_tags):
+            if len(key_names) > 0 and (set(key_names) | set(allowed_tags)) != set(allowed_tags):
                 raise LookupError("Key items %s must not exists." % ((set(key_names) | set(allowed_tags)) - set(allowed_tags)))
 
-            if (set(data_names) | set(allowed_tags)) != set(allowed_tags):
+            if len(data_names) > 0 and (set(data_names) | set(allowed_tags)) != set(allowed_tags):
                 raise LookupError("Data items %s must not exists." % ((set(data_names) | set(allowed_tags)) - set(allowed_tags)))
 
             for d in data_items:
@@ -1987,7 +1987,7 @@ class NEFTranslator(object):
         for loop in loops:
             tag_data = []
 
-            if set(key_names) & set(loop.tags) != set(key_names):
+            if len(key_names) > 0 and set(key_names) & set(loop.tags) != set(key_names):
                 missing_tags = list(set(key_names) - set(loop.tags))
                 for k in key_items:
                     if k['name'] in missing_tags:
@@ -2714,7 +2714,7 @@ class NEFTranslator(object):
 
         for loop in loops:
 
-            if set(key_names) & set(loop.tags) != set(key_names):
+            if len(key_names) > 0 and set(key_names) & set(loop.tags) != set(key_names):
                 missing_tags = list(set(key_names) - set(loop.tags))
                 for k in key_items:
                     if k['name'] in missing_tags:
@@ -2768,7 +2768,7 @@ class NEFTranslator(object):
 
         for loop in loops:
 
-            if set(key_names) & set(loop.tags) != set(key_names):
+            if len(key_names) > 0 and set(key_names) & set(loop.tags) != set(key_names):
                 missing_tags = list(set(key_names) - set(loop.tags))
                 raise LookupError("Missing mandatory %s loop tag%s." % (missing_tags, 's' if len(missing_tags) > 1 else ''))
 
@@ -2850,7 +2850,7 @@ class NEFTranslator(object):
 
         for loop in loops:
 
-            if set(key_names) & set(loop.tags) != set(key_names):
+            if len(key_names) > 0 and set(key_names) & set(loop.tags) != set(key_names):
                 missing_tags = list(set(key_names) - set(loop.tags))
                 for k in key_items:
                     if k['name'] in missing_tags:

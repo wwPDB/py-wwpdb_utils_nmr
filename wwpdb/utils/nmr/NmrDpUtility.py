@@ -94,8 +94,8 @@
 # 09-Jul-2020  M. Yokochi - adjust arguments of pynmrstar write_to_file() to prevent data losses (v2.6.1, DAOTHER-5926)
 # 17-Aug-2020  M. Yokochi - add support for residue variant (DAOTHER-5906)
 # 20-Aug-2020  M. Yokochi - add 'leave_intl_note' output parameter decides whether to leave internal commentary note in processed NMR-STAR file, set False for OneDep environment (DAOTHER-6030)
-# 10-Sep-2020  M. Yokochi - add 'transl_pseudo_name' input parameter decides whether to translate conventional pseudo atom nomenclature in combined NMR-STAR file, set False by default for OneDep environment
-# 16-Sep-2020  M. Yokochi - bug fix release based on internal test using BMRB NMR restraint archive of 6346 entries
+# 10-Sep-2020  M. Yokochi - add 'transl_pseudo_name' input parameter decides whether to translate conventional pseudo atom nomenclature in combined NMR-STAR file (DAOTHER-6128)
+# 16-Sep-2020  M. Yokochi - bug fix release based on internal test using BMRB NMR restraint archive of 6.3k entries (DAOTHER-6128)
 ##
 """ Wrapper class for data processing for NMR data.
     @author: Masashi Yokochi
@@ -3339,6 +3339,8 @@ class NmrDpUtility(object):
                 self.__transl_pseudo_name = self.__inputParamDict['transl_pseudo_name']
             else:
                 self.__transl_pseudo_name = self.__inputParamDict['transl_pseudo_name'] in self.true_value
+        elif op in ['nmr-str-consistency-check', 'nmr-str2str-deposit', 'nmr-str2nef-release']:
+            self.__transl_pseudo_name = True
 
         if 'fix_format_issue' in self.__inputParamDict and not self.__inputParamDict['fix_format_issue'] is None:
             if type(self.__inputParamDict['fix_format_issue']) is bool:

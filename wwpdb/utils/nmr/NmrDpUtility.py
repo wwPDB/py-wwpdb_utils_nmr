@@ -96,6 +96,7 @@
 # 20-Aug-2020  M. Yokochi - add 'leave_intl_note' output parameter decides whether to leave internal commentary note in processed NMR-STAR file, set False for OneDep environment (DAOTHER-6030)
 # 10-Sep-2020  M. Yokochi - add 'transl_pseudo_name' input parameter decides whether to translate conventional pseudo atom nomenclature in combined NMR-STAR file (DAOTHER-6128)
 # 16-Sep-2020  M. Yokochi - bug fix release based on internal test using BMRB NMR restraint archive of 6.3k entries (DAOTHER-6128)
+# 18-Sep-2020  M. Yokochi - bug fix release for negative sequence numbers (DAOTHER-6128)
 ##
 """ Wrapper class for data processing for NMR data.
     @author: Masashi Yokochi
@@ -190,10 +191,10 @@ def get_first_sf_tag(sf_data=None, tag=None):
         return ''
 
     return array[0]
-
+"""
 def fill_blank_comp_id(s1, s2):
-    """ Fill blanked comp ID in s2 against s1.
-    """
+    "" Fill blanked comp ID in s2 against s1.
+    ""
 
     seq_ids = sorted(set(s1['seq_id']) | set(s2['seq_id']))
     comp_ids = []
@@ -206,7 +207,7 @@ def fill_blank_comp_id(s1, s2):
             comp_ids.append('.')
 
     return {'chain_id': s2['chain_id'], 'seq_id': seq_ids, 'comp_id': comp_ids}
-
+"""
 def fill_blank_comp_id_with_offset(s1, s2, offset):
     """ Fill blanked comp ID in s2 against s1 with offset.
     """
@@ -1933,7 +1934,7 @@ class NmrDpUtility(object):
                                                          'Auth_entity_assembly_ID', 'Auth_asym_ID', 'Auth_seq_ID', 'Auth_comp_ID', 'Auth_atom_ID',
                                                          'PDB_record_ID', 'PDB_model_num', 'PDB_strand_ID', 'PDB_ins_code', 'PDB_residue_no', 'PDB_residue_name', 'PDB_atom_name',
                                                          'Original_PDB_strand_ID', 'Original_PDB_residue_no', 'Original_PDB_residue_name', 'Original_PDB_atom_name', 'Details', 'Sf_ID', 'Entry_ID', 'Assigned_chem_shift_list_ID'],
-                                          'chem_shift_ref': ['Atom_type','Atom_isotope_number', 'Mol_common_name', 'Atom_group', 'Concentration_val', 'Concentration_units', 'Solvent', 'Rank', 'Chem_shift_units', 'Chem_shift_val', 'Ref_method', 'Ref_type', 'Indirect_shift_ratio', 'External_ref_loc', 'External_ref_sample_geometry', 'External_ref_axis', 'Indirect_shift_ratio_cit_ID', 'Indirect_shift_ratio_cit_label', 'Ref_correction_type', 'Correction_val', 'Correction_val_cit_ID', 'Correction_val_cit_label', 'Sf_ID', 'Entry_ID', 'Chem_shift_reference_ID'],
+                                          'chem_shift_ref': ['Atom_type', 'Atom_isotope_number', 'Mol_common_name', 'Atom_group', 'Concentration_val', 'Concentration_units', 'Solvent', 'Rank', 'Chem_shift_units', 'Chem_shift_val', 'Ref_method', 'Ref_type', 'Indirect_shift_ratio', 'External_ref_loc', 'External_ref_sample_geometry', 'External_ref_axis', 'Indirect_shift_ratio_cit_ID', 'Indirect_shift_ratio_cit_label', 'Ref_correction_type', 'Correction_val', 'Correction_val_cit_ID', 'Correction_val_cit_label', 'Sf_ID', 'Entry_ID', 'Chem_shift_reference_ID'],
                                           'dist_restraint': ['Index_ID', 'ID', 'Combination_ID', 'Member_ID', 'Member_logic_code',
                                                              'Assembly_atom_ID_1', 'Entity_assembly_ID_1', 'Entity_ID_1', 'Comp_index_ID_1', 'Seq_ID_1', 'Comp_ID_1', 'Atom_ID_1', 'Atom_type_1', 'Atom_isotope_number_1', 'Resonance_ID_1', 'Assembly_atom_ID_2', 'Entity_assembly_ID_2', 'Entity_ID_2', 'Comp_index_ID_2', 'Seq_ID_2', 'Comp_ID_2', 'Atom_ID_2', 'Atom_type_2', 'Atom_isotope_number_2', 'Resonance_ID_2',
                                                              'Intensity_val', 'Intensity_lower_val_err', 'Intensity_upper_val_err', 'Distance_val', 'Target_val', 'Target_val_uncertainty', 'Lower_linear_limit', 'Upper_linear_limit', 'Distance_lower_bound_val', 'Distance_upper_bound_val', 'Contribution_fractional_val', 'Weight',
@@ -6224,38 +6225,47 @@ class NmrDpUtility(object):
 
             polymer_sequence_in_loop = input_source_dic['polymer_sequence_in_loop']
 
-            for content_subtype in polymer_sequence_in_loop.keys():
+            content_subtype = 'chem_shift'
 
-                for ps_in_loop in polymer_sequence_in_loop[content_subtype]:
-                    ps = ps_in_loop['polymer_sequence']
+            #for content_subtype in polymer_sequence_in_loop.keys():
 
-                    for s in ps:
-                        chain_id = s['chain_id']
+            for ps_in_loop in polymer_sequence_in_loop[content_subtype]:
+                ps = ps_in_loop['polymer_sequence']
 
-                        if not chain_id in common_poly_seq:
-                            common_poly_seq[chain_id] = set()
+                for s in ps:
+                    chain_id = s['chain_id']
 
-            for content_subtype in polymer_sequence_in_loop.keys():
+                    if not chain_id in common_poly_seq:
+                        common_poly_seq[chain_id] = set()
 
-                for ps_in_loop in polymer_sequence_in_loop[content_subtype]:
-                    ps = ps_in_loop['polymer_sequence']
+            chains = common_poly_seq.keys()
+            offset_seq_ids = {c: 0 for c in chains}
 
-                    for s in ps:
-                        chain_id = s['chain_id']
+            #for content_subtype in polymer_sequence_in_loop.keys():
 
-                        for seq_id, comp_id in zip(s['seq_id'], s['comp_id']):
-                            common_poly_seq[chain_id].add('{:04d} {}'.format(seq_id, comp_id))
+            for ps_in_loop in polymer_sequence_in_loop[content_subtype]:
+                ps = ps_in_loop['polymer_sequence']
+
+                for s in ps:
+                    chain_id = s['chain_id']
+
+                    min_seq_id = min(s['seq_id'])
+                    if min_seq_id < 0:
+                        offset_seq_ids[chain_id] = min_seq_id * -1
+
+                    for seq_id, comp_id in zip(s['seq_id'], s['comp_id']):
+                        common_poly_seq[chain_id].add('{:04d} {}'.format(seq_id + offset_seq_ids[chain_id], comp_id))
 
         asm = [] # molecular assembly of a loop
 
         for chain_id in sorted(common_poly_seq.keys()):
 
             if len(common_poly_seq[chain_id]) > 0:
-                seq_id_list = sorted(set([int(i.split(' ')[0]) for i in common_poly_seq[chain_id]]))
+                seq_id_list = sorted(set([int(i.split(' ')[0]) - offset_seq_ids[chain_id] for i in common_poly_seq[chain_id]]))
                 comp_id_list = []
 
                 for seq_id in seq_id_list:
-                    _comp_id = [i.split(' ')[1] for i in common_poly_seq[chain_id] if int(i.split(' ')[0]) == seq_id]
+                    _comp_id = [i.split(' ')[1] for i in common_poly_seq[chain_id] if int(i.split(' ')[0]) - offset_seq_ids[chain_id] == seq_id]
                     if len(_comp_id) == 1:
                         comp_id_list.append(_comp_id[0])
                     else:
@@ -6683,6 +6693,7 @@ class NmrDpUtility(object):
 
                             unmapped = 0
                             conflict = 0
+                            _matched = 0
                             for i in range(length):
                                 myPr = myAlign[i]
                                 myPr0 = str(myPr[0])
@@ -6698,8 +6709,9 @@ class NmrDpUtility(object):
                                     conflict += 1
                                 else:
                                     not_aligned = False
+                                    _matched += 1
 
-                            if length == unmapped + conflict:
+                            if length == unmapped + conflict or _matched < conflict:
                                 continue
 
                             _s1 = s1 if offset_1 == 0 else fill_blank_comp_id_with_offset(s2, s1, offset_1)
@@ -6729,10 +6741,7 @@ class NmrDpUtility(object):
                             ref_gauge_code = get_gauge_code(_s1['seq_id'])
                             test_gauge_code = get_gauge_code(_s2['seq_id'])
 
-                            if self.__resolve_conflict and any((__s1, __s2) for (__s1, __s2) in zip(_s1['seq_id'], _s2['seq_id']) if __s1 != '.' and __s2 != '.' and __s1 != __s2):
-                                if len(_s1['seq_id']) != len(_s2['seq_id']):
-                                  _s1 = fill_blank_comp_id(_s1, _s2)
-                                  _s2 = fill_blank_comp_id(_s2, _s1)
+                            if self.__resolve_conflict and conflict == 0 and any((__s1, __s2) for (__s1, __s2) in zip(_s1['seq_id'], _s2['seq_id']) if __s1 != '.' and __s2 != '.' and __s1 != __s2):
                                 seq_id_conv_dict = {str(__s2): str(__s1) for __s1, __s2 in zip(_s1['seq_id'], _s2['seq_id']) if __s2 != '.'}
                                 self.__fixSeqIdInLoop(fileListId, file_name, file_type, content_subtype, ps_in_loop['sf_framecode'], _chain_id, seq_id_conv_dict)
                                 _s2['seq_id'] = _s1['seq_id']
@@ -17729,6 +17738,22 @@ class NmrDpUtility(object):
 
         polymer_sequence_in_loop = input_source_dic['polymer_sequence_in_loop']
 
+        chains = set()
+
+        for content_subtype in polymer_sequence_in_loop.keys():
+
+            for ps_in_loop in polymer_sequence_in_loop[content_subtype]:
+                ps = ps_in_loop['polymer_sequence']
+
+                for s in ps:
+                    chain_id = s['chain_id']
+                    chains.add(chain_id)
+
+                    if not chain_id in common_poly_seq:
+                        common_poly_seq[chain_id] = set()
+
+        _offset_seq_ids = {c: 0 for c in chains}
+
         for content_subtype in polymer_sequence_in_loop.keys():
 
             for ps_in_loop in polymer_sequence_in_loop[content_subtype]:
@@ -17737,8 +17762,11 @@ class NmrDpUtility(object):
                 for s in ps:
                     chain_id = s['chain_id']
 
-                    if not chain_id in common_poly_seq:
-                        common_poly_seq[chain_id] = set()
+                    min_seq_id = min(s['seq_id'])
+                    if min_seq_id < _offset_seq_ids[chain_id]:
+                        _offset_seq_ids[chain_id] = min_seq_id
+
+        offset_seq_ids = {k: (0 if v >= 0 else -v) for k, v in _offset_seq_ids}
 
         for content_subtype in polymer_sequence_in_loop.keys():
 
@@ -17749,18 +17777,18 @@ class NmrDpUtility(object):
                     chain_id = s['chain_id']
 
                     for seq_id, comp_id in zip(s['seq_id'], s['comp_id']):
-                        common_poly_seq[chain_id].add('{:04d} {}'.format(seq_id, comp_id))
+                        common_poly_seq[chain_id].add('{:04d} {}'.format(seq_id + offset_seq_ids[chain_id], comp_id))
 
         asm = [] # molecular assembly of a loop
 
         for chain_id in sorted(common_poly_seq.keys()):
 
             if len(common_poly_seq[chain_id]) > 0:
-                seq_id_list = sorted(set([int(i.split(' ')[0]) for i in common_poly_seq[chain_id]]))
+                seq_id_list = sorted(set([int(i.split(' ')[0]) - offset_seq_ids[chain_id] for i in common_poly_seq[chain_id]]))
                 comp_id_list = []
 
                 for seq_id in seq_id_list:
-                    _comp_id = [i.split(' ')[1] for i in common_poly_seq[chain_id] if int(i.split(' ')[0]) == seq_id]
+                    _comp_id = [i.split(' ')[1] for i in common_poly_seq[chain_id] if int(i.split(' ')[0]) - offset_seq_ids[chain_id] == seq_id]
                     if len(_comp_id) == 1:
                         comp_id_list.append(_comp_id[0])
                     else:
@@ -18077,7 +18105,7 @@ class NmrDpUtility(object):
 
                 matched = mid_code.count('|')
 
-                seq_align = {'ref_chain_id': chain_id, 'test_chain_id': chain_id2, 'length': ref_length, 'matched': matched, 'conflict': conflict,'unmapped': unmapped,
+                seq_align = {'ref_chain_id': chain_id, 'test_chain_id': chain_id2, 'length': ref_length, 'matched': matched, 'conflict': conflict, 'unmapped': unmapped,
                              'sequence_coverage': float('{:.3f}'.format(float(length - (unmapped + conflict)) / float(ref_length))),
                              'ref_seq_id': _s1['seq_id'], 'test_seq_id': _s2['seq_id'],
                              'ref_gauge_code': ref_gauge_code, 'ref_code': ref_code, 'mid_code': mid_code, 'test_code': test_code, 'test_gauge_code': test_gauge_code}
@@ -24943,13 +24971,27 @@ class NmrDpUtility(object):
 
                 atoms = []
 
+                chains = set()
+
+                for i in lp_data:
+                    chains.add(i[chain_id_name])
+
+                min_seq_ids = {c: 0 for c in chains}
+
+                for i in lp_data:
+                    chain_id = i[chain_id_name]
+                    seq_id = i[seq_id_name]
+
+                    if seq_id < min_seq_ids[chain_id]:
+                        min_seq_ids[chain_id] = seq_id
+
                 for l, i in enumerate(lp_data):
                     chain_id = i[chain_id_name]
                     seq_id = i[seq_id_name]
                     iso_number = i[iso_number_name]
                     atom_id = i[atom_id_name]
 
-                    atoms.append('{:<4}:{:04d}:{:02d}:{:<8}:{:06d}'.format(chain_id, seq_id, iso_number, atom_id, l))
+                    atoms.append('{:<4}:{:04d}:{:02d}:{:<8}:{:06d}'.format(chain_id, seq_id - min_seq_ids[chain_id], iso_number, atom_id, l))
 
                 sorted_atoms = sorted(atoms)
 

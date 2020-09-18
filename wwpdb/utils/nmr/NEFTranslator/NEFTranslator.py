@@ -49,6 +49,7 @@
 # 17-Aug-2020  M. Yokochi - add support for residue variant (v2.7.0, DAOTHER-5906)
 # 14-Sep-2020  M. Yokochi - add support for psuedo atom in NMR-STAR (v2.8.0, DAOTHER-6128)
 # 17-Sep-2020  M. Yokochi - do not convert atom name between NEF and NMR-STAR, which ends with apostrophe (v2.8.0, DAOTHER-6128)
+# 18-Sep-2020  M. Yokochi - bug fix release for negative sequence numbers (v2.8.1, DAOTHER-6128)
 ##
 import sys
 import os
@@ -70,7 +71,7 @@ from wwpdb.utils.nmr.io.ChemCompIo import ChemCompReader
 from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
 from wwpdb.utils.nmr.NmrDpReport import NmrDpReport
 
-__version__ = '2.8.0'
+__version__ = '2.8.1'
 
 __pynmrstar_v3__ = version.parse(pynmrstar.__version__) >= version.parse("3.0.0")
 
@@ -1108,7 +1109,12 @@ class NEFTranslator(object):
             try:
 
                 chains = sorted(set([i[2] for i in seq_data]))
-                sorted_seq = sorted(set(['{} {:04d} {}'.format(i[2], int(i[0]), i[1]) for i in seq_data]))
+                offset_seq_ids = {i[2]: 0 for i in seq_data}
+                for c in chains:
+                    min_seq_id = min([int(i[0]) for i in seq_data if i[2] == c])
+                    if min_seq_id < 0:
+                        offset_seq_ids[c] = min_seq_id * -1
+                sorted_seq = sorted(set(['{} {:04d} {}'.format(i[2], int(i[0]) + offset_seq_ids[i[2]], i[1]) for i in seq_data]))
 
                 chk_dict = {'{} {:04d}'.format(i[2], int(i[0])):i[1] for i in seq_data}
 
@@ -1121,18 +1127,18 @@ class NEFTranslator(object):
                     if len(chains) > 1:
                         for c in chains:
                             cmp_dict[c] = [i.split(' ')[-1].upper() for i in sorted_seq if i.split(' ')[0] == c]
-                            seq_dict[c] = [int(i.split(' ')[1]) for i in sorted_seq if i.split(' ')[0] == c]
+                            seq_dict[c] = [int(i.split(' ')[1]) - offset_seq_ids[c] for i in sorted_seq if i.split(' ')[0] == c]
                     else:
                         cmp_dict[list(chains)[0]] = [i.split(' ')[-1].upper() for i in sorted_seq]
-                        seq_dict[list(chains)[0]] = [int(i.split(' ')[1]) for i in sorted_seq]
+                        seq_dict[list(chains)[0]] = [int(i.split(' ')[1]) - offset_seq_ids[c] for i in sorted_seq]
                 else:
                     if len(chains) > 1:
                         for c in chains:
                             cmp_dict[c] = [i.split(' ')[-1].upper() for i in sorted_seq if i.split(' ')[0] == c]
-                            seq_dict[c] = [int(i.split(' ')[1]) for i in sorted_seq if i.split(' ')[0] == c]
+                            seq_dict[c] = [int(i.split(' ')[1]) - offset_seq_ids[c] for i in sorted_seq if i.split(' ')[0] == c]
                     else:
                         cmp_dict[list(chains)[0]] = [i.split(' ')[-1].upper() for i in sorted_seq]
-                        seq_dict[list(chains)[0]] = [int(i.split(' ')[1]) for i in sorted_seq]
+                        seq_dict[list(chains)[0]] = [int(i.split(' ')[1]) - offset_seq_ids[c] for i in sorted_seq]
 
                 asm = [] # assembly of a loop
 
@@ -1261,7 +1267,12 @@ class NEFTranslator(object):
             try:
 
                 chains = sorted(set([i[2] for i in seq_data]))
-                sorted_seq = sorted(set(['{} {:04d} {}'.format(i[2], int(i[0]), i[1]) for i in seq_data]))
+                offset_seq_ids = {i[2]: 0 for i in seq_data}
+                for c in chains:
+                    min_seq_id = min([int(i[0]) for i in seq_data if i[2] == c])
+                    if min_seq_id < 0:
+                        offset_seq_ids[c] = min_seq_id * -1
+                sorted_seq = sorted(set(['{} {:04d} {}'.format(i[2], int(i[0]) + offset_seq_ids[i[2]], i[1]) for i in seq_data]))
 
                 chk_dict = {'{} {:04d}'.format(i[2], int(i[0])):i[1] for i in seq_data}
 
@@ -1274,18 +1285,18 @@ class NEFTranslator(object):
                     if len(chains) > 1:
                         for c in chains:
                             cmp_dict[c] = [i.split(' ')[-1].upper() for i in sorted_seq if i.split(' ')[0] == c]
-                            seq_dict[c] = [int(i.split(' ')[1]) for i in sorted_seq if i.split(' ')[0] == c]
+                            seq_dict[c] = [int(i.split(' ')[1]) - offset_seq_ids[c] for i in sorted_seq if i.split(' ')[0] == c]
                     else:
                         cmp_dict[list(chains)[0]] = [i.split(' ')[-1].upper() for i in sorted_seq]
-                        seq_dict[list(chains)[0]] = [int(i.split(' ')[1]) for i in sorted_seq]
+                        seq_dict[list(chains)[0]] = [int(i.split(' ')[1]) - offset_seq_ids[c] for i in sorted_seq]
                 else:
                     if len(chains) > 1:
                         for c in chains:
                             cmp_dict[c] = [i.split(' ')[-1].upper() for i in sorted_seq if i.split(' ')[0] == c]
-                            seq_dict[c] = [int(i.split(' ')[1]) for i in sorted_seq if i.split(' ')[0] == c]
+                            seq_dict[c] = [int(i.split(' ')[1]) - offset_seq_ids[c] for i in sorted_seq if i.split(' ')[0] == c]
                     else:
                         cmp_dict[list(chains)[0]] = [i.split(' ')[-1].upper() for i in sorted_seq]
-                        seq_dict[list(chains)[0]] = [int(i.split(' ')[1]) for i in sorted_seq]
+                        seq_dict[list(chains)[0]] = [int(i.split(' ')[1]) - offset_seq_ids[c] for i in sorted_seq]
 
                 asm = [] # assembly of a loop
 
@@ -1413,7 +1424,12 @@ class NEFTranslator(object):
             try:
 
                 chains = sorted(set([i[4] for i in seq_data]))
-                sorted_seq = sorted(set(['{}:{:04d}:{}:{: >4}:{}'.format(i[4], int(i[3]), i[2], i[0], i[1]) for i in seq_data]))
+                offset_seq_ids = {i[4]: 0 for i in seq_data}
+                for c in chains:
+                    min_seq_id = min([int(i[3]) for i in seq_data if i[4] == c])
+                    if min_seq_id < 0:
+                        offset_seq_ids[c] = min_seq_id * -1
+                sorted_seq = sorted(set(['{}:{:04d}:{}:{: >4}:{}'.format(i[4], int(i[3]) + offset_seq_ids[i[4]], i[2], i[0], i[1]) for i in seq_data]))
 
                 chk_dict = {'{}:{:04d}:{}:{: >4}'.format(i[4], int(i[3]), i[2], i[0]):i[1] for i in seq_data}
 
@@ -1429,24 +1445,24 @@ class NEFTranslator(object):
                             acmp_dict[c] = [i.split(':')[-1] for i in sorted_seq if i.split(':')[0] == c]
                             aseq_dict[c] = [i.split(':')[3].strip() for i in sorted_seq if i.split(':')[0] == c]
                             asym_dict[c] = [i.split(':')[2] for i in sorted_seq if i.split(':')[0] == c]
-                            seq_dict[c] = [int(i.split(':')[1]) for i in sorted_seq if i.split(':')[0] == c]
+                            seq_dict[c] = [int(i.split(':')[1]) - offset_seq_ids[c] for i in sorted_seq if i.split(':')[0] == c]
                     else:
                         acmp_dict[list(chains)[0]] = [i.split(':')[-1] for i in sorted_seq]
                         aseq_dict[list(chains)[0]] = [i.split(':')[3].strip() for i in sorted_seq]
                         asym_dict[list(chains)[0]] = [i.split(':')[2] for i in sorted_seq]
-                        seq_dict[list(chains)[0]] = [int(i.split(':')[1]) for i in sorted_seq]
+                        seq_dict[list(chains)[0]] = [int(i.split(':')[1]) - offset_seq_ids[c] for i in sorted_seq]
                 else:
                     if len(chains) > 1:
                         for c in chains:
                             acmp_dict[c] = [i.split(':')[-1] for i in sorted_seq if i.split(':')[0] == c]
                             aseq_dict[c] = [i.split(':')[3].strip() for i in sorted_seq if i.split(':')[0] == c]
                             asym_dict[c] = [i.split(':')[2] for i in sorted_seq if i.split(':')[0] == c]
-                            seq_dict[c] = [int(i.split(':')[1]) for i in sorted_seq if i.split(':')[0] == c]
+                            seq_dict[c] = [int(i.split(':')[1]) - offset_seq_ids[c] for i in sorted_seq if i.split(':')[0] == c]
                     else:
                         acmp_dict[list(chains)[0]] = [i.split(':')[-1] for i in sorted_seq]
                         aseq_dict[list(chains)[0]] = [i.split(':')[3].strip() for i in sorted_seq]
                         asym_dict[list(chains)[0]] = [i.split(':')[2] for i in sorted_seq]
-                        seq_dict[list(chains)[0]] = [int(i.split(':')[1]) for i in sorted_seq]
+                        seq_dict[list(chains)[0]] = [int(i.split(':')[1]) - offset_seq_ids[c] for i in sorted_seq]
 
                 asm = [] # assembly of a loop
 

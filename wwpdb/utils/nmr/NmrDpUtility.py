@@ -18068,7 +18068,7 @@ class NmrDpUtility(object):
                     if min_seq_id < _offset_seq_ids[chain_id]:
                         _offset_seq_ids[chain_id] = min_seq_id
 
-        offset_seq_ids = {k: (0 if v >= 0 else -v) for k, v in _offset_seq_ids}
+        offset_seq_ids = {k: (0 if v >= 0 else -v) for k, v in _offset_seq_ids.items()}
 
         for content_subtype in polymer_sequence_in_loop.keys():
 

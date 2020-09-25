@@ -50,6 +50,7 @@
 # 14-Sep-2020  M. Yokochi - add support for psuedo atom in NMR-STAR (v2.8.0, DAOTHER-6128)
 # 17-Sep-2020  M. Yokochi - do not convert atom name between NEF and NMR-STAR, which ends with apostrophe (v2.8.0, DAOTHER-6128)
 # 18-Sep-2020  M. Yokochi - bug fix release for negative sequence numbers (v2.8.1, DAOTHER-6128)
+# 25-Sep-2020  M. Yokochi - fix chain_code mapping in NEF MR loops in case that there is no CS assignment (v2.8.2, DAOTHER-6128)
 ##
 import sys
 import os
@@ -71,7 +72,7 @@ from wwpdb.utils.nmr.io.ChemCompIo import ChemCompReader
 from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
 from wwpdb.utils.nmr.NmrDpReport import NmrDpReport
 
-__version__ = '2.8.1'
+__version__ = '2.8.2'
 
 __pynmrstar_v3__ = version.parse(pynmrstar.__version__) >= version.parse("3.0.0")
 
@@ -1129,16 +1130,18 @@ class NEFTranslator(object):
                             cmp_dict[c] = [i.split(' ')[-1].upper() for i in sorted_seq if i.split(' ')[0] == c]
                             seq_dict[c] = [int(i.split(' ')[1]) - offset_seq_ids[c] for i in sorted_seq if i.split(' ')[0] == c]
                     else:
-                        cmp_dict[list(chains)[0]] = [i.split(' ')[-1].upper() for i in sorted_seq]
-                        seq_dict[list(chains)[0]] = [int(i.split(' ')[1]) - offset_seq_ids[c] for i in sorted_seq]
+                        c = list(chains)[0]
+                        cmp_dict[c] = [i.split(' ')[-1].upper() for i in sorted_seq]
+                        seq_dict[c] = [int(i.split(' ')[1]) - offset_seq_ids[c] for i in sorted_seq]
                 else:
                     if len(chains) > 1:
                         for c in chains:
                             cmp_dict[c] = [i.split(' ')[-1].upper() for i in sorted_seq if i.split(' ')[0] == c]
                             seq_dict[c] = [int(i.split(' ')[1]) - offset_seq_ids[c] for i in sorted_seq if i.split(' ')[0] == c]
                     else:
-                        cmp_dict[list(chains)[0]] = [i.split(' ')[-1].upper() for i in sorted_seq]
-                        seq_dict[list(chains)[0]] = [int(i.split(' ')[1]) - offset_seq_ids[c] for i in sorted_seq]
+                        c = list(chains)[0]
+                        cmp_dict[c] = [i.split(' ')[-1].upper() for i in sorted_seq]
+                        seq_dict[c] = [int(i.split(' ')[1]) - offset_seq_ids[c] for i in sorted_seq]
 
                 asm = [] # assembly of a loop
 
@@ -1287,16 +1290,18 @@ class NEFTranslator(object):
                             cmp_dict[c] = [i.split(' ')[-1].upper() for i in sorted_seq if i.split(' ')[0] == c]
                             seq_dict[c] = [int(i.split(' ')[1]) - offset_seq_ids[c] for i in sorted_seq if i.split(' ')[0] == c]
                     else:
-                        cmp_dict[list(chains)[0]] = [i.split(' ')[-1].upper() for i in sorted_seq]
-                        seq_dict[list(chains)[0]] = [int(i.split(' ')[1]) - offset_seq_ids[c] for i in sorted_seq]
+                        c = list(chains)[0]
+                        cmp_dict[c] = [i.split(' ')[-1].upper() for i in sorted_seq]
+                        seq_dict[c] = [int(i.split(' ')[1]) - offset_seq_ids[c] for i in sorted_seq]
                 else:
                     if len(chains) > 1:
                         for c in chains:
                             cmp_dict[c] = [i.split(' ')[-1].upper() for i in sorted_seq if i.split(' ')[0] == c]
                             seq_dict[c] = [int(i.split(' ')[1]) - offset_seq_ids[c] for i in sorted_seq if i.split(' ')[0] == c]
                     else:
-                        cmp_dict[list(chains)[0]] = [i.split(' ')[-1].upper() for i in sorted_seq]
-                        seq_dict[list(chains)[0]] = [int(i.split(' ')[1]) - offset_seq_ids[c] for i in sorted_seq]
+                        c = list(chains)[0]
+                        cmp_dict[c] = [i.split(' ')[-1].upper() for i in sorted_seq]
+                        seq_dict[c] = [int(i.split(' ')[1]) - offset_seq_ids[c] for i in sorted_seq]
 
                 asm = [] # assembly of a loop
 
@@ -1447,10 +1452,11 @@ class NEFTranslator(object):
                             asym_dict[c] = [i.split(':')[2] for i in sorted_seq if i.split(':')[0] == c]
                             seq_dict[c] = [int(i.split(':')[1]) - offset_seq_ids[c] for i in sorted_seq if i.split(':')[0] == c]
                     else:
-                        acmp_dict[list(chains)[0]] = [i.split(':')[-1] for i in sorted_seq]
-                        aseq_dict[list(chains)[0]] = [i.split(':')[3].strip() for i in sorted_seq]
-                        asym_dict[list(chains)[0]] = [i.split(':')[2] for i in sorted_seq]
-                        seq_dict[list(chains)[0]] = [int(i.split(':')[1]) - offset_seq_ids[c] for i in sorted_seq]
+                        c = list(chains)[0]
+                        acmp_dict[c] = [i.split(':')[-1] for i in sorted_seq]
+                        aseq_dict[c] = [i.split(':')[3].strip() for i in sorted_seq]
+                        asym_dict[c] = [i.split(':')[2] for i in sorted_seq]
+                        seq_dict[c] = [int(i.split(':')[1]) - offset_seq_ids[c] for i in sorted_seq]
                 else:
                     if len(chains) > 1:
                         for c in chains:
@@ -1459,10 +1465,11 @@ class NEFTranslator(object):
                             asym_dict[c] = [i.split(':')[2] for i in sorted_seq if i.split(':')[0] == c]
                             seq_dict[c] = [int(i.split(':')[1]) - offset_seq_ids[c] for i in sorted_seq if i.split(':')[0] == c]
                     else:
-                        acmp_dict[list(chains)[0]] = [i.split(':')[-1] for i in sorted_seq]
-                        aseq_dict[list(chains)[0]] = [i.split(':')[3].strip() for i in sorted_seq]
-                        asym_dict[list(chains)[0]] = [i.split(':')[2] for i in sorted_seq]
-                        seq_dict[list(chains)[0]] = [int(i.split(':')[1]) - offset_seq_ids[c] for i in sorted_seq]
+                        c = list(chains)[0]
+                        acmp_dict[c] = [i.split(':')[-1] for i in sorted_seq]
+                        aseq_dict[c] = [i.split(':')[3].strip() for i in sorted_seq]
+                        asym_dict[c] = [i.split(':')[2] for i in sorted_seq]
+                        seq_dict[c] = [int(i.split(':')[1]) - offset_seq_ids[c] for i in sorted_seq]
 
                 asm = [] # assembly of a loop
 
@@ -4895,7 +4902,12 @@ class NEFTranslator(object):
                     try:
                         tag_map[chain_tag], tag_map[seq_tag] = self.authSeqMap[seq_key]
                     except KeyError:
-                        tag_map[chain_tag] = _star_chain
+                        cid = self.authChainId.index(_star_chain)
+                        if cid <= 26:
+                            nef_chain = str(chr(65 + cid))
+                        else:
+                            nef_chain = str(chr(65 + (cid // 26))) + str(chr(65 + (cid % 26)))
+                        tag_map[chain_tag] = nef_chain
                         tag_map[seq_tag] = _star_seq
 
                     if chain_tag == chain_tag_1:
@@ -5574,7 +5586,12 @@ class NEFTranslator(object):
                     try:
                         tag_map[chain_tag], tag_map[seq_tag] = self.authSeqMap[seq_key]
                     except KeyError:
-                        tag_map[chain_tag] = _star_chain
+                        cid = self.authChainId.index(_star_chain)
+                        if cid <= 26:
+                            nef_chain = str(chr(65 + cid))
+                        else:
+                            nef_chain = str(chr(65 + (cid // 26))) + str(chr(65 + (cid % 26)))
+                        tag_map[chain_tag] = nef_chain
                         tag_map[seq_tag] = _star_seq
 
                     s.append(seq_key)
@@ -5729,7 +5746,12 @@ class NEFTranslator(object):
             try:
                 tag_map[chain_tag], tag_map[seq_tag] = self.authSeqMap[(_star_chain, _star_seq)]
             except KeyError:
-                tag_map[chain_tag] = _star_chain
+                cid = self.authChainId.index(_star_chain)
+                if cid <= 26:
+                    nef_chain = str(chr(65 + cid))
+                else:
+                    nef_chain = str(chr(65 + (cid // 26))) + str(chr(65 + (cid % 26)))
+                tag_map[chain_tag] = nef_chain
                 tag_map[seq_tag] = _star_seq
 
         out = [None] * len(nef_tags)

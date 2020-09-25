@@ -97,6 +97,7 @@
 # 10-Sep-2020  M. Yokochi - add 'transl_pseudo_name' input parameter decides whether to translate conventional pseudo atom nomenclature in combined NMR-STAR file (DAOTHER-6128)
 # 16-Sep-2020  M. Yokochi - bug fix release based on internal test using BMRB NMR restraint archive of 6.3k entries (DAOTHER-6128)
 # 18-Sep-2020  M. Yokochi - bug fix release for negative sequence numbers (DAOTHER-6128)
+# 25-Sep-2020  M. Yokochi - add 'tolerant_seq_align' input parameter which enables tolerant sequence alignement for residue variant, set False for OneDep environment (DAOTHER-6128)
 ##
 """ Wrapper class for data processing for NMR data.
     @author: Masashi Yokochi
@@ -499,6 +500,8 @@ class NmrDpUtility(object):
         self.__check_auth_seq = False
         # whether to translate conventional pseudo atom nomenclature in combined NMR-STAR file
         self.__transl_pseudo_name = False
+        # whether to enable tolerant sequence alignment for residue variants
+        self.__tolerant_seq_align = False
 
         # whether to fix format issue (enabled if NMR separated deposition or release mode)
         self.__fix_format_issue = False
@@ -3343,6 +3346,12 @@ class NmrDpUtility(object):
         elif op in ['nmr-str-consistency-check', 'nmr-str2str-deposit', 'nmr-str2nef-release']:
             self.__transl_pseudo_name = True
 
+        if 'tolerant_seq_align' in self.__inputParamDict and not self.__inputParamDict['tolerant_seq_align'] is None:
+            if type(self.__inputParamDict['tolerant_seq_align']) is bool:
+                self.__tolerant_seq_align = self.__inputParamDict['tolerant_seq_align']
+            else:
+                self.__tolerant_seq_align = self.__inputParamDict['tolerant_seq_align'] in self.true_value
+
         if 'fix_format_issue' in self.__inputParamDict and not self.__inputParamDict['fix_format_issue'] is None:
             if type(self.__inputParamDict['fix_format_issue']) is bool:
                 self.__fix_format_issue = self.__inputParamDict['fix_format_issue']
@@ -6122,16 +6131,25 @@ class NmrDpUtility(object):
 
                                         else:
                                             i = s1['seq_id'].index(seq_id)
+                                            _comp_id = s1['comp_id'][i]
 
-                                            if not comp_id in self.empty_value and not s1['comp_id'][i] in self.empty_value and comp_id != s1['comp_id'][i]:
+                                            if not comp_id in self.empty_value and not _comp_id in self.empty_value and comp_id != _comp_id:
 
-                                                err = "Invalid comp_id %r vs %r (seq_id %s, chain_id %s) in a loop %s." % (comp_id, s1['comp_id'][i], seq_id, chain_id, lp_category2)
+                                                err = "Invalid comp_id %r vs %r (seq_id %s, chain_id %s) in a loop %s." % (comp_id, _comp_id, seq_id, chain_id, lp_category2)
 
-                                                self.report.error.appendDescription('sequence_mismatch', {'file_name': file_name, 'sf_framecode': sf_framecode2, 'category': lp_category2, 'description': err})
-                                                self.report.setError()
+                                                if self.__tolerant_seq_align and self.__equalsRepresentativeCompId(comp_id, _comp_id):
+                                                    self.report.warning.appendDescription('sequence_mismatch', {'file_name': file_name, 'sf_framecode': sf_framecode2, 'category': lp_category2, 'description': err})
+                                                    self.report.setWarning()
 
-                                                if self.__verbose:
-                                                    self.__lfh.write("+NmrDpUtility.__testSequenceConsistency() ++ Error  - %s\n" % err)
+                                                    if self.__verbose:
+                                                        self.__lfh.write("+NmrDpUtility.__testSequenceConsistency() ++ Warning  - %s\n" % err)
+
+                                                else:
+                                                    self.report.error.appendDescription('sequence_mismatch', {'file_name': file_name, 'sf_framecode': sf_framecode2, 'category': lp_category2, 'description': err})
+                                                    self.report.setError()
+
+                                                    if self.__verbose:
+                                                        self.__lfh.write("+NmrDpUtility.__testSequenceConsistency() ++ Error  - %s\n" % err)
 
                 # brute force check
                 else:
@@ -6161,16 +6179,25 @@ class NmrDpUtility(object):
 
                                         if seq_id in s1['seq_id']:
                                             i = s1['seq_id'].index(seq_id)
+                                            _comp_id = s1['comp_id'][i]
 
-                                            if not comp_id in self.empty_value and not s1['comp_id'][i] in self.empty_value and comp_id != s1['comp_id'][i]:
+                                            if not comp_id in self.empty_value and not _comp_id in self.empty_value and comp_id != _comp_id:
 
-                                                err = "Unmatched comp_id %r vs %r (seq_id %s, chain_id %s) exists against %r saveframe." % (comp_id, s1['comp_id'][i], seq_id, chain_id, sf_framecode1)
+                                                err = "Unmatched comp_id %r vs %r (seq_id %s, chain_id %s) exists against %r saveframe." % (comp_id, _comp_id, seq_id, chain_id, sf_framecode1)
 
-                                                self.report.error.appendDescription('sequence_mismatch', {'file_name': file_name, 'sf_framecode': sf_framecode2, 'category': lp_category2, 'description': err})
-                                                self.report.setError()
+                                                if self.__tolerant_seq_align and self.__equalsRepresentativeCompId(comp_id, _comp_id):
+                                                    self.report.warning.appendDescription('sequence_mismatch', {'file_name': file_name, 'sf_framecode': sf_framecode2, 'category': lp_category2, 'description': err})
+                                                    self.report.setWarning()
 
-                                                if self.__verbose:
-                                                    self.__lfh.write("+NmrDpUtility.__testSequenceConsistency() ++ Error  - %s\n" % err)
+                                                    if self.__verbose:
+                                                        self.__lfh.write("+NmrDpUtility.__testSequenceConsistency() ++ Warning  - %s\n" % err)
+
+                                                else:
+                                                    self.report.error.appendDescription('sequence_mismatch', {'file_name': file_name, 'sf_framecode': sf_framecode2, 'category': lp_category2, 'description': err})
+                                                    self.report.setError()
+
+                                                    if self.__verbose:
+                                                        self.__lfh.write("+NmrDpUtility.__testSequenceConsistency() ++ Error  - %s\n" % err)
 
                             # inverse check required for unverified sequences
                             for s1 in ps1:
@@ -6186,18 +6213,61 @@ class NmrDpUtility(object):
 
                                         if seq_id in s2['seq_id']:
                                             j = s2['seq_id'].index(seq_id)
+                                            _comp_id = s2['comp_id'][j]
 
-                                            if not comp_id in self.empty_value and not s2['comp_id'][j] in self.empty_value and comp_id != s2['comp_id'][j]:
+                                            if not comp_id in self.empty_value and not _comp_id in self.empty_value and comp_id != _comp_id:
 
-                                                err = "Unmatched comp_id %r vs %r (seq_id %s, chain_id %s) exists against %r saveframe." % (comp_id, s2['comp_id'][j], seq_id, chain_id, sf_framecode2)
+                                                err = "Unmatched comp_id %r vs %r (seq_id %s, chain_id %s) exists against %r saveframe." % (comp_id, _comp_id, seq_id, chain_id, sf_framecode2)
 
-                                                self.report.error.appendDescription('sequence_mismatch', {'file_name': file_name, 'sf_framecode': sf_framecode1, 'category': lp_category1, 'description': err})
-                                                self.report.setError()
+                                                if self.__tolerant_seq_align and self.__equalsRepresentativeCompId(comp_id, _comp_id):
+                                                    self.report.warning.appendDescription('sequence_mismatch', {'file_name': file_name, 'sf_framecode': sf_framecode2, 'category': lp_category2, 'description': err})
+                                                    self.report.setWarning()
 
-                                                if self.__verbose:
-                                                    self.__lfh.write("+NmrDpUtility.__testSequenceConsistency() ++ Error  - %s\n" % err)
+                                                    if self.__verbose:
+                                                        self.__lfh.write("+NmrDpUtility.__testSequenceConsistency() ++ Warning  - %s\n" % err)
+
+                                                else:
+                                                    self.report.error.appendDescription('sequence_mismatch', {'file_name': file_name, 'sf_framecode': sf_framecode2, 'category': lp_category2, 'description': err})
+                                                    self.report.setError()
+
+                                                    if self.__verbose:
+                                                        self.__lfh.write("+NmrDpUtility.__testSequenceConsistency() ++ Error  - %s\n" % err)
 
         return not self.report.isError()
+
+    def __equalsRepresentativeCompId(self, comp_id, ref_comp_id):
+        """ Return whether given representative comp IDs are equal.
+            @return: True for representative comp IDs are matched, False otherwise
+        """
+
+        if comp_id is self.empty_value or ref_comp_id in self.empty_value:
+            return False
+
+        if '_' in comp_id:
+            comp_id = comp_id.split('_')[0]
+        elif self.__get1LetterCode(comp_id) == 'X':
+            self.__updateChemCompDict(comp_id)
+            if self.__last_comp_id_test and '_chem_comp.mon_nstd_parent_comp_id' in self.__last_chem_comp_dict: # matches with comp_id in CCD
+                if not self.__last_chem_comp_dict['_chem_comp.mon_nstd_parent_comp_id'] in self.empty_value:
+                    comp_id = self.__last_chem_comp_dict['_chem_comp.mon_nstd_parent_comp_id']
+                    if comp_id in ['A', 'C', 'G', 'T', 'I', 'U'] and len(ref_comp_id) == 2 and ref_comp_id.startswith('D'):
+                        comp_id = 'D' + comp_id
+                    elif ref_comp_id in ['A', 'C', 'G', 'T', 'I', 'U'] and len(comp_id) == 2 and comp_id.startswith('D'):
+                        comp_id = comp_id[1]
+
+        if '_' in ref_comp_id:
+            ref_comp_id = ref_comp_id.split('_')[0]
+        elif self.__get1LetterCode(ref_comp_id) == 'X':
+            self.__updateChemCompDict(ref_comp_id)
+            if self.__last_comp_id_test and '_chem_comp.mon_nstd_parent_comp_id' in self.__last_chem_comp_dict: # matches with comp_id in CCD
+                if not self.__last_chem_comp_dict['_chem_comp.mon_nstd_parent_comp_id'] in self.empty_value:
+                    ref_comp_id = self.__last_chem_comp_dict['_chem_comp.mon_nstd_parent_comp_id']
+                    if ref_comp_id in ['A', 'C', 'G', 'T', 'I', 'U'] and len(comp_id) == 2 and comp_id.startswith('D'):
+                        ref_comp_id = 'D' + ref_comp_id
+                    elif comp_id in ['A', 'C', 'G', 'T', 'I', 'U'] and len(ref_comp_id) == 2 and ref_comp_id.startswith('D'):
+                        ref_comp_id = ref_comp_id[1]
+
+        return comp_id == ref_comp_id
 
     def __extractCommonPolymerSequence(self):
         """ Extract common polymer sequence if required.
@@ -6711,8 +6781,121 @@ class NmrDpUtility(object):
                                     not_aligned = False
                                     _matched += 1
 
+                            alt_chain = False
+
                             if length == unmapped + conflict or _matched < conflict:
-                                continue
+
+                                if self.__resolve_conflict and _matched < conflict and len(polymer_sequence) > 1:
+
+                                    __length = length
+                                    __matched = _matched
+                                    __unmapped = unmapped
+                                    __conflict = conflict
+                                    __chain_id = None
+                                    __s1 = None
+                                    __offset_1 = None
+                                    __offset_2 = None
+
+                                    for _s1 in polymer_sequence:
+
+                                        if _s1 == s1:
+                                            continue
+
+                                        chain_id_ = _s1['chain_id']
+
+                                        if type(chain_id_) == int:
+                                            _chain_id_ = str(chain_id_)
+                                        else:
+                                            _chain_id_ = chain_id_
+
+                                        self.__pA.setReferenceSequence(_s1['comp_id'], 'REF' + _chain_id_)
+                                        self.__pA.addTestSequence(s2['comp_id'], _chain_id_)
+                                        self.__pA.doAlign()
+
+                                        myAlign = self.__pA.getAlignment(_chain_id_)
+
+                                        length = len(myAlign)
+
+                                        if length == 0:
+                                            continue
+
+                                        aligned = [True] * length
+
+                                        for i in range(length):
+                                            myPr = myAlign[i]
+                                            myPr0 = str(myPr[0])
+                                            myPr1 = str(myPr[1])
+                                            if myPr0 == '.' or myPr1 == '.':
+                                                aligned[i] = False
+                                                pass
+                                            elif myPr0 != myPr1:
+                                                pass
+                                            else:
+                                                break
+
+                                        not_aligned = True
+                                        offset_1 = 0
+                                        offset_2 = 0
+
+                                        unmapped = 0
+                                        conflict = 0
+                                        _matched = 0
+                                        for i in range(length):
+                                            myPr = myAlign[i]
+                                            myPr0 = str(myPr[0])
+                                            myPr1 = str(myPr[1])
+                                            if myPr0 == '.' or myPr1 == '.':
+                                                if not_aligned and not aligned[i]:
+                                                    if myPr0 == '.' and myPr1 != '.':
+                                                        offset_1 += 1
+                                                    if myPr0 != '.' and myPr1 == '.':
+                                                        offset_2 += 1
+                                                unmapped += 1
+                                            elif myPr0 != myPr1:
+                                                conflict += 1
+                                            else:
+                                                not_aligned = False
+                                                _matched += 1
+
+                                        if length == unmapped + conflict or _matched < conflict:
+                                            continue
+
+                                        if _matched - conflict < __matched - __conflict or unmapped + conflict > __unmapped + __conflict:
+                                            continue
+
+                                        __length = length
+                                        __matched = _matched
+                                        __unmapped = unmapped
+                                        __conflict = conflict
+                                        __chain_id = _chain_id_
+                                        __offset_1 = offset_1
+                                        __offset_2 = offset_2
+                                        __s1 = copy.copy(_s1)
+
+                                        alt_chain = True
+
+                                        break
+
+                                if not alt_chain:
+                                    continue
+
+                                else:
+
+                                    self.__fixChainIdInLoop(fileListId, file_name, file_type, content_subtype, ps_in_loop['sf_framecode'], _chain_id, __chain_id)
+
+                                    length = __length
+                                    _matched = __matched
+                                    unmapped = __unmapped
+                                    conflict = __conflict
+                                    chain_id = __s1['chain_id']
+                                    _chain_id = __chain_id
+                                    offset_1 = __offset_1
+                                    offset_2 = __offset_2
+                                    s1 = __s1
+
+                                    s2['chain_id'] = __chain_id
+
+                                    update_poly_seq = True
 
                             _s1 = s1 if offset_1 == 0 else fill_blank_comp_id_with_offset(s2, s1, offset_1)
                             _s2 = s2 if offset_2 == 0 else fill_blank_comp_id_with_offset(s1, s2, offset_2)
@@ -6741,7 +6924,8 @@ class NmrDpUtility(object):
                             ref_gauge_code = get_gauge_code(_s1['seq_id'])
                             test_gauge_code = get_gauge_code(_s2['seq_id'])
 
-                            if self.__resolve_conflict and conflict == 0 and any((__s1, __s2) for (__s1, __s2) in zip(_s1['seq_id'], _s2['seq_id']) if __s1 != '.' and __s2 != '.' and __s1 != __s2):
+                            if self.__resolve_conflict and conflict == 0 and not alt_chain and any((__s1, __s2) for (__s1, __s2, __c1, __c2) in zip(_s1['seq_id'], _s2['seq_id'], _s1['comp_id'], _s2['comp_id'])\
+                               if __s1 != '.' and __s2 != '.' and __s1 != __s2 and __c1 != '.' and __c2 != '.' and __c1 == __c2):
                                 seq_id_conv_dict = {str(__s2): str(__s1) for __s1, __s2 in zip(_s1['seq_id'], _s2['seq_id']) if __s2 != '.'}
                                 self.__fixSeqIdInLoop(fileListId, file_name, file_type, content_subtype, ps_in_loop['sf_framecode'], _chain_id, seq_id_conv_dict)
                                 _s2['seq_id'] = _s1['seq_id']
@@ -6810,8 +6994,126 @@ class NmrDpUtility(object):
 
         if update_poly_seq:
             self.__extractPolymerSequenceInLoop()
+            self.__depositNmrData()
 
         return is_done
+
+    def __fixChainIdInLoop(self, file_list_id, file_name, file_type, content_subtype, sf_framecode, chain_id, _chain_id):
+        """ Fix chain ID of interesting loop.
+        """
+
+        sf_category = self.sf_categories[file_type][content_subtype]
+        lp_category = self.lp_categories[file_type][content_subtype]
+
+        if file_type == 'nmr-star' and content_subtype == 'spectral_peak_alt':
+            lp_category = '_Assigned_peak_chem_shift'
+
+        if self.__star_data_type[file_list_id] == 'Loop':
+
+            sf_data = self.__star_data[file_list_id]
+
+            if sf_framecode == '':
+                self.__fixChainIdInLoop__(file_list_id, file_name, file_type, content_subtype, sf_data, sf_framecode, lp_category, chain_id, _chain_id)
+
+        elif self.__star_data_type[file_list_id] == 'Saveframe':
+
+            sf_data = self.__star_data[file_list_id]
+
+            if get_first_sf_tag(sf_data, 'sf_framecode') == sf_framecode:
+                self.__fixChainIdInLoop__(file_list_id, file_name, file_type, content_subtype, sf_data, sf_framecode, lp_category, chain_id, _chain_id)
+
+        else:
+
+            for sf_data in self.__star_data[file_list_id].get_saveframes_by_category(sf_category):
+
+                if get_first_sf_tag(sf_data, 'sf_framecode') != sf_framecode:
+                    continue
+
+                if not any(loop for loop in sf_data.loops if loop.category == lp_category):
+                    continue
+
+                self.__fixChainIdInLoop__(file_list_id, file_name, file_type, content_subtype, sf_data, sf_framecode, lp_category, chain_id, _chain_id)
+
+    def __fixChainIdInLoop__(self, file_list_id, file_name, file_type, content_subtype, sf_data, sf_framecode, lp_category, chain_id, _chain_id):
+        """ Fix sequence ID of interesting loop.
+        """
+
+        chain_id_name = 'chain_code' if file_type == 'nef' else 'Entity_assembly_ID'
+        entity_id_name = None if file_type == 'nef' else 'Entity_ID'
+
+        max_dim = 2
+
+        if content_subtype in ['poly_seq', 'dist_restraint', 'rdc_restraint']:
+            max_dim = 3
+
+        elif content_subtype == 'dihed_restraint':
+            max_dim = 5
+
+        elif content_subtype == 'spectral_peak':
+
+            try:
+
+                _num_dim = sf_data.get_tag(self.num_dim_items[file_type])[0]
+                num_dim = int(_num_dim)
+
+                if not num_dim in range(1, self.lim_num_dim):
+                    raise ValueError()
+
+            except ValueError: # raised error already at __testIndexConsistency()
+                return
+
+            max_dim = num_dim + 1
+
+        loop = sf_data if self.__star_data_type[file_list_id] == 'Loop' else sf_data.get_loop_by_category(lp_category)
+
+        if max_dim == 2:
+
+            chain_id_col = loop.tags.index(chain_id_name) if chain_id_name in loop.tags else -1
+            entity_id_col = -1
+            if not entity_id_name is None:
+                entity_id_col = loop.tags.index(entity_id_name) if entity_id_name in loop.tags else -1
+
+            if chain_id_col == -1:
+                return
+
+            for row in loop.data:
+
+                __chain_id = str(row[chain_id_col])
+
+                if __chain_id != chain_id:
+                    continue
+
+                row[chain_id_col] = _chain_id
+
+                if entity_id_col != -1:
+                    row[entity_id_col] = _chain_id
+
+        else:
+
+            for i in range(1, max_dim):
+
+                _chain_id_name = chain_id_name + '_' + str(i)
+                _entity_id_name = None if entity_id_name is None else entity_id_name + '_' + str(i)
+
+                chain_id_col = loop.tags.index(_chain_id_name) if _chain_id_name in loop.tags else -1
+                entity_id_col = -1
+                if not _entity_id_name is None:
+                    entity_id_col = loop.tags.index(_entity_id_name) if _entity_id_name in loop.tags else -1
+
+                if chain_id_col == -1:
+                    continue
+
+                for row in loop.data:
+
+                    __chain_id = str(row[chain_id_col])
+
+                    if __chain_id != chain_id:
+                        continue
+
+                    row[chain_id_col] = _chain_id
+
+                    if entity_id_col != -1:
+                        row[entity_id_col] = _chain_id
 
     def __fixSeqIdInLoop(self, file_list_id, file_name, file_type, content_subtype, sf_framecode, chain_id, seq_id_conv_dict):
         """ Fix sequence ID of interesting loop.
@@ -6893,7 +7195,7 @@ class NmrDpUtility(object):
             if chain_id_col == -1 or seq_id_col == -1:
                 return
 
-            for row in loop:
+            for row in loop.data:
 
                 _chain_id = str(row[chain_id_col])
 
@@ -6930,7 +7232,7 @@ class NmrDpUtility(object):
                 if chain_id_col == -1 or seq_id_col == -1:
                     continue
 
-                for row in loop:
+                for row in loop.data:
 
                     _chain_id = str(row[chain_id_col])
 
@@ -18455,11 +18757,19 @@ class NmrDpUtility(object):
                                 err = "Sequence alignment error between the coordinate (%s) and the NMR data (%s). Please verify the two sequences and re-upload the correct file(s)." %\
                                       (cif_seq_code, nmr_seq_code)
 
-                                self.report.error.appendDescription('sequence_mismatch', {'file_name': cif_file_name, 'description': err})
-                                self.report.setError()
+                                if self.__tolerant_seq_align and self.__equalsRepresentativeCompId(nmr_comp_id, cif_comp_id):
+                                    self.report.warning.appendDescription('sequence_mismatch', {'file_name': cif_file_name, 'description': err})
+                                    self.report.setWarning()
 
-                                if self.__verbose:
-                                    self.__lfh.write("+NmrDpUtility.__assignCoordPolymerSequence() ++ Error  - %s" % err)
+                                    if self.__verbose:
+                                        self.__lfh.write("+NmrDpUtility.__assignCoordPolymerSequence() ++ Warning  - %s" % err)
+
+                                else:
+                                    self.report.error.appendDescription('sequence_mismatch', {'file_name': cif_file_name, 'description': err})
+                                    self.report.setError()
+
+                                    if self.__verbose:
+                                        self.__lfh.write("+NmrDpUtility.__assignCoordPolymerSequence() ++ Error  - %s" % err)
 
                                 ref_code = result['ref_code']
                                 test_code = result['test_code']
@@ -18762,11 +19072,19 @@ class NmrDpUtility(object):
                                 err = "Sequence alignment error between the NMR data (%s) and the coordinate (%s). Please verify the two sequences and re-upload the correct file(s)." %\
                                       (nmr_seq_code, cif_seq_code)
 
-                                self.report.error.appendDescription('sequence_mismatch', {'file_name': nmr_file_name, 'description': err})
-                                self.report.setError()
+                                if self.__tolerant_seq_align and self.__equalsRepresentativeCompId(cif_comp_id, nmr_comp_id):
+                                    self.report.warning.appendDescription('sequence_mismatch', {'file_name': nmr_file_name, 'description': err})
+                                    self.report.setWarning()
 
-                                if self.__verbose:
-                                    self.__lfh.write("+NmrDpUtility.__assignCoordPolymerSequence() ++ Error  - %s" % err)
+                                    if self.__verbose:
+                                        self.__lfh.write("+NmrDpUtility.__assignCoordPolymerSequence() ++ Warning  - %s" % err)
+
+                                else:
+                                    self.report.error.appendDescription('sequence_mismatch', {'file_name': nmr_file_name, 'description': err})
+                                    self.report.setError()
+
+                                    if self.__verbose:
+                                        self.__lfh.write("+NmrDpUtility.__assignCoordPolymerSequence() ++ Error  - %s" % err)
 
                                 ref_code = result['ref_code']
                                 test_code = result['test_code']

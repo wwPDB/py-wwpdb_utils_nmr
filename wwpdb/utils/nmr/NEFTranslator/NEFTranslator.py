@@ -50,7 +50,7 @@
 # 14-Sep-2020  M. Yokochi - add support for psuedo atom in NMR-STAR (v2.8.0, DAOTHER-6128)
 # 17-Sep-2020  M. Yokochi - do not convert atom name between NEF and NMR-STAR, which ends with apostrophe (v2.8.0, DAOTHER-6128)
 # 18-Sep-2020  M. Yokochi - bug fix release for negative sequence numbers (v2.8.1, DAOTHER-6128)
-# 25-Sep-2020  M. Yokochi - fix chain_code mapping in NEF MR loops in case that there is no CS assignment (v2.8.2, DAOTHER-6128)
+# 28-Sep-2020  M. Yokochi - fix chain_code mapping in NEF MR loops in case that there is no CS assignment (v2.8.2, DAOTHER-6128)
 ##
 import sys
 import os
@@ -4023,7 +4023,7 @@ class NEFTranslator(object):
         seq_index = nef_tags.index('_nef_sequence.sequence_code')
         comp_index = nef_tags.index('_nef_sequence.residue_name')
 
-        for nef_chain in self.authChainId:
+        for _star_chain, nef_chain in enumerate(self.authChainId, start=1):
 
             seq_list = sorted(set([int(i[seq_index]) for i in loop_data if i[chain_index] == nef_chain]))
 
@@ -4035,8 +4035,6 @@ class NEFTranslator(object):
                 seq_align = report.getSequenceAlignmentWithNmrChainId(nef_chain)
                 if not seq_align is None:
                     cif_chain = seq_align['test_chain_id']
-
-            _star_chain = self.authChainId.index(nef_chain) + 1
 
             offset = None
 
@@ -4160,7 +4158,7 @@ class NEFTranslator(object):
             aux_seq_index = aux_tags.index('_Entity_deleted_atom.Comp_index_ID')
             aux_atom_index = aux_tags.index('_Entity_deleted_atom.Atom_ID')
 
-        for star_chain in self.authChainId:
+        for cid, star_chain in enumerate(self.authChainId):
 
             _star_chain = int(star_chain)
 
@@ -4175,7 +4173,6 @@ class NEFTranslator(object):
                 if not seq_align is None:
                     cif_chain = seq_align['test_chain_id']
 
-            cid = self.authChainId.index(star_chain)
             if cid <= 26:
                 nef_chain = str(chr(65 + cid))
             else:
@@ -4902,11 +4899,14 @@ class NEFTranslator(object):
                     try:
                         tag_map[chain_tag], tag_map[seq_tag] = self.authSeqMap[seq_key]
                     except KeyError:
-                        cid = self.authChainId.index(_star_chain)
-                        if cid <= 26:
-                            nef_chain = str(chr(65 + cid))
+                        if _star_chain in self.empty_value:
+                            nef_chain = _star_chain
                         else:
-                            nef_chain = str(chr(65 + (cid // 26))) + str(chr(65 + (cid % 26)))
+                            cid = self.authChainId.index(_star_chain)
+                            if cid <= 26:
+                                nef_chain = str(chr(65 + cid))
+                            else:
+                                nef_chain = str(chr(65 + (cid // 26))) + str(chr(65 + (cid % 26)))
                         tag_map[chain_tag] = nef_chain
                         tag_map[seq_tag] = _star_seq
 
@@ -5530,7 +5530,6 @@ class NEFTranslator(object):
             @param loop_data: loop data of NMR-STAR
             @return: rows of NEF
         """
-
         out_row = []
 
         comp_indices = []
@@ -5586,11 +5585,14 @@ class NEFTranslator(object):
                     try:
                         tag_map[chain_tag], tag_map[seq_tag] = self.authSeqMap[seq_key]
                     except KeyError:
-                        cid = self.authChainId.index(_star_chain)
-                        if cid <= 26:
-                            nef_chain = str(chr(65 + cid))
+                        if _star_chain in self.empty_value:
+                            nef_chain = _star_chain
                         else:
-                            nef_chain = str(chr(65 + (cid // 26))) + str(chr(65 + (cid % 26)))
+                            cid = self.authChainId.index(_star_chain)
+                            if cid <= 26:
+                                nef_chain = str(chr(65 + cid))
+                            else:
+                                nef_chain = str(chr(65 + (cid // 26))) + str(chr(65 + (cid % 26)))
                         tag_map[chain_tag] = nef_chain
                         tag_map[seq_tag] = _star_seq
 
@@ -5746,11 +5748,14 @@ class NEFTranslator(object):
             try:
                 tag_map[chain_tag], tag_map[seq_tag] = self.authSeqMap[(_star_chain, _star_seq)]
             except KeyError:
-                cid = self.authChainId.index(_star_chain)
-                if cid <= 26:
-                    nef_chain = str(chr(65 + cid))
+                if _star_chain in self.empty_value:
+                    nef_chain = _star_chain
                 else:
-                    nef_chain = str(chr(65 + (cid // 26))) + str(chr(65 + (cid % 26)))
+                    cid = self.authChainId.index(_star_chain)
+                    if cid <= 26:
+                        nef_chain = str(chr(65 + cid))
+                    else:
+                        nef_chain = str(chr(65 + (cid // 26))) + str(chr(65 + (cid % 26)))
                 tag_map[chain_tag] = nef_chain
                 tag_map[seq_tag] = _star_seq
 

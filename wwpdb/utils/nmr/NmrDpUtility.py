@@ -192,10 +192,10 @@ def get_first_sf_tag(sf_data=None, tag=None):
         return ''
 
     return array[0]
-"""
+
 def fill_blank_comp_id(s1, s2):
-    "" Fill blanked comp ID in s2 against s1.
-    ""
+    """ Fill blanked comp ID in s2 against s1.
+    """
 
     seq_ids = sorted(set(s1['seq_id']) | set(s2['seq_id']))
     comp_ids = []
@@ -208,7 +208,7 @@ def fill_blank_comp_id(s1, s2):
             comp_ids.append('.')
 
     return {'chain_id': s2['chain_id'], 'seq_id': seq_ids, 'comp_id': comp_ids}
-"""
+
 def fill_blank_comp_id_with_offset(s1, s2, offset):
     """ Fill blanked comp ID in s2 against s1 with offset.
     """
@@ -6924,12 +6924,19 @@ class NmrDpUtility(object):
                             ref_gauge_code = get_gauge_code(_s1['seq_id'])
                             test_gauge_code = get_gauge_code(_s2['seq_id'])
 
-                            if self.__resolve_conflict and conflict == 0 and not alt_chain and any((__s1, __s2) for (__s1, __s2, __c1, __c2) in zip(_s1['seq_id'], _s2['seq_id'], _s1['comp_id'], _s2['comp_id'])\
+                            if self.__resolve_conflict and conflict == 0 and not alt_chain and\
+                               any((__s1, __s2) for (__s1, __s2, __c1, __c2) in zip(_s1['seq_id'], _s2['seq_id'], _s1['comp_id'], _s2['comp_id'])\
                                if __s1 != '.' and __s2 != '.' and __s1 != __s2 and __c1 != '.' and __c2 != '.' and __c1 == __c2):
-                                seq_id_conv_dict = {str(__s2): str(__s1) for __s1, __s2 in zip(_s1['seq_id'], _s2['seq_id']) if __s2 != '.'}
-                                self.__fixSeqIdInLoop(fileListId, file_name, file_type, content_subtype, ps_in_loop['sf_framecode'], _chain_id, seq_id_conv_dict)
-                                _s2['seq_id'] = _s1['seq_id']
-                                test_gauge_code = ref_gauge_code
+                                if len(_s1['seq_id']) == len(_s2['seq_id']):
+                                    seq_id_conv_dict = {str(__s2): str(__s1) for __s1, __s2 in zip(_s1['seq_id'], _s2['seq_id']) if __s2 != '.'}
+                                    self.__fixSeqIdInLoop(fileListId, file_name, file_type, content_subtype, ps_in_loop['sf_framecode'], _chain_id, seq_id_conv_dict)
+                                    _s2['seq_id'] = _s1['seq_id']
+                                    test_gauge_code = ref_gauge_code
+                                else:
+                                    _s2 = fill_blank_comp_id(_s1, _s2)
+                                    test_code = self.__get1LetterCodeSequence(_s2['comp_id'])
+                                    mid_code = get_middle_code(ref_code, test_code)
+                                    test_gauge_code = ref_gauge_code
 
                                 update_poly_seq = True
 

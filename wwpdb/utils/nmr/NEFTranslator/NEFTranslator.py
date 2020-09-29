@@ -5530,6 +5530,7 @@ class NEFTranslator(object):
             @param loop_data: loop data of NMR-STAR
             @return: rows of NEF
         """
+
         out_row = []
 
         comp_indices = []

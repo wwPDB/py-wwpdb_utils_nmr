@@ -7070,7 +7070,7 @@ class NmrDpUtility(object):
                             ref_gauge_code = get_gauge_code(_s1['seq_id'])
                             test_gauge_code = get_gauge_code(_s2['seq_id'])
 
-                            if self.__resolve_conflict and conflict == 0 and not alt_chain and\
+                            if self.__resolve_conflict and not alt_chain and\
                                any((__s1, __s2) for (__s1, __s2, __c1, __c2) in zip(_s1['seq_id'], _s2['seq_id'], _s1['comp_id'], _s2['comp_id'])\
                                if __s1 != '.' and __s2 != '.' and __s1 != __s2 and __c1 != '.' and __c2 != '.' and __c1 == __c2):
                                 if _s2['seq_id'] == list(range(_s2['seq_id'][0], _s2['seq_id'][-1] + 1)):

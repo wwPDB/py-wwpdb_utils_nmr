@@ -6041,6 +6041,8 @@ class NmrDpUtility(object):
         #if self.report.isError():
         #    return False
 
+        update_poly_seq = False
+
         for fileListId in range(self.__file_path_list_len):
 
             input_source = self.report.input_sources[fileListId]
@@ -6144,6 +6146,19 @@ class NmrDpUtility(object):
                                                     if self.__verbose:
                                                         self.__lfh.write("+NmrDpUtility.__testSequenceConsistency() ++ Warning  - %s\n" % err)
 
+                                                elif self.__resolve_conflict and self.__get1LetterCode(comp_id) == self.__get1LetterCode(_comp_id):
+                                                    self.report.warning.appendDescription('sequence_mismatch', {'file_name': file_name, 'sf_framecode': sf_framecode2, 'category': lp_category2, 'description': err})
+                                                    self.report.setWarning()
+
+                                                    if self.__verbose:
+                                                        self.__lfh.write("+NmrDpUtility.__testSequenceConsistency() ++ Warning  - %s\n" % err)
+
+                                                    comp_id_conv_dict = {comp_id: _comp_id}
+
+                                                    self.__fixCompIdInLoop(fileListId, file_name, file_type, subtype2, ps_in_loop['sf_framecode'], chain_id, seq_id, comp_id_conv_dict)
+
+                                                    update_poly_seq = True
+
                                                 else:
                                                     self.report.error.appendDescription('sequence_mismatch', {'file_name': file_name, 'sf_framecode': sf_framecode2, 'category': lp_category2, 'description': err})
                                                     self.report.setError()
@@ -6233,6 +6248,10 @@ class NmrDpUtility(object):
                                                     if self.__verbose:
                                                         self.__lfh.write("+NmrDpUtility.__testSequenceConsistency() ++ Error  - %s\n" % err)
 
+        if update_poly_seq:
+            self.__extractPolymerSequenceInLoop()
+            self.__depositNmrData()
+
         return not self.report.isError()
 
     def __equalsRepresentativeCompId(self, comp_id, ref_comp_id):
@@ -6268,6 +6287,133 @@ class NmrDpUtility(object):
                         ref_comp_id = ref_comp_id[1]
 
         return comp_id == ref_comp_id
+
+    def __fixCompIdInLoop(self, file_list_id, file_name, file_type, content_subtype, sf_framecode, chain_id, seq_id, comp_id_conv_dict):
+        """ Fix comp ID of interesting loop.
+        """
+
+        sf_category = self.sf_categories[file_type][content_subtype]
+        lp_category = self.lp_categories[file_type][content_subtype]
+
+        if file_type == 'nmr-star' and content_subtype == 'spectral_peak_alt':
+            lp_category = '_Assigned_peak_chem_shift'
+
+        if self.__star_data_type[file_list_id] == 'Loop':
+
+            sf_data = self.__star_data[file_list_id]
+
+            if sf_framecode == '':
+                self.__fixCompIdInLoop__(file_list_id, file_name, file_type, content_subtype, sf_data, sf_framecode, lp_category, chain_id, seq_id, comp_id_conv_dict)
+
+        elif self.__star_data_type[file_list_id] == 'Saveframe':
+
+            sf_data = self.__star_data[file_list_id]
+
+            if get_first_sf_tag(sf_data, 'sf_framecode') == sf_framecode:
+                self.__fixCompIdInLoop__(file_list_id, file_name, file_type, content_subtype, sf_data, sf_framecode, lp_category, chain_id, seq_id, comp_id_conv_dict)
+
+        else:
+
+            for sf_data in self.__star_data[file_list_id].get_saveframes_by_category(sf_category):
+
+                if get_first_sf_tag(sf_data, 'sf_framecode') != sf_framecode:
+                    continue
+
+                if not any(loop for loop in sf_data.loops if loop.category == lp_category):
+                    continue
+
+                self.__fixCompIdInLoop__(file_list_id, file_name, file_type, content_subtype, sf_data, sf_framecode, lp_category, chain_id, seq_id, comp_id_conv_dict)
+
+    def __fixCompIdInLoop__(self, file_list_id, file_name, file_type, content_subtype, sf_data, sf_framecode, lp_category, chain_id, seq_id, comp_id_conv_dict):
+        """ Fix sequence ID of interesting loop.
+        """
+
+        chain_id_name = 'chain_code' if file_type == 'nef' else 'Entity_assembly_ID'
+        seq_id_name = 'sequence_code' if file_type == 'nef' else 'Comp_index_ID'
+        comp_id_name = 'residue_name' if file_type == 'nef' else 'Comp_ID'
+
+        max_dim = 2
+
+        if content_subtype in ['poly_seq', 'dist_restraint', 'rdc_restraint']:
+            max_dim = 3
+
+        elif content_subtype == 'dihed_restraint':
+            max_dim = 5
+
+        elif content_subtype == 'spectral_peak':
+
+            try:
+
+                _num_dim = sf_data.get_tag(self.num_dim_items[file_type])[0]
+                num_dim = int(_num_dim)
+
+                if not num_dim in range(1, self.lim_num_dim):
+                    raise ValueError()
+
+            except ValueError: # raised error already at __testIndexConsistency()
+                return
+
+            max_dim = num_dim + 1
+
+        loop = sf_data if self.__star_data_type[file_list_id] == 'Loop' else sf_data.get_loop_by_category(lp_category)
+
+        if max_dim == 2:
+
+            chain_id_col = loop.tags.index(chain_id_name) if chain_id_name in loop.tags else -1
+            seq_id_col = loop.tags.index(seq_id_name) if seq_id_name in loop.tags else -1
+            comp_id_col = loop.tags.index(comp_id_name) if comp_id_name in loop.tags else -1
+
+            if chain_id_col == -1 or seq_id_col == -1 or comp_id_col == -1:
+                return
+
+            for row in loop.data:
+
+                _chain_id = str(row[chain_id_col])
+
+                if _chain_id != chain_id:
+                    continue
+
+                _seq_id = row[seq_id_col]
+
+                if _seq_id in self.empty_value or int(_seq_id) != seq_id:
+                    continue
+
+                comp_id = row[comp_id_col]
+
+                if comp_id in comp_id_conv_dict:
+                    row[comp_id_col] = comp_id_conv_dict[comp_id]
+
+        else:
+
+            for i in range(1, max_dim):
+
+                _chain_id_name = chain_id_name + '_' + str(i)
+                _seq_id_name = seq_id_name + '_' + str(i)
+                _comp_id_name = comp_id_name + '_' + str(i)
+
+                chain_id_col = loop.tags.index(_chain_id_name) if _chain_id_name in loop.tags else -1
+                seq_id_col = loop.tags.index(_seq_id_name) if _seq_id_name in loop.tags else -1
+                comp_id_col = loop.tags.index(_comp_id_name) if _comp_id_name in loop.tags else -1
+
+                if chain_id_col == -1 or seq_id_col == -1 or comp_id_col == -1:
+                    continue
+
+                for row in loop.data:
+
+                    _chain_id = str(row[chain_id_col])
+
+                    if _chain_id != chain_id:
+                        continue
+
+                    _seq_id = row[seq_id_col]
+
+                    if _seq_id in self.empty_value or int(_seq_id) != seq_id:
+                        continue
+
+                    comp_id = row[comp_id_col]
+
+                    if comp_id in comp_id_conv_dict:
+                        row[comp_id_col] = comp_id_conv_dict[comp_id]
 
     def __extractCommonPolymerSequence(self):
         """ Extract common polymer sequence if required.
@@ -6927,7 +7073,7 @@ class NmrDpUtility(object):
                             if self.__resolve_conflict and conflict == 0 and not alt_chain and\
                                any((__s1, __s2) for (__s1, __s2, __c1, __c2) in zip(_s1['seq_id'], _s2['seq_id'], _s1['comp_id'], _s2['comp_id'])\
                                if __s1 != '.' and __s2 != '.' and __s1 != __s2 and __c1 != '.' and __c2 != '.' and __c1 == __c2):
-                                if len(_s1['seq_id']) == len(_s2['seq_id']):
+                                if _s2['seq_id'] == list(range(_s2['seq_id'][0], _s2['seq_id'][-1] + 1)):
                                     seq_id_conv_dict = {str(__s2): str(__s1) for __s1, __s2 in zip(_s1['seq_id'], _s2['seq_id']) if __s2 != '.'}
                                     self.__fixSeqIdInLoop(fileListId, file_name, file_type, content_subtype, ps_in_loop['sf_framecode'], _chain_id, seq_id_conv_dict)
                                     _s2['seq_id'] = _s1['seq_id']

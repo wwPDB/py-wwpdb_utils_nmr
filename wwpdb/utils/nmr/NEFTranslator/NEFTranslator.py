@@ -51,6 +51,7 @@
 # 17-Sep-2020  M. Yokochi - do not convert atom name between NEF and NMR-STAR, which ends with apostrophe (v2.8.0, DAOTHER-6128)
 # 18-Sep-2020  M. Yokochi - bug fix release for negative sequence numbers (v2.8.1, DAOTHER-6128)
 # 28-Sep-2020  M. Yokochi - fix chain_code mapping in NEF MR loops in case that there is no CS assignment (v2.8.2, DAOTHER-6128)
+# 29-Sep-2020  M. Yokochi - sort numeric string in a list of chain_id while NMR-STAR to NEF conversion (v2.8.3, DAOTHER-6128)
 ##
 import sys
 import os
@@ -72,7 +73,7 @@ from wwpdb.utils.nmr.io.ChemCompIo import ChemCompReader
 from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
 from wwpdb.utils.nmr.NmrDpReport import NmrDpReport
 
-__version__ = '2.8.2'
+__version__ = '2.8.3'
 
 __pynmrstar_v3__ = version.parse(pynmrstar.__version__) >= version.parse("3.0.0")
 
@@ -986,8 +987,8 @@ class NEFTranslator(object):
 
     def get_seq_from_cs_loop(self, in_file):
         """ Extract sequence from chemical shift loop.
-        	@param in_file: NEF/NMR-STAR file
-        	@return: status, JSON message
+            @param in_file: NEF/NMR-STAR file
+            @return: status, JSON message
         """
 
         is_valid, json_dumps = self.validate_file(in_file, 'S')
@@ -3195,7 +3196,7 @@ class NEFTranslator(object):
         """
 
         if comp_id != self.__last_comp_id:
-            self.__last_comp_id_test = self.__ccR.setCompId(comp_id)
+            self.__last_comp_id_test = False if '_' in comp_id else self.__ccR.setCompId(comp_id)
             self.__last_comp_id = comp_id
 
             if self.__last_comp_id_test:
@@ -4009,11 +4010,11 @@ class NEFTranslator(object):
     def nef2star_seq_row(self, nef_tags, star_tags, loop_data, report=None):
         """ Translate rows of data in sequence loop from NEF into NMR-STAR.
             @change: rename the original translate_seq_row() to nef2star_seq_row() by Masashi Yokochi
-        	@param nef_tags: list of NEF tags
-        	@param star_tags: list of NMR-STAR tags
-        	@param loop_data: loop data of NEF
-        	@param report: NMR data processing report
-        	@return: rows of NMR-STAR, rows of _Entity_deleted_atom loop (residue variants), otherwise None
+            @param nef_tags: list of NEF tags
+            @param star_tags: list of NMR-STAR tags
+            @param loop_data: loop data of NEF
+            @param report: NMR data processing report
+            @return: rows of NMR-STAR, rows of _Entity_deleted_atom loop (residue variants), otherwise None
         """
 
         out_row = []
@@ -4035,6 +4036,9 @@ class NEFTranslator(object):
                 seq_align = report.getSequenceAlignmentWithNmrChainId(nef_chain)
                 if not seq_align is None:
                     cif_chain = seq_align['test_chain_id']
+
+            if not cif_chain is None:
+                _star_chain = str(self.letter_to_int(cif_chain))
 
             offset = None
 
@@ -4139,11 +4143,11 @@ class NEFTranslator(object):
     def star2nef_seq_row(self, star_tags, nef_tags, loop_data, report=None, entity_del_atom_loop=None):
         """ Translate rows of data in sequence loop from NMR-STAR into NEF.
             @author: Masashi Yokochi
-        	@param star_tags: list of NMR-STAR tags
-        	@param nef_tags: list of NEF tags
-        	@param loop_data: loop data of NMR-STAR
-        	@param report: NMR data processing report
-        	@return: rows of NEF
+            @param star_tags: list of NMR-STAR tags
+            @param nef_tags: list of NEF tags
+            @param loop_data: loop data of NMR-STAR
+            @param report: NMR data processing report
+            @return: rows of NEF
         """
 
         out_row = []
@@ -4173,10 +4177,17 @@ class NEFTranslator(object):
                 if not seq_align is None:
                     cif_chain = seq_align['test_chain_id']
 
-            if cid <= 26:
-                nef_chain = str(chr(65 + cid))
+            if cif_chain is None:
+                if cid <= 26:
+                    nef_chain = str(chr(65 + cid))
+                else:
+                    nef_chain = str(chr(65 + (cid // 26))) + str(chr(65 + (cid % 26)))
             else:
-                nef_chain = str(chr(65 + (cid // 26))) + str(chr(65 + (cid % 26)))
+                cid = self.letter_to_int(cif_chain) - 1
+                if cid <= 26:
+                    nef_chain = str(chr(65 + cid))
+                else:
+                    nef_chain = str(chr(65 + (cid // 26))) + str(chr(65 + (cid % 26)))
 
             offset = None
 
@@ -4677,10 +4688,10 @@ class NEFTranslator(object):
     def nef2star_dist_row(self, nef_tags, star_tags, loop_data):
         """ Translate rows of data in distance restraint loop from NEF into NMR-STAR.
             @change: rename the original translate_restraint_row() to nef2star_dist_row() by Masashi Yokochi
-        	@param nef_tags: list of NEF tags
-        	@param star_tags: list of NMR-STAR tags
+            @param nef_tags: list of NEF tags
+            @param star_tags: list of NMR-STAR tags
             @param loop_data: loop data of NEF
-        	@return: rows of NMR-STAR
+            @return: rows of NMR-STAR
         """
 
         out_row = []
@@ -4834,9 +4845,9 @@ class NEFTranslator(object):
         """ Translate rows of data in distance restraint loop from NMR-STAR into NEF.
             @author: Masashi Yokochi
             @param star_tags: list of NMR-STAR tags
-        	@param nef_tags: list of NEF tags
+            @param nef_tags: list of NEF tags
             @param loop_data: loop data of NMR-STAR
-        	@return: rows of NEF
+            @return: rows of NEF
         """
 
         out_row = []
@@ -6299,11 +6310,11 @@ class NEFTranslator(object):
         if is_readable:
 
             if dat_content == 'Entry':
-                self.authChainId = sorted(list(set(star_data.get_loops_by_category('Chem_comp_assembly')[0].get_tag('Entity_assembly_ID'))))
+                self.authChainId = sorted(list(set(star_data.get_loops_by_category('Chem_comp_assembly')[0].get_tag('Entity_assembly_ID'))), key=lambda x:float(re.sub('[^\d]+', '', x)))
             elif dat_content == 'Saveframe':
-                self.authChainId = sorted(list(set(star_data[0].get_tag('Entity_assembly_ID'))))
+                self.authChainId = sorted(list(set(star_data[0].get_tag('Entity_assembly_ID'))), key=lambda x:float(re.sub('[^\d]+', '', x)))
             elif dat_content == 'Loop':
-                self.authChainId = sorted(list(set(star_data.get_tag('Entity_assembly_ID'))))
+                self.authChainId = sorted(list(set(star_data.get_tag('Entity_assembly_ID'))), key=lambda x:float(re.sub('[^\d]+', '', x)))
             else:
                 is_done = False
                 error.append('File content unknown')

@@ -209,21 +209,21 @@ def fill_blank_comp_id(s1, s2):
 
     return {'chain_id': s2['chain_id'], 'seq_id': seq_ids, 'comp_id': comp_ids}
 
-def fill_blank_comp_id_with_offset(s1, s2, offset):
-    """ Fill blanked comp ID in s2 against s1 with offset.
+def fill_blank_comp_id_with_offset(s, offset):
+    """ Fill blanked comp ID with offset.
     """
 
-    seq_ids = list(range(s2['seq_id'][0] - offset, s2['seq_id'][-1] + 1))
+    seq_ids = list(range(s['seq_id'][0] - offset, s['seq_id'][-1] + 1))
     comp_ids = []
 
     for i in seq_ids:
-        if i in s2['seq_id']:
-            j = s2['seq_id'].index(i)
-            comp_ids.append(s2['comp_id'][j])
+        if i in s['seq_id']:
+            j = s['seq_id'].index(i)
+            comp_ids.append(s['comp_id'][j])
         else:
             comp_ids.append('.')
 
-    return {'chain_id': s2['chain_id'], 'seq_id': seq_ids, 'comp_id': comp_ids}
+    return {'chain_id': s['chain_id'], 'seq_id': seq_ids, 'comp_id': comp_ids}
 
 def get_middle_code(ref_seq, test_seq):
     """ Return array of middle code of sequence alignment.
@@ -3595,7 +3595,7 @@ class NmrDpUtility(object):
         comp_id = comp_id.upper()
 
         if comp_id != self.__last_comp_id:
-            self.__last_comp_id_test = self.__ccR.setCompId(comp_id)
+            self.__last_comp_id_test = False if '_' in comp_id else self.__ccR.setCompId(comp_id)
             self.__last_comp_id = comp_id
 
             if self.__last_comp_id_test:
@@ -6875,7 +6875,10 @@ class NmrDpUtility(object):
                             if _chain_id != s2['chain_id']:
                                 continue
 
-                            #_s2 = fill_blank_comp_id(s1, s2)
+                            _s2 = fill_blank_comp_id_with_offset(s2, 0)
+
+                            if len(_s2['seq_id']) > len(s2['seq_id']) and len(_s2['seq_id']) < len(s1['seq_id']):
+                                s2 = _s2
 
                             self.__pA.setReferenceSequence(s1['comp_id'], 'REF' + _chain_id)
                             #self.__pA.addTestSequence(_s2['comp_id'], _chain_id)
@@ -6910,6 +6913,7 @@ class NmrDpUtility(object):
                             unmapped = 0
                             conflict = 0
                             _matched = 0
+                            _first_matched_comp_id = None
                             for i in range(length):
                                 myPr = myAlign[i]
                                 myPr0 = str(myPr[0])
@@ -6926,10 +6930,12 @@ class NmrDpUtility(object):
                                 else:
                                     not_aligned = False
                                     _matched += 1
+                                    if _first_matched_comp_id is None:
+                                        _first_matched_comp_id = myPr0
 
                             alt_chain = False
 
-                            if length == unmapped + conflict or _matched < conflict:
+                            if length == unmapped + conflict or _matched < conflict or (_matched == 1 and s1['comp_id'].count(_first_matched_comp_id) > 1):
 
                                 if self.__resolve_conflict and _matched < conflict and len(polymer_sequence) > 1:
 
@@ -6986,6 +6992,7 @@ class NmrDpUtility(object):
                                         unmapped = 0
                                         conflict = 0
                                         _matched = 0
+                                        _first_matched_comp_id = None
                                         for i in range(length):
                                             myPr = myAlign[i]
                                             myPr0 = str(myPr[0])
@@ -7002,8 +7009,10 @@ class NmrDpUtility(object):
                                             else:
                                                 not_aligned = False
                                                 _matched += 1
+                                                if _first_matched_comp_id is None:
+                                                    _first_matched_comp_id = myPr0
 
-                                        if length == unmapped + conflict or _matched < conflict:
+                                        if length == unmapped + conflict or _matched < conflict or (_matched == 1 and s1['comp_id'].count(_first_matched_comp_id) > 1):
                                             continue
 
                                         if _matched - conflict < __matched - __conflict or unmapped + conflict > __unmapped + __conflict:
@@ -7043,8 +7052,8 @@ class NmrDpUtility(object):
 
                                     update_poly_seq = True
 
-                            _s1 = s1 if offset_1 == 0 else fill_blank_comp_id_with_offset(s2, s1, offset_1)
-                            _s2 = s2 if offset_2 == 0 else fill_blank_comp_id_with_offset(s1, s2, offset_2)
+                            _s1 = s1 if offset_1 == 0 else fill_blank_comp_id_with_offset(s1, offset_1)
+                            _s2 = s2 if offset_2 == 0 else fill_blank_comp_id_with_offset(s2, offset_2)
                             """
                             unmapped = 0
                             conflict = 0
@@ -18421,8 +18430,8 @@ class NmrDpUtility(object):
                             if length == unmapped + conflict:
                                 continue
 
-                            _s1 = s1 if offset_1 == 0 else fill_blank_comp_id_with_offset(s2, s1, offset_1)
-                            _s2 = s2 if offset_2 == 0 else fill_blank_comp_id_with_offset(s1, s2, offset_2)
+                            _s1 = s1 if offset_1 == 0 else fill_blank_comp_id_with_offset(s1, offset_1)
+                            _s2 = s2 if offset_2 == 0 else fill_blank_comp_id_with_offset(s2, offset_2)
                             """
                             unmapped = 0
                             conflict = 0
@@ -18547,8 +18556,8 @@ class NmrDpUtility(object):
                 if length == unmapped + conflict or _matched < conflict:
                     continue
 
-                _s1 = s1 if offset_1 == 0 else fill_blank_comp_id_with_offset(s2, s1, offset_1)
-                _s2 = s2 if offset_2 == 0 else fill_blank_comp_id_with_offset(s1, s2, offset_2)
+                _s1 = s1 if offset_1 == 0 else fill_blank_comp_id_with_offset(s1, offset_1)
+                _s2 = s2 if offset_2 == 0 else fill_blank_comp_id_with_offset(s2, offset_2)
 
                 ref_length = len(s1['seq_id'])
 
@@ -18635,8 +18644,8 @@ class NmrDpUtility(object):
                 if length == unmapped + conflict or _matched < conflict:
                     continue
 
-                _s1 = s1 if offset_1 == 0 else fill_blank_comp_id_with_offset(s2, s1, offset_1)
-                _s2 = s2 if offset_2 == 0 else fill_blank_comp_id_with_offset(s1, s2, offset_2)
+                _s1 = s1 if offset_1 == 0 else fill_blank_comp_id_with_offset(s1, offset_1)
+                _s2 = s2 if offset_2 == 0 else fill_blank_comp_id_with_offset(s2, offset_2)
 
                 ref_length = len(s1['seq_id'])
 
@@ -18947,8 +18956,6 @@ class NmrDpUtility(object):
                                     if not hit:
                                         offset = 0
                                         while i + offset < length:
-                                            if not seq_id1[i + offset] is None:
-                                                hit = True
                                             offset += 1
 
                                     p = offset_1 + s1['seq_id'].index(seq_id1[i + offset]) - offset
@@ -19210,6 +19217,32 @@ class NmrDpUtility(object):
                                         if self.__verbose:
                                             self.__lfh.write("+NmrDpUtility.__assignCoordPolymerSequence() ++ Warning  - %s" % warn)
 
+                                    ref_code = result['ref_code']
+                                    test_code = result['test_code']
+                                    test_gauge_code = result['test_gauge_code']
+
+                                    offset = 0
+                                    hit = False
+                                    while i + offset >= 0:
+                                        if not seq_id2[i + offset] is None:
+                                            hit = True
+                                            break
+                                        offset -= 1
+
+                                    if not hit:
+                                        offset = 0
+                                        while i + offset < length:
+                                            offset += 1
+
+                                    if i + offset >= 0 and i + offset < length:
+                                        p = offset_2 + s2['seq_id'].index(seq_id2[i + offset]) - offset
+                                        test_code = test_code[0:p] + '-' + test_code[p:]
+                                        test_gauge_code = test_gauge_code[0:p] + ' ' + test_gauge_code[p:]
+
+                                        result['test_code'] = test_code
+                                        result['test_gauge_code'] = test_gauge_code
+                                        result['mid_code'] = get_middle_code(ref_code, test_code)
+
                             elif cif_comp_id != nmr_comp_id and aligned[i]:
 
                                 conflict.append({'ref_seq_id': seq_id1[i], 'ref_comp_id': nmr_comp_id,
@@ -19262,8 +19295,6 @@ class NmrDpUtility(object):
                                     if not hit:
                                         offset = 0
                                         while i + offset < length:
-                                            if not seq_id1[i + offset] is None:
-                                                hit = True
                                             offset += 1
 
                                     p = offset_1 + s1['seq_id'].index(seq_id1[i + offset]) - offset
@@ -19297,8 +19328,6 @@ class NmrDpUtility(object):
                                     if not hit:
                                         offset = 0
                                         while i + offset < length:
-                                            if not seq_id2[i + offset] is None:
-                                                hit = True
                                             offset += 1
 
                                     p = offset_2 + s2['seq_id'].index(seq_id2[i + offset]) - offset

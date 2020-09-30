@@ -660,7 +660,7 @@ class BMRBChemShiftStat:
         comp_id = comp_id.upper()
 
         if comp_id != self.__last_comp_id:
-            self.__last_comp_id_test = self.__ccR.setCompId(comp_id)
+            self.__last_comp_id_test = False if '_' in comp_id else self.__ccR.setCompId(comp_id)
             self.__last_comp_id = comp_id
 
             if self.__last_comp_id_test:

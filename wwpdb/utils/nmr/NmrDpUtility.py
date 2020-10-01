@@ -13474,7 +13474,7 @@ class NmrDpUtility(object):
                 has_cs_stat = False
 
                 # non-standard residue
-                if self.__get1LetterCode(comp_id)== 'X':
+                if self.__get1LetterCode(comp_id) == 'X':
 
                     neighbor_comp_ids = set([j[comp_id_name] for j in lp_data if str(j[chain_id_name]) == chain_id and abs(j[seq_id_name] - seq_id) < 3 and j[seq_id_name] != seq_id])
 
@@ -18989,8 +18989,6 @@ class NmrDpUtility(object):
                                     if not hit:
                                         offset = 0
                                         while i + offset < length:
-                                            if not seq_id2[i + offset] is None:
-                                                hit = True
                                             offset += 1
 
                                     p = offset_2 + s2['seq_id'].index(seq_id2[i + offset]) - offset

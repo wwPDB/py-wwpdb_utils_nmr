@@ -243,12 +243,15 @@ def get_gauge_code(seq_id):
     """ Return gauge code for seq ID.
     """
 
-    sid_len = len(seq_id)
+    sid_len = len([sid for sid in seq_id if not sid is None])
     code_len = 0
 
     chars = []
 
     for sid in seq_id:
+
+        if sid is None:
+            continue
 
         if sid >= 0 and sid % 10 == 0 and code_len == 0:
 
@@ -284,7 +287,20 @@ def get_gauge_code(seq_id):
 
     array = ''.join(chars)
 
-    return array[:sid_len]
+    if sid_len == len(seq_id):
+        return array[:sid_len]
+
+    _sid_len = len(seq_id)
+
+    offset = 0
+    for l, sid in enumerate(seq_id):
+
+        if sid is None:
+            p = l + offset
+            array = array[0:p] + ' ' + array[p:]
+            offset += 1
+
+    return array[:_sid_len]
 
 def probability_density(value, mean, stddev):
     """ Return probability density.
@@ -6155,7 +6171,7 @@ class NmrDpUtility(object):
 
                                                     comp_id_conv_dict = {comp_id: _comp_id}
 
-                                                    self.__fixCompIdInLoop(fileListId, file_name, file_type, subtype2, ps_in_loop['sf_framecode'], chain_id, seq_id, comp_id_conv_dict)
+                                                    self.__fixCompIdInLoop(fileListId, file_name, file_type, subtype2, sf_framecode2, chain_id, seq_id, comp_id_conv_dict)
 
                                                     update_poly_seq = True
 
@@ -6869,6 +6885,7 @@ class NmrDpUtility(object):
 
                     for ps_in_loop in polymer_sequence_in_loop[content_subtype]:
                         ps2 = ps_in_loop['polymer_sequence']
+                        sf_framecode2 = ps_in_loop['sf_framecode']
 
                         for s2 in ps2:
 
@@ -7036,7 +7053,7 @@ class NmrDpUtility(object):
 
                                 else:
 
-                                    self.__fixChainIdInLoop(fileListId, file_name, file_type, content_subtype, ps_in_loop['sf_framecode'], _chain_id, __chain_id)
+                                    self.__fixChainIdInLoop(fileListId, file_name, file_type, content_subtype, sf_framecode2, _chain_id, __chain_id)
 
                                     length = __length
                                     _matched = __matched
@@ -7084,9 +7101,61 @@ class NmrDpUtility(object):
                                if __s1 != '.' and __s2 != '.' and __s1 != __s2 and __c1 != '.' and __c2 != '.' and __c1 == __c2):
                                 if _s2['seq_id'] == list(range(_s2['seq_id'][0], _s2['seq_id'][-1] + 1)):
                                     seq_id_conv_dict = {str(__s2): str(__s1) for __s1, __s2 in zip(_s1['seq_id'], _s2['seq_id']) if __s2 != '.'}
-                                    self.__fixSeqIdInLoop(fileListId, file_name, file_type, content_subtype, ps_in_loop['sf_framecode'], _chain_id, seq_id_conv_dict)
-                                    _s2['seq_id'] = _s1['seq_id']
-                                    test_gauge_code = ref_gauge_code
+                                    if any((__s1, __s2) for (__s1, __s2, __c1, __c2) in zip(_s1['seq_id'], _s2['seq_id'], _s1['comp_id'], _s2['comp_id'])\
+                                       if __c1 != '.' and __c2 != '.' and __c1 != __c2):
+                                        seq_id1 = []
+                                        seq_id2 = []
+                                        comp_id1 = []
+                                        comp_id2 = []
+                                        idx1 = 0
+                                        idx2 = 0
+                                        for i in range(length):
+                                            myPr = myAlign[i]
+                                            myPr0 = str(myPr[0])
+                                            myPr1 = str(myPr[1])
+                                            if myPr0 != '.':
+                                                while idx1 < len(_s1['seq_id']):
+                                                    if _s1['comp_id'][idx1] == myPr0:
+                                                        seq_id1.append(_s1['seq_id'][idx1])
+                                                        comp_id1.append(myPr0)
+                                                        idx1 += 1
+                                                        break
+                                                    idx1 += 1
+                                            else:
+                                                seq_id1.append(None)
+                                                comp_id1.append('.')
+                                            if myPr1 != '.':
+                                                while idx2 < len(_s2['seq_id']):
+                                                    if _s2['comp_id'][idx2] == myPr1:
+                                                        seq_id2.append(_s2['seq_id'][idx2])
+                                                        comp_id2.append(myPr1)
+                                                        idx2 += 1
+                                                        break
+                                                    idx2 += 1
+                                            else:
+                                                seq_id2.append(None)
+                                                comp_id2.append('.')
+                                        seq_id_conv_dict = {str(__s2): str(__s1) for __s1, __s2 in zip(seq_id1, seq_id2) if not __s1 is None and not __s2 is None}
+                                        self.__fixSeqIdInLoop(fileListId, file_name, file_type, content_subtype, sf_framecode2, _chain_id, seq_id_conv_dict)
+                                        _s2['seq_id'] = _s1['seq_id']
+                                        ref_code = self.__get1LetterCodeSequence(comp_id1)
+                                        test_code = self.__get1LetterCodeSequence(comp_id2)
+                                        mid_code = get_middle_code(ref_code, test_code)
+                                        ref_gauge_code = get_gauge_code(seq_id1)
+                                        test_gauge_code = ref_gauge_code
+                                        if ' ' in ref_gauge_code:
+                                            for p, g in enumerate(ref_gauge_code):
+                                                if g == ' ':
+                                                    ref_code = ref_code[0:p] + '-' + ref_code[p + 1:]
+                                        if ' ' in test_gauge_code:
+                                            for p, g in enumerate(test_gauge_code):
+                                                if g == ' ':
+                                                    test_code = test_code[0:p] + '-' + test_code[p + 1:]
+                                    else:
+                                        self.__fixSeqIdInLoop(fileListId, file_name, file_type, content_subtype, sf_framecode2, _chain_id, seq_id_conv_dict)
+                                        _s2['seq_id'] = _s1['seq_id']
+                                        mid_code = get_middle_code(ref_code, test_code)
+                                        test_gauge_code = ref_gauge_code
                                 else:
                                     _s2 = fill_blank_comp_id(_s1, _s2)
                                     test_code = self.__get1LetterCodeSequence(_s2['comp_id'])
@@ -7098,7 +7167,7 @@ class NmrDpUtility(object):
                             matched = mid_code.count('|')
 
                             seq_align = {'list_id': ps_in_loop['list_id'],
-                                         'sf_framecode': ps_in_loop['sf_framecode'],
+                                         'sf_framecode': sf_framecode2,
                                          'chain_id': chain_id, 'length': ref_length, 'matched': matched, 'conflict': conflict, 'unmapped': unmapped,
                                          'sequence_coverage': float('{:.3f}'.format(float(length - (unmapped + conflict)) / float(ref_length))),
                                          'ref_seq_id': _s1['seq_id'], 'test_seq_id': _s2['seq_id'],
@@ -18567,6 +18636,54 @@ class NmrDpUtility(object):
                 ref_gauge_code = get_gauge_code(_s1['seq_id'])
                 test_gauge_code = get_gauge_code(_s2['seq_id'])
 
+                if any((__s1, __s2) for (__s1, __s2, __c1, __c2) in zip(_s1['seq_id'], _s2['seq_id'], _s1['comp_id'], _s2['comp_id'])\
+                   if __c1 != '.' and __c2 != '.' and __c1 != __c2):
+                    seq_id1 = []
+                    seq_id2 = []
+                    comp_id1 = []
+                    comp_id2 = []
+                    idx1 = 0
+                    idx2 = 0
+                    for i in range(length):
+                        myPr = myAlign[i]
+                        myPr0 = str(myPr[0])
+                        myPr1 = str(myPr[1])
+                        if myPr0 != '.':
+                            while idx1 < len(_s1['seq_id']):
+                                if _s1['comp_id'][idx1] == myPr0:
+                                    seq_id1.append(_s1['seq_id'][idx1])
+                                    comp_id1.append(myPr0)
+                                    idx1 += 1
+                                    break
+                                idx1 += 1
+                        else:
+                            seq_id1.append(None)
+                            comp_id1.append('.')
+                        if myPr1 != '.':
+                            while idx2 < len(_s2['seq_id']):
+                                if _s2['comp_id'][idx2] == myPr1:
+                                    seq_id2.append(_s2['seq_id'][idx2])
+                                    comp_id2.append(myPr1)
+                                    idx2 += 1
+                                    break
+                                idx2 += 1
+                        else:
+                            seq_id2.append(None)
+                            comp_id2.append('.')
+                    ref_code = self.__get1LetterCodeSequence(comp_id1)
+                    test_code = self.__get1LetterCodeSequence(comp_id2)
+                    mid_code = get_middle_code(ref_code, test_code)
+                    ref_gauge_code = get_gauge_code(seq_id1)
+                    test_gauge_code = get_gauge_code(seq_id2)
+                    if ' ' in ref_gauge_code:
+                        for p, g in enumerate(ref_gauge_code):
+                            if g == ' ':
+                                ref_code = ref_code[0:p] + '-' + ref_code[p + 1:]
+                    if ' ' in test_gauge_code:
+                        for p, g in enumerate(test_gauge_code):
+                            if g == ' ':
+                                test_code = test_code[0:p] + '-' + test_code[p + 1:]
+
                 matched = mid_code.count('|')
 
                 seq_align = {'ref_chain_id': chain_id, 'test_chain_id': chain_id2, 'length': ref_length, 'matched': matched, 'conflict': conflict, 'unmapped': unmapped,
@@ -18654,6 +18771,54 @@ class NmrDpUtility(object):
                 mid_code = get_middle_code(ref_code, test_code)
                 ref_gauge_code = get_gauge_code(_s1['seq_id'])
                 test_gauge_code = get_gauge_code(_s2['seq_id'])
+
+                if any((__s1, __s2) for (__s1, __s2, __c1, __c2) in zip(_s1['seq_id'], _s2['seq_id'], _s1['comp_id'], _s2['comp_id'])\
+                   if __c1 != '.' and __c2 != '.' and __c1 != __c2):
+                    seq_id1 = []
+                    seq_id2 = []
+                    comp_id1 = []
+                    comp_id2 = []
+                    idx1 = 0
+                    idx2 = 0
+                    for i in range(length):
+                        myPr = myAlign[i]
+                        myPr0 = str(myPr[0])
+                        myPr1 = str(myPr[1])
+                        if myPr0 != '.':
+                            while idx1 < len(_s1['seq_id']):
+                                if _s1['comp_id'][idx1] == myPr0:
+                                    seq_id1.append(_s1['seq_id'][idx1])
+                                    comp_id1.append(myPr0)
+                                    idx1 += 1
+                                    break
+                                idx1 += 1
+                        else:
+                            seq_id1.append(None)
+                            comp_id1.append('.')
+                        if myPr1 != '.':
+                            while idx2 < len(_s2['seq_id']):
+                                if _s2['comp_id'][idx2] == myPr1:
+                                    seq_id2.append(_s2['seq_id'][idx2])
+                                    comp_id2.append(myPr1)
+                                    idx2 += 1
+                                    break
+                                idx2 += 1
+                        else:
+                            seq_id2.append(None)
+                            comp_id2.append('.')
+                    ref_code = self.__get1LetterCodeSequence(comp_id1)
+                    test_code = self.__get1LetterCodeSequence(comp_id2)
+                    mid_code = get_middle_code(ref_code, test_code)
+                    ref_gauge_code = get_gauge_code(seq_id1)
+                    test_gauge_code = get_gauge_code(seq_id2)
+                    if ' ' in ref_gauge_code:
+                        for p, g in enumerate(ref_gauge_code):
+                            if g == ' ':
+                                ref_code = ref_code[0:p] + '-' + ref_code[p + 1:]
+                    if ' ' in test_gauge_code:
+                        for p, g in enumerate(test_gauge_code):
+                            if g == ' ':
+                                test_code = test_code[0:p] + '-' + test_code[p + 1:]
 
                 matched = mid_code.count('|')
 
@@ -18932,7 +19097,7 @@ class NmrDpUtility(object):
 
                                     if self.__verbose:
                                         self.__lfh.write("+NmrDpUtility.__assignCoordPolymerSequence() ++ Error  - %s" % err)
-
+                                """
                                 ref_code = result['ref_code']
                                 test_code = result['test_code']
                                 ref_gauge_code = result['ref_gauge_code']
@@ -19008,7 +19173,7 @@ class NmrDpUtility(object):
                                     _result['mid_code'] = get_middle_code(_ref_code, _test_code)
 
                                     offset_2 += 1
-
+                                """
                         if len(unmapped) > 0:
                             chain_assign['unmapped_sequence'] = unmapped
 
@@ -19214,7 +19379,7 @@ class NmrDpUtility(object):
 
                                         if self.__verbose:
                                             self.__lfh.write("+NmrDpUtility.__assignCoordPolymerSequence() ++ Warning  - %s" % warn)
-
+                                    """
                                     ref_code = result['ref_code']
                                     test_code = result['test_code']
                                     test_gauge_code = result['test_gauge_code']
@@ -19240,7 +19405,7 @@ class NmrDpUtility(object):
                                         result['test_code'] = test_code
                                         result['test_gauge_code'] = test_gauge_code
                                         result['mid_code'] = get_middle_code(ref_code, test_code)
-
+                                    """
                             elif cif_comp_id != nmr_comp_id and aligned[i]:
 
                                 conflict.append({'ref_seq_id': seq_id1[i], 'ref_comp_id': nmr_comp_id,
@@ -19269,7 +19434,7 @@ class NmrDpUtility(object):
 
                                     if self.__verbose:
                                         self.__lfh.write("+NmrDpUtility.__assignCoordPolymerSequence() ++ Error  - %s" % err)
-
+                                """
                                 ref_code = result['ref_code']
                                 test_code = result['test_code']
                                 ref_gauge_code = result['ref_gauge_code']
@@ -19344,7 +19509,7 @@ class NmrDpUtility(object):
                                     _result['mid_code'] = get_middle_code(_ref_code, _test_code)
 
                                     offset_2 += 1
-
+i                               """
                         if len(unmapped) > 0:
                             chain_assign['unmapped_sequence'] = unmapped
 

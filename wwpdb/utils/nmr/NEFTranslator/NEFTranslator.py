@@ -52,6 +52,7 @@
 # 18-Sep-2020  M. Yokochi - bug fix release for negative sequence numbers (v2.8.1, DAOTHER-6128)
 # 28-Sep-2020  M. Yokochi - fix chain_code mapping in NEF MR loops in case that there is no CS assignment (v2.8.2, DAOTHER-6128)
 # 29-Sep-2020  M. Yokochi - sort numeric string in a list of chain_id while NMR-STAR to NEF conversion (v2.8.3, DAOTHER-6128)
+# 06-Sep-2020  M. Yokochi - improve stability against the presence of undefined chain_id in loops (v2.8.4, DAOTHER-6128)
 ##
 import sys
 import os
@@ -73,7 +74,7 @@ from wwpdb.utils.nmr.io.ChemCompIo import ChemCompReader
 from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
 from wwpdb.utils.nmr.NmrDpReport import NmrDpReport
 
-__version__ = '2.8.3'
+__version__ = '2.8.4'
 
 __pynmrstar_v3__ = version.parse(pynmrstar.__version__) >= version.parse("3.0.0")
 
@@ -4910,7 +4911,7 @@ class NEFTranslator(object):
                     try:
                         tag_map[chain_tag], tag_map[seq_tag] = self.authSeqMap[seq_key]
                     except KeyError:
-                        if _star_chain in self.empty_value:
+                        if _star_chain in self.empty_value or not _star_chain in self.authChainId:
                             nef_chain = _star_chain
                         else:
                             cid = self.authChainId.index(_star_chain)
@@ -5597,7 +5598,7 @@ class NEFTranslator(object):
                     try:
                         tag_map[chain_tag], tag_map[seq_tag] = self.authSeqMap[seq_key]
                     except KeyError:
-                        if _star_chain in self.empty_value:
+                        if _star_chain in self.empty_value or not _star_chain in self.authChainId:
                             nef_chain = _star_chain
                         else:
                             cid = self.authChainId.index(_star_chain)
@@ -5760,7 +5761,7 @@ class NEFTranslator(object):
             try:
                 tag_map[chain_tag], tag_map[seq_tag] = self.authSeqMap[(_star_chain, _star_seq)]
             except KeyError:
-                if _star_chain in self.empty_value:
+                if _star_chain in self.empty_value or not _star_chain in self.authChainId:
                     nef_chain = _star_chain
                 else:
                     cid = self.authChainId.index(_star_chain)

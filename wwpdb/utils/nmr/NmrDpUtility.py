@@ -97,7 +97,7 @@
 # 10-Sep-2020  M. Yokochi - add 'transl_pseudo_name' input parameter decides whether to translate conventional pseudo atom nomenclature in combined NMR-STAR file (DAOTHER-6128)
 # 16-Sep-2020  M. Yokochi - bug fix release based on internal test using BMRB NMR restraint archive of 6.3k entries (DAOTHER-6128)
 # 18-Sep-2020  M. Yokochi - bug fix release for negative sequence numbers (DAOTHER-6128)
-# 25-Sep-2020  M. Yokochi - add 'tolerant_seq_align' input parameter which enables tolerant sequence alignement for residue variant, set False for OneDep environment (DAOTHER-6128)
+# 25-Sep-2020  M. Yokochi - add 'tolerant_seq_align' input parameter which enables tolerant sequence alignement for residue variant, set False for OneDep environment (DAOTHER-6129)
 ##
 """ Wrapper class for data processing for NMR data.
     @author: Masashi Yokochi
@@ -233,7 +233,7 @@ def get_middle_code(ref_seq, test_seq):
 
     for i in range(len(ref_seq)):
         if i < len(test_seq):
-            array += '|' if ref_seq[i] == test_seq[i] else ' '
+            array += '|' if ref_seq[i] == test_seq[i] and ref_seq[i] != '.' else ' '
         else:
             array += ' '
 
@@ -722,6 +722,8 @@ class NmrDpUtility(object):
 
         self.__sf_category_list = []
         self.__lp_category_list = []
+
+        self.__alt_chain = False
 
         # empty value
         self.empty_value = (None, '', '.', '?')
@@ -6139,13 +6141,15 @@ class NmrDpUtility(object):
 
                                         if not seq_id in s1['seq_id']:
 
-                                            err = "Invalid seq_id %r (chain_id %s) in a loop %s." % (seq_id, chain_id, lp_category2)
+                                            if comp_id != '.':
 
-                                            self.report.error.appendDescription('sequence_mismatch', {'file_name': file_name, 'sf_framecode': sf_framecode2, 'category': lp_category2, 'description': err})
-                                            self.report.setError()
+                                                err = "Invalid seq_id %r (chain_id %s) in a loop %s." % (seq_id, chain_id, lp_category2)
 
-                                            if self.__verbose:
-                                                self.__lfh.write("+NmrDpUtility.__testSequenceConsistency() ++ Error  - %s\n" % err)
+                                                self.report.error.appendDescription('sequence_mismatch', {'file_name': file_name, 'sf_framecode': sf_framecode2, 'category': lp_category2, 'description': err})
+                                                self.report.setError()
+
+                                                if self.__verbose:
+                                                    self.__lfh.write("+NmrDpUtility.__testSequenceConsistency() ++ Error  - %s\n" % err)
 
                                         else:
                                             i = s1['seq_id'].index(seq_id)
@@ -6162,7 +6166,7 @@ class NmrDpUtility(object):
                                                     if self.__verbose:
                                                         self.__lfh.write("+NmrDpUtility.__testSequenceConsistency() ++ Warning  - %s\n" % err)
 
-                                                elif self.__resolve_conflict and self.__get1LetterCode(comp_id) == self.__get1LetterCode(_comp_id):
+                                                elif self.__resolve_conflict and self.__tolerant_seq_align and self.__get1LetterCode(comp_id) == self.__get1LetterCode(_comp_id):
                                                     self.report.warning.appendDescription('sequence_mismatch', {'file_name': file_name, 'sf_framecode': sf_framecode2, 'category': lp_category2, 'description': err})
                                                     self.report.setWarning()
 
@@ -6840,6 +6844,8 @@ class NmrDpUtility(object):
 
         update_poly_seq = False
 
+        self.__alt_chain = False
+
         for fileListId in range(self.__file_path_list_len):
 
             input_source = self.report.input_sources[fileListId]
@@ -6954,7 +6960,7 @@ class NmrDpUtility(object):
 
                             if length == unmapped + conflict or _matched < conflict or (_matched == 1 and s1['comp_id'].count(_first_matched_comp_id) > 1):
 
-                                if self.__resolve_conflict and _matched < conflict and len(polymer_sequence) > 1:
+                                if self.__resolve_conflict and self.__tolerant_seq_align and _matched < conflict and len(polymer_sequence) > 1:
 
                                     __length = length
                                     __matched = _matched
@@ -7096,9 +7102,13 @@ class NmrDpUtility(object):
                             ref_gauge_code = get_gauge_code(_s1['seq_id'])
                             test_gauge_code = get_gauge_code(_s2['seq_id'])
 
-                            if self.__resolve_conflict and not alt_chain and\
-                               any((__s1, __s2) for (__s1, __s2, __c1, __c2) in zip(_s1['seq_id'], _s2['seq_id'], _s1['comp_id'], _s2['comp_id'])\
-                               if __s1 != '.' and __s2 != '.' and __s1 != __s2 and __c1 != '.' and __c2 != '.' and __c1 == __c2):
+                            self.__alt_chain |= alt_chain
+
+                            if self.__resolve_conflict and self.__tolerant_seq_align and not alt_chain and\
+                               (any((__s1, __s2) for (__s1, __s2, __c1, __c2) in zip(_s1['seq_id'], _s2['seq_id'], _s1['comp_id'], _s2['comp_id'])\
+                                    if __s1 != '.' and __s2 != '.' and __s1 != __s2 and __c1 != '.' and __c2 != '.' and __c1 == __c2) or
+                                any((__s1, __s2) for (__s1, __s2, __c1, __c2) in zip(_s1['seq_id'], _s2['seq_id'], _s1['comp_id'], _s2['comp_id'])\
+                                    if __c1 != '.' and __c2 != '.' and __c1 != __c2)):
                                 if _s2['seq_id'] == list(range(_s2['seq_id'][0], _s2['seq_id'][-1] + 1)):
                                     seq_id_conv_dict = {str(__s2): str(__s1) for __s1, __s2 in zip(_s1['seq_id'], _s2['seq_id']) if __s2 != '.'}
                                     if any((__s1, __s2) for (__s1, __s2, __c1, __c2) in zip(_s1['seq_id'], _s2['seq_id'], _s1['comp_id'], _s2['comp_id'])\
@@ -7136,21 +7146,27 @@ class NmrDpUtility(object):
                                                 seq_id2.append(None)
                                                 comp_id2.append('.')
                                         seq_id_conv_dict = {str(__s2): str(__s1) for __s1, __s2 in zip(seq_id1, seq_id2) if not __s1 is None and not __s2 is None}
-                                        self.__fixSeqIdInLoop(fileListId, file_name, file_type, content_subtype, sf_framecode2, _chain_id, seq_id_conv_dict)
-                                        _s2['seq_id'] = _s1['seq_id']
-                                        ref_code = self.__get1LetterCodeSequence(comp_id1)
-                                        test_code = self.__get1LetterCodeSequence(comp_id2)
-                                        mid_code = get_middle_code(ref_code, test_code)
-                                        ref_gauge_code = get_gauge_code(seq_id1)
-                                        test_gauge_code = ref_gauge_code
-                                        if ' ' in ref_gauge_code:
-                                            for p, g in enumerate(ref_gauge_code):
-                                                if g == ' ':
-                                                    ref_code = ref_code[0:p] + '-' + ref_code[p + 1:]
-                                        if ' ' in test_gauge_code:
-                                            for p, g in enumerate(test_gauge_code):
-                                                if g == ' ':
-                                                    test_code = test_code[0:p] + '-' + test_code[p + 1:]
+                                        if _s1['seq_id'] != list(range(_s1['seq_id'][0], _s1['seq_id'][-1] + 1)) and not any(k for k in seq_id_conv_dict.keys() if seq_id_conv_dict[k] != k):
+                                            _s2['seq_id'] = _s1['seq_id']
+                                            ref_code = test_code
+                                            mid_code = get_middle_code(ref_code, test_code)
+                                            ref_gauge_code = test_gauge_code
+                                        else:
+                                            self.__fixSeqIdInLoop(fileListId, file_name, file_type, content_subtype, sf_framecode2, _chain_id, seq_id_conv_dict)
+                                            _s2['seq_id'] = _s1['seq_id']
+                                            ref_code = self.__get1LetterCodeSequence(comp_id1)
+                                            test_code = self.__get1LetterCodeSequence(comp_id2)
+                                            mid_code = get_middle_code(ref_code, test_code)
+                                            ref_gauge_code = get_gauge_code(seq_id1)
+                                            test_gauge_code = ref_gauge_code
+                                            if ' ' in ref_gauge_code:
+                                                for p, g in enumerate(ref_gauge_code):
+                                                    if g == ' ':
+                                                        ref_code = ref_code[0:p] + '-' + ref_code[p + 1:]
+                                            if ' ' in test_gauge_code:
+                                                for p, g in enumerate(test_gauge_code):
+                                                    if g == ' ':
+                                                        test_code = test_code[0:p] + '-' + test_code[p + 1:]
                                     else:
                                         self.__fixSeqIdInLoop(fileListId, file_name, file_type, content_subtype, sf_framecode2, _chain_id, seq_id_conv_dict)
                                         _s2['seq_id'] = _s1['seq_id']
@@ -26055,7 +26071,7 @@ i                               """
 
             try:
 
-                is_valid, json_dumps = self.__nefT.nef_to_nmrstar(self.__dstPath, out_file_path, report=self.report)
+                is_valid, json_dumps = self.__nefT.nef_to_nmrstar(self.__dstPath, out_file_path, report=(None if self.__alt_chain else self.report))
 
                 if self.__release_mode and not self.__tmpPath is None:
                     os.remove(self.__tmpPath)
@@ -26166,7 +26182,7 @@ i                               """
 
             try:
 
-                is_valid, json_dumps = self.__nefT.nmrstar_to_nef(self.__dstPath, out_file_path, report=self.report)
+                is_valid, json_dumps = self.__nefT.nmrstar_to_nef(self.__dstPath, out_file_path, report=(None if self.__alt_chain else self.report))
 
                 if self.__release_mode and not self.__tmpPath is None:
                     os.remove(self.__tmpPath)

@@ -6895,7 +6895,7 @@ class NmrDpUtility(object):
 
                         for s2 in ps2:
 
-                            if _chain_id != s2['chain_id']:
+                            if _chain_id != s2['chain_id'] and not self.__alt_chain:
                                 continue
 
                             _s2 = fill_blank_comp_id_with_offset(s2, 0)
@@ -7074,6 +7074,9 @@ class NmrDpUtility(object):
                                     s2['chain_id'] = __chain_id
 
                                     update_poly_seq = True
+
+                            if self.__alt_chain and not alt_chain and _chain_id != s2['chain_id']:
+                                self.__fixChainIdInLoop(fileListId, file_name, file_type, content_subtype, sf_framecode2, s2['chain_id'], _chain_id)
 
                             _s1 = s1 if offset_1 == 0 else fill_blank_comp_id_with_offset(s1, offset_1)
                             _s2 = s2 if offset_2 == 0 else fill_blank_comp_id_with_offset(s2, offset_2)

@@ -97,7 +97,8 @@
 # 10-Sep-2020  M. Yokochi - add 'transl_pseudo_name' input parameter decides whether to translate conventional pseudo atom nomenclature in combined NMR-STAR file (DAOTHER-6128)
 # 16-Sep-2020  M. Yokochi - bug fix release based on internal test using BMRB NMR restraint archive of 6.3k entries (DAOTHER-6128)
 # 18-Sep-2020  M. Yokochi - bug fix release for negative sequence numbers (DAOTHER-6128)
-# 25-Sep-2020  M. Yokochi - add 'tolerant_seq_align' input parameter which enables tolerant sequence alignement for residue variant, set False for OneDep environment (DAOTHER-6129)
+# 25-Sep-2020  M. Yokochi - add 'tolerant_seq_align' input parameter which enables tolerant sequence alignement for residue variant, set False for OneDep environment (DAOTHER-6128)
+# 08-Oct-2020  M. Yokochi - support circular chain_id re-mapping in data loops if it is necessary, 'tolerant_seq_align' input parameter is required (DAOTHER-6128)
 ##
 """ Wrapper class for data processing for NMR data.
     @author: Masashi Yokochi
@@ -6887,8 +6888,9 @@ class NmrDpUtility(object):
 
                 seq_align_set = []
 
-                alt_chain_ids = {}
-                is_mapped_chain = {}
+                dst_chain_ids = {}
+                ref_chain_ids = {}
+                map_chain_ids = {}
 
                 for s1 in polymer_sequence:
                     chain_id = s1['chain_id']
@@ -7063,17 +7065,22 @@ class NmrDpUtility(object):
 
                                         break
 
-                                if not alt_chain:
+                                if not alt_chain or (sf_framecode2 in dst_chain_ids and __chain_id in dst_chain_ids[sf_framecode2]):
                                     continue
 
                                 else:
 
-                                    if not sf_framecode2 in alt_chain_ids:
-                                        alt_chain_ids[sf_framecode2] = set()
+                                    if not sf_framecode2 in dst_chain_ids:
+                                        dst_chain_ids[sf_framecode2] = set()
 
-                                    alt_chain_ids[sf_framecode2].add(__chain_id)
+                                    dst_chain_ids[sf_framecode2].add(__chain_id)
 
-                                    self.__fixChainIdInLoop(fileListId, file_name, file_type, content_subtype, sf_framecode2, _chain_id, __chain_id)
+                                    if not sf_framecode2 in map_chain_ids:
+                                        map_chain_ids[sf_framecode2] = {}
+
+                                    map_chain_ids[sf_framecode2][_chain_id] = __chain_id
+
+                                    #self.__fixChainIdInLoop(fileListId, file_name, file_type, content_subtype, sf_framecode2, _chain_id, __chain_id)
 
                                     length = __length
                                     _matched = __matched
@@ -7089,16 +7096,26 @@ class NmrDpUtility(object):
 
                                     update_poly_seq = True
 
-                            if conflict == 0 and self.__alt_chain and not alt_chain and _chain_id != s2['chain_id'] and (not sf_framecode2 in alt_chain_ids or not s2['chain_id'] in alt_chain_ids[sf_framecode2]):
+                            if conflict == 0 and self.__alt_chain and not alt_chain and _chain_id != s2['chain_id'] and (not sf_framecode2 in dst_chain_ids or not _chain_id in dst_chain_ids[sf_framecode2]):
 
-                                self.__fixChainIdInLoop(fileListId, file_name, file_type, content_subtype, sf_framecode2, s2['chain_id'], _chain_id)
+                                if not sf_framecode2 in dst_chain_ids:
+                                    dst_chain_ids[sf_framecode2] = set()
+
+                                dst_chain_ids[sf_framecode2].add(_chain_id)
+
+                                if not sf_framecode2 in map_chain_ids:
+                                    map_chain_ids[sf_framecode2] = {}
+
+                                map_chain_ids[sf_framecode2][s2['chain_id']] = _chain_id
+
+                                #self.__fixChainIdInLoop(fileListId, file_name, file_type, content_subtype, sf_framecode2, s2['chain_id'], _chain_id)
 
                                 alt_chain = True
 
-                            if not sf_framecode2 in is_mapped_chain:
-                                is_mapped_chain[sf_framecode2] = []
+                            if not sf_framecode2 in ref_chain_ids:
+                                ref_chain_ids[sf_framecode2] = []
 
-                            is_mapped_chain[sf_framecode2].append(_chain_id)
+                            ref_chain_ids[sf_framecode2].append(_chain_id)
 
                             _s1 = s1 if offset_1 == 0 else fill_blank_comp_id_with_offset(s1, offset_1)
                             _s2 = s2 if offset_2 == 0 else fill_blank_comp_id_with_offset(s2, offset_2)
@@ -7273,7 +7290,7 @@ class NmrDpUtility(object):
                         ps2 = ps_in_loop['polymer_sequence']
                         sf_framecode2 = ps_in_loop['sf_framecode']
 
-                        if sf_framecode2 in is_mapped_chain and _chain_id in is_mapped_chain[sf_framecode2]:
+                        if sf_framecode2 in ref_chain_ids and _chain_id in ref_chain_ids[sf_framecode2]:
                             continue
 
                         fixed = False
@@ -7343,7 +7360,7 @@ class NmrDpUtility(object):
 
                             alt_chain = False
 
-                            if length == unmapped + conflict or _matched < conflict or (_matched == 1 and s1['comp_id'].count(_first_matched_comp_id) > 1):
+                            if length == unmapped + conflict or _matched < conflict or (_matched < 4 and s1['comp_id'].count(_first_matched_comp_id) > 1):
 
                                 if self.__resolve_conflict and self.__tolerant_seq_align and _matched < conflict and len(polymer_sequence) > 1:
 
@@ -7420,7 +7437,7 @@ class NmrDpUtility(object):
                                                 if _first_matched_comp_id is None:
                                                     _first_matched_comp_id = myPr0
 
-                                        if length == unmapped + conflict or _matched < conflict or (_matched == 1 and s1['comp_id'].count(_first_matched_comp_id) > 1):
+                                        if length == unmapped + conflict or _matched < conflict or (_matched < 4 and s1['comp_id'].count(_first_matched_comp_id) > 1):
                                             continue
 
                                         if _matched - conflict < __matched - __conflict or unmapped + conflict > __unmapped + __conflict:
@@ -7439,17 +7456,22 @@ class NmrDpUtility(object):
 
                                         break
 
-                                if not alt_chain:
+                                if not alt_chain or (sf_framecode2 in dst_chain_ids and __chain_id in dst_chain_ids[sf_framecode2]):
                                     continue
 
                                 else:
 
-                                    if not sf_framecode2 in alt_chain_ids:
-                                        alt_chain_ids[sf_framecode2] = set()
+                                    if not sf_framecode2 in dst_chain_ids:
+                                        dst_chain_ids[sf_framecode2] = set()
 
-                                    alt_chain_ids[sf_framecode2].add(__chain_id)
+                                    dst_chain_ids[sf_framecode2].add(__chain_id)
 
-                                    self.__fixChainIdInLoop(fileListId, file_name, file_type, content_subtype, sf_framecode2, _chain_id, __chain_id)
+                                    if not sf_framecode2 in map_chain_ids:
+                                        map_chain_ids[sf_framecode2] = {}
+
+                                    map_chain_ids[sf_framecode2][_chain_id] = __chain_id
+
+                                    #self.__fixChainIdInLoop(fileListId, file_name, file_type, content_subtype, sf_framecode2, _chain_id, __chain_id)
 
                                     length = __length
                                     _matched = __matched
@@ -7466,9 +7488,19 @@ class NmrDpUtility(object):
                                     update_poly_seq = True
                                     fixed = True
 
-                            if conflict == 0 and self.__alt_chain and not alt_chain and _chain_id != s2['chain_id'] and (not sf_framecode2 in alt_chain_ids or not s2['chain_id'] in alt_chain_ids[sf_framecode2]):
+                            if conflict == 0 and self.__alt_chain and not alt_chain and _chain_id != s2['chain_id'] and (not sf_framecode2 in dst_chain_ids or not _chain_id in dst_chain_ids[sf_framecode2]):
 
-                                self.__fixChainIdInLoop(fileListId, file_name, file_type, content_subtype, sf_framecode2, s2['chain_id'], _chain_id)
+                                if not sf_framecode2 in dst_chain_ids:
+                                    dst_chain_ids[sf_framecode2] = set()
+
+                                dst_chain_ids[sf_framecode2].add(_chain_id)
+
+                                #self.__fixChainIdInLoop(fileListId, file_name, file_type, content_subtype, sf_framecode2, s2['chain_id'], _chain_id)
+
+                                if not sf_framecode2 in map_chain_ids:
+                                    map_chain_ids[sf_framecode2] = {}
+
+                                map_chain_ids[sf_framecode2][s2['chain_id']] = _chain_id
 
                                 alt_chain = True
                                 fixed = True
@@ -7638,6 +7670,43 @@ class NmrDpUtility(object):
 
                 if len(seq_align_set) > 0:
                     self.report.sequence_alignment.setItemValue('nmr_poly_seq_vs_' + content_subtype, seq_align_set)
+
+                if self.__alt_chain:
+                    for ps_in_loop in polymer_sequence_in_loop[content_subtype]:
+                        sf_framecode2 = ps_in_loop['sf_framecode']
+
+                        if sf_framecode2 in map_chain_ids:
+                            mapping = map_chain_ids[sf_framecode2]
+
+                            total = set(mapping.keys()) | set(mapping.values())
+
+                            rests = total - set(mapping.keys())
+
+                            circular = False
+                            for k, v in mapping.items():
+                                for _k, _v in mapping.items():
+                                    if v == _k:
+                                        circular = True
+                                        break
+                                if circular:
+                                    break
+
+                            if len(rests) > 0 and circular:
+                                for r in rests:
+                                    d = next((k for k, v in mapping.items() if v == r), None)
+                                    if not d is None:
+                                        mapping[r] = d
+
+                            if circular:
+                                for k, v in mapping.items():
+                                    self.__fixChainIdInLoop(fileListId, file_name, file_type, content_subtype, sf_framecode2, k, v + '_')
+
+                                for v in mapping.values():
+                                    self.__fixChainIdInLoop(fileListId, file_name, file_type, content_subtype, sf_framecode2, v + '_', v)
+
+                            else:
+                                for k, v in mapping.items():
+                                    self.__fixChainIdInLoop(fileListId, file_name, file_type, content_subtype, sf_framecode2, k, v)
 
         if update_poly_seq:
             self.__extractPolymerSequenceInLoop()

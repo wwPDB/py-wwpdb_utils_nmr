@@ -98,7 +98,7 @@
 # 16-Sep-2020  M. Yokochi - bug fix release based on internal test using BMRB NMR restraint archive of 6.3k entries (DAOTHER-6128)
 # 18-Sep-2020  M. Yokochi - bug fix release for negative sequence numbers (DAOTHER-6128)
 # 25-Sep-2020  M. Yokochi - add 'tolerant_seq_align' input parameter which enables tolerant sequence alignement for residue variant, set False for OneDep environment (DAOTHER-6128)
-# 08-Oct-2020  M. Yokochi - support circular chain_id re-mapping in data loops if it is necessary, 'tolerant_seq_align' input parameter is required (DAOTHER-6128)
+# 09-Oct-2020  M. Yokochi - support circular chain_id re-mapping with seq_id shifts in data loops if it is necessary, 'tolerant_seq_align' input parameter is required (DAOTHER-6128)
 ##
 """ Wrapper class for data processing for NMR data.
     @author: Masashi Yokochi
@@ -6884,13 +6884,12 @@ class NmrDpUtility(object):
             polymer_sequence_in_loop = input_source_dic['polymer_sequence_in_loop']
 
             for content_subtype in polymer_sequence_in_loop.keys():
-                list_len = len(polymer_sequence_in_loop[content_subtype])
 
                 seq_align_set = []
 
                 dst_chain_ids = {}
-                ref_chain_ids = {}
                 map_chain_ids = {}
+                map_seq_ids = {}
 
                 for s1 in polymer_sequence:
                     chain_id = s1['chain_id']
@@ -6915,7 +6914,6 @@ class NmrDpUtility(object):
                                 s2 = _s2
 
                             self.__pA.setReferenceSequence(s1['comp_id'], 'REF' + _chain_id)
-                            #self.__pA.addTestSequence(_s2['comp_id'], _chain_id)
                             self.__pA.addTestSequence(s2['comp_id'], _chain_id)
                             self.__pA.doAlign()
 
@@ -6947,7 +6945,7 @@ class NmrDpUtility(object):
                             unmapped = 0
                             conflict = 0
                             _matched = 0
-                            _first_matched_comp_id = None
+                            #_first_matched_comp_id = None
                             for i in range(length):
                                 myPr = myAlign[i]
                                 myPr0 = str(myPr[0])
@@ -6964,12 +6962,12 @@ class NmrDpUtility(object):
                                 else:
                                     not_aligned = False
                                     _matched += 1
-                                    if _first_matched_comp_id is None:
-                                        _first_matched_comp_id = myPr0
+                                    #if _first_matched_comp_id is None:
+                                    #    _first_matched_comp_id = myPr0
 
                             alt_chain = False
 
-                            if length == unmapped + conflict or _matched < conflict or (_matched == 1 and s1['comp_id'].count(_first_matched_comp_id) > 1):
+                            if length == unmapped + conflict or _matched < conflict: # or (_matched == 1 and s1['comp_id'].count(_first_matched_comp_id) > 1):
 
                                 if self.__resolve_conflict and self.__tolerant_seq_align and _matched < conflict and len(polymer_sequence) > 1:
 
@@ -7026,7 +7024,7 @@ class NmrDpUtility(object):
                                         unmapped = 0
                                         conflict = 0
                                         _matched = 0
-                                        _first_matched_comp_id = None
+                                        #_first_matched_comp_id = None
                                         for i in range(length):
                                             myPr = myAlign[i]
                                             myPr0 = str(myPr[0])
@@ -7043,10 +7041,10 @@ class NmrDpUtility(object):
                                             else:
                                                 not_aligned = False
                                                 _matched += 1
-                                                if _first_matched_comp_id is None:
-                                                    _first_matched_comp_id = myPr0
+                                                #if _first_matched_comp_id is None:
+                                                #    _first_matched_comp_id = myPr0
 
-                                        if length == unmapped + conflict or _matched < conflict or (_matched == 1 and s1['comp_id'].count(_first_matched_comp_id) > 1):
+                                        if length == unmapped + conflict or _matched < conflict: # or (_matched == 1 and s1['comp_id'].count(_first_matched_comp_id) > 1):
                                             continue
 
                                         if _matched - conflict < __matched - __conflict or unmapped + conflict > __unmapped + __conflict:
@@ -7112,35 +7110,14 @@ class NmrDpUtility(object):
 
                                 alt_chain = True
 
-                            if not sf_framecode2 in ref_chain_ids:
-                                ref_chain_ids[sf_framecode2] = []
-
-                            ref_chain_ids[sf_framecode2].append(_chain_id)
-
                             _s1 = s1 if offset_1 == 0 else fill_blank_comp_id_with_offset(s1, offset_1)
                             _s2 = s2 if offset_2 == 0 else fill_blank_comp_id_with_offset(s2, offset_2)
-                            """
-                            unmapped = 0
-                            conflict = 0
-                            for i in range(length):
-                                myPr = myAlign[i]
-                                myPr0 = str(myPr[0])
-                                myPr1 = str(myPr[1])
-                                if myPr0 == '.' or myPr1 == '.':
-                                    unmapped += 1
-                                elif myPr0 != myPr1:
-                                    conflict += 1
 
-                            if length == unmapped + conflict:
-                                continue
-                            """
                             ref_length = len(s1['seq_id'])
 
-                            #ref_code = self.__get1LetterCodeSequence(s1['comp_id'])
                             ref_code = self.__get1LetterCodeSequence(_s1['comp_id'])
                             test_code = self.__get1LetterCodeSequence(_s2['comp_id'])
                             mid_code = get_middle_code(ref_code, test_code)
-                            #ref_gauge_code = get_gauge_code(s1['seq_id'])
                             ref_gauge_code = get_gauge_code(_s1['seq_id'])
                             test_gauge_code = get_gauge_code(_s2['seq_id'])
 
@@ -7151,6 +7128,9 @@ class NmrDpUtility(object):
                                     if __s1 != '.' and __s2 != '.' and __s1 != __s2 and __c1 != '.' and __c2 != '.' and __c1 == __c2) or
                                 any((__s1, __s2) for (__s1, __s2, __c1, __c2) in zip(_s1['seq_id'], _s2['seq_id'], _s1['comp_id'], _s2['comp_id'])\
                                     if __c1 != '.' and __c2 != '.' and __c1 != __c2)):
+                                if not sf_framecode2 in map_seq_ids:
+                                    map_seq_ids[sf_framecode2] = set()
+                                map_seq_ids[sf_framecode2].add(_chain_id)
                                 if _s2['seq_id'] == list(range(_s2['seq_id'][0], _s2['seq_id'][-1] + 1)):
                                     seq_id_conv_dict = {str(__s2): str(__s1) for __s1, __s2 in zip(_s1['seq_id'], _s2['seq_id']) if __s2 != '.'}
                                     if any((__s1, __s2) for (__s1, __s2, __c1, __c2) in zip(_s1['seq_id'], _s2['seq_id'], _s1['comp_id'], _s2['comp_id'])\
@@ -7194,7 +7174,10 @@ class NmrDpUtility(object):
                                             mid_code = get_middle_code(ref_code, test_code)
                                             ref_gauge_code = test_gauge_code
                                         else:
-                                            self.__fixSeqIdInLoop(fileListId, file_name, file_type, content_subtype, sf_framecode2, _chain_id, seq_id_conv_dict)
+                                            _chain_id2 = _chain_id
+                                            if sf_framecode2 in map_chain_ids and _chain_id in map_chain_ids[sf_framecode2].values():
+                                                _chain_id2 = next(k for k, v in map_chain_ids[sf_framecode2].items() if v == _chain_id)
+                                            self.__fixSeqIdInLoop(fileListId, file_name, file_type, content_subtype, sf_framecode2, _chain_id2, seq_id_conv_dict)
                                             _s2['seq_id'] = _s1['seq_id']
                                             ref_code = self.__get1LetterCodeSequence(comp_id1)
                                             test_code = self.__get1LetterCodeSequence(comp_id2)
@@ -7210,400 +7193,13 @@ class NmrDpUtility(object):
                                                     if g == ' ':
                                                         test_code = test_code[0:p] + '-' + test_code[p + 1:]
                                     else:
-                                        self.__fixSeqIdInLoop(fileListId, file_name, file_type, content_subtype, sf_framecode2, _chain_id, seq_id_conv_dict)
+                                        _chain_id2 = _chain_id
+                                        if sf_framecode2 in map_chain_ids and _chain_id in map_chain_ids[sf_framecode2].values():
+                                            _chain_id2 = next(k for k, v in map_chain_ids[sf_framecode2].items() if v == _chain_id)
+                                        self.__fixSeqIdInLoop(fileListId, file_name, file_type, content_subtype, sf_framecode2, _chain_id2, seq_id_conv_dict)
                                         _s2['seq_id'] = _s1['seq_id']
                                         mid_code = get_middle_code(ref_code, test_code)
                                         test_gauge_code = ref_gauge_code
-                                else:
-                                    _s2 = fill_blank_comp_id(_s1, _s2)
-                                    test_code = self.__get1LetterCodeSequence(_s2['comp_id'])
-                                    mid_code = get_middle_code(ref_code, test_code)
-                                    test_gauge_code = ref_gauge_code
-
-                                update_poly_seq = True
-
-                            matched = mid_code.count('|')
-
-                            seq_align = {'list_id': ps_in_loop['list_id'],
-                                         'sf_framecode': sf_framecode2,
-                                         'chain_id': chain_id, 'length': ref_length, 'matched': matched, 'conflict': conflict, 'unmapped': unmapped,
-                                         'sequence_coverage': float('{:.3f}'.format(float(length - (unmapped + conflict)) / float(ref_length))),
-                                         'ref_seq_id': _s1['seq_id'], 'test_seq_id': _s2['seq_id'],
-                                         'ref_gauge_code': ref_gauge_code, 'ref_code': ref_code, 'mid_code': mid_code, 'test_code': test_code, 'test_gauge_code': test_gauge_code}
-
-                            seq_align_set.append(seq_align)
-
-                            if not self.__combined_mode and input_source_dic['non_standard_residue'] is None: # no polymer sequence
-                                has_non_std_comp_id = False
-                                for j in range(len(ref_code)):
-                                    if ref_code[j] == 'X' and test_code[j] == 'X':
-                                        has_non_std_comp_id = True
-                                        break
-
-                                if not has_non_std_comp_id:
-                                    continue
-
-                                asm = []
-
-                                for _s in polymer_sequence:
-
-                                    ent = {'chain_id': _s['chain_id'], 'seq_id': [], 'comp_id': [], 'chem_comp_name': [], 'exptl_data': []}
-
-                                    for _seq_id, _comp_id in zip(_s['seq_id'], _s['comp_id']):
-                                       if self.__get1LetterCode(_comp_id) == 'X':
-
-                                            ent['seq_id'].append(_seq_id)
-                                            ent['comp_id'].append(_comp_id)
-
-                                            self.__updateChemCompDict(_comp_id)
-
-                                            if self.__last_comp_id_test: # matches with comp_id in CCD
-                                                cc_name = self.__last_chem_comp_dict['_chem_comp.name']
-                                                cc_rel_status = self.__last_chem_comp_dict['_chem_comp.pdbx_release_status']
-                                                if cc_rel_status == 'REL':
-                                                    ent['chem_comp_name'].append(cc_name)
-                                                else:
-                                                    ent['chem_comp_name'].append('(Not available due to CCD status code %s)' % cc_rel_status)
-
-                                            else:
-                                                ent['chem_comp_name'].append(None)
-
-                                            ent['exptl_data'].append({'coordinate': False})
-
-                                    asm.append(ent)
-
-                                input_source.setItemValue('non_standard_residue', asm)
-
-                            for r_code, t_code, seq_id in zip(ref_code, test_code, s1['seq_id']):
-                                if r_code == 'X' and t_code == 'X':
-                                    input_source.updateNonStandardResidueByExptlData(chain_id, seq_id, content_subtype)
-
-                for s1 in polymer_sequence:
-                    chain_id = s1['chain_id']
-
-                    if type(chain_id) == int:
-                        _chain_id = str(chain_id)
-                    else:
-                        _chain_id = chain_id
-
-                    for ps_in_loop in polymer_sequence_in_loop[content_subtype]:
-                        ps2 = ps_in_loop['polymer_sequence']
-                        sf_framecode2 = ps_in_loop['sf_framecode']
-
-                        if sf_framecode2 in ref_chain_ids and _chain_id in ref_chain_ids[sf_framecode2]:
-                            continue
-
-                        fixed = False
-
-                        for s2 in ps2:
-
-                            if (_chain_id != s2['chain_id'] and not self.__tolerant_seq_align) or fixed:
-                                continue
-
-                            _s2 = fill_blank_comp_id_with_offset(s2, 0)
-
-                            if len(_s2['seq_id']) > len(s2['seq_id']) and len(_s2['seq_id']) < len(s1['seq_id']):
-                                s2 = _s2
-
-                            self.__pA.setReferenceSequence(s1['comp_id'], 'REF' + _chain_id)
-                            #self.__pA.addTestSequence(_s2['comp_id'], _chain_id)
-                            self.__pA.addTestSequence(s2['comp_id'], _chain_id)
-                            self.__pA.doAlign()
-
-                            myAlign = self.__pA.getAlignment(_chain_id)
-
-                            length = len(myAlign)
-
-                            if length == 0:
-                                continue
-
-                            aligned = [True] * length
-
-                            for i in range(length):
-                                myPr = myAlign[i]
-                                myPr0 = str(myPr[0])
-                                myPr1 = str(myPr[1])
-                                if myPr0 == '.' or myPr1 == '.':
-                                    aligned[i] = False
-                                    pass
-                                elif myPr0 != myPr1:
-                                    pass
-                                else:
-                                    break
-
-                            not_aligned = True
-                            offset_1 = 0
-                            offset_2 = 0
-
-                            unmapped = 0
-                            conflict = 0
-                            _matched = 0
-                            _first_matched_comp_id = None
-                            for i in range(length):
-                                myPr = myAlign[i]
-                                myPr0 = str(myPr[0])
-                                myPr1 = str(myPr[1])
-                                if myPr0 == '.' or myPr1 == '.':
-                                    if not_aligned and not aligned[i]:
-                                        if myPr0 == '.' and myPr1 != '.':
-                                            offset_1 += 1
-                                        if myPr0 != '.' and myPr1 == '.':
-                                            offset_2 += 1
-                                    unmapped += 1
-                                elif myPr0 != myPr1:
-                                    conflict += 1
-                                else:
-                                    not_aligned = False
-                                    _matched += 1
-                                    if _first_matched_comp_id is None:
-                                        _first_matched_comp_id = myPr0
-
-                            alt_chain = False
-
-                            if length == unmapped + conflict or _matched < conflict or (_matched < 4 and s1['comp_id'].count(_first_matched_comp_id) > 1):
-
-                                if self.__resolve_conflict and self.__tolerant_seq_align and _matched < conflict and len(polymer_sequence) > 1:
-
-                                    __length = length
-                                    __matched = _matched
-                                    __unmapped = unmapped
-                                    __conflict = conflict
-                                    __chain_id = None
-                                    __s1 = None
-                                    __offset_1 = None
-                                    __offset_2 = None
-
-                                    for _s1 in polymer_sequence:
-
-                                        if _s1 == s1:
-                                            continue
-
-                                        chain_id_ = _s1['chain_id']
-
-                                        if type(chain_id_) == int:
-                                            _chain_id_ = str(chain_id_)
-                                        else:
-                                            _chain_id_ = chain_id_
-
-                                        self.__pA.setReferenceSequence(_s1['comp_id'], 'REF' + _chain_id_)
-                                        self.__pA.addTestSequence(s2['comp_id'], _chain_id_)
-                                        self.__pA.doAlign()
-
-                                        myAlign = self.__pA.getAlignment(_chain_id_)
-
-                                        length = len(myAlign)
-
-                                        if length == 0:
-                                            continue
-
-                                        aligned = [True] * length
-
-                                        for i in range(length):
-                                            myPr = myAlign[i]
-                                            myPr0 = str(myPr[0])
-                                            myPr1 = str(myPr[1])
-                                            if myPr0 == '.' or myPr1 == '.':
-                                                aligned[i] = False
-                                                pass
-                                            elif myPr0 != myPr1:
-                                                pass
-                                            else:
-                                                break
-
-                                        not_aligned = True
-                                        offset_1 = 0
-                                        offset_2 = 0
-
-                                        unmapped = 0
-                                        conflict = 0
-                                        _matched = 0
-                                        _first_matched_comp_id = None
-                                        for i in range(length):
-                                            myPr = myAlign[i]
-                                            myPr0 = str(myPr[0])
-                                            myPr1 = str(myPr[1])
-                                            if myPr0 == '.' or myPr1 == '.':
-                                                if not_aligned and not aligned[i]:
-                                                    if myPr0 == '.' and myPr1 != '.':
-                                                        offset_1 += 1
-                                                    if myPr0 != '.' and myPr1 == '.':
-                                                        offset_2 += 1
-                                                unmapped += 1
-                                            elif myPr0 != myPr1:
-                                                conflict += 1
-                                            else:
-                                                not_aligned = False
-                                                _matched += 1
-                                                if _first_matched_comp_id is None:
-                                                    _first_matched_comp_id = myPr0
-
-                                        if length == unmapped + conflict or _matched < conflict or (_matched < 4 and s1['comp_id'].count(_first_matched_comp_id) > 1):
-                                            continue
-
-                                        if _matched - conflict < __matched - __conflict or unmapped + conflict > __unmapped + __conflict:
-                                            continue
-
-                                        __length = length
-                                        __matched = _matched
-                                        __unmapped = unmapped
-                                        __conflict = conflict
-                                        __chain_id = _chain_id_
-                                        __offset_1 = offset_1
-                                        __offset_2 = offset_2
-                                        __s1 = copy.copy(_s1)
-
-                                        alt_chain = True
-
-                                        break
-
-                                if not alt_chain or (sf_framecode2 in dst_chain_ids and __chain_id in dst_chain_ids[sf_framecode2]):
-                                    continue
-
-                                else:
-
-                                    if not sf_framecode2 in dst_chain_ids:
-                                        dst_chain_ids[sf_framecode2] = set()
-
-                                    dst_chain_ids[sf_framecode2].add(__chain_id)
-
-                                    if not sf_framecode2 in map_chain_ids:
-                                        map_chain_ids[sf_framecode2] = {}
-
-                                    map_chain_ids[sf_framecode2][_chain_id] = __chain_id
-
-                                    #self.__fixChainIdInLoop(fileListId, file_name, file_type, content_subtype, sf_framecode2, _chain_id, __chain_id)
-
-                                    length = __length
-                                    _matched = __matched
-                                    unmapped = __unmapped
-                                    conflict = __conflict
-                                    chain_id = __s1['chain_id']
-                                    _chain_id = __chain_id
-                                    offset_1 = __offset_1
-                                    offset_2 = __offset_2
-                                    s1 = __s1
-
-                                    s2['chain_id'] = __chain_id
-
-                                    update_poly_seq = True
-                                    fixed = True
-
-                            if conflict == 0 and self.__alt_chain and not alt_chain and _chain_id != s2['chain_id'] and (not sf_framecode2 in dst_chain_ids or not _chain_id in dst_chain_ids[sf_framecode2]):
-
-                                if not sf_framecode2 in dst_chain_ids:
-                                    dst_chain_ids[sf_framecode2] = set()
-
-                                dst_chain_ids[sf_framecode2].add(_chain_id)
-
-                                #self.__fixChainIdInLoop(fileListId, file_name, file_type, content_subtype, sf_framecode2, s2['chain_id'], _chain_id)
-
-                                if not sf_framecode2 in map_chain_ids:
-                                    map_chain_ids[sf_framecode2] = {}
-
-                                map_chain_ids[sf_framecode2][s2['chain_id']] = _chain_id
-
-                                alt_chain = True
-                                fixed = True
-
-                            _s1 = s1 if offset_1 == 0 else fill_blank_comp_id_with_offset(s1, offset_1)
-                            _s2 = s2 if offset_2 == 0 else fill_blank_comp_id_with_offset(s2, offset_2)
-                            """
-                            unmapped = 0
-                            conflict = 0
-                            for i in range(length):
-                                myPr = myAlign[i]
-                                myPr0 = str(myPr[0])
-                                myPr1 = str(myPr[1])
-                                if myPr0 == '.' or myPr1 == '.':
-                                    unmapped += 1
-                                elif myPr0 != myPr1:
-                                    conflict += 1
-
-                            if length == unmapped + conflict:
-                                continue
-                            """
-                            ref_length = len(s1['seq_id'])
-
-                            #ref_code = self.__get1LetterCodeSequence(s1['comp_id'])
-                            ref_code = self.__get1LetterCodeSequence(_s1['comp_id'])
-                            test_code = self.__get1LetterCodeSequence(_s2['comp_id'])
-                            mid_code = get_middle_code(ref_code, test_code)
-                            #ref_gauge_code = get_gauge_code(s1['seq_id'])
-                            ref_gauge_code = get_gauge_code(_s1['seq_id'])
-                            test_gauge_code = get_gauge_code(_s2['seq_id'])
-
-                            self.__alt_chain |= alt_chain
-
-                            if self.__resolve_conflict and self.__tolerant_seq_align and not alt_chain and\
-                               (any((__s1, __s2) for (__s1, __s2, __c1, __c2) in zip(_s1['seq_id'], _s2['seq_id'], _s1['comp_id'], _s2['comp_id'])\
-                                    if __s1 != '.' and __s2 != '.' and __s1 != __s2 and __c1 != '.' and __c2 != '.' and __c1 == __c2) or
-                                any((__s1, __s2) for (__s1, __s2, __c1, __c2) in zip(_s1['seq_id'], _s2['seq_id'], _s1['comp_id'], _s2['comp_id'])\
-                                    if __c1 != '.' and __c2 != '.' and __c1 != __c2)):
-                                if _s2['seq_id'] == list(range(_s2['seq_id'][0], _s2['seq_id'][-1] + 1)):
-                                    seq_id_conv_dict = {str(__s2): str(__s1) for __s1, __s2 in zip(_s1['seq_id'], _s2['seq_id']) if __s2 != '.'}
-                                    if any((__s1, __s2) for (__s1, __s2, __c1, __c2) in zip(_s1['seq_id'], _s2['seq_id'], _s1['comp_id'], _s2['comp_id'])\
-                                       if __c1 != '.' and __c2 != '.' and __c1 != __c2):
-                                        seq_id1 = []
-                                        seq_id2 = []
-                                        comp_id1 = []
-                                        comp_id2 = []
-                                        idx1 = 0
-                                        idx2 = 0
-                                        for i in range(length):
-                                            myPr = myAlign[i]
-                                            myPr0 = str(myPr[0])
-                                            myPr1 = str(myPr[1])
-                                            if myPr0 != '.':
-                                                while idx1 < len(_s1['seq_id']):
-                                                    if _s1['comp_id'][idx1] == myPr0:
-                                                        seq_id1.append(_s1['seq_id'][idx1])
-                                                        comp_id1.append(myPr0)
-                                                        idx1 += 1
-                                                        break
-                                                    idx1 += 1
-                                            else:
-                                                seq_id1.append(None)
-                                                comp_id1.append('.')
-                                            if myPr1 != '.':
-                                                while idx2 < len(_s2['seq_id']):
-                                                    if _s2['comp_id'][idx2] == myPr1:
-                                                        seq_id2.append(_s2['seq_id'][idx2])
-                                                        comp_id2.append(myPr1)
-                                                        idx2 += 1
-                                                        break
-                                                    idx2 += 1
-                                            else:
-                                                seq_id2.append(None)
-                                                comp_id2.append('.')
-                                        seq_id_conv_dict = {str(__s2): str(__s1) for __s1, __s2 in zip(seq_id1, seq_id2) if not __s1 is None and not __s2 is None}
-                                        if _s1['seq_id'] != list(range(_s1['seq_id'][0], _s1['seq_id'][-1] + 1)) and not any(k for k in seq_id_conv_dict.keys() if seq_id_conv_dict[k] != k):
-                                            _s2['seq_id'] = _s1['seq_id']
-                                            ref_code = test_code
-                                            mid_code = get_middle_code(ref_code, test_code)
-                                            ref_gauge_code = test_gauge_code
-                                        else:
-                                            self.__fixSeqIdInLoop(fileListId, file_name, file_type, content_subtype, sf_framecode2, _chain_id, seq_id_conv_dict)
-                                            _s2['seq_id'] = _s1['seq_id']
-                                            ref_code = self.__get1LetterCodeSequence(comp_id1)
-                                            test_code = self.__get1LetterCodeSequence(comp_id2)
-                                            mid_code = get_middle_code(ref_code, test_code)
-                                            ref_gauge_code = get_gauge_code(seq_id1)
-                                            test_gauge_code = ref_gauge_code
-                                            if ' ' in ref_gauge_code:
-                                                for p, g in enumerate(ref_gauge_code):
-                                                    if g == ' ':
-                                                        ref_code = ref_code[0:p] + '-' + ref_code[p + 1:]
-                                            if ' ' in test_gauge_code:
-                                                for p, g in enumerate(test_gauge_code):
-                                                    if g == ' ':
-                                                        test_code = test_code[0:p] + '-' + test_code[p + 1:]
-                                            fixed = True
-                                    else:
-                                        self.__fixSeqIdInLoop(fileListId, file_name, file_type, content_subtype, sf_framecode2, _chain_id, seq_id_conv_dict)
-                                        _s2['seq_id'] = _s1['seq_id']
-                                        mid_code = get_middle_code(ref_code, test_code)
-                                        test_gauge_code = ref_gauge_code
-                                        fixed = True
                                 else:
                                     _s2 = fill_blank_comp_id(_s1, _s2)
                                     test_code = self.__get1LetterCodeSequence(_s2['comp_id'])
@@ -7673,6 +7269,7 @@ class NmrDpUtility(object):
 
                 if self.__alt_chain:
                     for ps_in_loop in polymer_sequence_in_loop[content_subtype]:
+                        ps2 = ps_in_loop['polymer_sequence']
                         sf_framecode2 = ps_in_loop['sf_framecode']
 
                         if sf_framecode2 in map_chain_ids:
@@ -7680,7 +7277,8 @@ class NmrDpUtility(object):
 
                             total = set(mapping.keys()) | set(mapping.values())
 
-                            rests = total - set(mapping.keys())
+                            k_rests = list(total - set(mapping.keys()))
+                            v_rests = list(total - set(mapping.values()))
 
                             circular = False
                             for k, v in mapping.items():
@@ -7691,11 +7289,191 @@ class NmrDpUtility(object):
                                 if circular:
                                     break
 
-                            if len(rests) > 0 and circular:
-                                for r in rests:
-                                    d = next((k for k, v in mapping.items() if v == r), None)
-                                    if not d is None:
-                                        mapping[r] = d
+                            if len(k_rests) == 1 and len(v_rests) == 1 and circular:
+                                mapping[k_rests[0]] = v_rests[0]
+
+                            for s1 in polymer_sequence:
+                                chain_id = s1['chain_id']
+
+                                if type(chain_id) == int:
+                                    _chain_id = str(chain_id)
+                                else:
+                                    _chain_id = chain_id
+
+                                for s2 in ps2:
+
+                                    if _chain_id != s2['chain_id']:
+                                        continue
+
+                                    _s2 = fill_blank_comp_id_with_offset(s2, 0)
+
+                                    if len(_s2['seq_id']) > len(s2['seq_id']) and len(_s2['seq_id']) < len(s1['seq_id']):
+                                        s2 = _s2
+
+                                    self.__pA.setReferenceSequence(s1['comp_id'], 'REF' + _chain_id)
+                                    self.__pA.addTestSequence(s2['comp_id'], _chain_id)
+                                    self.__pA.doAlign()
+
+                                    myAlign = self.__pA.getAlignment(_chain_id)
+
+                                    length = len(myAlign)
+
+                                    if length == 0:
+                                        continue
+
+                                    aligned = [True] * length
+
+                                    for i in range(length):
+                                        myPr = myAlign[i]
+                                        myPr0 = str(myPr[0])
+                                        myPr1 = str(myPr[1])
+                                        if myPr0 == '.' or myPr1 == '.':
+                                            aligned[i] = False
+                                            pass
+                                        elif myPr0 != myPr1:
+                                            pass
+                                        else:
+                                            break
+
+                                    not_aligned = True
+                                    offset_1 = 0
+                                    offset_2 = 0
+
+                                    unmapped = 0
+                                    conflict = 0
+                                    _matched = 0
+                                    #_first_matched_comp_id = None
+                                    for i in range(length):
+                                        myPr = myAlign[i]
+                                        myPr0 = str(myPr[0])
+                                        myPr1 = str(myPr[1])
+                                        if myPr0 == '.' or myPr1 == '.':
+                                            if not_aligned and not aligned[i]:
+                                                if myPr0 == '.' and myPr1 != '.':
+                                                    offset_1 += 1
+                                                if myPr0 != '.' and myPr1 == '.':
+                                                    offset_2 += 1
+                                            unmapped += 1
+                                        elif myPr0 != myPr1:
+                                            conflict += 1
+                                        else:
+                                            not_aligned = False
+                                            _matched += 1
+                                            #if _first_matched_comp_id is None:
+                                            #    _first_matched_comp_id = myPr0
+
+                                    if length == unmapped + conflict or _matched < conflict: # or (_matched == 1 and s1['comp_id'].count(_first_matched_comp_id) > 1):
+                                        continue
+
+                                    _s1 = s1 if offset_1 == 0 else fill_blank_comp_id_with_offset(s1, offset_1)
+                                    _s2 = s2 if offset_2 == 0 else fill_blank_comp_id_with_offset(s2, offset_2)
+
+                                    ref_length = len(s1['seq_id'])
+
+                                    ref_code = self.__get1LetterCodeSequence(_s1['comp_id'])
+                                    test_code = self.__get1LetterCodeSequence(_s2['comp_id'])
+                                    mid_code = get_middle_code(ref_code, test_code)
+                                    ref_gauge_code = get_gauge_code(_s1['seq_id'])
+                                    test_gauge_code = get_gauge_code(_s2['seq_id'])
+
+                                    if self.__resolve_conflict and self.__tolerant_seq_align and\
+                                       (any((__s1, __s2) for (__s1, __s2, __c1, __c2) in zip(_s1['seq_id'], _s2['seq_id'], _s1['comp_id'], _s2['comp_id'])\
+                                            if __s1 != '.' and __s2 != '.' and __s1 != __s2 and __c1 != '.' and __c2 != '.' and __c1 == __c2) or
+                                        any((__s1, __s2) for (__s1, __s2, __c1, __c2) in zip(_s1['seq_id'], _s2['seq_id'], _s1['comp_id'], _s2['comp_id'])\
+                                            if __c1 != '.' and __c2 != '.' and __c1 != __c2)):
+                                        if sf_framecode2 in map_seq_ids and _chain_id in map_seq_ids[sf_framecode2]:
+                                            continue
+                                        if _s2['seq_id'] == list(range(_s2['seq_id'][0], _s2['seq_id'][-1] + 1)):
+                                            seq_id_conv_dict = {str(__s2): str(__s1) for __s1, __s2 in zip(_s1['seq_id'], _s2['seq_id']) if __s2 != '.'}
+                                            if any((__s1, __s2) for (__s1, __s2, __c1, __c2) in zip(_s1['seq_id'], _s2['seq_id'], _s1['comp_id'], _s2['comp_id'])\
+                                               if __c1 != '.' and __c2 != '.' and __c1 != __c2):
+                                                seq_id1 = []
+                                                seq_id2 = []
+                                                comp_id1 = []
+                                                comp_id2 = []
+                                                idx1 = 0
+                                                idx2 = 0
+                                                for i in range(length):
+                                                    myPr = myAlign[i]
+                                                    myPr0 = str(myPr[0])
+                                                    myPr1 = str(myPr[1])
+                                                    if myPr0 != '.':
+                                                        while idx1 < len(_s1['seq_id']):
+                                                            if _s1['comp_id'][idx1] == myPr0:
+                                                                seq_id1.append(_s1['seq_id'][idx1])
+                                                                comp_id1.append(myPr0)
+                                                                idx1 += 1
+                                                                break
+                                                            idx1 += 1
+                                                    else:
+                                                        seq_id1.append(None)
+                                                        comp_id1.append('.')
+                                                    if myPr1 != '.':
+                                                        while idx2 < len(_s2['seq_id']):
+                                                            if _s2['comp_id'][idx2] == myPr1:
+                                                                seq_id2.append(_s2['seq_id'][idx2])
+                                                                comp_id2.append(myPr1)
+                                                                idx2 += 1
+                                                                break
+                                                            idx2 += 1
+                                                    else:
+                                                        seq_id2.append(None)
+                                                        comp_id2.append('.')
+                                                seq_id_conv_dict = {str(__s2): str(__s1) for __s1, __s2 in zip(seq_id1, seq_id2) if not __s1 is None and not __s2 is None}
+                                                if _s1['seq_id'] != list(range(_s1['seq_id'][0], _s1['seq_id'][-1] + 1)) and not any(k for k in seq_id_conv_dict.keys() if seq_id_conv_dict[k] != k):
+                                                    _s2['seq_id'] = _s1['seq_id']
+                                                    ref_code = test_code
+                                                    mid_code = get_middle_code(ref_code, test_code)
+                                                    ref_gauge_code = test_gauge_code
+                                                else:
+                                                    _chain_id2 = _chain_id
+                                                    if _chain_id in mapping.values():
+                                                        _chain_id2 = next(k for k, v in mapping.items() if v == _chain_id)
+                                                    self.__fixSeqIdInLoop(fileListId, file_name, file_type, content_subtype, sf_framecode2, _chain_id2, seq_id_conv_dict)
+                                                    _s2['seq_id'] = _s1['seq_id']
+                                                    ref_code = self.__get1LetterCodeSequence(comp_id1)
+                                                    test_code = self.__get1LetterCodeSequence(comp_id2)
+                                                    mid_code = get_middle_code(ref_code, test_code)
+                                                    ref_gauge_code = get_gauge_code(seq_id1)
+                                                    test_gauge_code = ref_gauge_code
+                                                    if ' ' in ref_gauge_code:
+                                                        for p, g in enumerate(ref_gauge_code):
+                                                            if g == ' ':
+                                                                ref_code = ref_code[0:p] + '-' + ref_code[p + 1:]
+                                                    if ' ' in test_gauge_code:
+                                                        for p, g in enumerate(test_gauge_code):
+                                                            if g == ' ':
+                                                                test_code = test_code[0:p] + '-' + test_code[p + 1:]
+                                            else:
+                                                _chain_id2 = _chain_id
+                                                if _chain_id in mapping.values():
+                                                    _chain_id2 = next(k for k, v in mapping.items() if v == _chain_id)
+                                                self.__fixSeqIdInLoop(fileListId, file_name, file_type, content_subtype, sf_framecode2, _chain_id2, seq_id_conv_dict)
+                                                _s2['seq_id'] = _s1['seq_id']
+                                                mid_code = get_middle_code(ref_code, test_code)
+                                                test_gauge_code = ref_gauge_code
+                                        else:
+                                            _s2 = fill_blank_comp_id(_s1, _s2)
+                                            test_code = self.__get1LetterCodeSequence(_s2['comp_id'])
+                                            mid_code = get_middle_code(ref_code, test_code)
+                                            test_gauge_code = ref_gauge_code
+
+                                    matched = mid_code.count('|')
+
+                                    _seq_align = next((_seq_align for _seq_align in seq_align_set\
+                                                       if _seq_align['list_id'] == ps_in_loop['list_id'] and _seq_align['sf_framecode'] == sf_framecode2 and _seq_align['chain_id'] == chain_id), None)
+
+                                    if not _seq_align is None:
+                                        seq_align_set.remove(_seq_align)
+
+                                    seq_align = {'list_id': ps_in_loop['list_id'],
+                                                 'sf_framecode': sf_framecode2,
+                                                 'chain_id': chain_id, 'length': ref_length, 'matched': matched, 'conflict': conflict, 'unmapped': unmapped,
+                                                 'sequence_coverage': float('{:.3f}'.format(float(length - (unmapped + conflict)) / float(ref_length))),
+                                                 'ref_seq_id': _s1['seq_id'], 'test_seq_id': _s2['seq_id'],
+                                                 'ref_gauge_code': ref_gauge_code, 'ref_code': ref_code, 'mid_code': mid_code, 'test_code': test_code, 'test_gauge_code': test_gauge_code}
+
+                                    seq_align_set.append(seq_align)
 
                             if circular:
                                 for k, v in mapping.items():
@@ -18911,8 +18689,6 @@ class NmrDpUtility(object):
                 if content_subtype == 'non_poly':
                     continue
 
-                list_len = len(polymer_sequence_in_loop[content_subtype])
-
                 seq_align_set = []
 
                 for s1 in polymer_sequence:
@@ -18931,10 +18707,7 @@ class NmrDpUtility(object):
                             if _chain_id != s2['chain_id']:
                                 continue
 
-                            #_s2 = fill_blank_comp_id(s1, s2)
-
                             self.__pA.setReferenceSequence(s1['comp_id'], 'REF' + _chain_id)
-                            #self.__pA.addTestSequence(_s2['comp_id'], _chain_id)
                             self.__pA.addTestSequence(s2['comp_id'], _chain_id)
                             self.__pA.doAlign()
 
@@ -18986,28 +18759,12 @@ class NmrDpUtility(object):
 
                             _s1 = s1 if offset_1 == 0 else fill_blank_comp_id_with_offset(s1, offset_1)
                             _s2 = s2 if offset_2 == 0 else fill_blank_comp_id_with_offset(s2, offset_2)
-                            """
-                            unmapped = 0
-                            conflict = 0
-                            for i in range(length):
-                                myPr = myAlign[i]
-                                myPr0 = str(myPr[0])
-                                myPr1 = str(myPr[1])
-                                if myPr0 == '.' or myPr1 == '.':
-                                    unmapped += 1
-                                elif myPr0 != myPr1:
-                                    conflict += 1
 
-                            if length == unmapped + conflict:
-                                continue
-                            """
                             ref_length = len(s1['seq_id'])
 
-                            #ref_code = self.__get1LetterCodeSequence(s1['comp_id'])
                             ref_code = self.__get1LetterCodeSequence(_s1['comp_id'])
                             test_code = self.__get1LetterCodeSequence(_s2['comp_id'])
                             mid_code = get_middle_code(ref_code, test_code)
-                            #ref_gauge_code = get_gauge_code(s1['seq_id'])
                             ref_gauge_code = get_gauge_code(_s1['seq_id'])
                             test_gauge_code = get_gauge_code(_s2['seq_id'])
 

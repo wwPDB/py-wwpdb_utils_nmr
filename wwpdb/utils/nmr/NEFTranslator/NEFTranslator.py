@@ -53,6 +53,7 @@
 # 28-Sep-2020  M. Yokochi - fix chain_code mapping in NEF MR loops in case that there is no CS assignment (v2.8.2, DAOTHER-6128)
 # 29-Sep-2020  M. Yokochi - sort numeric string in a list of chain_id while NMR-STAR to NEF conversion (v2.8.3, DAOTHER-6128)
 # 06-Sep-2020  M. Yokochi - improve stability against the presence of undefined chain_id in loops (v2.8.4, DAOTHER-6128)
+# 12-Oct-2020  M. Yokochi - add support for spectral peak convertion from NMR-STAR canonical loops to NEF (v2.9.0, DAOTHER-6128)
 ##
 import sys
 import os
@@ -74,7 +75,7 @@ from wwpdb.utils.nmr.io.ChemCompIo import ChemCompReader
 from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
 from wwpdb.utils.nmr.NmrDpReport import NmrDpReport
 
-__version__ = '2.8.4'
+__version__ = '2.9.0'
 
 __pynmrstar_v3__ = version.parse(pynmrstar.__version__) >= version.parse("3.0.0")
 
@@ -5796,6 +5797,171 @@ class NEFTranslator(object):
 
         return out_row
 
+    def star2nef_peak_can(self, in_sf, out_sf):
+        """ Translate NMR-STAR canonical spectral peak loops (_Peak, _Peak_general_char, _Peak.char, _Assigned_peak_chem_shift) into NEF.
+            @author: Masashi Yokochi
+            @param in_sf: input saveframe
+            @param out_sf: output saveframe
+            @return: assigned chemical shift list id
+        """
+
+        try:
+            num_dim = int(in_sf.get_tag('Number_of_spectral_dimensions')[0])
+        except ValueError:
+            return None
+
+        try:
+            pk_loop = in_sf.get_loop_by_category('_Peak')
+        except KeyError:
+            return None
+
+        try:
+            pk_gen_char_loop = in_sf.get_loop_by_category('_Peak_general_char')
+        except KeyError:
+            pk_gen_char_loop = None
+
+        try:
+            pk_char_loop = in_sf.get_loop_by_category('_Peak_char')
+        except KeyError:
+            return None
+
+        try:
+            pk_assign_loop = in_sf.get_loop_by_category('_Assigned_peak_chem_shift')
+        except KeyError:
+            pk_assign_loop = None
+
+        out_lp = pynmrstar.Loop.from_scratch()
+        out_tags = ['_nef_peak.index', '_nef_peak.peak_id', '_nef_peak.volume', '_nef_peak.volume_uncertainty', '_nef_peak.height', '_nef_peak.height_uncertainty']
+        for d in range(1, num_dim + 1):
+            out_tags.append('_nef_peak.position_%s' % d)
+            out_tags.append('_nef_peak.position_uncertainty_%s' % d)
+        for d in range(1, num_dim + 1):
+            out_tags.append('_nef_peak.chain_code_%s' % d)
+            out_tags.append('_nef_peak.sequence_code_%s' % d)
+            out_tags.append('_nef_peak.residue_name_%s' % d)
+            out_tags.append('_nef_peak.atom_name_%s' % d)
+
+        for tag in out_tags:
+            out_lp.add_tag(tag)
+
+        pk_tags = pk_loop.get_tag_names()
+
+        pk_id_col = pk_tags.index('_Peak.ID')
+
+        if not pk_gen_char_loop is None:
+            pk_gen_char_tags = pk_gen_char_loop.get_tag_names()
+            pk_gen_char_id_col = pk_gen_char_tags.index('_Peak_general_char.Peak_ID')
+            pk_gen_char_val_col = pk_gen_char_tags.index('_Peak_general_char.Intensity_val')
+            pk_gen_char_val_err_col = pk_gen_char_tags.index('_Peak_general_char.Intensity_val_err')
+            pk_gen_char_type_col = pk_gen_char_tags.index('_Peak_general_char.Measurement_method')
+
+        pk_char_tags = pk_char_loop.get_tag_names()
+
+        pk_char_id_col = pk_char_tags.index('_Peak_char.Peak_ID')
+        pk_char_dim_id_col = pk_char_tags.index('_Peak_char.Spectral_dim_ID')
+        pk_char_pos_col = pk_char_tags.index('_Peak_char.Chem_shift_val')
+        pk_char_pos_err_col = pk_char_tags.index('_Peak_char.Chem_shift_val_err')
+
+        if not pk_assign_loop is None:
+            pk_assign_tags = pk_assign_loop.get_tag_names()
+            pk_assign_id_col = pk_assign_tags.index('_Assigned_peak_chem_shift.Peak_ID')
+            pk_assign_dim_id_col = pk_assign_tags.index('_Assigned_peak_chem_shift.Spectral_dim_ID')
+            pk_assign_chain_id_col = pk_assign_tags.index('_Assigned_peak_chem_shift.Entity_assembly_ID')
+            pk_assign_seq_id_col = pk_assign_tags.index('_Assigned_peak_chem_shift.Comp_index_ID')
+            pk_assign_comp_id_col = pk_assign_tags.index('_Assigned_peak_chem_shift.Comp_ID')
+            pk_assign_atom_id_col = pk_assign_tags.index('_Assigned_peak_chem_shift.Atom_ID')
+            pk_assign_cs_list_id_col = pk_assign_tags.index('_Assigned_peak_chem_shift.Assigned_chem_shift_list_ID')
+
+        cs_list_id_set = set()
+
+        index = 1
+
+        for pk in pk_loop.data:
+
+            out = [None] * len(out_tags)
+
+            pk_id = pk[pk_id_col]
+
+            out[0] = index
+            out[1] = pk_id
+
+            if not pk_gen_char_loop is None:
+                out[2], out[3] = next(((pk_gen_char[pk_gen_char_val_col], pk_gen_char[pk_gen_char_val_err_col])\
+                                       for pk_gen_char in pk_gen_char_loop.data\
+                                       if pk_gen_char[pk_gen_char_id_col] == pk_id and pk_gen_char[pk_gen_char_type_col] == 'volume'), None)
+
+                out[4], out[5] = next(((pk_gen_char[pk_gen_char_val_col], pk_gen_char[pk_gen_char_val_err_col])\
+                                       for pk_gen_char in pk_gen_char_loop.data\
+                                       if pk_gen_char[pk_gen_char_id_col] == pk_id and pk_gen_char[pk_gen_char_type_col] == 'height'), None)
+
+            l = 6
+
+            for d in range(1, num_dim + 1):
+                out[l], out[l + 1] = next((pk_char[pk_char_pos_col], pk_char[pk_char_pos_err_col]) for pk_char in pk_char_loop.data\
+                                          if pk_char[pk_char_id_col] == pk_id and int(pk_char[pk_char_dim_id_col]) == d)
+                l += 2
+
+            if not pk_assign_loop is None:
+                for d in range(1, num_dim + 1):
+                    pk_assign = next((pk_assign for pk_assign in pk_assign_loop.data\
+                                      if pk_assign[pk_assign_id_col] == pk_id and int(pk_assign[pk_assign_dim_id_col]) == d), None)
+
+                    _star_chain = pk_assign[pk_assign_chain_id_col]
+                    if type(_star_chain) == str and not _star_chain in self.empty_value:
+                        _star_chain = int(_star_chain)
+
+                    _star_seq = pk_assign[pk_assign_seq_id_col]
+                    if type(_star_seq) == str and not _star_seq in self.empty_value:
+                        _star_seq = int(_star_seq)
+
+                    seq_key = (_star_chain, _star_seq)
+
+                    try:
+                        nef_chain, nef_seq = self.authSeqMap[seq_key]
+                    except KeyError:
+                        if _star_chain in self.empty_value or not _star_chain in self.authChainId:
+                            nef_chain = _star_chain
+                        else:
+                            cid = self.authChainId.index(_star_chain)
+                            if cid <= 26:
+                                nef_chain = str(chr(65 + cid))
+                            else:
+                                nef_chain = str(chr(65 + (cid // 26))) + str(chr(65 + (cid % 26)))
+                        nef_seq = _star_seq
+
+                    out[l] = nef_chain
+                    out[l + 1] = nef_seq
+
+                    comp_id = pk_assign[pk_assign_comp_id_col]
+                    atom_id = pk_assign[pk_assign_atom_id_col]
+
+                    try:
+                        _atom_id = self.atomIdMap[seq_key][atom_id]
+                    except KeyError:
+                        atom_list = self.get_nef_atom(comp_id, [{'atom_id': atom_id, 'ambig_code': None, 'value': None}])[0]
+                        if len(atom_list) > 0:
+                            _atom_id = atom_list[0]
+                        else:
+                            _atom_id = atom_id
+
+                    out[l + 2] = comp_id
+                    out[l + 3] = _atom_id
+
+                    cs_list_id = pk_assign[pk_assign_cs_list_id_col]
+
+                    if not cs_list_id in self.empty_value:
+                        cs_list_id_set.add(cs_list_id)
+
+                    l = l + 4
+
+            out_lp.add_data(out)
+
+            index += 1
+
+        out_sf.add_loop(out_lp)
+
+        return None if len(cs_list_id_set) == 0 else list(cs_list_id_set)[0]
+
     def nef_to_nmrstar(self, nef_file, star_file=None, report=None):
         """ Convert NEF file to NMR-STAR file.
             @param nef_file: input NEF file path
@@ -6371,6 +6537,9 @@ class NEFTranslator(object):
 
                     entity_del_atom_loop = next((loop for loop in saveframe if loop.category == '_Entity_deleted_atom'), None)
 
+                    has_pk_can_format = False
+                    has_pk_row_format = False
+
                     for loop in saveframe:
 
                         try:
@@ -6408,13 +6577,16 @@ class NEFTranslator(object):
                                 rows = self.star2nef_peak_row(loop.get_tag_names(), lp.get_tag_names(), loop.data)
                                 for d in rows:
                                     lp.add_data(d)
+                                has_pk_row_format = True
 
                             elif len(tags) > 0:
                                 for data in loop.data:
-
                                     rows = self.star2nef_row(loop.get_tag_names(), lp.get_tag_names(), data)
                                     for d in rows:
                                         lp.add_data(d)
+
+                            elif loop.category == '_Peak':
+                                has_pk_can_format = True
 
                             sf.add_loop(lp)
 
@@ -6448,6 +6620,14 @@ class NEFTranslator(object):
                             loop.add_data(row)
                         except KeyError:
                             pass
+
+                    if saveframe.category == 'spectral_peak_list' and has_pk_can_format and not has_pk_row_format:
+                        cs_list_id = self.star2nef_peak_can(saveframe, sf)
+                        if not cs_list_id is None and not 'chemical_shift_list' in sf.tags:
+                            for cs_sf in star_data:
+                                if cs_sf.get_tag('Sf_category')[0] == 'assigned_chemical_shifts' and cs_sf.get_tag('ID')[0] == cs_list_id:
+                                    sf.add_tag('chemical_shift_list', cs_sf.name)
+                                    break
 
                     nef_data.add_saveframe(sf)
 
@@ -6529,6 +6709,9 @@ class NEFTranslator(object):
 
                 entity_del_atom_loop = next((loop for loop in saveframe if loop.category == '_Entity_deleted_atom'), None)
 
+                has_pk_can_format = False
+                has_pk_row_format = False
+
                 for loop in saveframe:
 
                     try:
@@ -6566,13 +6749,16 @@ class NEFTranslator(object):
                             rows = self.star2nef_peak_row(loop.get_tag_names(), lp.get_tag_names(), loop.data)
                             for d in rows:
                                 lp.add_data(d)
+                            has_pk_row_format = True
 
                         elif len(tags) > 0:
                             for data in loop.data:
-
                                 rows = self.star2nef_row(loop.get_tag_names(), lp.get_tag_names(), data)
                                 for d in rows:
                                     lp.add_data(d)
+
+                        elif loop.category == '_Peak':
+                             has_pk_can_format = True
 
                         sf.add_loop(lp)
 
@@ -6606,6 +6792,14 @@ class NEFTranslator(object):
                         loop.add_data(row)
                     except KeyError:
                         pass
+
+                if saveframe.category == 'spectral_peak_list' and has_pk_can_format and not has_pk_row_format:
+                    cs_list_id = self.star2nef_peak_can(saveframe, sf)
+                    if not cs_list_id is None and not 'chemical_shift_list' in sf.tags:
+                        for cs_sf in star_data:
+                            if cs_sf.get_tag('Sf_category')[0] == 'assigned_chemical_shifts' and cs_sf.get_tag('ID')[0] == cs_list_id:
+                                sf.add_tag('chemical_shift_list', cs_sf.name)
+                                break
 
                 nef_data.add_saveframe(sf)
 

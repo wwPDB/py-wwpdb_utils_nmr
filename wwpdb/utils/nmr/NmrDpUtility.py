@@ -11737,7 +11737,11 @@ class NmrDpUtility(object):
             for sf_data in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
 
                 sf_framecode = get_first_sf_tag(sf_data, 'sf_framecode')
-                cs_list = sf_data.get_tag(self.cs_list_sf_tag_name[file_type])[0]
+
+                try:
+                    cs_list = sf_data.get_tag(self.cs_list_sf_tag_name[file_type])[0]
+                except:
+                    continue
 
                 try:
 
@@ -26187,7 +26191,7 @@ i                               """
                 entryIdTag = 'ID' if sf_category == 'entry_information' else 'Entry_ID'
 
                 if len(sf_data.get_tag(entryIdTag)) == 0:
-                        sf_data.add_tag(entryIdTag, self.__entry_id)
+                    sf_data.add_tag(entryIdTag, self.__entry_id)
 
                 else:
                     tagNames = [t[0] for t in sf_data.tags]

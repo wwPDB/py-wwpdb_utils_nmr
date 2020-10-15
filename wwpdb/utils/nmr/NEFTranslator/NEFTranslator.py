@@ -3722,8 +3722,8 @@ class NEFTranslator(object):
 
                                 if has_methyl_proton and has_methyl_proton_2:
 
-                                    methyl_proton_value = next(_a['value'] for _a in star_atom_list if _a['atom_id'] in methyl_h_list)
-                                    methyl_proton_value_2 = next(_a['value'] for _a in star_atom_list if _a['atom_id'] in methyl_h_list_2)
+                                    methyl_proton_value = next((_a['value'] for _a in star_atom_list if _a['atom_id'] in methyl_h_list), None)
+                                    methyl_proton_value_2 = next((_a['value'] for _a in star_atom_list if _a['atom_id'] in methyl_h_list_2), None)
 
                                     if not methyl_proton_value is None and not methyl_proton_value_2 is None and float(methyl_proton_value_2) < float(methyl_proton_value):
                                         nef_atom_prefix = 'y'
@@ -3789,8 +3789,8 @@ class NEFTranslator(object):
 
                                 elif has_geminal_proton:
 
-                                    geminal_proton_value = next(_a['value'] for _a in star_atom_list if _a['atom_id'] == geminal_h_list[0])
-                                    geminal_proton_value_2 = next(_a['value'] for _a in star_atom_list if _a['atom_id'] == geminal_h_list[1])
+                                    geminal_proton_value = next((_a['value'] for _a in star_atom_list if _a['atom_id'] == geminal_h_list[0]), None)
+                                    geminal_proton_value_2 = next((_a['value'] for _a in star_atom_list if _a['atom_id'] == geminal_h_list[1]), None)
 
                                     if not geminal_proton_value is None and not geminal_proton_value_2 is None and float(geminal_proton_value_2) < float(geminal_proton_value):
                                         nef_atom_prefix = 'y'
@@ -3842,8 +3842,8 @@ class NEFTranslator(object):
 
                             if has_atom_id_2:
 
-                                atom_id_value = next(_a['value'] for _a in star_atom_list if _a['atom_id'] == atom_id)
-                                atom_id_value_2 = next(_a['value'] for _a in star_atom_list if _a['atom_id'] == atom_id_2)
+                                atom_id_value = next((_a['value'] for _a in star_atom_list if _a['atom_id'] == atom_id), None)
+                                atom_id_value_2 = next((_a['value'] for _a in star_atom_list if _a['atom_id'] == atom_id_2), None)
 
                                 if not atom_id_value is None and not atom_id_value_2 is None and float(atom_id_value_2) < float(atom_id_value):
                                     nef_atom_prefix = 'y'
@@ -3905,8 +3905,8 @@ class NEFTranslator(object):
 
                             if has_atom_id_2:
 
-                                atom_id_value = next(_a['value'] for _a in star_atom_list if _a['atom_id'] == atom_id)
-                                atom_id_value_2 = next(_a['value'] for _a in star_atom_list if _a['atom_id'] == atom_id_2)
+                                atom_id_value = next((_a['value'] for _a in star_atom_list if _a['atom_id'] == atom_id), None)
+                                atom_id_value_2 = next((_a['value'] for _a in star_atom_list if _a['atom_id'] == atom_id_2), None)
 
                                 if not atom_id_value is None and not atom_id_value_2 is None and float(atom_id_value_2) < float(atom_id_value):
                                     nef_atom_prefix = 'y'
@@ -4001,8 +4001,13 @@ class NEFTranslator(object):
             hvy_conn = ccb[self.__ccb_atom_id_1 if ccb[self.__ccb_atom_id_2] == atom_id else self.__ccb_atom_id_2]
 
             hvy_2 = next(c[self.__ccb_atom_id_1 if c[self.__ccb_atom_id_2] == hvy_conn else self.__ccb_atom_id_2]
-                         for c in self.__last_chem_comp_bonds if (c[self.__ccb_atom_id_2] == hvy_conn and c[self.__ccb_atom_id_1] != atom_id and c[self.__ccb_atom_id_1][0] != 'H' and len(self.get_group(comp_id, c[self.__ccb_atom_id_1])[1]) == h_list_len) or
-                                                                 (c[self.__ccb_atom_id_1] == hvy_conn and c[self.__ccb_atom_id_2] != atom_id and c[self.__ccb_atom_id_2][0] != 'H' and len(self.get_group(comp_id, c[self.__ccb_atom_id_2])[1]) == h_list_len))
+                         for c in self.__last_chem_comp_bonds\
+                         if (c[self.__ccb_atom_id_2] == hvy_conn and c[self.__ccb_atom_id_1] != atom_id and c[self.__ccb_atom_id_1][0] != 'H' and\
+                             not self.get_group(comp_id, c[self.__ccb_atom_id_1])[1] is None and\
+                             len(self.get_group(comp_id, c[self.__ccb_atom_id_1])[1]) == h_list_len) or
+                            (c[self.__ccb_atom_id_1] == hvy_conn and c[self.__ccb_atom_id_2] != atom_id and c[self.__ccb_atom_id_2][0] != 'H' and\
+                             not self.get_group(comp_id, c[self.__ccb_atom_id_2])[1] is None and\
+                             len(self.get_group(comp_id, c[self.__ccb_atom_id_2])[1]) == h_list_len))
 
             return self.get_group(comp_id, hvy_2)
 
@@ -4579,8 +4584,17 @@ class NEFTranslator(object):
 
                     out = [None] * len(nef_tags)
 
-                    star_atom = next(k for k, v in atom_id_map.items() if v == atom)
-                    i = next(l for l in in_row if l[atom_index] == star_atom)
+                    star_atom = next((k for k, v in atom_id_map.items() if v == atom), atom)
+                    i = next((l for l in in_row if l[atom_index] == star_atom), None)
+
+                    if i is None:
+
+                        if star_atom.endswith('%'):
+                            star_atom = star_atom.replace('%', '')
+                            i = next((l for l in in_row if l[atom_index] == star_atom), None)
+
+                        if i is None:
+                            continue
 
                     for j in star_tags:
 
@@ -4945,7 +4959,8 @@ class NEFTranslator(object):
                         buf[data_index] = tag_map[j]
                     elif nef_tag == '_nef_distance_restraint.atom_name_1':
                         try:
-                            buf[data_index] = self.atomIdMap[seq_key_1][data]
+                            if not self.atomIdMap is None:
+                                buf[data_index] = self.atomIdMap[seq_key_1][data]
                         except KeyError:
                             atom_list = self.get_nef_atom(i[comp_1_index], [{'atom_id': data, 'ambig_code': None, 'value': None}])[0]
                             if len(atom_list) > 0:
@@ -4954,7 +4969,8 @@ class NEFTranslator(object):
                                 buf[data_index] = data
                     elif nef_tag == '_nef_distance_restraint.atom_name_2':
                         try:
-                            buf[data_index] = self.atomIdMap[seq_key_2][data]
+                            if not self.atomIdMap is None:
+                                buf[data_index] = self.atomIdMap[seq_key_2][data]
                         except KeyError:
                             atom_list = self.get_nef_atom(i[comp_2_index], [{'atom_id': data, 'ambig_code': None, 'value': None}])[0]
                             if len(atom_list) > 0:
@@ -5629,7 +5645,8 @@ class NEFTranslator(object):
                         buf[data_index] = tag_map[j]
                     elif nef_tag.startswith('_nef_peak.atom_name'):
                         try:
-                            buf[data_index] = self.atomIdMap[s[int(nef_tag[20:]) - 1]][data]
+                            if not self.atomIdMap is None:
+                                buf[data_index] = self.atomIdMap[s[int(nef_tag[20:]) - 1]][data]
                         except KeyError:
                             atom_list = self.get_nef_atom(i[comp_indices[int(nef_tag[20:]) - 1]], [{'atom_id': data, 'ambig_code': None, 'value': None}])[0]
                             if len(atom_list) > 0:
@@ -5888,17 +5905,17 @@ class NEFTranslator(object):
             if not pk_gen_char_loop is None:
                 out[2], out[3] = next(((pk_gen_char[pk_gen_char_val_col], pk_gen_char[pk_gen_char_val_err_col])\
                                        for pk_gen_char in pk_gen_char_loop.data\
-                                       if pk_gen_char[pk_gen_char_id_col] == pk_id and pk_gen_char[pk_gen_char_type_col] == 'volume'), None)
+                                       if pk_gen_char[pk_gen_char_id_col] == pk_id and pk_gen_char[pk_gen_char_type_col] == 'volume'), (None, None))
 
                 out[4], out[5] = next(((pk_gen_char[pk_gen_char_val_col], pk_gen_char[pk_gen_char_val_err_col])\
                                        for pk_gen_char in pk_gen_char_loop.data\
-                                       if pk_gen_char[pk_gen_char_id_col] == pk_id and pk_gen_char[pk_gen_char_type_col] == 'height'), None)
+                                       if pk_gen_char[pk_gen_char_id_col] == pk_id and pk_gen_char[pk_gen_char_type_col] == 'height'), (None, None))
 
             l = 6
 
             for d in range(1, num_dim + 1):
-                out[l], out[l + 1] = next((pk_char[pk_char_pos_col], pk_char[pk_char_pos_err_col]) for pk_char in pk_char_loop.data\
-                                          if pk_char[pk_char_id_col] == pk_id and int(pk_char[pk_char_dim_id_col]) == d)
+                out[l], out[l + 1] = next(((pk_char[pk_char_pos_col], pk_char[pk_char_pos_err_col]) for pk_char in pk_char_loop.data\
+                                           if pk_char[pk_char_id_col] == pk_id and int(pk_char[pk_char_dim_id_col]) == d), (None, None))
                 l += 2
 
             if not pk_assign_loop is None:
@@ -5906,51 +5923,54 @@ class NEFTranslator(object):
                     pk_assign = next((pk_assign for pk_assign in pk_assign_loop.data\
                                       if pk_assign[pk_assign_id_col] == pk_id and int(pk_assign[pk_assign_dim_id_col]) == d), None)
 
-                    _star_chain = pk_assign[pk_assign_chain_id_col]
-                    if type(_star_chain) == str and not _star_chain in self.empty_value:
-                        _star_chain = int(_star_chain)
+                    if not pk_assign is None:
 
-                    _star_seq = pk_assign[pk_assign_seq_id_col]
-                    if type(_star_seq) == str and not _star_seq in self.empty_value:
-                        _star_seq = int(_star_seq)
+                        _star_chain = pk_assign[pk_assign_chain_id_col]
+                        if type(_star_chain) == str and not _star_chain in self.empty_value:
+                            _star_chain = int(_star_chain)
 
-                    seq_key = (_star_chain, _star_seq)
+                        _star_seq = pk_assign[pk_assign_seq_id_col]
+                        if type(_star_seq) == str and not _star_seq in self.empty_value:
+                            _star_seq = int(_star_seq)
 
-                    try:
-                        nef_chain, nef_seq = self.authSeqMap[seq_key]
-                    except KeyError:
-                        if _star_chain in self.empty_value or not _star_chain in self.authChainId:
-                            nef_chain = _star_chain
-                        else:
-                            cid = self.authChainId.index(_star_chain)
-                            if cid <= 26:
-                                nef_chain = str(chr(65 + cid))
+                        seq_key = (_star_chain, _star_seq)
+
+                        try:
+                            nef_chain, nef_seq = self.authSeqMap[seq_key]
+                        except KeyError:
+                            if _star_chain in self.empty_value or not _star_chain in self.authChainId:
+                                nef_chain = _star_chain
                             else:
-                                nef_chain = str(chr(65 + (cid // 26))) + str(chr(65 + (cid % 26)))
-                        nef_seq = _star_seq
+                                cid = self.authChainId.index(_star_chain)
+                                if cid <= 26:
+                                    nef_chain = str(chr(65 + cid))
+                                else:
+                                    nef_chain = str(chr(65 + (cid // 26))) + str(chr(65 + (cid % 26)))
+                            nef_seq = _star_seq
 
-                    out[l] = nef_chain
-                    out[l + 1] = nef_seq
+                        out[l] = nef_chain
+                        out[l + 1] = nef_seq
 
-                    comp_id = pk_assign[pk_assign_comp_id_col]
-                    atom_id = pk_assign[pk_assign_atom_id_col]
+                        comp_id = pk_assign[pk_assign_comp_id_col]
+                        atom_id = pk_assign[pk_assign_atom_id_col]
 
-                    try:
-                        _atom_id = self.atomIdMap[seq_key][atom_id]
-                    except KeyError:
-                        atom_list = self.get_nef_atom(comp_id, [{'atom_id': atom_id, 'ambig_code': None, 'value': None}])[0]
-                        if len(atom_list) > 0:
-                            _atom_id = atom_list[0]
-                        else:
-                            _atom_id = atom_id
+                        try:
+                            if not self.atomIdMap is None:
+                                _atom_id = self.atomIdMap[seq_key][atom_id]
+                        except KeyError:
+                            atom_list = self.get_nef_atom(comp_id, [{'atom_id': atom_id, 'ambig_code': None, 'value': None}])[0]
+                            if len(atom_list) > 0:
+                                _atom_id = atom_list[0]
+                            else:
+                                _atom_id = atom_id
 
-                    out[l + 2] = comp_id
-                    out[l + 3] = _atom_id
+                        out[l + 2] = comp_id
+                        out[l + 3] = _atom_id
 
-                    cs_list_id = pk_assign[pk_assign_cs_list_id_col]
+                        cs_list_id = pk_assign[pk_assign_cs_list_id_col]
 
-                    if not cs_list_id in self.empty_value:
-                        cs_list_id_set.add(cs_list_id)
+                        if not cs_list_id in self.empty_value:
+                            cs_list_id_set.add(cs_list_id)
 
                     l = l + 4
 
@@ -6623,10 +6643,13 @@ class NEFTranslator(object):
 
                     if saveframe.category == 'spectral_peak_list' and has_pk_can_format and not has_pk_row_format:
                         cs_list_id = self.star2nef_peak_can(saveframe, sf)
-                        if not cs_list_id is None and not 'chemical_shift_list' in sf.tags:
+                        if not cs_list_id is None and (len(sf.get_tag('chemical_shift_list')) == 0 or sf.get_tag('chemical_shift_list') in self.empty_value):
                             for cs_sf in star_data:
-                                if cs_sf.get_tag('Sf_category')[0] == 'assigned_chemical_shifts' and cs_sf.get_tag('ID')[0] == cs_list_id:
-                                    sf.add_tag('chemical_shift_list', cs_sf.name)
+                                if cs_sf.get_tag('Sf_category')[0] == 'assigned_chemical_shifts' and cs_sf.get_tag('ID')[0] == cs_list_id and not cs_sf.name in self.empty_value:
+                                    if len(sf.get_tag('chemical_shift_list')) == 0:
+                                        sf.add_tag('chemical_shift_list', cs_sf.name)
+                                    else:
+                                        sf.tags[sf.tags.index('chemical_shift_list')][1] = cs_sf.name
                                     break
 
                     nef_data.add_saveframe(sf)
@@ -6795,10 +6818,13 @@ class NEFTranslator(object):
 
                 if saveframe.category == 'spectral_peak_list' and has_pk_can_format and not has_pk_row_format:
                     cs_list_id = self.star2nef_peak_can(saveframe, sf)
-                    if not cs_list_id is None and not 'chemical_shift_list' in sf.tags:
+                    if not cs_list_id is None and (len(sf.get_tag('chemical_shift_list')) == 0 or sf.get_tag('chemical_shift_list') in self.empty_value):
                         for cs_sf in star_data:
-                            if cs_sf.get_tag('Sf_category')[0] == 'assigned_chemical_shifts' and cs_sf.get_tag('ID')[0] == cs_list_id:
-                                sf.add_tag('chemical_shift_list', cs_sf.name)
+                            if cs_sf.get_tag('Sf_category')[0] == 'assigned_chemical_shifts' and cs_sf.get_tag('ID')[0] == cs_list_id and not cs_sf.name in self.empty_value:
+                                if len(sf.get_tag('chemical_shift_list')) == 0:
+                                    sf.add_tag('chemical_shift_list', cs_sf.name)
+                                else:
+                                    sf.tags[sf.tags.index('chemical_shift_list')][1] = cs_sf.name
                                 break
 
                 nef_data.add_saveframe(sf)

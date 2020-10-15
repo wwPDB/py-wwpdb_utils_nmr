@@ -3691,8 +3691,17 @@ class NmrDpUtility(object):
                     self.__rescueFormerNef(0)
                     self.__rescueImmatureStr(0)
 
-            else:
-                is_done = self.__fixFormatIssueOfInputSource(0, file_name, file_type, srcPath, 'A', message)
+            elif not self.__fixFormatIssueOfInputSource(0, file_name, file_type, srcPath, 'A', message):
+
+                is_done, star_data_type, star_data = self.__nefT.read_input_file(srcPath) # NEFTranslator.validate_file() generates this object internally, but not re-used.
+
+                self.__star_data_type.append(star_data_type)
+                self.__star_data.append(star_data)
+
+                self.__rescueFormerNef(0)
+                self.__rescueImmatureStr(0)
+
+                is_done = False
 
             if not srcPath_ is None:
                 try:
@@ -4743,7 +4752,7 @@ class NmrDpUtility(object):
         file_name = input_source_dic['file_name']
         file_type = input_source_dic['file_type']
 
-        if file_type != 'nef':
+        if file_type != 'nef' or self.__star_data[file_list_id] is None:
             return False
 
         if self.__combined_mode:
@@ -5079,7 +5088,7 @@ class NmrDpUtility(object):
         file_name = input_source_dic['file_name']
         file_type = input_source_dic['file_type']
 
-        if file_type != 'nmr-star':
+        if file_type != 'nmr-star' or self.__star_data[file_list_id] is None:
             return False
 
         if self.__combined_mode:
@@ -8789,7 +8798,7 @@ class NmrDpUtility(object):
             content_subtype = 'chem_shift'
 
             if not content_subtype in input_source_dic['content_subtype'].keys():
-
+                """
                 err = "Assigned chemical shift loop does not exist in %r file." % file_name
 
                 self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateAtomTypeOfCSLoop() ++ Error  - %s" % err)
@@ -8797,7 +8806,7 @@ class NmrDpUtility(object):
 
                 if self.__verbose:
                     self.__lfh.write("+NmrDpUtility.__validateAtomTypeOfCSLoop() ++ Error  - %s\n" % err)
-
+                """
                 continue
 
             sf_category = self.sf_categories[file_type][content_subtype]
@@ -8961,7 +8970,7 @@ class NmrDpUtility(object):
             content_subtype = 'chem_shift'
 
             if not content_subtype in input_source_dic['content_subtype'].keys():
-
+                """
                 err = "Assigned chemical shift loop does not exist in %r file." % file_name
 
                 self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateAmbigCodeOfCSLoop() ++ Error  - %s" % err)
@@ -8969,7 +8978,7 @@ class NmrDpUtility(object):
 
                 if self.__verbose:
                     self.__lfh.write("+NmrDpUtility.__validateAmbigCodeOfCSLoop() ++ Error  - %s\n" % err)
-
+                """
                 continue
 
             # NEF file has no ambiguity code
@@ -10526,7 +10535,7 @@ class NmrDpUtility(object):
             content_subtype = 'chem_shift'
 
             if not content_subtype in input_source_dic['content_subtype'].keys():
-
+                """
                 err = "Assigned chemical shift loop does not exist in %r file." % file_name
 
                 self.report.error.appendDescription('internal_error', "+NmrDpUtility.__validateCSValue() ++ Error  - %s" % err)
@@ -10534,7 +10543,7 @@ class NmrDpUtility(object):
 
                 if self.__verbose:
                     self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ Error  - %s\n" % err)
-
+                """
                 continue
 
             sf_category = self.sf_categories[file_type][content_subtype]
@@ -11811,7 +11820,9 @@ class NmrDpUtility(object):
                             break
                 else:
                     for i in range(num_dim):
+                        axis_codes.append(None)
                         abs_pk_pos.append(False)
+                        sp_widths.append(None)
 
                 aux_data = next((l['data'] for l in self.__aux_data[content_subtype] if l['file_name'] == file_name and l['sf_framecode'] == sf_framecode and l['category'] == self.aux_lp_categories[file_type][content_subtype][1]), None)
 
@@ -11959,7 +11970,7 @@ class NmrDpUtility(object):
 
                                     axis_code = str(cs[cs_iso_number]) + cs[cs_atom_type]
 
-                                    if axis_code != axis_codes[d]:
+                                    if not axis_codes[d] is None and axis_code != axis_codes[d]:
 
                                         err = '[Check row of %s %s] Assignment of spectral peak %s is inconsistent with axis code %s vs %s.' %\
                                               (index_tag, i[index_tag], self.__getReducedAtomNotation(chain_id_names[d], chain_id, seq_id_names[d], seq_id, comp_id_names[d], comp_id, atom_id_names[d], atom_id), axis_code, axis_codes[d])
@@ -12182,6 +12193,7 @@ class NmrDpUtility(object):
                             break
                 else:
                     for i in range(num_dim):
+                        axis_codes.append(None)
                         abs_pk_pos.append(False)
                         sp_widths.append(None)
 
@@ -22329,7 +22341,7 @@ i                               """
             content_subtype = 'chem_shift'
 
             if not has_key_value(input_source_dic['content_subtype'], content_subtype):
-
+                """
                 err = "Assigned chemical shift loop does not exist in %r file." % file_name
 
                 self.report.error.appendDescription('internal_error', "+NmrDpUtility.__mapCoordDisulfideBond2Nmr() ++ Error  - %s" % err)
@@ -22337,7 +22349,7 @@ i                               """
 
                 if self.__verbose:
                     self.__lfh.write("+NmrDpUtility.__mapCoordDisulfideBond2Nmr() ++ Error  - %s\n" % err)
-
+                """
                 continue
 
             if not has_key_value(seq_align_dic, 'model_poly_seq_vs_nmr_poly_seq'):
@@ -22704,7 +22716,7 @@ i                               """
             content_subtype = 'chem_shift'
 
             if not has_key_value(input_source_dic['content_subtype'], content_subtype):
-
+                """
                 err = "Assigned chemical shift loop does not exist in %r file." % file_name
 
                 self.report.error.appendDescription('internal_error', "+NmrDpUtility.__mapCoordOtherBond2Nmr() ++ Error  - %s" % err)
@@ -22712,7 +22724,7 @@ i                               """
 
                 if self.__verbose:
                     self.__lfh.write("+NmrDpUtility.__mapCoordOtherBond2Nmr() ++ Error  - %s\n" % err)
-
+                """
                 continue
 
             if not has_key_value(seq_align_dic, 'model_poly_seq_vs_nmr_poly_seq'):
@@ -25065,7 +25077,7 @@ i                               """
             content_subtype = 'chem_shift'
 
             if not has_key_value(input_source_dic['content_subtype'], content_subtype):
-
+                """
                 err = "Assigned chemical shift loop does not exist in %r file." % file_name
 
                 self.report.error.appendDescription('internal_error', "+NmrDpUtility.__testDihedRestraintAsBackBoneChemShifts() ++ Error  - %s" % err)
@@ -25073,7 +25085,7 @@ i                               """
 
                 if self.__verbose:
                     self.__lfh.write("+NmrDpUtility.__testDihedRestraintAsBackBoneChemShifts() ++ Error  - %s\n" % err)
-
+                """
                 return False
 
             sf_category = self.sf_categories[file_type][content_subtype]
@@ -26244,7 +26256,7 @@ i                               """
         content_subtype = 'chem_shift'
 
         if not content_subtype in input_source_dic['content_subtype'].keys():
-
+            """
             err = "Assigned chemical shift loop does not exist in %r file." % file_name
 
             self.report.error.appendDescription('internal_error', "+NmrDpUtility.__sortCSLoop() ++ Error  - %s" % err)
@@ -26252,7 +26264,7 @@ i                               """
 
             if self.__verbose:
                 self.__lfh.write("+NmrDpUtility.__sortCSLoop() ++ Error  - %s\n" % err)
-
+            """
             return False
 
         sf_category = self.sf_categories[file_type][content_subtype]
@@ -26361,7 +26373,7 @@ i                               """
         content_subtype = 'chem_shift'
 
         if not content_subtype in input_source_dic['content_subtype'].keys():
-
+            """
             err = "Assigned chemical shift loop does not exist in %r file." % file_name
 
             self.report.error.appendDescription('internal_error', "+NmrDpUtility.__updateAtomChemShiftId() ++ Error  - %s" % err)
@@ -26369,7 +26381,7 @@ i                               """
 
             if self.__verbose:
                 self.__lfh.write("+NmrDpUtility.__updateAtomChemShiftId() ++ Error  - %s\n" % err)
-
+            """
             return False
 
         sf_category = self.sf_categories[file_type][content_subtype]
@@ -26483,7 +26495,7 @@ i                               """
         content_subtype = 'chem_shift'
 
         if not content_subtype in input_source_dic['content_subtype'].keys():
-
+            """
             err = "Assigned chemical shift loop does not exist in %r file." % file_name
 
             self.report.error.appendDescription('internal_error', "+NmrDpUtility.__updateAmbiguousAtomChemShift() ++ Error  - %s" % err)
@@ -26491,7 +26503,7 @@ i                               """
 
             if self.__verbose:
                 self.__lfh.write("+NmrDpUtility.__updateAmbiguousAtomChemShift() ++ Error  - %s\n" % err)
-
+            """
             return False
 
         sf_category = self.sf_categories[file_type][content_subtype]

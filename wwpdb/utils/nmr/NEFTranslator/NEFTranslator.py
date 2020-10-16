@@ -4169,36 +4169,60 @@ class NEFTranslator(object):
             aux_seq_index = aux_tags.index('_Entity_deleted_atom.Comp_index_ID')
             aux_atom_index = aux_tags.index('_Entity_deleted_atom.Atom_ID')
 
+        seq_list = {}
+        nef_mapping = {}
+
         for cid, star_chain in enumerate(self.authChainId):
+
+            seq_list[star_chain] = sorted(set([int(i[seq_index]) for i in loop_data if i[chain_index] == star_chain]))
+
+            if len(seq_list[star_chain]) == 0:
+                continue
+
+            if cid <= 26:
+                nef_chain = str(chr(65 + cid))
+            else:
+                nef_chain = str(chr(65 + (cid // 26))) + str(chr(65 + (cid % 26)))
+
+            nef_mapping[star_chain] = nef_chain
+
+        if not report is None:
+
+            cif_mapping = {}
+
+            for star_chain in self.authChainId:
+
+                if len(seq_list[star_chain]) == 0:
+                    continue
+
+                cif_chain = None
+                if not report is None:
+                    seq_align = report.getSequenceAlignmentWithNmrChainId(star_chain)
+                    if not seq_align is None:
+                        cif_chain = seq_align['test_chain_id']
+
+                cif_mapping[star_chain] = cif_chain
+
+            for star_chain in nef_mapping.keys():
+                if cif_mapping[star_chain] is None:
+                    for _star_chain in [k for k, v in nef_mapping.items() if v != nef_mapping[star_chain]]:
+                        if not nef_mapping[_star_chain] in cif_mapping.values():
+                            cif_mapping[star_chain] = nef_mapping[_star_chain]
+                            break
+
+        for star_chain in self.authChainId:
 
             _star_chain = int(star_chain)
 
-            seq_list = sorted(set([int(i[seq_index]) for i in loop_data if i[chain_index] == star_chain]))
-
-            if len(seq_list) == 0:
+            if len(seq_list[star_chain]) == 0:
                 continue
 
-            cif_chain = None
-            if not report is None:
-                seq_align = report.getSequenceAlignmentWithNmrChainId(star_chain)
-                if not seq_align is None:
-                    cif_chain = seq_align['test_chain_id']
-
-            if cif_chain is None:
-                if cid <= 26:
-                    nef_chain = str(chr(65 + cid))
-                else:
-                    nef_chain = str(chr(65 + (cid // 26))) + str(chr(65 + (cid % 26)))
-            else:
-                cid = self.letter_to_int(cif_chain) - 1
-                if cid <= 26:
-                    nef_chain = str(chr(65 + cid))
-                else:
-                    nef_chain = str(chr(65 + (cid // 26))) + str(chr(65 + (cid % 26)))
+            nef_chain = nef_mapping[star_chain]
+            cif_chain = None if report is None else cif_mapping[star_chain]
 
             offset = None
 
-            for _star_seq in seq_list:
+            for _star_seq in seq_list[star_chain]:
 
                 _cif_seq = None
                 if not cif_chain is None:
@@ -4555,7 +4579,7 @@ class NEFTranslator(object):
 
             _star_chain = int(star_chain)
 
-            for _star_seq in sorted([s for c, s in self.authSeqMap.keys() if c == _star_chain]):
+            for _star_seq in sorted([s for c, s in self.selfSeqMap.keys() if c == _star_chain]):
 
                 star_seq = str(_star_seq)
 
@@ -4573,7 +4597,7 @@ class NEFTranslator(object):
 
                 seq_key = (_star_chain, _star_seq)
 
-                cif_chain, _cif_seq = self.authSeqMap[seq_key]
+                cif_chain, _cif_seq = self.selfSeqMap[seq_key]
 
                 if not seq_key in self.atomIdMap:
                     self.atomIdMap[seq_key] = {}
@@ -4924,18 +4948,22 @@ class NEFTranslator(object):
                     seq_key = (_star_chain, _star_seq)
 
                     try:
-                        tag_map[chain_tag], tag_map[seq_tag] = self.authSeqMap[seq_key]
+                        tag_map[chain_tag], tag_map[seq_tag] = self.selfSeqMap[seq_key]
                     except KeyError:
-                        if _star_chain in self.empty_value or not _star_chain in self.authChainId:
-                            nef_chain = _star_chain
-                        else:
-                            cid = self.authChainId.index(_star_chain)
-                            if cid <= 26:
-                                nef_chain = str(chr(65 + cid))
+                        try:
+                            tag_map[chain_tag] = self.selfSeqMap[(_star_chain, 1)][0]
+                            tag_map[seq_tag] = _star_seq
+                        except KeyError:
+                            if _star_chain in self.empty_value or not _star_chain in self.authChainId:
+                                nef_chain = _star_chain
                             else:
-                                nef_chain = str(chr(65 + (cid // 26))) + str(chr(65 + (cid % 26)))
-                        tag_map[chain_tag] = nef_chain
-                        tag_map[seq_tag] = _star_seq
+                                cid = self.authChainId.index(_star_chain)
+                                if cid <= 26:
+                                    nef_chain = str(chr(65 + cid))
+                                else:
+                                    nef_chain = str(chr(65 + (cid // 26))) + str(chr(65 + (cid % 26)))
+                            tag_map[chain_tag] = nef_chain
+                            tag_map[seq_tag] = _star_seq
 
                     if chain_tag == chain_tag_1:
                         seq_key_1 = seq_key
@@ -5613,18 +5641,22 @@ class NEFTranslator(object):
                     seq_key = (_star_chain, _star_seq)
 
                     try:
-                        tag_map[chain_tag], tag_map[seq_tag] = self.authSeqMap[seq_key]
+                        tag_map[chain_tag], tag_map[seq_tag] = self.selfSeqMap[seq_key]
                     except KeyError:
-                        if _star_chain in self.empty_value or not _star_chain in self.authChainId:
-                            nef_chain = _star_chain
-                        else:
-                            cid = self.authChainId.index(_star_chain)
-                            if cid <= 26:
-                                nef_chain = str(chr(65 + cid))
+                        try:
+                            tag_map[chain_tag] = self.selfSeqMap[(_star_chain, 1)][0]
+                            tag_map[seq_tag] = _star_seq
+                        except KeyError:
+                            if _star_chain in self.empty_value or not _star_chain in self.authChainId:
+                                nef_chain = _star_chain
                             else:
-                                nef_chain = str(chr(65 + (cid // 26))) + str(chr(65 + (cid % 26)))
-                        tag_map[chain_tag] = nef_chain
-                        tag_map[seq_tag] = _star_seq
+                                cid = self.authChainId.index(_star_chain)
+                                if cid <= 26:
+                                    nef_chain = str(chr(65 + cid))
+                                else:
+                                    nef_chain = str(chr(65 + (cid // 26))) + str(chr(65 + (cid % 26)))
+                            tag_map[chain_tag] = nef_chain
+                            tag_map[seq_tag] = _star_seq
 
                     s.append(seq_key)
 
@@ -5777,18 +5809,22 @@ class NEFTranslator(object):
                 _star_seq = int(_star_seq)
 
             try:
-                tag_map[chain_tag], tag_map[seq_tag] = self.authSeqMap[(_star_chain, _star_seq)]
+                tag_map[chain_tag], tag_map[seq_tag] = self.selfSeqMap[(_star_chain, _star_seq)]
             except KeyError:
-                if _star_chain in self.empty_value or not _star_chain in self.authChainId:
-                    nef_chain = _star_chain
-                else:
-                    cid = self.authChainId.index(_star_chain)
-                    if cid <= 26:
-                        nef_chain = str(chr(65 + cid))
+                try:
+                    tag_map[chain_tag] = self.selfSeqMap[(_star_chain, 1)][0]
+                    tag_map[seq_tag] = _star_seq
+                except KeyError:
+                    if _star_chain in self.empty_value or not _star_chain in self.authChainId:
+                        nef_chain = _star_chain
                     else:
-                        nef_chain = str(chr(65 + (cid // 26))) + str(chr(65 + (cid % 26)))
-                tag_map[chain_tag] = nef_chain
-                tag_map[seq_tag] = _star_seq
+                        cid = self.authChainId.index(_star_chain)
+                        if cid <= 26:
+                            nef_chain = str(chr(65 + cid))
+                        else:
+                            nef_chain = str(chr(65 + (cid // 26))) + str(chr(65 + (cid % 26)))
+                    tag_map[chain_tag] = nef_chain
+                    tag_map[seq_tag] = _star_seq
 
         out = [None] * len(nef_tags)
 
@@ -5936,17 +5972,21 @@ class NEFTranslator(object):
                         seq_key = (_star_chain, _star_seq)
 
                         try:
-                            nef_chain, nef_seq = self.authSeqMap[seq_key]
+                            nef_chain, nef_seq = self.selfSeqMap[seq_key]
                         except KeyError:
-                            if _star_chain in self.empty_value or not _star_chain in self.authChainId:
-                                nef_chain = _star_chain
-                            else:
-                                cid = self.authChainId.index(_star_chain)
-                                if cid <= 26:
-                                    nef_chain = str(chr(65 + cid))
+                            try:
+                                nef_chain = self.selfSeqMap[(_star_chain, 1)][0]
+                                nef_seq = _star_seq
+                            except KeyError:
+                                if _star_chain in self.empty_value or not _star_chain in self.authChainId:
+                                    nef_chain = _star_chain
                                 else:
-                                    nef_chain = str(chr(65 + (cid // 26))) + str(chr(65 + (cid % 26)))
-                            nef_seq = _star_seq
+                                    cid = self.authChainId.index(_star_chain)
+                                    if cid <= 26:
+                                        nef_chain = str(chr(65 + cid))
+                                    else:
+                                        nef_chain = str(chr(65 + (cid // 26))) + str(chr(65 + (cid % 26)))
+                                nef_seq = _star_seq
 
                         out[l] = nef_chain
                         out[l + 1] = nef_seq

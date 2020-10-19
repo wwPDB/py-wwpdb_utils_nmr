@@ -4169,8 +4169,10 @@ class NEFTranslator(object):
             aux_seq_index = aux_tags.index('_Entity_deleted_atom.Comp_index_ID')
             aux_atom_index = aux_tags.index('_Entity_deleted_atom.Atom_ID')
 
+        self.star2nef_chain_mapping = {}
+        self.star2cif_chain_mapping = {}
+
         seq_list = {}
-        nef_mapping = {}
 
         for cid, star_chain in enumerate(self.authChainId):
 
@@ -4184,11 +4186,9 @@ class NEFTranslator(object):
             else:
                 nef_chain = str(chr(65 + (cid // 26))) + str(chr(65 + (cid % 26)))
 
-            nef_mapping[star_chain] = nef_chain
+            self.star2nef_chain_mapping[star_chain] = nef_chain
 
         if not report is None:
-
-            cif_mapping = {}
 
             for star_chain in self.authChainId:
 
@@ -4201,13 +4201,13 @@ class NEFTranslator(object):
                     if not seq_align is None:
                         cif_chain = seq_align['test_chain_id']
 
-                cif_mapping[star_chain] = cif_chain
+                self.star2cif_chain_mapping[star_chain] = cif_chain
 
-            for star_chain in nef_mapping.keys():
-                if cif_mapping[star_chain] is None:
-                    for _star_chain in [k for k, v in nef_mapping.items() if v != nef_mapping[star_chain]]:
-                        if not nef_mapping[_star_chain] in cif_mapping.values():
-                            cif_mapping[star_chain] = nef_mapping[_star_chain]
+            for star_chain in self.star2nef_chain_mapping.keys():
+                if self.star2cif_chain_mapping[star_chain] is None:
+                    for _star_chain in [k for k, v in self.star2nef_chain_mapping.items() if v != self.star2nef_chain_mapping[star_chain]]:
+                        if not self.star2nef_chain_mapping[_star_chain] in self.star2cif_chain_mapping.values():
+                            self.star2cif_chain_mapping[star_chain] = self.star2nef_chain_mapping[_star_chain]
                             break
 
         for star_chain in self.authChainId:
@@ -4217,8 +4217,12 @@ class NEFTranslator(object):
             if len(seq_list[star_chain]) == 0:
                 continue
 
-            nef_chain = nef_mapping[star_chain]
-            cif_chain = None if report is None else cif_mapping[star_chain]
+            nef_chain = self.star2nef_chain_mapping[star_chain]
+
+            cif_chain = None
+            if not report is None:
+                cif_chain = self.star2cif_chain_mapping[star_chain]
+                seq_align = report.getSequenceAlignmentWithNmrChainId(star_chain)
 
             offset = None
 
@@ -4578,8 +4582,9 @@ class NEFTranslator(object):
         for star_chain in self.authChainId:
 
             _star_chain = int(star_chain)
+            _cif_chain = None if not star_chain in self.star2cif_chain_mapping else self.star2cif_chain_mapping[star_chain]
 
-            for _star_seq in sorted([s for c, s in self.selfSeqMap.keys() if c == _star_chain]):
+            for _star_seq in sorted([s for c, s in self.authSeqMap.keys() if c == _star_chain]):
 
                 star_seq = str(_star_seq)
 
@@ -4597,7 +4602,10 @@ class NEFTranslator(object):
 
                 seq_key = (_star_chain, _star_seq)
 
-                cif_chain, _cif_seq = self.selfSeqMap[seq_key]
+                cif_chain, _cif_seq = self.authSeqMap[seq_key]
+
+                if not _cif_chain is None:
+                    cif_chain = _cif_chain
 
                 if not seq_key in self.atomIdMap:
                     self.atomIdMap[seq_key] = {}
@@ -4937,8 +4945,9 @@ class NEFTranslator(object):
                     chain_tag = tag['chain_tag']
                     seq_tag = tag['seq_tag']
 
-                    _star_chain = i[star_tags.index(chain_tag)]
-                    if type(_star_chain) == str and not _star_chain in self.empty_value:
+                    star_chain = i[star_tags.index(chain_tag)]
+                    _star_chain = star_chain
+                    if type(star_chain) == str and not star_chain in self.empty_value:
                         _star_chain = int(_star_chain)
 
                     _star_seq = i[star_tags.index(seq_tag)]
@@ -4948,7 +4957,7 @@ class NEFTranslator(object):
                     seq_key = (_star_chain, _star_seq)
 
                     try:
-                        tag_map[chain_tag], tag_map[seq_tag] = self.selfSeqMap[seq_key]
+                        tag_map[chain_tag], tag_map[seq_tag] = self.authSeqMap[seq_key]
                     except KeyError:
                         try:
                             tag_map[chain_tag] = self.selfSeqMap[(_star_chain, 1)][0]
@@ -4964,6 +4973,9 @@ class NEFTranslator(object):
                                     nef_chain = str(chr(65 + (cid // 26))) + str(chr(65 + (cid % 26)))
                             tag_map[chain_tag] = nef_chain
                             tag_map[seq_tag] = _star_seq
+
+                    if star_chain in self.star2cif_chain_mapping:
+                        tag_map[chain_tag] = self.star2cif_chain_mapping[star_chain]
 
                     if chain_tag == chain_tag_1:
                         seq_key_1 = seq_key
@@ -5641,7 +5653,7 @@ class NEFTranslator(object):
                     seq_key = (_star_chain, _star_seq)
 
                     try:
-                        tag_map[chain_tag], tag_map[seq_tag] = self.selfSeqMap[seq_key]
+                        tag_map[chain_tag], tag_map[seq_tag] = self.authSeqMap[seq_key]
                     except KeyError:
                         try:
                             tag_map[chain_tag] = self.selfSeqMap[(_star_chain, 1)][0]
@@ -5657,6 +5669,9 @@ class NEFTranslator(object):
                                     nef_chain = str(chr(65 + (cid // 26))) + str(chr(65 + (cid % 26)))
                             tag_map[chain_tag] = nef_chain
                             tag_map[seq_tag] = _star_seq
+
+                    if star_chain in self.star2cif_chain_mapping:
+                        tag_map[chain_tag] = self.star2cif_chain_mapping[star_chain]
 
                     s.append(seq_key)
 
@@ -5800,8 +5815,9 @@ class NEFTranslator(object):
             chain_tag = tag['chain_tag']
             seq_tag = tag['seq_tag']
 
-            _star_chain = in_row[star_tags.index(chain_tag)]
-            if type(_star_chain) == str and not _star_chain in self.empty_value:
+            star_chain = in_row[star_tags.index(chain_tag)]
+            _star_chain = star_chain
+            if type(star_chain) == str and not star_chain in self.empty_value:
                 _star_chain = int(_star_chain)
 
             _star_seq = in_row[star_tags.index(seq_tag)]
@@ -5809,7 +5825,7 @@ class NEFTranslator(object):
                 _star_seq = int(_star_seq)
 
             try:
-                tag_map[chain_tag], tag_map[seq_tag] = self.selfSeqMap[(_star_chain, _star_seq)]
+                tag_map[chain_tag], tag_map[seq_tag] = self.authSeqMap[(_star_chain, _star_seq)]
             except KeyError:
                 try:
                     tag_map[chain_tag] = self.selfSeqMap[(_star_chain, 1)][0]
@@ -5825,6 +5841,9 @@ class NEFTranslator(object):
                             nef_chain = str(chr(65 + (cid // 26))) + str(chr(65 + (cid % 26)))
                     tag_map[chain_tag] = nef_chain
                     tag_map[seq_tag] = _star_seq
+
+            if star_chain in self.star2cif_chain_mapping:
+                tag_map[chain_tag] = self.star2cif_chain_mapping[star_chain]
 
         out = [None] * len(nef_tags)
 
@@ -5972,7 +5991,7 @@ class NEFTranslator(object):
                         seq_key = (_star_chain, _star_seq)
 
                         try:
-                            nef_chain, nef_seq = self.selfSeqMap[seq_key]
+                            nef_chain, nef_seq = self.authSeqMap[seq_key]
                         except KeyError:
                             try:
                                 nef_chain = self.selfSeqMap[(_star_chain, 1)][0]
@@ -5987,6 +6006,9 @@ class NEFTranslator(object):
                                     else:
                                         nef_chain = str(chr(65 + (cid // 26))) + str(chr(65 + (cid % 26)))
                                 nef_seq = _star_seq
+
+                        if star_chain in self.star2cif_chain_mapping:
+                            nef_chain = self.star2cif_chain_mapping[star_chain]
 
                         out[l] = nef_chain
                         out[l + 1] = nef_seq

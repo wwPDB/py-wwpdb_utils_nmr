@@ -10008,8 +10008,8 @@ class NmrDpUtility(object):
 
             try:
 
-                min_points = []
-                max_points = []
+                min_points = [None] * num_dim
+                max_points = [None] * num_dim
 
                 for i in range(1, max_dim):
 
@@ -10055,8 +10055,10 @@ class NmrDpUtility(object):
                             min_point = last_point - (sp_width if abs else 0.0)
                             max_point = first_point + (sp_width if abs else 0.0)
 
-                        min_points.append(None if min_point is None else float('{:.7f}'.format(min_point)))
-                        max_points.append(None if max_point is None else float('{:.7f}'.format(max_point)))
+                        if not min_point is None:
+                            min_points[i - 1] = float('{:.7f}'.format(min_point))
+                        if not max_point is None:
+                            max_points[i - 1] = float('{:.7f}'.format(max_point))
 
                         break
 
@@ -10208,6 +10210,14 @@ class NmrDpUtility(object):
 
                             if self.__verbose:
                                 self.__lfh.write("+NmrDpUtility.__testDataConsistencyInAuxLoopOfSpectralPeakAlt() ++ ValueError  - %s\n" % err)
+
+            except ValueError as e:
+
+                self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': str(e).strip("'")})
+                self.report.setError()
+
+                if self.__verbose:
+                    self.__lfh.write("+NmrDpUtility.__testDataConsistencyInAuxLoopOfSpectralPeakAlt() ++ ValueError  - %s" % str(e))
 
             except Exception as e:
 
@@ -13117,6 +13127,14 @@ class NmrDpUtility(object):
 
                                 if self.__verbose:
                                     self.__lfh.write("+NmrDpUtility.__testResidueVariant() ++ Error  - %s\n" % err)
+
+        except ValueError as e:
+
+            self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': str(e).strip("'")})
+            self.report.setError()
+
+            if self.__verbose:
+                self.__lfh.write("+NmrDpUtility.__testResidueVariant() ++ ValueError  - %s" % str(e))
 
         except Exception as e:
 
@@ -18475,8 +18493,6 @@ class NmrDpUtility(object):
 
                 if self.__verbose:
                     self.__lfh.write("+NmrDpUtility.__parseCoordinate() ++ Error  - %s\n" % err)
-
-                return False
 
             elif self.__total_models < 5:
                 warn = "Coordinate file has %s models. We encourage you to deposit a sufficient number of models in the ensemble." % (self.__total_models)

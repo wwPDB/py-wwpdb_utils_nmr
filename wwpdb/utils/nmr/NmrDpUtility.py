@@ -491,6 +491,52 @@ def dihedral_angle(p0, p1, p2, p3):
 
     return np.degrees(np.arctan2(y, x))
 
+def score_of_seq_align(my_align):
+    """ Return score of sequence alignment.
+    """
+
+    length = len(my_align)
+
+    aligned = [True] * length
+
+    for i in range(length):
+        myPr = my_align[i]
+        myPr0 = str(myPr[0])
+        myPr1 = str(myPr[1])
+        if myPr0 == '.' or myPr1 == '.':
+            aligned[i] = False
+            pass
+        elif myPr0 != myPr1:
+            pass
+        else:
+            break
+
+    not_aligned = True
+    offset_1 = 0
+    offset_2 = 0
+
+    unmapped = 0
+    conflict = 0
+    _matched = 0
+    for i in range(length):
+        myPr = my_align[i]
+        myPr0 = str(myPr[0])
+        myPr1 = str(myPr[1])
+        if myPr0 == '.' or myPr1 == '.':
+            if not_aligned and not aligned[i]:
+                if myPr0 == '.' and myPr1 != '.':
+                    offset_1 += 1
+                if myPr0 != '.' and myPr1 == '.':
+                    offset_2 += 1
+            unmapped += 1
+        elif myPr0 != myPr1:
+            conflict += 1
+        else:
+            not_aligned = False
+            _matched += 1
+
+    return _matched, unmapped, conflict, offset_1, offset_2
+
 class NmrDpUtility(object):
     """ Wrapper class for data processing for NMR data.
     """
@@ -6917,6 +6963,9 @@ class NmrDpUtility(object):
 
                         for s2 in ps2:
 
+                            if sf_framecode2 in ref_chain_ids and  _chain_id in ref_chain_ids[sf_framecode2]:
+                                continue
+
                             if _chain_id != s2['chain_id']:
                                 continue
 
@@ -6936,50 +6985,11 @@ class NmrDpUtility(object):
                             if length == 0:
                                 continue
 
-                            aligned = [True] * length
-
-                            for i in range(length):
-                                myPr = myAlign[i]
-                                myPr0 = str(myPr[0])
-                                myPr1 = str(myPr[1])
-                                if myPr0 == '.' or myPr1 == '.':
-                                    aligned[i] = False
-                                    pass
-                                elif myPr0 != myPr1:
-                                    pass
-                                else:
-                                    break
-
-                            not_aligned = True
-                            offset_1 = 0
-                            offset_2 = 0
-
-                            unmapped = 0
-                            conflict = 0
-                            _matched = 0
-                            #_first_matched_comp_id = None
-                            for i in range(length):
-                                myPr = myAlign[i]
-                                myPr0 = str(myPr[0])
-                                myPr1 = str(myPr[1])
-                                if myPr0 == '.' or myPr1 == '.':
-                                    if not_aligned and not aligned[i]:
-                                        if myPr0 == '.' and myPr1 != '.':
-                                            offset_1 += 1
-                                        if myPr0 != '.' and myPr1 == '.':
-                                            offset_2 += 1
-                                    unmapped += 1
-                                elif myPr0 != myPr1:
-                                    conflict += 1
-                                else:
-                                    not_aligned = False
-                                    _matched += 1
-                                    #if _first_matched_comp_id is None:
-                                    #    _first_matched_comp_id = myPr0
+                            _matched, unmapped, conflict, offset_1, offset_2 = score_of_seq_align(myAlign)
 
                             alt_chain = False
 
-                            if length == unmapped + conflict or _matched < conflict: # or (_matched == 1 and s1['comp_id'].count(_first_matched_comp_id) > 1):
+                            if length == unmapped + conflict or _matched < conflict:
 
                                 if self.__tolerant_seq_align and _matched < conflict and len(polymer_sequence) > 1:
 
@@ -7004,6 +7014,9 @@ class NmrDpUtility(object):
                                         else:
                                             _chain_id_ = chain_id_
 
+                                        if sf_framecode2 in ref_chain_ids and _chain_id in ref_chain_ids[sf_framecode2]:
+                                            continue
+
                                         self.__pA.setReferenceSequence(_s1['comp_id'], 'REF' + _chain_id_)
                                         self.__pA.addTestSequence(s2['comp_id'], _chain_id_)
                                         self.__pA.doAlign()
@@ -7015,48 +7028,9 @@ class NmrDpUtility(object):
                                         if length == 0:
                                             continue
 
-                                        aligned = [True] * length
+                                        _matched, unmapped, conflict, offset_1, offset_2 = score_of_seq_align(myAlign)
 
-                                        for i in range(length):
-                                            myPr = myAlign[i]
-                                            myPr0 = str(myPr[0])
-                                            myPr1 = str(myPr[1])
-                                            if myPr0 == '.' or myPr1 == '.':
-                                                aligned[i] = False
-                                                pass
-                                            elif myPr0 != myPr1:
-                                                pass
-                                            else:
-                                                break
-
-                                        not_aligned = True
-                                        offset_1 = 0
-                                        offset_2 = 0
-
-                                        unmapped = 0
-                                        conflict = 0
-                                        _matched = 0
-                                        #_first_matched_comp_id = None
-                                        for i in range(length):
-                                            myPr = myAlign[i]
-                                            myPr0 = str(myPr[0])
-                                            myPr1 = str(myPr[1])
-                                            if myPr0 == '.' or myPr1 == '.':
-                                                if not_aligned and not aligned[i]:
-                                                    if myPr0 == '.' and myPr1 != '.':
-                                                        offset_1 += 1
-                                                    if myPr0 != '.' and myPr1 == '.':
-                                                        offset_2 += 1
-                                                unmapped += 1
-                                            elif myPr0 != myPr1:
-                                                conflict += 1
-                                            else:
-                                                not_aligned = False
-                                                _matched += 1
-                                                #if _first_matched_comp_id is None:
-                                                #    _first_matched_comp_id = myPr0
-
-                                        if length == unmapped + conflict or _matched < conflict: # or (_matched == 1 and s1['comp_id'].count(_first_matched_comp_id) > 1):
+                                        if length == unmapped + conflict or _matched < conflict:
                                             continue
 
                                         if _matched - conflict < __matched - __conflict or unmapped + conflict > __unmapped + __conflict:
@@ -7260,21 +7234,22 @@ class NmrDpUtility(object):
                     for ps_in_loop in polymer_sequence_in_loop[content_subtype]:
                         ps2 = ps_in_loop['polymer_sequence']
                         sf_framecode2 = ps_in_loop['sf_framecode']
-
-                        if sf_framecode2 in ref_chain_ids:
-
-                            if not sf_framecode2 in map_chain_ids or len(map_chain_ids[sf_framecode2]) + 2 > len(ps2):
-                                continue
-
-                            if _chain_id in ref_chain_ids[sf_framecode2]:
-                                continue
-
+                        """
+                        if sf_framecode2 in map_chain_ids and len(map_chain_ids[sf_framecode2]) + 2 > len(ps2):
+                            continue
+                        """
                         fixed = False
 
-                        for s2 in ps2:
+                        for s2 in reversed(ps2):
+
+                            if sf_framecode2 in ref_chain_ids and _chain_id in ref_chain_ids[sf_framecode2]:
+                                continue
+
+                            if sf_framecode2 in dst_chain_ids and s2['chain_id'] in dst_chain_ids[sf_framecode2]:
+                                continue
 
                             if (_chain_id != s2['chain_id'] and not self.__tolerant_seq_align) or fixed:
-                                continue
+                                break
 
                             _s2 = fill_blank_comp_id_with_offset(s2, 0)
 
@@ -7292,50 +7267,11 @@ class NmrDpUtility(object):
                             if length == 0:
                                 continue
 
-                            aligned = [True] * length
-
-                            for i in range(length):
-                                myPr = myAlign[i]
-                                myPr0 = str(myPr[0])
-                                myPr1 = str(myPr[1])
-                                if myPr0 == '.' or myPr1 == '.':
-                                    aligned[i] = False
-                                    pass
-                                elif myPr0 != myPr1:
-                                    pass
-                                else:
-                                    break
-
-                            not_aligned = True
-                            offset_1 = 0
-                            offset_2 = 0
-
-                            unmapped = 0
-                            conflict = 0
-                            _matched = 0
-                            #_first_matched_comp_id = None
-                            for i in range(length):
-                                myPr = myAlign[i]
-                                myPr0 = str(myPr[0])
-                                myPr1 = str(myPr[1])
-                                if myPr0 == '.' or myPr1 == '.':
-                                    if not_aligned and not aligned[i]:
-                                        if myPr0 == '.' and myPr1 != '.':
-                                            offset_1 += 1
-                                        if myPr0 != '.' and myPr1 == '.':
-                                            offset_2 += 1
-                                    unmapped += 1
-                                elif myPr0 != myPr1:
-                                    conflict += 1
-                                else:
-                                    not_aligned = False
-                                    _matched += 1
-                                    #if _first_matched_comp_id is None:
-                                    #    _first_matched_comp_id = myPr0
+                            _matched, unmapped, conflict, offset_1, offset_2 = score_of_seq_align(myAlign)
 
                             alt_chain = False
 
-                            if length == unmapped + conflict or _matched < conflict: # or (_matched == 1 and s1['comp_id'].count(_first_matched_comp_id) > 1):
+                            if length == unmapped + conflict or _matched < conflict:
 
                                 if self.__tolerant_seq_align and _matched < conflict and len(polymer_sequence) > 1:
 
@@ -7360,6 +7296,9 @@ class NmrDpUtility(object):
                                         else:
                                             _chain_id_ = chain_id_
 
+                                        if sf_framecode2 in ref_chain_ids and _chain_id in ref_chain_ids[sf_framecode2]:
+                                            continue
+
                                         self.__pA.setReferenceSequence(_s1['comp_id'], 'REF' + _chain_id_)
                                         self.__pA.addTestSequence(s2['comp_id'], _chain_id_)
                                         self.__pA.doAlign()
@@ -7371,48 +7310,9 @@ class NmrDpUtility(object):
                                         if length == 0:
                                             continue
 
-                                        aligned = [True] * length
+                                        _matched, unmapped, conflict, offset_1, offset_2 = score_of_seq_align(myAlign)
 
-                                        for i in range(length):
-                                            myPr = myAlign[i]
-                                            myPr0 = str(myPr[0])
-                                            myPr1 = str(myPr[1])
-                                            if myPr0 == '.' or myPr1 == '.':
-                                                aligned[i] = False
-                                                pass
-                                            elif myPr0 != myPr1:
-                                                pass
-                                            else:
-                                                break
-
-                                        not_aligned = True
-                                        offset_1 = 0
-                                        offset_2 = 0
-
-                                        unmapped = 0
-                                        conflict = 0
-                                        _matched = 0
-                                        #_first_matched_comp_id = None
-                                        for i in range(length):
-                                            myPr = myAlign[i]
-                                            myPr0 = str(myPr[0])
-                                            myPr1 = str(myPr[1])
-                                            if myPr0 == '.' or myPr1 == '.':
-                                                if not_aligned and not aligned[i]:
-                                                    if myPr0 == '.' and myPr1 != '.':
-                                                        offset_1 += 1
-                                                    if myPr0 != '.' and myPr1 == '.':
-                                                        offset_2 += 1
-                                                unmapped += 1
-                                            elif myPr0 != myPr1:
-                                                conflict += 1
-                                            else:
-                                                not_aligned = False
-                                                _matched += 1
-                                                #if _first_matched_comp_id is None:
-                                                #    _first_matched_comp_id = myPr0
-
-                                        if length == unmapped + conflict or _matched < conflict: # or (_matched == 1 and s1['comp_id'].count(_first_matched_comp_id) > 1):
+                                        if length == unmapped + conflict or _matched < conflict:
                                             continue
 
                                         if _matched - conflict < __matched - __conflict or unmapped + conflict > __unmapped + __conflict:
@@ -7483,6 +7383,11 @@ class NmrDpUtility(object):
 
                                 alt_chain = True
                                 fixed = True
+
+                            if not sf_framecode2 in ref_chain_ids:
+                                ref_chain_ids[sf_framecode2] = []
+
+                            ref_chain_ids[sf_framecode2].append(_chain_id)
 
                             _s1 = s1 if offset_1 == 0 else fill_blank_comp_id_with_offset(s1, offset_1)
                             _s2 = s2 if offset_2 == 0 else fill_blank_comp_id_with_offset(s2, offset_2)
@@ -7665,48 +7570,9 @@ class NmrDpUtility(object):
                                     if length == 0:
                                         continue
 
-                                    aligned = [True] * length
+                                    _matched, unmapped, conflict, offset_1, offset_2 = score_of_seq_align(myAlign)
 
-                                    for i in range(length):
-                                        myPr = myAlign[i]
-                                        myPr0 = str(myPr[0])
-                                        myPr1 = str(myPr[1])
-                                        if myPr0 == '.' or myPr1 == '.':
-                                            aligned[i] = False
-                                            pass
-                                        elif myPr0 != myPr1:
-                                            pass
-                                        else:
-                                            break
-
-                                    not_aligned = True
-                                    offset_1 = 0
-                                    offset_2 = 0
-
-                                    unmapped = 0
-                                    conflict = 0
-                                    _matched = 0
-                                    #_first_matched_comp_id = None
-                                    for i in range(length):
-                                        myPr = myAlign[i]
-                                        myPr0 = str(myPr[0])
-                                        myPr1 = str(myPr[1])
-                                        if myPr0 == '.' or myPr1 == '.':
-                                            if not_aligned and not aligned[i]:
-                                                if myPr0 == '.' and myPr1 != '.':
-                                                    offset_1 += 1
-                                                if myPr0 != '.' and myPr1 == '.':
-                                                    offset_2 += 1
-                                            unmapped += 1
-                                        elif myPr0 != myPr1:
-                                            conflict += 1
-                                        else:
-                                            not_aligned = False
-                                            _matched += 1
-                                            #if _first_matched_comp_id is None:
-                                            #    _first_matched_comp_id = myPr0
-
-                                    if length == unmapped + conflict or _matched < conflict: # or (_matched == 1 and s1['comp_id'].count(_first_matched_comp_id) > 1):
+                                    if length == unmapped + conflict or _matched < conflict:
                                         continue
 
                                     _s1 = s1 if offset_1 == 0 else fill_blank_comp_id_with_offset(s1, offset_1)
@@ -19122,41 +18988,7 @@ class NmrDpUtility(object):
                             if length == 0:
                                 continue
 
-                            aligned = [True] * length
-
-                            for i in range(length):
-                                myPr = myAlign[i]
-                                myPr0 = str(myPr[0])
-                                myPr1 = str(myPr[1])
-                                if myPr0 == '.' or myPr1 == '.':
-                                    aligned[i] = False
-                                    pass
-                                elif myPr0 != myPr1:
-                                    pass
-                                else:
-                                    break
-
-                            not_aligned = True
-                            offset_1 = 0
-                            offset_2 = 0
-
-                            unmapped = 0
-                            conflict = 0
-                            for i in range(length):
-                                myPr = myAlign[i]
-                                myPr0 = str(myPr[0])
-                                myPr1 = str(myPr[1])
-                                if myPr0 == '.' or myPr1 == '.':
-                                    if not_aligned and not aligned[i]:
-                                        if myPr0 == '.' and myPr1 != '.':
-                                            offset_1 += 1
-                                        if myPr0 != '.' and myPr1 == '.':
-                                            offset_2 += 1
-                                    unmapped += 1
-                                elif myPr0 != myPr1:
-                                    conflict += 1
-                                else:
-                                    not_aligned = False
+                            _matched, unmapped, conflict, offset_1, offset_2 = score_of_seq_align(myAlign)
 
                             if length == unmapped + conflict:
                                 continue
@@ -19230,43 +19062,7 @@ class NmrDpUtility(object):
                 if length == 0:
                     continue
 
-                aligned = [True] * length
-
-                for i in range(length):
-                    myPr = myAlign[i]
-                    myPr0 = str(myPr[0])
-                    myPr1 = str(myPr[1])
-                    if myPr0 == '.' or myPr1 == '.':
-                        aligned[i] = False
-                        pass
-                    elif myPr0 != myPr1:
-                        pass
-                    else:
-                        break
-
-                not_aligned = True
-                offset_1 = 0
-                offset_2 = 0
-
-                unmapped = 0
-                conflict = 0
-                _matched = 0
-                for i in range(length):
-                    myPr = myAlign[i]
-                    myPr0 = str(myPr[0])
-                    myPr1 = str(myPr[1])
-                    if myPr0 == '.' or myPr1 == '.':
-                        if not_aligned and not aligned[i]:
-                            if myPr0 == '.' and myPr1 != '.':
-                                offset_1 += 1
-                            if myPr0 != '.' and myPr1 == '.':
-                                offset_2 += 1
-                        unmapped += 1
-                    elif myPr0 != myPr1:
-                        conflict += 1
-                    else:
-                        not_aligned = False
-                        _matched += 1
+                _matched, unmapped, conflict, offset_1, offset_2 = score_of_seq_align(myAlign)
 
                 if length == unmapped + conflict or _matched < conflict:
                     continue
@@ -19366,43 +19162,7 @@ class NmrDpUtility(object):
                 if length == 0:
                     continue
 
-                aligned = [True] * length
-
-                for i in range(length):
-                    myPr = myAlign[i]
-                    myPr0 = str(myPr[0])
-                    myPr1 = str(myPr[1])
-                    if myPr0 == '.' or myPr1 == '.':
-                        aligned[i] = False
-                        pass
-                    elif myPr0 != myPr1:
-                        pass
-                    else:
-                        break
-
-                not_aligned = True
-                offset_1 = 0
-                offset_2 = 0
-
-                unmapped = 0
-                conflict = 0
-                _matched = 0
-                for i in range(length):
-                    myPr = myAlign[i]
-                    myPr0 = str(myPr[0])
-                    myPr1 = str(myPr[1])
-                    if myPr0 == '.' or myPr1 == '.':
-                        if not_aligned and not aligned[i]:
-                            if myPr0 == '.' and myPr1 != '.':
-                                offset_1 += 1
-                            if myPr0 != '.' and myPr1 == '.':
-                                offset_2 += 1
-                        unmapped += 1
-                    elif myPr0 != myPr1:
-                        conflict += 1
-                    else:
-                        not_aligned = False
-                        _matched += 1
+                _matched, unmapped, conflict, offset_1, offset_2 = score_of_seq_align(myAlign)
 
                 if length == unmapped + conflict or _matched < conflict:
                     continue
@@ -26701,7 +26461,7 @@ i                               """
 
             try:
 
-                is_valid, json_dumps = self.__nefT.nef_to_nmrstar(self.__dstPath, out_file_path, report=(None if self.__alt_chain else self.report))
+                is_valid, json_dumps = self.__nefT.nef_to_nmrstar(self.__dstPath, out_file_path, report=self.report) # (None if self.__alt_chain else self.report))
 
                 if self.__release_mode and not self.__tmpPath is None:
                     os.remove(self.__tmpPath)
@@ -26812,7 +26572,7 @@ i                               """
 
             try:
 
-                is_valid, json_dumps = self.__nefT.nmrstar_to_nef(self.__dstPath, out_file_path, report=(None if self.__alt_chain else self.report))
+                is_valid, json_dumps = self.__nefT.nmrstar_to_nef(self.__dstPath, out_file_path, report=self.report) # (None if self.__alt_chain else self.report))
 
                 if self.__release_mode and not self.__tmpPath is None:
                     os.remove(self.__tmpPath)

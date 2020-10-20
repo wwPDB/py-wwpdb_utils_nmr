@@ -4948,7 +4948,7 @@ class NEFTranslator(object):
                     star_chain = i[star_tags.index(chain_tag)]
                     _star_chain = star_chain
                     if type(star_chain) == str and not star_chain in self.empty_value:
-                        _star_chain = int(_star_chain)
+                        _star_chain = int(star_chain)
 
                     _star_seq = i[star_tags.index(seq_tag)]
                     if type(_star_seq) == str and not _star_seq in self.empty_value:
@@ -5642,9 +5642,10 @@ class NEFTranslator(object):
                     chain_tag = tag['chain_tag']
                     seq_tag = tag['seq_tag']
 
-                    _star_chain = i[star_tags.index(chain_tag)]
-                    if type(_star_chain) == str and not _star_chain in self.empty_value:
-                        _star_chain = int(_star_chain)
+                    star_chain = i[star_tags.index(chain_tag)]
+                    _star_chain = star_chain
+                    if type(star_chain) == str and not star_chain in self.empty_value:
+                        _star_chain = int(star_chain)
 
                     _star_seq = i[star_tags.index(seq_tag)]
                     if type(_star_seq) == str and not _star_seq in self.empty_value:
@@ -5818,7 +5819,7 @@ class NEFTranslator(object):
             star_chain = in_row[star_tags.index(chain_tag)]
             _star_chain = star_chain
             if type(star_chain) == str and not star_chain in self.empty_value:
-                _star_chain = int(_star_chain)
+                _star_chain = int(star_chain)
 
             _star_seq = in_row[star_tags.index(seq_tag)]
             if type(_star_seq) == str and not _star_seq in self.empty_value:

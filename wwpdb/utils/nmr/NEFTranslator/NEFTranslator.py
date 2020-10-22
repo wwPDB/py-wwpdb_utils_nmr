@@ -6042,8 +6042,8 @@ class NEFTranslator(object):
                                         nef_chain = str(chr(65 + (cid // 26))) + str(chr(65 + (cid % 26)))
                             nef_seq = _star_seq
 
-                        if star_chain in self.star2cif_chain_mapping:
-                            nef_chain = self.star2cif_chain_mapping[star_chain]
+                        if _star_chain in self.star2cif_chain_mapping:
+                            nef_chain = self.star2cif_chain_mapping[_star_chain]
 
                         out[l] = nef_chain
                         out[l + 1] = nef_seq

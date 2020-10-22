@@ -47,13 +47,13 @@
 # 30-Jun-2020  M. Yokochi - support bidirectional conversion between _nef_peak and _Peak_row_format (v2.5.0, DAOTHER-5896)
 # 08-Jul-2020  M. Yokochi - add support for _Gen_dist_constraint.Distance_val, _RDC_constraint.RDC_val, and _RDC_constraint.RDC_val_err (v2.6.0, DAOTHER-5926)
 # 17-Aug-2020  M. Yokochi - add support for residue variant (v2.7.0, DAOTHER-5906)
-# 14-Sep-2020  M. Yokochi - add support for psuedo atom in NMR-STAR (v2.8.0, DAOTHER-6128)
+# 14-Sep-2020  M. Yokochi - add support for pseudo atom in NMR-STAR (v2.8.0, DAOTHER-6128)
 # 17-Sep-2020  M. Yokochi - do not convert atom name between NEF and NMR-STAR, which ends with apostrophe (v2.8.0, DAOTHER-6128)
 # 18-Sep-2020  M. Yokochi - bug fix release for negative sequence numbers (v2.8.1, DAOTHER-6128)
 # 28-Sep-2020  M. Yokochi - fix chain_code mapping in NEF MR loops in case that there is no CS assignment (v2.8.2, DAOTHER-6128)
 # 29-Sep-2020  M. Yokochi - sort numeric string in a list of chain_id while NMR-STAR to NEF conversion (v2.8.3, DAOTHER-6128)
 # 06-Sep-2020  M. Yokochi - improve stability against the presence of undefined chain_id in loops (v2.8.4, DAOTHER-6128)
-# 12-Oct-2020  M. Yokochi - add support for spectral peak convertion from NMR-STAR canonical loops to NEF (v2.9.0, DAOTHER-6128)
+# 12-Oct-2020  M. Yokochi - add support for spectral peak conversion from NMR-STAR canonical loops to NEF (v2.9.0, DAOTHER-6128)
 ##
 import sys
 import os

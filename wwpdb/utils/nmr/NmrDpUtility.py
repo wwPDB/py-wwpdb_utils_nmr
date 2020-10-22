@@ -97,7 +97,7 @@
 # 10-Sep-2020  M. Yokochi - add 'transl_pseudo_name' input parameter decides whether to translate conventional pseudo atom nomenclature in combined NMR-STAR file (DAOTHER-6128)
 # 16-Sep-2020  M. Yokochi - bug fix release based on internal test using BMRB NMR restraint archive of 6.3k entries (DAOTHER-6128)
 # 18-Sep-2020  M. Yokochi - bug fix release for negative sequence numbers (DAOTHER-6128)
-# 25-Sep-2020  M. Yokochi - add 'tolerant_seq_align' input parameter which enables tolerant sequence alignement for residue variant, set False for OneDep environment (DAOTHER-6128)
+# 25-Sep-2020  M. Yokochi - add 'tolerant_seq_align' input parameter which enables tolerant sequence alignment for residue variant, set False for OneDep environment (DAOTHER-6128)
 # 09-Oct-2020  M. Yokochi - support circular chain_id re-mapping with seq_id shifts in data loops if it is necessary, 'tolerant_seq_align' input parameter is required (DAOTHER-6128)
 # 22-Oct-2020  M. Yokochi - run diagnostic routine for case of sequence mismatch between defined polymer sequence and sequence in data loop (DAOTHER-6128)
 ##
@@ -6118,6 +6118,7 @@ class NmrDpUtility(object):
 
     def __isConsistentSequence(self):
         """ Perform sequence consistency test among extracted polymer sequences.
+            @return: True for valid sequence, False otherwise
         """
 
         for fileListId in range(self.__file_path_list_len):

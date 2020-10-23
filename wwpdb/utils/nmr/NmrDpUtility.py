@@ -7056,10 +7056,13 @@ class NmrDpUtility(object):
 
         self.__alt_chain = False
 
-        self.__valid_seq = self.__isConsistentSequence()
+        self.__valid_seq = False
 
-        if not self.__valid_seq and not self.__tolerant_seq_align:
-            self.__tolerant_seq_align = True
+        if not self.__tolerant_seq_align:
+            self.__valid_seq = self.__isConsistentSequence()
+
+            if not self.__valid_seq:
+                self.__tolerant_seq_align = True
 
         for fileListId in range(self.__file_path_list_len):
 
@@ -7117,7 +7120,9 @@ class NmrDpUtility(object):
                             if sf_framecode2 in ref_chain_ids and  _chain_id in ref_chain_ids[sf_framecode2]:
                                 continue
 
-                            if _chain_id != s2['chain_id']:
+                            _chain_id2 = s2['chain_id']
+
+                            if _chain_id != _chain_id2:
                                 continue
 
                             _s2 = fill_blank_comp_id_with_offset(s2, 0)
@@ -7140,7 +7145,7 @@ class NmrDpUtility(object):
 
                             alt_chain = False
 
-                            if length == unmapped + conflict or _matched < conflict:
+                            if length == unmapped + conflict or _matched < conflict or (len(polymer_sequence) > 1 and _matched < 4 and offset_1 > 0):
 
                                 if self.__tolerant_seq_align and _matched < conflict and len(polymer_sequence) > 1:
 
@@ -7200,7 +7205,9 @@ class NmrDpUtility(object):
 
                                         break
 
-                                if not alt_chain or (sf_framecode2 in dst_chain_ids and __chain_id in dst_chain_ids[sf_framecode2]):
+                                if not alt_chain or\
+                                   (sf_framecode2 in dst_chain_ids and __chain_id in dst_chain_ids[sf_framecode2]) or\
+                                   (sf_framecode2 in map_chain_ids and _chain_id in map_chain_ids[sf_framecode2]):
                                     continue
 
                                 else:
@@ -7232,7 +7239,11 @@ class NmrDpUtility(object):
 
                                     update_poly_seq = True
 
-                            if conflict == 0 and self.__alt_chain and not alt_chain and _chain_id != s2['chain_id'] and (not sf_framecode2 in dst_chain_ids or not _chain_id in dst_chain_ids[sf_framecode2]):
+                            if conflict == 0 and self.__alt_chain and not alt_chain and _chain_id != s2['chain_id'] and\
+                               (not sf_framecode2 in dst_chain_ids or not _chain_id in dst_chain_ids[sf_framecode2]) and\
+                               (not sf_framecode2 in map_chain_ids or not s2['chain_id'] in map_chain_ids[sf_framecode2]) and\
+                               unmapped != offset_1 + 1 and unmapped != offset_2 + 1 and\
+                               unmapped <= _matched + offset_1 and unmapped <= _matched + offset_2:
 
                                 if not sf_framecode2 in dst_chain_ids:
                                     dst_chain_ids[sf_framecode2] = set()
@@ -7245,7 +7256,7 @@ class NmrDpUtility(object):
                                 map_chain_ids[sf_framecode2][s2['chain_id']] = _chain_id
 
                                 #if sf_framecode2 == target_framecode:
-                                #    print('#2 %s -> %s' % (s2['chain_id'], _chain_id))
+                                #    print('#2 %s -> %s, %s %s %s %s %s %s' % (s2['chain_id'], _chain_id, length, _matched, unmapped, conflict, offset_1, offset_2))
 
                                 alt_chain = True
 
@@ -7293,6 +7304,8 @@ class NmrDpUtility(object):
                                         _chain_id2 = _chain_id
                                         if sf_framecode2 in map_chain_ids and _chain_id in map_chain_ids[sf_framecode2].values():
                                             _chain_id2 = next(k for k, v in map_chain_ids[sf_framecode2].items() if v == _chain_id)
+                                        #if sf_framecode2 == target_framecode:
+                                        #    print('#a %s %s %s %s %s' % (_chain_id2, _matched, offset_1, offset_2, seq_id_conv_dict))
                                         self.__fixSeqIdInLoop(fileListId, file_name, file_type, content_subtype, sf_framecode2, _chain_id2, seq_id_conv_dict)
                                         _s2['seq_id'] = _s1['seq_id']
                                         mid_code = get_middle_code(ref_code, test_code)
@@ -7344,7 +7357,7 @@ class NmrDpUtility(object):
                                     ent = {'chain_id': _s['chain_id'], 'seq_id': [], 'comp_id': [], 'chem_comp_name': [], 'exptl_data': []}
 
                                     for _seq_id, _comp_id in zip(_s['seq_id'], _s['comp_id']):
-                                       if self.__get1LetterCode(_comp_id) == 'X':
+                                        if self.__get1LetterCode(_comp_id) == 'X':
 
                                             ent['seq_id'].append(_seq_id)
                                             ent['comp_id'].append(_comp_id)
@@ -7373,6 +7386,7 @@ class NmrDpUtility(object):
                                     input_source.updateNonStandardResidueByExptlData(chain_id, seq_id, content_subtype)
 
                 for s1 in polymer_sequence:
+
                     chain_id = s1['chain_id']
 
                     if type(chain_id) == int:
@@ -7389,10 +7403,12 @@ class NmrDpUtility(object):
                             if sf_framecode2 in ref_chain_ids and _chain_id in ref_chain_ids[sf_framecode2]:
                                 continue
 
-                            if sf_framecode2 in dst_chain_ids and s2['chain_id'] in dst_chain_ids[sf_framecode2]:
+                            chain_id2 = s2['chain_id']
+
+                            if sf_framecode2 in dst_chain_ids and _chain_id2 in dst_chain_ids[sf_framecode2]:
                                 continue
 
-                            if (_chain_id != s2['chain_id'] and not self.__tolerant_seq_align):
+                            if (_chain_id != _chain_id2 and not self.__tolerant_seq_align):
                                 continue
 
                             _s2 = fill_blank_comp_id_with_offset(s2, 0)
@@ -7415,7 +7431,7 @@ class NmrDpUtility(object):
 
                             alt_chain = False
 
-                            if length == unmapped + conflict or _matched < conflict:
+                            if length == unmapped + conflict or _matched < conflict or (len(polymer_sequence) > 1 and _matched < 4 and offset_1 > 0):
 
                                 if self.__tolerant_seq_align and _matched < conflict and len(polymer_sequence) > 1:
 
@@ -7475,7 +7491,9 @@ class NmrDpUtility(object):
 
                                         break
 
-                                if not alt_chain or (sf_framecode2 in dst_chain_ids and __chain_id in dst_chain_ids[sf_framecode2]):
+                                if not alt_chain or\
+                                   (sf_framecode2 in dst_chain_ids and __chain_id in dst_chain_ids[sf_framecode2]) or\
+                                   (sf_framecode2 in map_chain_ids and _chain_id in map_chain_ids[sf_framecode2]):
                                     continue
 
                                 else:
@@ -7506,24 +7524,28 @@ class NmrDpUtility(object):
                                     s2['chain_id'] = __chain_id
 
                                     update_poly_seq = True
-                            """
-                            if conflict == 0 and self.__alt_chain and not alt_chain and _chain_id != s2['chain_id'] and (not sf_framecode2 in dst_chain_ids or not _chain_id in dst_chain_ids[sf_framecode2]):
+
+                            if conflict == 0 and self.__alt_chain and not alt_chain and _chain_id != s2['chain_id'] and\
+                               (not sf_framecode2 in dst_chain_ids or not _chain_id in dst_chain_ids[sf_framecode2]) and\
+                               (not sf_framecode2 in map_chain_ids or not s2['chain_id'] in map_chain_ids[sf_framecode2]) and\
+                               unmapped != offset_1 + 1 and unmapped != offset_2 + 1 and\
+                               unmapped <= _matched + offset_1 and unmapped <= _matched + offset_2:
 
                                 if not sf_framecode2 in dst_chain_ids:
                                     dst_chain_ids[sf_framecode2] = set()
 
                                 dst_chain_ids[sf_framecode2].add(_chain_id)
 
-                                #if sf_framecode2 == target_framecode:
-                                #    print('#4 %s -> %s' % (s2['chain_id'], _chain_id))
-
                                 if not sf_framecode2 in map_chain_ids:
                                     map_chain_ids[sf_framecode2] = {}
 
                                 map_chain_ids[sf_framecode2][s2['chain_id']] = _chain_id
 
+                                #if sf_framecode2 == target_framecode:
+                                #    print('#4 %s -> %s, %s %s %s %s %s %s' % (s2['chain_id'], _chain_id, length, _matched, unmapped, conflict, offset_1, offset_2))
+
                                 alt_chain = True
-                            """
+
                             if not sf_framecode2 in ref_chain_ids:
                                 ref_chain_ids[sf_framecode2] = []
 
@@ -7549,6 +7571,9 @@ class NmrDpUtility(object):
                                                     if __c1 != '.' and __c2 != '.' and __c1 != __c2)
 
                             if self.__tolerant_seq_align and not alt_chain and (seq_mismatch or comp_mismatch):
+                                if not sf_framecode2 in map_seq_ids:
+                                    map_seq_ids[sf_framecode2] = set()
+                                map_seq_ids[sf_framecode2].add(_chain_id)
                                 if _s2['seq_id'] == list(range(_s2['seq_id'][0], _s2['seq_id'][-1] + 1)):
                                     seq_id_conv_dict = {str(__s2): str(__s1) for __s1, __s2 in zip(_s1['seq_id'], _s2['seq_id']) if __s2 != '.'}
                                     if comp_mismatch:
@@ -7565,6 +7590,8 @@ class NmrDpUtility(object):
                                         _chain_id2 = _chain_id
                                         if sf_framecode2 in map_chain_ids and _chain_id in map_chain_ids[sf_framecode2].values():
                                             _chain_id2 = next(k for k, v in map_chain_ids[sf_framecode2].items() if v == _chain_id)
+                                        #if sf_framecode2 == target_framecode:
+                                        #    print('#b %s %s %s %s %s' % (_chain_id2, _matched, offset_1, offset_2, seq_id_conv_dict))
                                         self.__fixSeqIdInLoop(fileListId, file_name, file_type, content_subtype, sf_framecode2, _chain_id2, seq_id_conv_dict)
                                         _s2['seq_id'] = _s1['seq_id']
                                         mid_code = get_middle_code(ref_code, test_code)
@@ -7616,7 +7643,7 @@ class NmrDpUtility(object):
                                     ent = {'chain_id': _s['chain_id'], 'seq_id': [], 'comp_id': [], 'chem_comp_name': [], 'exptl_data': []}
 
                                     for _seq_id, _comp_id in zip(_s['seq_id'], _s['comp_id']):
-                                       if self.__get1LetterCode(_comp_id) == 'X':
+                                        if self.__get1LetterCode(_comp_id) == 'X':
 
                                             ent['seq_id'].append(_seq_id)
                                             ent['comp_id'].append(_comp_id)
@@ -7786,6 +7813,8 @@ class NmrDpUtility(object):
                                                 _chain_id2 = _chain_id
                                                 if _chain_id in mapping.values():
                                                     _chain_id2 = next(k for k, v in mapping.items() if v == _chain_id)
+                                                #if sf_framecode2 == target_framecode:
+                                                #    print('#c %s %s %s %s %s' % (_chain_id2, _matched, offset_1, offset_2, seq_id_conv_dict))
                                                 self.__fixSeqIdInLoop(fileListId, file_name, file_type, content_subtype, sf_framecode2, _chain_id2, seq_id_conv_dict)
                                                 _s2['seq_id'] = _s1['seq_id']
                                                 mid_code = get_middle_code(ref_code, test_code)
@@ -10676,7 +10705,7 @@ class NmrDpUtility(object):
                 # non-standard residue
                 if self.__get1LetterCode(comp_id) == 'X':
 
-                    neighbor_comp_ids = set([j[comp_id_name] for j in lp_data if j[chain_id_name] == chain_id and abs(j[seq_id_name] - seq_id) < 3 and j[seq_id_name] != seq_id])
+                    neighbor_comp_ids = set([j[comp_id_name] for j in lp_data if j[chain_id_name] == chain_id and abs(j[seq_id_name] - seq_id) < 4 and j[seq_id_name] != seq_id])
 
                     polypeptide_like = False
 
@@ -14250,7 +14279,7 @@ class NmrDpUtility(object):
                 # non-standard residue
                 if self.__get1LetterCode(comp_id) == 'X':
 
-                    neighbor_comp_ids = set([j[comp_id_name] for j in lp_data if str(j[chain_id_name]) == chain_id and abs(j[seq_id_name] - seq_id) < 3 and j[seq_id_name] != seq_id])
+                    neighbor_comp_ids = set([j[comp_id_name] for j in lp_data if str(j[chain_id_name]) == chain_id and abs(j[seq_id_name] - seq_id) < 4 and j[seq_id_name] != seq_id])
 
                     polypeptide_like = False
 

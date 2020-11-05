@@ -3557,6 +3557,8 @@ class NmrDpUtility(object):
         self.report.warning.sortBySigma('conflicted_data')
         self.report.warning.sortBySigma('inconsistent_data')
 
+        self.report.clean()
+
         if self.__logPath is None:
             return False
 

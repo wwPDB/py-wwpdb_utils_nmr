@@ -1135,6 +1135,20 @@ class NmrDpReport:
             logging.warning('+NmrDpReport.setWarning() ++ Warning  - No effects on NMR data processing report because the report is immutable')
             raise UserWarning('+NmrDpReport.setWarning() ++ Warning  - No effects on NMR data processing report because the report is immutable')
 
+    def clean(self):
+
+        if not self.__immutable:
+
+            self.error.clean()
+            self.warning.clean()
+
+            self.__report['error'] = None if self.error.getTotal() == 0 else self.error.get()
+            self.__report['warning'] = None if self.warning.getTotal() == 0 else self.warning.get()
+
+        else:
+            logging.warning('+NmrDpReport.clean() ++ Warning  - No effects on NMR data processing report because the report is immutable')
+            raise UserWarning('+NmrDpReport.clean() ++ Warning  - No effects on NMR data processing report because the report is immutable')
+
     def setDiamagnetic(self, diamagnetic):
 
         if type(diamagnetic) is bool:
@@ -1695,6 +1709,25 @@ class NmrDpReportError:
 
         return d
 
+    def clean(self):
+        """ Clean-up empty items and update stats.
+        """
+
+        if self.__contents is None:
+            return
+
+        items = [item for item in self.__contents.keys() if item != 'total' and (self.__contents[item] is None or len(self.__contents[item]) == 0)]
+
+        for item in items:
+            del self.__contents[item]
+
+        total = 0
+        for item in self.__contents.keys():
+            if item != 'total':
+                total += len(self.__contents[item])
+
+        self.__contents['total'] = total
+
 class NmrDpReportWarning:
     """ Wrapper class for data processing report of NMR unified data (warning).
     """
@@ -1970,3 +2003,22 @@ class NmrDpReportWarning:
 
         for c in sorted(d, key=lambda i: i['sigma'], reverse=True):
             self.__contents[item].append(c)
+
+    def clean(self):
+        """ Clean-up empty items and update stats.
+        """
+
+        if self.__contents is None:
+            return
+
+        items = [item for item in self.__contents.keys() if item != 'total' and (self.__contents[item] is None or len(self.__contents[item]) == 0)]
+
+        for item in items:
+            del self.__contents[item]
+
+        total = 0
+        for item in self.__contents.keys():
+            if item != 'total':
+                total += len(self.__contents[item])
+
+        self.__contents['total'] = total

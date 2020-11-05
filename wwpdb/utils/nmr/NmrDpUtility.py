@@ -19557,7 +19557,7 @@ class NmrDpUtility(object):
                         _chain_id = chain_id
 
                     result = next(seq_align for seq_align in seq_align_dic['model_poly_seq_vs_nmr_poly_seq'] if seq_align['ref_chain_id'] == chain_id and seq_align['test_chain_id'] == chain_id2)
-                    _result = next(seq_align for seq_align in seq_align_dic['nmr_poly_seq_vs_model_poly_seq'] if seq_align['ref_chain_id'] == chain_id2 and seq_align['test_chain_id'] == chain_id)
+                    _result = next((seq_align for seq_align in seq_align_dic['nmr_poly_seq_vs_model_poly_seq'] if seq_align['ref_chain_id'] == chain_id2 and seq_align['test_chain_id'] == chain_id), None)
 
                     chain_assign = {'ref_chain_id': chain_id, 'test_chain_id': chain_id2, 'length': result['length'], 'matched': result['matched'], 'conflict': result['conflict'], 'unmapped': result['unmapped'], 'sequence_coverage': result['sequence_coverage']}
 
@@ -19790,8 +19790,9 @@ class NmrDpUtility(object):
                             result['conflict'] = chain_assign['conflict']
                             result['unmapped'] = chain_assign['unmapped']
 
-                            _result['conflict'] = chain_assign['conflict']
-                            _result['unmapped'] = chain_assign['unmapped']
+                            if not _result is None:
+                                _result['conflict'] = chain_assign['conflict']
+                                _result['unmapped'] = chain_assign['unmapped']
 
                     chain_assign_set.append(chain_assign)
 

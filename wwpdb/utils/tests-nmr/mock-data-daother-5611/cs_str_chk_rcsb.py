@@ -50,7 +50,7 @@ class TestNmrDpUtility(unittest.TestCase):
                                     }
         self.model_file = {entry_id: entry_id.lower() + '.cif' for entry_id in self.entries}
         self.alt_model_file = {'6PVR': 'D_800299_model_P1.cif.V4'}
-        self.nmr_db_util = NmrDpUtility()
+        self.nmr_dp_util = NmrDpUtility()
         pass
 
     def tearDown(self):
@@ -58,20 +58,20 @@ class TestNmrDpUtility(unittest.TestCase):
 
     def __test_nmr_cs_str_consistency(self, entry_id):
         entry_dir_path = self.data_dir_path + entry_id + '/'
-        self.nmr_db_util.addInput(name='chem_shift_file_path_list', value=[entry_dir_path + cs_file for cs_file in self.cs_file[entry_id]], type='file_list')
-        self.nmr_db_util.addOutput(name='chem_shift_file_path_list', value=[entry_dir_path + cs_file for cs_file in self.cs_file_2[entry_id]], type='file_list')
+        self.nmr_dp_util.addInput(name='chem_shift_file_path_list', value=[entry_dir_path + cs_file for cs_file in self.cs_file[entry_id]], type='file_list')
+        self.nmr_dp_util.addOutput(name='chem_shift_file_path_list', value=[entry_dir_path + cs_file for cs_file in self.cs_file_2[entry_id]], type='file_list')
         if not entry_id in self.alt_model_file:
-            self.nmr_db_util.addInput(name='coordinate_file_path', value=entry_dir_path + self.model_file[entry_id], type='file')
+            self.nmr_dp_util.addInput(name='coordinate_file_path', value=entry_dir_path + self.model_file[entry_id], type='file')
         else:
-            self.nmr_db_util.addInput(name='coordinate_file_path', value=entry_dir_path + self.alt_model_file[entry_id], type='file')
-        self.nmr_db_util.addInput(name='nonblk_anomalous_cs', value=True, type='param')
-        self.nmr_db_util.addInput(name='nonblk_bad_nterm', value=True, type='param')
-        self.nmr_db_util.addInput(name='resolve_conflict', value=True, type='param')
-        self.nmr_db_util.addInput(name='check_mandatory_tag', value=False, type='param')
-        self.nmr_db_util.setLog(self.data_dir_path + entry_id.lower() + '-cs-str-consistency-log.json')
-        self.nmr_db_util.setVerbose(False)
+            self.nmr_dp_util.addInput(name='coordinate_file_path', value=entry_dir_path + self.alt_model_file[entry_id], type='file')
+        self.nmr_dp_util.addInput(name='nonblk_anomalous_cs', value=True, type='param')
+        self.nmr_dp_util.addInput(name='nonblk_bad_nterm', value=True, type='param')
+        self.nmr_dp_util.addInput(name='resolve_conflict', value=True, type='param')
+        self.nmr_dp_util.addInput(name='check_mandatory_tag', value=False, type='param')
+        self.nmr_dp_util.setLog(self.data_dir_path + entry_id.lower() + '-cs-str-consistency-log.json')
+        self.nmr_dp_util.setVerbose(False)
 
-        self.nmr_db_util.op('nmr-cs-str-consistency-check')
+        self.nmr_dp_util.op('nmr-cs-str-consistency-check')
 
         with open(self.data_dir_path + entry_id.lower() + '-cs-str-consistency-log.json', 'r') as file:
             report = json.loads(file.read())

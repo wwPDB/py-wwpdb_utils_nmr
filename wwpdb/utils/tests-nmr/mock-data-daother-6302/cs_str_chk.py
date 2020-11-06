@@ -1,5 +1,5 @@
 ##
-# File: cs_str_chk.py (DAOTHER-6298)
+# File: cs_str_chk.py (DAOTHER-6302)
 # Date:  05-Nov-2020  M. Yokochi
 #
 # Updates:
@@ -17,9 +17,9 @@ class TestNmrDpUtility(unittest.TestCase):
     def setUp(self):
         here = os.path.abspath(os.path.dirname(__file__))
         self.data_dir_path = './'
-        self.cs_file_path = {'5ZKV': ['5zkv_cs.str']
+        self.cs_file_path = {'daother-6302': ['D_1000245727_cs-upload_P1.str.V1']
                             }
-        self.model_file = {'5ZKV': '5zkvfull.cif'}
+        self.model_file = {'daother-6302': 'D_1000245727_model_P1.cif.V1'}
         self.nmr_dp_util = NmrDpUtility()
         pass
 
@@ -55,8 +55,8 @@ class TestNmrDpUtility(unittest.TestCase):
             error_type = {str(k): len(v) for k, v in report['error'].items() if str(k) != 'total'}
             print('%s: %s, %s' % (entry_id.lower(), report['information']['status'], error_type))
 
-    def test_5zkv(self):
-        self.__test_nmr_cs_str_consistency('5ZKV')
+    def test_daother_6302(self):
+        self.__test_nmr_cs_str_consistency('daother-6302')
 
 if __name__ == '__main__':
     unittest.main()

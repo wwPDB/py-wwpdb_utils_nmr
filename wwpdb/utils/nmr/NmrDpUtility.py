@@ -247,9 +247,17 @@ def get_middle_code(ref_seq, test_seq):
 
     return array
 
-def get_gauge_code(seq_id):
+def get_gauge_code(seq_id, offset=0):
     """ Return gauge code for seq ID.
     """
+
+    if offset > 0:
+        _seq_id = [j for j in range(1, offset + 1)]
+        for l, sid in enumerate(seq_id):
+            if l < offset:
+                continue
+            _seq_id.append(sid)
+        seq_id = _seq_id
 
     sid_len = len([sid for sid in seq_id if not sid is None])
     code_len = 0
@@ -7147,9 +7155,9 @@ class NmrDpUtility(object):
 
                             alt_chain = False
 
-                            if length == unmapped + conflict or _matched < conflict or (len(polymer_sequence) > 1 and _matched < 4 and offset_1 > 0):
+                            if length == unmapped + conflict or _matched <= conflict or (len(polymer_sequence) > 1 and _matched < 4 and offset_1 > 0):
 
-                                if self.__tolerant_seq_align and _matched < conflict and len(polymer_sequence) > 1:
+                                if self.__tolerant_seq_align and _matched <= conflict and len(polymer_sequence) > 1:
 
                                     __length = length
                                     __matched = _matched
@@ -7188,7 +7196,7 @@ class NmrDpUtility(object):
 
                                         _matched, unmapped, conflict, offset_1, offset_2 = score_of_seq_align(myAlign)
 
-                                        if length == unmapped + conflict or _matched < conflict:
+                                        if length == unmapped + conflict or _matched <= conflict:
                                             continue
 
                                         if _matched - conflict < __matched - __conflict or unmapped + conflict > __unmapped + __conflict:
@@ -7410,7 +7418,7 @@ class NmrDpUtility(object):
                             if sf_framecode2 in dst_chain_ids and _chain_id2 in dst_chain_ids[sf_framecode2]:
                                 continue
 
-                            if (_chain_id != _chain_id2 and not self.__tolerant_seq_align):
+                            if _chain_id != _chain_id2 and not self.__tolerant_seq_align:
                                 continue
 
                             _s2 = fill_blank_comp_id_with_offset(s2, 0)
@@ -7433,9 +7441,9 @@ class NmrDpUtility(object):
 
                             alt_chain = False
 
-                            if length == unmapped + conflict or _matched < conflict or (len(polymer_sequence) > 1 and _matched < 4 and offset_1 > 0):
+                            if length == unmapped + conflict or _matched <= conflict or (len(polymer_sequence) > 1 and _matched < 4 and offset_1 > 0):
 
-                                if self.__tolerant_seq_align and _matched < conflict and len(polymer_sequence) > 1:
+                                if self.__tolerant_seq_align and _matched <= conflict and len(polymer_sequence) > 1:
 
                                     __length = length
                                     __matched = _matched
@@ -7474,7 +7482,7 @@ class NmrDpUtility(object):
 
                                         _matched, unmapped, conflict, offset_1, offset_2 = score_of_seq_align(myAlign)
 
-                                        if length == unmapped + conflict or _matched < conflict:
+                                        if length == unmapped + conflict or _matched <= conflict:
                                             continue
 
                                         if _matched - conflict < __matched - __conflict or unmapped + conflict > __unmapped + __conflict:
@@ -7738,7 +7746,7 @@ class NmrDpUtility(object):
 
                                         _matched, unmapped, conflict, offset_1, offset_2 = score_of_seq_align(myAlign)
 
-                                        if length == unmapped + conflict or _matched < conflict:
+                                        if length == unmapped + conflict or _matched <= conflict:
                                             break
 
                                         mapping[src_chain] = dst_chain
@@ -7776,7 +7784,7 @@ class NmrDpUtility(object):
 
                                     _matched, unmapped, conflict, offset_1, offset_2 = score_of_seq_align(myAlign)
 
-                                    if length == unmapped + conflict or _matched < conflict:
+                                    if length == unmapped + conflict or _matched <= conflict:
                                         continue
 
                                     _s1 = s1 if offset_1 == 0 else fill_blank_comp_id_with_offset(s1, offset_1)
@@ -19191,7 +19199,7 @@ class NmrDpUtility(object):
 
                             _matched, unmapped, conflict, offset_1, offset_2 = score_of_seq_align(myAlign)
 
-                            if length == unmapped + conflict:
+                            if length == unmapped + conflict or _matched <= conflict:
                                 continue
 
                             _s1 = s1 if offset_1 == 0 else fill_blank_comp_id_with_offset(s1, offset_1)
@@ -19265,7 +19273,7 @@ class NmrDpUtility(object):
 
                 _matched, unmapped, conflict, offset_1, offset_2 = score_of_seq_align(myAlign)
 
-                if length == unmapped + conflict or _matched < conflict:
+                if length == unmapped + conflict or _matched <= conflict:
                     continue
 
                 _s1 = s1 if offset_1 == 0 else fill_blank_comp_id_with_offset(s1, offset_1)
@@ -19316,8 +19324,8 @@ class NmrDpUtility(object):
                     ref_code = self.__get1LetterCodeSequence(comp_id1)
                     test_code = self.__get1LetterCodeSequence(comp_id2)
                     mid_code = get_middle_code(ref_code, test_code)
-                    ref_gauge_code = get_gauge_code(seq_id1)
-                    test_gauge_code = get_gauge_code(seq_id2)
+                    ref_gauge_code = get_gauge_code(seq_id1, offset_1)
+                    test_gauge_code = get_gauge_code(seq_id2, offset_2)
                     if ' ' in ref_gauge_code:
                         for p, g in enumerate(ref_gauge_code):
                             if g == ' ':
@@ -19365,7 +19373,7 @@ class NmrDpUtility(object):
 
                 _matched, unmapped, conflict, offset_1, offset_2 = score_of_seq_align(myAlign)
 
-                if length == unmapped + conflict or _matched < conflict:
+                if length == unmapped + conflict or _matched <= conflict:
                     continue
 
                 _s1 = s1 if offset_1 == 0 else fill_blank_comp_id_with_offset(s1, offset_1)
@@ -19416,8 +19424,8 @@ class NmrDpUtility(object):
                     ref_code = self.__get1LetterCodeSequence(comp_id1)
                     test_code = self.__get1LetterCodeSequence(comp_id2)
                     mid_code = get_middle_code(ref_code, test_code)
-                    ref_gauge_code = get_gauge_code(seq_id1)
-                    test_gauge_code = get_gauge_code(seq_id2)
+                    ref_gauge_code = get_gauge_code(seq_id1, offset_1)
+                    test_gauge_code = get_gauge_code(seq_id2, offset_2)
                     if ' ' in ref_gauge_code:
                         for p, g in enumerate(ref_gauge_code):
                             if g == ' ':

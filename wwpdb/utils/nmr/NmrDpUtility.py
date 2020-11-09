@@ -267,6 +267,7 @@ def get_gauge_code(seq_id, offset=0):
     for sid in seq_id:
 
         if sid is None:
+            chars.append('-')
             continue
 
         if sid >= 0 and sid % 10 == 0 and code_len == 0:
@@ -282,24 +283,18 @@ def get_gauge_code(seq_id, offset=0):
         else:
             chars.append('-')
 
-    for t in range(sid_len // 10):
-        offset = (t + 1) * 10 - 1
+    for l, sid in enumerate(seq_id):
 
-        code = ''
+        if sid is None or sid % 10 != 0:
+            continue
 
-        p = offset
-        while p < len(chars) and chars[p] != '-':
-            code += chars[p]
-            chars[p] = '-'
-            p += 1
-
+        code = str(sid)
         code_len = len(code)
 
-        offset -= code_len - 1
-
-        if offset >= 0:
+        if l - code_len > 0:
             for j in range(code_len):
-                chars[offset + j] = code[j]
+                chars[l + j - code_len + 1] = chars[l + j]
+                chars[l + j] = '-'
 
     array = ''.join(chars)
 

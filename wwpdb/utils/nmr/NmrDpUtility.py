@@ -296,6 +296,10 @@ def get_gauge_code(seq_id, offset=0):
                 chars[l + j - code_len + 1] = chars[l + j]
                 chars[l + j] = '-'
 
+    if offset > 0:
+        for l in range(offset):
+            chars[l] = '-'
+
     array = ''.join(chars)
 
     if sid_len == len(seq_id):
@@ -19691,6 +19695,16 @@ class NmrDpUtility(object):
                                 if nmr_comp_id == '.':
                                     nmr_seq_code += ', insersion error'
 
+                                auth_seq = next((seq_align for seq_align in seq_align_dic['model_poly_seq_vs_coordinate'] if seq_align['chain_id'] == chain_id), None)
+
+                                if not auth_seq is None and cif_comp_id != '.':
+                                    try:
+                                        auth_seq_id = auth_seq['test_seq_id'][auth_seq['ref_seq_id'].index(seq_id1[i])]
+                                        if seq_id1[i] != auth_seq_id:
+                                            cif_seq_code += ', or %s:%s:%s in author numbering scheme' % (chain_id, auth_seq_id, cif_comp_id)
+                                    except:
+                                        pass
+
                                 err = "Sequence alignment error between the coordinate (%s) and the NMR data (%s). Please verify the two sequences and re-upload the correct file(s)." %\
                                       (cif_seq_code, nmr_seq_code)
 
@@ -19977,7 +19991,7 @@ class NmrDpUtility(object):
 
                             if cif_comp_id == '.' and nmr_comp_id != '.':
 
-                                unmapped.append({'ref_seq_id': seq_id1[i], 'ref_comp_id': cif_comp_id})
+                                unmapped.append({'ref_seq_id': seq_id1[i], 'ref_comp_id': nmr_comp_id})
 
                                 if not aligned[i]:
 
@@ -20028,6 +20042,16 @@ class NmrDpUtility(object):
                                 nmr_seq_code = '%s:%s:%s' % (chain_id, seq_id1[i], nmr_comp_id)
                                 if nmr_comp_id == '.':
                                     nmr_seq_code += ', insersion error'
+
+                                auth_seq = next((seq_align for seq_align in seq_align_dic['model_poly_seq_vs_coordinate'] if seq_align['chain_id'] == chain_id2), None)
+
+                                if not auth_seq is None and cif_comp_id != '.':
+                                    try:
+                                        auth_seq_id = auth_seq['test_seq_id'][auth_seq['ref_seq_id'].index(seq_id2[i])]
+                                        if seq_id2[i] != auth_seq_id:
+                                            cif_seq_code += ', or %s:%s:%s in author numbering scheme' % (chain_id2, auth_seq_id, cif_comp_id)
+                                    except:
+                                        pass
 
                                 err = "Sequence alignment error between the NMR data (%s) and the coordinate (%s). Please verify the two sequences and re-upload the correct file(s)." %\
                                       (nmr_seq_code, cif_seq_code)

@@ -54,6 +54,7 @@
 # 29-Sep-2020  M. Yokochi - sort numeric string in a list of chain_id while NMR-STAR to NEF conversion (v2.8.3, DAOTHER-6128)
 # 06-Sep-2020  M. Yokochi - improve stability against the presence of undefined chain_id in loops (v2.8.4, DAOTHER-6128)
 # 12-Oct-2020  M. Yokochi - add support for spectral peak conversion from NMR-STAR canonical loops to NEF (v2.9.0, DAOTHER-6128)
+# 11-Nov-2020  M. Yokochi - fix crash while translation due to invalid seq_id (v2.9.1)
 ##
 import sys
 import os
@@ -75,7 +76,7 @@ from wwpdb.utils.nmr.io.ChemCompIo import ChemCompReader
 from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
 from wwpdb.utils.nmr.NmrDpReport import NmrDpReport
 
-__version__ = '2.9.0'
+__version__ = '2.9.1'
 
 __pynmrstar_v3__ = version.parse(pynmrstar.__version__) >= version.parse("3.0.0")
 
@@ -415,8 +416,8 @@ class NEFTranslator(object):
                                                  'Paramagnetic relaxation': 'pre',
                                                  'paramagnetic relaxation enhancement': 'pre',
                                                  'Paramagnetic relaxation enhancement': 'pre',
-                                                 'general distance': 'unknown',
-                                                 'distance': 'unknown',
+                                                 'general distance': 'undefined',
+                                                 'distance': 'undefined',
                                                  'Mutation': 'mutation',
                                                  'chemical shift perturbation': 'shift_perturbation',
                                                  'shift perturbation': 'shift_perturbation',
@@ -463,6 +464,7 @@ class NEFTranslator(object):
                                                       'Paramagnetic relaxation enhancement': 'paramagnetic relaxation',
                                                       'Mutation': 'mutation',
                                                       'unknown': 'general distance',
+                                                      'undefined': 'general distance',
                                                       'shift_perturbation': 'chemical shift perturbation',
                                                       'shift perturbation': 'chemical shift perturbation',
                                                       'chem shift perturbation': 'chemical shift perturbation',
@@ -628,6 +630,8 @@ class NEFTranslator(object):
                                         }
 
         self.entity_del_atom_row = ['ID', 'Entity_assembly_ID', 'Comp_index_ID', 'Comp_ID', 'Atom_ID', 'Auth_entity_assembly_ID', 'Auth_seq_ID', 'Auth_comp_ID', 'Auth_atom_ID', 'Assembly_ID']
+
+        self.int_pattern = re.compile(r'^([+-]?[1-9]\d*|0)$')
 
     def read_input_file(self, in_file):
         """ Read input NEF/NMR-STAR file.
@@ -3114,7 +3118,7 @@ class NEFTranslator(object):
                                             val = t['enum-alt'][val]
                                             star_data.tags[itCol][1] = val
                                         else:
-                                            user_warn_msg += "[Enumeration error] %s '%s' should be one of %s. The type may be filled with either 'unknown' or estimated value unless you would like to fix the type and re-upload the %s file.\n" % (name, val, enum, file_type.upper())
+                                            user_warn_msg += "[Enumeration error] %s '%s' should be one of %s. The type may be filled with either 'undefined' or estimated value unless you would like to fix the type and re-upload the %s file.\n" % (name, val, enum, file_type.upper())
                                     else:
                                         val = t['enum-alt'][val]
                                         star_data.tags[itCol][1] = val
@@ -4496,7 +4500,7 @@ class NEFTranslator(object):
         for nef_chain in self.authChainId:
 
             mapped_seq_id = [s for c, s in self.authSeqMap.keys() if c == nef_chain]
-            unmapped_seq_id = sorted(set([int(i[seq_index]) for i in loop_data if i[chain_index] == nef_chain and not i[seq_index] in self.empty_value and not int(i[seq_index]) in mapped_seq_id]))
+            unmapped_seq_id = sorted(set([int(i[seq_index]) for i in loop_data if i[chain_index] == nef_chain and not i[seq_index] in self.empty_value and not self.int_pattern.match(i[seq_index]) is None and not int(i[seq_index]) in mapped_seq_id]))
 
             if len(unmapped_seq_id) > 0:
                 mapped_seq_id.extend(unmapped_seq_id)
@@ -4601,7 +4605,7 @@ class NEFTranslator(object):
             _cif_chain = None if not star_chain in self.star2cif_chain_mapping else self.star2cif_chain_mapping[star_chain]
 
             mapped_seq_id = [s for c, s in self.authSeqMap.keys() if c == _star_chain]
-            unmapped_seq_id = set([int(i[seq_index]) for i in loop_data if i[chain_index] == star_chain and not i[seq_index] in self.empty_value and not int(i[seq_index]) in mapped_seq_id])
+            unmapped_seq_id = set([int(i[seq_index]) for i in loop_data if i[chain_index] == star_chain and not i[seq_index] in self.empty_value and not self.int_pattern.match(i[seq_index]) is None and not int(i[seq_index]) in mapped_seq_id])
 
             if len(unmapped_seq_id) > 0:
                 mapped_seq_id.extend(unmapped_seq_id)

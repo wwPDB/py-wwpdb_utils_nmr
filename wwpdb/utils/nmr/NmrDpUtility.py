@@ -100,6 +100,7 @@
 # 25-Sep-2020  M. Yokochi - add 'tolerant_seq_align' input parameter which enables tolerant sequence alignment for residue variant, set False for OneDep environment (DAOTHER-6128)
 # 09-Oct-2020  M. Yokochi - support circular chain_id re-mapping with seq_id shifts in data loops if it is necessary, 'tolerant_seq_align' input parameter is required (DAOTHER-6128)
 # 22-Oct-2020  M. Yokochi - run diagnostic routine for case of sequence mismatch between defined polymer sequence and sequence in data loop (DAOTHER-6128)
+# 11-Nov-2020  M. Yokochi - set NEF v1.1 as the default specification
 ##
 """ Wrapper class for data processing for NMR data.
     @author: Masashi Yokochi
@@ -2142,8 +2143,8 @@ class NmrDpUtility(object):
                                                  'Paramagnetic relaxation': 'pre',
                                                  'paramagnetic relaxation enhancement': 'pre',
                                                  'Paramagnetic relaxation enhancement': 'pre',
-                                                 'general distance': 'unknown',
-                                                 'distance': 'unknown',
+                                                 'general distance': 'undefined',
+                                                 'distance': 'undefined',
                                                  'Mutation': 'mutation',
                                                  'chemical shift perturbation': 'shift_perturbation',
                                                  'shift perturbation': 'shift_perturbation',
@@ -2151,7 +2152,7 @@ class NmrDpUtility(object):
                                                  'CS perturbation': 'shift_perturbation',
                                                  'csp': 'shift_perturbation',
                                                  'CSP': 'shift_perturbation',
-                                                 '?': 'unknown'
+                                                 '?': 'undefined'
                                                  },
                                          'nmr-star': {'noe': 'NOE',
                                                       'noe_build_up': 'NOE build-up',
@@ -2191,13 +2192,14 @@ class NmrDpUtility(object):
                                                       'Paramagnetic relaxation enhancement': 'paramagnetic relaxation',
                                                       'Mutation': 'mutation',
                                                       'unknown': 'general distance',
+                                                      'undefined': 'general distance',
                                                       'shift_perturbation': 'chemical shift perturbation',
                                                       'shift perturbation': 'chemical shift perturbation',
                                                       'chem shift perturbation': 'chemical shift perturbation',
                                                       'CS perturbation': 'chemical shift perturbation',
                                                       'csp': 'chemical shift perturbation',
                                                       'CSP': 'chemical shift perturbation',
-                                                      '?': 'unknown'
+                                                      '?': 'undefined'
                                                      }
                                          }
 
@@ -2272,7 +2274,7 @@ class NmrDpUtility(object):
                                                   'talos+': 'chemical_shift',
                                                   'TALOS-N': 'chemical_shift',
                                                   'talos-n': 'chemical_shift',
-                                                  '?': 'unknown'
+                                                  '?': 'undefined'
                                                   },
                                           'nmr-star': {'jcoupling': 'J-couplings',
                                                        'Jcoupling': 'J-couplings',
@@ -2346,17 +2348,17 @@ class NmrDpUtility(object):
                                                        'talos+': 'backbone chemical shifts',
                                                        'TALOS-N': 'backbone chemical shifts',
                                                        'talos-n': 'backbone chemical shifts',
-                                                       '?': 'unknown'
+                                                       '?': 'undefined'
                                                        }
                                           }
 
         self.rdc_alt_constraint_type = {'nef': {'RDC': 'measured',
                                                 'rdc': 'measured',
-                                                '?': 'unknown'
+                                                '?': 'undefined'
                                                 },
                                         'nmr-star': {'rdc': 'RDC',
                                                      'measured': 'RDC',
-                                                     '?': 'unknown'
+                                                     '?': 'undefined'
                                                      }
                                         }
 
@@ -2385,7 +2387,7 @@ class NmrDpUtility(object):
                                                          'enum': ('log-harmonic', 'parabolic', 'square-well-parabolic', 'square-well-parabolic-linear', 'upper-bound-parabolic', 'lower-bound-parabolic', 'upper-bound-parabolic-linear', 'lower-bound-parabolic-linear', 'undefined', 'unknown'),
                                                          'enum-alt': self.alt_potential_type},
                                                         {'name': 'restraint_origin', 'type': 'enum', 'mandatory': False,
-                                                         'enum': ('noe', 'noe_build_up', 'noe_not_seen', 'roe', 'roe_build_up', 'hbond', 'disulfide_bond', 'pre', 'symmetry', 'mutation', 'shift_perturbation', 'unknown'),
+                                                         'enum': ('noe', 'noe_build_up', 'noe_not_seen', 'roe', 'roe_build_up', 'hbond', 'disulfide_bond', 'pre', 'symmetry', 'mutation', 'shift_perturbation', 'undefined', 'unknown'),
                                                          'enum-alt': self.dist_alt_constraint_type['nef']}
                                                         ],
                                      'dihed_restraint': [{'name': 'sf_category', 'type': 'str', 'mandatory': True},
@@ -2394,7 +2396,7 @@ class NmrDpUtility(object):
                                                           'enum': ('parabolic', 'square-well-parabolic', 'square-well-parabolic-linear', 'upper-bound-parabolic', 'lower-bound-parabolic', 'upper-bound-parabolic-linear', 'lower-bound-parabolic-linear', 'undefined', 'unknown'),
                                                           'enum-alt': self.alt_potential_type},
                                                          {'name': 'restraint_origin', 'type': 'enum', 'mandatory': False,
-                                                          'enum': ('jcoupling', 'chemical_shift', 'unknown'),
+                                                          'enum': ('jcoupling', 'chemical_shift', 'undefined', 'unknown'),
                                                           'enum-alt': self.dihed_alt_constraint_type['nef']}
                                                          ],
                                      'rdc_restraint': [{'name': 'sf_category', 'type': 'str', 'mandatory': True},
@@ -2403,7 +2405,7 @@ class NmrDpUtility(object):
                                                         'enum': ('parabolic', 'square-well-parabolic', 'square-well-parabolic-linear', 'upper-bound-parabolic', 'lower-bound-parabolic', 'upper-bound-parabolic-linear', 'lower-bound-parabolic-linear', 'undefined', 'unknown'),
                                                         'enum-alt': self.alt_potential_type},
                                                        {'name': 'restraint_origin', 'type': 'enum', 'mandatory': False,
-                                                        'enum': ('measured', 'unknown'),
+                                                        'enum': ('measured', 'undefined', 'unknown'),
                                                         'enum-alt': self.rdc_alt_constraint_type['nef']},
                                                        {'name': 'tensor_magnitude', 'type': 'float', 'mandatory': False},
                                                        {'name': 'tensor_rhombicity', 'type': 'positive-float', 'mandatory': False},
@@ -2458,7 +2460,7 @@ class NmrDpUtility(object):
                                           'dist_restraint': [{'name': 'Sf_category', 'type': 'str', 'mandatory': True},
                                                              {'name': 'Sf_framecode', 'type': 'str', 'mandatory': True},
                                                              {'name': 'Constraint_type', 'type': 'enum', 'mandatory': False,
-                                                              'enum': ('NOE', 'NOE build-up', 'NOE not seen', 'ROE', 'ROE build-up', 'hydrogen bond', 'disulfide bond', 'paramagnetic relaxation', 'symmetry', 'general distance', 'mutation', 'chemical shift perturbation', 'unknown'),
+                                                              'enum': ('NOE', 'NOE build-up', 'NOE not seen', 'ROE', 'ROE build-up', 'hydrogen bond', 'disulfide bond', 'paramagnetic relaxation', 'symmetry', 'general distance', 'mutation', 'chemical shift perturbation', 'undefined', 'unknown'),
                                                               'enum-alt': self.dist_alt_constraint_type['nmr-star']},
                                                              {'name': 'Potential_type', 'type': 'enum', 'mandatory': False,
                                                               'enum': ('log-harmonic', 'parabolic', 'square-well-parabolic', 'square-well-parabolic-linear', 'upper-bound-parabolic', 'lower-bound-parabolic', 'upper-bound-parabolic-linear', 'lower-bound-parabolic-linear', 'undefined', 'unknown'),
@@ -2467,7 +2469,7 @@ class NmrDpUtility(object):
                                           'dihed_restraint': [{'name': 'Sf_category', 'type': 'str', 'mandatory': True},
                                                               {'name': 'Sf_framecode', 'type': 'str', 'mandatory': True},
                                                               {'name': 'Constraint_type', 'type': 'enum', 'mandatory': False,
-                                                               'enum': ('J-couplings', 'backbone chemical shifts', 'unknown'),
+                                                               'enum': ('J-couplings', 'backbone chemical shifts', 'undefined', 'unknown'),
                                                                'enum-alt': self.dihed_alt_constraint_type['nmr-star']},
                                                               {'name': 'Potential_type', 'type': 'enum', 'mandatory': False,
                                                                'enum': ('parabolic', 'square-well-parabolic', 'square-well-parabolic-linear', 'upper-bound-parabolic', 'lower-bound-parabolic', 'upper-bound-parabolic-linear', 'lower-bound-parabolic-linear', 'undefined', 'unknown'),
@@ -2476,7 +2478,7 @@ class NmrDpUtility(object):
                                           'rdc_restraint': [{'name': 'Sf_category', 'type': 'str', 'mandatory': True},
                                                               {'name': 'Sf_framecode', 'type': 'str', 'mandatory': True},
                                                               {'name': 'Constraint_type', 'type': 'enum', 'mandatory': False,
-                                                               'enum': ('RDC', 'unknown'),
+                                                               'enum': ('RDC', 'undefined', 'unknown'),
                                                                'enum-alt': self.rdc_alt_constraint_type['nmr-star']},
                                                               {'name': 'Potential_type', 'type': 'enum', 'mandatory': False,
                                                                'enum': ('parabolic', 'square-well-parabolic', 'square-well-parabolic-linear', 'upper-bound-parabolic', 'lower-bound-parabolic', 'upper-bound-parabolic-linear', 'lower-bound-parabolic-linear', 'undefined', 'unknown'),
@@ -4869,7 +4871,7 @@ class NmrDpUtility(object):
                 version = sf_data.get_tag('format_version')[0]
 
                 if not version.startswith('0.'):
-                    sf_data.format_version = '1.0'
+                    sf_data.format_version = '1.1'
 
         else:
 
@@ -7412,7 +7414,7 @@ class NmrDpUtility(object):
                             if sf_framecode2 in ref_chain_ids and _chain_id in ref_chain_ids[sf_framecode2]:
                                 continue
 
-                            chain_id2 = s2['chain_id']
+                            _chain_id2 = s2['chain_id']
 
                             if sf_framecode2 in dst_chain_ids and _chain_id2 in dst_chain_ids[sf_framecode2]:
                                 continue
@@ -15018,7 +15020,7 @@ class NmrDpUtility(object):
                    upper_linear_limit_value is None:
                     potential_type = 'log-harmonic'
                 else:
-                    potential_type = 'unknown'
+                    potential_type = 'undefined'
 
                 if not potential_type is None:
                     if not data_type in potential_types:
@@ -16696,7 +16698,7 @@ class NmrDpUtility(object):
                    upper_linear_limit_value is None:
                     potential_type = 'parabolic'
                 else:
-                    potential_type = 'unknown'
+                    potential_type = 'undefined'
 
                 if not potential_type is None:
                     if not data_type in potential_types:
@@ -17178,7 +17180,7 @@ class NmrDpUtility(object):
 
         if data_type in self.empty_value:
 
-            data_type = 'unknown'
+            data_type = 'undefined'
 
             if chain_id_1 == chain_id_2 and chain_id_2 == chain_id_3 and chain_id_3 == chain_id_4:
 
@@ -17460,7 +17462,7 @@ class NmrDpUtility(object):
                    upper_linear_limit_value is None:
                     potential_type = 'parabolic'
                 else:
-                    potential_type = 'unknown'
+                    potential_type = 'undefined'
 
                 if not potential_type is None:
                     if not data_type in potential_types:
@@ -24403,7 +24405,11 @@ i                               """
                                 val = None
 
                             if val is itValue or val == itValue:
-                                if len(itEnum) == 2: # include 'unknown' enum value at the last position
+
+                                undefined_enums = ['undefined', 'unknown']
+
+                                if (len(itEnum) == 2 and itEnum[1] in undefined_enums) or\
+                                   (len(itEnum) == 3 and itEnum[1] in undefined_enums and itEnum[2] in undefined_enums): # assumes 'undefined', 'unknown' enum values at the end of the array
                                     sf_data.tags[itCol][1] = itEnum[0]
 
                                 # specific remediation follows
@@ -24440,7 +24446,7 @@ i                               """
                                                 if content_subtype == 'dist_restraint':
 
                                                     if mandatory_tag:
-                                                        sf_data.tags[itCol][1] = 'unknown' if file_type == 'nef' else 'general distance'
+                                                        sf_data.tags[itCol][1] = 'undefined' if file_type == 'nef' else 'general distance'
 
                                                     # 'NOE', 'NOE build-up', 'NOE not seen', 'ROE', 'ROE build-up', 'hydrogen bond', 'disulfide bond', 'paramagnetic relaxation', 'symmetry', 'general distance'
 
@@ -24454,12 +24460,12 @@ i                               """
                                                         sf_data.tags[itCol][1] = 'symmetry'
 
                                                     else:
-                                                        sf_data.tags[itCol][1] = 'unknown' if file_type == 'nef' else 'general distance'
+                                                        sf_data.tags[itCol][1] = 'undefined' if file_type == 'nef' else 'general distance'
 
                                                 elif content_subtype == 'dihed_restraint':
 
                                                     if mandatory_tag:
-                                                        sf_data.tags[itCol][1] = 'unknown'
+                                                        sf_data.tags[itCol][1] = 'undefined'
 
                                                     # 'J-couplings', 'backbone chemical shifts'
 
@@ -24470,12 +24476,12 @@ i                               """
                                                     #    sf_data.tags[itCol][1] = 'J-couplings'
 
                                                     else:
-                                                        sf_data.tags[itCol][1] = 'unknown'
+                                                        sf_data.tags[itCol][1] = 'undefined'
 
                                                 elif content_subtype == 'rdc_restraint':
 
                                                     if mandatory_tag:
-                                                        sf_data.tags[itCol][1] = 'unknown'
+                                                        sf_data.tags[itCol][1] = 'undefined'
                                                     else:
                                                         sf_data.tags[itCol][1] = 'measured' if file_type =='nef' else 'RDC'
 

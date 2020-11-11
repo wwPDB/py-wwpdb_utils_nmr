@@ -2298,7 +2298,7 @@ save_nef_distance_restraint_list_1pqx
    _nef_distance_restraint_list.sf_category                  nef_distance_restraint_list
    _nef_distance_restraint_list.sf_framecode                 nef_distance_restraint_list_1pqx
    _nef_distance_restraint_list.potential_type               undefined
-   _nef_distance_restraint_list.restraint_origin             unknown
+   _nef_distance_restraint_list.restraint_origin             undefined
    _nef_distance_restraint_list.ccpn_tensor_chain_code       .
    _nef_distance_restraint_list.ccpn_tensor_sequence_code    .
    _nef_distance_restraint_list.ccpn_tensor_residue_name     .

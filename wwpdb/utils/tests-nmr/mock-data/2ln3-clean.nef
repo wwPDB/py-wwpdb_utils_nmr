@@ -1074,7 +1074,7 @@ save_nef_distance_restraint_list_distance_constraint_list
    _nef_distance_restraint_list.sf_category       nef_distance_restraint_list
    _nef_distance_restraint_list.sf_framecode      nef_distance_restraint_list_distance_constraint_list
    _nef_distance_restraint_list.potential_type    unknown
-   _nef_distance_restraint_list.restraint_origin  unknown
+   _nef_distance_restraint_list.restraint_origin  undefined
 
    loop_
       _nef_distance_restraint.index

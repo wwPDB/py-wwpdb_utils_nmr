@@ -55,6 +55,7 @@
 # 06-Sep-2020  M. Yokochi - improve stability against the presence of undefined chain_id in loops (v2.8.4, DAOTHER-6128)
 # 12-Oct-2020  M. Yokochi - add support for spectral peak conversion from NMR-STAR canonical loops to NEF (v2.9.0, DAOTHER-6128)
 # 11-Nov-2020  M. Yokochi - fix crash while translation due to invalid seq_id (v2.9.1)
+# 11-Nov-2020  M. Yokochi - append _nef_sequence.index even if _Chem_comp_assembly.NEF_index does not exist (v2.9.2, DAOTHER-6128)
 ##
 import sys
 import os
@@ -76,7 +77,7 @@ from wwpdb.utils.nmr.io.ChemCompIo import ChemCompReader
 from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
 from wwpdb.utils.nmr.NmrDpReport import NmrDpReport
 
-__version__ = '2.9.1'
+__version__ = '2.9.2'
 
 __pynmrstar_v3__ = version.parse(pynmrstar.__version__) >= version.parse("3.0.0")
 
@@ -3407,6 +3408,9 @@ class NEFTranslator(object):
 
         out_tag = [t[0] for t in sorted(out_tag_w_ordinal.items(), key=lambda x:x[1])]
 
+        if len(out_tag) > 0 and out_tag[0].startswith('_nef_sequence.') and not '_nef_sequence.index' in out_tag:
+            out_tag.insert(0, '_nef_sequence.index')
+
         return out_tag
 
     def get_star_atom(self, comp_id, nef_atom, details=None, leave_unmatched=True):
@@ -4163,6 +4167,8 @@ class NEFTranslator(object):
 
         out_row = []
 
+        has_nef_index = '_Chem_comp_assembly.NEF_index' in star_tags
+
         chain_index = star_tags.index('_Chem_comp_assembly.Entity_assembly_ID')
         seq_index = star_tags.index('_Chem_comp_assembly.Comp_index_ID')
         comp_index = star_tags.index('_Chem_comp_assembly.Comp_ID')
@@ -4218,6 +4224,8 @@ class NEFTranslator(object):
                 if self.star2cif_chain_mapping[star_chain] is None:
                     self.star2cif_chain_mapping[star_chain] = self.star2nef_chain_mapping[star_chain]
 
+        index = 1
+
         for star_chain in self.authChainId:
 
             _star_chain = int(star_chain)
@@ -4253,6 +4261,9 @@ class NEFTranslator(object):
                 i = next(i for i in loop_data if i[chain_index] == star_chain and i[seq_index] == star_seq)
 
                 out = [None] * len(nef_tags)
+
+                if not has_nef_index:
+                    out[0] = index
 
                 for j in star_tags:
 
@@ -4294,6 +4305,8 @@ class NEFTranslator(object):
 
                     else:
                         out[data_index] = data
+
+                index += 1
 
                 out_row.append(out)
 

@@ -21147,7 +21147,7 @@ i                               """
         has_auth_asym_id = False
         has_auth_seq_id = False
         has_auth_comp_id = False
-        has_nef_index_dat = False
+        has_nef_index = False
         has_assembly_id = False
         has_entry_id = False
 
@@ -21190,7 +21190,7 @@ i                               """
 
                     if 'NEF_index' in orig_lp_data[0]:
                         if any(i for i in orig_lp_data if not i['NEF_index'] in self.empty_value):
-                            has_nef_index_dat = True
+                            has_nef_index = True
 
                     if 'Assembly_ID' in orig_lp_data[0]:
                         has_assembly_id = True
@@ -21247,7 +21247,7 @@ i                               """
             data_name = data_item['name']
             if data_name != 'NEF_index':
                 loop.add_tag(lp_cat_name + '.' + data_name)
-            elif has_nef_index_dat:
+            elif has_nef_index:
                 loop.add_tag(lp_cat_name + '.' + data_name)
 
         if has_entry_id:
@@ -21407,7 +21407,7 @@ i                               """
 
                         # NEF_index
 
-                        if has_nef_index_dat:
+                        if has_nef_index:
                             if not orig_row is None:
                                 row.append(orig_row['NEF_index'])
                             else:

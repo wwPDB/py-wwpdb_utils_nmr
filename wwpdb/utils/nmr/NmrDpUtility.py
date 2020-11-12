@@ -10639,6 +10639,8 @@ class NmrDpUtility(object):
         value_name = item_names['value']
         ambig_code_name = 'Ambiguity_code' # NMR-STAR specific
 
+        full_value_name = lp_category + '.' + value_name
+
         index_tag = self.index_tags[file_type][content_subtype]
         max_cs_err = self.chem_shift_error['max_inclusive']
 
@@ -10742,7 +10744,7 @@ class NmrDpUtility(object):
                                 elif value != methyl_cs_vals[methyl_cs_key]:
 
                                     err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] Chemical shift values in the same methyl group (%s %s vs %s) are inconsistent.' %\
-                                          (value_name, value, methyl_cs_vals[methyl_cs_key])
+                                          (full_value_name, value, methyl_cs_vals[methyl_cs_key])
 
                                     self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
                                     self.report.setError()
@@ -10755,7 +10757,7 @@ class NmrDpUtility(object):
                             if std_value is None or std_value <= 0.0:
 
                                 warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] Insufficient chemical shift statistics on comp_id %s, atom_id %s is available to verify %s %s (avg %s).' %\
-                                       (comp_id, atom_name, value_name, value, avg_value)
+                                       (comp_id, atom_name, full_value_name, value, avg_value)
 
                                 self.report.warning.appendDescription('unusual_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
                                 self.report.setWarning()
@@ -10768,7 +10770,7 @@ class NmrDpUtility(object):
                             if avg_value is None:
 
                                 warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] Insufficient chemical shift statistics on comp_id %s, atom_id %s is available to verify %s %s.' %\
-                                       (comp_id, atom_name, value_name, value)
+                                       (comp_id, atom_name, full_value_name, value)
 
                                 self.report.warning.appendDescription('unusual_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
                                 self.report.setWarning()
@@ -10793,7 +10795,7 @@ class NmrDpUtility(object):
 
                                         err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) +\
                                               '] %s %s (%s:%s:%s, atom_id %s) is not within expected range (avg %s, std %s, min %s, max %s, Z_score %.2f). Neither aromatic ring nor paramagnetic atom were found in the vicinity. Please check for folded/aliased signals.' %\
-                                              (value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score)
+                                              (full_value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score)
 
                                         err_alt = 'Verify chemical shift value for %s:%s:%s:%s (%s ppm, %.2f sigma) is outside of expected range (%.2f ~ %.2f ppm, avg %s, std %s, min %s, max %s). Neither aromatic ring nor paramagnetic atom were found in the vicinity. Please check for folded/aliased signals.' %\
                                               (chain_id, seq_id, comp_id, atom_name, value, sigma, avg_value + 5.0 * std_value, avg_value - 5.0 * std_value, avg_value, std_value, min_value, max_value)
@@ -10808,7 +10810,7 @@ class NmrDpUtility(object):
 
                                             if file_type == 'nmr-star' and details_col != -1:
                                                 _details = loop.data[l][details_col]
-                                                details = '%s %s is not within expected range (avg %s, std %s, min %s, max %s, Z_score %.2f). Neither aromatic ring nor paramagnetic atom were found in the vicinity. Please check for folded/aliased signals.\n' % (value_name, value, avg_value, std_value, min_value, max_value, z_score)
+                                                details = '%s %s is not within expected range (avg %s, std %s, min %s, max %s, Z_score %.2f). Neither aromatic ring nor paramagnetic atom were found in the vicinity. Please check for folded/aliased signals.\n' % (full_value_name, value, avg_value, std_value, min_value, max_value, z_score)
                                                 if _details in self.empty_value or (not details in _details):
                                                     if _details in self.empty_value:
                                                         loop.data[l][details_col] = details
@@ -10828,7 +10830,7 @@ class NmrDpUtility(object):
 
                                         warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) +\
                                                '] %s %s (%s:%s:%s:%s) should be verified (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest aromatic ring (%s:%s:%s:%s) is located at %s angstroms, %s degrees.' %\
-                                               (value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score,
+                                               (full_value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score,
                                                 na['chain_id'], na['seq_id'], na['comp_id'], na['ring_atoms'], na['ring_distance'], na['ring_angle'])
 
                                         warn_alt = 'Verify chemical shift value for %s:%s:%s:%s (%s ppm, %.2f sigma) is outside of expected range (%.2f ~ %.2f ppm, avg %s, std %s, min %s, max %s). The nearest aromatic ring (%s:%s:%s:%s) is located at %s angstroms, %s degrees.' %\
@@ -10845,7 +10847,7 @@ class NmrDpUtility(object):
 
                                             if file_type == 'nmr-star' and details_col != -1 and (na['ring_angle'] - self.magic_angle * z_score < 0.0 or na['ring_distance'] > self.vicinity_aromatic):
                                                 _details = loop.data[l][details_col]
-                                                details = '%s %s is not within expected range (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest aromatic ring %s:%s:%s is located at %s angstroms, %s degrees.\n' % (value_name, value, avg_value, std_value, min_value, max_value, z_score, na['chain_id'], na['seq_id'], na['comp_id'], na['ring_distance'], na['ring_angle'])
+                                                details = '%s %s is not within expected range (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest aromatic ring %s:%s:%s is located at %s angstroms, %s degrees.\n' % (full_value_name, value, avg_value, std_value, min_value, max_value, z_score, na['chain_id'], na['seq_id'], na['comp_id'], na['ring_distance'], na['ring_angle'])
                                                 if _details in self.empty_value or (not details in _details):
                                                     if _details in self.empty_value:
                                                         loop.data[l][details_col] = details
@@ -10865,7 +10867,7 @@ class NmrDpUtility(object):
 
                                         warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) +\
                                                '] %s %s (%s:%s:%s, atom_id %s) should be verified (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest paramagnetic atom (%s:%s:%s:%s) is located at %s angstroms.' %\
-                                               (value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score,
+                                               (full_value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score,
                                                 pa['chain_id'], pa['seq_id'], pa['comp_id'], pa['atom_id'], pa['distance'])
 
                                         warn_alt = 'Verify chemical shift value for %s:%s:%s:%s (%s ppm, %.2f sigma) is outside of expected range (%.2f ~ %.2f ppm, avg %s, std %s, min %s, max %s). The nearest paramagnetic atom (%s:%s:%s:%s) is located at %s angstroms.' %\
@@ -10880,7 +10882,7 @@ class NmrDpUtility(object):
 
                                         if file_type == 'nmr-star' and details_col != -1 and pa['distance'] > self.vicinity_paramagnetic:
                                             _details = loop.data[l][details_col]
-                                            details = '%s %s is not within expected range (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest paramagnetic atom %s:%s:%s is located at %s angstroms.\n' % (value_name, value, avg_value, std_value, min_value, max_value, z_score, pa['chain_id'], pa['seq_id'], pa['comp_id'], pa['distance'])
+                                            details = '%s %s is not within expected range (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest paramagnetic atom %s:%s:%s is located at %s angstroms.\n' % (full_value_name, value, avg_value, std_value, min_value, max_value, z_score, pa['chain_id'], pa['seq_id'], pa['comp_id'], pa['distance'])
                                             if _details in self.empty_value or (not details in _details):
                                                 if _details in self.empty_value:
                                                     loop.data[l][details_col] = details
@@ -10897,7 +10899,7 @@ class NmrDpUtility(object):
 
                                         warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) +\
                                                '] %s %s (%s:%s:%s:%s) must be verified (avg %s, std %s, min %s, max %s, Z_score %.2f). Neither aromatic ring nor paramagnetic atom were found in the vicinity.' %\
-                                               (value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score)
+                                               (full_value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score)
 
                                         warn_alt = 'Verify chemical shift value for %s:%s:%s:%s (%s ppm, %.2f sigma) is outside of expected range (%.2f ~ %.2f ppm, avg %s, std %s, min %s, max %s). Neither aromatic ring nor paramagnetic atom were found in the vicinity.' %\
                                                (chain_id, seq_id, comp_id, atom_name, value, sigma, avg_value + 5.0 * std_value, avg_value - 5.0 * std_value, avg_value, std_value, min_value, max_value)
@@ -10914,7 +10916,7 @@ class NmrDpUtility(object):
 
                                             warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) +\
                                                    '] %s %s (%s:%s:%s:%s) should be verified (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest aromatic ring (%s:%s:%s:%s) is located at %s angstroms, %s degrees.' %\
-                                                   (value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score,
+                                                   (full_value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score,
                                                     na['chain_id'], na['seq_id'], na['comp_id'], na['ring_atoms'], na['ring_distance'], na['ring_angle'])
 
                                             warn_alt = 'Verify chemical shift value for %s:%s:%s:%s (%s ppm, %.2f sigma) is outside of expected range (%.2f ~ %.2f ppm, avg %s, std %s, min %s, max %s). The nearest aromatic ring (%s:%s:%s:%s) is located at %s angstroms, %s degrees.' %\
@@ -10933,7 +10935,7 @@ class NmrDpUtility(object):
 
                                             warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) +\
                                                    '] %s %s (%s:%s:%s:%s) should be verified (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest paramagnetic atom (%s:%s:%s:%s) is located at %s angstroms.' %\
-                                                   (value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score,
+                                                   (full_value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score,
                                                     pa['chain_id'], pa['seq_id'], pa['comp_id'], pa['atom_id'], pa['distance'])
 
                                             warn_alt = 'Verify chemical shift value for %s:%s:%s:%s (%s ppm, %.2f sigma) is outside of expected range (%.2f ~ %.2f ppm, avg %s, std %s, min %s, max %s). The nearest paramagnetic atom (%s:%s:%s:%s) is located at %s angstroms.' %\
@@ -10953,7 +10955,7 @@ class NmrDpUtility(object):
 
                                     warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) +\
                                            '] %s %s (%s:%s:%s:%s) should be verified (avg %s, std %s, min %s, max %s, Z_score %.2f).' %\
-                                           (value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score)
+                                           (full_value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score)
 
                                     warn_alt = 'Verify chemical shift value for %s:%s:%s:%s (%s ppm, %.2f sigma) is outside of expected range (%.2f ~ %.2f ppm, avg %s, std %s, min %s, max %s).' %\
                                            (chain_id, seq_id, comp_id, atom_name, value, sigma, avg_value + 5.0 * std_value, avg_value - 5.0 * std_value, avg_value, std_value, min_value, max_value)
@@ -10994,7 +10996,7 @@ class NmrDpUtility(object):
                                 elif not cs_stat['primary'] and cs_stat['norm_freq'] < 0.03:
 
                                     warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] %s %s is remarkable assignment. Occurrence of %s in %s is %s %% according to BMRB.' %\
-                                           (value_name, value, atom_id, comp_id, cs_stat['norm_freq'] * 100.0)
+                                           (full_value_name, value, atom_id, comp_id, cs_stat['norm_freq'] * 100.0)
 
                                     self.report.warning.appendDescription('remarkable_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
                                     self.report.setWarning()
@@ -11014,7 +11016,7 @@ class NmrDpUtility(object):
 
                                         err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) +\
                                               '] %s %s (%s:%s:%s:%s) is not within expected range (avg %s, std %s, min %s, max %s, Z_score %.2f). Neither aromatic ring nor paramagnetic atom were found in the vicinity. Please check for folded/aliased signals.' %\
-                                              (value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score)
+                                              (full_value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score)
 
                                         err_alt = 'Verify chemical shift value for %s:%s:%s:%s (%s ppm, %.2f sigma) is outside of expected range (%.2f ~ %.2f ppm, avg %s, std %s, min %s, max %s). Neither aromatic ring nor paramagnetic atom were found in the vicinity. Please check for folded/aliased signals.' %\
                                               (chain_id, seq_id, comp_id, atom_name, value, sigma, avg_value + 5.0 * std_value, avg_value - 5.0 * std_value, avg_value, std_value, min_value, max_value)
@@ -11029,7 +11031,7 @@ class NmrDpUtility(object):
 
                                             if file_type == 'nmr-star' and details_col != -1:
                                                 _details = loop.data[l][details_col]
-                                                details = '%s %s is not within expected range (avg %s, std %s, min %s, max %s, Z_score %.2f). Neither aromatic ring nor paramagnetic atom were found in the vicinity. Please check for folded/aliased signals.\n' % (value_name, value, avg_value, std_value, min_value, max_value, z_score)
+                                                details = '%s %s is not within expected range (avg %s, std %s, min %s, max %s, Z_score %.2f). Neither aromatic ring nor paramagnetic atom were found in the vicinity. Please check for folded/aliased signals.\n' % (full_value_name, value, avg_value, std_value, min_value, max_value, z_score)
                                                 if _details in self.empty_value or (not details in _details):
                                                     if _details in self.empty_value:
                                                         loop.data[l][details_col] = details
@@ -11049,7 +11051,7 @@ class NmrDpUtility(object):
 
                                         warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) +\
                                                '] %s %s (%s:%s:%s:%s) should be verified (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest aromatic ring (%s:%s:%s:%s) is located at %s angstroms, %s degrees.' %\
-                                               (value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score,
+                                               (full_value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score,
                                                 na['chain_id'], na['seq_id'], na['comp_id'], na['ring_atoms'], na['ring_distance'], na['ring_angle'])
 
                                         warn_alt = 'Verify chemical shift value for %s:%s:%s:%s (%s ppm, %.2f sigma) is outside of expected range (%.2f ~ %.2f ppm, avg %s, std %s, min %s, max %s). The nearest aromatic ring (%s:%s:%s:%s) is located at %s angstroms, %s degrees.' %\
@@ -11068,7 +11070,7 @@ class NmrDpUtility(object):
 
                                                 if file_type == 'nmr-star' and details_col != -1:
                                                     _details = loop.data[l][details_col]
-                                                    details = '%s %s is not within expected range (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest aromatic ring %s:%s:%s is located at %s angstroms, %s degrees.\n' % (value_name, value, avg_value, std_value, min_value, max_value, z_score, na['chain_id'], na['seq_id'], na['comp_id'], na['ring_distance'], na['ring_angle'])
+                                                    details = '%s %s is not within expected range (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest aromatic ring %s:%s:%s is located at %s angstroms, %s degrees.\n' % (full_value_name, value, avg_value, std_value, min_value, max_value, z_score, na['chain_id'], na['seq_id'], na['comp_id'], na['ring_distance'], na['ring_angle'])
                                                     if _details in self.empty_value or (not details in _details):
                                                         if _details in self.empty_value:
                                                             loop.data[l][details_col] = details
@@ -11090,7 +11092,7 @@ class NmrDpUtility(object):
 
                                             warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) +\
                                                    '] %s %s (%s:%s:%s:%s) should be verified (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest paramagnetic atom (%s:%s:%s:%s) is located at %s angstroms.' %\
-                                                   (value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score,
+                                                   (full_value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score,
                                                     pa['chain_id'], pa['seq_id'], pa['comp_id'], pa['atom_id'], pa['distance'])
 
                                             warn_alt = 'Verify chemical shift value for %s:%s:%s:%s (%s ppm, %.2f sigma) is outside of expected range (%.2f ~ %.2f ppm, avg %s, std %s, min %s, max %s). The nearest paramagnetic atom (%s:%s:%s:%s) is located at %s angstroms.' %\
@@ -11105,7 +11107,7 @@ class NmrDpUtility(object):
 
                                             if file_type == 'nmr-star' and details_col != -1:
                                                 _details = loop.data[l][details_col]
-                                                details = '%s %s is not within expected range (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest paramagnetic atom %s:%s:%s is located at %s angstroms.\n' % (value_name, value, avg_value, std_value, min_value, max_value, z_score, pa['chain_id'], pa['seq_id'], pa['comp_id'], pa['distance'])
+                                                details = '%s %s is not within expected range (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest paramagnetic atom %s:%s:%s is located at %s angstroms.\n' % (full_value_name, value, avg_value, std_value, min_value, max_value, z_score, pa['chain_id'], pa['seq_id'], pa['comp_id'], pa['distance'])
                                                 if _details in self.empty_value or (not details in _details):
                                                     if _details in self.empty_value:
                                                         loop.data[l][details_col] = details
@@ -11122,7 +11124,7 @@ class NmrDpUtility(object):
 
                                         warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) +\
                                                '] %s %s (%s:%s:%s:%s) must be verified (avg %s, std %s, min %s, max %s, Z_score %.2f). Neither aromatic ring nor paramagnetic atom were found in the vicinity.' %\
-                                               (value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score)
+                                               (full_value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score)
 
                                         warn_alt = 'Verify chemical shift value for %s:%s:%s:%s (%s ppm, %.2f sigma) is outside of expected range (%.2f ~ %.2f ppm, avg %s, std %s, min %s, max %s). Neither aromatic ring nor paramagnetic atom were found in the vicinity.' %\
                                                (chain_id, seq_id, comp_id, atom_name, value, sigma, avg_value + 5.0 * std_value, avg_value - 5.0 * std_value, avg_value, std_value, min_value, max_value)
@@ -11139,7 +11141,7 @@ class NmrDpUtility(object):
 
                                             warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) +\
                                                    '] %s %s (%s:%s:%s:%s) should be verified (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest aromatic ring (%s:%s:%s:%s) is located at %s angstroms, %s degrees.' %\
-                                                   (value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score,
+                                                   (full_value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score,
                                                     na['chain_id'], na['seq_id'], na['comp_id'], na['ring_atoms'], na['ring_distance'], na['ring_angle'])
 
                                             warn_alt = 'Verify chemical shift value for %s:%s:%s:%s (%s ppm, %.2f sigma) is outside of expected range (%.2f ~ %.2f ppm, avg %s, std %s, min %s, max %s). The nearest aromatic ring (%s:%s:%s:%s) is located at %s angstroms, %s degrees.' %\
@@ -11158,7 +11160,7 @@ class NmrDpUtility(object):
 
                                             warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) +\
                                                    '] %s %s (%s:%s:%s:%s) should be verified (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest paramagnetic atom (%s:%s:%s:%s) is located at %s angstroms.' %\
-                                                   (value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score,
+                                                   (full_value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score,
                                                     pa['chain_id'], pa['seq_id'], pa['comp_id'], pa['atom_id'], pa['distance'])
 
                                             warn_alt = 'Verify chemical shift value for %s:%s:%s:%s (%s ppm, %.2f sigma) is outside of expected range (%.2f ~ %.2f ppm, avg %s, std %s, min %s, max %s). The nearest paramagnetic atom (%s:%s:%s:%s) is located at %s angstroms.' %\
@@ -11195,7 +11197,7 @@ class NmrDpUtility(object):
                                 elif value != methyl_cs_vals[methyl_cs_key]:
 
                                     err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] Chemical shift values in the same methyl group (%s %s vs %s) are inconsistent.' %\
-                                          (value_name, value, methyl_cs_vals[methyl_cs_key])
+                                          (full_value_name, value, methyl_cs_vals[methyl_cs_key])
 
                                     self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
                                     self.report.setError()
@@ -11208,7 +11210,7 @@ class NmrDpUtility(object):
                             if std_value is None or std_value <= 0.0:
 
                                 warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] Insufficient chemical shift statistics on comp_id %s, atom_id %s is available to verify %s %s (avg %s).' %\
-                                       (comp_id, atom_name, value_name, value, avg_value)
+                                       (comp_id, atom_name, full_value_name, value, avg_value)
 
                                 self.report.warning.appendDescription('unusual_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
                                 self.report.setWarning()
@@ -11221,7 +11223,7 @@ class NmrDpUtility(object):
                             if avg_value is None:
 
                                 warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] Insufficient chemical shift statistics on comp_id %s, atom_id %s is available to verify %s %s.' %\
-                                       (comp_id, atom_name, value_name, value)
+                                       (comp_id, atom_name, full_vnalue_name, value)
 
                                 self.report.warning.appendDescription('unusual_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
                                 self.report.setWarning()
@@ -11244,7 +11246,7 @@ class NmrDpUtility(object):
 
                                     err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) +\
                                           '] %s %s (%s:%s:%s:%s) is not within expected range (avg %s, std %s, min %s, max %s, Z_score %.2f). Neither aromatic ring nor paramagnetic atom were found in the vicinity. Please check for folded/aliased signals.' %\
-                                          (value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score)
+                                          (full_value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score)
 
                                     err_alt = 'Verify chemical shift value for %s:%s:%s:%s (%s ppm, %.2f sigma) is outside of expected range (%.2f ~ %.2f ppm, avg %s, std %s, min %s, max %s). Neither aromatic ring nor paramagnetic atom were found in the vicinity. Please check for folded/aliased signals.' %\
                                           (chain_id, seq_id, comp_id, atom_name, value, sigma, avg_value + 5.0 * std_value, avg_value - 5.0 * std_value, avg_value, std_value, min_value, max_value)
@@ -11259,7 +11261,7 @@ class NmrDpUtility(object):
 
                                         if file_type == 'nmr-star' and details_col != -1:
                                             _details = loop.data[l][details_col]
-                                            details = '%s %s is not within expected range (avg %s, std %s, min %s, max %s, Z_score %.2f). Neither aromatic ring nor paramagnetic atom were found in the vicinity. Please check for folded/aliased signals.\n' % (value_name, value, avg_value, std_value, min_value, max_value, z_score)
+                                            details = '%s %s is not within expected range (avg %s, std %s, min %s, max %s, Z_score %.2f). Neither aromatic ring nor paramagnetic atom were found in the vicinity. Please check for folded/aliased signals.\n' % (full_value_name, value, avg_value, std_value, min_value, max_value, z_score)
                                             if _details in self.empty_value or (not details in _details):
                                                 if _details in self.empty_value:
                                                     loop.data[l][details_col] = details
@@ -11279,7 +11281,7 @@ class NmrDpUtility(object):
 
                                     warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) +\
                                            '] %s %s (%s:%s:%s:%s) should be verified (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest aromatic ring (%s:%s:%s:%s) is located at %s angstroms, %s degrees.' %\
-                                           (value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score,
+                                           (full_value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score,
                                             na['chain_id'], na['seq_id'], na['comp_id'], na['ring_atoms'], na['ring_distance'], na['ring_angle'])
 
                                     warn_alt = 'Verify chemical shift value for %s:%s:%s:%s (%s ppm, %.2f sigma) is outside of expected range (%.2f ~ %.2f ppm, avg %s, std %s, min %s, max %s). The nearest aromatic ring (%s:%s:%s:%s) is located at %s angstroms, %s degrees.' %\
@@ -11296,7 +11298,7 @@ class NmrDpUtility(object):
 
                                         if file_type == 'nmr-star' and details_col != -1 and (na['ring_angle'] - self.magic_angle * z_score > 0.0 or self.__nonblk_anomalous_cs):
                                             _details = loop.data[l][details_col]
-                                            details = '%s %s is not within expected range (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest aromatic ring %s:%s:%s is located at %s angstroms, %s degrees.\n' % (value_name, value, avg_value, std_value, min_value, max_value, z_score, na['chain_id'], na['seq_id'], na['comp_id'], na['ring_distance'], na['ring_angle'])
+                                            details = '%s %s is not within expected range (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest aromatic ring %s:%s:%s is located at %s angstroms, %s degrees.\n' % (full_value_name, value, avg_value, std_value, min_value, max_value, z_score, na['chain_id'], na['seq_id'], na['comp_id'], na['ring_distance'], na['ring_angle'])
                                             if _details in self.empty_value or (not details in _details):
                                                 if _details in self.empty_value:
                                                     loop.data[l][details_col] = details
@@ -11316,7 +11318,7 @@ class NmrDpUtility(object):
 
                                     warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) +\
                                            '] %s %s (%s:%s:%s:%s) should be verified (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest paramagnetic atom (%s:%s:%s:%s) is located at %s angstroms.' %\
-                                           (value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score,
+                                           (full_value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score,
                                             pa['chain_id'], pa['seq_id'], pa['comp_id'], pa['atom_id'], pa['distance'])
 
                                     warn_alt = 'Verify chemical shift value for %s:%s:%s:%s (%s ppm, %.2f sigma) is outside of expected range (%.2f ~ %.2f ppm, avg %s, std %s, min %s, max %s). The nearest paramagnetic atom (%s:%s:%s:%s) is located at %s angstroms.' %\
@@ -11331,7 +11333,7 @@ class NmrDpUtility(object):
 
                                     if file_type == 'nmr-star' and details_col != -1 and pa['distance'] > self.vicinity_paramagnetic:
                                         _details = loop.data[l][details_col]
-                                        details = '%s %s is not within expected range (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest paramagnetic atom %s:%s:%s is located at %s angstroms.\n' % (value_name, value, avg_value, std_value, min_value, max_value, z_score, pa['chain_id'], pa['seq_id'], pa['comp_id'], pa['distance'])
+                                        details = '%s %s is not within expected range (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest paramagnetic atom %s:%s:%s is located at %s angstroms.\n' % (full_value_name, value, avg_value, std_value, min_value, max_value, z_score, pa['chain_id'], pa['seq_id'], pa['comp_id'], pa['distance'])
                                         if _details in self.empty_value or (not details in _details):
                                             if _details in self.empty_value:
                                                 loop.data[l][details_col] = details
@@ -11348,7 +11350,7 @@ class NmrDpUtility(object):
 
                                     warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) +\
                                            '] %s %s (%s:%s:%s:%s) must be verified (avg %s, std %s, min %s, max %s, Z_score %.2f). Neither aromatic ring nor paramagnetic atom were found in the vicinity.' %\
-                                           (value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score)
+                                           (full_value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score)
 
                                     warn_alt = 'Verify chemical shift value for %s:%s:%s:%s (%s ppm, %.2f sigma) is outside of expected range (%.2f ~ %.2f ppm, avg %s, std %s, min %s, max %s). Neither aromatic ring nor paramagnetic atom were found in the vicinity.' %\
                                            (chain_id, seq_id, comp_id, atom_name, value, sigma, avg_value + 5.0 * std_value, avg_value - 5.0 * std_value, avg_value, std_value, min_value, max_value)
@@ -11365,7 +11367,7 @@ class NmrDpUtility(object):
 
                                         warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) +\
                                                '] %s %s (%s:%s:%s:%s) should be verified (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest aromatic ring (%s:%s:%s:%s) is located at %s angstroms, %s degrees.' %\
-                                               (value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score,
+                                               (full_value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score,
                                                 na['chain_id'], na['seq_id'], na['comp_id'], na['ring_atoms'], na['ring_distance'], na['ring_angle'])
 
                                         warn_alt = 'Verify chemical shift value for %s:%s:%s:%s (%s ppm, %.2f sigma) is outside of expected range (%.2f ~ %.2f ppm, avg %s, std %s, min %s, max %s). The nearest aromatic ring (%s:%s:%s:%s) is located at %s angstroms, %s degrees.' %\
@@ -11384,7 +11386,7 @@ class NmrDpUtility(object):
 
                                         warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) +\
                                                '] %s %s (%s:%s:%s:%s) should be verified (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest paramagnetic atom (%s:%s:%s:%s) is located at %s angstroms.' %\
-                                               (value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score,
+                                               (full_value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score,
                                                 pa['chain_id'], pa['seq_id'], pa['comp_id'], pa['atom_id'], pa['distance'])
 
                                         warn_alt = 'Verify chemical shift value for %s:%s:%s:%s (%s ppm, %.2f sigma) is outside of expected range (%.2f ~ %.2f ppm, avg %s, std %s, min %s, max %s). The nearest paramagnetic atom (%s:%s:%s:%s) is located at %s angstroms.' %\
@@ -11404,7 +11406,7 @@ class NmrDpUtility(object):
 
                                 warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) +\
                                        '] %s %s (%s:%s:%s:%s) should be verified (avg %s, std %s, min %s, max %s, Z_score %.2f).' %\
-                                       (value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score)
+                                       (full_value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score)
 
                                 warn_alt = 'Verify chemical shift value for %s:%s:%s:%s (%s ppm, %.2f sigma) is outside of expected range (%.2f ~ %.2f ppm, avg %s, std %s, min %s, max %s).' %\
                                        (chain_id, seq_id, comp_id, atom_name, value, sigma, avg_value + 5.0 * std_value, avg_value - 5.0 * std_value, avg_value, std_value, min_value, max_value)
@@ -11445,7 +11447,7 @@ class NmrDpUtility(object):
                             elif not cs_stat['primary'] and cs_stat['norm_freq'] < 0.03:
 
                                 warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] %s %s is remarkable assignment. Occurrence of %s in %s is %s %% according to BMRB.' %\
-                                       (value_name, value, atom_id, comp_id, '{:.1f}'.format(cs_stat['norm_freq'] * 100.0))
+                                       (full_value_name, value, atom_id, comp_id, '{:.1f}'.format(cs_stat['norm_freq'] * 100.0))
 
                                 self.report.warning.appendDescription('remarkable_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
                                 self.report.setWarning()
@@ -11458,7 +11460,7 @@ class NmrDpUtility(object):
                 if not has_cs_stat:
 
                     warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] No chemical shift statistics is available to verify %s %s.' %\
-                           (value_name, value)
+                           (full_value_name, value)
 
                     self.report.warning.appendDescription('unusual_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
                     self.report.setWarning()

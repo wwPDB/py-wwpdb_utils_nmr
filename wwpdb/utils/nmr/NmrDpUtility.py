@@ -101,6 +101,7 @@
 # 09-Oct-2020  M. Yokochi - support circular chain_id re-mapping with seq_id shifts in data loops if it is necessary, 'tolerant_seq_align' input parameter is required (DAOTHER-6128)
 # 22-Oct-2020  M. Yokochi - run diagnostic routine for case of sequence mismatch between defined polymer sequence and sequence in data loop (DAOTHER-6128)
 # 11-Nov-2020  M. Yokochi - set NEF v1.1 as the default specification
+# 12-Nov-2020  M. Yokochi - improve NMR warning messages (DAOTHER-6109, 6167)
 ##
 """ Wrapper class for data processing for NMR data.
     @author: Masashi Yokochi
@@ -19527,7 +19528,7 @@ class NmrDpUtility(object):
 
                         if not result is None:
                             cost[nmr_polymer_sequence.index(s2)] = result['unmapped'] + result['conflict'] - result['length']
-                            if not self.__combined_mode and result['length'] >= len(s1['seq_id']):
+                            if not self.__combined_mode and result['length'] >= len(s1['seq_id']) - result['unmapped']:
                                 indices.append((cif_polymer_sequence.index(s1), nmr_polymer_sequence.index(s2)))
 
                     mat.append(cost)
@@ -19678,8 +19679,20 @@ class NmrDpUtility(object):
                                 unmapped.append({'ref_seq_id': seq_id1[i], 'ref_comp_id': cif_comp_id})
 
                                 if not aligned[i]:
-                                    warn = "%s:%s:%s is not present in the NMR data (chain_id %s). Please update the sequence in the Macromolecules page." %\
-                                           (chain_id, seq_id1[i], cif_comp_id, chain_id2)
+                                    cif_seq_code = '%s:%s:%s' % (chain_id, seq_id1[i], cif_comp_id)
+
+                                    auth_seq = next((seq_align for seq_align in seq_align_dic['model_poly_seq_vs_coordinate'] if seq_align['chain_id'] == chain_id), None)
+
+                                    if not auth_seq is None:
+                                        try:
+                                            auth_seq_id = auth_seq['test_seq_id'][auth_seq['ref_seq_id'].index(seq_id1[i])]
+                                            if seq_id1[i] != auth_seq_id:
+                                                cif_seq_code += ' (%s:%s:%s in author numbering scheme)' % (chain_id, auth_seq_id, cif_comp_id)
+                                        except:
+                                            pass
+
+                                    warn = "%s is not present in the NMR data (chain_id %s)." %\
+                                           (cif_seq_code, chain_id2)
 
                                     self.report.warning.appendDescription('sequence_mismatch', {'file_name': cif_file_name, 'description': warn})
                                     self.report.setWarning()
@@ -19864,7 +19877,7 @@ class NmrDpUtility(object):
 
                         if not result is None:
                             cost[cif_polymer_sequence.index(s2)] = result['unmapped'] + result['conflict'] - result['length']
-                            if not self.__combined_mode and result['length'] >= len(s2['seq_id']):
+                            if not self.__combined_mode and result['length'] >= len(s2['seq_id']) - result['unmapped']:
                                 indices.append((nmr_polymer_sequence.index(s1), cif_polymer_sequence.index(s2)))
 
                     mat.append(cost)

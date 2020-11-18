@@ -56,8 +56,8 @@ class NmrDpReport:
         self.__immutable = False
 
         self.__report = {'information': {'input_sources': [],
-                                         'sequence_alignments': [],
-                                         'chain_assignments': [],
+                                         'sequence_alignments': None,
+                                         'chain_assignments': None,
                                          'diamagnetic': True,
                                          'disulfide_bond': False,
                                          'other_bond': False,
@@ -339,7 +339,7 @@ class NmrDpReport:
             carbohydrates = 0
             others = 0
             for stat in self.getNmrStatsOfExptlData(content_subtype):
-                for k, v in stat['number_of_constraints_per_polymer_type'].items():
+                for k, v in stat['constraints_per_polymer_type'].items():
                     if k == 'protein':
                         proteins += v
                     elif k == 'nucleic_acid':
@@ -529,7 +529,7 @@ class NmrDpReport:
                 others = 0
 
                 for stat in stats:
-                    for k, v in stat['number_of_constraints_per_polymer_type'].items():
+                    for k, v in stat['constraints_per_polymer_type'].items():
                         if k == 'protein':
                             proteins += v
                         elif k == 'nucleic_acid':

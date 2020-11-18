@@ -13706,16 +13706,16 @@ class NmrDpUtility(object):
 
                                 for a in all_atoms:
 
-                                    if a.startswith('H') and not a in non_rep_methyl_pros:
+                                    if h1_col != -1 and not a in non_rep_methyl_pros and a.startswith('H'):
                                         all_c[h1_col]['number_of_target_shifts'] += 1
 
-                                    elif a.startswith('C') and c13_col != -1:
+                                    elif c13_col != -1 and a.startswith('C'):
                                         all_c[c13_col]['number_of_target_shifts'] += 1
 
-                                    elif a.startswith('N') and n15_col != -1:
+                                    elif n15_col != -1 and a.startswith('N'):
                                         all_c[n15_col]['number_of_target_shifts'] += 1
 
-                                    elif a.startswith('P') and p31_col != -1:
+                                    elif p31_col != -1 and a.startswith('P'):
                                         all_c[p31_col]['number_of_target_shifts'] += 1
 
                                 for j in lp_data:
@@ -13744,16 +13744,16 @@ class NmrDpUtility(object):
 
                                             if a in all_atoms:
 
-                                                if data_type == '1H' and not a in non_rep_methyl_pros:
+                                                if data_type == '1H' and h1_col != -1 and not a in non_rep_methyl_pros and a.startswith('H'):
                                                     all_c[h1_col]['number_of_assigned_shifts'] += 1
 
-                                                elif data_type == '13C':
+                                                elif data_type == '13C' and c13_col != -1:
                                                     all_c[c13_col]['number_of_assigned_shifts'] += 1
 
-                                                elif data_type == '15N':
+                                                elif data_type == '15N' and n15_col != -1:
                                                     all_c[n15_col]['number_of_assigned_shifts'] += 1
 
-                                                elif data_type == '31P':
+                                                elif data_type == '31P' and p31_col != -1:
                                                     all_c[p31_col]['number_of_assigned_shifts'] += 1
 
                                             elif a in non_excl_atoms:
@@ -13763,16 +13763,16 @@ class NmrDpUtility(object):
 
                                         if atom_id in all_atoms:
 
-                                            if data_type == '1H' and not atom_id in non_rep_methyl_pros:
+                                            if data_type == '1H' and h1_col != -1 and not atom_id in non_rep_methyl_pros and atom_id.startswith('H'):
                                                 all_c[h1_col]['number_of_assigned_shifts'] += 1
 
-                                            elif data_type == '13C':
+                                            elif data_type == '13C' and c13_col != -1:
                                                 all_c[c13_col]['number_of_assigned_shifts'] += 1
 
-                                            elif data_type == '15N':
+                                            elif data_type == '15N' and n15_col != -1:
                                                 all_c[n15_col]['number_of_assigned_shifts'] += 1
 
-                                            elif data_type == '31P':
+                                            elif data_type == '31P' and p31_col != -1:
                                                 all_c[p31_col]['number_of_assigned_shifts'] += 1
 
                                         elif atom_id in non_excl_atoms:
@@ -13840,16 +13840,16 @@ class NmrDpUtility(object):
 
                                 for a in bb_atoms:
 
-                                    if a.startswith('H') and h1_col != -1 and not a in non_rep_methyl_pros:
+                                    if h1_col != -1 and not a in non_rep_methyl_pros and a.startswith('H'):
                                         bb_c[h1_col]['number_of_target_shifts'] += 1
 
-                                    elif a.startswith('C') and c13_col != -1:
+                                    elif c13_col != -1 and a.startswith('C'):
                                         bb_c[c13_col]['number_of_target_shifts'] += 1
 
-                                    elif a.startswith('N') and n15_col != -1:
+                                    elif n15_col != -1 and a.startswith('N'):
                                         bb_c[n15_col]['number_of_target_shifts'] += 1
 
-                                    elif a.startswith('P') and p31_col != -1:
+                                    elif p31_col != -1 and a.startswith('P'):
                                         bb_c[p31_col]['number_of_target_shifts'] += 1
 
                                 for j in lp_data:
@@ -13878,30 +13878,30 @@ class NmrDpUtility(object):
 
                                             if a in bb_atoms:
 
-                                                if data_type == '1H' and not a in non_rep_methyl_pros:
+                                                if data_type == '1H' and h1_col != -1 and not a in non_rep_methyl_pros and a.startswith('H'):
                                                     bb_c[h1_col]['number_of_assigned_shifts'] += 1
 
-                                                elif data_type == '13C':
+                                                elif data_type == '13C' and c13_col != -1:
                                                     bb_c[c13_col]['number_of_assigned_shifts'] += 1
 
-                                                elif data_type == '15N':
+                                                elif data_type == '15N' and n15_col != -1:
                                                     bb_c[n15_col]['number_of_assigned_shifts'] += 1
 
-                                                elif data_type == '31P':
+                                                elif data_type == '31P' and p31_col != -1:
                                                     bb_c[p31_col]['number_of_assigned_shifts'] += 1
 
                                     elif atom_id in bb_atoms:
 
-                                        if data_type == '1H' and not atom_id in non_rep_methyl_pros:
+                                        if data_type == '1H' and h1_col != -1 and not atom_id in non_rep_methyl_pros and atom_id.startswith('H'):
                                             bb_c[h1_col]['number_of_assigned_shifts'] += 1
 
-                                        elif data_type == '13C':
+                                        elif data_type == '13C' and c13_col != -1:
                                             bb_c[c13_col]['number_of_assigned_shifts'] += 1
 
-                                        elif data_type == '15N':
+                                        elif data_type == '15N' and n15_col != -1:
                                             bb_c[n15_col]['number_of_assigned_shifts'] += 1
 
-                                        elif data_type == '31P':
+                                        elif data_type == '31P' and p31_col != -1:
                                             bb_c[p31_col]['number_of_assigned_shifts'] += 1
 
                         for c in bb_c:
@@ -13961,16 +13961,16 @@ class NmrDpUtility(object):
 
                                 for a in sc_atoms:
 
-                                    if a.startswith('H') and h1_col != -1 and not a in non_rep_methyl_pros:
+                                    if h1_col != -1 and not a in non_rep_methyl_pros and a.startswith('H'):
                                         sc_c[h1_col]['number_of_target_shifts'] += 1
 
-                                    elif a.startswith('C') and c13_col != -1:
+                                    elif c13_col != -1 and a.startswith('C'):
                                         sc_c[c13_col]['number_of_target_shifts'] += 1
 
-                                    elif a.startswith('N') and n15_col != -1:
+                                    elif n15_col != -1 and a.startswith('N'):
                                         sc_c[n15_col]['number_of_target_shifts'] += 1
 
-                                    elif a.startswith('P') and p31_col != -1:
+                                    elif p31_col != -1 and a.startswith('P'):
                                         sc_c[p31_col]['number_of_target_shifts'] += 1
 
                                 for j in lp_data:
@@ -13999,30 +13999,30 @@ class NmrDpUtility(object):
 
                                             if a in sc_atoms:
 
-                                                if data_type == '1H' and not a in non_rep_methyl_pros:
+                                                if data_type == '1H' and h1_col != -1 and not a in non_rep_methyl_pros and a.startswith('H'):
                                                     sc_c[h1_col]['number_of_assigned_shifts'] += 1
 
-                                                elif data_type == '13C':
+                                                elif data_type == '13C' and c13_col != -1:
                                                     sc_c[c13_col]['number_of_assigned_shifts'] += 1
 
-                                                elif data_type == '15N':
+                                                elif data_type == '15N' and n15_col != -1:
                                                     sc_c[n15_col]['number_of_assigned_shifts'] += 1
 
-                                                elif data_type == '31P':
+                                                elif data_type == '31P' and p31_col != -1:
                                                     sc_c[p31_col]['number_of_assigned_shifts'] += 1
 
                                     elif atom_id in sc_atoms:
 
-                                        if data_type == '1H' and not atom_id in non_rep_methyl_pros:
+                                        if data_type == '1H' and h1_col != -1 and not atom_id in non_rep_methyl_pros and atom_id.startswith('H'):
                                             sc_c[h1_col]['number_of_assigned_shifts'] += 1
 
-                                        elif data_type == '13C':
+                                        elif data_type == '13C' and c13_col != -1:
                                             sc_c[c13_col]['number_of_assigned_shifts'] += 1
 
-                                        elif data_type == '15N':
+                                        elif data_type == '15N' and n15_col != -1:
                                             sc_c[n15_col]['number_of_assigned_shifts'] += 1
 
-                                        elif data_type == '31P':
+                                        elif data_type == '31P' and p31_col != -1:
                                             sc_c[p31_col]['number_of_assigned_shifts'] += 1
 
                         for c in sc_c:
@@ -14077,10 +14077,10 @@ class NmrDpUtility(object):
 
                                 for a in ch3_atoms:
 
-                                    if a.startswith('H') and h1_col != -1 and not a in non_rep_methyl_pros:
+                                    if h1_col != -1 and not a in non_rep_methyl_pros and a.startswith('H'):
                                         ch3_c[h1_col]['number_of_target_shifts'] += 1
 
-                                    elif a.startswith('C') and c13_col != -1:
+                                    elif c13_col != -1 and a.startswith('C'):
                                         ch3_c[c13_col]['number_of_target_shifts'] += 1
 
                                 for j in lp_data:
@@ -14109,18 +14109,18 @@ class NmrDpUtility(object):
 
                                             if a in ch3_atoms:
 
-                                                if data_type == '1H' and not a in non_rep_methyl_pros:
+                                                if data_type == '1H' and h1_col != -1 and not a in non_rep_methyl_pros and a.startswith('H'):
                                                     ch3_c[h1_col]['number_of_assigned_shifts'] += 1
 
-                                                elif data_type == '13C':
+                                                elif data_type == '13C' and c13_col != -1:
                                                     ch3_c[c13_col]['number_of_assigned_shifts'] += 1
 
                                     elif atom_id in ch3_atoms:
 
-                                        if data_type == '1H' and not atom_id in non_rep_methyl_pros:
+                                        if data_type == '1H' and a.startswith('H') and h1_col != -1 and not atom_id in non_rep_methyl_pros:
                                             ch3_c[h1_col]['number_of_assigned_shifts'] += 1
 
-                                        elif data_type == '13C':
+                                        elif data_type == '13C' and c13_col != -1:
                                             ch3_c[c13_col]['number_of_assigned_shifts'] += 1
 
                         for c in ch3_c:
@@ -14176,13 +14176,13 @@ class NmrDpUtility(object):
 
                                 for a in aro_atoms:
 
-                                    if a.startswith('H') and h1_col != -1 and not a in non_rep_methyl_pros:
+                                    if h1_col != -1 and not a in non_rep_methyl_pros and a.startswith('H'):
                                         aro_c[h1_col]['number_of_target_shifts'] += 1
 
-                                    elif a.startswith('C') and c13_col != -1:
+                                    elif c13_col != -1 and a.startswith('C'):
                                         aro_c[c13_col]['number_of_target_shifts'] += 1
 
-                                    elif a.startswith('N') and n15_col != -1:
+                                    elif n15_col != -1 and a.startswith('N'):
                                         aro_c[n15_col]['number_of_target_shifts'] += 1
 
                                 for j in lp_data:
@@ -14211,24 +14211,24 @@ class NmrDpUtility(object):
 
                                             if a in aro_atoms:
 
-                                                if data_type == '1H' and not a in non_rep_methyl_pros:
+                                                if data_type == '1H' and h1_col != -1 and not a in non_rep_methyl_pros and a.startswith('H'):
                                                     aro_c[h1_col]['number_of_assigned_shifts'] += 1
 
-                                                elif data_type == '13C':
+                                                elif data_type == '13C' and c13_col != -1:
                                                     aro_c[c13_col]['number_of_assigned_shifts'] += 1
 
-                                                elif data_type == '15N':
+                                                elif data_type == '15N' and n15_col != -1:
                                                     aro_c[n15_col]['number_of_assigned_shifts'] += 1
 
                                     elif atom_id in aro_atoms:
 
-                                        if data_type == '1H' and not atom_id in non_rep_methyl_pros:
+                                        if data_type == '1H' and h1_col != -1 and not atom_id in non_rep_methyl_pros and atom_id.startswith('H'):
                                             aro_c[h1_col]['number_of_assigned_shifts'] += 1
 
-                                        elif data_type == '13C':
+                                        elif data_type == '13C' and c13_col != -1:
                                             aro_c[c13_col]['number_of_assigned_shifts'] += 1
 
-                                        elif data_type == '15N':
+                                        elif data_type == '15N' and n15_col != -1:
                                             aro_c[n15_col]['number_of_assigned_shifts'] += 1
 
                         for c in aro_c:
@@ -15088,7 +15088,7 @@ class NmrDpUtility(object):
             if len(redu_count) > 0:
                 ent['number_of_redundant_constraints'] = redu_count
             if not polymer_sequence is None:
-                ent['number_of_constraints_per_residue'] = count_per_residue
+                ent['constraints_per_residue'] = count_per_residue
                 ent['constraints_on_contact_map'] = count_on_map
             if has_inter_chain_constraint:
                 ent['constraints_on_asym_contact_map'] = count_on_asym_map
@@ -16739,7 +16739,7 @@ class NmrDpUtility(object):
                     ent['number_of_inconsistent_constraints'] = inco_count
                 if len(redu_count) > 0:
                     ent['number_of_redundant_constraints'] = redu_count
-                ent['number_of_constraints_per_polymer_type'] = polymer_types
+                ent['constraints_per_polymer_type'] = polymer_types
                 if not polymer_sequence is None:
                     ent['constraints_per_residue'] = value_per_residue
                 if len(weights) > 0:
@@ -19822,6 +19822,9 @@ class NmrDpUtility(object):
                             chain_assign['conflict_sequence'] = conflict
                             chain_assign['conflict'] = len(conflict)
                             chain_assign['unmapped'] = chain_assign['unmapped'] - len(conflict)
+                            if chain_assign['unmapped'] < 0:
+                                chain_assign['conflict'] -= chain_assign['unmapped']
+                                chain_assign['unmapped'] = 0
 
                             result['conflict'] = chain_assign['conflict']
                             result['unmapped'] = chain_assign['unmapped']
@@ -20169,6 +20172,9 @@ i                               """
                             chain_assign['conflict_sequence'] = conflict
                             chain_assign['conflict'] = len(conflict)
                             chain_assign['unmapped'] = chain_assign['unmapped'] - len(conflict)
+                            if chain_assign['unmapped'] < 0:
+                                chain_assign['conflict'] -= chain_assign['unmapped']
+                                chain_assign['unmapped'] = 0
 
                             result['conflict'] = chain_assign['conflict']
                             result['unmapped'] = chain_assign['unmapped']

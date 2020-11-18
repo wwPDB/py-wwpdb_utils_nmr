@@ -3200,8 +3200,11 @@
       ],
       "properties": {
         "internal_error": {
-          "type": "string",
-          "minLength": 1
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
         },
         "format_issue": {
           "$ref": "#/definitions/common_message"

@@ -15112,9 +15112,9 @@ class NmrDpUtility(object):
                     for c in count_per_residue:
                         if not data_type in c:
                             c[data_type] = [0] * len(c['seq_id'])
-                        if c['chain_id'] == chain_id_1:
+                        if c['chain_id'] == chain_id_1 and seq_id_1 in c['seq_id']:
                             c[data_type][c['seq_id'].index(seq_id_1)] += 1
-                        if c['chain_id'] == chain_id_2:
+                        if c['chain_id'] == chain_id_2 and seq_id_2 in c['seq_id']:
                             c[data_type][c['seq_id'].index(seq_id_2)] += 1
 
                     # count on map

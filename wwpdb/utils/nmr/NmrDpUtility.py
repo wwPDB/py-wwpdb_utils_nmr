@@ -102,6 +102,7 @@
 # 22-Oct-2020  M. Yokochi - run diagnostic routine for case of sequence mismatch between defined polymer sequence and sequence in data loop (DAOTHER-6128)
 # 11-Nov-2020  M. Yokochi - set NEF v1.1 as the default specification
 # 12-Nov-2020  M. Yokochi - improve NMR warning messages (DAOTHER-6109, 6167)
+# 18-Nov-2020  M. Yokochi - fix calculation of CS completeness, fix empty polymer_sequence_in_loop due to atom_site.pdbx_PDB_ins_code (DAOTHER-6128)
 ##
 """ Wrapper class for data processing for NMR data.
     @author: Masashi Yokochi
@@ -1169,7 +1170,21 @@ class NmrDpUtility(object):
                                                         {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
                                                         {'name': 'auth_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
                                                         {'name': 'ndb_model', 'type': 'int', 'alt_name': 'model_id'}
-                                                        ]
+                                                        ],
+                                   'coordinate_ins': [{'name': 'label_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
+                                                      {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
+                                                      {'name': 'auth_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
+                                                      {'name': 'pdbx_PDB_ins_code', 'type': 'str', 'alt_name': 'ins_code', 'default': '?'},
+                                                      {'name': 'label_seq_id', 'type': 'str', 'alt_name': 'label_seq_id', 'default': '.'},
+                                                      {'name': 'pdbx_PDB_model_num', 'type': 'int', 'alt_name': 'model_id'}
+                                                     ],
+                                   'coordinate_ins_alias': [{'name': 'label_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
+                                                            {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
+                                                            {'name': 'auth_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
+                                                            {'name': 'ndb_ins_code', 'type': 'str', 'alt_name': 'ins_code', 'default': '?'},
+                                                            {'name': 'label_seq_id', 'type': 'str', 'alt_name': 'label_seq_id', 'default': '.'},
+                                                            {'name': 'ndb_model', 'type': 'int', 'alt_name': 'model_id'}
+                                                           ]
                                    }
                           }
 
@@ -13718,6 +13733,8 @@ class NmrDpUtility(object):
                                     elif p31_col != -1 and a.startswith('P'):
                                         all_c[p31_col]['number_of_target_shifts'] += 1
 
+                                atom_set = set()
+
                                 for j in lp_data:
 
                                     if file_type == 'nef':
@@ -13742,6 +13759,11 @@ class NmrDpUtility(object):
 
                                         for a in atom_ids:
 
+                                            if a in atom_set:
+                                                continue
+
+                                            atom_set.add(a)
+
                                             if a in all_atoms:
 
                                                 if data_type == '1H' and h1_col != -1 and not a in non_rep_methyl_pros and a.startswith('H'):
@@ -13760,6 +13782,11 @@ class NmrDpUtility(object):
                                                 excluded_atom_id.append({'seq_id': seq_id, 'comp_id': comp_id, 'atom_id': a, 'value': j[value_name]})
 
                                     else:
+
+                                        if atom_id in atom_set:
+                                            continue
+
+                                        atom_set.add(atom_id)
 
                                         if atom_id in all_atoms:
 
@@ -13852,6 +13879,8 @@ class NmrDpUtility(object):
                                     elif p31_col != -1 and a.startswith('P'):
                                         bb_c[p31_col]['number_of_target_shifts'] += 1
 
+                                atom_set = set()
+
                                 for j in lp_data:
 
                                     if file_type == 'nef':
@@ -13878,6 +13907,11 @@ class NmrDpUtility(object):
 
                                             if a in bb_atoms:
 
+                                                if a in atom_set:
+                                                    continue
+
+                                                atom_set.add(a)
+
                                                 if data_type == '1H' and h1_col != -1 and not a in non_rep_methyl_pros and a.startswith('H'):
                                                     bb_c[h1_col]['number_of_assigned_shifts'] += 1
 
@@ -13891,6 +13925,11 @@ class NmrDpUtility(object):
                                                     bb_c[p31_col]['number_of_assigned_shifts'] += 1
 
                                     elif atom_id in bb_atoms:
+
+                                        if atom_id in atom_set:
+                                            continue
+
+                                        atom_set.add(atom_id)
 
                                         if data_type == '1H' and h1_col != -1 and not atom_id in non_rep_methyl_pros and atom_id.startswith('H'):
                                             bb_c[h1_col]['number_of_assigned_shifts'] += 1
@@ -13973,6 +14012,8 @@ class NmrDpUtility(object):
                                     elif p31_col != -1 and a.startswith('P'):
                                         sc_c[p31_col]['number_of_target_shifts'] += 1
 
+                                atom_set = set()
+
                                 for j in lp_data:
 
                                     if file_type == 'nef':
@@ -13999,6 +14040,11 @@ class NmrDpUtility(object):
 
                                             if a in sc_atoms:
 
+                                                if a in atom_set:
+                                                    continue
+
+                                                atom_set.add(a)
+
                                                 if data_type == '1H' and h1_col != -1 and not a in non_rep_methyl_pros and a.startswith('H'):
                                                     sc_c[h1_col]['number_of_assigned_shifts'] += 1
 
@@ -14012,6 +14058,11 @@ class NmrDpUtility(object):
                                                     sc_c[p31_col]['number_of_assigned_shifts'] += 1
 
                                     elif atom_id in sc_atoms:
+
+                                        if atom_id in atom_set:
+                                            continue
+
+                                        atom_set.add(atom_id)
 
                                         if data_type == '1H' and h1_col != -1 and not atom_id in non_rep_methyl_pros and atom_id.startswith('H'):
                                             sc_c[h1_col]['number_of_assigned_shifts'] += 1
@@ -14083,6 +14134,8 @@ class NmrDpUtility(object):
                                     elif c13_col != -1 and a.startswith('C'):
                                         ch3_c[c13_col]['number_of_target_shifts'] += 1
 
+                                atom_set = set()
+
                                 for j in lp_data:
 
                                     if file_type == 'nef':
@@ -14109,6 +14162,11 @@ class NmrDpUtility(object):
 
                                             if a in ch3_atoms:
 
+                                                if a in atom_set:
+                                                    continue
+
+                                                atom_set.add(a)
+
                                                 if data_type == '1H' and h1_col != -1 and not a in non_rep_methyl_pros and a.startswith('H'):
                                                     ch3_c[h1_col]['number_of_assigned_shifts'] += 1
 
@@ -14116,6 +14174,11 @@ class NmrDpUtility(object):
                                                     ch3_c[c13_col]['number_of_assigned_shifts'] += 1
 
                                     elif atom_id in ch3_atoms:
+
+                                        if atom_id in atom_set:
+                                            continue
+
+                                        atom_set.add(atom_id)
 
                                         if data_type == '1H' and a.startswith('H') and h1_col != -1 and not atom_id in non_rep_methyl_pros:
                                             ch3_c[h1_col]['number_of_assigned_shifts'] += 1
@@ -14185,6 +14248,8 @@ class NmrDpUtility(object):
                                     elif n15_col != -1 and a.startswith('N'):
                                         aro_c[n15_col]['number_of_target_shifts'] += 1
 
+                                atom_set = set()
+
                                 for j in lp_data:
 
                                     if file_type == 'nef':
@@ -14211,6 +14276,11 @@ class NmrDpUtility(object):
 
                                             if a in aro_atoms:
 
+                                                if a in atom_set:
+                                                    continue
+
+                                                atom_set.add(a)
+
                                                 if data_type == '1H' and h1_col != -1 and not a in non_rep_methyl_pros and a.startswith('H'):
                                                     aro_c[h1_col]['number_of_assigned_shifts'] += 1
 
@@ -14221,6 +14291,11 @@ class NmrDpUtility(object):
                                                     aro_c[n15_col]['number_of_assigned_shifts'] += 1
 
                                     elif atom_id in aro_atoms:
+
+                                        if atom_id in atom_set:
+                                            continue
+
+                                        atom_set.add(atom_id)
 
                                         if data_type == '1H' and h1_col != -1 and not atom_id in non_rep_methyl_pros and atom_id.startswith('H'):
                                             aro_c[h1_col]['number_of_assigned_shifts'] += 1
@@ -18704,7 +18779,11 @@ class NmrDpUtility(object):
 
         try:
 
-            poly_seq = self.__cR.getPolymerSequence(lp_category, key_items, withStructConf=True, alias=alias, total_models=self.__total_models)
+            try:
+                poly_seq = self.__cR.getPolymerSequence(lp_category, key_items, withStructConf=True, alias=alias, total_models=self.__total_models)
+            except KeyError: # pdbx_PDB_ins_code throws KeyError
+                key_items = self.key_items[file_type][content_subtype + ('_ins_alias' if alias else '_ins')]
+                poly_seq = self.__cR.getPolymerSequence(lp_category, key_items, withStructConf=True, alias=alias, total_models=self.__total_models)
 
             input_source.setItemValue('polymer_sequence', poly_seq)
 
@@ -18832,7 +18911,11 @@ class NmrDpUtility(object):
 
         try:
 
-            non_poly = self.__cR.getPolymerSequence(lp_category, key_items)
+            try:
+                non_poly = self.__cR.getPolymerSequence(lp_category, key_items)
+            except KeyError: # pdbx_PDB_ins_code throws KeyError
+                key_items = self.key_items[file_type][content_subtype + ('_ins_alias' if alias else '_ins')]
+                non_poly = self.__cR.getPolymerSequence(lp_category, key_items)
 
             if len(non_poly) > 0:
 
@@ -18937,7 +19020,11 @@ class NmrDpUtility(object):
 
             try:
 
-                poly_seq = self.__cR.getPolymerSequence(lp_category, key_items)
+                try:
+                    poly_seq = self.__cR.getPolymerSequence(lp_category, key_items)
+                except KeyError: # pdbx_PDB_ins_code throws KeyError
+                    key_items = self.key_items[file_type][content_subtype + ('_ins_alias' if alias else '_ins')]
+                    poly_seq = self.__cR.getPolymerSequence(lp_category, key_items)
 
                 if len(poly_seq) > 0:
 

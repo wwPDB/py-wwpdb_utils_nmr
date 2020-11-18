@@ -96,10 +96,7 @@
         },
         "polymer_sequence_in_loop": {
           "description": "The object provides sequences in data loops of specified subtype of content.",
-          "type": [
-            "object",
-            "null"
-          ],
+          "type": "object",
           "properties": {
             "chem_shift": {
               "description": "The array provides the polymer sequences in data loops for assigned chemical shifts.",
@@ -248,6 +245,21 @@
         },
         "seq_id": {
           "description": "List of sequence ID of a chain.",
+          "type": "array",
+          "items": {
+            "type": "integer"
+          }
+        },
+        "ins_code": {
+          "description": "List of insertion code of a chain (PDBx/mmCIF specific, aka. atom_site.pdbx_PDB_ins_code).",
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "label_seq_id": {
+          "description": "List of alternative sequence ID of a chain (PDBx/mmCIF specific, aka. atom_site.label_seq_id).",
           "type": "array",
           "items": {
             "type": "integer"
@@ -2894,7 +2906,7 @@
         },
         "matched": {
           "type": "integer",
-          "minimum": 1
+          "minimum": 0
         },
         "conflict": {
           "type": "integer",
@@ -3036,7 +3048,7 @@
         },
         "matched": {
           "type": "integer",
-          "minimum": 1
+          "minimum": 0
         },
         "conflict": {
           "type": "integer",

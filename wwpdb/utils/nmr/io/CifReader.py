@@ -7,15 +7,16 @@
 #                     Add accessors for lists of dictionaries.
 # 12-May-2011 - rps - Added check for None when asking for category Object in __getDataList()
 # 2012-10-24    RPS   Updated to reflect reorganization of modules in pdbx packages
-# 23-Jul-2019   my  - Forked original code to wwpdb.util.nmr.CifReader
-# 30-Jul-2019   my  - Add 'range-float' as filter item type
-# 05-Aug-2019   my  - Add 'enum' as filter item type
-# 28-Jan-2020   my  - Add 'withStructConf' option of getPolymerSequence
-# 19-Mar-2020   my  - Add hasItem()
+# 23-Jul-2019   my  - forked original code to wwpdb.util.nmr.CifReader
+# 30-Jul-2019   my  - add 'range-float' as filter item type
+# 05-Aug-2019   my  - add 'enum' as filter item type
+# 28-Jan-2020   my  - add 'withStructConf' option of getPolymerSequence
+# 19-Mar-2020   my  - add hasItem()
 # 24-Mar-2020   my  - add 'identical_chain_id' in results of getPolymerSequence()
 # 15-Apr-2020   my  - add 'total_models' option of getPolymerSequence (DAOTHER-4060)
 # 19-Apr-2020   my  - add random rotation test for detection of non-superimposed models (DAOTHER-4060)
 # 08-May-2020   my  - make sure parse() is run only once (DAOTHER-5654)
+# 18-Nov-2020   my  - additional support for insertion code in getPolymerSequence() (DAOTHER-6128)
 ##
 """ A collection of classes for parsing CIF files.
 """
@@ -254,35 +255,69 @@ class CifReader(object):
                 for j in range(len_key):
                     itCol = itDict[keyNames[j]]
                     if itCol < len(row) and row[itCol] in self.emptyValue:
-                        raise ValueError("%s must not be empty." % keyNames[j])
+                        if not 'default' in keyItems[j] and not keyItems[j]['default'] in self.emptyValue:
+                            raise ValueError("%s must not be empty." % keyNames[j])
 
             compDict = {}
             seqDict = {}
+            insCodeDict = {}
+            labelSeqDict = {}
 
             chain_id_col = altDict['chain_id']
             seq_id_col = altDict['seq_id']
             comp_id_col = altDict['comp_id']
+            ins_code_col = -1 if not 'ins_code' in altDict else altDict['ins_code']
+            label_seq_col = -1 if not 'label_seq_id' in altDict else altDict['label_seq_id']
 
             chains = sorted(set([row[chain_id_col] for row in rowList]))
-            sortedSeq = sorted(set(['{} {:04d} {}'.format(row[chain_id_col], int(row[seq_id_col]), row[comp_id_col]) for row in rowList]))
 
-            keyDict = {'{} {:04d}'.format(row[chain_id_col], int(row[seq_id_col])):row[comp_id_col] for row in rowList}
+            if ins_code_col == -1 or label_seq_col == -1:
+                sortedSeq = sorted(set(['{} {:04d} {}'.format(row[chain_id_col], int(row[seq_id_col]), row[comp_id_col]) for row in rowList]))
 
-            for row in rowList:
-                key = '{} {:04d}'.format(row[chain_id_col], int(row[seq_id_col]))
-                if keyDict[key] != row[comp_id_col]:
-                    raise KeyError("Sequence must be unique. %s %s, %s %s, %s %s vs %s." %\
-                                   (itNameList[chain_id_col], row[chain_id_col],
-                                    itNameList[seq_id_col], row[seq_id_col],
-                                    itNameList[comp_id_col], row[comp_id_col], keyDict[key]))
+                keyDict = {'{} {:04d}'.format(row[chain_id_col], int(row[seq_id_col])): row[comp_id_col] for row in rowList}
 
-            if len(chains) > 1:
-                for c in chains:
-                    compDict[c] = [s.split(' ')[-1] for s in sortedSeq if s.split(' ')[0] == c]
-                    seqDict[c] = [int(s.split(' ')[1]) for s in sortedSeq if s.split(' ')[0] == c]
+                for row in rowList:
+                    key = '{} {:04d}'.format(row[chain_id_col], int(row[seq_id_col]))
+                    if keyDict[key] != row[comp_id_col]:
+                        raise KeyError("Sequence must be unique. %s %s, %s %s, %s %s vs %s." %\
+                                       (itNameList[chain_id_col], row[chain_id_col],
+                                        itNameList[seq_id_col], row[seq_id_col],
+                                        itNameList[comp_id_col], row[comp_id_col], keyDict[key]))
+
+                if len(chains) > 1:
+                    for c in chains:
+                        compDict[c] = [s.split(' ')[-1] for s in sortedSeq if s.split(' ')[0] == c]
+                        seqDict[c] = [int(s.split(' ')[1]) for s in sortedSeq if s.split(' ')[0] == c]
+                else:
+                    compDict[list(chains)[0]] = [s.split(' ')[-1] for s in sortedSeq]
+                    seqDict[list(chains)[0]] = [int(s.split(' ')[1]) for s in sortedSeq]
+
             else:
-                compDict[list(chains)[0]] = [s.split(' ')[-1] for s in sortedSeq]
-                seqDict[list(chains)[0]] = [int(s.split(' ')[1]) for s in sortedSeq]
+                sortedSeq = sorted(set(['{} {:04d} {} {} {}'.format(row[chain_id_col], int(row[seq_id_col]), row[ins_code_col], row[label_seq_col], row[comp_id_col]) for row in rowList]))
+
+                keyDict = {'{} {:04d} {} {}'.format(row[chain_id_col], int(row[seq_id_col]), row[ins_code_col], row[label_seq_col]): row[comp_id_col] for row in rowList}
+
+                for row in rowList:
+                    key = '{} {:04d} {} {}'.format(row[chain_id_col], int(row[seq_id_col]), row[ins_code_col], row[label_seq_col])
+                    if keyDict[key] != row[comp_id_col]:
+                        raise KeyError("Sequence must be unique. %s %s, %s %s, %s %s, %s %s, %s %s vs %s." %\
+                                       (itNameList[chain_id_col], row[chain_id_col],
+                                        itNameList[seq_id_col], row[seq_id_col],
+                                        itNameList[ins_code_col], row[ins_code_col],
+                                        itNameList[label_seq_col], row[label_seq_col],
+                                        itNameList[comp_id_col], row[comp_id_col], keyDict[key]))
+
+                if len(chains) > 1:
+                    for c in chains:
+                        compDict[c] = [s.split(' ')[-1] for s in sortedSeq if s.split(' ')[0] == c]
+                        seqDict[c] = [int(s.split(' ')[1]) for s in sortedSeq if s.split(' ')[0] == c]
+                        insCodeDict[c] = [s.split(' ')[2] for s in sortedSeq if s.split(' ')[0] == c]
+                        labelSeqDict[c] = [s.split(' ')[3] for s in sortedSeq if s.split(' ')[0] == c]
+                else:
+                    compDict[list(chains)[0]] = [s.split(' ')[-1] for s in sortedSeq]
+                    seqDict[list(chains)[0]] = [int(s.split(' ')[1]) for s in sortedSeq]
+                    insCodeDict[list(chains)[0]] = [s.split(' ')[2] for s in sortedSeq]
+                    labelSeqDict[list(chains)[0]] = [s.split(' ')[3] for s in sortedSeq]
 
             asm = [] # assembly of a loop
 
@@ -292,6 +327,10 @@ class CifReader(object):
                 ent['chain_id'] = c
                 ent['seq_id'] = seqDict[c]
                 ent['comp_id'] = compDict[c]
+                if c in insCodeDict:
+                    ent['ins_code'] = insCodeDict[c]
+                if c in labelSeqDict and not '.' in labelSeqDict[c] and not '?' in labelSeqDict[c]:
+                    ent['label_seq_id'] = [int(s) for s in labelSeqDict[c]]
 
                 if withStructConf:
                     ent['struct_conf'] = self.__extractStructConf(c, seqDict[c], alias)

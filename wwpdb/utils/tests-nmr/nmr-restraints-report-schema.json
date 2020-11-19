@@ -244,7 +244,7 @@
           "minLength": 1
         },
         "seq_id": {
-          "description": "List of sequence ID of a chain.",
+          "description": "List of unique sequence ID of a chain.",
           "type": "array",
           "items": {
             "type": "integer"
@@ -258,8 +258,15 @@
             "minLength": 1
           }
         },
+        "auth_seq_id": {
+          "description": "List of author sequence ID of a chain when the insertion code exists (PDBx/mmCIF specific, aka. atom_site.auth_seq_id).",
+          "type": "array",
+          "items": {
+            "type": "integer"
+          }
+        },
         "label_seq_id": {
-          "description": "List of alternative sequence ID of a chain (PDBx/mmCIF specific, aka. atom_site.label_seq_id).",
+          "description": "List of normalized sequence ID of a chain when the insertion code exists (PDBx/mmCIF specific, aka. atom_site.label_seq_id).",
           "type": "array",
           "items": {
             "type": "integer"
@@ -525,7 +532,7 @@
         },
         "distance_value": {
           "type": "number",
-          "minimum": 1.0
+          "minimum": 0.9
         }
       }
     },

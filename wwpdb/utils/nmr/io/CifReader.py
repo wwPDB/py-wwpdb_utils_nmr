@@ -289,8 +289,9 @@ class CifReader(object):
                         compDict[c] = [s.split(' ')[-1] for s in sortedSeq if s.split(' ')[0] == c]
                         seqDict[c] = [int(s.split(' ')[1]) for s in sortedSeq if s.split(' ')[0] == c]
                 else:
-                    compDict[list(chains)[0]] = [s.split(' ')[-1] for s in sortedSeq]
-                    seqDict[list(chains)[0]] = [int(s.split(' ')[1]) for s in sortedSeq]
+                    c = list(chains)[0]
+                    compDict[c] = [s.split(' ')[-1] for s in sortedSeq]
+                    seqDict[c] = [int(s.split(' ')[1]) for s in sortedSeq]
 
             else:
                 sortedSeq = sorted(set(['{} {:04d} {} {} {}'.format(row[chain_id_col], int(row[seq_id_col]), row[ins_code_col], row[label_seq_col], row[comp_id_col]) for row in rowList]))
@@ -314,10 +315,11 @@ class CifReader(object):
                         insCodeDict[c] = [s.split(' ')[2] for s in sortedSeq if s.split(' ')[0] == c]
                         labelSeqDict[c] = [s.split(' ')[3] for s in sortedSeq if s.split(' ')[0] == c]
                 else:
-                    compDict[list(chains)[0]] = [s.split(' ')[-1] for s in sortedSeq]
-                    seqDict[list(chains)[0]] = [int(s.split(' ')[1]) for s in sortedSeq]
-                    insCodeDict[list(chains)[0]] = [s.split(' ')[2] for s in sortedSeq]
-                    labelSeqDict[list(chains)[0]] = [s.split(' ')[3] for s in sortedSeq]
+                    c = list(chains)[0]
+                    compDict[c] = [s.split(' ')[-1] for s in sortedSeq]
+                    seqDict[c] = [int(s.split(' ')[1]) for s in sortedSeq]
+                    insCodeDict[c] = [s.split(' ')[2] for s in sortedSeq]
+                    labelSeqDict[c] = [s.split(' ')[3] for s in sortedSeq]
 
             asm = [] # assembly of a loop
 
@@ -327,10 +329,11 @@ class CifReader(object):
                 ent['chain_id'] = c
                 ent['seq_id'] = seqDict[c]
                 ent['comp_id'] = compDict[c]
-                if c in insCodeDict:
+                if c in insCodeDict and any(s for s in labelSeqDict[c] if s in self.emptyValue):
                     ent['ins_code'] = insCodeDict[c]
-                if c in labelSeqDict and not '.' in labelSeqDict[c] and not '?' in labelSeqDict[c]:
+                    ent['auth_seq_id'] = seqDict[c]
                     ent['label_seq_id'] = [int(s) for s in labelSeqDict[c]]
+                    ent['seq_id'] = ent['label_seq_id']
 
                 if withStructConf:
                     ent['struct_conf'] = self.__extractStructConf(c, seqDict[c], alias)

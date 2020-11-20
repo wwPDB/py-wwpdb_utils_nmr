@@ -9,6 +9,7 @@
 # 03-Apr-2020  M. Yokochi - support NEFTranslator v2.2.0
 # 23-Apr-2020  M. Yokochi - support NEFTranslator v2.2.5
 # 17-Aug-2020  M. Yokochi - support NEFTranslator v2.7.0
+# 19-Nov-2020  M. Yokochi - support NEFTranslator v2.9.3
 ##
 import unittest
 import os
@@ -587,7 +588,26 @@ class TestNEFTranslator(unittest.TestCase):
         self.assertEqual(self.neft.get_star_atom('TRP', 'CEY'), (['CE3'], 1, None))
         self.assertEqual(self.neft.get_star_atom('LEU', 'HDY%'), (['HD21', 'HD22', 'HD23'], 2, None))
         self.assertEqual(self.neft.get_star_atom('LEU', 'HD1%'), (['HD11', 'HD12', 'HD13'], 1, None))
-        self.assertEqual(self.neft.get_star_atom('DC', 'H4%'), (['H41', 'H42'], 2, None))
+        self.assertEqual(self.neft.get_star_atom('HEM', 'HMA%'), (['HMA', 'HMAA', 'HMAB'], 1, None))
+        self.assertEqual(self.neft.get_star_atom('HEB', 'HMA%'), (['HMA1', 'HMA2', 'HMA3'], 1, None))
+        self.assertEqual(self.neft.get_star_atom('HEC', 'HMA%'), (['HMA1', 'HMA2', 'HMA3'], 1, None))
+        self.assertEqual(self.neft.get_star_atom('HEB', 'HBB%'), (['HBB1', 'HBB2', 'HBB3'], 1, None))
+        self.assertEqual(self.neft.get_star_atom('HEC', 'HBB%'), (['HBB1', 'HBB2', 'HBB3'], 1, None))
+        self.assertEqual(self.neft.get_star_atom('HEC', 'HBC%'), (['HBC1', 'HBC2', 'HBC3'], 1, None))
+
+    def test_get_nef_atom(self):
+        self.assertEqual(self.neft.get_nef_atom('HEM', [{'atom_id': 'HMA', 'ambig_code': 1, 'value': None},
+                                                        {'atom_id': 'HMAA', 'ambig_code': 1, 'value': None},
+                                                        {'atom_id': 'HMAB', 'ambig_code': 1, 'value': None}], {}), (['HMA%'], {'HMA%': None}, {'HMA': 'HMA%', 'HMAA': 'HMA%', 'HMAB': 'HMA%'}))
+        self.assertEqual(self.neft.get_nef_atom('HEB', [{'atom_id': 'HMA1', 'ambig_code': 1, 'value': None},
+                                                        {'atom_id': 'HMA2', 'ambig_code': 1, 'value': None},
+                                                        {'atom_id': 'HMA3', 'ambig_code': 1, 'value': None}], {}), (['HMA%'], {'HMA%': None}, {'HMA1': 'HMA%', 'HMA2': 'HMA%', 'HMA3': 'HMA%'}))
+        self.assertEqual(self.neft.get_nef_atom('HEC', [{'atom_id': 'HMA1', 'ambig_code': 1, 'value': None},
+                                                        {'atom_id': 'HMA2', 'ambig_code': 1, 'value': None},
+                                                        {'atom_id': 'HMA3', 'ambig_code': 1, 'value': None}], {}), (['HMA%'], {'HMA%': None}, {'HMA1': 'HMA%', 'HMA2': 'HMA%', 'HMA3': 'HMA%'}))
+        self.assertEqual(self.neft.get_nef_atom('HEB', [{'atom_id': 'HBB1', 'ambig_code': 1, 'value': None},
+                                                        {'atom_id': 'HBB2', 'ambig_code': 1, 'value': None},
+                                                        {'atom_id': 'HBB3', 'ambig_code': 1, 'value': None}], {}), (['HBB%'], {'HBB%': None}, {'HBB1': 'HBB%', 'HBB2': 'HBB%', 'HBB3': 'HBB%'}))
 
     def test_nef2star_cs_row(self):
         input_tags = ['_nef_chemical_shift.chain_code', '_nef_chemical_shift.sequence_code',

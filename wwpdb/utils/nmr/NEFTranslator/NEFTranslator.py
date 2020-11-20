@@ -56,6 +56,7 @@
 # 12-Oct-2020  M. Yokochi - add support for spectral peak conversion from NMR-STAR canonical loops to NEF (v2.9.0, DAOTHER-6128)
 # 11-Nov-2020  M. Yokochi - fix crash while translation due to invalid seq_id (v2.9.1)
 # 11-Nov-2020  M. Yokochi - append _nef_sequence.index even if _Chem_comp_assembly.NEF_index does not exist (v2.9.2, DAOTHER-6128)
+# 19-Nov-2020  M. Yokochi - add support for HEM, HEB, HEC methyl groups (v2.9.3, DAOTHER-6366)
 ##
 import sys
 import os
@@ -77,7 +78,7 @@ from wwpdb.utils.nmr.io.ChemCompIo import ChemCompReader
 from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
 from wwpdb.utils.nmr.NmrDpReport import NmrDpReport
 
-__version__ = '2.9.2'
+__version__ = '2.9.3'
 
 __pynmrstar_v3__ = version.parse(pynmrstar.__version__) >= version.parse("3.0.0")
 
@@ -3483,7 +3484,7 @@ class NEFTranslator(object):
 
                 if wc_code == '%':
                     if comp_code == 'X':
-                        pattern = re.compile(r'%s\d$' % atom_type)
+                        pattern = re.compile(r'%s\S?$' % atom_type)
                     else:
                         pattern = re.compile(r'%s\d+' % atom_type)
                 elif wc_code == '*':
@@ -3675,7 +3676,14 @@ class NEFTranslator(object):
 
                             if has_methyl_proton:
 
-                                nef_atom = atom_id[:-1] + '%'
+                                name_len = [len(n) for n in methyl_h_list]
+                                max_len = max(name_len)
+                                min_len = min(name_len)
+
+                                if max_len == min_len or len(atom_id) == max_len:
+                                    nef_atom = atom_id[:-1] + '%'
+                                else: # For example, HEM HM[A-D]
+                                    nef_atom = atom_id + '%'
 
                                 atom_list.append(nef_atom)
                                 details[nef_atom] = None

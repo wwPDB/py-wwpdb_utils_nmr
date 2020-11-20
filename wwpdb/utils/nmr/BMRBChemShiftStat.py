@@ -6,6 +6,7 @@
 # 26-Feb-2020  M. Yokochi - load csv resource files if pickle is not available
 # 04-Mar-2020  M. Yokochi - support lazy import of others (non-standard residues, DAOTHER-5498)
 # 16-Apr-2020  M. Yokochi - fix ambiguity code of atom name starts with 'Q' (e.g. LYZ:QZ)
+# 20-Nov-2020  M. Yokochi - fix statics extraction for HEM, HEB, HEC from CSV (DAOTHER-6366)
 ##
 """ Wrapper class for retrieving BMRB chemical shift statistics.
     @author: Masashi Yokochi
@@ -428,13 +429,27 @@ class BMRBChemShiftStat:
         """ Return representative protons in methyl group of a given comp_id.
         """
 
-        return [a for a in self.getMethylAtoms(comp_id, excl_minor_atom, primary) if a.startswith('H') and a.endswith('1')]
+        ends_w_num = [a for a in self.getMethylAtoms(comp_id, excl_minor_atom, primary) if a.startswith('H') and a[-1].isdigit()]
+        ends_w_alp = [a for a in self.getMethylAtoms(comp_id, excl_minor_atom, primary) if a.startswith('H') and not a[-1].isdigit()]
+
+        atm_list = []
+
+        if len(ends_w_num) > 0:
+            atm_list.extend([a for a in ends_w_num if a.endswith('1')])
+
+        if len(ends_w_alp) > 0:
+            min_len = min([len(a) for a in ends_w_alp])
+            atm_list.extend([a for a in ends_w_alp if len(a) == min_len])
+
+        return atm_list
 
     def getNonRepresentativeMethylProtons(self, comp_id, excl_minor_atom=False, primary=False):
         """ Return non-representative protons in methyl group of a given comp_id.
         """
 
-        return [a for a in self.getMethylAtoms(comp_id, excl_minor_atom, primary) if a.startswith('H') and not a.endswith('1')]
+        rep_list = self.getRepresentativeMethylProtons(comp_id, excl_minor_atom, primary)
+
+        return [a for a in self.getMethylAtoms(comp_id, excl_minor_atom, primary) if a.startswith('H') and not a in rep_list]
 
     def getSideChainAtoms(self, comp_id, excl_minor_atom=False, polypeptide_like=False, polynucleotide_like=False, carbohydrates_like=False):
         """ Return sidechain atoms of a given comp_id.
@@ -466,11 +481,11 @@ class BMRBChemShiftStat:
         return [i['atom_id'] for i in cs_stat if not i['atom_id'] in bb_atoms and
                 (not excl_minor_atom or not 'secondary' in i or (excl_minor_atom and i['secondary']))]
 
-    def printStat(self, list):
+    def printStat(self, atm_list):
         """ Print out BMRB chemical shift statistics.
         """
 
-        for i in list:
+        for i in atm_list:
             print (i)
 
     def loadStatFromCsvFiles(self):
@@ -482,9 +497,8 @@ class BMRBChemShiftStat:
                           self.stat_dir + 'rna_filt.csv', self.stat_dir + 'rna_full.csv',
                           self.stat_dir + 'others.csv']
 
-        for file_name in file_name_list:
-            if not os.path.exists(file_name):
-                return False
+        if any(not os.path.exists(file_name) for file_name in file_name_list):
+            return False
 
         self.aa_filt = self.loadStatFromCsvFile(self.stat_dir + 'aa_filt.csv', self.aa_threshold)
         self.aa_full = self.loadStatFromCsvFile(self.stat_dir + 'aa_full.csv', self.aa_threshold)
@@ -519,7 +533,7 @@ class BMRBChemShiftStat:
         """ Load BMRB chemical shift statistics from a given CSV file.
         """
 
-        list = []
+        atm_list = []
 
         with open(file_name, 'r') as f:
             reader = csv.DictReader(f)
@@ -531,9 +545,11 @@ class BMRBChemShiftStat:
                 if not self.__updateChemCompDict(comp_id):
                     continue
 
+                _atom_id = row['atom_id']
+
                 # methyl proton group
-                if row['atom_id'].startswith('M'):
-                    _atom_id = re.sub(r'^M', 'H', row['atom_id'])
+                if _atom_id.startswith('M'):
+                    _atom_id = re.sub(r'^M', 'H', _atom_id)
 
                     for i in range(1, 4):
                         _row = {}
@@ -555,11 +571,83 @@ class BMRBChemShiftStat:
                         _row['primary'] = False
                         _row['norm_freq'] = None
 
-                        list.append(_row)
+                        atm_list.append(_row)
+
+                elif comp_id == 'HEM' and not re.match(r'^HM[A-D]$', _atom_id) is None: # others.csv dependent code
+
+                    for i in ['', 'A', 'B']:
+                        _row = {}
+                        _row['comp_id'] = comp_id
+                        _row['atom_id'] = _atom_id + i
+
+                        if not self.__checkAtomNomenclature(_row['atom_id']):
+                            continue
+
+                        _row['count'] = int(row['count'])
+                        _row['avg'] = float(row['avg'])
+                        try:
+                            _row['std'] = float(row['std'])
+                        except ValueError:
+                            _row['std'] = None
+                        _row['min'] = float(row['min'])
+                        _row['max'] = float(row['max'])
+                        _row['desc'] = 'methyl'
+                        _row['primary'] = False
+                        _row['norm_freq'] = None
+
+                        atm_list.append(_row)
+
+                elif comp_id == 'HEB' and (not re.match(r'^HM[A-D]1$', _atom_id) is None or _atom_id == 'HBB1'): # others.csv dependent code
+
+                    for i in range(1, 4):
+                        _row = {}
+                        _row['comp_id'] = comp_id
+                        _row['atom_id'] = _atom_id[:-1] + str(i)
+
+                        if not self.__checkAtomNomenclature(_row['atom_id']):
+                            continue
+
+                        _row['count'] = int(row['count'])
+                        _row['avg'] = float(row['avg'])
+                        try:
+                            _row['std'] = float(row['std'])
+                        except ValueError:
+                            _row['std'] = None
+                        _row['min'] = float(row['min'])
+                        _row['max'] = float(row['max'])
+                        _row['desc'] = 'methyl'
+                        _row['primary'] = False
+                        _row['norm_freq'] = None
+
+                        atm_list.append(_row)
+
+                elif comp_id == 'HEC' and (not re.match(r'^HM[A-D]$', _atom_id) is None or not re.match(r'^HB[BC]$', _atom_id) is None): # others.csv dependent code
+
+                    for i in range(1, 4):
+                        _row = {}
+                        _row['comp_id'] = comp_id
+                        _row['atom_id'] = _atom_id + str(i)
+
+                        if not self.__checkAtomNomenclature(_row['atom_id']):
+                            continue
+
+                        _row['count'] = int(row['count'])
+                        _row['avg'] = float(row['avg'])
+                        try:
+                            _row['std'] = float(row['std'])
+                        except ValueError:
+                            _row['std'] = None
+                        _row['min'] = float(row['min'])
+                        _row['max'] = float(row['max'])
+                        _row['desc'] = 'methyl'
+                        _row['primary'] = False
+                        _row['norm_freq'] = None
+
+                        atm_list.append(_row)
 
                 # geminal proton group
-                elif row['atom_id'].startswith('Q'):
-                    _atom_id = re.sub(r'^Q', 'H', row['atom_id'])
+                elif _atom_id.startswith('Q'):
+                    _atom_id = re.sub(r'^Q', 'H', _atom_id)
 
                     for i in range(1, 4):
                         _row = {}
@@ -581,12 +669,14 @@ class BMRBChemShiftStat:
                         _row['primary'] = False
                         _row['norm_freq'] = None
 
-                        list.append(_row)
+                        atm_list.append(_row)
 
-                else:
+                elif not((comp_id == 'HEM' and not re.match(r'^HM[A-D][AB]$', _atom_id) is None) or\
+                         (comp_id == 'HEB' and (not re.match(r'^HM[A-D][23]$', _atom_id) is None or not re.match(r'^HBB[23]', _atom_id) is None)) or\
+                         (comp_id == 'HEC' and (not re.match(r'^HM[A-D][123]$', _atom_id) is None or not re.match(r'^HB[BC][123]$', _atom_id) is None))):
                     _row = {}
                     _row['comp_id'] = comp_id
-                    _row['atom_id'] = row['atom_id']
+                    _row['atom_id'] = _atom_id
 
                     if not self.__checkAtomNomenclature(_row['atom_id']):
                         continue
@@ -603,17 +693,42 @@ class BMRBChemShiftStat:
                     _row['primary'] = False
                     _row['norm_freq'] = None
 
-                    list.append(_row)
+                    atm_list.append(_row)
 
-        self.__detectMethylProtonFromAtomNomenclature(list)
-        self.__detectGeminalProtonFromAtomNomenclature(list)
+        comp_ids = set([i['comp_id'] for i in atm_list])
 
-        self.__detectGeminalCarbon(list)
-        self.__detectGeminalNitrogen(list)
+        if not secondary_th is None: # extract rest of atoms for non-standard residues
 
-        self.__detectMajorResonance(list, primary_th, secondary_th)
+            for comp_id in comp_ids:
 
-        return list
+                if self.__updateChemCompDict(comp_id):
+
+                    for a in self.__last_chem_comp_atoms:
+
+                        if a[self.__cca_leaving_atom_flag] == 'Y' or not a[self.__cca_type_symbol] in ['H', 'C', 'N', 'P']:
+                            continue
+
+                        if not any(i for i in atm_list if i['comp_id'] == comp_id and i['atom_id'] == a[self.__cca_atom_id]):
+
+                            _row = {}
+                            _row['comp_id'] = comp_id
+                            _row['atom_id'] = a[self.__cca_atom_id]
+                            _row['desc'] = 'isolated'
+                            _row['primary'] = False
+                            _row['norm_freq'] = None
+                            _row['count'] = 0
+
+                            atm_list.append(_row)
+
+        self.__detectMethylProtonFromAtomNomenclature(comp_ids, atm_list)
+        self.__detectGeminalProtonFromAtomNomenclature(comp_ids, atm_list)
+
+        self.__detectGeminalCarbon(comp_ids, atm_list)
+        self.__detectGeminalNitrogen(comp_ids, atm_list)
+
+        self.__detectMajorResonance(comp_ids, atm_list, primary_th, secondary_th)
+
+        return atm_list
 
     def __appendExtraFromCcd(self, comp_id):
         """ Append atom list as extra residue for a given comp_id.
@@ -622,7 +737,7 @@ class BMRBChemShiftStat:
         if comp_id in self.__all_comp_ids or comp_id in self.__ext_comp_ids or not self.__updateChemCompDict(comp_id):
             return
 
-        list = []
+        atm_list = []
 
         for a in self.__last_chem_comp_atoms:
 
@@ -636,21 +751,22 @@ class BMRBChemShiftStat:
             _row['primary'] = False
             _row['norm_freq'] = None
 
-            list.append(_row)
+            atm_list.append(_row)
 
         self.__ext_comp_ids.add(comp_id)
 
-        if len(list) == 0:
+        if len(atm_list) == 0:
             return
 
-        self.__detectMethylProtonFromAtomNomenclature(list)
-        self.__detectGeminalProtonFromAtomNomenclature(list)
+        comp_ids = [comp_id]
 
-        self.__detectGeminalCarbon(list)
-        self.__detectGeminalNitrogen(list)
+        self.__detectMethylProtonFromAtomNomenclature(comp_ids, atm_list)
+        self.__detectGeminalProtonFromAtomNomenclature(comp_ids, atm_list)
 
-        for i in list:
-            self.extras.append(i)
+        self.__detectGeminalCarbon(comp_ids, atm_list)
+        self.__detectGeminalNitrogen(comp_ids, atm_list)
+
+        self.extras.extend(atm_list)
 
     def __updateChemCompDict(self, comp_id):
         """ Update CCD information for a given comp_id.
@@ -682,17 +798,12 @@ class BMRBChemShiftStat:
                 self.__lfh.write("+BMRBChemShiftStat.__checkAtomNomenclature() ++ Error  - Invalid atom nomenclature %s, comp_id %s\n" % (atom_id, self.__last_comp_id))
             return False
 
-    def __detectMethylProtonFromAtomNomenclature(self, list):
+    def __detectMethylProtonFromAtomNomenclature(self, comp_ids, atm_list):
         """ Detect methyl proton from atom nomenclature.
         """
 
-        comp_ids = set()
-
-        for i in list:
-            comp_ids.add(i['comp_id'])
-
         for comp_id in comp_ids:
-            _list = [i for i in list if i['comp_id'] == comp_id]
+            _list = [i for i in atm_list if i['comp_id'] == comp_id]
 
             h_list = [i for i in _list if i['atom_id'].startswith('H') and i['desc'] == 'isolated']
 
@@ -725,17 +836,12 @@ class BMRBChemShiftStat:
                         if atom_id == h + '1' or atom_id == h + '2' or atom_id == h + '3':
                             i['desc'] = 'methyl'
 
-    def __detectGeminalProtonFromAtomNomenclature(self, list):
+    def __detectGeminalProtonFromAtomNomenclature(self, comp_ids, atm_list):
         """ Detect geminal proton from atom nomenclature.
         """
 
-        comp_ids = set()
-
-        for i in list:
-            comp_ids.add(i['comp_id'])
-
         for comp_id in comp_ids:
-            _list = [i for i in list if i['comp_id'] == comp_id]
+            _list = [i for i in atm_list if i['comp_id'] == comp_id]
 
             h_list = [i for i in _list if i['atom_id'].startswith('H') and i['desc'] == 'isolated']
 
@@ -917,17 +1023,12 @@ class BMRBChemShiftStat:
                             if atom_id == h + '2' or atom_id == h + '3':
                                 i['desc'] = 'aroma-opposite'
 
-    def __detectGeminalCarbon(self, list):
+    def __detectGeminalCarbon(self, comp_ids, atm_list):
         """ Detect geminal carbon from atom nomenclature.
         """
 
-        comp_ids = set()
-
-        for i in list:
-            comp_ids.add(i['comp_id'])
-
         for comp_id in comp_ids:
-            _list = [i for i in list if i['comp_id'] == comp_id]
+            _list = [i for i in atm_list if i['comp_id'] == comp_id]
 
             if self.__updateChemCompDict(comp_id):
                 methyl_c_list = [i['atom_id'] for i in _list if i['atom_id'].startswith('C') and i['desc'] == 'methyl']
@@ -997,17 +1098,12 @@ class BMRBChemShiftStat:
                     if c['atom_id'] in aroma_opposite_list:
                         c['desc'] = 'aroma-opposite'
 
-    def __detectGeminalNitrogen(self, list):
+    def __detectGeminalNitrogen(self, comp_ids, atm_list):
         """ Detect geminal nitrogen from atom nomenclature.
         """
 
-        comp_ids = set()
-
-        for i in list:
-            comp_ids.add(i['comp_id'])
-
         for comp_id in comp_ids:
-            _list = [i for i in list if i['comp_id'] == comp_id]
+            _list = [i for i in atm_list if i['comp_id'] == comp_id]
 
             geminal_n_list = ['N' + i['atom_id'][1:-1] for i in _list if i['atom_id'].startswith('H') and i['desc'] == 'geminal' and i['atom_id'].endswith('1')]
 
@@ -1055,17 +1151,12 @@ class BMRBChemShiftStat:
                         if atom_id == g + '1' or atom_id == g + '2':
                             n['desc'] = 'geminal'
 
-    def __detectMajorResonance(self, list, primary_th, secondary_th=None):
+    def __detectMajorResonance(self, comp_ids, atm_list, primary_th, secondary_th=None):
         """ Detect major resonance based on count of assignments.
         """
 
-        comp_ids = set()
-
-        for i in list:
-            comp_ids.add(i['comp_id'])
-
         for comp_id in comp_ids:
-            _list = [i for i in list if i['comp_id'] == comp_id]
+            _list = [i for i in atm_list if i['comp_id'] == comp_id]
 
             max_count = max([i['count'] for i in _list])
 
@@ -1094,12 +1185,12 @@ class BMRBChemShiftStat:
 
         self.writeStatAsPickleFile(self.others, self.stat_dir + 'others.pkl')
 
-    def writeStatAsPickleFile(self, list, file_name):
+    def writeStatAsPickleFile(self, atm_list, file_name):
         """ Write BMRB chemical shift statistics as pickle file.
         """
 
         with open(file_name, 'wb') as f:
-            pickle.dump(list, f)
+            pickle.dump(atm_list, f)
 
     def loadStatFromPickleFiles(self):
         """ Load all BMRB chemical shift statistics from pickle files if possible.
@@ -1144,14 +1235,9 @@ class BMRBChemShiftStat:
         """ Update set of comp_id having BMRB chemical shift statistics
         """
 
-        for i in self.aa_filt:
-            self.__aa_comp_ids.add(i['comp_id'])
-
-        for i in self.dna_filt:
-            self.__dna_comp_ids.add(i['comp_id'])
-
-        for i in self.rna_filt:
-            self.__rna_comp_ids.add(i['comp_id'])
+        self.__aa_comp_ids = set([i['comp_id'] for i in self.aa_filt])
+        self.__dna_comp_ids = set([i['comp_id'] for i in self.dna_filt])
+        self.__rna_comp_ids = set([i['comp_id'] for i in self.rna_filt])
 
         self.__all_comp_ids |= self.__aa_comp_ids
         self.__all_comp_ids |= self.__dna_comp_ids
@@ -1159,7 +1245,6 @@ class BMRBChemShiftStat:
 
         self.__std_comp_ids = copy.copy(self.__all_comp_ids)
 
-        for i in self.others:
-            self.__oth_comp_ids.add(i['comp_id'])
+        self.__oth_comp_ids = set([i['comp_id'] for i in self.others])
 
         self.__all_comp_ids |= self.__oth_comp_ids

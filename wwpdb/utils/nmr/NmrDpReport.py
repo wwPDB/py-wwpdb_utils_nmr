@@ -39,6 +39,7 @@
 # 25-Jun-2020  M. Yokochi - add 'anomalous_bond_length' warning
 # 01-Jul-2020  M. Yokochi - suppress null error/warning in JSON report
 # 09-Jul-2020  M. Yokochi - support spectral_peak_alt content subtype (DAOTHER-5926)
+# 20-Nov-2020  M. Yokochi - rename 'remarkable_data' warning category to 'unusual/rare_data' (DAOTHER-6372)
 ##
 """ Wrapper class for data processing report of NMR data.
     @author: Masashi Yokochi
@@ -1364,7 +1365,7 @@ class NmrDpReport:
 
             ignorable_warning_types = ['auth_atom_nomenclature_mismatch', 'ccd_mismatch', 'disordered_index', 'enum_mismatch_ignorable', 'skipped_saveframe_category', 'skipped_loop_category',
                                        'anomalous_chemical_shift', 'unusual_chemical_shift',
-                                       'anomalous_data', 'unusual_data', 'remarkable_data', 'insufficient_data', 'conflicted_data', 'inconsistent_data',
+                                       'anomalous_data', 'unusual_data', 'unusual/rare_data', 'insufficient_data', 'conflicted_data', 'inconsistent_data',
                                        'total']
 
             self.corrected_warning = NmrDpReportWarning()
@@ -1740,7 +1741,7 @@ class NmrDpReportWarning:
                       'skipped_saveframe_category', 'skipped_loop_category',
                       'anomalous_bond_length',
                       'anomalous_chemical_shift', 'unusual_chemical_shift',
-                      'anomalous_data', 'unusual_data', 'remarkable_data', 'insufficient_data',
+                      'anomalous_data', 'unusual_data', 'unusual/rare_data', 'insufficient_data',
                       'conflicted_data', 'inconsistent_data', 'redundant_data',
                       'concatenated_sequence', 'not_superimposed_model')
 

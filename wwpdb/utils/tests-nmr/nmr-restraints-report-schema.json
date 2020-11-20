@@ -3332,7 +3332,7 @@
         "unusual_data": {
           "$ref": "#/definitions/common_message"
         },
-        "remarkable_data": {
+        "unusual/rare_data": {
           "$ref": "#/definitions/common_message"
         },
         "insufficient_data": {

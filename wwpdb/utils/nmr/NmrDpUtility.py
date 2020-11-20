@@ -103,6 +103,7 @@
 # 11-Nov-2020  M. Yokochi - set NEF v1.1 as the default specification
 # 12-Nov-2020  M. Yokochi - improve NMR warning messages (DAOTHER-6109, 6167)
 # 18-Nov-2020  M. Yokochi - fix calculation of CS completeness, fix empty polymer_sequence_in_loop due to atom_site.pdbx_PDB_ins_code (DAOTHER-6128)
+# 20-Nov-2020  M. Yokochi - rename 'remarkable_data' warning category to 'unusual/rare_data' (DAOTHER-6372)
 ##
 """ Wrapper class for data processing for NMR data.
     @author: Masashi Yokochi
@@ -7250,7 +7251,7 @@ class NmrDpUtility(object):
                                     map_chain_ids[sf_framecode2][_chain_id] = __chain_id
 
                                     #if sf_framecode2 == target_framecode:
-                                    #    print('#1 %s -> %s' % (_chain_id, __chain_id))
+                                    #    print('#1 %s -> %s, %s %s %s %s %s %s' % (_chain_id, __chain_id, __length, __matched, __unmapped, __conflict, __offset_1, __offset_2))
 
                                     length = __length
                                     _matched = __matched
@@ -7262,7 +7263,7 @@ class NmrDpUtility(object):
                                     offset_2 = __offset_2
                                     s1 = __s1
 
-                                    s2['chain_id'] = __chain_id
+                                    #s2['chain_id'] = __chain_id
 
                                     update_poly_seq = True
 
@@ -7427,7 +7428,7 @@ class NmrDpUtility(object):
                         ps2 = ps_in_loop['polymer_sequence']
                         sf_framecode2 = ps_in_loop['sf_framecode']
 
-                        for s2 in reversed(ps2):
+                        for s2 in ps2:
 
                             if sf_framecode2 in ref_chain_ids and _chain_id in ref_chain_ids[sf_framecode2]:
                                 continue
@@ -7538,7 +7539,7 @@ class NmrDpUtility(object):
                                     map_chain_ids[sf_framecode2][_chain_id] = __chain_id
 
                                     #if sf_framecode2 == target_framecode:
-                                    #    print('#3 %s -> %s' % (_chain_id, __chain_id))
+                                    #    print('#3 %s -> %s, %s %s %s %s %s %s' % (_chain_id, __chain_id, __length, __matched, __unmapped, __conflict, __offset_1, __offset_2))
 
                                     length = __length
                                     _matched = __matched
@@ -7550,10 +7551,10 @@ class NmrDpUtility(object):
                                     offset_2 = __offset_2
                                     s1 = __s1
 
-                                    s2['chain_id'] = __chain_id
+                                    #s2['chain_id'] = __chain_id
 
                                     update_poly_seq = True
-
+                            """
                             if conflict == 0 and self.__alt_chain and not alt_chain and _chain_id != s2['chain_id'] and\
                                (not sf_framecode2 in dst_chain_ids or not _chain_id in dst_chain_ids[sf_framecode2]) and\
                                (not sf_framecode2 in map_chain_ids or not s2['chain_id'] in map_chain_ids[sf_framecode2]) and\
@@ -7569,11 +7570,11 @@ class NmrDpUtility(object):
 
                                 map_chain_ids[sf_framecode2][s2['chain_id']] = _chain_id
 
-                                #if sf_framecode2 == target_framecode:
-                                #    print('#4 %s -> %s, %s %s %s %s %s %s' % (s2['chain_id'], _chain_id, length, _matched, unmapped, conflict, offset_1, offset_2))
+                                if sf_framecode2 == target_framecode:
+                                    print('#4 %s -> %s, %s %s %s %s %s %s' % (s2['chain_id'], _chain_id, length, _matched, unmapped, conflict, offset_1, offset_2))
 
                                 alt_chain = True
-
+                            """
                             if not sf_framecode2 in ref_chain_ids:
                                 ref_chain_ids[sf_framecode2] = []
 
@@ -7735,7 +7736,8 @@ class NmrDpUtility(object):
                                 dst_chain = v_rests[0]
 
                                 if circular:
-
+                                    mapping[src_chain] = dst_chain
+                                    """
                                     for s1 in polymer_sequence:
                                         chain_id = s1['chain_id']
 
@@ -7776,6 +7778,7 @@ class NmrDpUtility(object):
                                             mapping[src_chain] = dst_chain
 
                                             break
+                                    """
 
                                 else:
 
@@ -7809,17 +7812,20 @@ class NmrDpUtility(object):
                                             length = len(myAlign)
 
                                             if length == 0:
-                                                continue
+                                                break
 
                                             _matched, unmapped, conflict, offset_1, offset_2 = score_of_seq_align(myAlign)
 
                                             if length == unmapped + conflict or _matched <= conflict:
-                                                continue
+                                                break
 
                                             cross = True
                                             mapping[src_chain] = dst_chain
 
                                             break
+
+                            #if sf_framecode2 == target_framecode:
+                            #    print('chain_mapping %s cross %s cicular %s' % (mapping, cross, circular))
 
                             for s1 in polymer_sequence:
                                 chain_id = s1['chain_id']
@@ -7935,13 +7941,43 @@ class NmrDpUtility(object):
 
                             if circular or cross:
                                 for k, v in mapping.items():
+
+                                    for s2 in ps2:
+
+                                        if s2['chain_id'] != k:
+                                            continue
+
+                                        s2['chain_id'] = v + '_'
+
+                                        break
+
                                     self.__fixChainIdInLoop(fileListId, file_name, file_type, content_subtype, sf_framecode2, k, v + '_')
 
                                 for v in mapping.values():
+
+                                    for s2 in ps2:
+
+                                        if s2['chain_id'] != v + '_':
+                                            continue
+
+                                        s2['chain_id'] = v
+
+                                        break
+
                                     self.__fixChainIdInLoop(fileListId, file_name, file_type, content_subtype, sf_framecode2, v + '_', v)
 
                             else:
                                 for k, v in mapping.items():
+
+                                    for s2 in ps2:
+
+                                        if s2['chain_id'] != k:
+                                            continue
+
+                                        s2['chain_id'] = v
+
+                                        break
+
                                     self.__fixChainIdInLoop(fileListId, file_name, file_type, content_subtype, sf_framecode2, k, v)
 
         if update_poly_seq:
@@ -11064,10 +11100,10 @@ class NmrDpUtility(object):
 
                                 elif not cs_stat['primary'] and cs_stat['norm_freq'] < 0.03:
 
-                                    warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] %s %s is remarkable assignment. Occurrence of %s in %s is %s %% according to BMRB.' %\
+                                    warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] %s %s is an unusual/rare assignment. Occurrence of %s in %s is %s %% in BMRB archive.' %\
                                            (full_value_name, value, atom_id, comp_id, cs_stat['norm_freq'] * 100.0)
 
-                                    self.report.warning.appendDescription('remarkable_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
+                                    self.report.warning.appendDescription('unusual/rare_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
                                     self.report.setWarning()
 
                                     if self.__verbose:
@@ -11515,10 +11551,10 @@ class NmrDpUtility(object):
                                 """
                             elif not cs_stat['primary'] and cs_stat['norm_freq'] < 0.03:
 
-                                warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] %s %s is remarkable assignment. Occurrence of %s in %s is %s %% according to BMRB.' %\
+                                warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) + '] %s %s is an unusual/rare assignment. Occurrence of %s in %s is %s %% in BMRB archive.' %\
                                        (full_value_name, value, atom_id, comp_id, '{:.1f}'.format(cs_stat['norm_freq'] * 100.0))
 
-                                self.report.warning.appendDescription('remarkable_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
+                                self.report.warning.appendDescription('unusual/rare_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
                                 self.report.setWarning()
 
                                 if self.__verbose:
@@ -12733,7 +12769,7 @@ class NmrDpUtility(object):
                                     warn = "%sRDC vector over multiple covalent bonds (%s:%s:%s:%s, %s:%s:%s:%s)." %\
                                            (idx_msg, chain_id_1, seq_id_1, comp_id_1, atom_id_1, chain_id_2, seq_id_2, comp_id_2, atom_id_2)
 
-                                    self.report.warning.appendDescription('remarkable_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
+                                    self.report.warning.appendDescription('unusual/rare_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
                                     self.report.setWarning()
 
                                     if self.__verbose:
@@ -16843,7 +16879,7 @@ class NmrDpUtility(object):
                     for c in value_per_residue:
                         if not data_type in c:
                             c[data_type] = [None] * len(c['seq_id'])
-                        if c['chain_id'] == chain_id_1 and not target_value is None:
+                        if c['chain_id'] == chain_id_1 and not target_value is None and seq_id_common[0][0] in c['seq_id']:
                             b = c['seq_id'].index(seq_id_common[0][0])
                             if c[data_type][b] is None:
                                 c[data_type][b] = float(target_value)
@@ -17607,7 +17643,7 @@ class NmrDpUtility(object):
                     for c in value_per_residue:
                         if not data_type in c:
                             c[data_type] = [None] * len(c['seq_id'])
-                        if c['chain_id'] == chain_id_1 and not targe_value is None:
+                        if c['chain_id'] == chain_id_1 and not targe_value is None and seq_id_1 in c['seq_id']:
                             b = c['seq_id'].index(seq_id_1)
                             if c[data_type][b] is None:
                                 c[data_type][b] = float(targe_value)

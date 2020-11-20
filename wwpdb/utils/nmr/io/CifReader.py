@@ -16,7 +16,7 @@
 # 15-Apr-2020   my  - add 'total_models' option of getPolymerSequence (DAOTHER-4060)
 # 19-Apr-2020   my  - add random rotation test for detection of non-superimposed models (DAOTHER-4060)
 # 08-May-2020   my  - make sure parse() is run only once (DAOTHER-5654)
-# 18-Nov-2020   my  - additional support for insertion code in getPolymerSequence() (DAOTHER-6128)
+# 20-Nov-2020   my  - additional support for insertion code in getPolymerSequence() (DAOTHER-6128)
 ##
 """ A collection of classes for parsing CIF files.
 """
@@ -329,11 +329,12 @@ class CifReader(object):
                 ent['chain_id'] = c
                 ent['seq_id'] = seqDict[c]
                 ent['comp_id'] = compDict[c]
-                if c in insCodeDict and any(s for s in labelSeqDict[c] if s in self.emptyValue):
+                if c in insCodeDict and any(not s in self.emptyValue for s in labelSeqDict[c]):
                     ent['ins_code'] = insCodeDict[c]
-                    ent['auth_seq_id'] = seqDict[c]
-                    ent['label_seq_id'] = [int(s) for s in labelSeqDict[c]]
-                    ent['seq_id'] = ent['label_seq_id']
+                    if c in labelSeqDict and all(s.isdigit() for s in labelSeqDict[c]):
+                        ent['auth_seq_id'] = seqDict[c]
+                        ent['label_seq_id'] = [int(s) for s in labelSeqDict[c]]
+                        ent['seq_id'] = ent['label_seq_id']
 
                 if withStructConf:
                     ent['struct_conf'] = self.__extractStructConf(c, seqDict[c], alias)

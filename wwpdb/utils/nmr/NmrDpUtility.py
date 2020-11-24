@@ -10832,7 +10832,7 @@ class NmrDpUtility(object):
 
                     for cs_stat in self.__csStat.get(comp_id):
 
-                        if cs_stat['atom_id'] == atom_id_:
+                        if cs_stat['atom_id'] == atom_id_ and cs_stat['count'] > 0:
                             min_value = cs_stat['min']
                             max_value = cs_stat['max']
                             avg_value = cs_stat['avg']
@@ -11285,7 +11285,7 @@ class NmrDpUtility(object):
 
                     for cs_stat in self.__csStat.get(comp_id, self.report.isDiamagnetic()):
 
-                        if cs_stat['atom_id'] == atom_id_:
+                        if cs_stat['atom_id'] == atom_id_ and cs_stat['count'] > 0:
                             min_value = cs_stat['min']
                             max_value = cs_stat['max']
                             avg_value = cs_stat['avg']
@@ -14466,7 +14466,7 @@ class NmrDpUtility(object):
 
                     for cs_stat in self.__csStat.get(comp_id):
 
-                        if cs_stat['atom_id'] == atom_id_:
+                        if cs_stat['atom_id'] == atom_id_ and cs_stat['count'] > 0:
                             avg_value = cs_stat['avg']
                             std_value = cs_stat['std']
 
@@ -14479,7 +14479,7 @@ class NmrDpUtility(object):
 
                     for cs_stat in self.__csStat.get(comp_id, self.report.isDiamagnetic()):
 
-                        if cs_stat['atom_id'] == atom_id_:
+                        if cs_stat['atom_id'] == atom_id_ and cs_stat['count'] > 0:
                             avg_value = cs_stat['avg']
                             std_value = cs_stat['std']
 

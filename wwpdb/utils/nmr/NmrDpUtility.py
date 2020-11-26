@@ -931,6 +931,9 @@ class NmrDpUtility(object):
         # criterion for low sequence coverage
         self.low_seq_coverage = 0.3
 
+        # criterion for minimum sequence coverage when conflict occurs (NMR separated deposition)
+        self.min_seq_coverage_w_conflict = 0.95
+
         # cutoff value for detection of aromatic atoms
         self.cutoff_aromatic = 5.0
         # cutoff value for detection of paramagnetic/ferromagnetic atoms
@@ -19845,7 +19848,7 @@ class NmrDpUtility(object):
                                 elif nmr_comp_id != cif_comp_id and aligned[i]:
                                     _conflicts += 1
 
-                            if _conflicts > chain_assign['unmapped']:
+                            if _conflicts > chain_assign['unmapped'] and chain_assign['sequence_coverage'] < self.min_seq_coverage_w_conflict:
                                 continue
 
                         unmapped = []
@@ -20166,7 +20169,7 @@ class NmrDpUtility(object):
 
                             _conflicts = 0
 
-                            for i in range(len(myAlign)):
+                            for i in range(length):
                                 myPr = myAlign[i]
                                 if myPr[0] == myPr[1]:
                                     continue
@@ -20180,7 +20183,7 @@ class NmrDpUtility(object):
                                 elif cif_comp_id != nmr_comp_id and aligned[i]:
                                     _conflicts += 1
 
-                            if _conflicts > chain_assign['unmapped'] and chain_assign['sequence_coverage'] < 0.95:
+                            if _conflicts > chain_assign['unmapped'] and chain_assign['sequence_coverage'] < self.min_seq_coverage_w_conflict:
                                 continue
 
                         unmapped = []
@@ -20188,7 +20191,7 @@ class NmrDpUtility(object):
                         offset_1 = 0
                         offset_2 = 0
 
-                        for i in range(len(myAlign)):
+                        for i in range(length):
                             myPr = myAlign[i]
                             if myPr[0] == myPr[1]:
                                 continue

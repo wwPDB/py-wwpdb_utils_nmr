@@ -933,12 +933,12 @@ class NmrDpUtility(object):
 
         # cutoff value for detection of aromatic atoms
         self.cutoff_aromatic = 5.0
-        # cutoff value for detection of paramagnetic atoms
+        # cutoff value for detection of paramagnetic/ferromagnetic atoms
         self.cutoff_paramagnetic = 10.0
 
         # criterion for aromatic ring in the vicinity
         self.vicinity_aromatic = 4.0
-        # criterion for paramagnetic atom in the vicinity
+        # criterion for paramagnetic/ferromagnetic atom in the vicinity
         self.vicinity_paramagnetic = 8.0
 
         # criterion for detection of not superimposed models
@@ -3223,8 +3223,8 @@ class NmrDpUtility(object):
         self.__coord_rotamer = {}
         # nearest aromatic ring in model
         self.__coord_near_ring = {}
-        # nearest paramagnetic atom in model
-        self.__coord_near_para = {}
+        # nearest paramagnetic/ferromagnetic atom in model
+        self.__coord_near_para_ferro = {}
         # bond length in model
         self.__coord_bond_length = {}
 
@@ -10801,7 +10801,7 @@ class NmrDpUtility(object):
                         atom_name = atom_id
 
                         if not details is None:
-                            atom_name += ', besides that, ' + details.rstrip('.')
+                            atom_name += ', besides that ' + details.rstrip('.')
 
                     else:
                         atom_name = atom_id + ' (e.g. '
@@ -10841,7 +10841,18 @@ class NmrDpUtility(object):
                             has_cs_stat = True
 
                             if atom_id_.startswith('H') and 'methyl' in cs_stat['desc']:
-                                methyl_cs_key = "%s %04d %s" % (chain_id, seq_id, atom_id_[:-1])
+                                _, methyl_h_list = self.__nefT.get_group(comp_id, atom_id)
+
+                                name_len = [len(n) for n in methyl_h_list]
+                                max_len = max(name_len)
+                                min_len = min(name_len)
+
+                                if max_len == min_len or len(atom_id) == max_len:
+                                    _atom_id = atom_id[:-1]
+                                else: # For example, HEM HM[A-D]
+                                    _atom_id = atom_id
+
+                                methyl_cs_key = "%s %04d %s" % (chain_id, seq_id, _atom_id)
 
                                 if not methyl_cs_key in methyl_cs_vals:
                                     methyl_cs_vals[methyl_cs_key] = value
@@ -10894,15 +10905,15 @@ class NmrDpUtility(object):
                                 if (value < min_value - tolerance or value > max_value + tolerance) and sigma > 10.0:
 
                                     na = self.__getNearestAromaticRing(chain_id, seq_id, atom_id_, self.cutoff_aromatic)
-                                    pa = self.__getNearestParamagneticAtom(chain_id, seq_id, atom_id_, self.cutoff_paramagnetic)
+                                    pa = self.__getNearestParaFerroMagneticAtom(chain_id, seq_id, atom_id_, self.cutoff_paramagnetic)
 
                                     if na is None and pa is None:
 
                                         err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) +\
-                                              '] %s %s (%s:%s:%s, atom_id %s) is not within expected range (avg %s, std %s, min %s, max %s, Z_score %.2f). Neither aromatic ring nor paramagnetic atom were found in the vicinity. Please check for folded/aliased signals.' %\
+                                              '] %s %s (%s:%s:%s, atom_id %s) is not within expected range (avg %s, std %s, min %s, max %s, Z_score %.2f). Neither aromatic ring nor paramagnetic/ferromagnetic atom were found in the vicinity. Please check for folded/aliased signals.' %\
                                               (full_value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score)
 
-                                        err_alt = 'Verify chemical shift value for %s:%s:%s:%s (%s ppm, %.2f sigma) is outside of expected range (%.2f ~ %.2f ppm, avg %s, std %s, min %s, max %s). Neither aromatic ring nor paramagnetic atom were found in the vicinity. Please check for folded/aliased signals.' %\
+                                        err_alt = 'Verify chemical shift value for %s:%s:%s:%s (%s ppm, %.2f sigma) is outside of expected range (%.2f ~ %.2f ppm, avg %s, std %s, min %s, max %s). Neither aromatic ring nor paramagnetic/ferromagnetic atom were found in the vicinity. Please check for folded/aliased signals.' %\
                                               (chain_id, seq_id, comp_id, atom_name, value, sigma, avg_value + 5.0 * std_value, avg_value - 5.0 * std_value, avg_value, std_value, min_value, max_value)
 
                                         if self.__nonblk_anomalous_cs:
@@ -10915,7 +10926,7 @@ class NmrDpUtility(object):
 
                                             if file_type == 'nmr-star' and details_col != -1:
                                                 _details = loop.data[l][details_col]
-                                                details = '%s %s is not within expected range (avg %s, std %s, min %s, max %s, Z_score %.2f). Neither aromatic ring nor paramagnetic atom were found in the vicinity. Please check for folded/aliased signals.\n' % (full_value_name, value, avg_value, std_value, min_value, max_value, z_score)
+                                                details = '%s %s is not within expected range (avg %s, std %s, min %s, max %s, Z_score %.2f). Neither aromatic ring nor paramagnetic/ferromagnetic atom were found in the vicinity. Please check for folded/aliased signals.\n' % (full_value_name, value, avg_value, std_value, min_value, max_value, z_score)
                                                 if _details in self.empty_value or (not details in _details):
                                                     if _details in self.empty_value:
                                                         loop.data[l][details_col] = details
@@ -10971,11 +10982,11 @@ class NmrDpUtility(object):
                                     else:
 
                                         warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) +\
-                                               '] %s %s (%s:%s:%s, atom_id %s) should be verified (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest paramagnetic atom (%s:%s:%s:%s) is located at %s angstroms.' %\
+                                               '] %s %s (%s:%s:%s, atom_id %s) should be verified (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest paramagnetic/ferromagnetic atom (%s:%s:%s:%s) is located at %s angstroms.' %\
                                                (full_value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score,
                                                 pa['chain_id'], pa['seq_id'], pa['comp_id'], pa['atom_id'], pa['distance'])
 
-                                        warn_alt = 'Verify chemical shift value for %s:%s:%s:%s (%s ppm, %.2f sigma) is outside of expected range (%.2f ~ %.2f ppm, avg %s, std %s, min %s, max %s). The nearest paramagnetic atom (%s:%s:%s:%s) is located at %s angstroms.' %\
+                                        warn_alt = 'Verify chemical shift value for %s:%s:%s:%s (%s ppm, %.2f sigma) is outside of expected range (%.2f ~ %.2f ppm, avg %s, std %s, min %s, max %s). The nearest paramagnetic/ferromagnetic atom (%s:%s:%s:%s) is located at %s angstroms.' %\
                                                (chain_id, seq_id, comp_id, atom_name, value, abs(z_value), avg_value + 5.0 * std_value, avg_value - 5.0 * std_value, avg_value, std_value, min_value, max_value,
                                                 pa['chain_id'], pa['seq_id'], pa['comp_id'], pa['atom_id'], pa['distance'])
 
@@ -10987,7 +10998,7 @@ class NmrDpUtility(object):
 
                                         if file_type == 'nmr-star' and details_col != -1 and pa['distance'] > self.vicinity_paramagnetic:
                                             _details = loop.data[l][details_col]
-                                            details = '%s %s is not within expected range (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest paramagnetic atom %s:%s:%s is located at %s angstroms.\n' % (full_value_name, value, avg_value, std_value, min_value, max_value, z_score, pa['chain_id'], pa['seq_id'], pa['comp_id'], pa['distance'])
+                                            details = '%s %s is not within expected range (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest paramagnetic/ferromagnetic atom %s:%s:%s is located at %s angstroms.\n' % (full_value_name, value, avg_value, std_value, min_value, max_value, z_score, pa['chain_id'], pa['seq_id'], pa['comp_id'], pa['distance'])
                                             if _details in self.empty_value or (not details in _details):
                                                 if _details in self.empty_value:
                                                     loop.data[l][details_col] = details
@@ -10998,15 +11009,15 @@ class NmrDpUtility(object):
                                 elif sigma > 10.0:
 
                                     na = self.__getNearestAromaticRing(chain_id, seq_id, atom_id_, self.cutoff_aromatic)
-                                    pa = self.__getNearestParamagneticAtom(chain_id, seq_id, atom_id_, self.cutoff_paramagnetic)
+                                    pa = self.__getNearestParaFerroMagneticAtom(chain_id, seq_id, atom_id_, self.cutoff_paramagnetic)
 
                                     if na is None and pa is None:
 
                                         warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) +\
-                                               '] %s %s (%s:%s:%s:%s) must be verified (avg %s, std %s, min %s, max %s, Z_score %.2f). Neither aromatic ring nor paramagnetic atom were found in the vicinity.' %\
+                                               '] %s %s (%s:%s:%s:%s) must be verified (avg %s, std %s, min %s, max %s, Z_score %.2f). Neither aromatic ring nor paramagnetic/ferromagnetic atom were found in the vicinity.' %\
                                                (full_value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score)
 
-                                        warn_alt = 'Verify chemical shift value for %s:%s:%s:%s (%s ppm, %.2f sigma) is outside of expected range (%.2f ~ %.2f ppm, avg %s, std %s, min %s, max %s). Neither aromatic ring nor paramagnetic atom were found in the vicinity.' %\
+                                        warn_alt = 'Verify chemical shift value for %s:%s:%s:%s (%s ppm, %.2f sigma) is outside of expected range (%.2f ~ %.2f ppm, avg %s, std %s, min %s, max %s). Neither aromatic ring nor paramagnetic/ferromagnetic atom were found in the vicinity.' %\
                                                (chain_id, seq_id, comp_id, atom_name, value, sigma, avg_value + 5.0 * std_value, avg_value - 5.0 * std_value, avg_value, std_value, min_value, max_value)
 
                                         self.report.warning.appendDescription('anomalous_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn, 'value': value, 'z_score': z_score, 'description_alt': warn_alt, 'sigma': sigma})
@@ -11039,11 +11050,11 @@ class NmrDpUtility(object):
                                         if pa['distance'] > self.vicinity_paramagnetic:
 
                                             warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) +\
-                                                   '] %s %s (%s:%s:%s:%s) should be verified (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest paramagnetic atom (%s:%s:%s:%s) is located at %s angstroms.' %\
+                                                   '] %s %s (%s:%s:%s:%s) should be verified (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest paramagnetic/ferromagnetic atom (%s:%s:%s:%s) is located at %s angstroms.' %\
                                                    (full_value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score,
                                                     pa['chain_id'], pa['seq_id'], pa['comp_id'], pa['atom_id'], pa['distance'])
 
-                                            warn_alt = 'Verify chemical shift value for %s:%s:%s:%s (%s ppm, %.2f sigma) is outside of expected range (%.2f ~ %.2f ppm, avg %s, std %s, min %s, max %s). The nearest paramagnetic atom (%s:%s:%s:%s) is located at %s angstroms.' %\
+                                            warn_alt = 'Verify chemical shift value for %s:%s:%s:%s (%s ppm, %.2f sigma) is outside of expected range (%.2f ~ %.2f ppm, avg %s, std %s, min %s, max %s). The nearest paramagnetic/ferromagnetic atom (%s:%s:%s:%s) is located at %s angstroms.' %\
                                                    (chain_id, seq_id, comp_id, atom_name, value, sigma, avg_value + 5.0 * std_value, avg_value - 5.0 * std_value, avg_value, std_value, min_value, max_value,
                                                     pa['chain_id'], pa['seq_id'], pa['comp_id'], pa['atom_id'], pa['distance'])
 
@@ -11056,7 +11067,7 @@ class NmrDpUtility(object):
                                 elif sigma > 5.0:
 
                                     na = self.__getNearestAromaticRing(chain_id, seq_id, atom_id_, self.cutoff_aromatic)
-                                    pa = self.__getNearestParamagneticAtom(chain_id, seq_id, atom_id_, self.cutoff_paramagnetic)
+                                    pa = self.__getNearestParaFerroMagneticAtom(chain_id, seq_id, atom_id_, self.cutoff_paramagnetic)
 
                                     warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) +\
                                            '] %s %s (%s:%s:%s:%s) should be verified (avg %s, std %s, min %s, max %s, Z_score %.2f).' %\
@@ -11079,17 +11090,17 @@ class NmrDpUtility(object):
                                     elif not pa is None:
 
                                         if pa['distance'] > self.vicinity_paramagnetic:
-                                            warn += ' The nearest paramagnetic atom (%s:%s:%s:%s) is located at %s angstroms.' %\
+                                            warn += ' The nearest paramagnetic/ferromagnetic atom (%s:%s:%s:%s) is located at %s angstroms.' %\
                                                     (pa['chain_id'], pa['seq_id'], pa['comp_id'], pa['atom_id'], pa['distance'])
-                                            warn_alt += ' The nearest paramagnetic atom (%s:%s:%s:%s) is located at %s angstroms.' %\
+                                            warn_alt += ' The nearest paramagnetic/ferromagnetic atom (%s:%s:%s:%s) is located at %s angstroms.' %\
                                                     (pa['chain_id'], pa['seq_id'], pa['comp_id'], pa['atom_id'], pa['distance'])
                                         else:
                                             warn = None
                                             warn_alt = None
 
                                     else:
-                                        warn += ' Neither aromatic ring nor paramagnetic atom were found in the vicinity.'
-                                        warn_alt += ' Neither aromatic ring nor paramagnetic atom were found in the vicinity.'
+                                        warn += ' Neither aromatic ring nor paramagnetic/ferromagnetic atom were found in the vicinity.'
+                                        warn_alt += ' Neither aromatic ring nor paramagnetic/ferromagnetic atom were found in the vicinity.'
 
                                     if not warn is None:
                                         self.report.warning.appendDescription('unusual_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn, 'value': value, 'z_score': z_score, 'description_alt': warn_alt, 'sigma': sigma})
@@ -11115,15 +11126,15 @@ class NmrDpUtility(object):
                                 if min_value < max_value and (value < min_value - tolerance or value > max_value + tolerance) and sigma > 10.0:
 
                                     na = self.__getNearestAromaticRing(chain_id, seq_id, atom_id_, self.cutoff_aromatic)
-                                    pa = self.__getNearestParamagneticAtom(chain_id, seq_id, atom_id_, self.cutoff_paramagnetic)
+                                    pa = self.__getNearestParaFerroMagneticAtom(chain_id, seq_id, atom_id_, self.cutoff_paramagnetic)
 
                                     if na is None and pa is None:
 
                                         err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) +\
-                                              '] %s %s (%s:%s:%s:%s) is not within expected range (avg %s, std %s, min %s, max %s, Z_score %.2f). Neither aromatic ring nor paramagnetic atom were found in the vicinity. Please check for folded/aliased signals.' %\
+                                              '] %s %s (%s:%s:%s:%s) is not within expected range (avg %s, std %s, min %s, max %s, Z_score %.2f). Neither aromatic ring nor paramagnetic/ferromagnetic atom were found in the vicinity. Please check for folded/aliased signals.' %\
                                               (full_value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score)
 
-                                        err_alt = 'Verify chemical shift value for %s:%s:%s:%s (%s ppm, %.2f sigma) is outside of expected range (%.2f ~ %.2f ppm, avg %s, std %s, min %s, max %s). Neither aromatic ring nor paramagnetic atom were found in the vicinity. Please check for folded/aliased signals.' %\
+                                        err_alt = 'Verify chemical shift value for %s:%s:%s:%s (%s ppm, %.2f sigma) is outside of expected range (%.2f ~ %.2f ppm, avg %s, std %s, min %s, max %s). Neither aromatic ring nor paramagnetic/ferromagnetic atom were found in the vicinity. Please check for folded/aliased signals.' %\
                                               (chain_id, seq_id, comp_id, atom_name, value, sigma, avg_value + 5.0 * std_value, avg_value - 5.0 * std_value, avg_value, std_value, min_value, max_value)
 
                                         if self.__nonblk_anomalous_cs:
@@ -11136,7 +11147,7 @@ class NmrDpUtility(object):
 
                                             if file_type == 'nmr-star' and details_col != -1:
                                                 _details = loop.data[l][details_col]
-                                                details = '%s %s is not within expected range (avg %s, std %s, min %s, max %s, Z_score %.2f). Neither aromatic ring nor paramagnetic atom were found in the vicinity. Please check for folded/aliased signals.\n' % (full_value_name, value, avg_value, std_value, min_value, max_value, z_score)
+                                                details = '%s %s is not within expected range (avg %s, std %s, min %s, max %s, Z_score %.2f). Neither aromatic ring nor paramagnetic/ferromagnetic atom were found in the vicinity. Please check for folded/aliased signals.\n' % (full_value_name, value, avg_value, std_value, min_value, max_value, z_score)
                                                 if _details in self.empty_value or (not details in _details):
                                                     if _details in self.empty_value:
                                                         loop.data[l][details_col] = details
@@ -11196,11 +11207,11 @@ class NmrDpUtility(object):
                                         if pa['distance'] > self.vicinity_paramagnetic:
 
                                             warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) +\
-                                                   '] %s %s (%s:%s:%s:%s) should be verified (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest paramagnetic atom (%s:%s:%s:%s) is located at %s angstroms.' %\
+                                                   '] %s %s (%s:%s:%s:%s) should be verified (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest paramagnetic/ferromagnetic atom (%s:%s:%s:%s) is located at %s angstroms.' %\
                                                    (full_value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score,
                                                     pa['chain_id'], pa['seq_id'], pa['comp_id'], pa['atom_id'], pa['distance'])
 
-                                            warn_alt = 'Verify chemical shift value for %s:%s:%s:%s (%s ppm, %.2f sigma) is outside of expected range (%.2f ~ %.2f ppm, avg %s, std %s, min %s, max %s). The nearest paramagnetic atom (%s:%s:%s:%s) is located at %s angstroms.' %\
+                                            warn_alt = 'Verify chemical shift value for %s:%s:%s:%s (%s ppm, %.2f sigma) is outside of expected range (%.2f ~ %.2f ppm, avg %s, std %s, min %s, max %s). The nearest paramagnetic/ferromagnetic atom (%s:%s:%s:%s) is located at %s angstroms.' %\
                                                    (chain_id, seq_id, comp_id, atom_name, value, sigma, avg_value + 5.0 * std_value, avg_value - 5.0 * std_value, avg_value, std_value, min_value, max_value,
                                                     pa['chain_id'], pa['seq_id'], pa['comp_id'], pa['atom_id'], pa['distance'])
 
@@ -11212,7 +11223,7 @@ class NmrDpUtility(object):
 
                                             if file_type == 'nmr-star' and details_col != -1:
                                                 _details = loop.data[l][details_col]
-                                                details = '%s %s is not within expected range (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest paramagnetic atom %s:%s:%s is located at %s angstroms.\n' % (full_value_name, value, avg_value, std_value, min_value, max_value, z_score, pa['chain_id'], pa['seq_id'], pa['comp_id'], pa['distance'])
+                                                details = '%s %s is not within expected range (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest paramagnetic/ferromagnetic atom %s:%s:%s is located at %s angstroms.\n' % (full_value_name, value, avg_value, std_value, min_value, max_value, z_score, pa['chain_id'], pa['seq_id'], pa['comp_id'], pa['distance'])
                                                 if _details in self.empty_value or (not details in _details):
                                                     if _details in self.empty_value:
                                                         loop.data[l][details_col] = details
@@ -11223,15 +11234,15 @@ class NmrDpUtility(object):
                                 elif sigma > 10.0:
 
                                     na = self.__getNearestAromaticRing(chain_id, seq_id, atom_id_, self.cutoff_aromatic)
-                                    pa = self.__getNearestParamagneticAtom(chain_id, seq_id, atom_id_, self.cutoff_paramagnetic)
+                                    pa = self.__getNearestParaFerroMagneticAtom(chain_id, seq_id, atom_id_, self.cutoff_paramagnetic)
 
                                     if na is None and pa is None:
 
                                         warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) +\
-                                               '] %s %s (%s:%s:%s:%s) must be verified (avg %s, std %s, min %s, max %s, Z_score %.2f). Neither aromatic ring nor paramagnetic atom were found in the vicinity.' %\
+                                               '] %s %s (%s:%s:%s:%s) must be verified (avg %s, std %s, min %s, max %s, Z_score %.2f). Neither aromatic ring nor paramagnetic/ferromagnetic atom were found in the vicinity.' %\
                                                (full_value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score)
 
-                                        warn_alt = 'Verify chemical shift value for %s:%s:%s:%s (%s ppm, %.2f sigma) is outside of expected range (%.2f ~ %.2f ppm, avg %s, std %s, min %s, max %s). Neither aromatic ring nor paramagnetic atom were found in the vicinity.' %\
+                                        warn_alt = 'Verify chemical shift value for %s:%s:%s:%s (%s ppm, %.2f sigma) is outside of expected range (%.2f ~ %.2f ppm, avg %s, std %s, min %s, max %s). Neither aromatic ring nor paramagnetic/ferromagnetic atom were found in the vicinity.' %\
                                                (chain_id, seq_id, comp_id, atom_name, value, sigma, avg_value + 5.0 * std_value, avg_value - 5.0 * std_value, avg_value, std_value, min_value, max_value)
 
                                         self.report.warning.appendDescription('anomalous_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn, 'value': value, 'z_score': z_score, 'description_alt': warn_alt, 'sigma': sigma})
@@ -11264,11 +11275,11 @@ class NmrDpUtility(object):
                                         if pa['distance'] > self.vicinity_paramagnetic:
 
                                             warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) +\
-                                                   '] %s %s (%s:%s:%s:%s) should be verified (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest paramagnetic atom (%s:%s:%s:%s) is located at %s angstroms.' %\
+                                                   '] %s %s (%s:%s:%s:%s) should be verified (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest paramagnetic/ferromagnetic atom (%s:%s:%s:%s) is located at %s angstroms.' %\
                                                    (full_value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score,
                                                     pa['chain_id'], pa['seq_id'], pa['comp_id'], pa['atom_id'], pa['distance'])
 
-                                            warn_alt = 'Verify chemical shift value for %s:%s:%s:%s (%s ppm, %.2f sigma) is outside of expected range (%.2f ~ %.2f ppm, avg %s, std %s, min %s, max %s). The nearest paramagnetic atom (%s:%s:%s:%s) is located at %s angstroms.' %\
+                                            warn_alt = 'Verify chemical shift value for %s:%s:%s:%s (%s ppm, %.2f sigma) is outside of expected range (%.2f ~ %.2f ppm, avg %s, std %s, min %s, max %s). The nearest paramagnetic/ferromagnetic atom (%s:%s:%s:%s) is located at %s angstroms.' %\
                                                    (chain_id, seq_id, comp_id, atom_name, value, sigma, avg_value + 5.0 * std_value, avg_value - 5.0 * std_value, avg_value, std_value, min_value, max_value,
                                                     pa['chain_id'], pa['seq_id'], pa['comp_id'], pa['atom_id'], pa['distance'])
 
@@ -11345,15 +11356,15 @@ class NmrDpUtility(object):
                             if (value < min_value - tolerance or value > max_value + tolerance) and sigma > 5.0:
 
                                 na = self.__getNearestAromaticRing(chain_id, seq_id, atom_id_, self.cutoff_aromatic)
-                                pa = self.__getNearestParamagneticAtom(chain_id, seq_id, atom_id_, self.cutoff_paramagnetic)
+                                pa = self.__getNearestParaFerroMagneticAtom(chain_id, seq_id, atom_id_, self.cutoff_paramagnetic)
 
                                 if na is None and pa is None:
 
                                     err = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) +\
-                                          '] %s %s (%s:%s:%s:%s) is not within expected range (avg %s, std %s, min %s, max %s, Z_score %.2f). Neither aromatic ring nor paramagnetic atom were found in the vicinity. Please check for folded/aliased signals.' %\
+                                          '] %s %s (%s:%s:%s:%s) is not within expected range (avg %s, std %s, min %s, max %s, Z_score %.2f). Neither aromatic ring nor paramagnetic/ferromagnetic atom were found in the vicinity. Please check for folded/aliased signals.' %\
                                           (full_value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score)
 
-                                    err_alt = 'Verify chemical shift value for %s:%s:%s:%s (%s ppm, %.2f sigma) is outside of expected range (%.2f ~ %.2f ppm, avg %s, std %s, min %s, max %s). Neither aromatic ring nor paramagnetic atom were found in the vicinity. Please check for folded/aliased signals.' %\
+                                    err_alt = 'Verify chemical shift value for %s:%s:%s:%s (%s ppm, %.2f sigma) is outside of expected range (%.2f ~ %.2f ppm, avg %s, std %s, min %s, max %s). Neither aromatic ring nor paramagnetic/ferromagnetic atom were found in the vicinity. Please check for folded/aliased signals.' %\
                                           (chain_id, seq_id, comp_id, atom_name, value, sigma, avg_value + 5.0 * std_value, avg_value - 5.0 * std_value, avg_value, std_value, min_value, max_value)
 
                                     if self.__nonblk_anomalous_cs:
@@ -11366,7 +11377,7 @@ class NmrDpUtility(object):
 
                                         if file_type == 'nmr-star' and details_col != -1:
                                             _details = loop.data[l][details_col]
-                                            details = '%s %s is not within expected range (avg %s, std %s, min %s, max %s, Z_score %.2f). Neither aromatic ring nor paramagnetic atom were found in the vicinity. Please check for folded/aliased signals.\n' % (full_value_name, value, avg_value, std_value, min_value, max_value, z_score)
+                                            details = '%s %s is not within expected range (avg %s, std %s, min %s, max %s, Z_score %.2f). Neither aromatic ring nor paramagnetic/ferromagnetic atom were found in the vicinity. Please check for folded/aliased signals.\n' % (full_value_name, value, avg_value, std_value, min_value, max_value, z_score)
                                             if _details in self.empty_value or (not details in _details):
                                                 if _details in self.empty_value:
                                                     loop.data[l][details_col] = details
@@ -11422,11 +11433,11 @@ class NmrDpUtility(object):
                                 else:
 
                                     warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) +\
-                                           '] %s %s (%s:%s:%s:%s) should be verified (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest paramagnetic atom (%s:%s:%s:%s) is located at %s angstroms.' %\
+                                           '] %s %s (%s:%s:%s:%s) should be verified (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest paramagnetic/ferromagnetic atom (%s:%s:%s:%s) is located at %s angstroms.' %\
                                            (full_value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score,
                                             pa['chain_id'], pa['seq_id'], pa['comp_id'], pa['atom_id'], pa['distance'])
 
-                                    warn_alt = 'Verify chemical shift value for %s:%s:%s:%s (%s ppm, %.2f sigma) is outside of expected range (%.2f ~ %.2f ppm, avg %s, std %s, min %s, max %s). The nearest paramagnetic atom (%s:%s:%s:%s) is located at %s angstroms.' %\
+                                    warn_alt = 'Verify chemical shift value for %s:%s:%s:%s (%s ppm, %.2f sigma) is outside of expected range (%.2f ~ %.2f ppm, avg %s, std %s, min %s, max %s). The nearest paramagnetic/ferromagnetic atom (%s:%s:%s:%s) is located at %s angstroms.' %\
                                            (chain_id, seq_id, comp_id, atom_name, value, sigma, avg_value + 5.0 * std_value, avg_value - 5.0 * std_value, avg_value, std_value, min_value, max_value,
                                             pa['chain_id'], pa['seq_id'], pa['comp_id'], pa['atom_id'], pa['distance'])
 
@@ -11438,7 +11449,7 @@ class NmrDpUtility(object):
 
                                     if file_type == 'nmr-star' and details_col != -1 and pa['distance'] > self.vicinity_paramagnetic:
                                         _details = loop.data[l][details_col]
-                                        details = '%s %s is not within expected range (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest paramagnetic atom %s:%s:%s is located at %s angstroms.\n' % (full_value_name, value, avg_value, std_value, min_value, max_value, z_score, pa['chain_id'], pa['seq_id'], pa['comp_id'], pa['distance'])
+                                        details = '%s %s is not within expected range (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest paramagnetic/ferromagnetic atom %s:%s:%s is located at %s angstroms.\n' % (full_value_name, value, avg_value, std_value, min_value, max_value, z_score, pa['chain_id'], pa['seq_id'], pa['comp_id'], pa['distance'])
                                         if _details in self.empty_value or (not details in _details):
                                             if _details in self.empty_value:
                                                 loop.data[l][details_col] = details
@@ -11449,15 +11460,15 @@ class NmrDpUtility(object):
                             elif sigma > 5.0: # Set 5.0 to be consistent with validation report
 
                                 na = self.__getNearestAromaticRing(chain_id, seq_id, atom_id_, self.cutoff_aromatic)
-                                pa = self.__getNearestParamagneticAtom(chain_id, seq_id, atom_id_, self.cutoff_paramagnetic)
+                                pa = self.__getNearestParaFerroMagneticAtom(chain_id, seq_id, atom_id_, self.cutoff_paramagnetic)
 
                                 if na is None and pa is None:
 
                                     warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) +\
-                                           '] %s %s (%s:%s:%s:%s) must be verified (avg %s, std %s, min %s, max %s, Z_score %.2f). Neither aromatic ring nor paramagnetic atom were found in the vicinity.' %\
+                                           '] %s %s (%s:%s:%s:%s) must be verified (avg %s, std %s, min %s, max %s, Z_score %.2f). Neither aromatic ring nor paramagnetic/ferromagnetic atom were found in the vicinity.' %\
                                            (full_value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score)
 
-                                    warn_alt = 'Verify chemical shift value for %s:%s:%s:%s (%s ppm, %.2f sigma) is outside of expected range (%.2f ~ %.2f ppm, avg %s, std %s, min %s, max %s). Neither aromatic ring nor paramagnetic atom were found in the vicinity.' %\
+                                    warn_alt = 'Verify chemical shift value for %s:%s:%s:%s (%s ppm, %.2f sigma) is outside of expected range (%.2f ~ %.2f ppm, avg %s, std %s, min %s, max %s). Neither aromatic ring nor paramagnetic/ferromagnetic atom were found in the vicinity.' %\
                                            (chain_id, seq_id, comp_id, atom_name, value, sigma, avg_value + 5.0 * std_value, avg_value - 5.0 * std_value, avg_value, std_value, min_value, max_value)
 
                                     self.report.warning.appendDescription('anomalous_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn, 'value': value, 'z_score': z_score, 'description_alt': warn_alt, 'sigma': sigma})
@@ -11490,11 +11501,11 @@ class NmrDpUtility(object):
                                     if pa['distance'] > self.vicinity_paramagnetic:
 
                                         warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) +\
-                                               '] %s %s (%s:%s:%s:%s) should be verified (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest paramagnetic atom (%s:%s:%s:%s) is located at %s angstroms.' %\
+                                               '] %s %s (%s:%s:%s:%s) should be verified (avg %s, std %s, min %s, max %s, Z_score %.2f). The nearest paramagnetic/ferromagnetic atom (%s:%s:%s:%s) is located at %s angstroms.' %\
                                                (full_value_name, value, chain_id, seq_id, comp_id, atom_name, avg_value, std_value, min_value, max_value, z_score,
                                                 pa['chain_id'], pa['seq_id'], pa['comp_id'], pa['atom_id'], pa['distance'])
 
-                                        warn_alt = 'Verify chemical shift value for %s:%s:%s:%s (%s ppm, %.2f sigma) is outside of expected range (%.2f ~ %.2f ppm, avg %s, std %s, min %s, max %s). The nearest paramagnetic atom (%s:%s:%s:%s) is located at %s angstroms.' %\
+                                        warn_alt = 'Verify chemical shift value for %s:%s:%s:%s (%s ppm, %.2f sigma) is outside of expected range (%.2f ~ %.2f ppm, avg %s, std %s, min %s, max %s). The nearest paramagnetic/ferromagnetic atom (%s:%s:%s:%s) is located at %s angstroms.' %\
                                                (chain_id, seq_id, comp_id, atom_name, value, sigma, avg_value + 5.0 * std_value, avg_value - 5.0 * std_value, avg_value, std_value, min_value, max_value,
                                                 pa['chain_id'], pa['seq_id'], pa['comp_id'], pa['atom_id'], pa['distance'])
 
@@ -11507,7 +11518,7 @@ class NmrDpUtility(object):
                             elif sigma > 5.0:
 
                                 na = self.__getNearestAromaticRing(chain_id, seq_id, atom_id_, self.cutoff_aromatic)
-                                pa = self.__getNearestParamagneticAtom(chain_id, seq_id, atom_id_, self.cutoff_paramagnetic)
+                                pa = self.__getNearestParaFerroMagneticAtom(chain_id, seq_id, atom_id_, self.cutoff_paramagnetic)
 
                                 warn = chk_row_tmp % (chain_id, seq_id, comp_id, atom_name) +\
                                        '] %s %s (%s:%s:%s:%s) should be verified (avg %s, std %s, min %s, max %s, Z_score %.2f).' %\
@@ -11530,17 +11541,17 @@ class NmrDpUtility(object):
                                 elif not pa is None:
 
                                     if pa['distance'] > self.vicinity_paramagnetic:
-                                        warn += ' The nearest paramagnetic atom (%s:%s:%s:%s) is located at %s angstroms.' %\
+                                        warn += ' The nearest paramagnetic/ferromagnetic atom (%s:%s:%s:%s) is located at %s angstroms.' %\
                                                 (pa['chain_id'], pa['seq_id'], pa['comp_id'], pa['atom_id'], pa['distance'])
-                                        warn_alt += ' The nearest paramagnetic atom (%s:%s:%s:%s) is located at %s angstroms.' %\
+                                        warn_alt += ' The nearest paramagnetic/ferromagnetic atom (%s:%s:%s:%s) is located at %s angstroms.' %\
                                                 (pa['chain_id'], pa['seq_id'], pa['comp_id'], pa['atom_id'], pa['distance'])
                                     else:
                                         warn = None
                                         warn_alt = None
 
                                 else:
-                                    warn += ' Neither aromatic ring nor paramagnetic atom were found in the vicinity.'
-                                    warn_alt += ' Neither aromatic ring nor paramagnetic atom were found in the vicinity.'
+                                    warn += ' Neither aromatic ring nor paramagnetic/ferromagnetic atom were found in the vicinity.'
+                                    warn_alt += ' Neither aromatic ring nor paramagnetic/ferromagnetic atom were found in the vicinity.'
 
                                 if not warn is None:
                                     self.report.warning.appendDescription('unusual_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn, 'value': value, 'z_score': z_score, 'description_alt': warn_alt, 'sigma': sigma})
@@ -13196,7 +13207,7 @@ class NmrDpUtility(object):
                                     atom_name = atom_id
 
                                     if not details is None:
-                                        atom_name += ', besides that, ' + details.rstrip('.')
+                                        atom_name += ', besides that ' + details.rstrip('.')
 
                                 else:
                                     atom_name = atom_id + ' (e.g. '
@@ -13219,7 +13230,7 @@ class NmrDpUtility(object):
 
                                     if not any(a for a in self.__last_chem_comp_atoms if a[self.__cca_atom_id] == atom_id_):
 
-                                        warn = "Atom (%s), %s %r did not match with chemical component dictionary (CCD)." %\
+                                        warn = "Atom (%s, %s %r) did not match with chemical component dictionary (CCD)." %\
                                             (self.__getReducedAtomNotation(chain_id_name, chain_id, seq_id_name, seq_id, comp_id_name, comp_id, atom_id_name, atom_name), variant_name, _variant_)
 
                                         self.report.warning.appendDescription('atom_nomenclature_mismatch', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
@@ -13230,7 +13241,7 @@ class NmrDpUtility(object):
 
                                 if not coord_atom_id_ is None and coord_atom_id_['comp_id'] == cif_comp_id and atom_id_ in coord_atom_id_['atom_id']:
 
-                                    err = "Atom (%s), %s %r is unexpectedly incorporated in the coordinate." %\
+                                    err = "Atom (%s, %s %r) is unexpectedly incorporated in the coordinate." %\
                                         (self.__getReducedAtomNotation(chain_id_name, chain_id, seq_id_name, seq_id, comp_id_name, comp_id, atom_id_name, atom_name), variant_name, _variant_)
 
                                     self.report.error.appendDescription('invalid_atom_nomenclature', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
@@ -13243,7 +13254,7 @@ class NmrDpUtility(object):
 
                                 if not coord_atom_id_ is None and coord_atom_id_['comp_id'] == cif_comp_id and not atom_id_ in coord_atom_id_['atom_id']:
 
-                                    err = "Atom (%s), %s %r is not incorporated in the coordinate." %\
+                                    err = "Atom (%s, %s %r) is not incorporated in the coordinate." %\
                                         (self.__getReducedAtomNotation(chain_id_name, chain_id, seq_id_name, seq_id, comp_id_name, comp_id, atom_id_name, atom_name), variant_name, _variant_)
 
                                     self.report.error.appendDescription('invalid_atom_nomenclature', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
@@ -13270,7 +13281,7 @@ class NmrDpUtility(object):
                                 atom_name = atom_id
 
                                 if not details is None:
-                                    atom_name += ', besides that, ' + details.rstrip('.')
+                                    atom_name += ', besides that ' + details.rstrip('.')
 
                             else:
                                 atom_name = atom_id + ' (e.g. '
@@ -14821,7 +14832,7 @@ class NmrDpUtility(object):
 
                             if his['tautomeric_state_pred'] != 'unknown':
                                 item = None
-                                if his['tautomeric_state_pred'] != his['tautomeric_state']:
+                                if his['tautomeric_state_pred'] != his['tautomeric_state'] and his['tautomeric_state'] != 'unknown':
                                     if ',' in his['tautomeric_state_pred']:
                                         if (his['tautomeric_state'] == 'biprotonated' and bip > tau and bip > pi) or\
                                            (his['tautomeric_state'] == 'tau-tautomer' and tau > bip and tau > pi) or\
@@ -20169,7 +20180,7 @@ class NmrDpUtility(object):
                                 elif cif_comp_id != nmr_comp_id and aligned[i]:
                                     _conflicts += 1
 
-                            if _conflicts > chain_assign['unmapped']:
+                            if _conflicts > chain_assign['unmapped'] and chain_assign['sequence_coverage'] < 0.95:
                                 continue
 
                         unmapped = []
@@ -20731,7 +20742,7 @@ i                               """
                         atom_name = atom_id
 
                         if not details is None:
-                            atom_name += ', besides that, ' + details.rstrip('.')
+                            atom_name += ', besides that ' + details.rstrip('.')
 
                     else:
                         atom_name = atom_id + ' (e.g. '
@@ -23480,9 +23491,9 @@ i                               """
         self.__coord_near_ring[seq_key] = None
         return None
 
-    def __getNearestParamagneticAtom(self, _nmr_chain_id, nmr_seq_id, nmr_atom_id, cutoff):
-        """ Return the nearest paramagnetic atom around a given atom.
-            @return: the nearest paramagnetic atom
+    def __getNearestParaFerroMagneticAtom(self, _nmr_chain_id, nmr_seq_id, nmr_atom_id, cutoff):
+        """ Return the nearest paramagnetic/ferromagnetic atom around a given atom.
+            @return: the nearest paramagnetic/ferromagnetic atom
         """
 
         if self.report.isDiamagnetic():
@@ -23504,8 +23515,8 @@ i                               """
 
         seq_key = (_nmr_chain_id, nmr_seq_id, nmr_atom_id)
 
-        if seq_key in self.__coord_near_para:
-            return self.__coord_near_para[seq_key]
+        if seq_key in self.__coord_near_para_ferro:
+            return self.__coord_near_para_ferro[seq_key]
 
         result = next((seq_align for seq_align in seq_align_dic['nmr_poly_seq_vs_model_poly_seq'] if seq_align['ref_chain_id'] == nmr_chain_id and seq_align['test_chain_id'] == cif_chain_id), None)
 
@@ -23514,7 +23525,7 @@ i                               """
             cif_seq_id = next((test_seq_id for ref_seq_id, test_seq_id in zip(result['ref_seq_id'], result['test_seq_id']) if ref_seq_id == nmr_seq_id), None)
 
             if cif_seq_id is None:
-                self.__coord_near_para[seq_key] = None
+                self.__coord_near_para_ferro[seq_key] = None
                 return None
 
             try:
@@ -23533,11 +23544,11 @@ i                               """
 
             except Exception as e:
 
-                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__getNearestParamagneticAtom() ++ Error  - %s" % str(e))
+                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__getNearestParaFerroMagneticAtom() ++ Error  - %s" % str(e))
                 self.report.setError()
 
                 if self.__verbose:
-                    self.__lfh.write("+NmrDpUtility.__getNearestParamagneticAtom() ++ Error  - %s" % str(e))
+                    self.__lfh.write("+NmrDpUtility.__getNearestParaFerroMagneticAtom() ++ Error  - %s" % str(e))
 
                 return None
 
@@ -23546,13 +23557,13 @@ i                               """
                 """
                 err = 'Not found a given atom (chain_id %s, seq_id %s, atom_id %s) in coordinate model.' % (nmr_chain_id, nmr_seq_id, nmr_atom_id)
 
-                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__getNearestParamagneticAtom() ++ Error  - %s" % err)
+                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__getNearestParaFerroMagneticAtom() ++ Error  - %s" % err)
                 self.report.setError()
 
                 if self.__verbose:
-                    self.__lfh.write("+NmrDpUtility.__getNearestParamagneticAtom() ++ Error  - %s" % err)
+                    self.__lfh.write("+NmrDpUtility.__getNearestParaFerroMagneticAtom() ++ Error  - %s" % err)
                 """
-                self.__coord_near_para[seq_key] = None
+                self.__coord_near_para_ferro[seq_key] = None
                 return None
 
             o = to_np_array(_origin[0])
@@ -23576,23 +23587,23 @@ i                               """
 
             except Exception as e:
 
-                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__getNearestParamagneticAtom() ++ Error  - %s" % str(e))
+                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__getNearestParaFerroMagneticAtom() ++ Error  - %s" % str(e))
                 self.report.setError()
 
                 if self.__verbose:
-                    self.__lfh.write("+NmrDpUtility.__getNearestParamagneticAtom() ++ Error  - %s" % str(e))
+                    self.__lfh.write("+NmrDpUtility.__getNearestParaFerroMagneticAtom() ++ Error  - %s" % str(e))
 
                 return None
 
             if len(_neighbor) == 0:
-                self.__coord_near_para[seq_key] = None
+                self.__coord_near_para_ferro[seq_key] = None
                 return None
 
             neighbor = [n for n in _neighbor if n['seq_id'] != cif_seq_id and np.linalg.norm(to_np_array(n) - o) < cutoff and
-                        n['type_symbol'] in self.paramag_elems]
+                        (n['type_symbol'] in self.paramag_elems or n['type_symbol'] in self.ferromag_elems)]
 
             if len(neighbor) == 0:
-                self.__coord_near_para[seq_key] = None
+                self.__coord_near_para_ferro[seq_key] = None
                 return None
 
             atom_list = []
@@ -23621,16 +23632,16 @@ i                               """
 
             except Exception as e:
 
-                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__getNearestParamagneticAtom() ++ Error  - %s" % str(e))
+                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__getNearestParaFerroMagneticAtom() ++ Error  - %s" % str(e))
                 self.report.setError()
 
                 if self.__verbose:
-                    self.__lfh.write("+NmrDpUtility.__getNearestParamagneticAtom() ++ Error  - %s" % str(e))
+                    self.__lfh.write("+NmrDpUtility.__getNearestParaFerroMagneticAtom() ++ Error  - %s" % str(e))
 
                 return None
 
             if len(_p) == 0:
-                self.__coord_near_para[seq_key] = None
+                self.__coord_near_para_ferro[seq_key] = None
                 return None
 
             distance = 0.0
@@ -23640,10 +23651,10 @@ i                               """
 
             p['distance'] = float('{:.1f}'.format(distance / len(_p)))
 
-            self.__coord_near_para[seq_key] = p
+            self.__coord_near_para_ferro[seq_key] = p
             return p
 
-        self.__coord_near_para[seq_key] = None
+        self.__coord_near_para_ferro[seq_key] = None
         return None
 
     def __appendElemAndIsoNumOfNefCSLoop(self):

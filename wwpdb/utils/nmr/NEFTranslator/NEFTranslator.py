@@ -2319,7 +2319,7 @@ class NEFTranslator(object):
                                         loop.data[l][loop.tags.index(name)] = None
                                     ent[name] = None
                                 else:
-                                    user_warn_msg += "[Zero value error] %s%s '%s' should not have zero value for %s.\n" % (get_idx_msg(idx_tag_ids, tags, ent), name, val, self.readable_item_type[type])
+                                    user_warn_msg += "[Zero value error] %s%s '%s' should not be zero, as defined by %s.\n" % (get_idx_msg(idx_tag_ids, tags, ent), name, val, self.readable_item_type[type])
                         elif type == 'pointer-index':
                             try:
                                 ent[name] = int(val)
@@ -2365,7 +2365,7 @@ class NEFTranslator(object):
                                         loop.data[l][loop.tags.index(name)] = None
                                     ent[name] = None
                                 else:
-                                    user_warn_msg += "[Zero value error] %s%s '%s' should not have zero value for %s.\n" % (get_idx_msg(idx_tag_ids, tags, ent), name, val, self.readable_item_type[type])
+                                    user_warn_msg += "[Zero value error] %s%s '%s' should not be zero, as defined by %s.\n" % (get_idx_msg(idx_tag_ids, tags, ent), name, val, self.readable_item_type[type])
                         elif type == 'range-float':
                             try:
                                 _range = k['range']
@@ -2401,7 +2401,7 @@ class NEFTranslator(object):
                                             loop.data[l][loop.tags.index(name)] = None
                                         ent[name] = None
                                     else:
-                                        user_warn_msg += "[Zero value error] %s%s '%s' should not have zero value for %s, %s.\n" % (get_idx_msg(idx_tag_ids, tags, ent), name, val, self.readable_item_type[type], _range)
+                                        user_warn_msg += "[Zero value error] %s%s '%s' should not be zero, as defined by %s, %s.\n" % (get_idx_msg(idx_tag_ids, tags, ent), name, val, self.readable_item_type[type], _range)
                             elif ('min_exclusive' in _range and ent[name] <= _range['min_exclusive']) or ('min_inclusive' in _range and ent[name] < _range['min_inclusive']) or ('max_inclusive' in _range and ent[name] > _range['max_inclusive']) or ('max_exclusive' in _range and ent[name] >= _range['max_exclusive']):
                                 if 'void-zero' in k and ent[name] == 0.0:
                                     if self.replace_zero_by_null_in_case:
@@ -2507,7 +2507,7 @@ class NEFTranslator(object):
                                                 loop.data[l][loop.tags.index(name)] = None
                                             ent[name] = None
                                         else:
-                                            user_warn_msg += "[Zero value error] %s%s '%s' should not have zero value for %s.\n" % (get_idx_msg(idx_tag_ids, tags, ent), name, val, self.readable_item_type[type])
+                                            user_warn_msg += "[Zero value error] %s%s '%s' should not be zero, as defined by %s.\n" % (get_idx_msg(idx_tag_ids, tags, ent), name, val, self.readable_item_type[type])
                                 elif type == 'pointer-index':
                                     try:
                                         ent[name] = int(val)
@@ -2553,7 +2553,7 @@ class NEFTranslator(object):
                                                 loop.data[l][loop.tags.index(name)] = None
                                             ent[name] = None
                                         else:
-                                            user_warn_msg += "[Zero value error] %s%s '%s' should not have zero value for %s.\n" % (get_idx_msg(idx_tag_ids, tags, ent), name, val, self.readable_item_type[type])
+                                            user_warn_msg += "[Zero value error] %s%s '%s' should not be zero, as defined by %s.\n" % (get_idx_msg(idx_tag_ids, tags, ent), name, val, self.readable_item_type[type])
                                 elif type == 'range-float':
                                     try:
                                         _range = d['range']
@@ -2589,7 +2589,7 @@ class NEFTranslator(object):
                                                     loop.data[l][loop.tags.index(name)] = None
                                                 ent[name] = None
                                             else:
-                                                user_warn_msg += "[Zero value error] %s%s '%s' should not have zero value for %s, %s.\n" % (get_idx_msg(idx_tag_ids, tags, ent), name, val, self.readable_item_type[type], _range)
+                                                user_warn_msg += "[Zero value error] %s%s '%s' should not be zero, as defined by %s, %s.\n" % (get_idx_msg(idx_tag_ids, tags, ent), name, val, self.readable_item_type[type], _range)
                                     elif ('min_exclusive' in _range and ent[name] <= _range['min_exclusive']) or ('min_inclusive' in _range and ent[name] < _range['min_inclusive']) or ('max_inclusive' in _range and ent[name] > _range['max_inclusive']) or ('max_exclusive' in _range and ent[name] >= _range['max_exclusive']):
                                         if 'void-zero' in d and ent[name] == 0.0:
                                             if self.replace_zero_by_null_in_case:
@@ -3042,7 +3042,7 @@ class NEFTranslator(object):
                                     star_data.tags[sf_tags.keys().index(name)][1] = None
                                 ent[name] = None
                             else:
-                                user_warn_msg += "[Zero value error] %s '%s' should not have zero value for %s.\n" % (name, val, self.readable_item_type[type])
+                                user_warn_msg += "[Zero value error] %s '%s' should not be zero, as defined by %s.\n" % (name, val, self.readable_item_type[type])
                     elif type == 'float':
                         try:
                             ent[name] = float(val)
@@ -3061,7 +3061,7 @@ class NEFTranslator(object):
                                     star_data.tags[sf_tags.keys().index(name)][1] = None
                                 ent[name] = None
                             else:
-                                user_warn_msg += "[Zero value error] %s '%s' should not have zero value for %s.\n" % (name, val, self.readable_item_type[type])
+                                user_warn_msg += "[Zero value error] %s '%s' should not be zero, as defined by %s.\n" % (name, val, self.readable_item_type[type])
                     elif type == 'range-float':
                         try:
                             _range = t['range']
@@ -3094,7 +3094,7 @@ class NEFTranslator(object):
                                         star_data.tags[sf_tags.keys().index(name)][1] = None
                                     ent[name] = None
                                 else:
-                                    user_warn_msg += "[Zero value error] %s '%s' should not have zero value for %s, %s.\n" % (name, val, self.readable_item_type[type], _range)
+                                    user_warn_msg += "[Zero value error] %s '%s' should not be zero, as defined by %s, %s.\n" % (name, val, self.readable_item_type[type], _range)
                         elif ('min_exclusive' in _range and ent[name] <= _range['min_exclusive']) or ('min_inclusive' in _range and ent[name] < _range['min_inclusive']) or ('max_inclusive' in _range and ent[name] > _range['max_inclusive']) or ('max_exclusive' in _range and ent[name] >= _range['max_exclusive']):
                             if 'void-zero' in t and ent[name] == 0.0:
                                 if self.replace_zero_by_null_in_case:

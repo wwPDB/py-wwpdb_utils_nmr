@@ -3160,6 +3160,10 @@
             "type": "string",
             "minLength": 1
           },
+          "subtotal": {
+            "type": "integer",
+            "minumum": 1
+          },
           "value": {
             "type": "number"
           },

@@ -184,20 +184,20 @@ class TestNmrDpError(unittest.TestCase):
 
     def test_setitemvalue(self):
         for item in self.error.items:
-            self.error.appendDescription(item, 'foo')
+            self.error.appendDescription(item, {'foo': 'value'})
 
         with LogCapture() as logs:
             with self.assertRaises(KeyError):
-                self.error.appendDescription('unknown', 'foo')
+                self.error.appendDescription('unknown', {'foo': 'value'})
 
         for item in self.error.items:
-            self.assertEqual(self.error.get()[item], ['foo'])
+            self.assertEqual(self.error.get()[item], [{'foo': 'value'}])
 
         for item in self.error.items:
-            self.error.appendDescription(item, 'foo2')
+            self.error.appendDescription(item, {'foo2': 'value2'})
 
         for item in self.error.items:
-            self.assertEqual(self.error.get()[item], ['foo','foo2'])
+            self.assertEqual(self.error.get()[item], [{'foo': 'value'}, {'foo2': 'value2'}])
 
 class TestNmrDpWarning(unittest.TestCase):
 
@@ -210,20 +210,20 @@ class TestNmrDpWarning(unittest.TestCase):
 
     def test_setitemvalue(self):
         for item in self.warning.items:
-            self.warning.appendDescription(item, 'foo')
+            self.warning.appendDescription(item, {'foo': 'value'})
 
         with LogCapture() as logs:
             with self.assertRaises(KeyError):
-                self.warning.appendDescription('unknown', 'foo')
+                self.warning.appendDescription('unknown', {'foo': 'value'})
 
         for item in self.warning.items:
-            self.assertEqual(self.warning.get()[item], ['foo'])
+            self.assertEqual(self.warning.get()[item], [{'foo': 'value'}])
 
         for item in self.warning.items:
-            self.warning.appendDescription(item, 'foo2')
+            self.warning.appendDescription(item, {'foo2': 'value2'})
 
         for item in self.warning.items:
-            self.assertEqual(self.warning.get()[item], ['foo', 'foo2'])
+            self.assertEqual(self.warning.get()[item], [{'foo': 'value'}, {'foo2': 'value2'}])
 
 if __name__ == '__main__':
     unittest.main()

@@ -41,6 +41,7 @@
 # 09-Jul-2020  M. Yokochi - support spectral_peak_alt content subtype (DAOTHER-5926)
 # 20-Nov-2020  M. Yokochi - rename 'remarkable_data' warning category to 'unusual/rare_data' (DAOTHER-6372)
 # 27-Nov-2020  M. Yokochi - support grouped error/warning message (DAOTHER-6373)
+# 17-Dec-2020  M. Yokochi - add 'atom_not_found' error (DAOTHER-6345)
 ##
 """ Wrapper class for data processing report of NMR data.
     @author: Masashi Yokochi
@@ -1539,11 +1540,11 @@ class NmrDpReportError:
         self.items = ('internal_error', 'format_issue', 'missing_mandatory_content', 'missing_mandatory_item',
                       'content_mismatch', 'sequence_mismatch',
                       'invalid_data', 'invalid_atom_nomenclature', 'invalid_atom_type', 'invalid_isotope_number', 'invalid_ambiguity_code',
-                      'multiple_data', 'missing_data', 'duplicated_index', 'anomalous_data')
+                      'atom_not_found', 'multiple_data', 'missing_data', 'duplicated_index', 'anomalous_data')
 
         self.group_items = ('sequence_mismatch',
                       'invalid_data', 'invalid_atom_nomenclature', 'invalid_atom_type', 'invalid_isotope_number', 'invalid_ambiguity_code',
-                      'multiple_data', 'missing_data', 'anomalous_data')
+                      'atom_not_found', 'multiple_data', 'missing_data', 'anomalous_data')
 
         self.__contents = {item: None for item in self.items}
 

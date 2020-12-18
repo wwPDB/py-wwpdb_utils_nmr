@@ -40,6 +40,8 @@
 # 01-Jul-2020  M. Yokochi - suppress null error/warning in JSON report
 # 09-Jul-2020  M. Yokochi - support spectral_peak_alt content subtype (DAOTHER-5926)
 # 20-Nov-2020  M. Yokochi - rename 'remarkable_data' warning category to 'unusual/rare_data' (DAOTHER-6372)
+# 27-Nov-2020  M. Yokochi - support grouped error/warning message (DAOTHER-6373)
+# 17-Dec-2020  M. Yokochi - add 'atom_not_found' error (DAOTHER-6345)
 ##
 """ Wrapper class for data processing report of NMR data.
     @author: Masashi Yokochi
@@ -1538,7 +1540,11 @@ class NmrDpReportError:
         self.items = ('internal_error', 'format_issue', 'missing_mandatory_content', 'missing_mandatory_item',
                       'content_mismatch', 'sequence_mismatch',
                       'invalid_data', 'invalid_atom_nomenclature', 'invalid_atom_type', 'invalid_isotope_number', 'invalid_ambiguity_code',
-                      'multiple_data', 'missing_data', 'duplicated_index', 'anomalous_data')
+                      'atom_not_found', 'multiple_data', 'missing_data', 'duplicated_index', 'anomalous_data')
+
+        self.group_items = ('sequence_mismatch',
+                      'invalid_data', 'invalid_atom_nomenclature', 'invalid_atom_type', 'invalid_isotope_number', 'invalid_ambiguity_code',
+                      'atom_not_found', 'multiple_data', 'missing_data', 'anomalous_data')
 
         self.__contents = {item: None for item in self.items}
 
@@ -1585,6 +1591,26 @@ class NmrDpReportError:
                     value['description'] = g[1]
 
             if not any(v for v in self.__contents[item] if v == value):
+
+                if item in self.group_items and 'file_name' in value and not 'row_location' in value and not 'row_locations' in value:
+
+                    if 'sf_framecode' in value:
+                        v = next((v for v in self.__contents[item] if 'file_name' in v and v['file_name'] == value['file_name'] and\
+                                  'sf_framecode' in v and v['sf_framecode'] == value['sf_framecode'] and\
+                                  not 'row_location' in v and not 'row_locations' in v), None)
+                    else:
+                        v = next((v for v in self.__contents[item] if 'file_name' in v and v['file_name'] == value['file_name'] and\
+                                  not 'sf_framecode' in v and\
+                                  not 'row_location' in v and not 'row_locations' in v), None)
+
+                    if not v is None:
+                        v['description'] += '\n%s' % value['description']
+
+                        v['subtotal'] += 1
+
+                        return
+
+                    value['subtotal'] = 1
 
                 self.__contents[item].append(value)
 
@@ -1745,6 +1771,13 @@ class NmrDpReportWarning:
                       'conflicted_data', 'inconsistent_data', 'redundant_data',
                       'concatenated_sequence', 'not_superimposed_model')
 
+        self.group_items = ('sequence_mismatch',
+                      'atom_nomenclature_mismatch', 'auth_atom_nomenclature_mismatch', 'ccd_mismatch', 'ambiguity_code_mismatch',
+                      'anomalous_bond_length',
+                      'unusual/rare_data', 'insufficient_data',
+                      'conflicted_data', 'inconsistent_data', 'redundant_data')
+
+
         self.__contents = {item: None for item in self.items}
 
         self.__contents['total'] = 0
@@ -1790,6 +1823,26 @@ class NmrDpReportWarning:
                     value['description'] = g[1]
 
             if not any(v for v in self.__contents[item] if v == value):
+
+                if item in self.group_items and 'file_name' in value and not 'row_location' in value and not 'row_locations' in value:
+
+                    if 'sf_framecode' in value:
+                        v = next((v for v in self.__contents[item] if 'file_name' in v and v['file_name'] == value['file_name'] and\
+                                  'sf_framecode' in v and v['sf_framecode'] == value['sf_framecode'] and\
+                                  not 'row_location' in v and not 'row_locations' in v), None)
+                    else:
+                        v = next((v for v in self.__contents[item] if 'file_name' in v and v['file_name'] == value['file_name'] and\
+                                  not 'sf_framecode' in v and\
+                                  not 'row_location' in v and not 'row_locations' in v), None)
+
+                    if not v is None:
+                        v['description'] += '\n%s' % value['description']
+
+                        v['subtotal'] += 1
+
+                        return
+
+                    value['subtotal'] = 1
 
                 self.__contents[item].append(value)
 

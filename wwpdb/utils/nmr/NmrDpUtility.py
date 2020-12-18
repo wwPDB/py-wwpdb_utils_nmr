@@ -104,6 +104,9 @@
 # 12-Nov-2020  M. Yokochi - improve NMR warning messages (DAOTHER-6109, 6167)
 # 18-Nov-2020  M. Yokochi - fix calculation of CS completeness, fix empty polymer_sequence_in_loop due to atom_site.pdbx_PDB_ins_code (DAOTHER-6128)
 # 20-Nov-2020  M. Yokochi - rename 'remarkable_data' warning category to 'unusual/rare_data' (DAOTHER-6372)
+# 26-Nov-2020  M. Yokochi - detect the nearest ferromagnetic atom, in addition to paramagnetic atom (DAOTHER-6366)
+# 27-Nov-2020  M. Yokochi - add support for non-IUPAC atom names for standard amino acids, i.e. ARG:HB1/HB2 -> HB2/HB3 (DAOTHER-6373)
+# 17-Dec-2020  M. Yokochi - support 'atom_not_found' error with message revision (DAOTHER-6345)
 ##
 """ Wrapper class for data processing for NMR data.
     @author: Masashi Yokochi
@@ -8507,9 +8510,15 @@ class NmrDpUtility(object):
 
                         if not self.__nefT.validate_comp_atom(comp_id, atom_id_):
 
-                            if comp_id == 'GLY' and atom_id_ == 'HA1':
+                            if self.__csStat.getTypeOfCompId(comp_id)[0] and atom_id_.startswith('H') and atom_id_.endswith('1') and\
+                               self.__nefT.validate_comp_atom(comp_id, atom_id_[:-1] + '2') and self.__nefT.validate_comp_atom(comp_id, atom_id_[:-1] + '3'):
 
-                                warn = "GLY:HA1/HA2 should be GLY:HA2/HA3 according to the IUPAC atom nomenclature, respectively."
+                                _atom_id_ = atom_id_[:-1]
+                                _atom_id_1 = _atom_id_ + '1'
+                                _atom_id_2 = _atom_id_ + '2'
+                                _atom_id_3 = _atom_id_ + '3'
+
+                                warn = "%s:%s/%s should be %s:%s/%s according to the IUPAC atom nomenclature, respectively." % (comp_id, _atom_id_1, _atom_id_2, comp_id, _atom_id_2, _atom_id_3)
 
                                 self.report.warning.appendDescription('auth_atom_nomenclature_mismatch', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
                                 self.report.setWarning()
@@ -8517,7 +8526,7 @@ class NmrDpUtility(object):
                                 if self.__verbose:
                                     self.__lfh.write("+NmrDpUtility.__validateAtomNomenclature() ++ Warning  - %s\n" % warn)
 
-                                self.__fixAtomNomenclature('GLY', {'HA1': 'HA2', 'HA2': 'HA3'})
+                                self.__fixAtomNomenclature(comp_id, {_atom_id_1: _atom_id_2, _atom_id_2: _atom_id_3})
 
                             else:
 
@@ -10804,7 +10813,7 @@ class NmrDpUtility(object):
                         atom_name = atom_id
 
                         if not details is None:
-                            atom_name += ', besides that ' + details.rstrip('.')
+                            atom_name += ' (' + details.rstrip('.') + ')'
 
                     else:
                         atom_name = atom_id + ' (e.g. '
@@ -13210,7 +13219,7 @@ class NmrDpUtility(object):
                                     atom_name = atom_id
 
                                     if not details is None:
-                                        atom_name += ', besides that ' + details.rstrip('.')
+                                        atom_name += ' (' + details.rstrip('.') + ')'
 
                                 else:
                                     atom_name = atom_id + ' (e.g. '
@@ -13257,10 +13266,10 @@ class NmrDpUtility(object):
 
                                 if not coord_atom_id_ is None and coord_atom_id_['comp_id'] == cif_comp_id and not atom_id_ in coord_atom_id_['atom_id']:
 
-                                    err = "Atom (%s, %s %r) is not incorporated in the coordinate." %\
+                                    err = "Atom (%s) which is a %s %r is not present in the coordinate." %\
                                         (self.__getReducedAtomNotation(chain_id_name, chain_id, seq_id_name, seq_id, comp_id_name, comp_id, atom_id_name, atom_name), variant_name, _variant_)
 
-                                    self.report.error.appendDescription('invalid_atom_nomenclature', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
+                                    self.report.error.appendDescription('atom_not_found', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
                                     self.report.setError()
 
                                     if self.__verbose:
@@ -13284,7 +13293,7 @@ class NmrDpUtility(object):
                                 atom_name = atom_id
 
                                 if not details is None:
-                                    atom_name += ', besides that ' + details.rstrip('.')
+                                    atom_name += ' (' + details.rstrip('.') + ')'
 
                             else:
                                 atom_name = atom_id + ' (e.g. '
@@ -20745,7 +20754,7 @@ i                               """
                         atom_name = atom_id
 
                         if not details is None:
-                            atom_name += ', besides that ' + details.rstrip('.')
+                            atom_name += ' (' + details.rstrip('.') + ')'
 
                     else:
                         atom_name = atom_id + ' (e.g. '
@@ -20772,7 +20781,7 @@ i                               """
                     if not index_tag is None:
                         idx_msg = "[Check row of %s %s] " % (index_tag, i[index_tag])
 
-                    err = "%sAtom (%s) is not incorporated in the coordinate." %\
+                    err = "%sAtom (%s) is not present in the coordinate." %\
                           (idx_msg, self.__getReducedAtomNotation(chain_id_names[j], chain_id, seq_id_names[j], seq_id, comp_id_names[j], comp_id, atom_id_names[j], atom_name))
 
                     cyclic = self.__isCyclicPolymer(ref_chain_id)
@@ -20794,7 +20803,7 @@ i                               """
 
                         if file_type == 'nmr-star' and details_col != -1:
                             _details = loop.data[l][details_col]
-                            details = "%s:%s:%s:%s is not incorporated in the coordinate. However, it is acceptable if an appropriate atom name, H1, is given because of a cyclic-peptide.\n" % (chain_id, seq_id, comp_id, atom_name)
+                            details = "%s:%s:%s:%s is not present in the coordinate. However, it is acceptable if an appropriate atom name, H1, is given because of a cyclic-peptide.\n" % (chain_id, seq_id, comp_id, atom_name)
                             if _details in self.empty_value or (not details in _details):
                                 if _details in self.empty_value:
                                     loop.data[l][details_col] = details
@@ -20806,7 +20815,7 @@ i                               """
 
                         if self.__get1LetterCode(comp_id) != 'X':
 
-                            self.report.error.appendDescription('invalid_atom_nomenclature', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
+                            self.report.error.appendDescription('atom_not_found', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
                             self.report.setError()
 
                             if self.__verbose:

@@ -1475,11 +1475,11 @@ class NmrDpReportInputSource:
 
             if seq_id in c['seq_id']:
                 c['exptl_data'][c['seq_id'].index(seq_id)][content_subtype] = True
-
+            """ # should pass because reallocation of chain_id may happen
             else:
                 logging.error('+NmrDpReportInputSource.updateNonStandardResidueByExptlData() ++ Error  - Unknown seq_id %s' % seq_id)
                 raise KeyError('+NmrDpReportInputSource.updateNonStandardResidueByExptlData() ++ Error  - Unknown seq_id %s' % seq_id)
-
+            """
         except StopIteration:
             logging.error('+NmrDpReportInputSource.updateNonStandardResidueByExptlData() ++ Error  - Unknown chain_id %s' % chain_id)
             raise KeyError('+NmrDpReportInputSource.updateNonStandardResidueByExptlData() ++ Error  - Unknown chain_id %s' % chain_id)

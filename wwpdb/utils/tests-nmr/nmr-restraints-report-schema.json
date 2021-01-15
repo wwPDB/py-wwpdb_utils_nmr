@@ -415,9 +415,11 @@
               },
               "coordinate": {
                 "type": "boolean"
+              },
+              "poly_seq": {
+                "type": "boolean"
               }
-            },
-            "additionalProperties": false
+            }
           }
         }
       },
@@ -3180,18 +3182,22 @@
           },
           "row_location": {
             "type": "object",
-            "additionalProperties": {
-              "type": "string",
-              "minLength": 1
+            "patternProperties": {
+              "^.*$": {
+                "type": "string",
+                "minLength": 1
+              }
             }
           },
           "row_locations": {
             "type": "object",
-            "additionalProperties": {
-              "type": "array",
-              "items": {
-                "type": "string",
-                "minLength": 1
+            "patternProperties": {
+              "^.*$": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                }
               }
             }
           }

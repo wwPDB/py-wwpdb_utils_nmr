@@ -7374,6 +7374,9 @@ class NmrDpUtility(object):
                                          'ref_seq_id': _s1['seq_id'], 'test_seq_id': _s2['seq_id'],
                                          'ref_gauge_code': ref_gauge_code, 'ref_code': ref_code, 'mid_code': mid_code, 'test_code': test_code, 'test_gauge_code': test_gauge_code}
 
+                            if seq_align in seq_align_set:
+                                continue
+
                             seq_align_set.append(seq_align)
 
                             if not self.__combined_mode and input_source_dic['non_standard_residue'] is None: # no polymer sequence
@@ -7661,6 +7664,9 @@ class NmrDpUtility(object):
                                          'ref_seq_id': _s1['seq_id'], 'test_seq_id': _s2['seq_id'],
                                          'ref_gauge_code': ref_gauge_code, 'ref_code': ref_code, 'mid_code': mid_code, 'test_code': test_code, 'test_gauge_code': test_gauge_code}
 
+                            if seq_align in seq_align_set:
+                                continue
+
                             seq_align_set.append(seq_align)
 
                             if not self.__combined_mode and input_source_dic['non_standard_residue'] is None: # no polymer sequence
@@ -7942,6 +7948,9 @@ class NmrDpUtility(object):
                                                  'sequence_coverage': float('{:.3f}'.format(float(length - (unmapped + conflict)) / float(ref_length))),
                                                  'ref_seq_id': _s1['seq_id'], 'test_seq_id': _s2['seq_id'],
                                                  'ref_gauge_code': ref_gauge_code, 'ref_code': ref_code, 'mid_code': mid_code, 'test_code': test_code, 'test_gauge_code': test_gauge_code}
+
+                                    if seq_align in seq_align_set:
+                                        continue
 
                                     seq_align_set.append(seq_align)
 
@@ -10853,7 +10862,8 @@ class NmrDpUtility(object):
                             has_cs_stat = True
 
                             if atom_id_.startswith('H') and 'methyl' in cs_stat['desc']:
-                                _, methyl_h_list = self.__nefT.get_group(comp_id, atom_id)
+                                _atom_id = self.__getRepresentativeAtomId(file_type, comp_id, atom_id)
+                                _, methyl_h_list = self.__nefT.get_group(comp_id, _atom_id)
 
                                 name_len = [len(n) for n in methyl_h_list]
                                 max_len = max(name_len)

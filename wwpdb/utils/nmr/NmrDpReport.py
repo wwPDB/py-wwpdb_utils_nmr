@@ -42,6 +42,7 @@
 # 20-Nov-2020  M. Yokochi - rename 'remarkable_data' warning category to 'unusual/rare_data' (DAOTHER-6372)
 # 27-Nov-2020  M. Yokochi - support grouped error/warning message (DAOTHER-6373)
 # 17-Dec-2020  M. Yokochi - add 'atom_not_found' error (DAOTHER-6345)
+# 21-Jan-2021  M. Yokochi - symptomatic treatment for DAOTHER-6509
 ##
 """ Wrapper class for data processing report of NMR data.
     @author: Masashi Yokochi
@@ -257,6 +258,10 @@ class NmrDpReport:
             noe_like = 0
             noe_exp_type = None
             for stat in self.getNmrStatsOfExptlData(content_subtype):
+
+                if not 'number_of_constraints' in stat: # DAOTHER-6509
+                    continue
+
                 for k, v in stat['number_of_constraints'].items():
                     if 'hydrogen_bonds' in k:
                         hydrogen_bonds += v
@@ -342,6 +347,10 @@ class NmrDpReport:
             carbohydrates = 0
             others = 0
             for stat in self.getNmrStatsOfExptlData(content_subtype):
+
+                if not 'constraints_per_polymer_type' in stat: # DAOTHER-6509
+                    continue
+
                 for k, v in stat['constraints_per_polymer_type'].items():
                     if k == 'protein':
                         proteins += v
@@ -385,6 +394,10 @@ class NmrDpReport:
         if content_subtype in content_subtypes:
             rdc_total = 0
             for stat in self.getNmrStatsOfExptlData(content_subtype):
+
+                if not 'number_of_constraints' in stat: # DAOTHER-6509
+                    continue
+
                 for k, v in stat['number_of_constraints'].items():
                     rdc_total += v
 
@@ -440,6 +453,10 @@ class NmrDpReport:
                 noe_exp_type = None
 
                 for stat in stats:
+
+                    if not 'number_of_constraints' in stat: # DAOTHER-6509
+                        continue
+
                     for k, v in stat['number_of_constraints'].items():
                         if 'hydrogen_bonds' in k:
                             hydrogen_bonds += v
@@ -532,6 +549,10 @@ class NmrDpReport:
                 others = 0
 
                 for stat in stats:
+
+                    if not 'constraints_per_polymer_type' in stat: # DAOTHER-6509
+                        continue
+
                     for k, v in stat['constraints_per_polymer_type'].items():
                         if k == 'protein':
                             proteins += v
@@ -582,6 +603,10 @@ class NmrDpReport:
                 rdc_total = 0
 
                 for stat in stats:
+
+                    if not 'number_of_constraints' in stat: # DAOTHER-6509
+                        continue
+
                     for k, v in stat['number_of_constraints'].items():
                         rdc_total += v
 

@@ -42,6 +42,7 @@
 # 20-Nov-2020  M. Yokochi - rename 'remarkable_data' warning category to 'unusual/rare_data' (DAOTHER-6372)
 # 27-Nov-2020  M. Yokochi - support grouped error/warning message (DAOTHER-6373)
 # 17-Dec-2020  M. Yokochi - add 'atom_not_found' error (DAOTHER-6345)
+# 21-Jan-2021  M. Yokochi - symptomatic treatment for DAOTHER-6509
 ##
 """ Wrapper class for data processing report of NMR data.
     @author: Masashi Yokochi
@@ -257,6 +258,10 @@ class NmrDpReport:
             noe_like = 0
             noe_exp_type = None
             for stat in self.getNmrStatsOfExptlData(content_subtype):
+
+                if not 'number_of_constraints' in stat:
+                    continue
+
                 for k, v in stat['number_of_constraints'].items():
                     if 'hydrogen_bonds' in k:
                         hydrogen_bonds += v
@@ -342,15 +347,28 @@ class NmrDpReport:
             carbohydrates = 0
             others = 0
             for stat in self.getNmrStatsOfExptlData(content_subtype):
-                for k, v in stat['constraints_per_polymer_type'].items():
-                    if k == 'protein':
-                        proteins += v
-                    elif k == 'nucleic_acid':
-                        nucleic_acids += v
-                    elif k == 'carbohydrate':
-                        carbohydrates += v
-                    elif k == 'other':
-                        others += v
+
+                if 'constraints_per_polymer_type' in stat: # DAOTHER-6509
+                    for k, v in stat['constraints_per_polymer_type'].items():
+                        if k == 'protein':
+                            proteins += v
+                        elif k == 'nucleic_acid':
+                            nucleic_acids += v
+                        elif k == 'carbohydrate':
+                            carbohydrates += v
+                        elif k == 'other':
+                            others += v
+                elif 'number_of_constraints_per_polymer_type' in stat: # DAOTHER-6509
+                    for k, v in stat['number_of_constraints_per_polymer_type'].items():
+                        if k == 'protein':
+                            proteins += v
+                        elif k == 'nucleic_acid':
+                            nucleic_acids += v
+                        elif k == 'carbohydrate':
+                            carbohydrates += v
+                        elif k == 'other':
+                            others += v
+
             if proteins > 0:
                 restraint = {'constraint_filename': file_name,
                              'software_name': file_type,
@@ -385,6 +403,10 @@ class NmrDpReport:
         if content_subtype in content_subtypes:
             rdc_total = 0
             for stat in self.getNmrStatsOfExptlData(content_subtype):
+
+                if not 'number_of_constraints' in stat:
+                    continue
+
                 for k, v in stat['number_of_constraints'].items():
                     rdc_total += v
 
@@ -440,6 +462,10 @@ class NmrDpReport:
                 noe_exp_type = None
 
                 for stat in stats:
+
+                    if not 'number_of_constraints' in stat:
+                        continue
+
                     for k, v in stat['number_of_constraints'].items():
                         if 'hydrogen_bonds' in k:
                             hydrogen_bonds += v
@@ -532,15 +558,28 @@ class NmrDpReport:
                 others = 0
 
                 for stat in stats:
-                    for k, v in stat['constraints_per_polymer_type'].items():
-                        if k == 'protein':
-                            proteins += v
-                        elif k == 'nucleic_acid':
-                            nucleic_acids += v
-                        elif k == 'carbohydrate':
-                            carbohydrates += v
-                        elif k == 'other':
-                            others += v
+
+                    if 'constraints_per_polymer_type' in stat: # DAOTHER-6509
+                        for k, v in stat['constraints_per_polymer_type'].items():
+                            if k == 'protein':
+                                proteins += v
+                            elif k == 'nucleic_acid':
+                                nucleic_acids += v
+                            elif k == 'carbohydrate':
+                                carbohydrates += v
+                            elif k == 'other':
+                                others += v
+                    elif 'number_of_constraints_per_polymer_type' in stat: # DAOTHER-6509
+                        for k, v in stat['number_of_constraints_per_polymer_type'].items():
+                            if k == 'protein':
+                                proteins += v
+                            elif k == 'nucleic_acid':
+                                nucleic_acids += v
+                            elif k == 'carbohydrate':
+                                carbohydrates += v
+                            elif k == 'other':
+                                others += v
+
                 if proteins > 0:
                     restraint = {'constraint_filename': file_name,
                                  'software_name': file_type,
@@ -582,6 +621,10 @@ class NmrDpReport:
                 rdc_total = 0
 
                 for stat in stats:
+
+                    if not 'number_of_constraints' in stat:
+                        continue
+
                     for k, v in stat['number_of_constraints'].items():
                         rdc_total += v
 
@@ -1475,11 +1518,11 @@ class NmrDpReportInputSource:
 
             if seq_id in c['seq_id']:
                 c['exptl_data'][c['seq_id'].index(seq_id)][content_subtype] = True
-
+            """ # should pass because reallocation of chain_id may happen
             else:
                 logging.error('+NmrDpReportInputSource.updateNonStandardResidueByExptlData() ++ Error  - Unknown seq_id %s' % seq_id)
                 raise KeyError('+NmrDpReportInputSource.updateNonStandardResidueByExptlData() ++ Error  - Unknown seq_id %s' % seq_id)
-
+            """
         except StopIteration:
             logging.error('+NmrDpReportInputSource.updateNonStandardResidueByExptlData() ++ Error  - Unknown chain_id %s' % chain_id)
             raise KeyError('+NmrDpReportInputSource.updateNonStandardResidueByExptlData() ++ Error  - Unknown chain_id %s' % chain_id)

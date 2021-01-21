@@ -259,7 +259,7 @@ class NmrDpReport:
             noe_exp_type = None
             for stat in self.getNmrStatsOfExptlData(content_subtype):
 
-                if not 'number_of_constraints' in stat: # DAOTHER-6509
+                if not 'number_of_constraints' in stat:
                     continue
 
                 for k, v in stat['number_of_constraints'].items():
@@ -348,18 +348,27 @@ class NmrDpReport:
             others = 0
             for stat in self.getNmrStatsOfExptlData(content_subtype):
 
-                if not 'constraints_per_polymer_type' in stat: # DAOTHER-6509
-                    continue
+                if 'constraints_per_polymer_type' in stat: # DAOTHER-6509
+                    for k, v in stat['constraints_per_polymer_type'].items():
+                        if k == 'protein':
+                            proteins += v
+                        elif k == 'nucleic_acid':
+                            nucleic_acids += v
+                        elif k == 'carbohydrate':
+                            carbohydrates += v
+                        elif k == 'other':
+                            others += v
+                elif 'number_of_constraints_per_polymer_type' in stat: # DAOTHER-6509
+                    for k, v in stat['number_of_constraints_per_polymer_type'].items():
+                        if k == 'protein':
+                            proteins += v
+                        elif k == 'nucleic_acid':
+                            nucleic_acids += v
+                        elif k == 'carbohydrate':
+                            carbohydrates += v
+                        elif k == 'other':
+                            others += v
 
-                for k, v in stat['constraints_per_polymer_type'].items():
-                    if k == 'protein':
-                        proteins += v
-                    elif k == 'nucleic_acid':
-                        nucleic_acids += v
-                    elif k == 'carbohydrate':
-                        carbohydrates += v
-                    elif k == 'other':
-                        others += v
             if proteins > 0:
                 restraint = {'constraint_filename': file_name,
                              'software_name': file_type,
@@ -395,7 +404,7 @@ class NmrDpReport:
             rdc_total = 0
             for stat in self.getNmrStatsOfExptlData(content_subtype):
 
-                if not 'number_of_constraints' in stat: # DAOTHER-6509
+                if not 'number_of_constraints' in stat:
                     continue
 
                 for k, v in stat['number_of_constraints'].items():
@@ -454,7 +463,7 @@ class NmrDpReport:
 
                 for stat in stats:
 
-                    if not 'number_of_constraints' in stat: # DAOTHER-6509
+                    if not 'number_of_constraints' in stat:
                         continue
 
                     for k, v in stat['number_of_constraints'].items():
@@ -550,18 +559,27 @@ class NmrDpReport:
 
                 for stat in stats:
 
-                    if not 'constraints_per_polymer_type' in stat: # DAOTHER-6509
-                        continue
+                    if 'constraints_per_polymer_type' in stat: # DAOTHER-6509
+                        for k, v in stat['constraints_per_polymer_type'].items():
+                            if k == 'protein':
+                                proteins += v
+                            elif k == 'nucleic_acid':
+                                nucleic_acids += v
+                            elif k == 'carbohydrate':
+                                carbohydrates += v
+                            elif k == 'other':
+                                others += v
+                    elif 'number_of_constraints_per_polymer_type' in stat: # DAOTHER-6509
+                        for k, v in stat['number_of_constraints_per_polymer_type'].items():
+                            if k == 'protein':
+                                proteins += v
+                            elif k == 'nucleic_acid':
+                                nucleic_acids += v
+                            elif k == 'carbohydrate':
+                                carbohydrates += v
+                            elif k == 'other':
+                                others += v
 
-                    for k, v in stat['constraints_per_polymer_type'].items():
-                        if k == 'protein':
-                            proteins += v
-                        elif k == 'nucleic_acid':
-                            nucleic_acids += v
-                        elif k == 'carbohydrate':
-                            carbohydrates += v
-                        elif k == 'other':
-                            others += v
                 if proteins > 0:
                     restraint = {'constraint_filename': file_name,
                                  'software_name': file_type,
@@ -604,7 +622,7 @@ class NmrDpReport:
 
                 for stat in stats:
 
-                    if not 'number_of_constraints' in stat: # DAOTHER-6509
+                    if not 'number_of_constraints' in stat:
                         continue
 
                     for k, v in stat['number_of_constraints'].items():

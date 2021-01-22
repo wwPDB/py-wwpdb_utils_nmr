@@ -359,7 +359,10 @@
       "properties": {
         "chain_id": {
           "description": "Selected chain ID that contains non-standard residue(s).",
-          "type": "string",
+          "type": [
+            "string",
+            "integer"
+          ],
           "minLength": 1
         },
         "seq_id": {
@@ -771,7 +774,10 @@
       "properties": {
         "chain_id": {
           "description": "Selected chain ID.",
-          "type": "string",
+          "type": [
+            "string",
+            "integer"
+          ],
           "minLength": 1
         },
         "seq_id": {
@@ -1158,12 +1164,18 @@
       "properties": {
         "chain_id_1": {
           "description": "Selected chain ID 1.",
-          "type": "string",
+          "type": [
+            "string",
+            "integer"
+          ],
           "minLength": 1
         },
         "chain_id_2": {
           "description": "Selected chain ID 2.",
-          "type": "string",
+          "type": [
+            "string",
+            "integer"
+          ],
           "minLength": 1
         },
         "seq_id_1": {
@@ -1785,7 +1797,10 @@
         },
         "chain_id": {
           "description": "Selected chain ID.",
-          "type": "string",
+          "type": [
+            "string",
+            "integer"
+          ],
           "minLength": 1
         },
         "seq_id": {
@@ -2225,7 +2240,10 @@
         },
         "chain_id_1": {
           "description": "Selected chain ID 1.",
-          "type": "string",
+          "type": [
+            "string",
+            "integer"
+          ],
           "minLength": 1
         },
         "seq_id_1": {
@@ -2391,7 +2409,10 @@
       "properties": {
         "chain_id": {
           "description": "Selected chain ID.",
-          "type": "string",
+          "type": [
+            "string",
+            "integer"
+          ],
           "minLength": 1
         },
         "seq_id": {
@@ -2530,7 +2551,10 @@
         },
         "chain_id": {
           "description": "Selected chain ID.",
-          "type": "string",
+          "type": [
+            "string",
+            "integer"
+          ],
           "minLength": 1
         },
         "seq_id": {
@@ -2665,7 +2689,10 @@
       "properties": {
         "chain_id": {
           "description": "Selected chain ID.",
-          "type": "string",
+          "type": [
+            "string",
+            "integer"
+          ],
           "minLength": 1
         },
         "seq_id": {
@@ -2726,7 +2753,10 @@
         },
         "chain_id": {
           "description": "Selected chain ID.",
-          "type": "string",
+          "type": [
+            "string",
+            "integer"
+          ],
           "minLength": 1
         },
         "seq_id": {

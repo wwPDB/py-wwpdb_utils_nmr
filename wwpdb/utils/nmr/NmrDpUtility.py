@@ -9861,10 +9861,10 @@ class NmrDpUtility(object):
                                     if val_1 > val_2:
                                         r = abs(val_1 - (val_2 + 360.0))
 
-                                chain_id_1 = str(row_1[chain_id_1_name])
-                                chain_id_2 = str(row_1[chain_id_2_name])
-                                chain_id_3 = str(row_1[chain_id_3_name])
-                                chain_id_4 = str(row_1[chain_id_4_name])
+                                chain_id_1 = row_1[chain_id_1_name]
+                                chain_id_2 = row_1[chain_id_2_name]
+                                chain_id_3 = row_1[chain_id_3_name]
+                                chain_id_4 = row_1[chain_id_4_name]
                                 seq_id_1 = row_1[seq_id_1_name]
                                 seq_id_2 = row_1[seq_id_2_name]
                                 seq_id_3 = row_1[seq_id_3_name]
@@ -13859,12 +13859,7 @@ class NmrDpUtility(object):
 
                                 for j in lp_data:
 
-                                    if file_type == 'nef':
-                                        _chain_id = j[chain_id_name]
-                                    else:
-                                        _chain_id = str(j[chain_id_name])
-
-                                    if _chain_id != chain_id or j[seq_id_name] != seq_id or j[comp_id_name] != comp_id or j[value_name] in self.empty_value:
+                                    if j[chain_id_name] != chain_id or j[seq_id_name] != seq_id or j[comp_id_name] != comp_id or j[value_name] in self.empty_value:
                                         continue
 
                                     atom_id = j[atom_id_name]
@@ -14005,12 +14000,7 @@ class NmrDpUtility(object):
 
                                 for j in lp_data:
 
-                                    if file_type == 'nef':
-                                        _chain_id = j[chain_id_name]
-                                    else:
-                                        _chain_id = str(j[chain_id_name])
-
-                                    if _chain_id != chain_id or j[seq_id_name] != seq_id or j[comp_id_name] != comp_id or j[value_name] in self.empty_value:
+                                    if j[chain_id_name] != chain_id or j[seq_id_name] != seq_id or j[comp_id_name] != comp_id or j[value_name] in self.empty_value:
                                         continue
 
                                     atom_id = j[atom_id_name]
@@ -14138,12 +14128,7 @@ class NmrDpUtility(object):
 
                                 for j in lp_data:
 
-                                    if file_type == 'nef':
-                                        _chain_id = j[chain_id_name]
-                                    else:
-                                        _chain_id = str(j[chain_id_name])
-
-                                    if _chain_id != chain_id or j[seq_id_name] != seq_id or j[comp_id_name] != comp_id or j[value_name] in self.empty_value:
+                                    if j[chain_id_name] != chain_id or j[seq_id_name] != seq_id or j[comp_id_name] != comp_id or j[value_name] in self.empty_value:
                                         continue
 
                                     atom_id = j[atom_id_name]
@@ -14260,12 +14245,7 @@ class NmrDpUtility(object):
 
                                 for j in lp_data:
 
-                                    if file_type == 'nef':
-                                        _chain_id = j[chain_id_name]
-                                    else:
-                                        _chain_id = str(j[chain_id_name])
-
-                                    if _chain_id != chain_id or j[seq_id_name] != seq_id or j[comp_id_name] != comp_id or j[value_name] in self.empty_value:
+                                    if j[chain_id_name] != chain_id or j[seq_id_name] != seq_id or j[comp_id_name] != comp_id or j[value_name] in self.empty_value:
                                         continue
 
                                     atom_id = j[atom_id_name]
@@ -14374,12 +14354,7 @@ class NmrDpUtility(object):
 
                                 for j in lp_data:
 
-                                    if file_type == 'nef':
-                                        _chain_id = j[chain_id_name]
-                                    else:
-                                        _chain_id = str(j[chain_id_name])
-
-                                    if _chain_id != chain_id or j[seq_id_name] != seq_id or j[comp_id_name] != comp_id or j[value_name] in self.empty_value:
+                                    if j[chain_id_name] != chain_id or j[seq_id_name] != seq_id or j[comp_id_name] != comp_id or j[value_name] in self.empty_value:
                                         continue
 
                                     atom_id = j[atom_id_name]
@@ -14457,7 +14432,7 @@ class NmrDpUtility(object):
 
                 data_type = str(i[iso_number]) + i[atom_type].lower() + '_chemical_shifts'
 
-                chain_id = str(i[chain_id_name])
+                chain_id = i[chain_id_name]
                 seq_id = i[seq_id_name]
                 comp_id = i[comp_id_name]
                 atom_id = i[atom_id_name]
@@ -14490,7 +14465,7 @@ class NmrDpUtility(object):
                 # non-standard residue
                 if self.__get1LetterCode(comp_id) == 'X':
 
-                    neighbor_comp_ids = set([j[comp_id_name] for j in lp_data if str(j[chain_id_name]) == chain_id and abs(j[seq_id_name] - seq_id) < 4 and j[seq_id_name] != seq_id])
+                    neighbor_comp_ids = set([j[comp_id_name] for j in lp_data if j[chain_id_name] == chain_id and abs(j[seq_id_name] - seq_id) < 4 and j[seq_id_name] != seq_id])
 
                     polypeptide_like = False
 
@@ -14617,22 +14592,16 @@ class NmrDpUtility(object):
 
                             for j in lp_data:
 
-                                _chain_id = str(j[chain_id_name])
                                 atom_id = j[atom_id_name]
 
-                                if type(_chain_id) is int:
-                                    __chain_id = str(_chain_id)
-                                else:
-                                    __chain_id = _chain_id
-
-                                if __chain_id == chain_id and j[seq_id_name] == seq_id and j[comp_id_name] == comp_id:
+                                if j[chain_id_name] == chain_id and j[seq_id_name] == seq_id and j[comp_id_name] == comp_id:
                                     if atom_id == 'CA':
                                         ca_chem_shift = j[value_name]
                                     elif atom_id == 'CB':
                                         cb_chem_shift = j[value_name]
 
                                 if ca_chem_shift is None or cb_chem_shift is None:
-                                    if __chain_id == chain_id and j[seq_id_name] > seq_id:
+                                    if j[chain_id_name] == chain_id and j[seq_id_name] > seq_id:
                                         break
                                 else:
                                     break
@@ -14700,22 +14669,16 @@ class NmrDpUtility(object):
 
                             for j in lp_data:
 
-                                _chain_id = str(j[chain_id_name])
                                 atom_id = j[atom_id_name]
 
-                                if type(_chain_id) is int:
-                                    __chain_id = str(_chain_id)
-                                else:
-                                    __chain_id = _chain_id
-
-                                if __chain_id == chain_id and j[seq_id_name] == seq_id and j[comp_id_name] == comp_id:
+                                if j[chain_id_name] == chain_id and j[seq_id_name] == seq_id and j[comp_id_name] == comp_id:
                                     if atom_id == 'CB':
                                         cb_chem_shift = j[value_name]
                                     elif atom_id == 'CG':
                                         cg_chem_shift = j[value_name]
 
                                 if cb_chem_shift is None or cg_chem_shift is None:
-                                    if __chain_id == chain_id and j[seq_id_name] > seq_id:
+                                    if j[chain_id_name] == chain_id and j[seq_id_name] > seq_id:
                                         break
                                 else:
                                     break
@@ -14808,15 +14771,9 @@ class NmrDpUtility(object):
 
                             for j in lp_data:
 
-                                _chain_id = str(j[chain_id_name])
                                 atom_id = j[atom_id_name]
 
-                                if type(_chain_id) is int:
-                                    __chain_id = str(_chain_id)
-                                else:
-                                    __chain_id = _chain_id
-
-                                if __chain_id == chain_id and j[seq_id_name] == seq_id and j[comp_id_name] == comp_id:
+                                if j[chain_id_name] == chain_id and j[seq_id_name] == seq_id and j[comp_id_name] == comp_id:
                                     if atom_id == 'CG':
                                         cg_chem_shift = j[value_name]
                                     elif atom_id == 'CD2':
@@ -14827,7 +14784,7 @@ class NmrDpUtility(object):
                                         ne2_chem_shift = j[value_name]
 
                                 if cg_chem_shift is None or cd2_chem_shift is None or nd1_chem_shift is None or ne2_chem_shift is None:
-                                    if __chain_id == chain_id and j[seq_id_name] > seq_id:
+                                    if j[chain_id_name] == chain_id and j[seq_id_name] > seq_id:
                                         break
                                 else:
                                     break
@@ -14999,8 +14956,8 @@ class NmrDpUtility(object):
                 index = i[index_tag] if index_tag in i else None
                 comb_id = i[comb_id_name] if comb_id_name in i else None
 
-                chain_id_1 = str(i[chain_id_1_name])
-                chain_id_2 = str(i[chain_id_2_name])
+                chain_id_1 = i[chain_id_1_name]
+                chain_id_2 = i[chain_id_2_name]
                 seq_id_1 = i[seq_id_1_name]
                 seq_id_2 = i[seq_id_2_name]
                 comp_id_1 = i[comp_id_1_name]
@@ -15332,8 +15289,8 @@ class NmrDpUtility(object):
                     _count[k] = 0
 
                 for l, i in enumerate(lp_data):
-                    chain_id_1 = str(i[chain_id_1_name])
-                    chain_id_2 = str(i[chain_id_2_name])
+                    chain_id_1 = i[chain_id_1_name]
+                    chain_id_2 = i[chain_id_2_name]
                     seq_id_1 = i[seq_id_1_name]
                     seq_id_2 = i[seq_id_2_name]
                     comp_id_1 = i[comp_id_1_name]
@@ -15488,12 +15445,12 @@ class NmrDpUtility(object):
                             if discrepancy >= self.r_inconsistent_dist_restraint * 100.0:
                                 ann = {}
                                 ann['level'] = 'conflicted' if discrepancy >= self.r_conflicted_dist_restraint * 100.0 else 'inconsistent'
-                                ann['chain_id_1'] = str(row_1[chain_id_1_name])
+                                ann['chain_id_1'] = row_1[chain_id_1_name]
                                 ann['seq_id_1'] = row_1[seq_id_1_name]
                                 ann['comp_id_1'] = row_1[comp_id_1_name]
                                 ann['atom_id_1'] = row_1[atom_id_1_name]
                                 if row_1[chain_id_1_name] != row_2[chain_id_2_name]:
-                                    ann['chain_id_2'] = str(row_2[chain_id_2_name])
+                                    ann['chain_id_2'] = row_2[chain_id_2_name]
                                     ann['seq_id_2'] = row_2[seq_id_2_name]
                                     ann['comp_id_2'] = row_2[comp_id_2_name]
                                 elif row_1[seq_id_1_name] != row_2[seq_id_2_name]:
@@ -15640,8 +15597,8 @@ class NmrDpUtility(object):
                                         else:
                                             continue
 
-                                    chain_id_1 = str(row_1[chain_id_1_name])
-                                    chain_id_2 = str(row_1[chain_id_2_name])
+                                    chain_id_1 = row_1[chain_id_1_name]
+                                    chain_id_2 = row_1[chain_id_2_name]
                                     seq_id_1 = row_1[seq_id_1_name]
                                     seq_id_2 = row_1[seq_id_2_name]
                                     comp_id_1 = row_1[comp_id_1_name]
@@ -15688,8 +15645,8 @@ class NmrDpUtility(object):
                                     else:
                                         continue
 
-                                chain_id_1 = str(row_1[chain_id_1_name])
-                                chain_id_2 = str(row_1[chain_id_2_name])
+                                chain_id_1 = row_1[chain_id_1_name]
+                                chain_id_2 = row_1[chain_id_2_name]
                                 seq_id_1 = row_1[seq_id_1_name]
                                 seq_id_2 = row_1[seq_id_2_name]
                                 comp_id_1 = row_1[comp_id_1_name]
@@ -15780,8 +15737,8 @@ class NmrDpUtility(object):
                         count_on_asym_map.append({'chain_id_1': s['chain_id'], 'chain_id_2': t['chain_id'], 'seq_id_1': s['seq_id'], 'seq_id_2': t['seq_id'], 'comp_id_1': s['comp_id'], 'comp_id_2': t['comp_id'], 'struct_conf_1': self.__extractCoordStructConf(s['chain_id'], s['seq_id']), 'struct_conf_2': self.__extractCoordStructConf(t['chain_id'], t['seq_id'])})
 
             for l, i in enumerate(lp_data):
-                chain_id_1 = str(i[chain_id_1_name])
-                chain_id_2 = str(i[chain_id_2_name])
+                chain_id_1 = i[chain_id_1_name]
+                chain_id_2 = i[chain_id_2_name]
                 seq_id_1 = i[seq_id_1_name]
                 seq_id_2 = i[seq_id_2_name]
                 comp_id_1 = i[comp_id_1_name]
@@ -16130,8 +16087,8 @@ class NmrDpUtility(object):
                     if l == row_id:
                         continue
 
-                    _chain_id_1 = str(j[chain_id_1_name])
-                    _chain_id_2 = str(j[chain_id_2_name])
+                    _chain_id_1 = j[chain_id_1_name]
+                    _chain_id_2 = j[chain_id_2_name]
                     _seq_id_1 = j[seq_id_1_name]
                     _seq_id_2 = j[seq_id_2_name]
                     _comp_id_1 = j[comp_id_1_name]
@@ -16477,8 +16434,8 @@ class NmrDpUtility(object):
                     if l == row_id:
                         continue
 
-                    _chain_id_1 = str(j[chain_id_1_name])
-                    _chain_id_2 = str(j[chain_id_2_name])
+                    _chain_id_1 = j[chain_id_1_name]
+                    _chain_id_2 = j[chain_id_2_name]
                     _seq_id_1 = j[seq_id_1_name]
                     _seq_id_2 = j[seq_id_2_name]
                     _comp_id_1 = j[comp_id_1_name]
@@ -16734,10 +16691,10 @@ class NmrDpUtility(object):
                     lower_limit = None
                     upper_limit = None
 
-                chain_id_1 = str(i[chain_id_1_name])
-                chain_id_2 = str(i[chain_id_2_name])
-                chain_id_3 = str(i[chain_id_3_name])
-                chain_id_4 = str(i[chain_id_4_name])
+                chain_id_1 = i[chain_id_1_name]
+                chain_id_2 = i[chain_id_2_name]
+                chain_id_3 = i[chain_id_3_name]
+                chain_id_4 = i[chain_id_4_name]
                 seq_id_1 = i[seq_id_1_name]
                 seq_id_2 = i[seq_id_2_name]
                 seq_id_3 = i[seq_id_3_name]
@@ -17115,10 +17072,10 @@ class NmrDpUtility(object):
                                 if target_value_1 > target_value_2:
                                     discrepancy = abs(target_value_1 - (target_value_2 + 360.0))
 
-                            chain_id_1 = str(row_1[chain_id_1_name])
-                            chain_id_2 = str(row_1[chain_id_2_name])
-                            chain_id_3 = str(row_1[chain_id_3_name])
-                            chain_id_4 = str(row_1[chain_id_4_name])
+                            chain_id_1 = row_1[chain_id_1_name]
+                            chain_id_2 = row_1[chain_id_2_name]
+                            chain_id_3 = row_1[chain_id_3_name]
+                            chain_id_4 = row_1[chain_id_4_name]
                             seq_id_1 = row_1[seq_id_1_name]
                             seq_id_2 = row_1[seq_id_2_name]
                             seq_id_3 = row_1[seq_id_3_name]
@@ -17269,10 +17226,10 @@ class NmrDpUtility(object):
                                     if discrepancy < v or discrepancy >= v + scale:
                                         continue
 
-                                    chain_id_1 = str(row_1[chain_id_1_name])
-                                    chain_id_2 = str(row_1[chain_id_2_name])
-                                    chain_id_3 = str(row_1[chain_id_3_name])
-                                    chain_id_4 = str(row_1[chain_id_4_name])
+                                    chain_id_1 = row_1[chain_id_1_name]
+                                    chain_id_2 = row_1[chain_id_2_name]
+                                    chain_id_3 = row_1[chain_id_3_name]
+                                    chain_id_4 = row_1[chain_id_4_name]
                                     seq_id_1 = row_1[seq_id_1_name]
                                     seq_id_2 = row_1[seq_id_2_name]
                                     seq_id_3 = row_1[seq_id_3_name]
@@ -17294,10 +17251,10 @@ class NmrDpUtility(object):
 
                             if v >= 0.0 and v < scale and redundant:
 
-                                chain_id_1 = str(row_1[chain_id_1_name])
-                                chain_id_2 = str(row_1[chain_id_2_name])
-                                chain_id_3 = str(row_1[chain_id_3_name])
-                                chain_id_4 = str(row_1[chain_id_4_name])
+                                chain_id_1 = row_1[chain_id_1_name]
+                                chain_id_2 = row_1[chain_id_2_name]
+                                chain_id_3 = row_1[chain_id_3_name]
+                                chain_id_4 = row_1[chain_id_4_name]
                                 seq_id_1 = row_1[seq_id_1_name]
                                 seq_id_2 = row_1[seq_id_2_name]
                                 seq_id_3 = row_1[seq_id_3_name]
@@ -17576,7 +17533,7 @@ class NmrDpUtility(object):
                 index = i[index_tag] if index_tag in i else None
                 comb_id = i[comb_id_name] if comb_id_name in i else None
 
-                chain_id_1 = str(i[chain_id_1_name])
+                chain_id_1 = i[chain_id_1_name]
                 seq_id_1 = i[seq_id_1_name]
                 atom_id_1 = i[atom_id_1_name]
                 atom_id_2 = i[atom_id_2_name]
@@ -17889,7 +17846,7 @@ class NmrDpUtility(object):
                             if discrepancy > max_inclusive * self.inconsist_over_conflicted:
                                 ann = {}
                                 ann['level'] = 'conflicted' if discrepancy > max_inclusive else 'inconsistent'
-                                ann['chain_id'] = str(row_1[chain_id_1_name])
+                                ann['chain_id'] = row_1[chain_id_1_name]
                                 ann['seq_id'] = row_1[seq_id_1_name]
                                 ann['comp_id'] = row_1[comp_id_1_name]
                                 ann['atom_id_1'] = row_1[atom_id_1_name]
@@ -18319,7 +18276,7 @@ class NmrDpUtility(object):
                         break
 
                     else:
-                        chain_id = str(i[chain_id_names[j]])
+                        chain_id = i[chain_id_names[j]]
                         seq_id = i[seq_id_names[j]]
                         comp_id = i[comp_id_names[j]]
                         atom_id = i[atom_id_names[j]]
@@ -18566,7 +18523,7 @@ class NmrDpUtility(object):
                             break
 
                         else:
-                            chain_id = str(k[chain_id_name])
+                            chain_id = k[chain_id_name]
                             seq_id = k[seq_id_name]
                             comp_id = k[comp_id_name]
                             atom_id = k[atom_id_name]

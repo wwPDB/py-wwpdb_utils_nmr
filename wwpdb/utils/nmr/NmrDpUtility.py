@@ -107,6 +107,8 @@
 # 26-Nov-2020  M. Yokochi - detect the nearest ferromagnetic atom, in addition to paramagnetic atom (DAOTHER-6366)
 # 27-Nov-2020  M. Yokochi - add support for non-IUPAC atom names for standard amino acids, i.e. ARG:HB1/HB2 -> HB2/HB3 (DAOTHER-6373)
 # 17-Dec-2020  M. Yokochi - support 'atom_not_found' error with message revision (DAOTHER-6345)
+# 25-Jan-2021  M. Yokochi - simplify code for Entity_assemble_ID and chain_code
+# 25-Jan-2021  M. Yokochi - add CS validation code about rotameric state of ILE/LEU/VAL residue
 ##
 """ Wrapper class for data processing for NMR data.
     @author: Masashi Yokochi
@@ -466,6 +468,96 @@ def predict_tautomer_state_of_histidine(cg_chem_shift, cd2_chem_shift, nd1_chem_
         return 0.0, 0.0, 0.0
 
     return bip / sum, tau / sum, pi / sum
+
+def predict_rotamer_state_of_leucine(cd1_chem_shift, cd2_chem_shift):
+    """ Return prediction of romermeric state of Leucine using assigned CD1 and CD2 chemical shifts.
+        @return: probability of gauche+, trans, gauche-
+    """
+
+    if not cd1_chem_shift is None and not cd2_chem_shift is None:
+
+        delta = cd1_chem_shift - cd2_chem_shift
+
+        pt = (delta + 5.0) / 10.0
+
+        if pt >= 0.0 and pt <= 1.0:
+            return 1.0 - pt, pt, 0.0
+
+    gp_cd1 = {'avr': 24.45, 'std': 1.58}
+    gp_cd2 = {'avr': 25.79, 'std': 1.68}
+
+    t_cd1 = {'avr': 25.17, 'std': 1.58}
+    t_cd2 = {'avr': 23.84, 'std': 1.68}
+
+    gp = 1.0
+    t = 1.0
+
+    if not cd1_chem_shift is None:
+        gp *= probability_density(cd1_chem_shift, gp_cd1['avr'], gp_cd1['std'])
+        t *= probability_density(cd1_chem_shift, t_cd1['avr'], t_cd1['std'])
+
+    if not cd2_chem_shift is None:
+        gp *= probability_density(cd2_chem_shift, gp_cd2['avr'], gp_cd2['std'])
+        t *= probability_density(cd2_chem_shift, t_cd2['avr'], t_cd2['std'])
+
+    sum = gp + t
+
+    if sum == 0.0 or sum == 2.0:
+        return 0.0, 0.0, 0.0
+
+    return gp / sum, t / sum, 0.0
+
+def predict_rotamer_state_of_valine(cg1_chem_shift, cg2_chem_shift):
+    """ Return prediction of romermeric state of Valine using assigned CG1 and CG2 chemical shifts.
+        @return: probability of gauche+, trans, gauche-
+    """
+
+    gm_cg1 = {'avr': 22.05, 'std': 1.36}
+    gm_cg2 = {'avr': 20.1, 'std': 1.55}
+
+    gp_cg1 = {'avr': 20.87, 'std': 1.36}
+    gp_cg2 = {'avr': 21.23, 'std': 1.55}
+
+    t_cg1 = {'avr': 21.74, 'std': 1.36}
+    t_cg2 = {'avr': 21.97, 'std': 1.55}
+
+    gm = 1.0
+    gp = 1.0
+    t = 1.0
+
+    if not cg1_chem_shift is None:
+        gm *= probability_density(cg1_chem_shift, gm_cg1['avr'], gm_cg1['std'])
+        gp *= probability_density(cg1_chem_shift, gp_cg1['avr'], gp_cg1['std'])
+        t *= probability_density(cg1_chem_shift, t_cg1['avr'], t_cg1['std'])
+
+    if not cg2_chem_shift is None:
+        gm *= probability_density(cg2_chem_shift, gm_cg2['avr'], gm_cg2['std'])
+        gp *= probability_density(cg2_chem_shift, gp_cg2['avr'], gp_cg2['std'])
+        t *= probability_density(cg2_chem_shift, t_cg2['avr'], t_cg2['std'])
+
+    sum = gm + gp + t
+
+    if sum == 0.0 or sum == 3.0:
+        return 0.0, 0.0, 0.0
+
+    return gp / sum, t / sum, gm / sum
+
+def predict_rotamer_state_of_isoleucine(cd1_chem_shift):
+    """ Return prediction of romermeric state of Isoleucine using assigned CD1 chemical shift.
+        @return: probability of gauche+, trans, gauche-
+    """
+
+    if cd1_chem_shift is None:
+        return 0.0, 0.0, 0.0
+
+    if cd1_chem_shift < 9.3:
+        return 0.0, 0.0, 1.0
+
+    elif cd1_chem_shift > 14.8:
+        return 1.0 * (4.0 / 85.0), 1.0 * (81.0 / 85.0), 0.0
+    else:
+        pgm = (14.8 - cd1_chem_shift) / 5.5
+        return (1.0 - pgm) * (4.0 / 85.0), (1.0 - pgm) * (81.0 / 85.0), pgm
 
 def to_np_array(a):
     """ Return Numpy array of a given Cartesian coordinate in {'x': float, 'y': float, 'z': float} format.
@@ -1094,12 +1186,12 @@ class NmrDpUtility(object):
                                   'spectral_peak': None,
                                   'spectral_peak_alt': None
                                   },
-                          'nmr-star': {'poly_seq': [{'name': 'Entity_assembly_ID', 'type': 'positive-int', 'default': '1', 'default-from': 'self'},
+                          'nmr-star': {'poly_seq': [{'name': 'Entity_assembly_ID', 'type': 'positive-int-as-str', 'default': '1', 'default-from': 'self'},
                                                     {'name': 'Comp_index_ID', 'type': 'int'},
                                                     {'name': 'Comp_ID', 'type': 'str', 'uppercase': True}
                                                     ],
                                        'entity': None,
-                                       'chem_shift': [{'name': 'Entity_assembly_ID', 'type': 'positive-int', 'default': '1', 'default-from': 'self'},
+                                       'chem_shift': [{'name': 'Entity_assembly_ID', 'type': 'positive-int-as-str', 'default': '1', 'default-from': 'self'},
                                                       {'name': 'Comp_index_ID', 'type': 'int'},
                                                       {'name': 'Comp_ID', 'type': 'str', 'uppercase': True},
                                                       {'name': 'Atom_ID', 'type': 'str'}
@@ -1110,39 +1202,39 @@ class NmrDpUtility(object):
                                                            'enforce-enum': True},
                                                           {'name': 'Mol_common_name', 'type': 'str'}],
                                        'dist_restraint': [{'name': 'ID', 'type': 'positive-int'},
-                                                          {'name': 'Entity_assembly_ID_1', 'type': 'positive-int', 'default': '1', 'default-from': 'self'},
+                                                          {'name': 'Entity_assembly_ID_1', 'type': 'positive-int-as-str', 'default': '1', 'default-from': 'self'},
                                                           {'name': 'Comp_index_ID_1', 'type': 'int'},
                                                           {'name': 'Comp_ID_1', 'type': 'str', 'uppercase': True},
                                                           {'name': 'Atom_ID_1', 'type': 'str'},
-                                                          {'name': 'Entity_assembly_ID_2', 'type': 'positive-int', 'default': '1', 'default-from': 'self'},
+                                                          {'name': 'Entity_assembly_ID_2', 'type': 'positive-int-as-str', 'default': '1', 'default-from': 'self'},
                                                           {'name': 'Comp_index_ID_2', 'type': 'int'},
                                                           {'name': 'Comp_ID_2', 'type': 'str', 'uppercase': True},
                                                           {'name': 'Atom_ID_2', 'type': 'str'}
                                                           ],
                                        'dihed_restraint': [{'name': 'ID', 'type': 'positive-int'},
-                                                           {'name': 'Entity_assembly_ID_1', 'type': 'positive-int', 'default': '1', 'default-from': 'self'},
+                                                           {'name': 'Entity_assembly_ID_1', 'type': 'positive-int-as-str', 'default': '1', 'default-from': 'self'},
                                                            {'name': 'Comp_index_ID_1', 'type': 'int'},
                                                            {'name': 'Comp_ID_1', 'type': 'str', 'uppercase': True},
                                                            {'name': 'Atom_ID_1', 'type': 'str'},
-                                                           {'name': 'Entity_assembly_ID_2', 'type': 'positive-int', 'default': '1', 'default-from': 'self'},
+                                                           {'name': 'Entity_assembly_ID_2', 'type': 'positive-int-as-str', 'default': '1', 'default-from': 'self'},
                                                            {'name': 'Comp_index_ID_2', 'type': 'int'},
                                                            {'name': 'Comp_ID_2', 'type': 'str', 'uppercase': True},
                                                            {'name': 'Atom_ID_2', 'type': 'str'},
-                                                           {'name': 'Entity_assembly_ID_3', 'type': 'positive-int', 'default': '1', 'default-from': 'self'},
+                                                           {'name': 'Entity_assembly_ID_3', 'type': 'positive-int-as-str', 'default': '1', 'default-from': 'self'},
                                                            {'name': 'Comp_index_ID_3', 'type': 'int'},
                                                            {'name': 'Comp_ID_3', 'type': 'str', 'uppercase': True},
                                                            {'name': 'Atom_ID_3', 'type': 'str'},
-                                                           {'name': 'Entity_assembly_ID_4', 'type': 'positive-int', 'default': '1', 'default-from': 'self'},
+                                                           {'name': 'Entity_assembly_ID_4', 'type': 'positive-int-as-str', 'default': '1', 'default-from': 'self'},
                                                            {'name': 'Comp_index_ID_4', 'type': 'int'},
                                                            {'name': 'Comp_ID_4', 'type': 'str', 'uppercase': True},
                                                            {'name': 'Atom_ID_4', 'type': 'str'}
                                                            ],
                                        'rdc_restraint': [{'name': 'ID', 'type': 'positive-int'},
-                                                         {'name': 'Entity_assembly_ID_1', 'type': 'positive-int', 'default': '1', 'default-from': 'self'},
+                                                         {'name': 'Entity_assembly_ID_1', 'type': 'positive-int-as-str', 'default': '1', 'default-from': 'self'},
                                                          {'name': 'Comp_index_ID_1', 'type': 'int'},
                                                          {'name': 'Comp_ID_1', 'type': 'str', 'uppercase': True},
                                                          {'name': 'Atom_ID_1', 'type': 'str'},
-                                                         {'name': 'Entity_assembly_ID_2', 'type': 'positive-int', 'default': '1', 'default-from': 'self'},
+                                                         {'name': 'Entity_assembly_ID_2', 'type': 'positive-int-as-str', 'default': '1', 'default-from': 'self'},
                                                          {'name': 'Comp_index_ID_2', 'type': 'int'},
                                                          {'name': 'Comp_ID_2', 'type': 'str', 'uppercase': True},
                                                          {'name': 'Atom_ID_2', 'type': 'str'}
@@ -1234,38 +1326,38 @@ class NmrDpUtility(object):
                                           'spectral_peak': None,
                                           'spectral_peak_alt': None
                                           },
-                                  'nmr-star': {'dist_restraint': [{'name': 'Entity_assembly_ID_1', 'type': 'positive-int', 'default': '1', 'default-from': 'self'},
+                                  'nmr-star': {'dist_restraint': [{'name': 'Entity_assembly_ID_1', 'type': 'positive-int-as-str', 'default': '1', 'default-from': 'self'},
                                                                   {'name': 'Comp_index_ID_1', 'type': 'int'},
                                                                   {'name': 'Comp_ID_1', 'type': 'str', 'uppercase': True},
                                                                   {'name': 'Atom_ID_1', 'type': 'str'},
-                                                                  {'name': 'Entity_assembly_ID_2', 'type': 'positive-int', 'default': '1', 'default-from': 'self'},
+                                                                  {'name': 'Entity_assembly_ID_2', 'type': 'positive-int-as-str', 'default': '1', 'default-from': 'self'},
                                                                   {'name': 'Comp_index_ID_2', 'type': 'int'},
                                                                   {'name': 'Comp_ID_2', 'type': 'str', 'uppercase': True},
                                                                   {'name': 'Atom_ID_2', 'type': 'str'}
                                                                   ],
-                                               'dihed_restraint': [{'name': 'Entity_assembly_ID_1', 'type': 'positive-int', 'default': '1', 'default-from': 'self'},
+                                               'dihed_restraint': [{'name': 'Entity_assembly_ID_1', 'type': 'positive-int-as-str', 'default': '1', 'default-from': 'self'},
                                                                    {'name': 'Comp_index_ID_1', 'type': 'int'},
                                                                    {'name': 'Comp_ID_1', 'type': 'str', 'uppercase': True},
                                                                    {'name': 'Atom_ID_1', 'type': 'str'},
-                                                                   {'name': 'Entity_assembly_ID_2', 'type': 'positive-int', 'default': '1', 'default-from': 'self'},
+                                                                   {'name': 'Entity_assembly_ID_2', 'type': 'positive-int-as-str', 'default': '1', 'default-from': 'self'},
                                                                    {'name': 'Comp_index_ID_2', 'type': 'int'},
                                                                    {'name': 'Comp_ID_2', 'type': 'str', 'uppercase': True},
                                                                    {'name': 'Atom_ID_2', 'type': 'str'},
-                                                                   {'name': 'Entity_assembly_ID_3', 'type': 'positive-int', 'default': '1', 'default-from': 'self'},
+                                                                   {'name': 'Entity_assembly_ID_3', 'type': 'positive-int-as-str', 'default': '1', 'default-from': 'self'},
                                                                    {'name': 'Comp_index_ID_3', 'type': 'int'},
                                                                    {'name': 'Comp_ID_3', 'type': 'str', 'uppercase': True},
                                                                    {'name': 'Atom_ID_3', 'type': 'str'},
-                                                                   {'name': 'Entity_assembly_ID_4', 'type': 'positive-int', 'default': '1', 'default-from': 'self'},
+                                                                   {'name': 'Entity_assembly_ID_4', 'type': 'positive-int-as-str', 'default': '1', 'default-from': 'self'},
                                                                    {'name': 'Comp_index_ID_4', 'type': 'int'},
                                                                    {'name': 'Comp_ID_4', 'type': 'str', 'uppercase': True},
                                                                    {'name': 'Atom_ID_4', 'type': 'str'}
                                                                    ],
                                                'rdc_restraint': [
-                                                                 {'name': 'Entity_assembly_ID_1', 'type': 'positive-int', 'default': '1', 'default-from': 'self'},
+                                                                 {'name': 'Entity_assembly_ID_1', 'type': 'positive-int-as-str', 'default': '1', 'default-from': 'self'},
                                                                  {'name': 'Comp_index_ID_1', 'type': 'int'},
                                                                  {'name': 'Comp_ID_1', 'type': 'str', 'uppercase': True},
                                                                  {'name': 'Atom_ID_1', 'type': 'str'},
-                                                                 {'name': 'Entity_assembly_ID_2', 'type': 'positive-int', 'default': '1', 'default-from': 'self'},
+                                                                 {'name': 'Entity_assembly_ID_2', 'type': 'positive-int-as-str', 'default': '1', 'default-from': 'self'},
                                                                  {'name': 'Comp_index_ID_2', 'type': 'int'},
                                                                  {'name': 'Comp_ID_2', 'type': 'str', 'uppercase': True},
                                                                  {'name': 'Atom_ID_2', 'type': 'str'}
@@ -1984,7 +2076,7 @@ class NmrDpUtility(object):
                                        'relax-key-if-exist': True}],
                               'nmr-star': [{'name': 'Position_uncertainty_%s', 'type': 'range-float', 'mandatory': False,
                                             'range': self.chem_shift_error},
-                                           {'name': 'Entity_assembly_ID_%s', 'type': 'positive-int', 'mandatory': False,
+                                           {'name': 'Entity_assembly_ID_%s', 'type': 'positive-int-as-str', 'mandatory': False,
                                             'default': '1', 'default-from': 'self',
                                             'enforce-non-zero': True,
                                             'relax-key-if-exist': True},
@@ -2731,17 +2823,17 @@ class NmrDpUtility(object):
                                                           'enum': ('amide', 'covalent', 'directed', 'disulfide', 'ester', 'ether', 'hydrogen', 'metal coordination' 'peptide', 'thioether', 'oxime', 'thioester', 'phosphoester', 'phosphodiester', 'diselenide', 'na')},
                                                          {'name': 'Value_order', 'type': 'enum', 'mandatory': True, 'default': 'sing',
                                                           'enum': ('sing', 'doub', 'trip', 'quad', 'arom', 'poly', 'delo', 'pi', 'directed')},
-                                                         {'name': 'Entity_assembly_ID_1', 'type': 'positive-int', 'default': '1', 'default-from': 'self'},
+                                                         {'name': 'Entity_assembly_ID_1', 'type': 'positive-int-as-str', 'default': '1', 'default-from': 'self'},
                                                          {'name': 'Comp_index_ID_1', 'type': 'int'},
                                                          {'name': 'Comp_ID_1', 'type': 'str', 'uppercase': True},
                                                          {'name': 'Atom_ID_1', 'type': 'str'},
-                                                         {'name': 'Entity_assembly_ID_2', 'type': 'positive-int', 'default': '1', 'default-from': 'self'},
+                                                         {'name': 'Entity_assembly_ID_2', 'type': 'positive-int-as-str', 'default': '1', 'default-from': 'self'},
                                                          {'name': 'Comp_index_ID_2', 'type': 'int'},
                                                          {'name': 'Comp_ID_2', 'type': 'str', 'uppercase': True},
                                                          {'name': 'Atom_ID_2', 'type': 'str'}
                                                          ],
                                                '_Entity_deleted_atom': [{'name': 'ID', 'type': 'index-int', 'mandatory': True, 'default-from': 'self'},
-                                                                        {'name': 'Entity_assembly_ID', 'type': 'positive-int', 'default': '1', 'default-from': 'self'},
+                                                                        {'name': 'Entity_assembly_ID', 'type': 'positive-int-as-str', 'default': '1', 'default-from': 'self'},
                                                                         {'name': 'Comp_index_ID', 'type': 'int'},
                                                                         {'name': 'Comp_ID', 'type': 'str', 'uppercase': True},
                                                                         {'name': 'Atom_ID', 'type': 'str'}
@@ -2915,7 +3007,7 @@ class NmrDpUtility(object):
                                                                                  {'name': 'Figure_of_merit', 'type': 'range-float', 'mandatory': False,
                                                                                   'range': self.weight_range},
                                                                                  {'name': 'Assigned_chem_shift_list_ID', 'type': 'pointer-index', 'mandatory': False},
-                                                                                 {'name': 'Entity_assembly_ID', 'type': 'positive-int', 'mandatory': False},
+                                                                                 {'name': 'Entity_assembly_ID', 'type': 'positive-int-as-str', 'mandatory': False},
                                                                                  {'name': 'Comp_index_ID', 'type': 'int', 'mandatory': False},
                                                                                  {'name': 'Comp_ID', 'type': 'str', 'mandatory': False, 'uppercase': True},
                                                                                  {'name': 'Atom_ID', 'type': 'str', 'mandatory': False},
@@ -6203,7 +6295,7 @@ class NmrDpUtility(object):
                 if has_poly_seq and subtype1 == poly_seq:
                     ps1 = polymer_sequence
 
-                    ref_chain_ids = {str(s1['chain_id']) for s1 in ps1}
+                    ref_chain_ids = {s1['chain_id'] for s1 in ps1}
 
                     for ps_in_loop in polymer_sequence_in_loop[subtype2]:
                         ps2 = ps_in_loop['polymer_sequence']
@@ -6352,7 +6444,7 @@ class NmrDpUtility(object):
                 if has_poly_seq and subtype1 == poly_seq:
                     ps1 = polymer_sequence
 
-                    ref_chain_ids = {str(s1['chain_id']) for s1 in ps1}
+                    ref_chain_ids = {s1['chain_id'] for s1 in ps1}
 
                     for ps_in_loop in polymer_sequence_in_loop[subtype2]:
                         ps2 = ps_in_loop['polymer_sequence']
@@ -6630,9 +6722,7 @@ class NmrDpUtility(object):
 
             for row in loop.data:
 
-                _chain_id = str(row[chain_id_col])
-
-                if _chain_id != chain_id:
+                if row[chain_id_col] != chain_id:
                     continue
 
                 _seq_id = row[seq_id_col]
@@ -6662,9 +6752,7 @@ class NmrDpUtility(object):
 
                 for row in loop.data:
 
-                    _chain_id = str(row[chain_id_col])
-
-                    if _chain_id != chain_id:
+                    if row[chain_id_col] != chain_id:
                         continue
 
                     _seq_id = row[seq_id_col]
@@ -6818,7 +6906,7 @@ class NmrDpUtility(object):
                     return False
 
                 try:
-                    chain_id = int(c[0])
+                    chain_id = str(c[0])
                     entity_sf = c[1] if len(c) < 4 else (c[3][1:] if c[3][0] == '$' else c[3]) # Entity_assemble_name or Entity_label
                     entity_id = int(c[2])
 
@@ -7140,23 +7228,18 @@ class NmrDpUtility(object):
                 for s1 in polymer_sequence:
                     chain_id = s1['chain_id']
 
-                    if type(chain_id) == int:
-                        _chain_id = str(chain_id)
-                    else:
-                        _chain_id = chain_id
-
                     for ps_in_loop in polymer_sequence_in_loop[content_subtype]:
                         ps2 = ps_in_loop['polymer_sequence']
                         sf_framecode2 = ps_in_loop['sf_framecode']
 
                         for s2 in ps2:
 
-                            if sf_framecode2 in ref_chain_ids and  _chain_id in ref_chain_ids[sf_framecode2]:
+                            if sf_framecode2 in ref_chain_ids and chain_id in ref_chain_ids[sf_framecode2]:
                                 continue
 
-                            _chain_id2 = s2['chain_id']
+                            chain_id2 = s2['chain_id']
 
-                            if _chain_id != _chain_id2:
+                            if chain_id != chain_id2:
                                 continue
 
                             _s2 = fill_blank_comp_id_with_offset(s2, 0)
@@ -7164,11 +7247,11 @@ class NmrDpUtility(object):
                             if len(_s2['seq_id']) > len(s2['seq_id']) and len(_s2['seq_id']) < len(s1['seq_id']):
                                 s2 = _s2
 
-                            self.__pA.setReferenceSequence(s1['comp_id'], 'REF' + _chain_id)
-                            self.__pA.addTestSequence(s2['comp_id'], _chain_id)
+                            self.__pA.setReferenceSequence(s1['comp_id'], 'REF' + chain_id)
+                            self.__pA.addTestSequence(s2['comp_id'], chain_id)
                             self.__pA.doAlign()
 
-                            myAlign = self.__pA.getAlignment(_chain_id)
+                            myAlign = self.__pA.getAlignment(chain_id)
 
                             length = len(myAlign)
 
@@ -7199,19 +7282,14 @@ class NmrDpUtility(object):
 
                                         chain_id_ = _s1['chain_id']
 
-                                        if type(chain_id_) == int:
-                                            _chain_id_ = str(chain_id_)
-                                        else:
-                                            _chain_id_ = chain_id_
-
-                                        if sf_framecode2 in ref_chain_ids and _chain_id in ref_chain_ids[sf_framecode2]:
+                                        if sf_framecode2 in ref_chain_ids and chain_id in ref_chain_ids[sf_framecode2]:
                                             continue
 
-                                        self.__pA.setReferenceSequence(_s1['comp_id'], 'REF' + _chain_id_)
-                                        self.__pA.addTestSequence(s2['comp_id'], _chain_id_)
+                                        self.__pA.setReferenceSequence(_s1['comp_id'], 'REF' + chain_id_)
+                                        self.__pA.addTestSequence(s2['comp_id'], chain_id_)
                                         self.__pA.doAlign()
 
-                                        myAlign = self.__pA.getAlignment(_chain_id_)
+                                        myAlign = self.__pA.getAlignment(chain_id_)
 
                                         length = len(myAlign)
 
@@ -7230,7 +7308,7 @@ class NmrDpUtility(object):
                                         __matched = _matched
                                         __unmapped = unmapped
                                         __conflict = conflict
-                                        __chain_id = _chain_id_
+                                        __chain_id = chain_id_
                                         __offset_1 = offset_1
                                         __offset_2 = offset_2
                                         __s1 = copy.copy(_s1)
@@ -7241,7 +7319,7 @@ class NmrDpUtility(object):
 
                                 if not alt_chain or\
                                    (sf_framecode2 in dst_chain_ids and __chain_id in dst_chain_ids[sf_framecode2]) or\
-                                   (sf_framecode2 in map_chain_ids and _chain_id in map_chain_ids[sf_framecode2]):
+                                   (sf_framecode2 in map_chain_ids and chain_id in map_chain_ids[sf_framecode2]):
                                     continue
 
                                 else:
@@ -7254,17 +7332,17 @@ class NmrDpUtility(object):
                                     if not sf_framecode2 in map_chain_ids:
                                         map_chain_ids[sf_framecode2] = {}
 
-                                    map_chain_ids[sf_framecode2][_chain_id] = __chain_id
+                                    map_chain_ids[sf_framecode2][chain_id] = __chain_id
 
                                     #if sf_framecode2 == target_framecode:
-                                    #    print('#1 %s -> %s, %s %s %s %s %s %s' % (_chain_id, __chain_id, __length, __matched, __unmapped, __conflict, __offset_1, __offset_2))
+                                    #    print('#1 %s -> %s, %s %s %s %s %s %s' % (chain_id, __chain_id, __length, __matched, __unmapped, __conflict, __offset_1, __offset_2))
 
                                     length = __length
                                     _matched = __matched
                                     unmapped = __unmapped
                                     conflict = __conflict
                                     chain_id = __s1['chain_id']
-                                    _chain_id = __chain_id
+                                    chain_id = __chain_id
                                     offset_1 = __offset_1
                                     offset_2 = __offset_2
                                     s1 = __s1
@@ -7273,8 +7351,8 @@ class NmrDpUtility(object):
 
                                     update_poly_seq = True
 
-                            if conflict == 0 and self.__alt_chain and not alt_chain and _chain_id != s2['chain_id'] and\
-                               (not sf_framecode2 in dst_chain_ids or not _chain_id in dst_chain_ids[sf_framecode2]) and\
+                            if conflict == 0 and self.__alt_chain and not alt_chain and chain_id != s2['chain_id'] and\
+                               (not sf_framecode2 in dst_chain_ids or not chain_id in dst_chain_ids[sf_framecode2]) and\
                                (not sf_framecode2 in map_chain_ids or not s2['chain_id'] in map_chain_ids[sf_framecode2]) and\
                                unmapped != offset_1 + 1 and unmapped != offset_2 + 1 and\
                                unmapped <= _matched + offset_1 and unmapped <= _matched + offset_2:
@@ -7282,22 +7360,22 @@ class NmrDpUtility(object):
                                 if not sf_framecode2 in dst_chain_ids:
                                     dst_chain_ids[sf_framecode2] = set()
 
-                                dst_chain_ids[sf_framecode2].add(_chain_id)
+                                dst_chain_ids[sf_framecode2].add(chain_id)
 
                                 if not sf_framecode2 in map_chain_ids:
                                     map_chain_ids[sf_framecode2] = {}
 
-                                map_chain_ids[sf_framecode2][s2['chain_id']] = _chain_id
+                                map_chain_ids[sf_framecode2][s2['chain_id']] = chain_id
 
                                 #if sf_framecode2 == target_framecode:
-                                #    print('#2 %s -> %s, %s %s %s %s %s %s' % (s2['chain_id'], _chain_id, length, _matched, unmapped, conflict, offset_1, offset_2))
+                                #    print('#2 %s -> %s, %s %s %s %s %s %s' % (s2['chain_id'], chain_id, length, _matched, unmapped, conflict, offset_1, offset_2))
 
                                 alt_chain = True
 
                             if not sf_framecode2 in ref_chain_ids:
                                 ref_chain_ids[sf_framecode2] = []
 
-                            ref_chain_ids[sf_framecode2].append(_chain_id)
+                            ref_chain_ids[sf_framecode2].append(chain_id)
 
                             _s1 = s1 if offset_1 == 0 else fill_blank_comp_id_with_offset(s1, offset_1)
                             _s2 = s2 if offset_2 == 0 else fill_blank_comp_id_with_offset(s2, offset_2)
@@ -7321,12 +7399,12 @@ class NmrDpUtility(object):
                             if self.__tolerant_seq_align and not alt_chain and (seq_mismatch or comp_mismatch):
                                 if not sf_framecode2 in map_seq_ids:
                                     map_seq_ids[sf_framecode2] = set()
-                                map_seq_ids[sf_framecode2].add(_chain_id)
+                                map_seq_ids[sf_framecode2].add(chain_id)
                                 if _s2['seq_id'] == list(range(_s2['seq_id'][0], _s2['seq_id'][-1] + 1)):
                                     seq_id_conv_dict = {str(__s2): str(__s1) for __s1, __s2 in zip(_s1['seq_id'], _s2['seq_id']) if __s2 != '.'}
                                     if comp_mismatch:
                                         _seq_align = self.__getSeqAlignCode(fileListId, file_name, file_type, content_subtype, sf_framecode2,
-                                                                            _chain_id, _s1, _s2, myAlign, None if not sf_framecode2 in map_chain_ids else map_chain_ids[sf_framecode2],
+                                                                            chain_id, _s1, _s2, myAlign, None if not sf_framecode2 in map_chain_ids else map_chain_ids[sf_framecode2],
                                                                             ref_gauge_code, ref_code, mid_code, test_code, test_gauge_code)
                                         _s2['seq_id'] = _seq_align['test_seq_id']
                                         ref_gauge_code = _seq_align['ref_gauge_code']
@@ -7335,21 +7413,21 @@ class NmrDpUtility(object):
                                         test_code = _seq_align['test_code']
                                         test_gauge_code = _seq_align['test_gauge_code']
                                     else:
-                                        _chain_id2 = _chain_id
-                                        if sf_framecode2 in map_chain_ids and _chain_id in map_chain_ids[sf_framecode2].values():
-                                            _chain_id2 = next(k for k, v in map_chain_ids[sf_framecode2].items() if v == _chain_id)
+                                        chain_id2 = chain_id
+                                        if sf_framecode2 in map_chain_ids and chain_id in map_chain_ids[sf_framecode2].values():
+                                            chain_id2 = next(k for k, v in map_chain_ids[sf_framecode2].items() if v == chain_id)
 
                                         #if sf_framecode2 == target_framecode:
-                                        #    print('#a %s %s %s %s %s' % (_chain_id2, _matched, offset_1, offset_2, seq_id_conv_dict))
+                                        #    print('#a %s %s %s %s %s' % (chain_id2, _matched, offset_1, offset_2, seq_id_conv_dict))
 
-                                        self.__fixSeqIdInLoop(fileListId, file_name, file_type, content_subtype, sf_framecode2, _chain_id2, seq_id_conv_dict)
+                                        self.__fixSeqIdInLoop(fileListId, file_name, file_type, content_subtype, sf_framecode2, chain_id2, seq_id_conv_dict)
                                         _s2['seq_id'] = _s1['seq_id']
                                         mid_code = get_middle_code(ref_code, test_code)
                                         test_gauge_code = ref_gauge_code
                                 else:
                                     if seq_mismatch:
                                         _seq_align = self.__getSeqAlignCode(fileListId, file_name, file_type, content_subtype, sf_framecode2,
-                                                                            _chain_id, _s1, _s2, myAlign, None if not sf_framecode2 in map_chain_ids else map_chain_ids[sf_framecode2],
+                                                                            chain_id, _s1, _s2, myAlign, None if not sf_framecode2 in map_chain_ids else map_chain_ids[sf_framecode2],
                                                                             ref_gauge_code, ref_code, mid_code, test_code, test_gauge_code)
                                         _s2['seq_id'] = _seq_align['test_seq_id']
                                         ref_gauge_code = _seq_align['ref_gauge_code']
@@ -7428,26 +7506,21 @@ class NmrDpUtility(object):
 
                     chain_id = s1['chain_id']
 
-                    if type(chain_id) == int:
-                        _chain_id = str(chain_id)
-                    else:
-                        _chain_id = chain_id
-
                     for ps_in_loop in polymer_sequence_in_loop[content_subtype]:
                         ps2 = ps_in_loop['polymer_sequence']
                         sf_framecode2 = ps_in_loop['sf_framecode']
 
                         for s2 in ps2:
 
-                            if sf_framecode2 in ref_chain_ids and _chain_id in ref_chain_ids[sf_framecode2]:
+                            if sf_framecode2 in ref_chain_ids and chain_id in ref_chain_ids[sf_framecode2]:
                                 continue
 
-                            _chain_id2 = s2['chain_id']
+                            chain_id2 = s2['chain_id']
 
-                            if sf_framecode2 in dst_chain_ids and _chain_id2 in dst_chain_ids[sf_framecode2]:
+                            if sf_framecode2 in dst_chain_ids and chain_id2 in dst_chain_ids[sf_framecode2]:
                                 continue
 
-                            if _chain_id != _chain_id2 and not self.__tolerant_seq_align:
+                            if chain_id != chain_id2 and not self.__tolerant_seq_align:
                                 continue
 
                             _s2 = fill_blank_comp_id_with_offset(s2, 0)
@@ -7455,11 +7528,11 @@ class NmrDpUtility(object):
                             if len(_s2['seq_id']) > len(s2['seq_id']) and len(_s2['seq_id']) < len(s1['seq_id']):
                                 s2 = _s2
 
-                            self.__pA.setReferenceSequence(s1['comp_id'], 'REF' + _chain_id)
-                            self.__pA.addTestSequence(s2['comp_id'], _chain_id)
+                            self.__pA.setReferenceSequence(s1['comp_id'], 'REF' + chain_id)
+                            self.__pA.addTestSequence(s2['comp_id'], chain_id)
                             self.__pA.doAlign()
 
-                            myAlign = self.__pA.getAlignment(_chain_id)
+                            myAlign = self.__pA.getAlignment(chain_id)
 
                             length = len(myAlign)
 
@@ -7490,19 +7563,14 @@ class NmrDpUtility(object):
 
                                         chain_id_ = _s1['chain_id']
 
-                                        if type(chain_id_) == int:
-                                            _chain_id_ = str(chain_id_)
-                                        else:
-                                            _chain_id_ = chain_id_
-
-                                        if sf_framecode2 in ref_chain_ids and _chain_id in ref_chain_ids[sf_framecode2]:
+                                        if sf_framecode2 in ref_chain_ids and chain_id in ref_chain_ids[sf_framecode2]:
                                             continue
 
-                                        self.__pA.setReferenceSequence(_s1['comp_id'], 'REF' + _chain_id_)
-                                        self.__pA.addTestSequence(s2['comp_id'], _chain_id_)
+                                        self.__pA.setReferenceSequence(_s1['comp_id'], 'REF' + chain_id_)
+                                        self.__pA.addTestSequence(s2['comp_id'], chain_id_)
                                         self.__pA.doAlign()
 
-                                        myAlign = self.__pA.getAlignment(_chain_id_)
+                                        myAlign = self.__pA.getAlignment(chain_id_)
 
                                         length = len(myAlign)
 
@@ -7521,7 +7589,7 @@ class NmrDpUtility(object):
                                         __matched = _matched
                                         __unmapped = unmapped
                                         __conflict = conflict
-                                        __chain_id = _chain_id_
+                                        __chain_id = chain_id_
                                         __offset_1 = offset_1
                                         __offset_2 = offset_2
                                         __s1 = copy.copy(_s1)
@@ -7532,7 +7600,7 @@ class NmrDpUtility(object):
 
                                 if not alt_chain or\
                                    (sf_framecode2 in dst_chain_ids and __chain_id in dst_chain_ids[sf_framecode2]) or\
-                                   (sf_framecode2 in map_chain_ids and _chain_id in map_chain_ids[sf_framecode2]):
+                                   (sf_framecode2 in map_chain_ids and chain_id in map_chain_ids[sf_framecode2]):
                                     continue
 
                                 else:
@@ -7545,17 +7613,17 @@ class NmrDpUtility(object):
                                     if not sf_framecode2 in map_chain_ids:
                                         map_chain_ids[sf_framecode2] = {}
 
-                                    map_chain_ids[sf_framecode2][_chain_id] = __chain_id
+                                    map_chain_ids[sf_framecode2][chain_id] = __chain_id
 
                                     #if sf_framecode2 == target_framecode:
-                                    #    print('#3 %s -> %s, %s %s %s %s %s %s' % (_chain_id, __chain_id, __length, __matched, __unmapped, __conflict, __offset_1, __offset_2))
+                                    #    print('#3 %s -> %s, %s %s %s %s %s %s' % (chain_id, __chain_id, __length, __matched, __unmapped, __conflict, __offset_1, __offset_2))
 
                                     length = __length
                                     _matched = __matched
                                     unmapped = __unmapped
                                     conflict = __conflict
                                     chain_id = __s1['chain_id']
-                                    _chain_id = __chain_id
+                                    chain_id = __chain_id
                                     offset_1 = __offset_1
                                     offset_2 = __offset_2
                                     s1 = __s1
@@ -7564,30 +7632,30 @@ class NmrDpUtility(object):
 
                                     update_poly_seq = True
                             """
-                            if conflict == 0 and self.__alt_chain and not alt_chain and _chain_id != s2['chain_id'] and\
-                               (not sf_framecode2 in dst_chain_ids or not _chain_id in dst_chain_ids[sf_framecode2]) and\
+                            if conflict == 0 and self.__alt_chain and not alt_chain and chain_id != s2['chain_id'] and\
+                               (not sf_framecode2 in dst_chain_ids or not chain_id in dst_chain_ids[sf_framecode2]) and\
                                (not sf_framecode2 in map_chain_ids or not s2['chain_id'] in map_chain_ids[sf_framecode2]) and\
                                unmapped != offset_1 + 1 and unmapped != offset_2 + 1:
 
                                 if not sf_framecode2 in dst_chain_ids:
                                     dst_chain_ids[sf_framecode2] = set()
 
-                                dst_chain_ids[sf_framecode2].add(_chain_id)
+                                dst_chain_ids[sf_framecode2].add(chain_id)
 
                                 if not sf_framecode2 in map_chain_ids:
                                     map_chain_ids[sf_framecode2] = {}
 
-                                map_chain_ids[sf_framecode2][s2['chain_id']] = _chain_id
+                                map_chain_ids[sf_framecode2][s2['chain_id']] = chain_id
 
                                 if sf_framecode2 == target_framecode:
-                                    print('#4 %s -> %s, %s %s %s %s %s %s' % (s2['chain_id'], _chain_id, length, _matched, unmapped, conflict, offset_1, offset_2))
+                                    print('#4 %s -> %s, %s %s %s %s %s %s' % (s2['chain_id'], chain_id, length, _matched, unmapped, conflict, offset_1, offset_2))
 
                                 alt_chain = True
                             """
                             if not sf_framecode2 in ref_chain_ids:
                                 ref_chain_ids[sf_framecode2] = []
 
-                            ref_chain_ids[sf_framecode2].append(_chain_id)
+                            ref_chain_ids[sf_framecode2].append(chain_id)
 
                             _s1 = s1 if offset_1 == 0 else fill_blank_comp_id_with_offset(s1, offset_1)
                             _s2 = s2 if offset_2 == 0 else fill_blank_comp_id_with_offset(s2, offset_2)
@@ -7611,12 +7679,12 @@ class NmrDpUtility(object):
                             if self.__tolerant_seq_align and not alt_chain and (seq_mismatch or comp_mismatch):
                                 if not sf_framecode2 in map_seq_ids:
                                     map_seq_ids[sf_framecode2] = set()
-                                map_seq_ids[sf_framecode2].add(_chain_id)
+                                map_seq_ids[sf_framecode2].add(chain_id)
                                 if _s2['seq_id'] == list(range(_s2['seq_id'][0], _s2['seq_id'][-1] + 1)):
                                     seq_id_conv_dict = {str(__s2): str(__s1) for __s1, __s2 in zip(_s1['seq_id'], _s2['seq_id']) if __s2 != '.'}
                                     if comp_mismatch:
                                         _seq_align = self.__getSeqAlignCode(fileListId, file_name, file_type, content_subtype, sf_framecode2,
-                                                                            _chain_id, _s1, _s2, myAlign, None if not sf_framecode2 in map_chain_ids else map_chain_ids[sf_framecode2],
+                                                                            chain_id, _s1, _s2, myAlign, None if not sf_framecode2 in map_chain_ids else map_chain_ids[sf_framecode2],
                                                                             ref_gauge_code, ref_code, mid_code, test_code, test_gauge_code)
                                         _s2['seq_id'] = _seq_align['test_seq_id']
                                         ref_gauge_code = _seq_align['ref_gauge_code']
@@ -7625,21 +7693,21 @@ class NmrDpUtility(object):
                                         test_code = _seq_align['test_code']
                                         test_gauge_code = _seq_align['test_gauge_code']
                                     else:
-                                        _chain_id2 = _chain_id
-                                        if sf_framecode2 in map_chain_ids and _chain_id in map_chain_ids[sf_framecode2].values():
-                                            _chain_id2 = next(k for k, v in map_chain_ids[sf_framecode2].items() if v == _chain_id)
+                                        chain_id2 = chain_id
+                                        if sf_framecode2 in map_chain_ids and chain_id in map_chain_ids[sf_framecode2].values():
+                                            chain_id2 = next(k for k, v in map_chain_ids[sf_framecode2].items() if v == chain_id)
 
                                         #if sf_framecode2 == target_framecode:
-                                        #    print('#b %s %s %s %s %s' % (_chain_id2, _matched, offset_1, offset_2, seq_id_conv_dict))
+                                        #    print('#b %s %s %s %s %s' % (chain_id2, _matched, offset_1, offset_2, seq_id_conv_dict))
 
-                                        self.__fixSeqIdInLoop(fileListId, file_name, file_type, content_subtype, sf_framecode2, _chain_id2, seq_id_conv_dict)
+                                        self.__fixSeqIdInLoop(fileListId, file_name, file_type, content_subtype, sf_framecode2, chain_id2, seq_id_conv_dict)
                                         _s2['seq_id'] = _s1['seq_id']
                                         mid_code = get_middle_code(ref_code, test_code)
                                         test_gauge_code = ref_gauge_code
                                 else:
                                     if seq_mismatch:
                                         _seq_align = self.__getSeqAlignCode(fileListId, file_name, file_type, content_subtype, sf_framecode2,
-                                                                            _chain_id, _s1, _s2, myAlign, None if not sf_framecode2 in map_chain_ids else map_chain_ids[sf_framecode2],
+                                                                            chain_id, _s1, _s2, myAlign, None if not sf_framecode2 in map_chain_ids else map_chain_ids[sf_framecode2],
                                                                             ref_gauge_code, ref_code, mid_code, test_code, test_gauge_code)
                                         _s2['seq_id'] = _seq_align['test_seq_id']
                                         ref_gauge_code = _seq_align['ref_gauge_code']
@@ -7753,17 +7821,12 @@ class NmrDpUtility(object):
                                     for s1 in polymer_sequence:
                                         chain_id = s1['chain_id']
 
-                                        if type(chain_id) == int:
-                                            _chain_id = str(chain_id)
-                                        else:
-                                            _chain_id = chain_id
-
-                                        if _chain_id != dst_chain:
+                                        if chain_id != dst_chain:
                                             continue
 
                                         for s2 in ps2:
 
-                                            if _chain_id != src_chain:
+                                            if chain_id != src_chain:
                                                 continue
 
                                             _s2 = fill_blank_comp_id_with_offset(s2, 0)
@@ -7771,11 +7834,11 @@ class NmrDpUtility(object):
                                             if len(_s2['seq_id']) > len(s2['seq_id']) and len(_s2['seq_id']) < len(s1['seq_id']):
                                                 s2 = _s2
 
-                                            self.__pA.setReferenceSequence(s1['comp_id'], 'REF' + _chain_id)
-                                            self.__pA.addTestSequence(s2['comp_id'], _chain_id)
+                                            self.__pA.setReferenceSequence(s1['comp_id'], 'REF' + chain_id)
+                                            self.__pA.addTestSequence(s2['comp_id'], chain_id)
                                             self.__pA.doAlign()
 
-                                            myAlign = self.__pA.getAlignment(_chain_id)
+                                            myAlign = self.__pA.getAlignment(chain_id)
 
                                             length = len(myAlign)
 
@@ -7797,17 +7860,12 @@ class NmrDpUtility(object):
                                     for s1 in polymer_sequence:
                                         chain_id = s1['chain_id']
 
-                                        if type(chain_id) == int:
-                                            _chain_id = str(chain_id)
-                                        else:
-                                            _chain_id = chain_id
-
-                                        if _chain_id != dst_chain:
+                                        if chain_id != dst_chain:
                                             continue
 
                                         for s2 in ps2:
 
-                                            #if _chain_id != dst_chain:
+                                            #if chain_id != dst_chain:
                                             #    continue
 
                                             _s2 = fill_blank_comp_id_with_offset(s2, 0)
@@ -7815,11 +7873,11 @@ class NmrDpUtility(object):
                                             if len(_s2['seq_id']) > len(s2['seq_id']) and len(_s2['seq_id']) < len(s1['seq_id']):
                                                 s2 = _s2
 
-                                            self.__pA.setReferenceSequence(s1['comp_id'], 'REF' + _chain_id)
-                                            self.__pA.addTestSequence(s2['comp_id'], _chain_id)
+                                            self.__pA.setReferenceSequence(s1['comp_id'], 'REF' + chain_id)
+                                            self.__pA.addTestSequence(s2['comp_id'], chain_id)
                                             self.__pA.doAlign()
 
-                                            myAlign = self.__pA.getAlignment(_chain_id)
+                                            myAlign = self.__pA.getAlignment(chain_id)
 
                                             length = len(myAlign)
 
@@ -7842,14 +7900,9 @@ class NmrDpUtility(object):
                             for s1 in polymer_sequence:
                                 chain_id = s1['chain_id']
 
-                                if type(chain_id) == int:
-                                    _chain_id = str(chain_id)
-                                else:
-                                    _chain_id = chain_id
-
                                 for s2 in ps2:
 
-                                    if _chain_id != s2['chain_id']:
+                                    if chain_id != s2['chain_id']:
                                         continue
 
                                     _s2 = fill_blank_comp_id_with_offset(s2, 0)
@@ -7857,11 +7910,11 @@ class NmrDpUtility(object):
                                     if len(_s2['seq_id']) > len(s2['seq_id']) and len(_s2['seq_id']) < len(s1['seq_id']):
                                         s2 = _s2
 
-                                    self.__pA.setReferenceSequence(s1['comp_id'], 'REF' + _chain_id)
-                                    self.__pA.addTestSequence(s2['comp_id'], _chain_id)
+                                    self.__pA.setReferenceSequence(s1['comp_id'], 'REF' + chain_id)
+                                    self.__pA.addTestSequence(s2['comp_id'], chain_id)
                                     self.__pA.doAlign()
 
-                                    myAlign = self.__pA.getAlignment(_chain_id)
+                                    myAlign = self.__pA.getAlignment(chain_id)
 
                                     length = len(myAlign)
 
@@ -7891,13 +7944,13 @@ class NmrDpUtility(object):
                                                             if __c1 != '.' and __c2 != '.' and __c1 != __c2)
 
                                     if self.__tolerant_seq_align and (seq_mismatch or comp_mismatch):
-                                        if sf_framecode2 in map_seq_ids and _chain_id in map_seq_ids[sf_framecode2]:
+                                        if sf_framecode2 in map_seq_ids and chain_id in map_seq_ids[sf_framecode2]:
                                             continue
                                         if _s2['seq_id'] == list(range(_s2['seq_id'][0], _s2['seq_id'][-1] + 1)):
                                             seq_id_conv_dict = {str(__s2): str(__s1) for __s1, __s2 in zip(_s1['seq_id'], _s2['seq_id']) if __s2 != '.'}
                                             if comp_mismatch:
                                                 _seq_align = self.__getSeqAlignCode(fileListId, file_name, file_type, content_subtype, sf_framecode2,
-                                                                                    _chain_id, _s1, _s2, myAlign, mapping,
+                                                                                    chain_id, _s1, _s2, myAlign, mapping,
                                                                                     ref_gauge_code, ref_code, mid_code, test_code, test_gauge_code)
                                                 _s2['seq_id'] = _seq_align['test_seq_id']
                                                 ref_gauge_code = _seq_align['ref_gauge_code']
@@ -7906,21 +7959,21 @@ class NmrDpUtility(object):
                                                 test_code = _seq_align['test_code']
                                                 test_gauge_code = _seq_align['test_gauge_code']
                                             else:
-                                                _chain_id2 = _chain_id
-                                                if _chain_id in mapping.values():
-                                                    _chain_id2 = next(k for k, v in mapping.items() if v == _chain_id)
+                                                chain_id2 = chain_id
+                                                if chain_id in mapping.values():
+                                                    chain_id2 = next(k for k, v in mapping.items() if v == chain_id)
 
                                                 #if sf_framecode2 == target_framecode:
-                                                #    print('#c %s %s %s %s %s' % (_chain_id2, _matched, offset_1, offset_2, seq_id_conv_dict))
+                                                #    print('#c %s %s %s %s %s' % (chain_id2, _matched, offset_1, offset_2, seq_id_conv_dict))
 
-                                                self.__fixSeqIdInLoop(fileListId, file_name, file_type, content_subtype, sf_framecode2, _chain_id2, seq_id_conv_dict)
+                                                self.__fixSeqIdInLoop(fileListId, file_name, file_type, content_subtype, sf_framecode2, chain_id2, seq_id_conv_dict)
                                                 _s2['seq_id'] = _s1['seq_id']
                                                 mid_code = get_middle_code(ref_code, test_code)
                                                 test_gauge_code = ref_gauge_code
                                         else:
                                             if seq_mismatch:
                                                 _seq_align = self.__getSeqAlignCode(fileListId, file_name, file_type, content_subtype, sf_framecode2,
-                                                                                    _chain_id, _s1, _s2, myAlign, mapping,
+                                                                                    chain_id, _s1, _s2, myAlign, mapping,
                                                                                     ref_gauge_code, ref_code, mid_code, test_code, test_gauge_code)
                                                 _s2['seq_id'] = _seq_align['test_seq_id']
                                                 ref_gauge_code = _seq_align['ref_gauge_code']
@@ -8149,9 +8202,7 @@ class NmrDpUtility(object):
 
             for row in loop.data:
 
-                __chain_id = str(row[chain_id_col])
-
-                if __chain_id != chain_id:
+                if row[chain_id_col] != chain_id:
                     continue
 
                 row[chain_id_col] = _chain_id
@@ -8176,9 +8227,7 @@ class NmrDpUtility(object):
 
                 for row in loop.data:
 
-                    __chain_id = str(row[chain_id_col])
-
-                    if __chain_id != chain_id:
+                    if row[chain_id_col] != chain_id:
                         continue
 
                     row[chain_id_col] = _chain_id
@@ -8268,9 +8317,7 @@ class NmrDpUtility(object):
 
             for row in loop.data:
 
-                _chain_id = str(row[chain_id_col])
-
-                if _chain_id != chain_id:
+                if row[chain_id_col] != chain_id:
                     continue
 
                 seq_id = row[seq_id_col]
@@ -8305,9 +8352,7 @@ class NmrDpUtility(object):
 
                 for row in loop.data:
 
-                    _chain_id = str(row[chain_id_col])
-
-                    if _chain_id != chain_id:
+                    if row[chain_id_col] != chain_id:
                         continue
 
                     seq_id = row[seq_id_col]
@@ -12939,15 +12984,12 @@ class NmrDpUtility(object):
             if self.__verbose:
                 self.__lfh.write("+NmrDpUtility.__testCovalentBond() ++ Error  - %s" % str(e))
 
-    def __getBondLength(self, _nmr_chain_id_1, nmr_seq_id_1, nmr_atom_id_1, _nmr_chain_id_2, nmr_seq_id_2, nmr_atom_id_2):
+    def __getBondLength(self, nmr_chain_id_1, nmr_seq_id_1, nmr_atom_id_1, nmr_chain_id_2, nmr_seq_id_2, nmr_atom_id_2):
         """ Return the bond length of given two atoms.
             @return: the bond length
         """
 
-        intra_chain = _nmr_chain_id_1 == _nmr_chain_id_2
-
-        nmr_chain_id_1 = str(_nmr_chain_id_1)
-        nmr_chain_id_2 = str(_nmr_chain_id_2)
+        intra_chain = nmr_chain_id_1 == nmr_chain_id_2
 
         s_1 = self.report.getModelPolymerSequenceWithNmrChainId(nmr_chain_id_1)
 
@@ -12967,7 +13009,7 @@ class NmrDpUtility(object):
         if not has_key_value(seq_align_dic, 'nmr_poly_seq_vs_model_poly_seq'):
             return None
 
-        seq_key = (_nmr_chain_id_1, nmr_seq_id_1, nmr_atom_id_1, _nmr_chain_id_2, nmr_seq_id_2, nmr_atom_id_2)
+        seq_key = (nmr_chain_id_1, nmr_seq_id_1, nmr_atom_id_1, nmr_chain_id_2, nmr_seq_id_2, nmr_atom_id_2)
 
         if seq_key in self.__coord_bond_length:
             return self.__coord_bond_length[seq_key]
@@ -13111,7 +13153,7 @@ class NmrDpUtility(object):
 
                 result = next((seq_align for seq_align in seq_align_dic['nmr_poly_seq_vs_model_poly_seq'] if seq_align['ref_chain_id'] == ref_chain_id and seq_align['test_chain_id'] == test_chain_id), None)
 
-                nmr2ca[str(ref_chain_id)] = result
+                nmr2ca[ref_chain_id] = result
 
             if self.__star_data_type[fileListId] == 'Loop':
 
@@ -13168,10 +13210,10 @@ class NmrDpUtility(object):
                     comp_id = i[comp_id_name]
                     variant = i[variant_name]
 
-                    if not str(chain_id) in nmr2ca:
+                    if not chain_id in nmr2ca:
                         continue
 
-                    ca = nmr2ca[str(chain_id)]
+                    ca = nmr2ca[chain_id]
 
                     cif_chain_id = ca['test_chain_id']
 
@@ -14867,14 +14909,272 @@ class NmrDpUtility(object):
 
                             ilv = {'chain_id': chain_id, 'seq_id': seq_id, 'comp_id': comp_id}
 
-                            #TODO
-
                             if comp_id == 'VAL':
+
+                                cg1_chem_shift = None
+                                cg2_chem_shift = None
+
+                                for j in lp_data:
+
+                                    atom_id = j[atom_id_name]
+
+                                    if j[chain_id_name] == chain_id and j[seq_id_name] == seq_id and j[comp_id_name] == comp_id and atom_id.startswith('CG'):
+
+                                        _atom_id = atom_id
+
+                                        if (atom_id == 'HN' and self.__csStat.getTypeOfCompId(comp_id)[0]) or\
+                                            atom_id.startswith('Q') or\
+                                            atom_id.startswith('M') or\
+                                            self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id) == 0:
+                                            _atom_id = self.__getRepresentativeAtomId(file_type, comp_id, atom_id)
+
+                                        if _atom_id  == 'CG1':
+                                            cg1_chem_shift = j[value_name]
+                                        elif _atom_id  == 'CG2':
+                                            cg2_chem_shift = j[value_name]
+
+                                    if cg1_chem_shift is None or cg2_chem_shift is None:
+                                        if j[chain_id_name] == chain_id and j[seq_id_name] > seq_id:
+                                            break
+                                    else:
+                                        break
+
+                                ilv['cg1_chem_shift'] = cg1_chem_shift
+                                ilv['cg2_chem_shift'] = cg2_chem_shift
+
+                                if (not cg1_chem_shift is None) or (not cg2_chem_shift is None):
+                                    gp, t, gm = predict_rotamer_state_of_valine(cg1_chem_shift, cg2_chem_shift)
+                                    if t < 0.001 and gm < 0.001:
+                                        ilv['rotameric_state_pred'] = 'gauche+'
+                                    elif gm < 0.001 and gp < 0.001:
+                                        ilv['rotameric_state_pred'] = 'trans'
+                                    elif gp < 0.001 and t < 0.001:
+                                        ilv['rotameric_state_pred'] = 'gauche-'
+                                    else:
+                                        ilv['rotameric_state_pred'] = 'gauche+ %s (%%), trans %s (%%), gauche- %s (%%)' % ('{:.1f}'.format(gp * 100.0), '{:.1f}'.format(t * 100.0), '{:.1f}'.format(gm * 100.0))
+                                else:
+                                    ilv['rotameric_state_pred'] = 'unknown'
+
                                 ilv['rotameric_state'] = self.__getRotamerOfValine(chain_id, seq_id)
+
+                                r = next(r for r in ilv['rotameric_state'] if r['name'] == 'chi1')
+                                if 'unknown' in r:
+                                    _rotameric_state = 'unknown'
+                                else:
+                                    _gp = r['gauche+']
+                                    _t = r['trans']
+                                    _gm = r['gauche-']
+                                    if _gp > _t and _gp > _gm:
+                                        _rotameric_state = 'gauche+'
+                                    elif _t > _gm and _t > _gp:
+                                        _rotameric_state = 'trans'
+                                    elif _gm > _gp and _gm > _t:
+                                        _rotameric_state = 'gauche-'
+                                    else:
+                                        _rotameric_state = 'unknown'
+
+                                if ilv['rotameric_state_pred'] != 'unknown':
+                                    item = None
+                                    if ilv['rotameric_state_pred'] != _rotameric_state and _rotameric_state != 'unknown':
+                                        if ',' in ilv['rotameric_state_pred']:
+                                            if (_rotameric_state == 'gauche+' and gp > t and gp > gm) or\
+                                               (_rotameric_state == 'trans' and t > gm and t > gp) or\
+                                               (_rotameric_state == 'gauche-' and gm > gp and gm > t):
+                                                pass
+                                            else:
+                                                item = 'unusual_chemical_shift'
+                                        else:
+                                            item = 'anomalous_chemical_shift'
+
+                                    if not item is None:
+
+                                        shifts = ''
+                                        if not cg1_chem_shift is None:
+                                            shifts += 'CG1 %s ppm, ' % cg1_chem_shift
+                                        if not cg2_chem_shift is None:
+                                            shifts += 'CG2 %s ppm, ' % cg2_chem_shift
+
+                                        warn = "Rotameric state %s of %s:%s:%s can not be verified with the assigned chemical shift values (%srotameric_state_pred %s)." %\
+                                               (_rotameric_state, chain_id, seq_id, comp_id, shifts, ilv['rotameric_state_pred'])
+
+                                        self.report.warning.appendDescription(item, {'file_name': file_name, 'sf_framecode': sf_framecode, 'description': warn})
+                                        self.report.setWarning()
+
+                                        if self.__verbose:
+                                            self.__lfh.write("+NmrDpUtility.__calculateStatsOfAssignedChemShift() ++ Warning  - %s\n" % warn)
+
                             elif comp_id == 'LEU':
+
+                                cd1_chem_shift = None
+                                cd2_chem_shift = None
+
+                                for j in lp_data:
+
+                                    atom_id = j[atom_id_name]
+
+                                    if j[chain_id_name] == chain_id and j[seq_id_name] == seq_id and j[comp_id_name] == comp_id and atom_id.startswith('CD'):
+
+                                        _atom_id = atom_id
+
+                                        if (atom_id == 'HN' and self.__csStat.getTypeOfCompId(comp_id)[0]) or\
+                                            atom_id.startswith('Q') or\
+                                            atom_id.startswith('M') or\
+                                            self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id) == 0:
+                                            _atom_id = self.__getRepresentativeAtomId(file_type, comp_id, atom_id)
+
+                                        if _atom_id == 'CD1':
+                                            cd1_chem_shift = j[value_name]
+                                        elif _atom_id == 'CD2':
+                                            cd2_chem_shift = j[value_name]
+
+                                    if cd1_chem_shift is None or cd2_chem_shift is None:
+                                        if j[chain_id_name] == chain_id and j[seq_id_name] > seq_id:
+                                            break
+                                    else:
+                                        break
+
+                                ilv['cd1_chem_shift'] = cd1_chem_shift
+                                ilv['cd2_chem_shift'] = cd2_chem_shift
+
+                                if (not cd1_chem_shift is None) or (not cd2_chem_shift is None):
+                                    gp, t, gm = predict_rotamer_state_of_leucine(cd1_chem_shift, cd2_chem_shift)
+                                    if t < 0.001 and gm < 0.001:
+                                        ilv['rotameric_state_pred'] = 'gauche+'
+                                    elif gm < 0.001 and gp < 0.001:
+                                        ilv['rotameric_state_pred'] = 'trans'
+                                    elif gp < 0.001 and t < 0.001:
+                                        ilv['rotameric_state_pred'] = 'gauche-'
+                                    else:
+                                        ilv['rotameric_state_pred'] = 'gauche+ %s (%%), trans %s (%%), gauche- %s (%%)' % ('{:.1f}'.format(gp * 100.0), '{:.1f}'.format(t * 100.0), '{:.1f}'.format(gm * 100.0))
+                                else:
+                                    ilv['rotameric_state_pred'] = 'unknown'
+
                                 ilv['rotameric_state'] = self.__getRotamerOfLeucine(chain_id, seq_id)
+
+                                r = next(r for r in ilv['rotameric_state'] if r['name'] == 'chi2')
+                                if 'unknown' in r:
+                                    _rotameric_state = 'unknown'
+                                else:
+                                    _gp = r['gauche+']
+                                    _t = r['trans']
+                                    _gm = r['gauche-']
+                                    if _gp > _t and _gp > _gm:
+                                        _rotameric_state = 'gauche+'
+                                    elif _t > _gm and _t > _gp:
+                                        _rotameric_state = 'trans'
+                                    elif _gm > _gp and _gm > _t:
+                                        _rotameric_state = 'gauche-'
+                                    else:
+                                        _rotameric_state = 'unknown'
+
+                                if ilv['rotameric_state_pred'] != 'unknown':
+                                    item = None
+                                    if ilv['rotameric_state_pred'] != _rotameric_state and _rotameric_state != 'unknown':
+                                        if ',' in ilv['rotameric_state_pred']:
+                                            if (_rotameric_state == 'gauche+' and gp > t and gp > gm) or\
+                                               (_rotameric_state == 'trans' and t > gm and t > gp) or\
+                                               (_rotameric_state == 'gauche-' and gm > gp and gm > t):
+                                                pass
+                                            else:
+                                                item = 'unusual_chemical_shift'
+                                        else:
+                                            item = 'anomalous_chemical_shift'
+
+                                    if not item is None:
+
+                                        shifts = ''
+                                        if not cd1_chem_shift is None:
+                                            shifts += 'CD1 %s ppm, ' % cd1_chem_shift
+                                        if not cd2_chem_shift is None:
+                                            shifts += 'CD2 %s ppm, ' % cd2_chem_shift
+
+                                        warn = "Rotameric state %s of %s:%s:%s can not be verified with the assigned chemical shift values (%srotameric_state_pred %s)." %\
+                                               (_rotameric_state, chain_id, seq_id, comp_id, shifts, ilv['rotameric_state_pred'])
+
+                                        self.report.warning.appendDescription(item, {'file_name': file_name, 'sf_framecode': sf_framecode, 'description': warn})
+                                        self.report.setWarning()
+
+                                        if self.__verbose:
+                                            self.__lfh.write("+NmrDpUtility.__calculateStatsOfAssignedChemShift() ++ Warning  - %s\n" % warn)
+
                             else:
+
+                                cd1_chem_shift = None
+
+                                for j in lp_data:
+
+                                    atom_id = j[atom_id_name]
+
+                                    if j[chain_id_name] == chain_id and j[seq_id_name] == seq_id and j[comp_id_name] == comp_id:
+                                        if atom_id == 'CD1':
+                                            cd1_chem_shift = j[value_name]
+
+                                    if cd1_chem_shift is None:
+                                        if j[chain_id_name] == chain_id and j[seq_id_name] > seq_id:
+                                            break
+                                    else:
+                                        break
+
+                                ilv['cd1_chem_shift'] = cd1_chem_shift
+
+                                if not cd1_chem_shift is None:
+                                    gp, t, gm = predict_rotamer_state_of_isoleucine(cd1_chem_shift)
+                                    if t < 0.001 and gm < 0.001:
+                                        ilv['rotameric_state_pred'] = 'gauche+'
+                                    elif gm < 0.001 and gp < 0.001:
+                                        ilv['rotameric_state_pred'] = 'trans'
+                                    elif gp < 0.001 and t < 0.001:
+                                        ilv['rotameric_state_pred'] = 'gauche-'
+                                    else:
+                                        ilv['rotameric_state_pred'] = 'gauche+ %s (%%), trans %s (%%), gauche- %s (%%)' % ('{:.1f}'.format(gp * 100.0), '{:.1f}'.format(t * 100.0), '{:.1f}'.format(gm * 100.0))
+                                else:
+                                    ilv['rotameric_state_pred'] = 'unknown'
+
                                 ilv['rotameric_state'] = self.__getRotamerOfIsoleucine(chain_id, seq_id)
+
+                                r = next(r for r in ilv['rotameric_state'] if r['name'] == 'chi2')
+                                if 'unknown' in r:
+                                    _rotameric_state = 'unknown'
+                                else:
+                                    _gp = r['gauche+']
+                                    _t = r['trans']
+                                    _gm = r['gauche-']
+                                    if _gp > _t and _gp > _gm:
+                                        _rotameric_state = 'gauche+'
+                                    elif _t > _gm and _t > _gp:
+                                        _rotameric_state = 'trans'
+                                    elif _gm > _gp and _gm > _t:
+                                        _rotameric_state = 'gauche-'
+                                    else:
+                                        _rotameric_state = 'unknown'
+
+                                if ilv['rotameric_state_pred'] != 'unknown':
+                                    item = None
+                                    if ilv['rotameric_state_pred'] != _rotameric_state and _rotameric_state != 'unknown':
+                                        if ',' in ilv['rotameric_state_pred']:
+                                            if (_rotameric_state == 'gauche+' and gp > t and gp > gm) or\
+                                               (_rotameric_state == 'trans' and t > gm and t > gp) or\
+                                               (_rotameric_state == 'gauche-' and gm > gp and gm > t):
+                                                pass
+                                            else:
+                                                item = 'unusual_chemical_shift'
+                                        else:
+                                            item = 'anomalous_chemical_shift'
+
+                                    if not item is None:
+
+                                        shifts = ''
+                                        if not cd1_chem_shift is None:
+                                            shifts += 'CD1 %s ppm, ' % cd1_chem_shift
+
+                                        warn = "Rotameric state %s of %s:%s:%s can not be verified with the assigned chemical shift values (%srotameric_state_pred %s)." %\
+                                               (_rotameric_state, chain_id, seq_id, comp_id, shifts, ilv['rotameric_state_pred'])
+
+                                        self.report.warning.appendDescription(item, {'file_name': file_name, 'sf_framecode': sf_framecode, 'description': warn})
+                                        self.report.setWarning()
+
+                                        if self.__verbose:
+                                            self.__lfh.write("+NmrDpUtility.__calculateStatsOfAssignedChemShift() ++ Warning  - %s\n" % warn)
 
                             ilv_rotameric_state.append(ilv)
 
@@ -16921,7 +17221,7 @@ class NmrDpUtility(object):
                         if not comp_id in phi_psi_value:
                             phi_psi_value[comp_id] = []
 
-                        phi_psi_value[comp_id].append([phi['value'], psi['value'], str(phi['chain_id']) + ':' + str(phi['seq_id']) + ':' + phi['comp_id']])
+                        phi_psi_value[comp_id].append([phi['value'], psi['value'], phi['chain_id'] + ':' + str(phi['seq_id']) + ':' + phi['comp_id']])
 
                         if (not phi['error'] is None) or (not psi['error'] is None):
 
@@ -16959,7 +17259,7 @@ class NmrDpUtility(object):
                         if not comp_id in chi1_chi2_value:
                             chi1_chi2_value[comp_id] = []
 
-                        chi1_chi2_value[comp_id].append([chi1['value'], chi2['value'], str(chi1['chain_id']) + ':' + str(chi1['seq_id']) + ':' + chi1['comp_id']])
+                        chi1_chi2_value[comp_id].append([chi1['value'], chi2['value'], chi1['chain_id'] + ':' + str(chi1['seq_id']) + ':' + chi1['comp_id']])
 
                         if (not chi1['error'] is None) or (not chi2['error'] is None):
 
@@ -17102,7 +17402,7 @@ class NmrDpUtility(object):
                                 if discrepancy > max_inclusive * self.inconsist_over_conflicted:
                                     ann = {}
                                     ann['level'] = 'conflicted' if discrepancy > max_inclusive else 'inconsistent'
-                                    ann['chain_id'] = str(row_1[chain_id_2_name])
+                                    ann['chain_id'] = row_1[chain_id_2_name]
                                     ann['seq_id'] = row_1[seq_id_2_name]
                                     ann['comp_id'] = row_1[comp_id_2_name]
                                     ann['atom_id_1'] = row_1[atom_id_1_name]
@@ -19343,24 +19643,19 @@ class NmrDpUtility(object):
                 for s1 in polymer_sequence:
                     chain_id = s1['chain_id']
 
-                    if type(chain_id) == int:
-                        _chain_id = str(chain_id)
-                    else:
-                        _chain_id = chain_id
-
                     for ps_in_loop in polymer_sequence_in_loop[content_subtype]:
                         ps2 = ps_in_loop['polymer_sequence']
 
                         for s2 in ps2:
 
-                            if _chain_id != s2['chain_id']:
+                            if chain_id != s2['chain_id']:
                                 continue
 
-                            self.__pA.setReferenceSequence(s1['comp_id'], 'REF' + _chain_id)
-                            self.__pA.addTestSequence(s2['comp_id'], _chain_id)
+                            self.__pA.setReferenceSequence(s1['comp_id'], 'REF' + chain_id)
+                            self.__pA.addTestSequence(s2['comp_id'], chain_id)
                             self.__pA.doAlign()
 
-                            myAlign = self.__pA.getAlignment(_chain_id)
+                            myAlign = self.__pA.getAlignment(chain_id)
 
                             length = len(myAlign)
 
@@ -19422,19 +19717,14 @@ class NmrDpUtility(object):
         for s1 in polymer_sequence:
             chain_id = s1['chain_id']
 
-            if type(chain_id) == int:
-                _chain_id = str(chain_id)
-            else:
-                _chain_id = chain_id
-
             for s2 in nmr_polymer_sequence:
                 chain_id2 = s2['chain_id']
 
-                self.__pA.setReferenceSequence(s1['comp_id'], 'REF' + _chain_id)
-                self.__pA.addTestSequence(s2['comp_id'], _chain_id)
+                self.__pA.setReferenceSequence(s1['comp_id'], 'REF' + chain_id)
+                self.__pA.addTestSequence(s2['comp_id'], chain_id)
                 self.__pA.doAlign()
 
-                myAlign = self.__pA.getAlignment(_chain_id)
+                myAlign = self.__pA.getAlignment(chain_id)
 
                 length = len(myAlign)
 
@@ -19522,19 +19812,14 @@ class NmrDpUtility(object):
         for s1 in nmr_polymer_sequence:
             chain_id = s1['chain_id']
 
-            if type(chain_id) == int:
-                _chain_id = str(chain_id)
-            else:
-                _chain_id = chain_id
-
             for s2 in polymer_sequence:
                 chain_id2 = s2['chain_id']
 
-                self.__pA.setReferenceSequence(s1['comp_id'], 'REF' + _chain_id)
-                self.__pA.addTestSequence(s2['comp_id'], _chain_id)
+                self.__pA.setReferenceSequence(s1['comp_id'], 'REF' + chain_id)
+                self.__pA.addTestSequence(s2['comp_id'], chain_id)
                 self.__pA.doAlign()
 
-                myAlign = self.__pA.getAlignment(_chain_id)
+                myAlign = self.__pA.getAlignment(chain_id)
 
                 length = len(myAlign)
 
@@ -19731,11 +20016,6 @@ class NmrDpUtility(object):
                     chain_id = cif_polymer_sequence[row]['chain_id']
                     chain_id2 = nmr_polymer_sequence[column]['chain_id']
 
-                    if type(chain_id) == int:
-                        _chain_id = str(chain_id)
-                    else:
-                        _chain_id = chain_id
-
                     result = next(seq_align for seq_align in seq_align_dic['model_poly_seq_vs_nmr_poly_seq'] if seq_align['ref_chain_id'] == chain_id and seq_align['test_chain_id'] == chain_id2)
                     _result = next((seq_align for seq_align in seq_align_dic['nmr_poly_seq_vs_model_poly_seq'] if seq_align['ref_chain_id'] == chain_id2 and seq_align['test_chain_id'] == chain_id), None)
 
@@ -19744,11 +20024,11 @@ class NmrDpUtility(object):
                     s1 = next(s for s in cif_polymer_sequence if s['chain_id'] == chain_id)
                     s2 = next(s for s in nmr_polymer_sequence if s['chain_id'] == chain_id2)
 
-                    self.__pA.setReferenceSequence(s1['comp_id'], 'REF' + _chain_id)
-                    self.__pA.addTestSequence(s2['comp_id'], _chain_id)
+                    self.__pA.setReferenceSequence(s1['comp_id'], 'REF' + chain_id)
+                    self.__pA.addTestSequence(s2['comp_id'], chain_id)
                     self.__pA.doAlign()
 
-                    myAlign = self.__pA.getAlignment(_chain_id)
+                    myAlign = self.__pA.getAlignment(chain_id)
 
                     length = len(myAlign)
 
@@ -20017,11 +20297,11 @@ class NmrDpUtility(object):
                                 try:
                                     identity = next(s['identical_chain_id'] for s in cif_polymer_sequence if s['chain_id'] == chain_id and 'identical_chain_id' in s)
 
-                                    for _chain_id in identity:
+                                    for chain_id in identity:
 
-                                        if not any(_chain_assign for _chain_assign in chain_assign_set if _chain_assign['ref_chain_id'] == _chain_id):
+                                        if not any(_chain_assign for _chain_assign in chain_assign_set if _chain_assign['ref_chain_id'] == chain_id):
                                             _chain_assign = copy.copy(chain_assign)
-                                            _chain_assign['ref_chain_id'] = _chain_id
+                                            _chain_assign['ref_chain_id'] = chain_id
                                             chain_assign_set.append(_chain_assign)
 
                                 except StopIteration:
@@ -20064,11 +20344,6 @@ class NmrDpUtility(object):
                     chain_id = nmr_polymer_sequence[row]['chain_id']
                     chain_id2 = cif_polymer_sequence[column]['chain_id']
 
-                    if type(chain_id) == int:
-                        _chain_id = str(chain_id)
-                    else:
-                        _chain_id = chain_id
-
                     result = next(seq_align for seq_align in seq_align_dic['nmr_poly_seq_vs_model_poly_seq'] if seq_align['ref_chain_id'] == chain_id and seq_align['test_chain_id'] == chain_id2)
                     _result = next(seq_align for seq_align in seq_align_dic['model_poly_seq_vs_nmr_poly_seq'] if seq_align['ref_chain_id'] == chain_id2 and seq_align['test_chain_id'] == chain_id)
 
@@ -20077,11 +20352,11 @@ class NmrDpUtility(object):
                     s1 = next(s for s in nmr_polymer_sequence if s['chain_id'] == chain_id)
                     s2 = next(s for s in cif_polymer_sequence if s['chain_id'] == chain_id2)
 
-                    self.__pA.setReferenceSequence(s1['comp_id'], 'REF' + _chain_id)
-                    self.__pA.addTestSequence(s2['comp_id'], _chain_id)
+                    self.__pA.setReferenceSequence(s1['comp_id'], 'REF' + chain_id)
+                    self.__pA.addTestSequence(s2['comp_id'], chain_id)
                     self.__pA.doAlign()
 
-                    myAlign = self.__pA.getAlignment(_chain_id)
+                    myAlign = self.__pA.getAlignment(chain_id)
 
                     length = len(myAlign)
 
@@ -20366,11 +20641,11 @@ i                               """
                                 try:
                                     identity = next(s['identical_chain_id'] for s in cif_polymer_sequence if s['chain_id'] == chain_id and 'identical_chain_id' in s)
 
-                                    for _chain_id in identity:
+                                    for chain_id in identity:
 
-                                        if not any(_chain_assign for _chain_assign in chain_assign_set if _chain_assign['test_chain_id'] == _chain_id):
+                                        if not any(_chain_assign for _chain_assign in chain_assign_set if _chain_assign['test_chain_id'] == chain_id):
                                             _chain_assign = copy.copy(chain_assign)
-                                            _chain_assign['test_chain_id'] = _chain_id
+                                            _chain_assign['test_chain_id'] = chain_id
                                             chain_assign_set.append(_chain_assign)
 
                                 except StopIteration:
@@ -20482,7 +20757,7 @@ i                               """
 
                 result = next((seq_align for seq_align in seq_align_dic['nmr_poly_seq_vs_model_poly_seq'] if seq_align['ref_chain_id'] == ref_chain_id and seq_align['test_chain_id'] == test_chain_id), None)
 
-                nmr2ca[str(ref_chain_id)] = result
+                nmr2ca[ref_chain_id] = result
 
             if nmr_input_source_dic['content_subtype'] is None:
                 continue
@@ -20688,10 +20963,10 @@ i                               """
                 if content_subtype.startswith('spectral_peak') and (chain_id in self.empty_value or seq_id in self.empty_value or comp_id in self.empty_value or atom_id in self.empty_value):
                     continue
 
-                if not str(chain_id) in nmr2ca:
+                if not chain_id in nmr2ca:
                     continue
 
-                ca = nmr2ca[str(chain_id)]
+                ca = nmr2ca[chain_id]
 
                 cif_chain_id = ca['test_chain_id']
 
@@ -21759,10 +22034,8 @@ i                               """
                 star_chain = row[star_chain_index]
                 star_seq = row[star_seq_index]
 
-                star_chain_ = str(star_chain)
-
-                if star_chain_ in seqAlignMap:
-                    seq_align = seqAlignMap[star_chain_]
+                if star_chain in seqAlignMap:
+                    seq_align = seqAlignMap[star_chain]
 
                     if seq_align is None:
                         continue
@@ -22734,15 +23007,10 @@ i                               """
             if not lp_data is None:
 
                 for i in lp_data:
-                    _chain_id = i[chain_id_name]
+                    chain_id = i[chain_id_name]
                     seq_id = i[seq_id_name]
                     comp_id = i[comp_id_name]
                     atom_id = i[atom_id_name]
-
-                    if type(_chain_id) is int:
-                        chain_id = str(_chain_id)
-                    else:
-                        chain_id = _chain_id
 
                     if chain_id == nmr_chain_id_1 and seq_id == nmr_seq_id_1 and comp_id == nmr_comp_id_1:
                         if atom_id == 'CA' and ca_chem_shift_1 is None:
@@ -23110,15 +23378,10 @@ i                               """
             if not lp_data is None:
 
                 for i in lp_data:
-                    _chain_id = i[chain_id_name]
+                    chain_id = i[chain_id_name]
                     seq_id = i[seq_id_name]
                     comp_id = i[comp_id_name]
                     atom_id = i[atom_id_name]
-
-                    if type(_chain_id) is int:
-                        chain_id = str(_chain_id)
-                    else:
-                        chain_id = _chain_id
 
                     if chain_id == nmr_chain_id_1 and seq_id == nmr_seq_id_1 and comp_id == nmr_comp_id_1:
                         if atom_id == 'CA' and ca_chem_shift_1 is None:
@@ -23139,12 +23402,10 @@ i                               """
 
         return ca_chem_shift_1, cb_chem_shift_1, ca_chem_shift_2, cb_chem_shift_2
 
-    def __getNearestAromaticRing(self, _nmr_chain_id, nmr_seq_id, nmr_atom_id, cutoff):
+    def __getNearestAromaticRing(self, nmr_chain_id, nmr_seq_id, nmr_atom_id, cutoff):
         """ Return the nearest aromatic ring around a given atom.
             @return: the nearest aromatic ring
         """
-
-        nmr_chain_id = str(_nmr_chain_id)
 
         s = self.report.getModelPolymerSequenceWithNmrChainId(nmr_chain_id)
 
@@ -23158,7 +23419,7 @@ i                               """
         if not has_key_value(seq_align_dic, 'nmr_poly_seq_vs_model_poly_seq'):
             return None
 
-        seq_key = (_nmr_chain_id, nmr_seq_id, nmr_atom_id)
+        seq_key = (nmr_chain_id, nmr_seq_id, nmr_atom_id)
 
         if seq_key in self.__coord_near_ring:
             return self.__coord_near_ring[seq_key]
@@ -23470,15 +23731,13 @@ i                               """
         self.__coord_near_ring[seq_key] = None
         return None
 
-    def __getNearestParaFerroMagneticAtom(self, _nmr_chain_id, nmr_seq_id, nmr_atom_id, cutoff):
+    def __getNearestParaFerroMagneticAtom(self, nmr_chain_id, nmr_seq_id, nmr_atom_id, cutoff):
         """ Return the nearest paramagnetic/ferromagnetic atom around a given atom.
             @return: the nearest paramagnetic/ferromagnetic atom
         """
 
         if self.report.isDiamagnetic():
             return None
-
-        nmr_chain_id = str(_nmr_chain_id)
 
         s = self.report.getModelPolymerSequenceWithNmrChainId(nmr_chain_id)
 
@@ -23492,7 +23751,7 @@ i                               """
         if not has_key_value(seq_align_dic, 'nmr_poly_seq_vs_model_poly_seq'):
             return None
 
-        seq_key = (_nmr_chain_id, nmr_seq_id, nmr_atom_id)
+        seq_key = (nmr_chain_id, nmr_seq_id, nmr_atom_id)
 
         if seq_key in self.__coord_near_para_ferro:
             return self.__coord_near_para_ferro[seq_key]
@@ -25220,10 +25479,7 @@ i                               """
                         if atom_ids != self.dihed_atom_ids:
                             return False
 
-                if type(chain_id_1) is int:
-                    chain_id = str(chain_id_1)
-                else:
-                    chain_id = chain_id_1
+                chain_id = chain_id_1
 
                 if not chain_id in dh_seq_ids:
                     dh_seq_ids[chain_id] = set()
@@ -25281,17 +25537,12 @@ i                               """
                 if not lp_data is None:
 
                     for i in lp_data:
-                        _chain_id = i[chain_id_name]
+                        chain_id = i[chain_id_name]
                         seq_id = i[seq_id_name]
                         atom_id = i[atom_id_name]
 
-                        if type(_chain_id) is int:
-                            chain_id = str(_chain_id)
-                        else:
-                            chain_id = _chain_id
-
-                        if _chain_id in dh_chains and seq_id in dh_seq_ids[chain_id] and atom_id == 'CA':
-                            cs_chains.add(_chain_id)
+                        if chain_id in dh_chains and seq_id in dh_seq_ids[chain_id] and atom_id == 'CA':
+                            cs_chains.add(chain_id)
 
                             if not chain_id in cs_seq_ids:
                                 cs_seq_ids[chain_id] = set()

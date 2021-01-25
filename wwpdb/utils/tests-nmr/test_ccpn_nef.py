@@ -48,11 +48,11 @@ class TestNmrDpUtility(unittest.TestCase):
             report = json.loads(file.read())
 
         if not report['error'] is None:
-            self.assertEqual(report['error']['internal_error'], None)
+            self.assertNotIn('internal_error', report['error'])
 
         if report['error'] is None:
             print('%s: %s' % (entry_id, report['information']['status']))
-        elif not report['error']['format_issue'] is None:
+        elif 'format_issue' in report['error']:
             print('%s: %s\n format_issue: %s' % (entry_id, report['information']['status'], report['error']['format_issue'][0]['description']))
         elif 'missing_mandatory_content' in report['error']:
             print('%s: %s\n missing_mandatory_content: %s' % (entry_id, report['information']['status'], report['error']['missing_mandatory_content'][0]['description']))
@@ -84,7 +84,7 @@ class TestNmrDpUtility(unittest.TestCase):
             report = json.loads(file.read())
 
         if not report['error'] is None:
-            self.assertEqual(report['error']['internal_error'], None)
+            self.assertNotIn('internal_error', report['error'])
 
     def __test_nmr_str_consistency(self, entry_id):
         if not os.access(self.data_dir_path + entry_id + '-nef2str.str', os.F_OK):
@@ -105,7 +105,7 @@ class TestNmrDpUtility(unittest.TestCase):
 
         if report['error'] is None:
             print('%s: %s' % (entry_id, report['information']['status']))
-        elif not report['error']['format_issue'] is None:
+        elif 'format_issue' in report['error']:
             print('%s: %s\n format_issue: %s' % (entry_id, report['information']['status'], report['error']['format_issue'][0]['description']))
         elif 'missing_mandatory_content' in report['error']:
             print('%s: %s\n missing_mandatory_content: %s' % (entry_id, report['information']['status'], report['error']['missing_mandatory_content'][0]['description']))
@@ -137,11 +137,11 @@ class TestNmrDpUtility(unittest.TestCase):
             report = json.loads(file.read())
 
         if not report['error'] is None:
-            self.assertEqual(report['error']['internal_error'], None)
+            self.assertNotIn('internal_error', report['error'])
 
         if report['error'] is None:
             print('%s: %s' % (entry_id, report['information']['status']))
-        elif not report['error']['format_issue'] is None:
+        elif 'format_issue' in report['error']:
             print('%s: %s\n format_issue: %s' % (entry_id, report['information']['status'], report['error']['format_issue'][0]['description']))
         elif 'missing_mandatory_content' in report['error']:
             print('%s: %s\n missing_mandatory_content: %s' % (entry_id, report['information']['status'], report['error']['missing_mandatory_content'][0]['description']))

@@ -57,6 +57,7 @@
 # 11-Nov-2020  M. Yokochi - fix crash while translation due to invalid seq_id (v2.9.1)
 # 11-Nov-2020  M. Yokochi - append _nef_sequence.index even if _Chem_comp_assembly.NEF_index does not exist (v2.9.2, DAOTHER-6128)
 # 19-Nov-2020  M. Yokochi - add support for HEM, HEB, HEC methyl groups (v2.9.3, DAOTHER-6366)
+# 25-Jan-2021  M. Yokochi - add 'positive-int-as-str' value type to simplify code for Entity_assembly_ID, and chain_code (v2.9.4)
 ##
 import sys
 import os
@@ -78,7 +79,7 @@ from wwpdb.utils.nmr.io.ChemCompIo import ChemCompReader
 from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
 from wwpdb.utils.nmr.NmrDpReport import NmrDpReport
 
-__version__ = '2.9.3'
+__version__ = '2.9.4'
 
 __pynmrstar_v3__ = version.parse(pynmrstar.__version__) >= version.parse("3.0.0")
 
@@ -376,6 +377,7 @@ class NEFTranslator(object):
                                    'int': 'a integer',
                                    'index-int': 'a unique positive integer',
                                    'positive-int': 'a positive integer',
+                                   'positive-int-as-str': 'a positive integer',
                                    'pointer-index': 'a integer acting as a pointer to the parent item',
                                    'float': 'a floating point number',
                                    'positive-float': 'a positive floating point number',
@@ -1157,7 +1159,7 @@ class NEFTranslator(object):
                 for c in chains:
                     ent = {} # entity
 
-                    ent['chain_id'] = c
+                    ent['chain_id'] = str(c)
 
                     if allow_gap:
                         ent['seq_id'] = []
@@ -1317,7 +1319,7 @@ class NEFTranslator(object):
                 for c in chains:
                     ent = {} # entity
 
-                    ent['chain_id'] = c
+                    ent['chain_id'] = str(c)
 
                     if allow_gap:
                         ent['seq_id'] = []
@@ -1485,7 +1487,7 @@ class NEFTranslator(object):
                 for c in chains:
                     ent = {} # entity
 
-                    ent['chain_id'] = c
+                    ent['chain_id'] = str(c)
                     ent['seq_id'] = seq_dict[c]
                     ent['auth_asym_id'] = asym_dict[c]
                     ent['auth_seq_id'] = aseq_dict[c]
@@ -1967,7 +1969,7 @@ class NEFTranslator(object):
 
         data = [] # data of all loops
 
-        item_types = ('str', 'bool', 'int', 'index-int', 'positive-int', 'pointer-index', 'float', 'positive-float', 'range-float', 'enum', 'enum-int')
+        item_types = ('str', 'bool', 'int', 'index-int', 'positive-int', 'positive-int-as-str', 'pointer-index', 'float', 'positive-float', 'range-float', 'enum', 'enum-int')
 
         key_names = [k['name'] for k in key_items]
         data_names = [d['name'] for d in data_items]
@@ -2298,7 +2300,7 @@ class NEFTranslator(object):
                                     continue
                                 else:
                                     raise ValueError("%s%s '%s' must be %s." % (get_idx_msg(idx_tag_ids, tags, ent), name, val, self.readable_item_type[type]))
-                        elif type == 'index-int' or type == 'positive-int':
+                        elif type == 'index-int' or type == 'positive-int' or type == 'positive-int-as-str':
                             try:
                                 ent[name] = int(val)
                             except:
@@ -2320,6 +2322,8 @@ class NEFTranslator(object):
                                     ent[name] = None
                                 else:
                                     user_warn_msg += "[Zero value error] %s%s '%s' should not be zero, as defined by %s.\n" % (get_idx_msg(idx_tag_ids, tags, ent), name, val, self.readable_item_type[type])
+                            if type == 'positive-int-as-str':
+                                ent[name] = str(ent[name])
                         elif type == 'pointer-index':
                             try:
                                 ent[name] = int(val)
@@ -2486,7 +2490,7 @@ class NEFTranslator(object):
                                             continue
                                         else:
                                             raise ValueError("%s%s '%s' must be %s." % (get_idx_msg(idx_tag_ids, tags, ent), name, val, self.readable_item_type[type]))
-                                elif type == 'index-int' or type == 'positive-int':
+                                elif type == 'index-int' or type == 'positive-int' or type == 'positive-int-as-str':
                                     try:
                                         ent[name] = int(val)
                                     except:
@@ -2508,6 +2512,8 @@ class NEFTranslator(object):
                                             ent[name] = None
                                         else:
                                             user_warn_msg += "[Zero value error] %s%s '%s' should not be zero, as defined by %s.\n" % (get_idx_msg(idx_tag_ids, tags, ent), name, val, self.readable_item_type[type])
+                                    if type == 'positive-int-as-str':
+                                        ent[name] = str(ent[name])
                                 elif type == 'pointer-index':
                                     try:
                                         ent[name] = int(val)
@@ -2930,7 +2936,7 @@ class NEFTranslator(object):
 
         user_warn_msg = ''
 
-        item_types = ('str', 'bool', 'int', 'positive-int', 'float', 'positive-float', 'range-float', 'enum', 'enum-int')
+        item_types = ('str', 'bool', 'int', 'positive-int', 'positive-int-as-str', 'float', 'positive-float', 'range-float', 'enum', 'enum-int')
 
         tag_names = [t['name'] for t in tag_items]
         mand_tag_names = [t['name'] for t in tag_items if t['mandatory']]
@@ -3024,7 +3030,7 @@ class NEFTranslator(object):
                                 ent[name] = int(t['default'])
                             else:
                                 raise ValueError("%s '%s' must be %s." % (name, val, self.readable_item_type[type]))
-                    elif type == 'positive-int':
+                    elif type == 'positive-int' or type == 'positive-int-as-str':
                         try:
                             ent[name] = int(val)
                         except:
@@ -3043,6 +3049,8 @@ class NEFTranslator(object):
                                 ent[name] = None
                             else:
                                 user_warn_msg += "[Zero value error] %s '%s' should not be zero, as defined by %s.\n" % (name, val, self.readable_item_type[type])
+                        if type == 'positive-int-as-str':
+                            ent[name] = str(ent[name])
                     elif type == 'float':
                         try:
                             ent[name] = float(val)

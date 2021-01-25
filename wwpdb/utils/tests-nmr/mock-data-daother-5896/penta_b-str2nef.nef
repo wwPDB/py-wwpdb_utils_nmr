@@ -37,11 +37,11 @@ save_nef_molecular_system
       _nef_sequence.residue_variant
       _nef_sequence.cis_peptide
 
-     1   A   1   MET   start    .   false    
-     2   A   2   LYS   middle   .   false    
-     3   A   3   ILE   middle   .   false    
-     4   A   4   ILE   middle   .   false    
-     5   A   5   SER   end      .   false    
+     .   A   1   MET   start    .   false    
+     .   A   2   LYS   middle   .   false    
+     .   A   3   ILE   middle   .   false    
+     .   A   4   ILE   middle   .   false    
+     .   A   5   SER   end      .   false    
 
    stop_
 

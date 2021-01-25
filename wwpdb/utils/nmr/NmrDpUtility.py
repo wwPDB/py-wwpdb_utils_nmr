@@ -15508,7 +15508,8 @@ class NmrDpUtility(object):
                                     b = next(b for b in c[data_type] if b['seq_id_1'] == seq_id_1 and b['seq_id_2'] == seq_id_2)
                                     b['total'] += 1
                                 except StopIteration:
-                                    c[data_type].append({'seq_id_1': seq_id_1, 'seq_id_2': seq_id_2, 'total': 1})
+                                    if seq_id_1 in c['seq_id'] and seq_id_2 in c['seq_id']: 
+                                        c[data_type].append({'seq_id_1': seq_id_1, 'seq_id_2': seq_id_2, 'total': 1})
 
                     else:
 
@@ -15520,13 +15521,15 @@ class NmrDpUtility(object):
                                     b = next(b for b in c[data_type] if b['seq_id_1'] == seq_id_1 and b['seq_id_2'] == seq_id_2)
                                     b['total'] += 1
                                 except StopIteration:
-                                    c[data_type].append({'seq_id_1': seq_id_1, 'seq_id_2': seq_id_2, 'total': 1})
+                                    if seq_id_1 in c['seq_id_1'] and seq_id_2 in c['seq_id_2']:
+                                        c[data_type].append({'seq_id_1': seq_id_1, 'seq_id_2': seq_id_2, 'total': 1})
                             elif c['chain_id_1'] == chain_id_2 and c['chain_id_2'] == chain_id_1:
                                 try:
                                     b = next(b for b in c[data_type] if b['seq_id_1'] == seq_id_2 and b['seq_id_2'] == seq_id_1)
                                     b['total'] += 1
                                 except StopIteration:
-                                    c[data_type].append({'seq_id_1': seq_id_2, 'seq_id_2': seq_id_1, 'total': 1})
+                                    if seq_id_1 in c['seq_id_1'] and seq_id_2 in c['seq_id_2']:
+                                        c[data_type].append({'seq_id_1': seq_id_2, 'seq_id_2': seq_id_1, 'total': 1})
                             if not has_inter_chain_constraint and len(c[data_type]) > 0:
                                 has_inter_chain_constraint = True
 
@@ -16122,7 +16125,8 @@ class NmrDpUtility(object):
                                     b = next(b for b in c[data_type] if b['seq_id_1'] == seq_id_1 and b['seq_id_2'] == seq_id_2)
                                     b['total'] += 1
                                 except StopIteration:
-                                    c[data_type].append({'seq_id_1': seq_id_1, 'seq_id_2': seq_id_2, 'total': 1})
+                                    if seq_id_1 in c['seq_id'] and seq_id_2 in c['seq_id']:
+                                        c[data_type].append({'seq_id_1': seq_id_1, 'seq_id_2': seq_id_2, 'total': 1})
 
                     else:
 
@@ -16134,13 +16138,15 @@ class NmrDpUtility(object):
                                     b = next(b for b in c[data_type] if b['seq_id_1'] == seq_id_1 and b['seq_id_2'] == seq_id_2)
                                     b['total'] += 1
                                 except StopIteration:
-                                    c[data_type].append({'seq_id_1': seq_id_1, 'seq_id_2': seq_id_2, 'total': 1})
+                                    if seq_id_1 in c['seq_id_1'] and seq_id_2 in c['seq_id_2']:
+                                        c[data_type].append({'seq_id_1': seq_id_1, 'seq_id_2': seq_id_2, 'total': 1})
                             elif c['chain_id_1'] == chain_id_2 and c['chain_id_2'] == chain_id_1:
                                 try:
                                     b = next(b for b in c[data_type] if b['seq_id_1'] == seq_id_2 and b['seq_id_2'] == seq_id_1)
                                     b['total'] += 1
                                 except StopIteration:
-                                    c[data_type].append({'seq_id_1': seq_id_2, 'seq_id_2': seq_id_1, 'total': 1})
+                                    if seq_id_1 in c['seq_id_1'] and seq_id_2 in c['seq_id_2']:
+                                        c[data_type].append({'seq_id_1': seq_id_2, 'seq_id_2': seq_id_1, 'total': 1})
                             if not has_inter_chain_constraint and len(c[data_type]) > 0:
                                 has_inter_chain_constraint = True
 

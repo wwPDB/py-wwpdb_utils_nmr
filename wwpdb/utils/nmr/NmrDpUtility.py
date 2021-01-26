@@ -14324,7 +14324,7 @@ class NmrDpUtility(object):
 
                                         atom_set.add(atom_id)
 
-                                        if data_type == '1H' and a.startswith('H') and h1_col != -1 and not atom_id in non_rep_methyl_pros:
+                                        if data_type == '1H' and h1_col != -1 and not atom_id in non_rep_methyl_pros and atom_id.startswith('H'):
                                             ch3_c[h1_col]['number_of_assigned_shifts'] += 1
 
                                         elif data_type == '13C' and c13_col != -1:
@@ -15508,7 +15508,7 @@ class NmrDpUtility(object):
                                     b = next(b for b in c[data_type] if b['seq_id_1'] == seq_id_1 and b['seq_id_2'] == seq_id_2)
                                     b['total'] += 1
                                 except StopIteration:
-                                    if seq_id_1 in c['seq_id'] and seq_id_2 in c['seq_id']: 
+                                    if seq_id_1 in c['seq_id'] and seq_id_2 in c['seq_id']:
                                         c[data_type].append({'seq_id_1': seq_id_1, 'seq_id_2': seq_id_2, 'total': 1})
 
                     else:

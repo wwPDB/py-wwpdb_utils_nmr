@@ -1616,7 +1616,6 @@
               "chain_id",
               "seq_id",
               "comp_id",
-              "rotameric_state_pred",
               "rotameric_state"
             ]
           }

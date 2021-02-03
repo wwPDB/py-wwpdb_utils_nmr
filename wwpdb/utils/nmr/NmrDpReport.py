@@ -43,6 +43,7 @@
 # 27-Nov-2020  M. Yokochi - support grouped error/warning message (DAOTHER-6373)
 # 17-Dec-2020  M. Yokochi - add 'atom_not_found' error (DAOTHER-6345)
 # 21-Jan-2021  M. Yokochi - symptomatic treatment for DAOTHER-6509
+# 03-Feb-2021  M. Yokochi - add support for 'identical_chain_id' attribute, which contains mapping of chain id(s), which shares the same entity.
 ##
 """ Wrapper class for data processing report of NMR data.
     @author: Masashi Yokochi
@@ -895,6 +896,54 @@ class NmrDpReport:
             return None
 
         return next((ps for ps in cif_polymer_sequence if ps['chain_id'] == chain_id), None)
+
+    def getChainIdsForSameEntity(self):
+        """ Return mapping of chain_id in the NMR data, which share the same entity.
+        """
+
+        id = self.getInputSourceIdOfNmrData()
+
+        if id < 0:
+            ids = self.getInputSourceIdsOfNmrLegacyData()
+            if len(ids) == 0:
+                return None
+            id = ids[0]
+
+        nmr_polymer_sequence = self.getDictValue(self.getInputSourceDict(id), 'polymer_sequence')
+
+        if nmr_polymer_sequence is None:
+            return None
+
+        ret = {}
+
+        for ps in nmr_polymer_sequence:
+            if 'identical_chain_id' in ps:
+                ret[ps['chain_id']] = ps['identical_chain_id']
+
+        if len(ret) == 0:
+            return None
+
+        return ret
+
+    def getAsymIdsForSameEntity(self):
+        """ Return mapping of asym_id in the coordinates, which share the same entity.
+        """
+
+        cif_polymer_sequence = self.getDictValue(self.getInputSourceDict(self.getInputSourceIdOfCoord()), 'polymer_sequence')
+
+        if cif_polymer_sequence is None:
+            return None
+
+        ret = {}
+
+        for ps in cif_polymer_sequence:
+            if 'identical_chain_id' in ps:
+                ret[ps['chain_id']] = ps['identical_chain_id']
+
+        if len(ret) == 0:
+            return None
+
+        return ret
 
     def getNmrSeq1LetterCodeOf(self, chain_id, fullSequence=True, unmappedSeqId=[]):
         """ Retrieve NMR polymer sequence (1-letter code) having a given chain_id.

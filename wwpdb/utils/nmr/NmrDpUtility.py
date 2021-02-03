@@ -109,6 +109,7 @@
 # 17-Dec-2020  M. Yokochi - support 'atom_not_found' error with message revision (DAOTHER-6345)
 # 25-Jan-2021  M. Yokochi - simplify code for Entity_assemble_ID and chain_code
 # 25-Jan-2021  M. Yokochi - add CS validation code about rotameric state of ILE/LEU/VAL residue
+# 03-Feb-2021  M. Yokochi - update polymer sequence which shares the same entity and missing in the molecular assembly information if necessary, i.e. peptide dimer, double strand DNA 
 ##
 """ Wrapper class for data processing for NMR data.
     @author: Masashi Yokochi
@@ -6257,7 +6258,7 @@ class NmrDpUtility(object):
             has_poly_seq = has_key_value(input_source_dic, 'polymer_sequence')
             has_poly_seq_in_loop = has_key_value(input_source_dic, 'polymer_sequence_in_loop')
 
-            if (not has_poly_seq) and (not has_poly_seq_in_loop):
+            if (not has_poly_seq) or (not has_poly_seq_in_loop):
                 continue
 
             polymer_sequence = input_source_dic['polymer_sequence']
@@ -6406,7 +6407,7 @@ class NmrDpUtility(object):
             has_poly_seq = has_key_value(input_source_dic, 'polymer_sequence')
             has_poly_seq_in_loop = has_key_value(input_source_dic, 'polymer_sequence_in_loop')
 
-            if (not has_poly_seq) and (not has_poly_seq_in_loop):
+            if (not has_poly_seq) or (not has_poly_seq_in_loop):
                 continue
 
             polymer_sequence = input_source_dic['polymer_sequence']
@@ -7282,7 +7283,7 @@ class NmrDpUtility(object):
 
                                         chain_id_ = _s1['chain_id']
 
-                                        if sf_framecode2 in ref_chain_ids and chain_id in ref_chain_ids[sf_framecode2]:
+                                        if sf_framecode2 in ref_chain_ids and chain_id_ in ref_chain_ids[sf_framecode2]:
                                             continue
 
                                         self.__pA.setReferenceSequence(_s1['comp_id'], 'REF' + chain_id_)
@@ -7563,7 +7564,7 @@ class NmrDpUtility(object):
 
                                         chain_id_ = _s1['chain_id']
 
-                                        if sf_framecode2 in ref_chain_ids and chain_id in ref_chain_ids[sf_framecode2]:
+                                        if sf_framecode2 in ref_chain_ids and chain_id_ in ref_chain_ids[sf_framecode2]:
                                             continue
 
                                         self.__pA.setReferenceSequence(_s1['comp_id'], 'REF' + chain_id_)
@@ -7582,7 +7583,7 @@ class NmrDpUtility(object):
                                         if length == unmapped + conflict or _matched <= conflict:
                                             continue
 
-                                        if _matched - conflict < __matched - __conflict or unmapped + conflict > __unmapped + __conflict:
+                                        if _matched - conflict < __matched - __conflict or (unmapped + conflict > __unmapped + __conflict and __matched > 0):
                                             continue
 
                                         __length = length
@@ -8162,6 +8163,8 @@ class NmrDpUtility(object):
         """ Fix sequence ID of interesting loop.
         """
 
+        uniq_chains = self.report.getChainIdsForSameEntity() is None
+
         chain_id_name = 'chain_code' if file_type == 'nef' else 'Entity_assembly_ID'
         entity_id_name = None if file_type == 'nef' else 'Entity_ID'
 
@@ -8207,7 +8210,7 @@ class NmrDpUtility(object):
 
                 row[chain_id_col] = _chain_id
 
-                if entity_id_col != -1:
+                if uniq_chains and entity_id_col != -1:
                     row[entity_id_col] = _chain_id
 
         else:
@@ -8232,7 +8235,7 @@ class NmrDpUtility(object):
 
                     row[chain_id_col] = _chain_id
 
-                    if entity_id_col != -1:
+                    if uniq_chains and entity_id_col != -1:
                         row[entity_id_col] = _chain_id
 
     def __fixSeqIdInLoop(self, file_list_id, file_name, file_type, content_subtype, sf_framecode, chain_id, seq_id_conv_dict):
@@ -21725,6 +21728,8 @@ i                               """
 
         if not polymer_sequence is None:
 
+            cid_offset = 0
+
             chains = []
 
             for s in polymer_sequence:
@@ -21760,7 +21765,7 @@ i                               """
 
                     if file_type == 'nef':
 
-                        row.append(chain_id) # chain_code
+                        row.append(self.__nefT.index_to_letter(self.__nefT.letter_to_int(chain_id) - 1 + cid_offset)) # chain_code
                         row.append(seq_id) # sequence_code
                         row.append(comp_id) # residue_name
 
@@ -21803,7 +21808,7 @@ i                               """
 
                         cid = chains.index(chain_id) + 1
 
-                        row.append(cid) # Entity_assembly_ID
+                        row.append(cid + cid_offset) # Entity_assembly_ID
                         row.append(seq_id) # Comp_index_ID
                         row.append(comp_id) # Comp_ID
 
@@ -21901,6 +21906,176 @@ i                               """
                     loop.add_data(row)
 
                     row_id += 1
+
+                asym_ids_for_same_entity = self.report.getAsymIdsForSameEntity()
+                chain_ids_for_same_entity = self.report.getChainIdsForSameEntity()
+
+                if not asym_ids_for_same_entity is None and chain_ids_for_same_entity is None:
+                    for asym_id in asym_ids_for_same_entity.keys():
+                        nmr_ps = self.report.getNmrPolymerSequenceWithModelChainId(asym_id)
+                        if not nmr_ps is None and nmr_ps['chain_id'] == chain_id:
+                            cif_ps = self.report.getModelPolymerSequenceWithNmrChainId(chain_id)
+                            if not cif_ps is None and cif_ps['chain_id'] != asym_id:
+
+                                cid_offset += 1
+
+                                for j in range(length):
+
+                                    row = []
+
+                                    if has_index_tag:
+                                        row.append(row_id)
+
+                                    auth_seq_id = s['seq_id'][j]
+                                    auth_comp_id = s['comp_id'][j]
+
+                                    seq_id = auth_seq_id #+ seq_id_offset
+                                    _seq_id_ = auth_seq_id + seq_id_offset
+                                    comp_id = auth_comp_id.upper()
+
+                                    if file_type == 'nef':
+
+                                        row.append(self.__nefT.index_to_letter(self.__nefT.letter_to_int(chain_id) - 1 + cid_offset)) # chain_code
+                                        row.append(seq_id) # sequence_code
+                                        row.append(comp_id) # residue_name
+
+                                        # linking
+
+                                        if cyclic and (_seq_id_ == 1 or _seq_id_ == length):
+                                            row.append('cyclic')
+                                        elif _seq_id_ == 1 and length == 1:
+                                            row.append('single')
+                                        elif _seq_id_ == 1:
+                                            row.append('start')
+                                        elif _seq_id_ == length:
+                                            row.append('end')
+                                        elif auth_seq_id - 1 == s['seq_id'][j - 1] and auth_seq_id + 1 == s['seq_id'][j + 1]:
+                                            row.append('middle')
+                                        else:
+                                            row.append('break')
+
+                                        # residue_variant
+
+                                        if has_res_var_dat:
+                                            orig_row = None if orig_lp_data is None else next((i for i in orig_lp_data if i['chain_code'] == chain_id and i['sequence_code'] == auth_seq_id and i['residue_name'] == auth_comp_id), None)
+                                            if not orig_row is None:
+                                                row.append(orig_row['residue_variant'])
+                                            else:
+                                                row.append('.')
+                                        else:
+                                            row.append('.')
+
+                                        # cis_peptide
+
+                                        if self.__isProtCis(chain_id, seq_id):
+                                            row.append('true')
+                                        elif comp_id == 'PRO' or comp_id == 'GLY':
+                                            row.append('false')
+                                        else:
+                                            row.append('.')
+
+                                    else:
+
+                                        cid = chains.index(chain_id) + 1
+
+                                        row.append(cid + cid_offset) # Entity_assembly_ID
+                                        row.append(seq_id) # Comp_index_ID
+                                        row.append(comp_id) # Comp_ID
+
+                                        orig_row = None if orig_lp_data is None else next((i for i in orig_lp_data if i['Entity_assembly_ID'] == cid and i['Comp_index_ID'] == auth_seq_id and i['Comp_ID'] == auth_comp_id), None)
+
+                                        # Auth_asym_ID
+
+                                        if has_auth_asym_id:
+                                            if not orig_row is None:
+                                                row.append(orig_row['Auth_asym_ID'])
+                                            else:
+                                                row.append(chain_id)
+                                        else:
+                                            row.append(chain_id)
+
+                                        # Auth_seq_ID
+
+                                        if has_auth_seq_id:
+                                            if not orig_row is None:
+                                                row.append(orig_row['Auth_seq_ID'])
+                                            else:
+                                                row.append(auth_seq_id)
+                                        else:
+                                            row.append(auth_seq_id)
+
+                                        # Auth_comp_ID
+
+                                        if has_auth_comp_id:
+                                            if not orig_row is None:
+                                                row.append(orig_row['Auth_comp_ID'])
+                                            else:
+                                                row.append(auth_comp_id)
+                                        else:
+                                            row.append(auth_comp_id)
+
+                                        # Auth_variant_ID
+
+                                        if has_res_var_dat:
+                                            if not orig_row is None:
+                                                row.append(orig_row['Auth_variant_ID'])
+                                            else:
+                                                row.append('.')
+                                        else:
+                                            row.append('.')
+
+                                        # Sequence_linking
+
+                                        if cyclic and (seq_id == 1 or seq_id == length):
+                                            row.append('cyclic')
+                                        elif seq_id == 1 and length == 1:
+                                            row.append('single')
+                                        elif seq_id == 1:
+                                            row.append('start')
+                                        elif _seq_id_ == length:
+                                            row.append('end')
+                                        elif auth_seq_id - 1 == s['seq_id'][j - 1] and auth_seq_id + 1 == s['seq_id'][j + 1]:
+                                            row.append('middle')
+                                        else:
+                                            row.append('break')
+
+                                        # Cis_residue
+
+                                        if self.__isProtCis(chain_id, seq_id):
+                                            row.append('yes')
+                                        elif comp_id == 'PRO' or comp_id == 'GLY':
+                                            row.append('no')
+                                        else:
+                                            row.append('.')
+
+                                        # NEF_index
+
+                                        if has_nef_index:
+                                            if not orig_row is None:
+                                                row.append(orig_row['NEF_index'])
+                                            else:
+                                                row.append('.')
+
+                                        # Assembly_ID
+
+                                        if has_assembly_id:
+                                            if not orig_row is None:
+                                                row.append(orig_row['Assembly_ID'])
+                                            else:
+                                                row.append(1)
+
+                                        else:
+                                            row.append(1)
+
+                                        if has_entry_id:
+                                            if not orig_row is None:
+                                                row.append(orig_row['Entry_ID'])
+                                            else:
+                                                row.append('.')
+
+                                    loop.add_data(row)
+
+                                    row_id += 1
 
             poly_seq_sf_data.add_loop(loop)
 

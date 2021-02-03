@@ -58,6 +58,7 @@
 # 11-Nov-2020  M. Yokochi - append _nef_sequence.index even if _Chem_comp_assembly.NEF_index does not exist (v2.9.2, DAOTHER-6128)
 # 19-Nov-2020  M. Yokochi - add support for HEM, HEB, HEC methyl groups (v2.9.3, DAOTHER-6366)
 # 25-Jan-2021  M. Yokochi - add 'positive-int-as-str' value type to simplify code for Entity_assembly_ID, and chain_code (v2.9.4)
+# 03-Feb-2021  M. Yokochi - support 3 letter chain code (v2.9.5)
 ##
 import sys
 import os
@@ -79,7 +80,7 @@ from wwpdb.utils.nmr.io.ChemCompIo import ChemCompReader
 from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
 from wwpdb.utils.nmr.NmrDpReport import NmrDpReport
 
-__version__ = '2.9.4'
+__version__ = '2.9.5'
 
 __pynmrstar_v3__ = version.parse(pynmrstar.__version__) >= version.parse("3.0.0")
 
@@ -1182,6 +1183,16 @@ class NEFTranslator(object):
                         ent['seq_id'] = seq_dict[c]
                         ent['comp_id'] = cmp_dict[c]
 
+                    if len(chains) > 1:
+                        identity = []
+                        for _c in chains:
+                            if _c == c:
+                                continue
+                            if cmp_dict[_c] == cmp_dict[c]:
+                                identity.append(_c)
+                        if len(identity) > 0:
+                            ent['identical_chain_id'] = identity
+
                     asm.append(ent)
 
                 data.append(asm)
@@ -1341,6 +1352,16 @@ class NEFTranslator(object):
                     else:
                         ent['seq_id'] = seq_dict[c]
                         ent['comp_id'] = cmp_dict[c]
+
+                    if len(chains) > 1:
+                        identity = []
+                        for _c in chains:
+                            if _c == c:
+                                continue
+                            if cmp_dict[_c] == cmp_dict[c]:
+                                identity.append(_c)
+                        if len(identity) > 0:
+                            ent['identical_chain_id'] = identity
 
                     asm.append(ent)
 
@@ -2728,6 +2749,19 @@ class NEFTranslator(object):
             unit *= 27
 
         return ret if ret >= min else min
+
+    def index_to_letter(self, index):
+        """ Return string from digit.
+        """
+
+        index += 1
+
+        if index <= 27:
+            return str(chr(64 + index))
+        elif index <= 677:
+            return str(chr(64 + (index // 26))) + str(chr(64 + (index % 27)))
+        else:
+            return str(chr(64 + (index // 676))) + str(chr(64 + ((index // 26)) // 26)) + str(chr(64 + (index % 27)))
 
     def get_conflict_id(self, star_data, lp_category, key_items):
         """ Return list of row ID of duplicated/conflicted rows except for rows of the first occurrence.
@@ -4207,10 +4241,7 @@ class NEFTranslator(object):
             if len(seq_list[star_chain]) == 0:
                 continue
 
-            if cid <= 26:
-                nef_chain = str(chr(65 + cid))
-            else:
-                nef_chain = str(chr(65 + (cid // 26))) + str(chr(65 + (cid % 26)))
+            nef_chain = self.index_to_letter(cid)
 
             self.star2nef_chain_mapping[star_chain] = nef_chain
 
@@ -4668,10 +4699,7 @@ class NEFTranslator(object):
                             nef_chain = _star_chain
                         else:
                             cid = self.authChainId.index(_star_chain)
-                            if cid <= 26:
-                                nef_chain = str(chr(65 + cid))
-                            else:
-                                nef_chain = str(chr(65 + (cid // 26))) + str(chr(65 + (cid % 26)))
+                            nef_chain = self.index_to_letter(cid)
                         cif_chain = nef_chain
                         _cif_seq = _star_seq
 
@@ -5037,10 +5065,7 @@ class NEFTranslator(object):
                                 nef_chain = _star_chain
                             else:
                                 cid = self.authChainId.index(_star_chain)
-                                if cid <= 26:
-                                    nef_chain = str(chr(65 + cid))
-                                else:
-                                    nef_chain = str(chr(65 + (cid // 26))) + str(chr(65 + (cid % 26)))
+                                nef_chain = self.index_to_letter(cid)
                         tag_map[chain_tag] = nef_chain
                         tag_map[seq_tag] = _star_seq
 
@@ -5733,10 +5758,7 @@ class NEFTranslator(object):
                                 nef_chain = _star_chain
                             else:
                                 cid = self.authChainId.index(_star_chain)
-                                if cid <= 26:
-                                    nef_chain = str(chr(65 + cid))
-                                else:
-                                    nef_chain = str(chr(65 + (cid // 26))) + str(chr(65 + (cid % 26)))
+                                nef_chain = self.index_to_letter(cid)
                         tag_map[chain_tag] = nef_chain
                         tag_map[seq_tag] = _star_seq
 
@@ -5904,10 +5926,7 @@ class NEFTranslator(object):
                         nef_chain = _star_chain
                     else:
                         cid = self.authChainId.index(_star_chain)
-                        if cid <= 26:
-                            nef_chain = str(chr(65 + cid))
-                        else:
-                            nef_chain = str(chr(65 + (cid // 26))) + str(chr(65 + (cid % 26)))
+                        nef_chain = self.index_to_letter(cid)
                 tag_map[chain_tag] = nef_chain
                 tag_map[seq_tag] = _star_seq
 
@@ -6069,10 +6088,7 @@ class NEFTranslator(object):
                                     nef_chain = _star_chain
                                 else:
                                     cid = self.authChainId.index(_star_chain)
-                                    if cid <= 26:
-                                        nef_chain = str(chr(65 + cid))
-                                    else:
-                                        nef_chain = str(chr(65 + (cid // 26))) + str(chr(65 + (cid % 26)))
+                                    nef_chain = self.index_to_letter(cid)
                             nef_seq = _star_seq
 
                         if _star_chain in self.star2cif_chain_mapping:

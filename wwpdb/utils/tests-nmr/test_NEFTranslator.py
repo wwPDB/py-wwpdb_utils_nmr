@@ -218,8 +218,8 @@ class TestNEFTranslator(unittest.TestCase):
         self.assertEqual(self.neft.get_nef_seq(dat, 'nef_sequence', 'sequence_code', 'residue_name'),
                          [[{'chain_id': 'A', 'seq_id': [i for i in range(372, 587)],
                             'comp_id': ['TYR', 'GLY', 'PRO', 'HIS', 'ALA', 'ASP', 'SER', 'PRO', 'VAL', 'LEU', 'MET', 'VAL', 'TYR', 'GLY', 'LEU', 'ASP', 'GLN', 'SER', 'LYS', 'MET', 'ASN', 'CYS', 'ASP', 'ARG', 'VAL', 'PHE', 'ASN', 'VAL', 'PHE', 'CYS', 'LEU', 'TYR', 'GLY', 'ASN', 'VAL', 'GLU', 'LYS', 'VAL', 'LYS', 'PHE', 'MET', 'LYS', 'SER', 'LYS', 'PRO', 'GLY', 'ALA', 'ALA', 'MET', 'VAL', 'GLU', 'MET', 'ALA', 'ASP', 'GLY', 'TYR', 'ALA', 'VAL', 'ASP', 'ARG', 'ALA', 'ILE', 'THR', 'HIS', 'LEU', 'ASN', 'ASN', 'ASN', 'PHE', 'MET', 'PHE', 'GLY', 'GLN', 'LYS', 'MET', 'ASN', 'VAL', 'CYS', 'VAL', 'SER', 'LYS', 'GLN', 'PRO', 'ALA', 'ILE', 'MET', 'PRO', 'GLY', 'GLN', 'SER', 'TYR', 'GLY', 'LEU', 'GLU', 'ASP', 'GLY', 'SER', 'CYS', 'SER', 'TYR', 'LYS', 'ASP', 'PHE', 'SER', 'GLU', 'SER', 'ARG', 'ASN', 'ASN', 'ARG', 'PHE', 'SER', 'THR', 'PRO', 'GLU', 'GLN', 'ALA', 'ALA', 'LYS', 'ASN', 'ARG', 'ILE', 'GLN', 'HIS', 'PRO', 'SER', 'ASN', 'VAL', 'LEU', 'HIS', 'PHE', 'PHE', 'ASN', 'ALA', 'PRO', 'LEU', 'GLU', 'VAL', 'THR', 'GLU', 'GLU', 'ASN', 'PHE', 'PHE', 'GLU', 'ILE', 'CYS', 'ASP', 'GLU', 'LEU', 'GLY', 'VAL', 'LYS', 'ARG', 'PRO', 'THR', 'SER', 'VAL', 'LYS', 'VAL', 'PHE', 'SER', 'GLY', 'LYS', 'SER', 'GLU', 'ARG', 'SER', 'SER', 'SER', 'GLY', 'LEU', 'LEU', 'GLU', 'TRP', 'ASP', 'SER', 'LYS', 'SER', 'ASP', 'ALA', 'LEU', 'GLU', 'THR', 'LEU', 'GLY', 'PHE', 'LEU', 'ASN', 'HIS', 'TYR', 'GLN', 'MET', 'LYS', 'ASN', 'PRO', 'ASN', 'GLY', 'PRO', 'TYR', 'PRO', 'TYR', 'THR', 'LEU', 'LYS', 'LEU', 'CYS', 'PHE', 'SER', 'THR', 'ALA', 'GLN', 'HIS', 'ALA', 'SER']},
-                           {'chain_id': 'B', 'seq_id': [i for i in range(1, 6)], 'comp_id': ['A', 'C', 'A', 'C', 'A']},
-                           {'chain_id': 'C', 'seq_id': [i for i in range(1, 6)], 'comp_id': ['A', 'C', 'A', 'C', 'A']}]])
+                           {'chain_id': 'B', 'seq_id': [i for i in range(1, 6)], 'comp_id': ['A', 'C', 'A', 'C', 'A'], 'identical_chain_id': ['C']},
+                           {'chain_id': 'C', 'seq_id': [i for i in range(1, 6)], 'comp_id': ['A', 'C', 'A', 'C', 'A'], 'identical_chain_id': ['B']}]])
         dat = self.neft.read_input_file(self.data_dir_path + 'saveframeonly.nef')[2]
         self.assertEqual(self.neft.get_nef_seq(dat),
                          [[{'chain_id': 'A', 'seq_id': [i for i in range(10, 70)],
@@ -290,8 +290,8 @@ class TestNEFTranslator(unittest.TestCase):
         self.assertEqual(self.neft.get_star_seq(dat, 'Chem_comp_assembly', 'Comp_index_ID', 'Comp_ID'),
                          [[{'chain_id': '1', 'seq_id': [i for i in range(1, 216)],
                             'comp_id': ['TYR', 'GLY', 'PRO', 'HIS', 'ALA', 'ASP', 'SER', 'PRO', 'VAL', 'LEU', 'MET', 'VAL', 'TYR', 'GLY', 'LEU', 'ASP', 'GLN', 'SER', 'LYS', 'MET', 'ASN', 'CYS', 'ASP', 'ARG', 'VAL', 'PHE', 'ASN', 'VAL', 'PHE', 'CYS', 'LEU', 'TYR', 'GLY', 'ASN', 'VAL', 'GLU', 'LYS', 'VAL', 'LYS', 'PHE', 'MET', 'LYS', 'SER', 'LYS', 'PRO', 'GLY', 'ALA', 'ALA', 'MET', 'VAL', 'GLU', 'MET', 'ALA', 'ASP', 'GLY', 'TYR', 'ALA', 'VAL', 'ASP', 'ARG', 'ALA', 'ILE', 'THR', 'HIS', 'LEU', 'ASN', 'ASN', 'ASN', 'PHE', 'MET', 'PHE', 'GLY', 'GLN', 'LYS', 'MET', 'ASN', 'VAL', 'CYS', 'VAL', 'SER', 'LYS', 'GLN', 'PRO', 'ALA', 'ILE', 'MET', 'PRO', 'GLY', 'GLN', 'SER', 'TYR', 'GLY', 'LEU', 'GLU', 'ASP', 'GLY', 'SER', 'CYS', 'SER', 'TYR', 'LYS', 'ASP', 'PHE', 'SER', 'GLU', 'SER', 'ARG', 'ASN', 'ASN', 'ARG', 'PHE', 'SER', 'THR', 'PRO', 'GLU', 'GLN', 'ALA', 'ALA', 'LYS', 'ASN', 'ARG', 'ILE', 'GLN', 'HIS', 'PRO', 'SER', 'ASN', 'VAL', 'LEU', 'HIS', 'PHE', 'PHE', 'ASN', 'ALA', 'PRO', 'LEU', 'GLU', 'VAL', 'THR', 'GLU', 'GLU', 'ASN', 'PHE', 'PHE', 'GLU', 'ILE', 'CYS', 'ASP', 'GLU', 'LEU', 'GLY', 'VAL', 'LYS', 'ARG', 'PRO', 'THR', 'SER', 'VAL', 'LYS', 'VAL', 'PHE', 'SER', 'GLY', 'LYS', 'SER', 'GLU', 'ARG', 'SER', 'SER', 'SER', 'GLY', 'LEU', 'LEU', 'GLU', 'TRP', 'ASP', 'SER', 'LYS', 'SER', 'ASP', 'ALA', 'LEU', 'GLU', 'THR', 'LEU', 'GLY', 'PHE', 'LEU', 'ASN', 'HIS', 'TYR', 'GLN', 'MET', 'LYS', 'ASN', 'PRO', 'ASN', 'GLY', 'PRO', 'TYR', 'PRO', 'TYR', 'THR', 'LEU', 'LYS', 'LEU', 'CYS', 'PHE', 'SER', 'THR', 'ALA', 'GLN', 'HIS', 'ALA', 'SER']},
-                           {'chain_id': '2', 'seq_id': [i for i in range(1, 6)], 'comp_id': ['A', 'C', 'A', 'C', 'A']},
-                           {'chain_id': '3', 'seq_id': [i for i in range(1, 6)], 'comp_id': ['A', 'C', 'A', 'C', 'A']}]])
+                           {'chain_id': '2', 'seq_id': [i for i in range(1, 6)], 'comp_id': ['A', 'C', 'A', 'C', 'A'], 'identical_chain_id': ['3']},
+                           {'chain_id': '3', 'seq_id': [i for i in range(1, 6)], 'comp_id': ['A', 'C', 'A', 'C', 'A'], 'identical_chain_id': ['2']}]])
         entry = pynmrstar.Entry.from_file(self.data_dir_path + '2l9r.str')
         # extract polymer sequence from assembly category
         self.assertEqual(self.neft.get_star_seq(entry['nef_molecular_system'], lp_category='Chem_comp_assembly'),
@@ -792,6 +792,12 @@ class TestNEFTranslator(unittest.TestCase):
         self.assertEqual(self.neft.letter_to_int('0'), 0)
         self.assertEqual(self.neft.letter_to_int('0', 1), 1)
         self.assertEqual(self.neft.letter_to_int('Z*A'), 27 * 26 + 1)
+        self.assertEqual(self.neft.index_to_letter(self.neft.letter_to_int('A') - 1), 'A')
+        self.assertEqual(self.neft.index_to_letter(self.neft.letter_to_int('AA') - 1), 'AA')
+        self.assertEqual(self.neft.index_to_letter(self.neft.letter_to_int('AAA') - 1), 'AAA')
+        self.assertEqual(self.neft.index_to_letter(self.neft.letter_to_int('B') - 1), 'B')
+        self.assertEqual(self.neft.index_to_letter(self.neft.letter_to_int('BB') - 1), 'BB')
+        self.assertEqual(self.neft.index_to_letter(self.neft.letter_to_int('BBB') - 1), 'BBB')
 
 if __name__ == '__main__':
     unittest.main()

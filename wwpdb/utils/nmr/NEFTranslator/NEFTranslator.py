@@ -58,7 +58,7 @@
 # 11-Nov-2020  M. Yokochi - append _nef_sequence.index even if _Chem_comp_assembly.NEF_index does not exist (v2.9.2, DAOTHER-6128)
 # 19-Nov-2020  M. Yokochi - add support for HEM, HEB, HEC methyl groups (v2.9.3, DAOTHER-6366)
 # 25-Jan-2021  M. Yokochi - add 'positive-int-as-str' value type to simplify code for Entity_assembly_ID, and chain_code (v2.9.4)
-# 03-Feb-2021  M. Yokochi - support 3 letter chain code (v2.9.5)
+# 04-Feb-2021  M. Yokochi - support 3 letter chain code (v2.9.5, DAOTHER-5896, DAOTHER-6128, BMRB entry: 16812, PDB ID: 6kae)
 ##
 import sys
 import os
@@ -2729,7 +2729,7 @@ class NEFTranslator(object):
         return data
 
     def letter_to_int(self, code, min=0):
-        """ Return digit from string.
+        """ Return digit from a given chain code.
         """
 
         alphabet = 'abcdefghijklmnopqrstuvwxyz'
@@ -2751,17 +2751,20 @@ class NEFTranslator(object):
         return ret if ret >= min else min
 
     def index_to_letter(self, index):
-        """ Return string from digit.
+        """ Return chain code from a given index (0 based).
         """
 
-        index += 1
+        if index < 0:
+            return '.'
+        if index > 19683:
+            index = index % 19683
 
-        if index <= 27:
-            return str(chr(64 + index))
-        elif index <= 677:
-            return str(chr(64 + (index // 26))) + str(chr(64 + (index % 27)))
+        if index < 27:
+            return str(chr(65 + index))
+        elif index < 729:
+            return str(chr(64 + (index // 27))) + str(chr(65 + (index % 27)))
         else:
-            return str(chr(64 + (index // 676))) + str(chr(64 + ((index // 26)) // 26)) + str(chr(64 + (index % 27)))
+            return str(chr(64 + (index // 729))) + str(chr(64 + ((index % 729) // 27))) + str(chr(65 + (index % 27)))
 
     def get_conflict_id(self, star_data, lp_category, key_items):
         """ Return list of row ID of duplicated/conflicted rows except for rows of the first occurrence.

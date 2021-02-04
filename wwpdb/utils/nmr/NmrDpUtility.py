@@ -109,7 +109,7 @@
 # 17-Dec-2020  M. Yokochi - support 'atom_not_found' error with message revision (DAOTHER-6345)
 # 25-Jan-2021  M. Yokochi - simplify code for Entity_assemble_ID and chain_code
 # 25-Jan-2021  M. Yokochi - add CS validation code about rotameric state of ILE/LEU/VAL residue
-# 03-Feb-2021  M. Yokochi - update polymer sequence which shares the same entity and missing in the molecular assembly information if necessary, i.e. peptide dimer, double strand DNA 
+# 03-Feb-2021  M. Yokochi - update polymer sequence which shares the same entity and missing in the molecular assembly information if necessary, i.e. peptide dimer, double stranded DNA
 ##
 """ Wrapper class for data processing for NMR data.
     @author: Masashi Yokochi
@@ -21812,7 +21812,7 @@ i                               """
                         row.append(seq_id) # Comp_index_ID
                         row.append(comp_id) # Comp_ID
 
-                        orig_row = None if orig_lp_data is None else next((i for i in orig_lp_data if i['Entity_assembly_ID'] == cid and i['Comp_index_ID'] == auth_seq_id and i['Comp_ID'] == auth_comp_id), None)
+                        orig_row = None if orig_lp_data is None else next((i for i in orig_lp_data if i['Entity_assembly_ID'] == str(cid) and i['Comp_index_ID'] == auth_seq_id and i['Comp_ID'] == auth_comp_id), None)
 
                         # Auth_asym_ID
 
@@ -21982,7 +21982,7 @@ i                               """
                                         row.append(seq_id) # Comp_index_ID
                                         row.append(comp_id) # Comp_ID
 
-                                        orig_row = None if orig_lp_data is None else next((i for i in orig_lp_data if i['Entity_assembly_ID'] == cid and i['Comp_index_ID'] == auth_seq_id and i['Comp_ID'] == auth_comp_id), None)
+                                        orig_row = None if orig_lp_data is None else next((i for i in orig_lp_data if i['Entity_assembly_ID'] == str(cid) and i['Comp_index_ID'] == auth_seq_id and i['Comp_ID'] == auth_comp_id), None)
 
                                         # Auth_asym_ID
 

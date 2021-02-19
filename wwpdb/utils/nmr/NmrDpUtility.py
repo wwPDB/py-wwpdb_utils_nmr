@@ -338,6 +338,11 @@ def probability_density(value, mean, stddev):
 def predict_redox_state_of_cystein(ca_chem_shift, cb_chem_shift):
     """ Return prediction of redox state of Cystein using assigned CA, CB chemical shifts.
         @return: probability of oxidized state, probability of reduced state
+        Reference:
+          13C NMR chemical shifts can predict disulfide bond formation
+          Sharma, D., Rajarathnam, K.
+          J Biomol NMR 18, 165–171 (2000).
+          DOI: 10.1023/A:1008398416292
     """
 
     oxi_ca = {'avr': 55.5, 'std': 2.5}
@@ -373,6 +378,11 @@ def predict_redox_state_of_cystein(ca_chem_shift, cb_chem_shift):
 def predict_cis_trans_peptide_of_proline(cb_chem_shift, cg_chem_shift):
     """ Return prediction of cis-trans peptide bond of Proline using assigned CB, CG chemical shifts.
         @return: probability of cis-peptide bond, probability of trans-peptide bond
+        Reference:
+          A software tool for the prediction of Xaa-Pro peptide bond conformationsin proteins based on 13C chemical shift statistics
+          Schubert, M., Labudde, D., Oschkinat, H. et al
+          J Biomol NMR 24, 149–154 (2002)
+          DOI: 10.1023/A:1020997118364
     """
 
     cis_cb = {'avr': 34.16, 'std': 1.15, 'max': 36.23, 'min': 30.74}
@@ -422,6 +432,11 @@ def predict_cis_trans_peptide_of_proline(cb_chem_shift, cg_chem_shift):
 def predict_tautomer_state_of_histidine(cg_chem_shift, cd2_chem_shift, nd1_chem_shift, ne2_chem_shift):
     """ Return prediction of tautomeric state of Histidine using assigned CG, CD2, ND1, and NE2 chemical shifts.
         @return: probability of biprotonated, probability of tau tautomer, probability of pi tautomer
+        Reference:
+          Protonation, Tautomerization, and Rotameric Structure of Histidine: A Comprehensive Study by Magic-Angle-Spinning Solid-State NMR
+          Shenhui Li and Mei Hong
+          Journal of the American Chemical Society 2011 133 (5), 1534-1544
+          DOI: 10.1021/ja108943n
     """
 
     bip_cg = {'avr': 131.2, 'std': 0.7}
@@ -473,6 +488,11 @@ def predict_tautomer_state_of_histidine(cg_chem_shift, cd2_chem_shift, nd1_chem_
 def predict_rotamer_state_of_leucine(cd1_chem_shift, cd2_chem_shift):
     """ Return prediction of romermeric state of Leucine using assigned CD1 and CD2 chemical shifts.
         @return: probability of gauche+, trans, gauche-
+        Reference:
+          Dependence of Amino Acid Side Chain 13C Shifts on Dihedral Angle: Application to Conformational Analysis
+          Robert E. London, Brett D. Wingad, and Geoffrey A. Mueller
+          Journal of the American Chemical Society 2008 130 (33), 11097-11105
+          DOI: 10.1021/ja802729t
     """
 
     if not cd1_chem_shift is None and not cd2_chem_shift is None:
@@ -511,6 +531,11 @@ def predict_rotamer_state_of_leucine(cd1_chem_shift, cd2_chem_shift):
 def predict_rotamer_state_of_valine(cg1_chem_shift, cg2_chem_shift):
     """ Return prediction of romermeric state of Valine using assigned CG1 and CG2 chemical shifts.
         @return: probability of gauche+, trans, gauche-
+        Reference:
+          Dependence of Amino Acid Side Chain 13C Shifts on Dihedral Angle: Application to Conformational Analysis
+          Robert E. London, Brett D. Wingad, and Geoffrey A. Mueller
+          Journal of the American Chemical Society 2008 130 (33), 11097-11105
+          DOI: 10.1021/ja802729t
     """
 
     gm_cg1 = {'avr': 22.05, 'std': 1.36}
@@ -546,6 +571,11 @@ def predict_rotamer_state_of_valine(cg1_chem_shift, cg2_chem_shift):
 def predict_rotamer_state_of_isoleucine(cd1_chem_shift):
     """ Return prediction of romermeric state of Isoleucine using assigned CD1 chemical shift.
         @return: probability of gauche+, trans, gauche-
+        Reference:
+          Determination of Isoleucine Side-Chain Conformations in Ground and Excited States of Proteins from Chemical Shifts
+          D. Flemming Hansen, Philipp Neudecker, and Lewis E. Kay
+          Journal of the American Chemical Society 2010 132 (22), 7589-7591
+          DOI: 10.1021/ja102090z
     """
 
     if cd1_chem_shift is None:

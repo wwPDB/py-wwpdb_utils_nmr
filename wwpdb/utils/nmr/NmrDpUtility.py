@@ -110,6 +110,7 @@
 # 25-Jan-2021  M. Yokochi - simplify code for Entity_assemble_ID and chain_code
 # 25-Jan-2021  M. Yokochi - add CS validation code about rotameric state of ILE/LEU/VAL residue
 # 03-Feb-2021  M. Yokochi - update polymer sequence which shares the same entity and missing in the molecular assembly information if necessary, i.e. double stranded DNA (DAOTHER-6128, BMRB entry: 16812, PDB ID: 6kae)
+# 10-Mar-2021  M. Yokochi - block NEF deposition missing '_nef_sequence' category and turn off salvage routine for the case (DAOTHER-6694)
 ##
 """ Wrapper class for data processing for NMR data.
     @author: Masashi Yokochi
@@ -5663,14 +5664,14 @@ class NmrDpUtility(object):
 
             content_subtype = 'poly_seq'
 
-            if lp_counts[content_subtype] == 0:
+            lp_category = self.lp_categories[file_type][content_subtype]
 
-                sf_category = self.sf_categories[file_type][content_subtype]
+            if lp_counts[content_subtype] == 0:
 
                 if not self.__has_star_entity and self.__combined_mode:
 
-                    if self.__resolve_conflict:
-                        warn = "A saveframe with a category %r is missing in the NMR data." % sf_category
+                    if self.__resolve_conflict and False: # False due to DAOTHER-6694
+                        warn = "A saveframe with a category %r is missing in the NMR data." % lp_category
 
                         self.report.warning.appendDescription('missing_saveframe', {'file_name': file_name, 'description': warn})
                         self.report.setWarning()
@@ -5679,7 +5680,7 @@ class NmrDpUtility(object):
                             self.__lfh.write("+NmrDpUtility.__detectContentSubType() ++ Warning  - %s\n" % warn)
 
                     else:
-                        err = "A saveframe with a category %r is missing. Please re-upload the %s file." % (sf_category, file_type.upper())
+                        err = "A saveframe with a category %r is missing. Please re-upload the %s file." % (lp_category, file_type.upper())
 
                         self.report.error.appendDescription('missing_mandatory_content', {'file_name': file_name, 'description': err})
                         self.report.setError()
@@ -5688,7 +5689,7 @@ class NmrDpUtility(object):
                             self.__lfh.write("+NmrDpUtility.__detectContentSubType() ++ Error  - %s\n" % err)
 
                 elif lp_counts['chem_shift'] == 0 and lp_counts['dist_restraint'] > 0:
-                    err = "A saveframe with a category %r is missing. Please re-upload the %s file." % (sf_category, file_type.upper())
+                    err = "A saveframe with a category %r is missing. Please re-upload the %s file." % (lp_category, file_type.upper())
 
                     self.report.error.appendDescription('missing_mandatory_content', {'file_name': file_name, 'description': err})
                     self.report.setError()
@@ -5698,9 +5699,7 @@ class NmrDpUtility(object):
 
             elif lp_counts[content_subtype] > 1:
 
-                sf_category = self.sf_categories[file_type][content_subtype]
-
-                err = "Unexpectedly, multiple saveframes having %r category exist." % sf_category
+                err = "Unexpectedly, multiple saveframes having %r category exist." % lp_category
 
                 self.report.error.appendDescription('format_issue', {'file_name': file_name, 'description': err})
                 self.report.setError()
@@ -21699,6 +21698,9 @@ i                               """
                     if 'Entry_ID' in orig_lp_data[0]:
                         has_entry_id = True
 
+            elif not self.__has_star_entity: # DAOTHER-6694
+                return False
+
         sf_cat_name = 'nef_molecular_system' if file_type == 'nef' else 'Assembly'
         lp_cat_name = '_nef_sequence' if file_type == 'nef' else '_Chem_comp_assembly'
 
@@ -27358,8 +27360,9 @@ i                               """
                 if not 'No such file or directory' in str(e):
                     err += ' ' + re.sub('not in list', 'unknown item.', str(e))
 
-                self.report.error.appendDescription('format_issue', {'file_name': file_name, 'description': err})
-                self.report.setError()
+                if not self.report.isError():
+                    self.report.error.appendDescription('format_issue', {'file_name': file_name, 'description': err})
+                    self.report.setError()
 
                 if self.__verbose:
                     self.__lfh.write("+NmrDpUtility.__translateNef2Str() ++ Error  - %s\n" % err)
@@ -27383,8 +27386,9 @@ i                               """
                         if not 'No such file or directory' in err_message:
                             err += ' ' + re.sub('not in list', 'unknown item.', err_message)
 
-                self.report.error.appendDescription('format_issue', {'file_name': file_name, 'description': err})
-                self.report.setError()
+                if not self.report.isError():
+                    self.report.error.appendDescription('format_issue', {'file_name': file_name, 'description': err})
+                    self.report.setError()
 
                 if self.__verbose:
                     self.__lfh.write("+NmrDpUtility.__translateNef2Str() ++ Error  - %s\n" % err)
@@ -27469,8 +27473,9 @@ i                               """
                 if not 'No such file or directory' in str(e):
                     err += ' ' + re.sub('not in list', 'unknown item.', str(e))
 
-                self.report.error.appendDescription('format_issue', {'file_name': file_name, 'description': err})
-                self.report.setError()
+                if not self.report.isError():
+                    self.report.error.appendDescription('format_issue', {'file_name': file_name, 'description': err})
+                    self.report.setError()
 
                 if self.__verbose:
                     self.__lfh.write("+NmrDpUtility.__translateStr2Nef() ++ Error  - %s\n" % err)
@@ -27494,8 +27499,9 @@ i                               """
                         if not 'No such file or directory' in err_message:
                             err += ' ' + re.sub('not in list', 'unknown item.', err_message)
 
-                self.report.error.appendDescription('format_issue', {'file_name': file_name, 'description': err})
-                self.report.setError()
+                if not self.report.isError():
+                    self.report.error.appendDescription('format_issue', {'file_name': file_name, 'description': err})
+                    self.report.setError()
 
                 if self.__verbose:
                     self.__lfh.write("+NmrDpUtility.__translateStr2Nef() ++ Error  - %s\n" % err)

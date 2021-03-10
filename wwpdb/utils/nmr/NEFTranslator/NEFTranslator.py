@@ -59,6 +59,7 @@
 # 19-Nov-2020  M. Yokochi - add support for HEM, HEB, HEC methyl groups (v2.9.3, DAOTHER-6366)
 # 25-Jan-2021  M. Yokochi - add 'positive-int-as-str' value type to simplify code for Entity_assembly_ID, and chain_code (v2.9.4)
 # 04-Feb-2021  M. Yokochi - support 3 letter chain code (v2.9.5, DAOTHER-5896, DAOTHER-6128, BMRB entry: 16812, PDB ID: 6kae)
+# 10-Mar-2021  M. Yokochi - block NEF deposition missing '_nef_sequence' category and turn off salvage routine for the case (v2.9.6, DAOTHER-6694)
 ##
 import sys
 import os
@@ -80,7 +81,7 @@ from wwpdb.utils.nmr.io.ChemCompIo import ChemCompReader
 from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
 from wwpdb.utils.nmr.NmrDpReport import NmrDpReport
 
-__version__ = '2.9.5'
+__version__ = '2.9.6'
 
 __pynmrstar_v3__ = version.parse(pynmrstar.__version__) >= version.parse("3.0.0")
 
@@ -6159,6 +6160,9 @@ class NEFTranslator(object):
         if is_readable:
 
             if dat_content == 'Entry':
+                if len(nef_data.get_loops_by_category('nef_sequence')) == 0: # DAOTHER-6694
+                    error.append("Missing mandatory '_nef_sequence' category.")
+                    return False, json.dumps({'info': info, 'warning': warning, 'error': error})
                 self.authChainId = sorted(list(set(nef_data.get_loops_by_category('nef_sequence')[0].get_tag('chain_code'))))
             elif dat_content == 'Saveframe':
                 self.authChainId = sorted(list(set(nef_data[0].get_tag('chain_code'))))
@@ -6166,7 +6170,7 @@ class NEFTranslator(object):
                 self.authChainId = sorted(list(set(nef_data.get_tag('chain_code'))))
             else:
                 is_done = False
-                error.append('File content unknown')
+                error.append('File content unknown.')
 
             self.authSeqMap = None
             self.selfSeqMap = None
@@ -6609,11 +6613,11 @@ class NEFTranslator(object):
                     star_data.write_to_file(star_file, skip_empty_tags=False)
                 else:
                     star_data.write_to_file(star_file)
-                info.append('File {} successfully written'.format(star_file))
+                info.append('File {} successfully written.'.format(star_file))
 
         else:
             is_done = False
-            error.append('Input file not readable')
+            error.append('Input file not readable.')
 
         return is_done, json.dumps({'info': info, 'warning': warning, 'error': error})
 
@@ -6641,11 +6645,14 @@ class NEFTranslator(object):
             nef_data = pynmrstar.Entry.from_scratch(star_data.entry_id)
         except: # AttributeError:
             nef_data = pynmrstar.Entry.from_scratch(file_name.split('.')[0])
-            warning.append('Not a complete Entry')
+            warning.append('Not a complete Entry.')
 
         if is_readable:
 
             if dat_content == 'Entry':
+                if len(star_data.get_loops_by_category('Chem_comp_assembly')) == 0: # DAOTHER-6694
+                    error.append("Missing mandatory '_Chem_comp_assembly' category.")
+                    return False, json.dumps({'info': info, 'warning': warning, 'error': error})
                 self.authChainId = sorted(list(set(star_data.get_loops_by_category('Chem_comp_assembly')[0].get_tag('Entity_assembly_ID'))), key=lambda x:float(re.sub('[^\d]+', '', x)))
             elif dat_content == 'Saveframe':
                 self.authChainId = sorted(list(set(star_data[0].get_tag('Entity_assembly_ID'))), key=lambda x:float(re.sub('[^\d]+', '', x)))
@@ -6653,7 +6660,7 @@ class NEFTranslator(object):
                 self.authChainId = sorted(list(set(star_data.get_tag('Entity_assembly_ID'))), key=lambda x:float(re.sub('[^\d]+', '', x)))
             else:
                 is_done = False
-                error.append('File content unknown')
+                error.append('File content unknown.')
 
             self.authSeqMap = None
             self.selfSeqMap = None
@@ -6983,11 +6990,11 @@ class NEFTranslator(object):
                     nef_data.write_to_file(nef_file, skip_empty_tags=False)
                 else:
                     nef_data.write_to_file(nef_file)
-                info.append('File {} successfully written'.format(nef_file))
+                info.append('File {} successfully written.'.format(nef_file))
 
         else:
             is_done = False
-            error.append('Input file not readable')
+            error.append('Input file not readable.')
 
         return is_done, json.dumps({'info': info, 'warning': warning, 'error': error})
 

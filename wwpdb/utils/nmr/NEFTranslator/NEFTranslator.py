@@ -59,6 +59,7 @@
 # 19-Nov-2020  M. Yokochi - add support for HEM, HEB, HEC methyl groups (v2.9.3, DAOTHER-6366)
 # 25-Jan-2021  M. Yokochi - add 'positive-int-as-str' value type to simplify code for Entity_assembly_ID, and chain_code (v2.9.4)
 # 04-Feb-2021  M. Yokochi - support 3 letter chain code (v2.9.5, DAOTHER-5896, DAOTHER-6128, BMRB entry: 16812, PDB ID: 6kae)
+# 10-Mar-2021  M. Yokochi - add support for audit loop in NEF (v2,9,7, DAOTHER-6327)
 ##
 import sys
 import os
@@ -80,7 +81,7 @@ from wwpdb.utils.nmr.io.ChemCompIo import ChemCompReader
 from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
 from wwpdb.utils.nmr.NmrDpReport import NmrDpReport
 
-__version__ = '2.9.5'
+__version__ = '2.9.7'
 
 __pynmrstar_v3__ = version.parse(pynmrstar.__version__) >= version.parse("3.0.0")
 
@@ -6436,6 +6437,10 @@ class NEFTranslator(object):
                     sf = pynmrstar.Saveframe.from_scratch(nef_data.category)
 
                     if nef_data.category == '_nef_program_script':
+                        sf.set_tag_prefix('Entry')
+                        sf.add_tag('Sf_category', 'entry_information')
+
+                    elif nef_data.category == '_audit': # DAOTHER-6327
                         sf.set_tag_prefix('Entry')
                         sf.add_tag('Sf_category', 'entry_information')
 

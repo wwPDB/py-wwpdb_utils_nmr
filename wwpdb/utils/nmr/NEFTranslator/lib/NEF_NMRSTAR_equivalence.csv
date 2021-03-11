@@ -13,6 +13,7 @@
 #   Third Column : NMR-STAR saveframe/loop/tag (translated data goes here ; example HB2)
 ############################################################################################
 # 08-Jul-2020  M. Yokochi - add support for _Gen_dist_constraint.Distance_val, _RDC_constraint.RDC_val, and _RDC_constraint.RDC_val_err (DAOTHER-5926)
+# 10-Mar-2020  M. Yokochi - add support for _audit loop in NEF (DAOTHER-6327)
 #Saveframes and loops
 nef_nmr_meta_data,entry_information,entry_information
 nef_molecular_system,assembly,assembly
@@ -35,6 +36,7 @@ nef_spectrum_dimension,Spectral_dim,Spectral_dim
 nef_spectrum_dimension_transfer,Spectral_dim_transfer,Spectral_dim_transfer
 nef_peak,Peak_row_format,Peak_row_format
 nef_peak_restraint_link,Peak_constraint_link,Peak_constraint_link
+audit,Audit,Audit
 #tags
 _nef_program_script.program_name,_Software_applied_methods.Software_name,_Software_applied_methods.Software_name
 _nef_program_script.script_name,_Software_applied_methods.Script_name,_Software_applied_methods.Script_name
@@ -289,3 +291,7 @@ _nef_peak_restraint_link.nmr_spectrum_id,_Peak_constraint_link.Spectral_Peak_lis
 _nef_peak_restraint_link.peak_id,_Peak_constraint_link.Peak_ID,_Peak_constraint_link.Peak_ID
 _nef_peak_restraint_link.restraint_list_id,_Peak_constraint_link.Constraint_Sf_framecode,_Peak_constraint_link.Constraint_Sf_framecode
 _nef_peak_restraint_link.restraint_id,_Peak_constraint_link.Constraint_ID,_Peak_constraint_link.Constraint_ID
+_audit.revision_id,_Audit.Revision_ID,_Audit.Revision_ID
+_audit.creation_date,_Audit.Creation_date,_Audit.Creation_date
+_audit.creation_method,_Audit.Creation_method,_Audit.Creation_method
+_audit.update_record,_Audit.Update_record,_Audit.Update_record

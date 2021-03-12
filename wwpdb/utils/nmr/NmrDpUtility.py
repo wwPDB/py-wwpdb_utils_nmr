@@ -382,7 +382,7 @@ def predict_cis_trans_peptide_of_proline(cb_chem_shift, cg_chem_shift):
     """ Return prediction of cis-trans peptide bond of Proline using assigned CB, CG chemical shifts.
         @return: probability of cis-peptide bond, probability of trans-peptide bond
         Reference:
-          A software tool for the prediction of Xaa-Pro peptide bond conformationsin proteins based on 13C chemical shift statistics.
+          A software tool for the prediction of Xaa-Pro peptide bond conformations in proteins based on 13C chemical shift statistics.
           Schubert, M., Labudde, D., Oschkinat, H. et al.
           J Biomol NMR 24, 149–154 (2002)
           DOI: 10.1023/A:1020997118364
@@ -606,7 +606,7 @@ def to_unit_vector(a):
     return a / np.linalg.norm(a)
 
 def dihedral_angle(p0, p1, p2, p3):
-    """ Return dihedran angle from a series of four points.
+    """ Return dihedral angle from a series of four points.
     """
 
     b0 = -1.0 * (p1 - p0)

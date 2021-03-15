@@ -112,6 +112,7 @@
 # 03-Feb-2021  M. Yokochi - update polymer sequence which shares the same entity and missing in the molecular assembly information if necessary, i.e. double stranded DNA (DAOTHER-6128, BMRB entry: 16812, PDB ID: 6kae)
 # 10-Mar-2021  M. Yokochi - block NEF deposition missing '_nef_sequence' category and turn off salvage routine for the case (DAOTHER-6694)
 # 10-Mar-2021  M. Yokochi - add support for audit loop in NEF (DAOTHER-6327)
+# 12-Mar-2021  M. Yokochi - add diagnostic routine to fix inconsistent sf_framecode of conventional CS file (DAOTHER-6693)
 ##
 """ Wrapper class for data processing for NMR data.
     @author: Masashi Yokochi
@@ -381,7 +382,7 @@ def predict_cis_trans_peptide_of_proline(cb_chem_shift, cg_chem_shift):
     """ Return prediction of cis-trans peptide bond of Proline using assigned CB, CG chemical shifts.
         @return: probability of cis-peptide bond, probability of trans-peptide bond
         Reference:
-          A software tool for the prediction of Xaa-Pro peptide bond conformationsin proteins based on 13C chemical shift statistics.
+          A software tool for the prediction of Xaa-Pro peptide bond conformations in proteins based on 13C chemical shift statistics.
           Schubert, M., Labudde, D., Oschkinat, H. et al.
           J Biomol NMR 24, 149–154 (2002)
           DOI: 10.1023/A:1020997118364
@@ -605,7 +606,7 @@ def to_unit_vector(a):
     return a / np.linalg.norm(a)
 
 def dihedral_angle(p0, p1, p2, p3):
-    """ Return dihedran angle from a series of four points.
+    """ Return dihedral angle from a series of four points.
     """
 
     b0 = -1.0 * (p1 - p0)
@@ -720,6 +721,9 @@ class NmrDpUtility(object):
         #self.__check_empty_loop = False
         # whether to trust pdbx_nmr_ensemble to get total number of models
         self.__trust_pdbx_nmr_ens = True
+
+        # whether sf_framecode has to be fixed
+        self.__has_legacy_sf_issue = False
 
         # default entry_id
         self.__entry_id__ = 'UNNAMED'
@@ -3978,14 +3982,19 @@ class NmrDpUtility(object):
 
                         _is_done, star_data_type, star_data = self.__nefT.read_input_file(csPath) # NEFTranslator.validate_file() generates this object internally, but not re-used.
 
-                        self.__star_data_type.append(star_data_type)
-                        self.__star_data.append(star_data)
+                        self.__has_legacy_sf_issue = False
 
-                        self.__rescueFormerNef(csListId)
-                        self.__rescueImmatureStr(csListId)
+                        if star_data_type == 'Saveframe':
+                            self.__has_legacy_sf_issue = True
+                            self.__fixFormatIssueOfInputSource(csListId, file_name, file_type, csPath, 'S', message)
+                            _is_done, star_data_type, star_data = self.__nefT.read_input_file(csPath) # NEFTranslator.validate_file() generates this object internally, but not re-used.
 
-                        if not _is_done:
-                            is_done = False
+                        if not (self.__has_legacy_sf_issue and _is_done and star_data_type == 'Entry'):
+                            self.__star_data_type.append(star_data_type)
+                            self.__star_data.append(star_data)
+
+                            self.__rescueFormerNef(csListId)
+                            self.__rescueImmatureStr(csListId)
 
                 elif not self.__fixFormatIssueOfInputSource(csListId, file_name, file_type, csPath, 'S', message):
                     is_done = False
@@ -4059,11 +4068,19 @@ class NmrDpUtility(object):
 
                             _is_done, star_data_type, star_data = self.__nefT.read_input_file(mrPath) # NEFTranslator.validate_file() generates this object internally, but not re-used.
 
-                            self.__star_data_type.append(star_data_type)
-                            self.__star_data.append(star_data)
+                            self.__has_legacy_sf_issue = False
 
-                            self.__rescueFormerNef(file_path_list_len)
-                            self.__rescueImmatureStr(file_path_list_len)
+                            if star_data_type == 'Saveframe':
+                                self.__has_legacy_sf_issue = True
+                                self.__fixFormatIssueOfInputSource(file_path_list_len, file_name, file_type, mrPath, 'R', message)
+                                _is_done, star_data_type, star_data = self.__nefT.read_input_file(mrPath) # NEFTranslator.validate_file() generates this object internally, but not re-used.
+
+                            if not (self.__has_legacy_sf_issue and _is_done and star_data_type == 'Entry'):
+                                self.__star_data_type.append(star_data_type)
+                                self.__star_data.append(star_data)
+
+                                self.__rescueFormerNef(file_path_list_len)
+                                self.__rescueImmatureStr(file_path_list_len)
 
                             if not _is_done:
                                 is_done = False
@@ -4116,7 +4133,11 @@ class NmrDpUtility(object):
                 if self.__verbose:
                     self.__lfh.write("+NmrDpUtility.__fixFormatIssueOfInputSource() ++ Error  - %s\n" % err)
 
-            return False
+            if not self.__has_legacy_sf_issue:
+                return False
+
+        if self.__has_legacy_sf_issue:
+            star_data_type = self.__nefT.read_input_file(srcPath)[1]
 
         _srcPath = srcPath
         if tmpPaths is None:
@@ -4186,7 +4207,7 @@ class NmrDpUtility(object):
 
         msg_template = "Invalid file. NMR-STAR files must start with 'data_'. Did you accidentally select the wrong file?"
 
-        if any(msg for msg in message['error'] if msg_template in msg):
+        if any(msg for msg in message['error'] if msg_template in msg) or (self.__has_legacy_sf_issue and star_data_type == 'Saveframe'):
             warn = 'The datablock must hook saveframe(s).'
 
             self.report.warning.appendDescription('corrected_format_issue', {'file_name': file_name, 'description': warn})
@@ -4895,11 +4916,28 @@ class NmrDpUtility(object):
 
                 is_done, star_data_type, star_data = self.__nefT.read_input_file(_srcPath) # NEFTranslator.validate_file() generates this object internally, but not re-used.
 
+                rescued = self.__has_legacy_sf_issue and is_done and star_data_type == 'Entry'
+
                 self.__star_data_type.append(star_data_type)
                 self.__star_data.append(star_data)
 
                 self.__rescueFormerNef(file_list_id)
                 self.__rescueImmatureStr(file_list_id)
+
+                if rescued:
+                    onedep_file_pattern = re.compile(r'(.*)\-upload_(.*)\.V(.*)$')
+                    if onedep_file_pattern.match(srcPath):
+                        g = onedep_file_pattern.search(srcPath).groups()
+                        srcPath = g[0] + '-upload-convert_' + g[1] + '.V' + g[2]
+                    else:
+                        onedep_file_pattern = re.compile(r'(.*)\.V(.*)$')
+                        if onedep_file_pattern.match(srcPath):
+                            g = onedep_file_pattern.search(srcPath).groups()
+                            srcPath = g[0] + '.V' + str(int(g[1]) + 1)
+                    if __pynmrstar_v3__:
+                        self.__star_data[file_list_id].write_to_file(srcPath, skip_empty_tags=False)
+                    else:
+                        self.__star_data[file_list_id].write_to_file(srcPath)
 
         else:
 
@@ -4963,7 +5001,7 @@ class NmrDpUtility(object):
         if file_type != 'nef' or self.__star_data[file_list_id] is None:
             return False
 
-        if self.__combined_mode:
+        if self.__combined_mode or self.__star_data_type[file_list_id] == 'Entry':
 
             for content_subtype in self.nmr_content_subtypes:
 
@@ -5009,7 +5047,7 @@ class NmrDpUtility(object):
         if not self.__rescue_mode:
             return True
 
-        if self.__combined_mode:
+        if self.__combined_mode or self.__star_data_type[file_list_id] == 'Entry':
 
             content_subtype = 'entry_info'
 
@@ -5299,7 +5337,7 @@ class NmrDpUtility(object):
         if file_type != 'nmr-star' or self.__star_data[file_list_id] is None:
             return False
 
-        if self.__combined_mode:
+        if self.__combined_mode or self.__star_data_type[file_list_id] == 'Entry':
 
             for content_subtype in self.nmr_content_subtypes:
 
@@ -5345,19 +5383,17 @@ class NmrDpUtility(object):
         if not self.__rescue_mode:
             return True
 
-        if not self.__combined_mode:
+        self.__sf_category_list, self.__lp_category_list = self.__nefT.get_data_content(self.__star_data[file_list_id], self.__star_data_type[file_list_id])
 
-            self.__sf_category_list, self.__lp_category_list = self.__nefT.get_data_content(self.__star_data[file_list_id], self.__star_data_type[file_list_id])
+        # initialize loop counter
+        lp_counts = {t: 0 for t in self.nmr_content_subtypes}
 
-            # initialize loop counter
-            lp_counts = {t: 0 for t in self.nmr_content_subtypes}
+        # increment loop counter of each content subtype
+        for lp_category in self.__lp_category_list:
+            if lp_category in self.lp_categories[file_type].values():
+                lp_counts[[k for k, v in self.lp_categories[file_type].items() if v == lp_category][0]] += 1
 
-            # increment loop counter of each content subtype
-            for lp_category in self.__lp_category_list:
-                if lp_category in self.lp_categories[file_type].values():
-                    lp_counts[[k for k, v in self.lp_categories[file_type].items() if v == lp_category][0]] += 1
-
-            content_subtypes = {k: lp_counts[k] for k in lp_counts if lp_counts[k] > 0}
+        content_subtypes = {k: lp_counts[k] for k in lp_counts if lp_counts[k] > 0}
 
         for content_subtype in self.nmr_content_subtypes:
 

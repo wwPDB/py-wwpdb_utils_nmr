@@ -702,6 +702,8 @@ class NmrDpUtility(object):
         self.__nonblk_anomalous_cs = False
         # whether not to block deposition because bad n-term amino group
         self.__nonblk_bad_nterm = False
+        # whether to udpate polymer sequence
+        self.__update_poly_seq = False
         # whether to resolve conflict
         self.__resolve_conflict = False
         # whether to detect missing mandatory tags as errors
@@ -3555,6 +3557,12 @@ class NmrDpUtility(object):
             else:
                 self.__nonblk_bad_nterm = self.__inputParamDict['nonblk_bad_nterm'] in self.true_value
 
+        if 'update_poly_seq' in self.__inputParamDict and not self.__inputParamDict['update_poly_seq'] is None:
+            if type(self.__inputParamDict['update_poly_seq']) is bool:
+                self.__update_poly_seq = self.__inputParamDict['update_poly_seq']
+            else:
+                self.__update_poly_seq = self.__inputParamDict['update_poly_seq'] in self.true_value
+
         if 'resolve_conflict' in self.__inputParamDict and not self.__inputParamDict['resolve_conflict'] is None:
             if type(self.__inputParamDict['resolve_conflict']) is bool:
                 self.__resolve_conflict = self.__inputParamDict['resolve_conflict']
@@ -5708,7 +5716,7 @@ class NmrDpUtility(object):
 
                 if not self.__has_star_entity and self.__combined_mode:
 
-                    if self.__resolve_conflict and False: # False due to DAOTHER-6694
+                    if self.__resolve_conflict and self.__update_poly_seq: # DAOTHER-6694
                         warn = "A saveframe with a category %r is missing in the NMR data." % lp_category
 
                         self.report.warning.appendDescription('missing_saveframe', {'file_name': file_name, 'description': warn})
@@ -7440,13 +7448,16 @@ class NmrDpUtility(object):
 
                                 alt_chain = True
 
+                            _s1 = s1 if offset_1 == 0 else fill_blank_comp_id_with_offset(s1, offset_1)
+                            _s2 = s2 if offset_2 == 0 else fill_blank_comp_id_with_offset(s2, offset_2)
+
+                            if conflict > 0 and _s1['seq_id'][0] < 0 and _s2['seq_id'][0] < 0:
+                                continue
+
                             if not sf_framecode2 in ref_chain_ids:
                                 ref_chain_ids[sf_framecode2] = []
 
                             ref_chain_ids[sf_framecode2].append(chain_id)
-
-                            _s1 = s1 if offset_1 == 0 else fill_blank_comp_id_with_offset(s1, offset_1)
-                            _s2 = s2 if offset_2 == 0 else fill_blank_comp_id_with_offset(s2, offset_2)
 
                             ref_length = len(s1['seq_id'])
 
@@ -7475,12 +7486,16 @@ class NmrDpUtility(object):
                                                                             chain_id, _s1, _s2, myAlign, None if not sf_framecode2 in map_chain_ids else map_chain_ids[sf_framecode2],
                                                                             ref_gauge_code, ref_code, mid_code, test_code, test_gauge_code)
                                         _s2['seq_id'] = _seq_align['test_seq_id']
+                                        if _s1['seq_id'][0] < 0 and _s2['seq_id'][0] < 0:
+                                            continue
                                         ref_gauge_code = _seq_align['ref_gauge_code']
                                         ref_code = _seq_align['ref_code']
                                         mid_code = _seq_align['mid_code']
                                         test_code = _seq_align['test_code']
                                         test_gauge_code = _seq_align['test_gauge_code']
                                     else:
+                                        if _s1['seq_id'][0] < 0:
+                                            continue
                                         chain_id2 = chain_id
                                         if sf_framecode2 in map_chain_ids and chain_id in map_chain_ids[sf_framecode2].values():
                                             chain_id2 = next(k for k, v in map_chain_ids[sf_framecode2].items() if v == chain_id)
@@ -7498,6 +7513,8 @@ class NmrDpUtility(object):
                                                                             chain_id, _s1, _s2, myAlign, None if not sf_framecode2 in map_chain_ids else map_chain_ids[sf_framecode2],
                                                                             ref_gauge_code, ref_code, mid_code, test_code, test_gauge_code)
                                         _s2['seq_id'] = _seq_align['test_seq_id']
+                                        if _s1['seq_id'][0] < 0 and _s2['seq_id'][0] < 0:
+                                            continue
                                         ref_gauge_code = _seq_align['ref_gauge_code']
                                         ref_code = _seq_align['ref_code']
                                         mid_code = _seq_align['mid_code']
@@ -7505,6 +7522,8 @@ class NmrDpUtility(object):
                                         test_gauge_code = _seq_align['test_gauge_code']
                                     else:
                                         _s2 = fill_blank_comp_id(_s1, _s2)
+                                        if _s1['seq_id'][0] < 0 and _s2['seq_id'][0] < 0:
+                                            continue
                                         test_code = self.__get1LetterCodeSequence(_s2['comp_id'])
                                         mid_code = get_middle_code(ref_code, test_code)
                                         test_gauge_code = ref_gauge_code
@@ -7720,13 +7739,17 @@ class NmrDpUtility(object):
 
                                 alt_chain = True
                             """
+
+                            _s1 = s1 if offset_1 == 0 else fill_blank_comp_id_with_offset(s1, offset_1)
+                            _s2 = s2 if offset_2 == 0 else fill_blank_comp_id_with_offset(s2, offset_2)
+
+                            if conflict > 0 and _s1['seq_id'][0] < 0 and _s2['seq_id'][0] < 0:
+                                continue
+
                             if not sf_framecode2 in ref_chain_ids:
                                 ref_chain_ids[sf_framecode2] = []
 
                             ref_chain_ids[sf_framecode2].append(chain_id)
-
-                            _s1 = s1 if offset_1 == 0 else fill_blank_comp_id_with_offset(s1, offset_1)
-                            _s2 = s2 if offset_2 == 0 else fill_blank_comp_id_with_offset(s2, offset_2)
 
                             ref_length = len(s1['seq_id'])
 
@@ -7755,12 +7778,16 @@ class NmrDpUtility(object):
                                                                             chain_id, _s1, _s2, myAlign, None if not sf_framecode2 in map_chain_ids else map_chain_ids[sf_framecode2],
                                                                             ref_gauge_code, ref_code, mid_code, test_code, test_gauge_code)
                                         _s2['seq_id'] = _seq_align['test_seq_id']
+                                        if _s1['seq_id'][0] < 0 and _s2['seq_id'][0] < 0:
+                                            continue
                                         ref_gauge_code = _seq_align['ref_gauge_code']
                                         ref_code = _seq_align['ref_code']
                                         mid_code = _seq_align['mid_code']
                                         test_code = _seq_align['test_code']
                                         test_gauge_code = _seq_align['test_gauge_code']
                                     else:
+                                        if _s1['seq_id'][0] < 0:
+                                            continue
                                         chain_id2 = chain_id
                                         if sf_framecode2 in map_chain_ids and chain_id in map_chain_ids[sf_framecode2].values():
                                             chain_id2 = next(k for k, v in map_chain_ids[sf_framecode2].items() if v == chain_id)
@@ -7778,6 +7805,8 @@ class NmrDpUtility(object):
                                                                             chain_id, _s1, _s2, myAlign, None if not sf_framecode2 in map_chain_ids else map_chain_ids[sf_framecode2],
                                                                             ref_gauge_code, ref_code, mid_code, test_code, test_gauge_code)
                                         _s2['seq_id'] = _seq_align['test_seq_id']
+                                        if _s1['seq_id'][0] < 0 and _s2['seq_id'][0] < 0:
+                                            continue
                                         ref_gauge_code = _seq_align['ref_gauge_code']
                                         ref_code = _seq_align['ref_code']
                                         mid_code = _seq_align['mid_code']
@@ -7785,6 +7814,8 @@ class NmrDpUtility(object):
                                         test_gauge_code = _seq_align['test_gauge_code']
                                     else:
                                         _s2 = fill_blank_comp_id(_s1, _s2)
+                                        if _s1['seq_id'][0] < 0 and _s2['seq_id'][0] < 0:
+                                            continue
                                         test_code = self.__get1LetterCodeSequence(_s2['comp_id'])
                                         mid_code = get_middle_code(ref_code, test_code)
                                         test_gauge_code = ref_gauge_code
@@ -7997,6 +8028,9 @@ class NmrDpUtility(object):
                                     _s1 = s1 if offset_1 == 0 else fill_blank_comp_id_with_offset(s1, offset_1)
                                     _s2 = s2 if offset_2 == 0 else fill_blank_comp_id_with_offset(s2, offset_2)
 
+                                    if conflict > 0 and _s1['seq_id'][0] < 0 and _s2['seq_id'][0] < 0:
+                                        continue
+
                                     ref_length = len(s1['seq_id'])
 
                                     ref_code = self.__get1LetterCodeSequence(_s1['comp_id'])
@@ -8021,12 +8055,16 @@ class NmrDpUtility(object):
                                                                                     chain_id, _s1, _s2, myAlign, mapping,
                                                                                     ref_gauge_code, ref_code, mid_code, test_code, test_gauge_code)
                                                 _s2['seq_id'] = _seq_align['test_seq_id']
+                                                if _s1['seq_id'][0] < 0 and _s2['seq_id'][0] < 0:
+                                                    continue
                                                 ref_gauge_code = _seq_align['ref_gauge_code']
                                                 ref_code = _seq_align['ref_code']
                                                 mid_code = _seq_align['mid_code']
                                                 test_code = _seq_align['test_code']
                                                 test_gauge_code = _seq_align['test_gauge_code']
                                             else:
+                                                if _s1['seq_id'][0] < 0:
+                                                    continue
                                                 chain_id2 = chain_id
                                                 if chain_id in mapping.values():
                                                     chain_id2 = next(k for k, v in mapping.items() if v == chain_id)
@@ -8044,6 +8082,8 @@ class NmrDpUtility(object):
                                                                                     chain_id, _s1, _s2, myAlign, mapping,
                                                                                     ref_gauge_code, ref_code, mid_code, test_code, test_gauge_code)
                                                 _s2['seq_id'] = _seq_align['test_seq_id']
+                                                if _s1['seq_id'][0] < 0 and _s2['seq_id'][0] < 0:
+                                                    continue
                                                 ref_gauge_code = _seq_align['ref_gauge_code']
                                                 ref_code = _seq_align['ref_code']
                                                 mid_code = _seq_align['mid_code']
@@ -8051,6 +8091,8 @@ class NmrDpUtility(object):
                                                 test_gauge_code = _seq_align['test_gauge_code']
                                             else:
                                                 _s2 = fill_blank_comp_id(_s1, _s2)
+                                                if _s1['seq_id'][0] < 0 and _s2['seq_id'][0] < 0:
+                                                    continue
                                                 test_code = self.__get1LetterCodeSequence(_s2['comp_id'])
                                                 mid_code = get_middle_code(ref_code, test_code)
                                                 test_gauge_code = ref_gauge_code
@@ -21736,7 +21778,7 @@ i                               """
                     if 'Entry_ID' in orig_lp_data[0]:
                         has_entry_id = True
 
-            elif not self.__has_star_entity: # DAOTHER-6694
+            elif not self.__has_star_entity and not self.__update_poly_seq: # DAOTHER-6694
                 return False
 
         sf_cat_name = 'nef_molecular_system' if file_type == 'nef' else 'Assembly'

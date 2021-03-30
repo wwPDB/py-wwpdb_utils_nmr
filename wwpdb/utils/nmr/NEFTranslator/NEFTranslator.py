@@ -60,7 +60,8 @@
 # 25-Jan-2021  M. Yokochi - add 'positive-int-as-str' value type to simplify code for Entity_assembly_ID, and chain_code (v2.9.4)
 # 04-Feb-2021  M. Yokochi - support 3 letter chain code (v2.9.5, DAOTHER-5896, DAOTHER-6128, BMRB entry: 16812, PDB ID: 6kae)
 # 10-Mar-2021  M. Yokochi - block NEF deposition missing '_nef_sequence' category and turn off salvage routine for the case (v2.9.6, DAOTHER-6694)
-# 10-Mar-2021  M. Yokochi - add support for audit loop in NEF (v2,9,7, DAOTHER-6327)
+# 10-Mar-2021  M. Yokochi - add support for audit loop in NEF (v2.9.7, DAOTHER-6327)
+# 25-Mar-2021  M. Yokochi - fix crash during NMR-STAR to NEF atom name conversion (v2.9.8, DAOTHER-6128, bmrb_id: 15879, pdb_id: 2k6r, comp_id: DNS, nef_atom_id: Hx%, Hy% point to [H11A, H12, H13], [H21, H22, H23], respectively, but SHOULD NOT to H10, H11, H[ABCDE][23])
 ##
 import sys
 import os
@@ -82,7 +83,7 @@ from wwpdb.utils.nmr.io.ChemCompIo import ChemCompReader
 from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
 from wwpdb.utils.nmr.NmrDpReport import NmrDpReport
 
-__version__ = '2.9.7'
+__version__ = '2.9.8'
 
 __pynmrstar_v3__ = version.parse(pynmrstar.__version__) >= version.parse("3.0.0")
 
@@ -1190,7 +1191,17 @@ class NEFTranslator(object):
                         for _c in chains:
                             if _c == c:
                                 continue
-                            if cmp_dict[_c] == cmp_dict[c]:
+                            if seq_dict[_c] == seq_dict[c]:
+                                if cmp_dict[_c] == cmp_dict[c]:
+                                    identity.append(_c)
+                            else:
+                                common_seq_id = set(seq_dict[_c]) & set(seq_dict[c])
+                                if len(common_seq_id) == 0:
+                                    continue
+                                if any(s for s in common_seq_id if s in seq_dict[_c] and s in seq_dict[c] and cmp_dict[_c][seq_dict[_c].index(s)] != cmp_dict[c][seq_dict[c].index(s)]):
+                                    continue
+                                if not any(s for s in common_seq_id if s in seq_dict[_c] and s in seq_dict[c] and cmp_dict[_c][seq_dict[_c].index(s)] == cmp_dict[c][seq_dict[c].index(s)]):
+                                    continue
                                 identity.append(_c)
                         if len(identity) > 0:
                             ent['identical_chain_id'] = identity
@@ -1360,7 +1371,17 @@ class NEFTranslator(object):
                         for _c in chains:
                             if _c == c:
                                 continue
-                            if cmp_dict[_c] == cmp_dict[c]:
+                            if seq_dict[_c] == seq_dict[c]:
+                                if cmp_dict[_c] == cmp_dict[c]:
+                                    identity.append(_c)
+                            else:
+                                common_seq_id = set(seq_dict[_c]) & set(seq_dict[c])
+                                if len(common_seq_id) == 0:
+                                    continue
+                                if any(s for s in common_seq_id if s in seq_dict[_c] and s in seq_dict[c] and cmp_dict[_c][seq_dict[_c].index(s)] != cmp_dict[c][seq_dict[c].index(s)]):
+                                    continue
+                                if not any(s for s in common_seq_id if s in seq_dict[_c] and s in seq_dict[c] and cmp_dict[_c][seq_dict[_c].index(s)] == cmp_dict[c][seq_dict[c].index(s)]):
+                                    continue
                                 identity.append(_c)
                         if len(identity) > 0:
                             ent['identical_chain_id'] = identity
@@ -3513,14 +3534,20 @@ class NEFTranslator(object):
 
                 pattern = re.compile(r'%s\S\d+' % (atom_type))
 
-                alist2 = [i for i in atoms if re.search(pattern, i)]
+                alist2 = [i for i in atoms if re.search(pattern, i)\
+                                              and i[len_atom_type].isdigit()] # bmrb_id: 15879, pdb_id: 2k6r, comp_id: DNS
 
                 xid = sorted(set([int(i[len_atom_type]) for i in alist2]))
 
                 if xy_code == 'x':
                     atom_list = [i for i in alist2 if int(i[len_atom_type]) == xid[0]]
+                    if len(atom_list) > 3: # bmrb_id: 15879, pdb_id: 2k6r, comp_id: DNS
+                        atom_list[3:] = []
+
                 else:
                     atom_list = [i for i in alist2 if int(i[len_atom_type]) == xid[1]]
+                    if len(atom_list) > 3: # bmrb_id: 15879, pdb_id: 2k6r, comp_id: DNS
+                        atom_list[3:] = []
 
                 ambiguity_code = self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_list[0])
 
@@ -4118,6 +4145,8 @@ class NEFTranslator(object):
                 if not cif_chain is None:
                     try:
                         _cif_seq = seq_align['test_seq_id'][seq_align['ref_seq_id'].index(_nef_seq)]
+                        if offset is None:
+                            offset = _cif_seq - _nef_seq
                     except:
                         pass
 
@@ -4300,6 +4329,8 @@ class NEFTranslator(object):
                 if not cif_chain is None:
                     try:
                         _cif_seq = seq_align['test_seq_id'][seq_align['ref_seq_id'].index(_star_seq)]
+                        if offset is None:
+                            offset = _cif_seq - _star_seq
                     except:
                         pass
 

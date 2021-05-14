@@ -62,6 +62,8 @@
 # 10-Mar-2021  M. Yokochi - block NEF deposition missing '_nef_sequence' category and turn off salvage routine for the case (v2.9.6, DAOTHER-6694)
 # 10-Mar-2021  M. Yokochi - add support for audit loop in NEF (v2.9.7, DAOTHER-6327)
 # 25-Mar-2021  M. Yokochi - fix crash during NMR-STAR to NEF atom name conversion (v2.9.8, DAOTHER-6128, bmrb_id: 15879, pdb_id: 2k6r, comp_id: DNS, nef_atom_id: Hx%, Hy% point to [H11A, H12, H13], [H21, H22, H23], respectively, but SHOULD NOT to H10, H11, H[ABCDE][23])
+# 14-May-2021  M. Yokochi - add support for PyNMRSTAR v3.1.1 (DAOTHER-6693)
+# 14-May-2021  M. Yokochi - remove empty loop for Entity_deleted_atom category in NMR-STAR to NEF conversion (v2.10.0)
 ##
 import sys
 import os
@@ -83,8 +85,9 @@ from wwpdb.utils.nmr.io.ChemCompIo import ChemCompReader
 from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
 from wwpdb.utils.nmr.NmrDpReport import NmrDpReport
 
-__version__ = '2.9.8'
+__version__ = '2.10.0'
 
+__pynmrstar_v3_1__ = version.parse(pynmrstar.__version__) >= version.parse("3.1.0")
 __pynmrstar_v3__ = version.parse(pynmrstar.__version__) >= version.parse("3.0.0")
 
 logging.getLogger().setLevel(logging.ERROR)
@@ -670,7 +673,15 @@ class NEFTranslator(object):
 
                     is_ok = False
 
-                    if version.parse(pynmrstar.__version__) >= version.parse("2.6.5.1"):
+                    if __pynmrstar_v3_1__:
+                        if 'The Sf_framecode tag cannot be different from the saveframe name.' in str(e2):
+                            msg = str(e2)
+                        elif not "Invalid loop. Loops must start with the 'loop_' keyword." in str(e3) and not "Invalid token found in loop contents" in str(e3):
+                            msg = str(e3)
+                        else:
+                            msg = str(e1)
+
+                    elif version.parse(pynmrstar.__version__) >= version.parse("2.6.5.1"):
                         if not "Invalid loop. Loops must start with the 'loop_' keyword." in str(e3):
                             msg = str(e3)
                         else:
@@ -6761,6 +6772,10 @@ class NEFTranslator(object):
                             tag_set = set(tags)
                             if len(tags) > len(tag_set):
                                 tags = list(tag_set)
+
+                            if len(tags) == 0:
+                                contienue
+
                             for tag in tags:
                                 lp.add_tag(tag)
 
@@ -6936,6 +6951,10 @@ class NEFTranslator(object):
                         tag_set = set(tags)
                         if len(tags) > len(tag_set):
                             tags = list(tag_set)
+
+                        if len(tags) == 0:
+                            contienue
+
                         for tag in tags:
                             lp.add_tag(tag)
 

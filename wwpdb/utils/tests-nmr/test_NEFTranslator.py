@@ -10,6 +10,7 @@
 # 23-Apr-2020  M. Yokochi - support NEFTranslator v2.2.5
 # 17-Aug-2020  M. Yokochi - support NEFTranslator v2.7.0
 # 19-Nov-2020  M. Yokochi - support NEFTranslator v2.9.3
+# 14-May-2021  M. Yokochi - support NEFTranslator v2.10.0
 ##
 import unittest
 import os
@@ -20,6 +21,7 @@ from packaging import version
 
 from wwpdb.utils.nmr.NEFTranslator.NEFTranslator import NEFTranslator
 
+__pynmrstar_v3_1__ = version.parse(pynmrstar.__version__) >= version.parse("3.1.0")
 __pynmrstar_v3__ = version.parse(pynmrstar.__version__) >= version.parse("3.0.0")
 
 class TestNEFTranslator(unittest.TestCase):
@@ -104,7 +106,9 @@ class TestNEFTranslator(unittest.TestCase):
         self.assertEqual(read_out[1], 'Loop')
         read_out = self.neft.read_input_file(self.data_dir_path + 'nonsense.nef')
         self.assertEqual(read_out[0], False)
-        if __pynmrstar_v3__:
+        if __pynmrstar_v3_1__:
+            self.assertEqual(read_out[1], 'Invalid file. NMR-STAR files must start with \'data_\'. Did you accidentally select the wrong file? Your file started with \'A\'. Error detected on line 3.')
+        elif __pynmrstar_v3__:
             self.assertEqual(read_out[1], 'Invalid file. NMR-STAR files must start with \'data_\'. Did you accidentally select the wrong file? on line 2')
         else:
             self.assertEqual(read_out[1], '("Invalid file. NMR-STAR files must start with \'data_\'. Did you accidentally select the wrong file?", 2)')

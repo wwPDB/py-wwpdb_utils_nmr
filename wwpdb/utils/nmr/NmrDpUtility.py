@@ -113,6 +113,7 @@
 # 10-Mar-2021  M. Yokochi - block NEF deposition missing '_nef_sequence' category and turn off salvage routine for the case (DAOTHER-6694)
 # 10-Mar-2021  M. Yokochi - add support for audit loop in NEF (DAOTHER-6327)
 # 12-Mar-2021  M. Yokochi - add diagnostic routine to fix inconsistent sf_framecode of conventional CS file (DAOTHER-6693)
+# 14-May-2021  M. Yokochi - add support for PyNMRSTAR v3.1.1 (DAOTHER-6693)
 ##
 """ Wrapper class for data processing for NMR data.
     @author: Masashi Yokochi
@@ -143,6 +144,7 @@ from wwpdb.utils.config.ConfigInfo import ConfigInfo, getSiteId
 from wwpdb.utils.nmr.io.ChemCompIo import ChemCompReader
 from wwpdb.utils.nmr.io.CifReader import CifReader
 
+__pynmrstar_v3_1__ = version.parse(pynmrstar.__version__) >= version.parse("3.1.0")
 __pynmrstar_v3__ = version.parse(pynmrstar.__version__) >= version.parse("3.0.0")
 
 def detect_bom(in_file, default='utf-8'):
@@ -4216,6 +4218,9 @@ class NmrDpUtility(object):
 
                 ifp.close()
 
+#        if __pynmrstar_v3_1__:
+#            msg_template = 'Invalid token found in loop contents. Expecting \'loop_\' but found:' # \'*\' Error detected on line *.'
+#        else:
         msg_template = "Invalid file. NMR-STAR files must start with 'data_'. Did you accidentally select the wrong file?"
 
         if any(msg for msg in message['error'] if msg_template in msg) or (self.__has_legacy_sf_issue and star_data_type == 'Saveframe'):
@@ -10396,6 +10401,9 @@ class NmrDpUtility(object):
                     for loop in sf_data.loops:
 
                         lp_category = loop.category
+
+                        if lp_category is None:
+                            continue
 
                         # main content of loop has been processed in __testDataConsistencyInLoop()
                         if lp_category in self.lp_categories[file_type][content_subtype]:
@@ -21608,6 +21616,9 @@ i                               """
 
                     lp_category = loop.category
 
+                    if lp_category is None:
+                        continue
+
                     # main content of loop has been processed in __testDataConsistencyInLoop()
                     if lp_category in self.lp_categories[file_type][content_subtype]:
                         continue
@@ -26885,6 +26896,9 @@ i                               """
 
                     lp_category = loop.category
 
+                    if lp_category is None:
+                        continue
+
                     # main content of loop has been processed in __resetBoolValueInLoop()
                     if lp_category in self.lp_categories[file_type][content_subtype]:
                         continue
@@ -27135,6 +27149,9 @@ i                               """
 
                             lp_category = loop.category
 
+                            if lp_category is None:
+                                continue
+
                             if lp_category in self.lp_categories[file_type][content_subtype]:
                                 continue
 
@@ -27184,6 +27201,9 @@ i                               """
                     for loop in sf_data.loops:
 
                         lp_category = loop.category
+
+                        if lp_category is None:
+                            continue
 
                         _loop = sf_data.get_loop_by_category(lp_category)
 

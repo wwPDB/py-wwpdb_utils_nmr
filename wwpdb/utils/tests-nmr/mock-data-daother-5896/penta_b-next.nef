@@ -698,6 +698,14 @@ save_nef_nmr_spectrum_173
 
    stop_
 
+   loop_
+      _ccpn_multiplet_peaks.multiplet_list_serial
+      _ccpn_multiplet_peaks.multiplet_serial
+      _ccpn_multiplet_peaks.multiplet_peak
+
+
+   stop_
+
 save_
 
 save_nef_nmr_spectrum_182
@@ -826,6 +834,14 @@ save_nef_nmr_spectrum_182
      2   2   .   .   2309688.75   .   8.375167917   .   0.4802299282   .   119.9837713   .   .     .   .     .   .     .   .     .      .     .   .     .   1   .   .   .    
      3   3   .   .   2428724.75   .   8.376162972   .   0.2314502766   .   119.9861519   .   .     .   .     .   .     .   .     .      .     .   .     .   1   .   .   .    
      4   4   .   .   2094722.25   .   8.376487036   .   3.619032945    .   119.9873683   .   AAA   3   ILE   H   AAA   3   ILE   HA     AAA   3   ILE   N   1   .   .   .    
+
+   stop_
+
+   loop_
+      _ccpn_multiplet_peaks.multiplet_list_serial
+      _ccpn_multiplet_peaks.multiplet_serial
+      _ccpn_multiplet_peaks.multiplet_peak
+
 
    stop_
 

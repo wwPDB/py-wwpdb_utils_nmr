@@ -44,6 +44,7 @@
 # 17-Dec-2020  M. Yokochi - add 'atom_not_found' error (DAOTHER-6345)
 # 21-Jan-2021  M. Yokochi - symptomatic treatment for DAOTHER-6509
 # 03-Feb-2021  M. Yokochi - add support for 'identical_chain_id' attribute, which contains mapping of chain id(s), which shares the same entity.
+# 30-Mar-2021  M. Yokochi - getNmrSeq1LetterCodeOf() and getModelSeq1LetterCodeOf() do not return any 3-letter code (DAOTHER-6744)
 ##
 """ Wrapper class for data processing report of NMR data.
     @author: Masashi Yokochi
@@ -119,6 +120,9 @@ class NmrDpReport:
                          'T': 'T',
                          'U': 'U'
                          }
+
+        # empty value
+        self.empty_value = (None, '', '.', '?')
 
     def appendInputSource(self):
         self.input_sources.append(NmrDpReportInputSource())
@@ -976,8 +980,10 @@ class NmrDpReport:
 
             if comp_id in self.monDict3:
                 code += self.monDict3[comp_id]
+            elif comp_id in self.empty_value:
+                code += ' '
             else:
-                code += '(' + comp_id + ')'
+                code += 'X' # (' + comp_id + ')'
 
         return code
 
@@ -999,8 +1005,10 @@ class NmrDpReport:
         for comp_id in ps['comp_id']:
             if comp_id in self.monDict3:
                 code += self.monDict3[comp_id]
+            elif comp_id in self.empty_value:
+                code += ' '
             else:
-                code += '(' + comp_id + ')'
+                code += 'X' # '(' + comp_id + ')'
 
         return code
 

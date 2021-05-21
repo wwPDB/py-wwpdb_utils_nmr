@@ -6270,7 +6270,7 @@ class NmrDpUtility(object):
 
         except KeyError as e:
 
-            if self.__check_auth_seq:
+            if not 'Auth' in str(e) or self.__check_auth_seq:
                 self.report.error.appendDescription('sequence_mismatch', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': str(e).strip("'")})
                 self.report.setError()
 
@@ -6310,7 +6310,7 @@ class NmrDpUtility(object):
 
                 if invl:
 
-                    if self.__check_auth_seq:
+                    if not 'Auth' in warn or self.__check_auth_seq:
                         err = warn[15:]
 
                         self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})

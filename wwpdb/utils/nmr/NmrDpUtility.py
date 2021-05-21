@@ -114,6 +114,7 @@
 # 10-Mar-2021  M. Yokochi - add support for audit loop in NEF (DAOTHER-6327)
 # 12-Mar-2021  M. Yokochi - add diagnostic routine to fix inconsistent sf_framecode of conventional CS file (DAOTHER-6693)
 # 14-May-2021  M. Yokochi - add support for PyNMRSTAR v3.1.1 (DAOTHER-6693)
+# 20-May-2021  M. Yokochi - fix duplicating pynmrstar data objects during format issue correction that leads to empty upload summary page (DAOTHER-6834)
 ##
 """ Wrapper class for data processing for NMR data.
     @author: Masashi Yokochi
@@ -4003,6 +4004,11 @@ class NmrDpUtility(object):
                             _is_done, star_data_type, star_data = self.__nefT.read_input_file(csPath) # NEFTranslator.validate_file() generates this object internally, but not re-used.
 
                         if not (self.__has_legacy_sf_issue and _is_done and star_data_type == 'Entry'):
+
+                            if len(self.__star_data_type) == self.__file_path_list_len:
+                                del self.__star_data_type[-1]
+                                del self.__star_data[-1]
+
                             self.__star_data_type.append(star_data_type)
                             self.__star_data.append(star_data)
 
@@ -4089,6 +4095,11 @@ class NmrDpUtility(object):
                                 _is_done, star_data_type, star_data = self.__nefT.read_input_file(mrPath) # NEFTranslator.validate_file() generates this object internally, but not re-used.
 
                             if not (self.__has_legacy_sf_issue and _is_done and star_data_type == 'Entry'):
+
+                                if len(self.__star_data_type) == self.__file_path_list_len:
+                                    del self.__star_data_type[-1]
+                                    del self.__star_data[-1]
+
                                 self.__star_data_type.append(star_data_type)
                                 self.__star_data.append(star_data)
 

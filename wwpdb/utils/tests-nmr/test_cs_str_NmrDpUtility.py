@@ -16,6 +16,7 @@
 # 08-Jul-2020  M. Yokochi - add unit tests for DAOTHER-5910 and 5926
 # 12-Mar-2021  M. Yokochi - add a unit test for DAOTHER-6693
 # 20-May-2021  M. Yokochi - add unit tests for DAOTHER-6834 and 6855
+# 24-May-2021  M. Yokochi - add unit test for DAOTHER-6809
 #
 import unittest
 import os
@@ -66,7 +67,8 @@ class TestNmrDpUtility(unittest.TestCase):
                              'daother-5926': ['swallow_NMR-Star_3-1.str'],
                              'daother-6693': ['D_1000247867_cs-upload_P1.str.V1'],
                              'daother-6834': ['daother-6834_cs-upload_P1.str.V1'],
-                             'daother-6855': ['D_1000256494_cs-upload_P1.str.V1']
+                             'daother-6855': ['D_1000256494_cs-upload_P1.str.V1'],
+                             'daother-6809': ['D_1000256134_cs_P1.str']
                              }
         self.model_file_path = {'data': '2la6.cif',
                                 'sf': '2la6.cif',
@@ -103,7 +105,8 @@ class TestNmrDpUtility(unittest.TestCase):
                                 'daother-5926': 'D_800365_model_P1.cif.V4',
                                 'daother-6693': 'D_1000247867_model-upload_P1.cif.V1',
                                 'daother-6834': 'D_1000247867_model-upload_P1.cif.V1',
-                                'daother-6855': 'D_1000256494_model-upload-convert_P1.cif.V1'
+                                'daother-6855': 'D_1000256494_model-upload-convert_P1.cif.V1',
+                                'daother-6809': 'D_1000256134_model_P1.cif.V14'
                                 }
         self.utility = NmrDpUtility()
         pass
@@ -246,6 +249,9 @@ class TestNmrDpUtility(unittest.TestCase):
 
     def test_nmr_cs_str_consistency_check_daother_6855(self):
         self.__test_nmr_cs_str_consistency('daother-6855')
+
+    def test_nmr_cs_str_consistency_check_daother_6809(self):
+        self.__test_nmr_cs_str_consistency('daother-6809')
 
 if __name__ == '__main__':
     unittest.main()

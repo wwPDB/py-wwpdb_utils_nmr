@@ -115,6 +115,7 @@
 # 12-Mar-2021  M. Yokochi - add diagnostic routine to fix inconsistent sf_framecode of conventional CS file (DAOTHER-6693)
 # 14-May-2021  M. Yokochi - add support for PyNMRSTAR v3.1.1 (DAOTHER-6693)
 # 20-May-2021  M. Yokochi - fix duplicating pynmrstar data objects during format issue correction that leads to empty upload summary page (DAOTHER-6834)
+# 24-May-2021  M. Yokochi - fix tautomer detection of coordinate (DAOTHER-6809)
 ##
 """ Wrapper class for data processing for NMR data.
     @author: Masashi Yokochi
@@ -22880,11 +22881,11 @@ i                               """
                     self.__coord_tautomer[seq_key] = 'biprotonated'
                     return 'biprotonated'
                 elif has_hd1:
-                    self.__coord_tautomer[seq_key] = 'tau-tautomer'
-                    return 'tau-tautomer'
-                elif has_he2:
                     self.__coord_tautomer[seq_key] = 'pi-tautomer'
                     return 'pi-tautomer'
+                elif has_he2:
+                    self.__coord_tautomer[seq_key] = 'tau-tautomer'
+                    return 'tau-tautomer'
 
         self.__coord_tautomer[seq_key] = 'unknown'
         return 'unknown'

@@ -6774,7 +6774,7 @@ class NEFTranslator(object):
                                 tags = list(tag_set)
 
                             if len(tags) == 0:
-                                contienue
+                                continue
 
                             for tag in tags:
                                 lp.add_tag(tag)
@@ -6953,7 +6953,7 @@ class NEFTranslator(object):
                             tags = list(tag_set)
 
                         if len(tags) == 0:
-                            contienue
+                            continue
 
                         for tag in tags:
                             lp.add_tag(tag)

@@ -42,7 +42,7 @@ setup(
     ],
     #
     # munkres 1.0.12 last to support python 2. Developers did not tag properly
-    install_requires=['wwpdb.utils.config ~= 0.9', 'wwpdb.utils.align',
+    install_requires=['wwpdb.utils.config ~= 0.24', 'wwpdb.utils.align',
                       "pynmrstar ~= 2.6; python_version < '3'",
                       "pynmrstar; python_version >= '3'",                      
                       'pytz',

@@ -20,7 +20,8 @@ import copy
 import pickle
 import collections
 
-from wwpdb.utils.config.ConfigInfo import ConfigInfo, getSiteId
+from wwpdb.utils.config.ConfigInfo import getSiteId
+from wwpdb.utils.config.ConfigInfoApp import ConfigInfoAppCommon
 from wwpdb.utils.nmr.io.ChemCompIo import ChemCompReader
 
 class BMRBChemShiftStat:
@@ -65,8 +66,8 @@ class BMRBChemShiftStat:
         self.__verbose = False
         self.__lfh = sys.stderr
 
-        self.__cI = ConfigInfo(getSiteId())
-        self.__ccCvsPath = self.__cI.get('SITE_CC_CVS_PATH')
+        self.__cICommon = ConfigInfoAppCommon(getSiteId())
+        self.__ccCvsPath = self.__cICommon.get_site_cc_cvs_path()
 
         self.__ccR = ChemCompReader(self.__verbose, self.__lfh)
         self.__ccR.setCachePath(self.__ccCvsPath)

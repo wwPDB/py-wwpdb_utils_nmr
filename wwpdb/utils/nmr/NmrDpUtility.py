@@ -142,7 +142,8 @@ from wwpdb.utils.nmr.NEFTranslator.NEFTranslator import NEFTranslator
 from wwpdb.utils.nmr.NmrDpReport import NmrDpReport
 from wwpdb.utils.align.alignlib import PairwiseAlign
 from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
-from wwpdb.utils.config.ConfigInfo import ConfigInfo, getSiteId
+from wwpdb.utils.config.ConfigInfo import getSiteId
+from wwpdb.utils.config.ConfigInfoApp import ConfigInfoAppCommon
 from wwpdb.utils.nmr.io.ChemCompIo import ChemCompReader
 from wwpdb.utils.nmr.io.CifReader import CifReader
 
@@ -3347,8 +3348,8 @@ class NmrDpUtility(object):
         self.__pA.setVerbose(self.__verbose)
 
         # CCD accessing utility
-        self.__cI = ConfigInfo(getSiteId())
-        self.__ccCvsPath = self.__cI.get('SITE_CC_CVS_PATH')
+        self.__cICommon = ConfigInfoAppCommon(getSiteId())
+        self.__ccCvsPath = self.__cICommon.get_site_cc_cvs_path()
 
         self.__ccR = ChemCompReader(self.__verbose, self.__lfh)
         self.__ccR.setCachePath(self.__ccCvsPath)

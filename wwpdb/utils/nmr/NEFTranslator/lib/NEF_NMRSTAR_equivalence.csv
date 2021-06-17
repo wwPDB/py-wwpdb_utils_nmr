@@ -12,7 +12,6 @@
 #   Second Column : NMR-STAR saveframe/loop/tag (author tags i.e data copied from a NEF tag goes here ; example : HBx)
 #   Third Column : NMR-STAR saveframe/loop/tag (translated data goes here ; example HB2)
 ############################################################################################
-# 08-Jul-2020  M. Yokochi - add support for _Gen_dist_constraint.Distance_val, _RDC_constraint.RDC_val, and _RDC_constraint.RDC_val_err (DAOTHER-5926)
 # 10-Mar-2020  M. Yokochi - add support for _audit loop in NEF (DAOTHER-6327)
 #Saveframes and loops
 nef_nmr_meta_data,entry_information,entry_information
@@ -102,7 +101,6 @@ _nef_distance_restraint.residue_name_2,_Gen_dist_constraint.Auth_comp_ID_2,_Gen_
 _nef_distance_restraint.atom_name_2,_Gen_dist_constraint.Auth_atom_ID_2,_Gen_dist_constraint.Atom_ID_2
 _nef_distance_restraint.weight,_Gen_dist_constraint.Weight,_Gen_dist_constraint.Weight
 _nef_distance_restraint.target_value,_Gen_dist_constraint.Target_val,_Gen_dist_constraint.Target_val
-_nef_distance_restraint.target_value,_Gen_dist_constraint.Distance_val,_Gen_dist_constraint.Distance_val
 _nef_distance_restraint.target_value_uncertainty,_Gen_dist_constraint.Target_val_uncertainty,_Gen_dist_constraint.Target_val_uncertainty
 _nef_distance_restraint.lower_linear_limit,_Gen_dist_constraint.Lower_linear_limit,_Gen_dist_constraint.Lower_linear_limit
 _nef_distance_restraint.lower_limit,_Gen_dist_constraint.Distance_lower_bound_val,_Gen_dist_constraint.Distance_lower_bound_val
@@ -161,9 +159,7 @@ _nef_rdc_restraint.residue_name_2,_RDC_constraint.Auth_comp_ID_2,_RDC_constraint
 _nef_rdc_restraint.atom_name_2,_RDC_constraint.Auth_atom_ID_2,_RDC_constraint.Atom_ID_2
 _nef_rdc_restraint.weight,_RDC_constraint.Weight,_RDC_constraint.Weight
 _nef_rdc_restraint.target_value,_RDC_constraint.Target_value,_RDC_constraint.Target_value
-_nef_rdc_restraint.target_value,_RDC_constraint.RDC_val,_RDC_constraint.RDC_val
 _nef_rdc_restraint.target_value_uncertainty,_RDC_constraint.Target_value_uncertainty,_RDC_constraint.Target_value_uncertainty
-_nef_rdc_restraint.target_value_uncertainty,_RDC_constraint.RDC_val_err,_RDC_constraint.RDC_val_err
 _nef_rdc_restraint.lower_linear_limit,_RDC_constraint.RDC_lower_linear_limit,_RDC_constraint.RDC_lower_linear_limit
 _nef_rdc_restraint.lower_limit,_RDC_constraint.RDC_lower_bound,_RDC_constraint.RDC_lower_bound
 _nef_rdc_restraint.upper_limit,_RDC_constraint.RDC_upper_bound,_RDC_constraint.RDC_upper_bound

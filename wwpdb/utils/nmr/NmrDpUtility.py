@@ -1053,7 +1053,7 @@ class NmrDpUtility(object):
         self.chem_shift_error = {'min_inclusive': 0.0, 'max_inclusive': 3.0}
 
         # allowed distance range
-        self.dist_restraint_range = {'min_inclusive': 0.8, 'max_inclusive': 50.0}
+        self.dist_restraint_range = {'min_inclusive': 0.5, 'max_inclusive': 50.0}
         self.dist_restraint_error = {'min_inclusive': 0.0, 'max_inclusive': 5.0}
 
         # allowed dihed range

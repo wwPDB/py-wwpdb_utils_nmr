@@ -118,6 +118,7 @@
 # 24-May-2021  M. Yokochi - fix tautomer detection of coordinate (DAOTHER-6809)
 # 17-Jun-2021  M. Yokochi - fix error in handling lower/upper linear limits (DAOTHER-6963)
 # 17-Jun-2021  M. Yokochi - relax tolerance on chemical shift difference (DAOTHER-6963)
+# 23-Jun-2021  M. Yokochi - send back the initial error message when format remediation fails (DAOTHER-6830)
 ##
 """ Wrapper class for data processing for NMR data.
     @author: Masashi Yokochi
@@ -925,6 +926,8 @@ class NmrDpUtility(object):
 
         self.__star_data_type = []
         self.__star_data = []
+
+        self.__original_error_message = []
 
         self.__sf_category_list = []
         self.__lp_category_list = []
@@ -3810,6 +3813,8 @@ class NmrDpUtility(object):
         self.__star_data_type = []
         self.__star_data = []
 
+        self.__original_error_message = []
+
         self.__testDiamagnetism()
 
         return input_source is not None
@@ -3887,6 +3892,8 @@ class NmrDpUtility(object):
 
             message = json.loads(json_dumps)
 
+            self.__original_error_message.append(message)
+
             _file_type = message['file_type'] # nef/nmr-star/unknown
 
             input_source = self.report.input_sources[0]
@@ -3960,6 +3967,8 @@ class NmrDpUtility(object):
                 is_valid, json_dumps = self.__nefT.validate_file(csPath, 'S') # 'A' for NMR unified data, 'S' for assigned chemical shifts, 'R' for restraints.
 
                 message = json.loads(json_dumps)
+
+                self.__original_error_message.append(message)
 
                 _file_type = message['file_type'] # nef/nmr-star/unknown
 
@@ -4051,6 +4060,8 @@ class NmrDpUtility(object):
                     is_valid, json_dumps = self.__nefT.validate_file(mrPath, 'R') # 'A' for NMR unified data, 'S' for assigned chemical shifts, 'R' for restraints.
 
                     message = json.loads(json_dumps)
+
+                    self.__original_error_message.append(message)
 
                     _file_type = message['file_type'] # nef/nmr-star/unknown
 
@@ -4153,6 +4164,8 @@ class NmrDpUtility(object):
 
                     else:
                         missing_loop = False
+
+                        message = self.__original_error_message[file_list_id]
 
                         for err_message in message['error']:
                             if not 'No such file or directory' in err_message:
@@ -4991,6 +5004,8 @@ class NmrDpUtility(object):
 
                 else:
                     missing_loop = False
+
+                    message = self.__original_error_message[file_list_id]
 
                     for err_message in message['error']:
                         if not 'No such file or directory' in err_message:
@@ -10313,25 +10328,35 @@ class NmrDpUtility(object):
                         msg = '' if content_subtype != 'dihed_restraint' else angle_type_name + ' %s, ' % row_1[angle_type_name]
                         msg += self.__getResucedAtomNotations(key_items, row_1)
 
-                        warn = '[Check rows of %s %s vs %s, %s %s vs %s] ' %\
-                               (index_tag, row_1[index_tag], row_2[index_tag],
-                                id_tag, row_1[id_tag], row_2[id_tag])
+                        if index_tag in row_1:
+                            warn = '[Check rows of %s %s vs %s, %s %s vs %s] ' %\
+                                   (index_tag, row_1[index_tag], row_2[index_tag],
+                                    id_tag, row_1[id_tag], row_2[id_tag])
+                        else:
+                            warn = '[Check rows of %s %s vs %s, %s %s vs %s] ' %\
+                                   (index_tag, id_set[i] + 1, id_set[j] + 1,
+                                    id_tag, row_1[id_tag], row_2[id_tag])
                         warn += 'Found conflict on restraints (%s) for the same %s (%s).' % (discrepancy[:-2], data_unit_name, msg)
 
                         self.report.warning.appendDescription('conflicted_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn, 'sigma': float('{:.2f}'.format(r / max_inclusive))})
                         self.report.setWarning()
 
                         if self.__verbose:
-                            self.__lfh.write("+NmrDpUtility.__detetConflictDataInLoop() ++ Warning  - %s" % warn)
+                            self.__lfh.write("+NmrDpUtility.__detetConflictDataInLoo:0p() ++ Warning  - %s" % warn)
 
                     elif inconsist:
 
                         msg = '' if content_subtype != 'dihed_restraint' else angle_type_name + ' %s, ' % row_1[angle_type_name]
                         msg += self.__getResucedAtomNotations(key_items, row_1)
 
-                        warn = '[Check rows of %s %s vs %s, %s %s vs %s] ' %\
-                               (index_tag, row_1[index_tag], row_2[index_tag],
-                                id_tag, row_1[id_tag], row_2[id_tag])
+                        if index_tag in row_1:
+                            warn = '[Check rows of %s %s vs %s, %s %s vs %s] ' %\
+                                   (index_tag, row_1[index_tag], row_2[index_tag],
+                                    id_tag, row_1[id_tag], row_2[id_tag])
+                        else:
+                            warn = '[Check rows of %s %s vs %s, %s %s vs %s] ' %\
+                                   (index_tag, id_set[i] + 1, id_set[j] + 1,
+                                    id_tag, row_1[id_tag], row_2[id_tag])
                         warn += 'Found discrepancy in restraints (%s) for the same %s (%s).' % (discrepancy[:-2], data_unit_name, msg)
 
                         self.report.warning.appendDescription('inconsistent_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn, 'sigma': float('{:.2f}'.format(r / max_inclusive))})
@@ -10346,8 +10371,12 @@ class NmrDpUtility(object):
                 msg += self.__getResucedAtomNotations(key_items, row_1)
 
                 idx_msg = index_tag + ' '
-                for id in id_set:
-                    idx_msg += '%s vs ' % lp_data[id][index_tag]
+                if index_tag in lp_data[0]:
+                    for id in id_set:
+                        idx_msg += '%s vs ' % lp_data[id][index_tag]
+                else:
+                    for id in id_set:
+                        idx_msg += '%s vs ' % (id + 1)
                 idx_msg = idx_msg[:-4] + ', '
                 idx_msg += id_tag + ' '
                 for id in id_set:

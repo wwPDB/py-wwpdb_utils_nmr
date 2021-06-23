@@ -10342,7 +10342,7 @@ class NmrDpUtility(object):
                         self.report.setWarning()
 
                         if self.__verbose:
-                            self.__lfh.write("+NmrDpUtility.__detetConflictDataInLoo:0p() ++ Warning  - %s" % warn)
+                            self.__lfh.write("+NmrDpUtility.__detetConflictDataInLoop() ++ Warning  - %s" % warn)
 
                     elif inconsist:
 

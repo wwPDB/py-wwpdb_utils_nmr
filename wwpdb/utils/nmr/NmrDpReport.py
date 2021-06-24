@@ -45,6 +45,7 @@
 # 21-Jan-2021  M. Yokochi - symptomatic treatment for DAOTHER-6509
 # 03-Feb-2021  M. Yokochi - add support for 'identical_chain_id' attribute, which contains mapping of chain id(s), which shares the same entity.
 # 30-Mar-2021  M. Yokochi - getNmrSeq1LetterCodeOf() and getModelSeq1LetterCodeOf() do not return any 3-letter code (DAOTHER-6744)
+# 24-Jun-2021  M. Yokochi - resolve duplication in grouped error/warning message (DAOTHER-6345, 6830)
 ##
 """ Wrapper class for data processing report of NMR data.
     @author: Masashi Yokochi
@@ -1703,6 +1704,9 @@ class NmrDpReportError:
                                   not 'sf_framecode' in v and\
                                   not 'row_location' in v and not 'row_locations' in v), None)
 
+                        if not v is None and value['description'] in v['description'].split('\n'):
+                            return
+
                     if not v is None:
                         v['description'] += '\n%s' % value['description']
 
@@ -1934,6 +1938,9 @@ class NmrDpReportWarning:
                         v = next((v for v in self.__contents[item] if 'file_name' in v and v['file_name'] == value['file_name'] and\
                                   not 'sf_framecode' in v and\
                                   not 'row_location' in v and not 'row_locations' in v), None)
+
+                        if not v is None and value['description'] in v['description'].split('\n'):
+                            return
 
                     if not v is None:
                         v['description'] += '\n%s' % value['description']

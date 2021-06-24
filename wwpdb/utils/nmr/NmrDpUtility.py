@@ -120,6 +120,7 @@
 # 17-Jun-2021  M. Yokochi - relax tolerance on chemical shift difference (DAOTHER-6963)
 # 23-Jun-2021  M. Yokochi - send back the initial error message when format remediation fails (DAOTHER-6830)
 # 24-Jun-2021  M. Yokochi - support cif-formatted CS file for reupload without changing CS data (DAOTHER-6830)
+# 24-Jun-2021  M. Yokochi - block restraint files that have no distance restraints (DAOTHER-6830)
 ##
 """ Wrapper class for data processing for NMR data.
     @author: Masashi Yokochi
@@ -3492,6 +3493,8 @@ class NmrDpUtility(object):
                 self.__inputParamDict[name] = os.path.abspath(value)
             elif type == 'file_list':
                 self.__inputParamDict[name] = [os.path.abspath(f) for f in value]
+            elif type == 'file_dict_list':
+                self.__inputParamDict[name] = [{'file_name': os.path.abspath(f['file_name']), 'file_type': f['file_type']} for f in value]
             else:
                 raise ValueError("+NmrDpUtility.addInput() ++ Error  - Unknown input type %s." % type)
 
@@ -3807,6 +3810,24 @@ class NmrDpUtility(object):
 
                     input_source.setItemValue('file_name', os.path.basename(mrPath))
                     input_source.setItemValue('file_type', file_type)
+                    input_source.setItemValue('content_type', 'nmr-restraints')
+
+                    file_path_list_len += 1
+
+            ar_file_path_list = 'atypical_restraint_file_path_list'
+
+            if ar_file_path_list in self.__inputParamDict:
+
+                file_path_list_len = self.__cs_file_path_list_len
+
+                for ar in self.__inputParamDict[ar_file_path_list]:
+
+                    self.report.appendInputSource()
+
+                    input_source = self.report.input_sources[file_path_list_len]
+
+                    input_source.setItemValue('file_name', os.path.basename(ar['file_name']))
+                    input_source.setItemValue('file_type', ar['file_type'])
                     input_source.setItemValue('content_type', 'nmr-restraints')
 
                     file_path_list_len += 1
@@ -4136,6 +4157,29 @@ class NmrDpUtility(object):
                     if not mrPath_ is None:
                         try:
                             os.remove(mrPath_)
+                        except:
+                            pass
+
+            ar_file_path_list = 'atypical_restraint_file_path_list'
+
+            if ar_file_path_list in self.__inputParamDict:
+
+                for ar in self.__inputParamDict[ar_file_path_list]:
+
+                    arPath = ar['file_name']
+
+                    codec = detect_bom(arPath, 'utf-8')
+
+                    arPath_ = None
+
+                    if codec != 'utf-8':
+                        arPath_ = arPath + '~'
+                        convert_codec(arPath, arPath_, codec, 'utf-8')
+                        arPath = arPath_
+
+                    if not arPath_ is None:
+                        try:
+                            os.remove(arPath_)
                         except:
                             pass
 
@@ -5924,6 +5968,174 @@ class NmrDpUtility(object):
             content_subtypes = {k: lp_counts[k] for k in lp_counts if lp_counts[k] > 0}
 
             input_source.setItemValue('content_subtype', content_subtypes)
+
+        if not self.__combined_mode:
+
+            ar_file_path_list = 'atypical_restraint_file_path_list'
+
+            if ar_file_path_list in self.__inputParamDict:
+
+                dist_restraint_uploaded = False
+
+                atom_like_names = self.__csStat.getAtomLikeNameSet()
+                cs_range_min = self.chem_shift_range['min_exclusive']
+                cs_range_max = self.chem_shift_range['max_exclusive']
+                dist_range_min = self.dist_restraint_range['min_inclusive']
+                dist_range_max = self.dist_restraint_range['max_inclusive']
+
+                fileListId = self.__file_path_list_len
+
+                for ar in self.__inputParamDict[ar_file_path_list]:
+
+                    file_path = ar['file_name']
+
+                    input_source = self.report.input_sources[fileListId]
+                    input_source_dic = input_source.get()
+
+                    file_name = input_source_dic['file_name']
+                    file_type = input_source_dic['file_type']
+
+                    has_chem_shift = False
+                    has_dist_restraint = False
+
+                    if file_type == 'nm-res-cns' or file_type == 'nm-res-xpl':
+
+                        with open(file_path, 'r') as ifp:
+                            for line in ifp:
+                                l = " ".join(line.split())
+
+                                if len(l) == 0 or l.startswith('#') or l.startswith('!'):
+                                    continue
+
+                                s = l.split(' ')
+
+                                in_assi = False
+
+                                atom_like_count = 0
+                                cs_range_like = False
+                                dist_range_like = False
+
+                                for t in s:
+
+                                    if t == '#':
+                                        break
+
+                                    if t.lower().startswith('assi'):
+
+                                        if atom_like_count == 1 and cs_range_like:
+                                            has_chem_shift = True
+
+                                        elif atom_like_count == 2 and dist_range_like:
+                                            has_dist_restraint = True
+
+                                        atom_like_count = 0
+                                        cs_range_like = False
+                                        dist_range_like = False
+
+                                    if t in atom_like_names:
+                                        atom_like_count += 1
+
+                                    if '.' in t:
+                                        try:
+                                            v = float(t)
+                                            if v > cs_range_min and v < cs_range_max:
+                                                cs_range_like = True
+                                            if v >= dist_range_min and v <= dist_range_max:
+                                                dist_range_like = True
+                                        except:
+                                            pass
+
+                                if has_dist_restraint:
+                                    break
+
+                            ifp.close()
+
+                    elif file_type == 'nm-res-amb' or file_type == 'nm-res-cya' or file_type == 'nm-res-oth':
+
+                        with open(file_path, 'r') as ifp:
+                            for line in ifp:
+                                l = " ".join(line.split())
+
+                                if len(l) == 0 or l.startswith('#') or l.startswith('!'):
+                                    continue
+
+                                s = l.split(' ')
+
+                                atom_like_count = 0
+                                cs_range_like = False
+                                dist_range_like = False
+
+                                for t in s:
+
+                                    if t == '#':
+                                        break
+
+                                    if t in atom_like_names:
+                                        atom_like_count += 1
+
+                                    if '.' in t:
+                                        try:
+                                            v = float(t)
+                                            if v > cs_range_min and v < cs_range_max:
+                                                cs_range_like = True
+                                            if v >= dist_range_min and v <= dist_range_max:
+                                                dist_range_like = True
+                                        except:
+                                            pass
+
+                                if atom_like_count == 1 and cs_range_like:
+                                    has_chem_shift = True
+
+                                elif atom_like_count == 2 and dist_range_like:
+                                    has_dist_restraint = True
+                                    break
+
+                            ifp.close()
+
+                    content_subtype = {'chem_shift': 1 if has_chem_shift else 0, 'dist_restraint': 1 if has_dist_restraint else 0}
+
+                    dist_restraint_uploaded |= has_dist_restraint
+
+                    input_source.setItemValue('content_subtype', content_subtype)
+
+                    fileListId += 1
+
+                if not dist_restraint_uploaded:
+
+                    fileListId = self.__file_path_list_len
+
+                    for ar in self.__inputParamDict[ar_file_path_list]:
+
+                        input_source = self.report.input_sources[fileListId]
+                        input_source_dic = input_source.get()
+
+                        file_name = input_source_dic['file_name']
+                        content_subtype = input_source_dic['content_subtype']
+
+                        fileListId += 1
+
+                        if not content_subtype is None and 'dist_restraint' in content_subtype:
+                            continue
+
+                        elif content_subtype is None:
+
+                            err = "The NMR restraint file does not include mandatory distance restraints or is not recognized properly. Please re-upload the NMR restraint file."
+
+                            self.report.error.appendDescription('content_mismatch', {'file_name': file_name, 'description': err})
+                            self.report.setError()
+
+                            if self.__verbose:
+                                self.__lfh.write("+NmrDpUtility.__detectContentSubType() ++ Error  - %s\n" % err)
+
+                        elif 'chem_shift' in content_subtype:
+
+                            err = "The NMR restraint file includes assigned chemical shifts only. Deposition of distance restraints is mandatory. Please re-upload the NMR restraint file."
+
+                            self.report.error.appendDescription('content_mismatch', {'file_name': file_name, 'description': err})
+                            self.report.setError()
+
+                            if self.__verbose:
+                                self.__lfh.write("+NmrDpUtility.__detectContentSubType() ++ Error  - %s\n" % err)
 
         return not self.report.isError()
 

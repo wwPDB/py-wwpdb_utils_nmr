@@ -119,6 +119,7 @@
 # 17-Jun-2021  M. Yokochi - fix error in handling lower/upper linear limits (DAOTHER-6963)
 # 17-Jun-2021  M. Yokochi - relax tolerance on chemical shift difference (DAOTHER-6963)
 # 23-Jun-2021  M. Yokochi - send back the initial error message when format remediation fails (DAOTHER-6830)
+# 24-Jun-2021  M. Yokochi - support cif-formatted CS file for reupload without changing CS data (DAOTHER-6830)
 ##
 """ Wrapper class for data processing for NMR data.
     @author: Masashi Yokochi
@@ -4189,7 +4190,7 @@ class NmrDpUtility(object):
 
         len_tmp_paths = len(tmpPaths)
 
-        datablock_pattern = re.compile(r'\s*data_\S+\s*')
+        datablock_pattern = re.compile(r'\s*data_(\S+)\s*')
         sf_anonymous_pattern = re.compile(r'\s*save_\S+\s*')
         save_pattern = re.compile(r'\s*save_\s*')
         loop_pattern = re.compile(r'\s*loop_\s*')
@@ -4424,41 +4425,95 @@ class NmrDpUtility(object):
 
         try:
 
-            msg = next(msg for msg in message['error'] if msg_template in msg)
-            warn = "Loops must start with the 'loop_' keyword."
+            is_cs_cif = False
 
-            self.report.warning.appendDescription('corrected_format_issue', {'file_name': file_name, 'description': warn})
-            self.report.setWarning()
+            if self.__op == 'nmr-cs-str-consistency-check':
 
-            if self.__verbose:
-                self.__lfh.write("+NmrDpUtility.__validateInputSource() ++ Warning  - %s\n" % warn)
+                cs_cif_pattern = re.compile(r'D_[0-9]+_cs_P[0-9]+.cif.V[0-9]+$')
+                cif_stop_pattern = re.compile(r'^#\s*')
 
-            msg_pattern = re.compile(r'^.*' + msg_template + r" '(.*)'.*$")
+                if cs_cif_pattern.match(file_name):
 
-            try:
+                    is_cs_cif = True
 
-                g = msg_pattern.search(msg).groups()
+                    try:
 
-                tag_name = g[0]
+                        with open(_srcPath, 'r') as ifp:
+                            for line in ifp:
+                                if save_pattern.match(line) or stop_pattern.match(line):
+                                    is_cs_cif = False
+                                    break
 
-                tag_name_pattern = re.compile(r'\s*' + tag_name + '\s*')
+                            ifp.close()
 
-                with open(_srcPath, 'r') as ifp:
-                    with open(_srcPath + '~', 'w') as ofp:
-                        for line in ifp:
-                            if tag_name_pattern.match(line) is None:
-                                ofp.write(line)
-                            else:
-                                ofp.write('loop_\n')
+                        if is_cs_cif:
 
-                    _srcPath = ofp.name
-                    tmpPaths.append(_srcPath)
-                    ofp.close()
+                            in_loop = False
 
-                ifp.close()
+                            with open(_srcPath, 'r') as ifp:
+                                with open(_srcPath + '~', 'w') as ofp:
+                                    for line in ifp:
+                                        if datablock_pattern.match(line):
+                                            g = datablock_pattern.search(line).groups()
+                                            ofp.write('save_%s\n' % g[0])
+                                        elif cif_stop_pattern.match(line):
+                                            if in_loop:
+                                                ofp.write('stop_\nsave_\n')
+                                            else:
+                                                ofp.write(line)
+                                            in_loop = False
+                                        elif loop_pattern.match(line):
+                                            in_loop = True
+                                            ofp.write(line)
+                                        else:
+                                            ofp.write(line)
 
-            except AttributeError:
-                pass
+                                _srcPath = ofp.name
+                                tmpPaths.append(_srcPath)
+                                ofp.close()
+
+                            ifp.close()
+
+                    except AttributeError:
+                        pass
+
+            if not is_cs_cif:
+
+                msg = next(msg for msg in message['error'] if msg_template in msg)
+                warn = "Loops must start with the 'loop_' keyword."
+
+                self.report.warning.appendDescription('corrected_format_issue', {'file_name': file_name, 'description': warn})
+                self.report.setWarning()
+
+                if self.__verbose:
+                    self.__lfh.write("+NmrDpUtility.__validateInputSource() ++ Warning  - %s\n" % warn)
+
+                msg_pattern = re.compile(r'^.*' + msg_template + r" '(.*)'.*$")
+
+                try:
+
+                    g = msg_pattern.search(msg).groups()
+
+                    tag_name = g[0]
+
+                    tag_name_pattern = re.compile(r'\s*' + tag_name + '\s*')
+
+                    with open(_srcPath, 'r') as ifp:
+                        with open(_srcPath + '~', 'w') as ofp:
+                            for line in ifp:
+                                if tag_name_pattern.match(line) is None:
+                                    ofp.write(line)
+                                else:
+                                    ofp.write('loop_\n')
+
+                        _srcPath = ofp.name
+                        tmpPaths.append(_srcPath)
+                        ofp.close()
+
+                    ifp.close()
+
+                except AttributeError:
+                    pass
 
         except StopIteration:
             pass

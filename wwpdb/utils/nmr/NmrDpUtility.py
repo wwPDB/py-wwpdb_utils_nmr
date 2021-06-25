@@ -6062,7 +6062,7 @@ class NmrDpUtility(object):
                                     elif _t.lower() == 'name':
                                         name = t.upper()
                                         if name in atom_like_names:
-                                            if not name in names:
+                                            if not name in names or len(names) > 1:
                                                 atom_likes += 1
                                                 names.append(name)
                                         else:
@@ -6113,7 +6113,7 @@ class NmrDpUtility(object):
                                     name = t.upper()
 
                                     if name in atom_like_names:
-                                        if not name in names:
+                                        if not name in names or len(names) > 1:
                                             atom_likes += 1
                                             names.append(name)
 
@@ -6191,12 +6191,10 @@ class NmrDpUtility(object):
                             if self.__verbose:
                                 self.__lfh.write("+NmrDpUtility.__detectContentSubType() ++ Error  - %s\n" % err)
 
-                        else:
+                        elif not 'chem_shift' in content_subtype:
 
                             subtype_name = ""
 
-                            if 'chem_shift' in content_subtype:
-                                subtype_name += "assigned chemical shifts, "
                             if 'dihed_restraint' in content_subtype:
                                 subtype_name += "dihedral angle restraints, "
                             if 'rdc_restraint' in content_subtype:

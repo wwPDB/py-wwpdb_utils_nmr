@@ -6011,8 +6011,9 @@ class NmrDpUtility(object):
 
                             in_assi = False
 
-                            atom_like_count = 0
-                            non_atom_like_count = 0
+                            atom_likes = 0
+                            atom_unlikes = 0
+                            names = []
                             cs_range_like = False
                             dist_range_like = False
                             dihed_range_like = False
@@ -6038,30 +6039,34 @@ class NmrDpUtility(object):
 
                                     if t.lower().startswith('assi'):
 
-                                        if atom_like_count == 1 and cs_range_like:
+                                        if atom_likes == 1 and cs_range_like:
                                             has_chem_shift = True
 
-                                        elif atom_like_count == 2 and dist_range_like:
+                                        elif atom_likes == 2 and dist_range_like:
                                             has_dist_restraint = True
 
-                                        elif atom_like_count == 4 and dihed_range_like:
+                                        elif atom_likes == 4 and dihed_range_like:
                                             has_dihed_restraint = True
 
-                                        elif atom_like_count + non_atom_like_count == 6 and rdc_range_like:
+                                        elif atom_likes + atom_unlikes == 6 and rdc_range_like:
                                             has_rdc_restraint = True
 
-                                        atom_like_count = 0
-                                        non_atom_like_count = 0
+                                        atom_likes = 0
+                                        atom_unlikes = 0
+                                        names = []
                                         cs_range_like = False
                                         dist_range_like = False
                                         dihed_range_like = False
                                         rdc_range_like = False
 
                                     elif _t.lower() == 'name':
-                                        if t.upper() in atom_like_names:
-                                            atom_like_count += 1
+                                        name = t.upper()
+                                        if name in atom_like_names:
+                                            if not name in names:
+                                                atom_likes += 1
+                                                names.append(name)
                                         else:
-                                            non_atom_like_count += 1
+                                            atom_unlikes += 1
 
                                     elif '.' in t:
                                         try:
@@ -6092,7 +6097,8 @@ class NmrDpUtility(object):
 
                                 s = re.split('[ ()]', l)
 
-                                atom_like_count = 0
+                                atom_likes = 0
+                                names = []
                                 cs_range_like = False
                                 dist_range_like = False
 
@@ -6104,8 +6110,12 @@ class NmrDpUtility(object):
                                     if t[0] == '#' or t[0] == '!':
                                         break
 
-                                    if t.upper() in atom_like_names:
-                                        atom_like_count += 1
+                                    name = t.upper()
+
+                                    if name in atom_like_names:
+                                        if not name in names:
+                                            atom_likes += 1
+                                            names.append(name)
 
                                     elif '.' in t:
                                         try:
@@ -6119,13 +6129,13 @@ class NmrDpUtility(object):
                                         except:
                                             pass
 
-                                if atom_like_count == 1 and cs_range_like:
+                                if atom_likes == 1 and cs_range_like:
                                     has_chem_shift = True
 
-                                elif atom_like_count == 2 and dist_range_like:
+                                elif atom_likes == 2 and dist_range_like:
                                     has_dist_restraint = True
 
-                                elif atom_like_count == 4 and dihed_range_like:
+                                elif atom_likes == 4 and dihed_range_like:
                                     has_dihed_restraint = True
 
                             ifp.close()

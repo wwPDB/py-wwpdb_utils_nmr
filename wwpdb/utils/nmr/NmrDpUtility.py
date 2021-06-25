@@ -120,7 +120,7 @@
 # 17-Jun-2021  M. Yokochi - relax tolerance on chemical shift difference (DAOTHER-6963)
 # 23-Jun-2021  M. Yokochi - send back the initial error message when format remediation fails (DAOTHER-6830)
 # 24-Jun-2021  M. Yokochi - support cif-formatted CS file for reupload without changing CS data (DAOTHER-6830)
-# 24-Jun-2021  M. Yokochi - block restraint files that have no distance restraints (DAOTHER-6830)
+# 25-Jun-2021  M. Yokochi - block restraint files that have no distance restraints (DAOTHER-6830)
 ##
 """ Wrapper class for data processing for NMR data.
     @author: Masashi Yokochi
@@ -5977,11 +5977,14 @@ class NmrDpUtility(object):
 
                 dist_restraint_uploaded = False
 
-                atom_like_names = self.__csStat.getAtomLikeNameSet()
                 cs_range_min = self.chem_shift_range['min_exclusive']
                 cs_range_max = self.chem_shift_range['max_exclusive']
                 dist_range_min = self.dist_restraint_range['min_inclusive']
                 dist_range_max = self.dist_restraint_range['max_inclusive']
+                dihed_range_min = self.dihed_restraint_range['min_inclusive']
+                dihed_range_max = self.dihed_restraint_range['max_inclusive']
+                rdc_range_min = self.rdc_restraint_range['min_exclusive']
+                rdc_range_max = self.rdc_restraint_range['max_exclusive']
 
                 fileListId = self.__file_path_list_len
 
@@ -5995,29 +5998,42 @@ class NmrDpUtility(object):
                     file_name = input_source_dic['file_name']
                     file_type = input_source_dic['file_type']
 
+                    atom_like_names = self.__csStat.getAtomLikeNameSet(minimum_len=(2 if file_type == 'nm-res-oth' else 1))
+
                     has_chem_shift = False
                     has_dist_restraint = False
+                    has_dihed_restraint = False
+                    has_rdc_restraint = False
 
                     if file_type == 'nm-res-cns' or file_type == 'nm-res-xpl':
 
                         with open(file_path, 'r') as ifp:
+
+                            in_assi = False
+
+                            atom_like_count = 0
+                            non_atom_like_count = 0
+                            cs_range_like = False
+                            dist_range_like = False
+                            dihed_range_like = False
+                            rdc_range_like = False
+
                             for line in ifp:
                                 l = " ".join(line.split())
 
                                 if len(l) == 0 or l.startswith('#') or l.startswith('!'):
                                     continue
 
-                                s = l.split(' ')
+                                s = re.split('[ ()]', l)
 
-                                in_assi = False
-
-                                atom_like_count = 0
-                                cs_range_like = False
-                                dist_range_like = False
+                                _t = ""
 
                                 for t in s:
 
-                                    if t == '#':
+                                    if len(t) == 0:
+                                        continue
+
+                                    if t[0] == '#' or t[0] == '!':
                                         break
 
                                     if t.lower().startswith('assi'):
@@ -6028,25 +6044,40 @@ class NmrDpUtility(object):
                                         elif atom_like_count == 2 and dist_range_like:
                                             has_dist_restraint = True
 
+                                        elif atom_like_count == 4 and dihed_range_like:
+                                            has_dihed_restraint = True
+
+                                        elif atom_like_count + non_atom_like_count == 6 and rdc_range_like:
+                                            has_rdc_restraint = True
+
                                         atom_like_count = 0
+                                        non_atom_like_count = 0
                                         cs_range_like = False
                                         dist_range_like = False
+                                        dihed_range_like = False
+                                        rdc_range_like = False
 
-                                    if t in atom_like_names:
-                                        atom_like_count += 1
+                                    elif _t.lower() == 'name':
+                                        if t.upper() in atom_like_names:
+                                            atom_like_count += 1
+                                        else:
+                                            non_atom_like_count += 1
 
-                                    if '.' in t:
+                                    elif '.' in t:
                                         try:
                                             v = float(t)
                                             if v > cs_range_min and v < cs_range_max:
                                                 cs_range_like = True
                                             if v >= dist_range_min and v <= dist_range_max:
                                                 dist_range_like = True
+                                            if v >= dihed_range_min and v <= dihed_range_max:
+                                                dihed_range_like = True
+                                            if v > rdc_range_min and v < rdc_range_max:
+                                                rdc_range_like = True
                                         except:
                                             pass
 
-                                if has_dist_restraint:
-                                    break
+                                    _t = t
 
                             ifp.close()
 
@@ -6059,7 +6090,7 @@ class NmrDpUtility(object):
                                 if len(l) == 0 or l.startswith('#') or l.startswith('!'):
                                     continue
 
-                                s = l.split(' ')
+                                s = re.split('[ ()]', l)
 
                                 atom_like_count = 0
                                 cs_range_like = False
@@ -6067,19 +6098,24 @@ class NmrDpUtility(object):
 
                                 for t in s:
 
-                                    if t == '#':
+                                    if len(t) == 0:
+                                        continue
+
+                                    if t[0] == '#' or t[0] == '!':
                                         break
 
-                                    if t in atom_like_names:
+                                    if t.upper() in atom_like_names:
                                         atom_like_count += 1
 
-                                    if '.' in t:
+                                    elif '.' in t:
                                         try:
                                             v = float(t)
                                             if v > cs_range_min and v < cs_range_max:
                                                 cs_range_like = True
                                             if v >= dist_range_min and v <= dist_range_max:
                                                 dist_range_like = True
+                                            if v >= dihed_range_min and v <= dihed_range_max:
+                                                dihed_range_like = True
                                         except:
                                             pass
 
@@ -6088,11 +6124,29 @@ class NmrDpUtility(object):
 
                                 elif atom_like_count == 2 and dist_range_like:
                                     has_dist_restraint = True
-                                    break
+
+                                elif atom_like_count == 4 and dihed_range_like:
+                                    has_dihed_restraint = True
 
                             ifp.close()
 
-                    content_subtype = {'chem_shift': 1 if has_chem_shift else 0, 'dist_restraint': 1 if has_dist_restraint else 0}
+                    if has_chem_shift and not has_dist_restraint and not has_dihed_restraint and not has_rdc_restraint:
+
+                        err = "The NMR restraint file includes assigned chemical shifts. It should be included into the assigned chemical shift file. Please re-upload the NMR restraint file."
+
+                        self.report.error.appendDescription('content_mismatch', {'file_name': file_name, 'description': err})
+                        self.report.setError()
+
+                        if self.__verbose:
+                            self.__lfh.write("+NmrDpUtility.__detectContentSubType() ++ Error  - %s\n" % err)
+
+                    elif has_chem_shift:
+                        has_chem_shift = False
+
+                    content_subtype = {'chem_shift': 1 if has_chem_shift else 0,
+                                       'dist_restraint': 1 if has_dist_restraint else 0,
+                                       'dihed_restraint': 1 if has_dihed_restraint else 0,
+                                       'rdc_restraint': 1 if has_rdc_restraint else 0}
 
                     dist_restraint_uploaded |= has_dist_restraint
 
@@ -6117,7 +6171,7 @@ class NmrDpUtility(object):
                         if not content_subtype is None and 'dist_restraint' in content_subtype:
                             continue
 
-                        elif content_subtype is None:
+                        if content_subtype is None:
 
                             err = "The NMR restraint file does not include mandatory distance restraints or is not recognized properly. Please re-upload the NMR restraint file."
 
@@ -6127,15 +6181,25 @@ class NmrDpUtility(object):
                             if self.__verbose:
                                 self.__lfh.write("+NmrDpUtility.__detectContentSubType() ++ Error  - %s\n" % err)
 
-                        elif 'chem_shift' in content_subtype:
+                        else:
 
-                            err = "The NMR restraint file includes assigned chemical shifts only. Deposition of distance restraints is mandatory. Please re-upload the NMR restraint file."
+                            subtype_name = ""
+
+                            if 'chem_shift' in content_subtype:
+                                subtype_name += "assigned chemical shifts, "
+                            if 'dihed_restraint' in content_subtype:
+                                subtype_name += "dihedral angle restraints, "
+                            if 'rdc_restraint' in content_subtype:
+                                subtype_name += "RDC restraints, "
+
+                            err = "The NMR restraint file includes %s. However, deposition of distance restraints is mandatory. Please re-upload the NMR restraint file." % (subtype_name[:-2])
 
                             self.report.error.appendDescription('content_mismatch', {'file_name': file_name, 'description': err})
                             self.report.setError()
 
                             if self.__verbose:
                                 self.__lfh.write("+NmrDpUtility.__detectContentSubType() ++ Error  - %s\n" % err)
+
 
         return not self.report.isError()
 

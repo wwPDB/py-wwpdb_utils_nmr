@@ -7,7 +7,7 @@
 # 04-Mar-2020  M. Yokochi - support lazy import of others (non-standard residues, DAOTHER-5498)
 # 16-Apr-2020  M. Yokochi - fix ambiguity code of atom name starts with 'Q' (e.g. LYZ:QZ)
 # 20-Nov-2020  M. Yokochi - fix statics extraction for HEM, HEB, HEC from CSV (DAOTHER-6366)
-# 24-Jun-2021  M. Yokochi - add getAtomLikeNameSet() (DAOTHER-6830)
+# 25-Jun-2021  M. Yokochi - add getAtomLikeNameSet() (DAOTHER-6830)
 ##
 """ Wrapper class for retrieving BMRB chemical shift statistics.
     @author: Masashi Yokochi
@@ -1251,7 +1251,7 @@ class BMRBChemShiftStat:
 
         self.__all_comp_ids |= self.__oth_comp_ids
 
-    def getAtomLikeNameSet(self, excl_minor_atom=False, primary=False):
+    def getAtomLikeNameSet(self, excl_minor_atom=False, primary=False, minimum_len=1):
         """ Return atom like names of all standard residues.
         """
 
@@ -1267,7 +1267,7 @@ class BMRBChemShiftStat:
 
             for name in name_list:
 
-                if len(name) == 1:
+                if len(name) < minimum_len:
                     continue
 
                 name_set.add(name)
@@ -1291,8 +1291,6 @@ class BMRBChemShiftStat:
                         name_set.add(_name + '#')
                         name_set.add(_name + '%')
                     name_set.add(_name + '*')
-                    name_set.add(_name + 'x')
-                    name_set.add(_name + 'y')
                     name_set.add(_name + 'X')
                     name_set.add(_name + 'Y')
 

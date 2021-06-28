@@ -119,8 +119,8 @@
 # 17-Jun-2021  M. Yokochi - fix error in handling lower/upper linear limits (DAOTHER-6963)
 # 17-Jun-2021  M. Yokochi - relax tolerance on chemical shift difference (DAOTHER-6963)
 # 23-Jun-2021  M. Yokochi - send back the initial error message when format remediation fails (DAOTHER-6830)
-# 24-Jun-2021  M. Yokochi - support cif-formatted CS file for reupload without changing CS data (DAOTHER-6830)
 # 25-Jun-2021  M. Yokochi - block restraint files that have no distance restraints (DAOTHER-6830)
+# 28-Jun-2021  M. Yokochi - support cif-formatted CS file for reupload without changing CS data (DAOTHER-6830, 7097)
 ##
 """ Wrapper class for data processing for NMR data.
     @author: Masashi Yokochi
@@ -4492,6 +4492,15 @@ class NmrDpUtility(object):
 
                         if is_cs_cif:
 
+                            loop_count = 0
+
+                            with open(_srcPath, 'r') as ifp:
+                                for line in ifp:
+                                    if loop_pattern.match(line):
+                                        loop_count += 1
+
+                                ifp.close()
+
                             in_loop = False
 
                             with open(_srcPath, 'r') as ifp:
@@ -4499,10 +4508,14 @@ class NmrDpUtility(object):
                                     for line in ifp:
                                         if datablock_pattern.match(line):
                                             g = datablock_pattern.search(line).groups()
-                                            ofp.write('save_%s\n' % g[0])
+                                            if loop_count < 2:
+                                                ofp.write('save_%s\n' % g[0])
                                         elif cif_stop_pattern.match(line):
                                             if in_loop:
-                                                ofp.write('stop_\nsave_\n')
+                                                if loop_count < 2:
+                                                    ofp.write('stop_\nsave_\n')
+                                                else:
+                                                    ofp.write('stop_\n')
                                             else:
                                                 ofp.write(line)
                                             in_loop = False
@@ -4510,7 +4523,8 @@ class NmrDpUtility(object):
                                             in_loop = True
                                             ofp.write(line)
                                         else:
-                                            ofp.write(line)
+                                            if in_loop or loop_count < 2:
+                                                ofp.write(line)
 
                                 _srcPath = ofp.name
                                 tmpPaths.append(_srcPath)

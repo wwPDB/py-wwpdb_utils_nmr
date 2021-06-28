@@ -20785,7 +20785,7 @@ class NmrDpUtility(object):
                             if len(_cif_chains) > 1:
                                 chain_id2 = nmr_polymer_sequence[column]['chain_id']
                                 concatenated_nmr_chain[chain_id2] = _cif_chains
-                                warn = 'Concatenated sequence in NMR data (chain_id %s) should be split according to the coordinates (chain_id %s) during bioculation.' % (chain_id2, _cif_chains)
+                                warn = 'Concatenated sequence in NMR data (chain_id %s) should be split according to the coordinates (chain_id %s) during biocuration.' % (chain_id2, _cif_chains)
 
                                 self.report.warning.appendDescription('concatenated_sequence', {'file_name': nmr_file_name, 'description': warn})
                                 self.report.setWarning()

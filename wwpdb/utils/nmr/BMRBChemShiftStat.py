@@ -1259,6 +1259,7 @@ class BMRBChemShiftStat:
 
         name_set.add('HN')
         name_set.add('QR')
+        name_set.add('O')
 
         for comp_id in self.__std_comp_ids:
 
@@ -1286,7 +1287,7 @@ class BMRBChemShiftStat:
                     elif ambig_code == 2:
                         name_set.add(_name + '#')
                         name_set.add(_name + '%')
-                        name_set.add(_name + '*')                        
+                        name_set.add(_name + '*')
 
                 elif ambig_code >= 2:
                     geminal_name = self.getGeminalAtom(comp_id, name)

@@ -6111,6 +6111,11 @@ class NmrDpUtility(object):
 
                     elif file_type == 'nm-res-amb' or file_type == 'nm-res-cya' or file_type == 'nm-res-oth':
 
+                        atom_like_names_oth = self.__csStat.getAtomLikeNameSet(1)
+                        one_letter_codes = self.monDict3.values()
+
+                        prohibited_col = set()
+
                         with open(file_path, 'r') as ifp:
                             for line in ifp:
                                 l = " ".join(line.split())
@@ -6121,6 +6126,7 @@ class NmrDpUtility(object):
                                 s = re.split('[ ()]', l)
 
                                 atom_likes = 0
+                                atom_likes_oth = 0
                                 names = []
                                 cs_range_like = False
                                 dist_range_like = False
@@ -6139,6 +6145,9 @@ class NmrDpUtility(object):
                                         if not name in names or len(names) > 1:
                                             atom_likes += 1
                                             names.append(name)
+
+                                    elif name in one_letter_codes and not name in atom_like_names_oth:
+                                        prohibited_col.add(s.index(t))
 
                                     elif '.' in t:
                                         try:
@@ -6162,6 +6171,64 @@ class NmrDpUtility(object):
                                     has_dihed_restraint = True
 
                             ifp.close()
+
+                        if file_type == 'nm-res-oth' and has_chem_shift and not has_dist_restraint and not has_dihed_restraint:
+
+                            with open(file_path, 'r') as ifp:
+                                for line in ifp:
+                                    l = " ".join(line.split())
+
+                                    if len(l) == 0 or l.startswith('#') or l.startswith('!'):
+                                        continue
+
+                                    s = re.split('[ ()]', l)
+
+                                    atom_likes = 0
+                                    atom_likes_oth = 0
+                                    names = []
+                                    cs_range_like = False
+                                    dist_range_like = False
+
+                                    for t in s:
+
+                                        if len(t) == 0:
+                                            continue
+
+                                        if t[0] == '#' or t[0] == '!':
+                                            break
+
+                                        if s.index(t) in prohibited_col:
+                                            continue
+
+                                        name = t.upper()
+
+                                        if name in atom_like_names_oth:
+                                            if not name in names or len(names) > 1:
+                                                atom_likes += 1
+                                                names.append(name)
+
+                                        elif '.' in t:
+                                            try:
+                                                v = float(t)
+                                                if v > cs_range_min and v < cs_range_max:
+                                                    cs_range_like = True
+                                                if v >= dist_range_min and v <= dist_range_max:
+                                                    dist_range_like = True
+                                                if v >= dihed_range_min and v <= dihed_range_max:
+                                                    dihed_range_like = True
+                                            except:
+                                                pass
+
+                                    if atom_likes == 1 and cs_range_like:
+                                        has_chem_shift = True
+
+                                    elif atom_likes == 2 and dist_range_like:
+                                        has_dist_restraint = True
+
+                                    elif atom_likes == 4 and dihed_range_like:
+                                        has_dihed_restraint = True
+
+                                ifp.close()
 
                     if has_chem_shift and not has_dist_restraint and not has_dihed_restraint and not has_rdc_restraint:
 

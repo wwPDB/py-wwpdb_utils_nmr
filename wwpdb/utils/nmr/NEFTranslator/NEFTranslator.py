@@ -65,6 +65,7 @@
 # 14-May-2021  M. Yokochi - add support for PyNMRSTAR v3.1.1 (DAOTHER-6693)
 # 14-May-2021  M. Yokochi - remove empty loop for Entity_deleted_atom category in NMR-STAR to NEF conversion (v2.10.0)
 # 23-Jun-2021  M. Yokochi - fix error in handling lower/upper linear limits (v2.10.1, DAOTHER-6963)
+# 28-Jun-2021  M. Yokochi - revise error message for sequence mismatch in a loop (v2.10.2, DAOTHER-7103)
 ##
 import sys
 import os
@@ -87,7 +88,7 @@ from wwpdb.utils.nmr.io.ChemCompIo import ChemCompReader
 from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
 from wwpdb.utils.nmr.NmrDpReport import NmrDpReport
 
-__version__ = '2.10.1'
+__version__ = '2.10.2'
 
 __pynmrstar_v3_1__ = version.parse(pynmrstar.__version__) >= version.parse("3.1.0")
 __pynmrstar_v3__ = version.parse(pynmrstar.__version__) >= version.parse("3.0.0")
@@ -1153,7 +1154,8 @@ class NEFTranslator(object):
                 for i in seq_data:
                     chk_key = '{} {:04d}'.format(i[2], int(i[0]))
                     if chk_dict[chk_key] != i[1]:
-                        raise KeyError("Sequence must be unique. %s %s, %s %s, %s %s vs %s." % (chain_id, i[2], seq_id, i[0], comp_id, i[1], chk_dict[chk_key]))
+                        #raise KeyError("Sequence must be unique. %s %s, %s %s, %s %s vs %s." % (chain_id, i[2], seq_id, i[0], comp_id, i[1], chk_dict[chk_key]))
+                        raise KeyError("Loop %s contains different %s (%s and %s) with the same %s %s, %s %s." % (lp_category, comp_id, i[1], chk_dict[chk_key], chain_id, i[2], seq_id, i[0]))
 
                 if len(sorted_seq[0].split(' ')[-1]) > 1:
                     if len(chains) > 1:
@@ -1333,7 +1335,8 @@ class NEFTranslator(object):
                 for i in seq_data:
                     chk_key = '{} {:04d}'.format(i[2], int(i[0]))
                     if chk_dict[chk_key] != i[1]:
-                        raise KeyError("Sequence must be unique. %s %s, %s %s, %s %s vs %s." % (chain_id, i[2], seq_id, i[0], comp_id, i[1], chk_dict[chk_key]))
+                        #raise KeyError("Sequence must be unique. %s %s, %s %s, %s %s vs %s." % (chain_id, i[2], seq_id, i[0], comp_id, i[1], chk_dict[chk_key]))
+                        raise KeyError("Loop %s contains different %s (%s and %s) with the same %s %s, %s %s." % (lp_category, comp_id, i[1], chk_dict[chk_key], chain_id, i[2], seq_id, i[0]))
 
                 if len(sorted_seq[0].split(' ')[-1]) > 1:
                     if len(chains) > 1:

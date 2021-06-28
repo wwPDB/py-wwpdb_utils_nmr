@@ -138,6 +138,7 @@ import math
 import codecs
 import shutil
 import time
+import hashlib
 
 from packaging import version
 from munkres import Munkres
@@ -6002,9 +6003,17 @@ class NmrDpUtility(object):
 
                 fileListId = self.__file_path_list_len
 
+                md5_list = []
+
                 for ar in self.__inputParamDict[ar_file_path_list]:
 
                     file_path = ar['file_name']
+
+                    with open(file_path, 'r') as ifp:
+
+                        md5_list.append(hashlib.md5(ifp.read().encode('utf-8')).hexdigest())
+
+                        ifp.close()
 
                     input_source = self.report.input_sources[fileListId]
                     input_source_dic = input_source.get()
@@ -6222,6 +6231,26 @@ class NmrDpUtility(object):
                             if self.__verbose:
                                 self.__lfh.write("+NmrDpUtility.__detectContentSubType() ++ Error  - %s\n" % err)
 
+                md5_set = set(md5_list)
+
+                if len(md5_set) != len(md5_list):
+
+                    ar_path_len = len(self.__inputParamDict[ar_file_path_list])
+
+                    for (i, j) in itertools.combinations(range(0, ar_path_len), 2):
+
+                        if md5_list[i] == md5_list[j]:
+
+                            file_name_1 = os.path.basename(self.__inputParamDict[ar_file_path_list][i]['file_name'])
+                            file_name_2 = os.path.basename(self.__inputParamDict[ar_file_path_list][j]['file_name'])
+
+                            err = "You have uploaded the same NMR restranit file twice. Please replace/delete either %s or %s." % (file_name_1, file_name_2)
+
+                            self.report.error.appendDescription('content_mismatch', {'file_name': '%s vs %s' % (file_name_1, file_name_2), 'description': err})
+                            self.report.setError()
+
+                            if self.__verbose:
+                                self.__lfh.write("+NmrDpUtility.__detectContentSubType() ++ Error  - %s\n" % err)
 
         return not self.report.isError()
 

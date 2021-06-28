@@ -1155,7 +1155,7 @@ class NEFTranslator(object):
                     chk_key = '{} {:04d}'.format(i[2], int(i[0]))
                     if chk_dict[chk_key] != i[1]:
                         #raise KeyError("Sequence must be unique. %s %s, %s %s, %s %s vs %s." % (chain_id, i[2], seq_id, i[0], comp_id, i[1], chk_dict[chk_key]))
-                        raise KeyError("Loop %s contains different %s (%s and %s) with the same %s %s, %s %s." % (lp_category, comp_id, i[1], chk_dict[chk_key], chain_id, i[2], seq_id, i[0]))
+                        raise KeyError("%s loop contains different %s (%s and %s) with the same %s %s, %s %s." % (lp_category[1:], comp_id, i[1], chk_dict[chk_key], chain_id, i[2], seq_id, i[0]))
 
                 if len(sorted_seq[0].split(' ')[-1]) > 1:
                     if len(chains) > 1:
@@ -1336,7 +1336,7 @@ class NEFTranslator(object):
                     chk_key = '{} {:04d}'.format(i[2], int(i[0]))
                     if chk_dict[chk_key] != i[1]:
                         #raise KeyError("Sequence must be unique. %s %s, %s %s, %s %s vs %s." % (chain_id, i[2], seq_id, i[0], comp_id, i[1], chk_dict[chk_key]))
-                        raise KeyError("Loop %s contains different %s (%s and %s) with the same %s %s, %s %s." % (lp_category, comp_id, i[1], chk_dict[chk_key], chain_id, i[2], seq_id, i[0]))
+                        raise KeyError("%s loop contains different %s (%s and %s) with the same %s %s, %s %s." % (lp_category[1:], comp_id, i[1], chk_dict[chk_key], chain_id, i[2], seq_id, i[0]))
 
                 if len(sorted_seq[0].split(' ')[-1]) > 1:
                     if len(chains) > 1:

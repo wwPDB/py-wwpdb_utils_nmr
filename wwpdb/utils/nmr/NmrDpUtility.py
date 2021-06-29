@@ -122,6 +122,7 @@
 # 25-Jun-2021  M. Yokochi - block restraint files that have no distance restraints (DAOTHER-6830)
 # 28-Jun-2021  M. Yokochi - support cif-formatted CS file for reupload without changing CS data (DAOTHER-6830, 7097)
 # 29-Jun-2021  M. Yokochi - include auth_asym_id in NMR data processing report (DAOTHER-7108)
+# 29-Jun-2021  M. Yokochi - add support for PyNMRSTAR v3.2.0 (DAOTHER-7107)
 ##
 """ Wrapper class for data processing for NMR data.
     @author: Masashi Yokochi
@@ -154,6 +155,7 @@ from wwpdb.utils.config.ConfigInfoApp import ConfigInfoAppCommon
 from wwpdb.utils.nmr.io.ChemCompIo import ChemCompReader
 from wwpdb.utils.nmr.io.CifReader import CifReader
 
+__pynmrstar_v3_2__ = version.parse(pynmrstar.__version__) >= version.parse("3.2.0")
 __pynmrstar_v3_1__ = version.parse(pynmrstar.__version__) >= version.parse("3.1.0")
 __pynmrstar_v3__ = version.parse(pynmrstar.__version__) >= version.parse("3.0.0")
 
@@ -4301,7 +4303,10 @@ class NmrDpUtility(object):
 #        if __pynmrstar_v3_1__:
 #            msg_template = 'Invalid token found in loop contents. Expecting \'loop_\' but found:' # \'*\' Error detected on line *.'
 #        else:
-        msg_template = "Invalid file. NMR-STAR files must start with 'data_'. Did you accidentally select the wrong file?"
+        if __pynmrstar_v3_2__:
+            msg_template = "Invalid file. NMR-STAR files must start with 'data_' followed by the data name. Did you accidentally select the wrong file?"
+        else:
+            msg_template = "Invalid file. NMR-STAR files must start with 'data_'. Did you accidentally select the wrong file?"
 
         if any(msg for msg in message['error'] if msg_template in msg) or (self.__has_legacy_sf_issue and star_data_type == 'Saveframe'):
             warn = 'The datablock must hook saveframe(s).'
@@ -5286,7 +5291,10 @@ class NmrDpUtility(object):
         """
 
         try:
-            loop = sf_data.get_loop_by_category(lp_category)
+            if __pynmrstar_v3_2__:
+                loop = sf_data.get_loop(lp_category)
+            else:
+                loop = sf_data.get_loop_by_category(lp_category)
         except:
             loop = sf_data
 
@@ -5336,7 +5344,10 @@ class NmrDpUtility(object):
             elif content_subtype == 'chem_shift':
 
                 if any(tag for tag in sf_data.tags if tag[0] == 'atom_chemical_shift_units'):
-                    sf_data.delete_tag('atom_chemical_shift_units')
+                    if __pynmrstar_v3_2__:
+                        sf_data.remove_tag('atom_chemical_shift_units')
+                    else:
+                        sf_data.delete_tag('atom_chemical_shift_units')
 
                 try:
                     tag_pos = next(loop.tags.index(tag) for tag in loop.tags if tag == 'residue_type')
@@ -5449,7 +5460,10 @@ class NmrDpUtility(object):
                 try:
                     tag = next(tag for tag in sf_data.tags if tag[0] == 'tensor_residue_type')
                     sf_data.add_tag(sf_category + '.tensor_residue_name', tag[1])
-                    sf_data.delete_tag('tensor_residue_type')
+                    if __pynmrstar_v3_2__:
+                        sf_data.remove_tag('tensor_residue_type')
+                    else:
+                        sf_data.delete_tag('tensor_residue_type')
                 except StopIteration:
                     pass
 
@@ -5610,7 +5624,10 @@ class NmrDpUtility(object):
         """
 
         try:
-            loop = sf_data.get_loop_by_category(lp_category)
+            if __pynmrstar_v3_2__:
+                loop = sf_data.get_loop(lp_category)
+            else:
+                loop = sf_data.get_loop_by_category(lp_category)
         except:
             loop = sf_data
 
@@ -7355,7 +7372,10 @@ class NmrDpUtility(object):
 
             max_dim = num_dim + 1
 
-        loop = sf_data if self.__star_data_type[file_list_id] == 'Loop' else sf_data.get_loop_by_category(lp_category)
+        if __pynmrstar_v3_2__:
+            loop = sf_data if self.__star_data_type[file_list_id] == 'Loop' else sf_data.get_loop(lp_category)
+        else:
+            loop = sf_data if self.__star_data_type[file_list_id] == 'Loop' else sf_data.get_loop_by_category(lp_category)
 
         if max_dim == 2:
 
@@ -7531,7 +7551,10 @@ class NmrDpUtility(object):
         for sf_data in self.__star_data[file_list_id].get_saveframes_by_category('assembly'):
 
             try:
-                loop = sf_data.get_loop_by_category('_Entity_assembly')
+                if __pynmrstar_v3_2__:
+                    loop = sf_data.get_loop('_Entity_assembly')
+                else:
+                    loop = sf_data.get_loop_by_category('_Entity_assembly')
             except KeyError:
                 return False
 
@@ -7585,7 +7608,10 @@ class NmrDpUtility(object):
                 content_subtype = 'entity'
 
                 try:
-                    _loop = _sf_data.get_loop_by_category(self.lp_categories[file_type][content_subtype])
+                    if __pynmrstar_v3_2__:
+                        _loop = _sf_data.get_loop(self.lp_categories[file_type][content_subtype])
+                    else:
+                        _loop = _sf_data.get_loop_by_category(self.lp_categories[file_type][content_subtype])
                 except KeyError:
                     return False
 
@@ -7655,7 +7681,10 @@ class NmrDpUtility(object):
             loops = star_data.get_loops_by_category(lp_category)
         except AttributeError:
             try:
-                loops = [star_data.get_loop_by_category(lp_category)]
+                if __pynmrstar_v3_2__:
+                    loops = [star_data.get_loop(lp_category)]
+                else:
+                    loops = [star_data.get_loop_by_category(lp_category)]
             except AttributeError:
                 return False
 
@@ -7733,7 +7762,10 @@ class NmrDpUtility(object):
             loops = star_data.get_loops_by_category(lp_category)
         except AttributeError:
             try:
-                loops = [star_data.get_loop_by_category(lp_category)]
+                if __pynmrstar_v3_2__:
+                    loops = [star_data.get_loop(lp_category)]
+                else:
+                    loops = [star_data.get_loop_by_category(lp_category)]
             except AttributeError:
                 return False
 
@@ -9065,7 +9097,10 @@ class NmrDpUtility(object):
 
             max_dim = num_dim + 1
 
-        loop = sf_data if self.__star_data_type[file_list_id] == 'Loop' else sf_data.get_loop_by_category(lp_category)
+        if __pynmrstar_v3_2__:
+            loop = sf_data if self.__star_data_type[file_list_id] == 'Loop' else sf_data.get_loop(lp_category)
+        else:
+            loop = sf_data if self.__star_data_type[file_list_id] == 'Loop' else sf_data.get_loop_by_category(lp_category)
 
         if max_dim == 2:
 
@@ -9179,7 +9214,10 @@ class NmrDpUtility(object):
 
             max_dim = num_dim + 1
 
-        loop = sf_data if self.__star_data_type[file_list_id] == 'Loop' else sf_data.get_loop_by_category(lp_category)
+        if __pynmrstar_v3_2__:
+            loop = sf_data if self.__star_data_type[file_list_id] == 'Loop' else sf_data.get_loop(lp_category)
+        else:
+            loop = sf_data if self.__star_data_type[file_list_id] == 'Loop' else sf_data.get_loop_by_category(lp_category)
 
         if max_dim == 2:
 
@@ -9814,7 +9852,10 @@ class NmrDpUtility(object):
 
             max_dim = num_dim + 1
 
-        loop = sf_data if self.__star_data_type[file_list_id] == 'Loop' else sf_data.get_loop_by_category(lp_category)
+        if __pynmrstar_v3_2__:
+            loop = sf_data if self.__star_data_type[file_list_id] == 'Loop' else sf_data.get_loop(lp_category)
+        else:
+            loop = sf_data if self.__star_data_type[file_list_id] == 'Loop' else sf_data.get_loop_by_category(lp_category)
 
         if max_dim == 2:
 
@@ -10578,7 +10619,10 @@ class NmrDpUtility(object):
                 conflict_id = self.__nefT.get_conflict_id(sf_data, lp_category, key_items)[0]
 
                 if len(conflict_id) > 0:
-                    loop = sf_data if self.__star_data_type[file_list_id] == 'Loop' else sf_data.get_loop_by_category(lp_category)
+                    if __pynmrstar_v3_2__:
+                        loop = sf_data if self.__star_data_type[file_list_id] == 'Loop' else sf_data.get_loop(lp_category)
+                    else:
+                        loop = sf_data if self.__star_data_type[file_list_id] == 'Loop' else sf_data.get_loop_by_category(lp_category)
 
                     for l in conflict_id:
                         del loop.data[l]
@@ -11069,7 +11113,10 @@ class NmrDpUtility(object):
                                         conflict_id = self.__nefT.get_conflict_id(sf_data, lp_category, key_items)[0]
 
                                         if len(conflict_id) > 0:
-                                            _loop = sf_data.get_loop_by_category(lp_category)
+                                            if __pynmrstar_v3_2__:
+                                                _loop = sf_data.get_loop(lp_category)
+                                            else:
+                                                _loop = sf_data.get_loop_by_category(lp_category)
 
                                             for l in conflict_id:
                                                 del _loop.data[l]
@@ -11715,7 +11762,10 @@ class NmrDpUtility(object):
 
             if file_type == 'nmr-star':
 
-                loop = sf_data if self.__star_data_type[file_list_id] == 'Loop' else sf_data.get_loop_by_category(lp_category)
+                if __pynmrstar_v3_2__:
+                    loop = sf_data if self.__star_data_type[file_list_id] == 'Loop' else sf_data.get_loop(lp_category)
+                else:
+                    loop = sf_data if self.__star_data_type[file_list_id] == 'Loop' else sf_data.get_loop_by_category(lp_category)
 
                 details_col = loop.tags.index('Details') if 'Details' in loop.tags and self.__leave_intl_note else -1
 
@@ -21884,7 +21934,10 @@ i                               """
 
         if file_type == 'nmr-star':
 
-            loop = sf_data if self.__star_data_type[file_list_id] == 'Loop' else sf_data.get_loop_by_category(lp_category)
+            if __pynmrstar_v3_2__:
+                loop = sf_data if self.__star_data_type[file_list_id] == 'Loop' else sf_data.get_loop(lp_category)
+            else:
+                loop = sf_data if self.__star_data_type[file_list_id] == 'Loop' else sf_data.get_loop_by_category(lp_category)
 
             details_col = loop.tags.index('Details') if 'Details' in loop.tags and self.__leave_intl_note else -1
 
@@ -22127,7 +22180,10 @@ i                               """
                         conflict_id = self.__nefT.get_conflict_atom_id(sf_data, file_type, lp_category, key_items)[0]
 
                         if len(conflict_id) > 0:
-                            loop = sf_data.get_loop_by_category(lp_category)
+                            if __pynmrstar_v3_2__:
+                                loop = sf_data.get_loop(lp_category)
+                            else:
+                                loop = sf_data.get_loop_by_category(lp_category)
 
                             for l in conflict_id:
                                 del loop.data[l]
@@ -22137,7 +22193,10 @@ i                               """
                     conflict_id = self.__nefT.get_conflict_id(sf_data, lp_category, key_items)[0]
 
                     if len(conflict_id) > 0:
-                        loop = sf_data.get_loop_by_category(lp_category)
+                        if __pynmrstar_v3_2__:
+                            loop = sf_data.get_loop(lp_category)
+                        else:
+                            loop = sf_data.get_loop_by_category(lp_category)
 
                         for l in conflict_id:
                             del loop.data[l]
@@ -22211,7 +22270,10 @@ i                               """
                             conflict_id = self.__nefT.get_conflict_id(sf_data, lp_category, key_items)[0]
 
                             if len(conflict_id) > 0:
-                                _loop = sf_data.get_loop_by_category(lp_category)
+                                if __pynmrstar_v3_2__:
+                                    _loop = sf_data.get_loop(lp_category)
+                                else:
+                                    _loop = sf_data.get_loop_by_category(lp_category)
 
                                 for l in conflict_id:
                                     del _loop.data[l]
@@ -22257,7 +22319,10 @@ i                               """
                     sf_framecode = get_first_sf_tag(sf_data, 'sf_framecode')
 
                     try:
-                        loop = sf_data.get_loop_by_category(lp_category)
+                        if __pynmrstar_v3_2__:
+                            loop = sf_data.get_loop(lp_category)
+                        else:
+                            loop = sf_data.get_loop_by_category(lp_category)
                     except KeyError:
                         continue
 
@@ -22424,7 +22489,10 @@ i                               """
                             self.__lfh.write("+NmrDpUtility.__deleteSkippedLoop() ++ Error  - %s\n" % err)
 
                     else:
-                        del sf_data[sf_data.get_loop_by_category(w['category'])]
+                        if __pynmrstar_v3_2__:
+                            del sf_data[sf_data.get_loop(w['category'])]
+                        else:
+                            del sf_data[sf_data.get_loop_by_category(w['category'])]
 
             else:
 
@@ -23167,7 +23235,10 @@ i                               """
         for sf_data in self.__star_data[0].get_saveframes_by_category(sf_category):
 
             try:
-                loop = sf_data.get_loop_by_category(lp_category)
+                if __pynmrstar_v3_2__:
+                    loop = sf_data.get_loop(lp_category)
+                else:
+                    loop = sf_data.get_loop_by_category(lp_category)
             except KeyError:
                 continue
 
@@ -23204,7 +23275,10 @@ i                               """
             for sf_data in self.__star_data[0].get_saveframes_by_category(sf_category):
 
                 try:
-                    loop = sf_data.get_loop_by_category(lp_category)
+                    if __pynmrstar_v3_2__:
+                        loop = sf_data.get_loop(lp_category)
+                    else:
+                        loop = sf_data.get_loop_by_category(lp_category)
                 except KeyError:
                     continue
 
@@ -25072,7 +25146,10 @@ i                               """
             for sf_data in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
 
                 try:
-                    loop = sf_data.get_loop_by_category(lp_category)
+                    if __pynmrstar_v3_2__:
+                        loop = sf_data.get_loop(lp_category)
+                    else:
+                        loop = sf_data.get_loop_by_category(lp_category)
                 except KeyError:
                     continue
 
@@ -25196,7 +25273,10 @@ i                               """
                     sf_framecode = get_first_sf_tag(sf_data, 'sf_framecode')
 
                     try:
-                        loop = sf_data.get_loop_by_category(lp_category)
+                        if __pynmrstar_v3_2__:
+                            loop = sf_data.get_loop(lp_category)
+                        else:
+                            loop = sf_data.get_loop_by_category(lp_category)
                     except KeyError:
                         continue
 
@@ -25249,7 +25329,10 @@ i                               """
             for sf_data in self.__star_data[fileListId].get_saveframes_by_category(sf_category):
 
                 try:
-                    loop = sf_data.get_loop_by_category(lp_category)
+                    if __pynmrstar_v3_2__:
+                        loop = sf_data.get_loop(lp_category)
+                    else:
+                        loop = sf_data.get_loop_by_category(lp_category)
                 except KeyError:
                     continue
 
@@ -25521,7 +25604,10 @@ i                               """
                        len(chi1_index) + len(chi2_index) + len(chi3_index) + len(chi4_index) + len(chi5_index) > 0:
 
                         try:
-                            loop = sf_data.get_loop_by_category(lp_category)
+                            if __pynmrstar_v3_2__:
+                                loop = sf_data.get_loop(lp_category)
+                            else:
+                                loop = sf_data.get_loop_by_category(lp_category)
                         except KeyError:
                             continue
 
@@ -25620,7 +25706,10 @@ i                               """
 
                             content_subtype = next(c for c in input_source_dic['content_subtype'].keys() if self.lp_categories[file_type][c] == category and not self.index_tags[file_type][c] is None)
 
-                            loop = sf_data.get_loop_by_category(w['category'])
+                            if __pynmrstar_v3_2__:
+                                loop = sf_data.get_loop(w['category'])
+                            else:
+                                loop = sf_data.get_loop_by_category(w['category'])
                             loop.renumber_rows(self.index_tags[file_type][content_subtype])
 
                         except StopIteration:
@@ -25713,7 +25802,10 @@ i                               """
 
                         itName = w['description'].split(' ')[0]
 
-                        loop = sf_data.get_loop_by_category(w['category'])
+                        if __pynmrstar_v3_2__:
+                            loop = sf_data.get_loop(w['category'])
+                        else:
+                            loop = sf_data.get_loop_by_category(w['category'])
 
                         if not itName in loop.tags:
 
@@ -25822,7 +25914,10 @@ i                               """
 
                         itName = w['description'].split(' ')[0]
 
-                        loop = sf_data.get_loop_by_category(w['category'])
+                        if __pynmrstar_v3_2__:
+                            loop = sf_data.get_loop(w['category'])
+                        else:
+                            loop = sf_data.get_loop_by_category(w['category'])
 
                         if not itName in loop.tags:
 
@@ -26136,7 +26231,10 @@ i                               """
 
                     else:
 
-                        loop = sf_data.get_loop_by_category(w['category'])
+                        if __pynmrstar_v3_2__:
+                            loop = sf_data.get_loop(w['category'])
+                        else:
+                            loop = sf_data.get_loop_by_category(w['category'])
 
                         if not itName in loop.tags:
 
@@ -27115,7 +27213,10 @@ i                               """
                     itName = description[0]
                     itVal = description[1]
 
-                    loop = sf_data.get_loop_by_category(w['category'])
+                    if __pynmrstar_v3_2__:
+                        loop = sf_data.get_loop(w['category'])
+                    else:
+                        loop = sf_data.get_loop_by_category(w['category'])
 
                     if not itName in loop.tags:
 
@@ -27255,7 +27356,10 @@ i                               """
                     key_items = self.key_items[file_type][content_subtype]
                     data_items = self.data_items[file_type][content_subtype]
 
-                loop = sf_data.get_loop_by_category(lp_category)
+                if __pynmrstar_v3_2__:
+                    loop = sf_data.get_loop(lp_category)
+                else:
+                    loop = sf_data.get_loop_by_category(lp_category)
 
                 if file_type == 'nef':
                     key_names = [k['name'] for k in key_items if k['name'].startswith('chain_code') or k['name'].startswith('residue_name') or k['name'].startswith('atom_name') or k['name'] == 'element']
@@ -27394,7 +27498,10 @@ i                               """
 
                 if has_bool_key or has_bool_data:
 
-                    loop = sf_data.get_loop_by_category(lp_category)
+                    if __pynmrstar_v3_2__:
+                        loop = sf_data.get_loop(lp_category)
+                    else:
+                        loop = sf_data.get_loop_by_category(lp_category)
 
                     if has_bool_key:
 
@@ -27496,7 +27603,10 @@ i                               """
 
                         if has_bool_key or has_bool_data:
 
-                            _loop = sf_data.get_loop_by_category(lp_category)
+                            if __pynmrstar_v3_2__:
+                                _loop = sf_data.get_loop(lp_category)
+                            else:
+                                _loop = sf_data.get_loop_by_category(lp_category)
 
                             if has_bool_key:
 
@@ -27588,7 +27698,10 @@ i                               """
                     if (not warn_desc is None) and warn_desc.split(' ')[0] == self.sf_tag_prefixes[file_type][content_subtype].lstrip('_') + '.ID':
                         continue
 
-                    loop = sf_data.get_loop_by_category(lp_category)
+                    if __pynmrstar_v3_2__:
+                        loop = sf_data.get_loop(lp_category)
+                    else:
+                        loop = sf_data.get_loop_by_category(lp_category)
 
                     itName = list_id_tag_in_lp['name']
 
@@ -27699,7 +27812,10 @@ i                               """
                         entryIdTag = 'Entry_ID'
 
                         try:
-                            loop = sf_data.get_loop_by_category(lp_category)
+                            if __pynmrstar_v3_2__:
+                                loop = sf_data.get_loop(lp_category)
+                            else:
+                                loop = sf_data.get_loop_by_category(lp_category)
                         except KeyError:
                             continue
 
@@ -27733,7 +27849,10 @@ i                               """
 
                             #elif lp_category in self.aux_lp_categories[file_type][content_subtype]:
 
-                            _loop = sf_data.get_loop_by_category(lp_category)
+                            if __pynmrstar_v3_2__:
+                                _loop = sf_data.get_loop(lp_category)
+                            else:
+                                _loop = sf_data.get_loop_by_category(lp_category)
 
                                 #if entryIdTag in self.aux_allowed_tags[file_type][content_subtype][lp_category]:
 
@@ -27781,7 +27900,10 @@ i                               """
                         if lp_category is None:
                             continue
 
-                        _loop = sf_data.get_loop_by_category(lp_category)
+                        if __pynmrstar_v3_2__:
+                            _loop = sf_data.get_loop(lp_category)
+                        else:
+                            _loop = sf_data.get_loop_by_category(lp_category)
 
                         if entryIdTag in _loop.tags:
 
@@ -27897,7 +28019,10 @@ i                               """
 
                 if sorted_id != list(range(l)):
 
-                    loop = sf_data.get_loop_by_category(lp_category)
+                    if __pynmrstar_v3_2__:
+                        loop = sf_data.get_loop(lp_category)
+                    else:
+                        loop = sf_data.get_loop_by_category(lp_category)
 
                     new_loop = pynmrstar.Loop.from_scratch(lp_category)
 
@@ -27956,7 +28081,10 @@ i                               """
             if self.report.error.exists(file_name, sf_framecode):
                 continue
 
-            loop = sf_data.get_loop_by_category(lp_category)
+            if __pynmrstar_v3_2__:
+                loop = sf_data.get_loop(lp_category)
+            else:
+                loop = sf_data.get_loop_by_category(lp_category)
 
             ambig_set_id_name = 'Ambiguity_set_ID'
 

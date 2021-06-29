@@ -66,6 +66,7 @@
 # 14-May-2021  M. Yokochi - remove empty loop for Entity_deleted_atom category in NMR-STAR to NEF conversion (v2.10.0)
 # 23-Jun-2021  M. Yokochi - fix error in handling lower/upper linear limits (v2.10.1, DAOTHER-6963)
 # 28-Jun-2021  M. Yokochi - revise error message for sequence mismatch in a loop (v2.10.2, DAOTHER-7103)
+# 29-Jun-2021  M. Yokochi - add support for PyNMRSTAR v3.2.0 (v2.10.3, DAOTHER-7107)
 ##
 import sys
 import os
@@ -88,8 +89,9 @@ from wwpdb.utils.nmr.io.ChemCompIo import ChemCompReader
 from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
 from wwpdb.utils.nmr.NmrDpReport import NmrDpReport
 
-__version__ = '2.10.2'
+__version__ = '2.10.3'
 
+__pynmrstar_v3_2__ = version.parse(pynmrstar.__version__) >= version.parse("3.2.0")
 __pynmrstar_v3_1__ = version.parse(pynmrstar.__version__) >= version.parse("3.1.0")
 __pynmrstar_v3__ = version.parse(pynmrstar.__version__) >= version.parse("3.0.0")
 
@@ -967,7 +969,10 @@ class NEFTranslator(object):
             return any(len(loop.data) == 0 for loop in loops)
 
         elif data_type == 'Saveframe':
-            loop = star_data.get_loop_by_category(lp_category)
+            if __pynmrstar_v3_2__:
+                loop = star_data.get_loop(lp_category)
+            else:
+                loop = star_data.get_loop_by_category(lp_category)
 
             return len(loop.data) == 0
 
@@ -1081,7 +1086,10 @@ class NEFTranslator(object):
             loops = star_data.get_loops_by_category(lp_category)
         except: # AttributeError:
             try:
-                loops = [star_data.get_loop_by_category(lp_category)]
+                if __pynmrstar_v3_2__:
+                    loops = [star_data.get_loop(lp_category)]
+                else:
+                    loops = [star_data.get_loop_by_category(lp_category)]
             except: # AttributeError:
                 loops = [star_data]
 
@@ -1250,7 +1258,10 @@ class NEFTranslator(object):
             loops = star_data.get_loops_by_category(lp_category)
         except: # AttributeError:
             try:
-                loops = [star_data.get_loop_by_category(lp_category)]
+                if __pynmrstar_v3_2__:
+                    loops = [star_data.get_loop(lp_category)]
+                else:
+                    loops = [star_data.get_loop_by_category(lp_category)]
             except: # AttributeError:
                 loops = [star_data]
 
@@ -1431,7 +1442,10 @@ class NEFTranslator(object):
             loops = star_data.get_loops_by_category(lp_category)
         except: # AttributeError:
             try:
-                loops = [star_data.get_loop_by_category(lp_category)]
+                if __pynmrstar_v3_2__:
+                    loops = [star_data.get_loop(lp_category)]
+                else:
+                    loops = [star_data.get_loop_by_category(lp_category)]
             except: # AttributeError:
                 loops = [star_data]
 
@@ -1605,7 +1619,10 @@ class NEFTranslator(object):
             loops = star_data.get_loops_by_category(lp_category)
         except: # AttributeError:
             try:
-                loops = [star_data.get_loop_by_category(lp_category)]
+                if __pynmrstar_v3_2__:
+                    loops = [star_data.get_loop(lp_category)]
+                else:
+                    loops = [star_data.get_loop_by_category(lp_category)]
             except: # AttributeError:
                 loops = [star_data]
 
@@ -1701,7 +1718,10 @@ class NEFTranslator(object):
             loops = star_data.get_loops_by_category(lp_category)
         except: # AttributeError:
             try:
-                loops = [star_data.get_loop_by_category(lp_category)]
+                if __pynmrstar_v3_2__:
+                    loops = [star_data.get_loop(lp_category)]
+                else:
+                    loops = [star_data.get_loop_by_category(lp_category)]
             except: # AttributeError:
                 loops = [star_data]
 
@@ -1794,7 +1814,10 @@ class NEFTranslator(object):
             loops = star_data.get_loops_by_category(lp_category)
         except: # AttributeError:
             try:
-                loops = [star_data.get_loop_by_category(lp_category)]
+                if __pynmrstar_v3_2__:
+                    loops = [star_data.get_loop(lp_category)]
+                else:
+                    loops = [star_data.get_loop_by_category(lp_category)]
             except: # AttributeError:
                 loops = [star_data]
 
@@ -1926,7 +1949,10 @@ class NEFTranslator(object):
             loops = star_data.get_loops_by_category(lp_category)
         except: # AttributeError:
             try:
-                loops = [star_data.get_loop_by_category(lp_category)]
+                if __pynmrstar_v3_2__:
+                    loops = [star_data.get_loop(lp_category)]
+                else:
+                    loops = [star_data.get_loop_by_category(lp_category)]
             except: # AttributeError:
                 loops = [star_data]
 
@@ -2024,7 +2050,10 @@ class NEFTranslator(object):
             loops = star_data.get_loops_by_category(lp_category)
         except: # AttributeError:
             try:
-                loops = [star_data.get_loop_by_category(lp_category)]
+                if __pynmrstar_v3_2__:
+                    loops = [star_data.get_loop(lp_category)]
+                else:
+                    loops = [star_data.get_loop_by_category(lp_category)]
             except: # AttributeError:
                 loops = [star_data]
 
@@ -2820,7 +2849,10 @@ class NEFTranslator(object):
             loops = star_data.get_loops_by_category(lp_category)
         except: # AttributeError:
             try:
-                loops = [star_data.get_loop_by_category(lp_category)]
+                if __pynmrstar_v3_2__:
+                    loops = [star_data.get_loop(lp_category)]
+                else:
+                    loops = [star_data.get_loop_by_category(lp_category)]
             except: # AttributeError:
                 loops = [star_data]
 
@@ -2874,7 +2906,10 @@ class NEFTranslator(object):
             loops = star_data.get_loops_by_category(lp_category)
         except: # AttributeError:
             try:
-                loops = [star_data.get_loop_by_category(lp_category)]
+                if __pynmrstar_v3_2__:
+                    loops = [star_data.get_loop(lp_category)]
+                else:
+                    loops = [star_data.get_loop_by_category(lp_category)]
             except: # AttributeError:
                 loops = [star_data]
 
@@ -2956,7 +2991,10 @@ class NEFTranslator(object):
             loops = star_data.get_loops_by_category(lp_category)
         except: # AttributeError:
             try:
-                loops = [star_data.get_loop_by_category(lp_category)]
+                if __pynmrstar_v3_2__:
+                    loops = [star_data.get_loop(lp_category)]
+                else:
+                    loops = [star_data.get_loop_by_category(lp_category)]
             except: # AttributeError:
                 loops = [star_data]
 
@@ -3338,20 +3376,23 @@ class NEFTranslator(object):
         """
 
         try:
-            loop_data = star_data.get_loops_by_category(lp_category)
+            loops = star_data.get_loops_by_category(lp_category)
         except: # AttributeError:
             try:
-                loop_data = [star_data.get_loop_by_category(lp_category)]
+                if __pynmrstar_v3_2__:
+                    loops = [star_data.get_loop(lp_category)]
+                else:
+                    loops = [star_data.get_loop_by_category(lp_category)]
             except: # AttributeError:
-                loop_data = [star_data]
+                loops = [star_data]
 
         valid_row = []
 
-        for i in loop_data:
+        for loop in loops:
 
             try:
 
-                data = get_lp_tag(i, [comp_id, atom_id])
+                data = get_lp_tag(loop, [comp_id, atom_id])
 
                 for j in data:
 
@@ -6030,22 +6071,34 @@ class NEFTranslator(object):
             return None
 
         try:
-            pk_loop = in_sf.get_loop_by_category('_Peak')
+            if __pynmrstar_v3_2__:
+                pk_loop = in_sf.get_loop('_Peak')
+            else:
+                pk_loop = in_sf.get_loop_by_category('_Peak')
         except KeyError:
             return None
 
         try:
-            pk_gen_char_loop = in_sf.get_loop_by_category('_Peak_general_char')
+            if __pynmrstar_v3_2__:
+                pk_gen_char_loop = in_sf.get_loop('_Peak_general_char')
+            else:
+                pk_gen_char_loop = in_sf.get_loop_by_category('_Peak_general_char')
         except KeyError:
             pk_gen_char_loop = None
 
         try:
-            pk_char_loop = in_sf.get_loop_by_category('_Peak_char')
+            if __pynmrstar_v3_2__:
+                pk_char_loop = in_sf.get_loop('_Peak_char')
+            else:
+                pk_char_loop = in_sf.get_loop_by_category('_Peak_char')
         except KeyError:
             return None
 
         try:
-            pk_assign_loop = in_sf.get_loop_by_category('_Assigned_peak_chem_shift')
+            if __pynmrstar_v3_2__:
+                pk_assign_loop = in_sf.get_loop('_Assigned_peak_chem_shift')
+            else:
+                pk_assign_loop = in_sf.get_loop_by_category('_Assigned_peak_chem_shift')
         except KeyError:
             pk_assign_loop = None
 
@@ -6395,7 +6448,10 @@ class NEFTranslator(object):
                         sf.add_tag('NMR_STAR_version', self.star_version)
 
                         try:
-                            loop = sf.get_loop_by_category('_Software_applied_methods')
+                            if __pynmrstar_v3_2__:
+                                loop = sf.get_loop('_Software_applied_methods')
+                            else:
+                                loop = sf.get_loop_by_category('_Software_applied_methods')
                             row = []
                             for t in loop.tags:
                                 if t == 'Software_name':
@@ -6632,7 +6688,10 @@ class NEFTranslator(object):
                     sf.add_tag('NMR_STAR_version', self.star_version)
 
                     try:
-                        loop = sf.get_loop_by_category('_Software_applied_methods')
+                        if __pynmrstar_v3_2__:
+                            loop = sf.get_loop('_Software_applied_methods')
+                        else:
+                            loop = sf.get_loop_by_category('_Software_applied_methods')
                         row = []
                         for t in loop.tags:
                             if t == 'Software_name':
@@ -6847,7 +6906,10 @@ class NEFTranslator(object):
                             sf.add_tag('format_version', self.nef_version)
 
                         try:
-                            loop = sf.get_loop_by_category('_nef_program_script')
+                            if __pynmrstar_v3_2__:
+                                loop = sf.get_loop('_nef_program_script')
+                            else:
+                                loop = sf.get_loop_by_category('_nef_program_script')
                             row = []
                             for t in loop.tags:
                                 if t == 'program_name':
@@ -7026,7 +7088,10 @@ class NEFTranslator(object):
                         sf.add_tag('format_version', self.nef_version)
 
                     try:
-                        loop = sf.get_loop_by_category('_nef_program_script')
+                        if __pynmrstar_v3_2__:
+                            loop = sf.get_loop('_nef_program_script')
+                        else:
+                            loop = sf.get_loop_by_category('_nef_program_script')
                         row = []
                         for t in loop.tags:
                             if t == 'program_name':

@@ -240,6 +240,11 @@
           "type": "string",
           "minLength": 1
         },
+        "auth_chain_id": {
+          "description": "Selected auth chain ID.",
+          "type": "string",
+          "minLength": 1
+        },
         "seq_id": {
           "description": "List of unique sequence ID of a chain.",
           "type": "array",
@@ -289,6 +294,14 @@
         },
         "identical_chain_id": {
           "description": "List of chain IDs having the same sequence.",
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+       "identical_auth_chain_id": {
+          "description": "List of auth chain IDs having the same sequence.",
           "type": "array",
           "items": {
             "type": "string",
@@ -3045,6 +3058,22 @@
         },
         "test_chain_id": {
           "description": "Test chain ID.",
+          "type": [
+            "string",
+            "integer"
+          ],
+          "minLength": 1
+        },
+        "ref_auth_chain_id": {
+          "description": "Reference auth chain ID.",
+          "type": [
+            "string",
+            "integer"
+          ],
+          "minLength": 1
+        },
+        "test_auth_chain_id": {
+          "description": "Test auth chain ID.",
           "type": [
             "string",
             "integer"

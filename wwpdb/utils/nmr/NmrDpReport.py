@@ -46,6 +46,7 @@
 # 03-Feb-2021  M. Yokochi - add support for 'identical_chain_id' attribute, which contains mapping of chain id(s), which shares the same entity.
 # 30-Mar-2021  M. Yokochi - getNmrSeq1LetterCodeOf() and getModelSeq1LetterCodeOf() do not return any 3-letter code (DAOTHER-6744)
 # 24-Jun-2021  M. Yokochi - resolve duplication in grouped error/warning message (DAOTHER-6345, 6830)
+# 29-Jun-2021  M. Yokochi - enable to access NMR polymer sequence from auth_asym_id (DAOTHER-7108)
 ##
 """ Wrapper class for data processing report of NMR data.
     @author: Masashi Yokochi
@@ -1013,7 +1014,7 @@ class NmrDpReport:
 
         return code
 
-    def getNmrPolymerSequenceWithModelChainId(self, cif_chain_id):
+    def getNmrPolymerSequenceWithModelChainId(self, cif_chain_id, label_scheme=True):
         """ Retrieve NMR polymer sequence corresponding to a given coordinate chain_id.
         """
 
@@ -1024,7 +1025,8 @@ class NmrDpReport:
 
         for chain_assign in chain_assigns:
 
-            if chain_assign['ref_chain_id'] == cif_chain_id:
+            if (chain_assign['ref_chain_id'] == cif_chain_id and label_scheme) or\
+               ('ref_auth_chain_id' in chain_assign and chain_assign['ref_auth_chain_id'] == cif_chain_id and not label_scheme):
                 return self.getNmrPolymerSequenceOf(chain_assign['test_chain_id'])
 
         return None
@@ -1065,7 +1067,7 @@ class NmrDpReport:
 
         return None
 
-    def getSequenceAlignmentWithModelChainId(self, cif_chain_id):
+    def getSequenceAlignmentWithModelChainId(self, cif_chain_id, label_scheme=True):
         """ Retrieve sequence alignment (model vs nmr) of a given coordinate chain_id.
         """
 
@@ -1078,10 +1080,13 @@ class NmrDpReport:
 
         for chain_assign in chain_assigns:
 
-            if chain_assign['ref_chain_id'] == cif_chain_id:
+            if (chain_assign['ref_chain_id'] == cif_chain_id and label_scheme) or\
+               ('ref_auth_chain_id' in chain_assign and chain_assign['ref_auth_chain_id'] == cif_chain_id and not label_scheme):
 
                 if chain_assign['conflict'] > 0:
                     return None
+
+                _cif_chain_id = chain_assign['ref_chain_id']
 
                 nmr_chain_id = chain_assign['test_chain_id']
 
@@ -1092,7 +1097,7 @@ class NmrDpReport:
 
                 for sequence_align in sequence_aligns:
 
-                    if sequence_align['ref_chain_id'] == cif_chain_id and sequence_align['test_chain_id'] == nmr_chain_id:
+                    if sequence_align['ref_chain_id'] == _cif_chain_id and sequence_align['test_chain_id'] == nmr_chain_id:
 
                         if sequence_align['conflict'] > 0:
                             return None
@@ -1117,7 +1122,7 @@ class NmrDpReport:
 
         return None
 
-    def getNmrSeq1LetterCodeWithModelChainId(self, cif_chain_id):
+    def getNmrSeq1LetterCodeWithModelChainId(self, cif_chain_id, label_scheme=True):
         """ Retrieve NMR polymer sequence (1-letter code) corresponding to a given coordinate chain_id.
         """
 
@@ -1139,7 +1144,8 @@ class NmrDpReport:
 
                 for _chain_assign in _chain_assigns:
 
-                    if _chain_assign['test_chain_id'] == cif_chain_id:
+                    if (_chain_assign['test_chain_id'] == cif_chain_id and label_scheme) or\
+                       ('test_auth_chain_id' in _chain_assign and _chain_assign['test_auth_chain_id'] == cif_chain_id and not label_scheme):
 
                         if 'unmapped_sequence' in _chain_assign:
 
@@ -1150,7 +1156,8 @@ class NmrDpReport:
 
         for chain_assign in chain_assigns:
 
-            if chain_assign['ref_chain_id'] == cif_chain_id:
+            if (chain_assign['ref_chain_id'] == cif_chain_id and label_scheme) or\
+               ('ref_auth_chain_id' in chain_assign and chain_assign['ref_auth_chain_id'] == cif_chain_id and not label_scheme):
                 return self.getNmrSeq1LetterCodeOf(chain_assign['test_chain_id'], fullSequence=fullSeqeucne, unmappedSeqId=unmappedSeqId)
 
         return None

@@ -121,6 +121,7 @@
 # 23-Jun-2021  M. Yokochi - send back the initial error message when format remediation fails (DAOTHER-6830)
 # 25-Jun-2021  M. Yokochi - block restraint files that have no distance restraints (DAOTHER-6830)
 # 28-Jun-2021  M. Yokochi - support cif-formatted CS file for reupload without changing CS data (DAOTHER-6830, 7097)
+# 29-Jun-2021  M. Yokochi - include auth_asym_id in NMR data processing report (DAOTHER-7108)
 ##
 """ Wrapper class for data processing for NMR data.
     @author: Masashi Yokochi
@@ -1301,7 +1302,8 @@ class NmrDpUtility(object):
                                        },
                           'pdbx': {'poly_seq': [{'name': 'asym_id', 'type': 'str', 'alt_name': 'chain_id'},
                                                 {'name': 'seq_id', 'type': 'int', 'alt_name': 'seq_id'},
-                                                {'name': 'mon_id', 'type': 'str', 'alt_name': 'comp_id'}
+                                                {'name': 'mon_id', 'type': 'str', 'alt_name': 'comp_id'},
+                                                {'name': 'pdb_strand_id', 'type': 'str', 'alt_name': 'auth_chain_id'}
                                                 ],
                                    'poly_seq_alias': [{'name': 'id', 'type': 'str', 'alt_name': 'chain_id'},
                                                       {'name': 'seq_id', 'type': 'int', 'alt_name': 'seq_id'},
@@ -1309,7 +1311,8 @@ class NmrDpUtility(object):
                                                       ],
                                    'non_poly': [{'name': 'asym_id', 'type': 'str', 'alt_name': 'chain_id'},
                                                 {'name': 'pdb_seq_num', 'type': 'int', 'alt_name': 'seq_id'},
-                                                {'name': 'mon_id', 'type': 'str', 'alt_name': 'comp_id'}
+                                                {'name': 'mon_id', 'type': 'str', 'alt_name': 'comp_id'},
+                                                {'name': 'pdb_strand_id', 'type': 'str', 'alt_name': 'auth_chain_id'}
                                                 ],
                                    'non_poly_alias': [{'name': 'asym_id', 'type': 'str', 'alt_name': 'chain_id'},
                                                       {'name': 'pdb_num', 'type': 'int', 'alt_name': 'seq_id'},
@@ -20938,6 +20941,9 @@ class NmrDpUtility(object):
 
                     chain_assign = {'ref_chain_id': chain_id, 'test_chain_id': chain_id2, 'length': result['length'], 'matched': result['matched'], 'conflict': result['conflict'], 'unmapped': result['unmapped'], 'sequence_coverage': result['sequence_coverage']}
 
+                    if 'auth_chain_id' in cif_polymer_sequence[row]:
+                        chain_assign['ref_auth_chain_id'] = cif_polymer_sequence[row]['auth_chain_id']
+
                     s1 = next(s for s in cif_polymer_sequence if s['chain_id'] == chain_id)
                     s2 = next(s for s in nmr_polymer_sequence if s['chain_id'] == chain_id2)
 
@@ -21210,6 +21216,7 @@ class NmrDpUtility(object):
                                     continue
 
                                 chain_id = chain_assign['ref_chain_id']
+                                auth_chain_id = None if not 'ref_auth_chain_id' in chain_assign else chain_assign['ref_auth_chain_id']
 
                                 try:
                                     identity = next(s['identical_chain_id'] for s in cif_polymer_sequence if s['chain_id'] == chain_id and 'identical_chain_id' in s)
@@ -21219,6 +21226,8 @@ class NmrDpUtility(object):
                                         if not any(_chain_assign for _chain_assign in chain_assign_set if _chain_assign['ref_chain_id'] == chain_id):
                                             _chain_assign = copy.copy(chain_assign)
                                             _chain_assign['ref_chain_id'] = chain_id
+                                            if not auth_chain_id is None:
+                                                _chain_assign['ref_auth_chain_id'] = auth_chain_id
                                             chain_assign_set.append(_chain_assign)
 
                                 except StopIteration:
@@ -21265,6 +21274,9 @@ class NmrDpUtility(object):
                     _result = next(seq_align for seq_align in seq_align_dic['model_poly_seq_vs_nmr_poly_seq'] if seq_align['ref_chain_id'] == chain_id2 and seq_align['test_chain_id'] == chain_id)
 
                     chain_assign = {'ref_chain_id': chain_id, 'test_chain_id': chain_id2, 'length': result['length'], 'matched': result['matched'], 'conflict': result['conflict'], 'unmapped': result['unmapped'], 'sequence_coverage': result['sequence_coverage']}
+
+                    if 'auth_chain_id' in cif_polymer_sequence[column]:
+                        chain_assign['test_auth_chain_id'] = cif_polymer_sequence[column]['auth_chain_id']
 
                     s1 = next(s for s in nmr_polymer_sequence if s['chain_id'] == chain_id)
                     s2 = next(s for s in cif_polymer_sequence if s['chain_id'] == chain_id2)
@@ -21554,6 +21566,7 @@ i                               """
                                     continue
 
                                 chain_id = chain_assign['test_chain_id']
+                                auth_chain_id = None if not 'test_auth_chain_id' in chain_assign else chain_assign['test_auth_chain_id']
 
                                 try:
                                     identity = next(s['identical_chain_id'] for s in cif_polymer_sequence if s['chain_id'] == chain_id and 'identical_chain_id' in s)
@@ -21563,6 +21576,8 @@ i                               """
                                         if not any(_chain_assign for _chain_assign in chain_assign_set if _chain_assign['test_chain_id'] == chain_id):
                                             _chain_assign = copy.copy(chain_assign)
                                             _chain_assign['test_chain_id'] = chain_id
+                                            if not auth_chain_id is None:
+                                                _chain_assign['test_auth_chain_id'] = auth_chain_id
                                             chain_assign_set.append(_chain_assign)
 
                                 except StopIteration:

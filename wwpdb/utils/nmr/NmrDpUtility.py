@@ -6021,12 +6021,24 @@ class NmrDpUtility(object):
                     file_name = input_source_dic['file_name']
                     file_type = input_source_dic['file_type']
 
+                    if file_type == 'nm-res-cns':
+                        mr_format_name = 'CNS'
+                    elif file_type == 'nm-res-xpl':
+                        mr_format_name = 'XPLOR-NIH'
+                    elif file_type == 'nm-res-amb':
+                        mr_format_name = 'AMBER'
+                    elif file_type == 'nm-res-cya':
+                        mr_format_name = 'CYANA'
+                    else:
+                        mr_format_name = 'other format'
+
                     atom_like_names = self.__csStat.getAtomLikeNameSet(minimum_len=(2 if file_type == 'nm-res-oth' else 1))
 
                     has_chem_shift = False
                     has_dist_restraint = False
                     has_dihed_restraint = False
                     has_rdc_restraint = False
+                    has_coordinate = False
 
                     if file_type == 'nm-res-cns' or file_type == 'nm-res-xpl':
 
@@ -6047,6 +6059,9 @@ class NmrDpUtility(object):
 
                                 if len(l) == 0 or l.startswith('#') or l.startswith('!'):
                                     continue
+
+                                if line.startswith('ATOM ') and line.count('.') >= 5:
+                                    has_coordinate = True
 
                                 s = re.split('[ ()]', l)
 
@@ -6122,6 +6137,9 @@ class NmrDpUtility(object):
 
                                 if len(l) == 0 or l.startswith('#') or l.startswith('!'):
                                     continue
+
+                                if line.startswith('ATOM ') and line.count('.') >= 5:
+                                    has_coordinate = True
 
                                 s = re.split('[ ()]', l)
 
@@ -6230,9 +6248,21 @@ class NmrDpUtility(object):
 
                                 ifp.close()
 
-                    if has_chem_shift and not has_dist_restraint and not has_dihed_restraint and not has_rdc_restraint:
+                    if has_coordinate and not has_dist_restraint and not has_dihed_restraint and not has_rdc_restraint:
 
-                        err = "The NMR restraint file includes assigned chemical shifts. It should be included into the assigned chemical shift file. Please re-upload the NMR restraint file."
+                        err = "The NMR restraint file (%s) includes coordinates. Did you accidentally select the wrong format? Please re-upload the NMR restraint file." % mr_format_name
+
+                        self.report.error.appendDescription('content_mismatch', {'file_name': file_name, 'description': err})
+                        self.report.setError()
+
+                        if self.__verbose:
+                            self.__lfh.write("+NmrDpUtility.__detectContentSubType() ++ Error  - %s\n" % err)
+
+                        has_chem_shift = False
+
+                    elif has_chem_shift and not has_coordinate and not has_dist_restraint and not has_dihed_restraint and not has_rdc_restraint:
+
+                        err = "The NMR restraint file (%s) includes assigned chemical shifts. Did you accidentally select the wrong format? Please re-upload the NMR restraint file." % mr_format_name
 
                         self.report.error.appendDescription('content_mismatch', {'file_name': file_name, 'description': err})
                         self.report.setError()
@@ -6246,7 +6276,18 @@ class NmrDpUtility(object):
                     content_subtype = {'chem_shift': 1 if has_chem_shift else 0,
                                        'dist_restraint': 1 if has_dist_restraint else 0,
                                        'dihed_restraint': 1 if has_dihed_restraint else 0,
-                                       'rdc_restraint': 1 if has_rdc_restraint else 0}
+                                       'rdc_restraint': 1 if has_rdc_restraint else 0,
+                                       'coordinate': 1 if has_coordinate else 0}
+
+                    if not has_chem_shift and not has_dist_restraint and not has_dihed_restraint and not has_rdc_restraint:
+
+                        warn = "Constraint type of the NMR restraint file (%s) could not be identified. Did you accidentally select the wrong format?" % mr_format_name
+
+                        self.report.warning.appendDescription('missing_content', {'file_name': file_name, 'description': warn})
+                        self.report.setWarning()
+
+                        if self.__verbose:
+                            self.__lfh.write("+NmrDpUtility.__detectContentSubType() ++ Warning  - %s\n" % warn)
 
                     dist_restraint_uploaded |= has_dist_restraint
 

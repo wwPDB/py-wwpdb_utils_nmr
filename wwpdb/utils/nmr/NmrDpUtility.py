@@ -20941,8 +20941,10 @@ class NmrDpUtility(object):
 
                     chain_assign = {'ref_chain_id': chain_id, 'test_chain_id': chain_id2, 'length': result['length'], 'matched': result['matched'], 'conflict': result['conflict'], 'unmapped': result['unmapped'], 'sequence_coverage': result['sequence_coverage']}
 
+                    auth_chain_id = chain_id
                     if 'auth_chain_id' in cif_polymer_sequence[row]:
-                        chain_assign['ref_auth_chain_id'] = cif_polymer_sequence[row]['auth_chain_id']
+                        auth_chain_id = cif_polymer_sequence[row]['auth_chain_id']
+                        chain_assign['ref_auth_chain_id'] = auth_chain_id
 
                     s1 = next(s for s in cif_polymer_sequence if s['chain_id'] == chain_id)
                     s2 = next(s for s in nmr_polymer_sequence if s['chain_id'] == chain_id2)
@@ -21048,7 +21050,7 @@ class NmrDpUtility(object):
                                 unmapped.append({'ref_seq_id': seq_id1[i], 'ref_comp_id': cif_comp_id})
 
                                 if not aligned[i]:
-                                    cif_seq_code = '%s:%s:%s' % (chain_id, seq_id1[i], cif_comp_id)
+                                    cif_seq_code = '%s:%s:%s' % (auth_chain_id, seq_id1[i], cif_comp_id)
 
                                     auth_seq = next((seq_align for seq_align in seq_align_dic['model_poly_seq_vs_coordinate'] if seq_align['chain_id'] == chain_id), None)
 
@@ -21056,7 +21058,7 @@ class NmrDpUtility(object):
                                         try:
                                             auth_seq_id = auth_seq['test_seq_id'][auth_seq['ref_seq_id'].index(seq_id1[i])]
                                             if seq_id1[i] != auth_seq_id:
-                                                cif_seq_code += ' (%s:%s:%s in author numbering scheme)' % (chain_id, auth_seq_id, cif_comp_id)
+                                                cif_seq_code += ' (%s:%s:%s in author numbering scheme)' % (auth_chain_id, auth_seq_id, cif_comp_id)
                                         except:
                                             pass
 
@@ -21074,7 +21076,7 @@ class NmrDpUtility(object):
                                 conflict.append({'ref_seq_id': seq_id1[i], 'ref_comp_id': cif_comp_id,
                                                  'test_seq_id': seq_id2[i], 'test_comp_id': nmr_comp_id})
 
-                                cif_seq_code = '%s:%s:%s' % (chain_id, seq_id1[i], cif_comp_id)
+                                cif_seq_code = '%s:%s:%s' % (auth_chain_id, seq_id1[i], cif_comp_id)
                                 if cif_comp_id == '.':
                                     cif_seq_code += ', insersion error'
                                 nmr_seq_code = '%s:%s:%s' % (chain_id2, seq_id2[i], nmr_comp_id)
@@ -21087,7 +21089,7 @@ class NmrDpUtility(object):
                                     try:
                                         auth_seq_id = auth_seq['test_seq_id'][auth_seq['ref_seq_id'].index(seq_id1[i])]
                                         if seq_id1[i] != auth_seq_id:
-                                            cif_seq_code += ', or %s:%s:%s in author numbering scheme' % (chain_id, auth_seq_id, cif_comp_id)
+                                            cif_seq_code += ', or %s:%s:%s in author numbering scheme' % (auth_chain_id, auth_seq_id, cif_comp_id)
                                     except:
                                         pass
 
@@ -21275,8 +21277,10 @@ class NmrDpUtility(object):
 
                     chain_assign = {'ref_chain_id': chain_id, 'test_chain_id': chain_id2, 'length': result['length'], 'matched': result['matched'], 'conflict': result['conflict'], 'unmapped': result['unmapped'], 'sequence_coverage': result['sequence_coverage']}
 
+                    auth_chain_id2 = chain_id2
                     if 'auth_chain_id' in cif_polymer_sequence[column]:
-                        chain_assign['test_auth_chain_id'] = cif_polymer_sequence[column]['auth_chain_id']
+                        auth_chain_id2 = cif_polymer_sequence[column]['auth_chain_id']
+                        chain_assign['test_auth_chain_id'] = auth_chain_id2
 
                     s1 = next(s for s in nmr_polymer_sequence if s['chain_id'] == chain_id)
                     s2 = next(s for s in cif_polymer_sequence if s['chain_id'] == chain_id2)
@@ -21426,7 +21430,7 @@ class NmrDpUtility(object):
                                 conflict.append({'ref_seq_id': seq_id1[i], 'ref_comp_id': nmr_comp_id,
                                                  'test_seq_id': seq_id2[i], 'test_comp_id': cif_comp_id})
 
-                                cif_seq_code = '%s:%s:%s' % (chain_id2, seq_id2[i], cif_comp_id)
+                                cif_seq_code = '%s:%s:%s' % (auth_chain_id2, seq_id2[i], cif_comp_id)
                                 if cif_comp_id == '.':
                                     cif_seq_code += ', insersion error'
                                 nmr_seq_code = '%s:%s:%s' % (chain_id, seq_id1[i], nmr_comp_id)
@@ -21439,7 +21443,7 @@ class NmrDpUtility(object):
                                     try:
                                         auth_seq_id = auth_seq['test_seq_id'][auth_seq['ref_seq_id'].index(seq_id2[i])]
                                         if seq_id2[i] != auth_seq_id:
-                                            cif_seq_code += ', or %s:%s:%s in author numbering scheme' % (chain_id2, auth_seq_id, cif_comp_id)
+                                            cif_seq_code += ', or %s:%s:%s in author numbering scheme' % (auth_chain_id2, auth_seq_id, cif_comp_id)
                                     except:
                                         pass
 
@@ -21565,19 +21569,19 @@ i                               """
                                 if chain_assign['conflict'] > 0:
                                     continue
 
-                                chain_id = chain_assign['test_chain_id']
-                                auth_chain_id = None if not 'test_auth_chain_id' in chain_assign else chain_assign['test_auth_chain_id']
+                                _chain_id = chain_assign['test_chain_id']
+                                _auth_chain_id = None if not 'test_auth_chain_id' in chain_assign else chain_assign['test_auth_chain_id']
 
                                 try:
-                                    identity = next(s['identical_chain_id'] for s in cif_polymer_sequence if s['chain_id'] == chain_id and 'identical_chain_id' in s)
+                                    identity = next(s['identical_chain_id'] for s in cif_polymer_sequence if s['chain_id'] == _chain_id and 'identical_chain_id' in s)
 
-                                    for chain_id in identity:
+                                    for _chain_id in identity:
 
-                                        if not any(_chain_assign for _chain_assign in chain_assign_set if _chain_assign['test_chain_id'] == chain_id):
+                                        if not any(_chain_assign for _chain_assign in chain_assign_set if _chain_assign['test_chain_id'] == _chain_id):
                                             _chain_assign = copy.copy(chain_assign)
-                                            _chain_assign['test_chain_id'] = chain_id
-                                            if not auth_chain_id is None:
-                                                _chain_assign['test_auth_chain_id'] = auth_chain_id
+                                            _chain_assign['test_chain_id'] = _chain_id
+                                            if not _auth_chain_id is None:
+                                                _chain_assign['test_auth_chain_id'] = _auth_chain_id
                                             chain_assign_set.append(_chain_assign)
 
                                 except StopIteration:

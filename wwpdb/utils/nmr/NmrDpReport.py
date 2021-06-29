@@ -985,7 +985,7 @@ class NmrDpReport:
             elif comp_id in self.empty_value:
                 code += ' '
             else:
-                code += 'X' # (' + comp_id + ')'
+                code += '(' + comp_id + ')'
 
         return code
 
@@ -1010,7 +1010,7 @@ class NmrDpReport:
             elif comp_id in self.empty_value:
                 code += ' '
             else:
-                code += 'X' # '(' + comp_id + ')'
+                code += '(' + comp_id + ')'
 
         return code
 

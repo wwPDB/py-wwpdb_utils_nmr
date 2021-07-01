@@ -123,7 +123,7 @@
 # 28-Jun-2021  M. Yokochi - support cif-formatted CS file for reupload without changing CS data (DAOTHER-6830, 7097)
 # 29-Jun-2021  M. Yokochi - include auth_asym_id in NMR data processing report (DAOTHER-7108)
 # 29-Jun-2021  M. Yokochi - add support for PyNMRSTAR v3.2.0 (DAOTHER-7107)
-# 01-Jul-2021  M. Yokochi - detect content type of AMBER NMR restraints (DAOTHER-6830)
+# 01-Jul-2021  M. Yokochi - detect content type of AMBER restraint file and AMBER auxiliary file  (DAOTHER-6830)
 ##
 """ Wrapper class for data processing for NMR data.
     @author: Masashi Yokochi
@@ -6048,13 +6048,16 @@ class NmrDpUtility(object):
                         mr_format_name = 'XPLOR-NIH'
                     elif file_type == 'nm-res-amb':
                         mr_format_name = 'AMBER'
+                    elif file_type == 'nm-aux-amb':
+                        mr_format_name = 'AMBER - auxiliary file'
                     elif file_type == 'nm-res-cya':
                         mr_format_name = 'CYANA'
                     else:
                         mr_format_name = 'other format'
 
-                    atom_like_names = self.__csStat.getAtomLikeNameSet(minimum_len=(2 if file_type == 'nm-res-oth' else 1))
+                    atom_like_names = self.__csStat.getAtomLikeNameSet(minimum_len=(2 if file_type == 'nm-res-oth' or file_type == 'nm-aux-amb' else 1))
 
+                    has_atom_list = False
                     has_chem_shift = False
                     has_dist_restraint = False
                     has_dihed_restraint = False
@@ -6315,7 +6318,7 @@ class NmrDpUtility(object):
 
                             ifp.close()
 
-                    elif file_type == 'nm-res-cya' or file_type == 'nm-res-oth':
+                    elif file_type == 'nm-res-cya' or file_type == 'nm-res-oth' or file_type == 'nm-aux-amb':
 
                         atom_like_names_oth = self.__csStat.getAtomLikeNameSet(1)
                         one_letter_codes = self.monDict3.values()
@@ -6337,6 +6340,7 @@ class NmrDpUtility(object):
                                 atom_likes = 0
                                 atom_likes_oth = 0
                                 names = []
+                                iat_like = False
                                 cs_range_like = False
                                 dist_range_like = False
 
@@ -6370,7 +6374,14 @@ class NmrDpUtility(object):
                                         except:
                                             pass
 
-                                if atom_likes == 1 and cs_range_like:
+                                    elif t.isdigit():
+                                        if int(t) > 0:
+                                            iat_like = True
+
+                                if atom_likes == 1 and not cs_range_like and iat_like:
+                                    has_atom_list = True
+
+                                elif atom_likes == 1 and cs_range_like:
                                     has_chem_shift = True
 
                                 elif atom_likes == 2 and dist_range_like:
@@ -6441,13 +6452,15 @@ class NmrDpUtility(object):
 
                     if has_coordinate and not has_dist_restraint and not has_dihed_restraint and not has_rdc_restraint:
 
-                        err = "The NMR restraint file (%s) includes coordinates. Did you accidentally select the wrong format? Please re-upload the NMR restraint file." % mr_format_name
+                        if file_type != 'nm-aux-amb':
 
-                        self.report.error.appendDescription('content_mismatch', {'file_name': file_name, 'description': err})
-                        self.report.setError()
+                            err = "The NMR restraint file (%s) includes coordinates. Did you accidentally select the wrong format? Please re-upload the NMR restraint file." % mr_format_name
 
-                        if self.__verbose:
-                            self.__lfh.write("+NmrDpUtility.__detectContentSubType() ++ Error  - %s\n" % err)
+                            self.report.error.appendDescription('content_mismatch', {'file_name': file_name, 'description': err})
+                            self.report.setError()
+
+                            if self.__verbose:
+                                self.__lfh.write("+NmrDpUtility.__detectContentSubType() ++ Error  - %s\n" % err)
 
                         has_chem_shift = False
 
@@ -6472,13 +6485,15 @@ class NmrDpUtility(object):
 
                     if not has_chem_shift and not has_dist_restraint and not has_dihed_restraint and not has_rdc_restraint:
 
-                        warn = "Constraint type of the NMR restraint file (%s) could not be identified. Did you accidentally select the wrong format?" % mr_format_name
+                        if file_type != 'nm-aux-amb':
 
-                        self.report.warning.appendDescription('missing_content', {'file_name': file_name, 'description': warn})
-                        self.report.setWarning()
+                            warn = "Constraint type of the NMR restraint file (%s) could not be identified. Did you accidentally select the wrong format?" % mr_format_name
 
-                        if self.__verbose:
-                            self.__lfh.write("+NmrDpUtility.__detectContentSubType() ++ Warning  - %s\n" % warn)
+                            self.report.warning.appendDescription('missing_content', {'file_name': file_name, 'description': warn})
+                            self.report.setWarning()
+
+                            if self.__verbose:
+                                self.__lfh.write("+NmrDpUtility.__detectContentSubType() ++ Warning  - %s\n" % warn)
 
                     dist_restraint_uploaded |= has_dist_restraint
 
@@ -6496,11 +6511,12 @@ class NmrDpUtility(object):
                         input_source_dic = input_source.get()
 
                         file_name = input_source_dic['file_name']
+                        file_type = input_source_dic['file_type']
                         content_subtype = input_source_dic['content_subtype']
 
                         fileListId += 1
 
-                        if not content_subtype is None and 'dist_restraint' in content_subtype:
+                        if (not content_subtype is None and 'dist_restraint' in content_subtype) or file_type == 'nm-aux-amb':
                             continue
 
                         if content_subtype is None:

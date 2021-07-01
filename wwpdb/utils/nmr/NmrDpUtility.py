@@ -123,6 +123,7 @@
 # 28-Jun-2021  M. Yokochi - support cif-formatted CS file for reupload without changing CS data (DAOTHER-6830, 7097)
 # 29-Jun-2021  M. Yokochi - include auth_asym_id in NMR data processing report (DAOTHER-7108)
 # 29-Jun-2021  M. Yokochi - add support for PyNMRSTAR v3.2.0 (DAOTHER-7107)
+# 01-Jul-2021  M. Yokochi - detect content type of AMBER NMR restraints (DAOTHER-6830)
 ##
 """ Wrapper class for data processing for NMR data.
     @author: Masashi Yokochi
@@ -6064,8 +6065,6 @@ class NmrDpUtility(object):
 
                         with open(file_path, 'r') as ifp:
 
-                            in_assi = False
-
                             atom_likes = 0
                             atom_unlikes = 0
                             names = []
@@ -6075,10 +6074,11 @@ class NmrDpUtility(object):
                             rdc_range_like = False
 
                             for line in ifp:
-                                l = " ".join(line.split())
 
-                                if len(l) == 0 or l.startswith('#') or l.startswith('!'):
-                                    continue
+                                if line.startswith('ATOM ') and line.count('.') >= 5:
+                                    has_coordinate = True
+
+                                l = " ".join(line.split())
 
                                 if line.startswith('ATOM ') and line.count('.') >= 5:
                                     has_coordinate = True
@@ -6144,7 +6144,178 @@ class NmrDpUtility(object):
 
                             ifp.close()
 
-                    elif file_type == 'nm-res-amb' or file_type == 'nm-res-cya' or file_type == 'nm-res-oth':
+                    elif file_type == 'nm-res-amb':
+
+                        ws_pattern = re.compile(r'\s+')
+                        r_pattern = re.compile(r'r(\d+)=(.*)')
+
+                        with open(file_path, 'r') as ifp:
+
+                            in_rst = False
+                            in_iat = False
+                            in_igr1 = False
+                            in_igr2 = False
+
+                            names = []
+                            values = []
+
+                            for line in ifp:
+
+                                if line.startswith('ATOM ') and line.count('.') >= 5:
+                                    has_coordinate = True
+
+                                l = " ".join(line.split())
+
+                                if len(l) == 0 or l.startswith('#') or l.startswith('!'):
+                                    continue
+
+                                s = re.split(',', ws_pattern.sub('', l).lower())
+
+                                for t in s:
+
+                                    if len(t) == 0:
+                                        continue
+
+                                    if t[0] == '#' or t[0] == '!':
+                                        break
+
+                                    if t == '&rst':
+                                        in_rst = True
+
+                                    elif in_rst:
+
+                                        if t == '&end':
+
+                                            atom_likes = 0
+                                            atom_unlikes = 0
+
+                                            for name in names:
+
+                                                if type(name) is int:
+                                                    if int != -1:
+                                                        atom_likes += 1
+                                                    else:
+                                                        atom_unlikes += 1
+
+                                                if isinstance(name, list):
+
+                                                    if any(n for n in name if n != -1):
+                                                        atom_likes += 1
+                                                    else:
+                                                        atom_unlikes += 1
+
+                                            if len(values) == 4:
+                                                v = (values[1] + values[2]) / 2.0
+
+                                                if v >= dist_range_min and v <= dist_range_max:
+                                                    dist_range_like = True
+                                                if v >= dihed_range_min and v <= dihed_range_max:
+                                                    dihed_range_like = True
+                                                if v > rdc_range_min and v < rdc_range_max:
+                                                    rdc_range_like = True
+
+                                                if atom_likes == 2 and dist_range_like:
+                                                    has_dist_restraint = True
+
+                                                elif atom_likes == 4 and dihed_range_like:
+                                                    has_dihed_restraint = True
+
+                                                elif atom_likes + atom_unlikes == 6 and rdc_range_like:
+                                                    has_rdc_restraint = True
+
+                                            names = []
+                                            values = []
+
+                                            in_rst = False
+                                            in_iat = False
+                                            in_igr1 = False
+                                            in_igr2 = False
+
+                                        elif t.startswith('iat='):
+                                            in_iat = True
+                                            try:
+                                                iat = int(t[4:])
+                                                names.append(iat)
+                                            except ValueError:
+                                                pass
+
+                                            in_igr1 = False
+                                            in_igr2 = False
+
+                                        elif not '=' in t and in_iat:
+                                            try:
+                                                iat = int(t)
+                                                names.append(iat)
+                                            except ValueError:
+                                                pass
+
+                                        elif r_pattern.match(t):
+                                            len_values = len(values)
+                                            g = r_pattern.search(t).groups()
+                                            try:
+                                                r_idx = int(g[0]) - 1
+                                                v = float(g[1])
+                                                if len_values == r_idx:
+                                                    values.append(v)
+                                                elif len_values > r_idx:
+                                                    values.insert(r_idx, v)
+                                                else:
+                                                    while len(values) < r_idx:
+                                                        values.append(None)
+                                                    values.append(v)
+                                            except ValueError:
+                                                pass
+
+                                            in_iat = False
+                                            in_igr1 = False
+                                            in_igr2 = False
+
+                                        elif t.startswith('igr1'):
+                                            in_igr1 = True
+                                            try:
+                                                iat = int(t[5:])
+                                                names.insert(0, [iat])
+                                            except:
+                                                pass
+
+                                            in_iat = False
+                                            in_igr2 = False
+
+                                        elif not '=' in t and in_igr1:
+                                            try:
+                                                iat = int(t)
+                                                g = names[0]
+                                                g.append(iat)
+                                            except:
+                                                pass
+
+                                        elif t.startswith('igr2'):
+                                            in_igr2 = True
+                                            try:
+                                                iat = int(t[5:])
+                                                names.insert(1, [iat])
+                                            except:
+                                                pass
+
+                                            in_iat = False
+                                            in_igr1 = False
+
+                                        elif not '=' in t and in_igr2:
+                                            try:
+                                                iat = int(t)
+                                                g = names[1]
+                                                g.append(iat)
+                                            except:
+                                                pass
+
+                                        elif '=' in t:
+                                            in_iat = False
+                                            in_igr1 = False
+                                            in_igr2 = False
+
+                            ifp.close()
+
+                    elif file_type == 'nm-res-cya' or file_type == 'nm-res-oth':
 
                         atom_like_names_oth = self.__csStat.getAtomLikeNameSet(1)
                         one_letter_codes = self.monDict3.values()

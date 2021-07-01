@@ -3304,6 +3304,11 @@ class NmrDpUtility(object):
                          'U': 'U'
                          }
 
+        # standard dihedral angle name
+        self.dihed_ang_names = ['PHI', 'PSI', 'OMEGA', 'CHI1', 'CHI2', 'CHI3', 'CHI4', 'CHI5',
+                                'ALPHA', 'BETA', 'GAMMA', 'DELTA', 'EPSILON', 'ZETA',
+                                'NU0', 'NU1', 'NU2', 'NU3', 'NU4', 'CHI21', 'CHI22', 'CHI31', 'CHI32', 'CHI42']
+
         # patterns for detection of dihedral angle type
         self.dihed_atom_ids = ['N', 'CA', 'C']
 
@@ -6057,12 +6062,13 @@ class NmrDpUtility(object):
 
                     atom_like_names = self.__csStat.getAtomLikeNameSet(minimum_len=(2 if file_type == 'nm-res-oth' or file_type == 'nm-aux-amb' else 1))
 
-                    has_atom_list = False
                     has_chem_shift = False
                     has_dist_restraint = False
                     has_dihed_restraint = False
                     has_rdc_restraint = False
                     has_coordinate = False
+
+                    has_atom_list = False
 
                     if file_type == 'nm-res-cns' or file_type == 'nm-res-xpl':
 
@@ -6322,6 +6328,7 @@ class NmrDpUtility(object):
 
                         atom_like_names_oth = self.__csStat.getAtomLikeNameSet(1)
                         one_letter_codes = self.monDict3.values()
+                        three_letter_codes = self.monDict3.keys()
 
                         prohibited_col = set()
 
@@ -6340,6 +6347,8 @@ class NmrDpUtility(object):
                                 atom_likes = 0
                                 atom_likes_oth = 0
                                 names = []
+                                res_like = False
+                                angle_like = False
                                 iat_like = False
                                 cs_range_like = False
                                 dist_range_like = False
@@ -6374,6 +6383,12 @@ class NmrDpUtility(object):
                                         except:
                                             pass
 
+                                    elif name in three_letter_codes:
+                                        res_like = True
+
+                                    elif name in self.dihed_ang_names:
+                                        angle_like = True
+
                                     elif t.isdigit():
                                         if int(t) > 0:
                                             iat_like = True
@@ -6387,7 +6402,7 @@ class NmrDpUtility(object):
                                 elif atom_likes == 2 and dist_range_like:
                                     has_dist_restraint = True
 
-                                elif atom_likes == 4 and dihed_range_like:
+                                elif (atom_likes == 4 or (res_like and angle_like)) and dihed_range_like:
                                     has_dihed_restraint = True
 
                             ifp.close()

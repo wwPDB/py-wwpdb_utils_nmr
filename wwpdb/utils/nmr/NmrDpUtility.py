@@ -123,7 +123,7 @@
 # 28-Jun-2021  M. Yokochi - support cif-formatted CS file for reupload without changing CS data (DAOTHER-6830, 7097)
 # 29-Jun-2021  M. Yokochi - include auth_asym_id in NMR data processing report (DAOTHER-7108)
 # 29-Jun-2021  M. Yokochi - add support for PyNMRSTAR v3.2.0 (DAOTHER-7107)
-# 02-Jul-2021  M. Yokochi - detect content type of AMBER restraint file and AMBER auxiliary file (DAOTHER-6830)
+# 02-Jul-2021  M. Yokochi - detect content type of AMBER restraint file and AMBER auxiliary file (DAOTHER-6830, 1901)
 ##
 """ Wrapper class for data processing for NMR data.
     @author: Masashi Yokochi
@@ -6050,20 +6050,22 @@ class NmrDpUtility(object):
                     file_name = input_source_dic['file_name']
                     file_type = input_source_dic['file_type']
 
+                    is_aux_amb = file_type == 'nm-aux-amb'
+
                     if file_type == 'nm-res-cns':
                         mr_format_name = 'CNS'
                     elif file_type == 'nm-res-xpl':
                         mr_format_name = 'XPLOR-NIH'
                     elif file_type == 'nm-res-amb':
                         mr_format_name = 'AMBER'
-                    elif file_type == 'nm-aux-amb':
+                    elif is_aux_amb:
                         mr_format_name = 'AMBER - auxiliary file'
                     elif file_type == 'nm-res-cya':
                         mr_format_name = 'CYANA'
                     else:
                         mr_format_name = 'other format'
 
-                    atom_like_names = self.__csStat.getAtomLikeNameSet(minimum_len=(2 if file_type == 'nm-res-oth' or file_type == 'nm-aux-amb' else 1))
+                    atom_like_names = self.__csStat.getAtomLikeNameSet(minimum_len=(2 if file_type == 'nm-res-oth' or is_aux_amb else 1))
 
                     has_chem_shift = False
                     has_dist_restraint = False
@@ -6071,6 +6073,8 @@ class NmrDpUtility(object):
                     has_rdc_restraint = False
 
                     has_coordinate = False
+                    has_amb_coord = False
+                    has_ens_coord = False
                     has_topology = False
 
                     if file_type == 'nm-res-cns' or file_type == 'nm-res-xpl':
@@ -6089,6 +6093,10 @@ class NmrDpUtility(object):
 
                                 if line.startswith('ATOM ') and line.count('.') >= 3:
                                     has_coordinate = True
+
+                                elif line.startswith('MODEL') or line.startswith('ENDMDL') or\
+                                     line.startswith('_atom_site.pdbx_PDB_model_num') or line.startswith('_atom_site.ndb_model'):
+                                    has_ens_coord = True
 
                                 l = " ".join(line.split())
 
@@ -6172,6 +6180,10 @@ class NmrDpUtility(object):
 
                                 if line.startswith('ATOM ') and line.count('.') >= 3:
                                     has_coordinate = True
+
+                                elif line.startswith('MODEL') or line.startswith('ENDMDL') or\
+                                     line.startswith('_atom_site.pdbx_PDB_model_num') or line.startswith('_atom_site.ndb_model'):
+                                    has_ens_coord = True
 
                                 l = " ".join(line.split())
 
@@ -6324,9 +6336,9 @@ class NmrDpUtility(object):
 
                             ifp.close()
 
-                    elif file_type == 'nm-res-cya' or file_type == 'nm-res-oth' or file_type == 'nm-aux-amb':
+                    elif file_type == 'nm-res-cya' or file_type == 'nm-res-oth' or is_aux_amb:
 
-                        if file_type == 'nm-aux-amb':
+                        if is_aux_amb:
 
                             has_atom_name = False
                             has_residue_label = False
@@ -6356,10 +6368,17 @@ class NmrDpUtility(object):
                         with open(file_path, 'r') as ifp:
                             for line in ifp:
 
-                                if line.startswith('ATOM ') and line.count('.') >= 3:
-                                    has_coordinate = True
+                                if line.startswith('ATOM '):
+                                    if line.count('.') >= 3:
+                                        has_coordinate = True
+                                    if is_aux_amb and line.count('.') == 3:
+                                        has_amb_coord = True
 
-                                elif file_type == 'nm-aux-amb':
+                                elif line.startswith('MODEL') or line.startswith('ENDMDL') or\
+                                     line.startswith('_atom_site.pdbx_PDB_model_num') or line.startswith('_atom_site.ndb_model'):
+                                    has_ens_coord = True
+
+                                elif is_aux_amb:
 
                                     if line.startswith('%FLAG'):
                                         in_atom_name = False
@@ -6577,14 +6596,18 @@ class NmrDpUtility(object):
 
                                 ifp.close()
 
-                        if file_type == 'nm-aux-amb':
+                        if is_aux_amb:
+
                             if has_atom_name and has_residue_label and has_residue_pointer and\
                                len(atom_names) > 0 and len(residue_labels) > 0 and len(residue_pointers) > 0:
                                 has_topology = True
 
+                            if has_amb_coord and has_ens_coord:
+                                has_amb_coord = False
+
                     if has_coordinate and not has_dist_restraint and not has_dihed_restraint and not has_rdc_restraint:
 
-                        if file_type != 'nm-aux-amb':
+                        if not is_aux_amb:
 
                             err = "NMR restraint file (%s) includes coordinates. Did you accidentally select the wrong format? Please re-upload the NMR restraint file." % mr_format_name
 
@@ -6598,7 +6621,7 @@ class NmrDpUtility(object):
 
                     elif has_chem_shift and not has_coordinate and not has_dist_restraint and not has_dihed_restraint and not has_rdc_restraint:
 
-                        if file_type != 'nm-aux-amb':
+                        if not is_aux_amb:
 
                             err = "NMR restraint file (%s) includes assigned chemical shifts. Did you accidentally select the wrong format? Please re-upload the NMR restraint file." % mr_format_name
 
@@ -6618,7 +6641,7 @@ class NmrDpUtility(object):
                                        'coordinate': 1 if has_coordinate else 0,
                                        'topology': 1 if has_topology else 0}
 
-                    if file_type != 'nm-aux-amb' and not has_chem_shift and not has_dist_restraint and not has_dihed_restraint and not has_rdc_restraint:
+                    if not is_aux_amb and not has_chem_shift and not has_dist_restraint and not has_dihed_restraint and not has_rdc_restraint:
 
                         hint = ""
                         if file_type == 'nm-res-cns' or file_type == 'nm-res-xpl':
@@ -6637,30 +6660,33 @@ class NmrDpUtility(object):
                         if self.__verbose:
                             self.__lfh.write("+NmrDpUtility.__detectContentSubType() ++ Warning  - %s\n" % warn)
 
-                    elif file_type == 'nm-aux-amb' and not has_coordinate and not has_topology:
+                    elif is_aux_amb and not has_amb_coord and not has_topology:
 
-                        subtype_name = ""
-                        if has_chem_shift:
-                            subtype_name += "assigned chemical shifts, "
-                        if has_dist_restraint:
-                            subtype_name += "distance restraints, "
-                        if has_dihed_restraint:
-                            subtype_name += "torsion angle restraints, "
-                        if has_rdc_restraint:
-                            subtype_name += "RDC restraints, "
+                            subtype_name = ""
+                            if has_chem_shift:
+                                subtype_name += "assigned chemical shifts, "
+                            if has_dist_restraint:
+                                subtype_name += "distance restraints, "
+                            if has_dihed_restraint:
+                                subtype_name += "torsion angle restraints, "
+                            if has_rdc_restraint:
+                                subtype_name += "RDC restraints, "
 
-                        if len(subtype_name) > 0:
-                            subtype_name = ". It looks like to have " + subtype_name[:-2] + " instead"
+                            if len(subtype_name) > 0:
+                                subtype_name = ". It looks like to have " + subtype_name[:-2] + " instead"
 
-                        hint = ' Tips for AMBER topology: %FLAG ATOM_NAME, %FLAG RESIDUE_LABEL, %FLAG RESIDUE_POINTER must exist in the file'
+                            hint = ' Tips for AMBER topology: %FLAG ATOM_NAME, %FLAG RESIDUE_LABEL, %FLAG RESIDUE_POINTER must exist in the file'
 
-                        err = "NMR restraint file (%s) includes neither topology nor coordinates%s.%s. Did you accidentally select the wrong format? Please re-upload the NMR restraint file." % (mr_format_name, subtype_name, hint)
+                            if has_coordinate:
+                                hint = ' Tips for AMBER coordinate: It should be directory generated by ambpdb command and must not have occupancy, temperature factor columns, and MODEL/ENDMDL keywords to assure that AMBER atomic IDs, referred by the AMBER restraint file, are preserved as is in the file'
 
-                        self.report.error.appendDescription('content_mismatch', {'file_name': file_name, 'description': err})
-                        self.report.setError()
+                            err = "NMR restraint file (%s) includes neither AMBER topology nor coordinates%s.%s. Did you accidentally select the wrong format? Please re-upload the NMR restraint file." % (mr_format_name, subtype_name, hint)
 
-                        if self.__verbose:
-                            self.__lfh.write("+NmrDpUtility.__detectContentSubType() ++ Error  - %s\n" % err)
+                            self.report.error.appendDescription('content_mismatch', {'file_name': file_name, 'description': err})
+                            self.report.setError()
+
+                            if self.__verbose:
+                                self.__lfh.write("+NmrDpUtility.__detectContentSubType() ++ Error  - %s\n" % err)
 
                     dist_restraint_uploaded |= has_dist_restraint
 

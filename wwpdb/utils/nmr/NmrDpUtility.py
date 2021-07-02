@@ -6529,7 +6529,7 @@ class NmrDpUtility(object):
                             hint = '&rst iat=#[,#], r1=#.#, r2=#.#, r3=#.#, r4=#.# [igr1=#[,#], igr2=#[,#]] &end'
 
                         if len(hint) > 0:
-                            hint = ' Tips for %s format: ' % mr_format_name + hint + " pettern must exist in the file"
+                            hint = ' Tips for %s format: ' % mr_format_name + hint + " pattern must exist in the file"
 
                         warn = "Constraint type of the NMR restraint file (%s) could not be identified.%s. Did you accidentally select the wrong format?" % (mr_format_name, hint)
 

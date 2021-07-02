@@ -123,7 +123,7 @@
 # 28-Jun-2021  M. Yokochi - support cif-formatted CS file for reupload without changing CS data (DAOTHER-6830, 7097)
 # 29-Jun-2021  M. Yokochi - include auth_asym_id in NMR data processing report (DAOTHER-7108)
 # 29-Jun-2021  M. Yokochi - add support for PyNMRSTAR v3.2.0 (DAOTHER-7107)
-# 01-Jul-2021  M. Yokochi - detect content type of AMBER restraint file and AMBER auxiliary file  (DAOTHER-6830)
+# 02-Jul-2021  M. Yokochi - detect content type of AMBER restraint file and AMBER auxiliary file  (DAOTHER-6830)
 ##
 """ Wrapper class for data processing for NMR data.
     @author: Masashi Yokochi
@@ -3304,10 +3304,12 @@ class NmrDpUtility(object):
                          'U': 'U'
                          }
 
-        # standard dihedral angle name
+        # conventional dihedral angle names in standard residues
         self.dihed_ang_names = ['PHI', 'PSI', 'OMEGA', 'CHI1', 'CHI2', 'CHI3', 'CHI4', 'CHI5',
                                 'ALPHA', 'BETA', 'GAMMA', 'DELTA', 'EPSILON', 'ZETA',
-                                'NU0', 'NU1', 'NU2', 'NU3', 'NU4', 'CHI21', 'CHI22', 'CHI31', 'CHI32', 'CHI42']
+                                'NU0', 'NU1', 'NU2', 'NU3', 'NU4',
+                                'TAU0', 'TAU1', 'TAU2', 'TAU3', 'TAU4',
+                                'CHI21', 'CHI22', 'CHI31', 'CHI32', 'CHI42']
 
         # patterns for detection of dihedral angle type
         self.dihed_atom_ids = ['N', 'CA', 'C']
@@ -5951,7 +5953,7 @@ class NmrDpUtility(object):
 
             if lp_counts[content_subtype] > 0 and content_type == 'nmr-restraints':
 
-                err = "The NMR restraint file includes assigned chemical shifts. Please re-upload the %s file as an NMR combined data file." % file_type.upper()
+                err = "NMR restraint file includes assigned chemical shifts. Please re-upload the %s file as an NMR combined data file." % file_type.upper()
 
                 self.report.error.appendDescription('content_mismatch', {'file_name': file_name, 'description': err})
                 self.report.setError()
@@ -6066,9 +6068,9 @@ class NmrDpUtility(object):
                     has_dist_restraint = False
                     has_dihed_restraint = False
                     has_rdc_restraint = False
-                    has_coordinate = False
 
-                    has_atom_list = False
+                    has_coordinate = False
+                    has_topology = False
 
                     if file_type == 'nm-res-cns' or file_type == 'nm-res-xpl':
 
@@ -6088,9 +6090,6 @@ class NmrDpUtility(object):
                                     has_coordinate = True
 
                                 l = " ".join(line.split())
-
-                                if line.startswith('ATOM ') and line.count('.') >= 5:
-                                    has_coordinate = True
 
                                 s = re.split('[ ()]', l)
 
@@ -6326,6 +6325,10 @@ class NmrDpUtility(object):
 
                     elif file_type == 'nm-res-cya' or file_type == 'nm-res-oth' or file_type == 'nm-aux-amb':
 
+                        has_atom_name = False
+                        has_residue_label = False
+                        has_residue_pointer = False
+
                         atom_like_names_oth = self.__csStat.getAtomLikeNameSet(1)
                         one_letter_codes = self.monDict3.values()
                         three_letter_codes = self.monDict3.keys()
@@ -6334,13 +6337,23 @@ class NmrDpUtility(object):
 
                         with open(file_path, 'r') as ifp:
                             for line in ifp:
+
+                                if line.startswith('ATOM ') and line.count('.') >= 5:
+                                    has_coordinate = True
+
+                                elif line.startswith('%FLAG ATOM_NAME'):
+                                    has_atom_name = True
+
+                                elif line.startswith('%FLAG RESIDUE_LABEL'):
+                                    has_residue_label = True
+
+                                elif line.startswith('%FLAG RESIDUE_POINTER'):
+                                    has_residue_pointer = True
+
                                 l = " ".join(line.split())
 
                                 if len(l) == 0 or l.startswith('#') or l.startswith('!'):
                                     continue
-
-                                if line.startswith('ATOM ') and line.count('.') >= 5:
-                                    has_coordinate = True
 
                                 s = re.split('[ ()]', l)
 
@@ -6349,9 +6362,9 @@ class NmrDpUtility(object):
                                 names = []
                                 res_like = False
                                 angle_like = False
-                                iat_like = False
                                 cs_range_like = False
                                 dist_range_like = False
+                                dihed_range_like = False
 
                                 for t in s:
 
@@ -6389,14 +6402,7 @@ class NmrDpUtility(object):
                                     elif name in self.dihed_ang_names:
                                         angle_like = True
 
-                                    elif t.isdigit():
-                                        if int(t) > 0:
-                                            iat_like = True
-
-                                if atom_likes == 1 and not cs_range_like and iat_like:
-                                    has_atom_list = True
-
-                                elif atom_likes == 1 and cs_range_like:
+                                if atom_likes == 1 and cs_range_like:
                                     has_chem_shift = True
 
                                 elif atom_likes == 2 and dist_range_like:
@@ -6421,8 +6427,11 @@ class NmrDpUtility(object):
                                     atom_likes = 0
                                     atom_likes_oth = 0
                                     names = []
+                                    res_like = False
+                                    angle_like = False
                                     cs_range_like = False
                                     dist_range_like = False
+                                    dihed_range_like = False
 
                                     for t in s:
 
@@ -6454,22 +6463,31 @@ class NmrDpUtility(object):
                                             except:
                                                 pass
 
+                                        elif name in three_letter_codes:
+                                            res_like = True
+
+                                        elif name in self.dihed_ang_names:
+                                            angle_like = True
+
                                     if atom_likes == 1 and cs_range_like:
                                         has_chem_shift = True
 
                                     elif atom_likes == 2 and dist_range_like:
                                         has_dist_restraint = True
 
-                                    elif atom_likes == 4 and dihed_range_like:
+                                    elif (atom_likes == 4 or (res_like and angle_like)) and dihed_range_like:
                                         has_dihed_restraint = True
 
                                 ifp.close()
+
+                        if has_atom_name and has_residue_label and has_residue_pointer:
+                            has_topology = True
 
                     if has_coordinate and not has_dist_restraint and not has_dihed_restraint and not has_rdc_restraint:
 
                         if file_type != 'nm-aux-amb':
 
-                            err = "The NMR restraint file (%s) includes coordinates. Did you accidentally select the wrong format? Please re-upload the NMR restraint file." % mr_format_name
+                            err = "NMR restraint file (%s) includes coordinates. Did you accidentally select the wrong format? Please re-upload the NMR restraint file." % mr_format_name
 
                             self.report.error.appendDescription('content_mismatch', {'file_name': file_name, 'description': err})
                             self.report.setError()
@@ -6481,13 +6499,15 @@ class NmrDpUtility(object):
 
                     elif has_chem_shift and not has_coordinate and not has_dist_restraint and not has_dihed_restraint and not has_rdc_restraint:
 
-                        err = "The NMR restraint file (%s) includes assigned chemical shifts. Did you accidentally select the wrong format? Please re-upload the NMR restraint file." % mr_format_name
+                        if file_type != 'nm-aux-amb':
 
-                        self.report.error.appendDescription('content_mismatch', {'file_name': file_name, 'description': err})
-                        self.report.setError()
+                            err = "NMR restraint file (%s) includes assigned chemical shifts. Did you accidentally select the wrong format? Please re-upload the NMR restraint file." % mr_format_name
 
-                        if self.__verbose:
-                            self.__lfh.write("+NmrDpUtility.__detectContentSubType() ++ Error  - %s\n" % err)
+                            self.report.error.appendDescription('content_mismatch', {'file_name': file_name, 'description': err})
+                            self.report.setError()
+
+                            if self.__verbose:
+                                self.__lfh.write("+NmrDpUtility.__detectContentSubType() ++ Error  - %s\n" % err)
 
                     elif has_chem_shift:
                         has_chem_shift = False
@@ -6496,19 +6516,52 @@ class NmrDpUtility(object):
                                        'dist_restraint': 1 if has_dist_restraint else 0,
                                        'dihed_restraint': 1 if has_dihed_restraint else 0,
                                        'rdc_restraint': 1 if has_rdc_restraint else 0,
-                                       'coordinate': 1 if has_coordinate else 0}
+                                       'coordinate': 1 if has_coordinate else 0,
+                                       'topology': 1 if has_topology else 0}
 
-                    if not has_chem_shift and not has_dist_restraint and not has_dihed_restraint and not has_rdc_restraint:
+                    if file_type != 'nm-aux-amb' and not has_chem_shift and not has_dist_restraint and not has_dihed_restraint and not has_rdc_restraint:
 
-                        if file_type != 'nm-aux-amb':
+                        hint = ""
+                        if file_type == 'nm-res-cns' or file_type == 'nm-res-xpl':
+                            hint = 'assi ( resid # and name $ ) ( resid # and name $ ) #.# #.# #.#'
+                        elif file_type == 'nm-res-amb':
+                            hint = '&rst iat=#[,#], r1=#.#, r2=#.#, r3=#.#, r4=#.# [igr1=#[,#], igr2=#[,#]] &end'
 
-                            warn = "Constraint type of the NMR restraint file (%s) could not be identified. Did you accidentally select the wrong format?" % mr_format_name
+                        if len(hint) > 0:
+                            hint = ' Tips for the format: ' + hint
 
-                            self.report.warning.appendDescription('missing_content', {'file_name': file_name, 'description': warn})
-                            self.report.setWarning()
+                        warn = "Constraint type of the NMR restraint file (%s) could not be identified.%s. Did you accidentally select the wrong format?" % (mr_format_name, hint)
 
-                            if self.__verbose:
-                                self.__lfh.write("+NmrDpUtility.__detectContentSubType() ++ Warning  - %s\n" % warn)
+                        self.report.warning.appendDescription('missing_content', {'file_name': file_name, 'description': warn})
+                        self.report.setWarning()
+
+                        if self.__verbose:
+                            self.__lfh.write("+NmrDpUtility.__detectContentSubType() ++ Warning  - %s\n" % warn)
+
+                    elif file_type == 'nm-aux-amb' and not has_coordinate and not has_topology:
+
+                        subtype_name = ""
+                        if has_chem_shift:
+                            subtype_name += "assigned chemical shifts, "
+                        if has_dist_restraint:
+                            subtype_name += "distance restraints, "
+                        if has_dihed_restraint:
+                            subtype_name += "torsion angle restraints, "
+                        if has_rdc_restraint:
+                            subtype_name += "RDC restraints, "
+
+                        if len(subtype_name) > 0:
+                            subtype_name = ". It looks like to have " + subtype_name[:-2] + " instead"
+
+                        hint = ' Tips for topology: %FLAG ATOM_NAME, %FLAG RESIDUE_LABEL, %FLAG RESIDUE_POINTER'
+
+                        err = "NMR restraint file (%s) includes neither topology nor coordinates%s.%s. Did you accidentally select the wrong format? Please re-upload the NMR restraint file." % (mr_format_name, subtype_name, hint)
+
+                        self.report.error.appendDescription('content_mismatch', {'file_name': file_name, 'description': err})
+                        self.report.setError()
+
+                        if self.__verbose:
+                            self.__lfh.write("+NmrDpUtility.__detectContentSubType() ++ Error  - %s\n" % err)
 
                     dist_restraint_uploaded |= has_dist_restraint
 
@@ -6536,7 +6589,7 @@ class NmrDpUtility(object):
 
                         if content_subtype is None:
 
-                            err = "The NMR restraint file does not include mandatory distance restraints or is not recognized properly. Please re-upload the NMR restraint file."
+                            err = "NMR restraint file does not include mandatory distance restraints or is not recognized properly. Please re-upload the NMR restraint file."
 
                             self.report.error.appendDescription('content_mismatch', {'file_name': file_name, 'description': err})
                             self.report.setError()
@@ -6547,13 +6600,12 @@ class NmrDpUtility(object):
                         elif not 'chem_shift' in content_subtype:
 
                             subtype_name = ""
-
                             if 'dihed_restraint' in content_subtype:
                                 subtype_name += "dihedral angle restraints, "
                             if 'rdc_restraint' in content_subtype:
                                 subtype_name += "RDC restraints, "
 
-                            err = "The NMR restraint file includes %s. However, deposition of distance restraints is mandatory. Please re-upload the NMR restraint file." % (subtype_name[:-2])
+                            err = "NMR restraint file includes %s. However, deposition of distance restraints is mandatory. Please re-upload the NMR restraint file." % (subtype_name[:-2])
 
                             self.report.error.appendDescription('content_mismatch', {'file_name': file_name, 'description': err})
                             self.report.setError()

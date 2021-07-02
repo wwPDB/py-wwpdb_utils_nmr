@@ -83,7 +83,11 @@
             "spectral_peak_alt": {
               "type": "integer",
               "minimum": 1
-            }
+            },
+            "topology": {
+              "type": "integer",
+              "minimum": 1
+            },
           },
           "additionalProperties": false
         },

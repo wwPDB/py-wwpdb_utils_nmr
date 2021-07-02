@@ -123,7 +123,7 @@
 # 28-Jun-2021  M. Yokochi - support cif-formatted CS file for reupload without changing CS data (DAOTHER-6830, 7097)
 # 29-Jun-2021  M. Yokochi - include auth_asym_id in NMR data processing report (DAOTHER-7108)
 # 29-Jun-2021  M. Yokochi - add support for PyNMRSTAR v3.2.0 (DAOTHER-7107)
-# 02-Jul-2021  M. Yokochi - detect content type of AMBER restraint file and AMBER auxiliary file  (DAOTHER-6830)
+# 02-Jul-2021  M. Yokochi - detect content type of AMBER restraint file and AMBER auxiliary file (DAOTHER-6830)
 ##
 """ Wrapper class for data processing for NMR data.
     @author: Masashi Yokochi

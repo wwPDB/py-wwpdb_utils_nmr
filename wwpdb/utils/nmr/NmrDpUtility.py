@@ -4486,71 +4486,72 @@ class NmrDpUtility(object):
 
         try:
 
-            is_cs_cif = False
-
             if self.__op == 'nmr-cs-str-consistency-check':
 
-                cs_cif_pattern = re.compile(r'D_[0-9]+_cs_P[0-9]+.cif.V[0-9]+$')
+                is_cs_cif = True
+
                 cif_stop_pattern = re.compile(r'^#\s*')
+                """
+                cs_cif_pattern = re.compile(r'D_[0-9]+_cs_P[0-9]+.cif.V[0-9]+$')
 
                 if cs_cif_pattern.match(file_name):
 
                     is_cs_cif = True
+                """
+                try:
 
-                    try:
+                    with open(_srcPath, 'r') as ifp:
+                        for line in ifp:
+                            if save_pattern.match(line) or stop_pattern.match(line):
+                                is_cs_cif = False
+                                break
+
+                        ifp.close()
+
+                    if is_cs_cif:
+
+                        loop_count = 0
 
                         with open(_srcPath, 'r') as ifp:
                             for line in ifp:
-                                if save_pattern.match(line) or stop_pattern.match(line):
-                                    is_cs_cif = False
-                                    break
+                                if loop_pattern.match(line):
+                                    loop_count += 1
 
                             ifp.close()
 
-                        if is_cs_cif:
+                        in_loop = False
 
-                            loop_count = 0
-
-                            with open(_srcPath, 'r') as ifp:
+                        with open(_srcPath, 'r') as ifp:
+                            with open(_srcPath + '~', 'w') as ofp:
                                 for line in ifp:
-                                    if loop_pattern.match(line):
-                                        loop_count += 1
-
-                                ifp.close()
-
-                            in_loop = False
-
-                            with open(_srcPath, 'r') as ifp:
-                                with open(_srcPath + '~', 'w') as ofp:
-                                    for line in ifp:
-                                        if datablock_pattern.match(line):
-                                            g = datablock_pattern.search(line).groups()
+                                    if datablock_pattern.match(line):
+                                        g = datablock_pattern.search(line).groups()
+                                        if loop_count < 2:
+                                            ofp.write('save_%s\n' % g[0])
+                                    elif cif_stop_pattern.match(line):
+                                        if in_loop:
                                             if loop_count < 2:
-                                                ofp.write('save_%s\n' % g[0])
-                                        elif cif_stop_pattern.match(line):
-                                            if in_loop:
-                                                if loop_count < 2:
-                                                    ofp.write('stop_\nsave_\n')
-                                                else:
-                                                    ofp.write('stop_\n')
+                                                ofp.write('stop_\nsave_\n')
                                             else:
-                                                ofp.write(line)
-                                            in_loop = False
-                                        elif loop_pattern.match(line):
-                                            in_loop = True
-                                            ofp.write(line)
+                                                ofp.write('stop_\n')
                                         else:
-                                            if in_loop or loop_count < 2:
-                                                ofp.write(line)
+                                            ofp.write(line)
+                                        in_loop = False
+                                    elif loop_pattern.match(line):
+                                        in_loop = True
+                                        ofp.write(line)
+                                    else:
+                                        if in_loop or loop_count < 2:
+                                            ofp.write(line)
 
-                                _srcPath = ofp.name
-                                tmpPaths.append(_srcPath)
-                                ofp.close()
+                            _srcPath = ofp.name
+                            tmpPaths.append(_srcPath)
+                            ofp.close()
 
-                            ifp.close()
+                        ifp.close()
 
-                    except AttributeError:
-                        pass
+                except AttributeError:
+                    pass
 
             if not is_cs_cif:
 
@@ -6523,12 +6524,12 @@ class NmrDpUtility(object):
 
                         hint = ""
                         if file_type == 'nm-res-cns' or file_type == 'nm-res-xpl':
-                            hint = 'assi ( resid # and name $ ) ( resid # and name $ ) #.# #.# #.#'
+                            hint = 'assi|assign ( resid # and name $ )[ (resid # and name $)] #.# #.# #.#'
                         elif file_type == 'nm-res-amb':
                             hint = '&rst iat=#[,#], r1=#.#, r2=#.#, r3=#.#, r4=#.# [igr1=#[,#], igr2=#[,#]] &end'
 
                         if len(hint) > 0:
-                            hint = ' Tips for the format: ' + hint
+                            hint = ' Tips for %s format: ' % mr_format_name + hint + " pettern must exist in the file"
 
                         warn = "Constraint type of the NMR restraint file (%s) could not be identified.%s. Did you accidentally select the wrong format?" % (mr_format_name, hint)
 
@@ -6553,7 +6554,7 @@ class NmrDpUtility(object):
                         if len(subtype_name) > 0:
                             subtype_name = ". It looks like to have " + subtype_name[:-2] + " instead"
 
-                        hint = ' Tips for topology: %FLAG ATOM_NAME, %FLAG RESIDUE_LABEL, %FLAG RESIDUE_POINTER'
+                        hint = ' Tips for AMBER topology: %FLAG ATOM_NAME, %FLAG RESIDUE_LABEL, %FLAG RESIDUE_POINTER must exist in the file'
 
                         err = "NMR restraint file (%s) includes neither topology nor coordinates%s.%s. Did you accidentally select the wrong format? Please re-upload the NMR restraint file." % (mr_format_name, subtype_name, hint)
 

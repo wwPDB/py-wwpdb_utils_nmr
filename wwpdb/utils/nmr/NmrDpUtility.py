@@ -6087,7 +6087,7 @@ class NmrDpUtility(object):
 
                             for line in ifp:
 
-                                if line.startswith('ATOM ') and line.count('.') >= 5:
+                                if line.startswith('ATOM ') and line.count('.') >= 3:
                                     has_coordinate = True
 
                                 l = " ".join(line.split())
@@ -6170,7 +6170,7 @@ class NmrDpUtility(object):
 
                             for line in ifp:
 
-                                if line.startswith('ATOM ') and line.count('.') >= 5:
+                                if line.startswith('ATOM ') and line.count('.') >= 3:
                                     has_coordinate = True
 
                                 l = " ".join(line.split())
@@ -6326,9 +6326,26 @@ class NmrDpUtility(object):
 
                     elif file_type == 'nm-res-cya' or file_type == 'nm-res-oth' or file_type == 'nm-aux-amb':
 
-                        has_atom_name = False
-                        has_residue_label = False
-                        has_residue_pointer = False
+                        if file_type == 'nm-aux-amb':
+
+                            has_atom_name = False
+                            has_residue_label = False
+                            has_residue_pointer = False
+
+                            chk_atom_name_format = False
+                            chk_residue_label_format = False
+                            chk_residue_pointer_format = False
+
+                            in_atom_name = False
+                            in_residue_label = False
+                            in_residue_pointer = False
+
+                            a_format_pattern = re.compile(r'^%FORMAT\((\d+)a(\d+)\)\s*')
+                            i_format_pattern = re.compile(r'^%FORMAT\((\d+)I(\d+)\)\s*')
+
+                            atom_names = []
+                            residue_labels = []
+                            residue_pointers = []
 
                         atom_like_names_oth = self.__csStat.getAtomLikeNameSet(1)
                         one_letter_codes = self.monDict3.values()
@@ -6339,17 +6356,96 @@ class NmrDpUtility(object):
                         with open(file_path, 'r') as ifp:
                             for line in ifp:
 
-                                if line.startswith('ATOM ') and line.count('.') >= 5:
+                                if line.startswith('ATOM ') and line.count('.') >= 3:
                                     has_coordinate = True
 
-                                elif line.startswith('%FLAG ATOM_NAME'):
-                                    has_atom_name = True
+                                elif file_type == 'nm-aux-amb':
 
-                                elif line.startswith('%FLAG RESIDUE_LABEL'):
-                                    has_residue_label = True
+                                    if line.startswith('%FLAG'):
+                                        in_atom_name = False
+                                        in_residue_label = False
+                                        in_residue_pointer = False
 
-                                elif line.startswith('%FLAG RESIDUE_POINTER'):
-                                    has_residue_pointer = True
+                                        if line.startswith('%FLAG ATOM_NAME'):
+                                            has_atom_name = True
+                                            chk_atom_name_format = True
+
+                                        elif line.startswith('%FLAG RESIDUE_LABEL'):
+                                            has_residue_label = True
+                                            chk_residue_label_format = True
+
+                                        elif line.startswith('%FLAG RESIDUE_POINTER'):
+                                            has_residue_pointer = True
+                                            chk_residue_pointer_format = True
+
+                                    elif chk_atom_name_format:
+                                        chk_atom_name_format = a_format_pattern.match(line)
+                                        if chk_atom_name_format:
+                                            in_atom_name = True
+                                            g = a_format_pattern.search(line).groups()
+                                            max_cols = int(g[0])
+                                            max_char = int(g[1])
+                                        else:
+                                            has_atom_name = False
+                                        chk_atom_name_format = False
+
+                                    elif chk_residue_label_format:
+                                        chk_residue_label_format = a_format_pattern.match(line)
+                                        if chk_residue_label_format:
+                                            in_residue_label = True
+                                            g = a_format_pattern.search(line).groups()
+                                            max_cols = int(g[0])
+                                            max_char = int(g[1])
+                                        else:
+                                            has_residue_label = False
+                                        chk_residue_label_format = False
+
+                                    elif chk_residue_pointer_format:
+                                        chk_residue_pointer_format = i_format_pattern.match(line)
+                                        if chk_residue_pointer_format:
+                                            in_residue_pointer = True
+                                            g = i_format_pattern.search(line).groups()
+                                            max_cols = int(g[0])
+                                            max_char = int(g[1])
+                                        else:
+                                            chk_residue_pointer = False
+                                        chk_residue_pointer_format = False
+
+                                    elif in_atom_name:
+                                        len_line = len(line)
+                                        begin = 0
+                                        end = max_char
+                                        col = 0
+                                        while col < max_cols and end < len_line:
+                                            atom_names.append(line[begin:end].rstrip())
+                                            begin = end
+                                            end += max_char
+                                            col += 1
+
+                                    elif in_residue_label:
+                                        len_line = len(line)
+                                        begin = 0
+                                        end = max_char
+                                        col = 0
+                                        while col < max_cols and end < len_line:
+                                            residue_labels.append(line[begin:end].rstrip())
+                                            begin = end
+                                            end += max_char
+                                            col += 1
+
+                                    elif in_residue_pointer:
+                                        len_line = len(line)
+                                        begin = 0
+                                        end = max_char
+                                        col = 0
+                                        while col < max_cols and end < len_line:
+                                            try:
+                                                residue_pointers.append(int(line[begin:end].lstrip()))
+                                            except ValueError:
+                                                pass
+                                            begin = end
+                                            end += max_char
+                                            col += 1
 
                                 l = " ".join(line.split())
 
@@ -6481,8 +6577,10 @@ class NmrDpUtility(object):
 
                                 ifp.close()
 
-                        if has_atom_name and has_residue_label and has_residue_pointer:
-                            has_topology = True
+                        if file_type == 'nm-aux-amb':
+                            if has_atom_name and has_residue_label and has_residue_pointer and\
+                               len(atom_names) > 0 and len(residue_labels) > 0 and len(residue_pointers) > 0:
+                                has_topology = True
 
                     if has_coordinate and not has_dist_restraint and not has_dihed_restraint and not has_rdc_restraint:
 

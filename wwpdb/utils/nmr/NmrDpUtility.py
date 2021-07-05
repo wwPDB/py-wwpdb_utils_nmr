@@ -4486,18 +4486,19 @@ class NmrDpUtility(object):
 
         try:
 
-            if self.__op == 'nmr-cs-str-consistency-check':
+            is_cs_cif = False
 
-                is_cs_cif = True
+            if self.__op == 'nmr-cs-str-consistency-check':
 
                 cif_stop_pattern = re.compile(r'^#\s*')
                 """
                 cs_cif_pattern = re.compile(r'D_[0-9]+_cs_P[0-9]+.cif.V[0-9]+$')
 
                 if cs_cif_pattern.match(file_name):
-
-                    is_cs_cif = True
                 """
+
+                is_cs_cif = True
+
                 try:
 
                     with open(_srcPath, 'r') as ifp:

@@ -693,6 +693,7 @@ class NEFTranslator(object):
                             msg = str(e3)
                         else:
                             msg = str(e1)
+
                     else:
                         if not 'internaluseyoushouldntseethis_frame' in str(e3):
                             msg = str(e3)

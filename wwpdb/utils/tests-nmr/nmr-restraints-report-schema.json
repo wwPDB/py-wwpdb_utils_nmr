@@ -93,7 +93,7 @@
             "topology": {
               "type": "integer",
               "minimum": 1
-            },
+            }
           },
           "additionalProperties": false
         },

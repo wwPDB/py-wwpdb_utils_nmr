@@ -6646,9 +6646,9 @@ class NmrDpUtility(object):
 
                         hint = ""
                         if file_type == 'nm-res-cns' or file_type == 'nm-res-xpl':
-                            hint = 'assi|assign ( resid # and name $ )[ (resid # and name $)] #.# #.# #.#'
+                            hint = 'assign ( segid $ and resid # and name $ ) ( segid $ resid # and name $ ) #.# #.# #.#'
                         elif file_type == 'nm-res-amb':
-                            hint = '&rst iat=#[,#], r1=#.#, r2=#.#, r3=#.#, r4=#.# [igr1=#[,#], igr2=#[,#]] &end'
+                            hint = '&rst iat=#[,#], r1=#.#, r2=#.#, r3=#.#, r4=#.#, [igr1=#[,#],] [igr2=#[,#],] &end'
 
                         if len(hint) > 0:
                             hint = ' Tips for %s format: ' % mr_format_name + hint + " pattern must exist in the file"

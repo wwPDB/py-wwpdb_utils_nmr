@@ -18,7 +18,13 @@
           "enum": [
             "pdbx",
             "nef",
-            "nmr-star"
+            "nmr-star",
+            "nm-res-amb",
+            "nm-res-cns",
+            "nm-res-cya",
+            "nm-res-xpl",
+            "nm-res-oth",
+            "nm-aux-amb"
           ]
         },
         "content_type": {

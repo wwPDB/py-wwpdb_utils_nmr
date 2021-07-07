@@ -6096,7 +6096,7 @@ class NmrDpUtility(object):
 
                                 if line.startswith('ATOM ') and line.count('.') >= 3:
                                     has_coordinate = True
-                                    if line.startswith('ATOM      1 '):
+                                    if line.startswith('ATOM      1 ') or line.startswith('ATOM 1 '):
                                         if has_first_atom:
                                             has_ens_coord = True
                                         has_first_atom = True
@@ -6187,7 +6187,7 @@ class NmrDpUtility(object):
 
                                 if line.startswith('ATOM ') and line.count('.') >= 3:
                                     has_coordinate = True
-                                    if line.startswith('ATOM      1 '):
+                                    if line.startswith('ATOM      1 ') or line.startswith('ATOM 1 '):
                                         if has_first_atom:
                                             has_ens_coord = True
                                         has_first_atom = True
@@ -6382,7 +6382,7 @@ class NmrDpUtility(object):
                                 if line.startswith('ATOM '):
                                     if line.count('.') >= 3:
                                         has_coordinate = True
-                                        if line.startswith('ATOM      1 '):
+                                        if line.startswith('ATOM      1 ') or line.startswith('ATOM 1 '):
                                             if has_first_atom:
                                                 has_ens_coord = True
                                             has_first_atom = True

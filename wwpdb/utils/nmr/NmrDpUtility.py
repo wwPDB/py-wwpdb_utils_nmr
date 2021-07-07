@@ -6060,7 +6060,7 @@ class NmrDpUtility(object):
                     elif file_type == 'nm-res-amb':
                         mr_format_name = 'AMBER'
                     elif is_aux_amb:
-                        mr_format_name = 'AMBER - auxiliary file'
+                        mr_format_name = 'AMBER topology'
                     elif file_type == 'nm-res-cya':
                         mr_format_name = 'CYANA'
                     else:

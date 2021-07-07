@@ -16525,6 +16525,72 @@ class NmrDpUtility(object):
                 if len(ilv_rotameric_state) > 0:
                     ent['ilv_rotameric_state'] = ilv_rotameric_state
 
+                # random coil index
+
+                rci = []
+
+                for sc in ent['sequence_coverage']:
+
+                    chain_id = sc['chain_id']
+
+                    s = next((s for s in polymer_sequence if s['chain_id'] == chain_id), None)
+
+                    if not s is None:
+
+                        rci_assignments = []
+                        seq_ids_wo_assign = []
+
+                        for seq_id, comp_id in zip(s['seq_id'], s['comp_id']):
+
+                            polypeptide_like = self.__csStat.getTypeOfCompId(comp_id)[0]
+
+                            if not polypeptide_like:
+                                continue
+
+                            has_bb_atoms = False
+
+                            for j in lp_data:
+
+                                if j[chain_id_name] != chain_id or j[seq_id_name] != seq_id or j[comp_id_name] != comp_id or j[value_name] in self.empty_value:
+                                    continue
+
+                                atom_id = j[atom_id_name]
+
+                                if file_type == 'nef' or (atom_id == 'HN' or
+                                                          atom_id.startswith('Q') or
+                                                          atom_id.startswith('M') or
+                                                          self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id) == 0):
+                                    _atom_id, ambig_code, details = self.__getAtomIdListWithAmbigCode(file_type, comp_id, atom_id)
+
+                                    if len(_atom_id) == 0:
+                                        continue
+
+                                    if len(_atom_id) == 1 and atom_id == _atom_id[0]:
+                                        atom_id_ = atom_id
+
+                                    else:
+                                        # representative atom id
+                                        atom_id_ = _atom_id[0]
+
+                                else:
+                                    atom_id_ = atom_id
+
+                                if not atom_id_ in ['HA', 'HA1', 'HA2', 'HA3', 'H', 'HN', 'NH', 'C', 'CO', 'N', 'CA', 'CB']:
+                                    continue
+
+                                rci_assignments.append([comp_id, seq_id, atom_id, j[atom_type], j[value_name]])
+
+                                has_bb_atoms = True
+
+                            if not has_bb_atoms:
+                                seq_ids_wo_assign.append(seq_id)
+
+                        if len(rci_assignments) > 0:
+                            pass
+
+                if len(rci) > 0:
+                    ent['random_coil_index'] = rci
+
         except Exception as e:
 
             self.report.error.appendDescription('internal_error', "+NmrDpUtility.__calculateStatsOfAssignedChemShift() ++ Error  - %s" % str(e))

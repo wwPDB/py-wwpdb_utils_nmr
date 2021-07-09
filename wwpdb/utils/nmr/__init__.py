@@ -1,4 +1,4 @@
-1;95;0c__docformat__ = "restructuredtext en"
+__docformat__ = "restructuredtext en"
 __author__ = "Ezra Peisach"
 __email__ = "ezra.peisach@rcsb.org"
 __license__ = "Apache 2.0"

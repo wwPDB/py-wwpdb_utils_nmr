@@ -3464,6 +3464,9 @@ class NmrDpUtility(object):
         # used for debuging only, it should be empty for production
         self.__target_framecode = ''
 
+        # suspended error items for polypeptide
+        self.__suspended_errors_for_polypeptide = []
+
     def setVerbose(self, flag):
         """ Set verbose mode.
         """
@@ -6062,7 +6065,7 @@ class NmrDpUtility(object):
                     elif file_type == 'nm-res-amb':
                         mr_format_name = 'AMBER'
                     elif is_aux_amb:
-                        mr_format_name = 'AMBER topology'
+                        mr_format_name = 'AMBER'
                     elif file_type == 'nm-res-cya':
                         mr_format_name = 'CYANA'
                     else:
@@ -6077,6 +6080,7 @@ class NmrDpUtility(object):
 
                     has_coordinate = False
                     has_amb_coord = False
+                    has_amb_inpcrd = False
                     has_ens_coord = False
                     has_topology = False
 
@@ -6185,6 +6189,8 @@ class NmrDpUtility(object):
                             names = []
                             values = []
 
+                            pos = 0
+
                             for line in ifp:
 
                                 if line.startswith('ATOM ') and line.count('.') >= 3:
@@ -6197,6 +6203,30 @@ class NmrDpUtility(object):
                                 elif line.startswith('MODEL') or line.startswith('ENDMDL') or\
                                      line.startswith('_atom_site.pdbx_PDB_model_num') or line.startswith('_atom_site.ndb_model'):
                                     has_ens_coord = True
+
+                                pos += 1
+
+                                if pos == 1 and line.startswith('defa'):
+                                    has_amb_inpcrd = True
+
+                                elif pos == 2 and has_amb_inpcrd:
+                                    try:
+                                        int(line.lstrip().split()[0])
+                                    except:
+                                        has_amb_inpcrd = False
+
+                                elif pos == 3 and has_amb_inpcrd:
+                                    if line.count('.') != 6:
+                                        has_amb_inpcrd = False
+
+                                if '&rst ' in line:
+                                    line = re.sub('&rst ', '&rst,', line)
+
+                                elif '&end' in line:
+                                    line = re.sub('&end', ',&end', line)
+
+                                elif '/' in line:
+                                    line = re.sub('/', ',&end', line)
 
                                 l = " ".join(line.split())
 
@@ -6379,7 +6409,12 @@ class NmrDpUtility(object):
                         prohibited_col = set()
 
                         with open(file_path, 'r') as ifp:
+
+                            pos = 0
+
                             for line in ifp:
+
+                                pos += 1
 
                                 if line.startswith('ATOM '):
                                     if line.count('.') >= 3:
@@ -6396,6 +6431,19 @@ class NmrDpUtility(object):
                                     has_ens_coord = True
 
                                 elif is_aux_amb:
+
+                                    if pos == 1 and line.startswith('defa'):
+                                        has_amb_inpcrd = True
+
+                                    elif pos == 2 and has_amb_inpcrd:
+                                        try:
+                                            int(line.lstrip().split()[0])
+                                        except:
+                                            has_amb_inpcrd = False
+
+                                    elif pos == 3 and has_amb_inpcrd:
+                                        if line.count('.') != 6:
+                                            has_amb_inpcrd = False
 
                                     if line.startswith('%FLAG'):
                                         in_atom_name = False
@@ -6636,7 +6684,7 @@ class NmrDpUtility(object):
 
                         has_chem_shift = False
 
-                    elif has_chem_shift and not has_coordinate and not has_dist_restraint and not has_dihed_restraint and not has_rdc_restraint:
+                    elif has_chem_shift and not has_coordinate and not has_amb_inpcrd and not has_dist_restraint and not has_dihed_restraint and not has_rdc_restraint:
 
                         if not is_aux_amb:
 
@@ -6688,16 +6736,18 @@ class NmrDpUtility(object):
                                 subtype_name += "torsion angle restraints, "
                             if has_rdc_restraint:
                                 subtype_name += "RDC restraints, "
+                            if has_amb_inpcrd:
+                                subtype_name += "AMBER restart coordinates (.rst), "
 
                             if len(subtype_name) > 0:
                                 subtype_name = ". It looks like to have " + subtype_name[:-2] + " instead"
 
-                            hint = " Tips for AMBER topology: Proper contents starting with '%FLAG ATOM_NAME', '%FLAG RESIDUE_LABEL', and '%FLAG RESIDUE_POINTER' must be present in the file"
+                            hint = " Tips for AMBER topology: Proper contents starting with '%FLAG ATOM_NAME', '%FLAG RESIDUE_LABEL', and '%FLAG RESIDUE_POINTER' lines must be present in the file"
 
                             if has_coordinate:
                                 hint = " Tips for AMBER coordinates: It should be directory generated by 'ambpdb' command and must not have MODEL/ENDMDL keywords to ensure that AMBER atomic IDs, referred as 'iat' in the AMBER restraint file, are preserved in the file"
 
-                            err = "NMR restraint file (%s) includes neither AMBER topology (prmtop) nor coordinates (inpcrd.pdb)%s.%s. Did you accidentally select the wrong format? Please re-upload the NMR restraint file." % (mr_format_name, subtype_name, hint)
+                            err = "%r is neither AMBER topology (.prmtop) nor coordinates (.inpcrd.pdb)%s.%s. Did you accidentally select the wrong format? Please re-upload the AMBER topology file." % (file_name, subtype_name, hint)
 
                             self.report.error.appendDescription('content_mismatch', {'file_name': file_name, 'description': err})
                             self.report.setError()
@@ -6733,8 +6783,10 @@ class NmrDpUtility(object):
 
                             err = "NMR restraint file does not include mandatory distance restraints or is not recognized properly. Please re-upload the NMR restraint file."
 
-                            self.report.error.appendDescription('content_mismatch', {'file_name': file_name, 'description': err})
-                            self.report.setError()
+                            self.__suspended_errors_for_polypeptide.append({'content_mismatch': {'file_name': file_name, 'description': err}})
+
+                            #self.report.error.appendDescription('content_mismatch', {'file_name': file_name, 'description': err})
+                            #self.report.setError()
 
                             if self.__verbose:
                                 self.__lfh.write("+NmrDpUtility.__detectContentSubType() ++ Error  - %s\n" % err)
@@ -6749,8 +6801,10 @@ class NmrDpUtility(object):
 
                             err = "NMR restraint file includes %s. However, deposition of distance restraints is mandatory. Please re-upload the NMR restraint file." % (subtype_name[:-2])
 
-                            self.report.error.appendDescription('content_mismatch', {'file_name': file_name, 'description': err})
-                            self.report.setError()
+                            self.__suspended_errors_for_polypeptide.append({'content_mismatch': {'file_name': file_name, 'description': err}})
+
+                            #self.report.error.appendDescription('content_mismatch', {'file_name': file_name, 'description': err})
+                            #self.report.setError()
 
                             if self.__verbose:
                                 self.__lfh.write("+NmrDpUtility.__detectContentSubType() ++ Error  - %s\n" % err)
@@ -20651,6 +20705,13 @@ class NmrDpUtility(object):
 
                     if 'polypeptide' in type:
                         rmsd_label = 'ca_rmsd'
+
+                        if len(self.__suspended_errors_for_polypeptide) > 0:
+                            for msg in self.__suspended_errors_for_polypeptide:
+                                for k, v in msg.items():
+                                    self.report.error.appendDescription(k, v)
+                            self.__suspended_errors_for_polypeptide = []
+
                     elif 'ribonucleotide' in type:
                         rmsd_label = 'p_rmsd'
                     else:

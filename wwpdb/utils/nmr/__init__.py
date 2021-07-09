@@ -1,5 +1,5 @@
-__docformat__ = "restructuredtext en"
+1;95;0c__docformat__ = "restructuredtext en"
 __author__ = "Ezra Peisach"
 __email__ = "ezra.peisach@rcsb.org"
 __license__ = "Apache 2.0"
-__version__ = "0.12.dev6"
+__version__ = "0.12.dev7"

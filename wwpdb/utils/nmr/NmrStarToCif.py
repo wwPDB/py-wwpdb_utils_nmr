@@ -188,7 +188,7 @@ class NmrStarToCif(object):
             if containerList is not None and len(containerList) > 1:
 
                 if self.__verbose:
-                    self.__lfh.write('Input container list is  %r\n' % ([(c.getName(), c.getType()) for c in containerList]))
+                    self.__lfh.write('Input container list is %r\n' % ([(c.getName(), c.getType()) for c in containerList]))
 
                 for c in containerList:
                     c.setType('data')

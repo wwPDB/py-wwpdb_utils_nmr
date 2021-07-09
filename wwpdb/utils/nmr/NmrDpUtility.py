@@ -16555,6 +16555,7 @@ class NmrDpUtility(object):
 
                         rci_assignments = []
                         seq_ids_wo_assign = []
+                        oxidized_cys_seq_ids = []
 
                         for seq_id, comp_id in zip(s['seq_id'], s['comp_id']):
 
@@ -16598,7 +16599,49 @@ class NmrDpUtility(object):
 
                                 has_bb_atoms = True
 
-                            if not has_bb_atoms:
+                            if has_bb_atoms:
+
+                                if comp_id == 'CYS':
+
+                                    ca_chem_shift = None
+                                    cb_chem_shift = None
+
+                                    for j in lp_data:
+
+                                        atom_id = j[atom_id_name]
+
+                                        if j[chain_id_name] == chain_id and j[seq_id_name] == seq_id and j[comp_id_name] == comp_id:
+                                            if atom_id == 'CA':
+                                                ca_chem_shift = j[value_name]
+                                            elif atom_id == 'CB':
+                                                cb_chem_shift = j[value_name]
+
+                                        if ca_chem_shift is None or cb_chem_shift is None:
+                                            if j[chain_id_name] == chain_id and j[seq_id_name] > seq_id:
+                                                break
+                                        else:
+                                            break
+
+                                    ambig_redox_state = False
+
+                                    if not cb_chem_shift is None:
+                                        if cb_chem_shift < 32.0:
+                                            pass
+                                        elif cb_chem_shift > 35.0:
+                                            oxidized_cys_seq_ids.append(seq_id)
+                                        else:
+                                            ambig_redox_state = True
+                                    elif not ca_chem_shift is None:
+                                        ambig_redox_state = True
+
+                                    if ambig_redox_state:
+                                        oxi, red = predict_redox_state_of_cystein(ca_chem_shift, cb_chem_shift)
+                                        if oxi < 0.001:
+                                            pass
+                                        elif red < 0.001 or oxi > 0.5:
+                                            oxidized_cys_seq_ids.append(seq_id)
+
+                            else:
                                 seq_ids_wo_assign.append(seq_id)
 
                         if len(rci_assignments) > 0:

@@ -6429,9 +6429,6 @@ class NmrDpUtility(object):
 
                                 elif is_aux_amb:
 
-                                    if (pos == 1):
-                                        print(line)
-
                                     if pos == 1 and line.startswith('defa'):
                                         has_amb_inpcrd = True
 

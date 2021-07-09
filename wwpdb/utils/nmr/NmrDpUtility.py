@@ -6198,6 +6198,15 @@ class NmrDpUtility(object):
                                      line.startswith('_atom_site.pdbx_PDB_model_num') or line.startswith('_atom_site.ndb_model'):
                                     has_ens_coord = True
 
+                                if '&rst ' in line:
+                                    line = re.sub('&rst ', '&rst,', line)
+
+                                elif '&end' in line:
+                                    line = re.sub('&end', ',&end', line)
+
+                                elif '/' in line:
+                                    line = re.sub('/', ',&end', line)
+
                                 l = " ".join(line.split())
 
                                 if len(l) == 0 or l.startswith('#') or l.startswith('!'):
@@ -6749,7 +6758,7 @@ class NmrDpUtility(object):
 
                             err = "NMR restraint file includes %s. However, deposition of distance restraints is mandatory. Please re-upload the NMR restraint file." % (subtype_name[:-2])
 
-                            self.report.error.appendDescription('content_mismatch', {'file_name': file_name, 'description': err})
+                            self.report.error.appendDescription('missing_mandatory_content', {'file_name': file_name, 'description': err})
                             self.report.setError()
 
                             if self.__verbose:

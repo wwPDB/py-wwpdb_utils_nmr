@@ -3464,6 +3464,9 @@ class NmrDpUtility(object):
         # used for debuging only, it should be empty for production
         self.__target_framecode = ''
 
+        # suspended error items for polypeptide
+        self.__suspended_errors_for_polypeptide = []
+
     def setVerbose(self, flag):
         """ Set verbose mode.
         """
@@ -6780,8 +6783,10 @@ class NmrDpUtility(object):
 
                             err = "NMR restraint file does not include mandatory distance restraints or is not recognized properly. Please re-upload the NMR restraint file."
 
-                            self.report.error.appendDescription('content_mismatch', {'file_name': file_name, 'description': err})
-                            self.report.setError()
+                            self.__suspended_errors_for_polypeptide.append({'content_mismatch': {'file_name': file_name, 'description': err}})
+
+                            #self.report.error.appendDescription('content_mismatch', {'file_name': file_name, 'description': err})
+                            #self.report.setError()
 
                             if self.__verbose:
                                 self.__lfh.write("+NmrDpUtility.__detectContentSubType() ++ Error  - %s\n" % err)
@@ -6796,8 +6801,10 @@ class NmrDpUtility(object):
 
                             err = "NMR restraint file includes %s. However, deposition of distance restraints is mandatory. Please re-upload the NMR restraint file." % (subtype_name[:-2])
 
-                            self.report.error.appendDescription('missing_mandatory_content', {'file_name': file_name, 'description': err})
-                            self.report.setError()
+                            self.__suspended_errors_for_polypeptide.append({'content_mismatch': {'file_name': file_name, 'description': err}})
+
+                            #self.report.error.appendDescription('content_mismatch', {'file_name': file_name, 'description': err})
+                            #self.report.setError()
 
                             if self.__verbose:
                                 self.__lfh.write("+NmrDpUtility.__detectContentSubType() ++ Error  - %s\n" % err)
@@ -20589,6 +20596,13 @@ class NmrDpUtility(object):
 
                     if 'polypeptide' in type:
                         rmsd_label = 'ca_rmsd'
+
+                        if len(self.__suspended_errors_for_polypeptide) > 0:
+                            for msg in self.__suspended_errors_for_polypeptide:
+                                for k, v in msg.items():
+                                    self.report.error.appendDescription(k, v)
+                            self.__suspended_errors_for_polypeptide = []
+
                     elif 'ribonucleotide' in type:
                         rmsd_label = 'p_rmsd'
                     else:

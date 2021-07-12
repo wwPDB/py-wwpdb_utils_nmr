@@ -155,6 +155,7 @@ from wwpdb.utils.config.ConfigInfo import getSiteId
 from wwpdb.utils.config.ConfigInfoApp import ConfigInfoAppCommon
 from wwpdb.utils.nmr.io.ChemCompIo import ChemCompReader
 from wwpdb.utils.nmr.io.CifReader import CifReader
+from wwpdb.utils.nmr.rci.RCI import RCI
 
 __pynmrstar_v3_2__ = version.parse(pynmrstar.__version__) >= version.parse("3.2.0")
 __pynmrstar_v3_1__ = version.parse(pynmrstar.__version__) >= version.parse("3.1.0")
@@ -3466,6 +3467,9 @@ class NmrDpUtility(object):
 
         # suspended error items for polypeptide
         self.__suspended_errors_for_polypeptide = []
+
+        # RCI
+        self.__rci = RCI(False, self.__lfh)
 
     def setVerbose(self, flag):
         """ Set verbose mode.
@@ -16607,11 +16611,14 @@ class NmrDpUtility(object):
 
                     if not s is None:
 
+                        rci_residues = []
                         rci_assignments = []
                         seq_ids_wo_assign = []
                         oxidized_cys_seq_ids = []
 
                         for seq_id, comp_id in zip(s['seq_id'], s['comp_id']):
+
+                            rci_residues.append([comp_id, seq_id])
 
                             polypeptide_like = self.__csStat.getTypeOfCompId(comp_id)[0]
 
@@ -16699,7 +16706,12 @@ class NmrDpUtility(object):
                                 seq_ids_wo_assign.append(seq_id)
 
                         if len(rci_assignments) > 0:
-                            pass
+                            result = self.__rci.calculate(rci_residues, rci_assignments, oxidized_cys_seq_ids, seq_ids_wo_assign)
+
+                            if 'rci' in result and len(result['rci']) > 0:
+                                result['chain_id'] = chain_id
+
+                                rci.append(result)
 
                 if len(rci) > 0:
                     ent['random_coil_index'] = rci

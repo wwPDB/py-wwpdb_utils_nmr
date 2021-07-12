@@ -124,6 +124,7 @@
 # 29-Jun-2021  M. Yokochi - include auth_asym_id in NMR data processing report (DAOTHER-7108)
 # 29-Jun-2021  M. Yokochi - add support for PyNMRSTAR v3.2.0 (DAOTHER-7107)
 # 02-Jul-2021  M. Yokochi - detect content type of AMBER restraint file and AMBER auxiliary file (DAOTHER-6830, 1901)
+# 12-Jul-2021  M. Yokochi - add RCI validation code for graphical representation of NMR data
 ##
 """ Wrapper class for data processing for NMR data.
     @author: Masashi Yokochi
@@ -16729,7 +16730,7 @@ class NmrDpUtility(object):
 
                                 cif_ps = self.report.getModelPolymerSequenceWithNmrChainId(chain_id)
 
-                                if not cif_ps is None and 'ca_rmsd' in cif_ps:
+                                if not cif_ps is None and 'ca_rmsd' in cif_ps and len(cif_ps['ca_rmsd']) > 0 and 'rmsd_in_well_defined_region' in cif_ps['ca_rmsd'][0]:
                                     rmsd = cif_ps['ca_rmsd'][0]['rmsd_in_well_defined_region']
                                     result['rmsd_in_well_defined_region'] = rmsd
 

@@ -1642,6 +1642,93 @@
               "rotameric_state"
             ]
           }
+        },
+        "random_coil_index": {
+          "description": "Template for Random Coil Index.",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "chain_id": {
+                "description": "Selected chain ID.",
+                "type": "string",
+                "minLength": 1
+              },
+              "seq_id": {
+                "description": "List of unique sequence ID of a chain.",
+                "type": "array",
+                "items": {
+                  "type": "integer"
+                }
+              },
+              "comp_id": {
+                "description": "List of chemical component ID of a chain.",
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "struct_conf": {
+                "description": "List of secondary structure of a chain.",
+                "type": "array",
+                "items": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              },
+              "rci": {
+                "description": "Random Coil Index.",
+                "type": "array",
+                "items": {
+                  "type": [
+                    "number",
+                    "null"
+                  ],
+                  "minimum": 0.0,
+                  "maximum": 1.0
+                }
+              },
+              "nmr_rmsd": {
+                "description": "NMR RMSD prediction.",
+                "type": "array",
+                "items": {
+                  "type": [
+                    "number",
+                    "null"
+                  ],
+                  "minimum": 0.0
+                }
+              },
+              "s2": {
+                "description": "Order parameter prediction.",
+                "type": "array",
+                "items": {
+                  "type": [
+                    "number",
+                    "null"
+                  ],
+                  "minimum": 0.0,
+                  "maximum": 1.0
+                }
+              },
+              "rmsd_in_well_defined_region": {
+                "type": "number"
+              }
+            },
+            "additionalProperties": false,
+            "required": [
+              "chain_id",
+              "seq_id",
+              "comp_id",
+              "struct_conf",
+              "rci",
+              "nmr_rmsd",
+              "s2"
+            ]
+          }
         }
       }
     },

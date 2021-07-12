@@ -16618,12 +16618,22 @@ class NmrDpUtility(object):
 
                         for seq_id, comp_id in zip(s['seq_id'], s['comp_id']):
 
-                            rci_residues.append([comp_id, seq_id])
-
-                            polypeptide_like = self.__csStat.getTypeOfCompId(comp_id)[0]
-
-                            if not polypeptide_like:
-                                continue
+                            if not comp_id in self.empty_value:
+                                if not comp_id in self.monDict3.keys():
+                                    continue
+                                if not self.__csStat.getTypeOfCompId(comp_id)[0]:
+                                    continue
+                                rci_residues.append([comp_id, seq_id])
+                            else:
+                                _comp_id = self.__getCoordCompId(chain_id, seq_id)
+                                if not _comp_id is None:
+                                    if not _comp_id in self.monDict3.keys():
+                                        continue
+                                    if not self.__csStat.getTypeOfCompId(_comp_id)[0]:
+                                        continue
+                                    rci_residues.append([_comp_id, seq_id])
+                                else:
+                                    continue
 
                             has_bb_atoms = False
 
@@ -16710,6 +16720,18 @@ class NmrDpUtility(object):
 
                             if 'rci' in result and len(result['rci']) > 0:
                                 result['chain_id'] = chain_id
+                                result['comp_id'] = [res[0] for res in rci_residues]
+                                struct_conf = self.__extractCoordStructConf(chain_id, s['seq_id'])
+                                result['struct_conf'] = []
+                                for seq_id in result['seq_id']:
+                                    pos = s['seq_id'].index(seq_id)
+                                    result['struct_conf'].append(struct_conf[pos])
+
+                                cif_ps = self.report.getModelPolymerSequenceWithNmrChainId(chain_id)
+
+                                if not cif_ps is None and 'ca_rmsd' in cif_ps:
+                                    rmsd = cif_ps['ca_rmsd'][0]['rmsd_in_well_defined_region']
+                                    result['rmsd_in_well_defined_region'] = rmsd
 
                                 rci.append(result)
 
@@ -20399,14 +20421,14 @@ class NmrDpUtility(object):
 
         nmr_struct_conf = [None] * len(nmr_seq_ids)
 
-        s = self.report.getModelPolymerSequenceWithNmrChainId(nmr_chain_id)
+        cif_ps = self.report.getModelPolymerSequenceWithNmrChainId(nmr_chain_id)
 
-        if s is None:
+        if cif_ps is None:
             return nmr_struct_conf
 
-        cif_chain_id = s['chain_id']
+        cif_chain_id = cif_ps['chain_id']
 
-        if not 'struct_conf' in s:
+        if not 'struct_conf' in cif_ps:
             return nmr_struct_conf
 
         seq_align_dic = self.report.sequence_alignment.get()
@@ -20425,14 +20447,43 @@ class NmrDpUtility(object):
                 if cif_seq_id is None:
                     continue
 
-                if not cif_seq_id in s['seq_id']:
+                if not cif_seq_id in cif_ps['seq_id']:
                     continue
 
-                nmr_struct_conf[nmr_seq_ids.index(nmr_seq_id)] = s['struct_conf'][s['seq_id'].index(cif_seq_id)]
+                nmr_struct_conf[nmr_seq_ids.index(nmr_seq_id)] = cif_ps['struct_conf'][cif_ps['seq_id'].index(cif_seq_id)]
 
         self.__nmr_struct_conf[nmr_chain_id] = nmr_struct_conf
 
         return nmr_struct_conf
+
+    def __getCoordCompId(self, nmr_chain_id, nmr_seq_id):
+        """ Return comp ID of coordinate file for a given NMR sequence.
+        """
+
+        cif_ps = self.report.getModelPolymerSequenceWithNmrChainId(nmr_chain_id)
+
+        if cif_ps is None:
+            return None
+
+        cif_chain_id = cif_ps['chain_id']
+
+        seq_align_dic = self.report.sequence_alignment.get()
+
+        if not has_key_value(seq_align_dic, 'nmr_poly_seq_vs_model_poly_seq'):
+            return None
+
+        result = next((seq_align for seq_align in seq_align_dic['nmr_poly_seq_vs_model_poly_seq'] if seq_align['ref_chain_id'] == nmr_chain_id and seq_align['test_chain_id'] == cif_chain_id), None)
+
+        if not result is None:
+
+            cif_seq_id = next((test_seq_id for ref_seq_id, test_seq_id in zip(result['ref_seq_id'], result['test_seq_id']) if ref_seq_id == nmr_seq_id), None)
+
+            if cif_seq_id is None:
+                return None
+
+            return next((_comp_id for _seq_id, _comp_id in zip(cif_ps['seq_id'], cif_ps['comp_id']) if _seq_id == cif_seq_id), None)
+
+        return None
 
     def __validateCoordInputSource(self):
         """ Validate coordinate file as secondary input resource.
@@ -23904,14 +23955,14 @@ i                               """
             @return: True for cyclic polymer, False otherwise
         """
 
-        s = self.report.getModelPolymerSequenceWithNmrChainId(nmr_chain_id)
+        cif_ps = self.report.getModelPolymerSequenceWithNmrChainId(nmr_chain_id)
 
-        if s is None:
+        if cif_ps is None:
             return False
 
-        cif_chain_id = s['chain_id']
-        beg_cif_seq_id = s['seq_id'][0]
-        end_cif_seq_id = s['seq_id'][-1]
+        cif_chain_id = cif_ps['chain_id']
+        beg_cif_seq_id = cif_ps['seq_id'][0]
+        end_cif_seq_id = cif_ps['seq_id'][-1]
 
         try:
 
@@ -23977,12 +24028,12 @@ i                               """
             @return: True for cis peptide conformer, False otherwise
         """
 
-        s = self.report.getModelPolymerSequenceWithNmrChainId(nmr_chain_id)
+        cif_ps = self.report.getModelPolymerSequenceWithNmrChainId(nmr_chain_id)
 
-        if s is None:
+        if cif_ps is None:
             return False
 
-        cif_chain_id = s['chain_id']
+        cif_chain_id = cif_ps['chain_id']
 
         seq_align_dic = self.report.sequence_alignment.get()
 
@@ -24032,12 +24083,12 @@ i                               """
             @return: One of 'biprotonated', 'tau-tautomer', 'pi-tautomer', 'unknown'
         """
 
-        s = self.report.getModelPolymerSequenceWithNmrChainId(nmr_chain_id)
+        cif_ps = self.report.getModelPolymerSequenceWithNmrChainId(nmr_chain_id)
 
-        if s is None:
+        if cif_ps is None:
             return 'unknown'
 
-        cif_chain_id = s['chain_id']
+        cif_chain_id = cif_ps['chain_id']
 
         seq_align_dic = self.report.sequence_alignment.get()
 
@@ -24113,12 +24164,12 @@ i                               """
 
         none = [{'name': 'chi1', 'unknown': 1.0}]
 
-        s = self.report.getModelPolymerSequenceWithNmrChainId(nmr_chain_id)
+        cif_ps = self.report.getModelPolymerSequenceWithNmrChainId(nmr_chain_id)
 
-        if s is None:
+        if cif_ps is None:
             return none
 
-        cif_chain_id = s['chain_id']
+        cif_chain_id = cif_ps['chain_id']
 
         seq_align_dic = self.report.sequence_alignment.get()
 
@@ -24216,12 +24267,12 @@ i                               """
 
         none = [{'name': 'chi1', 'unknown': 1.0}, {'name': 'chi2', 'unknown': 1.0}]
 
-        s = self.report.getModelPolymerSequenceWithNmrChainId(nmr_chain_id)
+        cif_ps = self.report.getModelPolymerSequenceWithNmrChainId(nmr_chain_id)
 
-        if s is None:
+        if cif_ps is None:
             return none
 
-        cif_chain_id = s['chain_id']
+        cif_chain_id = cif_ps['chain_id']
 
         seq_align_dic = self.report.sequence_alignment.get()
 
@@ -24340,12 +24391,12 @@ i                               """
 
         none = [{'name': 'chi1', 'unknown': 1.0}, {'name': 'chi2', 'unknown': 1.0}]
 
-        s = self.report.getModelPolymerSequenceWithNmrChainId(nmr_chain_id)
+        cif_ps = self.report.getModelPolymerSequenceWithNmrChainId(nmr_chain_id)
 
-        if s is None:
+        if cif_ps is None:
             return none
 
-        cif_chain_id = s['chain_id']
+        cif_chain_id = cif_ps['chain_id']
 
         seq_align_dic = self.report.sequence_alignment.get()
 
@@ -25203,12 +25254,12 @@ i                               """
             @return: the nearest aromatic ring
         """
 
-        s = self.report.getModelPolymerSequenceWithNmrChainId(nmr_chain_id)
+        cif_ps = self.report.getModelPolymerSequenceWithNmrChainId(nmr_chain_id)
 
-        if s is None:
+        if cif_ps is None:
             return None
 
-        cif_chain_id = s['chain_id']
+        cif_chain_id = cif_ps['chain_id']
 
         seq_align_dic = self.report.sequence_alignment.get()
 
@@ -25535,12 +25586,12 @@ i                               """
         if self.report.isDiamagnetic():
             return None
 
-        s = self.report.getModelPolymerSequenceWithNmrChainId(nmr_chain_id)
+        cif_ps = self.report.getModelPolymerSequenceWithNmrChainId(nmr_chain_id)
 
-        if s is None:
+        if cif_ps is None:
             return None
 
-        cif_chain_id = s['chain_id']
+        cif_chain_id = cif_ps['chain_id']
 
         seq_align_dic = self.report.sequence_alignment.get()
 

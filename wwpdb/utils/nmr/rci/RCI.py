@@ -6871,16 +6871,10 @@ class RCI:
                                                                         coef_list.append(coeffabs)
 
                                                                         if valueabs_origin is not None and l_exclude != 1 and abs(coeffabs) > 0.01:
-
                                                                             valueabs = valueabs_origin * item[6]
-
                                                                             if l_exclude != 1 and abs(coeffabs) > 0.01 and valueabs is not None:
                                                                                 if abs(valueabs) < self.floor_value1:
-                                                                                    if valueabs >= 0:
-                                                                                        valueabs = self.floor_value1
-                                                                                    else:
-                                                                                        valueabs = -self.floor_value1
-
+                                                                                    valueabs = self.floor_value1 if valueabs >= 0 else -self.floor_value1
                                                                             valueabs_list.append(valueabs * coeffabs * 5)
 
                                                                         atoms_abs.append(atomabs)
@@ -6906,16 +6900,12 @@ class RCI:
                                                             s_final_again = 0
                                                             if self.termini_corr_flag == 1:
                                                                 CA_CB_CO_HA_all_residues_abs_new = self.__end_effect(CA_CB_CO_HA_all_residues_abs)
-
                                                             elif self.termini_corr_flag == 2:
                                                                 CA_CB_CO_HA_all_residues_abs_new = self.__end_effect2(CA_CB_CO_HA_all_residues_abs)
-
                                                             elif self.termini_corr_flag == 3:
                                                                 CA_CB_CO_HA_all_residues_abs_new = self.__end_effect3(CA_CB_CO_HA_all_residues_abs)
-
                                                             elif self.termini_corr_flag == 4:
                                                                 CA_CB_CO_HA_all_residues_abs_new = self.__end_effect4(CA_CB_CO_HA_all_residues_abs)
-
                                                             elif self.termini_corr_flag == 5:
                                                                 CA_CB_CO_HA_all_residues_abs_new = self.__end_effect5(CA_CB_CO_HA_all_residues_abs)
                                                             else:
@@ -6932,32 +6922,14 @@ class RCI:
                                                                 if s_final_again == 1:
                                                                     s_final_smooth = 3
                                                                     CA_CB_CO_HA_all_residues_abs_fsmooth = self.__final_smoothing(s_final_smooth, CA_CB_CO_HA_all_residues_abs_fsmooth)
-                                                                (
-                                                                    CA_CB_CO_HA_all_residues_abs_corr,
-                                                                    list_of_files,
-                                                                    d_Pearson_coeff,
-                                                                    d_Spearman_coeff,
-                                                                ) = self.__combo(
-                                                                    CA_CB_CO_HA_all_residues_abs_fsmooth,
-                                                                    CA_CB_CO_HA_all_residues_abs_corr,
-                                                                    coeff_list,
-                                                                )
+                                                                CA_CB_CO_HA_all_residues_abs_corr, list_of_files, d_Pearson_coeff, d_Spearman_coeff = self.__combo(CA_CB_CO_HA_all_residues_abs_fsmooth, CA_CB_CO_HA_all_residues_abs_corr, coeff_list)
                                                             else:
-                                                                (
-                                                                    CA_CB_CO_HA_all_residues_abs_corr,
-                                                                    list_of_files,
-                                                                    d_Pearson_coeff,
-                                                                    d_Spearman_coeff,
-                                                                ) = self.__combo(
-                                                                    CA_CB_CO_HA_all_residues_abs_new,
-                                                                    CA_CB_CO_HA_all_residues_abs_corr,
-                                                                    coeff_list,
-                                                                )
+                                                                CA_CB_CO_HA_all_residues_abs_corr, list_of_files, d_Pearson_coeff, d_Spearman_coeff = self.__combo(CA_CB_CO_HA_all_residues_abs_new, CA_CB_CO_HA_all_residues_abs_corr, coeff_list)
 
         all_lists = [CA_CB_CO_HA_all_residues_abs_corr]
 
         len_aa_list = len(self.__bmrb_to_aa_list)
-        ret = {"seq_id": [aa[1] for aa in self.__bmrb_to_aa_list], "rci": [None] * len_aa_list, "nmr_rmsd": [None] * len_aa_list, "s2": [None] * len_aa_list}
+        ret = {'seq_id': [aa[1] for aa in self.__bmrb_to_aa_list], 'rci': [None] * len_aa_list, 'nmr_rmsd': [None] * len_aa_list, 's2': [None] * len_aa_list}
 
         for file in list_of_files:
 
@@ -7003,10 +6975,11 @@ class RCI:
                         nmr_rmsd_out = "%s %s %s" % (dyna_corr_residue_number, dyna_corr_value * 16.44, dyna_corr_residue_name)
                         s2_out = "%s %s %s" % (dyna_corr_residue_number, 1 - (0.4 * log(1 + (dyna_corr_value * 17.7))), dyna_corr_residue_name)
                         """
-                        row_idx = ret["seq_id"].index(dyna_corr_residue_number)
-                        ret["rci"][row_idx] = float('{:.3f}'.format(dyna_corr_value))
-                        ret["nmr_rmsd"][row_idx] = float('{:.3f}'.format(dyna_corr_value * 29.55))
-                        ret["s2"][row_idx] = float('{:.3f}'.format(1 - (0.4 * log(1 + (dyna_corr_value * 17.7)))))
+                        if dyna_corr_residue_number in ret['seq_id']:
+                            row_idx = ret['seq_id'].index(dyna_corr_residue_number)
+                            ret['rci'][row_idx] = float('{:.3f}'.format(dyna_corr_value))
+                            ret['nmr_rmsd'][row_idx] = float('{:.3f}'.format(dyna_corr_value * 29.55))
+                            ret['s2'][row_idx] = float('{:.3f}'.format(1 - (0.4 * log(1 + (dyna_corr_value * 17.7)))))
 
             else:
                 for corr_element in correlation_sorted:
@@ -7020,10 +6993,11 @@ class RCI:
                         nmr_rmsd_out = "%s %s %s" % (dyna_corr_residue_number, dyna_corr_value * 16.44, dyna_corr_residue_name)
                         s2_out = "%s %s %s" % (dyna_corr_residue_number, 1 - (0.4 * log(1 + (dyna_corr_value * 17.7))), dyna_corr_residue_name)
                         """
-                        row_idx = ret["seq_id"].index(dyna_corr_residue_number)
-                        ret["rci"][row_idx] = float('{:.3f}'.format(dyna_corr_value))
-                        ret["nmr_rmsd"][row_idx] = float('{:.3f}'.format(dyna_corr_value * 29.55))
-                        ret["s2"][row_idx] = float('{:.3f}'.format(1 - (0.4 * log(1 + (dyna_corr_value * 17.7)))))
+                        if dyna_corr_residue_number in ret['seq_id']:
+                            row_idx = ret['seq_id'].index(dyna_corr_residue_number)
+                            ret['rci'][row_idx] = float('{:.3f}'.format(dyna_corr_value))
+                            ret['nmr_rmsd'][row_idx] = float('{:.3f}'.format(dyna_corr_value * 29.55))
+                            ret['s2'][row_idx] = float('{:.3f}'.format(1 - (0.4 * log(1 + (dyna_corr_value * 17.7)))))
 
         return ret
 
@@ -7101,7 +7075,6 @@ class RCI:
             l_C_mean = lmean(l_C_end_list)
         if l_N_mean > self.N_term_low and l_N_mean < self.N_term_high:
             l_N_switch = 1
-
         if l_C_mean > self.C_term_low and l_C_mean < self.C_term_high:
             l_C_switch = 1
         for l_item in l_list:
@@ -7143,8 +7116,7 @@ class RCI:
         l_N_switch = l_C_switch = 0
         l_N_end_list = []
         l_C_end_list = []
-        l_N_max = None
-        l_C_max = None
+        l_N_max = l_C_max = None
         for l_item in l_list:
             l_res_num, l_sigma = l_item[0], l_item[2]
             if abs(l_res_num - self.__firstresidue) <= 4: # 4 for DnaB
@@ -7213,10 +7185,8 @@ class RCI:
         """
 
         result_list = []
-        l_N_switch = l_C_switch = 0
         l_N_end_list = []
         l_C_end_list = []
-        l_N_mean = l_C_mean = 9999
         l_N_max = l_N_min = None
         for l_item in l_list:
             l_res_num, l_sigma = l_item[0], l_item[2]
@@ -7268,11 +7238,9 @@ class RCI:
         """
 
         result_list = []
-        l_N_switch = l_C_switch = 0
         l_N_end_list = []
         l_C_end_list = []
-        l_N_mean = l_C_mean = 9999
-        l_N_max = l_N_min = None
+        l_N_max = l_C_max = None
         for l_item in l_list:
             l_res_num, l_sigma = l_item[0], l_item[2]
             if abs(l_res_num - self.__firstresidue) <= 4: # 4 for DnaB
@@ -8235,7 +8203,7 @@ class RCI:
 
         self.__atom_list = self.__write_atom_list()
 
-        self.__real_BMRB_first_res = 999999
+        self.__real_BMRB_first_res = 9999
         self.__real_BMRB_last_res = 0
 
         for atom_type in self.__atom_list:

@@ -6055,11 +6055,6 @@ class RCI:
         if len(L_list) > 0:
             done = 0
             while not done:
-                L_residue_number = None
-                L_residue_name = None
-                L_bmrb_shift = None
-                L_simpred_shift = None
-                L_atom_type = None
                 for L_aa in self.__bmrb_to_aa_list:
                     L_residue_number_found = 0
                     L_residue_number = L_aa[1]
@@ -6073,7 +6068,6 @@ class RCI:
                                 L_chem_shift_diff = L_item[4]
                                 L_chem_shift_diff_abs = L_item[5]
                                 L_atom_type = L_item[6]
-                                chem_shift_diff_len = 0
                                 L_all.append([L_residue_number, L_residue_name, L_bmrb_shift, L_simpred_shift, L_chem_shift_diff, L_chem_shift_diff_abs, L_atom_type])
 
                         if L_residue_number_found == 0 and L_residue_number not in self.__excluded_residues:
@@ -6091,7 +6085,6 @@ class RCI:
                                             L_chem_shift_diff = L_item[4]
                                             L_chem_shift_diff_abs = L_item[5]
                                             L_atom_type = L_item[6]
-                                            chem_shift_diff_len = 0
                                             L_all.append([L_residue_number, L_residue_name, L_bmrb_shift, L_simpred_shift, L_chem_shift_diff, L_chem_shift_diff_abs, L_atom_type])
 
                                     if positive_found == 0:
@@ -6104,7 +6097,6 @@ class RCI:
                                                 L_chem_shift_diff = L_item[4]
                                                 L_chem_shift_diff_abs = L_item[5]
                                                 L_atom_type = L_item[6]
-                                                chem_shift_diff_len = 0
                                                 L_all.append([L_residue_number, L_residue_name, L_bmrb_shift, L_simpred_shift, L_chem_shift_diff, L_chem_shift_diff_abs, L_atom_type])
 
                                     else:
@@ -6124,11 +6116,6 @@ class RCI:
         if len(L_list) > 0:
             done = 0
             while not done:
-                L_residue_number = None
-                L_residue_name = None
-                L_bmrb_shift = None
-                L_simpred_shift = None
-                L_atom_type = None
                 for L_aa in self.__bmrb_to_aa_list:
                     L_residue_number_found = 0
                     L_residue_number = L_aa[1]
@@ -6142,7 +6129,6 @@ class RCI:
                                 L_chem_shift_diff = L_item[4]
                                 L_chem_shift_diff_abs = L_item[5]
                                 L_atom_type = L_item[6]
-                                chem_shift_diff_len = 0
                                 L_all.append([L_residue_number, L_residue_name, L_bmrb_shift, L_simpred_shift, L_chem_shift_diff, L_chem_shift_diff_abs, L_atom_type])
 
                         if L_residue_number_found == 0 and L_residue_number >= self.__real_BMRB_first_res and L_residue_number <= self.__real_BMRB_last_res and L_residue_number not in self.__excluded_residues:
@@ -6182,7 +6168,6 @@ class RCI:
                                 L_chem_shift_diff = pos_neg_list_true_ave
                                 L_chem_shift_diff_abs = pos_neg_list_abs_ave
                                 L_atom_type = L_item[6]
-                                chem_shift_diff_len = 0
                                 L_all.append([L_residue_number, L_residue_name, L_bmrb_shift, L_simpred_shift, L_chem_shift_diff, L_chem_shift_diff_abs, L_atom_type])
 
                             else:

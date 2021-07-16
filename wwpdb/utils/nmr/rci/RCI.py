@@ -7715,7 +7715,7 @@ class RCI:
                     if len(item) > 0:
                         name_of_file = item[0]
                         if name_of_file is filename:
-                            if len(item[1]) < number_of_best_matches:
+                            if len(item[1]) < self.__number_of_best_matches:
                                 if corel_coef not in m_best_ten_coef_corr_true[counter][5]:
                                     m_best_ten_coef_corr_true[counter][1].append(compare_list_corr_true)
                                     m_best_ten_coef_corr_true[counter][5].append(corel_coef)
@@ -8183,7 +8183,7 @@ class RCI:
             self.__smooth_types.append([None, 1, 3, 2])
 
         self.__all_smoothed = []
-        self.__all_atoms_no_smooth = []
+        #self.__all_atoms_no_smooth = []
         self.__all_atoms_no_smooth_gap_fill = []
 
         self.__atom_list = self.__write_atom_list()

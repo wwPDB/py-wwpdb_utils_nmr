@@ -13956,7 +13956,7 @@ class NmrDpUtility(object):
                                         err = "[Check row of %s %s] Peak position of spectral peak %s %s (%s) in %r saveframe is inconsistent with the assigned chemical shift value %s (difference %s, tolerance %s) in %r saveframe." %\
                                               (pk_id_name, i[pk_id_name], cs_value_name, position, self.__getReducedAtomNotation(cs_chain_id_name, chain_id, cs_seq_id_name, seq_id, cs_comp_id_name, comp_id, cs_atom_id_name, atom_id), sf_framecode, value, float('{:.3f}'.format(position - value)), error, cs_list)
 
-                                        if error >= max_cs_error:
+                                        if error >= max_cs_err:
 
                                             self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
                                             self.report.setError()

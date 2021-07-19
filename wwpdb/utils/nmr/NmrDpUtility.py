@@ -126,7 +126,6 @@
 # 02-Jul-2021  M. Yokochi - detect content type of AMBER restraint file and AMBER auxiliary file (DAOTHER-6830, 1901)
 # 12-Jul-2021  M. Yokochi - add RCI validation code for graphical representation of NMR data
 ##
-from rfc3986.validators import is_valid
 """ Wrapper class for data processing for NMR data.
     @author: Masashi Yokochi
 """

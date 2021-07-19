@@ -126,6 +126,7 @@
 # 02-Jul-2021  M. Yokochi - detect content type of AMBER restraint file and AMBER auxiliary file (DAOTHER-6830, 1901)
 # 12-Jul-2021  M. Yokochi - add RCI validation code for graphical representation of NMR data
 ##
+from rfc3986.validators import is_valid
 """ Wrapper class for data processing for NMR data.
     @author: Masashi Yokochi
 """
@@ -157,6 +158,7 @@ from wwpdb.utils.config.ConfigInfoApp import ConfigInfoAppCommon
 from wwpdb.utils.nmr.io.ChemCompIo import ChemCompReader
 from wwpdb.utils.nmr.io.CifReader import CifReader
 from wwpdb.utils.nmr.rci.RCI import RCI
+from wwpdb.utils.nmr.CifToNmrStar import CifToNmrStar
 
 __pynmrstar_v3_2__ = version.parse(pynmrstar.__version__) >= version.parse("3.2.0")
 __pynmrstar_v3_1__ = version.parse(pynmrstar.__version__) >= version.parse("3.1.0")
@@ -715,6 +717,8 @@ class NmrDpUtility(object):
         # whether to use datablock name of public release
         self.__release_mode = False
 
+        # whether to allow empty coordinate file path
+        self.__bmrb_only = False
         # whether not to block deposition because of anomalous cs
         self.__nonblk_anomalous_cs = False
         # whether not to block deposition because bad n-term amino group
@@ -3587,6 +3591,12 @@ class NmrDpUtility(object):
         if not op in self.__workFlowOps:
             raise KeyError("+NmrDpUtility.op() ++ Error  - Unknown workflow operation %s." % op)
 
+        if 'bmrb_only' in self.__inputParamDict and not self.__inputParamDict['bmrb_only'] is None:
+            if type(self.__inputParamDict['bmrb_only']) is bool:
+                self.__bmrb_only = self.__inputParamDict['bmrb_only']
+            else:
+                self.__bmrb_only = self.__inputParamDict['bmrb_only'] in self.true_value
+
         if 'nonblk_anomalous_cs' in self.__inputParamDict and not self.__inputParamDict['nonblk_anomalous_cs'] is None:
             if type(self.__inputParamDict['nonblk_anomalous_cs']) is bool:
                 self.__nonblk_anomalous_cs = self.__inputParamDict['nonblk_anomalous_cs']
@@ -4263,6 +4273,8 @@ class NmrDpUtility(object):
         stop_pattern = re.compile(r'\s*stop_\s*')
         category_pattern = re.compile(r'\s*_(\S*)\..*\s*')
         tagvalue_pattern = re.compile(r'\s*_(\S*)\.(\S*)\s+(.*)\s*')
+        sf_category_pattern = re.compile(r'\s*_\S*\.Sf_category\s*\S+\s*')
+        sf_framecode_pattern = re.compile(r'\s*_\S*\.Sf_framecode\s*\s+\s*')
 
         msg_template = "Saveframe improperly terminated at end of file."
 
@@ -4520,42 +4532,58 @@ class NmrDpUtility(object):
                     if is_cs_cif:
 
                         loop_count = 0
+                        has_sf_category = False
+                        has_sf_framecode = False
 
                         with open(_srcPath, 'r') as ifp:
                             for line in ifp:
                                 if loop_pattern.match(line):
                                     loop_count += 1
+                                elif sf_category_pattern.match(line):
+                                    has_sf_category = True
+                                elif sf_framecode_pattern.match(line):
+                                    has_sf_framecode = True
 
                             ifp.close()
 
-                        in_loop = False
+                        if not has_sf_category and not has_sf_framecode:
 
-                        with open(_srcPath, 'r') as ifp:
-                            with open(_srcPath + '~', 'w') as ofp:
-                                for line in ifp:
-                                    if datablock_pattern.match(line):
-                                        g = datablock_pattern.search(line).groups()
-                                        if loop_count < 2:
-                                            ofp.write('save_%s\n' % g[0])
-                                    elif cif_stop_pattern.match(line):
-                                        if in_loop:
+                            in_loop = False
+
+                            with open(_srcPath, 'r') as ifp:
+                                with open(_srcPath + '~', 'w') as ofp:
+                                    for line in ifp:
+                                        if datablock_pattern.match(line):
+                                            g = datablock_pattern.search(line).groups()
                                             if loop_count < 2:
-                                                ofp.write('stop_\nsave_\n')
+                                                ofp.write('save_%s\n' % g[0])
+                                        elif cif_stop_pattern.match(line):
+                                            if in_loop:
+                                                if loop_count < 2:
+                                                    ofp.write('stop_\nsave_\n')
+                                                else:
+                                                    ofp.write('stop_\n')
                                             else:
-                                                ofp.write('stop_\n')
+                                                ofp.write(line)
+                                            in_loop = False
+                                        elif loop_pattern.match(line):
+                                            in_loop = True
+                                            ofp.write(line)
                                         else:
-                                            ofp.write(line)
-                                        in_loop = False
-                                    elif loop_pattern.match(line):
-                                        in_loop = True
-                                        ofp.write(line)
-                                    else:
-                                        if in_loop or loop_count < 2:
-                                            ofp.write(line)
+                                            if in_loop or loop_count < 2:
+                                                ofp.write(line)
 
-                            _srcPath = ofp.name
+                                _srcPath = ofp.name
+                                tmpPaths.append(_srcPath)
+                                ofp.close()
+
+                        else:
+
+                            cif_to_star = CifToNmrStar()
+                            cif_to_star.convert(_srcPath, _srcPath + '~')
+
+                            _srcPath += '~'
                             tmpPaths.append(_srcPath)
-                            ofp.close()
 
                         ifp.close()
 
@@ -20530,7 +20558,7 @@ class NmrDpUtility(object):
                 if self.__verbose:
                     self.__lfh.write("+NmrDpUtility.__parseCoordinate() ++ Error  - %s\n" % err)
 
-            else:
+            elif not self.__bmrb_only:
 
                 err = "%s formatted coordinate file is mandatory." % self.readable_file_type[file_type]
 

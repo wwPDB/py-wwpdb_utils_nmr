@@ -67,7 +67,7 @@ class CifToNmrStar(object):
 
                 strObj.add_saveframe(sf)
 
-                strObj.write_to_file(strPath, skip_empty_tags=False)
+            strObj.write_to_file(strPath, skip_empty_tags=False)
 
         except Exception as e:
             self.__lfh.write('+ERROR- CifToNmrStar.convert() %s\n' % e)

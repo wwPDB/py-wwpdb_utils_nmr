@@ -12401,7 +12401,7 @@ class NmrDpUtility(object):
                             if self.__csStat.hasEnoughStat(comp_id, polypeptide_like):
                                 tolerance = std_value
 
-                                if (value < min_value - tolerance or value > max_value + tolerance) and sigma > 10.0:
+                                if (value < min_value - tolerance or value > max_value + tolerance) and sigma > (4.5 if self.__bmrb_only else 10.0):
 
                                     na = self.__getNearestAromaticRing(chain_id, seq_id, atom_id_, self.cutoff_aromatic)
                                     pa = self.__getNearestParaFerroMagneticAtom(chain_id, seq_id, atom_id_, self.cutoff_paramagnetic)
@@ -12505,7 +12505,7 @@ class NmrDpUtility(object):
                                                     loop.data[l][details_col] += ('' if '\n' in _details else '\n') + details
                                                 add_details = True
 
-                                elif sigma > 10.0:
+                                elif sigma > (4.5 if self.__bmrb_only else 10.0):
 
                                     na = self.__getNearestAromaticRing(chain_id, seq_id, atom_id_, self.cutoff_aromatic)
                                     pa = self.__getNearestParaFerroMagneticAtom(chain_id, seq_id, atom_id_, self.cutoff_paramagnetic)
@@ -12563,7 +12563,7 @@ class NmrDpUtility(object):
                                             if self.__verbose:
                                                 self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ Warning  - %s\n" % warn)
 
-                                elif sigma > 5.0:
+                                elif sigma > (3.5 if self.__bmrb_only else 5.0):
 
                                     na = self.__getNearestAromaticRing(chain_id, seq_id, atom_id_, self.cutoff_aromatic)
                                     pa = self.__getNearestParaFerroMagneticAtom(chain_id, seq_id, atom_id_, self.cutoff_paramagnetic)
@@ -12622,7 +12622,7 @@ class NmrDpUtility(object):
                             else:
                                 tolerance = std_value * 10.0
 
-                                if min_value < max_value and (value < min_value - tolerance or value > max_value + tolerance) and sigma > 10.0:
+                                if min_value < max_value and (value < min_value - tolerance or value > max_value + tolerance) and sigma > (4.5 if self.__bmrb_only else 10.0):
 
                                     na = self.__getNearestAromaticRing(chain_id, seq_id, atom_id_, self.cutoff_aromatic)
                                     pa = self.__getNearestParaFerroMagneticAtom(chain_id, seq_id, atom_id_, self.cutoff_paramagnetic)
@@ -12730,7 +12730,7 @@ class NmrDpUtility(object):
                                                         loop.data[l][details_col] += ('' if '\n' in _details else '\n') + details
                                                     add_details = True
 
-                                elif sigma > 10.0:
+                                elif sigma > (4.5 if self.__bmrb_only else 10.0):
 
                                     na = self.__getNearestAromaticRing(chain_id, seq_id, atom_id_, self.cutoff_aromatic)
                                     pa = self.__getNearestParaFerroMagneticAtom(chain_id, seq_id, atom_id_, self.cutoff_paramagnetic)
@@ -12852,7 +12852,7 @@ class NmrDpUtility(object):
                             sigma = abs(z_score)
                             tolerance = std_value
 
-                            if (value < min_value - tolerance or value > max_value + tolerance) and sigma > 5.0:
+                            if (value < min_value - tolerance or value > max_value + tolerance) and sigma > (3.5 if self.__bmrb_only else 5.0):
 
                                 na = self.__getNearestAromaticRing(chain_id, seq_id, atom_id_, self.cutoff_aromatic)
                                 pa = self.__getNearestParaFerroMagneticAtom(chain_id, seq_id, atom_id_, self.cutoff_paramagnetic)
@@ -12956,7 +12956,7 @@ class NmrDpUtility(object):
                                                 loop.data[l][details_col] += ('' if '\n' in _details else '\n') + details
                                             add_details = True
 
-                            elif sigma > 5.0: # Set 5.0 to be consistent with validation report
+                            elif sigma > (3.5 if self.__bmrb_only else 5.0): # Set 5.0 to be consistent with validation report
 
                                 na = self.__getNearestAromaticRing(chain_id, seq_id, atom_id_, self.cutoff_aromatic)
                                 pa = self.__getNearestParaFerroMagneticAtom(chain_id, seq_id, atom_id_, self.cutoff_paramagnetic)
@@ -13014,7 +13014,7 @@ class NmrDpUtility(object):
                                         if self.__verbose:
                                             self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ Warning  - %s\n" % warn)
                                 """ Can skip this to be consistent with validation report
-                            elif sigma > 5.0:
+                            elif sigma > (3.5 if self.__bmrb_only else 5.0):
 
                                 na = self.__getNearestAromaticRing(chain_id, seq_id, atom_id_, self.cutoff_aromatic)
                                 pa = self.__getNearestParaFerroMagneticAtom(chain_id, seq_id, atom_id_, self.cutoff_paramagnetic)

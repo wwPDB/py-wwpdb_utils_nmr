@@ -1116,8 +1116,12 @@ class NmrDpUtility(object):
         # criterion on R factor for inconsistent distance restraint
         self.r_inconsistent_dist_restraint = self.r_conflicted_dist_restraint * self.inconsist_over_conflicted
 
-        # criterion on chemical shift error scaled by its sigma
-        self.cs_error_scaled_by_sigma = 8.0
+        # criterion on chemical shift for anomalous value scaled by its sigma
+        self.cs_anomalous_error_scaled_by_sigma = 8.0
+        # criterion on chemical shift for unusual value scaled by its sigma
+        self.cs_unusual_error_scaled_by_sigma = 5.0
+        # criterion on chemical shift difference error scaled by its sigma
+        self.cs_diff_error_scaled_by_sigma = 8.0
 
         # loop index tags
         self.index_tags = {'nef': {'entry_info': None,
@@ -3372,6 +3376,8 @@ class NmrDpUtility(object):
                               'spectral_peak_alt': []
                               }
 
+        #self.__remapped_def_chain_id = {}
+
         # Pairwise align
         self.__pA = PairwiseAlign()
         self.__pA.setVerbose(self.__verbose)
@@ -3595,6 +3601,11 @@ class NmrDpUtility(object):
                 self.__bmrb_only = self.__inputParamDict['bmrb_only']
             else:
                 self.__bmrb_only = self.__inputParamDict['bmrb_only'] in self.true_value
+
+        if self.__bmrb_only:
+            self.cs_anomalous_error_scaled_by_sigma = 4.0
+            self.cs_unusual_error_scaled_by_sigma = 3.5
+            self.cs_diff_error_scaled_by_sigma = 4.0
 
         if 'nonblk_anomalous_cs' in self.__inputParamDict and not self.__inputParamDict['nonblk_anomalous_cs'] is None:
             if type(self.__inputParamDict['nonblk_anomalous_cs']) is bool:
@@ -7924,10 +7935,14 @@ class NmrDpUtility(object):
 
         common_poly_seq = {}
 
+        #primary_ps_list = []
+
         for fileListId in range(self.__file_path_list_len):
 
             input_source = self.report.input_sources[fileListId]
             input_source_dic = input_source.get()
+
+            #file_type = input_source_dic['file_type']
 
             has_poly_seq = has_key_value(input_source_dic, 'polymer_sequence')
             has_poly_seq_in_loop = has_key_value(input_source_dic, 'polymer_sequence_in_loop')
@@ -7947,7 +7962,47 @@ class NmrDpUtility(object):
 
             for ps_in_loop in polymer_sequence_in_loop[content_subtype]:
                 ps = ps_in_loop['polymer_sequence']
+                """
+                if len(primary_ps_list) > 0:
+                    for primary_ps in primary_ps_list:
+                        for primary_s in primary_ps:
+                            last_chain_id = primary_s['chain_id']
 
+                    chain_id_offset = self.__nefT.letter_to_int(last_chain_id);
+
+                    for primary_ps in primary_ps_list:
+                        for primary_s in primary_ps:
+                            primary_chain_id = primary_s['chain_id']
+
+                            s = next((s for s in ps if s['chain_id'] == primary_chain_id), None)
+
+                            if not s is None:
+
+                                _s1 = fill_blank_comp_id_with_offset(primary_s, 0)
+                                _s2 = fill_blank_comp_id_with_offset(s, 0)
+
+                                self.__pA.setReferenceSequence(_s1['comp_id'], 'REF' + chain_id)
+                                self.__pA.addTestSequence(_s2['comp_id'], chain_id)
+                                self.__pA.doAlign()
+
+                                myAlign = self.__pA.getAlignment(chain_id)
+
+                                length = len(myAlign)
+
+                                if length == 0:
+                                    continue
+
+                                _matched, unmapped, conflict, offset_1, offset_2 = score_of_seq_align(myAlign)
+
+                                if length == unmapped + conflict or _matched <= conflict or (len(polymer_sequence) > 1 and _matched < 4 and offset_1 > 0):
+                                    chain_id_offset += 1
+                                    s['chain_id'] = self.__nefT.index_to_letter(chain_id_offset) if file_type == 'nef' else str(chain_id_offset)
+                                    if fileListId in self.__remapped_def_chain_id:
+                                        self.__remapped_def_chain_id[fileListId] = {}
+                                    self.__remapped_def_chain_id[fileListId] = {chain_id: s['chain_id']}
+
+                primary_ps_list.append(ps)
+                """
                 for s in ps:
                     chain_id = s['chain_id']
 
@@ -12401,7 +12456,7 @@ class NmrDpUtility(object):
                             if self.__csStat.hasEnoughStat(comp_id, polypeptide_like):
                                 tolerance = std_value
 
-                                if (value < min_value - tolerance or value > max_value + tolerance) and sigma > (4.5 if self.__bmrb_only else 10.0):
+                                if (value < min_value - tolerance or value > max_value + tolerance) and sigma > self.cs_anomalous_error_scaled_by_sigma:
 
                                     na = self.__getNearestAromaticRing(chain_id, seq_id, atom_id_, self.cutoff_aromatic)
                                     pa = self.__getNearestParaFerroMagneticAtom(chain_id, seq_id, atom_id_, self.cutoff_paramagnetic)
@@ -12505,7 +12560,7 @@ class NmrDpUtility(object):
                                                     loop.data[l][details_col] += ('' if '\n' in _details else '\n') + details
                                                 add_details = True
 
-                                elif sigma > (4.5 if self.__bmrb_only else 10.0):
+                                elif sigma > self.cs_anomalous_error_scaled_by_sigma:
 
                                     na = self.__getNearestAromaticRing(chain_id, seq_id, atom_id_, self.cutoff_aromatic)
                                     pa = self.__getNearestParaFerroMagneticAtom(chain_id, seq_id, atom_id_, self.cutoff_paramagnetic)
@@ -12563,7 +12618,7 @@ class NmrDpUtility(object):
                                             if self.__verbose:
                                                 self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ Warning  - %s\n" % warn)
 
-                                elif sigma > (3.5 if self.__bmrb_only else 5.0):
+                                elif sigma > self.cs_unusual_error_scaled_by_sigma:
 
                                     na = self.__getNearestAromaticRing(chain_id, seq_id, atom_id_, self.cutoff_aromatic)
                                     pa = self.__getNearestParaFerroMagneticAtom(chain_id, seq_id, atom_id_, self.cutoff_paramagnetic)
@@ -12622,7 +12677,7 @@ class NmrDpUtility(object):
                             else:
                                 tolerance = std_value * 10.0
 
-                                if min_value < max_value and (value < min_value - tolerance or value > max_value + tolerance) and sigma > (4.5 if self.__bmrb_only else 10.0):
+                                if min_value < max_value and (value < min_value - tolerance or value > max_value + tolerance) and sigma > self.cs_anomalous_error_scaled_by_sigma:
 
                                     na = self.__getNearestAromaticRing(chain_id, seq_id, atom_id_, self.cutoff_aromatic)
                                     pa = self.__getNearestParaFerroMagneticAtom(chain_id, seq_id, atom_id_, self.cutoff_paramagnetic)
@@ -12730,7 +12785,7 @@ class NmrDpUtility(object):
                                                         loop.data[l][details_col] += ('' if '\n' in _details else '\n') + details
                                                     add_details = True
 
-                                elif sigma > (4.5 if self.__bmrb_only else 10.0):
+                                elif sigma > self.cs_anomalous_error_scaled_by_sigma:
 
                                     na = self.__getNearestAromaticRing(chain_id, seq_id, atom_id_, self.cutoff_aromatic)
                                     pa = self.__getNearestParaFerroMagneticAtom(chain_id, seq_id, atom_id_, self.cutoff_paramagnetic)
@@ -12852,7 +12907,7 @@ class NmrDpUtility(object):
                             sigma = abs(z_score)
                             tolerance = std_value
 
-                            if (value < min_value - tolerance or value > max_value + tolerance) and sigma > (3.5 if self.__bmrb_only else 5.0):
+                            if (value < min_value - tolerance or value > max_value + tolerance) and sigma > self.cs_unusual_error_scaled_by_sigma:
 
                                 na = self.__getNearestAromaticRing(chain_id, seq_id, atom_id_, self.cutoff_aromatic)
                                 pa = self.__getNearestParaFerroMagneticAtom(chain_id, seq_id, atom_id_, self.cutoff_paramagnetic)
@@ -12956,7 +13011,7 @@ class NmrDpUtility(object):
                                                 loop.data[l][details_col] += ('' if '\n' in _details else '\n') + details
                                             add_details = True
 
-                            elif sigma > (3.5 if self.__bmrb_only else 5.0): # Set 5.0 to be consistent with validation report
+                            elif sigma > self.cs_unusual_error_scaled_by_sigma: # Set 5.0 to be consistent with validation report
 
                                 na = self.__getNearestAromaticRing(chain_id, seq_id, atom_id_, self.cutoff_aromatic)
                                 pa = self.__getNearestParaFerroMagneticAtom(chain_id, seq_id, atom_id_, self.cutoff_paramagnetic)
@@ -13014,7 +13069,7 @@ class NmrDpUtility(object):
                                         if self.__verbose:
                                             self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ Warning  - %s\n" % warn)
                                 """ Can skip this to be consistent with validation report
-                            elif sigma > (3.5 if self.__bmrb_only else 5.0):
+                            elif sigma > self.cs_unusual_error_scaled_by_sigma:
 
                                 na = self.__getNearestAromaticRing(chain_id, seq_id, atom_id_, self.cutoff_aromatic)
                                 pa = self.__getNearestParaFerroMagneticAtom(chain_id, seq_id, atom_id_, self.cutoff_paramagnetic)
@@ -13605,10 +13660,10 @@ class NmrDpUtility(object):
                                     if value in self.empty_value:
                                         continue
 
-                                    if error is None or error < 1.0e-3 or error * self.cs_error_scaled_by_sigma > max_cs_err:
+                                    if error is None or error < 1.0e-3 or error * self.cs_diff_error_scaled_by_sigma > max_cs_err:
                                         error = max_cs_err
                                     else:
-                                        error *= self.cs_error_scaled_by_sigma
+                                        error *= self.cs_diff_error_scaled_by_sigma
 
                                     if abs(position - value) > error:
 
@@ -13969,10 +14024,10 @@ class NmrDpUtility(object):
                                 if value in self.empty_value:
                                     continue
 
-                                if error is None or error < 1.0e-3 or error * self.cs_error_scaled_by_sigma > max_cs_err:
+                                if error is None or error < 1.0e-3 or error * self.cs_diff_error_scaled_by_sigma > max_cs_err:
                                     error = max_cs_err
                                 else:
-                                    error *= self.cs_error_scaled_by_sigma
+                                    error *= self.cs_diff_error_scaled_by_sigma
 
                                 if abs(position - value) > error:
 

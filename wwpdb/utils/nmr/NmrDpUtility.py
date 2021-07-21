@@ -5908,16 +5908,18 @@ class NmrDpUtility(object):
 
                 if not sf_category is None and not sf_category in self.sf_categories[file_type].values():
 
-                    if file_type == 'nef':
-                        warn = "Ignored third party software's saveframe %r." % sf_category
-                    else:
-                        warn = "Ignored saveframe category %r." % sf_category
+                    if not self.__bmrb_only:
 
-                    self.report.warning.appendDescription('skipped_saveframe_category', {'file_name': file_name, 'sf_category': sf_category, 'description': warn})
-                    self.report.setWarning()
+                        if file_type == 'nef':
+                            warn = "Ignored third party software's saveframe %r." % sf_category
+                        else:
+                            warn = "Ignored saveframe category %r." % sf_category
 
-                    if self.__verbose:
-                        self.__lfh.write("+NmrDpUtility.__detectContentSubType() ++ Warning  - %s\n" % warn)
+                        self.report.warning.appendDescription('skipped_saveframe_category', {'file_name': file_name, 'sf_category': sf_category, 'description': warn})
+                        self.report.setWarning()
+
+                        if self.__verbose:
+                            self.__lfh.write("+NmrDpUtility.__detectContentSubType() ++ Warning  - %s\n" % warn)
 
             # initialize loop counter
             lp_counts = {t: 0 for t in self.nmr_content_subtypes}
@@ -11626,35 +11628,39 @@ class NmrDpUtility(object):
 
                         elif lp_category in self.linked_lp_categories[file_type][content_subtype]:
 
-                            warn = "Ignored %r loop in %r saveframe." % (lp_category, sf_framecode)
+                            if not self.__bmrb_only:
 
-                            self.report.warning.appendDescription('skipped_loop_category', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
-                            self.report.setWarning()
+                                warn = "Ignored %r loop in %r saveframe." % (lp_category, sf_framecode)
 
-                            if self.__verbose:
-                                self.__lfh.write("+NmrDpUtility.__testDataConsistencyInAuxLoop() ++ Warning  - %s\n" % warn)
+                                self.report.warning.appendDescription('skipped_loop_category', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
+                                self.report.setWarning()
+
+                                if self.__verbose:
+                                    self.__lfh.write("+NmrDpUtility.__testDataConsistencyInAuxLoop() ++ Warning  - %s\n" % warn)
 
                         else:
 
-                            if file_type == 'nef':
-                                warn = "Ignored third party software's loop %r in %r saveframe." % (lp_category, sf_framecode)
-                            else:
-                                warn = "Ignored %r loop in %r saveframe." % (lp_category, sf_framecode)
+                            if not self.__bmrb_only:
 
-                            self.report.warning.appendDescription('skipped_loop_category', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
-                            self.report.setWarning()
+                                if file_type == 'nef':
+                                    warn = "Ignored third party software's loop %r in %r saveframe." % (lp_category, sf_framecode)
+                                else:
+                                    warn = "Ignored %r loop in %r saveframe." % (lp_category, sf_framecode)
 
-                            if self.__verbose:
-                                self.__lfh.write("+NmrDpUtility.__testDataConsistencyInAuxLoop() ++ Warning  - %s\n" % warn)
-                            """
-                            err = "%r loop exists unexpectedly." % lp_category
+                                self.report.warning.appendDescription('skipped_loop_category', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
+                                self.report.setWarning()
 
-                            self.report.error.appendDescription('format_issue', {'file_name': file_name, 'sf_framecode': sf_framecode, 'description': err})
-                            self.report.setError()
+                                if self.__verbose:
+                                    self.__lfh.write("+NmrDpUtility.__testDataConsistencyInAuxLoop() ++ Warning  - %s\n" % warn)
+                                """
+                                err = "%r loop exists unexpectedly." % lp_category
 
-                            if self.__verbose:
-                                self.__lfh.write("+NmrDpUtility.__testDataConsistencyInAuxLoop() ++ Error  - %s\n" % err)
-                            """
+                                self.report.error.appendDescription('format_issue', {'file_name': file_name, 'sf_framecode': sf_framecode, 'description': err})
+                                self.report.setError()
+
+                                if self.__verbose:
+                                    self.__lfh.write("+NmrDpUtility.__testDataConsistencyInAuxLoop() ++ Error  - %s\n" % err)
+                                """
         return self.report.getTotalErrors() == __errors
 
     def __testDataConsistencyInAuxLoopOfSpectralPeak(self, file_name, file_type, sf_framecode, num_dim, lp_category, aux_data):
@@ -20781,8 +20787,14 @@ class NmrDpUtility(object):
             try:
                 poly_seq = self.__cR.getPolymerSequence(lp_category, key_items, withStructConf=True, alias=alias, total_models=self.__total_models)
             except KeyError: # pdbx_PDB_ins_code throws KeyError
-                key_items = self.key_items[file_type][content_subtype + ('_ins_alias' if alias else '_ins')]
-                poly_seq = self.__cR.getPolymerSequence(lp_category, key_items, withStructConf=True, alias=alias, total_models=self.__total_models)
+                if content_subtype + ('_ins_alias' if alias else '_ins') in self.key_items[file_type]:
+                    key_items = self.key_items[file_type][content_subtype + ('_ins_alias' if alias else '_ins')]
+                    poly_seq = self.__cR.getPolymerSequence(lp_category, key_items, withStructConf=True, alias=alias, total_models=self.__total_models)
+                else:
+                    poly_seq = []
+
+            if len(poly_seq) == 0:
+                return False
 
             input_source.setItemValue('polymer_sequence', poly_seq)
 
@@ -20920,8 +20932,11 @@ class NmrDpUtility(object):
             try:
                 non_poly = self.__cR.getPolymerSequence(lp_category, key_items)
             except KeyError: # pdbx_PDB_ins_code throws KeyError
-                key_items = self.key_items[file_type][content_subtype + ('_ins_alias' if alias else '_ins')]
-                non_poly = self.__cR.getPolymerSequence(lp_category, key_items)
+                if content_subtype + ('_ins_alias' if alias else '_ins') in self.key_items[file_type]:
+                    key_items = self.key_items[file_type][content_subtype + ('_ins_alias' if alias else '_ins')]
+                    non_poly = self.__cR.getPolymerSequence(lp_category, key_items)
+                else:
+                    non_poly = []
 
             if len(non_poly) > 0:
 
@@ -21029,8 +21044,11 @@ class NmrDpUtility(object):
                 try:
                     poly_seq = self.__cR.getPolymerSequence(lp_category, key_items)
                 except KeyError: # pdbx_PDB_ins_code throws KeyError
-                    key_items = self.key_items[file_type][content_subtype + ('_ins_alias' if alias else '_ins')]
-                    poly_seq = self.__cR.getPolymerSequence(lp_category, key_items)
+                    if content_subtype + ('_ins_alias' if alias else '_ins') in self.key_items[file_type]:
+                        key_items = self.key_items[file_type][content_subtype + ('_ins_alias' if alias else '_ins')]
+                        poly_seq = self.__cR.getPolymerSequence(lp_category, key_items)
+                    else:
+                        poly_seq = []
 
                 if len(poly_seq) > 0:
 
@@ -23994,11 +24012,21 @@ i                               """
 
         try:
 
-            struct_conn = self.__cR.getDictListWithFilter('struct_conn',
+            if not self.__bmrb_only:
+                struct_conn = self.__cR.getDictListWithFilter('struct_conn',
                                                           [{'name': 'conn_type_id', 'type': 'str'}
                                                            ],
                                                           [{'name': 'pdbx_leaving_atom_flag', 'type': 'str', 'value': 'both'},
                                                            {'name': 'ptnr1_label_asym_id', 'type': 'str', 'value': cif_chain_id},
+                                                           {'name': 'ptnr2_label_asym_id', 'type': 'str', 'value': cif_chain_id},
+                                                           {'name': 'ptnr1_label_seq_id', 'type': 'int', 'value': beg_cif_seq_id},
+                                                           {'name': 'ptnr2_label_seq_id', 'type': 'int', 'value': end_cif_seq_id},
+                                                           ])
+            else:
+                struct_conn = self.__cR.getDictListWithFilter('struct_conn',
+                                                          [{'name': 'conn_type_id', 'type': 'str'}
+                                                           ],
+                                                          [{'name': 'ptnr1_label_asym_id', 'type': 'str', 'value': cif_chain_id},
                                                            {'name': 'ptnr2_label_asym_id', 'type': 'str', 'value': cif_chain_id},
                                                            {'name': 'ptnr1_label_seq_id', 'type': 'int', 'value': beg_cif_seq_id},
                                                            {'name': 'ptnr2_label_seq_id', 'type': 'int', 'value': end_cif_seq_id},

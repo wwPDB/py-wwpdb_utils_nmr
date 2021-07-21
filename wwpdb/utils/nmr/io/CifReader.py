@@ -354,7 +354,7 @@ class CifReader(object):
 
                 entity_poly = self.getDictList('entity_poly')
 
-                type = next((e['type'] for e in entity_poly if c in e['pdbx_strand_id'].split(',')), None)
+                type = next((e['type'] for e in entity_poly if 'pdbx_strand_id' in e and c in e['pdbx_strand_id'].split(',')), None)
 
                 if not type is None:
                     ent['type'] = type

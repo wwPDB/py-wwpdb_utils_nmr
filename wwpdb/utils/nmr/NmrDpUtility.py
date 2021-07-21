@@ -5214,7 +5214,7 @@ class NmrDpUtility(object):
         file_name = input_source_dic['file_name']
         file_type = input_source_dic['file_type']
 
-        if file_type != 'nef' or self.__star_data[file_list_id] is None:
+        if file_type != 'nef' or file_list_id >= len(self.__star_data) or self.__star_data[file_list_id] is None:
             return False
 
         if self.__combined_mode or self.__star_data_type[file_list_id] == 'Entry':
@@ -5559,7 +5559,7 @@ class NmrDpUtility(object):
         file_name = input_source_dic['file_name']
         file_type = input_source_dic['file_type']
 
-        if file_type != 'nmr-star' or self.__star_data[file_list_id] is None:
+        if file_type != 'nmr-star' or file_list_id >= len(self.__star_data) or self.__star_data[file_list_id] is None:
             return False
 
         if self.__combined_mode or self.__star_data_type[file_list_id] == 'Entry':

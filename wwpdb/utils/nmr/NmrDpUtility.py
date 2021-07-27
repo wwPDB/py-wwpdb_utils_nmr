@@ -9866,6 +9866,17 @@ class NmrDpUtility(object):
             if not has_poly_seq_in_loop:
                 continue
 
+            polymer_sequence = input_source_dic['polymer_sequence']
+
+            first_comp_ids = set()
+
+            if not polymer_sequence is None:
+                for s in polymer_sequence:
+                    first_comp_id = s['comp_id'][0]
+
+                    if self.__csStat.getTypeOfCompId(first_comp_id)[0]:
+                        first_comp_ids.add(first_comp_id)
+
             polymer_sequence_in_loop = input_source_dic['polymer_sequence_in_loop']
 
             content_subtypes = ['poly_seq']
@@ -9890,14 +9901,14 @@ class NmrDpUtility(object):
                     sf_data = self.__star_data[fileListId]
                     sf_framecode = ''
 
-                    self.__validateAtomNomenclature__(file_name, file_type, content_subtype, sf_data, sf_framecode, lp_category)
+                    self.__validateAtomNomenclature__(file_name, file_type, content_subtype, sf_data, sf_framecode, lp_category, first_comp_ids)
 
                 elif self.__star_data_type[fileListId] == 'Saveframe':
 
                     sf_data = self.__star_data[fileListId]
                     sf_framecode = get_first_sf_tag(sf_data, 'sf_framecode')
 
-                    self.__validateAtomNomenclature__(file_name, file_type, content_subtype, sf_data, sf_framecode, lp_category)
+                    self.__validateAtomNomenclature__(file_name, file_type, content_subtype, sf_data, sf_framecode, lp_category, first_comp_ids)
 
                 else:
 
@@ -9908,7 +9919,7 @@ class NmrDpUtility(object):
                         if not any(loop for loop in sf_data.loops if loop.category == lp_category):
                             continue
 
-                        self.__validateAtomNomenclature__(file_name, file_type, content_subtype, sf_data, sf_framecode, lp_category)
+                        self.__validateAtomNomenclature__(file_name, file_type, content_subtype, sf_data, sf_framecode, lp_category, first_comp_ids)
 
         return not self.report.isError()
 
@@ -9950,7 +9961,7 @@ class NmrDpUtility(object):
         else:
             return self.__nefT.get_star_atom(comp_id, atom_id, leave_unmatched=leave_unmatched)
 
-    def __validateAtomNomenclature__(self, file_name, file_type, content_subtype, sf_data, sf_framecode, lp_category):
+    def __validateAtomNomenclature__(self, file_name, file_type, content_subtype, sf_data, sf_framecode, lp_category, first_comp_ids):
         """ Validate atom nomenclature using NEFTranslator and CCD.
         """
 
@@ -9978,6 +9989,9 @@ class NmrDpUtility(object):
                             _atom_id = self.__nefT.get_star_atom(comp_id, atom_id, leave_unmatched=False)[0]
 
                             if len(_atom_id) == 0:
+
+                                if self.__nonblk_bad_nterm and atom_id == 'H1' and comp_id in first_comp_ids:
+                                    continue
 
                                 err = "Invalid atom_id %r (comp_id %s) in a loop %s." % (atom_id, comp_id, lp_category)
 
@@ -10035,6 +10049,9 @@ class NmrDpUtility(object):
                                     self.__lfh.write("+NmrDpUtility.__validateAtomNomenclature() ++ Warning  - %s\n" % warn)
 
                                 self.__fixAtomNomenclature(comp_id, {_atom_id_1: _atom_id_2, _atom_id_2: _atom_id_3})
+
+                            elif self.__nonblk_bad_nterm and atom_id == 'H1' and comp_id in first_comp_ids:
+                                pass
 
                             else:
 
@@ -10134,6 +10151,9 @@ class NmrDpUtility(object):
 
                                 if len(_auth_atom_id) == 0:
 
+                                    if self.__nonblk_bad_nterm and auth_atom_id == 'H1' and comp_id in first_comp_ids:
+                                        continue
+
                                     warn = "Unmatched Auth_atom_ID %r (Auth_comp_ID %s)." % (auth_atom_id, comp_id)
 
                                     self.report.warning.appendDescription('auth_atom_nomenclature_mismatch', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
@@ -10150,6 +10170,9 @@ class NmrDpUtility(object):
                             for auth_atom_id in auth_atom_ids:
 
                                 if not self.__nefT.validate_comp_atom(comp_id, auth_atom_id):
+
+                                    if self.__nonblk_bad_nterm and auth_atom_id == 'H1' and comp_id in first_comp_ids:
+                                        continue
 
                                     warn = "Unmatched Auth_atom_ID %r (Auth_comp_ID %s)." % (auth_atom_id, comp_id)
 
@@ -10174,19 +10197,29 @@ class NmrDpUtility(object):
 
                                 if (set(auth_atom_ids) | set(atom_ids)) != set(atom_ids):
 
-                                    warn = "Unmatched Auth_atom_ID %r (Auth_comp_ID %s, non-standard residue)." % ((set(auth_atom_ids) | set(atom_ids)) - set(atom_ids), comp_id)
+                                    for auth_atom_id in (set(auth_atom_ids) | set(atom_ids)) - set(atom_ids):
 
-                                    self.report.warning.appendDescription('auth_atom_nomenclature_mismatch', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
-                                    self.report.setWarning()
+                                        if self.__nonblk_bad_nterm and auth_atom_id == 'H1' and comp_id in first_comp_ids:
+                                            continue
 
-                                    if self.__verbose:
-                                        self.__lfh.write("+NmrDpUtility.__validateAtomNomenclature() ++ Warning  - %s\n" % warn)
+                                        warn = "Unmatched Auth_atom_ID %r (Auth_comp_ID %s, non-standard residue)." % (auth_atom_id, comp_id)
+
+                                        self.report.warning.appendDescription('auth_atom_nomenclature_mismatch', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
+                                        self.report.setWarning()
+
+                                        if self.__verbose:
+                                            self.__lfh.write("+NmrDpUtility.__validateAtomNomenclature() ++ Warning  - %s\n" % warn)
 
                                 break
 
                             if not has_comp_id:
 
-                                    warn = "Unmatched Auth_atom_ID %r (Auth_comp_ID %s, non-standard residue)." % (auth_atom_ids, comp_id)
+                                for auth_atom_id in auth_atom_ids:
+
+                                    if self.__nonblk_bad_nterm and auth_atom_id == 'H1' and comp_id in first_comp_ids:
+                                        continue
+
+                                    warn = "Unmatched Auth_atom_ID %r (Auth_comp_ID %s, non-standard residue)." % (auth_atom_id, comp_id)
 
                                     self.report.warning.appendDescription('auth_atom_nomenclature_mismatch', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
                                     self.report.setWarning()

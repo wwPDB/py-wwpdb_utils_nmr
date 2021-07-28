@@ -8842,7 +8842,7 @@ class NmrDpUtility(object):
                             if not self.__combined_mode and input_source_dic['non_standard_residue'] is None: # no polymer sequence
                                 has_non_std_comp_id = False
                                 for j in range(len(ref_code)):
-                                    if ref_code[j] == 'X' and test_code[j] == 'X':
+                                    if ref_code[j] == 'X' and j < len(test_code) and test_code[j] == 'X':
                                         has_non_std_comp_id = True
                                         break
 
@@ -9160,7 +9160,7 @@ class NmrDpUtility(object):
                             if not self.__combined_mode and input_source_dic['non_standard_residue'] is None: # no polymer sequence
                                 has_non_std_comp_id = False
                                 for j in range(len(ref_code)):
-                                    if ref_code[j] == 'X' and test_code[j] == 'X':
+                                    if ref_code[j] == 'X' and j < len(test_code) and test_code[j] == 'X':
                                         has_non_std_comp_id = True
                                         break
 
@@ -22086,7 +22086,7 @@ class NmrDpUtility(object):
                     chain_id2 = cif_polymer_sequence[column]['chain_id']
 
                     result = next(seq_align for seq_align in seq_align_dic['nmr_poly_seq_vs_model_poly_seq'] if seq_align['ref_chain_id'] == chain_id and seq_align['test_chain_id'] == chain_id2)
-                    _result = next(seq_align for seq_align in seq_align_dic['model_poly_seq_vs_nmr_poly_seq'] if seq_align['ref_chain_id'] == chain_id2 and seq_align['test_chain_id'] == chain_id)
+                    _result = next((seq_align for seq_align in seq_align_dic['model_poly_seq_vs_nmr_poly_seq'] if seq_align['ref_chain_id'] == chain_id2 and seq_align['test_chain_id'] == chain_id), None)
 
                     chain_assign = {'ref_chain_id': chain_id, 'test_chain_id': chain_id2, 'length': result['length'], 'matched': result['matched'], 'conflict': result['conflict'], 'unmapped': result['unmapped'], 'sequence_coverage': result['sequence_coverage']}
 
@@ -22366,8 +22366,9 @@ i                               """
                             result['conflict'] = chain_assign['conflict']
                             result['unmapped'] = chain_assign['unmapped']
 
-                            _result['conflict'] = chain_assign['conflict']
-                            _result['unmapped'] = chain_assign['unmapped']
+                            if not _result is None:
+                                _result['conflict'] = chain_assign['conflict']
+                                _result['unmapped'] = chain_assign['unmapped']
 
                     chain_assign_set.append(chain_assign)
 

@@ -6001,7 +6001,7 @@ class NmrDpUtility(object):
                 if self.__verbose:
                     self.__lfh.write("+NmrDpUtility.__detectContentSubType() ++ Error  - %s\n" % err)
 
-            if lp_counts[content_subtype] > 0 and content_type == 'nmr-restraints':
+            if lp_counts[content_subtype] > 0 and content_type == 'nmr-restraints' and not self.__bmrb_only:
 
                 err = "NMR restraint file includes assigned chemical shifts. Please re-upload the %s file as an NMR combined data file." % file_type.upper()
 
@@ -6026,7 +6026,7 @@ class NmrDpUtility(object):
                 if self.__verbose:
                     self.__lfh.write("+NmrDpUtility.__detectContentSubType() ++ Error  - %s\n" % err)
 
-            if (lp_counts['dist_restraint'] > 0 or lp_counts['dihed_restraint'] or lp_counts['rdc_restraint']) and content_type == 'nmr-chemical-shifts':
+            if (lp_counts['dist_restraint'] > 0 or lp_counts['dihed_restraint'] or lp_counts['rdc_restraint']) and content_type == 'nmr-chemical-shifts' and not self.__bmrb_only:
 
                 err = "The assigned chemical shift file includes NMR restraints. Please re-upload the %s file as an NMR combined data file." % file_type.upper()
 
@@ -6048,7 +6048,7 @@ class NmrDpUtility(object):
                 if self.__verbose:
                     self.__lfh.write("+NmrDpUtility.__detectContentSubType() ++ Warning  - %s\n" % warn)
 
-            if has_spectral_peak and content_type == 'nmr-chemical-shifts':
+            if has_spectral_peak and content_type == 'nmr-chemical-shifts' and not self.__bmrb_only:
 
                 err = "The assigned chemical shift file includes spectral peak lists. Please re-upload the %s file as an NMR combined data file." % file_type.upper()
 
@@ -11962,7 +11962,7 @@ class NmrDpUtility(object):
 
                         j = i[dim_id_name] - 1
 
-                        if min_points[j] is None or max_points[j] is None:
+                        if j >= num_dim or min_points[j] is None or max_points[j] is None:
                             continue
 
                         position = i[position_name]
@@ -14066,7 +14066,7 @@ class NmrDpUtility(object):
 
                                 if abs(position - value) > error:
 
-                                    if not abs_pk_pos[d] and not sp_widths[d] is None:
+                                    if d < num_dim and not abs_pk_pos[d] and not sp_widths[d] is None:
                                         if position < value:
                                             while position < value:
                                                 position += sp_widths[d]
@@ -14097,7 +14097,7 @@ class NmrDpUtility(object):
 
                                 axis_code = str(cs[cs_iso_number]) + cs[cs_atom_type]
 
-                                if not aux_data is None and axis_code != axis_codes[d]:
+                                if not aux_data is None and d < num_dim and axis_code != axis_codes[d]:
 
                                     err = '[Check row of %s %s] Assignment of spectral peak %s is inconsistent with axis code %s vs %s.' %\
                                           (pk_id_name, i[pk_id_name], self.__getReducedAtomNotation(cs_chain_id_name, chain_id, cs_seq_id_name, seq_id, cs_comp_id_name, comp_id, cs_atom_id_name, atom_id), axis_code, axis_codes[d])
@@ -14119,7 +14119,7 @@ class NmrDpUtility(object):
                                 if self.__verbose:
                                     self.__lfh.write("+NmrDpUtility.__testCSValueConsistencyInPkAltLoop() ++ ValueError  - %s\n" % err)
 
-                            if True in onebond[d]:
+                            if d < num_dim and True in onebond[d]:
                                 for d2 in range(num_dim):
                                     if onebond[d][d2]:
 
@@ -14151,7 +14151,7 @@ class NmrDpUtility(object):
                                             if self.__verbose:
                                                 self.__lfh.write("+NmrDpUtility.__testCSValueConsistencyInPkAltLoop() ++ ValueError  - %s\n" % err)
 
-                            if True in jcoupling[d]:
+                            if d < num_dim and True in jcoupling[d]:
                                 for d2 in range(num_dim):
                                     if jcoupling[d][d2]:
 
@@ -14178,7 +14178,7 @@ class NmrDpUtility(object):
                                             if self.__verbose:
                                                 self.__lfh.write("+NmrDpUtility.__testCSValueConsistencyInPkAltLoop() ++ ValueError  - %s\n" % err)
 
-                            if True in relayed[d]:
+                            if d < num_dim and True in relayed[d]:
                                 for d2 in range(num_dim):
                                     if relayed[d][d2]:
 

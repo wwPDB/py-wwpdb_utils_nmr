@@ -19,10 +19,12 @@ __license__   = "Creative Commons Attribution 3.0 Unported"
 __version__   = "V0.01"
 
 
-import sys,time,os,traceback
+import sys,os,traceback
 from mmcif.io.PdbxReader import PdbxReader
-from mmcif.io.PdbxWriter import PdbxWriter
 from mmcif.api.PdbxContainers import *
+from wwpdb.utils.config.ConfigInfo import ConfigInfo
+from wwpdb.utils.config.ConfigInfoApp import ConfigInfoAppCommon
+from wwpdb.io.locator.ChemRefPathInfo import ChemRefPathInfo
 
 class ChemCompReader(object):
     ''' Accessor methods chemical component definition data files.

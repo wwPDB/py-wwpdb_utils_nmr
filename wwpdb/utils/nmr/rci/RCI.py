@@ -6218,7 +6218,7 @@ class RCI:
         L_start = 0
         L_end = L_smooth[2]
         L_length = len(L_list)
-        if len(L_list) > 0:
+        if len(L_list) > 1:
             ####################################################
             # Smoothing N_terminus
             ####################################################
@@ -7307,7 +7307,7 @@ class RCI:
 
         L_start = 0
         L_end = L_smooth
-        if len(L_list) > 0:
+        if len(L_list) > 1:
             ####################################################
             # Smoothing N_terminus
             ####################################################

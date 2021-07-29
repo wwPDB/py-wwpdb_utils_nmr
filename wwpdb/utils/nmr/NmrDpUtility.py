@@ -13547,7 +13547,7 @@ class NmrDpUtility(object):
                 abs_pk_pos = []
                 sp_widths = []
 
-                if not aux_data is None:
+                if not aux_data is None and len(aux_data) > 0:
                     for i in range(1, max_dim):
                         for sp_dim in aux_data:
                             if file_type == 'nef':
@@ -13941,7 +13941,7 @@ class NmrDpUtility(object):
                 abs_pk_pos = []
                 sp_widths = []
 
-                if not aux_data is None:
+                if not aux_data is None and len(aux_data) > 0:
                     for i in range(1, max_dim):
                         for sp_dim in aux_data:
                             if sp_dim['ID'] != i:

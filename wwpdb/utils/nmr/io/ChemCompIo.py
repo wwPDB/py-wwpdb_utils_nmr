@@ -38,6 +38,11 @@ class ChemCompReader(object):
         self.__ccU=None
         self.__filePath=None
         #
+        self.__cI = ConfigInfo()
+        self.__cICommon = ConfigInfoAppCommon()
+        self.__ccRefPathInfo = ChemRefPathInfo(configObj=self.__cI, configCommonObj=self.__cICommon,
+                                               verbose=self.__verbose, log=self.__lfh)
+        #
         self.__categoryInfo=[('chem_comp',             'key-value'),
                              ('chem_comp_atom',        'table'),
                              ('chem_comp_bond',        'table'),
@@ -123,7 +128,7 @@ class ChemCompReader(object):
 
     def setCompId(self,compId):
         self.__ccU=compId.upper()
-        self.__filePath=os.path.join(self.__topCachePath,self.__ccU[0:1],self.__ccU,self.__ccU+'.cif')
+        self.__filePath=self.__ccRefPathInfo.getFilePath(self.__ccU)
         if (not os.access(self.__filePath,os.R_OK)):
             if (self.__verbose):
                 self.__lfh.write("+ERROR- PdbxChemCompReader.getCompId() Missing file %s\n" % self.__filePath)

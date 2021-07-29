@@ -435,7 +435,7 @@ class CifReader(object):
 
         for sc in struct_conf:
             for seq_id in range(sc['beg_label_seq_id'], sc['end_label_seq_id'] + 1):
-                if seq_id in seq_ids:
+                if seq_id in seq_ids and not sc['conf_type_id'] is None and not sc['helix_id'] is None:
                     ret[seq_ids.index(seq_id)] = sc['conf_type_id'] + ':' + sc['helix_id']
 
         struct_sheet_range = self.getDictListWithFilter('struct_sheet_range',
@@ -450,7 +450,7 @@ class CifReader(object):
 
         for ssr in struct_sheet_range:
             for seq_id in range(ssr['beg_label_seq_id'], ssr['end_label_seq_id'] + 1):
-                if seq_id in seq_ids:
+                if seq_id in seq_ids and not ssr['sheet_id'] is None and not ssr['id'] is None:
                     ret[seq_ids.index(seq_id)] = 'STRN:' + ssr['sheet_id'] + ':' + ssr['id']
 
         return ret

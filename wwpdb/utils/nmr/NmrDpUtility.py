@@ -13684,10 +13684,29 @@ class NmrDpUtility(object):
 
                                 try:
 
+                                    if file_type == 'nef' or ((atom_id == 'HN' and self.__csStat.getTypeOfCompId(comp_id)[0]) or
+                                                              atom_id.startswith('Q') or
+                                                              atom_id.startswith('M') or
+                                                              self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id) == 0):
+                                        _atom_id, ambig_code, details = self.__getAtomIdListWithAmbigCode(file_type, comp_id, atom_id)
+
+                                        if len(_atom_id) == 0:
+                                            atom_id_ = atom_id
+
+                                        elif len(_atom_id) == 1 and atom_id == _atom_id[0]:
+                                            atom_id_ = atom_id
+
+                                        else:
+                                            # representative atom id
+                                            atom_id_ = _atom_id[0]
+
+                                    else:
+                                        atom_id_ = atom_id
+
                                     cs = next(j for j in cs_data if j[cs_chain_id_name] == chain_id and
                                                                     j[cs_seq_id_name] == seq_id and
                                                                     j[cs_comp_id_name] == comp_id and
-                                                                    j[cs_atom_id_name] == atom_id)
+                                                                    j[cs_atom_id_name] == atom_id_)
 
                                     value = cs[cs_value_name]
                                     error = cs[cs_error_name]
@@ -14048,10 +14067,29 @@ class NmrDpUtility(object):
 
                             try:
 
+                                if file_type == 'nef' or ((atom_id == 'HN' and self.__csStat.getTypeOfCompId(comp_id)[0]) or
+                                                          atom_id.startswith('Q') or
+                                                          atom_id.startswith('M') or
+                                                          self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id) == 0):
+                                    _atom_id, ambig_code, details = self.__getAtomIdListWithAmbigCode(file_type, comp_id, atom_id)
+
+                                    if len(_atom_id) == 0:
+                                        atom_id_ = atom_id
+
+                                    elif len(_atom_id) == 1 and atom_id == _atom_id[0]:
+                                        atom_id_ = atom_id
+
+                                    else:
+                                        # representative atom id
+                                        atom_id_ = _atom_id[0]
+
+                                else:
+                                    atom_id_ = atom_id
+
                                 cs = next(j for j in cs_data if j[cs_chain_id_name] == chain_id and
                                                                 j[cs_seq_id_name] == seq_id and
                                                                 j[cs_comp_id_name] == comp_id and
-                                                                j[cs_atom_id_name] == atom_id)
+                                                                j[cs_atom_id_name] == atom_id_)
 
                                 value = cs[cs_value_name]
                                 error = cs[cs_error_name]

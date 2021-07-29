@@ -11554,6 +11554,8 @@ class NmrDpUtility(object):
                             if self.__verbose:
                                 self.__lfh.write("+NmrDpUtility.__testDataConsistencyInAuxLoop() ++ ValueError  - %s\n" % err)
 
+                            continue
+
                     for loop in sf_data.loops:
 
                         lp_category = loop.category
@@ -12241,11 +12243,11 @@ class NmrDpUtility(object):
 
         except Exception as e:
 
-                self.report.error.appendDescription('internal_error', "+NmrDpUtility.__testParentChildRelation() ++ Error  - %s" % str(e))
-                self.report.setError()
+            self.report.error.appendDescription('internal_error', "+NmrDpUtility.__testParentChildRelation() ++ Error  - %s" % str(e))
+            self.report.setError()
 
-                if self.__verbose:
-                    self.__lfh.write("+NmrDpUtility.__testParentChildRelation() ++ Error  - %s" % str(e))
+            if self.__verbose:
+                self.__lfh.write("+NmrDpUtility.__testParentChildRelation() ++ Error  - %s" % str(e))
 
         return self.report.getTotalErrors() == __errors
 

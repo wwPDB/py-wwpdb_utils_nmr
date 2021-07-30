@@ -18460,7 +18460,7 @@ class NmrDpUtility(object):
             data_type = 'intra-residue_constraints'
         elif range_of_seq < 5:
 
-            if file_type == 'nef' or (self.__isNmrAtonName(comp_id_1, atom_id_1) or self.__isNmrAtonName(comp_id_2, atom_id2)):
+            if file_type == 'nef' or (self.__isNmrAtonName(comp_id_1, atom_id_1) or self.__isNmrAtonName(comp_id_2, atom_id_2)):
                 _atom_id_1 = self.__getAtomIdList(file_type, comp_id_1, atom_id_1)
                 _atom_id_2 = self.__getAtomIdList(file_type, comp_id_2, atom_id_2)
 

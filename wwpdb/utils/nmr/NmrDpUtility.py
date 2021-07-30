@@ -16461,9 +16461,9 @@ class NmrDpUtility(object):
                                         if self.__isNmrAtonName(comp_id, atom_id):
                                             _atom_id = self.__getRepresentativeAtomId(file_type, comp_id, atom_id)
 
-                                        if _atom_id  == 'CG1':
+                                        if _atom_id == 'CG1':
                                             cg1_chem_shift = j[value_name]
-                                        elif _atom_id  == 'CG2':
+                                        elif _atom_id == 'CG2':
                                             cg2_chem_shift = j[value_name]
 
                                     if cg1_chem_shift is None or cg2_chem_shift is None:

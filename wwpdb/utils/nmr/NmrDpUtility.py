@@ -9923,7 +9923,7 @@ class NmrDpUtility(object):
 
         return not self.report.isError()
 
-    def __isNmrAtonName(self, comp_id, atom_id):
+    def __isNmrAtomName(self, comp_id, atom_id):
         """ Return whether a given atom_id uses NMR conventional atom name.
         """
 
@@ -10023,7 +10023,7 @@ class NmrDpUtility(object):
 
                         atom_id_ = atom_id
 
-                        if (file_type == 'nef' or not self.__combined_mode or self.__transl_pseudo_name) and self.__isNmrAtonName(comp_id, atom_id):
+                        if (file_type == 'nef' or not self.__combined_mode or self.__transl_pseudo_name) and self.__isNmrAtomName(comp_id, atom_id):
                             atom_id_ = self.__getRepresentativeAtomId(file_type, comp_id, atom_id)
 
                             if file_type == 'nmr-star' and self.__combined_mode and self.__transl_pseudo_name and atom_id != atom_id_:
@@ -10120,7 +10120,7 @@ class NmrDpUtility(object):
 
                             atom_id_ = atom_id
 
-                            if (file_type == 'nef' or not self.__combined_mode or self.__transl_pseudo_name) and self.__isNmrAtonName(comp_id, atom_id):
+                            if (file_type == 'nef' or not self.__combined_mode or self.__transl_pseudo_name) and self.__isNmrAtomName(comp_id, atom_id):
                                 atom_id_ = self.__getRepresentativeAtomId(file_type, comp_id, atom_id)
 
                                 if file_type == 'nmr-star' and self.__combined_mode and self.__transl_pseudo_name and atom_id != atom_id_:
@@ -10750,7 +10750,7 @@ class NmrDpUtility(object):
 
                         _atom_id = atom_id
 
-                        if self.__isNmrAtonName(comp_id, atom_id):
+                        if self.__isNmrAtomName(comp_id, atom_id):
                             _atom_id = self.__getRepresentativeAtomId(file_type, comp_id, atom_id)
 
                         allowed_ambig_code = self.__csStat.getMaxAmbigCodeWoSetId(comp_id, _atom_id)
@@ -12379,7 +12379,7 @@ class NmrDpUtility(object):
                 if value in self.empty_value:
                     continue
 
-                if file_type == 'nef' or self.__isNmrAtonName(comp_id, atom_id):
+                if file_type == 'nef' or self.__isNmrAtomName(comp_id, atom_id):
                     _atom_id, ambig_code, details = self.__getAtomIdListWithAmbigCode(file_type, comp_id, atom_id)
 
                     if len(_atom_id) == 0:
@@ -13183,7 +13183,7 @@ class NmrDpUtility(object):
 
                     _atom_id = atom_id
 
-                    if self.__isNmrAtonName(comp_id, atom_id):
+                    if self.__isNmrAtomName(comp_id, atom_id):
                         _atom_id = self.__getRepresentativeAtomId(file_type, comp_id, atom_id)
 
                     allowed_ambig_code = self.__csStat.getMaxAmbigCodeWoSetId(comp_id, _atom_id)
@@ -13305,7 +13305,7 @@ class NmrDpUtility(object):
 
                                         _atom_id2 = atom_id2
 
-                                        if self.__isNmrAtonName(comp_id2, atom_id2):
+                                        if self.__isNmrAtomName(comp_id2, atom_id2):
                                             _atom_id2 = self.__getRepresentativeAtomId(file_type, comp_id2, atom_id2)
 
                                         if (chain_id2 != chain_id or seq_id2 != seq_id or comp_id2 != comp_id) and _atom_id < _atom_id2:
@@ -13331,7 +13331,7 @@ class NmrDpUtility(object):
 
                                         _atom_id2 = atom_id2
 
-                                        if self.__isNmrAtonName(comp_id2, atom_id2):
+                                        if self.__isNmrAtomName(comp_id2, atom_id2):
                                             _atom_id2 = self.__getRepresentativeAtomId(file_type, comp_id2, atom_id2)
 
                                         if ((chain_id2 != chain_id and chain_id < chain_id2) or (seq_id2 == seq_id and _atom_id < _atom_id2)):
@@ -13358,7 +13358,7 @@ class NmrDpUtility(object):
 
                                         _atom_id2 = atom_id2
 
-                                        if self.__isNmrAtonName(comp_id2, atom_id2):
+                                        if self.__isNmrAtomName(comp_id2, atom_id2):
                                             _atom_id2 = self.__getRepresentativeAtomId(file_type, comp_id2, atom_id2)
 
                                         if chain_id2 == chain_id and (seq_id < seq_id2 or (seq_id == seq_id2 and _atom_id < _atom_id2)):
@@ -13382,7 +13382,7 @@ class NmrDpUtility(object):
 
                                     _atom_id2 = atom_id2
 
-                                    if self.__isNmrAtonName(comp_id2, atom_id2):
+                                    if self.__isNmrAtomName(comp_id2, atom_id2):
                                         _atom_id2 = self.__getRepresentativeAtomId(file_type, comp_id2, atom_id2)
 
                                     if _atom_id[0] != _atom_id2[0] and _atom_id < _atom_id2:
@@ -13670,7 +13670,7 @@ class NmrDpUtility(object):
 
                                 try:
 
-                                    if file_type == 'nmr-star' and self.__isNmrAtonName(comp_id, atom_id):
+                                    if file_type == 'nmr-star' and self.__isNmrAtomName(comp_id, atom_id):
                                         _atom_id, ambig_code, details = self.__getAtomIdListWithAmbigCode(file_type, comp_id, atom_id)
 
                                         if len(_atom_id) == 0:
@@ -14050,7 +14050,7 @@ class NmrDpUtility(object):
 
                             try:
 
-                                if file_type == 'nmr-star' and self.__isNmrAtonName(comp_id, atom_id):
+                                if file_type == 'nmr-star' and self.__isNmrAtomName(comp_id, atom_id):
                                     _atom_id, ambig_code, details = self.__getAtomIdListWithAmbigCode(file_type, comp_id, atom_id)
 
                                     if len(_atom_id) == 0:
@@ -14817,7 +14817,7 @@ class NmrDpUtility(object):
 
                             atom_id = _variant_[1:]
 
-                            if file_type == 'nef' or self.__isNmrAtonName(comp_id, atom_id):
+                            if file_type == 'nef' or self.__isNmrAtomName(comp_id, atom_id):
                                 _atom_id, ambig_code, details = self.__getAtomIdListWithAmbigCode(file_type, comp_id, atom_id)
 
                                 if len(_atom_id) == 0:
@@ -14888,7 +14888,7 @@ class NmrDpUtility(object):
 
                         atom_id = variant
 
-                        if file_type == 'nef' or self.__isNmrAtonName(comp_id, atom_id):
+                        if file_type == 'nef' or self.__isNmrAtomName(comp_id, atom_id):
                             _atom_id, ambig_code, details = self.__getAtomIdListWithAmbigCode(file_type, comp_id, atom_id)
 
                             if len(_atom_id) == 0:
@@ -15461,7 +15461,7 @@ class NmrDpUtility(object):
                                     atom_id = j[atom_id_name]
                                     data_type = str(j[iso_number]) + j[atom_type]
 
-                                    if file_type == 'nef' or self.__isNmrAtonName(comp_id, atom_id):
+                                    if file_type == 'nef' or self.__isNmrAtomName(comp_id, atom_id):
                                         atom_ids = self.__getAtomIdList(file_type, comp_id, atom_id)
 
                                         if len(atom_ids) == 0:
@@ -15599,7 +15599,7 @@ class NmrDpUtility(object):
                                     atom_id = j[atom_id_name]
                                     data_type = str(j[iso_number]) + j[atom_type]
 
-                                    if file_type == 'nef' or self.__isNmrAtonName(comp_id, atom_id):
+                                    if file_type == 'nef' or self.__isNmrAtomName(comp_id, atom_id):
                                         atom_ids = self.__getAtomIdList(file_type, comp_id, atom_id)
 
                                         if len(atom_ids) == 0:
@@ -15724,7 +15724,7 @@ class NmrDpUtility(object):
                                     atom_id = j[atom_id_name]
                                     data_type = str(j[iso_number]) + j[atom_type]
 
-                                    if file_type == 'nef' or self.__isNmrAtonName(comp_id, atom_id):
+                                    if file_type == 'nef' or self.__isNmrAtomName(comp_id, atom_id):
                                         atom_ids = self.__getAtomIdList(file_type, comp_id, atom_id)
 
                                         if len(atom_ids) == 0:
@@ -15838,7 +15838,7 @@ class NmrDpUtility(object):
                                     atom_id = j[atom_id_name]
                                     data_type = str(j[iso_number]) + j[atom_type]
 
-                                    if file_type == 'nef' or self.__isNmrAtonName(comp_id, atom_id):
+                                    if file_type == 'nef' or self.__isNmrAtomName(comp_id, atom_id):
                                         atom_ids = self.__getAtomIdList(file_type, comp_id, atom_id)
 
                                         if len(atom_ids) == 0:
@@ -15944,7 +15944,7 @@ class NmrDpUtility(object):
                                     atom_id = j[atom_id_name]
                                     data_type = str(j[iso_number]) + j[atom_type]
 
-                                    if file_type == 'nef' or self.__isNmrAtonName(comp_id, atom_id):
+                                    if file_type == 'nef' or self.__isNmrAtomName(comp_id, atom_id):
                                         atom_ids = self.__getAtomIdList(file_type, comp_id, atom_id)
 
                                         if len(atom_ids) == 0:
@@ -16022,7 +16022,7 @@ class NmrDpUtility(object):
                 if value in self.empty_value:
                     continue
 
-                if file_type == 'nef' or self.__isNmrAtonName(comp_id, atom_id):
+                if file_type == 'nef' or self.__isNmrAtomName(comp_id, atom_id):
                     _atom_id, ambig_code, details = self.__getAtomIdListWithAmbigCode(file_type, comp_id, atom_id)
 
                     if len(_atom_id) == 0:
@@ -16458,7 +16458,7 @@ class NmrDpUtility(object):
 
                                         _atom_id = atom_id
 
-                                        if self.__isNmrAtonName(comp_id, atom_id):
+                                        if self.__isNmrAtomName(comp_id, atom_id):
                                             _atom_id = self.__getRepresentativeAtomId(file_type, comp_id, atom_id)
 
                                         if _atom_id == 'CG1':
@@ -16549,7 +16549,7 @@ class NmrDpUtility(object):
 
                                         _atom_id = atom_id
 
-                                        if self.__isNmrAtonName(comp_id, atom_id):
+                                        if self.__isNmrAtomName(comp_id, atom_id):
                                             _atom_id = self.__getRepresentativeAtomId(file_type, comp_id, atom_id)
 
                                         if _atom_id == 'CD1':
@@ -16756,7 +16756,7 @@ class NmrDpUtility(object):
 
                                 atom_id = j[atom_id_name]
 
-                                if file_type == 'nef' or self.__isNmrAtonName(comp_id, atom_id):
+                                if file_type == 'nef' or self.__isNmrAtomName(comp_id, atom_id):
                                     _atom_id, ambig_code, details = self.__getAtomIdListWithAmbigCode(file_type, comp_id, atom_id)
 
                                     if len(_atom_id) == 0:
@@ -18120,7 +18120,7 @@ class NmrDpUtility(object):
             data_type = 'intra-residue_constraints'
         elif range_of_seq < 5:
 
-            if file_type == 'nef' or (self.__isNmrAtonName(comp_id_1, atom_id_1) or self.__isNmrAtonName(comp_id_2, atom_id_2)):
+            if file_type == 'nef' or (self.__isNmrAtomName(comp_id_1, atom_id_1) or self.__isNmrAtomName(comp_id_2, atom_id_2)):
                 _atom_id_1 = self.__getAtomIdList(file_type, comp_id_1, atom_id_1)
                 _atom_id_2 = self.__getAtomIdList(file_type, comp_id_2, atom_id_2)
 
@@ -18460,7 +18460,7 @@ class NmrDpUtility(object):
             data_type = 'intra-residue_constraints'
         elif range_of_seq < 5:
 
-            if file_type == 'nef' or (self.__isNmrAtonName(comp_id_1, atom_id_1) or self.__isNmrAtonName(comp_id_2, atom_id_2)):
+            if file_type == 'nef' or (self.__isNmrAtomName(comp_id_1, atom_id_1) or self.__isNmrAtomName(comp_id_2, atom_id_2)):
                 _atom_id_1 = self.__getAtomIdList(file_type, comp_id_1, atom_id_1)
                 _atom_id_2 = self.__getAtomIdList(file_type, comp_id_2, atom_id_2)
 
@@ -22708,7 +22708,7 @@ i                               """
                 if cif_comp_id is None:
                     continue
 
-                if file_type == 'nef' or self.__isNmrAtonName(comp_id, atom_id):
+                if file_type == 'nef' or self.__isNmrAtomName(comp_id, atom_id):
                     _atom_id, ambig_code, details = self.__getAtomIdListWithAmbigCode(file_type, comp_id, atom_id)
 
                     if len(_atom_id) == 0:

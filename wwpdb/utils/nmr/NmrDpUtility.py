@@ -1645,7 +1645,7 @@ class NmrDpUtility(object):
                                                        {'name': 'Assigned_chem_shift_list_ID', 'type': 'pointer-index', 'mandatory': True, 'default': '1'}
                                                        ],
                                         'chem_shift_ref': [{'name': 'Atom_group', 'type': 'enum', 'mandatory': True,
-                                                            'enum': ('methyl carbon', 'methyl carbons', 'methyl protons', 'methylene protons', 'nitrogen', 'phosphorus')},
+                                                            'enum': ('methyl carbon', 'methyl carbons', 'methyl protons', 'methylene protons', 'nitrogen', 'phosphorus', 'protons')},
                                                            {'name': 'Chem_shift_val', 'type': 'float', 'mandatory': True},
                                                            {'name': 'Chem_shift_units', 'type': 'enum', 'mandatory': True,
                                                             'enum': ('ppm', 'Hz'),

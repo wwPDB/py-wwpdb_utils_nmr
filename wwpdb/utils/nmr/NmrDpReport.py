@@ -48,6 +48,7 @@
 # 24-Jun-2021  M. Yokochi - resolve duplication in grouped error/warning message (DAOTHER-6345, 6830)
 # 29-Jun-2021  M. Yokochi - enable to access NMR polymer sequence from auth_asym_id (DAOTHER-7108)
 # 02-Jul-2021  M. Yokochi - add content types of NMR restraint file (DAOTHER-6830)
+# 24-Aug-2021  M. Yokochi - add content subtype for XPLOR-NIH planarity restraints
 ##
 """ Wrapper class for data processing report of NMR data.
     @author: Masashi Yokochi
@@ -425,6 +426,41 @@ class NmrDpReport:
                          'constraint_number': rdc_total}
 
             restraints.append(restraint)
+            
+        content_subtype = 'plane_restraint'
+
+        if content_subtype in content_subtypes:
+            proteins = 0
+            nucleic_acids = 0
+            for stat in self.getNmrStatsOfExptlData(content_subtype):
+
+                if 'constraints_per_polymer_type' in stat:
+                    for k, v in stat['constraints_per_polymer_type'].items():
+                        if k == 'protein':
+                            proteins += v
+                        elif k == 'nucleic_acid':
+                            nucleic_acids += v
+                elif 'number_of_constraints_per_polymer_type' in stat: # DAOTHER-6509
+                    for k, v in stat['number_of_constraints_per_polymer_type'].items():
+                        if k == 'protein':
+                            proteins += v
+                        elif k == 'nucleic_acid':
+                            nucleic_acids += v
+
+            if proteins > 0:
+                restraint = {'constraint_filename': file_name,
+                             'software_name': file_type,
+                             'constraint_type': 'protein peptide planarity',
+                             'constraint_subtype': 'peptide',
+                             'constraint_number': proteins}
+                restraints.append(restraint)
+            if nucleic_acids > 0:
+                restraint = {'constraint_filename': file_name,
+                             'software_name': file_type,
+                             'constraint_type': 'nucleic acid base planarity',
+                             'constraint_subtype': 'ring',
+                             'constraint_number': nucleic_acids}
+                restraints.append(restraint)
 
         return restraints if len(restraints) > 0 else None
 
@@ -1526,7 +1562,7 @@ class NmrDpReportInputSource:
                       'stats_of_exptl_data')
         self.file_types = ('pdbx', 'nef', 'nmr-star', 'nm-res-amb', 'nm-res-cns', 'nm-res-cya', 'nm-res-xpl', 'nm-res-oth', 'nm-aux-amb')
         self.content_types = ('model', 'nmr-data-nef', 'nmr-data-str', 'nmr-chemical-shifts', 'nmr-restraints')
-        self.content_subtypes = ('coordinate', 'non_poly', 'entry_info', 'poly_seq', 'entity', 'chem_shift', 'chem_shift_ref', 'dist_restraint', 'dihed_restraint', 'rdc_restraint', 'spectral_peak', 'spectral_peak_alt', 'topology')
+        self.content_subtypes = ('coordinate', 'non_poly', 'entry_info', 'poly_seq', 'entity', 'chem_shift', 'chem_shift_ref', 'dist_restraint', 'dihed_restraint', 'rdc_restraint', 'plane_restraint', 'spectral_peak', 'spectral_peak_alt', 'topology')
 
         self.__contents = {item: None for item in self.items}
 

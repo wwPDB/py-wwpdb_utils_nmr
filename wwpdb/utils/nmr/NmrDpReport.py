@@ -48,7 +48,7 @@
 # 24-Jun-2021  M. Yokochi - resolve duplication in grouped error/warning message (DAOTHER-6345, 6830)
 # 29-Jun-2021  M. Yokochi - enable to access NMR polymer sequence from auth_asym_id (DAOTHER-7108)
 # 02-Jul-2021  M. Yokochi - add content types of NMR restraint file (DAOTHER-6830)
-# 24-Aug-2021  M. Yokochi - add content subtype for XPLOR-NIH planarity restraints
+# 24-Aug-2021  M. Yokochi - add content subtype for XPLOR-NIH planarity restraints (DAOTHER-7265)
 ##
 """ Wrapper class for data processing report of NMR data.
     @author: Masashi Yokochi

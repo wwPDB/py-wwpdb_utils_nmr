@@ -125,7 +125,7 @@
 # 29-Jun-2021  M. Yokochi - add support for PyNMRSTAR v3.2.0 (DAOTHER-7107)
 # 02-Jul-2021  M. Yokochi - detect content type of AMBER restraint file and AMBER auxiliary file (DAOTHER-6830, 1901)
 # 12-Jul-2021  M. Yokochi - add RCI validation code for graphical representation of NMR data
-# 24-Aug-2021  M. Yokochi - detect content type of XPLOR-NIH planarity restraints
+# 24-Aug-2021  M. Yokochi - detect content type of XPLOR-NIH planarity restraints (DAOTHER-7265)
 ##
 """ Wrapper class for data processing for NMR data.
     @author: Masashi Yokochi
@@ -6831,7 +6831,7 @@ class NmrDpUtility(object):
 
                         hint = ""
                         if file_type == 'nm-res-cns' or file_type == 'nm-res-xpl':
-                            hint = 'assign ( segid $ and resid # and name $ ) ( segid $ resid # and name $ ) #.# #.# #.#'
+                            hint = 'assign ( segid $ and resid # and name $ ) ( segid $ and resid # and name $ ) #.# #.# #.#'
                         elif file_type == 'nm-res-amb':
                             hint = '&rst iat=#[,#], r1=#.#, r2=#.#, r3=#.#, r4=#.#, [igr1=#[,#],] [igr2=#[,#],] &end'
 

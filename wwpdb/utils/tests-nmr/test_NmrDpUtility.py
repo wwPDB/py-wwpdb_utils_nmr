@@ -10,7 +10,7 @@
 # 14-May-2020  M. Yokochi - add unit tests for missing mandatory content (DAOTHER-5681 and 5682)
 # 30-May-2020  M. Yokochi - add unit test for detection of total number of models (DAOTHER-5650)
 # 08-Jul-2020  M. Yokochi - add unit test for combined NMR-STAR (DAOTHER-5926)
-# 24-Aug-2021  M. Yokochi - add support for XPLOR-NIH planarity restraints
+# 24-Aug-2021  M. Yokochi - add support for XPLOR-NIH planarity restraints (DAOTHER-7265)
 #
 import unittest
 import os

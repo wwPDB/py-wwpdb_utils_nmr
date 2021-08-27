@@ -6139,7 +6139,10 @@ class NmrDpUtility(object):
 
                             atom_likes = 0
                             atom_unlikes = 0
+                            resid_likes = 0
+                            real_likes = 0
                             names = []
+                            resids = []
                             cs_range_like = False
                             dist_range_like = False
                             dihed_range_like = False
@@ -6172,12 +6175,12 @@ class NmrDpUtility(object):
                                     if t[0] == '#' or t[0] == '!':
                                         break
 
-                                    if t.lower().startswith('assi'):
+                                    if t.lower().startswith('assi') or (real_likes == 3 and t.lower().startswith('weight')):
 
-                                        if atom_likes == 1 and cs_range_like:
+                                        if atom_likes == 1 and resid_likes == 1 and cs_range_like:
                                             has_chem_shift = True
 
-                                        elif atom_likes == 2 and dist_range_like:
+                                        elif (atom_likes == 2 or (atom_likes > 0 and resid_likes == 2)) and dist_range_like:
                                             has_dist_restraint = True
 
                                         elif atom_likes == 4 and dihed_range_like:
@@ -6188,7 +6191,10 @@ class NmrDpUtility(object):
 
                                         atom_likes = 0
                                         atom_unlikes = 0
+                                        resid_likes = 0
+                                        real_likes = 0
                                         names = []
+                                        resids = []
                                         cs_range_like = False
                                         dist_range_like = False
                                         dihed_range_like = False
@@ -6203,6 +6209,15 @@ class NmrDpUtility(object):
                                         else:
                                             atom_unlikes += 1
 
+                                    elif _t.lower() == 'resid':
+                                        try:
+                                            v = int(t)
+                                            if not v in resids:
+                                                resid_likes += 1
+                                                resids.append(v)
+                                        except:
+                                            pass
+
                                     elif '.' in t:
                                         try:
                                             v = float(t)
@@ -6214,6 +6229,7 @@ class NmrDpUtility(object):
                                                 dihed_range_like = True
                                             if v > rdc_range_min and v < rdc_range_max:
                                                 rdc_range_like = True
+                                            real_likes += 1
                                         except:
                                             pass
 

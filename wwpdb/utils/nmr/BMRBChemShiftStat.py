@@ -1301,4 +1301,18 @@ class BMRBChemShiftStat:
                             name_set.add(_name + 'X')
                             name_set.add(_name + 'Y')
 
+            if self.__updateChemCompDict(comp_id):
+
+                for a in self.__last_chem_comp_atoms:
+
+                    if a[self.__cca_leaving_atom_flag] == 'Y':
+                        continue
+
+                    name = a[self.__cca_atom_id]
+
+                    if len(name) < minimum_len:
+                        continue
+
+                    name_set.add(name)
+
         return name_set

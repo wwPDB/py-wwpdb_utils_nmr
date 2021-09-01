@@ -2,7 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://bmrbpub.pdbj.org/archive/combined_restraints/nmr-restraints-report-schema.json",
   "title": "JSON Schema for NMR restraints report",
-  "description": "The NMR restraints report provides restraint statistics and diagnostic information for NMR restraints with reference to the relevant atomic coordinates.",
+  "description": "The NMR restraints report provides restraint statistics and diagnostic information for NMR restraints with reference to associated atomic coordinates.",
   "definitions": {
     "input_source": {
       "type": "object",
@@ -155,7 +155,7 @@
               }
             },
             "coordinate": {
-              "description": "The array provides the polymer sequences in data loops for atomic coordinates.",
+              "description": "The array provides the polymer sequences in data loops for the coordinates.",
               "type": "array",
               "items": {
                 "$ref": "#/definitions/polymer_sequence_in_loop"
@@ -3090,7 +3090,7 @@
       }
     },
     "sequence_alignment_in_coord": {
-      "description": "Template for chain information of sequence alignment in coordinates.",
+      "description": "Template for chain information of sequence alignment in the coordinates.",
       "type": "object",
       "properties": {
         "list_id": {
@@ -3106,7 +3106,7 @@
       }
     },
     "sequence_alignment_nmr_coord": {
-      "description": "Template for chain information of sequence alignment between NMR data and coordinates.",
+      "description": "Template for chain information of sequence alignment between NMR data and the coordinates.",
       "type": "object",
       "properties": {
         "ref_chain_id": {
@@ -3146,7 +3146,7 @@
       }
     },
     "chain_assignment": {
-      "description": "Template for chain assignemnt between NMR data and coordinates.",
+      "description": "Template for chain assignemnt between NMR data and the coordinates.",
       "type": "object",
       "properties": {
         "ref_chain_id": {
@@ -3510,7 +3510,7 @@
   "type": "object",
   "properties": {
     "information": {
-      "description": "The object provides information of set of input sources that includes the NMR restraints file and reference atom coordinate file.",
+      "description": "The object provides information about set of input sources that includes the NMR restraints file and atomic coordinates file.",
       "type": "object",
       "properties": {
         "input_sources": {

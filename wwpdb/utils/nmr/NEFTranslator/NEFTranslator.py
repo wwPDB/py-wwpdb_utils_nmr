@@ -710,7 +710,7 @@ class NEFTranslator(object):
     def get_one_letter_code(self, comp_id):
         """ Convert comp ID to 1-letter code.
             @change: support empty value by Masashi Yokochi
-            @param comp_id: chemical compoent id
+            @param comp_id: chemical component id
             @return: 1-letter code for a given comp_id
         """
 

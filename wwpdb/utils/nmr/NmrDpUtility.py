@@ -126,6 +126,7 @@
 # 02-Jul-2021  M. Yokochi - detect content type of AMBER restraint file and AMBER auxiliary file (DAOTHER-6830, 1901)
 # 12-Jul-2021  M. Yokochi - add RCI validation code for graphical representation of NMR data
 # 24-Aug-2021  M. Yokochi - detect content type of XPLOR-NIH planarity restraints (DAOTHER-7265)
+# 10-Sep-2021  M. Yokochi - prevent system crash for empty row case (D_1292117593)
 ##
 """ Wrapper class for data processing for NMR data.
     @author: Masashi Yokochi
@@ -5161,7 +5162,7 @@ class NmrDpUtility(object):
                             g = onedep_file_pattern.search(srcPath).groups()
                             srcPath = g[0] + '.V' + str(int(g[1]) + 1)
                     if __pynmrstar_v3__:
-                        self.__star_data[file_list_id].write_to_file(srcPath, skip_empty_tags=False)
+                        self.__star_data[file_list_id].write_to_file(srcPath, skip_empty_loops=True, skip_empty_tags=False)
                     else:
                         self.__star_data[file_list_id].write_to_file(srcPath)
 
@@ -11384,7 +11385,7 @@ class NmrDpUtility(object):
 
         lp_data = next((l['data'] for l in self.__lp_data[content_subtype] if l['file_name'] == file_name and l['sf_framecode'] == sf_framecode), None)
 
-        if lp_data is None:
+        if lp_data is None or len(lp_data) == 0:
             return
 
         key_items = self.consist_key_items[file_type][content_subtype]
@@ -15174,7 +15175,7 @@ class NmrDpUtility(object):
         else:
             lp_data = next((l['data'] for l in self.__aux_data[content_subtype] if l['file_name'] == file_name and l['sf_framecode'] == sf_framecode and l['category'] == lp_category), None)
 
-        if lp_data is None:
+        if lp_data is None or len(lp_data) == 0:
             return
 
         sf_tag_data = next((t['data'] for t in self.__sf_tag_data[content_subtype] if t['file_name'] == file_name and t['sf_framecode'] == sf_framecode), None)
@@ -23463,7 +23464,7 @@ i                               """
                 except:
                     pass
 
-            if not orig_lp_data is None:
+            if not orig_lp_data is None and len(orig_lp_data) > 0:
 
                 if file_type == 'nef':
                     if 'residue_variant' in orig_lp_data[0]:
@@ -27145,7 +27146,7 @@ i                               """
         if not self.__combined_mode:
             return False
 
-        if lp_data is None:
+        if lp_data is None or len(lp_data) == 0:
             return False
 
         input_source = self.report.input_sources[0]
@@ -27276,7 +27277,7 @@ i                               """
         if not self.__combined_mode:
             return False
 
-        if lp_data is None:
+        if lp_data is None or len(lp_data) == 0:
             return False
 
         input_source = self.report.input_sources[0]
@@ -27928,7 +27929,7 @@ i                               """
         if not self.__combined_mode:
             return False
 
-        if lp_data is None:
+        if lp_data is None or len(lp_data) == 0:
             return False
 
         input_source = self.report.input_sources[0]
@@ -29140,7 +29141,7 @@ i                               """
             return True
 
         if __pynmrstar_v3__:
-            self.__star_data[0].write_to_file(self.__dstPath, skip_empty_tags=False)
+            self.__star_data[0].write_to_file(self.__dstPath, skip_empty_loops=True, skip_empty_tags=False)
         else:
             self.__star_data[0].write_to_file(self.__dstPath)
 
@@ -29181,7 +29182,7 @@ i                               """
                     return False
 
                 if __pynmrstar_v3__:
-                    self.__star_data[fileListId].write_to_file(dstPath, skip_empty_tags=False)
+                    self.__star_data[fileListId].write_to_file(dstPath, skip_empty_loops=True, skip_empty_tags=False)
                 else:
                     self.__star_data[fileListId].write_to_file(dstPath)
 
@@ -29213,7 +29214,7 @@ i                               """
                         return False
 
                     if __pynmrstar_v3__:
-                        self.__star_data[fileListId].write_to_file(dstPath, skip_empty_tags=False)
+                        self.__star_data[fileListId].write_to_file(dstPath, skip_empty_loops=True, skip_empty_tags=False)
                     else:
                         self.__star_data[fileListId].write_to_file(dstPath)
 

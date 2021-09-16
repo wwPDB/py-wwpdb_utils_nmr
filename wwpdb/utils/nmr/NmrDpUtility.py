@@ -126,7 +126,7 @@
 # 02-Jul-2021  M. Yokochi - detect content type of AMBER restraint file and AMBER auxiliary file (DAOTHER-6830, 1901)
 # 12-Jul-2021  M. Yokochi - add RCI validation code for graphical representation of NMR data
 # 24-Aug-2021  M. Yokochi - detect content type of XPLOR-NIH planarity restraints (DAOTHER-7265)
-# 10-Sep-2021  M. Yokochi - prevent system crash for empty row case (D_1292117593)
+# 10-Sep-2021  M. Yokochi - prevent system crash for an empty loop case of CS/MR data (D_1292117593)
 ##
 """ Wrapper class for data processing for NMR data.
     @author: Masashi Yokochi

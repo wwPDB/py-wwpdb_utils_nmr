@@ -67,6 +67,7 @@
 # 23-Jun-2021  M. Yokochi - fix error in handling lower/upper linear limits (v2.10.1, DAOTHER-6963)
 # 28-Jun-2021  M. Yokochi - revise error message for sequence mismatch in a loop (v2.10.2, DAOTHER-7103)
 # 29-Jun-2021  M. Yokochi - add support for PyNMRSTAR v3.2.0 (v2.10.3, DAOTHER-7107)
+# 16-Sep-2021  M. Yokochi - report an empty loop case of CS/MR data as an error (v2.10.4, D_1292117503, DAOTHER-7318)
 ##
 import sys
 import os
@@ -89,7 +90,7 @@ from wwpdb.utils.nmr.io.ChemCompIo import ChemCompReader
 from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
 from wwpdb.utils.nmr.NmrDpReport import NmrDpReport
 
-__version__ = '2.10.3'
+__version__ = '2.10.4'
 
 __pynmrstar_v3_2__ = version.parse(pynmrstar.__version__) >= version.parse("3.2.0")
 __pynmrstar_v3_1__ = version.parse(pynmrstar.__version__) >= version.parse("3.1.0")
@@ -896,9 +897,9 @@ class NEFTranslator(object):
                 if is_nef_file:
                     if file_subtype == 'A':
 
-                        for lp_cateogry, sf_category in zip(minimal_lp_category_nef_a, minimal_sf_category_nef_a):
-                            content_subtype = 'assigned chemical shifts' if 'shift' in lp_cateogry else 'distance restraints'
-                            if lp_cateogry not in lp_list:
+                        for lp_category, sf_category in zip(minimal_lp_category_nef_a, minimal_sf_category_nef_a):
+                            content_subtype = 'assigned chemical shifts' if 'shift' in lp_category else 'distance restraints'
+                            if lp_category not in lp_list:
                                 is_valid = False
                                 error.append(err_template_for_missing_mandatory_loop % (lp_category, content_subtype, file_type.upper()))
                             else:

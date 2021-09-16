@@ -4248,12 +4248,4 @@ save_nef_nmr_spectrum_173
 
    stop_
 
-   loop_
-      _ccpn_multiplet_peaks.multiplet_list_serial
-      _ccpn_multiplet_peaks.multiplet_serial
-      _ccpn_multiplet_peaks.multiplet_peak
-
-
-   stop_
-
 save_

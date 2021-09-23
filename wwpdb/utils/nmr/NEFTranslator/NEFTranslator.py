@@ -7293,8 +7293,8 @@ class NEFTranslator(object):
             error.append('Input file not readable.')
 
         return is_done, json.dumps({'info': info, 'warning': warning, 'error': error})
-
-if __name__ == "__main__":
-    _nefT = NEFTranslator()
-    _nefT.nef_to_nmrstar('data/2l9r.nef')
-    print(_nefT.validate_file('data/2l9r.str','A'))
+#
+# if __name__ == "__main__":
+#     _nefT = NEFTranslator()
+#     _nefT.nef_to_nmrstar('data/2l9r.nef')
+#     print(_nefT.validate_file('data/2l9r.str','A'))

@@ -6,12 +6,11 @@
 ##
 import unittest
 import os
-import sys
 import json
 
 from wwpdb.utils.nmr.NmrDpUtility import NmrDpUtility
-from wwpdb.utils.nmr.NmrDpReport import NmrDpReport, NmrDpReportInputSource, NmrDpReportSequenceAlignment, NmrDpReportError, NmrDpReportWarning
-from testfixtures import LogCapture
+from wwpdb.utils.nmr.NmrDpReport import NmrDpReport
+
 
 class TestNmrDpUtility(unittest.TestCase):
 
@@ -53,7 +52,7 @@ class TestNmrDpUtility(unittest.TestCase):
             print('%s: %s, %s' % (entry_id, report['information']['status'], error_type))
 
     def __test_nmr_nef2str_deposit(self, entry_id):
-        #if not os.access(self.data_dir_path + entry_id + '-nef-consistency-log.json', os.F_OK):
+        # if not os.access(self.data_dir_path + entry_id + '-nef-consistency-log.json', os.F_OK):
         self.__test_nmr_nef_consistency(entry_id)
 
         self.utility.setSource(self.data_dir_path + entry_id + '/' + entry_id + '-disulfide-bond.nef')
@@ -79,7 +78,7 @@ class TestNmrDpUtility(unittest.TestCase):
             self.assertNotIn('internal_error', report['error'])
 
     def __test_nmr_str_consistency(self, entry_id):
-        #if not os.access(self.data_dir_path + entry_id + '-disulfide-bond-nef2str.str', os.F_OK):
+        # if not os.access(self.data_dir_path + entry_id + '-disulfide-bond-nef2str.str', os.F_OK):
         self.__test_nmr_nef2str_deposit(entry_id)
 
         self.utility.setSource(self.data_dir_path + entry_id + '-disulfide-bond-nef2str.str')
@@ -106,7 +105,7 @@ class TestNmrDpUtility(unittest.TestCase):
             print('%s: %s, %s' % (entry_id, report['information']['status'], error_type))
 
     def __test_nmr_str2nef_release(self, entry_id):
-        #if not os.access(self.data_dir_path + entry_id + '-disulfide-bond-str2nef-consistency-log.json', os.F_OK):
+        # if not os.access(self.data_dir_path + entry_id + '-disulfide-bond-str2nef-consistency-log.json', os.F_OK):
         self.__test_nmr_str_consistency(entry_id)
 
         self.utility.setSource(self.data_dir_path + entry_id + '-disulfide-bond-nef2str.str')
@@ -146,6 +145,7 @@ class TestNmrDpUtility(unittest.TestCase):
 
     def test_nmr_str2nef_release_6nbn(self):
         self.__test_nmr_str2nef_release('6nbn')
+
 
 if __name__ == '__main__':
     unittest.main()

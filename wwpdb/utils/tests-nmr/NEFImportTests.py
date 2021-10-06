@@ -4,18 +4,20 @@
 #
 # Updates:
 ##
-"""Test cases for DetachUtils - simply import everything to ensure imports work"""
+"""Test cases for NEFTranslator - simply import everything to ensure imports work"""
 
 import unittest
 
 from wwpdb.utils.nmr.NEFTranslator.NEFTranslator import NEFTranslator
+
 
 class ImportTests(unittest.TestCase):
     def setUp(self):
         pass
 
     def testInstantiate(self):
-        c = NEFTranslator()
+        _c = NEFTranslator()  # noqa: F841
+
 
 if __name__ == '__main__':
     unittest.main()

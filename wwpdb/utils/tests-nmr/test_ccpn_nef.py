@@ -6,12 +6,11 @@
 ##
 import unittest
 import os
-import sys
 import json
 
 from wwpdb.utils.nmr.NmrDpUtility import NmrDpUtility
-from wwpdb.utils.nmr.NmrDpReport import NmrDpReport, NmrDpReportInputSource, NmrDpReportSequenceAlignment, NmrDpReportError, NmrDpReportWarning
-from testfixtures import LogCapture
+from wwpdb.utils.nmr.NmrDpReport import NmrDpReport
+
 
 class TestNmrDpUtility(unittest.TestCase):
 
@@ -24,7 +23,7 @@ class TestNmrDpUtility(unittest.TestCase):
                                            'cif': 'penta_a_modified.cif'},
                                'penta_b': {'nef': 'penta__eT_spDi_b.nef',
                                            'cif': 'penta_b_modified.cif'}
-                              }
+                               }
         self.utility = NmrDpUtility()
         self.report = NmrDpReport()
         pass
@@ -57,7 +56,7 @@ class TestNmrDpUtility(unittest.TestCase):
         elif 'missing_mandatory_content' in report['error']:
             print('%s: %s\n missing_mandatory_content: %s' % (entry_id, report['information']['status'], report['error']['missing_mandatory_content'][0]['description']))
         else:
-            error_type = {str(k): len(v) for k, v in report['error'].items() if not v is None and str(k) != 'total'}
+            error_type = {str(k): len(v) for k, v in report['error'].items() if v is not None and str(k) != 'total'}
             print('%s: %s, %s' % (entry_id, report['information']['status'], error_type))
 
     def __test_nmr_nef2str_deposit(self, entry_id):
@@ -110,7 +109,7 @@ class TestNmrDpUtility(unittest.TestCase):
         elif 'missing_mandatory_content' in report['error']:
             print('%s: %s\n missing_mandatory_content: %s' % (entry_id, report['information']['status'], report['error']['missing_mandatory_content'][0]['description']))
         else:
-            error_type = {str(k): len(v) for k, v in report['error'].items() if not v is None and str(k) != 'total'}
+            error_type = {str(k): len(v) for k, v in report['error'].items() if v is not None and str(k) != 'total'}
             print('%s: %s, %s' % (entry_id.lower(), report['information']['status'], error_type))
 
     def __test_nmr_str2nef_release(self, entry_id):
@@ -146,7 +145,7 @@ class TestNmrDpUtility(unittest.TestCase):
         elif 'missing_mandatory_content' in report['error']:
             print('%s: %s\n missing_mandatory_content: %s' % (entry_id, report['information']['status'], report['error']['missing_mandatory_content'][0]['description']))
         else:
-            error_type = {str(k): len(v) for k, v in report['error'].items() if not v is None and str(k) != 'total'}
+            error_type = {str(k): len(v) for k, v in report['error'].items() if v is not None and str(k) != 'total'}
             print('%s: %s, %s' % (entry_id, report['information']['status'], error_type))
 
     def test_nmr_nef_consistency_check_1pqx(self):
@@ -169,6 +168,7 @@ class TestNmrDpUtility(unittest.TestCase):
 
     def test_nmr_nef2str_release_penta_b(self):
         self.__test_nmr_str2nef_release('penta_b')
+
 
 if __name__ == '__main__':
     unittest.main()

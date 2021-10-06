@@ -14,7 +14,6 @@
 ##
 import unittest
 import os
-import sys
 import pynmrstar
 import json
 from packaging import version
@@ -24,70 +23,241 @@ from wwpdb.utils.nmr.NEFTranslator.NEFTranslator import NEFTranslator
 __pynmrstar_v3_1__ = version.parse(pynmrstar.__version__) >= version.parse("3.1.0")
 __pynmrstar_v3__ = version.parse(pynmrstar.__version__) >= version.parse("3.0.0")
 
-class TestNEFTranslator(unittest.TestCase):
 
+class TestNEFTranslator(unittest.TestCase):
     def setUp(self):
         here = os.path.abspath(os.path.dirname(__file__))
-        self.data_dir_path = os.path.join(here, 'mock-data/')
+        self.data_dir_path = os.path.join(here, "mock-data/")
         self.neft = NEFTranslator()
         self.neft.insert_original_pdb_cs_items = False
-        self.neft.authChainId = ['A', 'B', 'C']
-        self.neft.authSeqMap = {('A', 372): (1, 1), ('A', 373): (1, 2), ('A', 374): (1, 3), ('A', 375): (1, 4),
-                      ('A', 376): (1, 5), ('A', 377): (1, 6), ('A', 378): (1, 7), ('A', 379): (1, 8),
-                      ('A', 380): (1, 9), ('A', 381): (1, 10), ('A', 382): (1, 11), ('A', 383): (1, 12),
-                      ('A', 384): (1, 13), ('A', 385): (1, 14), ('A', 386): (1, 15), ('A', 387): (1, 16),
-                      ('A', 388): (1, 17), ('A', 389): (1, 18), ('A', 390): (1, 19), ('A', 391): (1, 20),
-                      ('A', 392): (1, 21), ('A', 393): (1, 22), ('A', 394): (1, 23), ('A', 395): (1, 24),
-                      ('A', 396): (1, 25), ('A', 397): (1, 26), ('A', 398): (1, 27), ('A', 399): (1, 28),
-                      ('A', 400): (1, 29), ('A', 401): (1, 30), ('A', 402): (1, 31), ('A', 403): (1, 32),
-                      ('A', 404): (1, 33), ('A', 405): (1, 34), ('A', 406): (1, 35), ('A', 407): (1, 36),
-                      ('A', 408): (1, 37), ('A', 409): (1, 38), ('A', 410): (1, 39), ('A', 411): (1, 40),
-                      ('A', 412): (1, 41), ('A', 413): (1, 42), ('A', 414): (1, 43), ('A', 415): (1, 44),
-                      ('A', 416): (1, 45), ('A', 417): (1, 46), ('A', 418): (1, 47), ('A', 419): (1, 48),
-                      ('A', 420): (1, 49), ('A', 421): (1, 50), ('A', 422): (1, 51), ('A', 423): (1, 52),
-                      ('A', 424): (1, 53), ('A', 425): (1, 54), ('A', 426): (1, 55), ('A', 427): (1, 56),
-                      ('A', 428): (1, 57), ('A', 429): (1, 58), ('A', 430): (1, 59), ('A', 431): (1, 60),
-                      ('A', 432): (1, 61), ('A', 433): (1, 62), ('A', 434): (1, 63), ('A', 435): (1, 64),
-                      ('A', 436): (1, 65), ('A', 437): (1, 66), ('A', 438): (1, 67), ('A', 439): (1, 68),
-                      ('A', 440): (1, 69), ('A', 441): (1, 70), ('A', 442): (1, 71), ('A', 443): (1, 72),
-                      ('A', 444): (1, 73), ('A', 445): (1, 74), ('A', 446): (1, 75), ('A', 447): (1, 76),
-                      ('A', 448): (1, 77), ('A', 449): (1, 78), ('A', 450): (1, 79), ('A', 451): (1, 80),
-                      ('A', 452): (1, 81), ('A', 453): (1, 82), ('A', 454): (1, 83), ('A', 455): (1, 84),
-                      ('A', 456): (1, 85), ('A', 457): (1, 86), ('A', 458): (1, 87), ('A', 459): (1, 88),
-                      ('A', 460): (1, 89), ('A', 461): (1, 90), ('A', 462): (1, 91), ('A', 463): (1, 92),
-                      ('A', 464): (1, 93), ('A', 465): (1, 94), ('A', 466): (1, 95), ('A', 467): (1, 96),
-                      ('A', 468): (1, 97), ('A', 469): (1, 98), ('A', 470): (1, 99), ('A', 471): (1, 100),
-                      ('A', 472): (1, 101), ('A', 473): (1, 102), ('A', 474): (1, 103), ('A', 475): (1, 104),
-                      ('A', 476): (1, 105), ('A', 477): (1, 106), ('A', 478): (1, 107), ('A', 479): (1, 108),
-                      ('A', 480): (1, 109), ('A', 481): (1, 110), ('A', 482): (1, 111), ('A', 483): (1, 112),
-                      ('A', 484): (1, 113), ('A', 485): (1, 114), ('A', 486): (1, 115), ('A', 487): (1, 116),
-                      ('A', 488): (1, 117), ('A', 489): (1, 118), ('A', 490): (1, 119), ('A', 491): (1, 120),
-                      ('A', 492): (1, 121), ('A', 493): (1, 122), ('A', 494): (1, 123), ('A', 495): (1, 124),
-                      ('A', 496): (1, 125), ('A', 497): (1, 126), ('A', 498): (1, 127), ('A', 499): (1, 128),
-                      ('A', 500): (1, 129), ('A', 501): (1, 130), ('A', 502): (1, 131), ('A', 503): (1, 132),
-                      ('A', 504): (1, 133), ('A', 505): (1, 134), ('A', 506): (1, 135), ('A', 507): (1, 136),
-                      ('A', 508): (1, 137), ('A', 509): (1, 138), ('A', 510): (1, 139), ('A', 511): (1, 140),
-                      ('A', 512): (1, 141), ('A', 513): (1, 142), ('A', 514): (1, 143), ('A', 515): (1, 144),
-                      ('A', 516): (1, 145), ('A', 517): (1, 146), ('A', 518): (1, 147), ('A', 519): (1, 148),
-                      ('A', 520): (1, 149), ('A', 521): (1, 150), ('A', 522): (1, 151), ('A', 523): (1, 152),
-                      ('A', 524): (1, 153), ('A', 525): (1, 154), ('A', 526): (1, 155), ('A', 527): (1, 156),
-                      ('A', 528): (1, 157), ('A', 529): (1, 158), ('A', 530): (1, 159), ('A', 531): (1, 160),
-                      ('A', 532): (1, 161), ('A', 533): (1, 162), ('A', 534): (1, 163), ('A', 535): (1, 164),
-                      ('A', 536): (1, 165), ('A', 537): (1, 166), ('A', 538): (1, 167), ('A', 539): (1, 168),
-                      ('A', 540): (1, 169), ('A', 541): (1, 170), ('A', 542): (1, 171), ('A', 543): (1, 172),
-                      ('A', 544): (1, 173), ('A', 545): (1, 174), ('A', 546): (1, 175), ('A', 547): (1, 176),
-                      ('A', 548): (1, 177), ('A', 549): (1, 178), ('A', 550): (1, 179), ('A', 551): (1, 180),
-                      ('A', 552): (1, 181), ('A', 553): (1, 182), ('A', 554): (1, 183), ('A', 555): (1, 184),
-                      ('A', 556): (1, 185), ('A', 557): (1, 186), ('A', 558): (1, 187), ('A', 559): (1, 188),
-                      ('A', 560): (1, 189), ('A', 561): (1, 190), ('A', 562): (1, 191), ('A', 563): (1, 192),
-                      ('A', 564): (1, 193), ('A', 565): (1, 194), ('A', 566): (1, 195), ('A', 567): (1, 196),
-                      ('A', 568): (1, 197), ('A', 569): (1, 198), ('A', 570): (1, 199), ('A', 571): (1, 200),
-                      ('A', 572): (1, 201), ('A', 573): (1, 202), ('A', 574): (1, 203), ('A', 575): (1, 204),
-                      ('A', 576): (1, 205), ('A', 577): (1, 206), ('A', 578): (1, 207), ('A', 579): (1, 208),
-                      ('A', 580): (1, 209), ('A', 581): (1, 210), ('A', 582): (1, 211), ('A', 583): (1, 212),
-                      ('A', 584): (1, 213), ('A', 585): (1, 214), ('A', 586): (1, 215),
-                      ('B', 1): (2, 1), ('B', 2): (2, 2), ('B', 3): (2, 3), ('B', 4): (2, 4), ('B', 5): (2, 5),
-                      ('C', 1): (3, 1), ('C', 2): (3, 2), ('C', 3): (3, 3), ('C', 4): (3, 4), ('C', 5): (3, 5)}
+        self.neft.authChainId = ["A", "B", "C"]
+        self.neft.authSeqMap = {
+            ("A", 372): (1, 1),
+            ("A", 373): (1, 2),
+            ("A", 374): (1, 3),
+            ("A", 375): (1, 4),
+            ("A", 376): (1, 5),
+            ("A", 377): (1, 6),
+            ("A", 378): (1, 7),
+            ("A", 379): (1, 8),
+            ("A", 380): (1, 9),
+            ("A", 381): (1, 10),
+            ("A", 382): (1, 11),
+            ("A", 383): (1, 12),
+            ("A", 384): (1, 13),
+            ("A", 385): (1, 14),
+            ("A", 386): (1, 15),
+            ("A", 387): (1, 16),
+            ("A", 388): (1, 17),
+            ("A", 389): (1, 18),
+            ("A", 390): (1, 19),
+            ("A", 391): (1, 20),
+            ("A", 392): (1, 21),
+            ("A", 393): (1, 22),
+            ("A", 394): (1, 23),
+            ("A", 395): (1, 24),
+            ("A", 396): (1, 25),
+            ("A", 397): (1, 26),
+            ("A", 398): (1, 27),
+            ("A", 399): (1, 28),
+            ("A", 400): (1, 29),
+            ("A", 401): (1, 30),
+            ("A", 402): (1, 31),
+            ("A", 403): (1, 32),
+            ("A", 404): (1, 33),
+            ("A", 405): (1, 34),
+            ("A", 406): (1, 35),
+            ("A", 407): (1, 36),
+            ("A", 408): (1, 37),
+            ("A", 409): (1, 38),
+            ("A", 410): (1, 39),
+            ("A", 411): (1, 40),
+            ("A", 412): (1, 41),
+            ("A", 413): (1, 42),
+            ("A", 414): (1, 43),
+            ("A", 415): (1, 44),
+            ("A", 416): (1, 45),
+            ("A", 417): (1, 46),
+            ("A", 418): (1, 47),
+            ("A", 419): (1, 48),
+            ("A", 420): (1, 49),
+            ("A", 421): (1, 50),
+            ("A", 422): (1, 51),
+            ("A", 423): (1, 52),
+            ("A", 424): (1, 53),
+            ("A", 425): (1, 54),
+            ("A", 426): (1, 55),
+            ("A", 427): (1, 56),
+            ("A", 428): (1, 57),
+            ("A", 429): (1, 58),
+            ("A", 430): (1, 59),
+            ("A", 431): (1, 60),
+            ("A", 432): (1, 61),
+            ("A", 433): (1, 62),
+            ("A", 434): (1, 63),
+            ("A", 435): (1, 64),
+            ("A", 436): (1, 65),
+            ("A", 437): (1, 66),
+            ("A", 438): (1, 67),
+            ("A", 439): (1, 68),
+            ("A", 440): (1, 69),
+            ("A", 441): (1, 70),
+            ("A", 442): (1, 71),
+            ("A", 443): (1, 72),
+            ("A", 444): (1, 73),
+            ("A", 445): (1, 74),
+            ("A", 446): (1, 75),
+            ("A", 447): (1, 76),
+            ("A", 448): (1, 77),
+            ("A", 449): (1, 78),
+            ("A", 450): (1, 79),
+            ("A", 451): (1, 80),
+            ("A", 452): (1, 81),
+            ("A", 453): (1, 82),
+            ("A", 454): (1, 83),
+            ("A", 455): (1, 84),
+            ("A", 456): (1, 85),
+            ("A", 457): (1, 86),
+            ("A", 458): (1, 87),
+            ("A", 459): (1, 88),
+            ("A", 460): (1, 89),
+            ("A", 461): (1, 90),
+            ("A", 462): (1, 91),
+            ("A", 463): (1, 92),
+            ("A", 464): (1, 93),
+            ("A", 465): (1, 94),
+            ("A", 466): (1, 95),
+            ("A", 467): (1, 96),
+            ("A", 468): (1, 97),
+            ("A", 469): (1, 98),
+            ("A", 470): (1, 99),
+            ("A", 471): (1, 100),
+            ("A", 472): (1, 101),
+            ("A", 473): (1, 102),
+            ("A", 474): (1, 103),
+            ("A", 475): (1, 104),
+            ("A", 476): (1, 105),
+            ("A", 477): (1, 106),
+            ("A", 478): (1, 107),
+            ("A", 479): (1, 108),
+            ("A", 480): (1, 109),
+            ("A", 481): (1, 110),
+            ("A", 482): (1, 111),
+            ("A", 483): (1, 112),
+            ("A", 484): (1, 113),
+            ("A", 485): (1, 114),
+            ("A", 486): (1, 115),
+            ("A", 487): (1, 116),
+            ("A", 488): (1, 117),
+            ("A", 489): (1, 118),
+            ("A", 490): (1, 119),
+            ("A", 491): (1, 120),
+            ("A", 492): (1, 121),
+            ("A", 493): (1, 122),
+            ("A", 494): (1, 123),
+            ("A", 495): (1, 124),
+            ("A", 496): (1, 125),
+            ("A", 497): (1, 126),
+            ("A", 498): (1, 127),
+            ("A", 499): (1, 128),
+            ("A", 500): (1, 129),
+            ("A", 501): (1, 130),
+            ("A", 502): (1, 131),
+            ("A", 503): (1, 132),
+            ("A", 504): (1, 133),
+            ("A", 505): (1, 134),
+            ("A", 506): (1, 135),
+            ("A", 507): (1, 136),
+            ("A", 508): (1, 137),
+            ("A", 509): (1, 138),
+            ("A", 510): (1, 139),
+            ("A", 511): (1, 140),
+            ("A", 512): (1, 141),
+            ("A", 513): (1, 142),
+            ("A", 514): (1, 143),
+            ("A", 515): (1, 144),
+            ("A", 516): (1, 145),
+            ("A", 517): (1, 146),
+            ("A", 518): (1, 147),
+            ("A", 519): (1, 148),
+            ("A", 520): (1, 149),
+            ("A", 521): (1, 150),
+            ("A", 522): (1, 151),
+            ("A", 523): (1, 152),
+            ("A", 524): (1, 153),
+            ("A", 525): (1, 154),
+            ("A", 526): (1, 155),
+            ("A", 527): (1, 156),
+            ("A", 528): (1, 157),
+            ("A", 529): (1, 158),
+            ("A", 530): (1, 159),
+            ("A", 531): (1, 160),
+            ("A", 532): (1, 161),
+            ("A", 533): (1, 162),
+            ("A", 534): (1, 163),
+            ("A", 535): (1, 164),
+            ("A", 536): (1, 165),
+            ("A", 537): (1, 166),
+            ("A", 538): (1, 167),
+            ("A", 539): (1, 168),
+            ("A", 540): (1, 169),
+            ("A", 541): (1, 170),
+            ("A", 542): (1, 171),
+            ("A", 543): (1, 172),
+            ("A", 544): (1, 173),
+            ("A", 545): (1, 174),
+            ("A", 546): (1, 175),
+            ("A", 547): (1, 176),
+            ("A", 548): (1, 177),
+            ("A", 549): (1, 178),
+            ("A", 550): (1, 179),
+            ("A", 551): (1, 180),
+            ("A", 552): (1, 181),
+            ("A", 553): (1, 182),
+            ("A", 554): (1, 183),
+            ("A", 555): (1, 184),
+            ("A", 556): (1, 185),
+            ("A", 557): (1, 186),
+            ("A", 558): (1, 187),
+            ("A", 559): (1, 188),
+            ("A", 560): (1, 189),
+            ("A", 561): (1, 190),
+            ("A", 562): (1, 191),
+            ("A", 563): (1, 192),
+            ("A", 564): (1, 193),
+            ("A", 565): (1, 194),
+            ("A", 566): (1, 195),
+            ("A", 567): (1, 196),
+            ("A", 568): (1, 197),
+            ("A", 569): (1, 198),
+            ("A", 570): (1, 199),
+            ("A", 571): (1, 200),
+            ("A", 572): (1, 201),
+            ("A", 573): (1, 202),
+            ("A", 574): (1, 203),
+            ("A", 575): (1, 204),
+            ("A", 576): (1, 205),
+            ("A", 577): (1, 206),
+            ("A", 578): (1, 207),
+            ("A", 579): (1, 208),
+            ("A", 580): (1, 209),
+            ("A", 581): (1, 210),
+            ("A", 582): (1, 211),
+            ("A", 583): (1, 212),
+            ("A", 584): (1, 213),
+            ("A", 585): (1, 214),
+            ("A", 586): (1, 215),
+            ("B", 1): (2, 1),
+            ("B", 2): (2, 2),
+            ("B", 3): (2, 3),
+            ("B", 4): (2, 4),
+            ("B", 5): (2, 5),
+            ("C", 1): (3, 1),
+            ("C", 2): (3, 2),
+            ("C", 3): (3, 3),
+            ("C", 4): (3, 4),
+            ("C", 5): (3, 5),
+        }
         self.neft.selfSeqMap = {k: k for k in self.neft.authSeqMap.keys()}
         pass
 
@@ -95,731 +265,3178 @@ class TestNEFTranslator(unittest.TestCase):
         pass
 
     def test_read_input_file(self):
-        read_out = self.neft.read_input_file(self.data_dir_path  + '2mtv.nef')
+        read_out = self.neft.read_input_file(self.data_dir_path + "2mtv.nef")
         self.assertEqual(read_out[0], True)
-        self.assertEqual(read_out[1], 'Entry')
-        read_out = self.neft.read_input_file(self.data_dir_path + 'saveframeonly.nef')
+        self.assertEqual(read_out[1], "Entry")
+        read_out = self.neft.read_input_file(self.data_dir_path + "saveframeonly.nef")
         self.assertEqual(read_out[0], True)
-        self.assertEqual(read_out[1], 'Saveframe')
-        read_out = self.neft.read_input_file(self.data_dir_path + 'loopOnly1.nef')
+        self.assertEqual(read_out[1], "Saveframe")
+        read_out = self.neft.read_input_file(self.data_dir_path + "loopOnly1.nef")
         self.assertEqual(read_out[0], True)
-        self.assertEqual(read_out[1], 'Loop')
-        read_out = self.neft.read_input_file(self.data_dir_path + 'nonsense.nef')
+        self.assertEqual(read_out[1], "Loop")
+        read_out = self.neft.read_input_file(self.data_dir_path + "nonsense.nef")
         self.assertEqual(read_out[0], False)
         if __pynmrstar_v3_1__:
-            self.assertEqual(read_out[1], 'Invalid file. NMR-STAR files must start with \'data_\'. Did you accidentally select the wrong file? Your file started with \'A\'. Error detected on line 3.')
+            self.assertEqual(
+                read_out[1],
+                "Invalid file. NMR-STAR files must start with 'data_'. Did you accidentally select the wrong file? Your file started with 'A'. Error detected on line 3.",
+            )
         elif __pynmrstar_v3__:
-            self.assertEqual(read_out[1], 'Invalid file. NMR-STAR files must start with \'data_\'. Did you accidentally select the wrong file? on line 2')
+            self.assertEqual(read_out[1], "Invalid file. NMR-STAR files must start with 'data_'. Did you accidentally select the wrong file? on line 2")
         else:
-            self.assertEqual(read_out[1], '("Invalid file. NMR-STAR files must start with \'data_\'. Did you accidentally select the wrong file?", 2)')
+            self.assertEqual(read_out[1], "(\"Invalid file. NMR-STAR files must start with 'data_'. Did you accidentally select the wrong file?\", 2)")
 
     def test_load_csv_data(self):
         self.assertTrue(len(self.neft.tagMap) > 0, "Can't read NEF-NMRSTAR_equivalence.csv or its empty")
         self.assertTrue(len(self.neft.nef_mandatory_tag) > 0, "Can't read NEF_mandatory.csv or its empty")
         self.assertTrue(len(self.neft.star_mandatory_tag) > 0, "Can't read NMR-STAR_mandatory.csv or its empty")
+
     """
     def test_load_json_data(self):
         self.assertTrue(len(self.neft.codeDict) > 0, "Can't read codeDict.json or its empty")
         self.assertTrue(len(self.neft.atomDict) > 0, "Can't read atomDict.json or its empty")
     """
+
     def test_get_one_letter_code(self):
-        self.assertTrue(self.neft.get_one_letter_code('ALA') == 'A')
-        self.assertTrue(self.neft.get_one_letter_code('Ala') == 'A')
-        self.assertTrue(self.neft.get_one_letter_code('Axy') == 'X')
+        self.assertTrue(self.neft.get_one_letter_code("ALA") == "A")
+        self.assertTrue(self.neft.get_one_letter_code("Ala") == "A")
+        self.assertTrue(self.neft.get_one_letter_code("Axy") == "X")
+
     """
     def test_get_readable_time_stamp(self):
         self.assertEqual(self.neft.get_readable_time_stamp(1556036192.7247672), '2019-04-23 16:16:32') # CDT to UTC
     """
+
     def test_validate_file(self):
-        self.assertEqual(self.neft.validate_file(self.data_dir_path + 'xxx.xx', 'A')[0], False) # File not found
-        self.assertEqual(self.neft.validate_file(self.data_dir_path + '2l9r.nef', 'A')[0], True)
-        self.assertEqual(self.neft.validate_file(self.data_dir_path + '2l9r.nef', 'S')[0], True)
-        self.assertEqual(self.neft.validate_file(self.data_dir_path + '2l9r.nef', 'R')[0], True)
-        self.assertEqual(self.neft.validate_file(self.data_dir_path + '2l9r.nef', 'X')[0], False)
-        self.assertEqual(self.neft.validate_file(self.data_dir_path + '2l9r.str', 'A')[0], True)
-        self.assertEqual(self.neft.validate_file(self.data_dir_path + '2l9r.str', 'S')[0], True)
-        self.assertEqual(self.neft.validate_file(self.data_dir_path + '2l9r.str', 'R')[0], True)
-        self.assertEqual(self.neft.validate_file(self.data_dir_path + '2l9r.str', 'X')[0], False)
-        self.assertEqual(self.neft.validate_file(self.data_dir_path + 'nocs.nef', 'A')[0], False)
-        self.assertEqual(self.neft.validate_file(self.data_dir_path + 'nocs.nef', 'S')[0], False)
-        self.assertEqual(self.neft.validate_file(self.data_dir_path + 'nocs.nef', 'R')[0], True)
-        self.assertEqual(self.neft.validate_file(self.data_dir_path + 'norest.nef', 'A')[0], False)
-        self.assertEqual(self.neft.validate_file(self.data_dir_path + 'norest.nef', 'S')[0], True)
-        self.assertEqual(self.neft.validate_file(self.data_dir_path + 'norest.nef', 'R')[0], False)
-        self.assertEqual(self.neft.validate_file(self.data_dir_path + 'norestcs.nef', 'A')[0], False)
-        self.assertEqual(self.neft.validate_file(self.data_dir_path + 'norestcs.nef', 'S')[0], False)
-        self.assertEqual(self.neft.validate_file(self.data_dir_path + 'norestcs.nef', 'R')[0], False)
-        self.assertEqual(self.neft.validate_file(self.data_dir_path + 'nocs.str', 'A')[0], False)
-        self.assertEqual(self.neft.validate_file(self.data_dir_path + 'nocs.str', 'S')[0], False)
-        self.assertEqual(self.neft.validate_file(self.data_dir_path + 'nocs.str', 'R')[0], True)
-        self.assertEqual(self.neft.validate_file(self.data_dir_path + 'norest.str', 'A')[0], False)
-        self.assertEqual(self.neft.validate_file(self.data_dir_path + 'norest.str', 'S')[0], True)
-        self.assertEqual(self.neft.validate_file(self.data_dir_path + 'norest.str', 'R')[0], False)
-        self.assertEqual(self.neft.validate_file(self.data_dir_path + 'norestcs.str', 'A')[0], False)
-        self.assertEqual(self.neft.validate_file(self.data_dir_path + 'norestcs.str', 'S')[0], False)
-        self.assertEqual(self.neft.validate_file(self.data_dir_path + 'norestcs.str', 'R')[0], False)
-        self.assertEqual(self.neft.validate_file(self.data_dir_path + 'nodat.str', 'R')[0], False)
-        self.assertEqual(self.neft.validate_file(self.data_dir_path + 'nodat.nef', 'R')[0], False)
-        self.assertEqual(self.neft.validate_file(self.data_dir_path + 'saveframeonly.nef', 'S')[0], True)
-        self.assertEqual(self.neft.validate_file(self.data_dir_path + 'loopOnly1.nef', 'S')[0], True)
-        self.assertEqual(self.neft.validate_file(self.data_dir_path + 'nonsense.nef', 'R')[0], False)
+        self.assertEqual(self.neft.validate_file(self.data_dir_path + "xxx.xx", "A")[0], False)  # File not found
+        self.assertEqual(self.neft.validate_file(self.data_dir_path + "2l9r.nef", "A")[0], True)
+        self.assertEqual(self.neft.validate_file(self.data_dir_path + "2l9r.nef", "S")[0], True)
+        self.assertEqual(self.neft.validate_file(self.data_dir_path + "2l9r.nef", "R")[0], True)
+        self.assertEqual(self.neft.validate_file(self.data_dir_path + "2l9r.nef", "X")[0], False)
+        self.assertEqual(self.neft.validate_file(self.data_dir_path + "2l9r.str", "A")[0], True)
+        self.assertEqual(self.neft.validate_file(self.data_dir_path + "2l9r.str", "S")[0], True)
+        self.assertEqual(self.neft.validate_file(self.data_dir_path + "2l9r.str", "R")[0], True)
+        self.assertEqual(self.neft.validate_file(self.data_dir_path + "2l9r.str", "X")[0], False)
+        self.assertEqual(self.neft.validate_file(self.data_dir_path + "nocs.nef", "A")[0], False)
+        self.assertEqual(self.neft.validate_file(self.data_dir_path + "nocs.nef", "S")[0], False)
+        self.assertEqual(self.neft.validate_file(self.data_dir_path + "nocs.nef", "R")[0], True)
+        self.assertEqual(self.neft.validate_file(self.data_dir_path + "norest.nef", "A")[0], False)
+        self.assertEqual(self.neft.validate_file(self.data_dir_path + "norest.nef", "S")[0], True)
+        self.assertEqual(self.neft.validate_file(self.data_dir_path + "norest.nef", "R")[0], False)
+        self.assertEqual(self.neft.validate_file(self.data_dir_path + "norestcs.nef", "A")[0], False)
+        self.assertEqual(self.neft.validate_file(self.data_dir_path + "norestcs.nef", "S")[0], False)
+        self.assertEqual(self.neft.validate_file(self.data_dir_path + "norestcs.nef", "R")[0], False)
+        self.assertEqual(self.neft.validate_file(self.data_dir_path + "nocs.str", "A")[0], False)
+        self.assertEqual(self.neft.validate_file(self.data_dir_path + "nocs.str", "S")[0], False)
+        self.assertEqual(self.neft.validate_file(self.data_dir_path + "nocs.str", "R")[0], True)
+        self.assertEqual(self.neft.validate_file(self.data_dir_path + "norest.str", "A")[0], False)
+        self.assertEqual(self.neft.validate_file(self.data_dir_path + "norest.str", "S")[0], True)
+        self.assertEqual(self.neft.validate_file(self.data_dir_path + "norest.str", "R")[0], False)
+        self.assertEqual(self.neft.validate_file(self.data_dir_path + "norestcs.str", "A")[0], False)
+        self.assertEqual(self.neft.validate_file(self.data_dir_path + "norestcs.str", "S")[0], False)
+        self.assertEqual(self.neft.validate_file(self.data_dir_path + "norestcs.str", "R")[0], False)
+        self.assertEqual(self.neft.validate_file(self.data_dir_path + "nodat.str", "R")[0], False)
+        self.assertEqual(self.neft.validate_file(self.data_dir_path + "nodat.nef", "R")[0], False)
+        self.assertEqual(self.neft.validate_file(self.data_dir_path + "saveframeonly.nef", "S")[0], True)
+        self.assertEqual(self.neft.validate_file(self.data_dir_path + "loopOnly1.nef", "S")[0], True)
+        self.assertEqual(self.neft.validate_file(self.data_dir_path + "nonsense.nef", "R")[0], False)
 
     def test_is_empty_loop(self):
-        dat = pynmrstar.Entry.from_file(self.data_dir_path + 'nodat.nef')
-        self.assertEqual(self.neft.is_empty_loop(dat, '_nef_chemical_shift', 'Entry'), False)
-        self.assertEqual(self.neft.is_empty_loop(dat, '_nef_distance_restraint', 'Entry'), True)
-        dat = pynmrstar.Entry.from_file(self.data_dir_path + 'nodat.str')
-        self.assertEqual(self.neft.is_empty_loop(dat, '_Atom_chem_shift', 'Entry'), False)
-        self.assertEqual(self.neft.is_empty_loop(dat, '_Gen_dist_constraint', 'Entry'), True)
+        dat = pynmrstar.Entry.from_file(self.data_dir_path + "nodat.nef")
+        self.assertEqual(self.neft.is_empty_loop(dat, "_nef_chemical_shift", "Entry"), False)
+        self.assertEqual(self.neft.is_empty_loop(dat, "_nef_distance_restraint", "Entry"), True)
+        dat = pynmrstar.Entry.from_file(self.data_dir_path + "nodat.str")
+        self.assertEqual(self.neft.is_empty_loop(dat, "_Atom_chem_shift", "Entry"), False)
+        self.assertEqual(self.neft.is_empty_loop(dat, "_Gen_dist_constraint", "Entry"), True)
 
     def test_get_data_content(self):
-        (isValid, content, data) = self.neft.read_input_file(self.data_dir_path + '2mqq.nef')
+        (isValid, content, data) = self.neft.read_input_file(self.data_dir_path + "2mqq.nef")
         self.assertTrue(isValid)
         datacontent = self.neft.get_data_content(data, content)
-        self.assertEqual(datacontent[0], ['nef_nmr_meta_data', 'nef_molecular_system', 'nef_chemical_shift_list',
-                                          'nef_chemical_shift_list', 'nef_chemical_shift_list',
-                                          'nef_distance_restraint_list',
-                                          'nef_distance_restraint_list', 'nef_dihedral_restraint_list'])
-        self.assertEqual(datacontent[1],
-                         ['_nef_program_script', '_nef_sequence', '_nef_chemical_shift', '_nef_chemical_shift',
-                          '_nef_chemical_shift', '_nef_distance_restraint', '_nef_distance_restraint',
-                          '_nef_dihedral_restraint'])
-        (isValid, content, data) = self.neft.read_input_file(self.data_dir_path + '2mqq.str')
+        self.assertEqual(
+            datacontent[0],
+            [
+                "nef_nmr_meta_data",
+                "nef_molecular_system",
+                "nef_chemical_shift_list",
+                "nef_chemical_shift_list",
+                "nef_chemical_shift_list",
+                "nef_distance_restraint_list",
+                "nef_distance_restraint_list",
+                "nef_dihedral_restraint_list",
+            ],
+        )
+        self.assertEqual(
+            datacontent[1],
+            [
+                "_nef_program_script",
+                "_nef_sequence",
+                "_nef_chemical_shift",
+                "_nef_chemical_shift",
+                "_nef_chemical_shift",
+                "_nef_distance_restraint",
+                "_nef_distance_restraint",
+                "_nef_dihedral_restraint",
+            ],
+        )
+        (isValid, content, data) = self.neft.read_input_file(self.data_dir_path + "2mqq.str")
         self.assertTrue(isValid)
         datacontent = self.neft.get_data_content(data, content)
-        self.assertEqual(datacontent[0], ['entry_information', 'assembly', 'assigned_chemical_shifts',
-                                          'assigned_chemical_shifts', 'assigned_chemical_shifts',
-                                          'general_distance_constraints', 'general_distance_constraints',
-                                          'torsion_angle_constraints'])
-        self.assertEqual(datacontent[1],
-                         ['_Software_applied_methods', '_Chem_comp_assembly', '_Atom_chem_shift', '_Atom_chem_shift',
-                          '_Atom_chem_shift', '_Gen_dist_constraint', '_Gen_dist_constraint',
-                          '_Torsion_angle_constraint'])
+        self.assertEqual(
+            datacontent[0],
+            [
+                "entry_information",
+                "assembly",
+                "assigned_chemical_shifts",
+                "assigned_chemical_shifts",
+                "assigned_chemical_shifts",
+                "general_distance_constraints",
+                "general_distance_constraints",
+                "torsion_angle_constraints",
+            ],
+        )
+        self.assertEqual(
+            datacontent[1],
+            [
+                "_Software_applied_methods",
+                "_Chem_comp_assembly",
+                "_Atom_chem_shift",
+                "_Atom_chem_shift",
+                "_Atom_chem_shift",
+                "_Gen_dist_constraint",
+                "_Gen_dist_constraint",
+                "_Torsion_angle_constraint",
+            ],
+        )
 
     def test_get_seq_from_cs_loop(self):
-        (isValid, jsondata) = self.neft.get_seq_from_cs_loop(self.data_dir_path + '2mqq.nef')
+        (isValid, jsondata) = self.neft.get_seq_from_cs_loop(self.data_dir_path + "2mqq.nef")
         dat = json.loads(jsondata)
         self.assertTrue(isValid)
-        self.assertEqual(dat['file_type'], 'nef')
-        self.assertEqual(len(dat['data'][0][0]['seq_id']), 214)
-        self.assertEqual(len(dat['data'][1][0]['seq_id']), 5)
-        self.assertEqual(len(dat['data'][2][0]['seq_id']), 5)
-        (isValid, jsondata) = self.neft.get_seq_from_cs_loop(self.data_dir_path + '2mqq.str')
+        self.assertEqual(dat["file_type"], "nef")
+        self.assertEqual(len(dat["data"][0][0]["seq_id"]), 214)
+        self.assertEqual(len(dat["data"][1][0]["seq_id"]), 5)
+        self.assertEqual(len(dat["data"][2][0]["seq_id"]), 5)
+        (isValid, jsondata) = self.neft.get_seq_from_cs_loop(self.data_dir_path + "2mqq.str")
         dat = json.loads(jsondata)
         self.assertTrue(isValid)
-        self.assertEqual(dat['file_type'], 'nmr-star')
-        self.assertEqual(len(dat['data'][0][0]['seq_id']), 214)
-        self.assertEqual(len(dat['data'][1][0]['seq_id']), 5)
-        self.assertEqual(len(dat['data'][2][0]['seq_id']), 5)
+        self.assertEqual(dat["file_type"], "nmr-star")
+        self.assertEqual(len(dat["data"][0][0]["seq_id"]), 214)
+        self.assertEqual(len(dat["data"][1][0]["seq_id"]), 5)
+        self.assertEqual(len(dat["data"][2][0]["seq_id"]), 5)
 
     def test_get_nef_seq(self):
-        dat = pynmrstar.Entry.from_file(self.data_dir_path + '2mqq.nef')
-        self.assertEqual(self.neft.get_nef_seq(dat),
-                         [[{'chain_id': 'A', 'seq_id': [372, 373, 375, 376, 377, 378, 379, 380, 381, 382, 383, 384, 385, 386, 387, 388, 389, 390, 391, 392, 393, 394, 395, 396, 397, 398, 399, 400, 401, 402, 403, 404, 405, 406, 407, 408, 409, 410, 411, 412, 413, 414, 415, 416, 417, 418, 419, 420, 421, 422, 423, 424, 425, 426, 427, 428, 429, 430, 431, 432, 433, 434, 435, 436, 437, 438, 439, 440, 441, 442, 443, 444, 445, 446, 447, 448, 449, 450, 451, 452, 453, 454, 455, 456, 457, 458, 459, 460, 461, 462, 463, 464, 465, 466, 467, 468, 469, 470, 471, 472, 473, 474, 475, 476, 477, 478, 479, 480, 481, 482, 483, 484, 485, 486, 487, 488, 489, 490, 491, 492, 493, 494, 495, 496, 497, 498, 499, 500, 501, 502, 503, 504, 505, 506, 507, 508, 509, 510, 511, 512, 513, 514, 515, 516, 517, 518, 519, 520, 521, 522, 523, 524, 525, 526, 527, 528, 529, 530, 531, 532, 533, 534, 535, 536, 537, 538, 539, 540, 541, 542, 543, 544, 545, 546, 547, 548, 549, 550, 551, 552, 553, 554, 555, 556, 557, 558, 559, 560, 561, 562, 563, 564, 565, 566, 567, 568, 569, 570, 571, 572, 573, 574, 575, 576, 577, 578, 579, 580, 581, 582, 583, 584, 585, 586],
-                            'comp_id': ['TYR', 'GLY', 'HIS', 'ALA', 'ASP', 'SER', 'PRO', 'VAL', 'LEU', 'MET', 'VAL', 'TYR', 'GLY', 'LEU', 'ASP', 'GLN', 'SER', 'LYS', 'MET', 'ASN', 'CYS', 'ASP', 'ARG', 'VAL', 'PHE', 'ASN', 'VAL', 'PHE', 'CYS', 'LEU', 'TYR', 'GLY', 'ASN', 'VAL', 'GLU', 'LYS', 'VAL', 'LYS', 'PHE', 'MET', 'LYS', 'SER', 'LYS', 'PRO', 'GLY', 'ALA', 'ALA', 'MET', 'VAL', 'GLU', 'MET', 'ALA', 'ASP', 'GLY', 'TYR', 'ALA', 'VAL', 'ASP', 'ARG', 'ALA', 'ILE', 'THR', 'HIS', 'LEU', 'ASN', 'ASN', 'ASN', 'PHE', 'MET', 'PHE', 'GLY', 'GLN', 'LYS', 'MET', 'ASN', 'VAL', 'CYS', 'VAL', 'SER', 'LYS', 'GLN', 'PRO', 'ALA', 'ILE', 'MET', 'PRO', 'GLY', 'GLN', 'SER', 'TYR', 'GLY', 'LEU', 'GLU', 'ASP', 'GLY', 'SER', 'CYS', 'SER', 'TYR', 'LYS', 'ASP', 'PHE', 'SER', 'GLU', 'SER', 'ARG', 'ASN', 'ASN', 'ARG', 'PHE', 'SER', 'THR', 'PRO', 'GLU', 'GLN', 'ALA', 'ALA', 'LYS', 'ASN', 'ARG', 'ILE', 'GLN', 'HIS', 'PRO', 'SER', 'ASN', 'VAL', 'LEU', 'HIS', 'PHE', 'PHE', 'ASN', 'ALA', 'PRO', 'LEU', 'GLU', 'VAL', 'THR', 'GLU', 'GLU', 'ASN', 'PHE', 'PHE', 'GLU', 'ILE', 'CYS', 'ASP', 'GLU', 'LEU', 'GLY', 'VAL', 'LYS', 'ARG', 'PRO', 'THR', 'SER', 'VAL', 'LYS', 'VAL', 'PHE', 'SER', 'GLY', 'LYS', 'SER', 'GLU', 'ARG', 'SER', 'SER', 'SER', 'GLY', 'LEU', 'LEU', 'GLU', 'TRP', 'ASP', 'SER', 'LYS', 'SER', 'ASP', 'ALA', 'LEU', 'GLU', 'THR', 'LEU', 'GLY', 'PHE', 'LEU', 'ASN', 'HIS', 'TYR', 'GLN', 'MET', 'LYS', 'ASN', 'PRO', 'ASN', 'GLY', 'PRO', 'TYR', 'PRO', 'TYR', 'THR', 'LEU', 'LYS', 'LEU', 'CYS', 'PHE', 'SER', 'THR', 'ALA', 'GLN', 'HIS', 'ALA', 'SER']}],
-                          [{'chain_id': 'B', 'seq_id': [i for i in range(1, 6)], 'comp_id': ['A', 'C', 'A', 'C', 'A']}],
-                          [{'chain_id': 'C', 'seq_id': [i for i in range(1, 6)], 'comp_id': ['A', 'C', 'A', 'C', 'A']}]])
-        self.assertEqual(self.neft.get_nef_seq(dat, 'nef_sequence', 'sequence_code', 'residue_name'),
-                         [[{'chain_id': 'A', 'seq_id': [i for i in range(372, 587)],
-                            'comp_id': ['TYR', 'GLY', 'PRO', 'HIS', 'ALA', 'ASP', 'SER', 'PRO', 'VAL', 'LEU', 'MET', 'VAL', 'TYR', 'GLY', 'LEU', 'ASP', 'GLN', 'SER', 'LYS', 'MET', 'ASN', 'CYS', 'ASP', 'ARG', 'VAL', 'PHE', 'ASN', 'VAL', 'PHE', 'CYS', 'LEU', 'TYR', 'GLY', 'ASN', 'VAL', 'GLU', 'LYS', 'VAL', 'LYS', 'PHE', 'MET', 'LYS', 'SER', 'LYS', 'PRO', 'GLY', 'ALA', 'ALA', 'MET', 'VAL', 'GLU', 'MET', 'ALA', 'ASP', 'GLY', 'TYR', 'ALA', 'VAL', 'ASP', 'ARG', 'ALA', 'ILE', 'THR', 'HIS', 'LEU', 'ASN', 'ASN', 'ASN', 'PHE', 'MET', 'PHE', 'GLY', 'GLN', 'LYS', 'MET', 'ASN', 'VAL', 'CYS', 'VAL', 'SER', 'LYS', 'GLN', 'PRO', 'ALA', 'ILE', 'MET', 'PRO', 'GLY', 'GLN', 'SER', 'TYR', 'GLY', 'LEU', 'GLU', 'ASP', 'GLY', 'SER', 'CYS', 'SER', 'TYR', 'LYS', 'ASP', 'PHE', 'SER', 'GLU', 'SER', 'ARG', 'ASN', 'ASN', 'ARG', 'PHE', 'SER', 'THR', 'PRO', 'GLU', 'GLN', 'ALA', 'ALA', 'LYS', 'ASN', 'ARG', 'ILE', 'GLN', 'HIS', 'PRO', 'SER', 'ASN', 'VAL', 'LEU', 'HIS', 'PHE', 'PHE', 'ASN', 'ALA', 'PRO', 'LEU', 'GLU', 'VAL', 'THR', 'GLU', 'GLU', 'ASN', 'PHE', 'PHE', 'GLU', 'ILE', 'CYS', 'ASP', 'GLU', 'LEU', 'GLY', 'VAL', 'LYS', 'ARG', 'PRO', 'THR', 'SER', 'VAL', 'LYS', 'VAL', 'PHE', 'SER', 'GLY', 'LYS', 'SER', 'GLU', 'ARG', 'SER', 'SER', 'SER', 'GLY', 'LEU', 'LEU', 'GLU', 'TRP', 'ASP', 'SER', 'LYS', 'SER', 'ASP', 'ALA', 'LEU', 'GLU', 'THR', 'LEU', 'GLY', 'PHE', 'LEU', 'ASN', 'HIS', 'TYR', 'GLN', 'MET', 'LYS', 'ASN', 'PRO', 'ASN', 'GLY', 'PRO', 'TYR', 'PRO', 'TYR', 'THR', 'LEU', 'LYS', 'LEU', 'CYS', 'PHE', 'SER', 'THR', 'ALA', 'GLN', 'HIS', 'ALA', 'SER']},
-                           {'chain_id': 'B', 'seq_id': [i for i in range(1, 6)], 'comp_id': ['A', 'C', 'A', 'C', 'A'], 'identical_chain_id': ['C']},
-                           {'chain_id': 'C', 'seq_id': [i for i in range(1, 6)], 'comp_id': ['A', 'C', 'A', 'C', 'A'], 'identical_chain_id': ['B']}]])
-        dat = self.neft.read_input_file(self.data_dir_path + 'saveframeonly.nef')[2]
-        self.assertEqual(self.neft.get_nef_seq(dat),
-                         [[{'chain_id': 'A', 'seq_id': [i for i in range(10, 70)],
-                            'comp_id': ['HIS', 'MET', 'SER', 'HIS', 'THR', 'GLN', 'VAL', 'ILE', 'GLU',
-                                        'LEU', 'GLU', 'ARG', 'LYS', 'PHE', 'SER', 'HIS', 'GLN', 'LYS',
-                                        'TYR', 'LEU', 'SER', 'ALA', 'PRO', 'GLU', 'ARG', 'ALA', 'HIS',
-                                        'LEU', 'ALA', 'LYS', 'ASN', 'LEU', 'LYS', 'LEU', 'THR', 'GLU',
-                                        'THR', 'GLN', 'VAL', 'LYS', 'ILE', 'TRP', 'PHE', 'GLN', 'ASN',
-                                        'ARG', 'ARG', 'TYR', 'LYS', 'THR', 'LYS', 'ARG', 'LYS', 'GLN',
-                                        'LEU', 'SER', 'SER', 'GLU', 'LEU', 'GLY']}]])
-        dat = self.neft.read_input_file(self.data_dir_path + 'loopOnly1.nef')[2]
-        self.assertEqual(self.neft.get_nef_seq(dat),
-                         [[{'chain_id': 'A', 'seq_id': [i for i in range(10, 120)],
-                            'comp_id': ['HIS', 'MET', 'ASN', 'SER', 'GLN', 'ARG', 'LEU', 'ILE', 'HIS',
-                                        'ILE', 'LYS', 'THR', 'LEU', 'THR', 'THR', 'PRO', 'ASN', 'GLU',
-                                        'ASN', 'ALA', 'LEU', 'LYS', 'PHE', 'LEU', 'SER', 'THR', 'ASP',
-                                        'GLY', 'GLU', 'MET', 'LEU', 'GLN', 'THR', 'ARG', 'GLY', 'SER',
-                                        'LYS', 'SER', 'ILE', 'VAL', 'ILE', 'LYS', 'ASN', 'THR', 'ASP',
-                                        'GLU', 'ASN', 'LEU', 'ILE', 'ASN', 'HIS', 'SER', 'LYS', 'LEU',
-                                        'ALA', 'GLN', 'GLN', 'ILE', 'PHE', 'LEU', 'GLN', 'CYS', 'PRO',
-                                        'GLY', 'VAL', 'GLU', 'SER', 'LEU', 'MET', 'ILE', 'GLY', 'ASP',
-                                        'ASP', 'PHE', 'LEU', 'THR', 'ILE', 'ASN', 'LYS', 'ASP', 'ARG',
-                                        'MET', 'VAL', 'HIS', 'TRP', 'ASN', 'SER', 'ILE', 'LYS', 'PRO',
-                                        'GLU', 'ILE', 'ILE', 'ASP', 'LEU', 'LEU', 'THR', 'LYS', 'GLN',
-                                        'LEU', 'ALA', 'TYR', 'GLY', 'GLU', 'ASP', 'VAL', 'ILE', 'SER',
-                                        'LYS', 'GLU']}]])
-        entry = pynmrstar.Entry.from_file(self.data_dir_path + '2l9r.nef')
+        dat = pynmrstar.Entry.from_file(self.data_dir_path + "2mqq.nef")
+        self.assertEqual(
+            self.neft.get_nef_seq(dat),
+            [
+                [
+                    {
+                        "chain_id": "A",
+                        "seq_id": [
+                            372,
+                            373,
+                            375,
+                            376,
+                            377,
+                            378,
+                            379,
+                            380,
+                            381,
+                            382,
+                            383,
+                            384,
+                            385,
+                            386,
+                            387,
+                            388,
+                            389,
+                            390,
+                            391,
+                            392,
+                            393,
+                            394,
+                            395,
+                            396,
+                            397,
+                            398,
+                            399,
+                            400,
+                            401,
+                            402,
+                            403,
+                            404,
+                            405,
+                            406,
+                            407,
+                            408,
+                            409,
+                            410,
+                            411,
+                            412,
+                            413,
+                            414,
+                            415,
+                            416,
+                            417,
+                            418,
+                            419,
+                            420,
+                            421,
+                            422,
+                            423,
+                            424,
+                            425,
+                            426,
+                            427,
+                            428,
+                            429,
+                            430,
+                            431,
+                            432,
+                            433,
+                            434,
+                            435,
+                            436,
+                            437,
+                            438,
+                            439,
+                            440,
+                            441,
+                            442,
+                            443,
+                            444,
+                            445,
+                            446,
+                            447,
+                            448,
+                            449,
+                            450,
+                            451,
+                            452,
+                            453,
+                            454,
+                            455,
+                            456,
+                            457,
+                            458,
+                            459,
+                            460,
+                            461,
+                            462,
+                            463,
+                            464,
+                            465,
+                            466,
+                            467,
+                            468,
+                            469,
+                            470,
+                            471,
+                            472,
+                            473,
+                            474,
+                            475,
+                            476,
+                            477,
+                            478,
+                            479,
+                            480,
+                            481,
+                            482,
+                            483,
+                            484,
+                            485,
+                            486,
+                            487,
+                            488,
+                            489,
+                            490,
+                            491,
+                            492,
+                            493,
+                            494,
+                            495,
+                            496,
+                            497,
+                            498,
+                            499,
+                            500,
+                            501,
+                            502,
+                            503,
+                            504,
+                            505,
+                            506,
+                            507,
+                            508,
+                            509,
+                            510,
+                            511,
+                            512,
+                            513,
+                            514,
+                            515,
+                            516,
+                            517,
+                            518,
+                            519,
+                            520,
+                            521,
+                            522,
+                            523,
+                            524,
+                            525,
+                            526,
+                            527,
+                            528,
+                            529,
+                            530,
+                            531,
+                            532,
+                            533,
+                            534,
+                            535,
+                            536,
+                            537,
+                            538,
+                            539,
+                            540,
+                            541,
+                            542,
+                            543,
+                            544,
+                            545,
+                            546,
+                            547,
+                            548,
+                            549,
+                            550,
+                            551,
+                            552,
+                            553,
+                            554,
+                            555,
+                            556,
+                            557,
+                            558,
+                            559,
+                            560,
+                            561,
+                            562,
+                            563,
+                            564,
+                            565,
+                            566,
+                            567,
+                            568,
+                            569,
+                            570,
+                            571,
+                            572,
+                            573,
+                            574,
+                            575,
+                            576,
+                            577,
+                            578,
+                            579,
+                            580,
+                            581,
+                            582,
+                            583,
+                            584,
+                            585,
+                            586,
+                        ],
+                        "comp_id": [
+                            "TYR",
+                            "GLY",
+                            "HIS",
+                            "ALA",
+                            "ASP",
+                            "SER",
+                            "PRO",
+                            "VAL",
+                            "LEU",
+                            "MET",
+                            "VAL",
+                            "TYR",
+                            "GLY",
+                            "LEU",
+                            "ASP",
+                            "GLN",
+                            "SER",
+                            "LYS",
+                            "MET",
+                            "ASN",
+                            "CYS",
+                            "ASP",
+                            "ARG",
+                            "VAL",
+                            "PHE",
+                            "ASN",
+                            "VAL",
+                            "PHE",
+                            "CYS",
+                            "LEU",
+                            "TYR",
+                            "GLY",
+                            "ASN",
+                            "VAL",
+                            "GLU",
+                            "LYS",
+                            "VAL",
+                            "LYS",
+                            "PHE",
+                            "MET",
+                            "LYS",
+                            "SER",
+                            "LYS",
+                            "PRO",
+                            "GLY",
+                            "ALA",
+                            "ALA",
+                            "MET",
+                            "VAL",
+                            "GLU",
+                            "MET",
+                            "ALA",
+                            "ASP",
+                            "GLY",
+                            "TYR",
+                            "ALA",
+                            "VAL",
+                            "ASP",
+                            "ARG",
+                            "ALA",
+                            "ILE",
+                            "THR",
+                            "HIS",
+                            "LEU",
+                            "ASN",
+                            "ASN",
+                            "ASN",
+                            "PHE",
+                            "MET",
+                            "PHE",
+                            "GLY",
+                            "GLN",
+                            "LYS",
+                            "MET",
+                            "ASN",
+                            "VAL",
+                            "CYS",
+                            "VAL",
+                            "SER",
+                            "LYS",
+                            "GLN",
+                            "PRO",
+                            "ALA",
+                            "ILE",
+                            "MET",
+                            "PRO",
+                            "GLY",
+                            "GLN",
+                            "SER",
+                            "TYR",
+                            "GLY",
+                            "LEU",
+                            "GLU",
+                            "ASP",
+                            "GLY",
+                            "SER",
+                            "CYS",
+                            "SER",
+                            "TYR",
+                            "LYS",
+                            "ASP",
+                            "PHE",
+                            "SER",
+                            "GLU",
+                            "SER",
+                            "ARG",
+                            "ASN",
+                            "ASN",
+                            "ARG",
+                            "PHE",
+                            "SER",
+                            "THR",
+                            "PRO",
+                            "GLU",
+                            "GLN",
+                            "ALA",
+                            "ALA",
+                            "LYS",
+                            "ASN",
+                            "ARG",
+                            "ILE",
+                            "GLN",
+                            "HIS",
+                            "PRO",
+                            "SER",
+                            "ASN",
+                            "VAL",
+                            "LEU",
+                            "HIS",
+                            "PHE",
+                            "PHE",
+                            "ASN",
+                            "ALA",
+                            "PRO",
+                            "LEU",
+                            "GLU",
+                            "VAL",
+                            "THR",
+                            "GLU",
+                            "GLU",
+                            "ASN",
+                            "PHE",
+                            "PHE",
+                            "GLU",
+                            "ILE",
+                            "CYS",
+                            "ASP",
+                            "GLU",
+                            "LEU",
+                            "GLY",
+                            "VAL",
+                            "LYS",
+                            "ARG",
+                            "PRO",
+                            "THR",
+                            "SER",
+                            "VAL",
+                            "LYS",
+                            "VAL",
+                            "PHE",
+                            "SER",
+                            "GLY",
+                            "LYS",
+                            "SER",
+                            "GLU",
+                            "ARG",
+                            "SER",
+                            "SER",
+                            "SER",
+                            "GLY",
+                            "LEU",
+                            "LEU",
+                            "GLU",
+                            "TRP",
+                            "ASP",
+                            "SER",
+                            "LYS",
+                            "SER",
+                            "ASP",
+                            "ALA",
+                            "LEU",
+                            "GLU",
+                            "THR",
+                            "LEU",
+                            "GLY",
+                            "PHE",
+                            "LEU",
+                            "ASN",
+                            "HIS",
+                            "TYR",
+                            "GLN",
+                            "MET",
+                            "LYS",
+                            "ASN",
+                            "PRO",
+                            "ASN",
+                            "GLY",
+                            "PRO",
+                            "TYR",
+                            "PRO",
+                            "TYR",
+                            "THR",
+                            "LEU",
+                            "LYS",
+                            "LEU",
+                            "CYS",
+                            "PHE",
+                            "SER",
+                            "THR",
+                            "ALA",
+                            "GLN",
+                            "HIS",
+                            "ALA",
+                            "SER",
+                        ],
+                    }
+                ],
+                [{"chain_id": "B", "seq_id": [i for i in range(1, 6)], "comp_id": ["A", "C", "A", "C", "A"]}],
+                [{"chain_id": "C", "seq_id": [i for i in range(1, 6)], "comp_id": ["A", "C", "A", "C", "A"]}],
+            ],
+        )
+        self.assertEqual(
+            self.neft.get_nef_seq(dat, "nef_sequence", "sequence_code", "residue_name"),
+            [
+                [
+                    {
+                        "chain_id": "A",
+                        "seq_id": [i for i in range(372, 587)],
+                        "comp_id": [
+                            "TYR",
+                            "GLY",
+                            "PRO",
+                            "HIS",
+                            "ALA",
+                            "ASP",
+                            "SER",
+                            "PRO",
+                            "VAL",
+                            "LEU",
+                            "MET",
+                            "VAL",
+                            "TYR",
+                            "GLY",
+                            "LEU",
+                            "ASP",
+                            "GLN",
+                            "SER",
+                            "LYS",
+                            "MET",
+                            "ASN",
+                            "CYS",
+                            "ASP",
+                            "ARG",
+                            "VAL",
+                            "PHE",
+                            "ASN",
+                            "VAL",
+                            "PHE",
+                            "CYS",
+                            "LEU",
+                            "TYR",
+                            "GLY",
+                            "ASN",
+                            "VAL",
+                            "GLU",
+                            "LYS",
+                            "VAL",
+                            "LYS",
+                            "PHE",
+                            "MET",
+                            "LYS",
+                            "SER",
+                            "LYS",
+                            "PRO",
+                            "GLY",
+                            "ALA",
+                            "ALA",
+                            "MET",
+                            "VAL",
+                            "GLU",
+                            "MET",
+                            "ALA",
+                            "ASP",
+                            "GLY",
+                            "TYR",
+                            "ALA",
+                            "VAL",
+                            "ASP",
+                            "ARG",
+                            "ALA",
+                            "ILE",
+                            "THR",
+                            "HIS",
+                            "LEU",
+                            "ASN",
+                            "ASN",
+                            "ASN",
+                            "PHE",
+                            "MET",
+                            "PHE",
+                            "GLY",
+                            "GLN",
+                            "LYS",
+                            "MET",
+                            "ASN",
+                            "VAL",
+                            "CYS",
+                            "VAL",
+                            "SER",
+                            "LYS",
+                            "GLN",
+                            "PRO",
+                            "ALA",
+                            "ILE",
+                            "MET",
+                            "PRO",
+                            "GLY",
+                            "GLN",
+                            "SER",
+                            "TYR",
+                            "GLY",
+                            "LEU",
+                            "GLU",
+                            "ASP",
+                            "GLY",
+                            "SER",
+                            "CYS",
+                            "SER",
+                            "TYR",
+                            "LYS",
+                            "ASP",
+                            "PHE",
+                            "SER",
+                            "GLU",
+                            "SER",
+                            "ARG",
+                            "ASN",
+                            "ASN",
+                            "ARG",
+                            "PHE",
+                            "SER",
+                            "THR",
+                            "PRO",
+                            "GLU",
+                            "GLN",
+                            "ALA",
+                            "ALA",
+                            "LYS",
+                            "ASN",
+                            "ARG",
+                            "ILE",
+                            "GLN",
+                            "HIS",
+                            "PRO",
+                            "SER",
+                            "ASN",
+                            "VAL",
+                            "LEU",
+                            "HIS",
+                            "PHE",
+                            "PHE",
+                            "ASN",
+                            "ALA",
+                            "PRO",
+                            "LEU",
+                            "GLU",
+                            "VAL",
+                            "THR",
+                            "GLU",
+                            "GLU",
+                            "ASN",
+                            "PHE",
+                            "PHE",
+                            "GLU",
+                            "ILE",
+                            "CYS",
+                            "ASP",
+                            "GLU",
+                            "LEU",
+                            "GLY",
+                            "VAL",
+                            "LYS",
+                            "ARG",
+                            "PRO",
+                            "THR",
+                            "SER",
+                            "VAL",
+                            "LYS",
+                            "VAL",
+                            "PHE",
+                            "SER",
+                            "GLY",
+                            "LYS",
+                            "SER",
+                            "GLU",
+                            "ARG",
+                            "SER",
+                            "SER",
+                            "SER",
+                            "GLY",
+                            "LEU",
+                            "LEU",
+                            "GLU",
+                            "TRP",
+                            "ASP",
+                            "SER",
+                            "LYS",
+                            "SER",
+                            "ASP",
+                            "ALA",
+                            "LEU",
+                            "GLU",
+                            "THR",
+                            "LEU",
+                            "GLY",
+                            "PHE",
+                            "LEU",
+                            "ASN",
+                            "HIS",
+                            "TYR",
+                            "GLN",
+                            "MET",
+                            "LYS",
+                            "ASN",
+                            "PRO",
+                            "ASN",
+                            "GLY",
+                            "PRO",
+                            "TYR",
+                            "PRO",
+                            "TYR",
+                            "THR",
+                            "LEU",
+                            "LYS",
+                            "LEU",
+                            "CYS",
+                            "PHE",
+                            "SER",
+                            "THR",
+                            "ALA",
+                            "GLN",
+                            "HIS",
+                            "ALA",
+                            "SER",
+                        ],
+                    },
+                    {"chain_id": "B", "seq_id": [i for i in range(1, 6)], "comp_id": ["A", "C", "A", "C", "A"], "identical_chain_id": ["C"]},
+                    {"chain_id": "C", "seq_id": [i for i in range(1, 6)], "comp_id": ["A", "C", "A", "C", "A"], "identical_chain_id": ["B"]},
+                ]
+            ],
+        )
+        dat = self.neft.read_input_file(self.data_dir_path + "saveframeonly.nef")[2]
+        self.assertEqual(
+            self.neft.get_nef_seq(dat),
+            [
+                [
+                    {
+                        "chain_id": "A",
+                        "seq_id": [i for i in range(10, 70)],
+                        "comp_id": [
+                            "HIS",
+                            "MET",
+                            "SER",
+                            "HIS",
+                            "THR",
+                            "GLN",
+                            "VAL",
+                            "ILE",
+                            "GLU",
+                            "LEU",
+                            "GLU",
+                            "ARG",
+                            "LYS",
+                            "PHE",
+                            "SER",
+                            "HIS",
+                            "GLN",
+                            "LYS",
+                            "TYR",
+                            "LEU",
+                            "SER",
+                            "ALA",
+                            "PRO",
+                            "GLU",
+                            "ARG",
+                            "ALA",
+                            "HIS",
+                            "LEU",
+                            "ALA",
+                            "LYS",
+                            "ASN",
+                            "LEU",
+                            "LYS",
+                            "LEU",
+                            "THR",
+                            "GLU",
+                            "THR",
+                            "GLN",
+                            "VAL",
+                            "LYS",
+                            "ILE",
+                            "TRP",
+                            "PHE",
+                            "GLN",
+                            "ASN",
+                            "ARG",
+                            "ARG",
+                            "TYR",
+                            "LYS",
+                            "THR",
+                            "LYS",
+                            "ARG",
+                            "LYS",
+                            "GLN",
+                            "LEU",
+                            "SER",
+                            "SER",
+                            "GLU",
+                            "LEU",
+                            "GLY",
+                        ],
+                    }
+                ]
+            ],
+        )
+        dat = self.neft.read_input_file(self.data_dir_path + "loopOnly1.nef")[2]
+        self.assertEqual(
+            self.neft.get_nef_seq(dat),
+            [
+                [
+                    {
+                        "chain_id": "A",
+                        "seq_id": [i for i in range(10, 120)],
+                        "comp_id": [
+                            "HIS",
+                            "MET",
+                            "ASN",
+                            "SER",
+                            "GLN",
+                            "ARG",
+                            "LEU",
+                            "ILE",
+                            "HIS",
+                            "ILE",
+                            "LYS",
+                            "THR",
+                            "LEU",
+                            "THR",
+                            "THR",
+                            "PRO",
+                            "ASN",
+                            "GLU",
+                            "ASN",
+                            "ALA",
+                            "LEU",
+                            "LYS",
+                            "PHE",
+                            "LEU",
+                            "SER",
+                            "THR",
+                            "ASP",
+                            "GLY",
+                            "GLU",
+                            "MET",
+                            "LEU",
+                            "GLN",
+                            "THR",
+                            "ARG",
+                            "GLY",
+                            "SER",
+                            "LYS",
+                            "SER",
+                            "ILE",
+                            "VAL",
+                            "ILE",
+                            "LYS",
+                            "ASN",
+                            "THR",
+                            "ASP",
+                            "GLU",
+                            "ASN",
+                            "LEU",
+                            "ILE",
+                            "ASN",
+                            "HIS",
+                            "SER",
+                            "LYS",
+                            "LEU",
+                            "ALA",
+                            "GLN",
+                            "GLN",
+                            "ILE",
+                            "PHE",
+                            "LEU",
+                            "GLN",
+                            "CYS",
+                            "PRO",
+                            "GLY",
+                            "VAL",
+                            "GLU",
+                            "SER",
+                            "LEU",
+                            "MET",
+                            "ILE",
+                            "GLY",
+                            "ASP",
+                            "ASP",
+                            "PHE",
+                            "LEU",
+                            "THR",
+                            "ILE",
+                            "ASN",
+                            "LYS",
+                            "ASP",
+                            "ARG",
+                            "MET",
+                            "VAL",
+                            "HIS",
+                            "TRP",
+                            "ASN",
+                            "SER",
+                            "ILE",
+                            "LYS",
+                            "PRO",
+                            "GLU",
+                            "ILE",
+                            "ILE",
+                            "ASP",
+                            "LEU",
+                            "LEU",
+                            "THR",
+                            "LYS",
+                            "GLN",
+                            "LEU",
+                            "ALA",
+                            "TYR",
+                            "GLY",
+                            "GLU",
+                            "ASP",
+                            "VAL",
+                            "ILE",
+                            "SER",
+                            "LYS",
+                            "GLU",
+                        ],
+                    }
+                ]
+            ],
+        )
+        entry = pynmrstar.Entry.from_file(self.data_dir_path + "2l9r.nef")
         # extract polymer sequence from nef_molecular_system category
-        self.assertEqual(self.neft.get_nef_seq(entry['nef_molecular_system'], lp_category='nef_sequence'),
-                         [[{'chain_id': 'A', 'seq_id': [i for i in range(1, 70)], 'comp_id':
-                           ['MET', 'GLY', 'HIS', 'HIS', 'HIS', 'HIS', 'HIS', 'HIS', 'SER', 'HIS',
-                            'MET', 'SER', 'HIS', 'THR', 'GLN', 'VAL', 'ILE', 'GLU', 'LEU', 'GLU',
-                            'ARG', 'LYS', 'PHE', 'SER', 'HIS', 'GLN', 'LYS', 'TYR', 'LEU', 'SER',
-                            'ALA', 'PRO', 'GLU', 'ARG', 'ALA', 'HIS', 'LEU', 'ALA', 'LYS', 'ASN',
-                            'LEU', 'LYS', 'LEU', 'THR', 'GLU', 'THR', 'GLN', 'VAL', 'LYS', 'ILE',
-                            'TRP', 'PHE', 'GLN', 'ASN', 'ARG', 'ARG', 'TYR', 'LYS', 'THR', 'LYS',
-                            'ARG', 'LYS', 'GLN', 'LEU', 'SER', 'SER', 'GLU', 'LEU', 'GLY']}]])
+        self.assertEqual(
+            self.neft.get_nef_seq(entry["nef_molecular_system"], lp_category="nef_sequence"),
+            [
+                [
+                    {
+                        "chain_id": "A",
+                        "seq_id": [i for i in range(1, 70)],
+                        "comp_id": [
+                            "MET",
+                            "GLY",
+                            "HIS",
+                            "HIS",
+                            "HIS",
+                            "HIS",
+                            "HIS",
+                            "HIS",
+                            "SER",
+                            "HIS",
+                            "MET",
+                            "SER",
+                            "HIS",
+                            "THR",
+                            "GLN",
+                            "VAL",
+                            "ILE",
+                            "GLU",
+                            "LEU",
+                            "GLU",
+                            "ARG",
+                            "LYS",
+                            "PHE",
+                            "SER",
+                            "HIS",
+                            "GLN",
+                            "LYS",
+                            "TYR",
+                            "LEU",
+                            "SER",
+                            "ALA",
+                            "PRO",
+                            "GLU",
+                            "ARG",
+                            "ALA",
+                            "HIS",
+                            "LEU",
+                            "ALA",
+                            "LYS",
+                            "ASN",
+                            "LEU",
+                            "LYS",
+                            "LEU",
+                            "THR",
+                            "GLU",
+                            "THR",
+                            "GLN",
+                            "VAL",
+                            "LYS",
+                            "ILE",
+                            "TRP",
+                            "PHE",
+                            "GLN",
+                            "ASN",
+                            "ARG",
+                            "ARG",
+                            "TYR",
+                            "LYS",
+                            "THR",
+                            "LYS",
+                            "ARG",
+                            "LYS",
+                            "GLN",
+                            "LEU",
+                            "SER",
+                            "SER",
+                            "GLU",
+                            "LEU",
+                            "GLY",
+                        ],
+                    }
+                ]
+            ],
+        )
         # extract polymer sequence from the first cs loop in nef_chemical_shift_list category
-        cs_loops = entry.get_saveframes_by_category('nef_chemical_shift_list')
-        self.assertEqual(len(cs_loops), 1) # assert single cs loop
-        self.assertEqual(self.neft.get_nef_seq(cs_loops[0], lp_category='nef_chemical_shift'), # select the first cs loop by input sta_data
-                         [[{'chain_id': 'A', 'seq_id': [i for i in range(10, 70)], 'comp_id':
-                           ['HIS',
-                            'MET', 'SER', 'HIS', 'THR', 'GLN', 'VAL', 'ILE', 'GLU', 'LEU', 'GLU',
-                            'ARG', 'LYS', 'PHE', 'SER', 'HIS', 'GLN', 'LYS', 'TYR', 'LEU', 'SER',
-                            'ALA', 'PRO', 'GLU', 'ARG', 'ALA', 'HIS', 'LEU', 'ALA', 'LYS', 'ASN',
-                            'LEU', 'LYS', 'LEU', 'THR', 'GLU', 'THR', 'GLN', 'VAL', 'LYS', 'ILE',
-                            'TRP', 'PHE', 'GLN', 'ASN', 'ARG', 'ARG', 'TYR', 'LYS', 'THR', 'LYS',
-                            'ARG', 'LYS', 'GLN', 'LEU', 'SER', 'SER', 'GLU', 'LEU', 'GLY']}]])
+        cs_loops = entry.get_saveframes_by_category("nef_chemical_shift_list")
+        self.assertEqual(len(cs_loops), 1)  # assert single cs loop
+        self.assertEqual(
+            self.neft.get_nef_seq(cs_loops[0], lp_category="nef_chemical_shift"),  # select the first cs loop by input sta_data
+            [
+                [
+                    {
+                        "chain_id": "A",
+                        "seq_id": [i for i in range(10, 70)],
+                        "comp_id": [
+                            "HIS",
+                            "MET",
+                            "SER",
+                            "HIS",
+                            "THR",
+                            "GLN",
+                            "VAL",
+                            "ILE",
+                            "GLU",
+                            "LEU",
+                            "GLU",
+                            "ARG",
+                            "LYS",
+                            "PHE",
+                            "SER",
+                            "HIS",
+                            "GLN",
+                            "LYS",
+                            "TYR",
+                            "LEU",
+                            "SER",
+                            "ALA",
+                            "PRO",
+                            "GLU",
+                            "ARG",
+                            "ALA",
+                            "HIS",
+                            "LEU",
+                            "ALA",
+                            "LYS",
+                            "ASN",
+                            "LEU",
+                            "LYS",
+                            "LEU",
+                            "THR",
+                            "GLU",
+                            "THR",
+                            "GLN",
+                            "VAL",
+                            "LYS",
+                            "ILE",
+                            "TRP",
+                            "PHE",
+                            "GLN",
+                            "ASN",
+                            "ARG",
+                            "ARG",
+                            "TYR",
+                            "LYS",
+                            "THR",
+                            "LYS",
+                            "ARG",
+                            "LYS",
+                            "GLN",
+                            "LEU",
+                            "SER",
+                            "SER",
+                            "GLU",
+                            "LEU",
+                            "GLY",
+                        ],
+                    }
+                ]
+            ],
+        )
         # extract polymer sequence from nef_distant_restraint_list category
-        self.assertEqual(self.neft.get_nef_seq(entry['nef_distance_restraint_list_distance_constraint_list'], lp_category='nef_distance_restraint'),
-                         [[{'chain_id': 'A', 'seq_id': [i for i in range(10, 70)], 'comp_id':
-                           ['HIS',
-                            'MET', 'SER', 'HIS', 'THR', 'GLN', 'VAL', 'ILE', 'GLU', 'LEU', 'GLU',
-                            'ARG', 'LYS', 'PHE', 'SER', 'HIS', 'GLN', 'LYS', 'TYR', 'LEU', 'SER',
-                            'ALA', 'PRO', 'GLU', 'ARG', 'ALA', 'HIS', 'LEU', 'ALA', 'LYS', 'ASN',
-                            'LEU', 'LYS', 'LEU', 'THR', 'GLU', 'THR', 'GLN', 'VAL', 'LYS', 'ILE',
-                            'TRP', 'PHE', 'GLN', 'ASN', 'ARG', 'ARG', 'TYR', 'LYS', 'THR', 'LYS',
-                            'ARG', 'LYS', 'GLN', 'LEU', 'SER', 'SER', 'GLU', 'LEU', 'GLY']}]])
+        self.assertEqual(
+            self.neft.get_nef_seq(entry["nef_distance_restraint_list_distance_constraint_list"], lp_category="nef_distance_restraint"),
+            [
+                [
+                    {
+                        "chain_id": "A",
+                        "seq_id": [i for i in range(10, 70)],
+                        "comp_id": [
+                            "HIS",
+                            "MET",
+                            "SER",
+                            "HIS",
+                            "THR",
+                            "GLN",
+                            "VAL",
+                            "ILE",
+                            "GLU",
+                            "LEU",
+                            "GLU",
+                            "ARG",
+                            "LYS",
+                            "PHE",
+                            "SER",
+                            "HIS",
+                            "GLN",
+                            "LYS",
+                            "TYR",
+                            "LEU",
+                            "SER",
+                            "ALA",
+                            "PRO",
+                            "GLU",
+                            "ARG",
+                            "ALA",
+                            "HIS",
+                            "LEU",
+                            "ALA",
+                            "LYS",
+                            "ASN",
+                            "LEU",
+                            "LYS",
+                            "LEU",
+                            "THR",
+                            "GLU",
+                            "THR",
+                            "GLN",
+                            "VAL",
+                            "LYS",
+                            "ILE",
+                            "TRP",
+                            "PHE",
+                            "GLN",
+                            "ASN",
+                            "ARG",
+                            "ARG",
+                            "TYR",
+                            "LYS",
+                            "THR",
+                            "LYS",
+                            "ARG",
+                            "LYS",
+                            "GLN",
+                            "LEU",
+                            "SER",
+                            "SER",
+                            "GLU",
+                            "LEU",
+                            "GLY",
+                        ],
+                    }
+                ]
+            ],
+        )
 
     def test_get_star_seq(self):
-        dat = pynmrstar.Entry.from_file(self.data_dir_path + '2mqq.str')
-        self.assertEqual(self.neft.get_star_seq(dat),
-                         [[{'chain_id': '1', 'seq_id': [1, 2, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123, 124, 125, 126, 127, 128, 129, 130, 131, 132, 133, 134, 135, 136, 137, 138, 139, 140, 141, 142, 143, 144, 145, 146, 147, 148, 149, 150, 151, 152, 153, 154, 155, 156, 157, 158, 159, 160, 161, 162, 163, 164, 165, 166, 167, 168, 169, 170, 171, 172, 173, 174, 175, 176, 177, 178, 179, 180, 181, 182, 183, 184, 185, 186, 187, 188, 189, 190, 191, 192, 193, 194, 195, 196, 197, 198, 199, 200, 201, 202, 203, 204, 205, 206, 207, 208, 209, 210, 211, 212, 213, 214, 215],
-                            'comp_id': ['TYR', 'GLY', 'HIS', 'ALA', 'ASP', 'SER', 'PRO', 'VAL', 'LEU', 'MET', 'VAL', 'TYR', 'GLY', 'LEU', 'ASP', 'GLN', 'SER', 'LYS', 'MET', 'ASN', 'CYS', 'ASP', 'ARG', 'VAL', 'PHE', 'ASN', 'VAL', 'PHE', 'CYS', 'LEU', 'TYR', 'GLY', 'ASN', 'VAL', 'GLU', 'LYS', 'VAL', 'LYS', 'PHE', 'MET', 'LYS', 'SER', 'LYS', 'PRO', 'GLY', 'ALA', 'ALA', 'MET', 'VAL', 'GLU', 'MET', 'ALA', 'ASP', 'GLY', 'TYR', 'ALA', 'VAL', 'ASP', 'ARG', 'ALA', 'ILE', 'THR', 'HIS', 'LEU', 'ASN', 'ASN', 'ASN', 'PHE', 'MET', 'PHE', 'GLY', 'GLN', 'LYS', 'MET', 'ASN', 'VAL', 'CYS', 'VAL', 'SER', 'LYS', 'GLN', 'PRO', 'ALA', 'ILE', 'MET', 'PRO', 'GLY', 'GLN', 'SER', 'TYR', 'GLY', 'LEU', 'GLU', 'ASP', 'GLY', 'SER', 'CYS', 'SER', 'TYR', 'LYS', 'ASP', 'PHE', 'SER', 'GLU', 'SER', 'ARG', 'ASN', 'ASN', 'ARG', 'PHE', 'SER', 'THR', 'PRO', 'GLU', 'GLN', 'ALA', 'ALA', 'LYS', 'ASN', 'ARG', 'ILE', 'GLN', 'HIS', 'PRO', 'SER', 'ASN', 'VAL', 'LEU', 'HIS', 'PHE', 'PHE', 'ASN', 'ALA', 'PRO', 'LEU', 'GLU', 'VAL', 'THR', 'GLU', 'GLU', 'ASN', 'PHE', 'PHE', 'GLU', 'ILE', 'CYS', 'ASP', 'GLU', 'LEU', 'GLY', 'VAL', 'LYS', 'ARG', 'PRO', 'THR', 'SER', 'VAL', 'LYS', 'VAL', 'PHE', 'SER', 'GLY', 'LYS', 'SER', 'GLU', 'ARG', 'SER', 'SER', 'SER', 'GLY', 'LEU', 'LEU', 'GLU', 'TRP', 'ASP', 'SER', 'LYS', 'SER', 'ASP', 'ALA', 'LEU', 'GLU', 'THR', 'LEU', 'GLY', 'PHE', 'LEU', 'ASN', 'HIS', 'TYR', 'GLN', 'MET', 'LYS', 'ASN', 'PRO', 'ASN', 'GLY', 'PRO', 'TYR', 'PRO', 'TYR', 'THR', 'LEU', 'LYS', 'LEU', 'CYS', 'PHE', 'SER', 'THR', 'ALA', 'GLN', 'HIS', 'ALA', 'SER']}],
-                          [{'chain_id': '2', 'seq_id': [i for i in range(1, 6)], 'comp_id': ['A', 'C', 'A', 'C', 'A']}],
-                          [{'chain_id': '3', 'seq_id': [i for i in range(1, 6)], 'comp_id': ['A', 'C', 'A', 'C', 'A']}]])
-        self.assertEqual(self.neft.get_star_seq(dat, 'Chem_comp_assembly', 'Comp_index_ID', 'Comp_ID'),
-                         [[{'chain_id': '1', 'seq_id': [i for i in range(1, 216)],
-                            'comp_id': ['TYR', 'GLY', 'PRO', 'HIS', 'ALA', 'ASP', 'SER', 'PRO', 'VAL', 'LEU', 'MET', 'VAL', 'TYR', 'GLY', 'LEU', 'ASP', 'GLN', 'SER', 'LYS', 'MET', 'ASN', 'CYS', 'ASP', 'ARG', 'VAL', 'PHE', 'ASN', 'VAL', 'PHE', 'CYS', 'LEU', 'TYR', 'GLY', 'ASN', 'VAL', 'GLU', 'LYS', 'VAL', 'LYS', 'PHE', 'MET', 'LYS', 'SER', 'LYS', 'PRO', 'GLY', 'ALA', 'ALA', 'MET', 'VAL', 'GLU', 'MET', 'ALA', 'ASP', 'GLY', 'TYR', 'ALA', 'VAL', 'ASP', 'ARG', 'ALA', 'ILE', 'THR', 'HIS', 'LEU', 'ASN', 'ASN', 'ASN', 'PHE', 'MET', 'PHE', 'GLY', 'GLN', 'LYS', 'MET', 'ASN', 'VAL', 'CYS', 'VAL', 'SER', 'LYS', 'GLN', 'PRO', 'ALA', 'ILE', 'MET', 'PRO', 'GLY', 'GLN', 'SER', 'TYR', 'GLY', 'LEU', 'GLU', 'ASP', 'GLY', 'SER', 'CYS', 'SER', 'TYR', 'LYS', 'ASP', 'PHE', 'SER', 'GLU', 'SER', 'ARG', 'ASN', 'ASN', 'ARG', 'PHE', 'SER', 'THR', 'PRO', 'GLU', 'GLN', 'ALA', 'ALA', 'LYS', 'ASN', 'ARG', 'ILE', 'GLN', 'HIS', 'PRO', 'SER', 'ASN', 'VAL', 'LEU', 'HIS', 'PHE', 'PHE', 'ASN', 'ALA', 'PRO', 'LEU', 'GLU', 'VAL', 'THR', 'GLU', 'GLU', 'ASN', 'PHE', 'PHE', 'GLU', 'ILE', 'CYS', 'ASP', 'GLU', 'LEU', 'GLY', 'VAL', 'LYS', 'ARG', 'PRO', 'THR', 'SER', 'VAL', 'LYS', 'VAL', 'PHE', 'SER', 'GLY', 'LYS', 'SER', 'GLU', 'ARG', 'SER', 'SER', 'SER', 'GLY', 'LEU', 'LEU', 'GLU', 'TRP', 'ASP', 'SER', 'LYS', 'SER', 'ASP', 'ALA', 'LEU', 'GLU', 'THR', 'LEU', 'GLY', 'PHE', 'LEU', 'ASN', 'HIS', 'TYR', 'GLN', 'MET', 'LYS', 'ASN', 'PRO', 'ASN', 'GLY', 'PRO', 'TYR', 'PRO', 'TYR', 'THR', 'LEU', 'LYS', 'LEU', 'CYS', 'PHE', 'SER', 'THR', 'ALA', 'GLN', 'HIS', 'ALA', 'SER']},
-                           {'chain_id': '2', 'seq_id': [i for i in range(1, 6)], 'comp_id': ['A', 'C', 'A', 'C', 'A'], 'identical_chain_id': ['3']},
-                           {'chain_id': '3', 'seq_id': [i for i in range(1, 6)], 'comp_id': ['A', 'C', 'A', 'C', 'A'], 'identical_chain_id': ['2']}]])
-        entry = pynmrstar.Entry.from_file(self.data_dir_path + '2l9r.str')
+        dat = pynmrstar.Entry.from_file(self.data_dir_path + "2mqq.str")
+        self.assertEqual(
+            self.neft.get_star_seq(dat),
+            [
+                [
+                    {
+                        "chain_id": "1",
+                        "seq_id": [
+                            1,
+                            2,
+                            4,
+                            5,
+                            6,
+                            7,
+                            8,
+                            9,
+                            10,
+                            11,
+                            12,
+                            13,
+                            14,
+                            15,
+                            16,
+                            17,
+                            18,
+                            19,
+                            20,
+                            21,
+                            22,
+                            23,
+                            24,
+                            25,
+                            26,
+                            27,
+                            28,
+                            29,
+                            30,
+                            31,
+                            32,
+                            33,
+                            34,
+                            35,
+                            36,
+                            37,
+                            38,
+                            39,
+                            40,
+                            41,
+                            42,
+                            43,
+                            44,
+                            45,
+                            46,
+                            47,
+                            48,
+                            49,
+                            50,
+                            51,
+                            52,
+                            53,
+                            54,
+                            55,
+                            56,
+                            57,
+                            58,
+                            59,
+                            60,
+                            61,
+                            62,
+                            63,
+                            64,
+                            65,
+                            66,
+                            67,
+                            68,
+                            69,
+                            70,
+                            71,
+                            72,
+                            73,
+                            74,
+                            75,
+                            76,
+                            77,
+                            78,
+                            79,
+                            80,
+                            81,
+                            82,
+                            83,
+                            84,
+                            85,
+                            86,
+                            87,
+                            88,
+                            89,
+                            90,
+                            91,
+                            92,
+                            93,
+                            94,
+                            95,
+                            96,
+                            97,
+                            98,
+                            99,
+                            100,
+                            101,
+                            102,
+                            103,
+                            104,
+                            105,
+                            106,
+                            107,
+                            108,
+                            109,
+                            110,
+                            111,
+                            112,
+                            113,
+                            114,
+                            115,
+                            116,
+                            117,
+                            118,
+                            119,
+                            120,
+                            121,
+                            122,
+                            123,
+                            124,
+                            125,
+                            126,
+                            127,
+                            128,
+                            129,
+                            130,
+                            131,
+                            132,
+                            133,
+                            134,
+                            135,
+                            136,
+                            137,
+                            138,
+                            139,
+                            140,
+                            141,
+                            142,
+                            143,
+                            144,
+                            145,
+                            146,
+                            147,
+                            148,
+                            149,
+                            150,
+                            151,
+                            152,
+                            153,
+                            154,
+                            155,
+                            156,
+                            157,
+                            158,
+                            159,
+                            160,
+                            161,
+                            162,
+                            163,
+                            164,
+                            165,
+                            166,
+                            167,
+                            168,
+                            169,
+                            170,
+                            171,
+                            172,
+                            173,
+                            174,
+                            175,
+                            176,
+                            177,
+                            178,
+                            179,
+                            180,
+                            181,
+                            182,
+                            183,
+                            184,
+                            185,
+                            186,
+                            187,
+                            188,
+                            189,
+                            190,
+                            191,
+                            192,
+                            193,
+                            194,
+                            195,
+                            196,
+                            197,
+                            198,
+                            199,
+                            200,
+                            201,
+                            202,
+                            203,
+                            204,
+                            205,
+                            206,
+                            207,
+                            208,
+                            209,
+                            210,
+                            211,
+                            212,
+                            213,
+                            214,
+                            215,
+                        ],
+                        "comp_id": [
+                            "TYR",
+                            "GLY",
+                            "HIS",
+                            "ALA",
+                            "ASP",
+                            "SER",
+                            "PRO",
+                            "VAL",
+                            "LEU",
+                            "MET",
+                            "VAL",
+                            "TYR",
+                            "GLY",
+                            "LEU",
+                            "ASP",
+                            "GLN",
+                            "SER",
+                            "LYS",
+                            "MET",
+                            "ASN",
+                            "CYS",
+                            "ASP",
+                            "ARG",
+                            "VAL",
+                            "PHE",
+                            "ASN",
+                            "VAL",
+                            "PHE",
+                            "CYS",
+                            "LEU",
+                            "TYR",
+                            "GLY",
+                            "ASN",
+                            "VAL",
+                            "GLU",
+                            "LYS",
+                            "VAL",
+                            "LYS",
+                            "PHE",
+                            "MET",
+                            "LYS",
+                            "SER",
+                            "LYS",
+                            "PRO",
+                            "GLY",
+                            "ALA",
+                            "ALA",
+                            "MET",
+                            "VAL",
+                            "GLU",
+                            "MET",
+                            "ALA",
+                            "ASP",
+                            "GLY",
+                            "TYR",
+                            "ALA",
+                            "VAL",
+                            "ASP",
+                            "ARG",
+                            "ALA",
+                            "ILE",
+                            "THR",
+                            "HIS",
+                            "LEU",
+                            "ASN",
+                            "ASN",
+                            "ASN",
+                            "PHE",
+                            "MET",
+                            "PHE",
+                            "GLY",
+                            "GLN",
+                            "LYS",
+                            "MET",
+                            "ASN",
+                            "VAL",
+                            "CYS",
+                            "VAL",
+                            "SER",
+                            "LYS",
+                            "GLN",
+                            "PRO",
+                            "ALA",
+                            "ILE",
+                            "MET",
+                            "PRO",
+                            "GLY",
+                            "GLN",
+                            "SER",
+                            "TYR",
+                            "GLY",
+                            "LEU",
+                            "GLU",
+                            "ASP",
+                            "GLY",
+                            "SER",
+                            "CYS",
+                            "SER",
+                            "TYR",
+                            "LYS",
+                            "ASP",
+                            "PHE",
+                            "SER",
+                            "GLU",
+                            "SER",
+                            "ARG",
+                            "ASN",
+                            "ASN",
+                            "ARG",
+                            "PHE",
+                            "SER",
+                            "THR",
+                            "PRO",
+                            "GLU",
+                            "GLN",
+                            "ALA",
+                            "ALA",
+                            "LYS",
+                            "ASN",
+                            "ARG",
+                            "ILE",
+                            "GLN",
+                            "HIS",
+                            "PRO",
+                            "SER",
+                            "ASN",
+                            "VAL",
+                            "LEU",
+                            "HIS",
+                            "PHE",
+                            "PHE",
+                            "ASN",
+                            "ALA",
+                            "PRO",
+                            "LEU",
+                            "GLU",
+                            "VAL",
+                            "THR",
+                            "GLU",
+                            "GLU",
+                            "ASN",
+                            "PHE",
+                            "PHE",
+                            "GLU",
+                            "ILE",
+                            "CYS",
+                            "ASP",
+                            "GLU",
+                            "LEU",
+                            "GLY",
+                            "VAL",
+                            "LYS",
+                            "ARG",
+                            "PRO",
+                            "THR",
+                            "SER",
+                            "VAL",
+                            "LYS",
+                            "VAL",
+                            "PHE",
+                            "SER",
+                            "GLY",
+                            "LYS",
+                            "SER",
+                            "GLU",
+                            "ARG",
+                            "SER",
+                            "SER",
+                            "SER",
+                            "GLY",
+                            "LEU",
+                            "LEU",
+                            "GLU",
+                            "TRP",
+                            "ASP",
+                            "SER",
+                            "LYS",
+                            "SER",
+                            "ASP",
+                            "ALA",
+                            "LEU",
+                            "GLU",
+                            "THR",
+                            "LEU",
+                            "GLY",
+                            "PHE",
+                            "LEU",
+                            "ASN",
+                            "HIS",
+                            "TYR",
+                            "GLN",
+                            "MET",
+                            "LYS",
+                            "ASN",
+                            "PRO",
+                            "ASN",
+                            "GLY",
+                            "PRO",
+                            "TYR",
+                            "PRO",
+                            "TYR",
+                            "THR",
+                            "LEU",
+                            "LYS",
+                            "LEU",
+                            "CYS",
+                            "PHE",
+                            "SER",
+                            "THR",
+                            "ALA",
+                            "GLN",
+                            "HIS",
+                            "ALA",
+                            "SER",
+                        ],
+                    }
+                ],
+                [{"chain_id": "2", "seq_id": [i for i in range(1, 6)], "comp_id": ["A", "C", "A", "C", "A"]}],
+                [{"chain_id": "3", "seq_id": [i for i in range(1, 6)], "comp_id": ["A", "C", "A", "C", "A"]}],
+            ],
+        )
+        self.assertEqual(
+            self.neft.get_star_seq(dat, "Chem_comp_assembly", "Comp_index_ID", "Comp_ID"),
+            [
+                [
+                    {
+                        "chain_id": "1",
+                        "seq_id": [i for i in range(1, 216)],
+                        "comp_id": [
+                            "TYR",
+                            "GLY",
+                            "PRO",
+                            "HIS",
+                            "ALA",
+                            "ASP",
+                            "SER",
+                            "PRO",
+                            "VAL",
+                            "LEU",
+                            "MET",
+                            "VAL",
+                            "TYR",
+                            "GLY",
+                            "LEU",
+                            "ASP",
+                            "GLN",
+                            "SER",
+                            "LYS",
+                            "MET",
+                            "ASN",
+                            "CYS",
+                            "ASP",
+                            "ARG",
+                            "VAL",
+                            "PHE",
+                            "ASN",
+                            "VAL",
+                            "PHE",
+                            "CYS",
+                            "LEU",
+                            "TYR",
+                            "GLY",
+                            "ASN",
+                            "VAL",
+                            "GLU",
+                            "LYS",
+                            "VAL",
+                            "LYS",
+                            "PHE",
+                            "MET",
+                            "LYS",
+                            "SER",
+                            "LYS",
+                            "PRO",
+                            "GLY",
+                            "ALA",
+                            "ALA",
+                            "MET",
+                            "VAL",
+                            "GLU",
+                            "MET",
+                            "ALA",
+                            "ASP",
+                            "GLY",
+                            "TYR",
+                            "ALA",
+                            "VAL",
+                            "ASP",
+                            "ARG",
+                            "ALA",
+                            "ILE",
+                            "THR",
+                            "HIS",
+                            "LEU",
+                            "ASN",
+                            "ASN",
+                            "ASN",
+                            "PHE",
+                            "MET",
+                            "PHE",
+                            "GLY",
+                            "GLN",
+                            "LYS",
+                            "MET",
+                            "ASN",
+                            "VAL",
+                            "CYS",
+                            "VAL",
+                            "SER",
+                            "LYS",
+                            "GLN",
+                            "PRO",
+                            "ALA",
+                            "ILE",
+                            "MET",
+                            "PRO",
+                            "GLY",
+                            "GLN",
+                            "SER",
+                            "TYR",
+                            "GLY",
+                            "LEU",
+                            "GLU",
+                            "ASP",
+                            "GLY",
+                            "SER",
+                            "CYS",
+                            "SER",
+                            "TYR",
+                            "LYS",
+                            "ASP",
+                            "PHE",
+                            "SER",
+                            "GLU",
+                            "SER",
+                            "ARG",
+                            "ASN",
+                            "ASN",
+                            "ARG",
+                            "PHE",
+                            "SER",
+                            "THR",
+                            "PRO",
+                            "GLU",
+                            "GLN",
+                            "ALA",
+                            "ALA",
+                            "LYS",
+                            "ASN",
+                            "ARG",
+                            "ILE",
+                            "GLN",
+                            "HIS",
+                            "PRO",
+                            "SER",
+                            "ASN",
+                            "VAL",
+                            "LEU",
+                            "HIS",
+                            "PHE",
+                            "PHE",
+                            "ASN",
+                            "ALA",
+                            "PRO",
+                            "LEU",
+                            "GLU",
+                            "VAL",
+                            "THR",
+                            "GLU",
+                            "GLU",
+                            "ASN",
+                            "PHE",
+                            "PHE",
+                            "GLU",
+                            "ILE",
+                            "CYS",
+                            "ASP",
+                            "GLU",
+                            "LEU",
+                            "GLY",
+                            "VAL",
+                            "LYS",
+                            "ARG",
+                            "PRO",
+                            "THR",
+                            "SER",
+                            "VAL",
+                            "LYS",
+                            "VAL",
+                            "PHE",
+                            "SER",
+                            "GLY",
+                            "LYS",
+                            "SER",
+                            "GLU",
+                            "ARG",
+                            "SER",
+                            "SER",
+                            "SER",
+                            "GLY",
+                            "LEU",
+                            "LEU",
+                            "GLU",
+                            "TRP",
+                            "ASP",
+                            "SER",
+                            "LYS",
+                            "SER",
+                            "ASP",
+                            "ALA",
+                            "LEU",
+                            "GLU",
+                            "THR",
+                            "LEU",
+                            "GLY",
+                            "PHE",
+                            "LEU",
+                            "ASN",
+                            "HIS",
+                            "TYR",
+                            "GLN",
+                            "MET",
+                            "LYS",
+                            "ASN",
+                            "PRO",
+                            "ASN",
+                            "GLY",
+                            "PRO",
+                            "TYR",
+                            "PRO",
+                            "TYR",
+                            "THR",
+                            "LEU",
+                            "LYS",
+                            "LEU",
+                            "CYS",
+                            "PHE",
+                            "SER",
+                            "THR",
+                            "ALA",
+                            "GLN",
+                            "HIS",
+                            "ALA",
+                            "SER",
+                        ],
+                    },
+                    {"chain_id": "2", "seq_id": [i for i in range(1, 6)], "comp_id": ["A", "C", "A", "C", "A"], "identical_chain_id": ["3"]},
+                    {"chain_id": "3", "seq_id": [i for i in range(1, 6)], "comp_id": ["A", "C", "A", "C", "A"], "identical_chain_id": ["2"]},
+                ]
+            ],
+        )
+        entry = pynmrstar.Entry.from_file(self.data_dir_path + "2l9r.str")
         # extract polymer sequence from assembly category
-        self.assertEqual(self.neft.get_star_seq(entry['nef_molecular_system'], lp_category='Chem_comp_assembly'),
-                         [[{'chain_id': '1', 'seq_id': [i for i in range(1, 70)], 'comp_id':
-                           ['MET', 'GLY', 'HIS', 'HIS', 'HIS', 'HIS', 'HIS', 'HIS', 'SER', 'HIS',
-                            'MET', 'SER', 'HIS', 'THR', 'GLN', 'VAL', 'ILE', 'GLU', 'LEU', 'GLU',
-                            'ARG', 'LYS', 'PHE', 'SER', 'HIS', 'GLN', 'LYS', 'TYR', 'LEU', 'SER',
-                            'ALA', 'PRO', 'GLU', 'ARG', 'ALA', 'HIS', 'LEU', 'ALA', 'LYS', 'ASN',
-                            'LEU', 'LYS', 'LEU', 'THR', 'GLU', 'THR', 'GLN', 'VAL', 'LYS', 'ILE',
-                            'TRP', 'PHE', 'GLN', 'ASN', 'ARG', 'ARG', 'TYR', 'LYS', 'THR', 'LYS',
-                            'ARG', 'LYS', 'GLN', 'LEU', 'SER', 'SER', 'GLU', 'LEU', 'GLY']}]])
+        self.assertEqual(
+            self.neft.get_star_seq(entry["nef_molecular_system"], lp_category="Chem_comp_assembly"),
+            [
+                [
+                    {
+                        "chain_id": "1",
+                        "seq_id": [i for i in range(1, 70)],
+                        "comp_id": [
+                            "MET",
+                            "GLY",
+                            "HIS",
+                            "HIS",
+                            "HIS",
+                            "HIS",
+                            "HIS",
+                            "HIS",
+                            "SER",
+                            "HIS",
+                            "MET",
+                            "SER",
+                            "HIS",
+                            "THR",
+                            "GLN",
+                            "VAL",
+                            "ILE",
+                            "GLU",
+                            "LEU",
+                            "GLU",
+                            "ARG",
+                            "LYS",
+                            "PHE",
+                            "SER",
+                            "HIS",
+                            "GLN",
+                            "LYS",
+                            "TYR",
+                            "LEU",
+                            "SER",
+                            "ALA",
+                            "PRO",
+                            "GLU",
+                            "ARG",
+                            "ALA",
+                            "HIS",
+                            "LEU",
+                            "ALA",
+                            "LYS",
+                            "ASN",
+                            "LEU",
+                            "LYS",
+                            "LEU",
+                            "THR",
+                            "GLU",
+                            "THR",
+                            "GLN",
+                            "VAL",
+                            "LYS",
+                            "ILE",
+                            "TRP",
+                            "PHE",
+                            "GLN",
+                            "ASN",
+                            "ARG",
+                            "ARG",
+                            "TYR",
+                            "LYS",
+                            "THR",
+                            "LYS",
+                            "ARG",
+                            "LYS",
+                            "GLN",
+                            "LEU",
+                            "SER",
+                            "SER",
+                            "GLU",
+                            "LEU",
+                            "GLY",
+                        ],
+                    }
+                ]
+            ],
+        )
         # extract polymer sequence from the first cs loop in nef_chemical_shift_list category
-        cs_loops = entry.get_saveframes_by_category('assigned_chemical_shifts')
-        self.assertEqual(len(cs_loops), 1) # assert single cs loop
-        self.assertEqual(self.neft.get_star_seq(cs_loops[0], lp_category='Atom_chem_shift'), # select the first cs loop by input sta_data
-                         [[{'chain_id': '1', 'seq_id': [i for i in range(10, 70)], 'comp_id':
-                           ['HIS',
-                            'MET', 'SER', 'HIS', 'THR', 'GLN', 'VAL', 'ILE', 'GLU', 'LEU', 'GLU',
-                            'ARG', 'LYS', 'PHE', 'SER', 'HIS', 'GLN', 'LYS', 'TYR', 'LEU', 'SER',
-                            'ALA', 'PRO', 'GLU', 'ARG', 'ALA', 'HIS', 'LEU', 'ALA', 'LYS', 'ASN',
-                            'LEU', 'LYS', 'LEU', 'THR', 'GLU', 'THR', 'GLN', 'VAL', 'LYS', 'ILE',
-                            'TRP', 'PHE', 'GLN', 'ASN', 'ARG', 'ARG', 'TYR', 'LYS', 'THR', 'LYS',
-                            'ARG', 'LYS', 'GLN', 'LEU', 'SER', 'SER', 'GLU', 'LEU', 'GLY']}]])
+        cs_loops = entry.get_saveframes_by_category("assigned_chemical_shifts")
+        self.assertEqual(len(cs_loops), 1)  # assert single cs loop
+        self.assertEqual(
+            self.neft.get_star_seq(cs_loops[0], lp_category="Atom_chem_shift"),  # select the first cs loop by input sta_data
+            [
+                [
+                    {
+                        "chain_id": "1",
+                        "seq_id": [i for i in range(10, 70)],
+                        "comp_id": [
+                            "HIS",
+                            "MET",
+                            "SER",
+                            "HIS",
+                            "THR",
+                            "GLN",
+                            "VAL",
+                            "ILE",
+                            "GLU",
+                            "LEU",
+                            "GLU",
+                            "ARG",
+                            "LYS",
+                            "PHE",
+                            "SER",
+                            "HIS",
+                            "GLN",
+                            "LYS",
+                            "TYR",
+                            "LEU",
+                            "SER",
+                            "ALA",
+                            "PRO",
+                            "GLU",
+                            "ARG",
+                            "ALA",
+                            "HIS",
+                            "LEU",
+                            "ALA",
+                            "LYS",
+                            "ASN",
+                            "LEU",
+                            "LYS",
+                            "LEU",
+                            "THR",
+                            "GLU",
+                            "THR",
+                            "GLN",
+                            "VAL",
+                            "LYS",
+                            "ILE",
+                            "TRP",
+                            "PHE",
+                            "GLN",
+                            "ASN",
+                            "ARG",
+                            "ARG",
+                            "TYR",
+                            "LYS",
+                            "THR",
+                            "LYS",
+                            "ARG",
+                            "LYS",
+                            "GLN",
+                            "LEU",
+                            "SER",
+                            "SER",
+                            "GLU",
+                            "LEU",
+                            "GLY",
+                        ],
+                    }
+                ]
+            ],
+        )
         # extract polymer sequence from nef_distant_restraint_list category
-        self.assertEqual(self.neft.get_star_seq(entry['nef_distance_restraint_list_distance_constraint_list'], lp_category='Gen_dist_constraint'),
-                         [[{'chain_id': '1', 'seq_id': [i for i in range(10, 70)], 'comp_id':
-                           ['HIS',
-                            'MET', 'SER', 'HIS', 'THR', 'GLN', 'VAL', 'ILE', 'GLU', 'LEU', 'GLU',
-                            'ARG', 'LYS', 'PHE', 'SER', 'HIS', 'GLN', 'LYS', 'TYR', 'LEU', 'SER',
-                            'ALA', 'PRO', 'GLU', 'ARG', 'ALA', 'HIS', 'LEU', 'ALA', 'LYS', 'ASN',
-                            'LEU', 'LYS', 'LEU', 'THR', 'GLU', 'THR', 'GLN', 'VAL', 'LYS', 'ILE',
-                            'TRP', 'PHE', 'GLN', 'ASN', 'ARG', 'ARG', 'TYR', 'LYS', 'THR', 'LYS',
-                            'ARG', 'LYS', 'GLN', 'LEU', 'SER', 'SER', 'GLU', 'LEU', 'GLY']}]])
+        self.assertEqual(
+            self.neft.get_star_seq(entry["nef_distance_restraint_list_distance_constraint_list"], lp_category="Gen_dist_constraint"),
+            [
+                [
+                    {
+                        "chain_id": "1",
+                        "seq_id": [i for i in range(10, 70)],
+                        "comp_id": [
+                            "HIS",
+                            "MET",
+                            "SER",
+                            "HIS",
+                            "THR",
+                            "GLN",
+                            "VAL",
+                            "ILE",
+                            "GLU",
+                            "LEU",
+                            "GLU",
+                            "ARG",
+                            "LYS",
+                            "PHE",
+                            "SER",
+                            "HIS",
+                            "GLN",
+                            "LYS",
+                            "TYR",
+                            "LEU",
+                            "SER",
+                            "ALA",
+                            "PRO",
+                            "GLU",
+                            "ARG",
+                            "ALA",
+                            "HIS",
+                            "LEU",
+                            "ALA",
+                            "LYS",
+                            "ASN",
+                            "LEU",
+                            "LYS",
+                            "LEU",
+                            "THR",
+                            "GLU",
+                            "THR",
+                            "GLN",
+                            "VAL",
+                            "LYS",
+                            "ILE",
+                            "TRP",
+                            "PHE",
+                            "GLN",
+                            "ASN",
+                            "ARG",
+                            "ARG",
+                            "TYR",
+                            "LYS",
+                            "THR",
+                            "LYS",
+                            "ARG",
+                            "LYS",
+                            "GLN",
+                            "LEU",
+                            "SER",
+                            "SER",
+                            "GLU",
+                            "LEU",
+                            "GLY",
+                        ],
+                    }
+                ]
+            ],
+        )
 
     def test_get_star_auth_seq(self):
-        entry = pynmrstar.Entry.from_file(self.data_dir_path + '2l9r.str')
+        entry = pynmrstar.Entry.from_file(self.data_dir_path + "2l9r.str")
         # extract polymer sequence from assembly category
-        self.assertEqual(self.neft.get_star_auth_seq(entry['nef_molecular_system'], lp_category='Chem_comp_assembly'),
-                         [[{'chain_id': '1', 'seq_id': [i for i in range(1, 70)],
-                            'auth_asym_id': ['A' for i in range(1, 70)],
-                            'auth_seq_id': ['%s' % i for i in range(1, 70)], 'auth_comp_id':
-                           ['MET', 'GLY', 'HIS', 'HIS', 'HIS', 'HIS', 'HIS', 'HIS', 'SER', 'HIS',
-                            'MET', 'SER', 'HIS', 'THR', 'GLN', 'VAL', 'ILE', 'GLU', 'LEU', 'GLU',
-                            'ARG', 'LYS', 'PHE', 'SER', 'HIS', 'GLN', 'LYS', 'TYR', 'LEU', 'SER',
-                            'ALA', 'PRO', 'GLU', 'ARG', 'ALA', 'HIS', 'LEU', 'ALA', 'LYS', 'ASN',
-                            'LEU', 'LYS', 'LEU', 'THR', 'GLU', 'THR', 'GLN', 'VAL', 'LYS', 'ILE',
-                            'TRP', 'PHE', 'GLN', 'ASN', 'ARG', 'ARG', 'TYR', 'LYS', 'THR', 'LYS',
-                            'ARG', 'LYS', 'GLN', 'LEU', 'SER', 'SER', 'GLU', 'LEU', 'GLY']}]])
+        self.assertEqual(
+            self.neft.get_star_auth_seq(entry["nef_molecular_system"], lp_category="Chem_comp_assembly"),
+            [
+                [
+                    {
+                        "chain_id": "1",
+                        "seq_id": [i for i in range(1, 70)],
+                        "auth_asym_id": ["A" for i in range(1, 70)],
+                        "auth_seq_id": ["%s" % i for i in range(1, 70)],
+                        "auth_comp_id": [
+                            "MET",
+                            "GLY",
+                            "HIS",
+                            "HIS",
+                            "HIS",
+                            "HIS",
+                            "HIS",
+                            "HIS",
+                            "SER",
+                            "HIS",
+                            "MET",
+                            "SER",
+                            "HIS",
+                            "THR",
+                            "GLN",
+                            "VAL",
+                            "ILE",
+                            "GLU",
+                            "LEU",
+                            "GLU",
+                            "ARG",
+                            "LYS",
+                            "PHE",
+                            "SER",
+                            "HIS",
+                            "GLN",
+                            "LYS",
+                            "TYR",
+                            "LEU",
+                            "SER",
+                            "ALA",
+                            "PRO",
+                            "GLU",
+                            "ARG",
+                            "ALA",
+                            "HIS",
+                            "LEU",
+                            "ALA",
+                            "LYS",
+                            "ASN",
+                            "LEU",
+                            "LYS",
+                            "LEU",
+                            "THR",
+                            "GLU",
+                            "THR",
+                            "GLN",
+                            "VAL",
+                            "LYS",
+                            "ILE",
+                            "TRP",
+                            "PHE",
+                            "GLN",
+                            "ASN",
+                            "ARG",
+                            "ARG",
+                            "TYR",
+                            "LYS",
+                            "THR",
+                            "LYS",
+                            "ARG",
+                            "LYS",
+                            "GLN",
+                            "LEU",
+                            "SER",
+                            "SER",
+                            "GLU",
+                            "LEU",
+                            "GLY",
+                        ],
+                    }
+                ]
+            ],
+        )
 
     def test_get_nef_comp_atom_pair(self):
-        entry = pynmrstar.Entry.from_file(self.data_dir_path + '2l9r.nef')
+        entry = pynmrstar.Entry.from_file(self.data_dir_path + "2l9r.nef")
         # extract comp/atom pair from the first cs loop in nef_chemical_shift_list category
-        cs_loops = entry.get_saveframes_by_category('nef_chemical_shift_list')
-        self.assertEqual(len(cs_loops), 1) # assert single cs loop
-        self.assertEqual(self.neft.get_nef_comp_atom_pair(cs_loops[0], lp_category='nef_chemical_shift'), # select the first cs loop by input sta_data
-                         [[{'comp_id': 'ALA', 'atom_id': ['C', 'CA', 'CB', 'H', 'HA', 'HB%', 'N']}, {'comp_id': 'ARG', 'atom_id': ['C', 'CA', 'CB', 'CD', 'CG', 'H', 'HA', 'HBX', 'HBY', 'HD2', 'HD3', 'HDX', 'HDY', 'HG2', 'HG3', 'HGX', 'HGY', 'N']}, {'comp_id': 'ASN', 'atom_id': ['C', 'CA', 'CB', 'H', 'HA', 'HBX', 'HBY', 'HD2X', 'HD2Y', 'N', 'ND2']}, {'comp_id': 'GLN', 'atom_id': ['C', 'CA', 'CB', 'CG', 'H', 'HA', 'HB2', 'HB3', 'HBX', 'HBY', 'HE2X', 'HE2Y', 'HG2', 'HG3', 'HGX', 'HGY', 'N', 'NE2']}, {'comp_id': 'GLU', 'atom_id': ['C', 'CA', 'CB', 'CG', 'H', 'HA', 'HB2', 'HB3', 'HBX', 'HBY', 'HGX', 'HGY', 'N']}, {'comp_id': 'GLY', 'atom_id': ['CA', 'H', 'HA2', 'HA3', 'N']}, {'comp_id': 'HIS', 'atom_id': ['C', 'CA', 'CB', 'CD2', 'H', 'HA', 'HB2', 'HB3', 'HBX', 'HBY', 'HD2', 'N']}, {'comp_id': 'ILE', 'atom_id': ['C', 'CA', 'CB', 'CD1', 'CG1', 'CG2', 'H', 'HA', 'HB', 'HD1%', 'HG1X', 'HG1Y', 'HG2%', 'N']}, {'comp_id': 'LEU', 'atom_id': ['C', 'CA', 'CB', 'CDX', 'CDY', 'CG', 'H', 'HA', 'HBX', 'HBY', 'HDX%', 'HDY%', 'HG', 'N']}, {'comp_id': 'LYS', 'atom_id': ['C', 'CA', 'CB', 'CD', 'CE', 'CG', 'H', 'HA', 'HBX', 'HBY', 'HD2', 'HD3', 'HDX', 'HDY', 'HE2', 'HE3', 'HEX', 'HEY', 'HG2', 'HG3', 'HGX', 'HGY', 'N']}, {'comp_id': 'MET', 'atom_id': ['C', 'CA', 'CB', 'CG', 'H', 'HA', 'HBX', 'HBY', 'HGX', 'HGY', 'N']}, {'comp_id': 'PHE', 'atom_id': ['C', 'CA', 'CB', 'CD1', 'CD2', 'CE1', 'CE2', 'CZ', 'H', 'HA', 'HBX', 'HBY', 'HD1', 'HD2', 'HE1', 'HE2', 'HZ', 'N']}, {'comp_id': 'PRO', 'atom_id': ['C', 'CA', 'CB', 'CD', 'CG', 'HA', 'HBX', 'HBY', 'HDX', 'HDY', 'HGX', 'HGY']}, {'comp_id': 'SER', 'atom_id': ['C', 'CA', 'CB', 'H', 'HA', 'HBX', 'HBY', 'N']}, {'comp_id': 'THR', 'atom_id': ['C', 'CA', 'CB', 'CG2', 'H', 'HA', 'HB', 'HG2%', 'N']}, {'comp_id': 'TRP', 'atom_id': ['C', 'CA', 'CB', 'CD1', 'CE3', 'CH2', 'CZ2', 'CZ3', 'H', 'HA', 'HBX', 'HBY', 'HD1', 'HE1', 'HE3', 'HH2', 'HZ2', 'HZ3', 'N', 'NE1']}, {'comp_id': 'TYR', 'atom_id': ['C', 'CA', 'CB', 'CD1', 'CD2', 'CE1', 'CE2', 'H', 'HA', 'HBX', 'HBY', 'HD1', 'HD2', 'HE1', 'HE2', 'N']}, {'comp_id': 'VAL', 'atom_id': ['C', 'CA', 'CB', 'CGX', 'CGY', 'H', 'HA', 'HB', 'HGX%', 'HGY%', 'N']}]])
+        cs_loops = entry.get_saveframes_by_category("nef_chemical_shift_list")
+        self.assertEqual(len(cs_loops), 1)  # assert single cs loop
+        self.assertEqual(
+            self.neft.get_nef_comp_atom_pair(cs_loops[0], lp_category="nef_chemical_shift"),  # select the first cs loop by input sta_data
+            [
+                [
+                    {"comp_id": "ALA", "atom_id": ["C", "CA", "CB", "H", "HA", "HB%", "N"]},
+                    {"comp_id": "ARG", "atom_id": ["C", "CA", "CB", "CD", "CG", "H", "HA", "HBX", "HBY", "HD2", "HD3", "HDX", "HDY", "HG2", "HG3", "HGX", "HGY", "N"]},
+                    {"comp_id": "ASN", "atom_id": ["C", "CA", "CB", "H", "HA", "HBX", "HBY", "HD2X", "HD2Y", "N", "ND2"]},
+                    {"comp_id": "GLN", "atom_id": ["C", "CA", "CB", "CG", "H", "HA", "HB2", "HB3", "HBX", "HBY", "HE2X", "HE2Y", "HG2", "HG3", "HGX", "HGY", "N", "NE2"]},
+                    {"comp_id": "GLU", "atom_id": ["C", "CA", "CB", "CG", "H", "HA", "HB2", "HB3", "HBX", "HBY", "HGX", "HGY", "N"]},
+                    {"comp_id": "GLY", "atom_id": ["CA", "H", "HA2", "HA3", "N"]},
+                    {"comp_id": "HIS", "atom_id": ["C", "CA", "CB", "CD2", "H", "HA", "HB2", "HB3", "HBX", "HBY", "HD2", "N"]},
+                    {"comp_id": "ILE", "atom_id": ["C", "CA", "CB", "CD1", "CG1", "CG2", "H", "HA", "HB", "HD1%", "HG1X", "HG1Y", "HG2%", "N"]},
+                    {"comp_id": "LEU", "atom_id": ["C", "CA", "CB", "CDX", "CDY", "CG", "H", "HA", "HBX", "HBY", "HDX%", "HDY%", "HG", "N"]},
+                    {
+                        "comp_id": "LYS",
+                        "atom_id": [
+                            "C",
+                            "CA",
+                            "CB",
+                            "CD",
+                            "CE",
+                            "CG",
+                            "H",
+                            "HA",
+                            "HBX",
+                            "HBY",
+                            "HD2",
+                            "HD3",
+                            "HDX",
+                            "HDY",
+                            "HE2",
+                            "HE3",
+                            "HEX",
+                            "HEY",
+                            "HG2",
+                            "HG3",
+                            "HGX",
+                            "HGY",
+                            "N",
+                        ],
+                    },
+                    {"comp_id": "MET", "atom_id": ["C", "CA", "CB", "CG", "H", "HA", "HBX", "HBY", "HGX", "HGY", "N"]},
+                    {"comp_id": "PHE", "atom_id": ["C", "CA", "CB", "CD1", "CD2", "CE1", "CE2", "CZ", "H", "HA", "HBX", "HBY", "HD1", "HD2", "HE1", "HE2", "HZ", "N"]},
+                    {"comp_id": "PRO", "atom_id": ["C", "CA", "CB", "CD", "CG", "HA", "HBX", "HBY", "HDX", "HDY", "HGX", "HGY"]},
+                    {"comp_id": "SER", "atom_id": ["C", "CA", "CB", "H", "HA", "HBX", "HBY", "N"]},
+                    {"comp_id": "THR", "atom_id": ["C", "CA", "CB", "CG2", "H", "HA", "HB", "HG2%", "N"]},
+                    {
+                        "comp_id": "TRP",
+                        "atom_id": ["C", "CA", "CB", "CD1", "CE3", "CH2", "CZ2", "CZ3", "H", "HA", "HBX", "HBY", "HD1", "HE1", "HE3", "HH2", "HZ2", "HZ3", "N", "NE1"],
+                    },
+                    {"comp_id": "TYR", "atom_id": ["C", "CA", "CB", "CD1", "CD2", "CE1", "CE2", "H", "HA", "HBX", "HBY", "HD1", "HD2", "HE1", "HE2", "N"]},
+                    {"comp_id": "VAL", "atom_id": ["C", "CA", "CB", "CGX", "CGY", "H", "HA", "HB", "HGX%", "HGY%", "N"]},
+                ]
+            ],
+        )
 
     def test_get_star_comp_atom_pair(self):
-        entry = pynmrstar.Entry.from_file(self.data_dir_path + '2l9r.str')
+        entry = pynmrstar.Entry.from_file(self.data_dir_path + "2l9r.str")
         # extract polymer sequence from the first cs loop in nef_chemical_shift_list category
-        cs_loops = entry.get_saveframes_by_category('assigned_chemical_shifts')
-        self.assertEqual(len(cs_loops), 1) # assert single cs loop
-        self.assertEqual(self.neft.get_star_comp_atom_pair(cs_loops[0], lp_category='Atom_chem_shift'), # select the first cs loop by input sta_data
-                         [[{'comp_id': 'ALA', 'atom_id': ['C', 'CA', 'CB', 'H', 'HA', 'HB1', 'HB2', 'HB3', 'N']}, {'comp_id': 'ARG', 'atom_id': ['C', 'CA', 'CB', 'CD', 'CG', 'H', 'HA', 'HB2', 'HB3', 'HD2', 'HD3', 'HG2', 'HG3', 'N']}, {'comp_id': 'ASN', 'atom_id': ['C', 'CA', 'CB', 'H', 'HA', 'HB2', 'HB3', 'HD21', 'HD22', 'N', 'ND2']}, {'comp_id': 'GLN', 'atom_id': ['C', 'CA', 'CB', 'CG', 'H', 'HA', 'HB2', 'HB3', 'HE21', 'HE22', 'HG2', 'HG3', 'N', 'NE2']}, {'comp_id': 'GLU', 'atom_id': ['C', 'CA', 'CB', 'CG', 'H', 'HA', 'HB2', 'HB3', 'HG2', 'HG3', 'N']}, {'comp_id': 'GLY', 'atom_id': ['CA', 'H', 'HA2', 'HA3', 'N']}, {'comp_id': 'HIS', 'atom_id': ['C', 'CA', 'CB', 'CD2', 'H', 'HA', 'HB2', 'HB3', 'HD2', 'N']}, {'comp_id': 'ILE', 'atom_id': ['C', 'CA', 'CB', 'CD1', 'CG1', 'CG2', 'H', 'HA', 'HB', 'HD11', 'HD12', 'HD13', 'HG12', 'HG13', 'HG21', 'HG22', 'HG23', 'N']}, {'comp_id': 'LEU', 'atom_id': ['C', 'CA', 'CB', 'CD1', 'CD2', 'CG', 'H', 'HA', 'HB2', 'HB3', 'HD11', 'HD12', 'HD13', 'HD21', 'HD22', 'HD23', 'HG', 'N']}, {'comp_id': 'LYS', 'atom_id': ['C', 'CA', 'CB', 'CD', 'CE', 'CG', 'H', 'HA', 'HB2', 'HB3', 'HD2', 'HD3', 'HE2', 'HE3', 'HG2', 'HG3', 'N']}, {'comp_id': 'MET', 'atom_id': ['C', 'CA', 'CB', 'CG', 'H', 'HA', 'HB2', 'HB3', 'HG2', 'HG3', 'N']}, {'comp_id': 'PHE', 'atom_id': ['C', 'CA', 'CB', 'CD1', 'CD2', 'CE1', 'CE2', 'CZ', 'H', 'HA', 'HB2', 'HB3', 'HD1', 'HD2', 'HE1', 'HE2', 'HZ', 'N']}, {'comp_id': 'PRO', 'atom_id': ['C', 'CA', 'CB', 'CD', 'CG', 'HA', 'HB2', 'HB3', 'HD2', 'HD3', 'HG2', 'HG3']}, {'comp_id': 'SER', 'atom_id': ['C', 'CA', 'CB', 'H', 'HA', 'HB2', 'HB3', 'N']}, {'comp_id': 'THR', 'atom_id': ['C', 'CA', 'CB', 'CG2', 'H', 'HA', 'HB', 'HG21', 'HG22', 'HG23', 'N']}, {'comp_id': 'TRP', 'atom_id': ['C', 'CA', 'CB', 'CD1', 'CE3', 'CH2', 'CZ2', 'CZ3', 'H', 'HA', 'HB2', 'HB3', 'HD1', 'HE1', 'HE3', 'HH2', 'HZ2', 'HZ3', 'N', 'NE1']}, {'comp_id': 'TYR', 'atom_id': ['C', 'CA', 'CB', 'CD1', 'CD2', 'CE1', 'CE2', 'H', 'HA', 'HB2', 'HB3', 'HD1', 'HD2', 'HE1', 'HE2', 'N']}, {'comp_id': 'VAL', 'atom_id': ['C', 'CA', 'CB', 'CG1', 'CG2', 'H', 'HA', 'HB', 'HG11', 'HG12', 'HG13', 'HG21', 'HG22', 'HG23', 'N']}]])
+        cs_loops = entry.get_saveframes_by_category("assigned_chemical_shifts")
+        self.assertEqual(len(cs_loops), 1)  # assert single cs loop
+        self.assertEqual(
+            self.neft.get_star_comp_atom_pair(cs_loops[0], lp_category="Atom_chem_shift"),  # select the first cs loop by input sta_data
+            [
+                [
+                    {"comp_id": "ALA", "atom_id": ["C", "CA", "CB", "H", "HA", "HB1", "HB2", "HB3", "N"]},
+                    {"comp_id": "ARG", "atom_id": ["C", "CA", "CB", "CD", "CG", "H", "HA", "HB2", "HB3", "HD2", "HD3", "HG2", "HG3", "N"]},
+                    {"comp_id": "ASN", "atom_id": ["C", "CA", "CB", "H", "HA", "HB2", "HB3", "HD21", "HD22", "N", "ND2"]},
+                    {"comp_id": "GLN", "atom_id": ["C", "CA", "CB", "CG", "H", "HA", "HB2", "HB3", "HE21", "HE22", "HG2", "HG3", "N", "NE2"]},
+                    {"comp_id": "GLU", "atom_id": ["C", "CA", "CB", "CG", "H", "HA", "HB2", "HB3", "HG2", "HG3", "N"]},
+                    {"comp_id": "GLY", "atom_id": ["CA", "H", "HA2", "HA3", "N"]},
+                    {"comp_id": "HIS", "atom_id": ["C", "CA", "CB", "CD2", "H", "HA", "HB2", "HB3", "HD2", "N"]},
+                    {"comp_id": "ILE", "atom_id": ["C", "CA", "CB", "CD1", "CG1", "CG2", "H", "HA", "HB", "HD11", "HD12", "HD13", "HG12", "HG13", "HG21", "HG22", "HG23", "N"]},
+                    {"comp_id": "LEU", "atom_id": ["C", "CA", "CB", "CD1", "CD2", "CG", "H", "HA", "HB2", "HB3", "HD11", "HD12", "HD13", "HD21", "HD22", "HD23", "HG", "N"]},
+                    {"comp_id": "LYS", "atom_id": ["C", "CA", "CB", "CD", "CE", "CG", "H", "HA", "HB2", "HB3", "HD2", "HD3", "HE2", "HE3", "HG2", "HG3", "N"]},
+                    {"comp_id": "MET", "atom_id": ["C", "CA", "CB", "CG", "H", "HA", "HB2", "HB3", "HG2", "HG3", "N"]},
+                    {"comp_id": "PHE", "atom_id": ["C", "CA", "CB", "CD1", "CD2", "CE1", "CE2", "CZ", "H", "HA", "HB2", "HB3", "HD1", "HD2", "HE1", "HE2", "HZ", "N"]},
+                    {"comp_id": "PRO", "atom_id": ["C", "CA", "CB", "CD", "CG", "HA", "HB2", "HB3", "HD2", "HD3", "HG2", "HG3"]},
+                    {"comp_id": "SER", "atom_id": ["C", "CA", "CB", "H", "HA", "HB2", "HB3", "N"]},
+                    {"comp_id": "THR", "atom_id": ["C", "CA", "CB", "CG2", "H", "HA", "HB", "HG21", "HG22", "HG23", "N"]},
+                    {
+                        "comp_id": "TRP",
+                        "atom_id": ["C", "CA", "CB", "CD1", "CE3", "CH2", "CZ2", "CZ3", "H", "HA", "HB2", "HB3", "HD1", "HE1", "HE3", "HH2", "HZ2", "HZ3", "N", "NE1"],
+                    },
+                    {"comp_id": "TYR", "atom_id": ["C", "CA", "CB", "CD1", "CD2", "CE1", "CE2", "H", "HA", "HB2", "HB3", "HD1", "HD2", "HE1", "HE2", "N"]},
+                    {"comp_id": "VAL", "atom_id": ["C", "CA", "CB", "CG1", "CG2", "H", "HA", "HB", "HG11", "HG12", "HG13", "HG21", "HG22", "HG23", "N"]},
+                ]
+            ],
+        )
 
     def test_get_nef_atom_type_from_cs_loop(self):
-        entry = pynmrstar.Entry.from_file(self.data_dir_path + '2l9r.nef')
+        entry = pynmrstar.Entry.from_file(self.data_dir_path + "2l9r.nef")
         # extract comp/atom pair from the first cs loop in nef_chemical_shift_list category
-        cs_loops = entry.get_saveframes_by_category('nef_chemical_shift_list')
-        self.assertEqual(len(cs_loops), 1) # assert single cs loop
-        self.assertEqual(self.neft.get_nef_atom_type_from_cs_loop(cs_loops[0], lp_category='nef_chemical_shift'), # select the first cs loop by input sta_data
-                         [[{'isotope_number': [13], 'atom_id': ['C', 'CA', 'CB', 'CD', 'CD1', 'CD2', 'CDX', 'CDY', 'CE', 'CE1', 'CE2', 'CE3', 'CG', 'CG1', 'CG2', 'CGX', 'CGY', 'CH2', 'CZ', 'CZ2', 'CZ3'], 'atom_type': 'C'}, {'isotope_number': [1], 'atom_id': ['H', 'HA', 'HA2', 'HA3', 'HB', 'HB%', 'HB2', 'HB3', 'HBX', 'HBY', 'HD1', 'HD1%', 'HD2', 'HD2X', 'HD2Y', 'HD3', 'HDX', 'HDX%', 'HDY', 'HDY%', 'HE1', 'HE2', 'HE2X', 'HE2Y', 'HE3', 'HEX', 'HEY', 'HG', 'HG1X', 'HG1Y', 'HG2', 'HG2%', 'HG3', 'HGX', 'HGX%', 'HGY', 'HGY%', 'HH2', 'HZ', 'HZ2', 'HZ3'], 'atom_type': 'H'}, {'isotope_number': [15], 'atom_id': ['N', 'ND2', 'NE1', 'NE2'], 'atom_type': 'N'}]])
+        cs_loops = entry.get_saveframes_by_category("nef_chemical_shift_list")
+        self.assertEqual(len(cs_loops), 1)  # assert single cs loop
+        self.assertEqual(
+            self.neft.get_nef_atom_type_from_cs_loop(cs_loops[0], lp_category="nef_chemical_shift"),  # select the first cs loop by input sta_data
+            [
+                [
+                    {
+                        "isotope_number": [13],
+                        "atom_id": ["C", "CA", "CB", "CD", "CD1", "CD2", "CDX", "CDY", "CE", "CE1", "CE2", "CE3", "CG", "CG1", "CG2", "CGX", "CGY", "CH2", "CZ", "CZ2", "CZ3"],
+                        "atom_type": "C",
+                    },
+                    {
+                        "isotope_number": [1],
+                        "atom_id": [
+                            "H",
+                            "HA",
+                            "HA2",
+                            "HA3",
+                            "HB",
+                            "HB%",
+                            "HB2",
+                            "HB3",
+                            "HBX",
+                            "HBY",
+                            "HD1",
+                            "HD1%",
+                            "HD2",
+                            "HD2X",
+                            "HD2Y",
+                            "HD3",
+                            "HDX",
+                            "HDX%",
+                            "HDY",
+                            "HDY%",
+                            "HE1",
+                            "HE2",
+                            "HE2X",
+                            "HE2Y",
+                            "HE3",
+                            "HEX",
+                            "HEY",
+                            "HG",
+                            "HG1X",
+                            "HG1Y",
+                            "HG2",
+                            "HG2%",
+                            "HG3",
+                            "HGX",
+                            "HGX%",
+                            "HGY",
+                            "HGY%",
+                            "HH2",
+                            "HZ",
+                            "HZ2",
+                            "HZ3",
+                        ],
+                        "atom_type": "H",
+                    },
+                    {"isotope_number": [15], "atom_id": ["N", "ND2", "NE1", "NE2"], "atom_type": "N"},
+                ]
+            ],
+        )
 
     def test_get_star_atom_type_from_cs_loop(self):
-        entry = pynmrstar.Entry.from_file(self.data_dir_path + '2l9r.str')
+        entry = pynmrstar.Entry.from_file(self.data_dir_path + "2l9r.str")
         # extract polymer sequence from the first cs loop in nef_chemical_shift_list category
-        cs_loops = entry.get_saveframes_by_category('assigned_chemical_shifts')
-        self.assertEqual(len(cs_loops), 1) # assert single cs loop
-        self.assertEqual(self.neft.get_star_atom_type_from_cs_loop(cs_loops[0], lp_category='Atom_chem_shift'), # select the first cs loop by input sta_data
-                         [[{'isotope_number': [13], 'atom_id': ['C', 'CA', 'CB', 'CD', 'CD1', 'CD2', 'CE', 'CE1', 'CE2', 'CE3', 'CG', 'CG1', 'CG2', 'CH2', 'CZ', 'CZ2', 'CZ3'], 'atom_type': 'C'}, {'isotope_number': [1], 'atom_id': ['H', 'HA', 'HA2', 'HA3', 'HB', 'HB1', 'HB2', 'HB3', 'HD1', 'HD11', 'HD12', 'HD13', 'HD2', 'HD21', 'HD22', 'HD23', 'HD3', 'HE1', 'HE2', 'HE21', 'HE22', 'HE3', 'HG', 'HG11', 'HG12', 'HG13', 'HG2', 'HG21', 'HG22', 'HG23', 'HG3', 'HH2', 'HZ', 'HZ2', 'HZ3'], 'atom_type': 'H'}, {'isotope_number': [15], 'atom_id': ['N', 'ND2', 'NE1', 'NE2'], 'atom_type': 'N'}]])
+        cs_loops = entry.get_saveframes_by_category("assigned_chemical_shifts")
+        self.assertEqual(len(cs_loops), 1)  # assert single cs loop
+        self.assertEqual(
+            self.neft.get_star_atom_type_from_cs_loop(cs_loops[0], lp_category="Atom_chem_shift"),  # select the first cs loop by input sta_data
+            [
+                [
+                    {
+                        "isotope_number": [13],
+                        "atom_id": ["C", "CA", "CB", "CD", "CD1", "CD2", "CE", "CE1", "CE2", "CE3", "CG", "CG1", "CG2", "CH2", "CZ", "CZ2", "CZ3"],
+                        "atom_type": "C",
+                    },
+                    {
+                        "isotope_number": [1],
+                        "atom_id": [
+                            "H",
+                            "HA",
+                            "HA2",
+                            "HA3",
+                            "HB",
+                            "HB1",
+                            "HB2",
+                            "HB3",
+                            "HD1",
+                            "HD11",
+                            "HD12",
+                            "HD13",
+                            "HD2",
+                            "HD21",
+                            "HD22",
+                            "HD23",
+                            "HD3",
+                            "HE1",
+                            "HE2",
+                            "HE21",
+                            "HE22",
+                            "HE3",
+                            "HG",
+                            "HG11",
+                            "HG12",
+                            "HG13",
+                            "HG2",
+                            "HG21",
+                            "HG22",
+                            "HG23",
+                            "HG3",
+                            "HH2",
+                            "HZ",
+                            "HZ2",
+                            "HZ3",
+                        ],
+                        "atom_type": "H",
+                    },
+                    {"isotope_number": [15], "atom_id": ["N", "ND2", "NE1", "NE2"], "atom_type": "N"},
+                ]
+            ],
+        )
 
     def test_get_star_ambig_code_from_cs_loop(self):
-        entry = pynmrstar.Entry.from_file(self.data_dir_path + '2l9r.str')
+        entry = pynmrstar.Entry.from_file(self.data_dir_path + "2l9r.str")
         # extract polymer sequence from the first cs loop in nef_chemical_shift_list category
-        cs_loops = entry.get_saveframes_by_category('assigned_chemical_shifts')
-        self.assertEqual(len(cs_loops), 1) # assert single cs loop
-        self.assertEqual(self.neft.get_star_ambig_code_from_cs_loop(cs_loops[0], lp_category='Atom_chem_shift'), # select the first cs loop by input sta_data
-                         [[{'comp_id': 'ALA', 'ambig_code': 1, 'atom_id': ['C', 'CA', 'CB', 'H', 'HA', 'HB1', 'HB2', 'HB3', 'N']}, {'comp_id': 'ARG', 'ambig_code': 1, 'atom_id': ['C', 'CA', 'CB', 'CD', 'CG', 'H', 'HA', 'HD2', 'HD3', 'HG2', 'HG3', 'N']}, {'comp_id': 'ARG', 'ambig_code': 2, 'atom_id': ['HB2', 'HB3', 'HD2', 'HD3', 'HG2', 'HG3']}, {'comp_id': 'ASN', 'ambig_code': 1, 'atom_id': ['C', 'CA', 'CB', 'H', 'HA', 'N', 'ND2']}, {'comp_id': 'ASN', 'ambig_code': 2, 'atom_id': ['HB2', 'HB3', 'HD21', 'HD22']}, {'comp_id': 'GLN', 'ambig_code': 1, 'atom_id': ['C', 'CA', 'CB', 'CG', 'H', 'HA', 'HB2', 'HB3', 'HG2', 'HG3', 'N', 'NE2']}, {'comp_id': 'GLN', 'ambig_code': 2, 'atom_id': ['HB2', 'HB3', 'HE21', 'HE22', 'HG2', 'HG3']}, {'comp_id': 'GLU', 'ambig_code': 1, 'atom_id': ['C', 'CA', 'CB', 'CG', 'H', 'HA', 'HB2', 'HB3', 'N']}, {'comp_id': 'GLU', 'ambig_code': 2, 'atom_id': ['HB2', 'HB3', 'HG2', 'HG3']}, {'comp_id': 'GLY', 'ambig_code': 1, 'atom_id': ['CA', 'H', 'HA2', 'HA3', 'N']}, {'comp_id': 'HIS', 'ambig_code': 1, 'atom_id': ['C', 'CA', 'CB', 'CD2', 'H', 'HA', 'HB2', 'HB3', 'HD2', 'N']}, {'comp_id': 'HIS', 'ambig_code': 2, 'atom_id': ['HB2', 'HB3']}, {'comp_id': 'ILE', 'ambig_code': 1, 'atom_id': ['C', 'CA', 'CB', 'CD1', 'CG1', 'CG2', 'H', 'HA', 'HB', 'HD11', 'HD12', 'HD13', 'HG21', 'HG22', 'HG23', 'N']}, {'comp_id': 'ILE', 'ambig_code': 2, 'atom_id': ['HG12', 'HG13']}, {'comp_id': 'LEU', 'ambig_code': 1, 'atom_id': ['C', 'CA', 'CB', 'CG', 'H', 'HA', 'HG', 'N']}, {'comp_id': 'LEU', 'ambig_code': 2, 'atom_id': ['CD1', 'CD2', 'HB2', 'HB3', 'HD11', 'HD12', 'HD13', 'HD21', 'HD22', 'HD23']}, {'comp_id': 'LYS', 'ambig_code': 1, 'atom_id': ['C', 'CA', 'CB', 'CD', 'CE', 'CG', 'H', 'HA', 'HD2', 'HD3', 'HE2', 'HE3', 'HG2', 'HG3', 'N']}, {'comp_id': 'LYS', 'ambig_code': 2, 'atom_id': ['HB2', 'HB3', 'HD2', 'HD3', 'HE2', 'HE3', 'HG2', 'HG3']}, {'comp_id': 'MET', 'ambig_code': 1, 'atom_id': ['C', 'CA', 'CB', 'CG', 'H', 'HA', 'N']}, {'comp_id': 'MET', 'ambig_code': 2, 'atom_id': ['HB2', 'HB3', 'HG2', 'HG3']}, {'comp_id': 'PHE', 'ambig_code': 1, 'atom_id': ['C', 'CA', 'CB', 'CD1', 'CD2', 'CE1', 'CE2', 'CZ', 'H', 'HA', 'HD1', 'HD2', 'HE1', 'HE2', 'HZ', 'N']}, {'comp_id': 'PHE', 'ambig_code': 2, 'atom_id': ['HB2', 'HB3']}, {'comp_id': 'PRO', 'ambig_code': 1, 'atom_id': ['C', 'CA', 'CB', 'CD', 'CG', 'HA']}, {'comp_id': 'PRO', 'ambig_code': 2, 'atom_id': ['HB2', 'HB3', 'HD2', 'HD3', 'HG2', 'HG3']}, {'comp_id': 'SER', 'ambig_code': 1, 'atom_id': ['C', 'CA', 'CB', 'H', 'HA', 'N']}, {'comp_id': 'SER', 'ambig_code': 2, 'atom_id': ['HB2', 'HB3']}, {'comp_id': 'THR', 'ambig_code': 1, 'atom_id': ['C', 'CA', 'CB', 'CG2', 'H', 'HA', 'HB', 'HG21', 'HG22', 'HG23', 'N']}, {'comp_id': 'TRP', 'ambig_code': 1, 'atom_id': ['C', 'CA', 'CB', 'CD1', 'CE3', 'CH2', 'CZ2', 'CZ3', 'H', 'HA', 'HD1', 'HE1', 'HE3', 'HH2', 'HZ2', 'HZ3', 'N', 'NE1']}, {'comp_id': 'TRP', 'ambig_code': 2, 'atom_id': ['HB2', 'HB3']}, {'comp_id': 'TYR', 'ambig_code': 1, 'atom_id': ['C', 'CA', 'CB', 'CD1', 'CD2', 'CE1', 'CE2', 'H', 'HA', 'HD1', 'HD2', 'HE1', 'HE2', 'N']}, {'comp_id': 'TYR', 'ambig_code': 2, 'atom_id': ['HB2', 'HB3']}, {'comp_id': 'VAL', 'ambig_code': 1, 'atom_id': ['C', 'CA', 'CB', 'H', 'HA', 'HB', 'N']}, {'comp_id': 'VAL', 'ambig_code': 2, 'atom_id': ['CG1', 'CG2', 'HG11', 'HG12', 'HG13', 'HG21', 'HG22', 'HG23']}]])
+        cs_loops = entry.get_saveframes_by_category("assigned_chemical_shifts")
+        self.assertEqual(len(cs_loops), 1)  # assert single cs loop
+        self.assertEqual(
+            self.neft.get_star_ambig_code_from_cs_loop(cs_loops[0], lp_category="Atom_chem_shift"),  # select the first cs loop by input sta_data
+            [
+                [
+                    {"comp_id": "ALA", "ambig_code": 1, "atom_id": ["C", "CA", "CB", "H", "HA", "HB1", "HB2", "HB3", "N"]},
+                    {"comp_id": "ARG", "ambig_code": 1, "atom_id": ["C", "CA", "CB", "CD", "CG", "H", "HA", "HD2", "HD3", "HG2", "HG3", "N"]},
+                    {"comp_id": "ARG", "ambig_code": 2, "atom_id": ["HB2", "HB3", "HD2", "HD3", "HG2", "HG3"]},
+                    {"comp_id": "ASN", "ambig_code": 1, "atom_id": ["C", "CA", "CB", "H", "HA", "N", "ND2"]},
+                    {"comp_id": "ASN", "ambig_code": 2, "atom_id": ["HB2", "HB3", "HD21", "HD22"]},
+                    {"comp_id": "GLN", "ambig_code": 1, "atom_id": ["C", "CA", "CB", "CG", "H", "HA", "HB2", "HB3", "HG2", "HG3", "N", "NE2"]},
+                    {"comp_id": "GLN", "ambig_code": 2, "atom_id": ["HB2", "HB3", "HE21", "HE22", "HG2", "HG3"]},
+                    {"comp_id": "GLU", "ambig_code": 1, "atom_id": ["C", "CA", "CB", "CG", "H", "HA", "HB2", "HB3", "N"]},
+                    {"comp_id": "GLU", "ambig_code": 2, "atom_id": ["HB2", "HB3", "HG2", "HG3"]},
+                    {"comp_id": "GLY", "ambig_code": 1, "atom_id": ["CA", "H", "HA2", "HA3", "N"]},
+                    {"comp_id": "HIS", "ambig_code": 1, "atom_id": ["C", "CA", "CB", "CD2", "H", "HA", "HB2", "HB3", "HD2", "N"]},
+                    {"comp_id": "HIS", "ambig_code": 2, "atom_id": ["HB2", "HB3"]},
+                    {"comp_id": "ILE", "ambig_code": 1, "atom_id": ["C", "CA", "CB", "CD1", "CG1", "CG2", "H", "HA", "HB", "HD11", "HD12", "HD13", "HG21", "HG22", "HG23", "N"]},
+                    {"comp_id": "ILE", "ambig_code": 2, "atom_id": ["HG12", "HG13"]},
+                    {"comp_id": "LEU", "ambig_code": 1, "atom_id": ["C", "CA", "CB", "CG", "H", "HA", "HG", "N"]},
+                    {"comp_id": "LEU", "ambig_code": 2, "atom_id": ["CD1", "CD2", "HB2", "HB3", "HD11", "HD12", "HD13", "HD21", "HD22", "HD23"]},
+                    {"comp_id": "LYS", "ambig_code": 1, "atom_id": ["C", "CA", "CB", "CD", "CE", "CG", "H", "HA", "HD2", "HD3", "HE2", "HE3", "HG2", "HG3", "N"]},
+                    {"comp_id": "LYS", "ambig_code": 2, "atom_id": ["HB2", "HB3", "HD2", "HD3", "HE2", "HE3", "HG2", "HG3"]},
+                    {"comp_id": "MET", "ambig_code": 1, "atom_id": ["C", "CA", "CB", "CG", "H", "HA", "N"]},
+                    {"comp_id": "MET", "ambig_code": 2, "atom_id": ["HB2", "HB3", "HG2", "HG3"]},
+                    {"comp_id": "PHE", "ambig_code": 1, "atom_id": ["C", "CA", "CB", "CD1", "CD2", "CE1", "CE2", "CZ", "H", "HA", "HD1", "HD2", "HE1", "HE2", "HZ", "N"]},
+                    {"comp_id": "PHE", "ambig_code": 2, "atom_id": ["HB2", "HB3"]},
+                    {"comp_id": "PRO", "ambig_code": 1, "atom_id": ["C", "CA", "CB", "CD", "CG", "HA"]},
+                    {"comp_id": "PRO", "ambig_code": 2, "atom_id": ["HB2", "HB3", "HD2", "HD3", "HG2", "HG3"]},
+                    {"comp_id": "SER", "ambig_code": 1, "atom_id": ["C", "CA", "CB", "H", "HA", "N"]},
+                    {"comp_id": "SER", "ambig_code": 2, "atom_id": ["HB2", "HB3"]},
+                    {"comp_id": "THR", "ambig_code": 1, "atom_id": ["C", "CA", "CB", "CG2", "H", "HA", "HB", "HG21", "HG22", "HG23", "N"]},
+                    {
+                        "comp_id": "TRP",
+                        "ambig_code": 1,
+                        "atom_id": ["C", "CA", "CB", "CD1", "CE3", "CH2", "CZ2", "CZ3", "H", "HA", "HD1", "HE1", "HE3", "HH2", "HZ2", "HZ3", "N", "NE1"],
+                    },
+                    {"comp_id": "TRP", "ambig_code": 2, "atom_id": ["HB2", "HB3"]},
+                    {"comp_id": "TYR", "ambig_code": 1, "atom_id": ["C", "CA", "CB", "CD1", "CD2", "CE1", "CE2", "H", "HA", "HD1", "HD2", "HE1", "HE2", "N"]},
+                    {"comp_id": "TYR", "ambig_code": 2, "atom_id": ["HB2", "HB3"]},
+                    {"comp_id": "VAL", "ambig_code": 1, "atom_id": ["C", "CA", "CB", "H", "HA", "HB", "N"]},
+                    {"comp_id": "VAL", "ambig_code": 2, "atom_id": ["CG1", "CG2", "HG11", "HG12", "HG13", "HG21", "HG22", "HG23"]},
+                ]
+            ],
+        )
 
     def test_get_nef_index(self):
-        dat = pynmrstar.Entry.from_file(self.data_dir_path + '2l9r.nef')
+        dat = pynmrstar.Entry.from_file(self.data_dir_path + "2l9r.nef")
         self.assertEqual(self.neft.get_nef_index(dat), [[i for i in range(1, 70)]])
 
     def test_get_star_index(self):
-        dat = pynmrstar.Entry.from_file(self.data_dir_path + '2l9r.str')
+        dat = pynmrstar.Entry.from_file(self.data_dir_path + "2l9r.str")
         self.assertEqual(self.neft.get_star_index(dat), [[i for i in range(1, 70)]])
 
     def test_check_nef_data(self):
-        dat = pynmrstar.Entry.from_file(self.data_dir_path + '2l9r.nef')
-        self.assertEqual(self.neft.check_nef_data(dat)[0][1]['value'], 56.002)
+        dat = pynmrstar.Entry.from_file(self.data_dir_path + "2l9r.nef")
+        self.assertEqual(self.neft.check_nef_data(dat)[0][1]["value"], 56.002)
 
     def test_check_star_data(self):
-        dat = pynmrstar.Entry.from_file(self.data_dir_path + '2l9r.str')
-        self.assertEqual(self.neft.check_star_data(dat)[0][1]['Val'], 56.002)
+        dat = pynmrstar.Entry.from_file(self.data_dir_path + "2l9r.str")
+        self.assertEqual(self.neft.check_star_data(dat)[0][1]["Val"], 56.002)
 
     def test_validate_comp_atom(self):
-        self.assertEqual(self.neft.validate_comp_atom('ALA', 'HB1'), True)
-        self.assertEqual(self.neft.validate_comp_atom('ALA', 'HB'), False)
-        self.assertEqual(self.neft.validate_comp_atom('AXA', 'HB'), False)
+        self.assertEqual(self.neft.validate_comp_atom("ALA", "HB1"), True)
+        self.assertEqual(self.neft.validate_comp_atom("ALA", "HB"), False)
+        self.assertEqual(self.neft.validate_comp_atom("AXA", "HB"), False)
 
     def test_validate_atom(self):
-        dat = pynmrstar.Entry.from_file(self.data_dir_path + '2mqq.nef')
-        self.assertEqual(len(self.neft.validate_atom(dat, 'nef_chemical_shift', 'residue_name', 'atom_name')),
-                         567)
-        self.assertEqual(len(self.neft.validate_atom(dat, 'nef_distance_restraint', 'residue_name_1', 'atom_name_1')),
-                         2960)
-        self.assertEqual(len(self.neft.validate_atom(dat, 'nef_distance_restraint', 'residue_name_2', 'atom_name_2')),
-                         3147)
-        dat = pynmrstar.Entry.from_file(self.data_dir_path + '2mqq.str')
+        dat = pynmrstar.Entry.from_file(self.data_dir_path + "2mqq.nef")
+        self.assertEqual(len(self.neft.validate_atom(dat, "nef_chemical_shift", "residue_name", "atom_name")), 567)
+        self.assertEqual(len(self.neft.validate_atom(dat, "nef_distance_restraint", "residue_name_1", "atom_name_1")), 2960)
+        self.assertEqual(len(self.neft.validate_atom(dat, "nef_distance_restraint", "residue_name_2", "atom_name_2")), 3147)
+        dat = pynmrstar.Entry.from_file(self.data_dir_path + "2mqq.str")
         self.assertEqual(len(self.neft.validate_atom(dat)), 0)
-        self.assertEqual(len(self.neft.validate_atom(dat, 'Gen_dist_constraint', 'Comp_ID_1', 'Atom_ID_1')),
-                         0)
-        self.assertEqual(len(self.neft.validate_atom(dat, 'Gen_dist_constraint', 'Comp_ID_2', 'Atom_ID_2')),
-                         0)
+        self.assertEqual(len(self.neft.validate_atom(dat, "Gen_dist_constraint", "Comp_ID_1", "Atom_ID_1")), 0)
+        self.assertEqual(len(self.neft.validate_atom(dat, "Gen_dist_constraint", "Comp_ID_2", "Atom_ID_2")), 0)
 
     def test_get_star_tag(self):
-        self.assertEqual(self.neft.get_star_tag('_nef_program_script.program_name')[0:2],
-                         ('_Software_applied_methods.Software_name', '_Software_applied_methods.Software_name'))
-        self.assertEqual(self.neft.get_star_tag('_nef_program_script.script_name')[0:2],
-                         ('_Software_applied_methods.Script_name', '_Software_applied_methods.Script_name'))
-        self.assertEqual(self.neft.get_star_tag('_nef_program_script.script')[0:2],
-                         ('_Software_applied_methods.Script', '_Software_applied_methods.Script'))
-        self.assertEqual(self.neft.get_star_tag('_nef_sequence.index')[0:2],
-                         ('_Chem_comp_assembly.NEF_index', '_Chem_comp_assembly.NEF_index'))
-        self.assertEqual(self.neft.get_star_tag('_nef_sequence.chain_code')[0:2],
-                         ('_Chem_comp_assembly.Auth_asym_ID', '_Chem_comp_assembly.Entity_assembly_ID'))
-        self.assertEqual(self.neft.get_star_tag('_nef_sequence.sequence_code')[0:2],
-                         ('_Chem_comp_assembly.Auth_seq_ID', '_Chem_comp_assembly.Comp_index_ID'))
-        self.assertEqual(self.neft.get_star_tag('_nef_sequence.residue_name')[0:2],
-                         ('_Chem_comp_assembly.Auth_comp_ID', '_Chem_comp_assembly.Comp_ID'))
-        self.assertEqual(self.neft.get_star_tag('_nef_sequence.linking')[0:2],
-                         ('_Chem_comp_assembly.Sequence_linking', '_Chem_comp_assembly.Sequence_linking'))
-        self.assertEqual(self.neft.get_star_tag('_nef_sequence.residue_variant')[0:2],
-                         ('_Chem_comp_assembly.Auth_variant_ID', '_Chem_comp_assembly.Auth_variant_ID'))
-        self.assertEqual(self.neft.get_star_tag('_nef_sequence.cis_peptide')[0:2],
-                         ('_Chem_comp_assembly.Cis_residue', '_Chem_comp_assembly.Cis_residue'))
-        self.assertEqual(self.neft.get_star_tag('_nef_chemical_shift.chain_code')[0:2],
-                         ('_Atom_chem_shift.Auth_asym_ID', '_Atom_chem_shift.Entity_assembly_ID'))
-        self.assertEqual(self.neft.get_star_tag('_nef_chemical_shift.sequence_code')[0:2],
-                         ('_Atom_chem_shift.Auth_seq_ID', '_Atom_chem_shift.Comp_index_ID'))
-        self.assertEqual(self.neft.get_star_tag('_nef_chemical_shift.residue_name')[0:2],
-                         ('_Atom_chem_shift.Auth_comp_ID', '_Atom_chem_shift.Comp_ID'))
-        self.assertEqual(self.neft.get_star_tag('_nef_chemical_shift.atom_name')[0:2],
-                         ('_Atom_chem_shift.Auth_atom_ID', '_Atom_chem_shift.Atom_ID'))
-        self.assertEqual(self.neft.get_star_tag('_nef_chemical_shift.value')[0:2],
-                         ('_Atom_chem_shift.Val', '_Atom_chem_shift.Val'))
-        self.assertEqual(self.neft.get_star_tag('_nef_chemical_shift.value_uncertainty')[0:2],
-                         ('_Atom_chem_shift.Val_err', '_Atom_chem_shift.Val_err'))
-        self.assertEqual(self.neft.get_star_tag('_nef_chemical_shift.element')[0:2],
-                         ('_Atom_chem_shift.Atom_type', '_Atom_chem_shift.Atom_type'))
-        self.assertEqual(self.neft.get_star_tag('_nef_chemical_shift.isotope_number')[0:2],
-                         ('_Atom_chem_shift.Atom_isotope_number', '_Atom_chem_shift.Atom_isotope_number'))
-        self.assertEqual(self.neft.get_star_tag('_nef_chemical_shift.chain_code')[0:2],
-                         ('_Atom_chem_shift.Auth_asym_ID', '_Atom_chem_shift.Entity_assembly_ID'))
-        self.assertEqual(self.neft.get_star_tag('_nef_chemical_shift.sequence_code')[0:2],
-                         ('_Atom_chem_shift.Auth_seq_ID', '_Atom_chem_shift.Comp_index_ID'))
-        self.assertEqual(self.neft.get_star_tag('_nef_chemical_shift.residue_name')[0:2],
-                         ('_Atom_chem_shift.Auth_comp_ID', '_Atom_chem_shift.Comp_ID'))
-        self.assertEqual(self.neft.get_star_tag('_nef_chemical_shift.atom_name')[0:2],
-                         ('_Atom_chem_shift.Auth_atom_ID', '_Atom_chem_shift.Atom_ID'))
-        self.assertEqual(self.neft.get_star_tag('_nef_chemical_shift.value')[0:2],
-                         ('_Atom_chem_shift.Val', '_Atom_chem_shift.Val'))
-        self.assertEqual(self.neft.get_star_tag('_nef_chemical_shift.value_uncertainty')[0:2],
-                         ('_Atom_chem_shift.Val_err', '_Atom_chem_shift.Val_err'))
-        self.assertEqual(self.neft.get_star_tag('_nef_chemical_shift.element')[0:2],
-                         ('_Atom_chem_shift.Atom_type', '_Atom_chem_shift.Atom_type'))
-        self.assertEqual(self.neft.get_star_tag('_nef_chemical_shift.isotope_number')[0:2],
-                         ('_Atom_chem_shift.Atom_isotope_number', '_Atom_chem_shift.Atom_isotope_number'))
-        self.assertEqual(self.neft.get_star_tag('_nef_chemical_shift.chain_code')[0:2],
-                         ('_Atom_chem_shift.Auth_asym_ID', '_Atom_chem_shift.Entity_assembly_ID'))
-        self.assertEqual(self.neft.get_star_tag('_nef_chemical_shift.sequence_code')[0:2],
-                         ('_Atom_chem_shift.Auth_seq_ID', '_Atom_chem_shift.Comp_index_ID'))
-        self.assertEqual(self.neft.get_star_tag('_nef_chemical_shift.residue_name')[0:2],
-                         ('_Atom_chem_shift.Auth_comp_ID', '_Atom_chem_shift.Comp_ID'))
-        self.assertEqual(self.neft.get_star_tag('_nef_chemical_shift.atom_name')[0:2],
-                         ('_Atom_chem_shift.Auth_atom_ID', '_Atom_chem_shift.Atom_ID'))
-        self.assertEqual(self.neft.get_star_tag('_nef_chemical_shift.value')[0:2],
-                         ('_Atom_chem_shift.Val', '_Atom_chem_shift.Val'))
-        self.assertEqual(self.neft.get_star_tag('_nef_chemical_shift.value_uncertainty')[0:2],
-                         ('_Atom_chem_shift.Val_err', '_Atom_chem_shift.Val_err'))
-        self.assertEqual(self.neft.get_star_tag('_nef_chemical_shift.element')[0:2],
-                         ('_Atom_chem_shift.Atom_type', '_Atom_chem_shift.Atom_type'))
-        self.assertEqual(self.neft.get_star_tag('_nef_chemical_shift.isotope_number')[0:2],
-                         ('_Atom_chem_shift.Atom_isotope_number', '_Atom_chem_shift.Atom_isotope_number'))
-        self.assertEqual(self.neft.get_star_tag('_nef_distance_restraint.index')[0:2],
-                         ('_Gen_dist_constraint.Index_ID', '_Gen_dist_constraint.Index_ID'))
-        self.assertEqual(self.neft.get_star_tag('_nef_distance_restraint.restraint_id')[0:2],
-                         ('_Gen_dist_constraint.ID', '_Gen_dist_constraint.ID'))
-        self.assertEqual(self.neft.get_star_tag('_nef_distance_restraint.restraint_combination_id')[0:2],
-                         ('_Gen_dist_constraint.Combination_ID', '_Gen_dist_constraint.Combination_ID'))
-        self.assertEqual(self.neft.get_star_tag('_nef_distance_restraint.chain_code_1')[0:2],
-                         ('_Gen_dist_constraint.Auth_asym_ID_1', '_Gen_dist_constraint.Entity_assembly_ID_1'))
-        self.assertEqual(self.neft.get_star_tag('_nef_distance_restraint.sequence_code_1')[0:2],
-                         ('_Gen_dist_constraint.Auth_seq_ID_1', '_Gen_dist_constraint.Comp_index_ID_1'))
-        self.assertEqual(self.neft.get_star_tag('_nef_distance_restraint.residue_name_1')[0:2],
-                         ('_Gen_dist_constraint.Auth_comp_ID_1', '_Gen_dist_constraint.Comp_ID_1'))
-        self.assertEqual(self.neft.get_star_tag('_nef_distance_restraint.atom_name_1')[0:2],
-                         ('_Gen_dist_constraint.Auth_atom_ID_1', '_Gen_dist_constraint.Atom_ID_1'))
-        self.assertEqual(self.neft.get_star_tag('_nef_distance_restraint.chain_code_2')[0:2],
-                         ('_Gen_dist_constraint.Auth_asym_ID_2', '_Gen_dist_constraint.Entity_assembly_ID_2'))
-        self.assertEqual(self.neft.get_star_tag('_nef_distance_restraint.sequence_code_2')[0:2],
-                         ('_Gen_dist_constraint.Auth_seq_ID_2', '_Gen_dist_constraint.Comp_index_ID_2'))
-        self.assertEqual(self.neft.get_star_tag('_nef_distance_restraint.residue_name_2')[0:2],
-                         ('_Gen_dist_constraint.Auth_comp_ID_2', '_Gen_dist_constraint.Comp_ID_2'))
-        self.assertEqual(self.neft.get_star_tag('_nef_distance_restraint.atom_name_2')[0:2],
-                         ('_Gen_dist_constraint.Auth_atom_ID_2', '_Gen_dist_constraint.Atom_ID_2'))
-        self.assertEqual(self.neft.get_star_tag('_nef_distance_restraint.weight')[0:2],
-                         ('_Gen_dist_constraint.Weight', '_Gen_dist_constraint.Weight'))
-        self.assertEqual(self.neft.get_star_tag('_nef_distance_restraint.target_value')[0:2],
-                         ('_Gen_dist_constraint.Target_val', '_Gen_dist_constraint.Target_val'))
-        self.assertEqual(self.neft.get_star_tag('_nef_distance_restraint.target_value_uncertainty')[0:2],
-                         ('_Gen_dist_constraint.Target_val_uncertainty', '_Gen_dist_constraint.Target_val_uncertainty'))
-        self.assertEqual(self.neft.get_star_tag('_nef_distance_restraint.lower_linear_limit')[0:2],
-                         ('_Gen_dist_constraint.Lower_linear_limit', '_Gen_dist_constraint.Lower_linear_limit'))
-        self.assertEqual(self.neft.get_star_tag('_nef_distance_restraint.lower_limit')[0:2],
-                         ('_Gen_dist_constraint.Distance_lower_bound_val', '_Gen_dist_constraint.Distance_lower_bound_val'))
-        self.assertEqual(self.neft.get_star_tag('_nef_distance_restraint.upper_limit')[0:2],
-                         ('_Gen_dist_constraint.Distance_upper_bound_val', '_Gen_dist_constraint.Distance_upper_bound_val'))
-        self.assertEqual(self.neft.get_star_tag('_nef_distance_restraint.upper_linear_limit')[0:2],
-                         ('_Gen_dist_constraint.Upper_linear_limit', '_Gen_dist_constraint.Upper_linear_limit'))
+        self.assertEqual(self.neft.get_star_tag("_nef_program_script.program_name")[0:2], ("_Software_applied_methods.Software_name", "_Software_applied_methods.Software_name"))
+        self.assertEqual(self.neft.get_star_tag("_nef_program_script.script_name")[0:2], ("_Software_applied_methods.Script_name", "_Software_applied_methods.Script_name"))
+        self.assertEqual(self.neft.get_star_tag("_nef_program_script.script")[0:2], ("_Software_applied_methods.Script", "_Software_applied_methods.Script"))
+        self.assertEqual(self.neft.get_star_tag("_nef_sequence.index")[0:2], ("_Chem_comp_assembly.NEF_index", "_Chem_comp_assembly.NEF_index"))
+        self.assertEqual(self.neft.get_star_tag("_nef_sequence.chain_code")[0:2], ("_Chem_comp_assembly.Auth_asym_ID", "_Chem_comp_assembly.Entity_assembly_ID"))
+        self.assertEqual(self.neft.get_star_tag("_nef_sequence.sequence_code")[0:2], ("_Chem_comp_assembly.Auth_seq_ID", "_Chem_comp_assembly.Comp_index_ID"))
+        self.assertEqual(self.neft.get_star_tag("_nef_sequence.residue_name")[0:2], ("_Chem_comp_assembly.Auth_comp_ID", "_Chem_comp_assembly.Comp_ID"))
+        self.assertEqual(self.neft.get_star_tag("_nef_sequence.linking")[0:2], ("_Chem_comp_assembly.Sequence_linking", "_Chem_comp_assembly.Sequence_linking"))
+        self.assertEqual(self.neft.get_star_tag("_nef_sequence.residue_variant")[0:2], ("_Chem_comp_assembly.Auth_variant_ID", "_Chem_comp_assembly.Auth_variant_ID"))
+        self.assertEqual(self.neft.get_star_tag("_nef_sequence.cis_peptide")[0:2], ("_Chem_comp_assembly.Cis_residue", "_Chem_comp_assembly.Cis_residue"))
+        self.assertEqual(self.neft.get_star_tag("_nef_chemical_shift.chain_code")[0:2], ("_Atom_chem_shift.Auth_asym_ID", "_Atom_chem_shift.Entity_assembly_ID"))
+        self.assertEqual(self.neft.get_star_tag("_nef_chemical_shift.sequence_code")[0:2], ("_Atom_chem_shift.Auth_seq_ID", "_Atom_chem_shift.Comp_index_ID"))
+        self.assertEqual(self.neft.get_star_tag("_nef_chemical_shift.residue_name")[0:2], ("_Atom_chem_shift.Auth_comp_ID", "_Atom_chem_shift.Comp_ID"))
+        self.assertEqual(self.neft.get_star_tag("_nef_chemical_shift.atom_name")[0:2], ("_Atom_chem_shift.Auth_atom_ID", "_Atom_chem_shift.Atom_ID"))
+        self.assertEqual(self.neft.get_star_tag("_nef_chemical_shift.value")[0:2], ("_Atom_chem_shift.Val", "_Atom_chem_shift.Val"))
+        self.assertEqual(self.neft.get_star_tag("_nef_chemical_shift.value_uncertainty")[0:2], ("_Atom_chem_shift.Val_err", "_Atom_chem_shift.Val_err"))
+        self.assertEqual(self.neft.get_star_tag("_nef_chemical_shift.element")[0:2], ("_Atom_chem_shift.Atom_type", "_Atom_chem_shift.Atom_type"))
+        self.assertEqual(self.neft.get_star_tag("_nef_chemical_shift.isotope_number")[0:2], ("_Atom_chem_shift.Atom_isotope_number", "_Atom_chem_shift.Atom_isotope_number"))
+        self.assertEqual(self.neft.get_star_tag("_nef_chemical_shift.chain_code")[0:2], ("_Atom_chem_shift.Auth_asym_ID", "_Atom_chem_shift.Entity_assembly_ID"))
+        self.assertEqual(self.neft.get_star_tag("_nef_chemical_shift.sequence_code")[0:2], ("_Atom_chem_shift.Auth_seq_ID", "_Atom_chem_shift.Comp_index_ID"))
+        self.assertEqual(self.neft.get_star_tag("_nef_chemical_shift.residue_name")[0:2], ("_Atom_chem_shift.Auth_comp_ID", "_Atom_chem_shift.Comp_ID"))
+        self.assertEqual(self.neft.get_star_tag("_nef_chemical_shift.atom_name")[0:2], ("_Atom_chem_shift.Auth_atom_ID", "_Atom_chem_shift.Atom_ID"))
+        self.assertEqual(self.neft.get_star_tag("_nef_chemical_shift.value")[0:2], ("_Atom_chem_shift.Val", "_Atom_chem_shift.Val"))
+        self.assertEqual(self.neft.get_star_tag("_nef_chemical_shift.value_uncertainty")[0:2], ("_Atom_chem_shift.Val_err", "_Atom_chem_shift.Val_err"))
+        self.assertEqual(self.neft.get_star_tag("_nef_chemical_shift.element")[0:2], ("_Atom_chem_shift.Atom_type", "_Atom_chem_shift.Atom_type"))
+        self.assertEqual(self.neft.get_star_tag("_nef_chemical_shift.isotope_number")[0:2], ("_Atom_chem_shift.Atom_isotope_number", "_Atom_chem_shift.Atom_isotope_number"))
+        self.assertEqual(self.neft.get_star_tag("_nef_chemical_shift.chain_code")[0:2], ("_Atom_chem_shift.Auth_asym_ID", "_Atom_chem_shift.Entity_assembly_ID"))
+        self.assertEqual(self.neft.get_star_tag("_nef_chemical_shift.sequence_code")[0:2], ("_Atom_chem_shift.Auth_seq_ID", "_Atom_chem_shift.Comp_index_ID"))
+        self.assertEqual(self.neft.get_star_tag("_nef_chemical_shift.residue_name")[0:2], ("_Atom_chem_shift.Auth_comp_ID", "_Atom_chem_shift.Comp_ID"))
+        self.assertEqual(self.neft.get_star_tag("_nef_chemical_shift.atom_name")[0:2], ("_Atom_chem_shift.Auth_atom_ID", "_Atom_chem_shift.Atom_ID"))
+        self.assertEqual(self.neft.get_star_tag("_nef_chemical_shift.value")[0:2], ("_Atom_chem_shift.Val", "_Atom_chem_shift.Val"))
+        self.assertEqual(self.neft.get_star_tag("_nef_chemical_shift.value_uncertainty")[0:2], ("_Atom_chem_shift.Val_err", "_Atom_chem_shift.Val_err"))
+        self.assertEqual(self.neft.get_star_tag("_nef_chemical_shift.element")[0:2], ("_Atom_chem_shift.Atom_type", "_Atom_chem_shift.Atom_type"))
+        self.assertEqual(self.neft.get_star_tag("_nef_chemical_shift.isotope_number")[0:2], ("_Atom_chem_shift.Atom_isotope_number", "_Atom_chem_shift.Atom_isotope_number"))
+        self.assertEqual(self.neft.get_star_tag("_nef_distance_restraint.index")[0:2], ("_Gen_dist_constraint.Index_ID", "_Gen_dist_constraint.Index_ID"))
+        self.assertEqual(self.neft.get_star_tag("_nef_distance_restraint.restraint_id")[0:2], ("_Gen_dist_constraint.ID", "_Gen_dist_constraint.ID"))
+        self.assertEqual(
+            self.neft.get_star_tag("_nef_distance_restraint.restraint_combination_id")[0:2], ("_Gen_dist_constraint.Combination_ID", "_Gen_dist_constraint.Combination_ID")
+        )
+        self.assertEqual(self.neft.get_star_tag("_nef_distance_restraint.chain_code_1")[0:2], ("_Gen_dist_constraint.Auth_asym_ID_1", "_Gen_dist_constraint.Entity_assembly_ID_1"))
+        self.assertEqual(self.neft.get_star_tag("_nef_distance_restraint.sequence_code_1")[0:2], ("_Gen_dist_constraint.Auth_seq_ID_1", "_Gen_dist_constraint.Comp_index_ID_1"))
+        self.assertEqual(self.neft.get_star_tag("_nef_distance_restraint.residue_name_1")[0:2], ("_Gen_dist_constraint.Auth_comp_ID_1", "_Gen_dist_constraint.Comp_ID_1"))
+        self.assertEqual(self.neft.get_star_tag("_nef_distance_restraint.atom_name_1")[0:2], ("_Gen_dist_constraint.Auth_atom_ID_1", "_Gen_dist_constraint.Atom_ID_1"))
+        self.assertEqual(self.neft.get_star_tag("_nef_distance_restraint.chain_code_2")[0:2], ("_Gen_dist_constraint.Auth_asym_ID_2", "_Gen_dist_constraint.Entity_assembly_ID_2"))
+        self.assertEqual(self.neft.get_star_tag("_nef_distance_restraint.sequence_code_2")[0:2], ("_Gen_dist_constraint.Auth_seq_ID_2", "_Gen_dist_constraint.Comp_index_ID_2"))
+        self.assertEqual(self.neft.get_star_tag("_nef_distance_restraint.residue_name_2")[0:2], ("_Gen_dist_constraint.Auth_comp_ID_2", "_Gen_dist_constraint.Comp_ID_2"))
+        self.assertEqual(self.neft.get_star_tag("_nef_distance_restraint.atom_name_2")[0:2], ("_Gen_dist_constraint.Auth_atom_ID_2", "_Gen_dist_constraint.Atom_ID_2"))
+        self.assertEqual(self.neft.get_star_tag("_nef_distance_restraint.weight")[0:2], ("_Gen_dist_constraint.Weight", "_Gen_dist_constraint.Weight"))
+        self.assertEqual(self.neft.get_star_tag("_nef_distance_restraint.target_value")[0:2], ("_Gen_dist_constraint.Target_val", "_Gen_dist_constraint.Target_val"))
+        self.assertEqual(
+            self.neft.get_star_tag("_nef_distance_restraint.target_value_uncertainty")[0:2],
+            ("_Gen_dist_constraint.Target_val_uncertainty", "_Gen_dist_constraint.Target_val_uncertainty"),
+        )
+        self.assertEqual(
+            self.neft.get_star_tag("_nef_distance_restraint.lower_linear_limit")[0:2], ("_Gen_dist_constraint.Lower_linear_limit", "_Gen_dist_constraint.Lower_linear_limit")
+        )
+        self.assertEqual(
+            self.neft.get_star_tag("_nef_distance_restraint.lower_limit")[0:2], ("_Gen_dist_constraint.Distance_lower_bound_val", "_Gen_dist_constraint.Distance_lower_bound_val")
+        )
+        self.assertEqual(
+            self.neft.get_star_tag("_nef_distance_restraint.upper_limit")[0:2], ("_Gen_dist_constraint.Distance_upper_bound_val", "_Gen_dist_constraint.Distance_upper_bound_val")
+        )
+        self.assertEqual(
+            self.neft.get_star_tag("_nef_distance_restraint.upper_linear_limit")[0:2], ("_Gen_dist_constraint.Upper_linear_limit", "_Gen_dist_constraint.Upper_linear_limit")
+        )
 
     def test_get_star_loop_tags(self):
-        self.assertEqual(self.neft.get_star_loop_tags(
-            ['_nef_program_script.program_name', '_nef_program_script.script_name', '_nef_program_script.script']),
-            ['_Software_applied_methods.Software_name', '_Software_applied_methods.Script_name',
-             '_Software_applied_methods.Script'])
-        self.assertEqual(self.neft.get_star_loop_tags(
-            ['_nef_sequence.index', '_nef_sequence.chain_code', '_nef_sequence.sequence_code',
-             '_nef_sequence.residue_name', '_nef_sequence.linking', '_nef_sequence.residue_variant',
-             '_nef_sequence.cis_peptide']),
-            ['_Chem_comp_assembly.NEF_index',
-             '_Chem_comp_assembly.Entity_assembly_ID',
-             '_Chem_comp_assembly.Comp_index_ID', '_Chem_comp_assembly.Comp_ID',
-             '_Chem_comp_assembly.Sequence_linking', '_Chem_comp_assembly.Auth_variant_ID',
-             '_Chem_comp_assembly.Cis_residue',
-             '_Chem_comp_assembly.Auth_asym_ID',
-             '_Chem_comp_assembly.Auth_seq_ID', '_Chem_comp_assembly.Auth_comp_ID',
-             '_Chem_comp_assembly.Assembly_ID'])
-        self.assertEqual(self.neft.get_star_loop_tags(
-            ['_nef_chemical_shift.chain_code', '_nef_chemical_shift.sequence_code', '_nef_chemical_shift.residue_name',
-             '_nef_chemical_shift.atom_name', '_nef_chemical_shift.value', '_nef_chemical_shift.value_uncertainty',
-             '_nef_chemical_shift.element', '_nef_chemical_shift.isotope_number']),
-            ['_Atom_chem_shift.ID',
-             '_Atom_chem_shift.Entity_assembly_ID',
-             '_Atom_chem_shift.Comp_index_ID', '_Atom_chem_shift.Comp_ID', '_Atom_chem_shift.Atom_ID',
-             '_Atom_chem_shift.Atom_type', '_Atom_chem_shift.Atom_isotope_number',
-             '_Atom_chem_shift.Val', '_Atom_chem_shift.Val_err',
-             '_Atom_chem_shift.Ambiguity_code', '_Atom_chem_shift.Ambiguity_set_ID',
-             '_Atom_chem_shift.Auth_asym_ID', '_Atom_chem_shift.Auth_seq_ID',
-             '_Atom_chem_shift.Auth_comp_ID', '_Atom_chem_shift.Auth_atom_ID',
-             '_Atom_chem_shift.Details', '_Atom_chem_shift.Assigned_chem_shift_list_ID'])
-        self.assertEqual(self.neft.get_star_loop_tags(
-            ['_nef_distance_restraint.index', '_nef_distance_restraint.restraint_id',
-             '_nef_distance_restraint.restraint_combination_id', '_nef_distance_restraint.chain_code_1',
-             '_nef_distance_restraint.sequence_code_1', '_nef_distance_restraint.residue_name_1',
-             '_nef_distance_restraint.atom_name_1', '_nef_distance_restraint.chain_code_2',
-             '_nef_distance_restraint.sequence_code_2', '_nef_distance_restraint.residue_name_2',
-             '_nef_distance_restraint.atom_name_2', '_nef_distance_restraint.weight',
-             '_nef_distance_restraint.target_value', '_nef_distance_restraint.target_value_uncertainty',
-             '_nef_distance_restraint.lower_linear_limit', '_nef_distance_restraint.lower_limit',
-             '_nef_distance_restraint.upper_limit', '_nef_distance_restraint.upper_linear_limit']),
-            ['_Gen_dist_constraint.Index_ID', '_Gen_dist_constraint.ID',
-             '_Gen_dist_constraint.Combination_ID',
-             '_Gen_dist_constraint.Entity_assembly_ID_1', '_Gen_dist_constraint.Comp_index_ID_1',
-             '_Gen_dist_constraint.Comp_ID_1', '_Gen_dist_constraint.Atom_ID_1',
-             '_Gen_dist_constraint.Entity_assembly_ID_2', '_Gen_dist_constraint.Comp_index_ID_2',
-             '_Gen_dist_constraint.Comp_ID_2', '_Gen_dist_constraint.Atom_ID_2',
-             '_Gen_dist_constraint.Weight',
-             '_Gen_dist_constraint.Target_val', '_Gen_dist_constraint.Target_val_uncertainty',
-             '_Gen_dist_constraint.Lower_linear_limit', '_Gen_dist_constraint.Distance_lower_bound_val',
-             '_Gen_dist_constraint.Distance_upper_bound_val', '_Gen_dist_constraint.Upper_linear_limit',
-             '_Gen_dist_constraint.Auth_asym_ID_1',
-             '_Gen_dist_constraint.Auth_seq_ID_1', '_Gen_dist_constraint.Auth_comp_ID_1',
-             '_Gen_dist_constraint.Auth_atom_ID_1', '_Gen_dist_constraint.Auth_asym_ID_2',
-             '_Gen_dist_constraint.Auth_seq_ID_2', '_Gen_dist_constraint.Auth_comp_ID_2',
-             '_Gen_dist_constraint.Auth_atom_ID_2',
-             '_Gen_dist_constraint.Member_logic_code',
-             '_Gen_dist_constraint.Gen_dist_constraint_list_ID'])
+        self.assertEqual(
+            self.neft.get_star_loop_tags(["_nef_program_script.program_name", "_nef_program_script.script_name", "_nef_program_script.script"]),
+            ["_Software_applied_methods.Software_name", "_Software_applied_methods.Script_name", "_Software_applied_methods.Script"],
+        )
+        self.assertEqual(
+            self.neft.get_star_loop_tags(
+                [
+                    "_nef_sequence.index",
+                    "_nef_sequence.chain_code",
+                    "_nef_sequence.sequence_code",
+                    "_nef_sequence.residue_name",
+                    "_nef_sequence.linking",
+                    "_nef_sequence.residue_variant",
+                    "_nef_sequence.cis_peptide",
+                ]
+            ),
+            [
+                "_Chem_comp_assembly.NEF_index",
+                "_Chem_comp_assembly.Entity_assembly_ID",
+                "_Chem_comp_assembly.Comp_index_ID",
+                "_Chem_comp_assembly.Comp_ID",
+                "_Chem_comp_assembly.Sequence_linking",
+                "_Chem_comp_assembly.Auth_variant_ID",
+                "_Chem_comp_assembly.Cis_residue",
+                "_Chem_comp_assembly.Auth_asym_ID",
+                "_Chem_comp_assembly.Auth_seq_ID",
+                "_Chem_comp_assembly.Auth_comp_ID",
+                "_Chem_comp_assembly.Assembly_ID",
+            ],
+        )
+        self.assertEqual(
+            self.neft.get_star_loop_tags(
+                [
+                    "_nef_chemical_shift.chain_code",
+                    "_nef_chemical_shift.sequence_code",
+                    "_nef_chemical_shift.residue_name",
+                    "_nef_chemical_shift.atom_name",
+                    "_nef_chemical_shift.value",
+                    "_nef_chemical_shift.value_uncertainty",
+                    "_nef_chemical_shift.element",
+                    "_nef_chemical_shift.isotope_number",
+                ]
+            ),
+            [
+                "_Atom_chem_shift.ID",
+                "_Atom_chem_shift.Entity_assembly_ID",
+                "_Atom_chem_shift.Comp_index_ID",
+                "_Atom_chem_shift.Comp_ID",
+                "_Atom_chem_shift.Atom_ID",
+                "_Atom_chem_shift.Atom_type",
+                "_Atom_chem_shift.Atom_isotope_number",
+                "_Atom_chem_shift.Val",
+                "_Atom_chem_shift.Val_err",
+                "_Atom_chem_shift.Ambiguity_code",
+                "_Atom_chem_shift.Ambiguity_set_ID",
+                "_Atom_chem_shift.Auth_asym_ID",
+                "_Atom_chem_shift.Auth_seq_ID",
+                "_Atom_chem_shift.Auth_comp_ID",
+                "_Atom_chem_shift.Auth_atom_ID",
+                "_Atom_chem_shift.Details",
+                "_Atom_chem_shift.Assigned_chem_shift_list_ID",
+            ],
+        )
+        self.assertEqual(
+            self.neft.get_star_loop_tags(
+                [
+                    "_nef_distance_restraint.index",
+                    "_nef_distance_restraint.restraint_id",
+                    "_nef_distance_restraint.restraint_combination_id",
+                    "_nef_distance_restraint.chain_code_1",
+                    "_nef_distance_restraint.sequence_code_1",
+                    "_nef_distance_restraint.residue_name_1",
+                    "_nef_distance_restraint.atom_name_1",
+                    "_nef_distance_restraint.chain_code_2",
+                    "_nef_distance_restraint.sequence_code_2",
+                    "_nef_distance_restraint.residue_name_2",
+                    "_nef_distance_restraint.atom_name_2",
+                    "_nef_distance_restraint.weight",
+                    "_nef_distance_restraint.target_value",
+                    "_nef_distance_restraint.target_value_uncertainty",
+                    "_nef_distance_restraint.lower_linear_limit",
+                    "_nef_distance_restraint.lower_limit",
+                    "_nef_distance_restraint.upper_limit",
+                    "_nef_distance_restraint.upper_linear_limit",
+                ]
+            ),
+            [
+                "_Gen_dist_constraint.Index_ID",
+                "_Gen_dist_constraint.ID",
+                "_Gen_dist_constraint.Combination_ID",
+                "_Gen_dist_constraint.Entity_assembly_ID_1",
+                "_Gen_dist_constraint.Comp_index_ID_1",
+                "_Gen_dist_constraint.Comp_ID_1",
+                "_Gen_dist_constraint.Atom_ID_1",
+                "_Gen_dist_constraint.Entity_assembly_ID_2",
+                "_Gen_dist_constraint.Comp_index_ID_2",
+                "_Gen_dist_constraint.Comp_ID_2",
+                "_Gen_dist_constraint.Atom_ID_2",
+                "_Gen_dist_constraint.Weight",
+                "_Gen_dist_constraint.Target_val",
+                "_Gen_dist_constraint.Target_val_uncertainty",
+                "_Gen_dist_constraint.Lower_linear_limit",
+                "_Gen_dist_constraint.Distance_lower_bound_val",
+                "_Gen_dist_constraint.Distance_upper_bound_val",
+                "_Gen_dist_constraint.Upper_linear_limit",
+                "_Gen_dist_constraint.Auth_asym_ID_1",
+                "_Gen_dist_constraint.Auth_seq_ID_1",
+                "_Gen_dist_constraint.Auth_comp_ID_1",
+                "_Gen_dist_constraint.Auth_atom_ID_1",
+                "_Gen_dist_constraint.Auth_asym_ID_2",
+                "_Gen_dist_constraint.Auth_seq_ID_2",
+                "_Gen_dist_constraint.Auth_comp_ID_2",
+                "_Gen_dist_constraint.Auth_atom_ID_2",
+                "_Gen_dist_constraint.Member_logic_code",
+                "_Gen_dist_constraint.Gen_dist_constraint_list_ID",
+            ],
+        )
 
     def test_get_star_atom(self):
-        self.assertEqual(self.neft.get_star_atom('CYS', 'HB%'), (['HB2', 'HB3'], 2, None))
-        self.assertEqual(self.neft.get_star_atom('TRP', 'CE%'), (['CE2', 'CE3'], 1, None))
-        self.assertEqual(self.neft.get_star_atom('TRP', 'CEX'), (['CE2'], 1, None))
-        self.assertEqual(self.neft.get_star_atom('TRP', 'CEY'), (['CE3'], 1, None))
-        self.assertEqual(self.neft.get_star_atom('LEU', 'HDY%'), (['HD21', 'HD22', 'HD23'], 2, None))
-        self.assertEqual(self.neft.get_star_atom('LEU', 'HD1%'), (['HD11', 'HD12', 'HD13'], 1, None))
-        self.assertEqual(self.neft.get_star_atom('HEM', 'HMA%'), (['HMA', 'HMAA', 'HMAB'], 1, None))
-        self.assertEqual(self.neft.get_star_atom('HEB', 'HMA%'), (['HMA1', 'HMA2', 'HMA3'], 1, None))
-        self.assertEqual(self.neft.get_star_atom('HEC', 'HMA%'), (['HMA1', 'HMA2', 'HMA3'], 1, None))
-        self.assertEqual(self.neft.get_star_atom('HEB', 'HBB%'), (['HBB1', 'HBB2', 'HBB3'], 1, None))
-        self.assertEqual(self.neft.get_star_atom('HEC', 'HBB%'), (['HBB1', 'HBB2', 'HBB3'], 1, None))
-        self.assertEqual(self.neft.get_star_atom('HEC', 'HBC%'), (['HBC1', 'HBC2', 'HBC3'], 1, None))
+        self.assertEqual(self.neft.get_star_atom("CYS", "HB%"), (["HB2", "HB3"], 2, None))
+        self.assertEqual(self.neft.get_star_atom("TRP", "CE%"), (["CE2", "CE3"], 1, None))
+        self.assertEqual(self.neft.get_star_atom("TRP", "CEX"), (["CE2"], 1, None))
+        self.assertEqual(self.neft.get_star_atom("TRP", "CEY"), (["CE3"], 1, None))
+        self.assertEqual(self.neft.get_star_atom("LEU", "HDY%"), (["HD21", "HD22", "HD23"], 2, None))
+        self.assertEqual(self.neft.get_star_atom("LEU", "HD1%"), (["HD11", "HD12", "HD13"], 1, None))
+        self.assertEqual(self.neft.get_star_atom("HEM", "HMA%"), (["HMA", "HMAA", "HMAB"], 1, None))
+        self.assertEqual(self.neft.get_star_atom("HEB", "HMA%"), (["HMA1", "HMA2", "HMA3"], 1, None))
+        self.assertEqual(self.neft.get_star_atom("HEC", "HMA%"), (["HMA1", "HMA2", "HMA3"], 1, None))
+        self.assertEqual(self.neft.get_star_atom("HEB", "HBB%"), (["HBB1", "HBB2", "HBB3"], 1, None))
+        self.assertEqual(self.neft.get_star_atom("HEC", "HBB%"), (["HBB1", "HBB2", "HBB3"], 1, None))
+        self.assertEqual(self.neft.get_star_atom("HEC", "HBC%"), (["HBC1", "HBC2", "HBC3"], 1, None))
 
     def test_get_nef_atom(self):
-        self.assertEqual(self.neft.get_nef_atom('HEM', [{'atom_id': 'HMA', 'ambig_code': 1, 'value': None},
-                                                        {'atom_id': 'HMAA', 'ambig_code': 1, 'value': None},
-                                                        {'atom_id': 'HMAB', 'ambig_code': 1, 'value': None}], {}), (['HMA%'], {'HMA%': None}, {'HMA': 'HMA%', 'HMAA': 'HMA%', 'HMAB': 'HMA%'}))
-        self.assertEqual(self.neft.get_nef_atom('HEB', [{'atom_id': 'HMA1', 'ambig_code': 1, 'value': None},
-                                                        {'atom_id': 'HMA2', 'ambig_code': 1, 'value': None},
-                                                        {'atom_id': 'HMA3', 'ambig_code': 1, 'value': None}], {}), (['HMA%'], {'HMA%': None}, {'HMA1': 'HMA%', 'HMA2': 'HMA%', 'HMA3': 'HMA%'}))
-        self.assertEqual(self.neft.get_nef_atom('HEC', [{'atom_id': 'HMA1', 'ambig_code': 1, 'value': None},
-                                                        {'atom_id': 'HMA2', 'ambig_code': 1, 'value': None},
-                                                        {'atom_id': 'HMA3', 'ambig_code': 1, 'value': None}], {}), (['HMA%'], {'HMA%': None}, {'HMA1': 'HMA%', 'HMA2': 'HMA%', 'HMA3': 'HMA%'}))
-        self.assertEqual(self.neft.get_nef_atom('HEB', [{'atom_id': 'HBB1', 'ambig_code': 1, 'value': None},
-                                                        {'atom_id': 'HBB2', 'ambig_code': 1, 'value': None},
-                                                        {'atom_id': 'HBB3', 'ambig_code': 1, 'value': None}], {}), (['HBB%'], {'HBB%': None}, {'HBB1': 'HBB%', 'HBB2': 'HBB%', 'HBB3': 'HBB%'}))
+        self.assertEqual(
+            self.neft.get_nef_atom(
+                "HEM",
+                [{"atom_id": "HMA", "ambig_code": 1, "value": None}, {"atom_id": "HMAA", "ambig_code": 1, "value": None}, {"atom_id": "HMAB", "ambig_code": 1, "value": None}],
+                {},
+            ),
+            (["HMA%"], {"HMA%": None}, {"HMA": "HMA%", "HMAA": "HMA%", "HMAB": "HMA%"}),
+        )
+        self.assertEqual(
+            self.neft.get_nef_atom(
+                "HEB",
+                [{"atom_id": "HMA1", "ambig_code": 1, "value": None}, {"atom_id": "HMA2", "ambig_code": 1, "value": None}, {"atom_id": "HMA3", "ambig_code": 1, "value": None}],
+                {},
+            ),
+            (["HMA%"], {"HMA%": None}, {"HMA1": "HMA%", "HMA2": "HMA%", "HMA3": "HMA%"}),
+        )
+        self.assertEqual(
+            self.neft.get_nef_atom(
+                "HEC",
+                [{"atom_id": "HMA1", "ambig_code": 1, "value": None}, {"atom_id": "HMA2", "ambig_code": 1, "value": None}, {"atom_id": "HMA3", "ambig_code": 1, "value": None}],
+                {},
+            ),
+            (["HMA%"], {"HMA%": None}, {"HMA1": "HMA%", "HMA2": "HMA%", "HMA3": "HMA%"}),
+        )
+        self.assertEqual(
+            self.neft.get_nef_atom(
+                "HEB",
+                [{"atom_id": "HBB1", "ambig_code": 1, "value": None}, {"atom_id": "HBB2", "ambig_code": 1, "value": None}, {"atom_id": "HBB3", "ambig_code": 1, "value": None}],
+                {},
+            ),
+            (["HBB%"], {"HBB%": None}, {"HBB1": "HBB%", "HBB2": "HBB%", "HBB3": "HBB%"}),
+        )
 
     def test_nef2star_cs_row(self):
-        input_tags = ['_nef_chemical_shift.chain_code', '_nef_chemical_shift.sequence_code',
-                      '_nef_chemical_shift.residue_name', '_nef_chemical_shift.atom_name',
-                      '_nef_chemical_shift.value', '_nef_chemical_shift.value_uncertainty',
-                      '_nef_chemical_shift.element', '_nef_chemical_shift.isotope_number']
-        output_tags = ['_Atom_chem_shift.Auth_asym_ID', '_Atom_chem_shift.Auth_seq_ID',
-                       '_Atom_chem_shift.Auth_comp_ID', '_Atom_chem_shift.Auth_atom_ID',
-                       '_Atom_chem_shift.Val', '_Atom_chem_shift.Val_err', '_Atom_chem_shift.Atom_type',
-                       '_Atom_chem_shift.Atom_isotope_number', '_Atom_chem_shift.Entity_assembly_ID',
-                       '_Atom_chem_shift.Comp_index_ID', '_Atom_chem_shift.Comp_ID', '_Atom_chem_shift.Atom_ID',
-                       '_Atom_chem_shift.Ambiguity_code', '_Atom_chem_shift.Ambiguity_set_ID',
-                       '_Atom_chem_shift.Details', '_Atom_chem_shift.Assigned_chem_shift_list_ID']
-        data = [['A', '484', 'THR', 'N', '108.193', '0.4', 'N', '15']]
-        data_out = [['A', 484, 'THR', 'N', '108.193', '0.4', 'N', '15', 1, 113, 'THR', 'N', 1, None, None, None]]
+        input_tags = [
+            "_nef_chemical_shift.chain_code",
+            "_nef_chemical_shift.sequence_code",
+            "_nef_chemical_shift.residue_name",
+            "_nef_chemical_shift.atom_name",
+            "_nef_chemical_shift.value",
+            "_nef_chemical_shift.value_uncertainty",
+            "_nef_chemical_shift.element",
+            "_nef_chemical_shift.isotope_number",
+        ]
+        output_tags = [
+            "_Atom_chem_shift.Auth_asym_ID",
+            "_Atom_chem_shift.Auth_seq_ID",
+            "_Atom_chem_shift.Auth_comp_ID",
+            "_Atom_chem_shift.Auth_atom_ID",
+            "_Atom_chem_shift.Val",
+            "_Atom_chem_shift.Val_err",
+            "_Atom_chem_shift.Atom_type",
+            "_Atom_chem_shift.Atom_isotope_number",
+            "_Atom_chem_shift.Entity_assembly_ID",
+            "_Atom_chem_shift.Comp_index_ID",
+            "_Atom_chem_shift.Comp_ID",
+            "_Atom_chem_shift.Atom_ID",
+            "_Atom_chem_shift.Ambiguity_code",
+            "_Atom_chem_shift.Ambiguity_set_ID",
+            "_Atom_chem_shift.Details",
+            "_Atom_chem_shift.Assigned_chem_shift_list_ID",
+        ]
+        data = [["A", "484", "THR", "N", "108.193", "0.4", "N", "15"]]
+        data_out = [["A", 484, "THR", "N", "108.193", "0.4", "N", "15", 1, 113, "THR", "N", 1, None, None, None]]
         self.assertEqual(self.neft.nef2star_cs_row(input_tags, output_tags, data), data_out)
-        data = [['A', '488', 'ALA', 'HB%', '1.625', '0.02', 'H', '1']]
-        data_out = [['A', 488, 'ALA', 'HB%', '1.625', '0.02', 'H', '1', 1, 117, 'ALA', 'HB1', 1, None, None, None],
-                    ['A', 488, 'ALA', 'HB%', '1.625', '0.02', 'H', '1', 1, 117, 'ALA', 'HB2', 1, None, None, None],
-                    ['A', 488, 'ALA', 'HB%', '1.625', '0.02', 'H', '1', 1, 117, 'ALA', 'HB3', 1, None, None, None]]
+        data = [["A", "488", "ALA", "HB%", "1.625", "0.02", "H", "1"]]
+        data_out = [
+            ["A", 488, "ALA", "HB%", "1.625", "0.02", "H", "1", 1, 117, "ALA", "HB1", 1, None, None, None],
+            ["A", 488, "ALA", "HB%", "1.625", "0.02", "H", "1", 1, 117, "ALA", "HB2", 1, None, None, None],
+            ["A", 488, "ALA", "HB%", "1.625", "0.02", "H", "1", 1, 117, "ALA", "HB3", 1, None, None, None],
+        ]
         self.assertEqual(self.neft.nef2star_cs_row(input_tags, output_tags, data), data_out)
-        data = [['A', '493', 'ILE', 'HD1%', '0.996', '0.02', 'H', '1']]
-        data_out = [['A', 493, 'ILE', 'HD1%', '0.996', '0.02', 'H', '1', 1, 122, 'ILE', 'HD11', 1, None, None, None],
-                    ['A', 493, 'ILE', 'HD1%', '0.996', '0.02', 'H', '1', 1, 122, 'ILE', 'HD12', 1, None, None, None],
-                    ['A', 493, 'ILE', 'HD1%', '0.996', '0.02', 'H', '1', 1, 122, 'ILE', 'HD13', 1, None, None, None]]
+        data = [["A", "493", "ILE", "HD1%", "0.996", "0.02", "H", "1"]]
+        data_out = [
+            ["A", 493, "ILE", "HD1%", "0.996", "0.02", "H", "1", 1, 122, "ILE", "HD11", 1, None, None, None],
+            ["A", 493, "ILE", "HD1%", "0.996", "0.02", "H", "1", 1, 122, "ILE", "HD12", 1, None, None, None],
+            ["A", 493, "ILE", "HD1%", "0.996", "0.02", "H", "1", 1, 122, "ILE", "HD13", 1, None, None, None],
+        ]
         self.assertEqual(self.neft.nef2star_cs_row(input_tags, output_tags, data), data_out)
-        data = [['A', '493', 'ILE', 'HG1x', '1.627', '0.02', 'H', '1']]
-        data_out = [['A', 493, 'ILE', 'HG1x', '1.627', '0.02', 'H', '1', 1, 122, 'ILE', 'HG12', 2, None, None, None]]
+        data = [["A", "493", "ILE", "HG1x", "1.627", "0.02", "H", "1"]]
+        data_out = [["A", 493, "ILE", "HG1x", "1.627", "0.02", "H", "1", 1, 122, "ILE", "HG12", 2, None, None, None]]
         self.assertEqual(self.neft.nef2star_cs_row(input_tags, output_tags, data), data_out)
-        data = [['A', '493', 'ILE', 'HG1y', '1.536', '0.02', 'H', '1']]
-        data_out = [['A', 493, 'ILE', 'HG1y', '1.536', '0.02', 'H', '1', 1, 122, 'ILE', 'HG13', 2, None, None, None]]
+        data = [["A", "493", "ILE", "HG1y", "1.536", "0.02", "H", "1"]]
+        data_out = [["A", 493, "ILE", "HG1y", "1.536", "0.02", "H", "1", 1, 122, "ILE", "HG13", 2, None, None, None]]
         self.assertEqual(self.neft.nef2star_cs_row(input_tags, output_tags, data), data_out)
-        data = [['A', '493', 'ILE', 'HG2%', '0.859', '0.02', 'H', '1']]
-        data_out = [['A', 493, 'ILE', 'HG2%', '0.859', '0.02', 'H', '1', 1, 122, 'ILE', 'HG21', 1, None, None, None],
-                    ['A', 493, 'ILE', 'HG2%', '0.859', '0.02', 'H', '1', 1, 122, 'ILE', 'HG22', 1, None, None, None],
-                    ['A', 493, 'ILE', 'HG2%', '0.859', '0.02', 'H', '1', 1, 122, 'ILE', 'HG23', 1, None, None, None]]
+        data = [["A", "493", "ILE", "HG2%", "0.859", "0.02", "H", "1"]]
+        data_out = [
+            ["A", 493, "ILE", "HG2%", "0.859", "0.02", "H", "1", 1, 122, "ILE", "HG21", 1, None, None, None],
+            ["A", 493, "ILE", "HG2%", "0.859", "0.02", "H", "1", 1, 122, "ILE", "HG22", 1, None, None, None],
+            ["A", 493, "ILE", "HG2%", "0.859", "0.02", "H", "1", 1, 122, "ILE", "HG23", 1, None, None, None],
+        ]
         self.assertEqual(self.neft.nef2star_cs_row(input_tags, output_tags, data), data_out)
 
     def test_get_seq_ident_tags(self):
-        inputtags = ['_nef_dihedral_restraint.index', '_nef_dihedral_restraint.restraint_id',
-                     '_nef_dihedral_restraint.restraint_combination_id', '_nef_dihedral_restraint.chain_code_1',
-                     '_nef_dihedral_restraint.sequence_code_1', '_nef_dihedral_restraint.residue_name_1',
-                     '_nef_dihedral_restraint.atom_name_1', '_nef_dihedral_restraint.chain_code_2',
-                     '_nef_dihedral_restraint.sequence_code_2', '_nef_dihedral_restraint.residue_name_2',
-                     '_nef_dihedral_restraint.atom_name_2', '_nef_dihedral_restraint.chain_code_3',
-                     '_nef_dihedral_restraint.sequence_code_3', '_nef_dihedral_restraint.residue_name_3',
-                     '_nef_dihedral_restraint.atom_name_3', '_nef_dihedral_restraint.chain_code_4',
-                     '_nef_dihedral_restraint.sequence_code_4', '_nef_dihedral_restraint.residue_name_4',
-                     '_nef_dihedral_restraint.atom_name_4', '_nef_dihedral_restraint.weight',
-                     '_nef_dihedral_restraint.target_value', '_nef_dihedral_restraint.target_value_uncertainty',
-                     '_nef_dihedral_restraint.lower_linear_limit', '_nef_dihedral_restraint.lower_limit',
-                     '_nef_dihedral_restraint.upper_limit', '_nef_dihedral_restraint.upper_linear_limit',
-                     '_nef_dihedral_restraint.name']
-        outtags = [{'seq_tag': '_nef_dihedral_restraint.sequence_code_1', 'chain_tag': '_nef_dihedral_restraint.chain_code_1'},
-                   {'seq_tag': '_nef_dihedral_restraint.sequence_code_2', 'chain_tag': '_nef_dihedral_restraint.chain_code_2'},
-                   {'seq_tag': '_nef_dihedral_restraint.sequence_code_3', 'chain_tag': '_nef_dihedral_restraint.chain_code_3'},
-                   {'seq_tag': '_nef_dihedral_restraint.sequence_code_4', 'chain_tag': '_nef_dihedral_restraint.chain_code_4'}]
-        self.assertEqual(self.neft.get_seq_ident_tags(inputtags, 'nef'), outtags)
+        inputtags = [
+            "_nef_dihedral_restraint.index",
+            "_nef_dihedral_restraint.restraint_id",
+            "_nef_dihedral_restraint.restraint_combination_id",
+            "_nef_dihedral_restraint.chain_code_1",
+            "_nef_dihedral_restraint.sequence_code_1",
+            "_nef_dihedral_restraint.residue_name_1",
+            "_nef_dihedral_restraint.atom_name_1",
+            "_nef_dihedral_restraint.chain_code_2",
+            "_nef_dihedral_restraint.sequence_code_2",
+            "_nef_dihedral_restraint.residue_name_2",
+            "_nef_dihedral_restraint.atom_name_2",
+            "_nef_dihedral_restraint.chain_code_3",
+            "_nef_dihedral_restraint.sequence_code_3",
+            "_nef_dihedral_restraint.residue_name_3",
+            "_nef_dihedral_restraint.atom_name_3",
+            "_nef_dihedral_restraint.chain_code_4",
+            "_nef_dihedral_restraint.sequence_code_4",
+            "_nef_dihedral_restraint.residue_name_4",
+            "_nef_dihedral_restraint.atom_name_4",
+            "_nef_dihedral_restraint.weight",
+            "_nef_dihedral_restraint.target_value",
+            "_nef_dihedral_restraint.target_value_uncertainty",
+            "_nef_dihedral_restraint.lower_linear_limit",
+            "_nef_dihedral_restraint.lower_limit",
+            "_nef_dihedral_restraint.upper_limit",
+            "_nef_dihedral_restraint.upper_linear_limit",
+            "_nef_dihedral_restraint.name",
+        ]
+        outtags = [
+            {"seq_tag": "_nef_dihedral_restraint.sequence_code_1", "chain_tag": "_nef_dihedral_restraint.chain_code_1"},
+            {"seq_tag": "_nef_dihedral_restraint.sequence_code_2", "chain_tag": "_nef_dihedral_restraint.chain_code_2"},
+            {"seq_tag": "_nef_dihedral_restraint.sequence_code_3", "chain_tag": "_nef_dihedral_restraint.chain_code_3"},
+            {"seq_tag": "_nef_dihedral_restraint.sequence_code_4", "chain_tag": "_nef_dihedral_restraint.chain_code_4"},
+        ]
+        self.assertEqual(self.neft.get_seq_ident_tags(inputtags, "nef"), outtags)
 
     def test_nef2star_row(self):
-        intag = ['_nef_dihedral_restraint.index', '_nef_dihedral_restraint.restraint_id',
-                 '_nef_dihedral_restraint.restraint_combination_id', '_nef_dihedral_restraint.chain_code_1',
-                 '_nef_dihedral_restraint.sequence_code_1', '_nef_dihedral_restraint.residue_name_1',
-                 '_nef_dihedral_restraint.atom_name_1', '_nef_dihedral_restraint.chain_code_2',
-                 '_nef_dihedral_restraint.sequence_code_2', '_nef_dihedral_restraint.residue_name_2',
-                 '_nef_dihedral_restraint.atom_name_2', '_nef_dihedral_restraint.chain_code_3',
-                 '_nef_dihedral_restraint.sequence_code_3', '_nef_dihedral_restraint.residue_name_3',
-                 '_nef_dihedral_restraint.atom_name_3', '_nef_dihedral_restraint.chain_code_4',
-                 '_nef_dihedral_restraint.sequence_code_4', '_nef_dihedral_restraint.residue_name_4',
-                 '_nef_dihedral_restraint.atom_name_4', '_nef_dihedral_restraint.weight',
-                 '_nef_dihedral_restraint.target_value', '_nef_dihedral_restraint.target_value_uncertainty',
-                 '_nef_dihedral_restraint.lower_linear_limit', '_nef_dihedral_restraint.lower_limit',
-                 '_nef_dihedral_restraint.upper_limit', '_nef_dihedral_restraint.upper_linear_limit',
-                 '_nef_dihedral_restraint.name']
-        outtag = ['_Torsion_angle_constraint.Index_ID', '_Torsion_angle_constraint.ID',
-                  '_Torsion_angle_constraint.Combination_ID', '_Torsion_angle_constraint.Auth_asym_ID_1',
-                  '_Torsion_angle_constraint.Auth_seq_ID_1', '_Torsion_angle_constraint.Auth_comp_ID_1',
-                  '_Torsion_angle_constraint.Auth_atom_ID_1', '_Torsion_angle_constraint.Auth_asym_ID_2',
-                  '_Torsion_angle_constraint.Auth_seq_ID_2', '_Torsion_angle_constraint.Auth_comp_ID_2',
-                  '_Torsion_angle_constraint.Auth_atom_ID_2', '_Torsion_angle_constraint.Auth_asym_ID_3',
-                  '_Torsion_angle_constraint.Auth_seq_ID_3', '_Torsion_angle_constraint.Auth_comp_ID_3',
-                  '_Torsion_angle_constraint.Auth_atom_ID_3', '_Torsion_angle_constraint.Auth_asym_ID_4',
-                  '_Torsion_angle_constraint.Auth_seq_ID_4', '_Torsion_angle_constraint.Auth_comp_ID_4',
-                  '_Torsion_angle_constraint.Auth_atom_ID_4', '_Torsion_angle_constraint.Weight',
-                  '_Torsion_angle_constraint.Angle_target_val', '_Torsion_angle_constraint.Angle_target_val_err',
-                  '_Torsion_angle_constraint.Angle_lower_linear_limit',
-                  '_Torsion_angle_constraint.Angle_lower_bound_val', '_Torsion_angle_constraint.Angle_upper_bound_val',
-                  '_Torsion_angle_constraint.Angle_upper_linear_limit', '_Torsion_angle_constraint.Torsion_angle_name',
-                  '_Torsion_angle_constraint.Entity_assembly_ID_1', '_Torsion_angle_constraint.Comp_index_ID_1',
-                  '_Torsion_angle_constraint.Comp_ID_1', '_Torsion_angle_constraint.Atom_ID_1',
-                  '_Torsion_angle_constraint.Entity_assembly_ID_2', '_Torsion_angle_constraint.Comp_index_ID_2',
-                  '_Torsion_angle_constraint.Comp_ID_2', '_Torsion_angle_constraint.Atom_ID_2',
-                  '_Torsion_angle_constraint.Entity_assembly_ID_3', '_Torsion_angle_constraint.Comp_index_ID_3',
-                  '_Torsion_angle_constraint.Comp_ID_3', '_Torsion_angle_constraint.Atom_ID_3',
-                  '_Torsion_angle_constraint.Entity_assembly_ID_4', '_Torsion_angle_constraint.Comp_index_ID_4',
-                  '_Torsion_angle_constraint.Comp_ID_4', '_Torsion_angle_constraint.Atom_ID_4']
-        indat = [1, 1, '.', 'A', 394, 'ASP', 'C', 'A', 395, 'ARG', 'N', 'A', 395, 'ARG', 'CA', 'A', 395,
-                 'ARG', 'C', 1, '.', '.', '.', -76, -56, '.', 'PHI']
-        outdat = [[1, 1, '.', 'A', 394, 'ASP', 'C', 'A', 395, 'ARG', 'N', 'A', 395, 'ARG', 'CA', 'A', 395,
-                   'ARG', 'C', 1, '.', '.', '.', -76, -56, '.', 'PHI', 1, 23, 'ASP', 'C', 1, 24, 'ARG', 'N', 1,
-                   24, 'ARG', 'CA', 1, 24, 'ARG', 'C']]
+        intag = [
+            "_nef_dihedral_restraint.index",
+            "_nef_dihedral_restraint.restraint_id",
+            "_nef_dihedral_restraint.restraint_combination_id",
+            "_nef_dihedral_restraint.chain_code_1",
+            "_nef_dihedral_restraint.sequence_code_1",
+            "_nef_dihedral_restraint.residue_name_1",
+            "_nef_dihedral_restraint.atom_name_1",
+            "_nef_dihedral_restraint.chain_code_2",
+            "_nef_dihedral_restraint.sequence_code_2",
+            "_nef_dihedral_restraint.residue_name_2",
+            "_nef_dihedral_restraint.atom_name_2",
+            "_nef_dihedral_restraint.chain_code_3",
+            "_nef_dihedral_restraint.sequence_code_3",
+            "_nef_dihedral_restraint.residue_name_3",
+            "_nef_dihedral_restraint.atom_name_3",
+            "_nef_dihedral_restraint.chain_code_4",
+            "_nef_dihedral_restraint.sequence_code_4",
+            "_nef_dihedral_restraint.residue_name_4",
+            "_nef_dihedral_restraint.atom_name_4",
+            "_nef_dihedral_restraint.weight",
+            "_nef_dihedral_restraint.target_value",
+            "_nef_dihedral_restraint.target_value_uncertainty",
+            "_nef_dihedral_restraint.lower_linear_limit",
+            "_nef_dihedral_restraint.lower_limit",
+            "_nef_dihedral_restraint.upper_limit",
+            "_nef_dihedral_restraint.upper_linear_limit",
+            "_nef_dihedral_restraint.name",
+        ]
+        outtag = [
+            "_Torsion_angle_constraint.Index_ID",
+            "_Torsion_angle_constraint.ID",
+            "_Torsion_angle_constraint.Combination_ID",
+            "_Torsion_angle_constraint.Auth_asym_ID_1",
+            "_Torsion_angle_constraint.Auth_seq_ID_1",
+            "_Torsion_angle_constraint.Auth_comp_ID_1",
+            "_Torsion_angle_constraint.Auth_atom_ID_1",
+            "_Torsion_angle_constraint.Auth_asym_ID_2",
+            "_Torsion_angle_constraint.Auth_seq_ID_2",
+            "_Torsion_angle_constraint.Auth_comp_ID_2",
+            "_Torsion_angle_constraint.Auth_atom_ID_2",
+            "_Torsion_angle_constraint.Auth_asym_ID_3",
+            "_Torsion_angle_constraint.Auth_seq_ID_3",
+            "_Torsion_angle_constraint.Auth_comp_ID_3",
+            "_Torsion_angle_constraint.Auth_atom_ID_3",
+            "_Torsion_angle_constraint.Auth_asym_ID_4",
+            "_Torsion_angle_constraint.Auth_seq_ID_4",
+            "_Torsion_angle_constraint.Auth_comp_ID_4",
+            "_Torsion_angle_constraint.Auth_atom_ID_4",
+            "_Torsion_angle_constraint.Weight",
+            "_Torsion_angle_constraint.Angle_target_val",
+            "_Torsion_angle_constraint.Angle_target_val_err",
+            "_Torsion_angle_constraint.Angle_lower_linear_limit",
+            "_Torsion_angle_constraint.Angle_lower_bound_val",
+            "_Torsion_angle_constraint.Angle_upper_bound_val",
+            "_Torsion_angle_constraint.Angle_upper_linear_limit",
+            "_Torsion_angle_constraint.Torsion_angle_name",
+            "_Torsion_angle_constraint.Entity_assembly_ID_1",
+            "_Torsion_angle_constraint.Comp_index_ID_1",
+            "_Torsion_angle_constraint.Comp_ID_1",
+            "_Torsion_angle_constraint.Atom_ID_1",
+            "_Torsion_angle_constraint.Entity_assembly_ID_2",
+            "_Torsion_angle_constraint.Comp_index_ID_2",
+            "_Torsion_angle_constraint.Comp_ID_2",
+            "_Torsion_angle_constraint.Atom_ID_2",
+            "_Torsion_angle_constraint.Entity_assembly_ID_3",
+            "_Torsion_angle_constraint.Comp_index_ID_3",
+            "_Torsion_angle_constraint.Comp_ID_3",
+            "_Torsion_angle_constraint.Atom_ID_3",
+            "_Torsion_angle_constraint.Entity_assembly_ID_4",
+            "_Torsion_angle_constraint.Comp_index_ID_4",
+            "_Torsion_angle_constraint.Comp_ID_4",
+            "_Torsion_angle_constraint.Atom_ID_4",
+        ]
+        indat = [1, 1, ".", "A", 394, "ASP", "C", "A", 395, "ARG", "N", "A", 395, "ARG", "CA", "A", 395, "ARG", "C", 1, ".", ".", ".", -76, -56, ".", "PHI"]
+        outdat = [
+            [
+                1,
+                1,
+                ".",
+                "A",
+                394,
+                "ASP",
+                "C",
+                "A",
+                395,
+                "ARG",
+                "N",
+                "A",
+                395,
+                "ARG",
+                "CA",
+                "A",
+                395,
+                "ARG",
+                "C",
+                1,
+                ".",
+                ".",
+                ".",
+                -76,
+                -56,
+                ".",
+                "PHI",
+                1,
+                23,
+                "ASP",
+                "C",
+                1,
+                24,
+                "ARG",
+                "N",
+                1,
+                24,
+                "ARG",
+                "CA",
+                1,
+                24,
+                "ARG",
+                "C",
+            ]
+        ]
         self.assertEqual(self.neft.nef2star_row(intag, outtag, indat), outdat)
 
     def test_nef2star_seq_row(self):
-        intag = ['_nef_sequence.index', '_nef_sequence.chain_code', '_nef_sequence.sequence_code',
-                 '_nef_sequence.residue_name', '_nef_sequence.linking', '_nef_sequence.residue_variant',
-                 '_nef_sequence.cis_peptide']
-        outtag = ['_Chem_comp_assembly.NEF_index', '_Chem_comp_assembly.Auth_asym_ID',
-                  '_Chem_comp_assembly.Auth_seq_ID', '_Chem_comp_assembly.Auth_comp_ID',
-                  '_Chem_comp_assembly.Sequence_linking', '_Chem_comp_assembly.Auth_variant_ID',
-                  '_Chem_comp_assembly.Cis_residue', '_Chem_comp_assembly.Entity_assembly_ID',
-                  '_Chem_comp_assembly.Comp_index_ID', '_Chem_comp_assembly.Comp_ID']
-        indat = [['177', 'A', '548', 'SER', 'middle', '.', '.']]
-        outdat = ([['177', 'A', '548', 'SER', 'middle', '.', '.', 1, 1, 'SER']], None)
+        intag = [
+            "_nef_sequence.index",
+            "_nef_sequence.chain_code",
+            "_nef_sequence.sequence_code",
+            "_nef_sequence.residue_name",
+            "_nef_sequence.linking",
+            "_nef_sequence.residue_variant",
+            "_nef_sequence.cis_peptide",
+        ]
+        outtag = [
+            "_Chem_comp_assembly.NEF_index",
+            "_Chem_comp_assembly.Auth_asym_ID",
+            "_Chem_comp_assembly.Auth_seq_ID",
+            "_Chem_comp_assembly.Auth_comp_ID",
+            "_Chem_comp_assembly.Sequence_linking",
+            "_Chem_comp_assembly.Auth_variant_ID",
+            "_Chem_comp_assembly.Cis_residue",
+            "_Chem_comp_assembly.Entity_assembly_ID",
+            "_Chem_comp_assembly.Comp_index_ID",
+            "_Chem_comp_assembly.Comp_ID",
+        ]
+        indat = [["177", "A", "548", "SER", "middle", ".", "."]]
+        outdat = ([["177", "A", "548", "SER", "middle", ".", ".", 1, 1, "SER"]], None)
         self.assertEqual(self.neft.nef2star_seq_row(intag, outtag, indat), outdat)
 
     def test_nef2star_dist_row(self):
-        intag = ['_nef_distance_restraint.index', '_nef_distance_restraint.restraint_id',
-                 '_nef_distance_restraint.restraint_combination_id', '_nef_distance_restraint.chain_code_1',
-                 '_nef_distance_restraint.sequence_code_1', '_nef_distance_restraint.residue_name_1',
-                 '_nef_distance_restraint.atom_name_1', '_nef_distance_restraint.chain_code_2',
-                 '_nef_distance_restraint.sequence_code_2', '_nef_distance_restraint.residue_name_2',
-                 '_nef_distance_restraint.atom_name_2', '_nef_distance_restraint.weight',
-                 '_nef_distance_restraint.target_value', '_nef_distance_restraint.target_value_uncertainty',
-                 '_nef_distance_restraint.lower_linear_limit', '_nef_distance_restraint.lower_limit',
-                 '_nef_distance_restraint.upper_limit', '_nef_distance_restraint.upper_linear_limit']
-        outtag = ['_Gen_dist_constraint.Index_ID', '_Gen_dist_constraint.ID', '_Gen_dist_constraint.Combination_ID',
-                  '_Gen_dist_constraint.Auth_asym_ID_1', '_Gen_dist_constraint.Auth_seq_ID_1',
-                  '_Gen_dist_constraint.Auth_comp_ID_1', '_Gen_dist_constraint.Auth_atom_ID_1',
-                  '_Gen_dist_constraint.Auth_asym_ID_2', '_Gen_dist_constraint.Auth_seq_ID_2',
-                  '_Gen_dist_constraint.Auth_comp_ID_2', '_Gen_dist_constraint.Auth_atom_ID_2',
-                  '_Gen_dist_constraint.Weight', '_Gen_dist_constraint.Target_val',
-                  '_Gen_dist_constraint.Target_val_uncertainty', '_Gen_dist_constraint.Lower_linear_limit',
-                  '_Gen_dist_constraint.Distance_lower_bound_val', '_Gen_dist_constraint.Distance_upper_bound_val',
-                  '_Gen_dist_constraint.Upper_linear_limit', '_Gen_dist_constraint.Entity_assembly_ID_1',
-                  '_Gen_dist_constraint.Comp_index_ID_1', '_Gen_dist_constraint.Comp_ID_1',
-                  '_Gen_dist_constraint.Atom_ID_1', '_Gen_dist_constraint.Entity_assembly_ID_2',
-                  '_Gen_dist_constraint.Comp_index_ID_2', '_Gen_dist_constraint.Comp_ID_2',
-                  '_Gen_dist_constraint.Atom_ID_2', '_Gen_dist_constraint.Member_logic_code']
-        indat = [[549, '389', '.', 'A', '384', 'TYR', 'HD%', 'A', '449', 'CYS', 'HBy', 1, '.', '.', '.', '.',
-                 5.7, '.']]
-        outdat = [[1, '389', '.', 'A', 384, 'TYR', 'HD%', 'A', 449, 'CYS', 'HBy', 1, '.', '.', '.', '.',
-                   5.7, '.', 1, 13, 'TYR', 'HD1', 1, 78, 'CYS', 'HB3', 'OR'],
-                  [2, '389', '.', 'A', 384, 'TYR', 'HD%', 'A', 449, 'CYS', 'HBy', 1, '.', '.', '.', '.',
-                   5.7, '.', 1, 13, 'TYR', 'HD2', 1, 78, 'CYS', 'HB3', 'OR']]
+        intag = [
+            "_nef_distance_restraint.index",
+            "_nef_distance_restraint.restraint_id",
+            "_nef_distance_restraint.restraint_combination_id",
+            "_nef_distance_restraint.chain_code_1",
+            "_nef_distance_restraint.sequence_code_1",
+            "_nef_distance_restraint.residue_name_1",
+            "_nef_distance_restraint.atom_name_1",
+            "_nef_distance_restraint.chain_code_2",
+            "_nef_distance_restraint.sequence_code_2",
+            "_nef_distance_restraint.residue_name_2",
+            "_nef_distance_restraint.atom_name_2",
+            "_nef_distance_restraint.weight",
+            "_nef_distance_restraint.target_value",
+            "_nef_distance_restraint.target_value_uncertainty",
+            "_nef_distance_restraint.lower_linear_limit",
+            "_nef_distance_restraint.lower_limit",
+            "_nef_distance_restraint.upper_limit",
+            "_nef_distance_restraint.upper_linear_limit",
+        ]
+        outtag = [
+            "_Gen_dist_constraint.Index_ID",
+            "_Gen_dist_constraint.ID",
+            "_Gen_dist_constraint.Combination_ID",
+            "_Gen_dist_constraint.Auth_asym_ID_1",
+            "_Gen_dist_constraint.Auth_seq_ID_1",
+            "_Gen_dist_constraint.Auth_comp_ID_1",
+            "_Gen_dist_constraint.Auth_atom_ID_1",
+            "_Gen_dist_constraint.Auth_asym_ID_2",
+            "_Gen_dist_constraint.Auth_seq_ID_2",
+            "_Gen_dist_constraint.Auth_comp_ID_2",
+            "_Gen_dist_constraint.Auth_atom_ID_2",
+            "_Gen_dist_constraint.Weight",
+            "_Gen_dist_constraint.Target_val",
+            "_Gen_dist_constraint.Target_val_uncertainty",
+            "_Gen_dist_constraint.Lower_linear_limit",
+            "_Gen_dist_constraint.Distance_lower_bound_val",
+            "_Gen_dist_constraint.Distance_upper_bound_val",
+            "_Gen_dist_constraint.Upper_linear_limit",
+            "_Gen_dist_constraint.Entity_assembly_ID_1",
+            "_Gen_dist_constraint.Comp_index_ID_1",
+            "_Gen_dist_constraint.Comp_ID_1",
+            "_Gen_dist_constraint.Atom_ID_1",
+            "_Gen_dist_constraint.Entity_assembly_ID_2",
+            "_Gen_dist_constraint.Comp_index_ID_2",
+            "_Gen_dist_constraint.Comp_ID_2",
+            "_Gen_dist_constraint.Atom_ID_2",
+            "_Gen_dist_constraint.Member_logic_code",
+        ]
+        indat = [[549, "389", ".", "A", "384", "TYR", "HD%", "A", "449", "CYS", "HBy", 1, ".", ".", ".", ".", 5.7, "."]]
+        outdat = [
+            [1, "389", ".", "A", 384, "TYR", "HD%", "A", 449, "CYS", "HBy", 1, ".", ".", ".", ".", 5.7, ".", 1, 13, "TYR", "HD1", 1, 78, "CYS", "HB3", "OR"],
+            [2, "389", ".", "A", 384, "TYR", "HD%", "A", 449, "CYS", "HBy", 1, ".", ".", ".", ".", 5.7, ".", 1, 13, "TYR", "HD2", 1, 78, "CYS", "HB3", "OR"],
+        ]
         self.assertEqual(self.neft.nef2star_dist_row(intag, outtag, indat), outdat)
 
     def test_nef_nmrstar(self):
-        self.neft.nef_to_nmrstar(self.data_dir_path + '2mqq.nef', star_file=self.data_dir_path + 'test_out.str')
-        self.assertTrue(self.neft.validate_file(self.data_dir_path + 'test_out.str', 'A')[0])
-        self.assertTrue(self.neft.validate_file(self.data_dir_path + 'test_out.str')[0])
+        self.neft.nef_to_nmrstar(self.data_dir_path + "2mqq.nef", star_file=self.data_dir_path + "test_out.str")
+        self.assertTrue(self.neft.validate_file(self.data_dir_path + "test_out.str", "A")[0])
+        self.assertTrue(self.neft.validate_file(self.data_dir_path + "test_out.str")[0])
 
     def test_nmrstar_nef(self):
-        self.neft.nmrstar_to_nef(self.data_dir_path + '2la6-clean.str', nef_file=self.data_dir_path + '2la6-clean-nef2star.nef')
-        self.assertTrue(self.neft.validate_file(self.data_dir_path + '2la6-clean-nef2star.nef', 'A')[0])
-        self.assertTrue(self.neft.validate_file(self.data_dir_path + '2la6-clean-nef2star.nef')[0])
+        self.neft.nmrstar_to_nef(self.data_dir_path + "2la6-clean.str", nef_file=self.data_dir_path + "2la6-clean-nef2star.nef")
+        self.assertTrue(self.neft.validate_file(self.data_dir_path + "2la6-clean-nef2star.nef", "A")[0])
+        self.assertTrue(self.neft.validate_file(self.data_dir_path + "2la6-clean-nef2star.nef")[0])
 
     def test_check_mandatory_tags(self):
-        missing_sf_tags, missing_lp_tags = self.neft.check_mandatory_tags(self.data_dir_path + 'mth1743-test-20190919.nef', 'nef')
-        self.assertEqual(missing_sf_tags, ['_nef_distance_restraint_list.potential_type', '_nef_dihedral_restraint_list.potential_type'])
-        self.assertEqual(missing_lp_tags, ['_nef_sequence.index', '_nef_distance_restraint.index', '_nef_distance_restraint.weight', '_nef_dihedral_restraint.index'])
-        missing_sf_tags, missing_lp_tags = self.neft.check_mandatory_tags(self.data_dir_path + 'saveframeonly.nef', 'nef')
+        missing_sf_tags, missing_lp_tags = self.neft.check_mandatory_tags(self.data_dir_path + "mth1743-test-20190919.nef", "nef")
+        self.assertEqual(missing_sf_tags, ["_nef_distance_restraint_list.potential_type", "_nef_dihedral_restraint_list.potential_type"])
+        self.assertEqual(missing_lp_tags, ["_nef_sequence.index", "_nef_distance_restraint.index", "_nef_distance_restraint.weight", "_nef_dihedral_restraint.index"])
+        missing_sf_tags, missing_lp_tags = self.neft.check_mandatory_tags(self.data_dir_path + "saveframeonly.nef", "nef")
         self.assertEqual(missing_sf_tags, [])
         self.assertEqual(missing_lp_tags, [])
-        missing_sf_tags, missing_lp_tags = self.neft.check_mandatory_tags(self.data_dir_path + 'loopOnly1.nef', 'nef')
+        missing_sf_tags, missing_lp_tags = self.neft.check_mandatory_tags(self.data_dir_path + "loopOnly1.nef", "nef")
         self.assertEqual(missing_sf_tags, [])
         self.assertEqual(missing_lp_tags, [])
 
     def test_is_mandatory_tag(self):
-        self.assertEqual(self.neft.is_mandatory_tag('_nef_rdc_restraint_list.potential_type', 'nef'), True)
+        self.assertEqual(self.neft.is_mandatory_tag("_nef_rdc_restraint_list.potential_type", "nef"), True)
 
     def test_letter_to_int(self):
-        self.assertEqual(self.neft.letter_to_int('A'), 1)
-        self.assertEqual(self.neft.letter_to_int('AA'), 28)
-        self.assertEqual(self.neft.letter_to_int('Z'), 26)
-        self.assertEqual(self.neft.letter_to_int('ZA'), 27 * 26 + 1)
-        self.assertEqual(self.neft.letter_to_int('a'), 1)
-        self.assertEqual(self.neft.letter_to_int('Aa'), 28)
-        self.assertEqual(self.neft.letter_to_int('z'), 26)
-        self.assertEqual(self.neft.letter_to_int('zA'), 27 * 26 + 1)
-        self.assertEqual(self.neft.letter_to_int('1'), 1)
-        self.assertEqual(self.neft.letter_to_int('0'), 0)
-        self.assertEqual(self.neft.letter_to_int('0', 1), 1)
-        self.assertEqual(self.neft.letter_to_int('Z*A'), 27 * 26 + 1)
-        self.assertEqual(self.neft.index_to_letter(self.neft.letter_to_int('A') - 1), 'A')
-        self.assertEqual(self.neft.index_to_letter(self.neft.letter_to_int('Z') - 1), 'Z')
-        self.assertEqual(self.neft.index_to_letter(self.neft.letter_to_int('AA') - 1), 'AA')
-        self.assertEqual(self.neft.index_to_letter(self.neft.letter_to_int('ZA') - 1), 'ZA')
-        self.assertEqual(self.neft.index_to_letter(self.neft.letter_to_int('AZ') - 1), 'AZ')
-        self.assertEqual(self.neft.index_to_letter(self.neft.letter_to_int('ZZ') - 1), 'ZZ')
-        self.assertEqual(self.neft.index_to_letter(self.neft.letter_to_int('AAA') - 1), 'AAA')
-        self.assertEqual(self.neft.index_to_letter(self.neft.letter_to_int('AAZ') - 1), 'AAZ')
-        self.assertEqual(self.neft.index_to_letter(self.neft.letter_to_int('AZA') - 1), 'AZA')
-        self.assertEqual(self.neft.index_to_letter(self.neft.letter_to_int('AZZ') - 1), 'AZZ')
-        self.assertEqual(self.neft.index_to_letter(self.neft.letter_to_int('ZAA') - 1), 'ZAA')
-        self.assertEqual(self.neft.index_to_letter(self.neft.letter_to_int('ZAZ') - 1), 'ZAZ')
-        self.assertEqual(self.neft.index_to_letter(self.neft.letter_to_int('ZZA') - 1), 'ZZA')
-        self.assertEqual(self.neft.index_to_letter(self.neft.letter_to_int('ZZZ') - 1), 'ZZZ')
-        self.assertEqual(self.neft.index_to_letter(self.neft.letter_to_int('B') - 1), 'B')
-        self.assertEqual(self.neft.index_to_letter(self.neft.letter_to_int('BB') - 1), 'BB')
-        self.assertEqual(self.neft.index_to_letter(self.neft.letter_to_int('BBB') - 1), 'BBB')
-        self.assertEqual(self.neft.index_to_letter(self.neft.letter_to_int('ABC') - 1), 'ABC')
-        self.assertEqual(self.neft.index_to_letter(self.neft.letter_to_int('CBA') - 1), 'CBA')
-        self.assertEqual(self.neft.index_to_letter(0), 'A')
-        self.assertEqual(self.neft.index_to_letter(1), 'B')
-        self.assertEqual(self.neft.index_to_letter(-1), '.')
-        self.assertEqual(self.neft.index_to_letter(self.neft.letter_to_int('AABC') - 1), 'ABC')
-        self.assertEqual(self.neft.index_to_letter(self.neft.letter_to_int('ZABC') - 1), 'ABC')
+        self.assertEqual(self.neft.letter_to_int("A"), 1)
+        self.assertEqual(self.neft.letter_to_int("AA"), 28)
+        self.assertEqual(self.neft.letter_to_int("Z"), 26)
+        self.assertEqual(self.neft.letter_to_int("ZA"), 27 * 26 + 1)
+        self.assertEqual(self.neft.letter_to_int("a"), 1)
+        self.assertEqual(self.neft.letter_to_int("Aa"), 28)
+        self.assertEqual(self.neft.letter_to_int("z"), 26)
+        self.assertEqual(self.neft.letter_to_int("zA"), 27 * 26 + 1)
+        self.assertEqual(self.neft.letter_to_int("1"), 1)
+        self.assertEqual(self.neft.letter_to_int("0"), 0)
+        self.assertEqual(self.neft.letter_to_int("0", 1), 1)
+        self.assertEqual(self.neft.letter_to_int("Z*A"), 27 * 26 + 1)
+        self.assertEqual(self.neft.index_to_letter(self.neft.letter_to_int("A") - 1), "A")
+        self.assertEqual(self.neft.index_to_letter(self.neft.letter_to_int("Z") - 1), "Z")
+        self.assertEqual(self.neft.index_to_letter(self.neft.letter_to_int("AA") - 1), "AA")
+        self.assertEqual(self.neft.index_to_letter(self.neft.letter_to_int("ZA") - 1), "ZA")
+        self.assertEqual(self.neft.index_to_letter(self.neft.letter_to_int("AZ") - 1), "AZ")
+        self.assertEqual(self.neft.index_to_letter(self.neft.letter_to_int("ZZ") - 1), "ZZ")
+        self.assertEqual(self.neft.index_to_letter(self.neft.letter_to_int("AAA") - 1), "AAA")
+        self.assertEqual(self.neft.index_to_letter(self.neft.letter_to_int("AAZ") - 1), "AAZ")
+        self.assertEqual(self.neft.index_to_letter(self.neft.letter_to_int("AZA") - 1), "AZA")
+        self.assertEqual(self.neft.index_to_letter(self.neft.letter_to_int("AZZ") - 1), "AZZ")
+        self.assertEqual(self.neft.index_to_letter(self.neft.letter_to_int("ZAA") - 1), "ZAA")
+        self.assertEqual(self.neft.index_to_letter(self.neft.letter_to_int("ZAZ") - 1), "ZAZ")
+        self.assertEqual(self.neft.index_to_letter(self.neft.letter_to_int("ZZA") - 1), "ZZA")
+        self.assertEqual(self.neft.index_to_letter(self.neft.letter_to_int("ZZZ") - 1), "ZZZ")
+        self.assertEqual(self.neft.index_to_letter(self.neft.letter_to_int("B") - 1), "B")
+        self.assertEqual(self.neft.index_to_letter(self.neft.letter_to_int("BB") - 1), "BB")
+        self.assertEqual(self.neft.index_to_letter(self.neft.letter_to_int("BBB") - 1), "BBB")
+        self.assertEqual(self.neft.index_to_letter(self.neft.letter_to_int("ABC") - 1), "ABC")
+        self.assertEqual(self.neft.index_to_letter(self.neft.letter_to_int("CBA") - 1), "CBA")
+        self.assertEqual(self.neft.index_to_letter(0), "A")
+        self.assertEqual(self.neft.index_to_letter(1), "B")
+        self.assertEqual(self.neft.index_to_letter(-1), ".")
+        self.assertEqual(self.neft.index_to_letter(self.neft.letter_to_int("AABC") - 1), "ABC")
+        self.assertEqual(self.neft.index_to_letter(self.neft.letter_to_int("ZABC") - 1), "ABC")
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     unittest.main()

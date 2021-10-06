@@ -6,12 +6,11 @@
 ##
 import unittest
 import os
-import sys
 import json
 
 from wwpdb.utils.nmr.NmrDpUtility import NmrDpUtility
-from wwpdb.utils.nmr.NmrDpReport import NmrDpReport, NmrDpReportInputSource, NmrDpReportSequenceAlignment, NmrDpReportError, NmrDpReportWarning
-from testfixtures import LogCapture
+from wwpdb.utils.nmr.NmrDpReport import NmrDpReport
+
 
 class TestNmrDpUtility(unittest.TestCase):
 
@@ -129,6 +128,7 @@ class TestNmrDpUtility(unittest.TestCase):
 
     def test_nmr_nef_consistency_check_6nbn(self):
         self.__test_nmr_nef_consistency('6nbn')
+
 
 if __name__ == '__main__':
     unittest.main()

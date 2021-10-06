@@ -6,12 +6,11 @@
 ##
 import unittest
 import os
-import sys
 import json
 
 from wwpdb.utils.nmr.NmrDpUtility import NmrDpUtility
-from wwpdb.utils.nmr.NmrDpReport import NmrDpReport, NmrDpReportInputSource, NmrDpReportSequenceAlignment, NmrDpReportError, NmrDpReportWarning
-from testfixtures import LogCapture
+from wwpdb.utils.nmr.NmrDpReport import NmrDpReport
+
 
 class TestNmrDpUtility(unittest.TestCase):
 
@@ -163,6 +162,7 @@ class TestNmrDpUtility(unittest.TestCase):
 
     def test_nmr_str_consistency_check_1pqx(self):
         self.__test_nmr_str_consistency('1pqx')
+
 
 if __name__ == '__main__':
     unittest.main()

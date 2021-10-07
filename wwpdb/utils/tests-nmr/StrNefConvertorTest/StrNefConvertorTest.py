@@ -1,6 +1,9 @@
-import os,sys,traceback
+import os
+import sys
+import traceback
 import shutil
 from wwpdb.utils.nmr.NmrDpUtility import NmrDpUtility
+
 
 def getNmrDataNefFile(workingDirPath, pdb_id, inputNmrDataStrFile, outputNmrDataNetFile):
     """ get nmr-data-nef file
@@ -9,7 +12,7 @@ def getNmrDataNefFile(workingDirPath, pdb_id, inputNmrDataStrFile, outputNmrData
         logOutPath1 = os.path.join(workingDirPath, pdb_id + "-logstrstr.json")
         logOutPath2 = os.path.join(workingDirPath, pdb_id + "-logstrnef.json")
         #
-        for filePath in ( logOutPath1, logOutPath2 ):
+        for filePath in (logOutPath1, logOutPath2):
             if os.access(filePath, os.F_OK):
                 os.remove(filePath)
             #
@@ -24,12 +27,12 @@ def getNmrDataNefFile(workingDirPath, pdb_id, inputNmrDataStrFile, outputNmrData
         np.setLog(logOutPath1)
         np.setVerbose(False)
         np.op("nmr-str2nef-release")
-    except:
+    except Exception as _e:  # noqa: F841
         traceback.print_exc(file=sys.stderr)
     #
+
 
 if __name__ == '__main__':
     dirPath = os.getcwd()
     shutil.copy(os.path.join(dirPath, "0037_nmr-data.str.bk"), os.path.join(dirPath, "0037_nmr-data.str"))
     getNmrDataNefFile(dirPath, "0037", os.path.join(dirPath, "0037_nmr-data.str"), os.path.join(dirPath, "0037_nmr-data.nef"))
-

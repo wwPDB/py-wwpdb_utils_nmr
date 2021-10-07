@@ -21,7 +21,6 @@ class TestNmrDpUtility(unittest.TestCase):
         self.data_dir_path = os.path.join(here, 'mock-data/')
         self.utility = NmrDpUtility()
         self.report = NmrDpReport()
-        pass
 
     def tearDown(self):
         pass

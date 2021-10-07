@@ -17,7 +17,6 @@ class TestNmrStarToCif(unittest.TestCase):
         here = os.path.abspath(os.path.dirname(__file__))
         self.data_dir_path = os.path.join(here, 'mock-data/')
         self.nmrstar_to_cif = NmrStarToCif()
-        pass
 
     def tearDown(self):
         pass

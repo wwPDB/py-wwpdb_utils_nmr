@@ -19,7 +19,6 @@ class TestNmrDpUtility(unittest.TestCase):
         self.data_dir_path = os.path.join(here, 'NMR-VTF/PDBStat_NEW/')
         self.utility = NmrDpUtility()
         self.report = NmrDpReport()
-        pass
 
     def tearDown(self):
         pass
@@ -51,7 +50,7 @@ class TestNmrDpUtility(unittest.TestCase):
             error_type = {str(k): len(v) for k, v in report['error'].items() if str(k) != 'total'}
             print('%s: %s, %s' % (entry_id, report['information']['status'], error_type))
 
-    def __test_nmr_nef2str_deposit(self, entry_id):
+    def __test_nmr_nef2str_deposit(self, entry_id):  # pylint: disable=unused-private-member
         if not os.access(self.data_dir_path + entry_id + '-nef-consistency-log.json', os.F_OK):
             self.__test_nmr_nef_consistency(entry_id)
 
@@ -83,49 +82,51 @@ class TestNmrDpUtility(unittest.TestCase):
         else:
             error_type = {str(k): len(v) for k, v in report['error'].items() if str(k) != 'total'}
             print('%s: %s, %s' % (entry_id, report['information']['status'], error_type))
-    """"
-    def test_nmr_nef_consistency_check_1pqx(self):
-        self.__test_nmr_nef_consistency('1pqx')
+    # """"
+    # def test_nmr_nef_consistency_check_1pqx(self):
+    #     self.__test_nmr_nef_consistency('1pqx')
 
-    def test_nmr_nef_consistency_check_2jr2(self):
-        self.__test_nmr_nef_consistency('2jr2')
+    # def test_nmr_nef_consistency_check_2jr2(self):
+    #     self.__test_nmr_nef_consistency('2jr2')
 
-    def test_nmr_nef_consistency_check_2juw(self):
-        self.__test_nmr_nef_consistency('2juw')
+    # def test_nmr_nef_consistency_check_2juw(self):
+    #     self.__test_nmr_nef_consistency('2juw')
 
-    def test_nmr_nef_consistency_check_2k2e(self):
-        self.__test_nmr_nef_consistency('2k2e')
+    # def test_nmr_nef_consistency_check_2k2e(self):
+    #     self.__test_nmr_nef_consistency('2k2e')
 
-    def test_nmr_nef_consistency_check_2kcu(self):
-        self.__test_nmr_nef_consistency('2kcu')
+    # def test_nmr_nef_consistency_check_2kcu(self):
+    #     self.__test_nmr_nef_consistency('2kcu')
 
-    def test_nmr_nef_consistency_check_2kko(self):
-        self.__test_nmr_nef_consistency('2kko')
+    # def test_nmr_nef_consistency_check_2kko(self):
+    #     self.__test_nmr_nef_consistency('2kko')
 
-    def test_nmr_nef_consistency_check_2ko1(self):
-        self.__test_nmr_nef_consistency('2ko1')
+    # def test_nmr_nef_consistency_check_2ko1(self):
+    #     self.__test_nmr_nef_consistency('2ko1')
 
-    def test_nmr_nef_consistency_check_2ko7(self):
-        self.__test_nmr_nef_consistency('2ko7')
+    # def test_nmr_nef_consistency_check_2ko7(self):
+    #     self.__test_nmr_nef_consistency('2ko7')
 
-    def test_nmr_nef_consistency_check_2kpu(self):
-        self.__test_nmr_nef_consistency('2kpu')
+    # def test_nmr_nef_consistency_check_2kpu(self):
+    #     self.__test_nmr_nef_consistency('2kpu')
 
-    def test_nmr_nef_consistency_check_2kw5(self):
-        self.__test_nmr_nef_consistency('2kw5')
-    """
+    # def test_nmr_nef_consistency_check_2kw5(self):
+    #     self.__test_nmr_nef_consistency('2kw5')
+    # """
     def test_nmr_nef_consistency_check_2kzn(self):
         self.__test_nmr_nef_consistency('2kzn')
-    """
-    def test_nmr_nef_consistency_check_2loy(self):
-        self.__test_nmr_nef_consistency('2loy')
-    """
+    # """
+    # def test_nmr_nef_consistency_check_2loy(self):
+    #     self.__test_nmr_nef_consistency('2loy')
+    # """
+
     def test_nmr_nef_consistency_check_2luz(self):
         self.__test_nmr_nef_consistency('2luz')
-    """
-    def test_nmr_nef_consistency_check_2png(self):
-        self.__test_nmr_nef_consistency('2png')
-    """
+    # """
+    # def test_nmr_nef_consistency_check_2png(self):
+    #     self.__test_nmr_nef_consistency('2png')
+    # """
+
     def test_nmr_nef_consistency_check_6nbn(self):
         self.__test_nmr_nef_consistency('6nbn')
 

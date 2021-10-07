@@ -259,7 +259,6 @@ class TestNEFTranslator(unittest.TestCase):
             ("C", 5): (3, 5),
         }
         self.neft.selfSeqMap = {k: k for k in self.neft.authSeqMap.keys()}
-        pass
 
     def tearDown(self):
         pass
@@ -291,21 +290,21 @@ class TestNEFTranslator(unittest.TestCase):
         self.assertTrue(len(self.neft.nef_mandatory_tag) > 0, "Can't read NEF_mandatory.csv or its empty")
         self.assertTrue(len(self.neft.star_mandatory_tag) > 0, "Can't read NMR-STAR_mandatory.csv or its empty")
 
-    """
-    def test_load_json_data(self):
-        self.assertTrue(len(self.neft.codeDict) > 0, "Can't read codeDict.json or its empty")
-        self.assertTrue(len(self.neft.atomDict) > 0, "Can't read atomDict.json or its empty")
-    """
+    # """
+    # def test_load_json_data(self):
+    #     self.assertTrue(len(self.neft.codeDict) > 0, "Can't read codeDict.json or its empty")
+    #     self.assertTrue(len(self.neft.atomDict) > 0, "Can't read atomDict.json or its empty")
+    # """
 
     def test_get_one_letter_code(self):
         self.assertTrue(self.neft.get_one_letter_code("ALA") == "A")
         self.assertTrue(self.neft.get_one_letter_code("Ala") == "A")
         self.assertTrue(self.neft.get_one_letter_code("Axy") == "X")
 
-    """
-    def test_get_readable_time_stamp(self):
-        self.assertEqual(self.neft.get_readable_time_stamp(1556036192.7247672), '2019-04-23 16:16:32') # CDT to UTC
-    """
+    # """
+    # def test_get_readable_time_stamp(self):
+    #     self.assertEqual(self.neft.get_readable_time_stamp(1556036192.7247672), '2019-04-23 16:16:32') # CDT to UTC
+    # """
 
     def test_validate_file(self):
         self.assertEqual(self.neft.validate_file(self.data_dir_path + "xxx.xx", "A")[0], False)  # File not found

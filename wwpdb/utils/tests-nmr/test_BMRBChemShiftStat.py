@@ -15,7 +15,6 @@ class TestBMRBChemShiftStat(unittest.TestCase):
 
     def setUp(self):
         self.bmrb_cs_stat = BMRBChemShiftStat()
-        pass
 
     def tearDown(self):
         pass

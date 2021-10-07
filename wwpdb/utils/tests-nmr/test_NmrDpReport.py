@@ -30,7 +30,6 @@ class TestNmrDpReport(unittest.TestCase):
 
     def setUp(self):
         self.report = NmrDpReport()
-        pass
 
     def tearDown(self):
         pass
@@ -75,7 +74,7 @@ class TestNmrDpReport(unittest.TestCase):
 
         self.assertEqual(result, answer)
 
-        with LogCapture() as logs:  # noqa: F841
+        with LogCapture() as _logs:  # noqa: F841
             with self.assertRaises(UserWarning):
                 self.report.setWarning()
 
@@ -84,7 +83,6 @@ class TestNmrDpInputSource(unittest.TestCase):
 
     def setUp(self):
         self.input_source = NmrDpReportInputSource()
-        pass
 
     def tearDown(self):
         pass
@@ -96,37 +94,37 @@ class TestNmrDpInputSource(unittest.TestCase):
         for file_type in self.input_source.file_types:
             self.input_source.setItemValue('file_type', file_type)
 
-        with LogCapture() as logs:  # noqa: F841
+        with LogCapture() as _logs:  # noqa: F841
             with self.assertRaises(KeyError):
                 self.input_source.setItemValue('unknown', 'foo')
 
-        with LogCapture() as logs:  # noqa: F841
+        with LogCapture() as _logs:  # noqa: F841
             with self.assertRaises(ValueError):
                 self.input_source.setItemValue('file_type', 'unknown')
 
         for content_type in self.input_source.content_types:
             self.input_source.setItemValue('content_type', content_type)
 
-        with LogCapture() as logs:  # noqa: F841
+        with LogCapture() as _logs:  # noqa: F841
             with self.assertRaises(ValueError):
                 self.input_source.setItemValue('content_type', 'unknown')
 
         for content_subtype in self.input_source.content_subtypes:
             self.input_source.setItemValue('content_subtype', {content_subtype: 1})
 
-        with LogCapture() as logs:  # noqa: F841
+        with LogCapture() as _logs:  # noqa: F841
             with self.assertRaises(AttributeError):
                 self.input_source.setItemValue('content_subtype', 'unknown')
 
-        with LogCapture() as logs:  # noqa: F841
+        with LogCapture() as _logs:  # noqa: F841
             with self.assertRaises(AttributeError):
                 self.input_source.setItemValue('content_subtype', ['unknown'])
 
-        with LogCapture() as logs:  # noqa: F841
+        with LogCapture() as _logs:  # noqa: F841
             with self.assertRaises(ValueError):
                 self.input_source.setItemValue('content_subtype', {'unknown': 1})
 
-        with LogCapture() as logs:  # noqa: F841
+        with LogCapture() as _logs:  # noqa: F841
             with self.assertRaises(ValueError):
                 self.input_source.setItemValue('content_subtype', {'chem_shift': 'unknown'})
 
@@ -138,7 +136,6 @@ class TestNmrDpSequenceAlignment(unittest.TestCase):
 
     def setUp(self):
         self.sequence_alignment = NmrDpReportSequenceAlignment()
-        pass
 
     def tearDown(self):
         pass
@@ -147,7 +144,7 @@ class TestNmrDpSequenceAlignment(unittest.TestCase):
         for item in self.sequence_alignment.items:
             self.sequence_alignment.setItemValue(item, 'foo')
 
-        with LogCapture() as logs:  # noqa: F841
+        with LogCapture() as _logs:  # noqa: F841
             with self.assertRaises(KeyError):
                 self.sequence_alignment.setItemValue('unknown', 'foo')
 
@@ -159,7 +156,6 @@ class TestNmrDpChainAssignment(unittest.TestCase):
 
     def setUp(self):
         self.chain_assignment = NmrDpReportChainAssignment()
-        pass
 
     def tearDown(self):
         pass
@@ -168,7 +164,7 @@ class TestNmrDpChainAssignment(unittest.TestCase):
         for item in self.chain_assignment.items:
             self.chain_assignment.setItemValue(item, 'foo')
 
-        with LogCapture() as logs:  # noqa: F841
+        with LogCapture() as _logs:  # noqa: F841
             with self.assertRaises(KeyError):
                 self.chain_assignment.setItemValue('unknown', 'foo')
 
@@ -180,7 +176,6 @@ class TestNmrDpError(unittest.TestCase):
 
     def setUp(self):
         self.error = NmrDpReportError()
-        pass
 
     def tearDown(self):
         pass
@@ -189,7 +184,7 @@ class TestNmrDpError(unittest.TestCase):
         for item in self.error.items:
             self.error.appendDescription(item, {'foo': 'value'})
 
-        with LogCapture() as logs:  # noqa: F841
+        with LogCapture() as _logs:  # noqa: F841
             with self.assertRaises(KeyError):
                 self.error.appendDescription('unknown', {'foo': 'value'})
 
@@ -207,7 +202,6 @@ class TestNmrDpWarning(unittest.TestCase):
 
     def setUp(self):
         self.warning = NmrDpReportWarning()
-        pass
 
     def tearDown(self):
         pass
@@ -216,7 +210,7 @@ class TestNmrDpWarning(unittest.TestCase):
         for item in self.warning.items:
             self.warning.appendDescription(item, {'foo': 'value'})
 
-        with LogCapture() as logs:  # noqa: F841
+        with LogCapture() as _logs:  # noqa: F841
             with self.assertRaises(KeyError):
                 self.warning.appendDescription('unknown', {'foo': 'value'})
 

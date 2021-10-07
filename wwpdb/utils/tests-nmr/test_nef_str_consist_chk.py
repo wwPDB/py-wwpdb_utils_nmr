@@ -23,7 +23,6 @@ class TestNmrDpUtility(unittest.TestCase):
                                             'cif': '1pqx.cif'}}
         self.utility = NmrDpUtility()
         self.report = NmrDpReport()
-        pass
 
     def tearDown(self):
         pass
@@ -47,7 +46,7 @@ class TestNmrDpUtility(unittest.TestCase):
 
         self.assertNotIn('anomalous_chemical_shift', report['warning'])
 
-    def __test_nmr_str_consistency(self, entry_id):
+    def __test_nmr_str_consistency(self, entry_id):  # pylint: disable=unused-private-member
         self.utility.setSource(self.data_dir_path + self.str_data_file_path[entry_id]['str'])
         self.utility.addInput(name='coordinate_file_path', value=self.data_dir_path + self.str_data_file_path[entry_id]['cif'], type='file')
         self.utility.addInput(name='nonblk_anomalous_cs', value=True, type='param')

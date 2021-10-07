@@ -19,7 +19,6 @@ class TestNmrDpUtility(unittest.TestCase):
         self.data_dir_path = os.path.join(here, 'NMR-VTF/PDBStat_NEW/')
         self.utility = NmrDpUtility()
         self.report = NmrDpReport()
-        pass
 
     def tearDown(self):
         pass
@@ -51,7 +50,7 @@ class TestNmrDpUtility(unittest.TestCase):
             error_type = {str(k): len(v) for k, v in report['error'].items() if str(k) != 'total'}
             print('%s: %s, %s' % (entry_id, report['information']['status'], error_type))
 
-    def __test_nmr_nef2str_deposit(self, entry_id):
+    def __test_nmr_nef2str_deposit(self, entry_id):  # pylint: disable=unused-private-member
         if not os.access(self.data_dir_path + entry_id + '-nef-consistency-log.json', os.F_OK):
             self.__test_nmr_nef_consistency(entry_id)
 

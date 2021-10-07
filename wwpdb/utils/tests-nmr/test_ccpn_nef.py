@@ -26,7 +26,6 @@ class TestNmrDpUtility(unittest.TestCase):
                                }
         self.utility = NmrDpUtility()
         self.report = NmrDpReport()
-        pass
 
     def tearDown(self):
         pass

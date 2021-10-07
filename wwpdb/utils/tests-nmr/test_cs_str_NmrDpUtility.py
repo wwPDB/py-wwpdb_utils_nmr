@@ -107,7 +107,6 @@ class TestNmrDpUtility(unittest.TestCase):
                                 'daother-6809': 'D_1000256134_model_P1.cif.V14'
                                 }
         self.utility = NmrDpUtility()
-        pass
 
     def tearDown(self):
         pass

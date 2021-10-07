@@ -7,16 +7,14 @@
 # 20-Nov-2020  M. Yokochi - add unit test for HEM, HEB, HEC (DAOTHER-6366)
 ##
 import unittest
-import os
-import sys
 
 from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
+
 
 class TestBMRBChemShiftStat(unittest.TestCase):
 
     def setUp(self):
         self.bmrb_cs_stat = BMRBChemShiftStat()
-        pass
 
     def tearDown(self):
         pass
@@ -29,10 +27,10 @@ class TestBMRBChemShiftStat(unittest.TestCase):
         self.bmrb_cs_stat.writeStatAsPickleFiles()
 
     def test_init(self):
-        #self.bmrb_cs_stat.printStat(self.bmrb_cs_stat.aa_filt)
-        #self.bmrb_cs_stat.printStat(self.bmrb_cs_stat.dna_filt)
-        #self.bmrb_cs_stat.printStat(self.bmrb_cs_stat.rna_filt)
-        #self.bmrb_cs_stat.printStat(self.bmrb_cs_stat.others)
+        # self.bmrb_cs_stat.printStat(self.bmrb_cs_stat.aa_filt)
+        # self.bmrb_cs_stat.printStat(self.bmrb_cs_stat.dna_filt)
+        # self.bmrb_cs_stat.printStat(self.bmrb_cs_stat.rna_filt)
+        # self.bmrb_cs_stat.printStat(self.bmrb_cs_stat.others)
         self.assertEqual(self.bmrb_cs_stat.isOk(), True)
 
     def test_poly_type(self):
@@ -86,10 +84,13 @@ class TestBMRBChemShiftStat(unittest.TestCase):
         self.assertEqual(self.bmrb_cs_stat.getMethylAtoms('HEM'), ['CMA', 'CMB', 'CMC', 'CMD', 'HMA', 'HMAA', 'HMAB', 'HMB', 'HMBA', 'HMBB', 'HMC', 'HMCA', 'HMCB', 'HMD', 'HMDA', 'HMDB'])
         self.assertEqual(self.bmrb_cs_stat.getRepresentativeMethylProtons('HEM'), ['HMA', 'HMB', 'HMC', 'HMD'])
         self.assertEqual(self.bmrb_cs_stat.getNonRepresentativeMethylProtons('HEM'), ['HMAA', 'HMAB', 'HMBA', 'HMBB', 'HMCA', 'HMCB', 'HMDA', 'HMDB'])
-        self.assertEqual(self.bmrb_cs_stat.getMethylAtoms('HEB'), ['HBB1', 'HBB2', 'HBB3', 'HMA1', 'HMA2', 'HMA3', 'HMB1', 'HMB2', 'HMB3', 'HMC1', 'HMC2', 'HMC3', 'HMD1', 'HMD2', 'HMD3', 'CMA', 'CMB', 'CBB', 'CMC', 'CMD'])
+        self.assertEqual(self.bmrb_cs_stat.getMethylAtoms('HEB'), ['HBB1', 'HBB2', 'HBB3', 'HMA1', 'HMA2', 'HMA3', 'HMB1',
+                                                                   'HMB2', 'HMB3', 'HMC1', 'HMC2', 'HMC3', 'HMD1', 'HMD2', 'HMD3', 'CMA', 'CMB', 'CBB', 'CMC', 'CMD'])
         self.assertEqual(self.bmrb_cs_stat.getRepresentativeMethylProtons('HEB'), ['HBB1', 'HMA1', 'HMB1', 'HMC1', 'HMD1'])
         self.assertEqual(self.bmrb_cs_stat.getNonRepresentativeMethylProtons('HEB'), ['HBB2', 'HBB3', 'HMA2', 'HMA3', 'HMB2', 'HMB3', 'HMC2', 'HMC3', 'HMD2', 'HMD3'])
-        self.assertEqual(self.bmrb_cs_stat.getMethylAtoms('HEC'), ['CBB', 'CBC', 'CMA', 'CMB', 'CMC', 'CMD', 'HBB1', 'HBB2', 'HBB3', 'HBC1', 'HBC2', 'HBC3', 'HMA1', 'HMA2', 'HMA3', 'HMB1', 'HMB2', 'HMB3', 'HMC1', 'HMC2', 'HMC3', 'HMD1', 'HMD2', 'HMD3'])
+        self.assertEqual(self.bmrb_cs_stat.getMethylAtoms('HEC'), ['CBB', 'CBC', 'CMA', 'CMB', 'CMC', 'CMD',
+                                                                   'HBB1', 'HBB2', 'HBB3', 'HBC1', 'HBC2', 'HBC3', 'HMA1', 'HMA2',
+                                                                   'HMA3', 'HMB1', 'HMB2', 'HMB3', 'HMC1', 'HMC2', 'HMC3', 'HMD1', 'HMD2', 'HMD3'])
         self.assertEqual(self.bmrb_cs_stat.getRepresentativeMethylProtons('HEC'), ['HBB1', 'HBC1', 'HMA1', 'HMB1', 'HMC1', 'HMD1'])
         self.assertEqual(self.bmrb_cs_stat.getNonRepresentativeMethylProtons('HEC'), ['HBB2', 'HBB3', 'HBC2', 'HBC3', 'HMA2', 'HMA3', 'HMB2', 'HMB3', 'HMC2', 'HMC3', 'HMD2', 'HMD3'])
 
@@ -100,16 +101,20 @@ class TestBMRBChemShiftStat(unittest.TestCase):
         self.assertEqual(self.bmrb_cs_stat.getSideChainAtoms('THR'), ['CB', 'CG2', 'HB', 'HG1', 'HG21', 'HG22', 'HG23'])
         self.assertEqual(self.bmrb_cs_stat.getSideChainAtoms('THR', excl_minor_atom=True), ['CB', 'CG2', 'HB', 'HG21', 'HG22', 'HG23'])
         self.assertEqual(self.bmrb_cs_stat.getSideChainAtoms('PRO'), ['CB', 'CD', 'CG', 'HB2', 'HB3', 'HD2', 'HD3', 'HG2', 'HG3'])
-        self.assertEqual(self.bmrb_cs_stat.getSideChainAtoms('ARG'), ['CB', 'CD', 'CG', 'CZ', 'HB2', 'HB3', 'HD2', 'HD3', 'HE', 'HG2', 'HG3', 'HH11', 'HH12', 'HH21', 'HH22', 'NE', 'NH1', 'NH2'])
+        self.assertEqual(self.bmrb_cs_stat.getSideChainAtoms('ARG'), ['CB', 'CD', 'CG', 'CZ', 'HB2', 'HB3', 'HD2', 'HD3',
+                                                                      'HE', 'HG2', 'HG3', 'HH11', 'HH12', 'HH21', 'HH22', 'NE', 'NH1', 'NH2'])
         self.assertEqual(self.bmrb_cs_stat.getSideChainAtoms('ARG', excl_minor_atom=True), ['CB', 'CD', 'CG', 'HB2', 'HB3', 'HD2', 'HD3', 'HE', 'HG2', 'HG3', 'NE'])
         self.assertEqual(self.bmrb_cs_stat.getSideChainAtoms('LYS'), ['CB', 'CD', 'CE', 'CG', 'HB2', 'HB3', 'HD2', 'HD3', 'HE2', 'HE3', 'HG2', 'HG3', 'NZ', 'HZ1', 'HZ2', 'HZ3'])
         self.assertEqual(self.bmrb_cs_stat.getSideChainAtoms('LYS', excl_minor_atom=True), ['CB', 'CD', 'CE', 'CG', 'HB2', 'HB3', 'HD2', 'HD3', 'HE2', 'HE3', 'HG2', 'HG3'])
-        self.assertEqual(self.bmrb_cs_stat.getSideChainAtoms('PTR', polypeptide_like=True), ['CB', 'CD1', 'CD2', 'CE1', 'CE2', 'HB2', 'HB3', 'HD1', 'HD2', 'HE1', 'HE2', 'CG', 'CZ', 'P', 'HO2P', 'HO3P'])
-        self.assertEqual(self.bmrb_cs_stat.getSideChainAtoms('PTR', excl_minor_atom=True, polypeptide_like=True), ['CB', 'CD1', 'CD2', 'CE1', 'CE2', 'HB2', 'HB3', 'HD1', 'HD2', 'HE1', 'HE2'])
+        self.assertEqual(self.bmrb_cs_stat.getSideChainAtoms('PTR', polypeptide_like=True), ['CB', 'CD1', 'CD2', 'CE1', 'CE2',
+                                                                                             'HB2', 'HB3', 'HD1', 'HD2', 'HE1', 'HE2', 'CG', 'CZ', 'P', 'HO2P', 'HO3P'])
+        self.assertEqual(self.bmrb_cs_stat.getSideChainAtoms('PTR', excl_minor_atom=True, polypeptide_like=True), ['CB', 'CD1', 'CD2',
+                                                                                                                   'CE1', 'CE2', 'HB2', 'HB3', 'HD1', 'HD2', 'HE1', 'HE2'])
         self.assertEqual(self.bmrb_cs_stat.getSideChainAtoms('DA'), ['C2', 'C4', 'C5', 'C6', 'C8', 'H2', 'H61', 'H62', 'H8', 'N1', 'N3', 'N6', 'N7', 'N9'])
         self.assertEqual(self.bmrb_cs_stat.getSideChainAtoms('DA', excl_minor_atom=True), ['H2', 'H8'])
         self.assertEqual(self.bmrb_cs_stat.getSideChainAtoms('A'), ['C2', 'C4', 'C5', 'C6', 'C8', 'H2', 'H61', 'H62', 'H8', 'N1', 'N3', 'N6', 'N7', 'N9'])
-        self.assertEqual(self.bmrb_cs_stat.getSideChainAtoms('5MC', polynucleotide_like=True), ['H6', 'HM51', 'HM52', 'HM53', 'HN41', 'HN42', 'N1', 'C2', 'N3', 'C4', 'N4', 'C5', 'C6', 'CM5', 'HOP2', 'HOP3', "HO2'"])
+        self.assertEqual(self.bmrb_cs_stat.getSideChainAtoms('5MC', polynucleotide_like=True), ['H6', 'HM51', 'HM52', 'HM53', 'HN41',
+                                                                                                'HN42', 'N1', 'C2', 'N3', 'C4', 'N4', 'C5', 'C6', 'CM5', 'HOP2', 'HOP3', "HO2'"])
 
     def test_geminal_atom(self):
         self.assertEqual(self.bmrb_cs_stat.getGeminalAtom('ARG', 'HB2'), 'HB3')
@@ -127,6 +132,7 @@ class TestBMRBChemShiftStat(unittest.TestCase):
         self.assertEqual(self.bmrb_cs_stat.getMaxAmbigCodeWoSetId('TYR', 'HE2'), 3)
         self.assertEqual(self.bmrb_cs_stat.getMaxAmbigCodeWoSetId('GLU', 'HB2'), 2)
         self.assertEqual(self.bmrb_cs_stat.getMaxAmbigCodeWoSetId('LYS', 'HZ1'), 1)
+
 
 if __name__ == '__main__':
     unittest.main()

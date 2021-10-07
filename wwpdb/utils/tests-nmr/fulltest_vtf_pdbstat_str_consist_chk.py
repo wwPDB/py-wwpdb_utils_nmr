@@ -6,12 +6,11 @@
 ##
 import unittest
 import os
-import sys
 import json
 
 from wwpdb.utils.nmr.NmrDpUtility import NmrDpUtility
-from wwpdb.utils.nmr.NmrDpReport import NmrDpReport, NmrDpReportInputSource, NmrDpReportSequenceAlignment, NmrDpReportError, NmrDpReportWarning
-from testfixtures import LogCapture
+from wwpdb.utils.nmr.NmrDpReport import NmrDpReport
+
 
 class TestNmrDpUtility(unittest.TestCase):
 
@@ -52,7 +51,6 @@ class TestNmrDpUtility(unittest.TestCase):
                                         'cif': 'ZR18/ZR18_1pqx.cif'}}
         self.utility = NmrDpUtility()
         self.report = NmrDpReport()
-        pass
 
     def tearDown(self):
         pass
@@ -84,7 +82,7 @@ class TestNmrDpUtility(unittest.TestCase):
             error_type = {str(k): len(v) for k, v in report['error'].items() if str(k) != 'total'}
             print('%s: %s, %s' % (entry_id, report['information']['status'], error_type))
 
-    def __test_nmr_str2str_deposit(self, entry_id):
+    def __test_nmr_str2str_deposit(self, entry_id):  # pylint: disable=unused-private-member
         if not os.access(self.data_dir_path + entry_id + '-str-consistency-log.json', os.F_OK):
             self.__test_nmr_str_consistency(entry_id)
 
@@ -163,6 +161,7 @@ class TestNmrDpUtility(unittest.TestCase):
 
     def test_nmr_str_consistency_check_1pqx(self):
         self.__test_nmr_str_consistency('1pqx')
+
 
 if __name__ == '__main__':
     unittest.main()

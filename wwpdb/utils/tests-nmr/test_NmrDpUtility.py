@@ -14,11 +14,11 @@
 #
 import unittest
 import os
-import sys
 
 from wwpdb.utils.nmr.NmrDpUtility import NmrDpUtility
-from wwpdb.utils.nmr.NmrDpReport import NmrDpReport, NmrDpReportInputSource, NmrDpReportSequenceAlignment, NmrDpReportError, NmrDpReportWarning
+from wwpdb.utils.nmr.NmrDpReport import NmrDpReportInputSource
 from testfixtures import LogCapture
+
 
 class TestNmrDpUtility(unittest.TestCase):
 
@@ -26,7 +26,6 @@ class TestNmrDpUtility(unittest.TestCase):
         here = os.path.abspath(os.path.dirname(__file__))
         self.data_dir_path = os.path.join(here, 'mock-data/')
         self.utility = NmrDpUtility()
-        pass
 
     def tearDown(self):
         pass
@@ -49,11 +48,11 @@ class TestNmrDpUtility(unittest.TestCase):
 
     def test_nmr_nef_consistency(self):
         # no input
-        with LogCapture() as logs:
+        with LogCapture() as _logs:
             with self.assertRaises(ValueError):
                 self.utility.op('nmr-nef-consistency-check')
 
-        with LogCapture() as logs:
+        with LogCapture() as _logs:
             with self.assertRaises(IOError):
                 self.utility.setSource('dummydummy')
 
@@ -61,7 +60,7 @@ class TestNmrDpUtility(unittest.TestCase):
         self.utility.addInput(name='coordinate_file_path', value=self.data_dir_path + '2l9r.cif', type='file')
 
         # invalid workflow operation
-        with LogCapture() as logs:
+        with LogCapture() as _logs:  # noqa: F841
             with self.assertRaises(KeyError):
                 self.utility.op('nmr')
 
@@ -71,11 +70,11 @@ class TestNmrDpUtility(unittest.TestCase):
 
     def test_nmr_str_consistency(self):
         # no input
-        with LogCapture() as logs:
+        with LogCapture() as _logs:
             with self.assertRaises(ValueError):
                 self.utility.op('nmr-str-consistency-check')
 
-        with LogCapture() as logs:
+        with LogCapture() as _logs:
             with self.assertRaises(IOError):
                 self.utility.setSource('dummydummy')
 
@@ -83,7 +82,7 @@ class TestNmrDpUtility(unittest.TestCase):
         self.utility.addInput(name='coordinate_file_path', value=self.data_dir_path + '2l9r.cif', type='file')
 
         # invalid workflow operation
-        with LogCapture() as logs:
+        with LogCapture() as _logs:  # noqa: F841
             with self.assertRaises(KeyError):
                 self.utility.op('nmr')
 
@@ -242,7 +241,7 @@ class TestNmrDpUtility(unittest.TestCase):
 
         self.utility.setSource(self.data_dir_path + '2l9r-cys.nef')
         self.utility.addInput(name='coordinate_file_path', value=self.data_dir_path + '2l9r-cys.cif', type='file')
-        self.utility.addInput(name='report_file_path',value=self.data_dir_path + '2l9r-cys-nef-consistency-log.json', type='file')
+        self.utility.addInput(name='report_file_path', value=self.data_dir_path + '2l9r-cys-nef-consistency-log.json', type='file')
         self.utility.setLog(self.data_dir_path + '2l9r-cys-nef2str-deposit-log.json')
         self.utility.setDestination(self.data_dir_path + '2l9r-cys-next.nef')
         self.utility.addOutput(name='nmr-star_file_path', value=self.data_dir_path + '2l9r-cys-nef2str.str', type='file')
@@ -258,7 +257,7 @@ class TestNmrDpUtility(unittest.TestCase):
 
         self.utility.setSource(self.data_dir_path + 'mth1743-test-20190919.nef')
         self.utility.addInput(name='coordinate_file_path', value=self.data_dir_path + '1ryg.cif', type='file')
-        self.utility.addInput(name='report_file_path',value=self.data_dir_path + 'mth1743-test-20190919-nef-consistency-log.json', type='file')
+        self.utility.addInput(name='report_file_path', value=self.data_dir_path + 'mth1743-test-20190919-nef-consistency-log.json', type='file')
         self.utility.addInput(name='resolve_conflict', value=True, type='param')
         self.utility.addInput(name='check_mandatory_tag', value=True, type='param')
         self.utility.setLog(self.data_dir_path + 'mth1743-test-20190919-nef2str-deposit-log.json')
@@ -276,7 +275,7 @@ class TestNmrDpUtility(unittest.TestCase):
 
         self.utility.setSource(self.data_dir_path + 'CCPN_2mtv_docr.nef')
         self.utility.addInput(name='coordinate_file_path', value=self.data_dir_path + '2mtv.cif', type='file')
-        self.utility.addInput(name='report_file_path',value=self.data_dir_path + 'ccpn_2mtv_docr-nef-consistency-log.json', type='file')
+        self.utility.addInput(name='report_file_path', value=self.data_dir_path + 'ccpn_2mtv_docr-nef-consistency-log.json', type='file')
         self.utility.addInput(name='resolve_conflict', value=True, type='param')
         self.utility.addInput(name='check_mandatory_tag', value=True, type='param')
         self.utility.setLog(self.data_dir_path + 'ccpn_2mtv_docr-nef2str-deposit-log.json')
@@ -382,7 +381,7 @@ class TestNmrDpUtility(unittest.TestCase):
 
         self.utility.op('nmr-str-consistency-check')
 
-        #pynmrstar.Entry.from_file(self.data_dir_path + 'D_800107_nmr-data-str-review_P1.str.V20.rev')
+        # pynmrstar.Entry.from_file(self.data_dir_path + 'D_800107_nmr-data-str-review_P1.str.V20.rev')
 
     def test_nmr_str_consistency_check_daother_5926(self):
         self.utility.setSource(self.data_dir_path + 'swallow_NMR-Star_3-1.str')
@@ -412,6 +411,7 @@ class TestNmrDpUtility(unittest.TestCase):
         self.utility.setVerbose(False)
 
         self.utility.op('nmr-str2str-deposit')
+
 
 if __name__ == '__main__':
     unittest.main()

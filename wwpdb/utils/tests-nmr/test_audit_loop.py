@@ -6,12 +6,11 @@
 ##
 import unittest
 import os
-import sys
 import json
 
 from wwpdb.utils.nmr.NmrDpUtility import NmrDpUtility
-from wwpdb.utils.nmr.NmrDpReport import NmrDpReport, NmrDpReportInputSource, NmrDpReportSequenceAlignment, NmrDpReportError, NmrDpReportWarning
-from testfixtures import LogCapture
+from wwpdb.utils.nmr.NmrDpReport import NmrDpReport
+
 
 class TestNmrDpUtility(unittest.TestCase):
 
@@ -20,7 +19,6 @@ class TestNmrDpUtility(unittest.TestCase):
         self.data_dir_path = os.path.join(here, 'mock-data-daother-6327/')
         self.utility = NmrDpUtility()
         self.report = NmrDpReport()
-        pass
 
     def tearDown(self):
         pass
@@ -147,6 +145,7 @@ class TestNmrDpUtility(unittest.TestCase):
 
     def test_nmr_str2nef_release_1pqx(self):
         self.__test_nmr_str2nef_release('1pqx')
+
 
 if __name__ == '__main__':
     unittest.main()

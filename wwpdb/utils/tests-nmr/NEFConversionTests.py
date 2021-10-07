@@ -13,6 +13,7 @@ import platform
 
 from wwpdb.utils.nmr.NEFTranslator.NEFTranslator import NEFTranslator
 
+
 class ImportTests(unittest.TestCase):
     def setUp(self):
         self.neft = NEFTranslator()
@@ -39,6 +40,7 @@ class ImportTests(unittest.TestCase):
         self.neft.nmrstar_to_nef(indata, outdata)
         self.assertTrue(self.neft.validate_file(outdata, 'A')[0])
         self.assertTrue(self.neft.validate_file(outdata)[0])
+
 
 if __name__ == '__main__':
     unittest.main()

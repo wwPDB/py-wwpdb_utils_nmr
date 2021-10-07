@@ -6,12 +6,11 @@
 ##
 import unittest
 import os
-import sys
 import json
 
 from wwpdb.utils.nmr.NmrDpUtility import NmrDpUtility
-from wwpdb.utils.nmr.NmrDpReport import NmrDpReport, NmrDpReportInputSource, NmrDpReportSequenceAlignment, NmrDpReportError, NmrDpReportWarning
-from testfixtures import LogCapture
+from wwpdb.utils.nmr.NmrDpReport import NmrDpReport
+
 
 class TestNmrDpUtility(unittest.TestCase):
 
@@ -20,7 +19,6 @@ class TestNmrDpUtility(unittest.TestCase):
         self.data_dir_path = os.path.join(here, 'NMR-VTF/PDBStat_it2/')
         self.utility = NmrDpUtility()
         self.report = NmrDpReport()
-        pass
 
     def tearDown(self):
         pass
@@ -52,7 +50,7 @@ class TestNmrDpUtility(unittest.TestCase):
             error_type = {str(k): len(v) for k, v in report['error'].items() if str(k) != 'total'}
             print('%s: %s, %s' % (entry_id, report['information']['status'], error_type))
 
-    def __test_nmr_nef2str_deposit(self, entry_id):
+    def __test_nmr_nef2str_deposit(self, entry_id):  # pylint: disable=unused-private-member
         if not os.access(self.data_dir_path + entry_id + '-nef-consistency-log.json', os.F_OK):
             self.__test_nmr_nef_consistency(entry_id)
 
@@ -126,6 +124,7 @@ class TestNmrDpUtility(unittest.TestCase):
 
     def test_nmr_nef_consistency_check_6nbn(self):
         self.__test_nmr_nef_consistency('6nbn')
+
 
 if __name__ == '__main__':
     unittest.main()

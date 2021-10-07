@@ -10,6 +10,7 @@
 # 14-May-2020  M. Yokochi - add unit tests for missing mandatory content (DAOTHER-5681 and 5682)
 # 30-May-2020  M. Yokochi - add unit test for detection of total number of models (DAOTHER-5650)
 # 08-Jul-2020  M. Yokochi - add unit test for combined NMR-STAR (DAOTHER-5926)
+# 24-Aug-2021  M. Yokochi - add support for XPLOR-NIH planarity restraints (DAOTHER-7265)
 #
 import unittest
 import os
@@ -40,7 +41,7 @@ class TestNmrDpUtility(unittest.TestCase):
 
         # compare NMR content subtypes in NmrDpReportInputSource
         input_source = NmrDpReportInputSource()
-        self.assertEqual(nmr_content_subtypes, set(input_source.content_subtypes) - {'coordinate', 'non_poly'})
+        self.assertEqual(nmr_content_subtypes, set(input_source.content_subtypes) - {'plane_restraint', 'coordinate', 'non_poly', 'topology'})
 
         # data directory exists
         self.assertEqual(os.path.isdir(self.data_dir_path), True)

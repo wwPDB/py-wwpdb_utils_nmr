@@ -17,6 +17,7 @@
 # 19-Apr-2020   my  - add random rotation test for detection of non-superimposed models (DAOTHER-4060)
 # 08-May-2020   my  - make sure parse() is run only once (DAOTHER-5654)
 # 20-Nov-2020   my  - additional support for insertion code in getPolymerSequence() (DAOTHER-6128)
+# 29-Jun-2021   my  - add 'auth_chain_id', 'identical_auth_chain_id' in results of getPolymerSequence() if possible (DAOTHER-7108)
 ##
 """ A collection of classes for parsing CIF files.
 """
@@ -263,11 +264,14 @@ class CifReader(object):
             insCodeDict = {}
             labelSeqDict = {}
 
+            authChainDict = {}
+
             chain_id_col = altDict['chain_id']
             seq_id_col = altDict['seq_id']
             comp_id_col = altDict['comp_id']
             ins_code_col = -1 if not 'ins_code' in altDict else altDict['ins_code']
             label_seq_col = -1 if not 'label_seq_id' in altDict else altDict['label_seq_id']
+            auth_chain_id_col = -1 if not 'auth_chain_id' in altDict else altDict['auth_chain_id']
 
             chains = sorted(set([row[chain_id_col] for row in rowList]))
 
@@ -321,6 +325,12 @@ class CifReader(object):
                     insCodeDict[c] = [s.split(' ')[2] for s in sortedSeq]
                     labelSeqDict[c] = [s.split(' ')[3] for s in sortedSeq]
 
+            if auth_chain_id_col != -1:
+                for row in rowList:
+                    c = row[chain_id_col]
+                    if not c in authChainDict:
+                        authChainDict[c] = row[auth_chain_id_col]
+
             asm = [] # assembly of a loop
 
             for c in chains:
@@ -336,12 +346,15 @@ class CifReader(object):
                         ent['label_seq_id'] = [int(s) for s in labelSeqDict[c]]
                         ent['seq_id'] = ent['label_seq_id']
 
+                if auth_chain_id_col != -1:
+                    ent['auth_chain_id'] = authChainDict[c]
+
                 if withStructConf:
                     ent['struct_conf'] = self.__extractStructConf(c, seqDict[c], alias)
 
                 entity_poly = self.getDictList('entity_poly')
 
-                type = next((e['type'] for e in entity_poly if c in e['pdbx_strand_id'].split(',')), None)
+                type = next((e['type'] for e in entity_poly if 'pdbx_strand_id' in e and c in e['pdbx_strand_id'].split(',')), None)
 
                 if not type is None:
                     ent['type'] = type
@@ -389,6 +402,7 @@ class CifReader(object):
 
                 if len(chains) > 1:
                     identity = []
+                    auth_identity = []
                     for _c in chains:
                         if _c == c:
                             continue
@@ -396,6 +410,8 @@ class CifReader(object):
                             identity.append(_c)
                     if len(identity) > 0:
                         ent['identical_chain_id'] = identity
+                        if auth_chain_id_col != -1:
+                            ent['identical_auth_chain_id'] = [authChainDict[c] for c in identity]
 
                 asm.append(ent)
 
@@ -419,7 +435,7 @@ class CifReader(object):
 
         for sc in struct_conf:
             for seq_id in range(sc['beg_label_seq_id'], sc['end_label_seq_id'] + 1):
-                if seq_id in seq_ids:
+                if seq_id in seq_ids and not sc['conf_type_id'] is None and not sc['helix_id'] is None:
                     ret[seq_ids.index(seq_id)] = sc['conf_type_id'] + ':' + sc['helix_id']
 
         struct_sheet_range = self.getDictListWithFilter('struct_sheet_range',
@@ -434,7 +450,7 @@ class CifReader(object):
 
         for ssr in struct_sheet_range:
             for seq_id in range(ssr['beg_label_seq_id'], ssr['end_label_seq_id'] + 1):
-                if seq_id in seq_ids:
+                if seq_id in seq_ids and not ssr['sheet_id'] is None and not ssr['id'] is None:
                     ret[seq_ids.index(seq_id)] = 'STRN:' + ssr['sheet_id'] + ':' + ssr['id']
 
         return ret

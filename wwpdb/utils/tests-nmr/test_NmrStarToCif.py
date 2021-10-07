@@ -34,6 +34,9 @@ class TestNmrStarToCif(unittest.TestCase):
         copyfile(self.data_dir_path + 'D_800350_cs_P1.cif.V2', self.data_dir_path + 'D_800350_cs_P1.cif.V1')
         self.nmrstar_to_cif.clean(cifPath=self.data_dir_path + 'D_800350_cs_P1.cif.V1', originalCsFileNameList=['Ost4V23D.star'])
 
+    def test_D_1292117503(self):
+        self.nmrstar_to_cif.convert(strPath=self.data_dir_path + 'D_800439_nmr-data-str_P1.str.V2', cifPath=self.data_dir_path + 'D_800439_nmr-data-str_P1.cif.V2', originalFileName='KpbK.str')
+
 
 if __name__ == '__main__':
     unittest.main()

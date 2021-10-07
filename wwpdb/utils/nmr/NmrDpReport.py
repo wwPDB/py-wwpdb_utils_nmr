@@ -45,6 +45,10 @@
 # 21-Jan-2021  M. Yokochi - symptomatic treatment for DAOTHER-6509
 # 03-Feb-2021  M. Yokochi - add support for 'identical_chain_id' attribute, which contains mapping of chain id(s), which shares the same entity.
 # 30-Mar-2021  M. Yokochi - getNmrSeq1LetterCodeOf() and getModelSeq1LetterCodeOf() do not return any 3-letter code (DAOTHER-6744)
+# 24-Jun-2021  M. Yokochi - resolve duplication in grouped error/warning message (DAOTHER-6345, 6830)
+# 29-Jun-2021  M. Yokochi - enable to access NMR polymer sequence from auth_asym_id (DAOTHER-7108)
+# 02-Jul-2021  M. Yokochi - add content types of NMR restraint file (DAOTHER-6830)
+# 24-Aug-2021  M. Yokochi - add content subtype for XPLOR-NIH planarity restraints (DAOTHER-7265)
 ##
 """ Wrapper class for data processing report of NMR data.
     @author: Masashi Yokochi
@@ -422,6 +426,41 @@ class NmrDpReport:
                          'constraint_number': rdc_total}
 
             restraints.append(restraint)
+            
+        content_subtype = 'plane_restraint'
+
+        if content_subtype in content_subtypes:
+            proteins = 0
+            nucleic_acids = 0
+            for stat in self.getNmrStatsOfExptlData(content_subtype):
+
+                if 'constraints_per_polymer_type' in stat:
+                    for k, v in stat['constraints_per_polymer_type'].items():
+                        if k == 'protein':
+                            proteins += v
+                        elif k == 'nucleic_acid':
+                            nucleic_acids += v
+                elif 'number_of_constraints_per_polymer_type' in stat: # DAOTHER-6509
+                    for k, v in stat['number_of_constraints_per_polymer_type'].items():
+                        if k == 'protein':
+                            proteins += v
+                        elif k == 'nucleic_acid':
+                            nucleic_acids += v
+
+            if proteins > 0:
+                restraint = {'constraint_filename': file_name,
+                             'software_name': file_type,
+                             'constraint_type': 'protein peptide planarity',
+                             'constraint_subtype': 'peptide',
+                             'constraint_number': proteins}
+                restraints.append(restraint)
+            if nucleic_acids > 0:
+                restraint = {'constraint_filename': file_name,
+                             'software_name': file_type,
+                             'constraint_type': 'nucleic acid base planarity',
+                             'constraint_subtype': 'ring',
+                             'constraint_number': nucleic_acids}
+                restraints.append(restraint)
 
         return restraints if len(restraints) > 0 else None
 
@@ -983,7 +1022,7 @@ class NmrDpReport:
             elif comp_id in self.empty_value:
                 code += ' '
             else:
-                code += 'X' # (' + comp_id + ')'
+                code += '(' + comp_id + ')'
 
         return code
 
@@ -1008,11 +1047,11 @@ class NmrDpReport:
             elif comp_id in self.empty_value:
                 code += ' '
             else:
-                code += 'X' # '(' + comp_id + ')'
+                code += '(' + comp_id + ')'
 
         return code
 
-    def getNmrPolymerSequenceWithModelChainId(self, cif_chain_id):
+    def getNmrPolymerSequenceWithModelChainId(self, cif_chain_id, label_scheme=True):
         """ Retrieve NMR polymer sequence corresponding to a given coordinate chain_id.
         """
 
@@ -1023,7 +1062,8 @@ class NmrDpReport:
 
         for chain_assign in chain_assigns:
 
-            if chain_assign['ref_chain_id'] == cif_chain_id:
+            if (chain_assign['ref_chain_id'] == cif_chain_id and label_scheme) or\
+               ('ref_auth_chain_id' in chain_assign and chain_assign['ref_auth_chain_id'] == cif_chain_id and not label_scheme):
                 return self.getNmrPolymerSequenceOf(chain_assign['test_chain_id'])
 
         return None
@@ -1064,7 +1104,7 @@ class NmrDpReport:
 
         return None
 
-    def getSequenceAlignmentWithModelChainId(self, cif_chain_id):
+    def getSequenceAlignmentWithModelChainId(self, cif_chain_id, label_scheme=True):
         """ Retrieve sequence alignment (model vs nmr) of a given coordinate chain_id.
         """
 
@@ -1077,10 +1117,13 @@ class NmrDpReport:
 
         for chain_assign in chain_assigns:
 
-            if chain_assign['ref_chain_id'] == cif_chain_id:
+            if (chain_assign['ref_chain_id'] == cif_chain_id and label_scheme) or\
+               ('ref_auth_chain_id' in chain_assign and chain_assign['ref_auth_chain_id'] == cif_chain_id and not label_scheme):
 
                 if chain_assign['conflict'] > 0:
                     return None
+
+                _cif_chain_id = chain_assign['ref_chain_id']
 
                 nmr_chain_id = chain_assign['test_chain_id']
 
@@ -1091,7 +1134,7 @@ class NmrDpReport:
 
                 for sequence_align in sequence_aligns:
 
-                    if sequence_align['ref_chain_id'] == cif_chain_id and sequence_align['test_chain_id'] == nmr_chain_id:
+                    if sequence_align['ref_chain_id'] == _cif_chain_id and sequence_align['test_chain_id'] == nmr_chain_id:
 
                         if sequence_align['conflict'] > 0:
                             return None
@@ -1116,7 +1159,7 @@ class NmrDpReport:
 
         return None
 
-    def getNmrSeq1LetterCodeWithModelChainId(self, cif_chain_id):
+    def getNmrSeq1LetterCodeWithModelChainId(self, cif_chain_id, label_scheme=True):
         """ Retrieve NMR polymer sequence (1-letter code) corresponding to a given coordinate chain_id.
         """
 
@@ -1138,7 +1181,8 @@ class NmrDpReport:
 
                 for _chain_assign in _chain_assigns:
 
-                    if _chain_assign['test_chain_id'] == cif_chain_id:
+                    if (_chain_assign['test_chain_id'] == cif_chain_id and label_scheme) or\
+                       ('test_auth_chain_id' in _chain_assign and _chain_assign['test_auth_chain_id'] == cif_chain_id and not label_scheme):
 
                         if 'unmapped_sequence' in _chain_assign:
 
@@ -1149,7 +1193,8 @@ class NmrDpReport:
 
         for chain_assign in chain_assigns:
 
-            if chain_assign['ref_chain_id'] == cif_chain_id:
+            if (chain_assign['ref_chain_id'] == cif_chain_id and label_scheme) or\
+               ('ref_auth_chain_id' in chain_assign and chain_assign['ref_auth_chain_id'] == cif_chain_id and not label_scheme):
                 return self.getNmrSeq1LetterCodeOf(chain_assign['test_chain_id'], fullSequence=fullSeqeucne, unmappedSeqId=unmappedSeqId)
 
         return None
@@ -1515,9 +1560,9 @@ class NmrDpReportInputSource:
                       'polymer_sequence', 'polymer_sequence_in_loop',
                       'non_standard_residue', 'disulfide_bond', 'other_bond',
                       'stats_of_exptl_data')
-        self.file_types = ('pdbx', 'nef', 'nmr-star')
+        self.file_types = ('pdbx', 'nef', 'nmr-star', 'nm-res-amb', 'nm-res-cns', 'nm-res-cya', 'nm-res-xpl', 'nm-res-oth', 'nm-aux-amb')
         self.content_types = ('model', 'nmr-data-nef', 'nmr-data-str', 'nmr-chemical-shifts', 'nmr-restraints')
-        self.content_subtypes = ('coordinate', 'non_poly', 'entry_info', 'poly_seq', 'entity', 'chem_shift', 'chem_shift_ref', 'dist_restraint', 'dihed_restraint', 'rdc_restraint', 'spectral_peak', 'spectral_peak_alt')
+        self.content_subtypes = ('coordinate', 'non_poly', 'entry_info', 'poly_seq', 'entity', 'chem_shift', 'chem_shift_ref', 'dist_restraint', 'dihed_restraint', 'rdc_restraint', 'plane_restraint', 'spectral_peak', 'spectral_peak_alt', 'topology')
 
         self.__contents = {item: None for item in self.items}
 
@@ -1702,6 +1747,9 @@ class NmrDpReportError:
                         v = next((v for v in self.__contents[item] if 'file_name' in v and v['file_name'] == value['file_name'] and\
                                   not 'sf_framecode' in v and\
                                   not 'row_location' in v and not 'row_locations' in v), None)
+
+                        if not v is None and value['description'] in v['description'].split('\n'):
+                            return
 
                     if not v is None:
                         v['description'] += '\n%s' % value['description']
@@ -1934,6 +1982,9 @@ class NmrDpReportWarning:
                         v = next((v for v in self.__contents[item] if 'file_name' in v and v['file_name'] == value['file_name'] and\
                                   not 'sf_framecode' in v and\
                                   not 'row_location' in v and not 'row_locations' in v), None)
+
+                        if not v is None and value['description'] in v['description'].split('\n'):
+                            return
 
                     if not v is None:
                         v['description'] += '\n%s' % value['description']

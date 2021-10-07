@@ -1127,7 +1127,7 @@ save_ccpn_additional_data
   }
 }
 ;
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              
+ 
      Spectrum:173     
 ;
 {
@@ -4245,14 +4245,6 @@ save_nef_nmr_spectrum_173
      10   10   .   .   2096868.75    .   2.798456579   .   7.193847456   .   37.8536294    .   .   .   .   .   .   .   .   .   .   .   .   .   1   .   .   .    
      11   11   .   .   1017458.188   .   1.643629398   .   7.189589774   .   37.61770544   .   .   .   .   .   .   .   .   .   .   .   .   .   1   .   .   .    
      12   12   .   .   3928774.75    .   2.896741212   .   6.958300528   .   37.71428705   .   .   .   .   .   .   .   .   .   .   .   .   .   1   .   .   .    
-
-   stop_
-
-   loop_
-      _ccpn_multiplet_peaks.multiplet_list_serial
-      _ccpn_multiplet_peaks.multiplet_serial
-      _ccpn_multiplet_peaks.multiplet_peak
-
 
    stop_
 

@@ -127,6 +127,7 @@
 # 12-Jul-2021  M. Yokochi - add RCI validation code for graphical representation of NMR data
 # 24-Aug-2021  M. Yokochi - detect content type of XPLOR-NIH planarity restraints (DAOTHER-7265)
 # 10-Sep-2021  M. Yokochi - prevent system crash for an empty loop case of CS/MR data (D_1292117593)
+# 11-Oct-2021  M. Yokochi - fix/adjust tolerances for spectral peak list (DAOTHER-7389, issue #1 and #2)
 ##
 """ Wrapper class for data processing for NMR data.
     @author: Masashi Yokochi
@@ -1124,6 +1125,9 @@ class NmrDpUtility(object):
         self.cs_unusual_error_scaled_by_sigma = 5.0
         # criterion on chemical shift difference error scaled by its sigma
         self.cs_diff_error_scaled_by_sigma = 8.0
+
+        # hardware limit of NMR prove design in Hz
+        self.hard_probe_limit = 250000
 
         # loop index tags
         self.index_tags = {'nef': {'entry_info': None,
@@ -11877,6 +11881,9 @@ class NmrDpUtility(object):
 
                 min_points = [None] * num_dim
                 max_points = [None] * num_dim
+                min_limits = [None] * num_dim
+                max_limits = [None] * num_dim
+                abs = [None] * num_dim
 
                 for i in range(1, max_dim):
 
@@ -11890,10 +11897,10 @@ class NmrDpUtility(object):
                             first_point = None if not 'value_first_point' in sp_dim else sp_dim['value_first_point']
                             sp_width = None if not 'spectral_width' in sp_dim else sp_dim['spectral_width']
                             # acq = sp_dim['is_acquisition']
-                            abs = False if not 'absolute_peak_positions' in sp_dim else sp_dim['absolute_peak_positions']
+                            sp_freq = None if not 'spectrometer_frequency' in sp_dim else sp_dim['spectrometer_frequency']
+                            abs[i - 1] = False if not 'absolute_peak_positions' in sp_dim else sp_dim['absolute_peak_positions']
 
-                            if 'axis_unit' in sp_dim and sp_dim['axis_unit'] == 'Hz' and 'spectrometer_frequency' in sp_dim and not first_point is None and not sp_width is None:
-                                sp_freq = sp_dim['spectrometer_frequency']
+                            if 'axis_unit' in sp_dim and sp_dim['axis_unit'] == 'Hz' and not sp_freq is None and not first_point is None and not sp_width is None:
                                 first_point /= sp_freq
                                 sp_width /= sp_freq
 
@@ -11905,27 +11912,43 @@ class NmrDpUtility(object):
                             first_point = None if not 'Value_first_point' in sp_dim else sp_dim['Value_first_point']
                             sp_width = None if not 'Sweep_width' in sp_dim else sp_dim['Sweep_width']
                             # acq = sp_dim['Acquisition']
-                            abs = False if not 'Absolute_peak_positions' in sp_dim else sp_dim['Absolute_peak_positions']
+                            sp_freq = None if not 'Spectrometer_frequency' in sp_dim else sp_dim['Spectrometer_frequency']
+                            abs[i - 1] = False if not 'Absolute_peak_positions' in sp_dim else sp_dim['Absolute_peak_positions']
 
-                            if 'Sweep_width_units' in sp_dim and sp_dim['Sweep_width_units'] == 'Hz' and 'Spectrometer_frequency' in sp_dim and not first_point is None and not sp_width is None:
-                                sp_freq = sp_dim['Spectrometer_frequency']
+                            if 'Sweep_width_units' in sp_dim and sp_dim['Sweep_width_units'] == 'Hz' and not sp_freq is None and not first_point is None and not sp_width is None:
                                 first_point /= sp_freq
                                 sp_width /= sp_freq
 
                         min_point = None
                         max_point = None
+                        min_limit = None
+                        max_limit = None
 
                         if not first_point is None and not sp_width is None:
 
                             last_point = first_point - sp_width
 
-                            min_point = last_point - (sp_width if abs else 0.0)
-                            max_point = first_point + (sp_width if abs else 0.0)
+                            min_point = last_point - (sp_width * 3.0 if abs[i - 1] else 0.0) # DAOTHER-7389, issue #1, relax expected range of peak position by three times of spectral width if absolute_peak_positios are true
+                            max_point = first_point + (sp_width * 3.0 if abs[i - 1] else 0.0)
+
+                            min_limit = min_point
+                            max_limit = max_point
+
+                            if abs[i - 1] and not sp_freq is None and not min_point is None and not max_point is None:
+                                range_point = max_point - min_point
+                                if range_point * sp_freq > self.hard_probe_limit:
+                                    min_limit = range_point / 2.0 - self.hard_probe_limit / 2.0 / sp_freq
+                                    max_limit = range_point / 2.0 + self.hard_probe_limit / 2.0 / sp_freq
 
                         if not min_point is None:
                             min_points[i - 1] = float('{:.7f}'.format(min_point))
                         if not max_point is None:
                             max_points[i - 1] = float('{:.7f}'.format(max_point))
+
+                        if not min_limit is None:
+                            min_limits[i - 1] = float('{:.7f}'.format(min_limit))
+                        if not max_limit is None:
+                            max_limits[i - 1] = float('{:.7f}'.format(max_limit))
 
                         break
 
@@ -11954,7 +11977,20 @@ class NmrDpUtility(object):
 
                             if position < min_points[j] or position > max_points[j]:
 
-                                err = '[Check row of %s %s] %s %s is not within expected range (min_position %s, max_position %s). Please check for reference frequency and spectral width.' % (index_tag, i[index_tag], position_names[j], position, min_points[j], max_points[j])
+                                err = '[Check row of %s %s] %s %s is not within expected range (min_position %s, max_position %s, absolute_peak_positions %s). Please check for reference frequency and spectral width.' % (index_tag, i[index_tag], position_names[j], position, min_points[j], max_points[j], abs[j])
+
+                                self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
+                                self.report.setError()
+
+                                if self.__verbose:
+                                    self.__lfh.write("+NmrDpUtility.__testDataConsistencyInAuxLoopOfSpectralPeak() ++ ValueError  - %s\n" % err)
+
+                            if min_limits[j] is None or max_limits[j] is None:
+                                continue
+
+                            if position < min_limits[j] or position > max_limits[j]:
+
+                                err = '[Check row of %s %s] %s %s is not within expected range (min_position %s, max_position %s, absolute_peak_positions %s), which exceeds limit of current probe design (%s kHz). Please check for reference frequency and spectral width.' % (index_tag, i[index_tag], position_names[j], position, min_limits[j], max_limits[j], abs[j], self.hard_probe_limit / 1000.0)
 
                                 self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
                                 self.report.setError()
@@ -12007,6 +12043,9 @@ class NmrDpUtility(object):
 
                 min_points = [None] * num_dim
                 max_points = [None] * num_dim
+                min_limits = [None] * num_dim
+                max_limits = [None] * num_dim
+                abs = [None] * num_dim
 
                 for i in range(1, max_dim):
 
@@ -12017,11 +12056,11 @@ class NmrDpUtility(object):
 
                         first_point = None if not 'Value_first_point' in sp_dim else sp_dim['Value_first_point']
                         sp_width = None if not 'Sweep_width' in sp_dim else sp_dim['Sweep_width']
+                        sp_freq = None if not 'Spectrometer_frequency' in sp_dim else sp_dim['Spectrometer_frequency']
                         # acq = sp_dim['Acquisition']
-                        abs = False if not 'Absolute_peak_positions' in sp_dim else sp_dim['Absolute_peak_positions']
+                        abs[i - 1] = False if not 'Absolute_peak_positions' in sp_dim else sp_dim['Absolute_peak_positions']
 
-                        if 'Sweep_width_units' in sp_dim and sp_dim['Sweep_width_units'] == 'Hz' and 'Spectrometer_frequency' in sp_dim and not first_point is None and not sp_width is None:
-                            sp_freq = sp_dim['Spectrometer_frequency']
+                        if 'Sweep_width_units' in sp_dim and sp_dim['Sweep_width_units'] == 'Hz' and not sp_freq is None and not first_point is None and not sp_width is None:
                             first_point /= sp_freq
                             sp_width /= sp_freq
 
@@ -12032,11 +12071,27 @@ class NmrDpUtility(object):
 
                             last_point = first_point - sp_width
 
-                            min_point = last_point - (sp_width if abs else 0.0)
-                            max_point = first_point + (sp_width if abs else 0.0)
+                            min_point = last_point - (sp_width * 3.0 if abs[i - 1] else 0.0) # DAOTHER-7389, issue #1, relax expected range of peak position by three times of spectral width if absolute_peak_positios are true
+                            max_point = first_point + (sp_width * 3.0 if abs[i - 1] else 0.0)
 
-                        min_points[i - 1] = None if min_point is None else float('{:.7f}'.format(min_point))
-                        max_points[i - 1] = None if max_point is None else float('{:.7f}'.format(max_point))
+                            min_limit = min_point
+                            max_limit = max_point
+
+                            if abs[i - 1] and not sp_freq is None and not min_point is None and not max_point is None:
+                                range_point = max_point - min_point
+                                if range_point * sp_freq > self.hard_probe_limit:
+                                    min_limit = range_point / 2.0 - self.hard_probe_limit / 2.0 / sp_freq
+                                    max_limit = range_point / 2.0 + self.hard_probe_limit / 2.0 / sp_freq
+
+                        if not min_point is None:
+                            min_points[i - 1] = float('{:.7f}'.format(min_point))
+                        if not max_point is None:
+                            max_points[i - 1] = float('{:.7f}'.format(max_point))
+
+                        if not min_limit is None:
+                            min_limits[i - 1] = float('{:.7f}'.format(min_limit))
+                        if not max_limit is None:
+                            max_limits[i - 1] = float('{:.7f}'.format(max_limit))
 
                         break
 
@@ -12070,7 +12125,20 @@ class NmrDpUtility(object):
 
                         if position < min_points[j] or position > max_points[j]:
 
-                            err = '[Check row of %s %s] %s %s is not within expected range (min_position %s, max_position %s). Please check for reference frequency and spectral width.' % (pk_id_name, i[pk_id_name], position_name, position, min_points[j], max_points[j])
+                            err = '[Check row of %s %s] %s %s is not within expected range (min_position %s, max_position %s, absolute_peak_positions %s). Please check for reference frequency and spectral width.' % (pk_id_name, i[pk_id_name], position_name, position, min_points[j], max_points[j], abs[j])
+
+                            self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
+                            self.report.setError()
+
+                            if self.__verbose:
+                                self.__lfh.write("+NmrDpUtility.__testDataConsistencyInAuxLoopOfSpectralPeakAlt() ++ ValueError  - %s\n" % err)
+
+                        if min_limits[j] is None or max_limits[j] is None:
+                            continue
+
+                        if position < min_limits[j] or position > max_limits[j]:
+
+                            err = '[Check row of %s %s] %s %s is not within expected range (min_position %s, max_position %s, absolute_peak_positions %s), which exceeds limit of current probe design (%s kHz). Please check for reference frequency and spectral width.' % (index_tag, i[index_tag], position_names[j], position, min_limits[j], max_limits[j], abs[j], self.hard_probe_limit / 1000.0)
 
                             self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
                             self.report.setError()
@@ -13889,7 +13957,7 @@ class NmrDpUtility(object):
                                             atom_id2 = i[atom_id_names[d2]]
 
                                             if chain_id2 in self.empty_value or seq_id2 in self.empty_value or comp_id2 in self.empty_value or atom_id2 in self.empty_value or\
-                                               (d < d2 and (chain_id2 != chain_id or abs(seq_id2 - seq_id) > 1)):
+                                               (d < d2 and (chain_id2 != chain_id or seq_id2 != seq_id or comp_id2 != comp_id)): # DAOTHER-7389, issue #2
 
                                                 err = '[Check row of %s %s] Coherence transfer type is jcoupling. However, assignment of spectral peak is inconsistent with the type, (s) vs (%s).' %\
                                                       (index_tag, i[index_tag], self.__getReducedAtomNotation(chain_id_names[d], chain_id, seq_id_names[d], seq_id, comp_id_names[d], comp_id, atom_id_names[d], atom_id),
@@ -13910,7 +13978,7 @@ class NmrDpUtility(object):
                                             atom_id2 = i[atom_id_names[d2]]
 
                                             if chain_id2 in self.empty_value or seq_id2 in self.empty_value or comp_id2 in self.empty_value or atom_id2 in self.empty_value or\
-                                               (d < d2 and (chain_id2 != chain_id or seq_id2 != seq_id or comp_id2 != comp_id or atom_id[0] != atom_id2[0])):
+                                               (d < d2 and (chain_id2 != chain_id or abs(seq_id2 - seq_id) > 1)): # DAOTHER-7389, issue #2, relax relayed coherence transfer to allow cohenrence transfer within neighboring residues
 
                                                 err = '[Check row of %s %s] Coherence transfer type is relayed. However, assignment of spectral peak is inconsistent with the type, (%s) vs (%s).' %\
                                                       (index_tag, i[index_tag], self.__getReducedAtomNotation(chain_id_names[d], chain_id, seq_id_names[d], seq_id, comp_id_names[d], comp_id, atom_id_names[d], atom_id),
@@ -14281,7 +14349,7 @@ class NmrDpUtility(object):
                                         atom_id2 = j[cs_atom_id_name]
 
                                         if chain_id2 in self.empty_value or seq_id2 in self.empty_value or comp_id2 in self.empty_value or atom_id2 in self.empty_value or\
-                                           (d < d2 and (chain_id2 != chain_id or abs(seq_id2 - seq_id) > 1)):
+                                           (d < d2 and (chain_id2 != chain_id or seq_id2 != seq_id or comp_id2 != comp_id)): # DAOTHER-7389, issue #2
 
                                             err = '[Check row of %s %s] Coherence transfer type is jcoupling. However, assignment of spectral peak is inconsistent with the type, (s) vs (%s).' %\
                                                   (pk_id_name, i[pk_id_name], self.__getReducedAtomNotation(chain_id_names[d], chain_id, seq_id_names[d], seq_id, comp_id_names[d], comp_id, atom_id_names[d], atom_id),
@@ -14308,7 +14376,7 @@ class NmrDpUtility(object):
                                         atom_id2 = j[cs_atom_id_name]
 
                                         if chain_id2 in self.empty_value or seq_id2 in self.empty_value or comp_id2 in self.empty_value or atom_id2 in self.empty_value or\
-                                           (d < d2 and (chain_id2 != chain_id or seq_id2 != seq_id or comp_id2 != comp_id or atom_id[0] != atom_id2[0])):
+                                           (d < d2 and (chain_id2 != chain_id or abs(seq_id2 - seq_id) > 1)): # DAOTHER-7389, issue #2
 
                                             err = '[Check row of %s %s] Coherence transfer type is relayed. However, assignment of spectral peak is inconsistent with the type, (%s) vs (%s).' %\
                                                   (pk_id_name, i[pk_id_name], self.__getReducedAtomNotation(chain_id_names[d], chain_id, seq_id_names[d], seq_id, comp_id_names[d], comp_id, atom_id_names[d], atom_id),

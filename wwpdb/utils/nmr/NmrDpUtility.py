@@ -15236,7 +15236,10 @@ class NmrDpUtility(object):
         if file_type == 'nmr-star' and self.__combined_mode:
             val = sf_data.get_tag('ID')
             if len(val) > 0:
-                _list_id = int(val[0])
+                try:
+                    _list_id = int(val[0])
+                except ValueError:
+                    return
 
         if content_subtype != 'poly_seq':
             lp_data = next((l['data'] for l in self.__lp_data[content_subtype] if l['file_name'] == file_name and l['sf_framecode'] == sf_framecode), None)
@@ -23572,7 +23575,10 @@ i                               """
         sf_cat_name = 'nef_molecular_system' if file_type == 'nef' else 'Assembly'
         lp_cat_name = '_nef_sequence' if file_type == 'nef' else '_Chem_comp_assembly'
 
-        orig_poly_seq_sf_data = self.__star_data[0].get_saveframes_by_category(sf_category)[0] if self.__retain_original else None
+        try:
+            orig_poly_seq_sf_data = self.__star_data[0].get_saveframes_by_category(sf_category)[0] if self.__retain_original else None
+        except IndexError:
+            return False
 
         poly_seq_sf_data = pynmrstar.Saveframe.from_scratch(sf_framecode) # sf_cat_name
 

@@ -5,6 +5,7 @@
 # Updates:
 # 16-Apr-2020  M. Yokochi - fix ambiguity code of atom name starts with 'Q' (e.g. LYZ:QZ)
 # 20-Nov-2020  M. Yokochi - add unit test for HEM, HEB, HEC (DAOTHER-6366)
+# 13-Oct-2021  M. Yokochi - code refactoring according to PEP8 using Pylint (DAOTHER-7389, issue #5)
 ##
 import unittest
 
@@ -27,10 +28,6 @@ class TestBMRBChemShiftStat(unittest.TestCase):
         self.bmrb_cs_stat.writeStatAsPickleFiles()
 
     def test_init(self):
-        # self.bmrb_cs_stat.printStat(self.bmrb_cs_stat.aa_filt)
-        # self.bmrb_cs_stat.printStat(self.bmrb_cs_stat.dna_filt)
-        # self.bmrb_cs_stat.printStat(self.bmrb_cs_stat.rna_filt)
-        # self.bmrb_cs_stat.printStat(self.bmrb_cs_stat.others)
         self.assertEqual(self.bmrb_cs_stat.isOk(), True)
 
     def test_poly_type(self):
@@ -132,7 +129,6 @@ class TestBMRBChemShiftStat(unittest.TestCase):
         self.assertEqual(self.bmrb_cs_stat.getMaxAmbigCodeWoSetId('TYR', 'HE2'), 3)
         self.assertEqual(self.bmrb_cs_stat.getMaxAmbigCodeWoSetId('GLU', 'HB2'), 2)
         self.assertEqual(self.bmrb_cs_stat.getMaxAmbigCodeWoSetId('LYS', 'HZ1'), 1)
-
 
 if __name__ == '__main__':
     unittest.main()

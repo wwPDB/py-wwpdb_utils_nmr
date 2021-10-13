@@ -5,6 +5,7 @@
 # Updates:
 # 06-Apr-2020  M. Yokochi - add support for Original_pdb_* items in restraints/peak lists
 # 07-Apr-2020  M. Yokochi - add clean() for NMR legacy deposition (DAOTHER-2874)
+# 13-Oct-2021  M. Yokochi - code refactoring according to PEP8 using Pylint (DAOTHER-7389, issue #5)
 ##
 """ Wrapper class for NMR-STAR to CIF converter.
     @author: Masashi Yokochi
@@ -14,7 +15,9 @@ import sys
 from mmcif.io.IoAdapterPy import IoAdapterPy
 from wwpdb.utils.nmr.io.mmCIFUtil import mmCIFUtil
 
-class NmrStarToCif(object):
+class NmrStarToCif:
+    """ NMR-STAR to CIF converter.
+    """
 
     def __init__(self, verbose=False, log=sys.stderr):
         self.__verbose = verbose
@@ -59,7 +62,7 @@ class NmrStarToCif(object):
                 if cs_list_cif in v:
 
                     if cs_loop_str in v:
-                        dList, iList = cifObj.GetValueAndItemByBlock(k, cs_list_cif)
+                        dList, _ = cifObj.GetValueAndItemByBlock(k, cs_list_cif)
 
                         info = {'sf_framecode': k}
                         if 'entry_id' in dList:
@@ -114,7 +117,7 @@ class NmrStarToCif(object):
 
                         if lp_tags[content_subtype] in v:
 
-                            dList, iList = cifObj.GetValueAndItemByBlock(k, lp_tags[content_subtype])
+                            dList, _ = cifObj.GetValueAndItemByBlock(k, lp_tags[content_subtype])
 
                             try:
                                 entry_id = next(row[entry_id_tag] for row in dList if not row[entry_id_tag] in self.empty_value)
@@ -231,7 +234,7 @@ class NmrStarToCif(object):
                             entry_id_tag = 'Entry_ID'
                             list_id_tag = 'Assigned_chem_shift_list_ID'
 
-                            dList, iList = cifObj.GetValueAndItemByBlock(k, cs_loop_str)
+                            dList, _ = cifObj.GetValueAndItemByBlock(k, cs_loop_str)
 
                             try:
                                 entry_id = next(row[entry_id_tag] for row in dList if not row[entry_id_tag] in self.empty_value)
@@ -262,7 +265,7 @@ class NmrStarToCif(object):
                         extended_items = [original_item for original_item in original_items if original_item not in items]
 
                         if len(extended_items) > 0:
-                            dList, iList = cifObj.GetValueAndItemByBlock(k, lp_category)
+                            dList, _ = cifObj.GetValueAndItemByBlock(k, lp_category)
 
                             auth_items = [original_auth_map[original_item] for original_item in extended_items]
 
@@ -305,7 +308,7 @@ class NmrStarToCif(object):
                         extended_items = [original_item for original_item in _original_items if original_item not in items]
 
                         if len(extended_items) > 0:
-                            dList, iList = cifObj.GetValueAndItemByBlock(k, lp_category)
+                            dList, _ = cifObj.GetValueAndItemByBlock(k, lp_category)
 
                             auth_items = [_original_auth_map[original_item] for original_item in extended_items]
 
@@ -350,7 +353,7 @@ class NmrStarToCif(object):
                             extended_items = [original_item for original_item in _original_items if original_item not in items]
 
                             if len(extended_items) > 0:
-                                dList, iList = cifObj.GetValueAndItemByBlock(k, lp_category)
+                                dList, _ = cifObj.GetValueAndItemByBlock(k, lp_category)
 
                                 auth_items = [_original_auth_map[original_item] for original_item in extended_items]
 
@@ -392,7 +395,7 @@ class NmrStarToCif(object):
                             extended_items = [original_item for original_item in _original_items if original_item not in items]
 
                             if len(extended_items) > 0:
-                                dList, iList = cifObj.GetValueAndItemByBlock(k, lp_category)
+                                dList, _ = cifObj.GetValueAndItemByBlock(k, lp_category)
 
                                 auth_items = [_original_auth_map[original_item] for original_item in extended_items]
 
@@ -421,7 +424,7 @@ class NmrStarToCif(object):
                                     break
                                 max_dim = i
 
-                            if max_dim > 1 and max_dim <= 16:
+                            if 1 < max_dim <= 16:
                                 _original_items = []
                                 _original_auth_map = {}
                                 _atom_id_tags = []
@@ -429,8 +432,8 @@ class NmrStarToCif(object):
                                 for i in range(1, max_dim):
                                     for original_item in original_items:
                                         _original_items.append(original_item + '_' + str(i))
-                                    for k, v in original_auth_map.items():
-                                        _original_auth_map[k + '_' + str(i)] = v + '_' + str(i)
+                                    for _k, _v in original_auth_map.items():
+                                        _original_auth_map[_k + '_' + str(i)] = _v + '_' + str(i)
                                     for atom_id_tag in atom_id_tags:
                                         _atom_id_tags.append(atom_id_tag + '_' + str(i))
                                     for auth_atom_id_tag in auth_atom_id_tags:
@@ -441,7 +444,7 @@ class NmrStarToCif(object):
                                 has_auth_value = False
 
                                 if len(extended_items) > 0:
-                                    dList, iList = cifObj.GetValueAndItemByBlock(k, lp_category)
+                                    dList, _ = cifObj.GetValueAndItemByBlock(k, lp_category)
 
                                     auth_items = [_original_auth_map[original_item] for original_item in extended_items]
 

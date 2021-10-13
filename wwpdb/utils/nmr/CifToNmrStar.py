@@ -3,6 +3,7 @@
 # Date: 19-Jul-2021
 #
 # Updates:
+# 13-Oct-2021  M. Yokochi - code refactoring according to PEP8 using Pylint (DAOTHER-7389, issue #5)
 ##
 """ Wrapper class for CIF to NMR-STAR converter.
     @author: Masashi Yokochi
@@ -14,10 +15,11 @@ import pynmrstar
 
 from wwpdb.utils.nmr.io.mmCIFUtil import mmCIFUtil
 
-class CifToNmrStar(object):
+class CifToNmrStar:
+    """ Simple CIF to NMR-STAR converter.
+    """
 
-    def __init__(self, verbose=False, log=sys.stderr):
-        self.__verbose = verbose
+    def __init__(self, log=sys.stderr):
         self.__lfh = log
 
     def convert(self, cifPath=None, strPath=None):

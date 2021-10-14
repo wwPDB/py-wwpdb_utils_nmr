@@ -5,20 +5,17 @@
 # Updates:
 #
 import unittest
-import os
-import sys
 import json
 
 from wwpdb.utils.nmr.NmrDpUtility import NmrDpUtility
-from wwpdb.utils.nmr.NmrDpReport import NmrDpReport, NmrDpReportInputSource, NmrDpReportSequenceAlignment, NmrDpReportError, NmrDpReportWarning
+
 
 class TestNmrDpUtility(unittest.TestCase):
 
     def setUp(self):
-        here = os.path.abspath(os.path.dirname(__file__))
         self.data_dir_path = './'
         self.cs_file_path = {'daother-6366': ['6wqe_cs.str']
-                            }
+                             }
         self.model_file = {'daother-6366': '6wqe.cif'}
         self.nmr_dp_util = NmrDpUtility()
         pass
@@ -57,6 +54,7 @@ class TestNmrDpUtility(unittest.TestCase):
 
     def test_daother_6366(self):
         self.__test_nmr_cs_str_consistency('daother-6366')
+
 
 if __name__ == '__main__':
     unittest.main()

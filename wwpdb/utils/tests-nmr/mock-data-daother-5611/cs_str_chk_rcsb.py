@@ -6,11 +6,10 @@
 #
 import unittest
 import os
-import sys
 import json
 
 from wwpdb.utils.nmr.NmrDpUtility import NmrDpUtility
-from wwpdb.utils.nmr.NmrDpReport import NmrDpReport, NmrDpReportInputSource, NmrDpReportSequenceAlignment, NmrDpReportError, NmrDpReportWarning
+
 
 class TestNmrDpUtility(unittest.TestCase):
 
@@ -27,7 +26,7 @@ class TestNmrDpUtility(unittest.TestCase):
                         '6PVT': ['D_1000243177_cs-upload_P1.str.V1'],
                         '6PX7': ['D_1000243136_cs-upload_P1.str.V1'],
                         '6PX8': ['D_1000243232_cs-upload_P1.str.V1']
-                         }
+                        }
         self.cs_file_2 = {'6NZN': ['D_1000238834_cs-upload_P1.str.V2'],
                           '6OC9': ['D_1000240310_cs-upload_P1.str.V2'],
                           '6PQE': ['D_1000242877_cs-upload_P1.str.V2'],
@@ -37,7 +36,7 @@ class TestNmrDpUtility(unittest.TestCase):
                           '6PVT': ['D_1000243177_cs-upload_P1.str.V2'],
                           '6PX7': ['D_1000243136_cs-upload_P1.str.V2'],
                           '6PX8': ['D_1000243232_cs-upload_P1.str.V2']
-                           }
+                          }
         self.original_model_file = {'6NZN': 'D_1000238834_model-upload_P1.cif.V1',
                                     '6OC9': 'D_1000240310_model-upload_P1.pdb.V1',
                                     '6PQE': 'D_1000242877_model-upload_P1.pdb.V1',
@@ -60,7 +59,7 @@ class TestNmrDpUtility(unittest.TestCase):
         entry_dir_path = self.data_dir_path + entry_id + '/'
         self.nmr_dp_util.addInput(name='chem_shift_file_path_list', value=[entry_dir_path + cs_file for cs_file in self.cs_file[entry_id]], type='file_list')
         self.nmr_dp_util.addOutput(name='chem_shift_file_path_list', value=[entry_dir_path + cs_file for cs_file in self.cs_file_2[entry_id]], type='file_list')
-        if not entry_id in self.alt_model_file:
+        if entry_id not in self.alt_model_file:
             self.nmr_dp_util.addInput(name='coordinate_file_path', value=entry_dir_path + self.model_file[entry_id], type='file')
         else:
             self.nmr_dp_util.addInput(name='coordinate_file_path', value=entry_dir_path + self.alt_model_file[entry_id], type='file')
@@ -115,6 +114,7 @@ class TestNmrDpUtility(unittest.TestCase):
 
     def test_6px8(self):
         self.__test_nmr_cs_str_consistency('6PX8')
+
 
 if __name__ == '__main__':
     unittest.main()

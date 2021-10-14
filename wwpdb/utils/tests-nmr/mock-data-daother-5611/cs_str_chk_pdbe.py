@@ -6,11 +6,10 @@
 #
 import unittest
 import os
-import sys
 import json
 
 from wwpdb.utils.nmr.NmrDpUtility import NmrDpUtility
-from wwpdb.utils.nmr.NmrDpReport import NmrDpReport, NmrDpReportInputSource, NmrDpReportSequenceAlignment, NmrDpReportError, NmrDpReportWarning
+
 
 class TestNmrDpUtility(unittest.TestCase):
 
@@ -85,6 +84,7 @@ class TestNmrDpUtility(unittest.TestCase):
 
     def test_6tph(self):
         self.__test_nmr_cs_str_consistency('6TPH')
+
 
 if __name__ == '__main__':
     unittest.main()

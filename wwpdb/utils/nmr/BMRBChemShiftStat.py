@@ -26,6 +26,7 @@ from wwpdb.utils.config.ConfigInfo import getSiteId
 from wwpdb.utils.config.ConfigInfoApp import ConfigInfoAppCommon
 from wwpdb.utils.nmr.io.ChemCompIo import ChemCompReader
 
+
 def load_stat_from_pickle(file_name):
     """ Load BMRB chemical shift statistics from pickle file if possible.
     """
@@ -37,12 +38,14 @@ def load_stat_from_pickle(file_name):
 
     return []
 
+
 def write_stat_as_pickle(atm_list, file_name):
     """ Write BMRB chemical shift statistics as pickle file.
     """
 
     with open(file_name, 'wb') as f:
         pickle.dump(atm_list, f)
+
 
 class BMRBChemShiftStat:
     """ Wrapper class for retrieving BMRB chemical shift statistics.
@@ -185,15 +188,15 @@ class BMRBChemShiftStat:
             return False, True, False
 
         if self.__updateChemCompDict(comp_id):
-            type = self.__last_chem_comp_dict['_chem_comp.type']
+            ctype = self.__last_chem_comp_dict['_chem_comp.type']
 
-            if 'PEPTIDE' in type:
+            if 'PEPTIDE' in ctype:
                 return True, False, False
 
-            if 'DNA' in type or 'RNA' in type:
+            if 'DNA' in ctype or 'RNA' in ctype:
                 return False, True, False
 
-            if 'SACCHARIDE' in type:
+            if 'SACCHARIDE' in ctype:
                 return False, False, True
 
         peptide_like = len(self.getBackBoneAtoms(comp_id, True, True, False, False))
@@ -394,24 +397,24 @@ class BMRBChemShiftStat:
                     and (not excl_minor_atom or (excl_minor_atom and i['primary']))]
 
         if comp_id in self.__dna_comp_ids:
-            return [i['atom_id'] for i in cs_stat if i['atom_id'] in ["C1'", "C2'", "C3'", "C4'", "C5'", "H1'", "H2'", "H2''", "H3'", "H4'", "H5'", "H5''", 'P'] and
-                    (not excl_minor_atom or (excl_minor_atom and i['primary']))]
+            return [i['atom_id'] for i in cs_stat if i['atom_id'] in ["C1'", "C2'", "C3'", "C4'", "C5'", "H1'", "H2'", "H2''", "H3'", "H4'", "H5'", "H5''", 'P']
+                    and (not excl_minor_atom or (excl_minor_atom and i['primary']))]
 
         if comp_id in self.__rna_comp_ids:
-            return [i['atom_id'] for i in cs_stat if i['atom_id'] in ["C1'", "C2'", "C3'", "C4'", "C5'", "H1'", "H2'", "H3'", "H4'", "H5'", "H5''", "HO2'", 'P'] and
-                    (not excl_minor_atom or (excl_minor_atom and i['primary']))]
+            return [i['atom_id'] for i in cs_stat if i['atom_id'] in ["C1'", "C2'", "C3'", "C4'", "C5'", "H1'", "H2'", "H3'", "H4'", "H5'", "H5''", "HO2'", 'P']
+                    and (not excl_minor_atom or (excl_minor_atom and i['primary']))]
 
         if polypeptide_like:
-            return [i['atom_id'] for i in cs_stat if i['atom_id'] in ['C', 'CA', 'CB', 'H', 'HA', 'HA2', 'HA3', 'N'] and
-                    (not excl_minor_atom or (excl_minor_atom and i['primary']))]
+            return [i['atom_id'] for i in cs_stat if i['atom_id'] in ['C', 'CA', 'CB', 'H', 'HA', 'HA2', 'HA3', 'N']
+                    and (not excl_minor_atom or (excl_minor_atom and i['primary']))]
 
         if polynucleotide_like:
-            return [i['atom_id'] for i in cs_stat if i['atom_id'] in ["C1'", "C2'", "C3'", "C4'", "C5'", "H1'", "H2'", "H2''", "H3'", "H4'", "H5'", "H5''", 'P'] and
-                    (not excl_minor_atom or not 'secondary' in i or (excl_minor_atom and i['secondary']))]
+            return [i['atom_id'] for i in cs_stat if i['atom_id'] in ["C1'", "C2'", "C3'", "C4'", "C5'", "H1'", "H2'", "H2''", "H3'", "H4'", "H5'", "H5''", 'P']
+                    and (not excl_minor_atom or 'secondary' not in i or (excl_minor_atom and i['secondary']))]
 
         if carbohydrates_like:
-            return [i['atom_id'] for i in cs_stat if i['atom_id'] in ["C1", "C2", "C3", "C4", "C5", "C6", "H61", "H62"] and
-                    (not excl_minor_atom or not 'secondary' in i or (excl_minor_atom and i['secondary']))]
+            return [i['atom_id'] for i in cs_stat if i['atom_id'] in ["C1", "C2", "C3", "C4", "C5", "C6", "H61", "H62"]
+                    and (not excl_minor_atom or 'secondary' not in i or (excl_minor_atom and i['secondary']))]
 
         return []
 
@@ -905,9 +908,9 @@ class BMRBChemShiftStat:
                                 hvy_2 = next(b[self.__ccb_atom_id_1] for b in self.__last_chem_comp_bonds if b[self.__ccb_atom_id_2] == h_2['atom_id'])
                                 if hvy_1[:-1] == hvy_2[:-1]:
                                     hvy_1_c = set(b[self.__ccb_atom_id_1] for b in self.__last_chem_comp_bonds if b[self.__ccb_aromatic_flag] == 'Y' and b[self.__ccb_atom_id_2] == hvy_1) |\
-                                              set(b[self.__ccb_atom_id_2] for b in self.__last_chem_comp_bonds if b[self.__ccb_aromatic_flag] == 'Y' and b[self.__ccb_atom_id_1] == hvy_1)
+                                        set(b[self.__ccb_atom_id_2] for b in self.__last_chem_comp_bonds if b[self.__ccb_aromatic_flag] == 'Y' and b[self.__ccb_atom_id_1] == hvy_1)
                                     hvy_2_c = set(b[self.__ccb_atom_id_1] for b in self.__last_chem_comp_bonds if b[self.__ccb_aromatic_flag] == 'Y' and b[self.__ccb_atom_id_2] == hvy_2) |\
-                                              set(b[self.__ccb_atom_id_2] for b in self.__last_chem_comp_bonds if b[self.__ccb_aromatic_flag] == 'Y' and b[self.__ccb_atom_id_1] == hvy_2)
+                                        set(b[self.__ccb_atom_id_2] for b in self.__last_chem_comp_bonds if b[self.__ccb_aromatic_flag] == 'Y' and b[self.__ccb_atom_id_1] == hvy_2)
                                     set_hvy_c = hvy_1_c & hvy_2_c
                                     if len(set_hvy_c) == 1:
                                         for hvy_c in set_hvy_c:
@@ -920,9 +923,9 @@ class BMRBChemShiftStat:
                         for hvy_c_2 in hvy_c_list:
                             if hvy_c_1 < hvy_c_2:
                                 hvy_set_1 = set(b[self.__ccb_atom_id_1] for b in self.__last_chem_comp_bonds if b[self.__ccb_aromatic_flag] == 'Y' and b[self.__ccb_atom_id_2] == hvy_c_1) |\
-                                            set(b[self.__ccb_atom_id_2] for b in self.__last_chem_comp_bonds if b[self.__ccb_aromatic_flag] == 'Y' and b[self.__ccb_atom_id_1] == hvy_c_1)
+                                    set(b[self.__ccb_atom_id_2] for b in self.__last_chem_comp_bonds if b[self.__ccb_aromatic_flag] == 'Y' and b[self.__ccb_atom_id_1] == hvy_c_1)
                                 hvy_set_2 = set(b[self.__ccb_atom_id_1] for b in self.__last_chem_comp_bonds if b[self.__ccb_aromatic_flag] == 'Y' and b[self.__ccb_atom_id_2] == hvy_c_2) |\
-                                            set(b[self.__ccb_atom_id_2] for b in self.__last_chem_comp_bonds if b[self.__ccb_aromatic_flag] == 'Y' and b[self.__ccb_atom_id_1] == hvy_c_2)
+                                    set(b[self.__ccb_atom_id_2] for b in self.__last_chem_comp_bonds if b[self.__ccb_aromatic_flag] == 'Y' and b[self.__ccb_atom_id_1] == hvy_c_2)
 
                                 in_ring = False
                                 for hvy_1 in hvy_set_1:
@@ -946,9 +949,9 @@ class BMRBChemShiftStat:
                                     hvy_2 = next(b[self.__ccb_atom_id_1] for b in self.__last_chem_comp_bonds if b[self.__ccb_atom_id_2] == h_2['atom_id'])
                                     if hvy_1[:-1] == hvy_2[:-1]:
                                         hvy_1_c = set(b[self.__ccb_atom_id_1] for b in self.__last_chem_comp_bonds if b[self.__ccb_aromatic_flag] == 'Y' and b[self.__ccb_atom_id_2] == hvy_1) |\
-                                                  set(b[self.__ccb_atom_id_2] for b in self.__last_chem_comp_bonds if b[self.__ccb_aromatic_flag] == 'Y' and b[self.__ccb_atom_id_1] == hvy_1)
+                                            set(b[self.__ccb_atom_id_2] for b in self.__last_chem_comp_bonds if b[self.__ccb_aromatic_flag] == 'Y' and b[self.__ccb_atom_id_1] == hvy_1)  # noqa: E501
                                         hvy_2_c = set(b[self.__ccb_atom_id_1] for b in self.__last_chem_comp_bonds if b[self.__ccb_aromatic_flag] == 'Y' and b[self.__ccb_atom_id_2] == hvy_2) |\
-                                                  set(b[self.__ccb_atom_id_2] for b in self.__last_chem_comp_bonds if b[self.__ccb_aromatic_flag] == 'Y' and b[self.__ccb_atom_id_1] == hvy_2)
+                                            set(b[self.__ccb_atom_id_2] for b in self.__last_chem_comp_bonds if b[self.__ccb_aromatic_flag] == 'Y' and b[self.__ccb_atom_id_1] == hvy_2)  # noqa: E501
                                         if len(hvy_1_c & hvy_2_c & hvy_c_set_in_ring) > 0:
                                             h_1['desc'] = 'aroma-opposite'
                                             h_2['desc'] = 'aroma-opposite'
@@ -1059,9 +1062,9 @@ class BMRBChemShiftStat:
                     for methyl_c_2 in methyl_c_list:
                         if methyl_c_list.index(methyl_c_1) < methyl_c_list.index(methyl_c_2):
                             hvy_1_c = set(b[self.__ccb_atom_id_2] for b in self.__last_chem_comp_bonds if b[self.__ccb_atom_id_1] == methyl_c_1 and not b[self.__ccb_atom_id_2].startswith('H')) |\
-                                      set(b[self.__ccb_atom_id_1] for b in self.__last_chem_comp_bonds if b[self.__ccb_atom_id_2] == methyl_c_1 and not b[self.__ccb_atom_id_1].startswith('H'))
+                                set(b[self.__ccb_atom_id_1] for b in self.__last_chem_comp_bonds if b[self.__ccb_atom_id_2] == methyl_c_1 and not b[self.__ccb_atom_id_1].startswith('H'))  # noqa: E501
                             hvy_2_c = set(b[self.__ccb_atom_id_2] for b in self.__last_chem_comp_bonds if b[self.__ccb_atom_id_1] == methyl_c_2 and not b[self.__ccb_atom_id_2].startswith('H')) |\
-                                      set(b[self.__ccb_atom_id_1] for b in self.__last_chem_comp_bonds if b[self.__ccb_atom_id_2] == methyl_c_2 and not b[self.__ccb_atom_id_1].startswith('H'))
+                                set(b[self.__ccb_atom_id_1] for b in self.__last_chem_comp_bonds if b[self.__ccb_atom_id_2] == methyl_c_2 and not b[self.__ccb_atom_id_1].startswith('H'))  # noqa: E501
                             hvy_common = hvy_1_c & hvy_2_c
                             if len(hvy_common) > 0:
                                 for hvy_c in hvy_common:
@@ -1134,9 +1137,9 @@ class BMRBChemShiftStat:
                     for geminal_n_2 in geminal_n_list:
                         if geminal_n_list.index(geminal_n_1) < geminal_n_list.index(geminal_n_2):
                             hvy_1_c = set(b[self.__ccb_atom_id_2] for b in self.__last_chem_comp_bonds if b[self.__ccb_atom_id_1] == geminal_n_1 and not b[self.__ccb_atom_id_2].startswith('H')) |\
-                                      set(b[self.__ccb_atom_id_1] for b in self.__last_chem_comp_bonds if b[self.__ccb_atom_id_2] == geminal_n_1 and not b[self.__ccb_atom_id_1].startswith('H'))
+                                set(b[self.__ccb_atom_id_1] for b in self.__last_chem_comp_bonds if b[self.__ccb_atom_id_2] == geminal_n_1 and not b[self.__ccb_atom_id_1].startswith('H'))  # noqa: E501
                             hvy_2_c = set(b[self.__ccb_atom_id_2] for b in self.__last_chem_comp_bonds if b[self.__ccb_atom_id_1] == geminal_n_2 and not b[self.__ccb_atom_id_2].startswith('H')) |\
-                                      set(b[self.__ccb_atom_id_1] for b in self.__last_chem_comp_bonds if b[self.__ccb_atom_id_2] == geminal_n_2 and not b[self.__ccb_atom_id_1].startswith('H'))
+                                set(b[self.__ccb_atom_id_1] for b in self.__last_chem_comp_bonds if b[self.__ccb_atom_id_2] == geminal_n_2 and not b[self.__ccb_atom_id_1].startswith('H'))  # noqa: E501
                             hvy_common = hvy_1_c & hvy_2_c
                             if len(hvy_common) > 0:
                                 for hvy_c in hvy_common:

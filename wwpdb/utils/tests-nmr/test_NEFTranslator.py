@@ -278,9 +278,9 @@ class TestNEFTranslator(unittest.TestCase):
         read_out = self.neft.read_input_file(self.data_dir_path + "nonsense.nef")
         self.assertEqual(read_out[0], False)
         if __pynmrstar_v3_2__:
-            self.assertEqual(read_out[1], 'Invalid file. NMR-STAR files must start with \'data_\' followed by the data name. Did you accidentally select the wrong file? Your file started with \'A\'. Error detected on line 2.')
+            self.assertEqual(read_out[1], 'Invalid file. NMR-STAR files must start with \'data_\' followed by the data name. Did you accidentally select the wrong file? Your file started with \'A\'. Error detected on line 2.')  # noqa: E501
         elif __pynmrstar_v3_1__:
-            self.assertEqual(read_out[1], 'Invalid file. NMR-STAR files must start with \'data_\'. Did you accidentally select the wrong file? Your file started with \'A\'. Error detected on line 3.')
+            self.assertEqual(read_out[1], 'Invalid file. NMR-STAR files must start with \'data_\'. Did you accidentally select the wrong file? Your file started with \'A\'. Error detected on line 3.')  # noqa: E501
         elif __pynmrstar_v3__:
             self.assertEqual(read_out[1], "Invalid file. NMR-STAR files must start with 'data_'. Did you accidentally select the wrong file? on line 2")
         else:

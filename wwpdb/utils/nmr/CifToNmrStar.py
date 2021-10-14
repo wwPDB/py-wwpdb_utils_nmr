@@ -14,6 +14,7 @@ import pynmrstar
 
 from wwpdb.utils.nmr.io.mmCIFUtil import mmCIFUtil
 
+
 class CifToNmrStar(object):
 
     def __init__(self, verbose=False, log=sys.stderr):

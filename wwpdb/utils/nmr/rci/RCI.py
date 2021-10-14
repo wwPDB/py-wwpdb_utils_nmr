@@ -3,12 +3,12 @@
 # Date: 12-Jul-2021
 #
 # Updates:
+# 13-Oct-2021  M. Yokochi - code refactoring according to PEP8 using Pylint (DAOTHER-7389, issue #5)
 ##
 """ Wrapper class for Random Coil Index calculation.
     @author: Masashi Yokochi
 """
 import sys
-import os
 from math import pow, exp, log
 
 import numpy as np
@@ -6652,9 +6652,9 @@ class RCI:
                                                                                 residue_data_abs.append([resnumber, resname, abs(abs_diff_mean), coefCApos, atom_type, self.CAp_exclude, self.CA_Hertz_corr])
                                                                             else:
                                                                                 if true_diff_mean > 0:
-                                                                                    residue_data_abs.append([resnumber, resname, true_diff_mean, coef_for_pos_CA * coefCApos, atom_type, self.CAp_exclude, self.CA_Hertz_corr])
+                                                                                    residue_data_abs.append([resnumber, resname, true_diff_mean, self.coef_for_pos_CA * coefCApos, atom_type, self.CAp_exclude, self.CA_Hertz_corr])
                                                                                 else:
-                                                                                    residue_data_abs.append([resnumber, resname, true_diff_mean, coef_for_neg_CA * coefCApos, atom_type, self.CAp_exclude, self.CA_Hertz_corr])
+                                                                                    residue_data_abs.append([resnumber, resname, true_diff_mean, self.coef_for_neg_CA * coefCApos, atom_type, self.CAp_exclude, self.CA_Hertz_corr])
 
                                                                         elif atom_type == "HA":
                                                                             HA_found = 1
@@ -6662,9 +6662,9 @@ class RCI:
                                                                                 residue_data_abs.append([resnumber, resname, abs(abs_diff_mean), coefHApos, atom_type, self.HAp_exclude, self.H_Hertz_corr])
                                                                             else:
                                                                                 if true_diff_mean > 0:
-                                                                                    residue_data_abs.append([resnumber, resname, true_diff_mean, coef_for_pos_HA * coefHApos, atom_type, self.HAp_exclude, self.H_Hertz_corr])
+                                                                                    residue_data_abs.append([resnumber, resname, true_diff_mean, self.coef_for_pos_HA * coefHApos, atom_type, self.HAp_exclude, self.H_Hertz_corr])
                                                                                 else:
-                                                                                    residue_data_abs.append([resnumber, resname, true_diff_mean, coef_for_neg_HA * coefHApos, atom_type, self.HAp_exclude, self.H_Hertz_corr])
+                                                                                    residue_data_abs.append([resnumber, resname, true_diff_mean, self.coef_for_neg_HA * coefHApos, atom_type, self.HAp_exclude, self.H_Hertz_corr])
 
                                                                         elif atom_type == "C":
                                                                             CO_found = 1
@@ -6672,9 +6672,9 @@ class RCI:
                                                                                 residue_data_abs.append([resnumber, resname, abs(abs_diff_mean), coefCOpos, atom_type, self.COp_exclude, self.CA_Hertz_corr])
                                                                             else:
                                                                                 if true_diff_mean > 0:
-                                                                                    residue_data_abs.append([resnumber, resname, true_diff_mean, coef_for_pos_CO * coefCOpos, atom_type, self.COp_exclude, self.CA_Hertz_corr])
+                                                                                    residue_data_abs.append([resnumber, resname, true_diff_mean, self.coef_for_pos_CO * coefCOpos, atom_type, self.COp_exclude, self.CA_Hertz_corr])
                                                                                 else:
-                                                                                    residue_data_abs.append([resnumber, resname, true_diff_mean, coef_for_neg_CO * coefCOpos, atom_type, self.COp_exclude, self.CA_Hertz_corr])
+                                                                                    residue_data_abs.append([resnumber, resname, true_diff_mean, self.coef_for_neg_CO * coefCOpos, atom_type, self.COp_exclude, self.CA_Hertz_corr])
 
                                                                         elif atom_type == "CB":
                                                                             CB_found = 1
@@ -6682,9 +6682,9 @@ class RCI:
                                                                                 residue_data_abs.append([resnumber, resname, abs(abs_diff_mean), coefCBpos, atom_type, self.CBp_exclude, self.CA_Hertz_corr])
                                                                             else:
                                                                                 if true_diff_mean > 0:
-                                                                                    residue_data_abs.append([resnumber, resname, true_diff_mean, coef_for_pos_CB * coefCBpos, atom_type, self.CBp_exclude, self.CA_Hertz_corr])
+                                                                                    residue_data_abs.append([resnumber, resname, true_diff_mean, self.coef_for_pos_CB * coefCBpos, atom_type, self.CBp_exclude, self.CA_Hertz_corr])
                                                                                 else:
-                                                                                    residue_data_abs.append([resnumber, resname, true_diff_mean, coef_for_neg_CB * coefCBpos, atom_type, self.CBp_exclude, self.CA_Hertz_corr])
+                                                                                    residue_data_abs.append([resnumber, resname, true_diff_mean, self.coef_for_neg_CB * coefCBpos, atom_type, self.CBp_exclude, self.CA_Hertz_corr])
 
                                                                         elif atom_type == "N":
                                                                             N_found = 1
@@ -6692,9 +6692,9 @@ class RCI:
                                                                                 residue_data_abs.append([resnumber, resname, abs(abs_diff_mean), coefNpos, atom_type, self.Np_exclude, self.N_Hertz_corr])
                                                                             else:
                                                                                 if true_diff_mean > 0:
-                                                                                    residue_data_abs.append([resnumber, resname, true_diff_mean, coef_for_pos_N * coefNpos, atom_type, self.Np_exclude, self.N_Hertz_corr])
+                                                                                    residue_data_abs.append([resnumber, resname, true_diff_mean, self.coef_for_pos_N * coefNpos, atom_type, self.Np_exclude, self.N_Hertz_corr])
                                                                                 else:
-                                                                                    residue_data_abs.append([resnumber, resname, true_diff_mean, coef_for_neg_N * coefNpos, atom_type, self.Np_exclude, self.N_Hertz_corr])
+                                                                                    residue_data_abs.append([resnumber, resname, true_diff_mean, self.coef_for_neg_N * coefNpos, atom_type, self.Np_exclude, self.N_Hertz_corr])
 
                                                                         elif atom_type == "H":
                                                                             NH_found = 1
@@ -6702,9 +6702,9 @@ class RCI:
                                                                                 residue_data_abs.append([resnumber, resname, abs(abs_diff_mean), coefHpos, atom_type, self.Hp_exclude, self.H_Hertz_corr])
                                                                             else:
                                                                                 if true_diff_mean > 0:
-                                                                                    residue_data_abs.append([resnumber, resname, true_diff_mean, coef_for_pos_H * coefHpos, atom_type, self.Hp_exclude, self.H_Hertz_corr])
+                                                                                    residue_data_abs.append([resnumber, resname, true_diff_mean, self.coef_for_pos_H * coefHpos, atom_type, self.Hp_exclude, self.H_Hertz_corr])
                                                                                 else:
-                                                                                    residue_data_abs.append([resnumber, resname, true_diff_mean, coef_for_neg_H * coefHpos, atom_type, self.Hp_exclude, self.H_Hertz_corr])
+                                                                                    residue_data_abs.append([resnumber, resname, true_diff_mean, self.coef_for_neg_H * coefHpos, atom_type, self.Hp_exclude, self.H_Hertz_corr])
 
                                                                         elif atom_type == "HN":
                                                                             NH_found = 1
@@ -6712,9 +6712,9 @@ class RCI:
                                                                                 residue_data_abs.append([resnumber, resname, abs(abs_diff_mean), coefHpos, atom_type, self.Hp_exclude, self.H_Hertz_corr])
                                                                             else:
                                                                                 if true_diff_mean > 0:
-                                                                                    residue_data_abs.append([resnumber, resname, true_diff_mean, coef_for_pos_H * coefHpos, atom_type, self.Hp_exclude, self.H_Hertz_corr])
+                                                                                    residue_data_abs.append([resnumber, resname, true_diff_mean, self.coef_for_pos_H * coefHpos, atom_type, self.Hp_exclude, self.H_Hertz_corr])
                                                                                 else:
-                                                                                    residue_data_abs.append([resnumber, resname, true_diff_mean, coef_for_neg_H * coefHpos, atom_type, self.Hp_exclude, self.H_Hertz_corr])
+                                                                                    residue_data_abs.append([resnumber, resname, true_diff_mean, self.coef_for_neg_H * coefHpos, atom_type, self.Hp_exclude, self.H_Hertz_corr])
 
                                                                         elif atom_type == "NH":
                                                                             NH_found = 1
@@ -6722,9 +6722,9 @@ class RCI:
                                                                                 residue_data_abs.append([resnumber, resname, abs(abs_diff_mean), coefHpos, atom_type, self.Hp_exclude, self.H_Hertz_corr])
                                                                             else:
                                                                                 if true_diff_mean > 0:
-                                                                                    residue_data_abs.append([resnumber, resname, true_diff_mean, coef_for_pos_H * coefHpos, atom_type, self.Hp_exclude, self.H_Hertz_corr])
+                                                                                    residue_data_abs.append([resnumber, resname, true_diff_mean, self.coef_for_pos_H * coefHpos, atom_type, self.Hp_exclude, self.H_Hertz_corr])
                                                                                 else:
-                                                                                    residue_data_abs.append([resnumber, resname, true_diff_mean, coef_for_neg_H * coefHpos, atom_type, self.Hp_exclude, self.H_Hertz_corr])
+                                                                                    residue_data_abs.append([resnumber, resname, true_diff_mean, self.coef_for_neg_H * coefHpos, atom_type, self.Hp_exclude, self.H_Hertz_corr])
 
                                                                 atoms_abs = []
 

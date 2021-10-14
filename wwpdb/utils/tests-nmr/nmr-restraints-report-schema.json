@@ -3469,6 +3469,12 @@
         "unusual_chemical_shift": {
           "$ref": "#/definitions/common_message"
         },
+       "incompletely_assigned_chemical_shift": {
+          "$ref": "#/definitions/common_message"
+        },
+       "incompletely_assigned_spectral_peak": {
+          "$ref": "#/definitions/common_message"
+        },
         "anomalous_data": {
           "$ref": "#/definitions/common_message"
         },

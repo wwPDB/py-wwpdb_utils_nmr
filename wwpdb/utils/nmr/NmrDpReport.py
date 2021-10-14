@@ -49,6 +49,8 @@
 # 29-Jun-2021  M. Yokochi - enable to access NMR polymer sequence from auth_asym_id (DAOTHER-7108)
 # 02-Jul-2021  M. Yokochi - add content types of NMR restraint file (DAOTHER-6830)
 # 24-Aug-2021  M. Yokochi - add content subtype for XPLOR-NIH planarity restraints (DAOTHER-7265)
+# 13-Oct-2021  M. Yokochi - code refactoring according to PEP8 using Pylint (DAOTHER-7389, issue #5)
+# 14-Oct-2021  M. Yokochi - add 'incompletely_ssigned_chemical_shift' and 'incompletely_assigned_spectral_peak' (DAOTHER-7389, issue #3)
 ##
 """ Wrapper class for data processing report of NMR data.
     @author: Masashi Yokochi
@@ -57,6 +59,19 @@ import logging
 import json
 import copy
 import re
+
+def get_value_safe(d=None, key=None):
+    """ Return value of a given dictionary for a key.
+        @return: value for a key, None otherwise
+    """
+
+    if d is None or key is None:
+        return None
+
+    if not key in d:
+        return None
+
+    return d[key]
 
 class NmrDpReport:
     """ Wrapper class for data processing report of NMR data.
@@ -129,24 +144,45 @@ class NmrDpReport:
         self.empty_value = (None, '', '.', '?')
 
     def appendInputSource(self):
+        """ Append empty input source.
+        """
+
         self.input_sources.append(NmrDpReportInputSource())
 
     def isOk(self):
+        """ Return whether processing status is OK.
+        """
+
         return self.__report['information']['status'] == 'OK'
 
     def isError(self):
+        """ Return whether processing status is Error.
+        """
+
         return self.__report['information']['status'] == 'Error'
 
     def isDiamagnetic(self):
+        """ Return whether molecular assembly is diamagnetic.
+        """
+
         return self.__report['information']['diamagnetic']
 
     def hasDisulfideBond(self):
+        """ Return whether molecular assembly has disulfide bond.
+        """
+
         return self.__report['information']['disulfide_bond']
 
     def hasOtherBond(self):
+        """ Return whether molecular assembly has other bond.
+        """
+
         return self.__report['information']['other_bond']
 
     def hasCyclicPolymer(self):
+        """ Return whether molecular assembly contains cyclic polymer.
+        """
+
         return self.__report['information']['cyclic_polymer']
 
     def getInputSourceDict(self, id):
@@ -188,24 +224,11 @@ class NmrDpReport:
 
         return -1
 
-    def getDictValue(self, dict=None, key=None):
-        """ Return value of a given dictionary for a key.
-            @return: value for a key, None otherwise
-        """
-
-        if dict is None or key is None:
-            return None
-
-        if not key in dict:
-            return None
-
-        return dict[key]
-
     def getNmrContentSubTypes(self):
         """ Return effective NMR content subtypes.
         """
 
-        content_subtype = self.getDictValue(self.getInputSourceDict(self.getInputSourceIdOfNmrData()), 'content_subtype')
+        content_subtype = get_value_safe(self.getInputSourceDict(self.getInputSourceIdOfNmrData()), 'content_subtype')
 
         if content_subtype is None:
             return None
@@ -216,7 +239,7 @@ class NmrDpReport:
         """ Return effective NMR content subtypes.
         """
 
-        content_subtype = self.getDictValue(self.getInputSourceDict(id), 'content_subtype')
+        content_subtype = get_value_safe(self.getInputSourceDict(id), 'content_subtype')
 
         if content_subtype is None:
             return None
@@ -227,13 +250,13 @@ class NmrDpReport:
         """ Return stats of experimental data of a given content subtype.
         """
 
-        return self.getDictValue(self.getDictValue(self.getInputSourceDict(self.getInputSourceIdOfNmrData()), 'stats_of_exptl_data'), content_subtype)
+        return get_value_safe(get_value_safe(self.getInputSourceDict(self.getInputSourceIdOfNmrData()), 'stats_of_exptl_data'), content_subtype)
 
     def getNmrLegacyStatsOfExptlData(self, id, content_subtype):
         """ Return stats of experimental data of a given content subtype.
         """
 
-        return self.getDictValue(self.getDictValue(self.getInputSourceDict(id), 'stats_of_exptl_data'), content_subtype)
+        return get_value_safe(get_value_safe(self.getInputSourceDict(id), 'stats_of_exptl_data'), content_subtype)
 
     def getNmrRestraints(self):
         """ Return stats of NMR restraints.
@@ -300,7 +323,7 @@ class NmrDpReport:
                     elif _noe_exp_type in ('noe not seen', 'noe_not_seen'):
                         noe_exp_type = 'NOE not seen'
                     elif _noe_exp_type in ('pre', 'paramagnetic relaxation'):
-                        noe_exp_type == 'PRE'
+                        noe_exp_type = 'PRE'
                     elif _noe_exp_type == 'pre solvent':
                         noe_exp_type = 'PRE solvent'
                     elif _noe_exp_type == 'roe':
@@ -426,7 +449,7 @@ class NmrDpReport:
                          'constraint_number': rdc_total}
 
             restraints.append(restraint)
-            
+
         content_subtype = 'plane_restraint'
 
         if content_subtype in content_subtypes:
@@ -472,6 +495,8 @@ class NmrDpReport:
 
         if len(list_id) == 0:
             return None
+
+        restraints = []
 
         for id in list_id:
 
@@ -539,7 +564,7 @@ class NmrDpReport:
                         elif _noe_exp_type in ('noe not seen', 'noe_not_seen'):
                             noe_exp_type = 'NOE not seen'
                         elif _noe_exp_type in ('pre', 'paramagnetic relaxation'):
-                            noe_exp_type == 'PRE'
+                            noe_exp_type = 'PRE'
                         elif _noe_exp_type == 'pre solvent':
                             noe_exp_type = 'PRE solvent'
                         elif _noe_exp_type == 'roe':
@@ -910,6 +935,12 @@ class NmrDpReport:
 
         return None if len(chem_shift_refs) == 0 else chem_shift_refs
 
+    def getPolymerSequenceByInputSrcId(self, input_source_id):
+        """ Retrieve polymer sequence of a given input_source_id.
+        """
+
+        return get_value_safe(self.getInputSourceDict(input_source_id), 'polymer_sequence')
+
     def getNmrPolymerSequenceOf(self, chain_id):
         """ Retrieve NMR polymer sequence having a given chain_id.
         """
@@ -922,7 +953,7 @@ class NmrDpReport:
                 return None
             id = ids[0]
 
-        nmr_polymer_sequence = self.getDictValue(self.getInputSourceDict(id), 'polymer_sequence')
+        nmr_polymer_sequence = self.getPolymerSequenceByInputSrcId(id)
 
         if nmr_polymer_sequence is None:
             return None
@@ -933,7 +964,7 @@ class NmrDpReport:
         """ Retrieve model polymer sequence having a given chain_id.
         """
 
-        cif_polymer_sequence = self.getDictValue(self.getInputSourceDict(self.getInputSourceIdOfCoord()), 'polymer_sequence')
+        cif_polymer_sequence = self.getPolymerSequenceByInputSrcId(self.getInputSourceIdOfCoord())
 
         if cif_polymer_sequence is None:
             return None
@@ -952,7 +983,7 @@ class NmrDpReport:
                 return None
             id = ids[0]
 
-        nmr_polymer_sequence = self.getDictValue(self.getInputSourceDict(id), 'polymer_sequence')
+        nmr_polymer_sequence = self.getPolymerSequenceByInputSrcId(id)
 
         if nmr_polymer_sequence is None:
             return None
@@ -972,7 +1003,7 @@ class NmrDpReport:
         """ Return mapping of asym_id in the coordinates, which share the same entity.
         """
 
-        cif_polymer_sequence = self.getDictValue(self.getInputSourceDict(self.getInputSourceIdOfCoord()), 'polymer_sequence')
+        cif_polymer_sequence = self.getPolymerSequenceByInputSrcId(self.getInputSourceIdOfCoord())
 
         if cif_polymer_sequence is None:
             return None
@@ -988,7 +1019,7 @@ class NmrDpReport:
 
         return ret
 
-    def getNmrSeq1LetterCodeOf(self, chain_id, fullSequence=True, unmappedSeqId=[]):
+    def getNmrSeq1LetterCodeOf(self, chain_id, fullSequence=True, unmappedSeqId=None):
         """ Retrieve NMR polymer sequence (1-letter code) having a given chain_id.
         """
 
@@ -1000,7 +1031,7 @@ class NmrDpReport:
                 return None
             id = ids[0]
 
-        nmr_polymer_sequence = self.getDictValue(self.getInputSourceDict(id), 'polymer_sequence')
+        nmr_polymer_sequence = self.getPolymerSequenceByInputSrcId(id)
 
         if nmr_polymer_sequence is None:
             return None
@@ -1014,7 +1045,7 @@ class NmrDpReport:
 
         for seq_id, comp_id in zip(ps['seq_id'], ps['comp_id']):
 
-            if not fullSequence and seq_id in unmappedSeqId:
+            if not fullSequence and not unmappedSeqId is None and seq_id in unmappedSeqId:
                 continue
 
             if comp_id in self.monDict3:
@@ -1030,7 +1061,7 @@ class NmrDpReport:
         """ Retrieve model polymer sequence (1-letter code) having a given chain_id.
         """
 
-        cif_polymer_sequence = self.getDictValue(self.getInputSourceDict(self.getInputSourceIdOfCoord()), 'polymer_sequence')
+        cif_polymer_sequence = self.getPolymerSequenceByInputSrcId(self.getInputSourceIdOfCoord())
 
         if cif_polymer_sequence is None:
             return None
@@ -1055,7 +1086,7 @@ class NmrDpReport:
         """ Retrieve NMR polymer sequence corresponding to a given coordinate chain_id.
         """
 
-        chain_assigns = self.getDictValue(self.chain_assignment.get(), 'model_poly_seq_vs_nmr_poly_seq')
+        chain_assigns = get_value_safe(self.chain_assignment.get(), 'model_poly_seq_vs_nmr_poly_seq')
 
         if chain_assigns is None:
             return None
@@ -1074,7 +1105,7 @@ class NmrDpReport:
 
         key = 'nmr_poly_seq_vs_model_poly_seq'
 
-        chain_assigns = self.getDictValue(self.chain_assignment.get(), key)
+        chain_assigns = get_value_safe(self.chain_assignment.get(), key)
 
         if chain_assigns is None:
             return None
@@ -1088,7 +1119,7 @@ class NmrDpReport:
 
                 cif_chain_id = chain_assign['test_chain_id']
 
-                sequence_aligns = self.getDictValue(self.sequence_alignment.get(), key)
+                sequence_aligns = get_value_safe(self.sequence_alignment.get(), key)
 
                 if sequence_aligns is None:
                     return None
@@ -1110,7 +1141,7 @@ class NmrDpReport:
 
         key = 'model_poly_seq_vs_nmr_poly_seq'
 
-        chain_assigns = self.getDictValue(self.chain_assignment.get(), key)
+        chain_assigns = get_value_safe(self.chain_assignment.get(), key)
 
         if chain_assigns is None:
             return None
@@ -1127,7 +1158,7 @@ class NmrDpReport:
 
                 nmr_chain_id = chain_assign['test_chain_id']
 
-                sequence_aligns = self.getDictValue(self.sequence_alignment.get(), key)
+                sequence_aligns = get_value_safe(self.sequence_alignment.get(), key)
 
                 if sequence_aligns is None:
                     return None
@@ -1147,7 +1178,7 @@ class NmrDpReport:
         """ Retrieve coordinate polymer sequence corresponding to a given NMR chain_id.
         """
 
-        chain_assigns = self.getDictValue(self.chain_assignment.get(), 'nmr_poly_seq_vs_model_poly_seq')
+        chain_assigns = get_value_safe(self.chain_assignment.get(), 'nmr_poly_seq_vs_model_poly_seq')
 
         if chain_assigns is None:
             return None
@@ -1168,14 +1199,14 @@ class NmrDpReport:
 
         chain_assign_dic = self.chain_assignment.get()
 
-        chain_assigns = self.getDictValue(chain_assign_dic, 'model_poly_seq_vs_nmr_poly_seq')
+        chain_assigns = get_value_safe(chain_assign_dic, 'model_poly_seq_vs_nmr_poly_seq')
 
         if chain_assigns is None:
             return None
 
         if not fullSeqeucne:
 
-            _chain_assigns = self.getDictValue(chain_assign_dic, 'nmr_poly_seq_vs_model_poly_seq')
+            _chain_assigns = get_value_safe(chain_assign_dic, 'nmr_poly_seq_vs_model_poly_seq')
 
             if not _chain_assigns is None:
 
@@ -1203,7 +1234,7 @@ class NmrDpReport:
         """ Retrieve coordinate polymer sequence (1-letter code) corresponding to a given NMR chain_id.
         """
 
-        chain_assigns = self.getDictValue(self.chain_assignment.get(), 'nmr_poly_seq_vs_model_poly_seq')
+        chain_assigns = get_value_safe(self.chain_assignment.get(), 'nmr_poly_seq_vs_model_poly_seq')
 
         if chain_assigns is None:
             return None
@@ -1224,7 +1255,7 @@ class NmrDpReport:
         if poly_seq is None or not 'type' in poly_seq:
             return None
 
-        type = ent['type']
+        type = poly_seq['type']
 
         if 'polypeptide' in type:
             rmsd_label = 'ca_rmsd'
@@ -1233,7 +1264,7 @@ class NmrDpReport:
         else:
             return None
 
-        if not rmsd_label in ent:
+        if not rmsd_label in poly_seq:
             return None
 
         if not (cif_beg_seq_id in poly_seq['seq_id'] and cif_end_seq_id in poly_seq['seq_id']):
@@ -1244,23 +1275,33 @@ class NmrDpReport:
         if len(rmsd) == 0:
             return None
 
-        return sum[rmsd] / len(rmsd)
+        return sum(rmsd) / len(rmsd)
 
     def getTotalErrors(self):
+        """ Return total number of errors.
+        """
+
         return self.error.getTotal()
 
     def getTotalWarnings(self):
+        """ Return total number of warnings.
+        """
+
         return self.warning.getTotal()
 
     def __setStatus(self, status):
+        """ Set processing status.
+        """
 
         if status in self.status_codes:
             self.__report['information']['status'] = status
         else:
-            logging.error('+NmrDpReport.__setStatus() ++ Error  - Unknown item type %s' % item)
-            raise KeyError('+NmrDpReport.__setStatus() ++ Error  - Unknown item type %s' % item)
+            logging.error('+NmrDpReport.__setStatus() ++ Error  - Unknown status %s', status)
+            raise KeyError('+NmrDpReport.__setStatus() ++ Error  - Unknown status %s' % status)
 
     def setError(self):
+        """ Set processing status Error.
+        """
 
         if not self.__immutable:
             self.__report['error'] = self.error.get()
@@ -1272,6 +1313,8 @@ class NmrDpReport:
             raise UserWarning('+NmrDpReport.setError() ++ Warning  - No effects on NMR data processing report because the report is immutable')
 
     def setWarning(self):
+        """ Set processing status Warning.
+        """
 
         if not self.__immutable:
             self.__report['warning'] = self.warning.get()
@@ -1284,6 +1327,8 @@ class NmrDpReport:
             raise UserWarning('+NmrDpReport.setWarning() ++ Warning  - No effects on NMR data processing report because the report is immutable')
 
     def clean(self):
+        """ Clear errors and warnings.
+        """
 
         if not self.__immutable:
 
@@ -1298,45 +1343,58 @@ class NmrDpReport:
             raise UserWarning('+NmrDpReport.clean() ++ Warning  - No effects on NMR data processing report because the report is immutable')
 
     def setDiamagnetic(self, diamagnetic):
+        """ Set diamagetism of molecular assembly.
+        """
 
-        if type(diamagnetic) is bool:
+        if isinstance(diamagnetic, bool):
             self.__report['information']['diamagnetic'] = diamagnetic
 
         else:
             logging.warning('+NmrDpReport.setDiamagnetic() ++ Warning  - No effects on NMR data processing report because input variable is not boolean type')
-            raise UserDiamagnetic('+NmrDpReport.setDiamagnetic() ++ Warning  - No effects on NMR data processing report because input variable is not boolean type')
+            raise UserWarning('+NmrDpReport.setDiamagnetic() ++ Warning  - No effects on NMR data processing report because input variable is not boolean type')
 
     def setDisulfideBond(self, disulfide_bond):
+        """ Set whether molecular assembly has a disulfide bond at least or not.
+        """
 
-        if type(disulfide_bond) is bool:
+        if isinstance(disulfide_bond, bool):
             self.__report['information']['disulfide_bond'] = disulfide_bond
 
         else:
             logging.warning('+NmrDpReport.setDisulfideBond() ++ Warning  - No effects on NMR data processing report because input variable is not boolean type')
-            raise UserDiamagnetic('+NmrDpReport.setDisulfideBond() ++ Warning  - No effects on NMR data processing report because input variable is not boolean type')
+            raise UserWarning('+NmrDpReport.setDisulfideBond() ++ Warning  - No effects on NMR data processing report because input variable is not boolean type')
 
     def setOtherBond(self, other_bond):
+        """ Set whether molecular assemble has an other bond at least or not.
+        """
 
-        if type(other_bond) is bool:
+        if isinstance(other_bond, bool):
             self.__report['information']['other_bond'] = other_bond
 
         else:
             logging.warning('+NmrDpReport.setOtherBond() ++ Warning  - No effects on NMR data processing report because input variable is not boolean type')
-            raise UserDiamagnetic('+NmrDpReport.setOtherBond() ++ Warning  - No effects on NMR data processing report because input variable is not boolean type')
+            raise UserWarning('+NmrDpReport.setOtherBond() ++ Warning  - No effects on NMR data processing report because input variable is not boolean type')
 
     def setCyclicPolymer(self, cyclic_polymer):
+        """ Set whether molecular assemble contains a cyclic polymer or not.
+        """
 
-        if type(cyclic_polymer) is bool:
+        if isinstance(cyclic_polymer, bool):
             self.__report['information']['cyclic_polymer'] = cyclic_polymer
 
         else:
             logging.warning('+NmrDpReport.setCyclicPolymer() ++ Warning  - No effects on NMR data processing report because input variable is not boolean type')
-            raise UserDiamagnetic('+NmrDpReport.setCyclicPolymer() ++ Warning  - No effects on NMR data processing report because input variable is not boolean type')
+            raise UserWarning('+NmrDpReport.setCyclicPolymer() ++ Warning  - No effects on NMR data processing report because input variable is not boolean type')
 
     def setMutable(self):
+        """ Enable to mute the report.
+        """
+
         self.__immutable = False
 
     def get(self):
+        """ Return NMR data processing report.
+        """
 
         if not self.__immutable:
             self.__report['information']['input_sources'] = [input_source.get() for input_source in self.input_sources]
@@ -1391,7 +1449,7 @@ class NmrDpReport:
         if self.get() is None:
             return False
 
-        with open(out_path, 'w') as file:
+        with open(out_path, 'w', encoding='UTF-8') as file:
             file.write(json.dumps(self.get(), indent=2))
 
         return True
@@ -1401,7 +1459,7 @@ class NmrDpReport:
             @return: True for success or False otherwise
         """
 
-        with open(in_path, 'r') as file:
+        with open(in_path, 'r', encoding='UTF-8') as file:
 
             report = json.loads(file.read())
 
@@ -1512,6 +1570,7 @@ class NmrDpReport:
 
             ignorable_warning_types = ['auth_atom_nomenclature_mismatch', 'ccd_mismatch', 'disordered_index', 'enum_mismatch_ignorable', 'skipped_saveframe_category', 'skipped_loop_category',
                                        'anomalous_chemical_shift', 'unusual_chemical_shift',
+                                       'incompletely_assigned_chemical_shift', 'incompletely_assigned_spectral_peak',
                                        'anomalous_data', 'unusual_data', 'unusual/rare_data', 'insufficient_data', 'conflicted_data', 'inconsistent_data',
                                        'total']
 
@@ -1567,23 +1626,25 @@ class NmrDpReportInputSource:
         self.__contents = {item: None for item in self.items}
 
     def setItemValue(self, item, value):
+        """ Set an item with a given value.
+        """
 
         if item in self.items:
 
             if item == 'file_type' and not value in self.file_types:
-                logging.error('+NmrDpReportInputSource.setItemValue() ++ Error  - Unknown file type %s' % value)
+                logging.error('+NmrDpReportInputSource.setItemValue() ++ Error  - Unknown file type %s', value)
                 raise ValueError('+NmrDpReportInputSource.setItemValue() ++ Error  - Unknown file type %s' % value)
 
-            elif item == 'content_type' and not value in self.content_types:
-                logging.error('+NmrDpReportInputSource.setItemValue() ++ Error  - Unknown content type %s' % value)
+            if item == 'content_type' and not value in self.content_types:
+                logging.error('+NmrDpReportInputSource.setItemValue() ++ Error  - Unknown content type %s', value)
                 raise ValueError('+NmrDpReportInputSource.setItemValue() ++ Error  - Unknown content type %s' % value)
 
-            elif item == 'content_subtype':
+            if item == 'content_subtype':
 
                 for k in value:
 
                     if not k in self.content_subtypes:
-                        logging.error('+NmrDpReportInputSource.setItemValue() ++ Error  - Unknown content subtype in %s' % value.keys())
+                        logging.error('+NmrDpReportInputSource.setItemValue() ++ Error  - Unknown content subtype in %s', value.keys())
                         raise ValueError('+NmrDpReportInputSource.setItemValue() ++ Error  - Unknown content subtype in %s' % value.keys())
 
                 non_positive_keys = [k for k in value if int(value[k]) <= 0]
@@ -1598,13 +1659,19 @@ class NmrDpReportInputSource:
                 self.__contents[item] = value
 
         else:
-            logging.error('+NmrDpReportInputSource.setItemValue() ++ Error  - Unknown item type %s' % item)
+            logging.error('+NmrDpReportInputSource.setItemValue() ++ Error  - Unknown item type %s', item)
             raise KeyError('+NmrDpReportInputSource.setItemValue() ++ Error  - Unknown item type %s' % item)
 
     def get(self):
+        """ Retrieve contents.
+        """
+
         return self.__contents
 
     def put(self, contents):
+        """ Set contents.
+        """
+
         self.__contents = contents
 
     def updateNonStandardResidueByExptlData(self, chain_id, seq_id, content_subtype):
@@ -1622,11 +1689,11 @@ class NmrDpReportInputSource:
                 c['exptl_data'][c['seq_id'].index(seq_id)][content_subtype] = True
             """ # should pass because reallocation of chain_id may happen
             else:
-                logging.error('+NmrDpReportInputSource.updateNonStandardResidueByExptlData() ++ Error  - Unknown seq_id %s' % seq_id)
+                logging.error('+NmrDpReportInputSource.updateNonStandardResidueByExptlData() ++ Error  - Unknown seq_id %s', seq_id)
                 raise KeyError('+NmrDpReportInputSource.updateNonStandardResidueByExptlData() ++ Error  - Unknown seq_id %s' % seq_id)
             """
         except StopIteration:
-            logging.error('+NmrDpReportInputSource.updateNonStandardResidueByExptlData() ++ Error  - Unknown chain_id %s' % chain_id)
+            logging.error('+NmrDpReportInputSource.updateNonStandardResidueByExptlData() ++ Error  - Unknown chain_id %s', chain_id)
             raise KeyError('+NmrDpReportInputSource.updateNonStandardResidueByExptlData() ++ Error  - Unknown chain_id %s' % chain_id)
 
 class NmrDpReportSequenceAlignment:
@@ -1639,18 +1706,26 @@ class NmrDpReportSequenceAlignment:
         self.__contents = {item: None for item in self.items}
 
     def setItemValue(self, item, value):
+        """ Set an item with a given value.
+        """
 
         if item in self.items:
             self.__contents[item] = value
 
         else:
-            logging.error('+NmrDpReportSequenceAlignment.setItemValue() ++ Error  - Unknown item type %s' % item)
+            logging.error('+NmrDpReportSequenceAlignment.setItemValue() ++ Error  - Unknown item type %s', item)
             raise KeyError('+NmrDpReportSequenceAlignment.setItemValue() ++ Error  - Unknown item type %s' % item)
 
     def get(self):
+        """ Retrieve contents.
+        """
+
         return self.__contents
 
     def put(self, contents):
+        """ Set contents.
+        """
+
         self.__contents = contents
 
 class NmrDpReportChainAssignment:
@@ -1663,18 +1738,26 @@ class NmrDpReportChainAssignment:
         self.__contents = {item: None for item in self.items}
 
     def setItemValue(self, item, value):
+        """ Set an item with a given value.
+        """
 
         if item in self.items:
             self.__contents[item] = value
 
         else:
-            logging.error('+NmrDpReportChainAssignment.setItemValue() ++ Error  - Unknown item type %s' % item)
+            logging.error('+NmrDpReportChainAssignment.setItemValue() ++ Error  - Unknown item type %s', item)
             raise KeyError('+NmrDpReportChainAssignment.setItemValue() ++ Error  - Unknown item type %s' % item)
 
     def get(self):
+        """ Retrieve contents.
+        """
+
         return self.__contents
 
     def put(self, contents):
+        """ Set contents.
+        """
+
         self.__contents = contents
 
 class NmrDpReportError:
@@ -1699,6 +1782,8 @@ class NmrDpReportError:
         self.chk_rows_pat = re.compile(r'\[Check rows of (.*)\] (.*)$')
 
     def appendDescription(self, item, value):
+        """ Append an error with a give description.
+        """
 
         if item in self.items:
 
@@ -1765,13 +1850,19 @@ class NmrDpReportError:
                 self.__contents['total'] += 1
 
         else:
-            logging.error('+NmrDpReportError.appendDescription() ++ Error  - Unknown item type %s' % item)
+            logging.error('+NmrDpReportError.appendDescription() ++ Error  - Unknown item type %s', item)
             raise KeyError('+NmrDpReportError.appendDescription() ++ Error  - Unknown item type %s' % item)
 
     def get(self):
+        """ Retrieve errors.
+        """
+
         return {k: v for k, v in self.__contents.items() if not v is None}
 
     def put(self, contents):
+        """ Set errors.
+        """
+
         self.__contents = contents
 
     def getTotal(self):
@@ -1915,6 +2006,7 @@ class NmrDpReportWarning:
                       'skipped_saveframe_category', 'skipped_loop_category',
                       'anomalous_bond_length',
                       'anomalous_chemical_shift', 'unusual_chemical_shift',
+                      'incompletely_assigned_chemical_shift', 'incompletely_assigned_spectral_peak',
                       'anomalous_data', 'unusual_data', 'unusual/rare_data', 'insufficient_data',
                       'conflicted_data', 'inconsistent_data', 'redundant_data',
                       'concatenated_sequence', 'not_superimposed_model')
@@ -1922,6 +2014,7 @@ class NmrDpReportWarning:
         self.group_items = ('sequence_mismatch',
                       'atom_nomenclature_mismatch', 'auth_atom_nomenclature_mismatch', 'ccd_mismatch', 'ambiguity_code_mismatch',
                       'anomalous_bond_length',
+                      'incompletely_assigned_chemical_shift', 'incompletely_assigned_spectral_peak',
                       'unusual/rare_data', 'insufficient_data',
                       'conflicted_data', 'inconsistent_data', 'redundant_data')
 
@@ -1934,6 +2027,8 @@ class NmrDpReportWarning:
         self.chk_rows_pat = re.compile(r'\[Check rows of (.*)\] (.*)$')
 
     def appendDescription(self, item, value):
+        """ Append a warning with a give description.
+        """
 
         if item in self.items:
 
@@ -2000,13 +2095,19 @@ class NmrDpReportWarning:
                 self.__contents['total'] += 1
 
         else:
-            logging.error('+NmrDpReportWarning.appendDescription() ++ Error  - Unknown item type %s' % item)
+            logging.error('+NmrDpReportWarning.appendDescription() ++ Error  - Unknown item type %s', item)
             raise KeyError('+NmrDpReportWarning.appendDescription() ++ Error  - Unknown item type %s' % item)
 
     def get(self):
+        """ Retrieve warnings.
+        """
+
         return {k: v for k, v in self.__contents.items() if not v is None}
 
     def put(self, contents):
+        """ Set warnings.
+        """
+
         self.__contents = contents
 
     def getTotal(self):

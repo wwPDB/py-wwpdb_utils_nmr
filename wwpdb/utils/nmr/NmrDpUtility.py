@@ -129,6 +129,7 @@
 # 10-Sep-2021  M. Yokochi - prevent system crash for an empty loop case of CS/MR data (D_1292117593)
 # 13-Oct-2021  M. Yokochi - fix/adjust tolerances for spectral peak list (DAOTHER-7389, issue #1 and #2)
 # 13-Oct-2021  M. Yokochi - code refactoring according to PEP8 using Pylint (DAOTHER-7389, issue #5)
+# 14-Oct-2021  M. Yokochi - remove unassigned chemical shifts, clear incompletely assigned spectral peaks (DAOTHER-7389, issue #3)
 ##
 """ Wrapper class for data processing for NMR data.
     @author: Masashi Yokochi
@@ -1214,9 +1215,13 @@ class NmrDpUtility:
                                                ],
                                   'entity': None,
                                   'chem_shift': [{'name': 'chain_code', 'type': 'str', 'default': 'A'},
-                                                 {'name': 'sequence_code', 'type': 'int'},
-                                                 {'name': 'residue_name', 'type': 'str', 'uppercase': True},
-                                                 {'name': 'atom_name', 'type': 'str'}
+                                                 {'name': 'sequence_code', 'type': 'int',
+                                                  'remove-bad-pattern': True},
+                                                 {'name': 'residue_name', 'type': 'str',
+                                                  'uppercase': True,
+                                                  'remove-bad-pattern': True},
+                                                 {'name': 'atom_name', 'type': 'str',
+                                                  'remove-bad-pattern': True}
                                                  ],
                                   'chem_shift_ref': None,
                                   'dist_restraint': [{'name': 'restraint_id', 'type': 'positive-int'},
@@ -1266,9 +1271,13 @@ class NmrDpUtility:
                                                     ],
                                        'entity': None,
                                        'chem_shift': [{'name': 'Entity_assembly_ID', 'type': 'positive-int-as-str', 'default': '1', 'default-from': 'self'},
-                                                      {'name': 'Comp_index_ID', 'type': 'int'},
-                                                      {'name': 'Comp_ID', 'type': 'str', 'uppercase': True},
-                                                      {'name': 'Atom_ID', 'type': 'str'}
+                                                      {'name': 'Comp_index_ID', 'type': 'int',
+                                                       'remove-bad-pattern': True},
+                                                      {'name': 'Comp_ID', 'type': 'str',
+                                                       'uppercase': True,
+                                                       'remove-bad-pattern': True},
+                                                      {'name': 'Atom_ID', 'type': 'str',
+                                                       'remove-bad-pattern': True}
                                                       ],
                                        'chem_shift_ref': [{'name': 'Atom_type', 'type': 'enum', 'enum': set(self.atom_isotopes.keys()),
                                                            'enforce-enum': True},
@@ -2145,11 +2154,15 @@ class NmrDpUtility:
                                       {'name': 'chain_code_%s', 'type': 'str', 'mandatory': False,
                                        'relax-key-if-exist': True},
                                       {'name': 'sequence_code_%s', 'type': 'int', 'mandatory': False,
-                                       'relax-key-if-exist': True},
+                                       'relax-key-if-exist': True,
+                                       'clear-bad-pattern': True},
                                       {'name': 'residue_name_%s', 'type': 'str', 'mandatory': False,
-                                       'relax-key-if-exist': True, 'uppercase': True},
+                                       'relax-key-if-exist': True,
+                                       'uppercase': True,
+                                       'clear-bad-pattern': True},
                                       {'name': 'atom_name_%s', 'type': 'str', 'mandatory': False,
-                                       'relax-key-if-exist': True}],
+                                       'relax-key-if-exist': True,
+                                       'clear-bad-pattern': True}],
                               'nmr-star': [{'name': 'Position_uncertainty_%s', 'type': 'range-float', 'mandatory': False,
                                             'range': self.chem_shift_error},
                                            {'name': 'Entity_assembly_ID_%s', 'type': 'positive-int-as-str', 'mandatory': False,
@@ -2157,11 +2170,15 @@ class NmrDpUtility:
                                             'enforce-non-zero': True,
                                             'relax-key-if-exist': True},
                                            {'name': 'Comp_index_ID_%s', 'type': 'int', 'mandatory': False,
-                                            'relax-key-if-exist': True},
+                                            'relax-key-if-exist': True,
+                                            'clear-bad-pattern': True},
                                            {'name': 'Comp_ID_%s', 'type': 'str', 'mandatory': False,
-                                            'relax-key-if-exist': True, 'uppercase': True},
+                                            'relax-key-if-exist': True,
+                                            'uppercase': True,
+                                            'clear-bad-pattern': True},
                                            {'name': 'Atom_ID_%s', 'type': 'str', 'mandatory': False,
-                                            'relax-key-if-exist': True},
+                                            'relax-key-if-exist': True,
+                                            'clear-bad-pattern': True},
                                            {'name': 'Auth_asym_ID_%s', 'type': 'str', 'mandatory': False},
                                            {'name': 'Auth_seq_ID_%s', 'type': 'int', 'mandatory': False},
                                            {'name': 'Auth_comp_ID_%s', 'type': 'str', 'mandatory': False},
@@ -6973,15 +6990,17 @@ class NmrDpUtility:
 
         file_type = input_source_dic['file_type']
 
-        if file_type == 'nef':
+        if file_type == 'nef': # DAOTHER-7389, issue #3, allow empty for 'chem_shift'
             return self.__nefT.get_nef_seq(sf_data, lp_category=self.lp_categories[file_type][content_subtype],
-                                           allow_empty=(content_subtype == 'spectral_peak'), allow_gap=(not content_subtype in ['poly_seq', 'entity']))
+                                           allow_empty=(content_subtype in ('chem_shift', 'spectral_peak')), allow_gap=(not content_subtype in ['poly_seq', 'entity']))
+
         if content_subtype == 'spectral_peak_alt':
             return self.__nefT.get_star_seq(sf_data, lp_category='_Assigned_peak_chem_shift',
                                         allow_empty=True, allow_gap=True)
 
+        # DAOTHER-7389, issue #3, allow empty for 'chem_shift'
         return self.__nefT.get_star_seq(sf_data, lp_category=self.lp_categories[file_type][content_subtype],
-                                        allow_empty=(content_subtype == 'spectral_peak'), allow_gap=(not content_subtype in ['poly_seq', 'entity']))
+                                        allow_empty=(content_subtype in ('chem_shift', 'spectral_peak')), allow_gap=(not content_subtype in ['poly_seq', 'entity']))
 
     def __extractPolymerSequence(self):
         """ Extract reference polymer sequence.
@@ -7284,7 +7303,7 @@ class NmrDpUtility:
 
                 if file_type == 'nmr-star':
 
-                    auth_poly_seq = self.__nefT.get_star_auth_seq(sf_data, lp_category)[0]
+                    auth_poly_seq = self.__nefT.get_star_auth_seq(sf_data, lp_category, allow_empty=(content_subtype in ('chem_shift', 'spectral_peak')))[0] # DAOTHER-7389, issue #3
 
                     for ps in poly_seq:
                         chain_id = ps['chain_id']
@@ -10056,12 +10075,12 @@ class NmrDpUtility:
 
         try:
 
-            if file_type == 'nef':
+            if file_type == 'nef': # DAOTHER-7389, issue #3, allow empty for 'chem_shift'
                 pairs = self.__nefT.get_nef_comp_atom_pair(sf_data, lp_category,
-                                                           allow_empty=(content_subtype == 'spectral_peak'))[0]
-            else:
+                                                           allow_empty=(content_subtype in ('chem_shift', 'spectral_peak')))[0]
+            else: # DAOTHER-7389, issue #3, allow empty for 'chem_shift'
                 pairs = self.__nefT.get_star_comp_atom_pair(sf_data, lp_category,
-                                                            allow_empty=(content_subtype.startswith('spectral_peak')))[0]
+                                                            allow_empty=(content_subtype in ('chem_shift', 'spectral_peak')))[0]
 
             for pair in pairs:
                 comp_id = pair['comp_id']
@@ -10222,7 +10241,9 @@ class NmrDpUtility:
 
                 try:
 
-                    auth_pairs = self.__nefT.get_star_auth_comp_atom_pair(sf_data, lp_category)[0]
+                    # DAOTHER-7389, issue #3, allow empty for 'chem_shift'
+                    auth_pairs = self.__nefT.get_star_auth_comp_atom_pair(sf_data, lp_category,
+                                                                          allow_empty=(content_subtype in ('chem_shift', 'spectral_peak')))[0]
 
                     for auth_pair in auth_pairs:
                         comp_id = auth_pair['comp_id']
@@ -10631,10 +10652,11 @@ class NmrDpUtility:
 
         try:
 
+            # DAOTHER-7389, issue #3, allow empty for 'chem_shift'
             if file_type == 'nef':
-                a_types = self.__nefT.get_nef_atom_type_from_cs_loop(sf_data)[0]
+                a_types = self.__nefT.get_nef_atom_type_from_cs_loop(sf_data, allow_empty=True)[0]
             else:
-                a_types = self.__nefT.get_star_atom_type_from_cs_loop(sf_data)[0]
+                a_types = self.__nefT.get_star_atom_type_from_cs_loop(sf_data, allow_empty=True)[0]
 
             for a_type in a_types:
                 atom_type = a_type['atom_type']
@@ -11208,6 +11230,7 @@ class NmrDpUtility:
             proc_warns = set()
 
             has_multiple_data = False
+            has_bad_pattern = False
 
             for warn in warns:
 
@@ -11221,8 +11244,10 @@ class NmrDpUtility:
                 rang = warn.startswith('[Range value error] ')
                 enum = warn.startswith('[Enumeration error] ')
                 mult = warn.startswith('[Multiple data] ')
+                remo = warn.startswith('[Remove bad pattern] ')
+                clea = warn.startswith('[Clear bad pattern]' )
 
-                if zero or nega or range or enum or mult:
+                if zero or nega or range or enum or mult or remo or clea:
 
                     if zero:
                         warn = warn[19:]
@@ -11236,6 +11261,21 @@ class NmrDpUtility:
                     elif enum:
                         warn = warn[20:]
                         item = 'enum_mismatch'
+                    elif remo:
+                        if content_subtype == 'chem_shift':
+                            warn = warn[21:] + ' Your unassigned chemical shifts have been removed.'
+                            item = 'incompletely_assigned_chemical_shift'
+                        else:
+                            warn = warn[21:]
+                            item = 'insufficient_data'
+                        has_bad_pattern = True
+                    elif clea:
+                        if content_subtype.startswith('spectral_peak'):
+                            warn = warn[20:] + ' Unassigned spectral peaks can be included in your peak list(s).'
+                            item = 'incompletely_assigned_spectral_peak'
+                        else:
+                            warn = warn[20:]
+                            item = 'insufficient_data'
                     elif self.__resolve_conflict:
                         warn = warn[16:]
                         item = 'redundant_data'
@@ -11244,7 +11284,7 @@ class NmrDpUtility:
                         err = warn[16:]
                         item = 'multiple_data'
 
-                    if zero or nega or rang or enum or self.__resolve_conflict:
+                    if zero or nega or rang or enum or remo or clea or self.__resolve_conflict:
 
                         self.report.warning.appendDescription(item, {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
                         self.report.setWarning()
@@ -11272,6 +11312,20 @@ class NmrDpUtility:
 
             if has_multiple_data:
                 conflict_id = self.__nefT.get_conflict_id(sf_data, lp_category, key_items)[0]
+
+                if len(conflict_id) > 0:
+                    if __pynmrstar_v3_2__:
+                        loop = sf_data if self.__star_data_type[file_list_id] == 'Loop' else sf_data.get_loop(lp_category)
+                    else:
+                        loop = sf_data if self.__star_data_type[file_list_id] == 'Loop' else sf_data.get_loop_by_category(lp_category)
+
+                    for l in conflict_id:
+                        del loop.data[l]
+
+            # try to parse data without bad patterns
+
+            if has_bad_pattern:
+                conflict_id = self.__nefT.get_bad_pattern_id(sf_data, lp_category, key_items, data_items)[0]
 
                 if len(conflict_id) > 0:
                     if __pynmrstar_v3_2__:
@@ -11699,6 +11753,7 @@ class NmrDpUtility:
                                 proc_warns = set()
 
                                 has_multiple_data = False
+                                has_bad_pattern = False
 
                                 for warn in warns:
 
@@ -11715,8 +11770,10 @@ class NmrDpUtility:
                                     rang = warn.startswith('[Range value error] ')
                                     enum = warn.startswith('[Enumeration error] ')
                                     mult = warn.startswith('[Multiple data] ')
+                                    remo = warn.startswith('[Remove bad pattern] ')
+                                    clea = warn.startswith('[Clear bad pattern]' )
 
-                                    if zero or nega or rang or enum or mult:
+                                    if zero or nega or rang or enum or mult or remo or clea:
 
                                         if zero:
                                             warn = warn[19:]
@@ -11730,6 +11787,21 @@ class NmrDpUtility:
                                         elif enum:
                                             warn = warn[20:]
                                             item = 'enum_mismatch'
+                                        elif remo:
+                                            if content_subtype == 'chem_shift':
+                                                warn = warn[21:] + ' Your unassigned chemical shifts have been removed.'
+                                                item = 'incompletely_assigned_chemical_shift'
+                                            else:
+                                                warn = warn[21:]
+                                                item = 'insufficient_data'
+                                            has_bad_pattern = True
+                                        elif clea:
+                                            if content_subtype.startswith('spectral_peak'):
+                                                warn = warn[20:] + ' Unassigned spectral peaks can be included in your peak list(s).'
+                                                item = 'incompletely_assigned_spectral_peak'
+                                            else:
+                                                warn = warn[20:]
+                                                item = 'insufficient_data'
                                         elif self.__resolve_conflict:
                                             warn = warn[16:]
                                             item = 'redundant_data'
@@ -11738,7 +11810,7 @@ class NmrDpUtility:
                                             err = warn[16:]
                                             item = 'multiple_data'
 
-                                        if zero or nega or rang or enum or self.__resolve_conflict:
+                                        if zero or nega or rang or enum or remo or clea or self.__resolve_conflict:
 
                                             self.report.warning.appendDescription(item, {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
                                             self.report.setWarning()
@@ -11764,19 +11836,33 @@ class NmrDpUtility:
 
                                 # try to parse data without constraints
 
+                                if has_multiple_data:
+                                    conflict_id = self.__nefT.get_conflict_id(sf_data, lp_category, key_items)[0]
+
+                                    if len(conflict_id) > 0:
+                                        if __pynmrstar_v3_2__:
+                                            _loop = sf_data.get_loop(lp_category)
+                                        else:
+                                            _loop = sf_data.get_loop_by_category(lp_category)
+
+                                        for l in conflict_id:
+                                            del _loop.data[l]
+
+                                # try to parse data without bad patterns
+
+                                if has_bad_pattern:
+                                    conflict_id = self.__nefT.get_bad_pattern_id(sf_data, lp_category, key_items, data_items)[0]
+
+                                    if len(conflict_id) > 0:
+                                        if __pynmrstar_v3_2__:
+                                            _loop = sf_data.get_loop(lp_category)
+                                        else:
+                                            _loop = sf_data.get_loop_by_category(lp_category)
+
+                                        for l in conflict_id:
+                                            del _loop.data[l]
+
                                 try:
-
-                                    if has_multiple_data:
-                                        conflict_id = self.__nefT.get_conflict_id(sf_data, lp_category, key_items)[0]
-
-                                        if len(conflict_id) > 0:
-                                            if __pynmrstar_v3_2__:
-                                                _loop = sf_data.get_loop(lp_category)
-                                            else:
-                                                _loop = sf_data.get_loop_by_category(lp_category)
-
-                                            for l in conflict_id:
-                                                del _loop.data[l]
 
                                     aux_data = self.__nefT.check_data(sf_data, lp_category, key_items, data_items, allowed_tags, None,
                                                                       excl_missing_data=self.__excl_missing_data)[0]

@@ -69,6 +69,7 @@
 # 29-Jun-2021  M. Yokochi - add support for PyNMRSTAR v3.2.0 (v2.10.3, DAOTHER-7107)
 # 16-Sep-2021  M. Yokochi - report an empty loop case of CS/MR data as an error (v2.10.4, D_1292117503, DAOTHER-7318)
 # 13-Oct-2021  M. Yokochi - code refactoring according to PEP8 using Pylint (v2.11.0, DAOTHER-7389, issue #5)
+# 14-Oct-2021  M. Yokochi - remove unassigned chemical shifts, clear incompletely assigned spectral peaks (v2.11.1, DAOTHER-7389, issue #3)
 ##
 ##
 """ Bi-directional translator between NEF and NMR-STAR
@@ -91,9 +92,8 @@ from wwpdb.utils.config.ConfigInfo import getSiteId
 from wwpdb.utils.config.ConfigInfoApp import ConfigInfoAppCommon
 from wwpdb.utils.nmr.io.ChemCompIo import ChemCompReader
 from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
-#from wwpdb.utils.nmr.NmrDpReport import NmrDpReport
 
-__version__ = '2.11.0'
+__version__ = '2.11.1'
 
 __pynmrstar_v3_2__ = version.parse(pynmrstar.__version__) >= version.parse("3.2.0")
 __pynmrstar_v3_1__ = version.parse(pynmrstar.__version__) >= version.parse("3.1.0")
@@ -734,6 +734,8 @@ class NEFTranslator:
 
         self.int_pattern = re.compile(r'^([+-]?[1-9]\d*|0)$')
 
+        self.bad_pattern = re.compile(r'.*[\!\$\&\(\)\=\~\^\\\|\`\@\{\}\[\]\;\:\<\>\,\/].*')
+
     def read_input_file(self, in_file):
         """ Read input NEF/NMR-STAR file.
             @param in_file: input NEF/NMR-STAR file path
@@ -1152,6 +1154,14 @@ class NEFTranslator:
 
         return not any(d in self.empty_value for d in data)
 
+    def is_good_data(self, data):
+        """ Check if given data has either no empty or bad pattern.
+            @author: Masashi Yokochi
+            @return: True for good data, False otherwise
+        """
+
+        return not any(d in self.empty_value or self.bad_pattern.match(d) for d in data)
+
     def get_data_content(self, star_data, data_type):
         """ Extract saveframe categories and loop categories from star data object.
             @return: list of saveframe categories, list of loop categories
@@ -1278,7 +1288,8 @@ class NEFTranslator:
                     raise LookupError("Missing mandatory %s loop tag%s." % (missing_tags, 's' if len(missing_tags) > 1 else ''))
 
             if allow_empty:
-                seq_data = list(filter(self.is_data, seq_data))
+                #seq_data = list(filter(self.is_data, seq_data))
+                seq_data = list(filter(self.is_good_data, seq_data)) # DAOTHER-7389, issue #3
                 if len(seq_data) == 0:
                     continue
             else:
@@ -1462,7 +1473,8 @@ class NEFTranslator:
                     raise LookupError("Missing mandatory %s loop tag%s." % (missing_tags, 's' if len(missing_tags) > 1 else ''))
 
             if allow_empty:
-                seq_data = list(filter(self.is_data, seq_data))
+                #seq_data = list(filter(self.is_data, seq_data))
+                seq_data = list(filter(self.is_good_data, seq_data)) # DAOTHER-7389, issue #3
                 if len(seq_data) == 0:
                     continue
             else:
@@ -1645,7 +1657,8 @@ class NEFTranslator:
                     raise LookupError("Missing mandatory %s loop tag%s." % (missing_tags, 's' if len(missing_tags) > 1 else ''))
 
             if allow_empty:
-                seq_data = list(filter(self.is_data, seq_data))
+                #seq_data = list(filter(self.is_data, seq_data))
+                seq_data = list(filter(self.is_good_data, seq_data)) # DAOTHER-7389, issue #3
                 if len(seq_data) == 0:
                     continue
             else:
@@ -1807,7 +1820,8 @@ class NEFTranslator:
                     raise LookupError("Missing mandatory %s loop tag%s." % (missing_tags, 's' if len(missing_tags) > 1 else ''))
 
             if allow_empty:
-                pair_data = list(filter(self.is_data, pair_data))
+                #pair_data = list(filter(self.is_data, pair_data))
+                pair_data = list(filter(self.is_good_data, pair_data)) # DAOTHER-7389, issue #3
                 if len(pair_data) == 0:
                     continue
             else:
@@ -1899,7 +1913,8 @@ class NEFTranslator:
             a_type_data = get_lp_tag(loop, tags)
 
             if allow_empty:
-                a_type_data = list(filter(self.is_data, a_type_data))
+                #a_type_data = list(filter(self.is_data, a_type_data))
+                a_type_data = list(filter(self.is_good_data, a_type_data)) # DAOTHER-7389, issue #3
                 if len(a_type_data) == 0:
                     continue
             else:
@@ -1931,7 +1946,7 @@ class NEFTranslator:
 
                 a_types = sorted(set(i[0] for i in a_type_data))
                 sorted_ist = sorted(set('{} {}'.format(i[0], i[1]) for i in a_type_data))
-                sorted_atm = sorted(set('{} {}'.format(i[0], i[2]) for i in a_type_data))
+                sorted_atm = sorted(set('{} {}'.format(i[0], i[2]) for i in a_type_data if not (i[2] in self.empty_value or self.bad_pattern.match(i[2])))) # DAOTHER-7389, issue #3
 
                 for t in a_types:
                     ist_dict[t] = [int(i.split(' ')[1]) for i in sorted_ist if i.split(' ')[0] == t]
@@ -2054,8 +2069,15 @@ class NEFTranslator:
             if len(user_warn_msg) > 0:
                 raise UserWarning(user_warn_msg)
 
-            ambigs = sorted(set('{}:{}'.format(i[0].upper(), i[2]) for i in ambig_data))
-            sorted_atm = sorted(set('{}:{} {}'.format(i[0].upper(), i[2], i[1]) for i in ambig_data))
+            _ambig_data = [i for i in ambig_data
+                           if not (i[0] in self.empty_value or self.bad_pattern.match(i[0])) and
+                              not (i[1] in self.empty_value or self.bad_pattern.match(i[1]))] # DAOTHER-7389, issue #3
+
+            if len(_ambig_data) == 0:
+                continue
+
+            ambigs = sorted(set('{}:{}'.format(i[0].upper(), i[2]) for i in _ambig_data))
+            sorted_atm = sorted(set('{}:{} {}'.format(i[0].upper(), i[2], i[1]) for i in _ambig_data))
 
             for a in ambigs:
                 atm_dict[a] = [i.split(' ')[1] for i in sorted_atm if i.split(' ')[0] == a]
@@ -2389,13 +2411,15 @@ class NEFTranslator:
                         if i[j] in self.empty_value:
                             name = tags[j]
                             if name in key_names:
-                                r = {}
-                                for _j,_t in enumerate(loop.tags):
-                                    r[_t] = loop.data[l][_j]
-                                raise ValueError("%s must not be empty. #_of_row %s, data_of_row %s." % (name, l + 1, r))
+                                k = key_items[key_names.index(name)]
+                                if not ('remove-bad-pattern' in k and k['remove-bad-pattern']):
+                                    r = {}
+                                    for _j,_t in enumerate(loop.tags):
+                                        r[_t] = loop.data[l][_j]
+                                    raise ValueError("%s must not be empty. #_of_row %s, data_of_row %s." % (name, l + 1, r))
 
                             for d in data_items:
-                                if d['name'] == name and d['mandatory'] and not 'default' in d:
+                                if d['name'] == name and d['mandatory'] and not 'default' in d and not('remove-bad-pattern' in d and d['detele-bad-pattern']):
                                     r = {}
                                     for _j, _t in enumerate(loop.tags):
                                         r[_t] = loop.data[l][_j]
@@ -2508,6 +2532,8 @@ class NEFTranslator:
                 ent = {} # entity
 
                 missing_mandatory_data = False
+                remove_bad_pattern = False
+                clear_bad_pattern = False
 
                 for j in range(tag_len):
                     name = tags[j]
@@ -2522,6 +2548,12 @@ class NEFTranslator:
                                 if excl_missing_data:
                                     missing_mandatory_data = True
                                     continue
+                                if 'remove-bad-pattern' in k and k['remove-bad-pattern']:
+                                    remove_bad_pattern = True
+                                    continue
+                                if 'clear-bad-pattern' in k and k['clear-bad-pattern']:
+                                    clear_bad_pattern = True
+                                    continue
                                 raise ValueError("%s%s %r must be %s." % (get_idx_msg(idx_tag_ids, tags, ent), name, val, self.readable_item_type[type]))
                         elif type == 'int':
                             try:
@@ -2533,6 +2565,12 @@ class NEFTranslator:
                                     ent[name] = int(k['default'])
                                 elif excl_missing_data:
                                     missing_mandatory_data = True
+                                    continue
+                                elif 'remove-bad-pattern' in k and k['remove-bad-pattern']:
+                                    remove_bad_pattern = True
+                                    continue
+                                elif 'clear-bad-pattern' in k and k['clear-bad-pattern']:
+                                    clear_bad_pattern = True
                                     continue
                                 else:
                                     raise ValueError("%s%s %r must be %s." % (get_idx_msg(idx_tag_ids, tags, ent), name, val, self.readable_item_type[type]))
@@ -2546,6 +2584,12 @@ class NEFTranslator:
                                     ent[name] = int(k['default'])
                                 elif excl_missing_data:
                                     missing_mandatory_data = True
+                                    continue
+                                elif 'remove-bad-pattern' in k and k['remove-bad-pattern']:
+                                    remove_bad_pattern = True
+                                    continue
+                                elif 'clear-bad-pattern' in k and k['clear-bad-pattern']:
+                                    clear_bad_pattern = True
                                     continue
                                 else:
                                     raise ValueError("%s%s %r must be %s." % (get_idx_msg(idx_tag_ids, tags, ent), name, val, self.readable_item_type[type]))
@@ -2571,6 +2615,12 @@ class NEFTranslator:
                                 elif excl_missing_data:
                                     missing_mandatory_data = True
                                     continue
+                                elif 'remove-bad-pattern' in k and k['remove-bad-pattern']:
+                                    remove_bad_pattern = True
+                                    continue
+                                elif 'clear-bad-pattern' in k and k['clear-bad-pattern']:
+                                    clear_bad_pattern = True
+                                    continue
                                 else:
                                     raise ValueError("%s%s %r must be %s." % (get_idx_msg(idx_tag_ids, tags, ent), name, val, self.readable_item_type[type]))
                             if ent[name] <= 0:
@@ -2586,6 +2636,12 @@ class NEFTranslator:
                                 if excl_missing_data:
                                     missing_mandatory_data = True
                                     continue
+                                if 'remove-bad-pattern' in k and k['remove-bad-pattern']:
+                                    remove_bad_pattern = True
+                                    continue
+                                if 'clear-bad-pattern' in k and k['clear-bad-pattern']:
+                                    clear_bad_pattern = True
+                                    continue
                                 raise ValueError("%s%s %r must be %s." % (get_idx_msg(idx_tag_ids, tags, ent), name, val, self.readable_item_type[type]))
                         elif type == 'positive-float':
                             try:
@@ -2593,6 +2649,12 @@ class NEFTranslator:
                             except:
                                 if excl_missing_data:
                                     missing_mandatory_data = True
+                                    continue
+                                if 'remove-bad-pattern' in k and k['remove-bad-pattern']:
+                                    remove_bad_pattern = True
+                                    continue
+                                if 'clear-bad-pattern' in k and k['clear-bad-pattern']:
+                                    clear_bad_pattern = True
                                     continue
                                 raise ValueError("%s%s %r must be %s." % (get_idx_msg(idx_tag_ids, tags, ent), name, val, self.readable_item_type[type]))
                             if ent[name] < 0.0 or (ent[name] == 0.0 and 'enforce-non-zero' in k and k['enforce-non-zero']):
@@ -2613,6 +2675,12 @@ class NEFTranslator:
                             except:
                                 if excl_missing_data:
                                     missing_mandatory_data = True
+                                    continue
+                                if 'remove-bad-pattern' in k and k['remove-bad-pattern']:
+                                    remove_bad_pattern = True
+                                    continue
+                                if 'clear-bad-pattern' in k and k['clear-bad-pattern']:
+                                    clear_bad_pattern = True
                                     continue
                                 if not enforce_range:
                                     ent[name] = None
@@ -2659,6 +2727,12 @@ class NEFTranslator:
                                         if excl_missing_data:
                                             missing_mandatory_data = True
                                             continue
+                                        if 'remove-bad-pattern' in k and k['remove-bad-pattern']:
+                                            remove_bad_pattern = True
+                                            continue
+                                        if 'clear-bad-pattern' in k and k['clear-bad-pattern']:
+                                            clear_bad_pattern = True
+                                            continue
                                         raise ValueError("%s%s %r must be one of %s." % (get_idx_msg(idx_tag_ids, tags, ent), name, val, enum))
                                     elif enforce_enum:
                                         user_warn_msg += "[Enumeration error] %s%s %r should be one of %s.\n" % (get_idx_msg(idx_tag_ids, tags, ent), name, val, enum)
@@ -2680,11 +2754,25 @@ class NEFTranslator:
                                 if excl_missing_data:
                                     missing_mandatory_data = True
                                     continue
+                                if 'remove-bad-pattern' in k and k['remove-bad-pattern']:
+                                    remove_bad_pattern = True
+                                    continue
+                                if 'clear-bad-pattern' in k and k['clear-bad-pattern']:
+                                    clear_bad_pattern = True
+                                    continue
                                 raise ValueError("%s%s %r must be %s." % (get_idx_msg(idx_tag_ids, tags, ent), name, val, self.readable_item_type[type]))
                         else:
                             if val in self.empty_value:
                                 missing_mandatory_data = True
                                 continue
+                            if ('remove-bad-pattern' in k and k['remove-bad-pattern']) or ('clear-bad-pattern' in k and k['clear-bad-pattern']):
+                                if self.bad_pattern.match(val):
+                                    if 'remove-bad-pattern' in k and k['remove-bad-pattern']:
+                                        remove_bad_pattern = True
+                                        continue
+                                    if 'clear-bad-pattern' in k and k['clear-bad-pattern']:
+                                        clear_bad_pattern = True
+                                        continue
                             if 'uppercase' in k and k['uppercase']:
                                 ent[name] = val.upper()
                             else:
@@ -2706,6 +2794,12 @@ class NEFTranslator:
                                         if excl_missing_data:
                                             ent[name] = None
                                             continue
+                                        if 'remove-bad-pattern' in d and d['remove-bad-pattern']:
+                                            remove_bad_pattern = True
+                                            continue
+                                        if 'clear-bad-pattern' in d and d['clear-bad-pattern']:
+                                            clear_bad_pattern = True
+                                            continue
                                         raise ValueError("%s%s %r must be %s." % (get_idx_msg(idx_tag_ids, tags, ent), name, val, self.readable_item_type[type]))
                                 elif type == 'int':
                                     try:
@@ -2717,6 +2811,12 @@ class NEFTranslator:
                                             ent[name] = int(d['default'])
                                         elif excl_missing_data:
                                             ent[name] = None
+                                            continue
+                                        elif 'remove-bad-pattern' in d and d['remove-bad-pattern']:
+                                            remove_bad_pattern = True
+                                            continue
+                                        elif 'clear-bad-pattern' in d and d['clear-bad-pattern']:
+                                            clear_bad_pattern = True
                                             continue
                                         else:
                                             raise ValueError("%s%s %r must be %s." % (get_idx_msg(idx_tag_ids, tags, ent), name, val, self.readable_item_type[type]))
@@ -2730,6 +2830,12 @@ class NEFTranslator:
                                             ent[name] = int(d['default'])
                                         elif excl_missing_data:
                                             ent[name] = None
+                                            continue
+                                        elif 'remove-bad-pattern' in d and d['remove-bad-pattern']:
+                                            remove_bad_pattern = True
+                                            continue
+                                        elif 'clear-bad-pattern' in d and d['clear-bad-pattern']:
+                                            clear_bad_pattern = True
                                             continue
                                         else:
                                             raise ValueError("%s%s %r must be %s." % (get_idx_msg(idx_tag_ids, tags, ent), name, val, self.readable_item_type[type]))
@@ -2755,6 +2861,12 @@ class NEFTranslator:
                                         elif excl_missing_data:
                                             ent[name] = None
                                             continue
+                                        elif 'remove-bad-pattern' in d and d['remove-bad-pattern']:
+                                            remove_bad_pattern = True
+                                            continue
+                                        elif 'clear-bad-pattern' in d and d['clear-bad-pattern']:
+                                            clear_bad_pattern = True
+                                            continue
                                         else:
                                             raise ValueError("%s%s %r must be %s." % (get_idx_msg(idx_tag_ids, tags, ent), name, val, self.readable_item_type[type]))
                                     if ent[name] <= 0:
@@ -2770,6 +2882,12 @@ class NEFTranslator:
                                         if excl_missing_data:
                                             ent[name] = None
                                             continue
+                                        if 'remove-bad-pattern' in d and d['remove-bad-pattern']:
+                                            remove_bad_pattern = True
+                                            continue
+                                        if 'clear-bad-pattern' in d and d['clear-bad-pattern']:
+                                            clear_bad_pattern = True
+                                            continue
                                         raise ValueError("%s%s %r must be %s." % (get_idx_msg(idx_tag_ids, tags, ent), name, val, self.readable_item_type[type]))
                                 elif type == 'positive-float':
                                     try:
@@ -2777,6 +2895,12 @@ class NEFTranslator:
                                     except:
                                         if excl_missing_data:
                                             ent[name] = None
+                                            continue
+                                        if 'remove-bad-pattern' in d and d['remove-bad-pattern']:
+                                            remove_bad_pattern = True
+                                            continue
+                                        if 'clear-bad-pattern' in d and d['clear-bad-pattern']:
+                                            clear_bad_pattern = True
                                             continue
                                         raise ValueError("%s%s %r must be %s." % (get_idx_msg(idx_tag_ids, tags, ent), name, val, self.readable_item_type[type]))
                                     if ent[name] < 0.0 or (ent[name] == 0.0 and 'enforce-non-zero' in d and d['enforce-non-zero']):
@@ -2801,6 +2925,12 @@ class NEFTranslator:
                                         if not enforce_range:
                                             ent[name] = None
                                             continue
+                                        if 'remove-bad-pattern' in d and d['remove-bad-pattern']:
+                                            remove_bad_pattern = True
+                                            continue
+                                        if 'clear-bad-pattern' in d and d['clear-bad-pattern']:
+                                            clear_bad_pattern = True
+                                            continue
                                         user_warn_msg += "[Range value error] %s%s %r must be %s.\n" % (get_idx_msg(idx_tag_ids, tags, ent), name, val, self.readable_item_type[type])
                                     if ('min_exclusive' in _range and _range['min_exclusive'] == 0.0 and ent[name] <= 0.0) or ('min_inclusive' in _range and _range['min_inclusive'] == 0.0 and ent[name] < 0):
                                         if ent[name] < 0.0:
@@ -2823,6 +2953,12 @@ class NEFTranslator:
                                                 ent[name] = None
                                             else:
                                                 user_warn_msg += "[Zero value error] %s%s %r should not be zero, as defined by %s, %s.\n" % (get_idx_msg(idx_tag_ids, tags, ent), name, val, self.readable_item_type[type], _range)
+                                        elif 'remove-bad-pattern' in d and d['remove-bad-pattern']:
+                                            remove_bad_pattern = True
+                                            continue
+                                        elif 'clear-bad-pattern' in d and d['clear-bad-pattern']:
+                                            clear_bad_pattern = True
+                                            continue
                                     elif ('min_exclusive' in _range and ent[name] <= _range['min_exclusive']) or ('min_inclusive' in _range and ent[name] < _range['min_inclusive']) or ('max_inclusive' in _range and ent[name] > _range['max_inclusive']) or ('max_exclusive' in _range and ent[name] >= _range['max_exclusive']):
                                         if 'void-zero' in d and ent[name] == 0.0:
                                             if self.replace_zero_by_null_in_case:
@@ -2830,6 +2966,12 @@ class NEFTranslator:
                                             ent[name] = None
                                         elif not enforce_range:
                                             ent[name] = None
+                                        elif 'remove-bad-pattern' in d and d['remove-bad-pattern']:
+                                            remove_bad_pattern = True
+                                            continue
+                                        elif 'clear-bad-pattern' in d and d['clear-bad-pattern']:
+                                            clear_bad_pattern = True
+                                            continue
                                         else:
                                             user_warn_msg += "[Range value error] %s%s %r must be within range %s.\n" % (get_idx_msg(idx_tag_ids, tags, ent), name, val, _range)
                                 elif type == 'enum':
@@ -2846,6 +2988,12 @@ class NEFTranslator:
                                                 raise ValueError("%s%s %r must be one of %s." % (get_idx_msg(idx_tag_ids, tags, ent), name, val, enum))
                                             elif enforce_enum:
                                                 user_warn_msg += "[Enumeration error] %s%s %r should be one of %s.\n" % (get_idx_msg(idx_tag_ids, tags, ent), name, val, enum)
+                                            elif 'remove-bad-pattern' in d and d['remove-bad-pattern']:
+                                                remove_bad_pattern = True
+                                                continue
+                                            elif 'clear-bad-pattern' in d and d['clear-bad-pattern']:
+                                                clear_bad_pattern = True
+                                                continue
                                         ent[name] = val
                                     except KeyError:
                                         raise ValueError('Enumeration of data item %s is not defined' % name)
@@ -2857,6 +3005,12 @@ class NEFTranslator:
                                                 raise ValueError("%s%s %r must be one of %s." % (get_idx_msg(idx_tag_ids, tags, ent), name, val, enum))
                                             if enforce_enum:
                                                 user_warn_msg += "[Enumeration error] %s%s %r should be one of %s.\n" % (get_idx_msg(idx_tag_ids, tags, ent), name, val, enum)
+                                            elif 'remove-bad-pattern' in d and d['remove-bad-pattern']:
+                                                remove_bad_pattern = True
+                                                continue
+                                            elif 'clear-bad-pattern' in d and d['clear-bad-pattern']:
+                                                clear_bad_pattern = True
+                                                continue
                                         ent[name] = int(val)
                                     except KeyError:
                                         raise ValueError('Enumeration of data item %s is not defined' % name)
@@ -2866,6 +3020,14 @@ class NEFTranslator:
                                             continue
                                         raise ValueError("%s%s %r must be %s." % (get_idx_msg(idx_tag_ids, tags, ent), name, val, self.readable_item_type[type]))
                                 else:
+                                    if ('remove-bad-pattern' in d and d['remove-bad-pattern']) or ('clear-bad-pattern' in d and d['clear-bad-pattern']):
+                                        if self.bad_pattern.match(val):
+                                            if 'remove-bad-pattern' in d and d['remove-bad-pattern']:
+                                                remove_bad_pattern = True
+                                                continue
+                                            if 'clear-bad-pattern' in d and d['clear-bad-pattern']:
+                                                clear_bad_pattern = True
+                                                continue
                                     if 'uppercase' in d and d['uppercase']:
                                         ent[name] = val.upper()
                                     else:
@@ -2918,6 +3080,27 @@ class NEFTranslator:
 
                 if missing_mandatory_data:
                     continue
+
+                if remove_bad_pattern:
+                    r = {}
+                    for j, t in enumerate(loop.tags):
+                        r[t] = loop.data[l][j]
+                    user_warn_msg += '[Remove bad pattern] Found bad pattern. #_of_row %s, data_of_row %s.\n' % (l + 1, r)
+                    continue # should be removed from loop later
+
+                if clear_bad_pattern:
+                    r = {}
+                    for j, t in enumerate(loop.tags):
+                        r[t] = loop.data[l][j]
+                    user_warn_msg += '[Clear bad pattern] Found bad pattern. #_of_row %s, data_of_row %s.\n' % (l + 1, r)
+                    for k in key_items:
+                        if k in loop.tags and 'clear-bad-pattern' in k and k['clear-bad-pattern']:
+                            i[loop.tags.index(k)] = '?'
+                            ent[k] = None
+                    for d in data_items:
+                        if d in loop.tags and 'clear-bad-pattern' in d and d['clear-bad-pattern']:
+                            i[loop.tags.index(d)] = '?'
+                            ent[d] = None
 
                 asm.append(ent)
 
@@ -2972,9 +3155,9 @@ class NEFTranslator:
         return str(chr(64 + (index // 729))) + str(chr(64 + ((index % 729) // 27))) + str(chr(65 + (index % 27)))
 
     def get_conflict_id(self, star_data, lp_category, key_items):
-        """ Return list of row ID of duplicated/conflicted rows except for rows of the first occurrence.
+        """ Return list of conflicted row IDs except for rows of the first occurrence.
             @author: Masashi Yokochi
-            @return: list of duplicated/conflicted row IDs in reverse order for each loop
+            @return: list of row IDs in reverse order for each loop
         """
 
         try:
@@ -3029,9 +3212,9 @@ class NEFTranslator:
         return data
 
     def get_conflict_id_set(self, star_data, lp_category, key_items):
-        """ Return list of row ID set of redundant/inconsistent rows.
+        """ Return list of conflicted row ID sets.
             @author: Masashi Yokochi
-            @return: list of redundant/inconsistent row ID set for each loop
+            @return: list of row ID sets for each loop
         """
 
         try:
@@ -3114,9 +3297,9 @@ class NEFTranslator:
         return data
 
     def get_conflict_atom_id(self, star_data, file_type, lp_category, key_items):
-        """ Return list of row ID of rows includes self atoms.
+        """ Return list of row IDs that include self atoms.
             @author: Masashi Yokochi
-            @return: list of duplicated/conflicted row IDs in reverse order for each loop
+            @return: list of row IDs in reverse order for each loop
         """
 
         try:
@@ -3172,6 +3355,43 @@ class NEFTranslator:
                             break
 
             data.append(sorted(list(dup_ids), reverse=True))
+
+        return data
+
+    def get_bad_pattern_id(self, star_data, lp_category, key_items, data_items):
+        """ Return list of row IDs with bad patterns
+            @author: Masashi Yokochi
+            @return: list of row IDs in reverse order for each loop
+        """
+
+        try:
+            loops = star_data.get_loops_by_category(lp_category)
+        except: # AttributeError:
+            try:
+                if __pynmrstar_v3_2__:
+                    loops = [star_data.get_loop(lp_category)]
+                else:
+                    loops = [star_data.get_loop_by_category(lp_category)]
+            except: # AttributeError:
+                loops = [star_data]
+
+        data = [] # data of all loops
+
+        key_names = [k['name'] for k in key_items if 'remove-bad-pattern' in k and k['remove-bad-pattern']]
+        data_names = [d['name'] for d in data_items if 'remove-bad-pattern' in d and d['remove-bad-pattern']]
+
+        key_names.extend(data_names)
+
+        for loop in loops:
+
+            bad_ids = set()
+
+            for l, i in enumerate(get_lp_tag(loop, key_names)):
+
+                if any(self.bad_pattern.match(d) for d in i):
+                    bad_ids.add(l)
+
+            data.append(sorted(list(bad_ids), reverse=True))
 
         return data
 

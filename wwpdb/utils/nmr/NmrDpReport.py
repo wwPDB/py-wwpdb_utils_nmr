@@ -50,6 +50,7 @@
 # 02-Jul-2021  M. Yokochi - add content types of NMR restraint file (DAOTHER-6830)
 # 24-Aug-2021  M. Yokochi - add content subtype for XPLOR-NIH planarity restraints (DAOTHER-7265)
 # 13-Oct-2021  M. Yokochi - code refactoring according to PEP8 using Pylint (DAOTHER-7389, issue #5)
+# 14-Oct-2021  M. Yokochi - add 'incompletely_ssigned_chemical_shift' and 'incompletely_assigned_spectral_peak' (DAOTHER-7389, issue #3)
 ##
 """ Wrapper class for data processing report of NMR data.
     @author: Masashi Yokochi
@@ -1569,6 +1570,7 @@ class NmrDpReport:
 
             ignorable_warning_types = ['auth_atom_nomenclature_mismatch', 'ccd_mismatch', 'disordered_index', 'enum_mismatch_ignorable', 'skipped_saveframe_category', 'skipped_loop_category',
                                        'anomalous_chemical_shift', 'unusual_chemical_shift',
+                                       'incompletely_assigned_chemical_shift', 'incompletely_assigned_spectral_peak',
                                        'anomalous_data', 'unusual_data', 'unusual/rare_data', 'insufficient_data', 'conflicted_data', 'inconsistent_data',
                                        'total']
 
@@ -2004,6 +2006,7 @@ class NmrDpReportWarning:
                       'skipped_saveframe_category', 'skipped_loop_category',
                       'anomalous_bond_length',
                       'anomalous_chemical_shift', 'unusual_chemical_shift',
+                      'incompletely_assigned_chemical_shift', 'incompletely_assigned_spectral_peak',
                       'anomalous_data', 'unusual_data', 'unusual/rare_data', 'insufficient_data',
                       'conflicted_data', 'inconsistent_data', 'redundant_data',
                       'concatenated_sequence', 'not_superimposed_model')
@@ -2011,6 +2014,7 @@ class NmrDpReportWarning:
         self.group_items = ('sequence_mismatch',
                       'atom_nomenclature_mismatch', 'auth_atom_nomenclature_mismatch', 'ccd_mismatch', 'ambiguity_code_mismatch',
                       'anomalous_bond_length',
+                      'incompletely_assigned_chemical_shift', 'incompletely_assigned_spectral_peak',
                       'unusual/rare_data', 'insufficient_data',
                       'conflicted_data', 'inconsistent_data', 'redundant_data')
 

@@ -350,6 +350,7 @@ class TestNEFTranslator(unittest.TestCase):
     #     self.assertEqual(self.neft.is_empty_loop(dat, "_Atom_chem_shift", "Entry"), False)
     #     self.assertEqual(self.neft.is_empty_loop(dat, "_Gen_dist_constraint", "Entry"), True)
     #
+
     def test_get_data_content(self):
         (isValid, content, data) = self.neft.read_input_file(self.data_dir_path + "2mqq.nef")
         self.assertTrue(isValid)
@@ -2812,7 +2813,7 @@ class TestNEFTranslator(unittest.TestCase):
     def test_get_star_index(self):
         dat = pynmrstar.Entry.from_file(self.data_dir_path + "2l9r.str")
         self.assertEqual(self.neft.get_star_index(dat), [[i for i in range(1, 70)]])
-    # 
+    #
     # def test_check_nef_data(self):
     #     dat = pynmrstar.Entry.from_file(self.data_dir_path + "2l9r.nef")
     #     self.assertEqual(self.neft.check_nef_data(dat)[0][1]["value"], 56.002)
@@ -2820,7 +2821,7 @@ class TestNEFTranslator(unittest.TestCase):
     # def test_check_star_data(self):
     #     dat = pynmrstar.Entry.from_file(self.data_dir_path + "2l9r.str")
     #     self.assertEqual(self.neft.check_star_data(dat)[0][1]["Val"], 56.002)
-    # 
+    #
     def test_validate_comp_atom(self):
         self.assertEqual(self.neft.validate_comp_atom("ALA", "HB1"), True)
         self.assertEqual(self.neft.validate_comp_atom("ALA", "HB"), False)

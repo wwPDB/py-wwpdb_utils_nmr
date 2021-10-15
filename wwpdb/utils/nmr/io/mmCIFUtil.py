@@ -20,12 +20,13 @@ from mmcif.api.PdbxContainers import DataContainer
 from mmcif.io.PdbxReader import PdbxReader
 from mmcif.io.PdbxWriter import PdbxWriter
 
+
 class mmCIFUtil:
     """Using pdbx mmCIF utility to parse mmCIF file
     """
 
-    def __init__(self, verbose=False, log=sys.stderr, filePath=None):
-        self.__verbose = verbose
+    def __init__(self, verbose=False, log=sys.stderr, filePath=None):  # pylint: disable=unused-argument
+        # self.__verbose = verbose
         self.__lfh = log
         self.__filePath = filePath
         self.__dataList = []
@@ -300,8 +301,8 @@ class mmCIFUtil:
         """
         data = {}
         for container in self.__dataList:
-           blockName = container.getName()
-           data[blockName] = container.getObjNameList()
+            blockName = container.getName()
+            data[blockName] = container.getObjNameList()
         #
         return data
 

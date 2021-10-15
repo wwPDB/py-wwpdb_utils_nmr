@@ -60,6 +60,7 @@ import json
 import copy
 import re
 
+
 def get_value_safe(d=None, key=None):
     """ Return value of a given dictionary for a key.
         @return: value for a key, None otherwise
@@ -68,10 +69,11 @@ def get_value_safe(d=None, key=None):
     if d is None or key is None:
         return None
 
-    if not key in d:
+    if key not in d:
         return None
 
     return d[key]
+
 
 class NmrDpReport:
     """ Wrapper class for data processing report of NMR data.
@@ -185,7 +187,7 @@ class NmrDpReport:
 
         return self.__report['information']['cyclic_polymer']
 
-    def getInputSourceDict(self, id):
+    def getInputSourceDict(self, id):  # pylint: disable=redefined-builtin
         """ Return input source dictionary of a given index.
             @return: input source of a given index, None otherwise
         """
@@ -235,7 +237,7 @@ class NmrDpReport:
 
         return {k: v for k, v in content_subtype.items() if v > 0}
 
-    def getNmrLegacyContentSubTypes(self, id):
+    def getNmrLegacyContentSubTypes(self, id):  # pylint: disable=redefined-builtin
         """ Return effective NMR content subtypes.
         """
 
@@ -252,7 +254,7 @@ class NmrDpReport:
 
         return get_value_safe(get_value_safe(self.getInputSourceDict(self.getInputSourceIdOfNmrData()), 'stats_of_exptl_data'), content_subtype)
 
-    def getNmrLegacyStatsOfExptlData(self, id, content_subtype):
+    def getNmrLegacyStatsOfExptlData(self, id, content_subtype):  # pylint: disable=redefined-builtin
         """ Return stats of experimental data of a given content subtype.
         """
 
@@ -269,9 +271,9 @@ class NmrDpReport:
 
         restraints = []
 
-        id = self.getInputSourceIdOfNmrData()
+        sid = self.getInputSourceIdOfNmrData()
 
-        nmr_input_source_dic = self.getInputSourceDict(id)
+        nmr_input_source_dic = self.getInputSourceDict(sid)
 
         if nmr_input_source_dic is None:
             return None
@@ -291,7 +293,7 @@ class NmrDpReport:
             noe_exp_type = None
             for stat in self.getNmrStatsOfExptlData(content_subtype):
 
-                if not 'number_of_constraints' in stat:
+                if 'number_of_constraints' not in stat:
                     continue
 
                 for k, v in stat['number_of_constraints'].items():
@@ -311,7 +313,7 @@ class NmrDpReport:
                         noe_like += v
             if noe_like > 0:
                 if noe_exp_type.lower() == 'unknown':
-                    noe_exp_type = 'NOE' #? (To be decided)'
+                    noe_exp_type = 'NOE'  # ? (To be decided)'
                 else:
                     _noe_exp_type = noe_exp_type.lower()
                     if _noe_exp_type in ('csp', 'chemical shift perturbation', 'shift_perturbation'):
@@ -380,7 +382,7 @@ class NmrDpReport:
             others = 0
             for stat in self.getNmrStatsOfExptlData(content_subtype):
 
-                if 'constraints_per_polymer_type' in stat: # DAOTHER-6509
+                if 'constraints_per_polymer_type' in stat:  # DAOTHER-6509
                     for k, v in stat['constraints_per_polymer_type'].items():
                         if k == 'protein':
                             proteins += v
@@ -390,7 +392,7 @@ class NmrDpReport:
                             carbohydrates += v
                         elif k == 'other':
                             others += v
-                elif 'number_of_constraints_per_polymer_type' in stat: # DAOTHER-6509
+                elif 'number_of_constraints_per_polymer_type' in stat:  # DAOTHER-6509
                     for k, v in stat['number_of_constraints_per_polymer_type'].items():
                         if k == 'protein':
                             proteins += v
@@ -436,7 +438,7 @@ class NmrDpReport:
             rdc_total = 0
             for stat in self.getNmrStatsOfExptlData(content_subtype):
 
-                if not 'number_of_constraints' in stat:
+                if 'number_of_constraints' not in stat:
                     continue
 
                 for k, v in stat['number_of_constraints'].items():
@@ -463,7 +465,7 @@ class NmrDpReport:
                             proteins += v
                         elif k == 'nucleic_acid':
                             nucleic_acids += v
-                elif 'number_of_constraints_per_polymer_type' in stat: # DAOTHER-6509
+                elif 'number_of_constraints_per_polymer_type' in stat:  # DAOTHER-6509
                     for k, v in stat['number_of_constraints_per_polymer_type'].items():
                         if k == 'protein':
                             proteins += v
@@ -498,14 +500,14 @@ class NmrDpReport:
 
         restraints = []
 
-        for id in list_id:
+        for lid in list_id:
 
-            content_subtypes = self.getNmrLegacyContentSubTypes(id)
+            content_subtypes = self.getNmrLegacyContentSubTypes(lid)
 
             if content_subtypes is None:
                 continue
 
-            nmr_input_source_dic = self.getInputSourceDict(id)
+            nmr_input_source_dic = self.getInputSourceDict(lid)
 
             if nmr_input_source_dic is None:
                 continue
@@ -517,7 +519,7 @@ class NmrDpReport:
 
             if content_subtype in content_subtypes:
 
-                stats = self.getNmrLegacyStatsOfExptlData(id, content_subtype)
+                stats = self.getNmrLegacyStatsOfExptlData(lid, content_subtype)
 
                 if stats is None:
                     continue
@@ -532,7 +534,7 @@ class NmrDpReport:
 
                 for stat in stats:
 
-                    if not 'number_of_constraints' in stat:
+                    if 'number_of_constraints' not in stat:
                         continue
 
                     for k, v in stat['number_of_constraints'].items():
@@ -552,7 +554,7 @@ class NmrDpReport:
                             noe_like += v
                 if noe_like > 0:
                     if noe_exp_type.lower() == 'unknown':
-                        noe_exp_type = 'NOE' #? (To be decided)'
+                        noe_exp_type = 'NOE'  # ? (To be decided)'
                     else:
                         _noe_exp_type = noe_exp_type.lower()
                         if _noe_exp_type in ('csp', 'chemical shift perturbation', 'shift_perturbation'):
@@ -616,7 +618,7 @@ class NmrDpReport:
 
             if content_subtype in content_subtypes:
 
-                stats = self.getNmrLegacyStatsOfExptlData(id, content_subtype)
+                stats = self.getNmrLegacyStatsOfExptlData(lid, content_subtype)
 
                 if stats is None:
                     continue
@@ -628,7 +630,7 @@ class NmrDpReport:
 
                 for stat in stats:
 
-                    if 'constraints_per_polymer_type' in stat: # DAOTHER-6509
+                    if 'constraints_per_polymer_type' in stat:  # DAOTHER-6509
                         for k, v in stat['constraints_per_polymer_type'].items():
                             if k == 'protein':
                                 proteins += v
@@ -638,7 +640,7 @@ class NmrDpReport:
                                 carbohydrates += v
                             elif k == 'other':
                                 others += v
-                    elif 'number_of_constraints_per_polymer_type' in stat: # DAOTHER-6509
+                    elif 'number_of_constraints_per_polymer_type' in stat:  # DAOTHER-6509
                         for k, v in stat['number_of_constraints_per_polymer_type'].items():
                             if k == 'protein':
                                 proteins += v
@@ -682,7 +684,7 @@ class NmrDpReport:
 
             if content_subtype in content_subtypes:
 
-                stats = self.getNmrLegacyStatsOfExptlData(id, content_subtype)
+                stats = self.getNmrLegacyStatsOfExptlData(lid, content_subtype)
 
                 if stats is None:
                     continue
@@ -691,7 +693,7 @@ class NmrDpReport:
 
                 for stat in stats:
 
-                    if not 'number_of_constraints' in stat:
+                    if 'number_of_constraints' not in stat:
                         continue
 
                     for k, v in stat['number_of_constraints'].items():
@@ -722,13 +724,19 @@ class NmrDpReport:
 
         if content_subtype in content_subtypes:
             for stat in self.getNmrStatsOfExptlData(content_subtype):
-                spectral_peaks.append({'list_id': stat['list_id'], 'sf_framecode': stat['sf_framecode'], 'number_of_spectral_dimensions': stat['number_of_spectral_dimensions'], 'spectral_dim': stat['spectral_dim']})
+                spectral_peaks.append({'list_id': stat['list_id'],
+                                       'sf_framecode': stat['sf_framecode'],
+                                       'number_of_spectral_dimensions': stat['number_of_spectral_dimensions'],
+                                       'spectral_dim': stat['spectral_dim']})
 
         content_subtype = 'spectral_peak_alt'
 
         if content_subtype in content_subtypes:
             for stat in self.getNmrStatsOfExptlData(content_subtype):
-                spectral_peaks.append({'list_id': stat['list_id'], 'sf_framecode': stat['sf_framecode'], 'number_of_spectral_dimensions': stat['number_of_spectral_dimensions'], 'spectral_dim': stat['spectral_dim']})
+                spectral_peaks.append({'list_id': stat['list_id'],
+                                       'sf_framecode': stat['sf_framecode'],
+                                       'number_of_spectral_dimensions': stat['number_of_spectral_dimensions'],
+                                       'spectral_dim': stat['spectral_dim']})
 
         return spectral_peaks
 
@@ -745,37 +753,43 @@ class NmrDpReport:
 
         content_subtype = 'spectral_peak'
 
-        for id in list_id:
+        for lid in list_id:
 
-            content_subtypes = self.getNmrLegacyContentSubTypes(id)
+            content_subtypes = self.getNmrLegacyContentSubTypes(lid)
 
             if content_subtypes is None:
                 continue
 
-            stats = self.getNmrLegacyStatsOfExptlData(id, content_subtype)
+            stats = self.getNmrLegacyStatsOfExptlData(lid, content_subtype)
 
             if stats is None:
                 continue
 
             for stat in stats:
-                spectral_peaks.append({'list_id': stat['list_id'], 'sf_framecode': stat['sf_framecode'], 'number_of_spectral_dimensions': stat['number_of_spectral_dimensions'], 'spectral_dim': stat['spectral_dim']})
+                spectral_peaks.append({'list_id': stat['list_id'],
+                                       'sf_framecode': stat['sf_framecode'],
+                                       'number_of_spectral_dimensions': stat['number_of_spectral_dimensions'],
+                                       'spectral_dim': stat['spectral_dim']})
 
         content_subtype = 'spectral_peak_alt'
 
-        for id in list_id:
+        for lid in list_id:
 
-            content_subtypes = self.getNmrLegacyContentSubTypes(id)
+            content_subtypes = self.getNmrLegacyContentSubTypes(lid)
 
             if content_subtypes is None:
                 continue
 
-            stats = self.getNmrLegacyStatsOfExptlData(id, content_subtype)
+            stats = self.getNmrLegacyStatsOfExptlData(lid, content_subtype)
 
             if stats is None:
                 continue
 
             for stat in stats:
-                spectral_peaks.append({'list_id': stat['list_id'], 'sf_framecode': stat['sf_framecode'], 'number_of_spectral_dimensions': stat['number_of_spectral_dimensions'], 'spectral_dim': stat['spectral_dim']})
+                spectral_peaks.append({'list_id': stat['list_id'],
+                                       'sf_framecode': stat['sf_framecode'],
+                                       'number_of_spectral_dimensions': stat['number_of_spectral_dimensions'],
+                                       'spectral_dim': stat['spectral_dim']})
 
         return spectral_peaks
 
@@ -790,7 +804,7 @@ class NmrDpReport:
 
         content_subtype = 'chem_shift'
 
-        if not content_subtype in content_subtypes:
+        if content_subtype not in content_subtypes:
             return None
 
         isotopes = {}
@@ -823,14 +837,14 @@ class NmrDpReport:
 
         pat = re.compile(r'^(\d+)(\D)$')
 
-        for id in list_id:
+        for lid in list_id:
 
-            content_subtypes = self.getNmrLegacyContentSubTypes(id)
+            content_subtypes = self.getNmrLegacyContentSubTypes(lid)
 
             if content_subtypes is None:
                 continue
 
-            stats = self.getNmrLegacyStatsOfExptlData(id, content_subtype)
+            stats = self.getNmrLegacyStatsOfExptlData(lid, content_subtype)
 
             if stats is None:
                 continue
@@ -857,7 +871,7 @@ class NmrDpReport:
 
         content_subtype = 'chem_shift_ref'
 
-        if not content_subtype in content_subtypes:
+        if content_subtype not in content_subtypes:
             return None
 
         chem_shift_refs = []
@@ -866,9 +880,9 @@ class NmrDpReport:
             loop = []
 
             if not stat['loop'] is None:
-                for l in stat['loop']:
+                for el in stat['loop']:
                     _l = {}
-                    for k, v in l.items():
+                    for k, v in el.items():
                         if v is None or k == 'Entry_ID':
                             continue
                         _l[k.lower()] = v
@@ -899,14 +913,14 @@ class NmrDpReport:
 
         chem_shift_refs = []
 
-        for id in list_id:
+        for lid in list_id:
 
-            content_subtypes = self.getNmrLegacyContentSubTypes(id)
+            content_subtypes = self.getNmrLegacyContentSubTypes(lid)
 
             if content_subtypes is None:
                 continue
 
-            stats = self.getNmrLegacyStatsOfExptlData(id, content_subtype)
+            stats = self.getNmrLegacyStatsOfExptlData(lid, content_subtype)
 
             if stats is None:
                 continue
@@ -915,9 +929,9 @@ class NmrDpReport:
                 loop = []
 
                 if not stat['loop'] is None:
-                    for l in stat['loop']:
+                    for el in stat['loop']:
                         _l = {}
-                        for k, v in l.items():
+                        for k, v in el.items():
                             if v is None or k == 'Entry_ID':
                                 continue
                             _l[k.lower()] = v
@@ -945,15 +959,15 @@ class NmrDpReport:
         """ Retrieve NMR polymer sequence having a given chain_id.
         """
 
-        id = self.getInputSourceIdOfNmrData()
+        sid = self.getInputSourceIdOfNmrData()
 
-        if id < 0:
+        if sid < 0:
             ids = self.getInputSourceIdsOfNmrLegacyData()
             if len(ids) == 0:
                 return None
-            id = ids[0]
+            sid = ids[0]
 
-        nmr_polymer_sequence = self.getPolymerSequenceByInputSrcId(id)
+        nmr_polymer_sequence = self.getPolymerSequenceByInputSrcId(sid)
 
         if nmr_polymer_sequence is None:
             return None
@@ -975,15 +989,15 @@ class NmrDpReport:
         """ Return mapping of chain_id in the NMR data, which share the same entity.
         """
 
-        id = self.getInputSourceIdOfNmrData()
+        sid = self.getInputSourceIdOfNmrData()
 
-        if id < 0:
+        if sid < 0:
             ids = self.getInputSourceIdsOfNmrLegacyData()
             if len(ids) == 0:
                 return None
-            id = ids[0]
+            sid = ids[0]
 
-        nmr_polymer_sequence = self.getPolymerSequenceByInputSrcId(id)
+        nmr_polymer_sequence = self.getPolymerSequenceByInputSrcId(sid)
 
         if nmr_polymer_sequence is None:
             return None
@@ -1023,15 +1037,15 @@ class NmrDpReport:
         """ Retrieve NMR polymer sequence (1-letter code) having a given chain_id.
         """
 
-        id = self.getInputSourceIdOfNmrData()
+        sid = self.getInputSourceIdOfNmrData()
 
-        if id < 0:
+        if sid < 0:
             ids = self.getInputSourceIdsOfNmrLegacyData()
             if len(ids) == 0:
                 return None
-            id = ids[0]
+            sid = ids[0]
 
-        nmr_polymer_sequence = self.getPolymerSequenceByInputSrcId(id)
+        nmr_polymer_sequence = self.getPolymerSequenceByInputSrcId(sid)
 
         if nmr_polymer_sequence is None:
             return None
@@ -1045,7 +1059,7 @@ class NmrDpReport:
 
         for seq_id, comp_id in zip(ps['seq_id'], ps['comp_id']):
 
-            if not fullSequence and not unmappedSeqId is None and seq_id in unmappedSeqId:
+            if not fullSequence and unmappedSeqId is not None and seq_id in unmappedSeqId:
                 continue
 
             if comp_id in self.monDict3:
@@ -1208,7 +1222,7 @@ class NmrDpReport:
 
             _chain_assigns = get_value_safe(chain_assign_dic, 'nmr_poly_seq_vs_model_poly_seq')
 
-            if not _chain_assigns is None:
+            if _chain_assigns is not None:
 
                 for _chain_assign in _chain_assigns:
 
@@ -1252,19 +1266,19 @@ class NmrDpReport:
 
         poly_seq = self.getModelPolymerSequenceOf(cif_chain_id)
 
-        if poly_seq is None or not 'type' in poly_seq:
+        if poly_seq is None or 'type' not in poly_seq:
             return None
 
-        type = poly_seq['type']
+        stype = poly_seq['type']
 
-        if 'polypeptide' in type:
+        if 'polypeptide' in stype:
             rmsd_label = 'ca_rmsd'
-        elif 'ribonucleotide' in type:
+        elif 'ribonucleotide' in stype:
             rmsd_label = 'p_rmsd'
         else:
             return None
 
-        if not rmsd_label in poly_seq:
+        if rmsd_label not in poly_seq:
             return None
 
         if not (cif_beg_seq_id in poly_seq['seq_id'] and cif_end_seq_id in poly_seq['seq_id']):
@@ -1544,18 +1558,18 @@ class NmrDpReport:
                 if _value_list is None:
                     continue
 
-                list = []
+                tlist = []
 
                 for _c in _value_list:
 
                     if value_list is None or\
                        not any(c for c in value_list if 'sf_framecode' in c and 'sf_framecode' in _c and c['sf_framecode'] == _c['sf_framecode'] and c['description'] == _c['description']):
-                        list.append(_c)
+                        tlist.append(_c)
 
-                for c in list:
+                for c in tlist:
                     self.error.appendDescription(item, c)
 
-                if len(list) > 0:
+                if len(tlist) > 0:
                     self.setError()
 
         else:
@@ -1568,7 +1582,8 @@ class NmrDpReport:
 
         if not self.__immutable:
 
-            ignorable_warning_types = ['auth_atom_nomenclature_mismatch', 'ccd_mismatch', 'disordered_index', 'enum_mismatch_ignorable', 'skipped_saveframe_category', 'skipped_loop_category',
+            ignorable_warning_types = ['auth_atom_nomenclature_mismatch', 'ccd_mismatch', 'disordered_index', 'enum_mismatch_ignorable',
+                                       'skipped_saveframe_category', 'skipped_loop_category',
                                        'anomalous_chemical_shift', 'unusual_chemical_shift',
                                        'incompletely_assigned_chemical_shift', 'incompletely_assigned_spectral_peak',
                                        'anomalous_data', 'unusual_data', 'unusual/rare_data', 'insufficient_data', 'conflicted_data', 'inconsistent_data',
@@ -1590,14 +1605,14 @@ class NmrDpReport:
                 if _value_list is None:
                     continue
 
-                list = []
+                tlist = []
 
                 for _c in _value_list:
 
-                    if value_list is None or not any(c for c in value_list if 'sf_framecode' in c and 'sf_framecode' in _c and c['sf_framecode'] == _c['sf_framecode'] and c['description'] == _c['description']):
-                        list.append(_c)
+                    if value_list is None or not any(c for c in value_list if 'sf_framecode' in c and 'sf_framecode' in _c and c['sf_framecode'] == _c['sf_framecode'] and c['description'] == _c['description']):  # noqa: E501
+                        tlist.append(_c)
 
-                for c in list:
+                for c in tlist:
                     self.corrected_warning.appendDescription(item, c)
 
             if self.corrected_warning.getTotal() > 0:
@@ -1610,6 +1625,7 @@ class NmrDpReport:
             logging.warning('+NmrDpReport.setCorrectedWarning() ++ Warning  - No effects on NMR data processing report because the report is immutable')
             raise UserWarning('+NmrDpReport.setCorrectedWarning() ++ Warning  - No effects on NMR data processing report because the report is immutable')
 
+
 class NmrDpReportInputSource:
     """ Wrapper class for data processing report of NMR data (input source).
     """
@@ -1621,7 +1637,9 @@ class NmrDpReportInputSource:
                       'stats_of_exptl_data')
         self.file_types = ('pdbx', 'nef', 'nmr-star', 'nm-res-amb', 'nm-res-cns', 'nm-res-cya', 'nm-res-xpl', 'nm-res-oth', 'nm-aux-amb')
         self.content_types = ('model', 'nmr-data-nef', 'nmr-data-str', 'nmr-chemical-shifts', 'nmr-restraints')
-        self.content_subtypes = ('coordinate', 'non_poly', 'entry_info', 'poly_seq', 'entity', 'chem_shift', 'chem_shift_ref', 'dist_restraint', 'dihed_restraint', 'rdc_restraint', 'plane_restraint', 'spectral_peak', 'spectral_peak_alt', 'topology')
+        self.content_subtypes = ('coordinate', 'non_poly', 'entry_info', 'poly_seq', 'entity', 'chem_shift',
+                                 'chem_shift_ref', 'dist_restraint', 'dihed_restraint', 'rdc_restraint', 'plane_restraint',
+                                 'spectral_peak', 'spectral_peak_alt', 'topology')
 
         self.__contents = {item: None for item in self.items}
 
@@ -1631,11 +1649,11 @@ class NmrDpReportInputSource:
 
         if item in self.items:
 
-            if item == 'file_type' and not value in self.file_types:
+            if item == 'file_type' and value not in self.file_types:
                 logging.error('+NmrDpReportInputSource.setItemValue() ++ Error  - Unknown file type %s', value)
                 raise ValueError('+NmrDpReportInputSource.setItemValue() ++ Error  - Unknown file type %s' % value)
 
-            if item == 'content_type' and not value in self.content_types:
+            if item == 'content_type' and value not in self.content_types:
                 logging.error('+NmrDpReportInputSource.setItemValue() ++ Error  - Unknown content type %s', value)
                 raise ValueError('+NmrDpReportInputSource.setItemValue() ++ Error  - Unknown content type %s' % value)
 
@@ -1643,7 +1661,7 @@ class NmrDpReportInputSource:
 
                 for k in value:
 
-                    if not k in self.content_subtypes:
+                    if k not in self.content_subtypes:
                         logging.error('+NmrDpReportInputSource.setItemValue() ++ Error  - Unknown content subtype in %s', value.keys())
                         raise ValueError('+NmrDpReportInputSource.setItemValue() ++ Error  - Unknown content subtype in %s' % value.keys())
 
@@ -1687,21 +1705,24 @@ class NmrDpReportInputSource:
 
             if seq_id in c['seq_id']:
                 c['exptl_data'][c['seq_id'].index(seq_id)][content_subtype] = True
-            """ # should pass because reallocation of chain_id may happen
-            else:
-                logging.error('+NmrDpReportInputSource.updateNonStandardResidueByExptlData() ++ Error  - Unknown seq_id %s', seq_id)
-                raise KeyError('+NmrDpReportInputSource.updateNonStandardResidueByExptlData() ++ Error  - Unknown seq_id %s' % seq_id)
-            """
+            # # should pass because reallocation of chain_id may happen
+            # else:
+            #     logging.error('+NmrDpReportInputSource.updateNonStandardResidueByExptlData() ++ Error  - Unknown seq_id %s', seq_id)
+            #     raise KeyError('+NmrDpReportInputSource.updateNonStandardResidueByExptlData() ++ Error  - Unknown seq_id %s' % seq_id)
+            #
         except StopIteration:
             logging.error('+NmrDpReportInputSource.updateNonStandardResidueByExptlData() ++ Error  - Unknown chain_id %s', chain_id)
-            raise KeyError('+NmrDpReportInputSource.updateNonStandardResidueByExptlData() ++ Error  - Unknown chain_id %s' % chain_id)
+            raise KeyError('+NmrDpReportInputSource.updateNonStandardResidueByExptlData() ++ Error  - Unknown chain_id %s' % chain_id)  # pylint: disable=raise-missing-from
+
 
 class NmrDpReportSequenceAlignment:
     """ Wrapper class for data processing report of NMR data (sequence alignment).
     """
 
     def __init__(self):
-        self.items = ('model_poly_seq_vs_coordinate', 'model_poly_seq_vs_nmr_poly_seq', 'nmr_poly_seq_vs_model_poly_seq', 'nmr_poly_seq_vs_chem_shift', 'nmr_poly_seq_vs_dist_restraint', 'nmr_poly_seq_vs_dihed_restraint', 'nmr_poly_seq_vs_rdc_restraint', 'nmr_poly_seq_vs_spectral_peak', 'nmr_poly_seq_vs_spectral_peak_alt')
+        self.items = ('model_poly_seq_vs_coordinate', 'model_poly_seq_vs_nmr_poly_seq', 'nmr_poly_seq_vs_model_poly_seq',
+                      'nmr_poly_seq_vs_chem_shift', 'nmr_poly_seq_vs_dist_restraint', 'nmr_poly_seq_vs_dihed_restraint',
+                      'nmr_poly_seq_vs_rdc_restraint', 'nmr_poly_seq_vs_spectral_peak', 'nmr_poly_seq_vs_spectral_peak_alt')
 
         self.__contents = {item: None for item in self.items}
 
@@ -1727,6 +1748,7 @@ class NmrDpReportSequenceAlignment:
         """
 
         self.__contents = contents
+
 
 class NmrDpReportChainAssignment:
     """ Wrapper class for data processing report of NMR data (chain assignment).
@@ -1760,6 +1782,7 @@ class NmrDpReportChainAssignment:
 
         self.__contents = contents
 
+
 class NmrDpReportError:
     """ Wrapper class for data processing report of NMR data (error).
     """
@@ -1771,8 +1794,8 @@ class NmrDpReportError:
                       'atom_not_found', 'multiple_data', 'missing_data', 'duplicated_index', 'anomalous_data')
 
         self.group_items = ('sequence_mismatch',
-                      'invalid_data', 'invalid_atom_nomenclature', 'invalid_atom_type', 'invalid_isotope_number', 'invalid_ambiguity_code',
-                      'atom_not_found', 'multiple_data', 'missing_data', 'anomalous_data')
+                            'invalid_data', 'invalid_atom_nomenclature', 'invalid_atom_type', 'invalid_isotope_number', 'invalid_ambiguity_code',
+                            'atom_not_found', 'multiple_data', 'missing_data', 'anomalous_data')
 
         self.__contents = {item: None for item in self.items}
 
@@ -1787,7 +1810,7 @@ class NmrDpReportError:
 
         if item in self.items:
 
-            if not item in self.__contents or self.__contents[item] is None:
+            if item not in self.__contents or self.__contents[item] is None:
                 self.__contents[item] = []
 
             if item != 'internal_error' and 'category' in value:
@@ -1822,21 +1845,21 @@ class NmrDpReportError:
 
             if not any(v for v in self.__contents[item] if v == value):
 
-                if item in self.group_items and 'file_name' in value and not 'row_location' in value and not 'row_locations' in value:
+                if item in self.group_items and 'file_name' in value and 'row_location' not in value and 'row_locations' not in value:
 
                     if 'sf_framecode' in value:
-                        v = next((v for v in self.__contents[item] if 'file_name' in v and v['file_name'] == value['file_name'] and\
-                                  'sf_framecode' in v and v['sf_framecode'] == value['sf_framecode'] and\
-                                  not 'row_location' in v and not 'row_locations' in v), None)
+                        v = next((v for v in self.__contents[item] if 'file_name' in v and v['file_name'] == value['file_name']
+                                  and 'sf_framecode' in v and v['sf_framecode'] == value['sf_framecode']
+                                  and 'row_location' not in v and 'row_locations' not in v), None)
                     else:
-                        v = next((v for v in self.__contents[item] if 'file_name' in v and v['file_name'] == value['file_name'] and\
-                                  not 'sf_framecode' in v and\
-                                  not 'row_location' in v and not 'row_locations' in v), None)
+                        v = next((v for v in self.__contents[item] if 'file_name' in v and v['file_name'] == value['file_name']
+                                  and 'sf_framecode' not in v
+                                  and 'row_location' not in v and 'row_locations' not in v), None)
 
-                        if not v is None and value['description'] in v['description'].split('\n'):
+                        if v is not None and value['description'] in v['description'].split('\n'):
                             return
 
-                    if not v is None:
+                    if v is not None:
                         v['description'] += '\n%s' % value['description']
 
                         v['subtotal'] += 1
@@ -1857,7 +1880,7 @@ class NmrDpReportError:
         """ Retrieve errors.
         """
 
-        return {k: v for k, v in self.__contents.items() if not v is None}
+        return {k: v for k, v in self.__contents.items() if v is not None}
 
     def put(self, contents):
         """ Set errors.
@@ -1891,7 +1914,7 @@ class NmrDpReportError:
         """ Return list of error values specified by item name and file name.
         """
 
-        if item in ['total', 'internal_error'] or self.__contents is None or (not item in self.__contents.keys()) or self.__contents[item] is None:
+        if item in ['total', 'internal_error'] or self.__contents is None or (item not in self.__contents.keys()) or self.__contents[item] is None:
             return None
 
         return [c for c in self.__contents[item] if c['file_name'] == file_name or (key is None or key in c['description'])]
@@ -1900,7 +1923,7 @@ class NmrDpReportError:
         """ Return list of error values specified by item name, file name, and saveframe.
         """
 
-        if item in ['total', 'internal_error'] or self.__contents is None or (not item in self.__contents.keys()) or self.__contents[item] is None:
+        if item in ['total', 'internal_error'] or self.__contents is None or (item not in self.__contents.keys()) or self.__contents[item] is None:
             return None
 
         return [c for c in self.__contents[item] if c['file_name'] == file_name and 'sf_framecode' in c and c['sf_framecode'] == sf_framecode and (key is None or key in c['description'])]
@@ -1909,16 +1932,16 @@ class NmrDpReportError:
         """ Return list of error values having unique sf_framecode and description.
         """
 
-        if item in ['total', 'internal_error'] or self.__contents is None or (not item in self.__contents.keys()) or self.__contents[item] is None:
+        if item in ['total', 'internal_error'] or self.__contents is None or (item not in self.__contents.keys()) or self.__contents[item] is None:
             return None
 
-        list = []
+        rlist = []
 
         keys = set()
 
         for c in self.getValueList(item, file_name):
 
-            if not 'sf_framecode' in c:
+            if 'sf_framecode' not in c:
                 continue
 
             key = c['sf_framecode'] + c['description']
@@ -1932,17 +1955,17 @@ class NmrDpReportError:
             elif 'row_locations' in c:
                 del c['row_locations']
 
-            list.append(c)
+            rlist.append(c)
 
             keys.add(key)
 
-        return list
+        return rlist
 
     def getDescription(self, item, file_name, sf_framecode):
         """ Return error description specified by item name, file name, and saveframe.
         """
 
-        if item in ['total', 'internal_error'] or self.__contents is None or (not item in self.__contents.keys()) or self.__contents[item] is None:
+        if item in ['total', 'internal_error'] or self.__contents is None or (item not in self.__contents.keys()) or self.__contents[item] is None:
             return None
 
         try:
@@ -1994,6 +2017,7 @@ class NmrDpReportError:
 
         self.__contents['total'] = total
 
+
 class NmrDpReportWarning:
     """ Wrapper class for data processing report of NMR unified data (warning).
     """
@@ -2012,12 +2036,11 @@ class NmrDpReportWarning:
                       'concatenated_sequence', 'not_superimposed_model')
 
         self.group_items = ('sequence_mismatch',
-                      'atom_nomenclature_mismatch', 'auth_atom_nomenclature_mismatch', 'ccd_mismatch', 'ambiguity_code_mismatch',
-                      'anomalous_bond_length',
-                      'incompletely_assigned_chemical_shift', 'incompletely_assigned_spectral_peak',
-                      'unusual/rare_data', 'insufficient_data',
-                      'conflicted_data', 'inconsistent_data', 'redundant_data')
-
+                            'atom_nomenclature_mismatch', 'auth_atom_nomenclature_mismatch', 'ccd_mismatch', 'ambiguity_code_mismatch',
+                            'anomalous_bond_length',
+                            'incompletely_assigned_chemical_shift', 'incompletely_assigned_spectral_peak',
+                            'unusual/rare_data', 'insufficient_data',
+                            'conflicted_data', 'inconsistent_data', 'redundant_data')
 
         self.__contents = {item: None for item in self.items}
 
@@ -2032,7 +2055,7 @@ class NmrDpReportWarning:
 
         if item in self.items:
 
-            if not item in self.__contents or self.__contents[item] is None:
+            if item not in self.__contents or self.__contents[item] is None:
                 self.__contents[item] = []
 
             if 'category' in value:
@@ -2067,21 +2090,21 @@ class NmrDpReportWarning:
 
             if not any(v for v in self.__contents[item] if v == value):
 
-                if item in self.group_items and 'file_name' in value and not 'row_location' in value and not 'row_locations' in value:
+                if item in self.group_items and 'file_name' in value and 'row_location' not in value and 'row_locations' not in value:
 
                     if 'sf_framecode' in value:
-                        v = next((v for v in self.__contents[item] if 'file_name' in v and v['file_name'] == value['file_name'] and\
-                                  'sf_framecode' in v and v['sf_framecode'] == value['sf_framecode'] and\
-                                  not 'row_location' in v and not 'row_locations' in v), None)
+                        v = next((v for v in self.__contents[item] if 'file_name' in v and v['file_name'] == value['file_name']
+                                  and 'sf_framecode' in v and v['sf_framecode'] == value['sf_framecode']
+                                  and 'row_location' not in v and 'row_locations' not in v), None)
                     else:
-                        v = next((v for v in self.__contents[item] if 'file_name' in v and v['file_name'] == value['file_name'] and\
-                                  not 'sf_framecode' in v and\
-                                  not 'row_location' in v and not 'row_locations' in v), None)
+                        v = next((v for v in self.__contents[item] if 'file_name' in v and v['file_name'] == value['file_name']
+                                  and 'sf_framecode' not in v
+                                  and 'row_location' not in v and 'row_locations' not in v), None)
 
-                        if not v is None and value['description'] in v['description'].split('\n'):
+                        if v is not None and value['description'] in v['description'].split('\n'):
                             return
 
-                    if not v is None:
+                    if v is not None:
                         v['description'] += '\n%s' % value['description']
 
                         v['subtotal'] += 1
@@ -2102,7 +2125,7 @@ class NmrDpReportWarning:
         """ Retrieve warnings.
         """
 
-        return {k: v for k, v in self.__contents.items() if not v is None}
+        return {k: v for k, v in self.__contents.items() if v is not None}
 
     def put(self, contents):
         """ Set warnings.
@@ -2136,7 +2159,7 @@ class NmrDpReportWarning:
         """ Return list of warning values specified by item name and file name.
         """
 
-        if item == 'total' or self.__contents is None or (not item in self.__contents.keys()) or self.__contents[item] is None:
+        if item == 'total' or self.__contents is None or (item not in self.__contents.keys()) or self.__contents[item] is None:
             return None
 
         return [c for c in self.__contents[item] if c['file_name'] == file_name and (key is None or key in c['description'])]
@@ -2145,7 +2168,7 @@ class NmrDpReportWarning:
         """ Return list of warning values specified by item name, file name, and saveframe.
         """
 
-        if item == 'total' or self.__contents is None or (not item in self.__contents.keys()) or self.__contents[item] is None:
+        if item == 'total' or self.__contents is None or (item not in self.__contents.keys()) or self.__contents[item] is None:
             return None
 
         return [c for c in self.__contents[item] if c['file_name'] == file_name and 'sf_framecode' in c and c['sf_framecode'] == sf_framecode and (key is None or key in c['description'])]
@@ -2154,16 +2177,16 @@ class NmrDpReportWarning:
         """ Return list of warning values having unique sf_framecode and description.
         """
 
-        if item == 'total' or self.__contents is None or (not item in self.__contents.keys()) or self.__contents[item] is None:
+        if item == 'total' or self.__contents is None or (item not in self.__contents.keys()) or self.__contents[item] is None:
             return None
 
-        list = []
+        rlist = []
 
         keys = set()
 
         for c in self.getValueList(item, file_name):
 
-            if not 'sf_framecode' in c:
+            if 'sf_framecode' not in c:
                 continue
 
             key = c['sf_framecode'] + c['description']
@@ -2177,17 +2200,17 @@ class NmrDpReportWarning:
             elif 'row_locations' in c:
                 del c['row_locations']
 
-            list.append(c)
+            rlist.append(c)
 
             keys.add(key)
 
-        return list
+        return rlist
 
     def getDescription(self, item, file_name, sf_framecode):
         """ Return warning description specified by item name, file name, and saveframe.
         """
 
-        if item == 'total' or self.__contents is None or (not item in self.__contents.keys()) or self.__contents[item] is None:
+        if item == 'total' or self.__contents is None or (item not in self.__contents.keys()) or self.__contents[item] is None:
             return None
 
         try:
@@ -2234,7 +2257,7 @@ class NmrDpReportWarning:
 
         for item in ['anomalous_data', 'anomalous_chemical_shift', 'unusual_data', 'unusual_chemical_shift']:
 
-            if not item in self.__contents.keys() or self.__contents[item] is None:
+            if item not in self.__contents.keys() or self.__contents[item] is None:
                 continue
 
             _d = [c for c in self.__contents[item] if 'sigma' in c] if 'data' in item else self.__contents[item]
@@ -2267,9 +2290,9 @@ class NmrDpReportWarning:
 
         if mixed_status:
             for c in d:
-                if not 'status' in c:
+                if 'status' not in c:
                     c['status'] = 'S'
-                if not 'sigma' in c:
+                if 'sigma' not in c:
                     c['sigma'] = 0.0
 
             for c in sorted(sorted(d, key=lambda i: i['sigma'], reverse=True), key=lambda j: j['status']):
@@ -2283,7 +2306,7 @@ class NmrDpReportWarning:
             for c in d:
                 if 'status' in c and not anomalous_cs:
                     del c['status']
-                if not 'sigma' in c:
+                if 'sigma' not in c:
                     c['sigma'] = 0.0
 
             for c in sorted(d, key=lambda i: i['sigma'], reverse=True):
@@ -2300,7 +2323,7 @@ class NmrDpReportWarning:
         if self.__contents is None:
             return
 
-        if not item in self.__contents or self.__contents[item] is None or len(self.__contents[item]) < 2:
+        if item not in self.__contents or self.__contents[item] is None or len(self.__contents[item]) < 2:
             return
 
         d = copy.copy(self.__contents[item])

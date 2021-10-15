@@ -338,13 +338,19 @@ class NEFTranslator:
                          "DG": ["OP3", "P", "OP1", "OP2", "O5'", "C5'", "C4'", "O4'", "C3'", "O3'", "C2'", "C1'", "N9", "C8", "N7", "C5", "C6", "O6", "N1", "C2", "N2", "N3", "C4", "HOP3", "HOP2", "H5'", "H5''", "H4'", "H3'", "HO3'", "H2'", "H2''", "H1'", "H8", "H1", "H21", "H22"],
                          "DT": ["OP3", "P", "OP1", "OP2", "O5'", "C5'", "C4'", "O4'", "C3'", "O3'", "C2'", "C1'", "N1", "C2", "O2", "N3", "C4", "O4", "C5", "C7", "C6", "HOP3", "HOP2", "H5'", "H5''", "H4'", "H3'", "HO3'", "H2'", "H2''", "H1'", "H3", "H71", "H72", "H73", "H6"],
                          "DU": ["OP3", "P", "OP1", "OP2", "O5'", "C5'", "C4'", "O4'", "C3'", "O3'", "C2'", "C1'", "N1", "C2", "O2", "N3", "C4", "O4", "C5", "C6", "HOP3", "HOP2", "H5'", "H5''", "H4'", "H3'", "HO3'", "H2'", "H2''", "H1'", "H3", "H5", "H6"],
-                         "A": ["OP3", "P", "OP1", "OP2", "O5'", "C5'", "C4'", "O4'", "C3'", "O3'", "C2'", "O2'", "C1'", "N9", "C8", "N7", "C5", "C6", "N6", "N1", "C2", "N3", "C4", "HOP3", "HOP2", "H5'", "H5''", "H4'", "H3'", "HO3'", "H2'", "HO2'", "H1'", "H8", "H61", "H62", "H2"],
-                         "C": ["OP3", "P", "OP1", "OP2", "O5'", "C5'", "C4'", "O4'", "C3'", "O3'", "C2'", "O2'", "C1'", "N1", "C2", "O2", "N3", "C4", "N4", "C5", "C6", "HOP3", "HOP2", "H5'", "H5''", "H4'", "H3'", "HO3'", "H2'", "HO2'", "H1'", "H41", "H42", "H5", "H6"],
-                         "G": ["OP3", "P", "OP1", "OP2", "O5'", "C5'", "C4'", "O4'", "C3'", "O3'", "C2'", "O2'", "C1'", "N9", "C8", "N7", "C5", "C6", "O6", "N1", "C2", "N2", "N3", "C4", "HOP3", "HOP2", "H5'", "H5''", "H4'", "H3'", "HO3'", "H2'", "HO2'", "H1'", "H8", "H1", "H21", "H22"],
-                         "T": ["OP3", "P", "OP1", "OP2", "O5'", "C5'", "C4'", "O4'", "C3'", "O3'", "C2'", "C1'", "N1", "C2", "O2", "N3", "C4", "O4", "C5", "C7", "C6", "HOP3", "HOP2", "H5'", "H5''", "H4'", "H3'", "HO3'", "H2'", "H2''", "H1'", "H3", "H71", "H72", "H73", "H6"],
-                         "U": ["OP3", "P", "OP1", "OP2", "O5'", "C5'", "C4'", "O4'", "C3'", "O3'", "C2'", "O2'", "C1'", "N1", "C2", "O2", "N3", "C4", "O4", "C5", "C6", "HOP3", "HOP2", "H5'", "H5''", "H4'", "H3'", "HO3'", "H2'", "HO2'", "H1'", "H3", "H5", "H6"],
+                         "A": ["OP3", "P", "OP1", "OP2", "O5'", "C5'", "C4'", "O4'", "C3'", "O3'", "C2'", "O2'", "C1'", "N9", "C8", "N7", "C5", "C6", "N6", "N1",
+                               "C2", "N3", "C4", "HOP3", "HOP2", "H5'", "H5''", "H4'", "H3'", "HO3'", "H2'", "HO2'", "H1'", "H8", "H61", "H62", "H2"],
+                         "C": ["OP3", "P", "OP1", "OP2", "O5'", "C5'", "C4'", "O4'", "C3'", "O3'", "C2'", "O2'", "C1'", "N1", "C2", "O2", "N3", "C4", "N4", "C5",
+                               "C6", "HOP3", "HOP2", "H5'", "H5''", "H4'", "H3'", "HO3'", "H2'", "HO2'", "H1'", "H41", "H42", "H5", "H6"],
+                         "G": ["OP3", "P", "OP1", "OP2", "O5'", "C5'", "C4'", "O4'", "C3'", "O3'", "C2'", "O2'", "C1'", "N9", "C8", "N7", "C5", "C6", "O6", "N1",
+                               "C2", "N2", "N3", "C4", "HOP3", "HOP2", "H5'", "H5''", "H4'", "H3'", "HO3'", "H2'", "HO2'", "H1'", "H8", "H1", "H21", "H22"],
+                         "T": ["OP3", "P", "OP1", "OP2", "O5'", "C5'", "C4'", "O4'", "C3'", "O3'", "C2'", "C1'", "N1", "C2", "O2", "N3", "C4", "O4", "C5", "C7",
+                               "C6", "HOP3", "HOP2", "H5'", "H5''", "H4'", "H3'", "HO3'", "H2'", "H2''", "H1'", "H3", "H71", "H72", "H73", "H6"],
+                         "U": ["OP3", "P", "OP1", "OP2", "O5'", "C5'", "C4'", "O4'", "C3'", "O3'", "C2'", "O2'", "C1'", "N1", "C2", "O2", "N3", "C4", "O4", "C5", "C6",
+                               "HOP3", "HOP2", "H5'", "H5''", "H4'", "H3'", "HO3'", "H2'", "HO2'", "H1'", "H3", "H5", "H6"],
                          #
-                         "PYL": ["CB2", "CG2", "CD2", "CE2", "N2", "CA2", "C2", "O2", "NZ", "CE", "CD", "CG", "CB", "CA", "C", "OXT", "O", "N", "HXT", "HA", "H", "H2", "HB3", "HB2", "HG3", "HG2", "HD3", "HD2", "HE3", "HE2", "HZ", "HA2", "HE22", "HD32", "HD22", "HG22", "HB12", "HB22", "HB32"],
+                         "PYL": ["CB2", "CG2", "CD2", "CE2", "N2", "CA2", "C2", "O2", "NZ", "CE", "CD", "CG", "CB", "CA", "C", "OXT", "O", "N", "HXT",
+                                 "HA", "H", "H2", "HB3", "HB2", "HG3", "HG2", "HD3", "HD2", "HE3", "HE2", "HZ", "HA2", "HE22", "HD32", "HD22", "HG22", "HB12", "HB22", "HB32"],
                          "SEC": ["N", "CA", "CB", "SE", "C", "O", "OXT", "H", "H2", "HA", "HB2", "HB3", "HE", "HXT"],
                          "UNK": ["N", "CA", "C", "O", "CB", "CG", "OXT", "H", "H2", "HA", "HB1", "HB2", "HG1", "HG2", "HG3", "HXT"],
                          #
@@ -418,25 +424,25 @@ class NEFTranslator:
 
         # taken from wwpdb.apps.ccmodule.io.ChemCompIo
         self.__chem_comp_atom_dict = [
-                ('_chem_comp_atom.comp_id','%s','str',''),
-                ('_chem_comp_atom.atom_id','%s','str',''),
-                ('_chem_comp_atom.alt_atom_id','%s','str',''),
-                ('_chem_comp_atom.type_symbol','%s','str',''),
-                ('_chem_comp_atom.charge','%s','str',''),
-                ('_chem_comp_atom.pdbx_align','%s','str',''),
-                ('_chem_comp_atom.pdbx_aromatic_flag','%s','str',''),
-                ('_chem_comp_atom.pdbx_leaving_atom_flag','%s','str',''),
-                ('_chem_comp_atom.pdbx_stereo_config','%s','str',''),
-                ('_chem_comp_atom.model_Cartn_x','%s','str',''),
-                ('_chem_comp_atom.model_Cartn_y','%s','str',''),
-                ('_chem_comp_atom.model_Cartn_z','%s','str',''),
-                ('_chem_comp_atom.pdbx_model_Cartn_x_ideal','%s','str',''),
-                ('_chem_comp_atom.pdbx_model_Cartn_y_ideal','%s','str',''),
-                ('_chem_comp_atom.pdbx_model_Cartn_z_ideal','%s','str',''),
-                ('_chem_comp_atom.pdbx_component_atom_id','%s','str',''),
-                ('_chem_comp_atom.pdbx_component_comp_id','%s','str',''),
-                ('_chem_comp_atom.pdbx_ordinal','%s','str','')
-                ]
+            ('_chem_comp_atom.comp_id', '%s', 'str', ''),
+            ('_chem_comp_atom.atom_id', '%s', 'str', ''),
+            ('_chem_comp_atom.alt_atom_id', '%s', 'str', ''),
+            ('_chem_comp_atom.type_symbol', '%s', 'str', ''),
+            ('_chem_comp_atom.charge', '%s', 'str', ''),
+            ('_chem_comp_atom.pdbx_align', '%s', 'str', ''),
+            ('_chem_comp_atom.pdbx_aromatic_flag', '%s', 'str', ''),
+            ('_chem_comp_atom.pdbx_leaving_atom_flag', '%s', 'str', ''),
+            ('_chem_comp_atom.pdbx_stereo_config', '%s', 'str', ''),
+            ('_chem_comp_atom.model_Cartn_x', '%s', 'str', ''),
+            ('_chem_comp_atom.model_Cartn_y', '%s', 'str', ''),
+            ('_chem_comp_atom.model_Cartn_z', '%s', 'str', ''),
+            ('_chem_comp_atom.pdbx_model_Cartn_x_ideal', '%s', 'str', ''),
+            ('_chem_comp_atom.pdbx_model_Cartn_y_ideal', '%s', 'str', ''),
+            ('_chem_comp_atom.pdbx_model_Cartn_z_ideal', '%s', 'str', ''),
+            ('_chem_comp_atom.pdbx_component_atom_id', '%s', 'str', ''),
+            ('_chem_comp_atom.pdbx_component_comp_id', '%s', 'str', ''),
+            ('_chem_comp_atom.pdbx_ordinal', '%s', 'str', '')
+        ]
 
         atom_id = next(d for d in self.__chem_comp_atom_dict if d[0] == '_chem_comp_atom.atom_id')
         self.__cca_atom_id = self.__chem_comp_atom_dict.index(atom_id)
@@ -452,14 +458,14 @@ class NEFTranslator:
 
         # taken from wwpdb.apps.ccmodule.io.ChemCompIo
         self.__chem_comp_bond_dict = [
-                ('_chem_comp_bond.comp_id','%s','str',''),
-                ('_chem_comp_bond.atom_id_1','%s','str',''),
-                ('_chem_comp_bond.atom_id_2','%s','str',''),
-                ('_chem_comp_bond.value_order','%s','str',''),
-                ('_chem_comp_bond.pdbx_aromatic_flag','%s','str',''),
-                ('_chem_comp_bond.pdbx_stereo_config','%s','str',''),
-                ('_chem_comp_bond.pdbx_ordinal','%s','str','')
-                ]
+            ('_chem_comp_bond.comp_id', '%s', 'str', ''),
+            ('_chem_comp_bond.atom_id_1', '%s', 'str', ''),
+            ('_chem_comp_bond.atom_id_2', '%s', 'str', ''),
+            ('_chem_comp_bond.value_order', '%s', 'str', ''),
+            ('_chem_comp_bond.pdbx_aromatic_flag', '%s', 'str', ''),
+            ('_chem_comp_bond.pdbx_stereo_config', '%s', 'str', ''),
+            ('_chem_comp_bond.pdbx_ordinal', '%s', 'str', '')
+        ]
 
         atom_id_1 = next(d for d in self.__chem_comp_bond_dict if d[0] == '_chem_comp_bond.atom_id_1')
         self.__ccb_atom_id_1 = self.__chem_comp_bond_dict.index(atom_id_1)
@@ -768,21 +774,21 @@ class NEFTranslator:
                     if __pynmrstar_v3_1__:
                         if 'The Sf_framecode tag cannot be different from the saveframe name.' in str(e2):
                             msg = str(e2)
-                        elif not "Invalid loop. Loops must start with the 'loop_' keyword." in str(e3) and\
-                             not "Invalid token found in loop contents" in str(e3) and\
-                             not "Illegal value: 'loop_'" in str(e3):
+                        elif "Invalid loop. Loops must start with the 'loop_' keyword." not in str(e3) and\
+                             "Invalid token found in loop contents" not in str(e3) and\
+                             "Illegal value: 'loop_'" not in str(e3):
                             msg = str(e3)
                         else:
                             msg = str(e1)
 
                     elif version.parse(pynmrstar.__version__) >= version.parse("2.6.5.1"):
-                        if not "Invalid loop. Loops must start with the 'loop_' keyword." in str(e3):
+                        if "Invalid loop. Loops must start with the 'loop_' keyword." not in str(e3):
                             msg = str(e3)
                         else:
                             msg = str(e1)
 
                     else:
-                        if not 'internaluseyoushouldntseethis_frame' in str(e3):
+                        if 'internaluseyoushouldntseethis_frame' not in str(e3):
                             msg = str(e3)
                         else:
                             msg = str(e1) # '%s contains no valid saveframe or loop. PyNMRSTAR ++ Error  - %s' % (os.path.basename(in_file), str(e))
@@ -933,8 +939,8 @@ class NEFTranslator:
 
                 info.append('{} saveframes and {} loops found'.format(len(sf_list), len(lp_list)))
 
-                nef_sf_list = [i for i in sf_list if not i is None and 'nef' in i]
-                nef_lp_list = [i for i in lp_list if not i is None and 'nef' in i]
+                nef_sf_list = [i for i in sf_list if i is not None and 'nef' in i]
+                nef_lp_list = [i for i in lp_list if i is not None and 'nef' in i]
 
                 info.append('{} saveframes and {} loops found with NEF prefix'.format(len(nef_sf_list), len(nef_lp_list)))
 
@@ -1183,7 +1189,7 @@ class NEFTranslator:
             for lp in star_data:
                 lp_list.append(lp.category)
 
-        elif not star_data is None:
+        elif star_data is not None:
             lp_list.append(star_data.category)
 
         return sf_list, lp_list
@@ -7276,7 +7282,7 @@ class NEFTranslator:
                         cs_list_id = self.star2nef_peak_can(saveframe, sf)
                         if not cs_list_id is None and (len(sf.get_tag('chemical_shift_list')) == 0 or sf.get_tag('chemical_shift_list') in self.empty_value):
                             for cs_sf in star_data:
-                                if cs_sf.get_tag('Sf_category')[0] == 'assigned_chemical_shifts' and cs_sf.get_tag('ID')[0] == cs_list_id and not cs_sf.name in self.empty_value:
+                                if cs_sf.get_tag('Sf_category')[0] == 'assigned_chemical_shifts' and cs_sf.get_tag('ID')[0] == cs_list_id and cs_sf.name not in self.empty_value:
                                     if len(sf.get_tag('chemical_shift_list')) == 0:
                                         sf.add_tag('chemical_shift_list', cs_sf.name)
                                     else:
@@ -7320,14 +7326,14 @@ class NEFTranslator:
                             elif saveframe.category == 'torsion_angle_constraints' and tag_name == 'constraint_type':
                                 nef_tag, _ = self.get_nef_tag(saveframe.tag_prefix + '.' + tag[0])
                                 if not nef_tag is None:
-                                    sf.add_tag(nef_tag, tag[1] if not tag[1] in self.dihed_alt_constraint_type['nef'] else self.dihed_alt_constraint_type['nef'][tag[1]])
+                                    sf.add_tag(nef_tag, tag[1] if tag[1] not in self.dihed_alt_constraint_type['nef'] else self.dihed_alt_constraint_type['nef'][tag[1]])
                             elif saveframe.category == 'RDC_constraints' and tag_name == 'constraint_type':
                                 nef_tag, _ = self.get_nef_tag(saveframe.tag_prefix + '.' + tag[0])
-                                if not nef_tag is None:
+                                if nef_tag is not None:
                                     sf.add_tag(nef_tag, tag[1] if not tag[1] in self.rdc_alt_constraint_type['nef'] else self.rdc_alt_constraint_type['nef'][tag[1]])
                             else:
                                 nef_tag, _ = self.get_nef_tag(saveframe.tag_prefix + '.' + tag[0])
-                                if not nef_tag is None:
+                                if nef_tag is not None:
                                     sf.add_tag(nef_tag, tag[1])
 
                 else:
@@ -7456,9 +7462,10 @@ class NEFTranslator:
 
                 if saveframe.category == 'spectral_peak_list' and has_pk_can_format and not has_pk_row_format:
                     cs_list_id = self.star2nef_peak_can(saveframe, sf)
-                    if not cs_list_id is None and (len(sf.get_tag('chemical_shift_list')) == 0 or sf.get_tag('chemical_shift_list') in self.empty_value):
+                    if cs_list_id is not None and (len(sf.get_tag('chemical_shift_list')) == 0
+                                                   or sf.get_tag('chemical_shift_list') in self.empty_value):
                         for cs_sf in star_data:
-                            if cs_sf.get_tag('Sf_category')[0] == 'assigned_chemical_shifts' and cs_sf.get_tag('ID')[0] == cs_list_id and not cs_sf.name in self.empty_value:
+                            if cs_sf.get_tag('Sf_category')[0] == 'assigned_chemical_shifts' and cs_sf.get_tag('ID')[0] == cs_list_id and cs_sf.name not in self.empty_value:
                                 if len(sf.get_tag('chemical_shift_list')) == 0:
                                     sf.add_tag('chemical_shift_list', cs_sf.name)
                                 else:
@@ -7478,9 +7485,8 @@ class NEFTranslator:
             is_done = False
             error.append('Input file not readable.')
 
-        return is_done, json.dumps({'info': info, 'warning': warning, 'error': error})
 
 if __name__ == "__main__":
     _nefT = NEFTranslator()
     _nefT.nef_to_nmrstar('data/2l9r.nef')
-    print(_nefT.validate_file('data/2l9r.str','A'))
+    print(_nefT.validate_file('data/2l9r.str', 'A'))

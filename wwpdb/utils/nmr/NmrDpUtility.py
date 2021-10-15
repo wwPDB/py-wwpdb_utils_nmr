@@ -29286,11 +29286,13 @@ i                               """
 
                 if dstPath in self.__inputParamDict[cs_file_path_list]:
                     return False
-
+                """
                 if __pynmrstar_v3__:
                     self.__star_data[fileListId].write_to_file(dstPath, skip_empty_loops=True, skip_empty_tags=False)
                 else:
                     self.__star_data[fileListId].write_to_file(dstPath)
+                """
+                self.__nefT.star_data_to_nmrstar(self.__star_data_type[fileListId], self.__star_data[fileListId], dstPath, fileListId, self.report)
 
             mr_file_path_list = 'restraint_file_path_list'
 
@@ -29320,11 +29322,13 @@ i                               """
 
                     if dstPath in self.__inputParamDict[mr_file_path_list]:
                         return False
-
+                    """
                     if __pynmrstar_v3__:
                         self.__star_data[fileListId].write_to_file(dstPath, skip_empty_loops=True, skip_empty_tags=False)
                     else:
                         self.__star_data[fileListId].write_to_file(dstPath)
+                    """
+                    self.__nefT.star_data_to_nmrstar(self.__star_data_type[fileListId], self.__star_data[fileListId], dstPath, fileListId, self.report)
 
                     fileListId += 1
 

@@ -7175,17 +7175,16 @@ class NmrDpUtility:
 
                         proc_warns.add(warn)
 
-                        invl = warn.startswith('[Invalid data] ')
+                        if warn.startswith('[Invalid data]'):
 
-                        if invl:
+                            p = warn.index(']') + 2
+                            warn = warn[p:]
 
-                            err = warn[15:]
-
-                            self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
+                            self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
                             self.report.setError()
 
                             if self.__verbose:
-                                self.__lfh.write("+NmrDpUtility.__extractPolymerSequence() ++ ValueError  - %s" % err)
+                                self.__lfh.write("+NmrDpUtility.__extractPolymerSequence() ++ ValueError  - %s" % warn)
 
                         else:
 
@@ -7435,18 +7434,18 @@ class NmrDpUtility:
 
                 proc_warns.add(warn)
 
-                invl = warn.startswith('[Invalid data] ')
-
-                if invl:
+                if warn.startswith('[Invalid data]'):
 
                     if not 'Auth' in warn or self.__check_auth_seq:
-                        err = warn[15:]
 
-                        self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
+                        p = warn.index(']') + 2
+                        warn = warn[p:]
+
+                        self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
                         self.report.setError()
 
                         if self.__verbose:
-                            self.__lfh.write("+NmrDpUtility.__extractPolymerSequenceInLoop() ++ ValueError  - %s" % err)
+                            self.__lfh.write("+NmrDpUtility.__extractPolymerSequenceInLoop() ++ ValueError  - %s" % warn)
 
                 else:
 
@@ -10363,17 +10362,16 @@ class NmrDpUtility:
 
                         proc_warns.add(warn)
 
-                        invl = warn.startswith('[Invalid data] ')
+                        if warn.startswith('[Invalid data]'):
 
-                        if invl:
+                            p = warn.index(']') + 2
+                            warn = warn[p:]
 
-                            err = warn[15:]
-
-                            self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
+                            self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
                             self.report.setError()
 
                             if self.__verbose:
-                                self.__lfh.write("+NmrDpUtility.__validateAtomNomenclature() ++ ValueError  - %s" % err)
+                                self.__lfh.write("+NmrDpUtility.__validateAtomNomenclature() ++ ValueError  - %s" % warn)
 
                         else:
 
@@ -10419,17 +10417,16 @@ class NmrDpUtility:
 
                 proc_warns.add(warn)
 
-                invl = warn.startswith('[Invalid data] ')
+                if warn.startswith('[Invalid data]'):
 
-                if invl:
+                    p = warn.index(']') + 2
+                    warn = warn[p:]
 
-                    err = warn[15:]
-
-                    self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
+                    self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
                     self.report.setError()
 
                     if self.__verbose:
-                        self.__lfh.write("+NmrDpUtility.__validateAtomNomenclature() ++ ValueError  - %s" % err)
+                        self.__lfh.write("+NmrDpUtility.__validateAtomNomenclature() ++ ValueError  - %s" % warn)
 
                 else:
 
@@ -10726,17 +10723,16 @@ class NmrDpUtility:
 
                 proc_warns.add(warn)
 
-                invl = warn.startswith('[Invalid data] ')
+                if warn.startswith('[Invalid data]'):
 
-                if invl:
+                    p = warn.index(']') + 2
+                    warn = warn[p:]
 
-                    err = warn[15:]
-
-                    self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
+                    self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
                     self.report.setError()
 
                     if self.__verbose:
-                        self.__lfh.write("+NmrDpUtility.__validateAtomTypeOfCSLoop() ++ ValueError  - %s" % err)
+                        self.__lfh.write("+NmrDpUtility.__validateAtomTypeOfCSLoop() ++ ValueError  - %s" % warn)
 
                 else:
 
@@ -10917,17 +10913,16 @@ class NmrDpUtility:
 
                 proc_warns.add(warn)
 
-                invl = warn.startswith('[Invalid data] ')
+                if warn.startswith('[Invalid data]'):
 
-                if invl:
+                    p = warn.index(']') + 2
+                    warn = warn[p:]
 
-                    err = warn[15:]
-
-                    self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
+                    self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
                     self.report.setError()
 
                     if self.__verbose:
-                        self.__lfh.write("+NmrDpUtility.__testAmbigCodeOfCSLoop() ++ ValueError  - %s" % err)
+                        self.__lfh.write("+NmrDpUtility.__testAmbigCodeOfCSLoop() ++ ValueError  - %s" % warn)
 
                 else:
 
@@ -11057,17 +11052,16 @@ class NmrDpUtility:
 
                 proc_warns.add(warn)
 
-                invl = warn.startswith('[Invalid data] ')
+                if warn.startswith('[Invalid data]'):
 
-                if invl:
+                    p = warn.index(']') + 2
+                    warn = warn[p:]
 
-                    err = warn[15:]
-
-                    self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
+                    self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
                     self.report.setError()
 
                     if self.__verbose:
-                        self.__lfh.write("+NmrDpUtility.__testIndexConsistency() ++ ValueError  - %s" % err)
+                        self.__lfh.write("+NmrDpUtility.__testIndexConsistency() ++ ValueError  - %s" % warn)
 
                 else:
 
@@ -11239,49 +11233,40 @@ class NmrDpUtility:
 
                 proc_warns.add(warn)
 
-                zero = warn.startswith('[Zero value error] ')
-                nega = warn.startswith('[Negative value error] ')
-                rang = warn.startswith('[Range value error] ')
-                enum = warn.startswith('[Enumeration error] ')
-                mult = warn.startswith('[Multiple data] ')
-                remo = warn.startswith('[Remove bad pattern] ')
-                clea = warn.startswith('[Clear bad pattern]' )
+                zero = warn.startswith('[Zero value error]')
+                nega = warn.startswith('[Negative value error]')
+                rang = warn.startswith('[Range value error]')
+                enum = warn.startswith('[Enumeration error]')
+                mult = warn.startswith('[Multiple data]')
+                remo = warn.startswith('[Remove bad pattern]')
+                clea = warn.startswith('[Clear bad pattern]')
 
                 if zero or nega or range or enum or mult or remo or clea:
 
-                    if zero:
-                        warn = warn[19:]
-                        item = 'unusual_data'
-                    elif nega:
-                        warn = warn[23:]
-                        item = 'unusual_data'
-                    elif rang:
-                        warn = warn[20:]
+                    p = warn.index(']') + 2
+                    warn = warn[p:]
+
+                    if zero or nega or rang:
                         item = 'unusual_data'
                     elif enum:
-                        warn = warn[20:]
                         item = 'enum_mismatch'
                     elif remo:
                         if content_subtype == 'chem_shift':
-                            warn = warn[21:] + ' Your unassigned chemical shifts have been removed.'
+                            warn += ' Your unassigned chemical shifts have been removed.'
                             item = 'incompletely_assigned_chemical_shift'
                         else:
-                            warn = warn[21:]
                             item = 'insufficient_data'
                         has_bad_pattern = True
                     elif clea:
                         if content_subtype.startswith('spectral_peak'):
-                            warn = warn[20:] + ' Unassigned spectral peaks can be included in your peak list(s).'
+                            warn += ' Unassigned spectral peaks can be included in your peak list(s).'
                             item = 'incompletely_assigned_spectral_peak'
                         else:
-                            warn = warn[20:]
                             item = 'insufficient_data'
                     elif self.__resolve_conflict:
-                        warn = warn[16:]
                         item = 'redundant_data'
                         has_multiple_data = True
                     else:
-                        err = warn[16:]
                         item = 'multiple_data'
 
                     if zero or nega or rang or enum or remo or clea or self.__resolve_conflict:
@@ -11294,11 +11279,11 @@ class NmrDpUtility:
 
                     else:
 
-                        self.report.error.appendDescription(item, {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
+                        self.report.error.appendDescription(item, {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
                         self.report.setError()
 
                         if self.__verbose:
-                            self.__lfh.write("+NmrDpUtility.__testDataConsistencyInLoop() ++ KeyError  - %s" % err)
+                            self.__lfh.write("+NmrDpUtility.__testDataConsistencyInLoop() ++ KeyError  - %s" % warn)
 
                 else:
 
@@ -11765,49 +11750,40 @@ class NmrDpUtility:
 
                                     proc_warns.add(warn)
 
-                                    zero = warn.startswith('[Zero value error] ')
-                                    nega = warn.startswith('[Negative value error] ')
-                                    rang = warn.startswith('[Range value error] ')
-                                    enum = warn.startswith('[Enumeration error] ')
-                                    mult = warn.startswith('[Multiple data] ')
-                                    remo = warn.startswith('[Remove bad pattern] ')
-                                    clea = warn.startswith('[Clear bad pattern]' )
+                                    zero = warn.startswith('[Zero value error]')
+                                    nega = warn.startswith('[Negative value error]')
+                                    rang = warn.startswith('[Range value error]')
+                                    enum = warn.startswith('[Enumeration error]')
+                                    mult = warn.startswith('[Multiple data]')
+                                    remo = warn.startswith('[Remove bad pattern]')
+                                    clea = warn.startswith('[Clear bad pattern]')
 
                                     if zero or nega or rang or enum or mult or remo or clea:
 
-                                        if zero:
-                                            warn = warn[19:]
-                                            item = 'unusual_data'
-                                        elif nega:
-                                            warn = warn[23:]
-                                            item = 'unusual_data'
-                                        elif rang:
-                                            warn = warn[20:]
+                                        p = warn.index(']') + 2
+                                        warn = warn[p:]
+
+                                        if zero or nega or rang:
                                             item = 'unusual_data'
                                         elif enum:
-                                            warn = warn[20:]
                                             item = 'enum_mismatch'
                                         elif remo:
                                             if content_subtype == 'chem_shift':
-                                                warn = warn[21:] + ' Your unassigned chemical shifts have been removed.'
+                                                warn += ' Your unassigned chemical shifts have been removed.'
                                                 item = 'incompletely_assigned_chemical_shift'
                                             else:
-                                                warn = warn[21:]
                                                 item = 'insufficient_data'
                                             has_bad_pattern = True
                                         elif clea:
                                             if content_subtype.startswith('spectral_peak'):
-                                                warn = warn[20:] + ' Unassigned spectral peaks can be included in your peak list(s).'
+                                                warn += ' Unassigned spectral peaks can be included in your peak list(s).'
                                                 item = 'incompletely_assigned_spectral_peak'
                                             else:
-                                                warn = warn[20:]
                                                 item = 'insufficient_data'
                                         elif self.__resolve_conflict:
-                                            warn = warn[16:]
                                             item = 'redundant_data'
                                             has_multiple_data = True
                                         else:
-                                            err = warn[16:]
                                             item = 'multiple_data'
 
                                         if zero or nega or rang or enum or remo or clea or self.__resolve_conflict:
@@ -11820,11 +11796,11 @@ class NmrDpUtility:
 
                                         else:
 
-                                            self.report.error.appendDescription(item, {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
+                                            self.report.error.appendDescription(item, {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
                                             self.report.setError()
 
                                             if self.__verbose:
-                                                self.__lfh.write("+NmrDpUtility.__testDataConsistencyInAuxLoop() ++ KeyError  - %s" % err)
+                                                self.__lfh.write("+NmrDpUtility.__testDataConsistencyInAuxLoop() ++ KeyError  - %s" % warn)
 
                                     else:
 
@@ -12326,23 +12302,21 @@ class NmrDpUtility:
                             if warn == '':
                                 continue
 
-                            zero = warn.startswith('[Zero value error] ')
-                            nega = warn.startswith('[Negative value error] ')
-                            rang = warn.startswith('[Range value error] ')
-                            enum = warn.startswith('[Enumeration error] ')
+                            zero = warn.startswith('[Zero value error]')
+                            nega = warn.startswith('[Negative value error]')
+                            rang = warn.startswith('[Range value error]')
+                            enum = warn.startswith('[Enumeration error]')
 
                             ignorable = False
 
                             if zero or nega or rang or enum:
 
-                                if zero:
-                                    warn = warn[19:]
-                                elif nega:
-                                    warn = warn[23:]
-                                elif rang:
-                                    warn = warn[20:]
+                                p = warn.index(']') + 2
+                                warn = warn[p:]
+
+                                if zero or nega or rang:
+                                    item = 'unusual_data'
                                 else: # enum
-                                    warn = warn[20:]
 
                                     if warn.startswith('The mandatory type'):
                                         try:
@@ -12361,7 +12335,9 @@ class NmrDpUtility:
                                             if not self.__nefT.is_mandatory_tag('_' + sf_category + '.' + g[0], file_type):
                                                 ignorable = True # author provides the meta data through DepUI after upload
 
-                                self.report.warning.appendDescription('unusual_data' if zero else ('unusual_data' if nega else ('unusual_data' if rang else ('enum_mismatch_ignorable' if ignorable else 'enum_mismatch'))), {'file_name': file_name, 'sf_framecode': sf_framecode, 'description': warn})
+                                    item = 'enum_mismatch_ignorable' if ignorable else 'enum_mismatch'
+
+                                self.report.warning.appendDescription(item, {'file_name': file_name, 'sf_framecode': sf_framecode, 'description': warn})
                                 self.report.setWarning()
 
                                 if self.__verbose:

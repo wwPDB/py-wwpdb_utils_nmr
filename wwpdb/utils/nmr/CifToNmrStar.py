@@ -15,6 +15,7 @@ import pynmrstar
 
 from wwpdb.utils.nmr.io.mmCIFUtil import mmCIFUtil
 
+
 class CifToNmrStar:
     """ Simple CIF to NMR-STAR converter.
     """

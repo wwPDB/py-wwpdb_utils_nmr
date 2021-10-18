@@ -7485,6 +7485,7 @@ class NEFTranslator:
             is_done = False
             error.append('Input file not readable.')
 
+        return is_done, json.dumps({'info': info, 'warning': warning, 'error': error})
 
 if __name__ == "__main__":
     _nefT = NEFTranslator()

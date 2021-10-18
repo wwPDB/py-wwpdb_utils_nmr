@@ -137,13 +137,13 @@ class BMRBChemShiftStat:
 
         # taken from wwpdb.apps.ccmodule.io.ChemCompIo
         self.__chem_comp_bond_dict = [
-            ('_chem_comp_bond.comp_id;', '%s;', 'str;', ''),
-            ('_chem_comp_bond.atom_id_1;', '%s;', 'str;', ''),
-            ('_chem_comp_bond.atom_id_2;', '%s;', 'str;', ''),
-            ('_chem_comp_bond.value_order;', '%s;', 'str;', ''),
-            ('_chem_comp_bond.pdbx_aromatic_flag;', '%s;', 'str;', ''),
-            ('_chem_comp_bond.pdbx_stereo_config;', '%s;', 'str;', ''),
-            ('_chem_comp_bond.pdbx_ordinal;', '%s;', 'str;', '')
+            ('_chem_comp_bond.comp_id', '%s', 'str', ''),
+            ('_chem_comp_bond.atom_id_1', '%s', 'str', ''),
+            ('_chem_comp_bond.atom_id_2', '%s', 'str', ''),
+            ('_chem_comp_bond.value_order', '%s', 'str', ''),
+            ('_chem_comp_bond.pdbx_aromatic_flag', '%s', 'str', ''),
+            ('_chem_comp_bond.pdbx_stereo_config', '%s', 'str', ''),
+            ('_chem_comp_bond.pdbx_ordinal', '%s', 'str', '')
         ]
 
         atom_id_1 = next(d for d in self.__chem_comp_bond_dict if d[0] == '_chem_comp_bond.atom_id_1')

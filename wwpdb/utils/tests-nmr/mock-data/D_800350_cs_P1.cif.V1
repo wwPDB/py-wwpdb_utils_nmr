@@ -675,7 +675,7 @@ _Assigned_chem_shift_list.Error_derivation_method      .
 _Assigned_chem_shift_list.Details                      .
 _Assigned_chem_shift_list.Text_data_format             .
 _Assigned_chem_shift_list.Text_data                    .
-_Assigned_chem_shift_list.Data_file_name               Ost4V23D.star
+_Assigned_chem_shift_list.Data_file_name               D_1000249951_cs-upload_P1.str.V1
 #
 loop_
 _Chem_shift_experiment.Experiment_ID

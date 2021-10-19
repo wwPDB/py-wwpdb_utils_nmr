@@ -128,7 +128,7 @@
 # 24-Aug-2021  M. Yokochi - detect content type of XPLOR-NIH planarity restraints (DAOTHER-7265)
 # 10-Sep-2021  M. Yokochi - prevent system crash for an empty loop case of CS/MR data (D_1292117593)
 # 13-Oct-2021  M. Yokochi - fix/adjust tolerances for spectral peak list (DAOTHER-7389, issue #1 and #2)
-# 13-Oct-2021  M. Yokochi - code refactoring according to PEP8 using Pylint (DAOTHER-7389, issue #5)
+# 13-Oct-2021  M. Yokochi - code revision according to PEP8 using Pylint (DAOTHER-7389, issue #5)
 # 14-Oct-2021  M. Yokochi - remove unassigned chemical shifts, clear incompletely assigned spectral peaks (DAOTHER-7389, issue #3)
 ##
 """ Wrapper class for data processing for NMR data.
@@ -3660,7 +3660,7 @@ class NmrDpUtility:
                 self.__transl_pseudo_name = self.__inputParamDict['transl_pseudo_name']
             else:
                 self.__transl_pseudo_name = self.__inputParamDict['transl_pseudo_name'] in self.true_value
-        elif op in ['nmr-str-consistency-check', 'nmr-str2str-deposit', 'nmr-str2nef-release']:
+        elif op in ('nmr-str-consistency-check', 'nmr-str2str-deposit', 'nmr-str2nef-release'):
             self.__transl_pseudo_name = True
 
         if 'tolerant_seq_align' in self.__inputParamDict and not self.__inputParamDict['tolerant_seq_align'] is None:
@@ -4001,6 +4001,10 @@ class NmrDpUtility:
 
                     is_done, star_data_type, star_data = self.__nefT.read_input_file(srcPath) # NEFTranslator.validate_file() generates this object internally, but not re-used.
 
+                    if len(self.__star_data_type) > 0:
+                        del self.__star_data_type[-1]
+                        del self.__star_data[-1]
+
                     self.__star_data_type.append(star_data_type)
                     self.__star_data.append(star_data)
 
@@ -4008,15 +4012,6 @@ class NmrDpUtility:
                     self.__rescueImmatureStr(0)
 
             elif not self.__fixFormatIssueOfInputSource(0, file_name, file_type, srcPath, 'A', message):
-
-                is_done, star_data_type, star_data = self.__nefT.read_input_file(srcPath) # NEFTranslator.validate_file() generates this object internally, but not re-used.
-
-                self.__star_data_type.append(star_data_type)
-                self.__star_data.append(star_data)
-
-                self.__rescueFormerNef(0)
-                self.__rescueImmatureStr(0)
-
                 is_done = False
 
             if not srcPath_ is None:
@@ -4243,7 +4238,7 @@ class NmrDpUtility:
         """ Fix format issue of NMR data.
         """
 
-        if not self.__fix_format_issue or srcPath is None or not fileSubType in ['A', 'S', 'R'] or message is None:
+        if not self.__fix_format_issue or srcPath is None or not fileSubType in ('A', 'S', 'R') or message is None:
 
             if not message is None:
 
@@ -4264,9 +4259,7 @@ class NmrDpUtility:
                     else:
                         missing_loop = False
 
-                        message = self.__original_error_message[file_list_id]
-
-                        for err_message in message['error']:
+                        for err_message in self.__original_error_message[file_list_id]['error']:
                             if not 'No such file or directory' in err_message:
                                 err += ' ' + re.sub('not in list', 'unknown item.', err_message)
 
@@ -4276,7 +4269,7 @@ class NmrDpUtility:
                 if self.__verbose:
                     self.__lfh.write("+NmrDpUtility.__fixFormatIssueOfInputSource() ++ Error  - %s\n" % err)
 
-            if not self.__has_legacy_sf_issue:
+            if not self.__has_legacy_sf_issue and fileSubType in ('S', 'R'):
                 return False
 
         if self.__has_legacy_sf_issue:
@@ -5081,6 +5074,52 @@ class NmrDpUtility:
         except StopIteration:
             pass
 
+        msg_template = 'The Sf_framecode tag cannot be different from the saveframe name.'
+
+        try:
+
+            msg = next(msg for msg in message['error'] if msg_template in msg)
+            warn = "Sf_framecode tag value should match with the saveframe name."
+
+            self.report.warning.appendDescription('corrected_format_issue', {'file_name': file_name, 'description': warn})
+            self.report.setWarning()
+
+            if self.__verbose:
+                self.__lfh.write("+NmrDpUtility.__validateInputSource() ++ Warning  - %s\n" % warn)
+
+            msg_pattern = re.compile(r'^.*' + msg_template + r" Error occurred in tag _\S+ with value (\S+) which conflicts with.* the saveframe name (\S+)\. Error detected on line (\d+).*$")
+
+            try:
+
+                g = msg_pattern.search(msg).groups()
+
+                sf_framecode = g[0]
+                saveframe_name = g[1]
+                line_num = int(g[2])
+
+                i = 1
+
+                with open(_srcPath, 'r', encoding='UTF-8') as ifp:
+                    with open(_srcPath + '~', 'w', encoding='UTF-8') as ofp:
+                        for line in ifp:
+                            if i == line_num:
+                                ofp.write(re.sub(sf_framecode + r'\s$', saveframe_name + r'\n', line))
+                            else:
+                                ofp.write(line)
+                            i += 1
+
+                    _srcPath = ofp.name
+                    tmpPaths.append(_srcPath)
+                    ofp.close()
+
+                ifp.close()
+
+            except AttributeError:
+                pass
+
+        except StopIteration:
+            pass
+
         if len(tmpPaths) > len_tmp_paths:
 
             is_valid, json_dumps = self.__nefT.validate_file(_srcPath, fileSubType)
@@ -5154,6 +5193,10 @@ class NmrDpUtility:
 
                 rescued = self.__has_legacy_sf_issue and is_done and star_data_type == 'Entry'
 
+                if len(self.__star_data_type) > file_list_id:
+                    del self.__star_data_type[-1]
+                    del self.__star_data[-1]
+
                 self.__star_data_type.append(star_data_type)
                 self.__star_data.append(star_data)
 
@@ -5194,9 +5237,7 @@ class NmrDpUtility:
                 else:
                     missing_loop = False
 
-                    message = self.__original_error_message[file_list_id]
-
-                    for err_message in message['error']:
+                    for err_message in self.__original_error_message[file_list_id]['error']:
                         if not 'No such file or directory' in err_message:
                             err += ' ' + re.sub('not in list', 'unknown item.', err_message)
 
@@ -5534,7 +5575,7 @@ class NmrDpUtility:
                 except StopIteration:
                     pass
 
-            if content_subtype in ['dist_restraint', 'rdc_restraint']:
+            if content_subtype in ('dist_restraint', 'rdc_restraint'):
                 max_dim = 3
 
             elif content_subtype == 'dihed_restraint':
@@ -6992,7 +7033,7 @@ class NmrDpUtility:
 
         if file_type == 'nef': # DAOTHER-7389, issue #3, allow empty for 'chem_shift'
             return self.__nefT.get_nef_seq(sf_data, lp_category=self.lp_categories[file_type][content_subtype],
-                                           allow_empty=(content_subtype in ('chem_shift', 'spectral_peak')), allow_gap=(not content_subtype in ['poly_seq', 'entity']))
+                                           allow_empty=(content_subtype in ('chem_shift', 'spectral_peak')), allow_gap=(not content_subtype in ('poly_seq', 'entity')))
 
         if content_subtype == 'spectral_peak_alt':
             return self.__nefT.get_star_seq(sf_data, lp_category='_Assigned_peak_chem_shift',
@@ -7000,7 +7041,7 @@ class NmrDpUtility:
 
         # DAOTHER-7389, issue #3, allow empty for 'chem_shift'
         return self.__nefT.get_star_seq(sf_data, lp_category=self.lp_categories[file_type][content_subtype],
-                                        allow_empty=(content_subtype in ('chem_shift', 'spectral_peak')), allow_gap=(not content_subtype in ['poly_seq', 'entity']))
+                                        allow_empty=(content_subtype in ('chem_shift', 'spectral_peak')), allow_gap=(not content_subtype in ('poly_seq', 'entity')))
 
     def __extractPolymerSequence(self):
         """ Extract reference polymer sequence.
@@ -7175,17 +7216,16 @@ class NmrDpUtility:
 
                         proc_warns.add(warn)
 
-                        invl = warn.startswith('[Invalid data] ')
+                        if warn.startswith('[Invalid data]'):
 
-                        if invl:
+                            p = warn.index(']') + 2
+                            warn = warn[p:]
 
-                            err = warn[15:]
-
-                            self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
+                            self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
                             self.report.setError()
 
                             if self.__verbose:
-                                self.__lfh.write("+NmrDpUtility.__extractPolymerSequence() ++ ValueError  - %s" % err)
+                                self.__lfh.write("+NmrDpUtility.__extractPolymerSequence() ++ ValueError  - %s" % warn)
 
                         else:
 
@@ -7232,7 +7272,7 @@ class NmrDpUtility:
 
             for content_subtype in self.nmr_content_subtypes:
 
-                if content_subtype in ['entry_info', 'poly_seq', 'entity'] or (not has_key_value(input_source_dic['content_subtype'], content_subtype)):
+                if content_subtype in ('entry_info', 'poly_seq', 'entity') or (not has_key_value(input_source_dic['content_subtype'], content_subtype)):
                     continue
 
                 poly_seq_list_set[content_subtype] = []
@@ -7435,18 +7475,18 @@ class NmrDpUtility:
 
                 proc_warns.add(warn)
 
-                invl = warn.startswith('[Invalid data] ')
-
-                if invl:
+                if warn.startswith('[Invalid data]'):
 
                     if not 'Auth' in warn or self.__check_auth_seq:
-                        err = warn[15:]
 
-                        self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
+                        p = warn.index(']') + 2
+                        warn = warn[p:]
+
+                        self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
                         self.report.setError()
 
                         if self.__verbose:
-                            self.__lfh.write("+NmrDpUtility.__extractPolymerSequenceInLoop() ++ ValueError  - %s" % err)
+                            self.__lfh.write("+NmrDpUtility.__extractPolymerSequenceInLoop() ++ ValueError  - %s" % warn)
 
                 else:
 
@@ -7881,9 +7921,9 @@ class NmrDpUtility:
             if self.__last_comp_id_test and '_chem_comp.mon_nstd_parent_comp_id' in self.__last_chem_comp_dict: # matches with comp_id in CCD
                 if not self.__last_chem_comp_dict['_chem_comp.mon_nstd_parent_comp_id'] in self.empty_value:
                     comp_id = self.__last_chem_comp_dict['_chem_comp.mon_nstd_parent_comp_id']
-                    if comp_id in ['A', 'C', 'G', 'T', 'I', 'U'] and len(ref_comp_id) == 2 and ref_comp_id.startswith('D'):
+                    if comp_id in ('A', 'C', 'G', 'T', 'I', 'U') and len(ref_comp_id) == 2 and ref_comp_id.startswith('D'):
                         comp_id = 'D' + comp_id
-                    elif ref_comp_id in ['A', 'C', 'G', 'T', 'I', 'U'] and len(comp_id) == 2 and comp_id.startswith('D'):
+                    elif ref_comp_id in ('A', 'C', 'G', 'T', 'I', 'U') and len(comp_id) == 2 and comp_id.startswith('D'):
                         comp_id = comp_id[1]
 
         if '_' in ref_comp_id:
@@ -7893,9 +7933,9 @@ class NmrDpUtility:
             if self.__last_comp_id_test and '_chem_comp.mon_nstd_parent_comp_id' in self.__last_chem_comp_dict: # matches with comp_id in CCD
                 if not self.__last_chem_comp_dict['_chem_comp.mon_nstd_parent_comp_id'] in self.empty_value:
                     ref_comp_id = self.__last_chem_comp_dict['_chem_comp.mon_nstd_parent_comp_id']
-                    if ref_comp_id in ['A', 'C', 'G', 'T', 'I', 'U'] and len(comp_id) == 2 and comp_id.startswith('D'):
+                    if ref_comp_id in ('A', 'C', 'G', 'T', 'I', 'U') and len(comp_id) == 2 and comp_id.startswith('D'):
                         ref_comp_id = 'D' + ref_comp_id
-                    elif comp_id in ['A', 'C', 'G', 'T', 'I', 'U'] and len(ref_comp_id) == 2 and ref_comp_id.startswith('D'):
+                    elif comp_id in ('A', 'C', 'G', 'T', 'I', 'U') and len(ref_comp_id) == 2 and ref_comp_id.startswith('D'):
                         ref_comp_id = ref_comp_id[1]
 
         return comp_id == ref_comp_id
@@ -7946,7 +7986,7 @@ class NmrDpUtility:
 
         max_dim = 2
 
-        if content_subtype in ['poly_seq', 'dist_restraint', 'rdc_restraint']:
+        if content_subtype in ('poly_seq', 'dist_restraint', 'rdc_restraint'):
             max_dim = 3
 
         elif content_subtype == 'dihed_restraint':
@@ -9709,7 +9749,7 @@ class NmrDpUtility:
 
         max_dim = 2
 
-        if content_subtype in ['poly_seq', 'dist_restraint', 'rdc_restraint']:
+        if content_subtype in ('poly_seq', 'dist_restraint', 'rdc_restraint'):
             max_dim = 3
 
         elif content_subtype == 'dihed_restraint':
@@ -9826,7 +9866,7 @@ class NmrDpUtility:
 
         max_dim = 2
 
-        if content_subtype in ['poly_seq', 'dist_restraint', 'rdc_restraint']:
+        if content_subtype in ('poly_seq', 'dist_restraint', 'rdc_restraint'):
             max_dim = 3
 
         elif content_subtype == 'dihed_restraint':
@@ -10087,7 +10127,7 @@ class NmrDpUtility:
                 atom_ids = pair['atom_id']
 
                 # standard residue
-                if self.__nefT.get_one_letter_code(comp_id) != 'X':
+                if self.__get1LetterCode(comp_id) != 'X':
 
                     if file_type == 'nef':
 
@@ -10250,7 +10290,7 @@ class NmrDpUtility:
                         auth_atom_ids = auth_pair['atom_id']
 
                         # standard residue
-                        if self.__nefT.get_one_letter_code(comp_id) != 'X':
+                        if self.__get1LetterCode(comp_id) != 'X':
 
                             _auth_atom_ids = []
                             for auth_atom_id in auth_atom_ids:
@@ -10363,17 +10403,16 @@ class NmrDpUtility:
 
                         proc_warns.add(warn)
 
-                        invl = warn.startswith('[Invalid data] ')
+                        if warn.startswith('[Invalid data]'):
 
-                        if invl:
+                            p = warn.index(']') + 2
+                            warn = warn[p:]
 
-                            err = warn[15:]
-
-                            self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
+                            self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
                             self.report.setError()
 
                             if self.__verbose:
-                                self.__lfh.write("+NmrDpUtility.__validateAtomNomenclature() ++ ValueError  - %s" % err)
+                                self.__lfh.write("+NmrDpUtility.__validateAtomNomenclature() ++ ValueError  - %s" % warn)
 
                         else:
 
@@ -10419,17 +10458,16 @@ class NmrDpUtility:
 
                 proc_warns.add(warn)
 
-                invl = warn.startswith('[Invalid data] ')
+                if warn.startswith('[Invalid data]'):
 
-                if invl:
+                    p = warn.index(']') + 2
+                    warn = warn[p:]
 
-                    err = warn[15:]
-
-                    self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
+                    self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
                     self.report.setError()
 
                     if self.__verbose:
-                        self.__lfh.write("+NmrDpUtility.__validateAtomNomenclature() ++ ValueError  - %s" % err)
+                        self.__lfh.write("+NmrDpUtility.__validateAtomNomenclature() ++ ValueError  - %s" % warn)
 
                 else:
 
@@ -10510,7 +10548,7 @@ class NmrDpUtility:
 
         max_dim = 2
 
-        if content_subtype in ['poly_seq', 'dist_restraint', 'rdc_restraint']:
+        if content_subtype in ('poly_seq', 'dist_restraint', 'rdc_restraint'):
             max_dim = 3
 
         elif content_subtype == 'dihed_restraint':
@@ -10726,17 +10764,16 @@ class NmrDpUtility:
 
                 proc_warns.add(warn)
 
-                invl = warn.startswith('[Invalid data] ')
+                if warn.startswith('[Invalid data]'):
 
-                if invl:
+                    p = warn.index(']') + 2
+                    warn = warn[p:]
 
-                    err = warn[15:]
-
-                    self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
+                    self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
                     self.report.setError()
 
                     if self.__verbose:
-                        self.__lfh.write("+NmrDpUtility.__validateAtomTypeOfCSLoop() ++ ValueError  - %s" % err)
+                        self.__lfh.write("+NmrDpUtility.__validateAtomTypeOfCSLoop() ++ ValueError  - %s" % warn)
 
                 else:
 
@@ -10917,17 +10954,16 @@ class NmrDpUtility:
 
                 proc_warns.add(warn)
 
-                invl = warn.startswith('[Invalid data] ')
+                if warn.startswith('[Invalid data]'):
 
-                if invl:
+                    p = warn.index(']') + 2
+                    warn = warn[p:]
 
-                    err = warn[15:]
-
-                    self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
+                    self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
                     self.report.setError()
 
                     if self.__verbose:
-                        self.__lfh.write("+NmrDpUtility.__testAmbigCodeOfCSLoop() ++ ValueError  - %s" % err)
+                        self.__lfh.write("+NmrDpUtility.__testAmbigCodeOfCSLoop() ++ ValueError  - %s" % warn)
 
                 else:
 
@@ -11057,17 +11093,16 @@ class NmrDpUtility:
 
                 proc_warns.add(warn)
 
-                invl = warn.startswith('[Invalid data] ')
+                if warn.startswith('[Invalid data]'):
 
-                if invl:
+                    p = warn.index(']') + 2
+                    warn = warn[p:]
 
-                    err = warn[15:]
-
-                    self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
+                    self.report.error.appendDescription('invalid_data', {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
                     self.report.setError()
 
                     if self.__verbose:
-                        self.__lfh.write("+NmrDpUtility.__testIndexConsistency() ++ ValueError  - %s" % err)
+                        self.__lfh.write("+NmrDpUtility.__testIndexConsistency() ++ ValueError  - %s" % warn)
 
                 else:
 
@@ -11104,7 +11139,7 @@ class NmrDpUtility:
 
             for content_subtype in input_source_dic['content_subtype'].keys():
 
-                if content_subtype in ['entry_info', 'entity']:
+                if content_subtype in ('entry_info', 'entity'):
                     continue
 
                 sf_category = self.sf_categories[file_type][content_subtype]
@@ -11239,49 +11274,40 @@ class NmrDpUtility:
 
                 proc_warns.add(warn)
 
-                zero = warn.startswith('[Zero value error] ')
-                nega = warn.startswith('[Negative value error] ')
-                rang = warn.startswith('[Range value error] ')
-                enum = warn.startswith('[Enumeration error] ')
-                mult = warn.startswith('[Multiple data] ')
-                remo = warn.startswith('[Remove bad pattern] ')
-                clea = warn.startswith('[Clear bad pattern]' )
+                zero = warn.startswith('[Zero value error]')
+                nega = warn.startswith('[Negative value error]')
+                rang = warn.startswith('[Range value error]')
+                enum = warn.startswith('[Enumeration error]')
+                mult = warn.startswith('[Multiple data]')
+                remo = warn.startswith('[Remove bad pattern]')
+                clea = warn.startswith('[Clear bad pattern]')
 
                 if zero or nega or range or enum or mult or remo or clea:
 
-                    if zero:
-                        warn = warn[19:]
-                        item = 'unusual_data'
-                    elif nega:
-                        warn = warn[23:]
-                        item = 'unusual_data'
-                    elif rang:
-                        warn = warn[20:]
+                    p = warn.index(']') + 2
+                    warn = warn[p:]
+
+                    if zero or nega or rang:
                         item = 'unusual_data'
                     elif enum:
-                        warn = warn[20:]
                         item = 'enum_mismatch'
                     elif remo:
                         if content_subtype == 'chem_shift':
-                            warn = warn[21:] + ' Your unassigned chemical shifts have been removed.'
+                            warn += ' Your unassigned chemical shifts have been removed.'
                             item = 'incompletely_assigned_chemical_shift'
                         else:
-                            warn = warn[21:]
                             item = 'insufficient_data'
                         has_bad_pattern = True
                     elif clea:
                         if content_subtype.startswith('spectral_peak'):
-                            warn = warn[20:] + ' Unassigned spectral peaks can be included in your peak list(s).'
+                            warn += ' Unassigned spectral peaks can be included in your peak list(s).'
                             item = 'incompletely_assigned_spectral_peak'
                         else:
-                            warn = warn[20:]
                             item = 'insufficient_data'
                     elif self.__resolve_conflict:
-                        warn = warn[16:]
                         item = 'redundant_data'
                         has_multiple_data = True
                     else:
-                        err = warn[16:]
                         item = 'multiple_data'
 
                     if zero or nega or rang or enum or remo or clea or self.__resolve_conflict:
@@ -11294,11 +11320,11 @@ class NmrDpUtility:
 
                     else:
 
-                        self.report.error.appendDescription(item, {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
+                        self.report.error.appendDescription(item, {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
                         self.report.setError()
 
                         if self.__verbose:
-                            self.__lfh.write("+NmrDpUtility.__testDataConsistencyInLoop() ++ KeyError  - %s" % err)
+                            self.__lfh.write("+NmrDpUtility.__testDataConsistencyInLoop() ++ KeyError  - %s" % warn)
 
                 else:
 
@@ -11383,7 +11409,7 @@ class NmrDpUtility:
 
             for content_subtype in input_source_dic['content_subtype'].keys():
 
-                if content_subtype in ['dist_restraint', 'dihed_restraint', 'rdc_restraint']:
+                if content_subtype in ('dist_restraint', 'dihed_restraint', 'rdc_restraint'):
 
                     sf_category = self.sf_categories[file_type][content_subtype]
                     lp_category = self.lp_categories[file_type][content_subtype]
@@ -11765,49 +11791,40 @@ class NmrDpUtility:
 
                                     proc_warns.add(warn)
 
-                                    zero = warn.startswith('[Zero value error] ')
-                                    nega = warn.startswith('[Negative value error] ')
-                                    rang = warn.startswith('[Range value error] ')
-                                    enum = warn.startswith('[Enumeration error] ')
-                                    mult = warn.startswith('[Multiple data] ')
-                                    remo = warn.startswith('[Remove bad pattern] ')
-                                    clea = warn.startswith('[Clear bad pattern]' )
+                                    zero = warn.startswith('[Zero value error]')
+                                    nega = warn.startswith('[Negative value error]')
+                                    rang = warn.startswith('[Range value error]')
+                                    enum = warn.startswith('[Enumeration error]')
+                                    mult = warn.startswith('[Multiple data]')
+                                    remo = warn.startswith('[Remove bad pattern]')
+                                    clea = warn.startswith('[Clear bad pattern]')
 
                                     if zero or nega or rang or enum or mult or remo or clea:
 
-                                        if zero:
-                                            warn = warn[19:]
-                                            item = 'unusual_data'
-                                        elif nega:
-                                            warn = warn[23:]
-                                            item = 'unusual_data'
-                                        elif rang:
-                                            warn = warn[20:]
+                                        p = warn.index(']') + 2
+                                        warn = warn[p:]
+
+                                        if zero or nega or rang:
                                             item = 'unusual_data'
                                         elif enum:
-                                            warn = warn[20:]
                                             item = 'enum_mismatch'
                                         elif remo:
                                             if content_subtype == 'chem_shift':
-                                                warn = warn[21:] + ' Your unassigned chemical shifts have been removed.'
+                                                warn += ' Your unassigned chemical shifts have been removed.'
                                                 item = 'incompletely_assigned_chemical_shift'
                                             else:
-                                                warn = warn[21:]
                                                 item = 'insufficient_data'
                                             has_bad_pattern = True
                                         elif clea:
                                             if content_subtype.startswith('spectral_peak'):
-                                                warn = warn[20:] + ' Unassigned spectral peaks can be included in your peak list(s).'
+                                                warn += ' Unassigned spectral peaks can be included in your peak list(s).'
                                                 item = 'incompletely_assigned_spectral_peak'
                                             else:
-                                                warn = warn[20:]
                                                 item = 'insufficient_data'
                                         elif self.__resolve_conflict:
-                                            warn = warn[16:]
                                             item = 'redundant_data'
                                             has_multiple_data = True
                                         else:
-                                            err = warn[16:]
                                             item = 'multiple_data'
 
                                         if zero or nega or rang or enum or remo or clea or self.__resolve_conflict:
@@ -11820,11 +11837,11 @@ class NmrDpUtility:
 
                                         else:
 
-                                            self.report.error.appendDescription(item, {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': err})
+                                            self.report.error.appendDescription(item, {'file_name': file_name, 'sf_framecode': sf_framecode, 'category': lp_category, 'description': warn})
                                             self.report.setError()
 
                                             if self.__verbose:
-                                                self.__lfh.write("+NmrDpUtility.__testDataConsistencyInAuxLoop() ++ KeyError  - %s" % err)
+                                                self.__lfh.write("+NmrDpUtility.__testDataConsistencyInAuxLoop() ++ KeyError  - %s" % warn)
 
                                     else:
 
@@ -12326,23 +12343,21 @@ class NmrDpUtility:
                             if warn == '':
                                 continue
 
-                            zero = warn.startswith('[Zero value error] ')
-                            nega = warn.startswith('[Negative value error] ')
-                            rang = warn.startswith('[Range value error] ')
-                            enum = warn.startswith('[Enumeration error] ')
+                            zero = warn.startswith('[Zero value error]')
+                            nega = warn.startswith('[Negative value error]')
+                            rang = warn.startswith('[Range value error]')
+                            enum = warn.startswith('[Enumeration error]')
 
                             ignorable = False
 
                             if zero or nega or rang or enum:
 
-                                if zero:
-                                    warn = warn[19:]
-                                elif nega:
-                                    warn = warn[23:]
-                                elif rang:
-                                    warn = warn[20:]
+                                p = warn.index(']') + 2
+                                warn = warn[p:]
+
+                                if zero or nega or rang:
+                                    item = 'unusual_data'
                                 else: # enum
-                                    warn = warn[20:]
 
                                     if warn.startswith('The mandatory type'):
                                         try:
@@ -12361,7 +12376,9 @@ class NmrDpUtility:
                                             if not self.__nefT.is_mandatory_tag('_' + sf_category + '.' + g[0], file_type):
                                                 ignorable = True # author provides the meta data through DepUI after upload
 
-                                self.report.warning.appendDescription('unusual_data' if zero else ('unusual_data' if nega else ('unusual_data' if rang else ('enum_mismatch_ignorable' if ignorable else 'enum_mismatch'))), {'file_name': file_name, 'sf_framecode': sf_framecode, 'description': warn})
+                                    item = 'enum_mismatch_ignorable' if ignorable else 'enum_mismatch'
+
+                                self.report.warning.appendDescription(item, {'file_name': file_name, 'sf_framecode': sf_framecode, 'description': warn})
                                 self.report.setWarning()
 
                                 if self.__verbose:
@@ -12405,7 +12422,7 @@ class NmrDpUtility:
         """ Perform consistency test on saveframe category and loop category relationship of interesting loops.
         """
 
-        if file_type == 'nef' or content_subtype in ['entry_info', 'entity']:
+        if file_type == 'nef' or content_subtype in ('entry_info', 'entity'):
             return True
 
         __errors = self.report.getTotalErrors()
@@ -13475,7 +13492,7 @@ class NmrDpUtility:
                                 self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ Warning  - %s\n" % warn)
                             """
 
-                    elif ambig_code in [4, 5, 6, 9]:
+                    elif ambig_code in (4, 5, 6, 9):
 
                         ambig_set_id_name = 'Ambiguity_set_ID'
 
@@ -15249,7 +15266,7 @@ class NmrDpUtility:
 
             for content_subtype in input_source_dic['content_subtype'].keys():
 
-                if content_subtype in ['entry_info', 'entity']:
+                if content_subtype in ('entry_info', 'entity'):
                     continue
 
                 if not self.report_prev is None:
@@ -15329,7 +15346,7 @@ class NmrDpUtility:
 
         ent = {'list_id': _list_id, 'sf_framecode': sf_framecode, 'number_of_rows': len(lp_data)}
 
-        if content_subtype in ['dist_restraint', 'dihed_restraint', 'rdc_restraint']:
+        if content_subtype in ('dist_restraint', 'dihed_restraint', 'rdc_restraint'):
 
             type = sf_data.get_tag('restraint_origin' if file_type == 'nef' else 'Constraint_type')
             if len(type) > 0 and not type[0] in self.empty_value:
@@ -15345,7 +15362,7 @@ class NmrDpUtility:
             else:
                 ent['exp_type'] = 'Unknown'
 
-        if content_subtype in ['chem_shift', 'dist_restraint', 'dihed_restraint', 'rdc_restraint', 'spectral_peak', 'spectral_peak_alt']:
+        if content_subtype in ('chem_shift', 'dist_restraint', 'dihed_restraint', 'rdc_restraint', 'spectral_peak', 'spectral_peak_alt'):
 
             sa_name = 'nmr_poly_seq_vs_' + content_subtype
 
@@ -15365,7 +15382,7 @@ class NmrDpUtility:
                         sc['sequence_coverage'] = seq_align['sequence_coverage']
 
                         if seq_align['sequence_coverage'] < self.low_seq_coverage and seq_align['length'] > 1:
-                            if (not 'exp_type' in ent) or (not ent['exp_type'] in ['disulfide bound', 'disulfide_bond', 'paramagnetic relaxation', 'pre', 'symmetry', 'J-couplings', 'jcoupling']):
+                            if (not 'exp_type' in ent) or (not ent['exp_type'] in ('disulfide bound', 'disulfide_bond', 'paramagnetic relaxation', 'pre', 'symmetry', 'J-couplings', 'jcoupling')):
                                 low_seq_coverage += 'coverage %s for chain_id %s, length %s, ' % (seq_align['sequence_coverage'], seq_align['chain_id'], seq_align['length'])
 
                         seq_coverage.append(sc)
@@ -15481,7 +15498,7 @@ class NmrDpUtility:
 
                     self.__calculateStatsOfAssignedChemShift(file_list_id, sf_framecode, lp_data, cs_ann, ent)
 
-                elif content_subtype in ['dist_restraint', 'dihed_restraint', 'rdc_restraint']:
+                elif content_subtype in ('dist_restraint', 'dihed_restraint', 'rdc_restraint'):
 
                     conflict_id_set = self.__nefT.get_conflict_id_set(sf_data, lp_category, self.consist_key_items[file_type][content_subtype])[0]
 
@@ -16684,7 +16701,7 @@ class NmrDpUtility:
 
                         for seq_id, comp_id in zip(s['seq_id'], s['comp_id']):
 
-                            if not comp_id in ['VAL', 'LEU', 'ILE']:
+                            if not comp_id in ('VAL', 'LEU', 'ILE'):
                                 continue
 
                             ilv = {'chain_id': chain_id, 'seq_id': seq_id, 'comp_id': comp_id}
@@ -17016,7 +17033,7 @@ class NmrDpUtility:
                                 else:
                                     atom_id_ = atom_id
 
-                                if not atom_id_ in ['HA', 'HA1', 'HA2', 'HA3', 'H', 'HN', 'NH', 'C', 'CO', 'N', 'CA', 'CB']:
+                                if not atom_id_ in ('HA', 'HA1', 'HA2', 'HA3', 'H', 'HN', 'NH', 'C', 'CO', 'N', 'CA', 'CB'):
                                     continue
 
                                 rci_assignments.append([comp_id, seq_id, atom_id, j[atom_type], j[value_name]])
@@ -19588,8 +19605,8 @@ class NmrDpUtility:
                         # chi1
 
                         if atom_ids[0] == 'N' and atom_ids[1] == 'CA' and atom_ids[2] == 'CB' and self.chi1_atom_id_4_pat.match(atom_ids[3]):
-                            #if (atom_ids[3] == 'CG' and comp_id in ['ARG', 'ASN', 'ASP', 'GLN', 'GLU', 'HIS', 'LEU', 'LYS', 'MET', 'PHE', 'PRO', 'TRP', 'TYR']) or\
-                            #   (atom_ids[3] == 'CG1' and comp_id in ['ILE', 'VAL']) or\
+                            #if (atom_ids[3] == 'CG' and comp_id in ('ARG', 'ASN', 'ASP', 'GLN', 'GLU', 'HIS', 'LEU', 'LYS', 'MET', 'PHE', 'PRO', 'TRP', 'TYR')) or\
+                            #   (atom_ids[3] == 'CG1' and comp_id in ('ILE', 'VAL')) or\
                             #   (atom_ids[3] == 'OG' and comp_id == 'SER') or\
                             #   (atom_ids[3] == 'OG1' and comp_id == 'THR') or\
                             #   (atom_ids[3] == 'SG' and comp_id == 'CYS'):
@@ -19598,10 +19615,10 @@ class NmrDpUtility:
                         # chi2
 
                         if atom_ids[0] == 'CA' and atom_ids[1] == 'CB' and self.chi2_atom_id_3_pat.match(atom_ids[2]) and self.chi2_atom_id_4_pat.match(atom_ids[3]):
-                            #if (atom_ids[2] == 'CG' and atom_ids[3] == 'CD' and comp_id in ['ARG', 'GLN', 'GLU', 'LYS', 'PRO']) or\
-                            #   (atom_ids[2] == 'CG' and atom_ids[3] == 'CD1' and comp_id in ['LEU', 'PHE', 'TRP', 'TYR']) or\
+                            #if (atom_ids[2] == 'CG' and atom_ids[3] == 'CD' and comp_id in ('ARG', 'GLN', 'GLU', 'LYS', 'PRO')) or\
+                            #   (atom_ids[2] == 'CG' and atom_ids[3] == 'CD1' and comp_id in ('LEU', 'PHE', 'TRP', 'TYR')) or\
                             #   (atom_ids[2] == 'CG' and atom_ids[3] == 'ND1' and comp_id == 'HIS') or\
-                            #   (atom_ids[2] == 'CG' and atom_ids[3] == 'OD1' and comp_id in ['ASN', 'ASP']) or\
+                            #   (atom_ids[2] == 'CG' and atom_ids[3] == 'OD1' and comp_id in ('ASN', 'ASP')) or\
                             #   (atom_ids[2] == 'CG' and atom_ids[3] == 'SD' and comp_id == 'MET') or\
                             #   (atom_ids[2] == 'CG1' and atom_ids[3] == 'CD' and comp_id == 'ILE'):
                             data_type = 'chi2'
@@ -19611,7 +19628,7 @@ class NmrDpUtility:
                         if atom_ids[0] == 'CB' and atom_ids[1] == 'CG' and self.chi3_atom_id_3_pat.match(atom_ids[2]) and self.chi3_atom_id_4_pat.match(atom_ids[3]):
                             #if (atom_ids[2] == 'CD' and atom_ids[3] == 'CE' and comp_id == 'LYS') or\
                             #   (atom_ids[2] == 'CD' and atom_ids[3] == 'NE' and comp_id == 'ARG') or\
-                            #   (atom_ids[2] == 'CD' and atom_ids[3] == 'OE1' and comp_id in ['GLN', 'GLU']) or\
+                            #   (atom_ids[2] == 'CD' and atom_ids[3] == 'OE1' and comp_id in ('GLN', 'GLU')) or\
                             #   (atom_ids[2] == 'SD' and atom_ids[3] == 'CE' and comp_id == 'MET'):
                             data_type = 'chi3'
 
@@ -20345,7 +20362,7 @@ class NmrDpUtility:
                         if not under_sampling_type is None and under_sampling_type in self.empty_value:
                             under_sampling_type = None
 
-                        if not under_sampling_type is None and under_sampling_type in ['circular', 'mirror', 'none']:
+                        if not under_sampling_type is None and under_sampling_type in ('circular', 'mirror', 'none'):
                             if under_sampling_type == 'circular':
                                 under_sampling_type = 'folded'
                             elif under_sampling_type == 'mirror':
@@ -20590,7 +20607,7 @@ class NmrDpUtility:
                         if not under_sampling_type is None and under_sampling_type in self.empty_value:
                             under_sampling_type = None
 
-                        if not under_sampling_type is None and under_sampling_type in ['circular', 'mirror', 'none']:
+                        if not under_sampling_type is None and under_sampling_type in ('circular', 'mirror', 'none'):
                             if under_sampling_type == 'circular':
                                 under_sampling_type = 'folded'
                             elif under_sampling_type == 'mirror':
@@ -21318,7 +21335,7 @@ class NmrDpUtility:
 
         for content_subtype in self.cif_content_subtypes:
 
-            if content_subtype in ['entry_info', 'poly_seq'] or (not has_key_value(input_source_dic['content_subtype'], content_subtype)):
+            if content_subtype in ('entry_info', 'poly_seq') or (not has_key_value(input_source_dic['content_subtype'], content_subtype)):
                 continue
 
             poly_seq_list_set[content_subtype] = []
@@ -22725,7 +22742,7 @@ i                               """
 
             for content_subtype in nmr_input_source_dic['content_subtype'].keys():
 
-                if content_subtype in ['entry_info', 'entity']:
+                if content_subtype in ('entry_info', 'entity'):
                     continue
 
                 sf_category = self.sf_categories[file_type][content_subtype]
@@ -22860,7 +22877,7 @@ i                               """
 
         else:
 
-            if content_subtype in ['poly_seq', 'dist_restraint', 'rdc_restraint']:
+            if content_subtype in ('poly_seq', 'dist_restraint', 'rdc_restraint'):
                 max_dim = 3
 
             elif content_subtype == 'dihed_restraint':
@@ -23097,7 +23114,7 @@ i                               """
 
         for content_subtype in input_source_dic['content_subtype'].keys():
 
-            if content_subtype in ['entry_info', 'entity']:
+            if content_subtype in ('entry_info', 'entity'):
                 continue
 
             sf_category = self.sf_categories[file_type][content_subtype]
@@ -23138,7 +23155,7 @@ i                               """
                     if len(key_items) == 0:
                         continue
 
-                    if content_subtype in ['dist_restraint', 'dihed_restraint', 'rdc_restraint']:
+                    if content_subtype in ('dist_restraint', 'dihed_restraint', 'rdc_restraint'):
 
                         conflict_id = self.__nefT.get_conflict_atom_id(sf_data, file_type, lp_category, key_items)[0]
 
@@ -24232,7 +24249,7 @@ i                               """
 
         for content_subtype in input_source_dic['content_subtype'].keys():
 
-            if content_subtype in ['entry_info', 'entity']:
+            if content_subtype in ('entry_info', 'entity'):
                 continue
 
             sf_category = self.sf_categories[file_type][content_subtype]
@@ -26344,7 +26361,7 @@ i                               """
 
             for content_subtype in input_source_dic['content_subtype'].keys():
 
-                if content_subtype in ['entry_info', 'poly_seq', 'entity', 'chem_shift']:
+                if content_subtype in ('entry_info', 'poly_seq', 'entity', 'chem_shift'):
                     continue
 
                 sf_category = self.sf_categories[file_type][content_subtype]
@@ -26529,8 +26546,8 @@ i                               """
                                 # chi1
 
                                 if atom_ids[0] == 'N' and atom_ids[1] == 'CA' and atom_ids[2] == 'CB' and self.chi1_atom_id_4_pat.match(atom_ids[3]):
-                                    #if (atom_ids[3] == 'CG' and comp_id in ['ARG', 'ASN', 'ASP', 'GLN', 'GLU', 'HIS', 'LEU', 'LYS', 'MET', 'PHE', 'PRO', 'TRP', 'TYR']) or\
-                                    #   (atom_ids[3] == 'CG1' and comp_id in ['ILE', 'VAL']) or\
+                                    #if (atom_ids[3] == 'CG' and comp_id in ('ARG', 'ASN', 'ASP', 'GLN', 'GLU', 'HIS', 'LEU', 'LYS', 'MET', 'PHE', 'PRO', 'TRP', 'TYR')) or\
+                                    #   (atom_ids[3] == 'CG1' and comp_id in ('ILE', 'VAL')) or\
                                     #   (atom_ids[3] == 'OG' and comp_id == 'SER') or\
                                     #   (atom_ids[3] == 'OG1' and comp_id == 'THR') or\
                                     #   (atom_ids[3] == 'SG' and comp_id == 'CYS'):
@@ -26539,10 +26556,10 @@ i                               """
                                 # chi2
 
                                 if atom_ids[0] == 'CA' and atom_ids[1] == 'CB' and self.chi2_atom_id_3_pat.match(atom_ids[2]) and self.chi2_atom_id_4_pat.match(atom_ids[3]):
-                                    #if (atom_ids[2] == 'CG' and atom_ids[3] == 'CD' and comp_id in ['ARG', 'GLN', 'GLU', 'LYS', 'PRO']) or\
-                                    #   (atom_ids[2] == 'CG' and atom_ids[3] == 'CD1' and comp_id in ['LEU', 'PHE', 'TRP', 'TYR']) or\
+                                    #if (atom_ids[2] == 'CG' and atom_ids[3] == 'CD' and comp_id in ('ARG', 'GLN', 'GLU', 'LYS', 'PRO')) or\
+                                    #   (atom_ids[2] == 'CG' and atom_ids[3] == 'CD1' and comp_id in ('LEU', 'PHE', 'TRP', 'TYR')) or\
                                     #   (atom_ids[2] == 'CG' and atom_ids[3] == 'ND1' and comp_id == 'HIS') or\
-                                    #   (atom_ids[2] == 'CG' and atom_ids[3] == 'OD1' and comp_id in ['ASN', 'ASP']) or\
+                                    #   (atom_ids[2] == 'CG' and atom_ids[3] == 'OD1' and comp_id in ('ASN', 'ASP')) or\
                                     #   (atom_ids[2] == 'CG' and atom_ids[3] == 'SD' and comp_id == 'MET') or\
                                     #   (atom_ids[2] == 'CG1' and atom_ids[3] == 'CD1' and comp_id == 'ILE'):
                                     chi2_index.append(index_id)
@@ -26552,7 +26569,7 @@ i                               """
                                 if atom_ids[0] == 'CB' and atom_ids[1] == 'CG' and self.chi3_atom_id_3_pat.match(atom_ids[2]) and self.chi3_atom_id_4_pat.match(atom_ids[3]):
                                     #if (atom_ids[2] == 'CD' and atom_ids[3] == 'CE' and comp_id == 'LYS') or\
                                     #   (atom_ids[2] == 'CD' and atom_ids[3] == 'NE' and comp_id == 'ARG') or\
-                                    #   (atom_ids[2] == 'CD' and atom_ids[3] == 'OE1' and comp_id in ['GLN', 'GLU']) or\
+                                    #   (atom_ids[2] == 'CD' and atom_ids[3] == 'OE1' and comp_id in ('GLN', 'GLU')) or\
                                     #   (atom_ids[2] == 'SD' and atom_ids[3] == 'CE' and comp_id == 'MET'):
                                     chi3_index.append(index_id)
 
@@ -27244,7 +27261,7 @@ i                               """
 
                                         # 'circular', 'mirror', 'none'
 
-                                        if val in ['aliased', 'folded', 'not observed']:
+                                        if val in ('aliased', 'folded', 'not observed'):
                                             if val == 'aliased':
                                                 row[itCol] = 'mirror'
                                             elif val == 'folded':
@@ -27256,7 +27273,7 @@ i                               """
 
                                         # 'aliased', 'folded', 'not observed'
 
-                                        if val in ['circular', 'mirror', 'none']:
+                                        if val in ('circular', 'mirror', 'none'):
                                             if val == 'circular':
                                                 row[itCol] = 'folded'
                                             elif val == 'mirror':
@@ -27647,7 +27664,7 @@ i                               """
 
                 angle_type = angle_type.lower()
 
-                if not angle_type in ['phi', 'psi']:
+                if not angle_type in ('phi', 'psi'):
                     return False
 
                 if chain_id_1 != chain_id_2 or chain_id_2 != chain_id_3 or chain_id_3 != chain_id_4:
@@ -28270,7 +28287,7 @@ i                               """
 
         for content_subtype in input_source_dic['content_subtype'].keys():
 
-            if content_subtype in ['entry_info', 'entity']:
+            if content_subtype in ('entry_info', 'entity'):
                 continue
 
             sf_category = self.sf_categories[file_type][content_subtype]
@@ -28400,7 +28417,7 @@ i                               """
 
         for content_subtype in input_source_dic['content_subtype'].keys():
 
-            if content_subtype in ['entry_info', 'entity']:
+            if content_subtype in ('entry_info', 'entity'):
                 continue
 
             sf_category = self.sf_categories[file_type][content_subtype]
@@ -28537,7 +28554,7 @@ i                               """
 
         for content_subtype in input_source_dic['content_subtype'].keys():
 
-            if content_subtype in ['entry_info', 'entity']:
+            if content_subtype in ('entry_info', 'entity'):
                 continue
 
             sf_category = self.sf_categories[file_type][content_subtype]
@@ -28642,7 +28659,7 @@ i                               """
 
         for content_subtype in input_source_dic['content_subtype'].keys():
 
-            if content_subtype in ['entry_info', 'entity']:
+            if content_subtype in ('entry_info', 'entity'):
                 continue
 
             sf_category = self.sf_categories[file_type][content_subtype]
@@ -29304,17 +29321,19 @@ i                               """
 
                 if fileListId >= len(self.__star_data) or self.__star_data[fileListId] is None:
                     return False
-
+                """ DAOTHER-7407: utilize NMR-STAR format normalizer of NEFTranslator v3
                 if self.__star_data_type[fileListId] == 'Loop': # copied already
                     continue
-
+                """
                 if dstPath in self.__inputParamDict[cs_file_path_list]:
                     return False
-
+                """ DAOTHER-7407: utilize NMR-STAR format normalizer of NEFTranslator v3
                 if __pynmrstar_v3__:
                     self.__star_data[fileListId].write_to_file(dstPath, skip_empty_loops=True, skip_empty_tags=False)
                 else:
                     self.__star_data[fileListId].write_to_file(dstPath)
+                """
+                self.__nefT.star_data_to_nmrstar(self.__star_data_type[fileListId], self.__star_data[fileListId], dstPath, fileListId, self.report)
 
             mr_file_path_list = 'restraint_file_path_list'
 
@@ -29338,17 +29357,19 @@ i                               """
 
                     if fileListId >= len(self.__star_data) or self.__star_data[fileListId] is None:
                         return False
-
+                    """ DAOTHER-7407: utilize NMR-STAR format normalizer of NEFTranslator v3
                     if self.__star_data_type[fileListId] == 'Loop': # copied already
                         continue
-
+                    """
                     if dstPath in self.__inputParamDict[mr_file_path_list]:
                         return False
-
+                    """ DAOTHER-7407: utilize NMR-STAR format normalizer of NEFTranslator v3
                     if __pynmrstar_v3__:
                         self.__star_data[fileListId].write_to_file(dstPath, skip_empty_loops=True, skip_empty_tags=False)
                     else:
                         self.__star_data[fileListId].write_to_file(dstPath)
+                    """
+                    self.__nefT.star_data_to_nmrstar(self.__star_data_type[fileListId], self.__star_data[fileListId], dstPath, fileListId, self.report)
 
                     fileListId += 1
 

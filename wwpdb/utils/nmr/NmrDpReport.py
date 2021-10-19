@@ -49,7 +49,7 @@
 # 29-Jun-2021  M. Yokochi - enable to access NMR polymer sequence from auth_asym_id (DAOTHER-7108)
 # 02-Jul-2021  M. Yokochi - add content types of NMR restraint file (DAOTHER-6830)
 # 24-Aug-2021  M. Yokochi - add content subtype for XPLOR-NIH planarity restraints (DAOTHER-7265)
-# 13-Oct-2021  M. Yokochi - code refactoring according to PEP8 using Pylint (DAOTHER-7389, issue #5)
+# 13-Oct-2021  M. Yokochi - code revision according to PEP8 using Pylint (DAOTHER-7389, issue #5)
 # 14-Oct-2021  M. Yokochi - add 'incompletely_ssigned_chemical_shift' and 'incompletely_assigned_spectral_peak' (DAOTHER-7389, issue #3)
 ##
 """ Wrapper class for data processing report of NMR data.
@@ -203,7 +203,7 @@ class NmrDpReport:
         """
 
         for i in self.input_sources:
-            if i.get()['content_type'] in ['nmr-data-nef', 'nmr-data-str']:
+            if i.get()['content_type'] in ('nmr-data-nef', 'nmr-data-str'):
                 return self.input_sources.index(i)
 
         return -1
@@ -213,7 +213,7 @@ class NmrDpReport:
             @return: array of index of input source of NMR legacy data file, [] otherwise
         """
 
-        return [self.input_sources.index(i) for i in self.input_sources if i.get()['content_type'] in ['nmr-chemical-shifts', 'nmr-restraints']]
+        return [self.input_sources.index(i) for i in self.input_sources if i.get()['content_type'] in ('nmr-chemical-shifts', 'nmr-restraints')]
 
     def getInputSourceIdOfCoord(self):
         """ Return input_source_id of coordinate file.
@@ -1902,7 +1902,7 @@ class NmrDpReportError:
 
         for item in self.__contents.keys():
 
-            if item in ['total', 'internal_error'] or self.__contents[item] is None:
+            if item in ('total', 'internal_error') or self.__contents[item] is None:
                 continue
 
             if any(c for c in self.__contents[item] if c['file_name'] == file_name and 'sf_framecode' in c and c['sf_framecode'] == sf_framecode):
@@ -1914,7 +1914,7 @@ class NmrDpReportError:
         """ Return list of error values specified by item name and file name.
         """
 
-        if item in ['total', 'internal_error'] or self.__contents is None or (item not in self.__contents.keys()) or self.__contents[item] is None:
+        if item in ('total', 'internal_error') or self.__contents is None or (item not in self.__contents.keys()) or self.__contents[item] is None:
             return None
 
         return [c for c in self.__contents[item] if c['file_name'] == file_name or (key is None or key in c['description'])]
@@ -1923,7 +1923,7 @@ class NmrDpReportError:
         """ Return list of error values specified by item name, file name, and saveframe.
         """
 
-        if item in ['total', 'internal_error'] or self.__contents is None or (item not in self.__contents.keys()) or self.__contents[item] is None:
+        if item in ('total', 'internal_error') or self.__contents is None or (item not in self.__contents.keys()) or self.__contents[item] is None:
             return None
 
         return [c for c in self.__contents[item] if c['file_name'] == file_name and 'sf_framecode' in c and c['sf_framecode'] == sf_framecode and (key is None or key in c['description'])]
@@ -1932,7 +1932,7 @@ class NmrDpReportError:
         """ Return list of error values having unique sf_framecode and description.
         """
 
-        if item in ['total', 'internal_error'] or self.__contents is None or (item not in self.__contents.keys()) or self.__contents[item] is None:
+        if item in ('total', 'internal_error') or self.__contents is None or (item not in self.__contents.keys()) or self.__contents[item] is None:
             return None
 
         rlist = []
@@ -1965,7 +1965,7 @@ class NmrDpReportError:
         """ Return error description specified by item name, file name, and saveframe.
         """
 
-        if item in ['total', 'internal_error'] or self.__contents is None or (item not in self.__contents.keys()) or self.__contents[item] is None:
+        if item in ('total', 'internal_error') or self.__contents is None or (item not in self.__contents.keys()) or self.__contents[item] is None:
             return None
 
         try:
@@ -2147,7 +2147,7 @@ class NmrDpReportWarning:
 
         for item in self.__contents.keys():
 
-            if item in ['total', 'enum_mismatch_ignorable'] or self.__contents[item] is None:
+            if item in ('total', 'enum_mismatch_ignorable') or self.__contents[item] is None:
                 continue
 
             if any(c for c in self.__contents[item] if c['file_name'] == file_name and 'sf_framecode' in c and c['sf_framecode'] == sf_framecode):

@@ -3,7 +3,7 @@
 # Date: 19-Jul-2021
 #
 # Updates:
-# 13-Oct-2021  M. Yokochi - code refactoring according to PEP8 using Pylint (DAOTHER-7389, issue #5)
+# 13-Oct-2021  M. Yokochi - code revision according to PEP8 using Pylint (DAOTHER-7389, issue #5)
 ##
 """ Wrapper class for CIF to NMR-STAR converter.
     @author: Masashi Yokochi

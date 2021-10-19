@@ -8,7 +8,7 @@
 # 16-Apr-2020  M. Yokochi - fix ambiguity code of atom name starts with 'Q' (e.g. LYZ:QZ)
 # 20-Nov-2020  M. Yokochi - fix statics extraction for HEM, HEB, HEC from CSV (DAOTHER-6366)
 # 25-Jun-2021  M. Yokochi - add getAtomLikeNameSet() (DAOTHER-6830)
-# 13-Oct-2021  M. Yokochi - code refactoring according to PEP8 using Pylint (DAOTHER-7389, issue #5)
+# 13-Oct-2021  M. Yokochi - code revision according to PEP8 using Pylint (DAOTHER-7389, issue #5)
 ##
 """ Wrapper class for retrieving BMRB chemical shift statistics.
     @author: Masashi Yokochi

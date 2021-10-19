@@ -68,9 +68,9 @@
 # 28-Jun-2021  M. Yokochi - revise error message for sequence mismatch in a loop (v2.10.2, DAOTHER-7103)
 # 29-Jun-2021  M. Yokochi - add support for PyNMRSTAR v3.2.0 (v2.10.3, DAOTHER-7107)
 # 16-Sep-2021  M. Yokochi - report an empty loop case of CS/MR data as an error (v2.10.4, D_1292117503, DAOTHER-7318)
-# 13-Oct-2021  M. Yokochi - code refactoring according to PEP8 using Pylint (v2.11.0, DAOTHER-7389, issue #5)
+# 13-Oct-2021  M. Yokochi - code revision according to PEP8 using Pylint (v2.11.0, DAOTHER-7389, issue #5)
 # 14-Oct-2021  M. Yokochi - remove unassigned chemical shifts, clear incompletely assigned spectral peaks (v2.11.1, DAOTHER-7389, issue #3)
-# 15-Oct-2021  M. Yokochi - add NMR-STAR format normalizer for conventional CS deposition using a single file (v3.0.0, DAOTHER-7344, 7355, 7389 issue #4, 7407)
+# 18-Oct-2021  M. Yokochi - add NMR-STAR format normalizer for conventional CS deposition using a single file (v3.0.0, DAOTHER-7344, 7355, 7389 issue #4, 7407)
 ##
 """ Bi-directional translator between NEF and NMR-STAR
     @author: Kumaran Baskaran, Masashi Yokochi
@@ -5002,11 +5002,11 @@ class NEFTranslator:
                             out[data_index] = data
 
                 out_row.append(out)
-
+                """
                 self.authSeqMap[(in_star_chain, _in_star_seq)] = (_star_chain, _star_seq)
                 self.selfSeqMap[(in_star_chain, _in_star_seq)] = (in_star_chain if cif_chain is None else cif_chain,
                                                           _in_star_seq if _cif_seq is None else _cif_seq)
-
+                """
                 if not variant is None:
                     aux = [None] * len(self.entity_del_atom_row)
                     for l, aux_tag in enumerate(self.entity_del_atom_row):
@@ -8563,7 +8563,7 @@ class NEFTranslator:
                 else:
                     sf = pynmrstar.Saveframe.from_scratch(star_data.category)
 
-                    if star_data.category == '__Software_applied_methods':
+                    if star_data.category == '_Software_applied_methods':
                         sf.set_tag_prefix('nef_nmr_meta_data')
                         sf.add_tag('sf_category', 'nef_molecular_system')
 
@@ -8745,10 +8745,35 @@ class NEFTranslator:
             else:
 
                 self.authChainId = sorted([ps['chain_id'] for ps in polymer_sequence])
+                self.authSeqMap = {}
+                self.selfSeqMap = {}
 
-                self.authSeqMap = None
-                self.selfSeqMap = None
-                self.atomIdMap = None
+                for star_chain in self.authChainId:
+
+                    ps = next(ps for ps in polymer_sequence if ps['chain_id'] == star_chain)
+
+                    if len(ps['seq_id']) == 0:
+                        continue
+
+                    cif_chain = None
+                    seq_align = report.getSequenceAlignmentWithNmrChainId(star_chain)
+                    if not seq_align is None:
+                        cif_chain = seq_align['test_chain_id']
+
+                    #self.star2cif_chain_mapping[star_chain] = cif_chain
+
+                    for star_seq in ps['seq_id']:
+
+                        _cif_seq = None
+                        if not cif_chain is None:
+                            try:
+                                _cif_seq = seq_align['test_seq_id'][seq_align['ref_seq_id'].index(star_seq)]
+                            except:
+                                pass
+
+                        self.authSeqMap[(star_chain, star_seq)] = (star_chain, star_seq)
+                        self.selfSeqMap[(star_chain, star_seq)] = (star_chain if cif_chain is None else cif_chain,
+                                                                   star_seq if _cif_seq is None else _cif_seq)
 
                 asm_id = 0
                 cs_list_id = 0
@@ -8762,25 +8787,25 @@ class NEFTranslator:
                     for saveframe in star_data:
                         sf = pynmrstar.Saveframe.from_scratch(saveframe.name)
 
-                        if saveframe.category == 'Assembly':
+                        if saveframe.tag_prefix == '_Assembly':
                             asm_id += 1
 
-                        elif saveframe.category == 'Assigned_chem_shift_list':
+                        elif saveframe.tag_prefix == '_Assigned_chem_shift_list':
                             cs_list_id += 1
 
-                        elif saveframe.category == 'Gen_dist_constraint_list':
+                        elif saveframe.tag_prefix == '_Gen_dist_constraint_list':
                             dist_list_id += 1
 
-                        elif saveframe.category == 'Torsion_angle_constraint_list':
+                        elif saveframe.tag_prefix == '_Torsion_angle_constraint_list':
                             dihed_list_id += 1
 
-                        elif saveframe.category == 'RDC_constraint_list':
+                        elif saveframe.tag_prefix == '_RDC_constraint_list':
                             rdc_list_id += 1
 
-                        elif saveframe.category == 'Spectral_peak_list':
+                        elif saveframe.tag_prefix == '_Spectral_peak_list':
                             peak_list_id += 1
 
-                        sf.set_tag_prefix(saveframe.category)
+                        sf.set_tag_prefix(saveframe.tag_prefix)
 
                         for tag in saveframe.tags:
 
@@ -8788,6 +8813,21 @@ class NEFTranslator:
                                 auth_tag = self.get_star_auth_tag(saveframe.category)[0]
                                 if not auth_tag is None:
                                     sf.add_tag('Sf_category', auth_tag)
+                            elif saveframe.tag_prefix == '_Gen_dist_constraint_list' and tag[0] == 'Constraint_type':
+                                star_tag = '{}.{}'.format(saveframe.tag_prefix, tag[0])
+                                auth_tag = self.get_star_auth_tag(star_tag)[0]
+                                if not auth_tag is None:
+                                    sf.add_tag(auth_tag, tag[1] if not tag[1] in self.dist_alt_constraint_type['nmr-star'] else self.dist_alt_constraint_type['nmr-star'][tag[1]])
+                            elif saveframe.tag_prefix == '_Torsion_angle_constraint_list' and tag[0] == 'Constraint_type':
+                                star_tag = '{}.{}'.format(saveframe.tag_prefix, tag[0])
+                                auth_tag = self.get_star_auth_tag(star_tag)[0]
+                                if not auth_tag is None:
+                                    sf.add_tag(auth_tag, tag[1] if not tag[1] in self.dihed_alt_constraint_type['nmr-star'] else self.dihed_alt_constraint_type['nmr-star'][tag[1]])
+                            elif saveframe.tag_prefix == '_RDC_constraint_list' and tag[0] == 'Constraint_type':
+                                star_tag = '{}.{}'.format(saveframe.tag_prefix, tag[0])
+                                auth_tag = self.get_star_auth_tag(star_tag)[0]
+                                if not auth_tag is None:
+                                    sf.add_tag(auth_tag, tag[1] if not tag[1] in self.rdc_alt_constraint_type['nmr-star'] else self.rdc_alt_constraint_type['nmr-star'][tag[1]])
                             else:
                                 star_tag = '{}.{}'.format(saveframe.tag_prefix, tag[0])
                                 auth_tag = self.get_star_auth_tag(star_tag)[0]
@@ -8806,9 +8846,6 @@ class NEFTranslator:
                                 lp.add_tag(tag)
 
                             if loop.category == '_Chem_comp_assembly':
-                                if self.authSeqMap is None:
-                                    self.authSeqMap = {}
-                                    self.selfSeqMap = {}
                                 rows, aux_rows = self.star2star_seq_row(loop.get_tag_names(), lp.get_tag_names(), loop.data, report)
                                 for d in rows:
                                     d[lp.get_tag_names().index('_Chem_comp_assembly.Assembly_ID')] = asm_id
@@ -8873,7 +8910,7 @@ class NEFTranslator:
 
                             sf.add_loop(lp)
 
-                        if saveframe.category == 'Entry':
+                        if saveframe.tag_prefix == '_Entry':
                             sf.add_tag('NMR_STAR_version', self.star_version)
 
                             try:
@@ -8893,22 +8930,22 @@ class NEFTranslator:
                             except KeyError:
                                 pass
 
-                        elif saveframe.category == 'Assembly':
+                        elif saveframe.tag_prefix == '_Assembly':
                             sf.add_tag('ID', asm_id)
 
-                        elif saveframe.category == 'Assigned_chem_shift_list':
+                        elif saveframe.tag_prefix == '_Assigned_chem_shift_list':
                             sf.add_tag('ID', cs_list_id)
 
-                        elif saveframe.category == 'Gen_dist_constraint_list':
+                        elif saveframe.tag_prefix == '_Gen_dist_constraint_list':
                             sf.add_tag('ID', dist_list_id)
 
-                        elif saveframe.category == 'Torsion_angle_constraint_list':
+                        elif saveframe.tag_prefix == '_Torsion_angle_constraint_list':
                             sf.add_tag('ID', dihed_list_id)
 
-                        elif saveframe.category == 'RDC_constraint_list':
+                        elif saveframe.tag_prefix == '_RDC_constraint_list':
                             sf.add_tag('ID', rdc_list_id)
 
-                        elif saveframe.category == 'Spectral_peak_list':
+                        elif saveframe.tag_prefix == '_Spectral_peak_list':
                             sf.add_tag('ID', peak_list_id)
 
                         else:
@@ -8955,17 +8992,17 @@ class NEFTranslator:
                                 auth_tag = self.get_star_auth_tag(saveframe.category)[0]
                                 if not auth_tag is None:
                                     sf.add_tag('Sf_category', auth_tag)
-                            elif saveframe.category == 'Gen_dist_constraint_list' and tag[0] == 'Constraint_type':
+                            elif saveframe.tag_prefix == '_Gen_dist_constraint_list' and tag[0] == 'Constraint_type':
                                 star_tag = '{}.{}'.format(saveframe.tag_prefix, tag[0])
                                 auth_tag = self.get_star_auth_tag(star_tag)[0]
                                 if not auth_tag is None:
                                     sf.add_tag(auth_tag, tag[1] if not tag[1] in self.dist_alt_constraint_type['nmr-star'] else self.dist_alt_constraint_type['nmr-star'][tag[1]])
-                            elif saveframe.category == 'Torsion_angle_constraint_list' and tag[0] == 'Constraint_type':
+                            elif saveframe.tag_prefix == '_Torsion_angle_constraint_list' and tag[0] == 'Constraint_type':
                                 star_tag = '{}.{}'.format(saveframe.tag_prefix, tag[0])
                                 auth_tag = self.get_star_auth_tag(star_tag)[0]
                                 if not auth_tag is None:
                                     sf.add_tag(auth_tag, tag[1] if not tag[1] in self.dihed_alt_constraint_type['nmr-star'] else self.dihed_alt_constraint_type['nmr-star'][tag[1]])
-                            elif saveframe.category == 'RDC_constraint_list' and tag[0] == 'Constraint_type':
+                            elif saveframe.tag_prefix == '_RDC_constraint_list' and tag[0] == 'Constraint_type':
                                 star_tag = '{}.{}'.format(saveframe.tag_prefix, tag[0])
                                 auth_tag = self.get_star_auth_tag(star_tag)[0]
                                 if not auth_tag is None:
@@ -9036,9 +9073,6 @@ class NEFTranslator:
                             lp.add_tag(tag)
 
                         if loop.category == '_Chem_comp_assembly':
-                            if self.authSeqMap is None:
-                                self.authSeqMap = {}
-                                self.selfSeqMap = {}
                             rows, aux_rows = self.star2star_seq_row(loop.get_tag_names(), lp.get_tag_names(), loop.data, report)
                             for d in rows:
                                 d[lp.get_tag_names().index('_Chem_comp_assembly.Assembly_ID')] = asm_id
@@ -9113,7 +9147,7 @@ class NEFTranslator:
                                 lp.add_data(d)
                             sf.add_loop(lp)
 
-                    if saveframe.category == 'entry_information':
+                    if saveframe.tag_prefix == '_Entry':
                         sf.add_tag('NMR_STAR_version', self.star_version)
 
                         try:
@@ -9133,22 +9167,22 @@ class NEFTranslator:
                         except KeyError:
                             pass
 
-                    elif saveframe.category == 'Assembly':
+                    elif saveframe.tag_prefix == '_Assembly':
                         sf.add_tag('ID', asm_id)
 
-                    elif saveframe.category == 'Assigned_chem_shift_list':
+                    elif saveframe.tag_prefix == '_Assigned_chem_shift_list':
                         sf.add_tag('ID', cs_list_id)
 
-                    elif saveframe.category == 'Gen_dist_constraint':
+                    elif saveframe.tag_prefix == '_Gen_dist_constraint':
                         sf.add_tag('ID', dist_list_id)
 
-                    elif saveframe.category == 'Torsion_angle_constraint':
+                    elif saveframe.tag_prefix == '_Torsion_angle_constraint':
                         sf.add_tag('ID', dihed_list_id)
 
-                    elif saveframe.category == 'RDC_constraint':
+                    elif saveframe.tag_prefix == '_RDC_constraint':
                         sf.add_tag('ID', rdc_list_id)
 
-                    elif saveframe.category == 'Peak_row_format':
+                    elif saveframe.tag_prefix == '_Peak_row_format':
                         sf.add_tag('ID', peak_list_id)
 
                     out_data.add_saveframe(sf)

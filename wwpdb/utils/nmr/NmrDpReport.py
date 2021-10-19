@@ -49,7 +49,7 @@
 # 29-Jun-2021  M. Yokochi - enable to access NMR polymer sequence from auth_asym_id (DAOTHER-7108)
 # 02-Jul-2021  M. Yokochi - add content types of NMR restraint file (DAOTHER-6830)
 # 24-Aug-2021  M. Yokochi - add content subtype for XPLOR-NIH planarity restraints (DAOTHER-7265)
-# 13-Oct-2021  M. Yokochi - code refactoring according to PEP8 using Pylint (DAOTHER-7389, issue #5)
+# 13-Oct-2021  M. Yokochi - code revision according to PEP8 using Pylint (DAOTHER-7389, issue #5)
 # 14-Oct-2021  M. Yokochi - add 'incompletely_ssigned_chemical_shift' and 'incompletely_assigned_spectral_peak' (DAOTHER-7389, issue #3)
 ##
 """ Wrapper class for data processing report of NMR data.

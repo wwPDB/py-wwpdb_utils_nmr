@@ -5,7 +5,7 @@
 # Updates:
 # 06-Apr-2020  M. Yokochi - add support for Original_pdb_* items in restraints/peak lists
 # 07-Apr-2020  M. Yokochi - add clean() for NMR legacy deposition (DAOTHER-2874)
-# 13-Oct-2021  M. Yokochi - code refactoring according to PEP8 using Pylint (DAOTHER-7389, issue #5)
+# 18-Oct-2021  M. Yokochi - code revision according to PEP8 using Pylint (DAOTHER-7389, issue #5)
 ##
 """ Wrapper class for NMR-STAR to CIF converter.
     @author: Masashi Yokochi
@@ -64,14 +64,18 @@ class NmrStarToCif:
                     if cs_loop_str in v:
                         dList, _ = cifObj.GetValueAndItemByBlock(k, cs_list_cif)
 
-                        info = {'sf_framecode': k}
-                        if 'entry_id' in dList:
-                            info['entry_id'] = dList['entry_id']
-                        if 'id' in dList:
-                            info['id'] = dList['id']
-                        if 'data_file_name' in dList:
-                            info['data_file_name'] = dList['data_file_name']
-                        cs_list_cif_info.append(info)
+                        if len(dList) == 0:
+                            continue
+
+                        for d in dList:
+                            info = {'sf_framecode': k}
+                            if 'entry_id' in d:
+                                info['entry_id'] = d['entry_id']
+                            if 'id' in d:
+                                info['id'] = d['id']
+                            if 'data_file_name' in d:
+                                info['data_file_name'] = d['data_file_name']
+                            cs_list_cif_info.append(info)
 
                     if self.__remove_cs_list_cif or not cs_loop_str in v:
                         cifObj.RemoveCategory(k, cs_list_cif)

@@ -184,10 +184,10 @@ class TestNmrDpUtility(unittest.TestCase):
 
     def test_nmr_str2nef_release_2png(self):
         self.__test_nmr_str2nef_release('2png')
-    """
+
     def test_nmr_str2nef_release_6nbn(self):
         self.__test_nmr_str2nef_release('6nbn')
-    """
+
 
 if __name__ == '__main__':
     unittest.main()

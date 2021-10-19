@@ -128,7 +128,7 @@
 # 24-Aug-2021  M. Yokochi - detect content type of XPLOR-NIH planarity restraints (DAOTHER-7265)
 # 10-Sep-2021  M. Yokochi - prevent system crash for an empty loop case of CS/MR data (D_1292117593)
 # 13-Oct-2021  M. Yokochi - fix/adjust tolerances for spectral peak list (DAOTHER-7389, issue #1 and #2)
-# 13-Oct-2021  M. Yokochi - code refactoring according to PEP8 using Pylint (DAOTHER-7389, issue #5)
+# 13-Oct-2021  M. Yokochi - code revision according to PEP8 using Pylint (DAOTHER-7389, issue #5)
 # 14-Oct-2021  M. Yokochi - remove unassigned chemical shifts, clear incompletely assigned spectral peaks (DAOTHER-7389, issue #3)
 ##
 """ Wrapper class for data processing for NMR data.
@@ -4001,6 +4001,10 @@ class NmrDpUtility:
 
                     is_done, star_data_type, star_data = self.__nefT.read_input_file(srcPath) # NEFTranslator.validate_file() generates this object internally, but not re-used.
 
+                    if len(self.__star_data_type) > 0:
+                        del self.__star_data_type[-1]
+                        del self.__star_data[-1]
+
                     self.__star_data_type.append(star_data_type)
                     self.__star_data.append(star_data)
 
@@ -4008,15 +4012,6 @@ class NmrDpUtility:
                     self.__rescueImmatureStr(0)
 
             elif not self.__fixFormatIssueOfInputSource(0, file_name, file_type, srcPath, 'A', message):
-
-                is_done, star_data_type, star_data = self.__nefT.read_input_file(srcPath) # NEFTranslator.validate_file() generates this object internally, but not re-used.
-
-                self.__star_data_type.append(star_data_type)
-                self.__star_data.append(star_data)
-
-                self.__rescueFormerNef(0)
-                self.__rescueImmatureStr(0)
-
                 is_done = False
 
             if not srcPath_ is None:
@@ -4264,9 +4259,7 @@ class NmrDpUtility:
                     else:
                         missing_loop = False
 
-                        message = self.__original_error_message[file_list_id]
-
-                        for err_message in message['error']:
+                        for err_message in self.__original_error_message[file_list_id]['error']:
                             if not 'No such file or directory' in err_message:
                                 err += ' ' + re.sub('not in list', 'unknown item.', err_message)
 
@@ -4276,7 +4269,7 @@ class NmrDpUtility:
                 if self.__verbose:
                     self.__lfh.write("+NmrDpUtility.__fixFormatIssueOfInputSource() ++ Error  - %s\n" % err)
 
-            if not self.__has_legacy_sf_issue:
+            if not self.__has_legacy_sf_issue and fileSubType in ['S', 'R']:
                 return False
 
         if self.__has_legacy_sf_issue:
@@ -5081,6 +5074,52 @@ class NmrDpUtility:
         except StopIteration:
             pass
 
+        msg_template = 'The Sf_framecode tag cannot be different from the saveframe name.'
+
+        try:
+
+            msg = next(msg for msg in message['error'] if msg_template in msg)
+            warn = "Sf_framecode tag value should match with the saveframe name."
+
+            self.report.warning.appendDescription('corrected_format_issue', {'file_name': file_name, 'description': warn})
+            self.report.setWarning()
+
+            if self.__verbose:
+                self.__lfh.write("+NmrDpUtility.__validateInputSource() ++ Warning  - %s\n" % warn)
+
+            msg_pattern = re.compile(r'^.*' + msg_template + r" Error occurred in tag _\S+ with value (\S+) which conflicts with.* the saveframe name (\S+)\. Error detected on line (\d+).*$")
+
+            try:
+
+                g = msg_pattern.search(msg).groups()
+
+                sf_framecode = g[0]
+                saveframe_name = g[1]
+                line_num = int(g[2])
+
+                i = 1
+
+                with open(_srcPath, 'r', encoding='UTF-8') as ifp:
+                    with open(_srcPath + '~', 'w', encoding='UTF-8') as ofp:
+                        for line in ifp:
+                            if i == line_num:
+                                ofp.write(re.sub(sf_framecode + r'\s$', saveframe_name + r'\n', line))
+                            else:
+                                ofp.write(line)
+                            i += 1
+
+                    _srcPath = ofp.name
+                    tmpPaths.append(_srcPath)
+                    ofp.close()
+
+                ifp.close()
+
+            except AttributeError:
+                pass
+
+        except StopIteration:
+            pass
+
         if len(tmpPaths) > len_tmp_paths:
 
             is_valid, json_dumps = self.__nefT.validate_file(_srcPath, fileSubType)
@@ -5154,6 +5193,10 @@ class NmrDpUtility:
 
                 rescued = self.__has_legacy_sf_issue and is_done and star_data_type == 'Entry'
 
+                if len(self.__star_data_type) > file_list_id:
+                    del self.__star_data_type[-1]
+                    del self.__star_data[-1]
+
                 self.__star_data_type.append(star_data_type)
                 self.__star_data.append(star_data)
 
@@ -5194,9 +5237,7 @@ class NmrDpUtility:
                 else:
                     missing_loop = False
 
-                    message = self.__original_error_message[file_list_id]
-
-                    for err_message in message['error']:
+                    for err_message in self.__original_error_message[file_list_id]['error']:
                         if not 'No such file or directory' in err_message:
                             err += ' ' + re.sub('not in list', 'unknown item.', err_message)
 
@@ -29286,7 +29327,7 @@ i                               """
 
                 if dstPath in self.__inputParamDict[cs_file_path_list]:
                     return False
-                """
+                """ DAOTHER-7407: utilize NMR-STAR format normalizer of NEFTranslator v3
                 if __pynmrstar_v3__:
                     self.__star_data[fileListId].write_to_file(dstPath, skip_empty_loops=True, skip_empty_tags=False)
                 else:

@@ -8175,6 +8175,11 @@ class NEFTranslator:
                         sf.set_tag_prefix('Spectral_peak_list')
                         sf.add_tag('Sf_category', 'spectral_peak_list')
 
+                    else:
+                        is_done = False
+                        error.append('Loop category %s is not supported.' % nef_data.category)
+                        return is_done, json.dumps({'info': info, 'warning': warning, 'error': error})
+
                     sf.add_tag('Sf_framecode', sf.name)
 
                     saveframe = [nef_data]
@@ -8616,6 +8621,11 @@ class NEFTranslator:
                         sf = pynmrstar.Saveframe.from_scratch('nef_nmr_spectrum_%s' % peak_list_id)
                         sf.set_tag_prefix('nef_nmr_spectrum')
                         sf.add_tag('sf_category', 'nef_nmr_spectrum')
+
+                    else:
+                        is_done = False
+                        error.append('Loop category %s is not supported.' % star_data.category)
+                        return is_done, json.dumps({'info': info, 'warning': warning, 'error': error})
 
                     sf.add_tag('sf_framecode', sf.name)
 
@@ -9090,6 +9100,11 @@ class NEFTranslator:
                             sf = pynmrstar.Saveframe.from_scratch('spectral_peak_list_%s' % peak_list_id)
                             sf.set_tag_prefix('Spectral_peak_list')
                             sf.add_tag('Sf_category', 'spectral_peak_list')
+
+                        else:
+                            is_done = False
+                            error.append('Loop category %s is not supported.' % star_data.category)
+                            return is_done, json.dumps({'info': info, 'warning': warning, 'error': error})
 
                         sf.add_tag('Sf_framecode', sf.name)
 

@@ -10127,7 +10127,7 @@ class NmrDpUtility:
                 atom_ids = pair['atom_id']
 
                 # standard residue
-                if self.__nefT.get_one_letter_code(comp_id) != 'X':
+                if self.__get1LetterCode(comp_id) != 'X':
 
                     if file_type == 'nef':
 
@@ -10290,7 +10290,7 @@ class NmrDpUtility:
                         auth_atom_ids = auth_pair['atom_id']
 
                         # standard residue
-                        if self.__nefT.get_one_letter_code(comp_id) != 'X':
+                        if self.__get1LetterCode(comp_id) != 'X':
 
                             _auth_atom_ids = []
                             for auth_atom_id in auth_atom_ids:
@@ -29363,7 +29363,7 @@ i                               """
                     """
                     if dstPath in self.__inputParamDict[mr_file_path_list]:
                         return False
-                    """
+                    """ DAOTHER-7407: utilize NMR-STAR format normalizer of NEFTranslator v3
                     if __pynmrstar_v3__:
                         self.__star_data[fileListId].write_to_file(dstPath, skip_empty_loops=True, skip_empty_tags=False)
                     else:

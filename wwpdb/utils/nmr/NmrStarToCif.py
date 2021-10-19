@@ -15,6 +15,7 @@ import sys
 from mmcif.io.IoAdapterPy import IoAdapterPy
 from wwpdb.utils.nmr.io.mmCIFUtil import mmCIFUtil
 
+
 class NmrStarToCif:
     """ NMR-STAR to CIF converter.
     """
@@ -77,7 +78,7 @@ class NmrStarToCif:
                                 info['data_file_name'] = d['data_file_name']
                             cs_list_cif_info.append(info)
 
-                    if self.__remove_cs_list_cif or not cs_loop_str in v:
+                    if self.__remove_cs_list_cif or cs_loop_str not in v:
                         cifObj.RemoveCategory(k, cs_list_cif)
 
             # add the following saveframe tag
@@ -125,12 +126,12 @@ class NmrStarToCif:
 
                             try:
                                 entry_id = next(row[entry_id_tag] for row in dList if not row[entry_id_tag] in self.empty_value)
-                            except:
+                            except:  # noqa: E722 pylint: disable=bare-except
                                 entry_id = '?'
 
                             try:
                                 list_id = next(row[list_id_tags[content_subtype]] for row in dList if not row[list_id_tags[content_subtype]] in self.empty_value)
-                            except:
+                            except:  # noqa: E722 pylint: disable=bare-except
                                 list_id = '?'
 
                             if content_subtype == 'chem_shift':
@@ -242,12 +243,12 @@ class NmrStarToCif:
 
                             try:
                                 entry_id = next(row[entry_id_tag] for row in dList if not row[entry_id_tag] in self.empty_value)
-                            except:
+                            except:  # noqa: E722 pylint: disable=bare-except
                                 entry_id = '?'
 
                             try:
                                 list_id = next(row[list_id_tag] for row in dList if not row[list_id_tag] in self.empty_value)
-                            except:
+                            except:  # noqa: E722 pylint: disable=bare-except
                                 list_id = '?'
 
                             cifObj.AddCategory(k, cs_list_cif, ['entry_id', 'id', 'data_file_name'])
@@ -257,7 +258,10 @@ class NmrStarToCif:
 
                 lp_category = 'Atom_chem_shift'
                 original_items = ['Original_PDB_strand_ID', 'Original_PDB_residue_no', 'Original_PDB_residue_name', 'Original_PDB_atom_name']
-                original_auth_map = {'Original_PDB_strand_ID': 'Auth_asym_ID', 'Original_PDB_residue_no': 'Auth_seq_ID', 'Original_PDB_residue_name': 'Auth_comp_ID', 'Original_PDB_atom_name': 'Auth_atom_ID'}
+                original_auth_map = {'Original_PDB_strand_ID': 'Auth_asym_ID',
+                                     'Original_PDB_residue_no': 'Auth_seq_ID',
+                                     'Original_PDB_residue_name': 'Auth_comp_ID',
+                                     'Original_PDB_atom_name': 'Auth_atom_ID'}
                 atom_id_tags = ['Atom_ID']
                 auth_atom_id_tags = ['Auth_atom_ID']
 

@@ -14,8 +14,8 @@ from pdbe.nmrStar.IO.NmrStarExport import NmrStarExport
 
 class CcpnConversionException( Exception ):
     def __init__(s,e):
-        print "CCpnConversionException"
-        print e
+        print("CCpnConversionException")
+        print(e)
         s.e = e
 
     def __str__(s):
@@ -73,19 +73,19 @@ class CcpnProject:
         #make new temp folder
         try:
           tempDir = os.path.join( s.tempDir, s.uniq )
-          print 'Making %s' % tempDir
+          print('Making %s' % tempDir)
           if os.path.isdir(tempDir):
               shutil.rmtree(tempDir)
           os.mkdir(tempDir)
-          print 'Created temp dir'
+          print('Created temp dir')
         except Exception,e:
           return "Failed to create temporary folder"
 
         #Copy and extract project file
         try:
-          print 'Opening file %s' % s.projectFile
+          print('Opening file %s' % s.projectFile)
           tf = tarfile.open( s.projectFile , 'r:gz')
-          print 'Opened file %s' % s.projectFile
+          print('Opened file %s' % s.projectFile)
           members = tf.getmembers()
           ok = True
           for member in members:
@@ -100,9 +100,9 @@ class CcpnProject:
               tf.extract(member, path = tempDir)
 
           #tf.extractall( tempDir )
-          print 'Extracted file %s' % s.projectFile
+          print('Extracted file %s' % s.projectFile)
           dirs = [d for d in os.listdir(tempDir) if os.path.isdir(os.path.join(tempDir, d))]
-          print 'dirs', dirs
+          print('dirs', dirs)
           if len(dirs) != 1:
               return "CCPN project file does not contain a single folder"
           s.projectPath = os.path.join( tempDir )
@@ -110,7 +110,7 @@ class CcpnProject:
           try: tf.close()
           except: pass
         except Exception,e:
-          print e
+          print(e)
           try: tf.close()
           except: pass
           return "Failed to extract CCPN project from file"
@@ -164,7 +164,7 @@ class CcpnProject:
 
     def writeShiftMapping(s):
 
-        print "Writing shits mapping"
+        print("Writing shits mapping")
         pass
 
 #if __name__ == "__main__":

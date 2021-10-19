@@ -2064,7 +2064,7 @@ class NEFTranslator:
 
                 if not i[3] in self.empty_value:
 
-                    if i[2] in self.empty_value or not i[2] in ['4', '5', '6', '9']:
+                    if i[2] in self.empty_value or not i[2] in ('4', '5', '6', '9'):
                         if l < len(loop.data):
                             r = {}
                             for j, t in enumerate(loop.tags):
@@ -4554,7 +4554,7 @@ class NEFTranslator:
 
         self.__updateChemCompDict(comp_id)
 
-        if not self.__last_comp_id_test or atom_id is None or not atom_id[0] in ['H', 'C', 'N', 'O']:
+        if not self.__last_comp_id_test or atom_id is None or not atom_id[0] in ('H', 'C', 'N', 'O'):
             return None, None
 
         try:
@@ -4581,7 +4581,7 @@ class NEFTranslator:
 
         self.__updateChemCompDict(comp_id)
 
-        if not self.__last_comp_id_test or atom_id is None or not atom_id[0] in ['H', 'C', 'N', 'O']:
+        if not self.__last_comp_id_test or atom_id is None or not atom_id[0] in ('H', 'C', 'N', 'O'):
             return None, None
 
         atom_id, h_list = self.get_group(comp_id, atom_id)

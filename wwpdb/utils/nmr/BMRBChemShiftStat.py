@@ -393,27 +393,27 @@ class BMRBChemShiftStat:
         cs_stat = self.__get(comp_id)
 
         if comp_id in self.__aa_comp_ids:
-            return [i['atom_id'] for i in cs_stat if i['atom_id'] in ['C', 'CA', 'CB', 'H', 'HA', 'HA2', 'HA3', 'N']
+            return [i['atom_id'] for i in cs_stat if i['atom_id'] in ('C', 'CA', 'CB', 'H', 'HA', 'HA2', 'HA3', 'N')
                     and (not excl_minor_atom or (excl_minor_atom and i['primary']))]
 
         if comp_id in self.__dna_comp_ids:
-            return [i['atom_id'] for i in cs_stat if i['atom_id'] in ["C1'", "C2'", "C3'", "C4'", "C5'", "H1'", "H2'", "H2''", "H3'", "H4'", "H5'", "H5''", 'P']
+            return [i['atom_id'] for i in cs_stat if i['atom_id'] in ("C1'", "C2'", "C3'", "C4'", "C5'", "H1'", "H2'", "H2''", "H3'", "H4'", "H5'", "H5''", 'P')
                     and (not excl_minor_atom or (excl_minor_atom and i['primary']))]
 
         if comp_id in self.__rna_comp_ids:
-            return [i['atom_id'] for i in cs_stat if i['atom_id'] in ["C1'", "C2'", "C3'", "C4'", "C5'", "H1'", "H2'", "H3'", "H4'", "H5'", "H5''", "HO2'", 'P']
+            return [i['atom_id'] for i in cs_stat if i['atom_id'] in ("C1'", "C2'", "C3'", "C4'", "C5'", "H1'", "H2'", "H3'", "H4'", "H5'", "H5''", "HO2'", 'P')
                     and (not excl_minor_atom or (excl_minor_atom and i['primary']))]
 
         if polypeptide_like:
-            return [i['atom_id'] for i in cs_stat if i['atom_id'] in ['C', 'CA', 'CB', 'H', 'HA', 'HA2', 'HA3', 'N']
+            return [i['atom_id'] for i in cs_stat if i['atom_id'] in ('C', 'CA', 'CB', 'H', 'HA', 'HA2', 'HA3', 'N')
                     and (not excl_minor_atom or (excl_minor_atom and i['primary']))]
 
         if polynucleotide_like:
-            return [i['atom_id'] for i in cs_stat if i['atom_id'] in ["C1'", "C2'", "C3'", "C4'", "C5'", "H1'", "H2'", "H2''", "H3'", "H4'", "H5'", "H5''", 'P']
+            return [i['atom_id'] for i in cs_stat if i['atom_id'] in ("C1'", "C2'", "C3'", "C4'", "C5'", "H1'", "H2'", "H2''", "H3'", "H4'", "H5'", "H5''", 'P')
                     and (not excl_minor_atom or 'secondary' not in i or (excl_minor_atom and i['secondary']))]
 
         if carbohydrates_like:
-            return [i['atom_id'] for i in cs_stat if i['atom_id'] in ["C1", "C2", "C3", "C4", "C5", "C6", "H61", "H62"]
+            return [i['atom_id'] for i in cs_stat if i['atom_id'] in ('C1', 'C2', 'C3', 'C4', 'C5', 'C6', 'H61', 'H62')
                     and (not excl_minor_atom or 'secondary' not in i or (excl_minor_atom and i['secondary']))]
 
         return []
@@ -729,7 +729,7 @@ class BMRBChemShiftStat:
 
                     for a in self.__last_chem_comp_atoms:
 
-                        if a[self.__cca_leaving_atom_flag] == 'Y' or not a[self.__cca_type_symbol] in ['H', 'C', 'N', 'P']:
+                        if a[self.__cca_leaving_atom_flag] == 'Y' or not a[self.__cca_type_symbol] in ('H', 'C', 'N', 'P'):
                             continue
 
                         if not any(i for i in atm_list if i['comp_id'] == comp_id and i['atom_id'] == a[self.__cca_atom_id]):
@@ -765,7 +765,7 @@ class BMRBChemShiftStat:
 
         for a in self.__last_chem_comp_atoms:
 
-            if a[self.__cca_leaving_atom_flag] == 'Y' or not a[self.__cca_type_symbol] in ['H', 'C', 'N', 'P']:
+            if a[self.__cca_leaving_atom_flag] == 'Y' or not a[self.__cca_type_symbol] in ('H', 'C', 'N', 'P'):
                 continue
 
             _row = {}
@@ -901,10 +901,10 @@ class BMRBChemShiftStat:
 
                 pair = 0
                 for h_1 in h_list:
-                    if h_1['atom_id'][-1] in ['1', '2', '3']:
+                    if h_1['atom_id'][-1] in ('1', '2', '3'):
                         hvy_1 = next(b[self.__ccb_atom_id_1] for b in self.__last_chem_comp_bonds if b[self.__ccb_atom_id_2] == h_1['atom_id'])
                         for h_2 in h_list:
-                            if h_2['atom_id'][-1] in ['1', '2', '3'] and h_list.index(h_1) < h_list.index(h_2):
+                            if h_2['atom_id'][-1] in ('1', '2', '3') and h_list.index(h_1) < h_list.index(h_2):
                                 hvy_2 = next(b[self.__ccb_atom_id_1] for b in self.__last_chem_comp_bonds if b[self.__ccb_atom_id_2] == h_2['atom_id'])
                                 if hvy_1[:-1] == hvy_2[:-1]:
                                     hvy_1_c = set(b[self.__ccb_atom_id_1] for b in self.__last_chem_comp_bonds if b[self.__ccb_aromatic_flag] == 'Y' and b[self.__ccb_atom_id_2] == hvy_1) |\
@@ -942,10 +942,10 @@ class BMRBChemShiftStat:
                                     hvy_c_set_in_ring.add(hvy_c_2)
 
                     for h_1 in h_list:
-                        if h_1['atom_id'][-1] in ['1', '2', '3']:
+                        if h_1['atom_id'][-1] in ('1', '2', '3'):
                             hvy_1 = next(b[self.__ccb_atom_id_1] for b in self.__last_chem_comp_bonds if b[self.__ccb_atom_id_2] == h_1['atom_id'])
                             for h_2 in h_list:
-                                if h_2['atom_id'][-1] in ['1', '2', '3'] and h_list.index(h_1) < h_list.index(h_2):
+                                if h_2['atom_id'][-1] in ('1', '2', '3') and h_list.index(h_1) < h_list.index(h_2):
                                     hvy_2 = next(b[self.__ccb_atom_id_1] for b in self.__last_chem_comp_bonds if b[self.__ccb_atom_id_2] == h_2['atom_id'])
                                     if hvy_1[:-1] == hvy_2[:-1]:
                                         hvy_1_c = set(b[self.__ccb_atom_id_1] for b in self.__last_chem_comp_bonds if b[self.__ccb_aromatic_flag] == 'Y' and b[self.__ccb_atom_id_2] == hvy_1) |\

@@ -3660,7 +3660,7 @@ class NmrDpUtility:
                 self.__transl_pseudo_name = self.__inputParamDict['transl_pseudo_name']
             else:
                 self.__transl_pseudo_name = self.__inputParamDict['transl_pseudo_name'] in self.true_value
-        elif op in ['nmr-str-consistency-check', 'nmr-str2str-deposit', 'nmr-str2nef-release']:
+        elif op in ('nmr-str-consistency-check', 'nmr-str2str-deposit', 'nmr-str2nef-release'):
             self.__transl_pseudo_name = True
 
         if 'tolerant_seq_align' in self.__inputParamDict and not self.__inputParamDict['tolerant_seq_align'] is None:
@@ -4238,7 +4238,7 @@ class NmrDpUtility:
         """ Fix format issue of NMR data.
         """
 
-        if not self.__fix_format_issue or srcPath is None or not fileSubType in ['A', 'S', 'R'] or message is None:
+        if not self.__fix_format_issue or srcPath is None or not fileSubType in ('A', 'S', 'R') or message is None:
 
             if not message is None:
 
@@ -4269,7 +4269,7 @@ class NmrDpUtility:
                 if self.__verbose:
                     self.__lfh.write("+NmrDpUtility.__fixFormatIssueOfInputSource() ++ Error  - %s\n" % err)
 
-            if not self.__has_legacy_sf_issue and fileSubType in ['S', 'R']:
+            if not self.__has_legacy_sf_issue and fileSubType in ('S', 'R'):
                 return False
 
         if self.__has_legacy_sf_issue:
@@ -5575,7 +5575,7 @@ class NmrDpUtility:
                 except StopIteration:
                     pass
 
-            if content_subtype in ['dist_restraint', 'rdc_restraint']:
+            if content_subtype in ('dist_restraint', 'rdc_restraint'):
                 max_dim = 3
 
             elif content_subtype == 'dihed_restraint':
@@ -7033,7 +7033,7 @@ class NmrDpUtility:
 
         if file_type == 'nef': # DAOTHER-7389, issue #3, allow empty for 'chem_shift'
             return self.__nefT.get_nef_seq(sf_data, lp_category=self.lp_categories[file_type][content_subtype],
-                                           allow_empty=(content_subtype in ('chem_shift', 'spectral_peak')), allow_gap=(not content_subtype in ['poly_seq', 'entity']))
+                                           allow_empty=(content_subtype in ('chem_shift', 'spectral_peak')), allow_gap=(not content_subtype in ('poly_seq', 'entity')))
 
         if content_subtype == 'spectral_peak_alt':
             return self.__nefT.get_star_seq(sf_data, lp_category='_Assigned_peak_chem_shift',
@@ -7041,7 +7041,7 @@ class NmrDpUtility:
 
         # DAOTHER-7389, issue #3, allow empty for 'chem_shift'
         return self.__nefT.get_star_seq(sf_data, lp_category=self.lp_categories[file_type][content_subtype],
-                                        allow_empty=(content_subtype in ('chem_shift', 'spectral_peak')), allow_gap=(not content_subtype in ['poly_seq', 'entity']))
+                                        allow_empty=(content_subtype in ('chem_shift', 'spectral_peak')), allow_gap=(not content_subtype in ('poly_seq', 'entity')))
 
     def __extractPolymerSequence(self):
         """ Extract reference polymer sequence.
@@ -7272,7 +7272,7 @@ class NmrDpUtility:
 
             for content_subtype in self.nmr_content_subtypes:
 
-                if content_subtype in ['entry_info', 'poly_seq', 'entity'] or (not has_key_value(input_source_dic['content_subtype'], content_subtype)):
+                if content_subtype in ('entry_info', 'poly_seq', 'entity') or (not has_key_value(input_source_dic['content_subtype'], content_subtype)):
                     continue
 
                 poly_seq_list_set[content_subtype] = []
@@ -7921,9 +7921,9 @@ class NmrDpUtility:
             if self.__last_comp_id_test and '_chem_comp.mon_nstd_parent_comp_id' in self.__last_chem_comp_dict: # matches with comp_id in CCD
                 if not self.__last_chem_comp_dict['_chem_comp.mon_nstd_parent_comp_id'] in self.empty_value:
                     comp_id = self.__last_chem_comp_dict['_chem_comp.mon_nstd_parent_comp_id']
-                    if comp_id in ['A', 'C', 'G', 'T', 'I', 'U'] and len(ref_comp_id) == 2 and ref_comp_id.startswith('D'):
+                    if comp_id in ('A', 'C', 'G', 'T', 'I', 'U') and len(ref_comp_id) == 2 and ref_comp_id.startswith('D'):
                         comp_id = 'D' + comp_id
-                    elif ref_comp_id in ['A', 'C', 'G', 'T', 'I', 'U'] and len(comp_id) == 2 and comp_id.startswith('D'):
+                    elif ref_comp_id in ('A', 'C', 'G', 'T', 'I', 'U') and len(comp_id) == 2 and comp_id.startswith('D'):
                         comp_id = comp_id[1]
 
         if '_' in ref_comp_id:
@@ -7933,9 +7933,9 @@ class NmrDpUtility:
             if self.__last_comp_id_test and '_chem_comp.mon_nstd_parent_comp_id' in self.__last_chem_comp_dict: # matches with comp_id in CCD
                 if not self.__last_chem_comp_dict['_chem_comp.mon_nstd_parent_comp_id'] in self.empty_value:
                     ref_comp_id = self.__last_chem_comp_dict['_chem_comp.mon_nstd_parent_comp_id']
-                    if ref_comp_id in ['A', 'C', 'G', 'T', 'I', 'U'] and len(comp_id) == 2 and comp_id.startswith('D'):
+                    if ref_comp_id in ('A', 'C', 'G', 'T', 'I', 'U') and len(comp_id) == 2 and comp_id.startswith('D'):
                         ref_comp_id = 'D' + ref_comp_id
-                    elif comp_id in ['A', 'C', 'G', 'T', 'I', 'U'] and len(ref_comp_id) == 2 and ref_comp_id.startswith('D'):
+                    elif comp_id in ('A', 'C', 'G', 'T', 'I', 'U') and len(ref_comp_id) == 2 and ref_comp_id.startswith('D'):
                         ref_comp_id = ref_comp_id[1]
 
         return comp_id == ref_comp_id
@@ -7986,7 +7986,7 @@ class NmrDpUtility:
 
         max_dim = 2
 
-        if content_subtype in ['poly_seq', 'dist_restraint', 'rdc_restraint']:
+        if content_subtype in ('poly_seq', 'dist_restraint', 'rdc_restraint'):
             max_dim = 3
 
         elif content_subtype == 'dihed_restraint':
@@ -9749,7 +9749,7 @@ class NmrDpUtility:
 
         max_dim = 2
 
-        if content_subtype in ['poly_seq', 'dist_restraint', 'rdc_restraint']:
+        if content_subtype in ('poly_seq', 'dist_restraint', 'rdc_restraint'):
             max_dim = 3
 
         elif content_subtype == 'dihed_restraint':
@@ -9866,7 +9866,7 @@ class NmrDpUtility:
 
         max_dim = 2
 
-        if content_subtype in ['poly_seq', 'dist_restraint', 'rdc_restraint']:
+        if content_subtype in ('poly_seq', 'dist_restraint', 'rdc_restraint'):
             max_dim = 3
 
         elif content_subtype == 'dihed_restraint':
@@ -10548,7 +10548,7 @@ class NmrDpUtility:
 
         max_dim = 2
 
-        if content_subtype in ['poly_seq', 'dist_restraint', 'rdc_restraint']:
+        if content_subtype in ('poly_seq', 'dist_restraint', 'rdc_restraint'):
             max_dim = 3
 
         elif content_subtype == 'dihed_restraint':
@@ -11139,7 +11139,7 @@ class NmrDpUtility:
 
             for content_subtype in input_source_dic['content_subtype'].keys():
 
-                if content_subtype in ['entry_info', 'entity']:
+                if content_subtype in ('entry_info', 'entity'):
                     continue
 
                 sf_category = self.sf_categories[file_type][content_subtype]
@@ -11409,7 +11409,7 @@ class NmrDpUtility:
 
             for content_subtype in input_source_dic['content_subtype'].keys():
 
-                if content_subtype in ['dist_restraint', 'dihed_restraint', 'rdc_restraint']:
+                if content_subtype in ('dist_restraint', 'dihed_restraint', 'rdc_restraint'):
 
                     sf_category = self.sf_categories[file_type][content_subtype]
                     lp_category = self.lp_categories[file_type][content_subtype]
@@ -12422,7 +12422,7 @@ class NmrDpUtility:
         """ Perform consistency test on saveframe category and loop category relationship of interesting loops.
         """
 
-        if file_type == 'nef' or content_subtype in ['entry_info', 'entity']:
+        if file_type == 'nef' or content_subtype in ('entry_info', 'entity'):
             return True
 
         __errors = self.report.getTotalErrors()
@@ -13492,7 +13492,7 @@ class NmrDpUtility:
                                 self.__lfh.write("+NmrDpUtility.__validateCSValue() ++ Warning  - %s\n" % warn)
                             """
 
-                    elif ambig_code in [4, 5, 6, 9]:
+                    elif ambig_code in (4, 5, 6, 9):
 
                         ambig_set_id_name = 'Ambiguity_set_ID'
 
@@ -15266,7 +15266,7 @@ class NmrDpUtility:
 
             for content_subtype in input_source_dic['content_subtype'].keys():
 
-                if content_subtype in ['entry_info', 'entity']:
+                if content_subtype in ('entry_info', 'entity'):
                     continue
 
                 if not self.report_prev is None:
@@ -15346,7 +15346,7 @@ class NmrDpUtility:
 
         ent = {'list_id': _list_id, 'sf_framecode': sf_framecode, 'number_of_rows': len(lp_data)}
 
-        if content_subtype in ['dist_restraint', 'dihed_restraint', 'rdc_restraint']:
+        if content_subtype in ('dist_restraint', 'dihed_restraint', 'rdc_restraint'):
 
             type = sf_data.get_tag('restraint_origin' if file_type == 'nef' else 'Constraint_type')
             if len(type) > 0 and not type[0] in self.empty_value:
@@ -15362,7 +15362,7 @@ class NmrDpUtility:
             else:
                 ent['exp_type'] = 'Unknown'
 
-        if content_subtype in ['chem_shift', 'dist_restraint', 'dihed_restraint', 'rdc_restraint', 'spectral_peak', 'spectral_peak_alt']:
+        if content_subtype in ('chem_shift', 'dist_restraint', 'dihed_restraint', 'rdc_restraint', 'spectral_peak', 'spectral_peak_alt'):
 
             sa_name = 'nmr_poly_seq_vs_' + content_subtype
 
@@ -15382,7 +15382,7 @@ class NmrDpUtility:
                         sc['sequence_coverage'] = seq_align['sequence_coverage']
 
                         if seq_align['sequence_coverage'] < self.low_seq_coverage and seq_align['length'] > 1:
-                            if (not 'exp_type' in ent) or (not ent['exp_type'] in ['disulfide bound', 'disulfide_bond', 'paramagnetic relaxation', 'pre', 'symmetry', 'J-couplings', 'jcoupling']):
+                            if (not 'exp_type' in ent) or (not ent['exp_type'] in ('disulfide bound', 'disulfide_bond', 'paramagnetic relaxation', 'pre', 'symmetry', 'J-couplings', 'jcoupling')):
                                 low_seq_coverage += 'coverage %s for chain_id %s, length %s, ' % (seq_align['sequence_coverage'], seq_align['chain_id'], seq_align['length'])
 
                         seq_coverage.append(sc)
@@ -15498,7 +15498,7 @@ class NmrDpUtility:
 
                     self.__calculateStatsOfAssignedChemShift(file_list_id, sf_framecode, lp_data, cs_ann, ent)
 
-                elif content_subtype in ['dist_restraint', 'dihed_restraint', 'rdc_restraint']:
+                elif content_subtype in ('dist_restraint', 'dihed_restraint', 'rdc_restraint'):
 
                     conflict_id_set = self.__nefT.get_conflict_id_set(sf_data, lp_category, self.consist_key_items[file_type][content_subtype])[0]
 
@@ -16701,7 +16701,7 @@ class NmrDpUtility:
 
                         for seq_id, comp_id in zip(s['seq_id'], s['comp_id']):
 
-                            if not comp_id in ['VAL', 'LEU', 'ILE']:
+                            if not comp_id in ('VAL', 'LEU', 'ILE'):
                                 continue
 
                             ilv = {'chain_id': chain_id, 'seq_id': seq_id, 'comp_id': comp_id}
@@ -17033,7 +17033,7 @@ class NmrDpUtility:
                                 else:
                                     atom_id_ = atom_id
 
-                                if not atom_id_ in ['HA', 'HA1', 'HA2', 'HA3', 'H', 'HN', 'NH', 'C', 'CO', 'N', 'CA', 'CB']:
+                                if not atom_id_ in ('HA', 'HA1', 'HA2', 'HA3', 'H', 'HN', 'NH', 'C', 'CO', 'N', 'CA', 'CB'):
                                     continue
 
                                 rci_assignments.append([comp_id, seq_id, atom_id, j[atom_type], j[value_name]])
@@ -19605,8 +19605,8 @@ class NmrDpUtility:
                         # chi1
 
                         if atom_ids[0] == 'N' and atom_ids[1] == 'CA' and atom_ids[2] == 'CB' and self.chi1_atom_id_4_pat.match(atom_ids[3]):
-                            #if (atom_ids[3] == 'CG' and comp_id in ['ARG', 'ASN', 'ASP', 'GLN', 'GLU', 'HIS', 'LEU', 'LYS', 'MET', 'PHE', 'PRO', 'TRP', 'TYR']) or\
-                            #   (atom_ids[3] == 'CG1' and comp_id in ['ILE', 'VAL']) or\
+                            #if (atom_ids[3] == 'CG' and comp_id in ('ARG', 'ASN', 'ASP', 'GLN', 'GLU', 'HIS', 'LEU', 'LYS', 'MET', 'PHE', 'PRO', 'TRP', 'TYR')) or\
+                            #   (atom_ids[3] == 'CG1' and comp_id in ('ILE', 'VAL')) or\
                             #   (atom_ids[3] == 'OG' and comp_id == 'SER') or\
                             #   (atom_ids[3] == 'OG1' and comp_id == 'THR') or\
                             #   (atom_ids[3] == 'SG' and comp_id == 'CYS'):
@@ -19615,10 +19615,10 @@ class NmrDpUtility:
                         # chi2
 
                         if atom_ids[0] == 'CA' and atom_ids[1] == 'CB' and self.chi2_atom_id_3_pat.match(atom_ids[2]) and self.chi2_atom_id_4_pat.match(atom_ids[3]):
-                            #if (atom_ids[2] == 'CG' and atom_ids[3] == 'CD' and comp_id in ['ARG', 'GLN', 'GLU', 'LYS', 'PRO']) or\
-                            #   (atom_ids[2] == 'CG' and atom_ids[3] == 'CD1' and comp_id in ['LEU', 'PHE', 'TRP', 'TYR']) or\
+                            #if (atom_ids[2] == 'CG' and atom_ids[3] == 'CD' and comp_id in ('ARG', 'GLN', 'GLU', 'LYS', 'PRO')) or\
+                            #   (atom_ids[2] == 'CG' and atom_ids[3] == 'CD1' and comp_id in ('LEU', 'PHE', 'TRP', 'TYR')) or\
                             #   (atom_ids[2] == 'CG' and atom_ids[3] == 'ND1' and comp_id == 'HIS') or\
-                            #   (atom_ids[2] == 'CG' and atom_ids[3] == 'OD1' and comp_id in ['ASN', 'ASP']) or\
+                            #   (atom_ids[2] == 'CG' and atom_ids[3] == 'OD1' and comp_id in ('ASN', 'ASP')) or\
                             #   (atom_ids[2] == 'CG' and atom_ids[3] == 'SD' and comp_id == 'MET') or\
                             #   (atom_ids[2] == 'CG1' and atom_ids[3] == 'CD' and comp_id == 'ILE'):
                             data_type = 'chi2'
@@ -19628,7 +19628,7 @@ class NmrDpUtility:
                         if atom_ids[0] == 'CB' and atom_ids[1] == 'CG' and self.chi3_atom_id_3_pat.match(atom_ids[2]) and self.chi3_atom_id_4_pat.match(atom_ids[3]):
                             #if (atom_ids[2] == 'CD' and atom_ids[3] == 'CE' and comp_id == 'LYS') or\
                             #   (atom_ids[2] == 'CD' and atom_ids[3] == 'NE' and comp_id == 'ARG') or\
-                            #   (atom_ids[2] == 'CD' and atom_ids[3] == 'OE1' and comp_id in ['GLN', 'GLU']) or\
+                            #   (atom_ids[2] == 'CD' and atom_ids[3] == 'OE1' and comp_id in ('GLN', 'GLU')) or\
                             #   (atom_ids[2] == 'SD' and atom_ids[3] == 'CE' and comp_id == 'MET'):
                             data_type = 'chi3'
 
@@ -20362,7 +20362,7 @@ class NmrDpUtility:
                         if not under_sampling_type is None and under_sampling_type in self.empty_value:
                             under_sampling_type = None
 
-                        if not under_sampling_type is None and under_sampling_type in ['circular', 'mirror', 'none']:
+                        if not under_sampling_type is None and under_sampling_type in ('circular', 'mirror', 'none'):
                             if under_sampling_type == 'circular':
                                 under_sampling_type = 'folded'
                             elif under_sampling_type == 'mirror':
@@ -20607,7 +20607,7 @@ class NmrDpUtility:
                         if not under_sampling_type is None and under_sampling_type in self.empty_value:
                             under_sampling_type = None
 
-                        if not under_sampling_type is None and under_sampling_type in ['circular', 'mirror', 'none']:
+                        if not under_sampling_type is None and under_sampling_type in ('circular', 'mirror', 'none'):
                             if under_sampling_type == 'circular':
                                 under_sampling_type = 'folded'
                             elif under_sampling_type == 'mirror':
@@ -21335,7 +21335,7 @@ class NmrDpUtility:
 
         for content_subtype in self.cif_content_subtypes:
 
-            if content_subtype in ['entry_info', 'poly_seq'] or (not has_key_value(input_source_dic['content_subtype'], content_subtype)):
+            if content_subtype in ('entry_info', 'poly_seq') or (not has_key_value(input_source_dic['content_subtype'], content_subtype)):
                 continue
 
             poly_seq_list_set[content_subtype] = []
@@ -22742,7 +22742,7 @@ i                               """
 
             for content_subtype in nmr_input_source_dic['content_subtype'].keys():
 
-                if content_subtype in ['entry_info', 'entity']:
+                if content_subtype in ('entry_info', 'entity'):
                     continue
 
                 sf_category = self.sf_categories[file_type][content_subtype]
@@ -22877,7 +22877,7 @@ i                               """
 
         else:
 
-            if content_subtype in ['poly_seq', 'dist_restraint', 'rdc_restraint']:
+            if content_subtype in ('poly_seq', 'dist_restraint', 'rdc_restraint'):
                 max_dim = 3
 
             elif content_subtype == 'dihed_restraint':
@@ -23114,7 +23114,7 @@ i                               """
 
         for content_subtype in input_source_dic['content_subtype'].keys():
 
-            if content_subtype in ['entry_info', 'entity']:
+            if content_subtype in ('entry_info', 'entity'):
                 continue
 
             sf_category = self.sf_categories[file_type][content_subtype]
@@ -23155,7 +23155,7 @@ i                               """
                     if len(key_items) == 0:
                         continue
 
-                    if content_subtype in ['dist_restraint', 'dihed_restraint', 'rdc_restraint']:
+                    if content_subtype in ('dist_restraint', 'dihed_restraint', 'rdc_restraint'):
 
                         conflict_id = self.__nefT.get_conflict_atom_id(sf_data, file_type, lp_category, key_items)[0]
 
@@ -24249,7 +24249,7 @@ i                               """
 
         for content_subtype in input_source_dic['content_subtype'].keys():
 
-            if content_subtype in ['entry_info', 'entity']:
+            if content_subtype in ('entry_info', 'entity'):
                 continue
 
             sf_category = self.sf_categories[file_type][content_subtype]
@@ -26361,7 +26361,7 @@ i                               """
 
             for content_subtype in input_source_dic['content_subtype'].keys():
 
-                if content_subtype in ['entry_info', 'poly_seq', 'entity', 'chem_shift']:
+                if content_subtype in ('entry_info', 'poly_seq', 'entity', 'chem_shift'):
                     continue
 
                 sf_category = self.sf_categories[file_type][content_subtype]
@@ -26546,8 +26546,8 @@ i                               """
                                 # chi1
 
                                 if atom_ids[0] == 'N' and atom_ids[1] == 'CA' and atom_ids[2] == 'CB' and self.chi1_atom_id_4_pat.match(atom_ids[3]):
-                                    #if (atom_ids[3] == 'CG' and comp_id in ['ARG', 'ASN', 'ASP', 'GLN', 'GLU', 'HIS', 'LEU', 'LYS', 'MET', 'PHE', 'PRO', 'TRP', 'TYR']) or\
-                                    #   (atom_ids[3] == 'CG1' and comp_id in ['ILE', 'VAL']) or\
+                                    #if (atom_ids[3] == 'CG' and comp_id in ('ARG', 'ASN', 'ASP', 'GLN', 'GLU', 'HIS', 'LEU', 'LYS', 'MET', 'PHE', 'PRO', 'TRP', 'TYR')) or\
+                                    #   (atom_ids[3] == 'CG1' and comp_id in ('ILE', 'VAL')) or\
                                     #   (atom_ids[3] == 'OG' and comp_id == 'SER') or\
                                     #   (atom_ids[3] == 'OG1' and comp_id == 'THR') or\
                                     #   (atom_ids[3] == 'SG' and comp_id == 'CYS'):
@@ -26556,10 +26556,10 @@ i                               """
                                 # chi2
 
                                 if atom_ids[0] == 'CA' and atom_ids[1] == 'CB' and self.chi2_atom_id_3_pat.match(atom_ids[2]) and self.chi2_atom_id_4_pat.match(atom_ids[3]):
-                                    #if (atom_ids[2] == 'CG' and atom_ids[3] == 'CD' and comp_id in ['ARG', 'GLN', 'GLU', 'LYS', 'PRO']) or\
-                                    #   (atom_ids[2] == 'CG' and atom_ids[3] == 'CD1' and comp_id in ['LEU', 'PHE', 'TRP', 'TYR']) or\
+                                    #if (atom_ids[2] == 'CG' and atom_ids[3] == 'CD' and comp_id in ('ARG', 'GLN', 'GLU', 'LYS', 'PRO')) or\
+                                    #   (atom_ids[2] == 'CG' and atom_ids[3] == 'CD1' and comp_id in ('LEU', 'PHE', 'TRP', 'TYR')) or\
                                     #   (atom_ids[2] == 'CG' and atom_ids[3] == 'ND1' and comp_id == 'HIS') or\
-                                    #   (atom_ids[2] == 'CG' and atom_ids[3] == 'OD1' and comp_id in ['ASN', 'ASP']) or\
+                                    #   (atom_ids[2] == 'CG' and atom_ids[3] == 'OD1' and comp_id in ('ASN', 'ASP')) or\
                                     #   (atom_ids[2] == 'CG' and atom_ids[3] == 'SD' and comp_id == 'MET') or\
                                     #   (atom_ids[2] == 'CG1' and atom_ids[3] == 'CD1' and comp_id == 'ILE'):
                                     chi2_index.append(index_id)
@@ -26569,7 +26569,7 @@ i                               """
                                 if atom_ids[0] == 'CB' and atom_ids[1] == 'CG' and self.chi3_atom_id_3_pat.match(atom_ids[2]) and self.chi3_atom_id_4_pat.match(atom_ids[3]):
                                     #if (atom_ids[2] == 'CD' and atom_ids[3] == 'CE' and comp_id == 'LYS') or\
                                     #   (atom_ids[2] == 'CD' and atom_ids[3] == 'NE' and comp_id == 'ARG') or\
-                                    #   (atom_ids[2] == 'CD' and atom_ids[3] == 'OE1' and comp_id in ['GLN', 'GLU']) or\
+                                    #   (atom_ids[2] == 'CD' and atom_ids[3] == 'OE1' and comp_id in ('GLN', 'GLU')) or\
                                     #   (atom_ids[2] == 'SD' and atom_ids[3] == 'CE' and comp_id == 'MET'):
                                     chi3_index.append(index_id)
 
@@ -27261,7 +27261,7 @@ i                               """
 
                                         # 'circular', 'mirror', 'none'
 
-                                        if val in ['aliased', 'folded', 'not observed']:
+                                        if val in ('aliased', 'folded', 'not observed'):
                                             if val == 'aliased':
                                                 row[itCol] = 'mirror'
                                             elif val == 'folded':
@@ -27273,7 +27273,7 @@ i                               """
 
                                         # 'aliased', 'folded', 'not observed'
 
-                                        if val in ['circular', 'mirror', 'none']:
+                                        if val in ('circular', 'mirror', 'none'):
                                             if val == 'circular':
                                                 row[itCol] = 'folded'
                                             elif val == 'mirror':
@@ -27664,7 +27664,7 @@ i                               """
 
                 angle_type = angle_type.lower()
 
-                if not angle_type in ['phi', 'psi']:
+                if not angle_type in ('phi', 'psi'):
                     return False
 
                 if chain_id_1 != chain_id_2 or chain_id_2 != chain_id_3 or chain_id_3 != chain_id_4:
@@ -28287,7 +28287,7 @@ i                               """
 
         for content_subtype in input_source_dic['content_subtype'].keys():
 
-            if content_subtype in ['entry_info', 'entity']:
+            if content_subtype in ('entry_info', 'entity'):
                 continue
 
             sf_category = self.sf_categories[file_type][content_subtype]
@@ -28417,7 +28417,7 @@ i                               """
 
         for content_subtype in input_source_dic['content_subtype'].keys():
 
-            if content_subtype in ['entry_info', 'entity']:
+            if content_subtype in ('entry_info', 'entity'):
                 continue
 
             sf_category = self.sf_categories[file_type][content_subtype]
@@ -28554,7 +28554,7 @@ i                               """
 
         for content_subtype in input_source_dic['content_subtype'].keys():
 
-            if content_subtype in ['entry_info', 'entity']:
+            if content_subtype in ('entry_info', 'entity'):
                 continue
 
             sf_category = self.sf_categories[file_type][content_subtype]
@@ -28659,7 +28659,7 @@ i                               """
 
         for content_subtype in input_source_dic['content_subtype'].keys():
 
-            if content_subtype in ['entry_info', 'entity']:
+            if content_subtype in ('entry_info', 'entity'):
                 continue
 
             sf_category = self.sf_categories[file_type][content_subtype]

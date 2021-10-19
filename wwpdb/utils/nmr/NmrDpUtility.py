@@ -29321,10 +29321,10 @@ i                               """
 
                 if fileListId >= len(self.__star_data) or self.__star_data[fileListId] is None:
                     return False
-
+                """ DAOTHER-7407: utilize NMR-STAR format normalizer of NEFTranslator v3
                 if self.__star_data_type[fileListId] == 'Loop': # copied already
                     continue
-
+                """
                 if dstPath in self.__inputParamDict[cs_file_path_list]:
                     return False
                 """ DAOTHER-7407: utilize NMR-STAR format normalizer of NEFTranslator v3
@@ -29357,10 +29357,10 @@ i                               """
 
                     if fileListId >= len(self.__star_data) or self.__star_data[fileListId] is None:
                         return False
-
+                    """ DAOTHER-7407: utilize NMR-STAR format normalizer of NEFTranslator v3
                     if self.__star_data_type[fileListId] == 'Loop': # copied already
                         continue
-
+                    """
                     if dstPath in self.__inputParamDict[mr_file_path_list]:
                         return False
                     """

@@ -163,6 +163,7 @@ from wwpdb.utils.nmr.io.ChemCompIo import ChemCompReader
 from wwpdb.utils.nmr.io.CifReader import CifReader
 from wwpdb.utils.nmr.rci.RCI import RCI
 from wwpdb.utils.nmr.CifToNmrStar import CifToNmrStar
+from wwpdb.utils.nmr.NmrStarToCif import NmrStarToCif
 
 __pynmrstar_v3_2__ = version.parse(pynmrstar.__version__) >= version.parse("3.2.0")
 __pynmrstar_v3_1__ = version.parse(pynmrstar.__version__) >= version.parse("3.1.0")
@@ -10082,7 +10083,7 @@ class NmrDpUtility:
         return self.__getAtomIdListWithAmbigCode(file_type, comp_id, atom_id, leave_unmatched=False)[0]
 
     def __getAtomIdListWithAmbigCode(self, file_type, comp_id, atom_id, leave_unmatched=True):
-        """ Return lists of atom ID, ambiguity_code, details in IUPAC atom nomenclature for a given atom_id.
+        """ Return lists of atom ID, ambiguity_code, details in IUPAC atom nomenclature for a given conventional NMR atom name.
         """
 
         if file_type == 'nef' or atom_id == 'HN' or atom_id.endswith('%') or atom_id.endswith('*'):
@@ -12009,8 +12010,8 @@ class NmrDpUtility:
 
                             last_point = first_point - sp_width
 
-                            min_point = last_point - (sp_width * 3.0 if abs[i - 1] else 0.0) # DAOTHER-7389, issue #1, relax expected range of peak position by three times of spectral width if absolute_peak_positios are true
-                            max_point = first_point + (sp_width * 3.0 if abs[i - 1] else 0.0)
+                            min_point = last_point - (sp_width * (1.0 if self.__bmrb_only else 3.0) if abs[i - 1] else 0.0) # DAOTHER-7389, issue #1, relax expected range of peak position by three times of spectral width if absolute_peak_positios are true
+                            max_point = first_point + (sp_width * (1.0 if self.__bmrb_only else 3.0) if abs[i - 1] else 0.0)
 
                             min_limit = min_point
                             max_limit = max_point
@@ -12153,8 +12154,8 @@ class NmrDpUtility:
 
                             last_point = first_point - sp_width
 
-                            min_point = last_point - (sp_width * 3.0 if abs[i - 1] else 0.0) # DAOTHER-7389, issue #1, relax expected range of peak position by three times of spectral width if absolute_peak_positios are true
-                            max_point = first_point + (sp_width * 3.0 if abs[i - 1] else 0.0)
+                            min_point = last_point - (sp_width * (1.0 if self.__bmrb_only else 3.0) if abs[i - 1] else 0.0) # DAOTHER-7389, issue #1, relax expected range of peak position by three times of spectral width if absolute_peak_positios are true
+                            max_point = first_point + (sp_width * (1.0 if self.__bmrb_only else 3.0) if abs[i - 1] else 0.0)
 
                             min_limit = min_point
                             max_limit = max_point
@@ -29292,6 +29293,15 @@ i                               """
         else:
             self.__star_data[0].write_to_file(self.__dstPath)
 
+        if not 'nef' in self.__op and 'deposit' in self.__op and 'nmr-cif_file_path' in self.__outputParamDict:
+            star_to_cif = NmrStarToCif()
+
+            original_file_name = ''
+            if 'original_file_name' in self.__inputParamDict:
+                original_file_name = self.__inputParamDict['original_file_name']
+
+            star_to_cif.convert(self.__dstPath, self.__outputParamDict['nmr-cif_file_path'], original_file_name, 'nm-uni-str')
+
         return not self.report.isError()
 
     def __depositLegacyNmrData(self):
@@ -29333,7 +29343,16 @@ i                               """
                 else:
                     self.__star_data[fileListId].write_to_file(dstPath)
                 """
-                self.__nefT.star_data_to_nmrstar(self.__star_data_type[fileListId], self.__star_data[fileListId], dstPath, fileListId, self.report)
+                if self.__nefT.star_data_to_nmrstar(self.__star_data_type[fileListId], self.__star_data[fileListId], dstPath, fileListId, report=self.report, leave_unmatched=self.__leave_intl_note)[0]:
+
+                    if 'nmr-cif_file_path' in self.__outputParamDict:
+                        star_to_cif = NmrStarToCif()
+
+                        original_file_name = ''
+                        if 'original_file_name' in self.__inputParamDict:
+                            original_file_name = self.__inputParamDict['original_file_name']
+
+                        star_to_cif.convert(dstPath, self.__outputParamDict['nmr-cif_file_path'], original_file_name, 'nm-shi')
 
             mr_file_path_list = 'restraint_file_path_list'
 
@@ -29410,7 +29429,7 @@ i                               """
 
         try:
 
-            is_valid, json_dumps = self.__nefT.nef_to_nmrstar(self.__dstPath, out_file_path, report=self.report) # (None if self.__alt_chain else self.report))
+            is_valid, json_dumps = self.__nefT.nef_to_nmrstar(self.__dstPath, out_file_path, report=self.report, leave_unmatched=self.__leave_intl_note) # (None if self.__alt_chain else self.report))
 
             if self.__release_mode and not self.__tmpPath is None:
                 os.remove(self.__tmpPath)
@@ -29436,6 +29455,16 @@ i                               """
             return False
 
         if is_valid:
+
+            if 'deposit' in self.__op and 'nmr-cif_file_path' in self.__outputParamDict:
+                star_to_cif = NmrStarToCif()
+
+                original_file_name = ''
+                if 'original_file_name' in self.__inputParamDict:
+                    original_file_name = self.__inputParamDict['original_file_name']
+
+                star_to_cif.convert(out_file_path, self.__outputParamDict['nmr-cif_file_path'], original_file_name, 'nm-uni-nef')
+
             return True
 
         message = json.loads(json_dumps)

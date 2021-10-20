@@ -3,6 +3,7 @@
 # Date:  02-Apr-2020  M. Yokochi
 #
 # Updates:
+# 20-Oct-2021  M. Yokochi - add unit test for case-sensitive saveframe name (DAOTHER-7398, 7407)
 #
 import unittest
 import os
@@ -37,6 +38,10 @@ class TestNmrStarToCif(unittest.TestCase):
     def test_D_1292117503(self):
         self.nmrstar_to_cif.convert(strPath=self.data_dir_path + 'D_800439_nmr-data-str_P1.str.V2',
                                     cifPath=self.data_dir_path + 'D_800439_nmr-data-str_P1.cif.V2', originalFileName='KpbK.str')
+
+    def test_daother_7389(self):
+        self.nmrstar_to_cif.convert(strPath=self.data_dir_path + 'D_800444_nmr-data-str-upload-convert_P1.str.V1',
+                                    cifPath=self.data_dir_path + 'D_800444_nmr-data-str-upload-convert_P1.cif.V1', originalFileName='kbpk_letterCaseTest.nef')
 
 
 if __name__ == '__main__':

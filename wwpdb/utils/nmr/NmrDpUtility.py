@@ -7344,7 +7344,7 @@ class NmrDpUtility:
 
                 if file_type == 'nmr-star':
 
-                    auth_poly_seq = self.__nefT.get_star_auth_seq(sf_data, lp_category, allow_empty=(content_subtype in ('chem_shift', 'spectral_peak')))[0] # DAOTHER-7389, issue #3
+                    auth_poly_seq = self.__nefT.get_star_auth_seq(sf_data, lp_category)[0]
 
                     for ps in poly_seq:
                         chain_id = ps['chain_id']
@@ -10282,9 +10282,7 @@ class NmrDpUtility:
 
                 try:
 
-                    # DAOTHER-7389, issue #3, allow empty for 'chem_shift'
-                    auth_pairs = self.__nefT.get_star_auth_comp_atom_pair(sf_data, lp_category,
-                                                                          allow_empty=(content_subtype in ('chem_shift', 'spectral_peak')))[0]
+                    auth_pairs = self.__nefT.get_star_auth_comp_atom_pair(sf_data, lp_category)[0]
 
                     for auth_pair in auth_pairs:
                         comp_id = auth_pair['comp_id']

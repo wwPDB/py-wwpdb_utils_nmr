@@ -71,6 +71,7 @@
 # 13-Oct-2021  M. Yokochi - code revision according to PEP8 using Pylint (v2.11.0, DAOTHER-7389, issue #5)
 # 14-Oct-2021  M. Yokochi - remove unassigned chemical shifts, clear incompletely assigned spectral peaks (v2.11.1, DAOTHER-7389, issue #3)
 # 19-Oct-2021  M. Yokochi - add NMR-STAR format normalizer for conventional CS deposition using a single file (v3.0.0, DAOTHER-7344, 7355, 7389 issue #4, 7407)
+# 27-Oct-2021  M. Yokochi - utilize Auth_asym_ID* tag for chain_id if Entity_assembly_ID* is not available (v3.0.1, DAOTHER-7421)
 ##
 """ Bi-directional translator between NEF and NMR-STAR
     @author: Kumaran Baskaran, Masashi Yokochi
@@ -1420,7 +1421,7 @@ class NEFTranslator:
         return data
 
     def get_star_seq(self, star_data, lp_category='Atom_chem_shift', seq_id='Comp_index_ID', comp_id='Comp_ID',
-                     chain_id='Entity_assembly_ID', allow_empty=False, allow_gap=False):
+                     chain_id='Entity_assembly_ID', alt_chain_id='Auth_asym_ID', allow_empty=False, allow_gap=False):
         """ Extract sequence from any given loops in an NMR-STAR file.
             @change: re-written by Masashi Yokochi
             @return: list of sequence information for each loop
@@ -1443,6 +1444,7 @@ class NEFTranslator:
 
         tags = [seq_id, comp_id, chain_id]
         tags_ = [seq_id, comp_id]
+        tags__ = [seq_id, comp_id, alt_chain_id] # DAOTHER-7421
 
         for loop in loops:
             cmp_dict = {}
@@ -1455,6 +1457,10 @@ class NEFTranslator:
                 for i in seq_data:
                     if i[2] in self.empty_value:
                         i[2] = '1'
+            elif set(tags__) & set(loop.tags) == set(tags__): # DAOTHER-7421
+                seq_data = get_lp_tag(loop, tags__)
+                for i in seq_data:
+                    i[2] = '1' if i[2] in self.empty_value else str(self.letter_to_int(i[2], 1))
             elif set(tags_) & set(loop.tags) == set(tags_): # No Entity_assembly_ID tag case
                 seq_data = get_lp_tag(loop, tags_)
                 for i in seq_data:
@@ -1464,9 +1470,20 @@ class NEFTranslator:
                 for j in range(1, self.lim_num_dim):
                     _tags = [seq_id + '_' + str(j), comp_id + '_' + str(j), chain_id + '_' + str(j)]
                     _tags_ = [seq_id + '_' + str(j), comp_id + '_' + str(j)]
+                    _tags__ = [seq_id + '_' + str(j), comp_id + '_' + str(j), alt_chain_id + '_' + str(j)] # DAOTHER-7421
                     if set(_tags) & set(loop.tags) == set(_tags):
                         _tags_exist = True
-                        seq_data += get_lp_tag(loop, _tags)
+                        seq_data_ = get_lp_tag(loop, _tags)
+                        for i in seq_data_:
+                            if i[2] in self.empty_value:
+                                i[2] = '1'
+                        seq_data += seq_data_
+                    elif set(_tags__) & set(loop.tags) == set(_tags__): # DAOTHER-7421
+                        _tags_exist = True
+                        seq_data_ = get_lp_tag(loop, _tags__)
+                        for i in seq_data_:
+                            i[2] = '1' if i[2] in self.empty_value else str(self.letter_to_int(i[2], 1))
+                        seq_data += seq_data_
                     elif set(_tags_) & set(loop.tags) == set(_tags_):
                         _tags_exist = True
                         seq_data_ = get_lp_tag(loop, _tags_)
@@ -2290,7 +2307,13 @@ class NEFTranslator:
                 missing_tags = list(set(key_names) - set(loop.tags))
                 for k in key_items:
                     if k['name'] in missing_tags:
-                        if 'default' in k:
+                        if 'default-from' in k and k['default-from'] != 'self' and k['default-from'] in loop.tags:
+                            from_col = loop.tags.index(k['default-from'])
+                            for row in loop.data:
+                                ref = row[from_col]
+                                row.append(ref)
+                            loop.add_tag(k['name'])
+                        elif 'default' in k:
                             for row in loop.data:
                                 row.append(k['default'])
                             loop.add_tag(k['name'])
@@ -2301,7 +2324,13 @@ class NEFTranslator:
                 missing_tags = list(set(mand_data_names) - set(loop.tags))
                 for k in key_items:
                     if k['name'] in missing_tags:
-                        if 'default' in k:
+                        if 'default-from' in k and k['default-from'] != 'self' and k['default-from'] in loop.tags:
+                            from_col = loop.tags.index(k['default-from'])
+                            for row in loop.data:
+                                ref = row[from_col]
+                                row.append(ref)
+                            loop.add_tag(k['name'])
+                        elif 'default' in k:
                             for row in loop.data:
                                 row.append(k['default'])
                             loop.add_tag(k['name'])
@@ -2317,24 +2346,29 @@ class NEFTranslator:
                                 for l, row in enumerate(loop.data, start=1):
                                     row.append(l)
                                 loop.add_tag(d['name'])
-                            elif d['name'] == 'element' or d['name'] == 'Atom_type':
+                            elif d['default-from'] != 'self' and d['default-from'] in loop.tags:
                                 from_col = loop.tags.index(d['default-from'])
-                                for row in loop.data:
-                                    ref = row[from_col]
-                                    if ref.startswith('H') or ref.startswith('Q') or ref.startswith('M'):
-                                        row.append('H')
-                                    else:
-                                        row.append(ref[0])
-                                loop.add_tag(d['name'])
-                            elif d['name'] == 'isotope_number' or d['name'] == 'Atom_isotope_number':
-                                from_col = loop.tags.index(d['default-from'])
-                                for row in loop.data:
-                                    ref = row[from_col]
-                                    if ref.startswith('H') or ref.startswith('Q') or ref.startswith('M'):
-                                        row.append(1)
-                                    else:
-                                        row.append(self.atom_isotopes[ref[0]][0])
-                                loop.add_tag(d['name'])
+                                if d['name'] == 'element' or d['name'] == 'Atom_type':
+                                    for row in loop.data:
+                                        ref = row[from_col]
+                                        if ref.startswith('H') or ref.startswith('Q') or ref.startswith('M'):
+                                            row.append('H')
+                                        else:
+                                            row.append(ref[0])
+                                    loop.add_tag(d['name'])
+                                elif d['name'] == 'isotope_number' or d['name'] == 'Atom_isotope_number':
+                                    for row in loop.data:
+                                        ref = row[from_col]
+                                        if ref.startswith('H') or ref.startswith('Q') or ref.startswith('M'):
+                                            row.append(1)
+                                        else:
+                                            row.append(self.atom_isotopes[ref[0]][0])
+                                    loop.add_tag(d['name'])
+                                elif 'Entity_assembly_ID' in d['name']:
+                                    for row in loop.data:
+                                        ref = row[from_col]
+                                        row.append(ref)
+                                    loop.add_tag(d['name'])
 
             if not disallowed_tags is None:
                 if len(set(loop.tags) & set(disallowed_tags)) > 0:
@@ -2567,6 +2601,8 @@ class NEFTranslator:
                             except:
                                 if 'default-from' in k and k['default-from'] == 'self':
                                     i[j] = ent[name] = self.letter_to_int(val)
+                                elif 'default-from' in k and k['default-from'] in tags:
+                                    i[j] = ent[name] = self.letter_to_int(i[tags.index(k['default-from'])])
                                 elif 'default' in k:
                                     i[j] = ent[name] = int(k['default'])
                                 elif excl_missing_data:
@@ -2586,6 +2622,8 @@ class NEFTranslator:
                             except:
                                 if 'default-from' in k and k['default-from'] == 'self':
                                     i[j] = ent[name] = self.letter_to_int(val, 1)
+                                elif 'default-from' in k and k['default-from'] in tags:
+                                    i[j] = ent[name] = self.letter_to_int(i[tags.index(k['default-from'])], 1)
                                 elif 'default' in k:
                                     i[j] = ent[name] = int(k['default'])
                                 elif excl_missing_data:
@@ -2616,6 +2654,8 @@ class NEFTranslator:
                             except:
                                 if 'default-from' in k and k['default-from'] == 'self':
                                     i[j] = ent[name] = self.letter_to_int(val, 1)
+                                elif 'default-from' in k and k['default-from'] in tags:
+                                    i[j] = ent[name] = self.letter_to_int(i[tags.index(k['default-from'])], 1)
                                 elif 'default' in k:
                                     i[j] = ent[name] = int(k['default'])
                                 elif excl_missing_data:
@@ -2813,6 +2853,8 @@ class NEFTranslator:
                                     except:
                                         if 'default-from' in d and d['default-from'] == 'self':
                                             i[j] = ent[name] = self.letter_to_int(val)
+                                        elif 'default-from' in d and d['default-from'] in tags:
+                                            i[j] = ent[name] = self.letter_to_int(i[tags.index(d['default-from'])])
                                         elif 'default' in d:
                                             i[j] = ent[name] = int(d['default'])
                                         elif excl_missing_data:
@@ -2832,6 +2874,8 @@ class NEFTranslator:
                                     except:
                                         if 'default-from' in d and d['default-from'] == 'self':
                                             i[j] = ent[name] = self.letter_to_int(val, 1)
+                                        elif 'default-from' in d and d['default-from'] in tags:
+                                            i[j] = ent[name] = self.letter_to_int(i[tags.index(d['default-from'])], 1)
                                         elif 'default' in d:
                                             i[j] = ent[name] = int(d['default'])
                                         elif excl_missing_data:
@@ -2862,6 +2906,8 @@ class NEFTranslator:
                                     except:
                                         if 'default-from' in d and d['default-from'] == 'self':
                                             i[j] = ent[name] = self.letter_to_int(val, 1)
+                                        elif 'default-from' in d and d['default-from'] in tags:
+                                            i[j] = ent[name] = self.letter_to_int(i[tags.index(d['default-from'])], 1)
                                         elif 'default' in d:
                                             i[j] = ent[name] = int(d['default'])
                                         elif excl_missing_data:
@@ -3488,6 +3534,8 @@ class NEFTranslator:
                         except:
                             if 'default-from' in t and t['default-from'] == 'self':
                                 ent[name] = self.letter_to_int(val)
+                            elif 'default-from' in t and t['default-from'] in sf_tags.keys():
+                                ent[name] = self.letter_to_int(sf_tags[t['default-from']])
                             elif 'default' in t:
                                 ent[name] = int(t['default'])
                             else:
@@ -3498,6 +3546,8 @@ class NEFTranslator:
                         except:
                             if 'default-from' in t and t['default-from'] == 'self':
                                 ent[name] = self.letter_to_int(val, 1)
+                            elif 'default-from' in t and t['default-from'] in sf_tags.keys():
+                                ent[name] = self.letter_to_int(sf_tags[t['default-from']], 1)
                             elif 'default' in t:
                                 ent[name] = int(t['default'])
                             else:

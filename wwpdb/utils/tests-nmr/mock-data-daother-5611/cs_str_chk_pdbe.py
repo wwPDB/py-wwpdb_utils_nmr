@@ -7,6 +7,7 @@
 import unittest
 import os
 import json
+import re
 
 from wwpdb.utils.nmr.NmrDpUtility import NmrDpUtility
 
@@ -43,6 +44,8 @@ class TestNmrDpUtility(unittest.TestCase):
         self.nmr_dp_util.addInput(name='nonblk_bad_nterm', value=True, type='param')
         self.nmr_dp_util.addInput(name='resolve_conflict', value=True, type='param')
         self.nmr_dp_util.addInput(name='check_mandatory_tag', value=False, type='param')
+        self.nmr_dp_util.addInput(name='original_file_name', value=self.cs_file[entry_id][0], type='param')
+        self.nmr_dp_util.addOutput(name='nmr-cif_file_path', value=re.sub(r'\.str\.', '.cif.', entry_dir_path + self.cs_file_2[entry_id][0]), type='file')
         self.nmr_dp_util.setLog(self.data_dir_path + entry_id.lower() + '-cs-str-consistency-log.json')
         self.nmr_dp_util.setVerbose(False)
 

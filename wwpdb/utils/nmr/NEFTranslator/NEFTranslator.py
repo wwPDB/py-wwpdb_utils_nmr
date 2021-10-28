@@ -73,6 +73,7 @@
 # 19-Oct-2021  M. Yokochi - add NMR-STAR format normalizer for conventional CS deposition using a single file (v3.0.0, DAOTHER-7344, 7355, 7389 issue #4, 7407)
 # 27-Oct-2021  M. Yokochi - utilize Auth_asym_ID* tag for chain_id if Entity_assembly_ID* is not available (v3.0.1, DAOTHER-7421)
 # 28-Oct-2021  M. Yokochi - use simple dictionary for return messaging, instead of JSON dump/load (v3.0.2)
+# 28-Oct-2021  M. Yokochi - resolve case-insensitive saveframe name collision for CIF (v3.0.3, DAOTHER-7389, issue #4)
 ##
 """ Bi-directional translator between NEF and NMR-STAR
     @author: Kumaran Baskaran, Masashi Yokochi
@@ -94,7 +95,7 @@ from wwpdb.utils.config.ConfigInfoApp import ConfigInfoAppCommon
 from wwpdb.utils.nmr.io.ChemCompIo import ChemCompReader
 from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
 
-__version__ = '3.0.2'
+__version__ = '3.0.3'
 
 __pynmrstar_v3_2__ = version.parse(pynmrstar.__version__) >= version.parse("3.2.0")
 __pynmrstar_v3_1__ = version.parse(pynmrstar.__version__) >= version.parse("3.1.0")
@@ -1168,6 +1169,43 @@ class NEFTranslator:
         """
 
         return not any(d in self.empty_value or self.bad_pattern.match(d) for d in data)
+
+    def resolve_sf_names_for_cif(self, star_data, data_type): # DAOTHER-7389, issue #4
+        """ Resolve saveframe names to prevent case-insensitive name collisions occur in CIF format.
+            @return: status, list of correction messages, dictionary of saveframe name corrections
+        """
+
+        if data_type != 'Entry':
+            return True, [], {}
+
+        original_names = [sf.name for sf in star_data.frame_list]
+
+        while True:
+
+            lower_names = [sf.name.lower() for sf in star_data.frame_list]
+            dup_names = set(n for n in lower_names if lower_names.count(n) > 1)
+
+            if len(dup_names) == 0:
+                break
+
+            for dup_name in dup_names:
+                idx = 1
+                for sf in star_data.frame_list:
+                    if sf.name.lower() == dup_name:
+                        sf.name = '%s_%s' % (sf.name, idx)
+                        idx += 1
+
+        resolved_names = [sf.name for sf in star_data.frame_list]
+
+        messages = []
+        corrections = {}
+
+        for original, resolved in zip(original_names, resolved_names):
+            if original != resolved:
+                messages.append("The saveframe name %r has been renamed to %r in order to prevent case-insensitive name collisions occurring in CIF format." % (original, resolved))
+                corrections[original] = resolved
+
+        return len(messages) == 0, messages, corrections
 
     def get_data_content(self, star_data, data_type):
         """ Extract saveframe categories and loop categories from star data object.
@@ -7937,6 +7975,8 @@ class NEFTranslator:
 
         is_readable, data_type, nef_data = self.read_input_file(nef_file)
 
+        self.resolve_sf_names_for_cif(nef_data, data_type) # DAOTHER-7389, issue #4
+
         try:
             star_data = pynmrstar.Entry.from_scratch(nef_data.entry_id)
         except: # AttributeError:
@@ -8444,6 +8484,8 @@ class NEFTranslator:
             nef_file = file_path + '/' + file_name.split('.')[0] + '.nef'
 
         is_readable, data_type, star_data = self.read_input_file(star_file)
+
+        self.resolve_sf_names_for_cif(star_data, data_type) # DAOTHER-7389, issue #4
 
         try:
             nef_data = pynmrstar.Entry.from_scratch(star_data.entry_id)

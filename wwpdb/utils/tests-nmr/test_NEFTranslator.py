@@ -13,11 +13,11 @@
 # 14-May-2021  M. Yokochi - support NEFTranslator v2.10.0
 # 29-Jun-2021  M. Yokochi - support NEFTranslator v2.10.3
 # 13-Oct-2021  M. Yokochi - code refactoring according to PEP8 using Pylint (NEFTranslator v2.11.0, DAOTHER-7389, issue #5)
+# 28-Oct-2021  M. Yokochi - support NEFTranslator v3.0.2
 ##
 import unittest
 import os
 import pynmrstar
-import json
 from packaging import version
 
 from wwpdb.utils.nmr.NEFTranslator.NEFTranslator import NEFTranslator
@@ -412,20 +412,18 @@ class TestNEFTranslator(unittest.TestCase):
         )
 
     def test_get_seq_from_cs_loop(self):
-        (isValid, jsondata) = self.neft.get_seq_from_cs_loop(self.data_dir_path + "2mqq.nef")
-        dat = json.loads(jsondata)
+        (isValid, msg) = self.neft.get_seq_from_cs_loop(self.data_dir_path + "2mqq.nef")
         self.assertTrue(isValid)
-        self.assertEqual(dat["file_type"], "nef")
-        self.assertEqual(len(dat["data"][0][0]["seq_id"]), 214)
-        self.assertEqual(len(dat["data"][1][0]["seq_id"]), 5)
-        self.assertEqual(len(dat["data"][2][0]["seq_id"]), 5)
-        (isValid, jsondata) = self.neft.get_seq_from_cs_loop(self.data_dir_path + "2mqq.str")
-        dat = json.loads(jsondata)
+        self.assertEqual(msg["file_type"], "nef")
+        self.assertEqual(len(msg["data"][0][0]["seq_id"]), 214)
+        self.assertEqual(len(msg["data"][1][0]["seq_id"]), 5)
+        self.assertEqual(len(msg["data"][2][0]["seq_id"]), 5)
+        (isValid, msg) = self.neft.get_seq_from_cs_loop(self.data_dir_path + "2mqq.str")
         self.assertTrue(isValid)
-        self.assertEqual(dat["file_type"], "nmr-star")
-        self.assertEqual(len(dat["data"][0][0]["seq_id"]), 214)
-        self.assertEqual(len(dat["data"][1][0]["seq_id"]), 5)
-        self.assertEqual(len(dat["data"][2][0]["seq_id"]), 5)
+        self.assertEqual(msg["file_type"], "nmr-star")
+        self.assertEqual(len(msg["data"][0][0]["seq_id"]), 214)
+        self.assertEqual(len(msg["data"][1][0]["seq_id"]), 5)
+        self.assertEqual(len(msg["data"][2][0]["seq_id"]), 5)
 
     def test_get_nef_seq(self):
         dat = pynmrstar.Entry.from_file(self.data_dir_path + "2mqq.nef")

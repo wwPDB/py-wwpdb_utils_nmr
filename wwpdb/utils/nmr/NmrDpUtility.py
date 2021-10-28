@@ -131,6 +131,7 @@
 # 13-Oct-2021  M. Yokochi - code revision according to PEP8 using Pylint (DAOTHER-7389, issue #5)
 # 14-Oct-2021  M. Yokochi - remove unassigned chemical shifts, clear incompletely assigned spectral peaks (DAOTHER-7389, issue #3)
 # 27-Oct-2021  M. Yokochi - fix collection of unmapped sequences and utilize Auth_asym_ID* tag for chain_id if Entity_assembly_ID* is not available (DAOTHER-7421)
+# 28-Oct-2021  M. Yokochi - resolve case-insensitive saveframe name collision for CIF (DAOTHER-7389, issue #4)
 ##
 """ Wrapper class for data processing for NMR data.
     @author: Masashi Yokochi
@@ -139,7 +140,6 @@ import sys
 import os
 import os.path
 import pynmrstar
-import json
 import itertools
 import copy
 import collections
@@ -947,6 +947,7 @@ class NmrDpUtility:
 
         self.__star_data_type = []
         self.__star_data = []
+        self.__sf_name_corr = []
 
         self.__original_error_message = []
 
@@ -3361,6 +3362,9 @@ class NmrDpUtility:
         self.chk_desc_pat_mand = re.compile(r'^The mandatory type _.*\.(.*) \'(.*)\' is missing and the type must be one of \((.*)\)\.(.*)$')
         self.chk_desc_pat_mand_one = re.compile(r'^The mandatory type _.*\.(.*) \'(.*)\' is missing and the type must be one of (.*)\.(.*)$')
 
+        # pattern for guessing original saveframe name DAOTHER-7389, issue #4
+        self.chk_unresolved_sf_name_pat = re.compile(r'^(.*)_\d+$')
+
         # main contents of loops
         self.__lp_data = {'entry_info': [],
                           'poly_seq': [],
@@ -3794,6 +3798,7 @@ class NmrDpUtility:
         if not self.report_prev is None:
             self.report.inheritFormatIssueErrors(self.report_prev)
             self.report.inheritCorrectedFormatIssueWarnings(self.report_prev)
+            self.report.inheritCorrectedSaveframeNameWarnings(self.report_prev)
 
             if not self.report_prev.error.get() is None:
                 self.report.setCorrectedError(self.report_prev)
@@ -3892,6 +3897,7 @@ class NmrDpUtility:
 
         self.__star_data_type = []
         self.__star_data = []
+        self.__sf_name_corr = []
 
         self.__original_error_message = []
 
@@ -3968,9 +3974,7 @@ class NmrDpUtility:
                 convert_codec(srcPath, srcPath_, codec, 'utf-8')
                 srcPath = srcPath_
 
-            is_valid, json_dumps = self.__nefT.validate_file(srcPath, 'A') # 'A' for NMR unified data, 'S' for assigned chemical shifts, 'R' for restraints.
-
-            message = json.loads(json_dumps)
+            is_valid, message = self.__nefT.validate_file(srcPath, 'A') # 'A' for NMR unified data, 'S' for assigned chemical shifts, 'R' for restraints.
 
             self.__original_error_message.append(message)
 
@@ -4039,9 +4043,7 @@ class NmrDpUtility:
                     convert_codec(csPath, csPath_, codec, 'utf-8')
                     csPath = csPath_
 
-                is_valid, json_dumps = self.__nefT.validate_file(csPath, 'S') # 'A' for NMR unified data, 'S' for assigned chemical shifts, 'R' for restraints.
-
-                message = json.loads(json_dumps)
+                is_valid, message = self.__nefT.validate_file(csPath, 'S') # 'A' for NMR unified data, 'S' for assigned chemical shifts, 'R' for restraints.
 
                 self.__original_error_message.append(message)
 
@@ -4132,9 +4134,7 @@ class NmrDpUtility:
                         convert_codec(mrPath, mrPath_, codec, 'utf-8')
                         mrPath = mrPath_
 
-                    is_valid, json_dumps = self.__nefT.validate_file(mrPath, 'R') # 'A' for NMR unified data, 'S' for assigned chemical shifts, 'R' for restraints.
-
-                    message = json.loads(json_dumps)
+                    is_valid, message = self.__nefT.validate_file(mrPath, 'R') # 'A' for NMR unified data, 'S' for assigned chemical shifts, 'R' for restraints.
 
                     self.__original_error_message.append(message)
 
@@ -5126,9 +5126,7 @@ class NmrDpUtility:
 
         if len(tmpPaths) > len_tmp_paths:
 
-            is_valid, json_dumps = self.__nefT.validate_file(_srcPath, fileSubType)
-
-            _message = json.loads(json_dumps)
+            is_valid, _message = self.__nefT.validate_file(_srcPath, fileSubType)
 
             if not is_valid:
 
@@ -5146,9 +5144,7 @@ class NmrDpUtility:
 
         is_done = True
 
-        is_valid, json_dumps = self.__nefT.validate_file(_srcPath, fileSubType)
-
-        message = json.loads(json_dumps)
+        is_valid, message = self.__nefT.validate_file(_srcPath, fileSubType)
 
         _file_type = message['file_type'] # nef/nmr-star/unknown
 
@@ -5297,9 +5293,7 @@ class NmrDpUtility:
 
                     sf_framecode = get_first_sf_tag(sf_data, 'sf_framecode')
 
-                    try:
-                        self.__star_data[file_list_id].get_saveframe_by_name(sf_framecode)
-                    except KeyError:
+                    if self.__getSaveframeByName(file_list_id, sf_framecode) is None:
 
                         itName = '_' + sf_category + '.sf_framecode'
 
@@ -5642,9 +5636,7 @@ class NmrDpUtility:
 
                     sf_framecode = get_first_sf_tag(sf_data, 'sf_framecode')
 
-                    try:
-                        self.__star_data[file_list_id].get_saveframe_by_name(sf_framecode)
-                    except KeyError:
+                    if self.__getSaveframeByName(file_list_id, sf_framecode) is None:
 
                         itName = '_' + sf_category + '.Sf_framecode'
 
@@ -5946,6 +5938,18 @@ class NmrDpUtility:
             content_type = input_source_dic['content_type']
 
             self.__sf_category_list, self.__lp_category_list = self.__nefT.get_data_content(self.__star_data[fileListId], self.__star_data_type[fileListId])
+
+            is_valid, messages, corrections = self.__nefT.resolve_sf_names_for_cif(self.__star_data[fileListId], self.__star_data_type[fileListId]) # DAOTHER-7389, issue #4
+            self.__sf_name_corr.append(corrections)
+
+            if not is_valid:
+
+                for warn in messages:
+                    self.report.warning.appendDescription('corrected_saveframe_name', {'file_name': file_name, 'description': warn})
+                    self.report.setWarning()
+
+                    if self.__verbose:
+                        self.__lfh.write("+NmrDpUtility.__detectContentSubType() ++ Warning  - %s\n" % warn)
 
             tags_with_null_str = []
 
@@ -8283,9 +8287,9 @@ class NmrDpUtility:
                 except ValueError:
                     return False
 
-                try:
-                    _sf_data = self.__star_data[file_list_id].get_saveframe_by_name(entity_sf)
-                except KeyError:
+                _sf_data = self.__getSaveframeByName(file_list_id, entity_sf)
+
+                if _sf_data is None:
                     return False
 
                 content_subtype = 'entity'
@@ -14167,7 +14171,10 @@ class NmrDpUtility:
                     cs_data = cs['data']
                     cs_list = cs['sf_framecode']
 
-                    cs_sf_data = self.__star_data[fileListId].get_saveframe_by_name(cs_list)
+                    cs_sf_data = self.__getSaveframeByName(fileListId, cs_list)
+
+                    if cs_sf_data is None:
+                        continue
 
                     _cs_list_id = cs_sf_data.get_tag('ID')[0]
 
@@ -14302,7 +14309,10 @@ class NmrDpUtility:
                                         cs_data = l['data']
                                         cs_list = l['sf_framecode']
 
-                                        cs_sf_data = self.__star_data[fileListId].get_saveframe_by_name(cs_list)
+                                        cs_sf_data = self.__getSaveframeByName(fileListId, cs_list)
+
+                                        if cs_sf_data is None:
+                                            continue
 
                                         _cs_list_id = cs_sf_data.get_tag('ID')[0]
 
@@ -23061,6 +23071,7 @@ i                               """
         if len(self.__sf_category_list) == 0:
 
             _, star_data_type, star_data = self.__nefT.read_input_file(self.__srcPath)
+
             self.__sf_category_list, self.__lp_category_list = self.__nefT.get_data_content(star_data, star_data_type)
 
             if len(self.__star_data_type) == 0:
@@ -23072,6 +23083,13 @@ i                               """
                 self.__star_data.append(star_data)
             else:
                 self.__star_data[0] = star_data
+
+            corrections = self.__nefT.resolve_sf_names_for_cif(star_data, star_data_type) # DAOTHER-7389, issue #4
+
+            if len(self.__sf_name_corr) == 0:
+                self.__sf_name_corr.append(corrections)
+            else:
+                self.__sf_name_corr[0] = corrections
 
         if not 'report_file_path' in self.__inputParamDict:
             self.__initializeDpReport()
@@ -23445,9 +23463,9 @@ i                               """
 
                 else:
 
-                    try:
-                        sf_data = self.__star_data[0].get_saveframe_by_name(w['sf_framecode'])
-                    except KeyError:
+                    sf_data = self.__getSaveframeByName(0, w['sf_framecode'])
+
+                    if sf_data is None:
 
                         err = "Could not specify %r saveframe unexpectedly in %r file." % (w['sf_framecode'], file_name)
 
@@ -26670,9 +26688,9 @@ i                               """
 
                 else:
 
-                    try:
-                        sf_data = self.__star_data[0].get_saveframe_by_name(w['sf_framecode'])
-                    except KeyError:
+                    sf_data = self.__getSaveframeByName(0, w['sf_framecode'])
+
+                    if sf_data is None:
 
                         err = "Could not specify %r saveframe unexpectedly in %r file." % (w['sf_framecode'], file_name)
 
@@ -26770,9 +26788,9 @@ i                               """
 
                 else:
 
-                    try:
-                        sf_data = self.__star_data[0].get_saveframe_by_name(w['sf_framecode'])
-                    except KeyError:
+                    sf_data = self.__getSaveframeByName(0, w['sf_framecode'])
+
+                    if sf_data is None:
 
                         err = "Could not specify %r saveframe unexpectedly in %r file." % (w['sf_framecode'], file_name)
 
@@ -26882,9 +26900,9 @@ i                               """
 
                 else:
 
-                    try:
-                        sf_data = self.__star_data[0].get_saveframe_by_name(w['sf_framecode'])
-                    except KeyError:
+                    sf_data = self.__getSaveframeByName(0, w['sf_framecode'])
+
+                    if sf_data is None:
 
                         err = "Could not specify %r saveframe unexpectedly in %r file." % (w['sf_framecode'], file_name)
 
@@ -27049,9 +27067,9 @@ i                               """
 
                 else:
 
-                    try:
-                        sf_data = self.__star_data[0].get_saveframe_by_name(w['sf_framecode'])
-                    except KeyError:
+                    sf_data = self.__getSaveframeByName(0, w['sf_framecode'])
+
+                    if sf_data is None:
 
                         err = "Could not specify %r saveframe unexpectedly in %r file." % (w['sf_framecode'], file_name)
 
@@ -28183,9 +28201,9 @@ i                               """
 
                 else:
 
-                    try:
-                        sf_data = self.__star_data[0].get_saveframe_by_name(w['sf_framecode'])
-                    except KeyError:
+                    sf_data = self.__getSaveframeByName(0, w['sf_framecode'])
+
+                    if sf_data is None:
 
                         err = "Could not specify %r saveframe unexpectedly in %r file." % (w['sf_framecode'], file_name)
 
@@ -28271,6 +28289,33 @@ i                               """
 
         return True
     """
+    def __getSaveframeByName(self, file_list_id, sf_framecode):
+        """ Retrieve saveframe content from a given name.
+        """
+
+        try:
+
+            return self.__star_data[file_list_id].get_saveframe_by_name(sf_framecode)
+
+        except KeyError: # DAOTHER-7389, issue #4
+
+            if sf_framecode in self.__sf_name_corr[file_list_id]:
+
+                try:
+                    return self.__star_data[file_list_id].get_saveframe_by_name(self.__sf_name_corr[file_list_id][sf_framecode])
+                except KeyError:
+                    return None
+
+            else:
+
+                try:
+                    g = self.chk_unresolved_sf_name_pat.search(sf_framecode).groups()
+                    return self.__star_data[file_list_id].get_saveframe_by_name(g[0])
+                except AttributeError:
+                    return None
+                except KeyError:
+                    return None
+
     def __resetCapitalStringInLoop(self):
         """ Reset capital string values (chain_id, comp_id, atom_id) in loops depending on file type.
         """
@@ -29433,7 +29478,7 @@ i                               """
 
         try:
 
-            is_valid, json_dumps = self.__nefT.nef_to_nmrstar(self.__dstPath, out_file_path, report=self.report, leave_unmatched=self.__leave_intl_note) # (None if self.__alt_chain else self.report))
+            is_valid, message = self.__nefT.nef_to_nmrstar(self.__dstPath, out_file_path, report=self.report, leave_unmatched=self.__leave_intl_note) # (None if self.__alt_chain else self.report))
 
             if self.__release_mode and not self.__tmpPath is None:
                 os.remove(self.__tmpPath)
@@ -29470,8 +29515,6 @@ i                               """
                 star_to_cif.convert(out_file_path, self.__outputParamDict['nmr-cif_file_path'], original_file_name, 'nm-uni-nef')
 
             return True
-
-        message = json.loads(json_dumps)
 
         err = "%s is not compliant with the %s dictionary." % (file_name, self.readable_file_type[file_type])
 
@@ -29550,7 +29593,7 @@ i                               """
 
         try:
 
-            is_valid, json_dumps = self.__nefT.nmrstar_to_nef(self.__dstPath, out_file_path, report=self.report) # (None if self.__alt_chain else self.report))
+            is_valid, message = self.__nefT.nmrstar_to_nef(self.__dstPath, out_file_path, report=self.report) # (None if self.__alt_chain else self.report))
 
             if self.__release_mode and not self.__tmpPath is None:
                 os.remove(self.__tmpPath)
@@ -29577,8 +29620,6 @@ i                               """
 
         if is_valid:
             return True
-
-        message = json.loads(json_dumps)
 
         err = "%s is not compliant with the %s dictionary." % (file_name, self.readable_file_type[file_type])
 

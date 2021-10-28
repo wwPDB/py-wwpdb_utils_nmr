@@ -3436,6 +3436,9 @@
         "corrected_format_issue": {
           "$ref": "#/definitions/common_message"
         },
+        "corrected_saveframe_name": {
+          "$ref": "#/definitions/common_message"
+        },
         "disordered_index": {
           "$ref": "#/definitions/common_message"
         },

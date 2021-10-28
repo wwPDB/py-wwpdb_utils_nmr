@@ -51,6 +51,7 @@
 # 24-Aug-2021  M. Yokochi - add content subtype for XPLOR-NIH planarity restraints (DAOTHER-7265)
 # 13-Oct-2021  M. Yokochi - code revision according to PEP8 using Pylint (DAOTHER-7389, issue #5)
 # 14-Oct-2021  M. Yokochi - add 'incompletely_ssigned_chemical_shift' and 'incompletely_assigned_spectral_peak' (DAOTHER-7389, issue #3)
+# 28-Oct-2021  M. Yokochi - add 'corrected_saveframe_name' warning (DAOTHER-7389, issue #4)
 ##
 """ Wrapper class for data processing report of NMR data.
     @author: Masashi Yokochi
@@ -1538,6 +1539,33 @@ class NmrDpReport:
             logging.warning('+NmrDpReport.inheritCorrectedFormatIssueWarnings() ++ Warning  - No effects on NMR data processing report because the report is immutable')
             raise UserWarning('+NmrDpReport.inheritCorrectedFormatIssueWarnings() ++ Warning  - No effects on NMR data processing report because the report is immutable')
 
+    def inheritCorrectedSaveframeNameWarnings(self, prev_report):
+        """ Inherit corrected saveframe name warnings from the previous report (e.g. nmr-*-consistency-check workflow operation).
+        """
+
+        item = 'corrected_saveframe_name'
+
+        if not self.__immutable:
+
+            file_name = self.input_sources[self.getInputSourceIdOfNmrData()].get()['file_name']
+            _file_name = prev_report.input_sources[prev_report.getInputSourceIdOfNmrData()].get()['file_name']
+
+            value_list = prev_report.warning.getValueList(item, _file_name)
+
+            if value_list is None:
+                return
+
+            for c in value_list:
+
+                if 'file_name' in c:
+                    c['file_name'] = file_name
+
+                self.warning.appendDescription(item, c)
+
+        else:
+            logging.warning('+NmrDpReport.inheritCorrectedSaveframeNameWarnings() ++ Warning  - No effects on NMR data processing report because the report is immutable')
+            raise UserWarning('+NmrDpReport.inheritCorrectedSaveframeNameWarnings() ++ Warning  - No effects on NMR data processing report because the report is immutable')
+
     def setCorrectedError(self, prev_report):
         """ Initialize history of corrected errors in the previous report.
         """
@@ -2024,7 +2052,7 @@ class NmrDpReportWarning:
 
     def __init__(self):
         self.items = ('encouragement', 'missing_content', 'missing_saveframe', 'missing_data', 'enum_mismatch',
-                      'enum_mismatch_ignorable', 'corrected_format_issue',
+                      'enum_mismatch_ignorable', 'corrected_format_issue', 'corrected_saveframe_name',
                       'disordered_index', 'sequence_mismatch',
                       'atom_nomenclature_mismatch', 'auth_atom_nomenclature_mismatch', 'ccd_mismatch', 'ambiguity_code_mismatch',
                       'skipped_saveframe_category', 'skipped_loop_category',

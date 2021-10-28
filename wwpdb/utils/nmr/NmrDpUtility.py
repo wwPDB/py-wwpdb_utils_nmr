@@ -139,7 +139,6 @@ import sys
 import os
 import os.path
 import pynmrstar
-import json
 import itertools
 import copy
 import collections
@@ -3968,9 +3967,7 @@ class NmrDpUtility:
                 convert_codec(srcPath, srcPath_, codec, 'utf-8')
                 srcPath = srcPath_
 
-            is_valid, json_dumps = self.__nefT.validate_file(srcPath, 'A') # 'A' for NMR unified data, 'S' for assigned chemical shifts, 'R' for restraints.
-
-            message = json.loads(json_dumps)
+            is_valid, message = self.__nefT.validate_file(srcPath, 'A') # 'A' for NMR unified data, 'S' for assigned chemical shifts, 'R' for restraints.
 
             self.__original_error_message.append(message)
 
@@ -4039,9 +4036,7 @@ class NmrDpUtility:
                     convert_codec(csPath, csPath_, codec, 'utf-8')
                     csPath = csPath_
 
-                is_valid, json_dumps = self.__nefT.validate_file(csPath, 'S') # 'A' for NMR unified data, 'S' for assigned chemical shifts, 'R' for restraints.
-
-                message = json.loads(json_dumps)
+                is_valid, message = self.__nefT.validate_file(csPath, 'S') # 'A' for NMR unified data, 'S' for assigned chemical shifts, 'R' for restraints.
 
                 self.__original_error_message.append(message)
 
@@ -4132,9 +4127,7 @@ class NmrDpUtility:
                         convert_codec(mrPath, mrPath_, codec, 'utf-8')
                         mrPath = mrPath_
 
-                    is_valid, json_dumps = self.__nefT.validate_file(mrPath, 'R') # 'A' for NMR unified data, 'S' for assigned chemical shifts, 'R' for restraints.
-
-                    message = json.loads(json_dumps)
+                    is_valid, message = self.__nefT.validate_file(mrPath, 'R') # 'A' for NMR unified data, 'S' for assigned chemical shifts, 'R' for restraints.
 
                     self.__original_error_message.append(message)
 
@@ -5126,9 +5119,7 @@ class NmrDpUtility:
 
         if len(tmpPaths) > len_tmp_paths:
 
-            is_valid, json_dumps = self.__nefT.validate_file(_srcPath, fileSubType)
-
-            _message = json.loads(json_dumps)
+            is_valid, _message = self.__nefT.validate_file(_srcPath, fileSubType)
 
             if not is_valid:
 
@@ -5146,9 +5137,7 @@ class NmrDpUtility:
 
         is_done = True
 
-        is_valid, json_dumps = self.__nefT.validate_file(_srcPath, fileSubType)
-
-        message = json.loads(json_dumps)
+        is_valid, message = self.__nefT.validate_file(_srcPath, fileSubType)
 
         _file_type = message['file_type'] # nef/nmr-star/unknown
 
@@ -29433,7 +29422,7 @@ i                               """
 
         try:
 
-            is_valid, json_dumps = self.__nefT.nef_to_nmrstar(self.__dstPath, out_file_path, report=self.report, leave_unmatched=self.__leave_intl_note) # (None if self.__alt_chain else self.report))
+            is_valid, message = self.__nefT.nef_to_nmrstar(self.__dstPath, out_file_path, report=self.report, leave_unmatched=self.__leave_intl_note) # (None if self.__alt_chain else self.report))
 
             if self.__release_mode and not self.__tmpPath is None:
                 os.remove(self.__tmpPath)
@@ -29470,8 +29459,6 @@ i                               """
                 star_to_cif.convert(out_file_path, self.__outputParamDict['nmr-cif_file_path'], original_file_name, 'nm-uni-nef')
 
             return True
-
-        message = json.loads(json_dumps)
 
         err = "%s is not compliant with the %s dictionary." % (file_name, self.readable_file_type[file_type])
 
@@ -29550,7 +29537,7 @@ i                               """
 
         try:
 
-            is_valid, json_dumps = self.__nefT.nmrstar_to_nef(self.__dstPath, out_file_path, report=self.report) # (None if self.__alt_chain else self.report))
+            is_valid, message = self.__nefT.nmrstar_to_nef(self.__dstPath, out_file_path, report=self.report) # (None if self.__alt_chain else self.report))
 
             if self.__release_mode and not self.__tmpPath is None:
                 os.remove(self.__tmpPath)
@@ -29577,8 +29564,6 @@ i                               """
 
         if is_valid:
             return True
-
-        message = json.loads(json_dumps)
 
         err = "%s is not compliant with the %s dictionary." % (file_name, self.readable_file_type[file_type])
 

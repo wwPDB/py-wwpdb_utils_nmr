@@ -72,6 +72,7 @@
 # 14-Oct-2021  M. Yokochi - remove unassigned chemical shifts, clear incompletely assigned spectral peaks (v2.11.1, DAOTHER-7389, issue #3)
 # 19-Oct-2021  M. Yokochi - add NMR-STAR format normalizer for conventional CS deposition using a single file (v3.0.0, DAOTHER-7344, 7355, 7389 issue #4, 7407)
 # 27-Oct-2021  M. Yokochi - utilize Auth_asym_ID* tag for chain_id if Entity_assembly_ID* is not available (v3.0.1, DAOTHER-7421)
+# 28-Oct-2021  M. Yokochi - use simple dictionary for return messaging, instead of JSON dump/load (v3.0.2)
 ##
 """ Bi-directional translator between NEF and NMR-STAR
     @author: Kumaran Baskaran, Masashi Yokochi
@@ -79,7 +80,6 @@
 import sys
 import os
 import ntpath
-import json
 import logging
 import re
 import csv
@@ -94,7 +94,7 @@ from wwpdb.utils.config.ConfigInfoApp import ConfigInfoAppCommon
 from wwpdb.utils.nmr.io.ChemCompIo import ChemCompReader
 from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
 
-__version__ = '3.0.1'
+__version__ = '3.0.2'
 
 __pynmrstar_v3_2__ = version.parse(pynmrstar.__version__) >= version.parse("3.2.0")
 __pynmrstar_v3_1__ = version.parse(pynmrstar.__version__) >= version.parse("3.1.0")
@@ -898,7 +898,7 @@ class NEFTranslator:
         """ Validate input NEF/NMR-STAR file.
             @param infile: input NEF/NMR-STAR file path
             @param file_subtype: should be 'A' or 'S' or 'R' where A for All in one file, S for chemical Shifts file, R for Restraints file
-            @return: status, JSON message
+            @return: status, message
         """
 
         is_valid = True
@@ -1143,7 +1143,7 @@ class NEFTranslator:
             is_valid = False
             error.append(str(e))
 
-        return is_valid, json.dumps({'info': info, 'warning': warning, 'error': error, 'file_type': file_type})
+        return is_valid, {'info': info, 'warning': warning, 'error': error, 'file_type': file_type}
 
     def is_empty(self, data):
         """ Check if given data has empty code.
@@ -1198,16 +1198,15 @@ class NEFTranslator:
     def get_seq_from_cs_loop(self, in_file):
         """ Extract sequence from chemical shift loop.
             @param in_file: NEF/NMR-STAR file
-            @return: status, JSON message
+            @return: status, message
         """
 
-        is_valid, json_dumps = self.validate_file(in_file, 'S')
+        is_valid, message = self.validate_file(in_file, 'S')
 
-        data = json.loads(json_dumps)
-
-        info = data['info']
-        warning = data['warning']
-        error = data['error']
+        info = message['info']
+        warning = message['warning']
+        error = message['error']
+        file_type = message['file_type']
 
         is_ok = False
         seq = []
@@ -1217,7 +1216,7 @@ class NEFTranslator:
             info.append('File successfully read ')
             in_data = self.read_input_file(in_file)[-1]
 
-            if data['file_type'] == 'nmr-star':
+            if file_type == 'nmr-star':
 
                 info.append('NMR-STAR')
                 seq = self.get_star_seq(in_data)
@@ -1228,7 +1227,7 @@ class NEFTranslator:
                 else:
                     error.append("Can't extract sequence from chemical shift loop")
 
-            elif data['file_type'] == 'nef':
+            elif file_type == 'nef':
 
                 info.append('NEF')
                 seq = self.get_nef_seq(in_data)
@@ -1245,7 +1244,7 @@ class NEFTranslator:
         else:
             error.append('File validation failed (or) File contains no chemical shift information')
 
-        return is_ok, json.dumps({'info': info, 'warning': warning, 'error': error, 'file_type': data['file_type'], 'data': seq})
+        return is_ok, {'info': info, 'warning': warning, 'error': error, 'file_type': file_type, 'data': seq}
 
     def get_nef_seq(self, star_data, lp_category='nef_chemical_shift', seq_id='sequence_code', comp_id='residue_name',
                     chain_id='chain_code', allow_empty=False, allow_gap=False):
@@ -7946,16 +7945,16 @@ class NEFTranslator:
 
         if not is_readable:
             error.append('Input file not readable.')
-            return False, json.dumps({'info': info, 'warning': warning, 'error': error})
+            return False, {'info': info, 'warning': warning, 'error': error}
 
         if not data_type in ('Entry', 'Saveframe', 'Loop'):
             error.append('File content unknown.')
-            return False, json.dumps({'info': info, 'warning': warning, 'error': error})
+            return False, {'info': info, 'warning': warning, 'error': error}
 
         if data_type == 'Entry':
             if len(nef_data.get_loops_by_category('nef_sequence')) == 0: # DAOTHER-6694
                 error.append("Missing mandatory '_nef_sequence' category.")
-                return False, json.dumps({'info': info, 'warning': warning, 'error': error})
+                return False, {'info': info, 'warning': warning, 'error': error}
             self.authChainId = sorted(list(set(nef_data.get_loops_by_category('nef_sequence')[0].get_tag('chain_code'))))
         elif data_type == 'Saveframe':
             self.authChainId = sorted(list(set(nef_data[0].get_tag('chain_code'))))
@@ -8279,7 +8278,7 @@ class NEFTranslator:
 
                 else:
                     error.append('Loop category %s is not supported.' % nef_data.category)
-                    return False, json.dumps({'info': info, 'warning': warning, 'error': error})
+                    return False, {'info': info, 'warning': warning, 'error': error}
 
                 sf.add_tag('Sf_framecode', sf.name)
 
@@ -8425,7 +8424,7 @@ class NEFTranslator:
             star_data.write_to_file(star_file)
         info.append('File {} successfully written.'.format(star_file))
 
-        return True, json.dumps({'info': info, 'warning': warning, 'error': error})
+        return True, {'info': info, 'warning': warning, 'error': error}
 
     def nmrstar_to_nef(self, star_file, nef_file=None, report=None):
         """ Convert NMR-STAR file to NEF file.
@@ -8454,11 +8453,11 @@ class NEFTranslator:
 
         if not is_readable:
             error.append('Input file not readable.')
-            return False, json.dumps({'info': info, 'warning': warning, 'error': error})
+            return False, {'info': info, 'warning': warning, 'error': error}
 
         if not data_type in ('Entry', 'Saveframe', 'Loop'):
             error.append('File content unknown.')
-            return False, json.dumps({'info': info, 'warning': warning, 'error': error})
+            return False, {'info': info, 'warning': warning, 'error': error}
 
         asm_id = 0
         cs_list_id = 0
@@ -8470,7 +8469,7 @@ class NEFTranslator:
         if data_type == 'Entry':
             if len(star_data.get_loops_by_category('Chem_comp_assembly')) == 0: # DAOTHER-6694
                 error.append("Missing mandatory '_Chem_comp_assembly' category.")
-                return False, json.dumps({'info': info, 'warning': warning, 'error': error})
+                return False, {'info': info, 'warning': warning, 'error': error}
             self.authChainId = sorted(list(set(star_data.get_loops_by_category('Chem_comp_assembly')[0].get_tag('Entity_assembly_ID'))), key=lambda x:float(re.sub(r'[^\d]+', '', x)))
         elif data_type == 'Saveframe':
             self.authChainId = sorted(list(set(star_data[0].get_tag('Entity_assembly_ID'))), key=lambda x:float(re.sub(r'[^\d]+', '', x)))
@@ -8722,7 +8721,7 @@ class NEFTranslator:
 
                 else:
                     error.append('Loop category %s is not supported.' % star_data.category)
-                    return False, json.dumps({'info': info, 'warning': warning, 'error': error})
+                    return False, {'info': info, 'warning': warning, 'error': error}
 
                 sf.add_tag('sf_framecode', sf.name)
 
@@ -8841,7 +8840,7 @@ class NEFTranslator:
             nef_data.write_to_file(nef_file)
         info.append('File {} successfully written.'.format(nef_file))
 
-        return True, json.dumps({'info': info, 'warning': warning, 'error': error})
+        return True, {'info': info, 'warning': warning, 'error': error}
 
     def star_data_to_nmrstar(self, data_type, star_data, output_file_path=None, input_source_id=None, report=None, leave_unmatched=False):
         """ Convert PyNMRSTAR data object (Entry/Saveframe/Loop) to complete NMR-STAR (Entry) file.
@@ -8867,17 +8866,17 @@ class NEFTranslator:
 
         if star_data is None or report is None:
             error.append('Input file not readable.')
-            return False, json.dumps({'info': info, 'warning': warning, 'error': error})
+            return False, {'info': info, 'warning': warning, 'error': error}
 
         if not data_type in ('Entry', 'Saveframe', 'Loop'):
             error.append('Data type unknown.')
-            return False, json.dumps({'info': info, 'warning': warning, 'error': error})
+            return False, {'info': info, 'warning': warning, 'error': error}
 
         polymer_sequence = report.getPolymerSequenceByInputSrcId(input_source_id)
 
         if polymer_sequence is None:
             error.append('Common polymer sequence does not exist.')
-            return False, json.dumps({'info': info, 'warning': warning, 'error': error})
+            return False, {'info': info, 'warning': warning, 'error': error}
 
         self.authChainId = sorted([ps['chain_id'] for ps in polymer_sequence])
         self.authSeqMap = {}
@@ -9198,7 +9197,7 @@ class NEFTranslator:
 
                 else:
                     error.append('Loop category %s is not supported.' % star_data.category)
-                    return False, json.dumps({'info': info, 'warning': warning, 'error': error})
+                    return False, {'info': info, 'warning': warning, 'error': error}
 
                 sf.add_tag('Sf_framecode', sf.name)
 
@@ -9339,7 +9338,7 @@ class NEFTranslator:
             out_data.write_to_file(output_file_path)
         info.append('File {} successfully written.'.format(output_file_path))
 
-        return True, json.dumps({'info': info, 'warning': warning, 'error': error})
+        return True, {'info': info, 'warning': warning, 'error': error}
 
 if __name__ == "__main__":
     _nefT = NEFTranslator()

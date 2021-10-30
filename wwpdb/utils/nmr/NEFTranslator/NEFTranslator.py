@@ -61,7 +61,9 @@
 # 04-Feb-2021  M. Yokochi - support 3 letter chain code (v2.9.5, DAOTHER-5896, DAOTHER-6128, BMRB entry: 16812, PDB ID: 6kae)
 # 10-Mar-2021  M. Yokochi - block NEF deposition missing '_nef_sequence' category and turn off salvage routine for the case (v2.9.6, DAOTHER-6694)
 # 10-Mar-2021  M. Yokochi - add support for audit loop in NEF (v2.9.7, DAOTHER-6327)
-# 25-Mar-2021  M. Yokochi - fix crash during NMR-STAR to NEF atom name conversion (v2.9.8, DAOTHER-6128, bmrb_id: 15879, pdb_id: 2k6r, comp_id: DNS, nef_atom_id: Hx%, Hy% point to [H11A, H12, H13], [H21, H22, H23], respectively, but SHOULD NOT to H10, H11, H[ABCDE][23])
+# 25-Mar-2021  M. Yokochi - fix crash during NMR-STAR to NEF atom name conversion (v2.9.8, DAOTHER-6128,
+#                           bmrb_id: 15879, pdb_id: 2k6r, comp_id: DNS, nef_atom_id: Hx%, Hy% point to [H11A, H12, H13],
+#                           [H21, H22, H23], respectively, but SHOULD NOT to H10, H11, H[ABCDE][23])
 # 14-May-2021  M. Yokochi - add support for PyNMRSTAR v3.1.1 (DAOTHER-6693)
 # 14-May-2021  M. Yokochi - remove empty loop for Entity_deleted_atom category in NMR-STAR to NEF conversion (v2.10.0)
 # 23-Jun-2021  M. Yokochi - fix error in handling lower/upper linear limits (v2.10.1, DAOTHER-6963)
@@ -102,24 +104,25 @@ __pynmrstar_v3_1__ = version.parse(pynmrstar.__version__) >= version.parse("3.1.
 __pynmrstar_v3__ = version.parse(pynmrstar.__version__) >= version.parse("3.0.0")
 
 logging.getLogger().setLevel(logging.ERROR)
-"""
-def load_json_data(json_file):
-    "" Load JSON data to dictionary.
-        @param json_file: input JSON file path
-        @return: dictionary object
-    ""
+#
+# def load_json_data(json_file):
+#     "" Load JSON data to dictionary.
+#         @param json_file: input JSON file path
+#         @return: dictionary object
+#     ""
 
-    data_dict = []
+#     data_dict = []
 
-    try:
-        with open(json_file, 'r') as file:
-            data_dict = json.loads(file.read())
+#     try:
+#         with open(json_file, 'r') as file:
+#             data_dict = json.loads(file.read())
 
-    except Exception as e:
-        logging.error(str(e))
+#     except Exception as e:
+#         logging.error(str(e))
 
-    return data_dict
-"""
+#     return data_dict
+#
+
 
 def load_csv_data(csv_file, transpose=False):
     """ Load CSV data to list.
@@ -297,7 +300,12 @@ class NEFTranslator:
         self.star_boolean = ('yes', 'no')
 
         # paramagnetic elements, except for Oxygen
-        self.paramag_elems = ('LI', 'NA', 'MG', 'AL', 'K', 'CA', 'SC', 'TI', 'V', 'MN', 'RB', 'SR', 'Y', 'ZR', 'NB', 'MO', 'TC', 'RU', 'RH', 'PD', 'SN', 'CS', 'BA', 'LA', 'CE', 'PR', 'ND', 'PM', 'SM', 'EU', 'GD', 'TB', 'DY', 'HO', 'ER', 'TM', 'YB', 'LU', 'HF', 'TA', 'W', 'RE', 'OS', 'IR', 'PT', 'FR', 'RA', 'AC')
+        self.paramag_elems = ('LI', 'NA', 'MG', 'AL', 'K', 'CA', 'SC', 'TI',
+                              'V', 'MN', 'RB', 'SR', 'Y', 'ZR', 'NB', 'MO',
+                              'TC', 'RU', 'RH', 'PD', 'SN', 'CS', 'BA', 'LA',
+                              'CE', 'PR', 'ND', 'PM', 'SM', 'EU', 'GD', 'TB',
+                              'DY', 'HO', 'ER', 'TM', 'YB', 'LU', 'HF', 'TA',
+                              'W', 'RE', 'OS', 'IR', 'PT', 'FR', 'RA', 'AC')
 
         # ferromagnetic elements
         self.ferromag_elems = ('CR', 'FE', 'CO', 'NI')
@@ -322,49 +330,85 @@ class NEFTranslator:
 
         # list of atom_id of known residues
         self.atomDict = {"ALA": ["N", "CA", "C", "O", "CB", "OXT", "H", "H2", "HA", "HB1", "HB2", "HB3", "HXT"],
-                         "ARG": ["N", "CA", "C", "O", "CB", "CG", "CD", "NE", "CZ", "NH1", "NH2", "OXT", "H", "H2", "HA", "HB2", "HB3", "HG2", "HG3", "HD2", "HD3", "HE", "HH11", "HH12", "HH21", "HH22", "HXT"],
-                         "ASN": ["N", "CA", "C", "O", "CB", "CG", "OD1", "ND2", "OXT", "H", "H2", "HA", "HB2", "HB3", "HD21", "HD22", "HXT"],
-                         "ASP": ["N", "CA", "C", "O", "CB", "CG", "OD1", "OD2", "OXT", "H", "H2", "HA", "HB2", "HB3", "HD2", "HXT"],
-                         "ASX": ["N", "CA", "C", "O", "CB", "CG", "XD1", "XD2", "OXT", "H", "H2", "HA", "HB1", "HB2", "HXT"],
-                         "CYS": ["N", "CA", "C", "O", "CB", "SG", "OXT", "H", "H2", "HA", "HB2", "HB3", "HG", "HXT"],
-                         "GLN": ["N", "CA", "C", "O", "CB", "CG", "CD", "OE1", "NE2", "OXT", "H", "H2", "HA", "HB2", "HB3", "HG2", "HG3", "HE21", "HE22", "HXT"],
-                         "GLU": ["N", "CA", "C", "O", "CB", "CG", "CD", "OE1", "OE2", "OXT", "H", "H2", "HA", "HB2", "HB3", "HG2", "HG3", "HE2", "HXT"],
-                         "GLX": ["N", "CA", "C", "O", "CB", "CG", "CD", "XE1", "XE2", "HA", "OXT", "HXT", "HB1", "HB2", "HG1", "HG2", "H", "H2"],
+                         "ARG": ["N", "CA", "C", "O", "CB", "CG", "CD", "NE", "CZ", "NH1", "NH2", "OXT", "H", "H2", "HA",
+                                 "HB2", "HB3", "HG2", "HG3", "HD2", "HD3", "HE", "HH11", "HH12", "HH21", "HH22", "HXT"],
+                         "ASN": ["N", "CA", "C", "O", "CB", "CG", "OD1", "ND2", "OXT",
+                                 "H", "H2", "HA", "HB2", "HB3", "HD21", "HD22", "HXT"],
+                         "ASP": ["N", "CA", "C", "O", "CB", "CG", "OD1", "OD2", "OXT",
+                                 "H", "H2", "HA", "HB2", "HB3", "HD2", "HXT"],
+                         "ASX": ["N", "CA", "C", "O", "CB", "CG", "XD1", "XD2",
+                                 "OXT", "H", "H2", "HA", "HB1", "HB2", "HXT"],
+                         "CYS": ["N", "CA", "C", "O", "CB", "SG", "OXT", "H",
+                                 "H2", "HA", "HB2", "HB3", "HG", "HXT"],
+                         "GLN": ["N", "CA", "C", "O", "CB", "CG", "CD", "OE1",
+                                 "NE2", "OXT", "H", "H2", "HA", "HB2", "HB3", "HG2", "HG3", "HE21", "HE22", "HXT"],
+                         "GLU": ["N", "CA", "C", "O", "CB", "CG", "CD", "OE1",
+                                 "OE2", "OXT", "H", "H2", "HA", "HB2", "HB3", "HG2", "HG3", "HE2", "HXT"],
+                         "GLX": ["N", "CA", "C", "O", "CB", "CG", "CD", "XE1", "XE2", "HA", "OXT", "HXT",
+                                 "HB1", "HB2", "HG1", "HG2", "H", "H2"],
                          "GLY": ["N", "CA", "C", "O", "OXT", "H", "H2", "HA2", "HA3", "HXT"],
-                         "HIS": ["N", "CA", "C", "O", "CB", "CG", "ND1", "CD2", "CE1", "NE2", "OXT", "H", "H2", "HA", "HB2", "HB3", "HD1", "HD2", "HE1", "HE2", "HXT"],
-                         "ILE": ["N", "CA", "C", "O", "CB", "CG1", "CG2", "CD1", "OXT", "H", "H2", "HA", "HB", "HG12", "HG13", "HG21", "HG22", "HG23", "HD11", "HD12", "HD13", "HXT"],
-                         "LEU": ["N", "CA", "C", "O", "CB", "CG", "CD1", "CD2", "OXT", "H", "H2", "HA", "HB2", "HB3", "HG", "HD11", "HD12", "HD13", "HD21", "HD22", "HD23", "HXT"],
-                         "LYS": ["N", "CA", "C", "O", "CB", "CG", "CD", "CE", "NZ", "OXT", "H", "H2", "HA", "HB2", "HB3", "HG2", "HG3", "HD2", "HD3", "HE2", "HE3", "HZ1", "HZ2", "HZ3", "HXT"],
-                         "MET": ["N", "CA", "C", "O", "CB", "CG", "SD", "CE", "OXT", "H", "H2", "HA", "HB2", "HB3", "HG2", "HG3", "HE1", "HE2", "HE3", "HXT"],
-                         "PHE": ["N", "CA", "C", "O", "CB", "CG", "CD1", "CD2", "CE1", "CE2", "CZ", "OXT", "H", "H2", "HA", "HB2", "HB3", "HD1", "HD2", "HE1", "HE2", "HZ", "HXT"],
-                         "PRO": ["N", "CA", "C", "O", "CB", "CG", "CD", "OXT", "H", "HA", "HB2", "HB3", "HG2", "HG3", "HD2", "HD3", "HXT"],
+                         "HIS": ["N", "CA", "C", "O", "CB", "CG", "ND1", "CD2", "CE1", "NE2", "OXT", "H",
+                                 "H2", "HA", "HB2", "HB3", "HD1", "HD2", "HE1", "HE2", "HXT"],
+                         "ILE": ["N", "CA", "C", "O", "CB", "CG1", "CG2", "CD1", "OXT", "H", "H2", "HA", "HB",
+                                 "HG12", "HG13", "HG21", "HG22", "HG23", "HD11", "HD12", "HD13", "HXT"],
+                         "LEU": ["N", "CA", "C", "O", "CB", "CG", "CD1", "CD2", "OXT", "H", "H2", "HA", "HB2",
+                                 "HB3", "HG", "HD11", "HD12", "HD13", "HD21", "HD22", "HD23", "HXT"],
+                         "LYS": ["N", "CA", "C", "O", "CB", "CG", "CD", "CE", "NZ", "OXT", "H", "H2", "HA", "HB2",
+                                 "HB3", "HG2", "HG3", "HD2", "HD3", "HE2", "HE3", "HZ1", "HZ2", "HZ3", "HXT"],
+                         "MET": ["N", "CA", "C", "O", "CB", "CG", "SD", "CE", "OXT", "H", "H2", "HA", "HB2", "HB3",
+                                 "HG2", "HG3", "HE1", "HE2", "HE3", "HXT"],
+                         "PHE": ["N", "CA", "C", "O", "CB", "CG", "CD1", "CD2", "CE1", "CE2", "CZ", "OXT", "H", "H2",
+                                 "HA", "HB2", "HB3", "HD1", "HD2", "HE1", "HE2", "HZ", "HXT"],
+                         "PRO": ["N", "CA", "C", "O", "CB", "CG", "CD", "OXT", "H", "HA", "HB2", "HB3", "HG2", "HG3",
+                                 "HD2", "HD3", "HXT"],
                          "SER": ["N", "CA", "C", "O", "CB", "OG", "OXT", "H", "H2", "HA", "HB2", "HB3", "HG", "HXT"],
-                         "THR": ["N", "CA", "C", "O", "CB", "OG1", "CG2", "OXT", "H", "H2", "HA", "HB", "HG1", "HG21", "HG22", "HG23", "HXT"],
-                         "TRP": ["N", "CA", "C", "O", "CB", "CG", "CD1", "CD2", "NE1", "CE2", "CE3", "CZ2", "CZ3", "CH2", "OXT", "H", "H2", "HA", "HB2", "HB3", "HD1", "HE1", "HE3", "HZ2", "HZ3", "HH2", "HXT"],
-                         "TYR": ["N", "CA", "C", "O", "CB", "CG", "CD1", "CD2", "CE1", "CE2", "CZ", "OH", "OXT", "H", "H2", "HA", "HB2", "HB3", "HD1", "HD2", "HE1", "HE2", "HH", "HXT"],
-                         "VAL": ["N", "CA", "C", "O", "CB", "CG1", "CG2", "OXT", "H", "H2", "HA", "HB", "HG11", "HG12", "HG13", "HG21", "HG22", "HG23", "HXT"],
-                         "DA": ["OP3", "P", "OP1", "OP2", "O5'", "C5'", "C4'", "O4'", "C3'", "O3'", "C2'", "C1'", "N9", "C8", "N7", "C5", "C6", "N6", "N1", "C2", "N3", "C4", "HOP3", "HOP2", "H5'", "H5''", "H4'", "H3'", "HO3'", "H2'", "H2''", "H1'", "H8", "H61", "H62", "H2"],
-                         "DC": ["OP3", "P", "OP1", "OP2", "O5'", "C5'", "C4'", "O4'", "C3'", "O3'", "C2'", "C1'", "N1", "C2", "O2", "N3", "C4", "N4", "C5", "C6", "HOP3", "HOP2", "H5'", "H5''", "H4'", "H3'", "HO3'", "H2'", "H2''", "H1'", "H41", "H42", "H5", "H6"],
-                         "DG": ["OP3", "P", "OP1", "OP2", "O5'", "C5'", "C4'", "O4'", "C3'", "O3'", "C2'", "C1'", "N9", "C8", "N7", "C5", "C6", "O6", "N1", "C2", "N2", "N3", "C4", "HOP3", "HOP2", "H5'", "H5''", "H4'", "H3'", "HO3'", "H2'", "H2''", "H1'", "H8", "H1", "H21", "H22"],
-                         "DT": ["OP3", "P", "OP1", "OP2", "O5'", "C5'", "C4'", "O4'", "C3'", "O3'", "C2'", "C1'", "N1", "C2", "O2", "N3", "C4", "O4", "C5", "C7", "C6", "HOP3", "HOP2", "H5'", "H5''", "H4'", "H3'", "HO3'", "H2'", "H2''", "H1'", "H3", "H71", "H72", "H73", "H6"],
-                         "DU": ["OP3", "P", "OP1", "OP2", "O5'", "C5'", "C4'", "O4'", "C3'", "O3'", "C2'", "C1'", "N1", "C2", "O2", "N3", "C4", "O4", "C5", "C6", "HOP3", "HOP2", "H5'", "H5''", "H4'", "H3'", "HO3'", "H2'", "H2''", "H1'", "H3", "H5", "H6"],
-                         "A": ["OP3", "P", "OP1", "OP2", "O5'", "C5'", "C4'", "O4'", "C3'", "O3'", "C2'", "O2'", "C1'", "N9", "C8", "N7", "C5", "C6", "N6", "N1",
-                               "C2", "N3", "C4", "HOP3", "HOP2", "H5'", "H5''", "H4'", "H3'", "HO3'", "H2'", "HO2'", "H1'", "H8", "H61", "H62", "H2"],
-                         "C": ["OP3", "P", "OP1", "OP2", "O5'", "C5'", "C4'", "O4'", "C3'", "O3'", "C2'", "O2'", "C1'", "N1", "C2", "O2", "N3", "C4", "N4", "C5",
-                               "C6", "HOP3", "HOP2", "H5'", "H5''", "H4'", "H3'", "HO3'", "H2'", "HO2'", "H1'", "H41", "H42", "H5", "H6"],
-                         "G": ["OP3", "P", "OP1", "OP2", "O5'", "C5'", "C4'", "O4'", "C3'", "O3'", "C2'", "O2'", "C1'", "N9", "C8", "N7", "C5", "C6", "O6", "N1",
-                               "C2", "N2", "N3", "C4", "HOP3", "HOP2", "H5'", "H5''", "H4'", "H3'", "HO3'", "H2'", "HO2'", "H1'", "H8", "H1", "H21", "H22"],
-                         "T": ["OP3", "P", "OP1", "OP2", "O5'", "C5'", "C4'", "O4'", "C3'", "O3'", "C2'", "C1'", "N1", "C2", "O2", "N3", "C4", "O4", "C5", "C7",
+                         "THR": ["N", "CA", "C", "O", "CB", "OG1", "CG2", "OXT", "H", "H2", "HA", "HB", "HG1", "HG21",
+                                 "HG22", "HG23", "HXT"],
+                         "TRP": ["N", "CA", "C", "O", "CB", "CG", "CD1", "CD2", "NE1", "CE2", "CE3", "CZ2", "CZ3", "CH2",
+                                 "OXT", "H", "H2", "HA", "HB2", "HB3", "HD1", "HE1", "HE3", "HZ2", "HZ3", "HH2", "HXT"],
+                         "TYR": ["N", "CA", "C", "O", "CB", "CG", "CD1", "CD2", "CE1", "CE2", "CZ", "OH", "OXT", "H", "H2", "HA"
+                                 , "HB2", "HB3", "HD1", "HD2", "HE1", "HE2", "HH", "HXT"],
+                         "VAL": ["N", "CA", "C", "O", "CB", "CG1", "CG2", "OXT", "H", "H2", "HA", "HB", "HG11", "HG12",
+                                 "HG13", "HG21", "HG22", "HG23", "HXT"],
+                         "DA": ["OP3", "P", "OP1", "OP2", "O5'", "C5'", "C4'", "O4'", "C3'", "O3'", "C2'", "C1'", "N9",
+                                "C8", "N7", "C5", "C6", "N6", "N1", "C2", "N3", "C4", "HOP3", "HOP2", "H5'", "H5''", "H4'", "H3'", "HO3'", "H2'", "H2''", "H1'", "H8", "H61", "H62", "H2"],
+                         "DC": ["OP3", "P", "OP1", "OP2", "O5'", "C5'", "C4'", "O4'", "C3'", "O3'", "C2'", "C1'", "N1",
+                                "C2", "O2", "N3", "C4", "N4", "C5", "C6", "HOP3", "HOP2", "H5'", "H5''", "H4'", "H3'", "HO3'", "H2'", "H2''", "H1'", "H41", "H42", "H5", "H6"],
+                         "DG": ["OP3", "P", "OP1", "OP2", "O5'", "C5'", "C4'", "O4'", "C3'", "O3'", "C2'", "C1'", "N9",
+                                "C8", "N7", "C5", "C6", "O6", "N1", "C2", "N2", "N3", "C4", "HOP3", "HOP2", "H5'", "H5''",
+                                "H4'", "H3'", "HO3'", "H2'", "H2''", "H1'", "H8", "H1", "H21", "H22"],
+                         "DT": ["OP3", "P", "OP1", "OP2", "O5'", "C5'", "C4'", "O4'", "C3'", "O3'", "C2'", "C1'", "N1",
+                                "C2", "O2", "N3", "C4", "O4", "C5", "C7", "C6", "HOP3", "HOP2", "H5'", "H5''", "H4'", "H3'",
+                                "HO3'", "H2'", "H2''", "H1'", "H3", "H71", "H72", "H73", "H6"],
+                         "DU": ["OP3", "P", "OP1", "OP2", "O5'", "C5'", "C4'", "O4'", "C3'", "O3'", "C2'", "C1'", "N1",
+                                "C2", "O2", "N3", "C4", "O4", "C5", "C6", "HOP3", "HOP2", "H5'", "H5''", "H4'", "H3'", "HO3'",
+                                "H2'", "H2''", "H1'", "H3", "H5", "H6"],
+                         "A": ["OP3", "P", "OP1", "OP2", "O5'", "C5'", "C4'", "O4'", "C3'", "O3'", "C2'", "O2'", "C1'",
+                               "N9", "C8", "N7", "C5", "C6", "N6", "N1",
+                               "C2", "N3", "C4", "HOP3", "HOP2", "H5'", "H5''", "H4'", "H3'", "HO3'", "H2'", "HO2'",
+                               "H1'", "H8", "H61", "H62", "H2"],
+                         "C": ["OP3", "P", "OP1", "OP2", "O5'", "C5'", "C4'", "O4'", "C3'", "O3'", "C2'", "O2'", "C1'",
+                               "N1", "C2", "O2", "N3", "C4", "N4", "C5",
+                               "C6", "HOP3", "HOP2", "H5'", "H5''", "H4'", "H3'", "HO3'", "H2'", "HO2'", "H1'", "H41",
+                               "H42", "H5", "H6"],
+                         "G": ["OP3", "P", "OP1", "OP2", "O5'", "C5'", "C4'", "O4'", "C3'", "O3'", "C2'", "O2'", "C1'",
+                               "N9", "C8", "N7", "C5", "C6", "O6", "N1",
+                               "C2", "N2", "N3", "C4", "HOP3", "HOP2", "H5'", "H5''", "H4'", "H3'", "HO3'", "H2'", "HO2'",
+                               "H1'", "H8", "H1", "H21", "H22"],
+                         "T": ["OP3", "P", "OP1", "OP2", "O5'", "C5'", "C4'", "O4'", "C3'", "O3'", "C2'", "C1'", "N1", "C2",
+                               "O2", "N3", "C4", "O4", "C5", "C7",
                                "C6", "HOP3", "HOP2", "H5'", "H5''", "H4'", "H3'", "HO3'", "H2'", "H2''", "H1'", "H3", "H71", "H72", "H73", "H6"],
-                         "U": ["OP3", "P", "OP1", "OP2", "O5'", "C5'", "C4'", "O4'", "C3'", "O3'", "C2'", "O2'", "C1'", "N1", "C2", "O2", "N3", "C4", "O4", "C5", "C6",
-                               "HOP3", "HOP2", "H5'", "H5''", "H4'", "H3'", "HO3'", "H2'", "HO2'", "H1'", "H3", "H5", "H6"],
+                         "U": ["OP3", "P", "OP1", "OP2", "O5'", "C5'", "C4'", "O4'", "C3'", "O3'", "C2'", "O2'", "C1'",
+                               "N1", "C2", "O2", "N3", "C4", "O4", "C5", "C6", "HOP3", "HOP2", "H5'", "H5''", "H4'", "H3'",
+                               "HO3'", "H2'", "HO2'", "H1'", "H3", "H5", "H6"],
                          #
                          "PYL": ["CB2", "CG2", "CD2", "CE2", "N2", "CA2", "C2", "O2", "NZ", "CE", "CD", "CG", "CB", "CA", "C", "OXT", "O", "N", "HXT",
                                  "HA", "H", "H2", "HB3", "HB2", "HG3", "HG2", "HD3", "HD2", "HE3", "HE2", "HZ", "HA2", "HE22", "HD32", "HD22", "HG22", "HB12", "HB22", "HB32"],
                          "SEC": ["N", "CA", "CB", "SE", "C", "O", "OXT", "H", "H2", "HA", "HB2", "HB3", "HE", "HXT"],
                          "UNK": ["N", "CA", "C", "O", "CB", "CG", "OXT", "H", "H2", "HA", "HB1", "HB2", "HG1", "HG2", "HG3", "HXT"],
                          #
-                         "N": ["OP3", "P", "OP1", "OP2", "O5'", "C5'", "C4'", "O4'", "C3'", "O3'", "C2'", "O2'", "C1'", "HOP3", "HOP2", "H5'", "H5''", "H4'", "H3'", "HO3'", "H2'", "HO2'", "H1'", "H1'2"],
+                         "N": ["OP3", "P", "OP1", "OP2", "O5'", "C5'", "C4'", "O4'", "C3'", "O3'", "C2'", "O2'", "C1'", "HOP3", "HOP2",
+                               "H5'", "H5''", "H4'", "H3'", "HO3'", "H2'", "HO2'", "H1'", "H1'2"],
                          }
 
         # taken from wwpdb.utils.align.SequenceReferenceData.py
@@ -428,7 +472,7 @@ class NEFTranslator:
 
         self.__last_comp_id = None
         self.__last_comp_id_test = False
-        #self.__last_chem_comp_dict = None
+        # self.__last_chem_comp_dict = None
         self.__last_chem_comp_atoms = None
         self.__last_chem_comp_bonds = None
 
@@ -457,14 +501,14 @@ class NEFTranslator:
         atom_id = next(d for d in self.__chem_comp_atom_dict if d[0] == '_chem_comp_atom.atom_id')
         self.__cca_atom_id = self.__chem_comp_atom_dict.index(atom_id)
 
-        #aromatic_flag = next(d for d in self.__chem_comp_atom_dict if d[0] == '_chem_comp_atom.pdbx_aromatic_flag')
-        #self.__cca_aromatic_flag = self.__chem_comp_atom_dict.index(aromatic_flag)
+        # aromatic_flag = next(d for d in self.__chem_comp_atom_dict if d[0] == '_chem_comp_atom.pdbx_aromatic_flag')
+        # self.__cca_aromatic_flag = self.__chem_comp_atom_dict.index(aromatic_flag)
 
-        #leaving_atom_flag = next(d for d in self.__chem_comp_atom_dict if d[0] == '_chem_comp_atom.pdbx_leaving_atom_flag')
-        #self.__cca_leaving_atom_flag = self.__chem_comp_atom_dict.index(leaving_atom_flag)
+        # leaving_atom_flag = next(d for d in self.__chem_comp_atom_dict if d[0] == '_chem_comp_atom.pdbx_leaving_atom_flag')
+        # self.__cca_leaving_atom_flag = self.__chem_comp_atom_dict.index(leaving_atom_flag)
 
-        #type_symbol = next(d for d in self.__chem_comp_atom_dict if d[0] == '_chem_comp_atom.type_symbol')
-        #self.__cca_type_symbol = self.__chem_comp_atom_dict.index(type_symbol)
+        # type_symbol = next(d for d in self.__chem_comp_atom_dict if d[0] == '_chem_comp_atom.type_symbol')
+        # self.__cca_type_symbol = self.__chem_comp_atom_dict.index(type_symbol)
 
         # taken from wwpdb.apps.ccmodule.io.ChemCompIo
         self.__chem_comp_bond_dict = [
@@ -483,8 +527,8 @@ class NEFTranslator:
         atom_id_2 = next(d for d in self.__chem_comp_bond_dict if d[0] == '_chem_comp_bond.atom_id_2')
         self.__ccb_atom_id_2 = self.__chem_comp_bond_dict.index(atom_id_2)
 
-        #aromatic_flag = next(d for d in self.__chem_comp_bond_dict if d[0] == '_chem_comp_bond.pdbx_aromatic_flag')
-        #self.__ccb_aromatic_flag = self.__chem_comp_bond_dict.index(aromatic_flag)
+        # aromatic_flag = next(d for d in self.__chem_comp_bond_dict if d[0] == '_chem_comp_bond.pdbx_aromatic_flag')
+        # self.__ccb_aromatic_flag = self.__chem_comp_bond_dict.index(aromatic_flag)
 
         # readable item type
         self.readable_item_type = {'str': 'a string',
@@ -588,7 +632,7 @@ class NEFTranslator:
                                                       'CS perturbation': 'chemical shift perturbation',
                                                       'csp': 'chemical shift perturbation',
                                                       'CSP': 'chemical shift perturbation'
-                                                     }
+                                                      }
                                          }
 
         self.dihed_alt_constraint_type = {'nef': {'J-couplings': 'jcoupling',
@@ -666,7 +710,7 @@ class NEFTranslator:
                                           'nmr-star': {'jcoupling': 'J-couplings',
                                                        'Jcoupling': 'J-couplings',
                                                        'jcouplings': 'J-couplings',
-                                                       'Jcouplings':'J-couplings',
+                                                       'Jcouplings': 'J-couplings',
                                                        'j-couplings': 'J-couplings',
                                                        'J couplings': 'J-couplings',
                                                        'j couplings': 'J-couplings',
@@ -746,7 +790,8 @@ class NEFTranslator:
                                                      }
                                         }
 
-        self.entity_del_atom_row = ['ID', 'Entity_assembly_ID', 'Comp_index_ID', 'Comp_ID', 'Atom_ID', 'Auth_entity_assembly_ID', 'Auth_seq_ID', 'Auth_comp_ID', 'Auth_atom_ID', 'Assembly_ID']
+        self.entity_del_atom_row = ['ID', 'Entity_assembly_ID', 'Comp_index_ID', 'Comp_ID', 'Atom_ID',
+                                    'Auth_entity_assembly_ID', 'Auth_seq_ID', 'Auth_comp_ID', 'Auth_atom_ID', 'Assembly_ID']
 
         self.int_pattern = re.compile(r'^([+-]?[1-9]\d*|0)$')
 
@@ -801,13 +846,13 @@ class NEFTranslator:
                         if 'internaluseyoushouldntseethis_frame' not in str(e3):
                             msg = str(e3)
                         else:
-                            msg = str(e1) # '%s contains no valid saveframe or loop. PyNMRSTAR ++ Error  - %s' % (os.path.basename(in_file), str(e))
+                            msg = str(e1)  # '%s contains no valid saveframe or loop. PyNMRSTAR ++ Error  - %s' % (os.path.basename(in_file), str(e))
 
-        """
-        except Exception as e:
-            is_ok = False
-            msg = str(e)
-        """
+        #
+        # except Exception as e:
+        #     is_ok = False
+        #     msg = str(e)
+        #
         return is_ok, msg, star_data
 
     def get_one_letter_code(self, comp_id):
@@ -1178,7 +1223,7 @@ class NEFTranslator:
 
         return not any(d in self.empty_value or self.bad_pattern.match(d) for d in data)
 
-    def resolve_sf_names_for_cif(self, star_data, data_type): # DAOTHER-7389, issue #4
+    def resolve_sf_names_for_cif(self, star_data, data_type):  # DAOTHER-7389, issue #4
         """ Resolve saveframe names to prevent case-insensitive name collisions occur in CIF format.
             @return: status, list of correction messages, dictionary of saveframe name corrections
         """
@@ -1312,7 +1357,7 @@ class NEFTranslator:
             except:  # AttributeError:  # noqa: E722 pylint: disable=bare-except
                 loops = [star_data]
 
-        data = [] # data of all loops
+        data = []  # data of all loops
 
         tags = [seq_id, comp_id, chain_id]
 
@@ -1340,20 +1385,20 @@ class NEFTranslator:
                     raise LookupError("Missing mandatory %s loop tag%s." % (missing_tags, 's' if len(missing_tags) > 1 else ''))
 
             if allow_empty:
-                #seq_data = list(filter(self.is_data, seq_data))
-                seq_data = list(filter(self.is_good_data, seq_data)) # DAOTHER-7389, issue #3
+                # seq_data = list(filter(self.is_data, seq_data))
+                seq_data = list(filter(self.is_good_data, seq_data))  # DAOTHER-7389, issue #3
                 if len(seq_data) == 0:
                     continue
             else:
-                for l, i in enumerate(seq_data):
+                for l, i in enumerate(seq_data):  # noqa: E741
                     if self.is_empty(i) and l < len(loop.data):
                         r = {}
                         for j, t in enumerate(loop.tags):
                             r[t] = loop.data[l][j]
                         user_warn_msg += '[Invalid data] Sequence must not be empty. #_of_row %s, data_of_row %s.\n' % (l + 1, r)
-                        #raise ValueError("Sequence must not be empty. #_of_row %s, data_of_row %s." % (l + 1, r))
+                        # raise ValueError("Sequence must not be empty. #_of_row %s, data_of_row %s." % (l + 1, r))
 
-            for l, i in enumerate(seq_data):
+            for l, i in enumerate(seq_data):  # noqa: E741
                 try:
                     int(i[0])
                 except ValueError:
@@ -1362,7 +1407,7 @@ class NEFTranslator:
                         for j, t in enumerate(loop.tags):
                             r[t] = loop.data[l][j]
                         user_warn_msg += '[Invalid data] %s must be int. #_of_row %s, data_of_row %s.\n' % (seq_id, l + 1, r)
-                        #raise ValueError("%s must be int. #_of_row %s, data_of_row %s." % (seq_id, l + 1, r))
+                        # raise ValueError("%s must be int. #_of_row %s, data_of_row %s." % (seq_id, l + 1, r))
 
             if len(user_warn_msg) > 0:
                 raise UserWarning(user_warn_msg)
@@ -1377,13 +1422,13 @@ class NEFTranslator:
                         offset_seq_ids[c] = min_seq_id * -1
                 sorted_seq = sorted(set('{} {:04d} {}'.format(i[2], int(i[0]) + offset_seq_ids[i[2]], i[1]) for i in seq_data))
 
-                chk_dict = {'{} {:04d}'.format(i[2], int(i[0])):i[1] for i in seq_data}
+                chk_dict = {'{} {:04d}'.format(i[2], int(i[0])): i[1] for i in seq_data}
 
                 for i in seq_data:
                     chk_key = '{} {:04d}'.format(i[2], int(i[0]))
                     if chk_dict[chk_key] != i[1]:
-                        #raise KeyError("Sequence must be unique. %s %s, %s %s, %s %s vs %s." % (chain_id, i[2], seq_id, i[0], comp_id, i[1], chk_dict[chk_key]))
-                        raise KeyError("%s loop contains different %s (%s and %s) with the same %s %s, %s %s." % (lp_category[1:], comp_id, i[1], chk_dict[chk_key], chain_id, i[2], seq_id, i[0]))
+                        # raise KeyError("Sequence must be unique. %s %s, %s %s, %s %s vs %s." % (chain_id, i[2], seq_id, i[0], comp_id, i[1], chk_dict[chk_key]))
+                        raise KeyError("%s loop contains different %s (%s and %s) with the same %s %s, %s %s." % (lp_category[1:], comp_id, i[1], chk_dict[chk_key], chain_id, i[2], seq_id, i[0]))  # noqa: E501
 
                 if len(sorted_seq[0].split(' ')[-1]) > 1:
                     if len(chains) > 1:
@@ -1404,10 +1449,10 @@ class NEFTranslator:
                         cmp_dict[c] = [i.split(' ')[-1].upper() for i in sorted_seq]
                         seq_dict[c] = [int(i.split(' ')[1]) - offset_seq_ids[c] for i in sorted_seq]
 
-                asm = [] # assembly of a loop
+                asm = []  # assembly of a loop
 
                 for c in chains:
-                    ent = {} # entity
+                    ent = {}  # entity
 
                     ent['chain_id'] = str(c)
 
@@ -1457,7 +1502,7 @@ class NEFTranslator:
                 data.append(asm)
 
             except ValueError:
-                #raise ValueError("%s must be int." % seq_id)
+                # raise ValueError("%s must be int." % seq_id)
                 pass
 
         if len(data) == 0:
@@ -1485,11 +1530,11 @@ class NEFTranslator:
             except:  # AttributeError:  # noqa: E722 pylint: disable=bare-except
                 loops = [star_data]
 
-        data = [] # data of all loops
+        data = []  # data of all loops
 
         tags = [seq_id, comp_id, chain_id]
         tags_ = [seq_id, comp_id]
-        tags__ = [seq_id, comp_id, alt_chain_id] # DAOTHER-7421
+        tags__ = [seq_id, comp_id, alt_chain_id]  # DAOTHER-7421
 
         for loop in loops:
             cmp_dict = {}
@@ -1502,11 +1547,11 @@ class NEFTranslator:
                 for i in seq_data:
                     if i[2] in self.empty_value:
                         i[2] = '1'
-            elif set(tags__) & set(loop.tags) == set(tags__): # DAOTHER-7421
+            elif set(tags__) & set(loop.tags) == set(tags__):  # DAOTHER-7421
                 seq_data = get_lp_tag(loop, tags__)
                 for i in seq_data:
                     i[2] = '1' if i[2] in self.empty_value else str(self.letter_to_int(i[2], 1))
-            elif set(tags_) & set(loop.tags) == set(tags_): # No Entity_assembly_ID tag case
+            elif set(tags_) & set(loop.tags) == set(tags_):  # No Entity_assembly_ID tag case
                 seq_data = get_lp_tag(loop, tags_)
                 for i in seq_data:
                     i.append('1')
@@ -1515,7 +1560,7 @@ class NEFTranslator:
                 for j in range(1, self.lim_num_dim):
                     _tags = [seq_id + '_' + str(j), comp_id + '_' + str(j), chain_id + '_' + str(j)]
                     _tags_ = [seq_id + '_' + str(j), comp_id + '_' + str(j)]
-                    _tags__ = [seq_id + '_' + str(j), comp_id + '_' + str(j), alt_chain_id + '_' + str(j)] # DAOTHER-7421
+                    _tags__ = [seq_id + '_' + str(j), comp_id + '_' + str(j), alt_chain_id + '_' + str(j)]  # DAOTHER-7421
                     if set(_tags) & set(loop.tags) == set(_tags):
                         _tags_exist = True
                         seq_data_ = get_lp_tag(loop, _tags)
@@ -1523,7 +1568,7 @@ class NEFTranslator:
                             if i[2] in self.empty_value:
                                 i[2] = '1'
                         seq_data += seq_data_
-                    elif set(_tags__) & set(loop.tags) == set(_tags__): # DAOTHER-7421
+                    elif set(_tags__) & set(loop.tags) == set(_tags__):  # DAOTHER-7421
                         _tags_exist = True
                         seq_data_ = get_lp_tag(loop, _tags__)
                         for i in seq_data_:
@@ -1541,20 +1586,20 @@ class NEFTranslator:
                     raise LookupError("Missing mandatory %s loop tag%s." % (missing_tags, 's' if len(missing_tags) > 1 else ''))
 
             if allow_empty:
-                #seq_data = list(filter(self.is_data, seq_data))
-                seq_data = list(filter(self.is_good_data, seq_data)) # DAOTHER-7389, issue #3
+                # seq_data = list(filter(self.is_data, seq_data))
+                seq_data = list(filter(self.is_good_data, seq_data))  # DAOTHER-7389, issue #3
                 if len(seq_data) == 0:
                     continue
             else:
-                for l, i in enumerate(seq_data):
+                for l, i in enumerate(seq_data):  # noqa: E741
                     if self.is_empty(i) and l < len(loop.data):
                         r = {}
                         for j, t in enumerate(loop.tags):
                             r[t] = loop.data[l][j]
                         user_warn_msg += '[Invalid data] Sequence must not be empty. #_of_row %s, data_of_row %s.\n' % (l + 1, r)
-                        #raise ValueError("Sequence must not be empty. #_of_row %s, data_of_row %s." % (l + 1, r))
+                        # raise ValueError("Sequence must not be empty. #_of_row %s, data_of_row %s." % (l + 1, r))
 
-            for l, i in enumerate(seq_data):
+            for l, i in enumerate(seq_data):  # noqa: E741
                 try:
                     int(i[0])
                 except ValueError:
@@ -1563,7 +1608,7 @@ class NEFTranslator:
                         for j, t in enumerate(loop.tags):
                             r[t] = loop.data[l][j]
                         user_warn_msg += '[Invalid data] %s must be int. #_of_row %s, data_of_row %s.\n' % (seq_id, l + 1, r)
-                        #raise ValueError("%s must be int. #_of_row %s, data_of_row %s." % (seq_id, l + 1, r))
+                        # raise ValueError("%s must be int. #_of_row %s, data_of_row %s." % (seq_id, l + 1, r))
 
             if len(user_warn_msg) > 0:
                 raise UserWarning(user_warn_msg)
@@ -1578,13 +1623,13 @@ class NEFTranslator:
                         offset_seq_ids[c] = min_seq_id * -1
                 sorted_seq = sorted(set('{} {:04d} {}'.format(i[2], int(i[0]) + offset_seq_ids[i[2]], i[1]) for i in seq_data))
 
-                chk_dict = {'{} {:04d}'.format(i[2], int(i[0])):i[1] for i in seq_data}
+                chk_dict = {'{} {:04d}'.format(i[2], int(i[0])): i[1] for i in seq_data}
 
                 for i in seq_data:
                     chk_key = '{} {:04d}'.format(i[2], int(i[0]))
                     if chk_dict[chk_key] != i[1]:
-                        #raise KeyError("Sequence must be unique. %s %s, %s %s, %s %s vs %s." % (chain_id, i[2], seq_id, i[0], comp_id, i[1], chk_dict[chk_key]))
-                        raise KeyError("%s loop contains different %s (%s and %s) with the same %s %s, %s %s." % (lp_category[1:], comp_id, i[1], chk_dict[chk_key], chain_id, i[2], seq_id, i[0]))
+                        # raise KeyError("Sequence must be unique. %s %s, %s %s, %s %s vs %s." % (chain_id, i[2], seq_id, i[0], comp_id, i[1], chk_dict[chk_key]))
+                        raise KeyError("%s loop contains different %s (%s and %s) with the same %s %s, %s %s." % (lp_category[1:], comp_id, i[1], chk_dict[chk_key], chain_id, i[2], seq_id, i[0]))  # noqa: E501
 
                 if len(sorted_seq[0].split(' ')[-1]) > 1:
                     if len(chains) > 1:
@@ -1605,10 +1650,10 @@ class NEFTranslator:
                         cmp_dict[c] = [i.split(' ')[-1].upper() for i in sorted_seq]
                         seq_dict[c] = [int(i.split(' ')[1]) - offset_seq_ids[c] for i in sorted_seq]
 
-                asm = [] # assembly of a loop
+                asm = []  # assembly of a loop
 
                 for c in chains:
-                    ent = {} # entity
+                    ent = {}  # entity
 
                     ent['chain_id'] = str(c)
 
@@ -1658,7 +1703,7 @@ class NEFTranslator:
                 data.append(asm)
 
             except ValueError:
-                #raise ValueError("%s must be int." % seq_id)
+                # raise ValueError("%s must be int." % seq_id)
                 pass
 
         if len(data) == 0:
@@ -1686,7 +1731,7 @@ class NEFTranslator:
             except:  # AttributeError:  # noqa: E722 pylint: disable=bare-except
                 loops = [star_data]
 
-        data = [] # data of all loops
+        data = []  # data of all loops
 
         tags = [aseq_id, acomp_id, asym_id, seq_id, chain_id]
         tags_ = [aseq_id, acomp_id, seq_id, asym_id]
@@ -1701,7 +1746,7 @@ class NEFTranslator:
 
             if set(tags) & set(loop.tags) == set(tags):
                 seq_data = get_lp_tag(loop, tags)
-            elif set(tags_) & set(loop.tags) == set(tags_): # No Entity_assembly_ID tag case
+            elif set(tags_) & set(loop.tags) == set(tags_):  # No Entity_assembly_ID tag case
                 seq_data = get_lp_tag(loop, tags_)
                 for i in seq_data:
                     i.append('1')
@@ -1725,20 +1770,20 @@ class NEFTranslator:
                     raise LookupError("Missing mandatory %s loop tag%s." % (missing_tags, 's' if len(missing_tags) > 1 else ''))
 
             if allow_empty:
-                #seq_data = list(filter(self.is_data, seq_data))
-                seq_data = list(filter(self.is_good_data, seq_data)) # DAOTHER-7389, issue #3
+                # seq_data = list(filter(self.is_data, seq_data))
+                seq_data = list(filter(self.is_good_data, seq_data))  # DAOTHER-7389, issue #3
                 if len(seq_data) == 0:
                     continue
             else:
-                for l, i in enumerate(seq_data):
+                for l, i in enumerate(seq_data):  # noqa: E741
                     if self.is_empty(i) and l < len(loop.data):
                         r = {}
                         for j, t in enumerate(loop.tags):
                             r[t] = loop.data[l][j]
                         user_warn_msg += '[Invalid data] Author sequence must not be empty. #_of_row %s, data_of_row %s.\n' % (l + 1, r)
-                        #raise ValueError("Author sequence must not be empty. #_of_row %s, data_of_row %s." % (l + 1, r))
+                        # raise ValueError("Author sequence must not be empty. #_of_row %s, data_of_row %s." % (l + 1, r))
 
-            for l, i in enumerate(seq_data):
+            for l, i in enumerate(seq_data):  # noqa: E741
                 try:
                     int(i[3])
                 except ValueError:
@@ -1747,7 +1792,7 @@ class NEFTranslator:
                         for j, t in enumerate(loop.tags):
                             r[t] = loop.data[l][j]
                         user_warn_msg += '[Invalid data] %s must be int. #_of_row %s, data_of_row %s.\n' % (seq_id, l + 1, r)
-                        #raise ValueError("%s must be int. #_of_row %s, data_of_row %s." % (seq_id, l + 1, r))
+                        # raise ValueError("%s must be int. #_of_row %s, data_of_row %s." % (seq_id, l + 1, r))
 
             if len(user_warn_msg) > 0:
                 raise UserWarning(user_warn_msg)
@@ -1762,12 +1807,12 @@ class NEFTranslator:
                         offset_seq_ids[c] = min_seq_id * -1
                 sorted_seq = sorted(set('{}:{:04d}:{}:{: >4}:{}'.format(i[4], int(i[3]) + offset_seq_ids[i[4]], i[2], i[0], i[1]) for i in seq_data))
 
-                chk_dict = {'{}:{:04d}:{}:{: >4}'.format(i[4], int(i[3]), i[2], i[0]):i[1] for i in seq_data}
+                chk_dict = {'{}:{:04d}:{}:{: >4}'.format(i[4], int(i[3]), i[2], i[0]): i[1] for i in seq_data}
 
                 for i in seq_data:
                     chk_key = '{}:{:04d}:{}:{: >4}'.format(i[4], int(i[3]), i[2], i[0])
                     if chk_dict[chk_key] != i[1]:
-                        raise KeyError("Author sequence must be unique. %s %s, %s %s, %s %s, %s %s, %s %s vs %s." %\
+                        raise KeyError("Author sequence must be unique. %s %s, %s %s, %s %s, %s %s, %s %s vs %s." %
                                        (chain_id, i[4], seq_id, i[3], asym_id, i[2], aseq_id, i[0], acomp_id, i[1], chk_dict[chk_key]))
 
                 if len(sorted_seq[0].split(':')[-1]) > 1:
@@ -1797,10 +1842,10 @@ class NEFTranslator:
                         asym_dict[c] = [i.split(':')[2] for i in sorted_seq]
                         seq_dict[c] = [int(i.split(':')[1]) - offset_seq_ids[c] for i in sorted_seq]
 
-                asm = [] # assembly of a loop
+                asm = []  # assembly of a loop
 
                 for c in chains:
-                    ent = {} # entity
+                    ent = {}  # entity
 
                     ent['chain_id'] = str(c)
                     ent['seq_id'] = seq_dict[c]
@@ -1813,7 +1858,7 @@ class NEFTranslator:
                 data.append(asm)
 
             except ValueError:
-                #raise ValueError("%s must be int." % seq_id)
+                # raise ValueError("%s must be int." % seq_id)
                 pass
 
         if len(data) == 0:
@@ -1864,7 +1909,7 @@ class NEFTranslator:
             except:  # AttributeError:  # noqa: E722 pylint: disable=bare-except
                 loops = [star_data]
 
-        data = [] # data of all loops
+        data = []  # data of all loops
 
         tags = [comp_id, atom_id]
 
@@ -1888,19 +1933,19 @@ class NEFTranslator:
                     raise LookupError("Missing mandatory %s loop tag%s." % (missing_tags, 's' if len(missing_tags) > 1 else ''))
 
             if allow_empty:
-                #pair_data = list(filter(self.is_data, pair_data))
-                pair_data = list(filter(self.is_good_data, pair_data)) # DAOTHER-7389, issue #3
+                # pair_data = list(filter(self.is_data, pair_data))
+                pair_data = list(filter(self.is_good_data, pair_data))  # DAOTHER-7389, issue #3
                 if len(pair_data) == 0:
                     continue
             else:
-                for l, i in enumerate(pair_data):
+                for l, i in enumerate(pair_data):  # noqa: E741
                     if self.is_empty(i) and l < len(loop.data):
                         r = {}
                         for j, t in enumerate(loop.tags):
                             r[t] = loop.data[l][j]
                         user_warn_msg += '[Invalid data] %s and %s must not be empty. #_of_row %s, data_of_row %s.\n' %\
                                          (comp_id, atom_id, l + 1, r)
-                        #raise ValueError("%s and %s must not be empty. #_of_row %s, data_of_row %s." %\
+                        # raise ValueError("%s and %s must not be empty. #_of_row %s, data_of_row %s." %\
                         #                 (comp_id, atom_id, l + 1, r))
 
             if len(user_warn_msg) > 0:
@@ -1912,10 +1957,10 @@ class NEFTranslator:
             for c in comps:
                 atm_dict[c] = [i.split(' ')[1] for i in sorted_comp_atom if i.split(' ')[0] == c]
 
-            asm = [] # assembly of a loop
+            asm = []  # assembly of a loop
 
             for c in comps:
-                ent = {} # entity
+                ent = {}  # entity
 
                 ent['comp_id'] = c
                 ent['atom_id'] = atm_dict[c]
@@ -1964,7 +2009,7 @@ class NEFTranslator:
             except:  # AttributeError:  # noqa: E722 pylint: disable=bare-except
                 loops = [star_data]
 
-        data = [] # data of all loops
+        data = []  # data of all loops
 
         tags = [atom_type, isotope_number, atom_id]
 
@@ -1981,22 +2026,22 @@ class NEFTranslator:
             a_type_data = get_lp_tag(loop, tags)
 
             if allow_empty:
-                #a_type_data = list(filter(self.is_data, a_type_data))
-                a_type_data = list(filter(self.is_good_data, a_type_data)) # DAOTHER-7389, issue #3
+                # a_type_data = list(filter(self.is_data, a_type_data))
+                a_type_data = list(filter(self.is_good_data, a_type_data))  # DAOTHER-7389, issue #3
                 if len(a_type_data) == 0:
                     continue
             else:
-                for l, i in enumerate(a_type_data):
+                for l, i in enumerate(a_type_data):  # noqa: E741
                     if self.is_empty(i) and l < len(loop.data):
                         r = {}
                         for j, t in enumerate(loop.tags):
                             r[t] = loop.data[l][j]
                         user_warn_msg += '[Invalid data] %s, %s, and %s must not be empty. #_of_row %s, data_of_row %s.\n' %\
                                          (atom_type, isotope_number, atom_id, l + 1, r)
-                        #raise ValueError("%s, %s, and %s must not be empty. #_of_row %s, data_of_row %s." %\
+                        # raise ValueError("%s, %s, and %s must not be empty. #_of_row %s, data_of_row %s." %\
                         #                 (atom_type, isotope_number, atom_id, l + 1, r))
 
-            for l, i in enumerate(a_type_data):
+            for l, i in enumerate(a_type_data):  # noqa: E741
                 try:
                     int(i[1])
                 except ValueError:
@@ -2005,7 +2050,7 @@ class NEFTranslator:
                         for j, t in enumerate(loop.tags):
                             r[t] = loop.data[l][j]
                         user_warn_msg += '[Invalid data] %s must be int. #_of_row %s, data_of_row %s.\n' % (isotope_number, l + 1, r)
-                        #raise ValueError("%s must be int. #_of_row %s, data_of_row %s." % (isotope_number, l + 1, r))
+                        # raise ValueError("%s must be int. #_of_row %s, data_of_row %s." % (isotope_number, l + 1, r))
 
             if len(user_warn_msg) > 0:
                 raise UserWarning(user_warn_msg)
@@ -2014,16 +2059,16 @@ class NEFTranslator:
 
                 a_types = sorted(set(i[0] for i in a_type_data))
                 sorted_ist = sorted(set('{} {}'.format(i[0], i[1]) for i in a_type_data))
-                sorted_atm = sorted(set('{} {}'.format(i[0], i[2]) for i in a_type_data if not (i[2] in self.empty_value or self.bad_pattern.match(i[2])))) # DAOTHER-7389, issue #3
+                sorted_atm = sorted(set('{} {}'.format(i[0], i[2]) for i in a_type_data if not (i[2] in self.empty_value or self.bad_pattern.match(i[2]))))  # DAOTHER-7389, issue #3
 
                 for t in a_types:
                     ist_dict[t] = [int(i.split(' ')[1]) for i in sorted_ist if i.split(' ')[0] == t]
                     atm_dict[t] = [i.split(' ')[1] for i in sorted_atm if i.split(' ')[0] == t]
 
-                asm = [] # assembly of a loop
+                asm = []  # assembly of a loop
 
                 for t in a_types:
-                    ent = {} # entity
+                    ent = {}  # entity
 
                     ent['atom_type'] = t
                     ent['isotope_number'] = ist_dict[t]
@@ -2034,7 +2079,7 @@ class NEFTranslator:
                 data.append(asm)
 
             except ValueError:
-                #raise ValueError("%s must be int." % isotope_number)
+                # raise ValueError("%s must be int." % isotope_number)
                 pass
 
         if len(data) == 0:
@@ -2061,7 +2106,7 @@ class NEFTranslator:
             except:  # AttributeError:  # noqa: E722 pylint: disable=bare-except
                 loops = [star_data]
 
-        data = [] # data of all loops
+        data = []  # data of all loops
 
         tags = [comp_id, atom_id, ambig_code, ambig_set_id]
 
@@ -2080,11 +2125,11 @@ class NEFTranslator:
                 data.append(None)
                 continue
 
-            for l, i in enumerate(ambig_data):
+            for l, i in enumerate(ambig_data):  # noqa: E741
                 # already checked elsewhere
-                #if i[0] in self.empty_value:
+                # if i[0] in self.empty_value:
                 #   raise ValueError("%s must not be empty." % comp_id)
-                #if i[1] in self.empty_value:
+                # if i[1] in self.empty_value:
                 #    raise ValueError("%s must not be empty." % atom_id)
                 if i[2] not in self.empty_value:
 
@@ -2096,7 +2141,7 @@ class NEFTranslator:
                             for j, t in enumerate(loop.tags):
                                 r[t] = loop.data[l][j]
                             user_warn_msg += '[Invalid data] %s must be one of %s. #_of_row %s, data_of_row %s.\n' % (ambig_code, list(self.bmrb_ambiguity_codes), l + 1, r)
-                            #raise ValueError("%s must be one of %s. #_of_row %s, data_of_row %s." % (ambig_code, list(self.bmrb_ambiguity_codes), l + 1, r))
+                            # raise ValueError("%s must be one of %s. #_of_row %s, data_of_row %s." % (ambig_code, list(self.bmrb_ambiguity_codes), l + 1, r))
 
                     if code not in self.bmrb_ambiguity_codes:
                         if l < len(loop.data):
@@ -2104,7 +2149,7 @@ class NEFTranslator:
                             for j, t in enumerate(loop.tags):
                                 r[t] = loop.data[l][j]
                             user_warn_msg += '[Invalid data] %s must be one of %s. #_of_row %s, data_of_row %s.\n' % (ambig_code, list(self.bmrb_ambiguity_codes), l + 1, r)
-                            #raise ValueError("%s must be one of %s. #_of_row %s, data_of_row %s." % (ambig_code, list(self.bmrb_ambiguity_codes), l + 1, r))
+                            # raise ValueError("%s must be one of %s. #_of_row %s, data_of_row %s." % (ambig_code, list(self.bmrb_ambiguity_codes), l + 1, r))
 
                     if code >= 4:
                         if i[3] in self.empty_value and l < len(loop.data):
@@ -2112,7 +2157,7 @@ class NEFTranslator:
                             for j, t in enumerate(loop.tags):
                                 r[t] = loop.data[l][j]
                             user_warn_msg += '[Invalid data] %s must not be empty for %s %s. #_of_row %s, data_of_row %s.\n' % (ambig_set_id, ambig_code, code, l + 1, r)
-                            #raise ValueError("%s must not be empty for %s %s. #_of_row %s, data_of_row %s." % (ambig_set_id, ambig_code, code, l + 1, r))
+                            # raise ValueError("%s must not be empty for %s %s. #_of_row %s, data_of_row %s." % (ambig_set_id, ambig_code, code, l + 1, r))
                         else:
                             try:
                                 int(i[3])
@@ -2122,7 +2167,7 @@ class NEFTranslator:
                                     for j, t in enumerate(loop.tags):
                                         r[t] = loop.data[l][j]
                                     user_warn_msg += '[Invalid data] %s must be int. #_of_row %s, data_of_row %s.\n' % (ambig_set_id, l + 1, r)
-                                    #raise ValueError("%s must be int. #_of_row %s, data_of_row %s." % (ambig_set_id, l + 1, r))
+                                    # raise ValueError("%s must be int. #_of_row %s, data_of_row %s." % (ambig_set_id, l + 1, r))
 
                 if i[3] not in self.empty_value:
 
@@ -2132,14 +2177,14 @@ class NEFTranslator:
                             for j, t in enumerate(loop.tags):
                                 r[t] = loop.data[l][j]
                             user_warn_msg += '[Invalid data] %s must be empty for %s %s. #_of_row %s, data_of_row %s.\n' % (ambig_set_id, ambig_code, i[2], l + 1, r)
-                            #raise ValueError("%s must be empty for %s %s. #_of_row %s, data_of_row %s." % (ambig_set_id, ambig_code, i[2], l + 1, r))
+                            # raise ValueError("%s must be empty for %s %s. #_of_row %s, data_of_row %s." % (ambig_set_id, ambig_code, i[2], l + 1, r))
 
             if len(user_warn_msg) > 0:
                 raise UserWarning(user_warn_msg)
 
             _ambig_data = [i for i in ambig_data
-                           if not (i[0] in self.empty_value or self.bad_pattern.match(i[0])) and
-                              not (i[1] in self.empty_value or self.bad_pattern.match(i[1]))] # DAOTHER-7389, issue #3
+                           if not (i[0] in self.empty_value or self.bad_pattern.match(i[0]))
+                           and not (i[1] in self.empty_value or self.bad_pattern.match(i[1]))]  # DAOTHER-7389, issue #3
 
             if len(_ambig_data) == 0:
                 continue
@@ -2150,10 +2195,10 @@ class NEFTranslator:
             for a in ambigs:
                 atm_dict[a] = [i.split(' ')[1] for i in sorted_atm if i.split(' ')[0] == a]
 
-            asm = [] # assembly of a loop
+            asm = []  # assembly of a loop
 
             for a in ambigs:
-                ent = {} # entity
+                ent = {}  # entity
 
                 split_a = a.split(':')
 
@@ -2203,7 +2248,7 @@ class NEFTranslator:
             except:  # AttributeError:  # noqa: E722 pylint: disable=bare-except
                 loops = [star_data]
 
-        data = [] # data of all loops
+        data = []  # data of all loops
 
         tags = [index_id]
 
@@ -2215,13 +2260,13 @@ class NEFTranslator:
             else:
                 raise LookupError("Missing mandatory %s loop tag." % index_id)
 
-            for l, i in enumerate(index_data):
+            for l, i in enumerate(index_data):  # noqa: E741
                 if self.is_empty(i) and l < len(loop.data):
                     r = {}
                     for j, t in enumerate(loop.tags):
                         r[t] = loop.data[l][j]
                     user_warn_msg += '[Invalid data] %s must not be empty. #_of_row %s, data_of_row %s.\n' % (index_id, l + 1, r)
-                    #raise ValueError("%s must not be empty. #_of_row %s, data_of_row %s." % (index_id, l + 1, r))
+                    # raise ValueError("%s must not be empty. #_of_row %s, data_of_row %s." % (index_id, l + 1, r))
                 else:
                     try:
                         int(i[0])
@@ -2231,7 +2276,7 @@ class NEFTranslator:
                             for j, t in enumerate(loop.tags):
                                 r[t] = loop.data[l][j]
                             user_warn_msg += '[Invalid data] %s must be int. #_of_row %s, data_of_row %s.\n' % (index_id, l + 1, r)
-                            #raise ValueError("%s must be int. #_of_row %s, data_of_row %s." % (index_id, l + 1, r))
+                            # raise ValueError("%s must be int. #_of_row %s, data_of_row %s." % (index_id, l + 1, r))
 
             if len(user_warn_msg) > 0:
                 raise UserWarning(user_warn_msg)
@@ -2251,40 +2296,40 @@ class NEFTranslator:
                 data.append(idxs)
 
             except ValueError:
-                #raise ValueError("%s must be int." % index_id)
+                # raise ValueError("%s must be int." % index_id)
                 pass
 
         if len(data) == 0:
             data.append([])
 
         return data
-    """
-    def check_nef_data(self, star_data, lp_category='nef_chemical_shift',
-                       key_items=[{'name': 'chain_code', 'type': 'str'},
-                                  {'name': 'sequence_code', 'type': 'int'},
-                                  {'name': 'residue_name', 'type': 'str'},
-                                  {'name': 'atom_name', 'type': 'str'}],
-                       data_items=[{'name': 'value', 'type': 'float', 'mandatory': True},
-                                   {'name': 'value_uncertainty', 'type': 'positive-float', 'mandatory': False}]):
-        "" Wrapper function of check_data() for an NEF file.
-            @author: Masashi Yokochi
-        ""
+    #
+    # def check_nef_data(self, star_data, lp_category='nef_chemical_shift',
+    #                    key_items=[{'name': 'chain_code', 'type': 'str'},
+    #                               {'name': 'sequence_code', 'type': 'int'},
+    #                               {'name': 'residue_name', 'type': 'str'},
+    #                               {'name': 'atom_name', 'type': 'str'}],
+    #                    data_items=[{'name': 'value', 'type': 'float', 'mandatory': True},
+    #                                {'name': 'value_uncertainty', 'type': 'positive-float', 'mandatory': False}]):
+    #     "" Wrapper function of check_data() for an NEF file.
+    #         @author: Masashi Yokochi
+    #     ""
 
-        return self.check_data(star_data, lp_category, key_items, data_items)
+    #     return self.check_data(star_data, lp_category, key_items, data_items)
 
-    def check_star_data(self, star_data, lp_category='Atom_chem_shift',
-                        key_items=[{'name': 'Entity_assembly_ID', 'type': 'int'},
-                                   {'name': 'Comp_index_ID', 'type': 'int'},
-                                   {'name': 'Comp_ID', 'type': 'str'},
-                                   {'name': 'Atom_ID', 'type': 'str'}],
-                        data_items=[{'name': 'Val', 'type': 'float', 'mandatory': True},
-                                    {'name': 'Val_err', 'type': 'positive-float', 'mandatory': False}]):
-        "" Wrapper function of check_data() for an NMR-STAR file.
-            @author: Masashi Yokochi
-        ""
+    # def check_star_data(self, star_data, lp_category='Atom_chem_shift',
+    #                     key_items=[{'name': 'Entity_assembly_ID', 'type': 'int'},
+    #                                {'name': 'Comp_index_ID', 'type': 'int'},
+    #                                {'name': 'Comp_ID', 'type': 'str'},
+    #                                {'name': 'Atom_ID', 'type': 'str'}],
+    #                     data_items=[{'name': 'Val', 'type': 'float', 'mandatory': True},
+    #                                 {'name': 'Val_err', 'type': 'positive-float', 'mandatory': False}]):
+    #     "" Wrapper function of check_data() for an NMR-STAR file.
+    #         @author: Masashi Yokochi
+    #     ""
 
-        return self.check_data(star_data, lp_category, key_items, data_items)
-    """
+    #     return self.check_data(star_data, lp_category, key_items, data_items)
+    #
     def check_data(self, star_data, lp_category, key_items, data_items, allowed_tags=None, disallowed_tags=None,
                    test_on_index=False, enforce_non_zero=False, enforce_sign=False, enforce_range=False, enforce_enum=False,
                    excl_missing_data=False):
@@ -2306,7 +2351,7 @@ class NEFTranslator:
 
         user_warn_msg = ''
 
-        data = [] # data of all loops
+        data = []  # data of all loops
 
         item_types = ('str', 'bool', 'int', 'index-int', 'positive-int', 'positive-int-as-str', 'pointer-index', 'float', 'positive-float', 'range-float', 'enum', 'enum-int')
 
@@ -2388,8 +2433,8 @@ class NEFTranslator:
                     if d['name'] in missing_tags:
                         if 'default-from' in d:
                             if d['type'] == 'index-int':
-                                for l, row in enumerate(loop.data, start=1):
-                                    row.append(l)
+                                for lv, row in enumerate(loop.data, start=1):
+                                    row.append(lv)
                                 loop.add_tag(d['name'])
                             elif d['default-from'] != 'self' and d['default-from'] in loop.tags:
                                 from_col = loop.tags.index(d['default-from'])
@@ -2460,7 +2505,7 @@ class NEFTranslator:
                             idx_tag_ids.add(j)
                 else:
                     for d in data_items:
-                        if d['name'] == name and d['type']== 'index-int':
+                        if d['name'] == name and d['type'] == 'index-int':
                             idx_tag_ids.add(j)
 
             relax_key_ids = set()
@@ -2474,7 +2519,7 @@ class NEFTranslator:
 
             if test_on_index and len(idx_tag_ids) > 0:
 
-                for l, _j in enumerate(idx_tag_ids):
+                for l, _j in enumerate(idx_tag_ids):  # noqa: E741
 
                     try:
                         idxs = [int(i[_j]) for i in tag_data]
@@ -2491,7 +2536,7 @@ class NEFTranslator:
                         raise ValueError("%s must be int. #_of_row %s, data_of_row %s." % (tags[_j], l + 1, r))
 
             if not excl_missing_data:
-                for l, i in enumerate(tag_data):
+                for l, i in enumerate(tag_data):  # noqa: E741
                     for j in range(tag_len):
                         if i[j] in self.empty_value:
                             name = tags[j]
@@ -2499,12 +2544,12 @@ class NEFTranslator:
                                 k = key_items[key_names.index(name)]
                                 if not ('remove-bad-pattern' in k and k['remove-bad-pattern']):
                                     r = {}
-                                    for _j,_t in enumerate(loop.tags):
+                                    for _j, _t in enumerate(loop.tags):  # noqa: E741
                                         r[_t] = loop.data[l][_j]
                                     raise ValueError("%s must not be empty. #_of_row %s, data_of_row %s." % (name, l + 1, r))
 
                             for d in data_items:
-                                if d['name'] == name and d['mandatory'] and not 'default' in d and not('remove-bad-pattern' in d and d['detele-bad-pattern']):
+                                if d['name'] == name and d['mandatory'] and 'default' not in d and not('remove-bad-pattern' in d and d['detele-bad-pattern']):
                                     r = {}
                                     for _j, _t in enumerate(loop.tags):
                                         r[_t] = loop.data[l][_j]
@@ -2515,7 +2560,7 @@ class NEFTranslator:
 
                 rechk = False
 
-                for l, i in enumerate(tag_data):
+                for l, i in enumerate(tag_data):  # noqa: E741
 
                     key = ''
                     for j in range(key_len):
@@ -2567,7 +2612,7 @@ class NEFTranslator:
                 if rechk:
                     keys = set()
 
-                    for l, i in enumerate(tag_data):
+                    for l, i in enumerate(tag_data):  # noqa: E741
 
                         key = ''
                         for j in range(key_len):
@@ -2611,10 +2656,10 @@ class NEFTranslator:
                         else:
                             keys.add(key)
 
-            asm = [] # assembly of a loop
+            asm = []  # assembly of a loop
 
-            for l, i in enumerate(tag_data):
-                ent = {} # entity
+            for l, i in enumerate(tag_data):  # noqa: E741
+                ent = {}  # entity
 
                 missing_mandatory_data = False
                 remove_bad_pattern = False
@@ -2625,7 +2670,7 @@ class NEFTranslator:
                     val = i[j]
                     if j < key_len:
                         k = key_items[j]
-                        type = k['type']
+                        type = k['type']  # pylint: disable=redefined-builtin
                         if type == 'bool':
                             try:
                                 ent[name] = val.lower() in self.true_value
@@ -2682,7 +2727,7 @@ class NEFTranslator:
                                     continue
                                 else:
                                     raise ValueError("%s%s %r must be %s." % (get_idx_msg(idx_tag_ids, tags, ent), name, val, self.readable_item_type[type]))
-                            if (type == 'index-int' and ent[name] <= 0) or (type == 'positive-int' and (ent[name] < 0 or (ent[name] == 0 and 'enforce-non-zero' in k and k['enforce-non-zero']))):
+                            if (type == 'index-int' and ent[name] <= 0) or (type == 'positive-int' and (ent[name] < 0 or (ent[name] == 0 and 'enforce-non-zero' in k and k['enforce-non-zero']))):  # noqa: E501
                                 raise ValueError("%s%s %r must be %s." % (get_idx_msg(idx_tag_ids, tags, ent), name, val, self.readable_item_type[type]))
                             if ent[name] == 0 and enforce_non_zero:
                                 if 'void-zero' in k:
@@ -2690,7 +2735,7 @@ class NEFTranslator:
                                         loop.data[l][loop.tags.index(name)] = None
                                     ent[name] = None
                                 else:
-                                    user_warn_msg += "[Zero value error] %s%s %r should not be zero, as defined by %s.\n" % (get_idx_msg(idx_tag_ids, tags, ent), name, val, self.readable_item_type[type])
+                                    user_warn_msg += "[Zero value error] %s%s %r should not be zero, as defined by %s.\n" % (get_idx_msg(idx_tag_ids, tags, ent), name, val, self.readable_item_type[type])  # noqa: E501
                             if type == 'positive-int-as-str':
                                 i[j] = ent[name] = str(ent[name])
                         elif type == 'pointer-index':
@@ -2756,7 +2801,7 @@ class NEFTranslator:
                                         loop.data[l][loop.tags.index(name)] = None
                                     ent[name] = None
                                 else:
-                                    user_warn_msg += "[Zero value error] %s%s %r should not be zero, as defined by %s.\n" % (get_idx_msg(idx_tag_ids, tags, ent), name, val, self.readable_item_type[type])
+                                    user_warn_msg += "[Zero value error] %s%s %r should not be zero, as defined by %s.\n" % (get_idx_msg(idx_tag_ids, tags, ent), name, val, self.readable_item_type[type])  # noqa: E501
                         elif type == 'range-float':
                             try:
                                 _range = k['range']
@@ -2777,15 +2822,15 @@ class NEFTranslator:
                                     ent[name] = None
                                     continue
                                 user_warn_msg += "[Range value error] %s%s %r must be %s.\n" % (get_idx_msg(idx_tag_ids, tags, ent), name, val, self.readable_item_type[type])
-                            if ('min_exclusive' in _range and _range['min_exclusive'] == 0.0 and ent[name] <= 0.0) or ('min_inclusive' in _range and _range['min_inclusive'] == 0.0 and ent[name] < 0):
+                            if ('min_exclusive' in _range and _range['min_exclusive'] == 0.0 and ent[name] <= 0.0) or ('min_inclusive' in _range and _range['min_inclusive'] == 0.0 and ent[name] < 0):  # noqa: E501
                                 if ent[name] < 0.0:
-                                    if ('max_inclusive' in _range and abs(ent[name]) > _range['max_inclusive']) or ('max_exclusive' in _range and abs(ent[name]) >= _range['max_exclusive']) or ('enforce-sign' in k and k['enforce-sign']):
+                                    if ('max_inclusive' in _range and abs(ent[name]) > _range['max_inclusive']) or ('max_exclusive' in _range and abs(ent[name]) >= _range['max_exclusive']) or ('enforce-sign' in k and k['enforce-sign']):  # noqa: E501
                                         if not enforce_range:
                                             ent[name] = None
                                         else:
                                             user_warn_msg += "[Range value error] %s%s %r must be within range %s.\n" % (get_idx_msg(idx_tag_ids, tags, ent), name, val, _range)
                                     elif enforce_sign:
-                                        user_warn_msg += "[Negative value error] %s%s %r should not have negative value for %s, %s.\n" % (get_idx_msg(idx_tag_ids, tags, ent), name, val, self.readable_item_type[type], _range)
+                                        user_warn_msg += "[Negative value error] %s%s %r should not have negative value for %s, %s.\n" % (get_idx_msg(idx_tag_ids, tags, ent), name, val, self.readable_item_type[type], _range)  # noqa: E501
                                 elif ent[name] == 0.0 and 'enforce-non-zero' in k and k['enforce-non-zero']:
                                     if not enforce_range:
                                         ent[name] = None
@@ -2797,8 +2842,8 @@ class NEFTranslator:
                                             loop.data[l][loop.tags.index(name)] = None
                                         ent[name] = None
                                     else:
-                                        user_warn_msg += "[Zero value error] %s%s %r should not be zero, as defined by %s, %s.\n" % (get_idx_msg(idx_tag_ids, tags, ent), name, val, self.readable_item_type[type], _range)
-                            elif ('min_exclusive' in _range and ent[name] <= _range['min_exclusive']) or ('min_inclusive' in _range and ent[name] < _range['min_inclusive']) or ('max_inclusive' in _range and ent[name] > _range['max_inclusive']) or ('max_exclusive' in _range and ent[name] >= _range['max_exclusive']):
+                                        user_warn_msg += "[Zero value error] %s%s %r should not be zero, as defined by %s, %s.\n" % (get_idx_msg(idx_tag_ids, tags, ent), name, val, self.readable_item_type[type], _range)  # noqa: E501
+                            elif ('min_exclusive' in _range and ent[name] <= _range['min_exclusive']) or ('min_inclusive' in _range and ent[name] < _range['min_inclusive']) or ('max_inclusive' in _range and ent[name] > _range['max_inclusive']) or ('max_exclusive' in _range and ent[name] >= _range['max_exclusive']):  # noqa: E501
                                 if 'void-zero' in k and ent[name] == 0.0:
                                     if self.replace_zero_by_null_in_case:
                                         loop.data[l][loop.tags.index(name)] = None
@@ -2810,7 +2855,7 @@ class NEFTranslator:
                         elif type == 'enum':
                             try:
                                 enum = k['enum']
-                                if not val in enum:
+                                if val not in enum:
                                     if 'enum-alt' in k and val in k['enum-alt']:
                                         val = k['enum-alt'][val]
                                         i[j] = val
@@ -2873,7 +2918,7 @@ class NEFTranslator:
                         for d in data_items:
                             if d['name'] == name:
                                 type = d['type']
-                                if val in self.empty_value and ('enum' in type or (not 'default-from' in d and not 'default' in d)):
+                                if val in self.empty_value and ('enum' in type or ('default-from' not in d and 'default' not in d)):
                                     if d['mandatory'] and excl_missing_data:
                                         missing_mandatory_data = True
                                         continue
@@ -2934,7 +2979,7 @@ class NEFTranslator:
                                             continue
                                         else:
                                             raise ValueError("%s%s %r must be %s." % (get_idx_msg(idx_tag_ids, tags, ent), name, val, self.readable_item_type[type]))
-                                    if (type == 'index-int' and ent[name] <= 0) or (type == 'positive-int' and (ent[name] < 0 or (ent[name] == 0 and 'enforce-non-zero' in d and d['enforce-non-zero']))):
+                                    if (type == 'index-int' and ent[name] <= 0) or (type == 'positive-int' and (ent[name] < 0 or (ent[name] == 0 and 'enforce-non-zero' in d and d['enforce-non-zero']))):  # noqa: E501
                                         raise ValueError("%s%s %r must be %s." % (get_idx_msg(idx_tag_ids, tags, ent), name, val, self.readable_item_type[type]))
                                     if ent[name] == 0 and enforce_non_zero:
                                         if 'void-zero' in d:
@@ -2942,7 +2987,7 @@ class NEFTranslator:
                                                 loop.data[l][loop.tags.index(name)] = None
                                             ent[name] = None
                                         else:
-                                            user_warn_msg += "[Zero value error] %s%s %r should not be zero, as defined by %s.\n" % (get_idx_msg(idx_tag_ids, tags, ent), name, val, self.readable_item_type[type])
+                                            user_warn_msg += "[Zero value error] %s%s %r should not be zero, as defined by %s.\n" % (get_idx_msg(idx_tag_ids, tags, ent), name, val, self.readable_item_type[type])  # noqa: E501
                                     if type == 'positive-int-as-str':
                                         i[j] = ent[name] = str(ent[name])
                                 elif type == 'pointer-index':
@@ -3008,7 +3053,7 @@ class NEFTranslator:
                                                 loop.data[l][loop.tags.index(name)] = None
                                             ent[name] = None
                                         else:
-                                            user_warn_msg += "[Zero value error] %s%s %r should not be zero, as defined by %s.\n" % (get_idx_msg(idx_tag_ids, tags, ent), name, val, self.readable_item_type[type])
+                                            user_warn_msg += "[Zero value error] %s%s %r should not be zero, as defined by %s.\n" % (get_idx_msg(idx_tag_ids, tags, ent), name, val, self.readable_item_type[type])  # noqa: E501
                                 elif type == 'range-float':
                                     try:
                                         _range = d['range']
@@ -3029,15 +3074,15 @@ class NEFTranslator:
                                             clear_bad_pattern = True
                                             continue
                                         user_warn_msg += "[Range value error] %s%s %r must be %s.\n" % (get_idx_msg(idx_tag_ids, tags, ent), name, val, self.readable_item_type[type])
-                                    if ('min_exclusive' in _range and _range['min_exclusive'] == 0.0 and ent[name] <= 0.0) or ('min_inclusive' in _range and _range['min_inclusive'] == 0.0 and ent[name] < 0):
+                                    if ('min_exclusive' in _range and _range['min_exclusive'] == 0.0 and ent[name] <= 0.0) or ('min_inclusive' in _range and _range['min_inclusive'] == 0.0 and ent[name] < 0):  # noqa: E501
                                         if ent[name] < 0.0:
-                                            if ('max_inclusive' in _range and abs(ent[name]) > _range['max_inclusive']) or ('max_exclusive' in _range and abs(ent[name]) >= _range['max_exclusive']) or ('enforce-sign' in d and d['enforce-sign']):
+                                            if ('max_inclusive' in _range and abs(ent[name]) > _range['max_inclusive']) or ('max_exclusive' in _range and abs(ent[name]) >= _range['max_exclusive']) or ('enforce-sign' in d and d['enforce-sign']):  # noqa: E501
                                                 if not enforce_range:
                                                     ent[name] = None
                                                 else:
                                                     user_warn_msg += "[Range value error] %s%s %r must be within range %s.\n" % (get_idx_msg(idx_tag_ids, tags, ent), name, val, _range)
                                             elif enforce_sign:
-                                                user_warn_msg += "[Negative value error] %s%s %r should not have negative value for %s, %s.\n" % (get_idx_msg(idx_tag_ids, tags, ent), name, val, self.readable_item_type[type], _range)
+                                                user_warn_msg += "[Negative value error] %s%s %r should not have negative value for %s, %s.\n" % (get_idx_msg(idx_tag_ids, tags, ent), name, val, self.readable_item_type[type], _range)  # noqa: E501
                                         elif ent[name] == 0.0 and 'enforce-non-zero' in d and d['enforce-non-zero']:
                                             if not enforce_range:
                                                 ent[name] = None
@@ -3049,14 +3094,16 @@ class NEFTranslator:
                                                     loop.data[l][loop.tags.index(name)] = None
                                                 ent[name] = None
                                             else:
-                                                user_warn_msg += "[Zero value error] %s%s %r should not be zero, as defined by %s, %s.\n" % (get_idx_msg(idx_tag_ids, tags, ent), name, val, self.readable_item_type[type], _range)
+                                                user_warn_msg += "[Zero value error] %s%s %r should not be zero, as defined by %s, %s.\n" % (get_idx_msg(idx_tag_ids, tags, ent),
+                                                                                                                                             name, val,
+                                                                                                                                             self.readable_item_type[type], _range)
                                         elif 'remove-bad-pattern' in d and d['remove-bad-pattern']:
                                             remove_bad_pattern = True
                                             continue
                                         elif 'clear-bad-pattern' in d and d['clear-bad-pattern']:
                                             clear_bad_pattern = True
                                             continue
-                                    elif ('min_exclusive' in _range and ent[name] <= _range['min_exclusive']) or ('min_inclusive' in _range and ent[name] < _range['min_inclusive']) or ('max_inclusive' in _range and ent[name] > _range['max_inclusive']) or ('max_exclusive' in _range and ent[name] >= _range['max_exclusive']):
+                                    elif ('min_exclusive' in _range and ent[name] <= _range['min_exclusive']) or ('min_inclusive' in _range and ent[name] < _range['min_inclusive']) or ('max_inclusive' in _range and ent[name] > _range['max_inclusive']) or ('max_exclusive' in _range and ent[name] >= _range['max_exclusive']):  # noqa: E501
                                         if 'void-zero' in d and ent[name] == 0.0:
                                             if self.replace_zero_by_null_in_case:
                                                 loop.data[l][loop.tags.index(name)] = None
@@ -3074,7 +3121,7 @@ class NEFTranslator:
                                 elif type == 'enum':
                                     try:
                                         enum = d['enum']
-                                        if not val in enum:
+                                        if val not in enum:
                                             if 'enum-alt' in d and val in d['enum-alt']:
                                                 val = d['enum-alt'][val]
                                                 i[j] = val
@@ -3137,7 +3184,7 @@ class NEFTranslator:
                         if name in ent and not ent[name] is None:
                             if not group['coexist-with'] is None:
                                 for cw in group['coexist-with']:
-                                    if not cw in ent or ent[cw] is None:
+                                    if cw not in ent or ent[cw] is None:
                                         raise ValueError("%sOne of data item %s must not be empty for a row having %s %r." % (get_idx_msg(idx_tag_ids, tags, ent), cw, name, ent[name]))
 
                             if 'smaller-than' in group and not group['smaller-than'] is None:
@@ -3183,7 +3230,7 @@ class NEFTranslator:
                     for j, t in enumerate(loop.tags):
                         r[t] = loop.data[l][j]
                     user_warn_msg += '[Remove bad pattern] Found bad pattern. #_of_row %s, data_of_row %s.\n' % (l + 1, r)
-                    continue # should be removed from loop later
+                    continue  # should be removed from loop later
 
                 if clear_bad_pattern:
                     r = {}
@@ -3211,7 +3258,7 @@ class NEFTranslator:
 
         return data
 
-    def letter_to_int(self, code, min=0):
+    def letter_to_int(self, code, min=0):  # pylint: disable=redefined-builtin
         """ Return digit from a given chain code.
         """
 
@@ -3259,16 +3306,16 @@ class NEFTranslator:
 
         try:
             loops = star_data.get_loops_by_category(lp_category)
-        except: # AttributeError:
+        except:  # AttributeError:  # noqa: E722 pylint: disable=bare-except
             try:
                 if __pynmrstar_v3_2__:
                     loops = [star_data.get_loop(lp_category)]
                 else:
                     loops = [star_data.get_loop_by_category(lp_category)]
-            except: # AttributeError:
+            except:  # AttributeError:  # noqa: E722 pylint: disable=bare-except
                 loops = [star_data]
 
-        data = [] # data of all loops
+        data = []  # data of all loops
 
         key_names = [k['name'] for k in key_items]
         uppercases = [('uppercase' in k and k['uppercase']) for k in key_items]
@@ -3291,7 +3338,7 @@ class NEFTranslator:
             keys = set()
             dup_ids = set()
 
-            for l, i in enumerate(get_lp_tag(loop, key_names)):
+            for l, i in enumerate(get_lp_tag(loop, key_names)):  # noqa: E741
 
                 key = ''
                 for j in range(key_len):
@@ -3316,16 +3363,16 @@ class NEFTranslator:
 
         try:
             loops = star_data.get_loops_by_category(lp_category)
-        except: # AttributeError:
+        except:  # AttributeError:  # noqa: E722 pylint: disable=bare-except
             try:
                 if __pynmrstar_v3_2__:
                     loops = [star_data.get_loop(lp_category)]
                 else:
                     loops = [star_data.get_loop_by_category(lp_category)]
-            except: # AttributeError:
+            except:  # AttributeError:  # noqa: E722 pylint: disable=bare-except
                 loops = [star_data]
 
-        data = [] # data of all loops
+        data = []  # data of all loops
 
         key_names = [k['name'] for k in key_items]
         uppercases = [('uppercase' in k and k['uppercase']) for k in key_items]
@@ -3343,7 +3390,7 @@ class NEFTranslator:
             keys = set()
             dup_ids = set()
 
-            for l, i in enumerate(tag_data):
+            for l, i in enumerate(tag_data):  # noqa: E741
 
                 key = ''
                 for j in range(key_len):
@@ -3364,7 +3411,7 @@ class NEFTranslator:
             else:
                 conflict_id_set = []
 
-                for l in conflict_id:
+                for l in conflict_id:  # noqa: E741
 
                     key = ''
                     for j in range(key_len):
@@ -3401,16 +3448,16 @@ class NEFTranslator:
 
         try:
             loops = star_data.get_loops_by_category(lp_category)
-        except: # AttributeError:
+        except:  # AttributeError:  # noqa: E722 pylint: disable=bare-except
             try:
                 if __pynmrstar_v3_2__:
                     loops = [star_data.get_loop(lp_category)]
                 else:
                     loops = [star_data.get_loop_by_category(lp_category)]
-            except: # AttributeError:
+            except:  # AttributeError:  # noqa: E722 pylint: disable=bare-except
                 loops = [star_data]
 
-        data = [] # data of all loops
+        data = []  # data of all loops
 
         key_names = [k['name'] for k in key_items]
 
@@ -3433,7 +3480,7 @@ class NEFTranslator:
 
             dup_ids = set()
 
-            for l, i in enumerate(get_lp_tag(loop, key_names)):
+            for tag, i in enumerate(get_lp_tag(loop, key_names)):
 
                 for j in range(0, len_atom_keys - 2):
                     atom_key_j = atom_keys[j]
@@ -3448,7 +3495,7 @@ class NEFTranslator:
                         atom_id_k = i[key_names.index(atom_key_k['atom_tag'])]
 
                         if chain_id_j == chain_id_k and seq_id_j == seq_id_k and atom_id_j == atom_id_k:
-                            dup_ids.add(l)
+                            dup_ids.add(tag)
                             break
 
             data.append(sorted(list(dup_ids), reverse=True))
@@ -3463,16 +3510,16 @@ class NEFTranslator:
 
         try:
             loops = star_data.get_loops_by_category(lp_category)
-        except: # AttributeError:
+        except:  # AttributeError:  # noqa: E722 pylint: disable=bare-except
             try:
                 if __pynmrstar_v3_2__:
                     loops = [star_data.get_loop(lp_category)]
                 else:
                     loops = [star_data.get_loop_by_category(lp_category)]
-            except: # AttributeError:
+            except:  # AttributeError:   # noqa: E722 pylint: disable=bare-except
                 loops = [star_data]
 
-        data = [] # data of all loops
+        data = []  # data of all loops
 
         key_names = [k['name'] for k in key_items if 'remove-bad-pattern' in k and k['remove-bad-pattern']]
         data_names = [d['name'] for d in data_items if 'remove-bad-pattern' in d and d['remove-bad-pattern']]
@@ -3483,10 +3530,10 @@ class NEFTranslator:
 
             bad_ids = set()
 
-            for l, i in enumerate(get_lp_tag(loop, key_names)):
+            for tag, i in enumerate(get_lp_tag(loop, key_names)):
 
                 if any(self.bad_pattern.match(d) for d in i):
-                    bad_ids.add(l)
+                    bad_ids.add(tag)
 
             data.append(sorted(list(bad_ids), reverse=True))
 
@@ -3510,7 +3557,7 @@ class NEFTranslator:
             if not t['type'] in item_types:
                 raise TypeError("Type %s of tag item %s must be one of %s." % (t['type'], t['name'], item_types))
 
-        if not allowed_tags is None:
+        if allowed_tags is not None:
 
             if (set(tag_names) | set(allowed_tags)) != set(allowed_tags):
                 raise LookupError("Tag items %s must not exists." % ((set(tag_names) | set(allowed_tags)) - set(allowed_tags)))
@@ -3520,14 +3567,14 @@ class NEFTranslator:
                     group = t['group']
                     if not group['member-with'] is None:
                         for mw in group['member-with']:
-                            if not mw in allowed_tags:
+                            if mw not in allowed_tags:
                                 raise ValueError("Member tag item %s of %s must exists in allowed tags." % (mw, t['name']))
                     if not group['coexist-with'] is None:
                         for cw in group['coexist-with']:
-                            if not cw in allowed_tags:
+                            if cw not in allowed_tags:
                                 raise ValueError("Coexisting tag item %s of %s must exists in allowed tags." % (cw, t['name']))
 
-        sf_tags = {i[0]:i[1] for i in star_data.tags}
+        sf_tags = {i[0]: i[1] for i in star_data.tags}
 
         if len(mand_tag_names) > 0 and set(mand_tag_names) & set(sf_tags.keys()) != set(mand_tag_names):
             missing_tags = list(set(mand_tag_names) - set(sf_tags.keys()))
@@ -3540,7 +3587,7 @@ class NEFTranslator:
                 if name in sf_tags.keys():
                     if not group['coexist-with'] is None:
                         for cw in group['coexist-with']:
-                            if not cw in sf_tags.keys():
+                            if cw not in sf_tags.keys():
                                 missing_tags = list(set(group['coexist-with']).add(name) - set(sf_tags.keys()))
                                 raise LookupError("Missing mandatory %s saveframe tag%s." % (missing_tags, 's' if len(missing_tags) > 1 else ''))
 
@@ -3557,16 +3604,16 @@ class NEFTranslator:
         for name, val in sf_tags.items():
             if val in self.empty_value:
                 for t in tag_items:
-                    if t['name'] == name and t['mandatory'] and not 'default' in t:
+                    if t['name'] == name and t['mandatory'] and 'default' not in t:
                         raise ValueError("%s must not be empty." % name)
 
-        ent = {} # entity
+        ent = {}  # entity
 
         for name, val in sf_tags.items():
             for t in tag_items:
                 if t['name'] == name:
-                    type = t['type']
-                    if val in self.empty_value and not 'enum' in type and not 'default-from' in t and not 'default' in t:
+                    type = t['type']  # pylint: disable=redefined-builtin
+                    if val in self.empty_value and 'enum' not in type and 'default-from' not in t and 'default' not in t:
                         ent[name] = None
                     elif type == 'bool':
                         try:
@@ -3638,9 +3685,9 @@ class NEFTranslator:
                                 ent[name] = None
                                 continue
                             user_warn_msg += "[Range value error] %s %r must be %s.\n" % (name, val, self.readable_item_type[type])
-                        if ('min_exclusive' in _range and _range['min_exclusive'] == 0.0 and ent[name] <= 0.0) or ('min_inclusive' in _range and _range['min_inclusive'] == 0.0 and ent[name] < 0):
+                        if ('min_exclusive' in _range and _range['min_exclusive'] == 0.0 and ent[name] <= 0.0) or ('min_inclusive' in _range and _range['min_inclusive'] == 0.0 and ent[name] < 0):  # noqa: E501
                             if ent[name] < 0.0:
-                                if ('max_inclusive' in _range and abs(ent[name]) > _range['max_inclusive']) or ('max_exclusive' in _range and abs(ent[name]) >= _range['max_exclusive']) or ('enforce-sign' in t and t['enforce-sign']):
+                                if ('max_inclusive' in _range and abs(ent[name]) > _range['max_inclusive']) or ('max_exclusive' in _range and abs(ent[name]) >= _range['max_exclusive']) or ('enforce-sign' in t and t['enforce-sign']):  # noqa: E501
                                     if not enforce_range:
                                         ent[name] = None
                                     else:
@@ -3659,7 +3706,7 @@ class NEFTranslator:
                                     ent[name] = None
                                 else:
                                     user_warn_msg += "[Zero value error] %s %r should not be zero, as defined by %s, %s.\n" % (name, val, self.readable_item_type[type], _range)
-                        elif ('min_exclusive' in _range and ent[name] <= _range['min_exclusive']) or ('min_inclusive' in _range and ent[name] < _range['min_inclusive']) or ('max_inclusive' in _range and ent[name] > _range['max_inclusive']) or ('max_exclusive' in _range and ent[name] >= _range['max_exclusive']):
+                        elif ('min_exclusive' in _range and ent[name] <= _range['min_exclusive']) or ('min_inclusive' in _range and ent[name] < _range['min_inclusive']) or ('max_inclusive' in _range and ent[name] > _range['max_inclusive']) or ('max_exclusive' in _range and ent[name] >= _range['max_exclusive']):  # noqa: E501
                             if 'void-zero' in t and ent[name] == 0.0:
                                 if self.replace_zero_by_null_in_case:
                                     star_data.tags[sf_tags.keys().index(name)][1] = None
@@ -3670,21 +3717,21 @@ class NEFTranslator:
                                 user_warn_msg += "[Range value error] %s %r must be within range %s.\n" % (name, val, _range)
                     elif type == 'enum':
                         if val in self.empty_value:
-                            val = '?' # '.' raises internal error in NmrDpUtility
+                            val = '?'  # '.' raises internal error in NmrDpUtility
                         try:
                             enum = t['enum']
-                            if not val in enum:
+                            if val not in enum:
                                 if 'enum-alt' in t and val in t['enum-alt']:
                                     tagNames = [_t[0] for _t in star_data.tags]
                                     itCol = tagNames.index(name)
                                     itName = '_' + category + '.' + t['name']
                                     if val == '?' and enforce_enum:
                                         if self.is_mandatory_tag(itName, file_type):
-                                            user_warn_msg += "[Enumeration error] The mandatory type %s %r is missing and the type must be one of %s. %r will be given unless you would like to fix the type and re-upload the %s file.\n" % (itName, val, enum, t['enum-alt'][val], file_type.upper())
+                                            user_warn_msg += "[Enumeration error] The mandatory type %s %r is missing and the type must be one of %s. %r will be given unless you would like to fix the type and re-upload the %s file.\n" % (itName, val, enum, t['enum-alt'][val], file_type.upper())  # noqa: E501
                                             val = t['enum-alt'][val]
                                             star_data.tags[itCol][1] = val
                                         else:
-                                            user_warn_msg += "[Enumeration error] %s %r should be one of %s. The type may be filled with either 'undefined' or estimated value unless you would like to fix the type and re-upload the %s file.\n" % (name, val, enum, file_type.upper())
+                                            user_warn_msg += "[Enumeration error] %s %r should be one of %s. The type may be filled with either 'undefined' or estimated value unless you would like to fix the type and re-upload the %s file.\n" % (name, val, enum, file_type.upper())  # noqa: E501
                                     else:
                                         val = t['enum-alt'][val]
                                         star_data.tags[itCol][1] = val
@@ -3718,7 +3765,7 @@ class NEFTranslator:
                     if name in ent and not ent[name] is None:
                         if not group['coexist-with'] is None:
                             for cw in group['coexist-with']:
-                                if not cw in ent or ent[cw] is None:
+                                if cw not in ent or ent[cw] is None:
                                     raise ValueError("One of tag item %s must not be empty due to %s %r." % (cw, name, ent[name]))
 
                         if 'smaller-than' in group and not group['smaller-than'] is None:
@@ -3771,7 +3818,7 @@ class NEFTranslator:
             self.__last_comp_id = comp_id
 
             if self.__last_comp_id_test:
-                #self.__last_chem_comp_dict = self.__ccR.getChemCompDict()
+                # self.__last_chem_comp_dict = self.__ccR.getChemCompDict()
                 self.__last_chem_comp_atoms = self.__ccR.getAtomList()
                 self.__last_chem_comp_bonds = self.__ccR.getBonds()
 
@@ -3796,7 +3843,7 @@ class NEFTranslator:
         else:
             self.__updateChemCompDict(comp_id)
 
-            if self.__last_comp_id_test: # matches with comp_id in CCD
+            if self.__last_comp_id_test:  # matches with comp_id in CCD
                 atoms = [a[self.__cca_atom_id] for a in self.__last_chem_comp_atoms]
             else:
                 return False
@@ -3811,13 +3858,13 @@ class NEFTranslator:
 
         try:
             loops = star_data.get_loops_by_category(lp_category)
-        except: # AttributeError:
+        except:  # AttributeError:  # noqa: E722 pylint: disable=bare-except
             try:
                 if __pynmrstar_v3_2__:
                     loops = [star_data.get_loop(lp_category)]
                 else:
                     loops = [star_data.get_loop_by_category(lp_category)]
-            except: # AttributeError:
+            except:  # AttributeError:  # noqa: E722 pylint: disable=bare-except
                 loops = [star_data]
 
         valid_row = []
@@ -3837,14 +3884,14 @@ class NEFTranslator:
                         valid_row.append(j)
 
                     elif _comp_id in self.atomDict:
-                        if not _atom_id in self.atomDict[_comp_id]:
+                        if _atom_id not in self.atomDict[_comp_id]:
                             valid_row.append(j)
 
                     else:
                         self.__updateChemCompDict(_comp_id)
 
-                        if self.__last_comp_id_test: # matches with comp_id in CCD
-                            if not _atom_id in [a[self.__cca_atom_id] for a in self.__last_chem_comp_atoms]:
+                        if self.__last_comp_id_test:  # matches with comp_id in CCD
+                            if _atom_id not in [a[self.__cca_atom_id] for a in self.__last_chem_comp_atoms]:
                                 valid_row.append(j)
                         else:
                             valid_row.append(j)
@@ -3864,7 +3911,7 @@ class NEFTranslator:
 
             n = self.tagMap[0].index(nef_tag)
 
-            return self.tagMap[1][n], self.tagMap[2][n], n # author tag, data tag
+            return self.tagMap[1][n], self.tagMap[2][n], n  # author tag, data tag
 
         except ValueError:
             return None, None, None
@@ -3877,11 +3924,11 @@ class NEFTranslator:
 
         try:
 
-            n = self.tagMap[2].index(star_tag) # NEF has no auth tags
+            n = self.tagMap[2].index(star_tag)  # NEF has no auth tags
 
             return self.tagMap[0][n], n
 
-        except ValueError: # None for NMR-STAR specific tag
+        except ValueError:  # None for NMR-STAR specific tag
             return None, None
 
     def get_star_auth_tag(self, star_tag):
@@ -3893,7 +3940,7 @@ class NEFTranslator:
 
             n = self.tagMap[2].index(star_tag)
 
-            return self.tagMap[1][n], n # author tag
+            return self.tagMap[1][n], n  # author tag
 
         except ValueError:
             return None, None
@@ -3993,68 +4040,68 @@ class NEFTranslator:
         lp_category = star_loop_tags[0].split('.')[0]
 
         if lp_category == '_Chem_comp_assembly':
-            if not '_Chem_comp_assembly.Assembly_ID' in out_tag:
+            if '_Chem_comp_assembly.Assembly_ID' not in out_tag:
                 out_tag.append('_Chem_comp_assembly.Assembly_ID')
 
         elif lp_category == '_Bond':
-            if not '_Bond.ID' in out_tag:
+            if '_Bond.ID' not in out_tag:
                 out_tag.insert(0, '_Bond.ID')
-            if not '_Bond.Type' in out_tag:
+            if '_Bond.Type' not in out_tag:
                 out_tag.insert(1, '_Bond.Type')
-            if not '_Bond.Value_order' in out_tag:
+            if '_Bond.Value_order' not in out_tag:
                 out_tag.insert(2, '_Bond.Value_order')
-            if not '_Bond.Assembly_ID' in out_tag:
+            if '_Bond.Assembly_ID' not in out_tag:
                 out_tag.append('_Bond.Assembly_ID')
 
         elif lp_category == '_Atom_chem_shift':
-            if not '_Atom_chem_shift.ID' in out_tag:
+            if '_Atom_chem_shift.ID' not in out_tag:
                 out_tag.insert(0, '_Atom_chem_shift.ID')
-            if not '_Atom_chem_shift.Ambiguity_code' in out_tag:
+            if '_Atom_chem_shift.Ambiguity_code' not in out_tag:
                 out_tag.insert(9, '_Atom_chem_shift.Ambiguity_code')
-            if not '_Atom_chem_shift.Ambiguity_set_ID' in out_tag:
+            if '_Atom_chem_shift.Ambiguity_set_ID' not in out_tag:
                 out_tag.insert(10, '_Atom_chem_shift.Ambiguity_set_ID')
 
             if self.insert_original_pdb_cs_items:
-                if not '_Atom_chem_shift.Original_PDB_strand_ID' in out_tag:
+                if '_Atom_chem_shift.Original_PDB_strand_ID' not in out_tag:
                     out_tag.append('_Atom_chem_shift.Original_PDB_strand_ID')
-                if not '_Atom_chem_shift.Original_PDB_residue_no' in out_tag:
+                if '_Atom_chem_shift.Original_PDB_residue_no' not in out_tag:
                     out_tag.append('_Atom_chem_shift.Original_PDB_residue_no')
-                if not '_Atom_chem_shift.Original_PDB_residue_name' in out_tag:
+                if '_Atom_chem_shift.Original_PDB_residue_name' not in out_tag:
                     out_tag.append('_Atom_chem_shift.Original_PDB_residue_name')
-                if not '_Atom_chem_shift.Original_PDB_atom_name' in out_tag:
+                if '_Atom_chem_shift.Original_PDB_atom_name' not in out_tag:
                     out_tag.append('_Atom_chem_shift.Original_PDB_atom_name')
 
-            if not '_Atom_chem_shift.Details' in out_tag:
+            if '_Atom_chem_shift.Details' not in out_tag:
                 out_tag.append('_Atom_chem_shift.Details')
-            if not '_Atom_chem_shift.Assigned_chem_shift_list_ID' in out_tag:
+            if '_Atom_chem_shift.Assigned_chem_shift_list_ID' not in out_tag:
                 out_tag.append('_Atom_chem_shift.Assigned_chem_shift_list_ID')
 
         elif lp_category == '_Gen_dist_constraint.Member':
-            if not '_Gen_dist_constraint.Member_logic_code' in out_tag:
+            if '_Gen_dist_constraint.Member_logic_code' not in out_tag:
                 out_tag.append('_Gen_dist_constraint.Member_logic_code')
-            if not '_Gen_dist_constraint.Gen_dist_constraint_list_ID' in out_tag:
+            if '_Gen_dist_constraint.Gen_dist_constraint_list_ID' not in out_tag:
                 out_tag.append('_Gen_dist_constraint.Gen_dist_constraint_list_ID')
 
         elif lp_category == '_Torsion_angle_constraint':
-            if not '_Torsion_angle_constraint.Torsion_angle_constraint_list_ID' in out_tag:
+            if '_Torsion_angle_constraint.Torsion_angle_constraint_list_ID' not in out_tag:
                 out_tag.append('_Torsion_angle_constraint.Torsion_angle_constraint_list_ID')
 
         elif lp_category == '_RDC_constraint':
-            if not '_RDC_constraint.RDC_constraint_list_ID' in out_tag:
+            if '_RDC_constraint.RDC_constraint_list_ID' not in out_tag:
                 out_tag.append('_RDC_constraint.RDC_constraint_list_ID')
 
         elif lp_category == '_Peak_row_format':
-            if not '_Peak_row_format.Details' in out_tag:
+            if '_Peak_row_format.Details' not in out_tag:
                 out_tag.append('_Peak_row_format.Details')
-            if not '_Peak_row_format.Spectral_peak_list_ID' in out_tag:
+            if '_Peak_row_format.Spectral_peak_list_ID' not in out_tag:
                 out_tag.append('_Peak_row_format.Spectral_peak_list_ID')
 
         elif lp_category == '_Spectral_dim':
-            if not '_Spectral_dim.Spectral_peak_list_ID' in out_tag:
+            if '_Spectral_dim.Spectral_peak_list_ID' not in out_tag:
                 out_tag.append('_Spectral_dim.Spectral_peak_list_ID')
 
         elif lp_category == '_Spectral_dim_transfer':
-            if not '_Spectral_dim_transfer.Spectral_peak_list_ID' in out_tag:
+            if '_Spectral_dim_transfer.Spectral_peak_list_ID' not in out_tag:
                 out_tag.append('_Spectral_dim_transfer.Spectral_peak_list_ID')
 
         return out_tag
@@ -4072,12 +4119,12 @@ class NEFTranslator:
 
             data_tag, ordinal = self.get_nef_tag(j)
 
-            if not data_tag is None:
+            if data_tag is not None:
                 out_tag_w_ordinal[data_tag] = ordinal
 
         out_tag = [t[0] for t in sorted(out_tag_w_ordinal.items(), key=lambda x:x[1])]
 
-        if len(out_tag) > 0 and out_tag[0].startswith('_nef_sequence.') and not '_nef_sequence.index' in out_tag:
+        if len(out_tag) > 0 and out_tag[0].startswith('_nef_sequence.') and '_nef_sequence.index' not in out_tag:
             out_tag.insert(0, '_nef_sequence.index')
 
         return out_tag
@@ -4095,7 +4142,8 @@ class NEFTranslator:
             return self.get_star_atom(comp_id, 'H' + atom_id[2:] + '%', details, leave_unmatched)
 
         if atom_id.startswith('QR'):
-            qr_atoms = sorted(set(atom_id[:-1] + '%' for atom_id in self.__csStat.getAromaticAtoms(comp_id) if atom_id[0] == 'H' and self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id) == 3))
+            qr_atoms = sorted(set(atom_id[:-1] + '%' for atom_id in self.__csStat.getAromaticAtoms(comp_id) if atom_id[0] == 'H'
+                                  and self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id) == 3))
             if len(qr_atoms) == 0:
                 return [], None, None
             atom_list = []
@@ -4137,7 +4185,7 @@ class NEFTranslator:
         else:
             self.__updateChemCompDict(comp_id)
 
-            if self.__last_comp_id_test: # matches with comp_id in CCD
+            if self.__last_comp_id_test:  # matches with comp_id in CCD
                 atoms = [a[self.__cca_atom_id] for a in self.__last_chem_comp_atoms]
 
             else:
@@ -4155,7 +4203,7 @@ class NEFTranslator:
 
             pattern = None
 
-            if atm_set == [0, 1, 2]: # endswith [xyXY][%*]
+            if atm_set == [0, 1, 2]:  # endswith [xyXY][%*]
 
                 atom_type = ref_atom[0]
                 xy_code = ref_atom[1].lower()
@@ -4164,24 +4212,24 @@ class NEFTranslator:
 
                 pattern = re.compile(r'%s\S\d+' % (atom_type))
 
-                alist2 = [i for i in atoms if re.search(pattern, i)\
-                                              and i[len_atom_type].isdigit()] # bmrb_id: 15879, pdb_id: 2k6r, comp_id: DNS
+                alist2 = [i for i in atoms if re.search(pattern, i)
+                          and i[len_atom_type].isdigit()]  # bmrb_id: 15879, pdb_id: 2k6r, comp_id: DNS
 
                 xid = sorted(set(int(i[len_atom_type]) for i in alist2))
 
                 if xy_code == 'x':
                     atom_list = [i for i in alist2 if int(i[len_atom_type]) == xid[0]]
-                    if len(atom_list) > 3: # bmrb_id: 15879, pdb_id: 2k6r, comp_id: DNS
+                    if len(atom_list) > 3:  # bmrb_id: 15879, pdb_id: 2k6r, comp_id: DNS
                         atom_list[3:] = []
 
                 else:
                     atom_list = [i for i in alist2 if int(i[len_atom_type]) == xid[1]]
-                    if len(atom_list) > 3: # bmrb_id: 15879, pdb_id: 2k6r, comp_id: DNS
+                    if len(atom_list) > 3:  # bmrb_id: 15879, pdb_id: 2k6r, comp_id: DNS
                         atom_list[3:] = []
 
                 ambiguity_code = self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_list[0])
 
-            elif atm_set == [3, 4]: # endswith [%*] but neither [xyXY][%*]
+            elif atm_set == [3, 4]:  # endswith [%*] but neither [xyXY][%*]
 
                 atom_type = ref_atom[3]
                 wc_code = ref_atom[4]
@@ -4202,7 +4250,7 @@ class NEFTranslator:
 
                 ambiguity_code = 1 if atom_list[0] in methyl_atoms else self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_list[0])
 
-            elif atm_set == [5, 6]: # endswith [xyXY]
+            elif atm_set == [5, 6]:  # endswith [xyXY]
 
                 atom_type = ref_atom[5]
                 xy_code = ref_atom[6].lower()
@@ -4247,8 +4295,10 @@ class NEFTranslator:
                     return self.get_star_atom(comp_id, nef_atom[:-1] + '%', ('%s converted to %s%%.' % (nef_atom, nef_atom[:-1])) if leave_unmatched else None, leave_unmatched)
 
                 if ((comp_code != 'X' and nef_atom[-1] == '%') or nef_atom[-1] == '*') and not (nef_atom[:-1] + '1' in methyl_atoms) and\
-                    len(nef_atom) > 2 and (nef_atom[-2].lower() == 'x' or nef_atom[-2].lower() == 'y'):
-                    return self.get_star_atom(comp_id, nef_atom[:-2] + ('1' if nef_atom[-2].lower() == 'x' else '2') + '%', ('%s converted to %s%%.' % (nef_atom, nef_atom[:-2] + ('1' if nef_atom[-2].lower() == 'x' else '2'))) if leave_unmatched else None, leave_unmatched)
+                   len(nef_atom) > 2 and (nef_atom[-2].lower() == 'x' or nef_atom[-2].lower() == 'y'):
+                    return self.get_star_atom(comp_id, nef_atom[:-2] + ('1' if nef_atom[-2].lower() == 'x' else '2') + '%',
+                                              ('%s converted to %s%%.' % (nef_atom, nef_atom[:-2]
+                                                                          + ('1' if nef_atom[-2].lower() == 'x' else '2'))) if leave_unmatched else None, leave_unmatched)
 
             if nef_atom in atoms:
                 atom_list.append(nef_atom)
@@ -4282,7 +4332,7 @@ class NEFTranslator:
         if comp_id in self.atomDict:
             atoms = self.atomDict[comp_id]
 
-        elif self.__last_comp_id_test: # matches with comp_id in CCD
+        elif self.__last_comp_id_test:  # matches with comp_id in CCD
             atoms = [a[self.__cca_atom_id] for a in self.__last_chem_comp_atoms]
 
         methyl_atoms = self.__csStat.getMethylAtoms(comp_id)
@@ -4303,7 +4353,7 @@ class NEFTranslator:
                 if atom_id in proc_atom_list:
                     continue
 
-                if not atom_id in atoms:
+                if atom_id not in atoms:
 
                     _atom_id = None
 
@@ -4312,7 +4362,8 @@ class NEFTranslator:
                     elif atom_id.startswith('QQ'):
                         _atom_id = 'H' + atom_id[2:] + '%'
                     elif atom_id.startswith('QR'):
-                        qr_atoms = sorted(set(atom_id[:-1] + '%' for atom_id in self.__csStat.getAromaticAtoms(comp_id) if atom_id[0] == 'H' and self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id) == 3))
+                        qr_atoms = sorted(set(atom_id[:-1] + '%' for atom_id in self.__csStat.getAromaticAtoms(comp_id) if atom_id[0] == 'H'
+                                              and self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id) == 3))
                         if len(qr_atoms) > 0:
                             for qr_atom in qr_atoms:
                                 _a = copy.copy(a)
@@ -4351,7 +4402,7 @@ class NEFTranslator:
                 else:
                     ambig_code = int(_ambig_code)
 
-                if not ambig_code in self.bmrb_ambiguity_codes:
+                if ambig_code not in self.bmrb_ambiguity_codes:
 
                     if leave_unmatched:
                         atom_list.append(atom_id)
@@ -4389,7 +4440,7 @@ class NEFTranslator:
 
                                 if max_len == min_len or len(atom_id) == max_len:
                                     nef_atom = atom_id[:-1] + '%'
-                                else: # For example, HEM HM[A-D]
+                                else:  # For example, HEM HM[A-D]
                                     nef_atom = atom_id + '%'
 
                                 atom_list.append(nef_atom)
@@ -4438,7 +4489,7 @@ class NEFTranslator:
                             else:
 
                                 has_methyl_proton = len([_a['atom_id'] for _a in star_atom_list if _a['atom_id'] in methyl_h_list and (_a['value'] is None or _a['value'] == _value)]) == 3
-                                has_methyl_proton_2 = not methyl_h_list_2 is None and len([_a['atom_id'] for _a in star_atom_list if _a['atom_id'] in methyl_h_list_2 and (_a['value'] is None or _a['value'] == _value)]) == 3
+                                has_methyl_proton_2 = methyl_h_list_2 is not None and len([_a['atom_id'] for _a in star_atom_list if _a['atom_id'] in methyl_h_list_2 and (_a['value'] is None or _a['value'] == _value)]) == 3  # noqa: E501
 
                                 nef_atom_prefix = 'x'
                                 nef_atom_prefix_2 = 'y'
@@ -4448,7 +4499,7 @@ class NEFTranslator:
                                     methyl_proton_value = next((_a['value'] for _a in star_atom_list if _a['atom_id'] in methyl_h_list), None)
                                     methyl_proton_value_2 = next((_a['value'] for _a in star_atom_list if _a['atom_id'] in methyl_h_list_2), None)
 
-                                    if not methyl_proton_value is None and not methyl_proton_value_2 is None and float(methyl_proton_value_2) < float(methyl_proton_value):
+                                    if methyl_proton_value is not None and methyl_proton_value_2 is not None and float(methyl_proton_value_2) < float(methyl_proton_value):
                                         nef_atom_prefix = 'y'
                                         nef_atom_prefix_2 = 'x'
 
@@ -4515,7 +4566,7 @@ class NEFTranslator:
                                     geminal_proton_value = next((_a['value'] for _a in star_atom_list if _a['atom_id'] == geminal_h_list[0]), None)
                                     geminal_proton_value_2 = next((_a['value'] for _a in star_atom_list if _a['atom_id'] == geminal_h_list[1]), None)
 
-                                    if not geminal_proton_value is None and not geminal_proton_value_2 is None and float(geminal_proton_value_2) < float(geminal_proton_value):
+                                    if geminal_proton_value is not None and geminal_proton_value_2 is not None and float(geminal_proton_value_2) < float(geminal_proton_value):
                                         nef_atom_prefix = 'y'
                                         nef_atom_prefix_2 = 'x'
 
@@ -4568,7 +4619,7 @@ class NEFTranslator:
                                 atom_id_value = next((_a['value'] for _a in star_atom_list if _a['atom_id'] == atom_id), None)
                                 atom_id_value_2 = next((_a['value'] for _a in star_atom_list if _a['atom_id'] == atom_id_2), None)
 
-                                if not atom_id_value is None and not atom_id_value_2 is None and float(atom_id_value_2) < float(atom_id_value):
+                                if atom_id_value is not None and atom_id_value_2 is not None and float(atom_id_value_2) < float(atom_id_value):
                                     nef_atom_prefix = 'y'
                                     nef_atom_prefix_2 = 'x'
 
@@ -4631,7 +4682,7 @@ class NEFTranslator:
                                 atom_id_value = next((_a['value'] for _a in star_atom_list if _a['atom_id'] == atom_id), None)
                                 atom_id_value_2 = next((_a['value'] for _a in star_atom_list if _a['atom_id'] == atom_id_2), None)
 
-                                if not atom_id_value is None and not atom_id_value_2 is None and float(atom_id_value_2) < float(atom_id_value):
+                                if atom_id_value is not None and atom_id_value_2 is not None and float(atom_id_value_2) < float(atom_id_value):
                                     nef_atom_prefix = 'y'
                                     nef_atom_prefix_2 = 'x'
 
@@ -4685,8 +4736,12 @@ class NEFTranslator:
         try:
 
             ccb = next(b for b in self.__last_chem_comp_bonds
-                       if (b[self.__ccb_atom_id_1] == atom_id and (atom_id[0] == 'H' or b[self.__ccb_atom_id_2][0] == 'H')) or
-                          (b[self.__ccb_atom_id_2] == atom_id and (atom_id[0] == 'H' or b[self.__ccb_atom_id_1][0] == 'H')))
+                       if (b[self.__ccb_atom_id_1] == atom_id
+                           and (atom_id[0] == 'H'
+                                or b[self.__ccb_atom_id_2][0] == 'H'))
+                       or (b[self.__ccb_atom_id_2] == atom_id
+                           and (atom_id[0] == 'H'
+                                or b[self.__ccb_atom_id_1][0] == 'H')))
 
             hvy_col = self.__ccb_atom_id_1 if ccb[self.__ccb_atom_id_2 if atom_id[0] == 'H' else self.__ccb_atom_id_1] == atom_id else self.__ccb_atom_id_2
             pro_col = self.__ccb_atom_id_2 if self.__ccb_atom_id_1 == hvy_col else self.__ccb_atom_id_1
@@ -4718,8 +4773,11 @@ class NEFTranslator:
 
         try:
 
-            ccb = next(b for b in self.__last_chem_comp_bonds if (b[self.__ccb_atom_id_2] == atom_id and b[self.__ccb_atom_id_1][0] != 'H') or
-                                                                 (b[self.__ccb_atom_id_1] == atom_id and b[self.__ccb_atom_id_2][0] != 'H'))
+            ccb = next(b for b in self.__last_chem_comp_bonds
+                       if (b[self.__ccb_atom_id_2] == atom_id
+                           and b[self.__ccb_atom_id_1][0] != 'H')
+                       or (b[self.__ccb_atom_id_1] == atom_id
+                           and b[self.__ccb_atom_id_2][0] != 'H'))
 
             hvy_conn = ccb[self.__ccb_atom_id_1 if ccb[self.__ccb_atom_id_2] == atom_id else self.__ccb_atom_id_2]
 
@@ -4727,8 +4785,8 @@ class NEFTranslator:
                          for c in self.__last_chem_comp_bonds
                          if (c[self.__ccb_atom_id_2] == hvy_conn and c[self.__ccb_atom_id_1] != atom_id and c[self.__ccb_atom_id_1][0] != 'H'
                              and not self.get_group(comp_id, c[self.__ccb_atom_id_1])[1] is None
-                             and len(self.get_group(comp_id, c[self.__ccb_atom_id_1])[1]) == h_list_len) or
-                            (c[self.__ccb_atom_id_1] == hvy_conn and c[self.__ccb_atom_id_2] != atom_id and c[self.__ccb_atom_id_2][0] != 'H'
+                             and len(self.get_group(comp_id, c[self.__ccb_atom_id_1])[1]) == h_list_len)
+                         or (c[self.__ccb_atom_id_1] == hvy_conn and c[self.__ccb_atom_id_2] != atom_id and c[self.__ccb_atom_id_2][0] != 'H'
                              and not self.get_group(comp_id, c[self.__ccb_atom_id_2])[1] is None
                              and len(self.get_group(comp_id, c[self.__ccb_atom_id_2])[1]) == h_list_len))
 
@@ -5129,11 +5187,11 @@ class NEFTranslator:
                             out[data_index] = data
 
                 out_row.append(out)
-                """
-                self.authSeqMap[(in_star_chain, _in_star_seq)] = (_star_chain, _star_seq)
-                self.selfSeqMap[(in_star_chain, _in_star_seq)] = (in_star_chain if cif_chain is None else cif_chain,
-                                                          _in_star_seq if _cif_seq is None else _cif_seq)
-                """
+                #
+                # self.authSeqMap[(in_star_chain, _in_star_seq)] = (_star_chain, _star_seq)
+                # self.selfSeqMap[(in_star_chain, _in_star_seq)] = (in_star_chain if cif_chain is None else cif_chain,
+                #                                           _in_star_seq if _cif_seq is None else _cif_seq)
+                #
                 if variant is not None:
                     aux = [None] * len(self.entity_del_atom_row)
                     for l, aux_tag in enumerate(self.entity_del_atom_row):  # noqa: E741
@@ -5782,7 +5840,9 @@ class NEFTranslator:
                     cif_chain = in_star_chain
                     _cif_seq = _in_star_seq
 
-                in_row = [i for i in loop_data if (i[chain_index] == in_star_chain or i[chain_index] in self.empty_value) and i[seq_index] == in_star_seq and not i[value_index] in self.empty_value]
+                in_row = [i for i in loop_data if (i[chain_index] == in_star_chain or i[chain_index] in self.empty_value)
+                          and i[seq_index] == in_star_seq
+                          and not i[value_index] in self.empty_value]
 
                 if len(in_row) == 0:
                     continue
@@ -5973,7 +6033,7 @@ class NEFTranslator:
 
         index = 1
 
-        for id in id_list:
+        for id in id_list:  # pylint: disable=redefined-builtin
 
             in_row = [i for i in loop_data if i[id_index] == str(id)]
 
@@ -6046,16 +6106,16 @@ class NEFTranslator:
                                     buf[data_index] = l
                                 else:
                                     buf[data_index] = data
-                            """
-                            if details_1 is None and details_2 is None:
-                                pass
+                            #
+                            # if details_1 is None and details_2 is None:
+                            #     pass
 
-                            else:
+                            # else:
 
-                                details_index = star_tags.index('_Gen_dist_constraint.Details')
+                            #     details_index = star_tags.index('_Gen_dist_constraint.Details')
 
-                                buf[details_index] = ' '.join(filter(None, [details_1, detail_2]))
-                            """
+                            #     buf[details_index] = ' '.join(filter(None, [details_1, detail_2]))
+                            #
                         if or_code:
                             buf[member_code_index] = 'OR'
 
@@ -6126,7 +6186,7 @@ class NEFTranslator:
 
         index = 1
 
-        for id in id_list:
+        for id in id_list:  # pylint: disable=redefined-builtin
 
             in_row = [i for i in loop_data if i[id_index] == str(id)]
 
@@ -6281,7 +6341,7 @@ class NEFTranslator:
 
         index = 1
 
-        for id in id_list:
+        for id in id_list:  # pylint: disable=redefined-builtin
 
             in_row = [i for i in loop_data if i[id_index] == str(id)]
 
@@ -6440,7 +6500,7 @@ class NEFTranslator:
 
         index = 1
 
-        for id in id_list:
+        for id in id_list:  # pylint: disable=redefined-builtin
 
             in_row = [i for i in loop_data if i[id_index] == str(id)]
 
@@ -6613,7 +6673,7 @@ class NEFTranslator:
 
         index = 1
 
-        for id in id_list:
+        for id in id_list:  # pylint: disable=redefined-builtin
 
             in_row = [i for i in loop_data if i[id_index] == str(id)]
 
@@ -6776,7 +6836,7 @@ class NEFTranslator:
 
         index = 1
 
-        for id in id_list:
+        for id in id_list:  # pylint: disable=redefined-builtin
 
             in_row = [i for i in loop_data if i[id_index] == str(id)]
 
@@ -6916,7 +6976,7 @@ class NEFTranslator:
 
         index = 1
 
-        for id in id_list:
+        for id in id_list:  # pylint: disable=redefined-builtin
 
             in_row = [i for i in loop_data if i[id_index] == str(id)]
 
@@ -7051,7 +7111,7 @@ class NEFTranslator:
 
         index = 1
 
-        for id in id_list:
+        for id in id_list:  # pylint: disable=redefined-builtin
 
             in_row = [i for i in loop_data if i[id_index] == str(id)]
 
@@ -7266,7 +7326,7 @@ class NEFTranslator:
 
         index = 1
 
-        for id in id_list:
+        for id in id_list:  # pylint: disable=redefined-builtin
 
             in_row = [i for i in loop_data if i[id_index] == str(id)]
 
@@ -7401,7 +7461,7 @@ class NEFTranslator:
 
         index = 1
 
-        for id in id_list:
+        for id in id_list:  # pylint: disable=redefined-builtin
 
             in_row = [i for i in loop_data if i[id_index] == str(id)]
 
@@ -7435,7 +7495,7 @@ class NEFTranslator:
                 details = ''
                 a = []
 
-                for in_star_comp_index, in_star_atom_index  in zip(in_star_comp_indices, in_star_atom_indices):
+                for in_star_comp_index, in_star_atom_index in zip(in_star_comp_indices, in_star_atom_indices):
                     atom_list = self.get_valid_star_atom(i[in_star_comp_index], i[in_star_atom_index])[0]
                     len_atom_list = len(atom_list)
                     if len_atom_list == 0:
@@ -7991,7 +8051,7 @@ class NEFTranslator:
 
         is_readable, data_type, nef_data = self.read_input_file(nef_file)
 
-        self.resolve_sf_names_for_cif(nef_data, data_type) # DAOTHER-7389, issue #4
+        self.resolve_sf_names_for_cif(nef_data, data_type)  # DAOTHER-7389, issue #4
 
         try:
             star_data = pynmrstar.Entry.from_scratch(nef_data.entry_id)
@@ -8501,7 +8561,7 @@ class NEFTranslator:
 
         is_readable, data_type, star_data = self.read_input_file(star_file)
 
-        self.resolve_sf_names_for_cif(star_data, data_type) # DAOTHER-7389, issue #4
+        self.resolve_sf_names_for_cif(star_data, data_type)  # DAOTHER-7389, issue #4
 
         try:
             nef_data = pynmrstar.Entry.from_scratch(star_data.entry_id)
@@ -8528,7 +8588,7 @@ class NEFTranslator:
             if len(star_data.get_loops_by_category('Chem_comp_assembly')) == 0:  # DAOTHER-6694
                 error.append("Missing mandatory '_Chem_comp_assembly' category.")
                 return False, {'info': info, 'warning': warning, 'error': error}
-            self.authChainId = sorted(list(set(star_data.get_loops_by_category('Chem_comp_assembly')[0].get_tag('Entity_assembly_ID'))), key=lambda x:float(re.sub(r'[^\d]+', '', x)))
+            self.authChainId = sorted(list(set(star_data.get_loops_by_category('Chem_comp_assembly')[0].get_tag('Entity_assembly_ID'))), key=lambda x: float(re.sub(r'[^\d]+', '', x)))
         elif data_type == 'Saveframe':
             self.authChainId = sorted(list(set(star_data[0].get_tag('Entity_assembly_ID'))), key=lambda x: float(re.sub(r'[^\d]+', '', x)))
         else:

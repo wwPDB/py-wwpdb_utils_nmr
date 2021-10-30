@@ -6,12 +6,11 @@
 #
 import unittest
 import os
-import sys
 import json
 
 from wwpdb.utils.nmr.NmrDpUtility import NmrDpUtility
-from wwpdb.utils.nmr.NmrDpReport import NmrDpReport, NmrDpReportInputSource, NmrDpReportSequenceAlignment, NmrDpReportError, NmrDpReportWarning
-from testfixtures import LogCapture
+from wwpdb.utils.nmr.NmrDpReport import NmrDpReport
+
 
 class TestNmrDpUtility(unittest.TestCase):
 
@@ -19,19 +18,18 @@ class TestNmrDpUtility(unittest.TestCase):
         here = os.path.abspath(os.path.dirname(__file__))
         self.data_dir_path = os.path.join(here, 'mock-data-daother-7421/')
         self.res_file_type = {
-                              'daother-7421': ['nm-res-amb', 'nm-res-amb', 'nm-aux-amb']
-                             }
+            'daother-7421': ['nm-res-amb', 'nm-res-amb', 'nm-aux-amb']
+        }
         self.cs_file_path = {
-                             'daother-7421': ['D_1292118884_cs-upload_P1.str.V1']
-                             }
+            'daother-7421': ['D_1292118884_cs-upload_P1.str.V1']
+        }
         self.mr_file_path = {
-                             'daother-7421': ['D_1292118884_mr-upload_P1.amber.V1', 'D_1292118884_mr-upload_P2.amber.V1', 'D_1292118884_mr-upload_P1.dat.V1']
-                             }
+            'daother-7421': ['D_1292118884_mr-upload_P1.amber.V1', 'D_1292118884_mr-upload_P2.amber.V1', 'D_1292118884_mr-upload_P1.dat.V1']
+        }
         self.model_file_path = {
-                                'daother-7421': 'D_800450_model_P1.cif.V1'
-                                }
+            'daother-7421': 'D_800450_model_P1.cif.V1'
+        }
         self.utility = NmrDpUtility()
-        pass
 
     def tearDown(self):
         pass
@@ -39,7 +37,9 @@ class TestNmrDpUtility(unittest.TestCase):
     def __test_nmr_cs_str_consistency(self, cs_type):
         self.utility.addInput(name='chem_shift_file_path_list', value=[self.data_dir_path + cs_file_path for cs_file_path in self.cs_file_path[cs_type]], type='file_list')
         if len(self.mr_file_path[cs_type]) == 1:
-            self.utility.addInput(name='atypical_restraint_file_path_list', value=[{'file_name': self.data_dir_path + self.mr_file_path[cs_type][0], 'file_type': self.res_file_type[cs_type]}], type='file_dict_list')
+            self.utility.addInput(name='atypical_restraint_file_path_list',
+                                  value=[{'file_name': self.data_dir_path + self.mr_file_path[cs_type][0], 'file_type': self.res_file_type[cs_type]}],
+                                  type='file_dict_list')
         else:
             ar_path_list = []
             for i, ar_path in enumerate(self.mr_file_path[cs_type]):
@@ -79,6 +79,7 @@ class TestNmrDpUtility(unittest.TestCase):
 
     def test_nmr_cs_str_consistency_check_daother_7421(self):
         self.__test_nmr_cs_str_consistency('daother-7421')
+
 
 if __name__ == '__main__':
     unittest.main()

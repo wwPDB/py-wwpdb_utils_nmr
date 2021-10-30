@@ -119,12 +119,14 @@ class TestNmrDpUtility(unittest.TestCase):
     # def test_nmr_nef_consistency_check_2loy(self):
     #     self.__test_nmr_nef_consistency('2loy')
     # """
+
     def test_nmr_nef_consistency_check_2luz(self):
         self.__test_nmr_nef_consistency('2luz')
     # """
     # def test_nmr_nef_consistency_check_2png(self):
     #     self.__test_nmr_nef_consistency('2png')
     # """
+
     def test_nmr_nef_consistency_check_6nbn(self):
         self.__test_nmr_nef_consistency('6nbn')
 

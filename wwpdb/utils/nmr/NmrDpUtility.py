@@ -166,6 +166,7 @@ from wwpdb.utils.nmr.rci.RCI import RCI
 from wwpdb.utils.nmr.CifToNmrStar import CifToNmrStar
 from wwpdb.utils.nmr.NmrStarToCif import NmrStarToCif
 
+__pynmrstar_v3_3__ = version.parse(pynmrstar.__version__) >= version.parse("3.3.0")
 __pynmrstar_v3_2__ = version.parse(pynmrstar.__version__) >= version.parse("3.2.0")
 __pynmrstar_v3_1__ = version.parse(pynmrstar.__version__) >= version.parse("3.1.0")
 __pynmrstar_v3__ = version.parse(pynmrstar.__version__) >= version.parse("3.0.0")
@@ -5091,7 +5092,10 @@ class NmrDpUtility:
             if self.__verbose:
                 self.__lfh.write("+NmrDpUtility.__validateInputSource() ++ Warning  - %s\n" % warn)
 
-            msg_pattern = re.compile(r'^.*' + msg_template + r" Error occurred in tag _\S+ with value (\S+) which conflicts with.* the saveframe name (\S+)\. Error detected on line (\d+).*$")
+            if __pynmrstar_v3_3__:
+                msg_pattern = re.compile(r'^.*' + msg_template + r" Error occurred in tag _\S+ with value (\S+) which conflicts with the saveframe name (\S+)\. Error detected on line (\d+).*$")
+            else:
+                msg_pattern = re.compile(r'^.*' + msg_template + r" Error occurred in tag _\S+ with value (\S+) which conflicts with.* the saveframe name (\S+)\. Error detected on line (\d+).*$")
 
             try:
 

@@ -6306,7 +6306,7 @@ class NmrDpUtility:
                                             atom_unlikes += 1
                                             if name in ('OO', 'X', 'Y', 'Z'):
                                                 rdc_atom_names.add(name)
-                                                if (len(rdc_atom_names) == 4):
+                                                if len(rdc_atom_names) == 4:
                                                     has_rdc_origins = True
 
                                     elif _t.lower() == 'resid':

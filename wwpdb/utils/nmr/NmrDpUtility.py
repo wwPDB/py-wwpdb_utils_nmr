@@ -133,7 +133,8 @@
 # 27-Oct-2021  M. Yokochi - fix collection of unmapped sequences and utilize Auth_asym_ID* tag for chain_id if Entity_assembly_ID* is not available (DAOTHER-7421)
 # 28-Oct-2021  M. Yokochi - resolve case-insensitive saveframe name collision for CIF (DAOTHER-7389, issue #4)
 # 16-Nov-2021  M. Yokochi - fix sequence conflict in case that large sequence gap in CS implies multi chain complex (DAOTHER-7465)
-# 16-Nov-2021  M. Yokochi - fix server crash with dusulfide bond, which is not supported by chemical shifts (DAOTHER-7575)
+# 16-Nov-2021  M. Yokochi - fix server crash with dusulfide bond, which is not supported by chemical shifts (DAOTHER-7475)
+# 16-Nov-2021  M. Yokochi - revised error message for malformed XPLOR-NIH RDC restraints (DAOTHER-7478)
 ##
 """ Wrapper class for data processing for NMR data.
     @author: Masashi Yokochi
@@ -3575,7 +3576,10 @@ class NmrDpUtility:
             elif type == 'file_list':
                 self.__inputParamDict[name] = [os.path.abspath(f) for f in value]
             elif type == 'file_dict_list':
-                self.__inputParamDict[name] = [{'file_name': os.path.abspath(f['file_name']), 'file_type': f['file_type']} for f in value]
+                if any(f for f in value if 'original_file_name' in f):
+                    self.__inputParamDict[name] = [{'file_name': os.path.abspath(f['file_name']), 'file_type': f['file_type'], 'original_file_name': f['original_file_name']} for f in value]
+                else:
+                    self.__inputParamDict[name] = [{'file_name': os.path.abspath(f['file_name']), 'file_type': f['file_type']} for f in value]
             else:
                 raise ValueError("+NmrDpUtility.addInput() ++ Error  - Unknown input type %s." % type)
 
@@ -3912,6 +3916,8 @@ class NmrDpUtility:
                     input_source.setItemValue('file_name', os.path.basename(ar['file_name']))
                     input_source.setItemValue('file_type', ar['file_type'])
                     input_source.setItemValue('content_type', 'nmr-restraints')
+                    if 'original_file_name' in ar:
+                        input_source.setItemValue('original_file_name', ar['original_file_name'])
 
                     file_path_list_len += 1
 
@@ -6183,6 +6189,10 @@ class NmrDpUtility:
 
                     file_name = input_source_dic['file_name']
                     file_type = input_source_dic['file_type']
+                    if 'original_file_name' in input_source_dic:
+                        original_file_name = input_source_dic['original_file_name']
+                        if file_name != original_file_name:
+                            file_name = '%s (%s)' % (original_file_name, file_name)
 
                     is_aux_amb = file_type == 'nm-aux-amb'
 
@@ -6206,6 +6216,7 @@ class NmrDpUtility:
                     has_dihed_restraint = False
                     has_rdc_restraint = False
                     has_plane_restraint = False
+                    has_rdc_origins = False
 
                     has_coordinate = False
                     has_amb_coord = False
@@ -6225,6 +6236,9 @@ class NmrDpUtility:
                             real_likes = 0
                             names = []
                             resids = []
+
+                            rdc_atom_names = set()
+
                             cs_range_like = False
                             dist_range_like = False
                             dihed_range_like = False
@@ -6290,6 +6304,10 @@ class NmrDpUtility:
                                                 names.append(name)
                                         else:
                                             atom_unlikes += 1
+                                            if name in ('OO', 'X', 'Y', 'Z'):
+                                                rdc_atom_names.add(name)
+                                                if (len(rdc_atom_names) == 4):
+                                                    has_rdc_origins = True
 
                                     elif _t.lower() == 'resid':
                                         try:
@@ -6902,7 +6920,21 @@ class NmrDpUtility:
 
                     elif has_chem_shift and not has_coordinate and not has_amb_inpcrd and not has_dist_restraint and not has_dihed_restraint and not has_rdc_restraint and not has_plane_restraint:
 
-                        if not is_aux_amb:
+                        if has_rdc_origins:
+
+                            hint = 'assign ( resid # and name OO ) ( resid # and name X ) ( resid # and name Y ) ( resid # and name Z ) ( segid $ and resid # and name $ ) ( segid $ and resid # and name $ ) #.# #.#'
+
+                            err = "NMR restraint file (%s) seems to be a malformed XPLOR-NIH RDC restraint file. Tips for XPLOR-NIH RDC restraints: %r pattern must be present in the file. Did you accidentally select the wrong format? Please re-upload the NMR restraint file." % (mr_format_name, hint)
+
+                            self.report.error.appendDescription('content_mismatch', {'file_name': file_name, 'description': err})
+                            self.report.setError()
+
+                            if self.__verbose:
+                                self.__lfh.write("+NmrDpUtility.__detectContentSubType() ++ Error  - %s\n" % err)
+
+                            has_chem_shift = False
+
+                        elif not is_aux_amb:
 
                             err = "NMR restraint file (%s) includes assigned chemical shifts. Did you accidentally select the wrong format? Please re-upload the NMR restraint file." % mr_format_name
 
@@ -6926,15 +6958,15 @@ class NmrDpUtility:
                     if not is_aux_amb and not has_chem_shift and not has_dist_restraint and not has_dihed_restraint and not has_rdc_restraint and not has_plane_restraint:
 
                         hint = ""
-                        if file_type in ('nm-res-cns', 'nm-res-xpl'):
+                        if file_type in ('nm-res-cns', 'nm-res-xpl') and not has_rdc_origins:
                             hint = 'assign ( segid $ and resid # and name $ ) ( segid $ and resid # and name $ ) #.# #.# #.#'
                         elif file_type == 'nm-res-amb':
                             hint = '&rst iat=#[,#], r1=#.#, r2=#.#, r3=#.#, r4=#.#, [igr1=#[,#],] [igr2=#[,#],] &end'
 
                         if len(hint) > 0:
-                            hint = ' Tips for %s restraints: ' % mr_format_name + "%r pattern must be present in the file" % hint
+                            hint = ' Tips for %s restraints: ' % mr_format_name + "%r pattern must be present in the file." % hint
 
-                        warn = "Constraint type of the NMR restraint file (%s) could not be identified.%s. Did you accidentally select the wrong format?" % (mr_format_name, hint)
+                        warn = "Constraint type of the NMR restraint file (%s) could not be identified.%s Did you accidentally select the wrong format?" % (mr_format_name, hint)
 
                         self.report.warning.appendDescription('missing_content', {'file_name': file_name, 'description': warn})
                         self.report.setWarning()
@@ -6964,9 +6996,9 @@ class NmrDpUtility:
                         hint = " Tips for AMBER topology: Proper contents starting with '%FLAG ATOM_NAME', '%FLAG RESIDUE_LABEL', and '%FLAG RESIDUE_POINTER' lines must be present in the file"
 
                         if has_coordinate:
-                            hint = " Tips for AMBER coordinates: It should be directory generated by 'ambpdb' command and must not have MODEL/ENDMDL keywords to ensure that AMBER atomic IDs, referred as 'iat' in the AMBER restraint file, are preserved in the file"
+                            hint = " Tips for AMBER coordinates: It should be directory generated by 'ambpdb' command and must not have MODEL/ENDMDL keywords to ensure that AMBER atomic IDs, referred as 'iat' in the AMBER restraint file, are preserved in the file."
 
-                        err = "%r is neither AMBER topology (.prmtop) nor coordinates (.inpcrd.pdb)%s.%s. Did you accidentally select the wrong format? Please re-upload the AMBER topology file." % (file_name, subtype_name, hint)
+                        err = "%r is neither AMBER topology (.prmtop) nor coordinates (.inpcrd.pdb)%s.%s Did you accidentally select the wrong format? Please re-upload the AMBER topology file." % (file_name, subtype_name, hint)
 
                         self.report.error.appendDescription('content_mismatch', {'file_name': file_name, 'description': err})
                         self.report.setError()
